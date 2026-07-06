@@ -506,7 +506,7 @@
   line-height:1.5;
   background:rgba(255,255,255,.025);
 }
-.timeNowBox b{ color:var(--txt); }
+.timeNowBox b{ color:var(--text); }
 .timeNowBox span{ color:var(--dim); }
 .timeDefaults{
   border:1px solid var(--line);
@@ -546,3 +546,21 @@
   .timeSettingsGrid{ grid-template-columns:1fr; }
   .timeDefaultRow{ grid-template-columns:1fr; }
 }
+
+/* ── Время и регион: стили полей (в v19.4 не были дописаны) ── */
+.timeSettingsGrid input, .timeSettingsGrid select,
+.timeDefaultRow input {
+  background:var(--bg); border:1px solid var(--line); border-radius:8px;
+  color:var(--text); padding:7px 9px; font-size:13px; font-family:inherit;
+  color-scheme:dark; /* тёмные иконки часов и стрелки number-инпутов */
+  min-width:0; width:100%;
+}
+.timeSettingsGrid input:focus-visible, .timeSettingsGrid select:focus-visible,
+.timeDefaultRow input:focus-visible { outline:2px solid var(--accent); outline-offset:1px; border-color:transparent; }
+.timeDefaultRow button, .timeSettingsActions button {
+  background:transparent; color:var(--mut); border:1px dashed var(--dim);
+  border-radius:7px; padding:6px 9px; font-size:12px; cursor:pointer; font-family:inherit; white-space:nowrap;
+}
+.timeDefaultRow button:hover, .timeSettingsActions button:hover { color:var(--accent); border-color:var(--accent); }
+.timeSettingsActions button.primary { background:var(--accent); color:#14171C; border-color:var(--accent); font-weight:800; }
+.timeSettingsActions button.primary:hover { color:#14171C; }
