@@ -74,8 +74,24 @@ function csrfToken(){
   const m = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
   return m ? decodeURIComponent(m[1]) : "";
 }
-$("csrfField").value = csrfToken();
-$("loginForm").addEventListener("submit", () => { $("csrfField").value = csrfToken(); });
+async function ensureCsrf(){
+  if (!csrfToken()) {
+    // cookie нет (например, страница пришла из кэша service worker) —
+    // тихо дёргаем сервер напрямую, он поставит XSRF-TOKEN
+    try { await fetch("/login.html", { cache: "no-store", credentials: "same-origin" }); } catch (e) {}
+  }
+  return csrfToken();
+}
+ensureCsrf().then(t => { $("csrfField").value = t || ""; });
+$("loginForm").addEventListener("submit", (e) => {
+  if (!csrfToken()) {
+    // токена всё ещё нет — добываем и отправляем форму сами
+    e.preventDefault();
+    ensureCsrf().then(t => { $("csrfField").value = t || ""; $("loginForm").submit(); });
+    return;
+  }
+  $("csrfField").value = csrfToken();
+});
 
 function setTab(reg) {
   $("tabLogin").classList.toggle("on", !reg);
@@ -106,6 +122,7 @@ $("regForm").addEventListener("submit", async (e) => {
   $("regBtn").disabled = true;
   setMsg("Создаю аккаунт…");
   try {
+    await ensureCsrf();
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-XSRF-TOKEN": csrfToken() },

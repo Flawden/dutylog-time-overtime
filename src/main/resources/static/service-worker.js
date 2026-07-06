@@ -1,6 +1,6 @@
-const CACHE_NAME = "shift-calendar-shell-v6";
+const CACHE_NAME = "shift-calendar-shell-v7"; // bump: сбрасывает старый кэш при активации
+
 const SHELL = [
-  "/login.html",
   "/manifest.json",
   "/icons/icon-192.png",
   "/icons/icon-512.png"
@@ -23,11 +23,28 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const url = new URL(event.request.url);
 
-  // API и авторизацию не кэшируем: данные должны идти с сервера.
+  // API и авторизацию не трогаем вообще.
   if (url.pathname.startsWith("/api/") || url.pathname === "/perform_login" || url.pathname === "/logout") {
     return;
   }
 
+  // HTML — только network-first: страницы должны приходить с сервера
+  // (там ставятся cookie, в т.ч. CSRF-токен). Кэш — лишь оффлайн-запаска.
+  const isHtml = event.request.mode === "navigate" || url.pathname.endsWith(".html");
+  if (isHtml) {
+    event.respondWith(
+      fetch(event.request)
+        .then(res => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(event.request, copy));
+          return res;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Статика (иконки, манифест): cache-first, это безопасно.
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request))
   );
