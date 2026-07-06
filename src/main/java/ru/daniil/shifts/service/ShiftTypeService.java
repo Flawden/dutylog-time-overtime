@@ -5,12 +5,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeCreateRequest;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeDto;
+import ru.daniil.shifts.dto.Dtos.ShiftTypeUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.ShiftType;
 import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.repo.ShiftTypeRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -37,12 +39,44 @@ public class ShiftTypeService {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
 
-        String name = req.name().trim();
+        String name = cleanName(req.name());
         double hours = req.hours() != null ? req.hours() : 0;
         String color = req.color() != null ? req.color() : DEFAULT_COLOR;
+        LocalTime startTime = parseOptionalTime(req.startTime());
+        LocalTime endTime = parseOptionalTime(req.endTime());
+        int breakMinutes = req.breakMinutes() != null ? req.breakMinutes() : 0;
+        double plannedHours = req.plannedHours() != null ? req.plannedHours() : hours;
 
-        ShiftType saved = shiftTypes.save(new ShiftType(user, name, hours, color, false));
+        ShiftType saved = shiftTypes.save(new ShiftType(user, name, hours, color, false,
+                startTime, endTime, breakMinutes, plannedHours));
         return ShiftTypeDto.from(saved);
+    }
+
+    @Transactional
+    public ShiftTypeDto update(AppUser user, Long id, ShiftTypeUpdateRequest req) {
+        if (req == null) {
+            throw ApiException.badRequest("Некорректный JSON в запросе");
+        }
+        ShiftType st = requireOwnedShiftType(user, id);
+
+        // Встроенные смены можно настраивать по времени/обеду/плану,
+        // но нельзя переименовывать или удалять. Так не ломаются шаблоны графика.
+        if (!st.isBuiltin()) {
+            if (req.name() != null) st.setName(cleanName(req.name()));
+            if (req.color() != null) st.setColor(req.color());
+        } else {
+            if (req.name() != null || req.color() != null) {
+                throw new ApiException(HttpStatus.CONFLICT, "Название и цвет встроенной смены менять нельзя");
+            }
+        }
+
+        if (req.hours() != null) st.setHours(req.hours());
+        if (req.startTime() != null) st.setStartTime(parseOptionalTime(req.startTime()));
+        if (req.endTime() != null) st.setEndTime(parseOptionalTime(req.endTime()));
+        if (req.breakMinutes() != null) st.setBreakMinutes(req.breakMinutes());
+        if (req.plannedHours() != null) st.setPlannedHours(req.plannedHours());
+
+        return ShiftTypeDto.from(shiftTypes.save(st));
     }
 
     @Transactional
@@ -75,22 +109,54 @@ public class ShiftTypeService {
      */
     @Transactional
     public void ensureBuiltinShiftTypes(AppUser user) {
-        ensureBuiltin(user, "Дневная", 8, "#F5B841");
-        ensureBuiltin(user, "Ночная", 8, "#7B8CE0");
-        ensureBuiltin(user, "Выходной", 0, "#6FBF73");
+        ensureBuiltin(user, "Дневная", 8, "#F5B841", "06:30", "17:00", 30, 8.0);
+        ensureBuiltin(user, "Ночная", 8, "#7B8CE0", "20:00", "08:00", 60, 11.0);
+        ensureBuiltin(user, "Выходной", 0, "#6FBF73", null, null, 0, 0.0);
     }
 
-    private void ensureBuiltin(AppUser user, String name, double hours, String color) {
+    private void ensureBuiltin(AppUser user, String name, double hours, String color,
+                               String startTime, String endTime, int breakMinutes, Double plannedHours) {
         List<ShiftType> existing = shiftTypes.findByOwnerAndName(user, name);
         if (existing.isEmpty()) {
-            shiftTypes.save(new ShiftType(user, name, hours, color, true));
+            shiftTypes.save(new ShiftType(user, name, hours, color, true,
+                    parseOptionalTime(startTime), parseOptionalTime(endTime), breakMinutes, plannedHours));
             return;
         }
 
         ShiftType first = existing.get(0);
+        boolean changed = false;
         if (!first.isBuiltin()) {
             first.setBuiltin(true);
-            shiftTypes.save(first);
+            changed = true;
         }
+        // Для старых пользователей аккуратно заполняем новые поля только если они пустые.
+        if (first.getStartTime() == null && startTime != null) {
+            first.setStartTime(parseOptionalTime(startTime));
+            changed = true;
+        }
+        if (first.getEndTime() == null && endTime != null) {
+            first.setEndTime(parseOptionalTime(endTime));
+            changed = true;
+        }
+        if (first.getBreakMinutes() == 0 && breakMinutes > 0) {
+            first.setBreakMinutes(breakMinutes);
+            changed = true;
+        }
+        if (first.getPlannedHours() == null) {
+            first.setPlannedHours(plannedHours != null ? plannedHours : first.getHours());
+            changed = true;
+        }
+        if (changed) shiftTypes.save(first);
+    }
+
+    private String cleanName(String raw) {
+        String name = raw == null ? "" : raw.trim();
+        if (name.isBlank()) throw ApiException.badRequest("Название смены не должно быть пустым");
+        return name;
+    }
+
+    private LocalTime parseOptionalTime(String raw) {
+        if (raw == null || raw.isBlank()) return null;
+        return LocalTime.parse(raw.trim());
     }
 }

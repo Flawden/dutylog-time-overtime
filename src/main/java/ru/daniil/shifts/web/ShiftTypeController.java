@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeCreateRequest;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeDto;
+import ru.daniil.shifts.dto.Dtos.ShiftTypeUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.ShiftTypeService;
@@ -36,6 +37,14 @@ public class ShiftTypeController {
                                                Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         return ResponseEntity.status(HttpStatus.CREATED).body(shiftTypeService.create(current, req));
+    }
+
+    @PatchMapping("/{id}")
+    public ShiftTypeDto update(@PathVariable Long id,
+                               @Valid @RequestBody(required = false) ShiftTypeUpdateRequest req,
+                               Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        return shiftTypeService.update(current, id, req);
     }
 
     /**

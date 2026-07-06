@@ -11,6 +11,7 @@ import ru.daniil.shifts.repo.ShiftTypeRepository;
 import ru.daniil.shifts.repo.UserRepository;
 
 import java.security.Principal;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 
@@ -80,9 +81,9 @@ public class AuthController {
      */
     private void seedDefaults(AppUser user) {
         shiftTypes.saveAll(List.of(
-                new ShiftType(user, "Дневная", 8, "#F5B841", true),
-                new ShiftType(user, "Ночная", 8, "#7B8CE0", true),
-                new ShiftType(user, "Выходной", 0, "#6FBF73", true)
+                new ShiftType(user, "Дневная", 8, "#F5B841", true, LocalTime.parse("06:30"), LocalTime.parse("17:00"), 30, 8.0),
+                new ShiftType(user, "Ночная", 8, "#7B8CE0", true, LocalTime.parse("20:00"), LocalTime.parse("08:00"), 60, 11.0),
+                new ShiftType(user, "Выходной", 0, "#6FBF73", true, null, null, 0, 0.0)
         ));
     }
 }

@@ -28,6 +28,7 @@ import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -105,6 +106,89 @@ public class OvertimeService {
         double earned = creditList.stream().mapToDouble(OvertimeCredit::getHours).sum();
         double used = usageList.stream().mapToDouble(OvertimeUsage::getHours).sum();
         return new OvertimeAccountDto(round2(earned), round2(used), round2(earned - used), creditRows, usageRows);
+    }
+
+    /**
+     * Экспорт журнала переработок в CSV. Фильтры совпадают с таблицей на фронте.
+     */
+    @Transactional(readOnly = true)
+    public byte[] exportAccountCsv(AppUser user, String from, String to, String status, String q) {
+        List<OvertimeCreditRowDto> rows = filterCreditRows(account(user).credits(), from, to, status, q);
+        StringBuilder sb = new StringBuilder();
+        sb.append('\ufeff'); // BOM, чтобы Excel нормально открыл кириллицу
+        appendCsvLine(sb, List.of(
+                "День переработки",
+                "Время",
+                "Начислено, ч",
+                "Причина переработки",
+                "Использовано, ч",
+                "Куда списано",
+                "Остаток, ч",
+                "Обед, мин",
+                "Вычтено плана, ч",
+                "Рассчитано автоматически"
+        ));
+        for (OvertimeCreditRowDto row : rows) {
+            appendCsvLine(sb, List.of(
+                    row.workedDate(),
+                    value(row.timeRange()),
+                    fmt(row.hours()),
+                    value(row.reason()),
+                    fmt(row.usedHours()),
+                    usagesText(row),
+                    fmt(row.remainingHours()),
+                    String.valueOf(row.breakMinutes()),
+                    fmt(row.plannedHours()),
+                    row.calculated() ? "да" : "нет"
+            ));
+        }
+        return sb.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Excel-совместимый .xls без тяжёлых зависимостей: обычная HTML-таблица, которую Excel открывает как книгу.
+     */
+    @Transactional(readOnly = true)
+    public byte[] exportAccountXls(AppUser user, String from, String to, String status, String q) {
+        OvertimeAccountDto account = account(user);
+        List<OvertimeCreditRowDto> rows = filterCreditRows(account.credits(), from, to, status, q);
+        double earned = rows.stream().mapToDouble(OvertimeCreditRowDto::hours).sum();
+        double used = rows.stream().mapToDouble(OvertimeCreditRowDto::usedHours).sum();
+        double remain = rows.stream().mapToDouble(OvertimeCreditRowDto::remainingHours).sum();
+
+        StringBuilder html = new StringBuilder();
+        html.append("\ufeff");
+        html.append("<!doctype html><html><head><meta charset=\"UTF-8\">");
+        html.append("<style>");
+        html.append("body{font-family:Arial,sans-serif} table{border-collapse:collapse} th,td{border:1px solid #999;padding:6px;vertical-align:top} th{background:#f2f2f2} .num{mso-number-format:'0.00'}");
+        html.append("</style></head><body>");
+        html.append("<h2>Журнал переработок</h2>");
+        html.append("<p>Всего остаток аккаунта: ").append(escHtml(fmt(account.balanceHours()))).append(" ч</p>");
+        html.append("<p>По выгрузке: записей ").append(rows.size())
+                .append(", начислено ").append(escHtml(fmt(earned)))
+                .append(" ч, использовано ").append(escHtml(fmt(used)))
+                .append(" ч, остаток ").append(escHtml(fmt(remain))).append(" ч</p>");
+        html.append("<table><thead><tr>");
+        for (String h : List.of("День переработки", "Время", "Начислено, ч", "Причина переработки", "Использовано, ч", "Куда списано", "Остаток, ч", "Обед, мин", "Вычтено плана, ч", "Авторасчёт")) {
+            html.append("<th>").append(escHtml(h)).append("</th>");
+        }
+        html.append("</tr></thead><tbody>");
+        for (OvertimeCreditRowDto row : rows) {
+            html.append("<tr>")
+                    .append("<td>").append(escHtml(row.workedDate())).append("</td>")
+                    .append("<td>").append(escHtml(value(row.timeRange()))).append("</td>")
+                    .append("<td class=\"num\">").append(escHtml(fmt(row.hours()))).append("</td>")
+                    .append("<td>").append(escHtml(value(row.reason()))).append("</td>")
+                    .append("<td class=\"num\">").append(escHtml(fmt(row.usedHours()))).append("</td>")
+                    .append("<td>").append(escHtml(usagesText(row)).replace("\n", "<br>")).append("</td>")
+                    .append("<td class=\"num\">").append(escHtml(fmt(row.remainingHours()))).append("</td>")
+                    .append("<td>").append(row.breakMinutes()).append("</td>")
+                    .append("<td class=\"num\">").append(escHtml(fmt(row.plannedHours()))).append("</td>")
+                    .append("<td>").append(row.calculated() ? "да" : "нет").append("</td>")
+                    .append("</tr>");
+        }
+        html.append("</tbody></table></body></html>");
+        return html.toString().getBytes(StandardCharsets.UTF_8);
     }
 
     @Transactional
@@ -397,6 +481,69 @@ public class OvertimeService {
     private List<DayEntry> entries(AppUser user, LocalDate from, LocalDate to) {
         dayEntryService.validateRange(from, to);
         return days.findByOwnerAndDateBetweenOrderByDateAsc(user, from, to);
+    }
+
+    private List<OvertimeCreditRowDto> filterCreditRows(List<OvertimeCreditRowDto> rows, String from, String to, String status, String q) {
+        String normalizedStatus = hasText(status) ? status.trim().toLowerCase() : "all";
+        String normalizedQ = hasText(q) ? q.trim().toLowerCase() : "";
+        return rows.stream()
+                .filter(row -> !hasText(from) || row.workedDate().compareTo(from.trim()) >= 0)
+                .filter(row -> !hasText(to) || row.workedDate().compareTo(to.trim()) <= 0)
+                .filter(row -> statusMatches(row, normalizedStatus))
+                .filter(row -> normalizedQ.isBlank() || exportSearchHaystack(row).contains(normalizedQ))
+                .toList();
+    }
+
+    private boolean statusMatches(OvertimeCreditRowDto row, String status) {
+        double remaining = row.remainingHours();
+        double used = row.usedHours();
+        return switch (status) {
+            case "open" -> remaining > 0.00001;
+            case "partial" -> remaining > 0.00001 && used > 0.00001;
+            case "closed" -> remaining <= 0.00001;
+            default -> true;
+        };
+    }
+
+    private String exportSearchHaystack(OvertimeCreditRowDto row) {
+        return (row.workedDate() + " " + value(row.timeRange()) + " " + fmt(row.hours()) + " "
+                + value(row.reason()) + " " + usagesText(row)).toLowerCase();
+    }
+
+    private String usagesText(OvertimeCreditRowDto row) {
+        if (row.usages() == null || row.usages().isEmpty()) {
+            return "не списывалось";
+        }
+        return row.usages().stream()
+                .map(u -> u.usageDate() + ": " + fmt(u.hours()) + " ч" + (hasText(u.reason()) ? " — " + u.reason() : ""))
+                .collect(Collectors.joining("\n"));
+    }
+
+    private void appendCsvLine(StringBuilder sb, List<String> cells) {
+        for (int i = 0; i < cells.size(); i++) {
+            if (i > 0) sb.append(';');
+            sb.append(csvCell(cells.get(i)));
+        }
+        sb.append('\n');
+    }
+
+    private String csvCell(String value) {
+        String v = value(value).replace("\r", " ");
+        boolean quote = v.contains(";") || v.contains("\n") || v.contains("\"");
+        v = v.replace("\"", "\"\"");
+        return quote ? "\"" + v + "\"" : v;
+    }
+
+    private String value(String value) {
+        return value == null ? "" : value;
+    }
+
+    private String escHtml(String value) {
+        return value(value)
+                .replace("&", "&amp;")
+                .replace("<", "&lt;")
+                .replace(">", "&gt;")
+                .replace("\"", "&quot;");
     }
 
     private CalculatedCredit calculateCredit(OvertimeCreditCreateRequest req) {

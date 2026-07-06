@@ -26,9 +26,29 @@ public final class Dtos {
     private Dtos() {}
 
     /** Тип смены наружу. */
-    public record ShiftTypeDto(Long id, String name, double hours, String color, boolean builtin) {
+    public record ShiftTypeDto(
+            Long id,
+            String name,
+            double hours,
+            String color,
+            boolean builtin,
+            String startTime,
+            String endTime,
+            int breakMinutes,
+            double plannedHours
+    ) {
         public static ShiftTypeDto from(ShiftType s) {
-            return new ShiftTypeDto(s.getId(), s.getName(), s.getHours(), s.getColor(), s.isBuiltin());
+            return new ShiftTypeDto(
+                    s.getId(),
+                    s.getName(),
+                    s.getHours(),
+                    s.getColor(),
+                    s.isBuiltin(),
+                    s.getStartTime() != null ? s.getStartTime().toString() : null,
+                    s.getEndTime() != null ? s.getEndTime().toString() : null,
+                    s.getBreakMinutes(),
+                    s.effectivePlannedHours()
+            );
         }
     }
 
@@ -43,7 +63,48 @@ public final class Dtos {
             Double hours,
 
             @Pattern(regexp = "#[0-9a-fA-F]{6}", message = "Цвет должен быть в формате #RRGGBB")
-            String color
+            String color,
+
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время начала должно быть в формате HH:mm")
+            String startTime,
+
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время конца должно быть в формате HH:mm")
+            String endTime,
+
+            @Min(value = 0, message = "Обед не может быть отрицательным")
+            @Max(value = 1440, message = "Обед не может быть больше 1440 минут")
+            Integer breakMinutes,
+
+            @DecimalMin(value = "0.0", message = "Плановые часы не могут быть отрицательными")
+            @DecimalMax(value = "24.0", message = "Плановые часы не могут быть больше 24")
+            Double plannedHours
+    ) {}
+
+    /** Обновление типа смены. Все поля опциональны. */
+    public record ShiftTypeUpdateRequest(
+            @Size(max = 60, message = "Название смены: максимум 60 символов")
+            String name,
+
+            @DecimalMin(value = "0.0", message = "Часы не могут быть отрицательными")
+            @DecimalMax(value = "24.0", message = "Часы не могут быть больше 24")
+            Double hours,
+
+            @Pattern(regexp = "#[0-9a-fA-F]{6}", message = "Цвет должен быть в формате #RRGGBB")
+            String color,
+
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время начала должно быть в формате HH:mm")
+            String startTime,
+
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время конца должно быть в формате HH:mm")
+            String endTime,
+
+            @Min(value = 0, message = "Обед не может быть отрицательным")
+            @Max(value = 1440, message = "Обед не может быть больше 1440 минут")
+            Integer breakMinutes,
+
+            @DecimalMin(value = "0.0", message = "Плановые часы не могут быть отрицательными")
+            @DecimalMax(value = "24.0", message = "Плановые часы не могут быть больше 24")
+            Double plannedHours
     ) {}
 
     /** Запись дня наружу: дата в ISO (yyyy-MM-dd). */

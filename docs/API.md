@@ -621,9 +621,28 @@ YEARLY  — каждый год
 {
   "name": "12 часов",
   "hours": 12,
-  "color": "#E0653A"
+  "color": "#E0653A",
+  "startTime": "08:00",
+  "endTime": "20:00",
+  "breakMinutes": 60,
+  "plannedHours": 11
 }
 ```
+
+Поля `startTime`, `endTime`, `breakMinutes`, `plannedHours` необязательные.
+
+### PATCH `/api/shift-types/{id}`
+
+```json
+{
+  "startTime": "06:30",
+  "endTime": "17:00",
+  "breakMinutes": 30,
+  "plannedHours": 8
+}
+```
+
+У встроенных смен можно менять время/обед/план/часы, но нельзя менять название и цвет.
 
 ### DELETE `/api/shift-types/{id}`
 
@@ -638,3 +657,29 @@ YEARLY  — каждый год
 ```
 
 Для ошибок валидации может быть дополнительное поле `fields`.
+
+
+## Экспорт переработок
+
+```text
+GET /api/overtime/export.csv
+GET /api/overtime/export.xls
+```
+
+Параметры совпадают с фильтрами таблицы переработок:
+
+```text
+from=2026-07-01      // необязательно
+to=2026-07-31        // необязательно
+status=all|open|partial|closed
+q=ППР                // необязательно, поиск по дате/причине/списаниям
+```
+
+Примеры:
+
+```text
+/api/overtime/export.csv?from=2026-07-01&to=2026-07-31&status=open
+/api/overtime/export.xls?q=ППР
+```
+
+CSV открывается в Excel с кириллицей за счёт UTF-8 BOM. XLS — Excel-совместимая HTML-таблица, поэтому не требует отдельной зависимости вроде Apache POI.

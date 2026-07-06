@@ -1,6 +1,9 @@
 package ru.daniil.shifts.web;
 
 import jakarta.validation.Valid;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -47,6 +50,36 @@ public class OvertimeController {
     public OvertimeAccountDto account(Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         return overtimeService.account(current);
+    }
+
+    /** GET /api/overtime/export.csv — выгрузить текущий журнал переработок в CSV. */
+    @GetMapping("/export.csv")
+    public ResponseEntity<byte[]> exportCsv(@RequestParam(required = false) String from,
+                                            @RequestParam(required = false) String to,
+                                            @RequestParam(required = false, defaultValue = "all") String status,
+                                            @RequestParam(required = false, defaultValue = "") String q,
+                                            Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        byte[] body = overtimeService.exportAccountCsv(current, from, to, status, q);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"overtime-ledger.csv\"")
+                .contentType(new MediaType("text", "csv"))
+                .body(body);
+    }
+
+    /** GET /api/overtime/export.xls — Excel-совместимый отчёт без дополнительной тяжёлой зависимости. */
+    @GetMapping("/export.xls")
+    public ResponseEntity<byte[]> exportXls(@RequestParam(required = false) String from,
+                                            @RequestParam(required = false) String to,
+                                            @RequestParam(required = false, defaultValue = "all") String status,
+                                            @RequestParam(required = false, defaultValue = "") String q,
+                                            Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        byte[] body = overtimeService.exportAccountXls(current, from, to, status, q);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"overtime-ledger.xls\"")
+                .contentType(MediaType.parseMediaType("application/vnd.ms-excel; charset=UTF-8"))
+                .body(body);
     }
 
     /** POST /api/overtime/credits — начислить переработку. */
