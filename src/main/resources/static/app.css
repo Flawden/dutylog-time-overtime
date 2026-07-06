@@ -2,6 +2,7 @@
   :root {
     --bg:#14171C; --panel:#1C2027; --panel2:#22262E; --line:#2E333C;
     --text:#E8EAED; --mut:#8B929E; --dim:#5A6270; --accent:#F5B841; --danger:#E0653A;
+    color-scheme: dark; /* нативные контролы (select, date, checkbox) — в тёмной теме браузера */
   }
   * { box-sizing: border-box; }
   body { margin:0; background:var(--bg); color:var(--text); font-family:'Segoe UI',system-ui,sans-serif; }
@@ -564,3 +565,64 @@
 .timeDefaultRow button:hover, .timeSettingsActions button:hover { color:var(--accent); border-color:var(--accent); }
 .timeSettingsActions button.primary { background:var(--accent); color:#14171C; border-color:var(--accent); font-weight:800; }
 .timeSettingsActions button.primary:hover { color:#14171C; }
+
+/* ── Дочинка стилей (v19.8) ── */
+
+/* Кнопки «выбранный день» / «сегодня» у важных дней и любые
+   безклассовые кнопки в формах панели дня */
+.dayForm .row > button:not(.addSmall) {
+  background:transparent; color:var(--mut); border:1px dashed var(--dim);
+  border-radius:7px; padding:6px 9px; font-size:12px; cursor:pointer;
+  font-family:inherit; white-space:nowrap;
+}
+.dayForm .row > button:not(.addSmall):hover { color:var(--accent); border-color:var(--accent); }
+
+/* Пресеты «15 мин … 2 часа» в уведомлениях — стилей не было вовсе */
+.notifyPresets { display:flex; align-items:center; gap:6px; flex-wrap:wrap; margin:10px 0; font-size:12px; color:var(--mut); }
+.notifyPresets button {
+  background:transparent; color:var(--mut); border:1px dashed var(--dim);
+  border-radius:7px; padding:5px 9px; font-size:12px; cursor:pointer; font-family:inherit;
+}
+.notifyPresets button:hover { color:var(--accent); border-color:var(--accent); }
+
+/* Чекбоксы по всему приложению — фирменный жёлтый вместо системного */
+input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
+
+/* Селекты и date-инпуты панели дня: дублируем с запасом специфичности,
+   на случай если какое-то правило их перебивает */
+.dayForm .row select, .dayForm .row input[type=date] {
+  background:var(--bg); border:1px solid var(--line); border-radius:7px;
+  color:var(--text); padding:6px 8px; font-size:12.5px; font-family:inherit;
+}
+
+/* ── Полноэкранный редактор заметок (v19.9) ── */
+.noteExpandBtn { margin-left:auto; background:transparent; color:var(--mut); border:1px dashed var(--dim);
+  border-radius:7px; padding:4px 9px; font-size:11.5px; cursor:pointer; font-family:inherit; align-self:center; }
+.noteExpandBtn:hover { color:var(--accent); border-color:var(--accent); }
+
+.noteFs { position:fixed; inset:0; z-index:100; background:var(--bg); display:flex; flex-direction:column; }
+.noteFsHead { display:flex; justify-content:space-between; align-items:center; gap:10px;
+  padding:12px 20px; border-bottom:1px solid var(--line); flex:none; }
+.noteFsTitle { font-size:18px; font-weight:800; }
+.noteFsAuto { font-size:11px; color:var(--dim); font-weight:400; margin-left:10px; letter-spacing:.3px; }
+.noteFsActions { display:flex; gap:10px; align-items:center; }
+#noteFsClose { background:none; border:none; color:var(--dim); font-size:28px; cursor:pointer; line-height:1; padding:0 4px; }
+#noteFsClose:hover { color:var(--text); }
+#noteFsTab { display:none; background:transparent; color:var(--mut); border:1px dashed var(--dim);
+  border-radius:7px; padding:5px 10px; font-size:12px; cursor:pointer; font-family:inherit; }
+
+.noteFsBody { flex:1; display:grid; grid-template-columns:1fr 1fr; min-height:0; }
+#noteFsEdit { border:none; outline:none; resize:none; background:var(--bg); color:var(--text);
+  padding:20px 24px; font:13.5px/1.7 ui-monospace,'Cascadia Mono',Consolas,monospace;
+  border-right:1px solid var(--line); min-height:0; }
+.noteFsPrev { overflow-y:auto; padding:20px 24px; font-size:14.5px; min-width:0; background:rgba(255,255,255,.015); }
+.noteFsEmpty { color:var(--dim); font-size:13px; }
+
+@media (max-width: 900px) {
+  .noteFsBody { grid-template-columns:1fr; }
+  #noteFsTab { display:inline-block; }
+  .noteFsPrev { display:none; }
+  .noteFs.showPrev .noteFsPrev { display:block; }
+  .noteFs.showPrev #noteFsEdit { display:none; }
+  #noteFsEdit { border-right:none; }
+}

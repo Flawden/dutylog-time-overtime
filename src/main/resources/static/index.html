@@ -193,6 +193,7 @@
 <div class="tabs">
 <button class="on" id="tabEdit">Заметка</button>
 <button id="tabPrev">Превью</button>
+<button id="noteExpand" class="noteExpandBtn" title="Редактор на весь экран" type="button">⛶ развернуть</button>
 </div>
 <textarea id="noteEdit" placeholder="# Заголовок
 **жирный**, *курсив*, `код`
@@ -465,6 +466,22 @@
 <div class="importantList" id="importantSettingsList"></div>
 </div>
 </section>
+</div>
+<div class="noteFs" id="noteFullscreen" hidden>
+  <div class="noteFsHead">
+    <div>
+      <div class="eyebrow" id="noteFsDate"></div>
+      <div class="noteFsTitle">Заметка <span class="noteFsAuto">сохраняется автоматически</span></div>
+    </div>
+    <div class="noteFsActions">
+      <button id="noteFsTab" type="button">превью</button>
+      <button id="noteFsClose" type="button" title="Закрыть (Esc)">×</button>
+    </div>
+  </div>
+  <div class="noteFsBody">
+    <textarea id="noteFsEdit" spellcheck="false" placeholder="# Заголовок&#10;**жирный**, *курсив*, `код`&#10;- [ ] задача&#10;> цитата&#10;```&#10;код блоком&#10;```"></textarea>
+    <div class="noteFsPrev" id="noteFsPrev"></div>
+  </div>
 </div>
 <script src="app.js"></script>
 </body>

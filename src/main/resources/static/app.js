@@ -2675,3 +2675,57 @@ function applyRoute(){
 }
 window.addEventListener("hashchange", applyRoute);
 applyRoute();
+
+/* ─── Полноэкранный редактор заметок ────────────────────────── */
+function renderNoteFsPrev(){
+  const v = $("noteFsEdit").value;
+  $("noteFsPrev").innerHTML = v.trim() ? renderMd(v)
+    : '<span class="noteFsEmpty">Пусто. Пиши слева — превью живое.</span>';
+}
+
+function openNoteFullscreen(){
+  if (!state.selected) return;
+  $("noteFsEdit").value = $("noteEdit").value;
+  $("noteFsDate").textContent = ($("pWeekday")?.textContent || "") + " · " + ($("pDate")?.textContent || state.selected);
+  renderNoteFsPrev();
+  $("noteFullscreen").hidden = false;
+  document.body.style.overflow = "hidden"; // страница под оверлеем не скроллится
+  $("noteFsEdit").focus();
+}
+
+function closeNoteFullscreen(){
+  $("noteFullscreen").hidden = true;
+  document.body.style.overflow = "";
+}
+
+// Сквозная запись: переиспользуем весь существующий пайплайн сохранения —
+// пишем в noteEdit и диспатчим его событие. Дебаунс, календарь, сводки — всё штатное.
+$("noteFsEdit").addEventListener("input", () => {
+  $("noteEdit").value = $("noteFsEdit").value;
+  $("noteEdit").dispatchEvent(new Event("input"));
+  renderNoteFsPrev();
+});
+
+// Tab в редакторе — отступ, а не прыжок фокуса (как в Obsidian)
+$("noteFsEdit").addEventListener("keydown", e => {
+  if (e.key === "Tab") {
+    e.preventDefault();
+    const el = e.target, s = el.selectionStart, end = el.selectionEnd;
+    el.value = el.value.slice(0, s) + "  " + el.value.slice(end);
+    el.selectionStart = el.selectionEnd = s + 2;
+    el.dispatchEvent(new Event("input"));
+  }
+});
+
+$("noteExpand").addEventListener("click", openNoteFullscreen);
+$("noteFsClose").addEventListener("click", closeNoteFullscreen);
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && !$("noteFullscreen").hidden) closeNoteFullscreen();
+});
+$("noteFsTab").addEventListener("click", () => {
+  const fs = $("noteFullscreen");
+  fs.classList.toggle("showPrev");
+  const prev = fs.classList.contains("showPrev");
+  $("noteFsTab").textContent = prev ? "редактор" : "превью";
+  if (prev) renderNoteFsPrev();
+});
