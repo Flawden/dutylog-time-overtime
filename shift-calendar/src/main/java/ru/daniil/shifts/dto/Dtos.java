@@ -42,18 +42,30 @@ public final class Dtos {
     ) {}
 
     /** Запись дня наружу: дата в ISO (yyyy-MM-dd). */
-    public record DayDto(String date, Long shiftTypeId, String note) {
+    public record DayDto(
+            String date,
+            Long shiftTypeId,
+            String note,
+            double overtimeHours,
+            double timeOffHours,
+            double overtimeBalanceHours
+    ) {
         public static DayDto from(DayEntry e) {
+            double overtime = e.getOvertimeHours();
+            double timeOff = e.getTimeOffHours();
             return new DayDto(
                     e.getDate().toString(),
                     e.getShiftType() != null ? e.getShiftType().getId() : null,
-                    e.getNote()
+                    e.getNote(),
+                    overtime,
+                    timeOff,
+                    overtime - timeOff
             );
         }
     }
 
 
-    /** Массовое заполнение графика от выбранной даты. Заметки при этом сохраняются. */
+    /** Массовое заполнение графика от выбранной даты. Заметки и переработки при этом сохраняются. */
     public record DayFillRequest(
             @NotBlank(message = "Дата начала должна быть в формате yyyy-MM-dd")
             String startDate,
@@ -68,11 +80,19 @@ public final class Dtos {
             Boolean overwriteExistingShift
     ) {}
 
-    /** Upsert записи дня. Оба поля могут быть null. */
+    /** Upsert записи дня. Все поля опциональны. */
     public record DayUpsertRequest(
             Long shiftTypeId,
 
             @Size(max = 20000, message = "Заметка слишком длинная: максимум 20 000 символов")
-            String note
+            String note,
+
+            @DecimalMin(value = "0.0", message = "Переработка не может быть отрицательной")
+            @DecimalMax(value = "100.0", message = "Переработка за день: максимум 100 часов")
+            Double overtimeHours,
+
+            @DecimalMin(value = "0.0", message = "Отгул не может быть отрицательным")
+            @DecimalMax(value = "100.0", message = "Отгул за день: максимум 100 часов")
+            Double timeOffHours
     ) {}
 }

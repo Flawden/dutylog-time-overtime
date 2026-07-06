@@ -4,9 +4,15 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 
 /**
- * Запись на конкретную дату: назначенная смена (может отсутствовать)
- * и заметка в Markdown (может быть пустой).
- * Если нет ни смены, ни заметки — запись удаляется целиком.
+ * Запись на конкретную дату: назначенная смена, заметка в Markdown,
+ * дополнительные часы переработки и часы использованного отгула.
+ *
+ * Важная мысль по переработкам:
+ * - shiftType хранит обычную/плановую смену дня;
+ * - overtimeHours — дополнительные часы сверх обычной смены, например ППР после работы;
+ * - timeOffHours — часы, которые пользователь списал как отгул/компенсацию.
+ *
+ * Баланс переработки за период считается как sum(overtimeHours) - sum(timeOffHours).
  */
 @Entity
 @Table(name = "day_entries",
@@ -29,6 +35,12 @@ public class DayEntry {
     @JoinColumn(name = "shift_type_id")
     private ShiftType shiftType; // может быть null
 
+    @Column(name = "overtime_hours")
+    private Double overtimeHours = 0.0;
+
+    @Column(name = "time_off_hours")
+    private Double timeOffHours = 0.0;
+
     @Lob
     @Column(name = "note")
     private String note; // Markdown, может быть null/пустой
@@ -45,11 +57,18 @@ public class DayEntry {
     public LocalDate getDate() { return date; }
     public ShiftType getShiftType() { return shiftType; }
     public void setShiftType(ShiftType shiftType) { this.shiftType = shiftType; }
+    public double getOvertimeHours() { return overtimeHours == null ? 0.0 : overtimeHours; }
+    public void setOvertimeHours(double overtimeHours) { this.overtimeHours = Math.max(0.0, overtimeHours); }
+    public double getTimeOffHours() { return timeOffHours == null ? 0.0 : timeOffHours; }
+    public void setTimeOffHours(double timeOffHours) { this.timeOffHours = Math.max(0.0, timeOffHours); }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
 
     /** Пустая запись не имеет смысла и должна удаляться. */
     public boolean isEmpty() {
-        return shiftType == null && (note == null || note.isBlank());
+        return shiftType == null
+                && getOvertimeHours() <= 0.00001
+                && getTimeOffHours() <= 0.00001
+                && (note == null || note.isBlank());
     }
 }

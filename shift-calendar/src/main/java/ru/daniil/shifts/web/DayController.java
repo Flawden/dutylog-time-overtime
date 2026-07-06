@@ -60,8 +60,8 @@ public class DayController {
 
     /**
      * Upsert записи дня текущего пользователя: PUT /api/days/2026-07-02
-     * Тело: { "shiftTypeId": 3, "note": "# Markdown" } — оба поля опциональны.
-     * Чужой тип смены назначить нельзя. Пустая запись удаляется (204).
+     * Тело: { "shiftTypeId": 3, "note": "# Markdown", "overtimeHours": 15, "timeOffHours": 8 }.
+     * Все поля опциональны. Чужой тип смены назначить нельзя. Пустая запись удаляется (204).
      */
     @PutMapping("/{date}")
     @Transactional
@@ -95,6 +95,8 @@ public class DayController {
                 .orElseGet(() -> new DayEntry(current, d));
         entry.setShiftType(st);
         entry.setNote(normalizeNote(req.note()));
+        entry.setOvertimeHours(req.overtimeHours() != null ? req.overtimeHours() : 0.0);
+        entry.setTimeOffHours(req.timeOffHours() != null ? req.timeOffHours() : 0.0);
 
         if (entry.isEmpty()) {
             if (entry.getId() != null) days.delete(entry);
@@ -114,7 +116,7 @@ public class DayController {
      *   "overwriteExistingShift": true
      * }
      *
-     * Важно: заметки в днях не трогаются, меняется только тип смены.
+     * Важно: заметки, переработки и отгулы в днях не трогаются, меняется только тип смены.
      */
     @PostMapping("/fill")
     @Transactional

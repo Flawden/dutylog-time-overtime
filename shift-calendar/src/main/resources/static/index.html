@@ -101,6 +101,17 @@
   .tplBox .apply { margin-left:auto; background:var(--accent); color:#14171C; border:none; border-radius:7px; padding:6px 12px; font-size:12.5px; font-weight:800; cursor:pointer; }
   .tplHint { color:var(--dim); line-height:1.45; margin-top:7px; }
 
+  .ot { margin:10px 0 8px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:10px; font-size:12.5px; }
+  .ot .row { display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+  .ot input[type=number] { width:82px; background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:6px 8px; font-size:12.5px; font-family:ui-monospace,monospace; }
+  .ot label { color:var(--mut); display:flex; align-items:center; gap:6px; }
+  .ot button { background:transparent; color:var(--mut); border:1px dashed var(--dim); border-radius:7px; padding:6px 9px; font-size:12px; cursor:pointer; }
+  .ot button:hover { color:var(--accent); border-color:var(--accent); }
+  .ot .bal { margin-left:auto; font-family:ui-monospace,monospace; color:var(--accent); }
+  .otHint { color:var(--dim); line-height:1.45; margin-top:7px; }
+  .cell .otMark { font-size:10.5px; font-weight:700; font-family:ui-monospace,monospace; color:var(--accent); line-height:1.1; }
+  .sum .over { color:var(--accent); font-family:ui-monospace,monospace; }
+
   .tabs { display:flex; gap:4px; margin:12px 0 8px; border-bottom:1px solid var(--line); }
   .tabs button { background:none; border:none; cursor:pointer; padding:6px 10px; font-size:13px; color:var(--dim); border-bottom:2px solid transparent; margin-bottom:-1px; }
   .tabs button.on { color:var(--text); font-weight:700; border-bottom-color:var(--accent); }
@@ -194,6 +205,16 @@
           <div class="tplHint" id="tplHint">По умолчанию заполняется 31 день вперёд, включая следующий месяц. Заметки не стираются.</div>
         </div>
       </div>
+      <div class="ot">
+        <div class="eyebrow">Переработка / отгулы</div>
+        <div class="row">
+          <label>ППР / доп. часы <input type="number" id="otHours" min="0" max="100" step="0.25" value="0"></label>
+          <label>Списано отгула <input type="number" id="offHours" min="0" max="100" step="0.25" value="0"></label>
+          <button id="offByShift" type="button">Списать по смене</button>
+          <span class="bal" id="otBalance">0 ч</span>
+        </div>
+        <div class="otHint">Пример: обычную дневную оставь как смену дня, в ППР поставь +15 ч. На следующий плановый день нажми «Списать по смене» — уйдёт 8 ч, баланс станет +7 ч.</div>
+      </div>
       <div class="tabs">
         <button id="tabEdit" class="on">Заметка</button>
         <button id="tabPrev">Превью</button>
@@ -213,7 +234,7 @@ const state = {
   y: new Date().getFullYear(),
   m: new Date().getMonth(),      // 0–11
   shiftTypes: [],                 // [{id,name,hours,color,builtin}]
-  days: {},                       // { 'YYYY-MM-DD': {shiftTypeId, note} }
+  days: {},                       // { 'YYYY-MM-DD': {shiftTypeId, note, overtimeHours, timeOffHours} }
   selected: null,                 // ключ даты
   tab: "edit",
   swColor: "#F5B841",
@@ -241,6 +262,17 @@ const SCHEDULE_TEMPLATES = {
 const pad = n => String(n).padStart(2, "0");
 const keyOf = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
 const todayKey = () => { const t = new Date(); return keyOf(t.getFullYear(), t.getMonth(), t.getDate()); };
+const numOr0 = v => { const n = Number(v ?? 0); return Number.isFinite(n) ? n : 0; };
+const fmtHours = v => {
+  const n = Math.round(numOr0(v) * 100) / 100;
+  return n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
+};
+const normalizeDay = e => ({
+  shiftTypeId: e?.shiftTypeId ?? null,
+  note: e?.note ?? null,
+  overtimeHours: numOr0(e?.overtimeHours),
+  timeOffHours: numOr0(e?.timeOffHours),
+});
 
 const monthPrefix = () => `${state.y}-${pad(state.m + 1)}-`;
 function weekdayIndex(k){
@@ -392,6 +424,13 @@ function renderCalendar(){
       nm.className = "shift"; nm.style.color = st.color; nm.textContent = st.name;
       cell.appendChild(nm);
     }
+    const bal = numOr0(entry?.overtimeHours) - numOr0(entry?.timeOffHours);
+    if (Math.abs(bal) > 0.0001) {
+      const ot = document.createElement("span");
+      ot.className = "otMark";
+      ot.textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)}ч`;
+      cell.appendChild(ot);
+    }
     cell.addEventListener("click", () => selectDay(state.selected === k ? null : k));
     grid.appendChild(cell);
   }
@@ -399,8 +438,10 @@ function renderCalendar(){
 }
 
 function renderSummary(){
-  const counts = {}; let hours = 0;
+  const counts = {}; let hours = 0, overtime = 0, timeOff = 0;
   for (const [k, v] of Object.entries(state.days)) {
+    overtime += numOr0(v.overtimeHours);
+    timeOff += numOr0(v.timeOffHours);
     if (!v.shiftTypeId) continue;
     counts[v.shiftTypeId] = (counts[v.shiftTypeId] || 0) + 1;
     const st = state.shiftTypes.find(s => s.id === v.shiftTypeId);
@@ -408,7 +449,7 @@ function renderSummary(){
   }
   const el = $("summary");
   el.innerHTML = '<span class="lbl">Итого:</span>';
-  let any = false;
+  let any = Math.abs(overtime) > 0.0001 || Math.abs(timeOff) > 0.0001;
   for (const s of state.shiftTypes) {
     if (!counts[s.id]) continue;
     any = true;
@@ -416,9 +457,17 @@ function renderSummary(){
     span.innerHTML = `<span class="dot" style="background:${s.color}"></span>${esc(s.name)} — <b>${counts[s.id]}</b>`;
     el.appendChild(span);
   }
+  const balance = overtime - timeOff;
+  if (Math.abs(overtime) > 0.0001 || Math.abs(timeOff) > 0.0001) {
+    const o = document.createElement("span");
+    o.className = "over";
+    o.textContent = `переработка: ${balance > 0 ? "+" : ""}${fmtHours(balance)} ч`;
+    o.title = `Начислено: ${fmtHours(overtime)} ч, списано: ${fmtHours(timeOff)} ч`;
+    el.appendChild(o);
+  }
   if (hours > 0) {
     const h = document.createElement("span");
-    h.className = "hrs"; h.textContent = `${hours} ч`;
+    h.className = "hrs"; h.textContent = `${fmtHours(hours)} ч`;
     el.appendChild(h);
   }
   if (!any) {
@@ -442,6 +491,7 @@ function selectDay(k){
     setTab("edit");
     renderChips();
     renderScheduleControls();
+    renderOvertimeControls();
   }
   renderCalendar();
 }
@@ -498,7 +548,7 @@ async function applyScheduleTemplate(){
     const prefix = monthPrefix();
     for (const e of changed) {
       if (e.date.startsWith(prefix)) {
-        state.days[e.date] = { shiftTypeId: e.shiftTypeId, note: e.note };
+        state.days[e.date] = normalizeDay(e);
       }
     }
     setSave("saved");
@@ -519,6 +569,59 @@ $("tplToggle").addEventListener("click", () => {
 $("tplPreset").addEventListener("change", renderScheduleControls);
 $("tplDays").addEventListener("input", () => { $("tplDays").dataset.userTouched = "1"; });
 $("tplApply").addEventListener("click", applyScheduleTemplate);
+
+/* ─── Переработка и отгулы ─────────────────────────────────── */
+function updateOvertimeBalanceLabel(entry){
+  const balance = numOr0(entry?.overtimeHours) - numOr0(entry?.timeOffHours);
+  $("otBalance").textContent = `${balance > 0 ? "+" : ""}${fmtHours(balance)} ч`;
+}
+
+function renderOvertimeControls(){
+  const entry = state.days[state.selected] || {};
+  $("otHours").value = fmtHours(numOr0(entry.overtimeHours));
+  $("offHours").value = fmtHours(numOr0(entry.timeOffHours));
+  updateOvertimeBalanceLabel(entry);
+}
+
+function readHoursInput(id){
+  const raw = String($(id).value || "").trim().replace(",", ".");
+  if (!raw) return 0;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : NaN;
+}
+
+function saveOvertimeControls(){
+  const k = state.selected;
+  if (!k) return;
+  const overtimeHours = readHoursInput("otHours");
+  const timeOffHours = readHoursInput("offHours");
+  if (!Number.isFinite(overtimeHours) || !Number.isFinite(timeOffHours)) {
+    return setSave("err", "часы должны быть положительным числом");
+  }
+  if (overtimeHours > 100 || timeOffHours > 100) {
+    return setSave("err", "переработка/отгул за день: максимум 100 часов");
+  }
+  const cur = state.days[k] || {};
+  const next = {
+    shiftTypeId: cur.shiftTypeId ?? null,
+    note: cur.note ?? null,
+    overtimeHours,
+    timeOffHours,
+  };
+  applyLocal(k, next);
+  updateOvertimeBalanceLabel(next);
+  renderCalendar();
+  scheduleDaySave(k, next);
+}
+
+$("otHours").addEventListener("input", saveOvertimeControls);
+$("offHours").addEventListener("input", saveOvertimeControls);
+$("offByShift").addEventListener("click", () => {
+  const st = stOf(state.selected);
+  if (!st || !st.hours) return setSave("err", "на этом дне нет смены с часами для списания");
+  $("offHours").value = fmtHours(st.hours);
+  saveOvertimeControls();
+});
 
 function renderChips(){
   const box = $("chips");
@@ -554,7 +657,12 @@ function renderChips(){
 async function toggleShift(id){
   const k = state.selected;
   const cur = state.days[k] || {};
-  const next = { shiftTypeId: cur.shiftTypeId === id ? null : id, note: cur.note || null };
+  const next = {
+    shiftTypeId: cur.shiftTypeId === id ? null : id,
+    note: cur.note || null,
+    overtimeHours: numOr0(cur.overtimeHours),
+    timeOffHours: numOr0(cur.timeOffHours),
+  };
   applyLocal(k, next);
   renderChips(); renderCalendar();
   await pushDaySnapshot(k, next);
@@ -564,8 +672,11 @@ function applyLocal(k, next){
   const clean = {
     shiftTypeId: next.shiftTypeId ?? null,
     note: next.note ?? null,
+    overtimeHours: numOr0(next.overtimeHours),
+    timeOffHours: numOr0(next.timeOffHours),
   };
-  if (!clean.shiftTypeId && !(clean.note || "").trim()) delete state.days[k];
+  const hasOvertime = Math.abs(clean.overtimeHours) > 0.0001 || Math.abs(clean.timeOffHours) > 0.0001;
+  if (!clean.shiftTypeId && !(clean.note || "").trim() && !hasOvertime) delete state.days[k];
   else state.days[k] = clean;
 }
 
@@ -580,6 +691,8 @@ async function pushDaySnapshot(k, payload){
     await api.upsertDay(k, {
       shiftTypeId: payload.shiftTypeId ?? null,
       note: payload.note ?? null,
+      overtimeHours: numOr0(payload.overtimeHours),
+      timeOffHours: numOr0(payload.timeOffHours),
     });
     setSave("saved");
   } catch (err) {
@@ -616,7 +729,12 @@ $("noteEdit").addEventListener("input", () => {
   const k = state.selected;
   if (!k) return;
   const cur = state.days[k] || {};
-  const next = { shiftTypeId: cur.shiftTypeId ?? null, note: $("noteEdit").value };
+  const next = {
+    shiftTypeId: cur.shiftTypeId ?? null,
+    note: $("noteEdit").value,
+    overtimeHours: numOr0(cur.overtimeHours),
+    timeOffHours: numOr0(cur.timeOffHours),
+  };
   applyLocal(k, next);
   renderCalendar();
   scheduleDaySave(k, next);
@@ -747,7 +865,7 @@ async function loadMonth(){
   try {
     const list = await api.month(state.y, state.m);
     state.days = {};
-    for (const e of list) state.days[e.date] = { shiftTypeId: e.shiftTypeId, note: e.note };
+    for (const e of list) state.days[e.date] = normalizeDay(e);
     setSave("");
   } catch (err) { console.error(err); setSave("err", err.message); }
 }
