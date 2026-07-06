@@ -334,8 +334,10 @@
         <div class="ot">
         <div class="row">
           <span class="editNotice" id="creditEditNotice" hidden></span>
-          <label>Дата ручн. <input type="date" id="creditDate"></label>
-          <input type="text" id="creditTimeRange" placeholder="Время вручную, например 17:00–20:00">
+          <label>Дата начисления <input type="date" id="creditDate"></label>
+          <button id="creditDateSelected" type="button">выбранный день</button>
+          <button id="creditDateToday" type="button">сегодня</button>
+          <input type="text" id="creditTimeRange" placeholder="Коротко: 17:00–20:00 или 17–08">
         </div>
         <div class="row">
           <label>Начало <input type="datetime-local" id="creditStart"></label>
@@ -354,7 +356,7 @@
           <button id="creditNightPreset" type="button">17–08</button>
           <button id="creditAdd" class="primary" type="button">Начислить</button>
           <button id="creditCancel" class="cancelEdit" type="button" hidden>отмена</button>
-          <div class="wideHint">Если вводишь только переработку — план оставь 0. Если вводишь всю фактическую смену целиком — вычти плановые часы смены.</div>
+          <div class="wideHint">Можно ввести полный интервал датами или коротко: дата начисления + 17:00–20:00. Если вводишь только переработку — план оставь 0; если всю фактическую смену — вычти план.</div>
         </div>
         <div class="row">
           <span class="editNotice" id="usageEditNotice" hidden></span>
@@ -1010,17 +1012,29 @@ function renderOvertimeDayDetails(){
   el.textContent = parts.join(" | ");
 }
 
-function overtimeCalcFromInputs(){
-  const startValue = $("creditStart").value;
-  const endValue = $("creditEnd").value;
-  if (!startValue && !endValue) {
-    $("creditCalcHint").textContent = "можно вручную";
-    return null;
-  }
-  if (!startValue || !endValue) {
-    $("creditCalcHint").textContent = "нужны начало и конец";
-    return null;
-  }
+function parseShortTimePart(raw){
+  const t = String(raw || "").trim();
+  const m = t.match(/^(\d{1,2})(?:[:.](\d{1,2}))?$/);
+  if (!m) return null;
+  const hh = Number(m[1]);
+  const mm = m[2] == null ? 0 : Number(m[2]);
+  if (!Number.isInteger(hh) || !Number.isInteger(mm) || hh < 0 || hh > 23 || mm < 0 || mm > 59) return null;
+  return `${pad(hh)}:${pad(mm)}`;
+}
+
+function parseManualTimeRange(text){
+  const raw = String(text || "").trim();
+  if (!raw) return null;
+  const normalized = raw.replace(/[—–−]/g, "-").replace(/\s+/g, "");
+  const parts = normalized.split("-");
+  if (parts.length !== 2) return null;
+  const from = parseShortTimePart(parts[0]);
+  const to = parseShortTimePart(parts[1]);
+  if (!from || !to) return null;
+  return { from, to };
+}
+
+function calcOvertimeInterval(startValue, endValue, sourceLabel){
   const start = new Date(startValue);
   const end = new Date(endValue);
   if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start) {
@@ -1046,8 +1060,34 @@ function overtimeCalcFromInputs(){
     const sameClock = startValue.slice(11, 16) === endValue.slice(11, 16);
     splitHint = sameClock ? "; сервер разобьёт ровные сутки пополам" : "; сервер разобьёт по датам";
   }
-  $("creditCalcHint").textContent = `${fmtHours(totalMinutes / 60)}ч - ${breakMinutes}м${plannedHours ? " - " + fmtHours(plannedHours) + "ч плана" : ""} = ${fmtHours(hours)}ч${splitHint}`;
+  const prefix = sourceLabel ? `${sourceLabel}: ` : "";
+  $("creditCalcHint").textContent = `${prefix}${fmtHours(totalMinutes / 60)}ч - ${breakMinutes}м${plannedHours ? " - " + fmtHours(plannedHours) + "ч плана" : ""} = ${fmtHours(hours)}ч${splitHint}`;
   return { startValue, endValue, breakMinutes, plannedHours, hours, timeRange: displayDateTimeRange(startValue, endValue) };
+}
+
+function overtimeCalcFromInputs(){
+  const startValue = $("creditStart").value;
+  const endValue = $("creditEnd").value;
+  if (startValue || endValue) {
+    if (!startValue || !endValue) {
+      $("creditCalcHint").textContent = "нужны начало и конец";
+      return null;
+    }
+    return calcOvertimeInterval(startValue, endValue, "полный интервал");
+  }
+
+  const shortRange = parseManualTimeRange($("creditTimeRange")?.value);
+  if (shortRange) {
+    const base = $("creditDate")?.value || state.selected || todayKey();
+    let start = setTimeOnDate(base, shortRange.from);
+    let endDate = base;
+    if (shortRange.to <= shortRange.from) endDate = dateKeyOffset(base, 1);
+    let end = setTimeOnDate(endDate, shortRange.to);
+    return calcOvertimeInterval(start, end, "короткий ввод");
+  }
+
+  $("creditCalcHint").textContent = "можно вручную";
+  return null;
 }
 
 function updateOvertimeCalcPreview(){
@@ -1409,7 +1449,16 @@ $("creditPlanByShift").addEventListener("click", () => {
   $("creditPlanned").value = fmtHours(st.hours);
   updateOvertimeCalcPreview();
 });
-for (const id of ["creditStart", "creditEnd", "creditBreak", "creditPlanned"]) {
+$("creditDateSelected").addEventListener("click", () => {
+  if (!state.selected) return setSave("err", "сначала выбери день в календаре");
+  $("creditDate").value = state.selected;
+  updateOvertimeCalcPreview();
+});
+$("creditDateToday").addEventListener("click", () => {
+  $("creditDate").value = todayKey();
+  updateOvertimeCalcPreview();
+});
+for (const id of ["creditDate", "creditTimeRange", "creditStart", "creditEnd", "creditBreak", "creditPlanned"]) {
   $(id).addEventListener("input", updateOvertimeCalcPreview);
 }
 $("usageAdd").addEventListener("click", addOvertimeUsage);
