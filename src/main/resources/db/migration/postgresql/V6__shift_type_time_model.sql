@@ -5,7 +5,7 @@ ALTER TABLE shift_types
     ADD COLUMN planned_hours DOUBLE PRECISION;
 
 UPDATE shift_types
-SET start_time = TIME '06:30',
+SET start_time = TIME '08:30',
     end_time = TIME '17:00',
     break_minutes = 30,
     planned_hours = 8

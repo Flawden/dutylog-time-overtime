@@ -774,3 +774,41 @@ GET /api/notifications/upcoming?from=2026-07-01&to=2026-07-31&includePast=true
 ```
 
 `includePast=false` скрывает напоминания, время которых уже прошло.
+
+## Quick scenarios
+
+Пользовательские быстрые сценарии заполняют форму переработки по выбранной смене и дате.
+Сценарий сам не начисляет часы — он только подставляет начало, конец, обед, план и причину.
+
+### GET /api/quick-scenarios
+
+Возвращает список сценариев пользователя. При первом запросе создаёт стандартные сценарии.
+
+### POST /api/quick-scenarios
+
+Создаёт сценарий.
+
+Поля:
+
+- `name` — название;
+- `groupLabel` — короткая метка над названием;
+- `description` — описание;
+- `startMode` — `SHIFT_START` или `SHIFT_END`;
+- `endMode` — `SHIFT_END`, `ADD_MINUTES` или `FIXED_TIME`;
+- `endOffsetMinutes` — сколько минут прибавить к старту для `ADD_MINUTES`;
+- `endFixedTime` — время `HH:mm` для `FIXED_TIME`;
+- `endNextDay` — брать фиксированное время на следующий день;
+- `breakMode` — `ZERO`, `SHIFT` или `CUSTOM`;
+- `customBreakMinutes` — свой обед в минутах;
+- `plannedMode` — `ZERO`, `SHIFT` или `CUSTOM`;
+- `customPlannedHours` — свои плановые часы;
+- `reasonTemplate` — причина по умолчанию;
+- `sortOrder` — порядок вывода.
+
+### PATCH /api/quick-scenarios/{id}
+
+Обновляет сценарий.
+
+### DELETE /api/quick-scenarios/{id}
+
+Удаляет сценарий.

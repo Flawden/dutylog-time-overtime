@@ -114,7 +114,7 @@ public class ShiftTypeService {
      */
     @Transactional
     public void ensureBuiltinShiftTypes(AppUser user) {
-        ensureBuiltin(user, "Дневная", 8, "#F5B841", "06:30", "17:00", 30, 8.0);
+        ensureBuiltin(user, "Дневная", 8, "#F5B841", "08:30", "17:00", 30, 8.0);
         ensureBuiltin(user, "Ночная", 8, "#7B8CE0", "20:00", "08:00", 60, 11.0);
         ensureBuiltin(user, "Выходной", 0, "#6FBF73", null, null, 0, 0.0);
     }
@@ -135,12 +135,26 @@ public class ShiftTypeService {
             changed = true;
         }
         // Для старых пользователей аккуратно заполняем новые поля только если они пустые.
-        if (first.getStartTime() == null && startTime != null) {
-            first.setStartTime(parseOptionalTime(startTime));
+        LocalTime desiredStart = parseOptionalTime(startTime);
+        LocalTime desiredEnd = parseOptionalTime(endTime);
+        if (first.getStartTime() == null && desiredStart != null) {
+            first.setStartTime(desiredStart);
             changed = true;
         }
-        if (first.getEndTime() == null && endTime != null) {
-            first.setEndTime(parseOptionalTime(endTime));
+        // Мягкая миграция старого дефолта: дневная раньше была 06:30–17:00,
+        // но для текущей логики пользователя удобнее 08:30–17:00. Если человек уже
+        // менял время сам — не трогаем.
+        if ("Дневная".equals(name)
+                && first.getStartTime() != null
+                && first.getStartTime().equals(LocalTime.parse("06:30"))
+                && first.getEndTime() != null
+                && first.getEndTime().equals(LocalTime.parse("17:00"))
+                && desiredStart != null) {
+            first.setStartTime(desiredStart);
+            changed = true;
+        }
+        if (first.getEndTime() == null && desiredEnd != null) {
+            first.setEndTime(desiredEnd);
             changed = true;
         }
         if (first.getBreakMinutes() == 0 && breakMinutes > 0) {

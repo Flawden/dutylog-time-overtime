@@ -14,6 +14,7 @@ import ru.daniil.shifts.model.DayTask;
 import ru.daniil.shifts.model.ImportantDay;
 import ru.daniil.shifts.model.RepeatMode;
 import ru.daniil.shifts.model.NotificationSettings;
+import ru.daniil.shifts.model.QuickScenario;
 import ru.daniil.shifts.model.ShiftType;
 
 import java.util.List;
@@ -176,6 +177,143 @@ public final class Dtos {
             @DecimalMin(value = "0.0", message = "Отгул не может быть отрицательным")
             @DecimalMax(value = "100.0", message = "Отгул за день: максимум 100 часов")
             Double timeOffHours
+    ) {}
+
+
+    /** Быстрый сценарий заполнения формы переработки. */
+    public record QuickScenarioDto(
+            Long id,
+            String name,
+            String groupLabel,
+            String description,
+            String startMode,
+            String endMode,
+            int endOffsetMinutes,
+            String endFixedTime,
+            boolean endNextDay,
+            String breakMode,
+            int customBreakMinutes,
+            String plannedMode,
+            double customPlannedHours,
+            String reasonTemplate,
+            int sortOrder
+    ) {
+        public static QuickScenarioDto from(QuickScenario s) {
+            return new QuickScenarioDto(
+                    s.getId(),
+                    s.getName(),
+                    s.getGroupLabel(),
+                    s.getDescription(),
+                    s.getStartMode(),
+                    s.getEndMode(),
+                    s.getEndOffsetMinutes(),
+                    s.getEndFixedTime() != null ? s.getEndFixedTime().toString() : null,
+                    s.isEndNextDay(),
+                    s.getBreakMode(),
+                    s.getCustomBreakMinutes(),
+                    s.getPlannedMode(),
+                    s.getCustomPlannedHours(),
+                    s.getReasonTemplate(),
+                    s.getSortOrder()
+            );
+        }
+    }
+
+    /** Создание быстрого сценария. */
+    public record QuickScenarioCreateRequest(
+            @NotBlank(message = "Название сценария не должно быть пустым")
+            @Size(max = 80, message = "Название сценария: максимум 80 символов")
+            String name,
+
+            @Size(max = 40, message = "Группа сценария: максимум 40 символов")
+            String groupLabel,
+
+            @Size(max = 300, message = "Описание сценария: максимум 300 символов")
+            String description,
+
+            @Pattern(regexp = "SHIFT_START|SHIFT_END", message = "startMode: SHIFT_START или SHIFT_END")
+            String startMode,
+
+            @Pattern(regexp = "SHIFT_END|ADD_MINUTES|FIXED_TIME", message = "endMode: SHIFT_END, ADD_MINUTES или FIXED_TIME")
+            String endMode,
+
+            @Min(value = 0, message = "Смещение конца не может быть отрицательным")
+            @Max(value = 4320, message = "Смещение конца: максимум 4320 минут")
+            Integer endOffsetMinutes,
+
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Фиксированное время конца должно быть в формате HH:mm")
+            String endFixedTime,
+
+            Boolean endNextDay,
+
+            @Pattern(regexp = "ZERO|SHIFT|CUSTOM", message = "breakMode: ZERO, SHIFT или CUSTOM")
+            String breakMode,
+
+            @Min(value = 0, message = "Обед не может быть отрицательным")
+            @Max(value = 1440, message = "Обед: максимум 1440 минут")
+            Integer customBreakMinutes,
+
+            @Pattern(regexp = "ZERO|SHIFT|CUSTOM", message = "plannedMode: ZERO, SHIFT или CUSTOM")
+            String plannedMode,
+
+            @DecimalMin(value = "0.0", message = "Плановые часы не могут быть отрицательными")
+            @DecimalMax(value = "100.0", message = "Плановые часы: максимум 100")
+            Double customPlannedHours,
+
+            @Size(max = 300, message = "Причина сценария: максимум 300 символов")
+            String reasonTemplate,
+
+            @Min(value = 0, message = "Порядок не может быть отрицательным")
+            @Max(value = 10000, message = "Порядок слишком большой")
+            Integer sortOrder
+    ) {}
+
+    /** Обновление быстрого сценария. Все поля опциональны. */
+    public record QuickScenarioUpdateRequest(
+            @Size(max = 80, message = "Название сценария: максимум 80 символов")
+            String name,
+
+            @Size(max = 40, message = "Группа сценария: максимум 40 символов")
+            String groupLabel,
+
+            @Size(max = 300, message = "Описание сценария: максимум 300 символов")
+            String description,
+
+            @Pattern(regexp = "SHIFT_START|SHIFT_END", message = "startMode: SHIFT_START или SHIFT_END")
+            String startMode,
+
+            @Pattern(regexp = "SHIFT_END|ADD_MINUTES|FIXED_TIME", message = "endMode: SHIFT_END, ADD_MINUTES или FIXED_TIME")
+            String endMode,
+
+            @Min(value = 0, message = "Смещение конца не может быть отрицательным")
+            @Max(value = 4320, message = "Смещение конца: максимум 4320 минут")
+            Integer endOffsetMinutes,
+
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Фиксированное время конца должно быть в формате HH:mm")
+            String endFixedTime,
+
+            Boolean endNextDay,
+
+            @Pattern(regexp = "ZERO|SHIFT|CUSTOM", message = "breakMode: ZERO, SHIFT или CUSTOM")
+            String breakMode,
+
+            @Min(value = 0, message = "Обед не может быть отрицательным")
+            @Max(value = 1440, message = "Обед: максимум 1440 минут")
+            Integer customBreakMinutes,
+
+            @Pattern(regexp = "ZERO|SHIFT|CUSTOM", message = "plannedMode: ZERO, SHIFT или CUSTOM")
+            String plannedMode,
+
+            @DecimalMin(value = "0.0", message = "Плановые часы не могут быть отрицательными")
+            @DecimalMax(value = "100.0", message = "Плановые часы: максимум 100")
+            Double customPlannedHours,
+
+            @Size(max = 300, message = "Причина сценария: максимум 300 символов")
+            String reasonTemplate,
+
+            @Min(value = 0, message = "Порядок не может быть отрицательным")
+            @Max(value = 10000, message = "Порядок слишком большой")
+            Integer sortOrder
     ) {}
 
     /** Задача дня. */
@@ -585,6 +723,7 @@ public final class Dtos {
             OvertimeSummaryDto overtime,
             OvertimeAccountDto overtimeAccount,
             NotificationSettingsDto notificationSettings,
-            List<NotificationReminderDto> reminders
+            List<NotificationReminderDto> reminders,
+            List<QuickScenarioDto> quickScenarios
     ) {}
 }

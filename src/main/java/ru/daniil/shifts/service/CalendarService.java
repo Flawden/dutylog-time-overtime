@@ -9,6 +9,7 @@ import ru.daniil.shifts.dto.Dtos.OvertimeSummaryDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.NotificationReminderDto;
 import ru.daniil.shifts.dto.Dtos.NotificationSettingsDto;
+import ru.daniil.shifts.dto.Dtos.QuickScenarioDto;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeDto;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.model.AppUser;
@@ -24,19 +25,22 @@ public class CalendarService {
     private final TaskService taskService;
     private final ImportantDayService importantDayService;
     private final NotificationService notificationService;
+    private final QuickScenarioService quickScenarioService;
 
     public CalendarService(DayEntryService dayEntryService,
                            ShiftTypeService shiftTypeService,
                            OvertimeService overtimeService,
                            TaskService taskService,
                            ImportantDayService importantDayService,
-                           NotificationService notificationService) {
+                           NotificationService notificationService,
+                           QuickScenarioService quickScenarioService) {
         this.dayEntryService = dayEntryService;
         this.shiftTypeService = shiftTypeService;
         this.overtimeService = overtimeService;
         this.taskService = taskService;
         this.importantDayService = importantDayService;
         this.notificationService = notificationService;
+        this.quickScenarioService = quickScenarioService;
     }
 
     @Transactional
@@ -50,6 +54,7 @@ public class CalendarService {
         OvertimeAccountDto overtimeAccount = overtimeService.account(user);
         NotificationSettingsDto notificationSettings = notificationService.settings(user);
         List<NotificationReminderDto> reminders = notificationService.upcoming(user, from, to);
-        return new CalendarRangeDto(from.toString(), to.toString(), shiftTypes, dayEntries, tasks, importantDays, overtime, overtimeAccount, notificationSettings, reminders);
+        List<QuickScenarioDto> quickScenarios = quickScenarioService.list(user);
+        return new CalendarRangeDto(from.toString(), to.toString(), shiftTypes, dayEntries, tasks, importantDays, overtime, overtimeAccount, notificationSettings, reminders, quickScenarios);
     }
 }
