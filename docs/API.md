@@ -1,6 +1,300 @@
-# Shift Calendar API v11
+# Shift Calendar API v13
 
-Пока авторизация остаётся сессионной (`JSESSIONID`), чтобы не ломать веб-версию. Android на следующем этапе лучше перевести на JWT/refresh-token, но календарные endpoint'ы уже подготовлены под мобильный клиент.
+Веб-версия работает через `JSESSIONID`, Android/PWA-клиенты могут использовать `Authorization: Bearer <accessToken>`. Старые endpoint'ы сохранены, поверх них добавлен mobile-слой.
+
+
+
+## Mobile auth
+
+### POST `/api/mobile/auth/login`
+
+```json
+{
+  "username": "alex",
+  "password": "secret123",
+  "deviceName": "Galaxy S23 Plus"
+}
+```
+
+Ответ:
+
+```json
+{
+  "tokenType": "Bearer",
+  "accessToken": "...",
+  "accessExpiresAt": "2026-07-02T18:00:00Z",
+  "refreshToken": "...",
+  "refreshExpiresAt": "2026-08-16T17:30:00Z",
+  "user": {
+    "username": "alex"
+  }
+}
+```
+
+Android хранит `accessToken` для обычных запросов и `refreshToken` для получения новой пары токенов. Для запросов:
+
+```http
+Authorization: Bearer <accessToken>
+```
+
+### POST `/api/mobile/auth/refresh`
+
+```json
+{
+  "refreshToken": "..."
+}
+```
+
+Refresh token ротируется: ответ содержит новую пару `accessToken` + `refreshToken`, старую пару надо забыть.
+
+### POST `/api/mobile/auth/logout`
+
+```json
+{
+  "refreshToken": "..."
+}
+```
+
+Можно также вызвать с `Authorization: Bearer ...` без тела — будет отозвана текущая access-сессия.
+
+### GET `/api/mobile/auth/me`
+
+Возвращает пользователя текущего Bearer-токена:
+
+```json
+{
+  "username": "alex"
+}
+```
+
+### GET `/api/mobile/auth/sessions`
+
+Список мобильных устройств/сессий:
+
+```json
+[
+  {
+    "id": 1,
+    "deviceName": "Galaxy S23 Plus",
+    "createdAt": "2026-07-02T17:00:00Z",
+    "lastUsedAt": "2026-07-02T17:05:00Z",
+    "refreshExpiresAt": "2026-08-16T17:00:00Z",
+    "revoked": false,
+    "active": true
+  }
+]
+```
+
+### DELETE `/api/mobile/auth/sessions/{id}`
+
+Отозвать конкретную мобильную сессию.
+
+## Mobile bootstrap
+
+### GET `/api/mobile/bootstrap?from=2026-07-01&to=2026-08-31`
+
+Первый запрос после старта Android-приложения. Возвращает server time, профиль и полный диапазон календаря:
+
+```json
+{
+  "serverTime": "2026-07-02T17:10:00Z",
+  "user": { "username": "alex" },
+  "calendar": {
+    "from": "2026-07-01",
+    "to": "2026-08-31",
+    "shiftTypes": [],
+    "days": [],
+    "tasks": [],
+    "importantDays": [],
+    "overtime": {
+      "from": "2026-07-01",
+      "to": "2026-08-31",
+      "overtimeHours": 0,
+      "timeOffHours": 0,
+      "balanceHours": 0
+    },
+    "overtimeAccount": {
+      "totalEarnedHours": 0,
+      "totalUsedHours": 0,
+      "balanceHours": 0,
+      "credits": [],
+      "usages": []
+    }
+  }
+}
+```
+
+## Mobile sync
+
+### POST `/api/mobile/sync`
+
+Пакетная синхронизация изменений дней из offline-очереди Android. Сейчас sync покрывает `DayEntry`: смена, заметка, переработка, отгул. Задачи и важные дни пока отправляются обычными endpoint’ами `/api/tasks` и `/api/important-days`.
+
+```json
+{
+  "days": [
+    {
+      "date": "2026-07-02",
+      "shiftTypeId": 1,
+      "note": "ППР после смены",
+      "overtimeHours": 7,
+      "timeOffHours": 0
+    },
+    {
+      "date": "2026-07-03",
+      "clearShiftType": true,
+      "clearNote": true,
+      "overtimeHours": 0,
+      "timeOffHours": 8
+    }
+  ]
+}
+```
+
+Ответ:
+
+```json
+{
+  "serverTime": "2026-07-02T17:12:00Z",
+  "days": [
+    {
+      "date": "2026-07-02",
+      "shiftTypeId": 1,
+      "note": "ППР после смены",
+      "overtimeHours": 7,
+      "timeOffHours": 0,
+      "overtimeBalanceHours": 7
+    }
+  ],
+  "warnings": {}
+}
+```
+
+Patch-правила:
+
+```text
+shiftTypeId       — поставить смену
+clearShiftType    — очистить смену
+note              — заменить заметку
+clearNote         — очистить заметку
+overtimeHours     — заменить часы переработки
+timeOffHours      — заменить списанные часы отгула
+```
+
+
+## Переработка: полноценная бухгалтерия часов
+
+Старые поля `DayDto.overtimeHours` и `DayDto.timeOffHours` оставлены для совместимости, но продуктовый учёт переработок теперь идёт через отдельный журнал начислений и списаний.
+
+### GET `/api/overtime/account`
+
+Возвращает всю таблицу переработок пользователя. Это не месячный отчёт: начисления живут до полного списания.
+
+```json
+{
+  "totalEarnedHours": 5,
+  "totalUsedHours": 4,
+  "balanceHours": 1,
+  "credits": [
+    {
+      "id": 10,
+      "workedDate": "2026-06-20",
+      "timeRange": "15:00–17:00",
+      "hours": 2,
+      "reason": "ППР после смены",
+      "usedHours": 2,
+      "remainingHours": 0,
+      "usages": [
+        {
+          "usageId": 30,
+          "usageDate": "2026-06-23",
+          "hours": 2,
+          "reason": "Отгул"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "workedDate": "2026-06-21",
+      "timeRange": "15:00–18:00",
+      "hours": 3,
+      "reason": "Замена смены",
+      "usedHours": 2,
+      "remainingHours": 1,
+      "usages": [
+        {
+          "usageId": 30,
+          "usageDate": "2026-06-23",
+          "hours": 2,
+          "reason": "Отгул"
+        }
+      ]
+    }
+  ],
+  "usages": [
+    {
+      "id": 30,
+      "usageDate": "2026-06-23",
+      "hours": 4,
+      "reason": "Отгул",
+      "allocations": [
+        {
+          "creditId": 10,
+          "workedDate": "2026-06-20",
+          "timeRange": "15:00–17:00",
+          "hours": 2,
+          "reason": "ППР после смены"
+        },
+        {
+          "creditId": 11,
+          "workedDate": "2026-06-21",
+          "timeRange": "15:00–18:00",
+          "hours": 2,
+          "reason": "Замена смены"
+        }
+      ]
+    }
+  ]
+}
+```
+
+### POST `/api/overtime/credits`
+
+Начислить переработку.
+
+```json
+{
+  "date": "2026-06-20",
+  "timeRange": "15:00–17:00",
+  "hours": 2,
+  "reason": "ППР после смены"
+}
+```
+
+Ответ — обновлённый `OvertimeAccountDto`.
+
+### POST `/api/overtime/usages`
+
+Списать отгул. Backend сам распределяет часы по FIFO: сначала самые старые остатки.
+
+```json
+{
+  "date": "2026-06-23",
+  "hours": 4,
+  "reason": "Отгул"
+}
+```
+
+Если доступно меньше часов, API вернёт ошибку `400` с понятным текстом.
+
+### DELETE `/api/overtime/credits/{id}`
+
+Удалить начисление. Разрешено только если из него ещё ничего не списывали.
+
+### DELETE `/api/overtime/usages/{id}`
+
+Удалить списание. Часы автоматически вернутся в остатки соответствующих начислений.
+
 
 ## Базовые сущности
 

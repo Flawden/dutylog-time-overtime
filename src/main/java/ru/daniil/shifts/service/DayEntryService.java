@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.DayDto;
 import ru.daniil.shifts.dto.Dtos.DayFillRequest;
 import ru.daniil.shifts.dto.Dtos.DayUpsertRequest;
+import ru.daniil.shifts.dto.Dtos.MobileDayChangeRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.ShiftType;
@@ -110,6 +111,49 @@ public class DayEntryService {
         }
 
         return changed;
+    }
+
+
+
+    /**
+     * Patch-семантика для Android sync: меняются только присланные поля.
+     * clearShiftType/clearNote позволяют явно очистить смену или заметку.
+     */
+    @Transactional
+    public DayDto patchMobileDay(AppUser user, MobileDayChangeRequest req) {
+        if (req == null) {
+            throw ApiException.badRequest("Пустое изменение дня в sync-запросе");
+        }
+        LocalDate d = parseDate(req.date(), "Дата дня должна быть в формате yyyy-MM-dd");
+        DayEntry entry = days.findByOwnerAndDate(user, d)
+                .orElseGet(() -> new DayEntry(user, d));
+
+        if (Boolean.TRUE.equals(req.clearShiftType())) {
+            entry.setShiftType(null);
+        } else if (req.shiftTypeId() != null) {
+            entry.setShiftType(shiftTypeService.requireOwnedShiftType(user, req.shiftTypeId()));
+        }
+
+        if (Boolean.TRUE.equals(req.clearNote())) {
+            entry.setNote(null);
+        } else if (req.note() != null) {
+            entry.setNote(normalizeNote(req.note()));
+        }
+
+        if (req.overtimeHours() != null) {
+            entry.setOvertimeHours(req.overtimeHours());
+        }
+        if (req.timeOffHours() != null) {
+            entry.setTimeOffHours(req.timeOffHours());
+        }
+
+        if (entry.isEmpty()) {
+            if (entry.getId() != null) {
+                days.delete(entry);
+            }
+            return null;
+        }
+        return DayDto.from(days.save(entry));
     }
 
     public LocalDate parseDate(String date, String message) {

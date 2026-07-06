@@ -1,65 +1,47 @@
 # Android API plan
 
-## Текущее состояние v11
+## Текущее состояние v13
 
-Backend уже получил Android-friendly endpoint:
-
-```text
-GET /api/calendar?from=2026-06-01&to=2026-07-31
-```
-
-Он отдаёт одним ответом:
-
-- диапазон календарных дней;
-- типы смен пользователя;
-- заметки и отметки по дням;
-- переработку и списания отгула;
-- задачи дня;
-- важные дни и их повторения;
-- сводку баланса переработки/отгулов.
-
-Также есть отдельные endpoint'ы:
+Backend получил mobile-слой и полноценную бухгалтерию переработок:
 
 ```text
-GET /api/overtime/balance?from=&to=
-GET /api/overtime/ledger?from=&to=
-GET/POST/PATCH/DELETE /api/tasks
-GET/POST/PATCH/DELETE /api/important-days
-GET /api/important-days/occurrences?from=&to=
+POST   /api/mobile/auth/login
+POST   /api/mobile/auth/refresh
+POST   /api/mobile/auth/logout
+GET    /api/mobile/auth/me
+GET    /api/mobile/auth/sessions
+DELETE /api/mobile/auth/sessions/{id}
+GET    /api/mobile/bootstrap?from=&to=
+POST   /api/mobile/sync
+GET    /api/overtime/account
+POST   /api/overtime/credits
+POST   /api/overtime/usages
 ```
 
-Это уже удобно для Android-экранов:
+Android теперь не обязан работать через cookie-сессию. Он логинится, получает `accessToken` и `refreshToken`, а дальше отправляет:
 
-- календарь;
-- экран дня;
-- задачи дня;
-- важные дни/дни рождения;
-- баланс переработок;
-- журнал переработок;
-- список смен.
+```http
+Authorization: Bearer <accessToken>
+```
+
+`GET /api/mobile/bootstrap?from=&to=` — главный стартовый запрос: профиль, смены, дни, задачи, важные дни, месячный legacy-баланс и `overtimeAccount` с полным остатком переработки в одном ответе.
+
+`POST /api/mobile/sync` — первый простой слой offline-синхронизации. Пока он синхронизирует изменения дней: смена и заметка. Задачи, важные дни и журнал переработок идут через отдельные endpoint’ы. Для Android это удобнее: начисления и списания не теряются между месяцами.
+
+## Рекомендуемая Android-архитектура
+
+```text
+Kotlin + Jetpack Compose
+Retrofit/OkHttp
+Room
+EncryptedSharedPreferences
+WorkManager
+AlarmManager позже для будильника
+```
 
 ## Что ещё нужно для настоящего Android-клиента
 
-### v12 — авторизация для Android
-
-Сейчас авторизация сессионная через cookie `JSESSIONID`. Для браузера это удобно, но Android лучше перевести на токены:
-
-```text
-POST /api/auth/login
-POST /api/auth/refresh
-POST /api/auth/logout
-GET  /api/auth/me
-```
-
-План:
-
-- access token на короткое время;
-- refresh token на долгий срок;
-- хранение refresh token в БД;
-- возможность выйти со всех устройств;
-- Android хранит токены в EncryptedSharedPreferences.
-
-### v13 — offline-first Android
+### v14 — offline-first Android
 
 Android должен хранить календарь локально:
 
@@ -69,6 +51,9 @@ Room DB
 ├─ day_entries
 ├─ day_tasks
 ├─ important_days
+├─ overtime_credits
+├─ overtime_usages
+├─ overtime_allocations
 └─ sync_queue
 ```
 
@@ -80,7 +65,7 @@ Room DB
 4. Изменения попадают в `sync_queue`.
 5. WorkManager отправляет очередь на backend, когда сеть появилась.
 
-### v14 — уведомления и будильник
+### v15 — уведомления и будильник
 
 Для смен нужны поля:
 
@@ -105,7 +90,7 @@ Android:
 - серьёзный будильник через AlarmManager;
 - экран подтверждения “я проснулся / смена началась”.
 
-### v15 — Telegram bot
+### v16 — Telegram bot
 
 Бот должен быть отдельным клиентом к тому же backend:
 

@@ -104,9 +104,12 @@
   .ot { margin:10px 0 8px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:10px; font-size:12.5px; }
   .ot .row { display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-top:8px; }
   .ot input[type=number] { width:82px; background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:6px 8px; font-size:12.5px; font-family:ui-monospace,monospace; }
+  .ot input[type=text] { flex:1; min-width:120px; background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:6px 8px; font-size:12.5px; }
   .ot label { color:var(--mut); display:flex; align-items:center; gap:6px; }
   .ot button { background:transparent; color:var(--mut); border:1px dashed var(--dim); border-radius:7px; padding:6px 9px; font-size:12px; cursor:pointer; }
+  .ot button.primary { background:var(--accent); color:#14171C; border-color:var(--accent); font-weight:800; }
   .ot button:hover { color:var(--accent); border-color:var(--accent); }
+  .ot button.primary:hover { color:#14171C; }
   .ot .bal { margin-left:auto; font-family:ui-monospace,monospace; color:var(--accent); }
   .otHint { color:var(--dim); line-height:1.45; margin-top:7px; }
   .cell .otMark { font-size:10.5px; font-weight:700; font-family:ui-monospace,monospace; color:var(--accent); line-height:1.1; }
@@ -134,6 +137,23 @@
   .taskItem.done .taskText { color:var(--dim); text-decoration:line-through; }
   .tinyDel { background:none; border:none; color:var(--dim); cursor:pointer; font-size:12px; padding:3px 4px; }
   .tinyDel:hover { color:var(--danger); }
+
+
+  .ledgerCard { margin-top:12px; background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:10px; }
+  .ledgerHead { display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+  .ledgerHead .balance { color:var(--accent); font-family:ui-monospace,monospace; font-weight:800; }
+  .ledgerTableWrap { overflow:auto; border:1px solid var(--line); border-radius:10px; }
+  .ledgerTable { width:100%; min-width:760px; border-collapse:collapse; font-size:12px; }
+  .ledgerTable th, .ledgerTable td { padding:7px 8px; border-bottom:1px solid var(--line); vertical-align:top; }
+  .ledgerTable th { position:sticky; top:0; background:#191D24; color:var(--dim); text-align:left; font-family:ui-monospace,monospace; font-weight:700; }
+  .ledgerTable tr:last-child td { border-bottom:none; }
+  .ledgerTable .numc { font-family:ui-monospace,monospace; white-space:nowrap; text-align:right; }
+  .ledgerTable .remain { color:var(--accent); font-weight:800; }
+  .ledgerTable .used { color:var(--mut); }
+  .ledgerTable .reason { min-width:170px; overflow-wrap:anywhere; }
+  .ledgerTable .small { color:var(--dim); line-height:1.35; }
+  .ledgerTable button { background:none; border:none; color:var(--dim); cursor:pointer; padding:0; font-size:12px; }
+  .ledgerTable button:hover { color:var(--danger); }
 
   .tabs { display:flex; gap:4px; margin:12px 0 8px; border-bottom:1px solid var(--line); }
   .tabs button { background:none; border:none; cursor:pointer; padding:6px 10px; font-size:13px; color:var(--dim); border-bottom:2px solid transparent; margin-bottom:-1px; }
@@ -187,6 +207,23 @@
       </div>
       <div class="grid" id="grid"></div>
       <div class="sum" id="summary"></div>
+      <div class="ledgerCard" id="ledgerCard">
+        <div class="ledgerHead">
+          <div>
+            <div class="eyebrow">Таблица переработок</div>
+            <div class="small" style="color:var(--dim);font-size:12px;">Начисления живут до полного списания. Отгулы списываются со старых остатков.</div>
+          </div>
+          <div class="balance" id="ledgerBalance">0 ч</div>
+        </div>
+        <div class="ledgerTableWrap">
+          <table class="ledgerTable">
+            <thead><tr>
+              <th>День</th><th>Время</th><th>Начислено</th><th>Причина</th><th>Использовано</th><th>Куда списано</th><th>Остаток</th><th></th>
+            </tr></thead>
+            <tbody id="ledgerRows"></tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
     <div class="card" id="panel" hidden>
@@ -229,14 +266,23 @@
         </div>
       </div>
       <div class="ot">
-        <div class="eyebrow">Переработка / отгулы</div>
+        <div class="eyebrow">Журнал переработки / отгулов</div>
         <div class="row">
-          <label>ППР / доп. часы <input type="number" id="otHours" min="0" max="100" step="0.25" value="0"></label>
-          <label>Списано отгула <input type="number" id="offHours" min="0" max="100" step="0.25" value="0"></label>
-          <button id="offByShift" type="button">Списать по смене</button>
+          <label>Время <input type="text" id="creditTime" placeholder="17:00–24:00"></label>
+          <label>Часы <input type="number" id="creditHours" min="0" max="100" step="0.25" value="0"></label>
+        </div>
+        <div class="row">
+          <input type="text" id="creditReason" placeholder="Причина переработки: ППР, авария, замена смены…">
+          <button id="creditAdd" class="primary" type="button">Начислить</button>
+        </div>
+        <div class="row">
+          <label>Списать <input type="number" id="usageHours" min="0" max="100" step="0.25" value="0"></label>
+          <input type="text" id="usageReason" placeholder="Зачем списал: отгул, не вышел после ППР…">
+          <button id="usageByShift" type="button">по смене</button>
+          <button id="usageAdd" class="primary" type="button">Списать FIFO</button>
           <span class="bal" id="otBalance">0 ч</span>
         </div>
-        <div class="otHint">Пример: обычную дневную оставь как смену дня, в ППР поставь +15 ч. На следующий плановый день нажми «Списать по смене» — уйдёт 8 ч, баланс станет +7 ч.</div>
+        <div class="otHint" id="otDayDetails">FIFO: сначала списываются самые старые часы переработки. Пример: +2 ч за 20 число и +3 ч за 21 число; отгул 4 ч заберёт 2 ч с 20 и 2 ч с 21.</div>
       </div>
 
       <div class="dayBlock">
@@ -285,6 +331,7 @@ const state = {
   days: {},                       // { 'YYYY-MM-DD': {shiftTypeId, note, overtimeHours, timeOffHours} }
   tasksByDate: {},                // { 'YYYY-MM-DD': [{id,date,text,done}] }
   importantByDate: {},            // { 'YYYY-MM-DD': [{id,date,title,repeatMode,color}] }
+  overtimeAccount: { totalEarnedHours:0, totalUsedHours:0, balanceHours:0, credits:[], usages:[] },
   selected: null,                 // ключ даты
   tab: "edit",
   swColor: "#F5B841",
@@ -333,6 +380,13 @@ function tasksOf(k){ return state.tasksByDate[k] || []; }
 function importantOf(k){ return state.importantByDate[k] || []; }
 function activeTasksOf(k){ return tasksOf(k).filter(t => !t.done); }
 const repeatLabel = mode => mode === "YEARLY" ? "каждый год" : mode === "MONTHLY" ? "каждый месяц" : "один раз";
+function creditsOf(k){ return (state.overtimeAccount?.credits || []).filter(x => x.workedDate === k); }
+function usagesOf(k){ return (state.overtimeAccount?.usages || []).filter(x => x.usageDate === k); }
+function ledgerNetOf(k){
+  const earned = creditsOf(k).reduce((sum, x) => sum + numOr0(x.hours), 0);
+  const used = usagesOf(k).reduce((sum, x) => sum + numOr0(x.hours), 0);
+  return earned - used;
+}
 
 const monthPrefix = () => `${state.y}-${pad(state.m + 1)}-`;
 function monthFromTo(y = state.y, m = state.m){
@@ -366,6 +420,11 @@ const api = {
   async deleteTask(id)     { return jfetch(`/api/tasks/${id}`, { method:"DELETE" }); },
   async createImportantDay(b) { return jfetch("/api/important-days", { method:"POST", body:b }); },
   async deleteImportantDay(id) { return jfetch(`/api/important-days/${id}`, { method:"DELETE" }); },
+  async overtimeAccount() { return jfetch("/api/overtime/account"); },
+  async createOvertimeCredit(b) { return jfetch("/api/overtime/credits", { method:"POST", body:b }); },
+  async deleteOvertimeCredit(id) { return jfetch(`/api/overtime/credits/${id}`, { method:"DELETE" }); },
+  async createOvertimeUsage(b) { return jfetch("/api/overtime/usages", { method:"POST", body:b }); },
+  async deleteOvertimeUsage(id) { return jfetch(`/api/overtime/usages/${id}`, { method:"DELETE" }); },
 };
 
 async function jfetch(url, opts = {}) {
@@ -493,7 +552,9 @@ function renderCalendar(){
       nm.className = "shift"; nm.style.color = st.color; nm.textContent = st.name;
       cell.appendChild(nm);
     }
-    const bal = numOr0(entry?.overtimeHours) - numOr0(entry?.timeOffHours);
+    const ledgerBal = ledgerNetOf(k);
+    const legacyBal = numOr0(entry?.overtimeHours) - numOr0(entry?.timeOffHours);
+    const bal = Math.abs(ledgerBal) > 0.0001 ? ledgerBal : legacyBal;
     if (Math.abs(bal) > 0.0001) {
       const ot = document.createElement("span");
       ot.className = "otMark";
@@ -569,11 +630,21 @@ function renderSummary(){
     h.className = "hrs"; h.textContent = `${fmtHours(hours)} ч`;
     el.appendChild(h);
   }
+  const acc = state.overtimeAccount;
+  if (acc && (numOr0(acc.totalEarnedHours) > 0 || numOr0(acc.totalUsedHours) > 0)) {
+    const global = document.createElement("span");
+    global.className = "over";
+    global.textContent = `общий остаток переработки: ${numOr0(acc.balanceHours) > 0 ? "+" : ""}${fmtHours(acc.balanceHours)} ч`;
+    global.title = `Всего начислено: ${fmtHours(acc.totalEarnedHours)} ч, всего списано: ${fmtHours(acc.totalUsedHours)} ч`;
+    el.appendChild(global);
+    any = true;
+  }
   if (!any) {
     const s = document.createElement("span");
     s.style.color = "var(--dim)"; s.textContent = "смены пока не отмечены — тыкни в день";
     el.appendChild(s);
   }
+  renderLedgerTable();
 }
 
 /* ─── Панель дня ────────────────────────────────────────────── */
@@ -671,17 +742,17 @@ $("tplPreset").addEventListener("change", renderScheduleControls);
 $("tplDays").addEventListener("input", () => { $("tplDays").dataset.userTouched = "1"; });
 $("tplApply").addEventListener("click", applyScheduleTemplate);
 
-/* ─── Переработка и отгулы ─────────────────────────────────── */
-function updateOvertimeBalanceLabel(entry){
-  const balance = numOr0(entry?.overtimeHours) - numOr0(entry?.timeOffHours);
-  $("otBalance").textContent = `${balance > 0 ? "+" : ""}${fmtHours(balance)} ч`;
+/* ─── Журнал переработки и отгулов ─────────────────────────── */
+function updateOvertimeBalanceLabel(){
+  const acc = state.overtimeAccount || { balanceHours:0 };
+  const bal = numOr0(acc.balanceHours);
+  $("otBalance").textContent = `доступно ${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
+  $("ledgerBalance").textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
 }
 
 function renderOvertimeControls(){
-  const entry = state.days[state.selected] || {};
-  $("otHours").value = fmtHours(numOr0(entry.overtimeHours));
-  $("offHours").value = fmtHours(numOr0(entry.timeOffHours));
-  updateOvertimeBalanceLabel(entry);
+  updateOvertimeBalanceLabel();
+  renderOvertimeDayDetails();
 }
 
 function readHoursInput(id){
@@ -691,38 +762,158 @@ function readHoursInput(id){
   return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : NaN;
 }
 
-function saveOvertimeControls(){
+function renderOvertimeDayDetails(){
   const k = state.selected;
-  if (!k) return;
-  const overtimeHours = readHoursInput("otHours");
-  const timeOffHours = readHoursInput("offHours");
-  if (!Number.isFinite(overtimeHours) || !Number.isFinite(timeOffHours)) {
-    return setSave("err", "часы должны быть положительным числом");
+  const el = $("otDayDetails");
+  if (!k || !el) return;
+  const credits = creditsOf(k);
+  const usages = usagesOf(k);
+  if (!credits.length && !usages.length) {
+    el.textContent = "На этот день в журнале переработок записей нет. Начисления не сгорают при переходе между месяцами.";
+    return;
   }
-  if (overtimeHours > 100 || timeOffHours > 100) {
-    return setSave("err", "переработка/отгул за день: максимум 100 часов");
+  const parts = [];
+  for (const c of credits) {
+    parts.push(`+${fmtHours(c.hours)} ч${c.timeRange ? " (" + c.timeRange + ")" : ""}${c.reason ? " — " + c.reason : ""}; остаток: ${fmtHours(c.remainingHours)} ч`);
   }
-  const cur = state.days[k] || {};
-  const next = {
-    shiftTypeId: cur.shiftTypeId ?? null,
-    note: cur.note ?? null,
-    overtimeHours,
-    timeOffHours,
-  };
-  applyLocal(k, next);
-  updateOvertimeBalanceLabel(next);
-  renderCalendar();
-  scheduleDaySave(k, next);
+  for (const u of usages) {
+    const from = (u.allocations || []).map(a => `${fmtHours(a.hours)} ч с ${a.workedDate}`).join(", ");
+    parts.push(`-${fmtHours(u.hours)} ч${u.reason ? " — " + u.reason : ""}${from ? "; взято: " + from : ""}`);
+  }
+  el.textContent = parts.join(" | ");
 }
 
-$("otHours").addEventListener("input", saveOvertimeControls);
-$("offHours").addEventListener("input", saveOvertimeControls);
-$("offByShift").addEventListener("click", () => {
+async function addOvertimeCredit(){
+  const k = state.selected;
+  if (!k) return;
+  const hours = readHoursInput("creditHours");
+  if (!Number.isFinite(hours) || hours <= 0) return setSave("err", "укажи часы переработки больше 0");
+  setSave("saving");
+  try {
+    state.overtimeAccount = await api.createOvertimeCredit({
+      date: k,
+      timeRange: $("creditTime").value.trim() || null,
+      hours,
+      reason: $("creditReason").value.trim() || null,
+    });
+    $("creditHours").value = "0";
+    $("creditReason").value = "";
+    setSave("saved");
+    renderOvertimeControls();
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+
+async function addOvertimeUsage(){
+  const k = state.selected;
+  if (!k) return;
+  const hours = readHoursInput("usageHours");
+  if (!Number.isFinite(hours) || hours <= 0) return setSave("err", "укажи часы списания больше 0");
+  setSave("saving");
+  try {
+    state.overtimeAccount = await api.createOvertimeUsage({
+      date: k,
+      hours,
+      reason: $("usageReason").value.trim() || null,
+    });
+    $("usageHours").value = "0";
+    $("usageReason").value = "";
+    setSave("saved");
+    renderOvertimeControls();
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+
+async function removeOvertimeCredit(id){
+  setSave("saving");
+  try {
+    state.overtimeAccount = await api.deleteOvertimeCredit(id);
+    setSave("saved");
+    renderOvertimeControls();
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+
+async function removeOvertimeUsage(id){
+  setSave("saving");
+  try {
+    state.overtimeAccount = await api.deleteOvertimeUsage(id);
+    setSave("saved");
+    renderOvertimeControls();
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+
+function renderLedgerTable(){
+  const tbody = $("ledgerRows");
+  const balanceEl = $("ledgerBalance");
+  if (!tbody || !balanceEl) return;
+  const acc = state.overtimeAccount || { credits:[], balanceHours:0 };
+  const bal = numOr0(acc.balanceHours);
+  balanceEl.textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
+  tbody.innerHTML = "";
+  const credits = acc.credits || [];
+  if (!credits.length) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 8;
+    td.className = "small";
+    td.textContent = "Пока нет начислений переработки. Добавь запись в выбранном дне — она появится здесь и будет жить до списания.";
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    return;
+  }
+  for (const c of credits) {
+    const tr = document.createElement("tr");
+    const usedText = (c.usages || []).length
+      ? (c.usages || []).map(u => `${esc(u.usageDate)}: ${fmtHours(u.hours)} ч${u.reason ? " — " + esc(u.reason) : ""} · <button type="button" data-del-usage="${u.usageId}">удалить списание</button>`).join("<br>")
+      : '<span class="small">не списывалось</span>';
+    tr.innerHTML = `
+      <td class="mono">${esc(c.workedDate)}</td>
+      <td>${esc(c.timeRange || "—")}</td>
+      <td class="numc">+${fmtHours(c.hours)} ч</td>
+      <td class="reason">${esc(c.reason || "—")}</td>
+      <td class="numc used">${fmtHours(c.usedHours)} ч</td>
+      <td class="small">${usedText}</td>
+      <td class="numc remain">${fmtHours(c.remainingHours)} ч</td>
+      <td>${numOr0(c.usedHours) <= 0.0001 ? `<button type="button" data-del-credit="${c.id}">удалить</button>` : ""}</td>
+    `;
+    tbody.appendChild(tr);
+  }
+  tbody.querySelectorAll("[data-del-credit]").forEach(btn => {
+    btn.addEventListener("click", () => removeOvertimeCredit(Number(btn.dataset.delCredit)));
+  });
+  tbody.querySelectorAll("[data-del-usage]").forEach(btn => {
+    btn.addEventListener("click", () => removeOvertimeUsage(Number(btn.dataset.delUsage)));
+  });
+}
+
+$("creditAdd").addEventListener("click", addOvertimeCredit);
+$("usageAdd").addEventListener("click", addOvertimeUsage);
+$("usageByShift").addEventListener("click", () => {
   const st = stOf(state.selected);
   if (!st || !st.hours) return setSave("err", "на этом дне нет смены с часами для списания");
-  $("offHours").value = fmtHours(st.hours);
-  saveOvertimeControls();
+  $("usageHours").value = fmtHours(st.hours);
 });
+for (const id of ["creditTime", "creditHours", "creditReason", "usageHours", "usageReason"]) {
+  $(id).addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    if (id.startsWith("credit")) addOvertimeCredit();
+    else addOvertimeUsage();
+  });
+}
 
 /* ─── Важные дни ───────────────────────────────────────────── */
 function renderImportantDays(){
@@ -1141,6 +1332,7 @@ async function loadMonth(){
       state.tasksByDate = {};
       state.importantByDate = {};
       for (const e of bundle) state.days[e.date] = normalizeDay(e);
+      state.overtimeAccount = await api.overtimeAccount();
     } else {
       state.days = {};
       state.tasksByDate = {};
@@ -1149,6 +1341,7 @@ async function loadMonth(){
       for (const e of bundle.days || []) state.days[e.date] = normalizeDay(e);
       for (const t of bundle.tasks || []) addToDateMap(state.tasksByDate, t);
       for (const i of bundle.importantDays || []) addToDateMap(state.importantByDate, i);
+      if (bundle.overtimeAccount) state.overtimeAccount = bundle.overtimeAccount;
     }
     setSave("");
   } catch (err) { console.error(err); setSave("err", err.message); }

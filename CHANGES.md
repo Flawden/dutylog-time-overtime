@@ -1,5 +1,61 @@
 # Изменения
 
+## v13-overtime-accounting
+
+Переработка вынесена в полноценную бухгалтерию часов.
+
+### Журнал начислений и списаний
+
+- Добавлены сущности `OvertimeCredit`, `OvertimeUsage`, `OvertimeAllocation`.
+- Начисление переработки хранит дату, диапазон времени, часы и причину.
+- Списание отгула хранит дату, часы и причину.
+- Списание автоматически распределяется по начислениям по FIFO: сначала самые старые остатки.
+- Переработка больше не “сгорает” при переходе на следующий месяц.
+- Можно начислить переработку в мае и списать её в августе.
+- Добавлена таблица переработок в веб-интерфейсе: день, время, начислено, причина, использовано, куда списано, остаток.
+
+### API и БД
+
+- Добавлен `GET /api/overtime/account`.
+- Добавлен `POST /api/overtime/credits`.
+- Добавлен `DELETE /api/overtime/credits/{id}`.
+- Добавлен `POST /api/overtime/usages`.
+- Добавлен `DELETE /api/overtime/usages/{id}`.
+- `GET /api/calendar?from=&to=` теперь дополнительно отдаёт `overtimeAccount` с общим остатком переработки.
+- Добавлена миграция `V4__overtime_accounting.sql`.
+
+## v12-android-ready
+
+Слой подготовки под полноценное Android-приложение.
+
+### Мобильная авторизация
+
+- Добавлена сущность `MobileAuthToken`.
+- Добавлен `MobileAuthService`.
+- Добавлен `BearerTokenAuthenticationFilter`.
+- Android может ходить в API через `Authorization: Bearer <accessToken>`.
+- Веб-сессия `JSESSIONID` сохранена и не сломана.
+- Access token живёт коротко, refresh token — дольше.
+- Refresh token ротируется при обновлении.
+- В базе хранятся SHA-256 хэши токенов, а не сами токены.
+- Добавлено управление мобильными сессиями/устройствами.
+
+### Mobile API
+
+- Добавлен `POST /api/mobile/auth/login`.
+- Добавлен `POST /api/mobile/auth/refresh`.
+- Добавлен `POST /api/mobile/auth/logout`.
+- Добавлен `GET /api/mobile/auth/me`.
+- Добавлен `GET /api/mobile/auth/sessions`.
+- Добавлен `DELETE /api/mobile/auth/sessions/{id}`.
+- Добавлен `GET /api/mobile/bootstrap?from=&to=`.
+- Добавлен `POST /api/mobile/sync` для пакетной синхронизации изменений дней.
+
+### БД и документация
+
+- Добавлена миграция `V3__mobile_auth_tokens.sql`.
+- Обновлены `README.md`, `docs/API.md`, `docs/ANDROID_API_PLAN.md`.
+
 ## v11-important-days-tasks
 
 Новый продуктовый слой поверх календаря смен.

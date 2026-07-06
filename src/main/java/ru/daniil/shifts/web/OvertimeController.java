@@ -1,11 +1,19 @@
 package ru.daniil.shifts.web;
 
+import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
+import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeLedgerItemDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeSummaryDto;
+import ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.DayEntryService;
@@ -31,7 +39,44 @@ public class OvertimeController {
         this.overtimeService = overtimeService;
     }
 
-    /** GET /api/overtime/balance?from=2026-06-01&to=2026-06-30 */
+    /** GET /api/overtime/account — полная таблица начислений, списаний и остатка. */
+    @GetMapping("/account")
+    public OvertimeAccountDto account(Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        return overtimeService.account(current);
+    }
+
+    /** POST /api/overtime/credits — начислить переработку. */
+    @PostMapping("/credits")
+    public OvertimeAccountDto createCredit(@Valid @RequestBody OvertimeCreditCreateRequest req,
+                                           Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        return overtimeService.createCredit(current, req);
+    }
+
+    /** DELETE /api/overtime/credits/{id} — удалить начисление, если из него ещё ничего не списано. */
+    @DeleteMapping("/credits/{id}")
+    public OvertimeAccountDto deleteCredit(@PathVariable long id, Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        return overtimeService.deleteCredit(current, id);
+    }
+
+    /** POST /api/overtime/usages — списать часы в отгул, FIFO со старых начислений. */
+    @PostMapping("/usages")
+    public OvertimeAccountDto createUsage(@Valid @RequestBody OvertimeUsageCreateRequest req,
+                                          Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        return overtimeService.createUsage(current, req);
+    }
+
+    /** DELETE /api/overtime/usages/{id} — удалить списание и вернуть часы в остатки начислений. */
+    @DeleteMapping("/usages/{id}")
+    public OvertimeAccountDto deleteUsage(@PathVariable long id, Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        return overtimeService.deleteUsage(current, id);
+    }
+
+    /** GET /api/overtime/balance?from=2026-06-01&to=2026-06-30 — старый периодный отчёт по day_entries. */
     @GetMapping("/balance")
     public OvertimeSummaryDto balance(@RequestParam String from,
                                       @RequestParam String to,
@@ -42,7 +87,7 @@ public class OvertimeController {
         return overtimeService.summary(current, fromDate, toDate);
     }
 
-    /** GET /api/overtime/ledger?from=2026-06-01&to=2026-06-30 */
+    /** GET /api/overtime/ledger?from=2026-06-01&to=2026-06-30 — старый журнал по day_entries. */
     @GetMapping("/ledger")
     public List<OvertimeLedgerItemDto> ledger(@RequestParam String from,
                                               @RequestParam String to,

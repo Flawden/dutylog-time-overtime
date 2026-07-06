@@ -6,6 +6,7 @@ import ru.daniil.shifts.dto.Dtos.CalendarRangeDto;
 import ru.daniil.shifts.dto.Dtos.DayDto;
 import ru.daniil.shifts.dto.Dtos.ImportantDayOccurrenceDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeSummaryDto;
+import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeDto;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.model.AppUser;
@@ -41,6 +42,7 @@ public class CalendarService {
         List<TaskDto> tasks = taskService.listRange(user, from, to);
         List<ImportantDayOccurrenceDto> importantDays = importantDayService.occurrences(user, from, to);
         OvertimeSummaryDto overtime = overtimeService.summary(user, from, to);
-        return new CalendarRangeDto(from.toString(), to.toString(), shiftTypes, dayEntries, tasks, importantDays, overtime);
+        OvertimeAccountDto overtimeAccount = overtimeService.account(user);
+        return new CalendarRangeDto(from.toString(), to.toString(), shiftTypes, dayEntries, tasks, importantDays, overtime, overtimeAccount);
     }
 }

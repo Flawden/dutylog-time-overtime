@@ -1,5 +1,6 @@
 package ru.daniil.shifts.dto;
 
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Max;
@@ -15,6 +16,7 @@ import ru.daniil.shifts.model.RepeatMode;
 import ru.daniil.shifts.model.ShiftType;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * DTO-шки API. Вложенные records — легальный способ держать
@@ -169,6 +171,169 @@ public final class Dtos {
             String color
     ) {}
 
+
+
+    /** Запрос логина для Android/PWA API. */
+    public record MobileLoginRequest(
+            @NotBlank(message = "Имя пользователя не должно быть пустым")
+            String username,
+
+            @NotBlank(message = "Пароль не должен быть пустым")
+            String password,
+
+            @Size(max = 120, message = "Название устройства: максимум 120 символов")
+            String deviceName
+    ) {}
+
+    /** Запрос обновления access token через refresh token. */
+    public record MobileRefreshRequest(
+            @NotBlank(message = "Нужен refreshToken")
+            String refreshToken
+    ) {}
+
+    /** Запрос выхода мобильного клиента. */
+    public record MobileLogoutRequest(String refreshToken) {}
+
+    /** Краткая информация о пользователе для мобильного клиента. */
+    public record MobileUserDto(String username) {}
+
+    /** Ответ мобильной авторизации. */
+    public record MobileTokenResponse(
+            String tokenType,
+            String accessToken,
+            String accessExpiresAt,
+            String refreshToken,
+            String refreshExpiresAt,
+            MobileUserDto user
+    ) {}
+
+    /** Активная мобильная сессия / устройство. */
+    public record MobileAuthTokenDto(
+            Long id,
+            String deviceName,
+            String createdAt,
+            String lastUsedAt,
+            String refreshExpiresAt,
+            boolean revoked,
+            boolean active
+    ) {}
+
+    /** Первый крупный ответ для Android: профиль + диапазон календаря + serverTime. */
+    public record MobileBootstrapDto(
+            String serverTime,
+            MobileUserDto user,
+            CalendarRangeDto calendar
+    ) {}
+
+    /** Изменение одного дня для пакетной мобильной синхронизации. */
+    public record MobileDayChangeRequest(
+            @NotBlank(message = "Дата дня должна быть в формате yyyy-MM-dd")
+            String date,
+            Long shiftTypeId,
+            Boolean clearShiftType,
+
+            @Size(max = 20000, message = "Заметка слишком длинная: максимум 20 000 символов")
+            String note,
+            Boolean clearNote,
+
+            @DecimalMin(value = "0.0", message = "Переработка не может быть отрицательной")
+            @DecimalMax(value = "100.0", message = "Переработка за день: максимум 100 часов")
+            Double overtimeHours,
+
+            @DecimalMin(value = "0.0", message = "Отгул не может быть отрицательным")
+            @DecimalMax(value = "100.0", message = "Отгул за день: максимум 100 часов")
+            Double timeOffHours
+    ) {}
+
+    /** Пакет изменений с Android. Пока синхронизируем дни; задачи и важные дни идут обычными API. */
+    public record MobileSyncRequest(
+            @Size(max = 366, message = "За один sync можно отправить максимум 366 изменений дней")
+            List<@Valid MobileDayChangeRequest> days
+    ) {}
+
+    /** Результат пакетной синхронизации. */
+    public record MobileSyncResultDto(
+            String serverTime,
+            List<DayDto> days,
+            Map<String, String> warnings
+    ) {}
+
+    /** Начисление переработки: день, время, часы и причина. */
+    public record OvertimeCreditCreateRequest(
+            @NotBlank(message = "Дата переработки должна быть в формате yyyy-MM-dd")
+            String date,
+
+            @Size(max = 50, message = "Время переработки: максимум 50 символов")
+            String timeRange,
+
+            @DecimalMin(value = "0.01", message = "Переработка должна быть больше 0")
+            @DecimalMax(value = "100.0", message = "Переработка за запись: максимум 100 часов")
+            Double hours,
+
+            @Size(max = 1000, message = "Причина переработки: максимум 1000 символов")
+            String reason
+    ) {}
+
+    /** Списание часов переработки в отгул. Распределяется по старым начислениям автоматически. */
+    public record OvertimeUsageCreateRequest(
+            @NotBlank(message = "Дата списания должна быть в формате yyyy-MM-dd")
+            String date,
+
+            @DecimalMin(value = "0.01", message = "Списание должно быть больше 0")
+            @DecimalMax(value = "100.0", message = "Списание за запись: максимум 100 часов")
+            Double hours,
+
+            @Size(max = 1000, message = "Причина списания: максимум 1000 символов")
+            String reason
+    ) {}
+
+    /** Деталь списания: сколько часов было забрано из конкретного начисления. */
+    public record OvertimeUsageRefDto(
+            Long usageId,
+            String usageDate,
+            double hours,
+            String reason
+    ) {}
+
+    /** Деталь начисления, из которого списали часы. */
+    public record OvertimeAllocationDto(
+            Long creditId,
+            String workedDate,
+            String timeRange,
+            double hours,
+            String reason
+    ) {}
+
+    /** Строка таблицы начислений переработки. */
+    public record OvertimeCreditRowDto(
+            Long id,
+            String workedDate,
+            String timeRange,
+            double hours,
+            String reason,
+            double usedHours,
+            double remainingHours,
+            List<OvertimeUsageRefDto> usages
+    ) {}
+
+    /** Списание отгула с расшифровкой, из каких начислений оно взяло часы. */
+    public record OvertimeUsageDto(
+            Long id,
+            String usageDate,
+            double hours,
+            String reason,
+            List<OvertimeAllocationDto> allocations
+    ) {}
+
+    /** Полная бухгалтерия переработок: начисления, списания, остаток. */
+    public record OvertimeAccountDto(
+            double totalEarnedHours,
+            double totalUsedHours,
+            double balanceHours,
+            List<OvertimeCreditRowDto> credits,
+            List<OvertimeUsageDto> usages
+    ) {}
+
     /** Сводка переработок за диапазон. */
     public record OvertimeSummaryDto(
             String from,
@@ -215,6 +380,7 @@ public final class Dtos {
             List<DayDto> days,
             List<TaskDto> tasks,
             List<ImportantDayOccurrenceDto> importantDays,
-            OvertimeSummaryDto overtime
+            OvertimeSummaryDto overtime,
+            OvertimeAccountDto overtimeAccount
     ) {}
 }
