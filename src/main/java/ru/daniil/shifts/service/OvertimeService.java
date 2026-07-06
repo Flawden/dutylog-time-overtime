@@ -22,7 +22,10 @@ import ru.daniil.shifts.repo.OvertimeCreditRepository;
 import ru.daniil.shifts.repo.OvertimeUsageRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
+import java.time.Duration;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -31,6 +34,10 @@ import java.util.stream.Collectors;
 
 @Service
 public class OvertimeService {
+    private static final DateTimeFormatter ISO_MINUTES = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm");
+    private static final DateTimeFormatter SHORT_DATE_TIME = DateTimeFormatter.ofPattern("dd.MM HH:mm");
+    private static final DateTimeFormatter SHORT_TIME = DateTimeFormatter.ofPattern("HH:mm");
+
     private final DayEntryRepository days;
     private final DayEntryService dayEntryService;
     private final OvertimeCreditRepository credits;
@@ -104,8 +111,19 @@ public class OvertimeService {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
         LocalDate date = dayEntryService.parseDate(req.date(), "Дата переработки должна быть в формате yyyy-MM-dd");
-        double hours = requirePositiveHours(req.hours(), "Укажи часы переработки больше 0");
-        credits.save(new OvertimeCredit(user, date, normalize(req.timeRange()), hours, normalize(req.reason())));
+        CalculatedCredit calculated = calculateCredit(req);
+        credits.save(new OvertimeCredit(
+                user,
+                date,
+                normalize(calculated.timeRange()),
+                calculated.hours(),
+                normalize(req.reason()),
+                calculated.startAt(),
+                calculated.endAt(),
+                calculated.breakMinutes(),
+                calculated.plannedHours(),
+                calculated.calculated()
+        ));
         return account(user);
     }
 
@@ -184,6 +202,11 @@ public class OvertimeService {
                 credit.getId(),
                 credit.getWorkDate().toString(),
                 credit.getTimeRange(),
+                credit.getStartAt() == null ? null : credit.getStartAt().toString(),
+                credit.getEndAt() == null ? null : credit.getEndAt().toString(),
+                credit.getBreakMinutes(),
+                round2(credit.getPlannedHours()),
+                credit.isCalculated(),
                 round2(credit.getHours()),
                 credit.getReason(),
                 round2(used),
@@ -211,6 +234,74 @@ public class OvertimeService {
         return days.findByOwnerAndDateBetweenOrderByDateAsc(user, from, to);
     }
 
+    private CalculatedCredit calculateCredit(OvertimeCreditCreateRequest req) {
+        boolean hasStart = hasText(req.startDateTime());
+        boolean hasEnd = hasText(req.endDateTime());
+        if (hasStart || hasEnd) {
+            if (!hasStart || !hasEnd) {
+                throw ApiException.badRequest("Для автоподсчёта нужны и начало, и конец переработки");
+            }
+            LocalDateTime start = parseDateTime(req.startDateTime(), "Начало должно быть в формате yyyy-MM-ddTHH:mm");
+            LocalDateTime end = parseDateTime(req.endDateTime(), "Конец должен быть в формате yyyy-MM-ddTHH:mm");
+            if (!end.isAfter(start)) {
+                throw ApiException.badRequest("Конец должен быть позже начала. Для ночной работы укажи следующий день в поле конца.");
+            }
+            long totalMinutes = Duration.between(start, end).toMinutes();
+            int breakMinutes = sanitizeMinutes(req.breakMinutes());
+            double plannedHours = sanitizePlannedHours(req.plannedHours());
+            long plannedMinutes = Math.round(plannedHours * 60.0);
+            long creditedMinutes = totalMinutes - breakMinutes - plannedMinutes;
+            if (creditedMinutes <= 0) {
+                throw ApiException.badRequest("После вычета обеда и плановых часов переработка получилась 0 или меньше");
+            }
+            double hours = requirePositiveHours(creditedMinutes / 60.0, "Переработка должна быть больше 0");
+            String timeRange = hasText(req.timeRange()) ? req.timeRange().trim() : formatTimeRange(start, end);
+            return new CalculatedCredit(timeRange, hours, start, end, breakMinutes, plannedHours, true);
+        }
+
+        double hours = requirePositiveHours(req.hours(), "Укажи часы переработки больше 0");
+        return new CalculatedCredit(normalize(req.timeRange()), hours, null, null, 0, 0.0, false);
+    }
+
+    private LocalDateTime parseDateTime(String value, String message) {
+        try {
+            return LocalDateTime.parse(value.trim());
+        } catch (Exception ignored) {
+            try {
+                return LocalDateTime.parse(value.trim(), ISO_MINUTES);
+            } catch (Exception ignoredAgain) {
+                throw ApiException.badRequest(message);
+            }
+        }
+    }
+
+    private int sanitizeMinutes(Integer value) {
+        if (value == null) return 0;
+        if (value < 0 || value > 1440) {
+            throw ApiException.badRequest("Обед должен быть от 0 до 1440 минут");
+        }
+        return value;
+    }
+
+    private double sanitizePlannedHours(Double value) {
+        if (value == null) return 0.0;
+        if (!Double.isFinite(value) || value < 0 || value > 100.0) {
+            throw ApiException.badRequest("Плановые часы должны быть от 0 до 100");
+        }
+        return round2(value);
+    }
+
+    private String formatTimeRange(LocalDateTime start, LocalDateTime end) {
+        if (start.toLocalDate().equals(end.toLocalDate())) {
+            return start.format(SHORT_TIME) + "–" + end.format(SHORT_TIME);
+        }
+        return start.format(SHORT_DATE_TIME) + "–" + end.format(SHORT_DATE_TIME);
+    }
+
+    private boolean hasText(String value) {
+        return value != null && !value.isBlank();
+    }
+
     private double requirePositiveHours(Double value, String message) {
         if (value == null || !Double.isFinite(value) || value <= 0.00001) {
             throw ApiException.badRequest(message);
@@ -233,4 +324,15 @@ public class OvertimeService {
     private double round2(double value) {
         return Math.round(value * 100.0) / 100.0;
     }
+
+
+    private record CalculatedCredit(
+            String timeRange,
+            double hours,
+            LocalDateTime startAt,
+            LocalDateTime endAt,
+            int breakMinutes,
+            double plannedHours,
+            boolean calculated
+    ) {}
 }

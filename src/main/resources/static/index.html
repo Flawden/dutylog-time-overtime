@@ -124,7 +124,10 @@
   .ot { margin:10px 0 8px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:10px; font-size:12.5px; }
   .ot .row { display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-top:8px; }
   .ot input[type=number] { width:82px; background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:6px 8px; font-size:12.5px; font-family:ui-monospace,monospace; }
-  .ot input[type=text] { flex:1; min-width:120px; background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:6px 8px; font-size:12.5px; }
+  .ot input[type=text], .ot input[type=datetime-local] { flex:1; min-width:120px; background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:6px 8px; font-size:12.5px; }
+  .ot input[type=datetime-local] { min-width:190px; font-family:ui-monospace,monospace; }
+  .ot .calc { color:var(--dim); font-family:ui-monospace,monospace; }
+  .ot .wideHint { flex-basis:100%; color:var(--dim); line-height:1.45; }
   .ot label { color:var(--mut); display:flex; align-items:center; gap:6px; }
   .ot button { background:transparent; color:var(--mut); border:1px dashed var(--dim); border-radius:7px; padding:6px 9px; font-size:12px; cursor:pointer; }
   .ot button.primary { background:var(--accent); color:#14171C; border-color:var(--accent); font-weight:800; }
@@ -140,13 +143,14 @@
   .cell .taskMark { color:#14171C; background:var(--danger); }
   .cell .taskMark.done { background:var(--line); color:var(--mut); }
 
-  .dayBlock { margin:10px 0 8px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:10px; font-size:12.5px; }
-  .dayBlock .row { display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-top:8px; }
-  .dayBlock input[type=text], .dayBlock input[type=date], .dayBlock select { background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:6px 8px; font-size:12.5px; }
-  .dayBlock input[type=text] { flex:1; min-width:140px; }
-  .dayBlock select { min-width:130px; }
-  .dayBlock input[type=color] { width:28px; height:28px; padding:0; border:1px solid var(--line); border-radius:7px; background:none; cursor:pointer; }
-  .dayBlock .addSmall { margin-left:auto; background:var(--accent); color:#14171C; border:none; border-radius:7px; padding:6px 10px; font-size:12px; font-weight:800; cursor:pointer; }
+  /* Формы «Важные дни» и «Задачи» внутри аккордеона (бывший .dayBlock) */
+  .dayForm { font-size:12.5px; }
+  .dayForm .row { display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+  .dayForm input[type=text], .dayForm input[type=date], .dayForm select { background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:6px 8px; font-size:12.5px; font-family:inherit; }
+  .dayForm input[type=text] { flex:1; min-width:140px; }
+  .dayForm select { min-width:130px; }
+  .dayForm input[type=color] { width:28px; height:28px; padding:0; border:1px solid var(--line); border-radius:7px; background:none; cursor:pointer; }
+  .dayForm .addSmall { margin-left:auto; background:var(--accent); color:#14171C; border:none; border-radius:7px; padding:6px 10px; font-size:12px; font-weight:800; cursor:pointer; font-family:inherit; }
   .emptyLine { color:var(--dim); line-height:1.45; margin-top:7px; }
   .importantList, .taskList { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
   .importantItem, .taskItem { display:flex; gap:8px; align-items:center; background:rgba(20,23,28,.45); border:1px solid var(--line); border-radius:8px; padding:6px 8px; }
@@ -298,12 +302,22 @@
         <div class="accB">
         <div class="ot">
         <div class="row">
-          <label>Время <input type="text" id="creditTime" placeholder="17:00–24:00"></label>
-          <label>Часы <input type="number" id="creditHours" min="0" max="100" step="0.25" value="0"></label>
+          <label>Начало <input type="datetime-local" id="creditStart"></label>
+          <label>Конец <input type="datetime-local" id="creditEnd"></label>
+        </div>
+        <div class="row">
+          <label>Обед, мин <input type="number" id="creditBreak" min="0" max="1440" step="5" value="0"></label>
+          <label>Вычесть план, ч <input type="number" id="creditPlanned" min="0" max="100" step="0.25" value="0"></label>
+          <button id="creditPlanByShift" type="button">план по смене</button>
+          <label>Итого <input type="number" id="creditHours" min="0" max="100" step="0.25" value="0"></label>
+          <span class="calc" id="creditCalcHint">можно вручную</span>
         </div>
         <div class="row">
           <input type="text" id="creditReason" placeholder="Причина переработки: ППР, авария, замена смены…">
+          <button id="creditNightShiftPreset" type="button">20–08 обед 60</button>
+          <button id="creditNightPreset" type="button">17–08</button>
           <button id="creditAdd" class="primary" type="button">Начислить</button>
+          <div class="wideHint">Если вводишь только переработку — план оставь 0. Если вводишь всю фактическую смену целиком — вычти плановые часы смены.</div>
         </div>
         <div class="row">
           <label>Списать <input type="number" id="usageHours" min="0" max="100" step="0.25" value="0"></label>
@@ -319,7 +333,7 @@
 
       <details class="acc" id="accImp">
         <summary><span class="accT">Важные дни</span><span class="accS" id="sumImp"></span></summary>
-        <div class="accB">
+        <div class="accB dayForm">
         <div class="importantList" id="importantList"></div>
         <div class="row">
           <input type="text" id="impTitle" placeholder="Например: день рождения Макса">
@@ -336,7 +350,7 @@
 
       <details class="acc" id="accTasks">
         <summary><span class="accT">Задачи</span><span class="accS" id="sumTasks"></span></summary>
-        <div class="accB">
+        <div class="accB dayForm">
         <div class="taskList" id="taskList"></div>
         <div class="row">
           <input type="text" id="taskText" placeholder="Задача на этот день">
@@ -437,6 +451,21 @@ function monthFromTo(y = state.y, m = state.m){
 function weekdayIndex(k){
   const [y, m, d] = k.split("-").map(Number);
   return (new Date(y, m - 1, d).getDay() + 6) % 7; // Пн=0, Вс=6
+}
+function dateKeyOffset(k, days){
+  const [y, m, d] = k.split("-").map(Number);
+  const dt = new Date(y, m - 1, d + days);
+  return keyOf(dt.getFullYear(), dt.getMonth(), dt.getDate());
+}
+function setTimeOnDate(k, hhmm){ return `${k}T${hhmm}`; }
+function displayDateTimeRange(startValue, endValue){
+  if (!startValue || !endValue) return "";
+  const sd = startValue.slice(0, 10), ed = endValue.slice(0, 10);
+  const st = startValue.slice(11, 16), et = endValue.slice(11, 16);
+  if (sd === ed) return `${st}–${et}`;
+  const [, sm, sday] = sd.split("-");
+  const [, em, eday] = ed.split("-");
+  return `${sday}.${sm} ${st}–${eday}.${em} ${et}`;
 }
 function effectiveTemplateNames(tpl, startDateKey){
   if (!tpl.weekly) return tpl.names;
@@ -872,7 +901,8 @@ function renderOvertimeDayDetails(){
   }
   const parts = [];
   for (const c of credits) {
-    parts.push(`+${fmtHours(c.hours)} ч${c.timeRange ? " (" + c.timeRange + ")" : ""}${c.reason ? " — " + c.reason : ""}; остаток: ${fmtHours(c.remainingHours)} ч`);
+    const calc = c.calculated ? `; обед ${c.breakMinutes || 0} мин${numOr0(c.plannedHours) ? "; вычтено плана " + fmtHours(c.plannedHours) + " ч" : ""}` : "";
+    parts.push(`+${fmtHours(c.hours)} ч${c.timeRange ? " (" + c.timeRange + ")" : ""}${calc}${c.reason ? " — " + c.reason : ""}; остаток: ${fmtHours(c.remainingHours)} ч`);
   }
   for (const u of usages) {
     const from = (u.allocations || []).map(a => `${fmtHours(a.hours)} ч с ${a.workedDate}`).join(", ");
@@ -881,21 +911,98 @@ function renderOvertimeDayDetails(){
   el.textContent = parts.join(" | ");
 }
 
+function readIntInput(id){
+  const raw = String($(id).value || "").trim().replace(",", ".");
+  if (!raw) return 0;
+  const n = Number(raw);
+  return Number.isFinite(n) && n >= 0 ? Math.round(n) : NaN;
+}
+
+function overtimeCalcFromInputs(){
+  const startValue = $("creditStart").value;
+  const endValue = $("creditEnd").value;
+  if (!startValue && !endValue) {
+    $("creditCalcHint").textContent = "можно вручную";
+    return null;
+  }
+  if (!startValue || !endValue) {
+    $("creditCalcHint").textContent = "нужны начало и конец";
+    return null;
+  }
+  const start = new Date(startValue);
+  const end = new Date(endValue);
+  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start) {
+    $("creditCalcHint").textContent = "конец должен быть позже";
+    return null;
+  }
+  const breakMinutes = readIntInput("creditBreak");
+  const plannedHours = readHoursInput("creditPlanned");
+  if (!Number.isFinite(breakMinutes) || !Number.isFinite(plannedHours)) {
+    $("creditCalcHint").textContent = "проверь обед/план";
+    return null;
+  }
+  const totalMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
+  const creditedMinutes = totalMinutes - breakMinutes - Math.round(plannedHours * 60);
+  const hours = Math.round((creditedMinutes / 60) * 100) / 100;
+  if (hours <= 0) {
+    $("creditCalcHint").textContent = "итого 0 или меньше";
+    return null;
+  }
+  $("creditHours").value = fmtHours(hours);
+  $("creditCalcHint").textContent = `${fmtHours(totalMinutes / 60)}ч - ${breakMinutes}м${plannedHours ? " - " + fmtHours(plannedHours) + "ч плана" : ""} = ${fmtHours(hours)}ч`;
+  return { startValue, endValue, breakMinutes, plannedHours, hours, timeRange: displayDateTimeRange(startValue, endValue) };
+}
+
+function updateOvertimeCalcPreview(){
+  overtimeCalcFromInputs();
+}
+
+function setNightShiftPreset(){
+  if (!state.selected) return;
+  $("creditStart").value = setTimeOnDate(state.selected, "20:00");
+  $("creditEnd").value = setTimeOnDate(dateKeyOffset(state.selected, 1), "08:00");
+  $("creditBreak").value = "60";
+  $("creditPlanned").value = "0";
+  updateOvertimeCalcPreview();
+}
+
+function setNightOvertimePreset(){
+  if (!state.selected) return;
+  $("creditStart").value = setTimeOnDate(state.selected, "17:00");
+  $("creditEnd").value = setTimeOnDate(dateKeyOffset(state.selected, 1), "08:00");
+  $("creditBreak").value = "0";
+  $("creditPlanned").value = "0";
+  updateOvertimeCalcPreview();
+}
+
 async function addOvertimeCredit(){
   const k = state.selected;
   if (!k) return;
-  const hours = readHoursInput("creditHours");
+  const calc = overtimeCalcFromInputs();
+  const hours = calc ? calc.hours : readHoursInput("creditHours");
   if (!Number.isFinite(hours) || hours <= 0) return setSave("err", "укажи часы переработки больше 0");
   setSave("saving");
   try {
-    state.overtimeAccount = await api.createOvertimeCredit({
+    const payload = {
       date: k,
-      timeRange: $("creditTime").value.trim() || null,
+      timeRange: calc ? calc.timeRange : null,
       hours,
       reason: $("creditReason").value.trim() || null,
-    });
+    };
+    if (calc) {
+      payload.startDateTime = calc.startValue;
+      payload.endDateTime = calc.endValue;
+      payload.breakMinutes = calc.breakMinutes;
+      payload.plannedHours = calc.plannedHours;
+    }
+    state.overtimeAccount = await api.createOvertimeCredit(payload);
     $("creditHours").value = "0";
+    $("creditStart").value = "";
+    $("creditEnd").value = "";
+    $("creditBreak").value = "0";
+    $("creditPlanned").value = "0";
     $("creditReason").value = "";
+    $("creditCalcHint").textContent = "можно вручную";
     setSave("saved");
     renderOvertimeControls();
     renderCalendar();
@@ -978,9 +1085,10 @@ function renderLedgerTable(){
     const usedText = (c.usages || []).length
       ? (c.usages || []).map(u => `${esc(u.usageDate)}: ${fmtHours(u.hours)} ч${u.reason ? " — " + esc(u.reason) : ""} · <button type="button" data-del-usage="${u.usageId}">удалить списание</button>`).join("<br>")
       : '<span class="small">не списывалось</span>';
+    const calcInfo = c.calculated ? `<div class="small">обед: ${c.breakMinutes || 0} мин${numOr0(c.plannedHours) ? ` · план: ${fmtHours(c.plannedHours)} ч` : ""}</div>` : "";
     tr.innerHTML = `
       <td class="mono">${esc(c.workedDate)}</td>
-      <td>${esc(c.timeRange || "—")}</td>
+      <td>${esc(c.timeRange || "—")}${calcInfo}</td>
       <td class="numc">+${fmtHours(c.hours)} ч</td>
       <td class="reason">${esc(c.reason || "—")}</td>
       <td class="numc used">${fmtHours(c.usedHours)} ч</td>
@@ -999,13 +1107,24 @@ function renderLedgerTable(){
 }
 
 $("creditAdd").addEventListener("click", addOvertimeCredit);
+$("creditNightShiftPreset").addEventListener("click", setNightShiftPreset);
+$("creditNightPreset").addEventListener("click", setNightOvertimePreset);
+$("creditPlanByShift").addEventListener("click", () => {
+  const st = stOf(state.selected);
+  if (!st || !st.hours) return setSave("err", "на этом дне нет смены с часами");
+  $("creditPlanned").value = fmtHours(st.hours);
+  updateOvertimeCalcPreview();
+});
+for (const id of ["creditStart", "creditEnd", "creditBreak", "creditPlanned"]) {
+  $(id).addEventListener("input", updateOvertimeCalcPreview);
+}
 $("usageAdd").addEventListener("click", addOvertimeUsage);
 $("usageByShift").addEventListener("click", () => {
   const st = stOf(state.selected);
   if (!st || !st.hours) return setSave("err", "на этом дне нет смены с часами для списания");
   $("usageHours").value = fmtHours(st.hours);
 });
-for (const id of ["creditTime", "creditHours", "creditReason", "usageHours", "usageReason"]) {
+for (const id of ["creditStart", "creditEnd", "creditBreak", "creditPlanned", "creditHours", "creditReason", "usageHours", "usageReason"]) {
   $(id).addEventListener("keydown", e => {
     if (e.key !== "Enter") return;
     if (id.startsWith("credit")) addOvertimeCredit();

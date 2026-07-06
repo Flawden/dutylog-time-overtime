@@ -258,13 +258,30 @@ public final class Dtos {
             Map<String, String> warnings
     ) {}
 
-    /** Начисление переработки: день, время, часы и причина. */
+    /**
+     * Начисление переработки. Можно передать либо готовые hours, либо интервал startDateTime/endDateTime,
+     * тогда сервер сам посчитает: длительность - обед - плановые часы.
+     */
     public record OvertimeCreditCreateRequest(
             @NotBlank(message = "Дата переработки должна быть в формате yyyy-MM-dd")
             String date,
 
             @Size(max = 50, message = "Время переработки: максимум 50 символов")
             String timeRange,
+
+            /** Формат datetime-local / ISO: 2026-05-04T20:00 */
+            String startDateTime,
+
+            /** Формат datetime-local / ISO: 2026-05-05T08:00 */
+            String endDateTime,
+
+            @DecimalMin(value = "0", message = "Обед не может быть отрицательным")
+            @DecimalMax(value = "1440", message = "Обед не может быть больше 1440 минут")
+            Integer breakMinutes,
+
+            @DecimalMin(value = "0.0", message = "Плановые часы не могут быть отрицательными")
+            @DecimalMax(value = "100.0", message = "Плановые часы: максимум 100")
+            Double plannedHours,
 
             @DecimalMin(value = "0.01", message = "Переработка должна быть больше 0")
             @DecimalMax(value = "100.0", message = "Переработка за запись: максимум 100 часов")
@@ -309,6 +326,11 @@ public final class Dtos {
             Long id,
             String workedDate,
             String timeRange,
+            String startDateTime,
+            String endDateTime,
+            int breakMinutes,
+            double plannedHours,
+            boolean calculated,
             double hours,
             String reason,
             double usedHours,
