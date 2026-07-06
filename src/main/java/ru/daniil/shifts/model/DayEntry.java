@@ -35,14 +35,13 @@ public class DayEntry {
     @JoinColumn(name = "shift_type_id")
     private ShiftType shiftType; // может быть null
 
-    @Column(name = "overtime_hours")
+    @Column(name = "overtime_hours", nullable = false)
     private Double overtimeHours = 0.0;
 
-    @Column(name = "time_off_hours")
+    @Column(name = "time_off_hours", nullable = false)
     private Double timeOffHours = 0.0;
 
-    @Lob
-    @Column(name = "note")
+    @Column(name = "note", columnDefinition = "text")
     private String note; // Markdown, может быть null/пустой
 
     protected DayEntry() {} // для JPA

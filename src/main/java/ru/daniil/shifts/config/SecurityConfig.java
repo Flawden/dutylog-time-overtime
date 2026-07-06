@@ -44,7 +44,16 @@ public class SecurityConfig {
             // включить обратно и пробрасывать токен, см. README.
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/login.html", "/manifest.json", "/service-worker.js", "/icons/**", "/api/auth/register", "/h2-console/**").permitAll()
+                .requestMatchers(
+                        "/login.html",
+                        "/manifest.json",
+                        "/service-worker.js",
+                        "/icons/**",
+                        "/api/auth/register",
+                        "/h2-console/**",
+                        "/actuator/health",
+                        "/actuator/health/**"
+                ).permitAll()
                 .anyRequest().authenticated())
             .formLogin(form -> form
                 .loginPage("/login.html")
