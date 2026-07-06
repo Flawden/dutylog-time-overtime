@@ -47,8 +47,11 @@ public class ShiftTypeService {
         int breakMinutes = req.breakMinutes() != null ? req.breakMinutes() : 0;
         double plannedHours = req.plannedHours() != null ? req.plannedHours() : hours;
 
-        ShiftType saved = shiftTypes.save(new ShiftType(user, name, hours, color, false,
-                startTime, endTime, breakMinutes, plannedHours));
+        ShiftType newType = new ShiftType(user, name, hours, color, false,
+                startTime, endTime, breakMinutes, plannedHours);
+        if (req.notificationsEnabled() != null) newType.setNotificationsEnabled(req.notificationsEnabled());
+        if (req.notificationMinutesBefore() != null) newType.setNotificationMinutesBefore(req.notificationMinutesBefore() < 0 ? null : req.notificationMinutesBefore());
+        ShiftType saved = shiftTypes.save(newType);
         return ShiftTypeDto.from(saved);
     }
 
@@ -75,6 +78,8 @@ public class ShiftTypeService {
         if (req.endTime() != null) st.setEndTime(parseOptionalTime(req.endTime()));
         if (req.breakMinutes() != null) st.setBreakMinutes(req.breakMinutes());
         if (req.plannedHours() != null) st.setPlannedHours(req.plannedHours());
+        if (req.notificationsEnabled() != null) st.setNotificationsEnabled(req.notificationsEnabled());
+        if (req.notificationMinutesBefore() != null) st.setNotificationMinutesBefore(req.notificationMinutesBefore() < 0 ? null : req.notificationMinutesBefore());
 
         return ShiftTypeDto.from(shiftTypes.save(st));
     }

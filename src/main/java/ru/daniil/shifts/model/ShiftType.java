@@ -49,6 +49,14 @@ public class ShiftType {
     @Column(name = "planned_hours")
     private Double plannedHours;
 
+    /** Можно ли создавать напоминания перед этой сменой. */
+    @Column(name = "notifications_enabled", nullable = false)
+    private boolean notificationsEnabled = true;
+
+    /** Переопределение времени напоминания именно для этой смены. null — использовать глобальную настройку. */
+    @Column(name = "notification_minutes_before")
+    private Integer notificationMinutesBefore;
+
     /** Владелец. У каждого пользователя — свой набор типов смен. */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
@@ -92,5 +100,11 @@ public class ShiftType {
     public Double getPlannedHours() { return plannedHours; }
     public void setPlannedHours(Double plannedHours) { this.plannedHours = plannedHours; }
     public double effectivePlannedHours() { return plannedHours != null ? plannedHours : hours; }
+    public boolean isNotificationsEnabled() { return notificationsEnabled; }
+    public void setNotificationsEnabled(boolean notificationsEnabled) { this.notificationsEnabled = notificationsEnabled; }
+    public Integer getNotificationMinutesBefore() { return notificationMinutesBefore; }
+    public void setNotificationMinutesBefore(Integer notificationMinutesBefore) {
+        this.notificationMinutesBefore = notificationMinutesBefore != null ? Math.max(0, notificationMinutesBefore) : null;
+    }
     public AppUser getOwner() { return owner; }
 }

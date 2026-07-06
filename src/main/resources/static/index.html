@@ -140,13 +140,32 @@
   .ot button.primary:hover { color:#14171C; }
   .ot .bal { margin-left:auto; font-family:ui-monospace,monospace; color:var(--accent); }
   .otHint { color:var(--dim); line-height:1.45; margin-top:7px; }
+  .quickScenarioPanel { margin-top:10px; border:1px solid var(--line); border-radius:12px; padding:10px; background:rgba(20,23,28,.35); }
+  .quickScenarioHead { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; margin-bottom:8px; }
+  .quickScenarioTitle { color:var(--text); font-weight:800; letter-spacing:.04em; }
+  .quickScenarioContext { color:var(--dim); font-size:12px; line-height:1.4; margin-top:2px; }
+  .quickGhost { background:transparent !important; color:var(--dim) !important; border:1px dashed var(--line) !important; border-radius:8px !important; padding:6px 9px !important; flex:none; }
+  .scenarioGrid { display:grid; grid-template-columns:repeat(5, minmax(120px, 1fr)); gap:8px; }
+  .scenarioCard { text-align:left; min-height:92px; background:var(--bg) !important; border:1px solid var(--line) !important; border-radius:11px !important; padding:9px 10px !important; color:var(--text) !important; display:flex; flex-direction:column; gap:4px; }
+  .scenarioCard span { color:var(--dim); font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; }
+  .scenarioCard b { color:var(--text); font-size:13.5px; line-height:1.2; }
+  .scenarioCard small { color:var(--mut); line-height:1.35; font-size:11.5px; }
+  .scenarioCard.recommended { border-color:rgba(245,184,65,.45) !important; box-shadow:0 0 0 1px rgba(245,184,65,.08) inset; }
+  .scenarioCard.recommended span::after { content:" · совет"; color:var(--accent); }
+  .scenarioCard:hover:not(:disabled), .scenarioCard.active { border-color:var(--accent) !important; transform:translateY(-1px); }
+  .scenarioCard.active { background:rgba(245,184,65,.08) !important; }
+  .scenarioCard:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+  .quickScenarioTips { margin-top:8px; color:var(--dim); font-size:12px; line-height:1.45; }
+  @media (max-width: 980px) { .scenarioGrid { grid-template-columns:repeat(2, minmax(140px, 1fr)); } }
+  @media (max-width: 520px) { .quickScenarioHead { flex-direction:column; } .scenarioGrid { grid-template-columns:1fr; } }
   .cell .otMark { font-size:10.5px; font-weight:700; font-family:ui-monospace,monospace; color:var(--accent); line-height:1.1; }
   .sum .over { color:var(--accent); font-family:ui-monospace,monospace; }
   .cell .miniMarks { display:flex; gap:4px; align-items:center; min-height:14px; }
-  .cell .importantMark, .cell .taskMark { display:inline-flex; align-items:center; justify-content:center; min-width:16px; height:16px; border-radius:6px; font-size:10px; font-weight:900; font-family:ui-monospace,monospace; }
+  .cell .importantMark, .cell .taskMark, .cell .notifyMark { display:inline-flex; align-items:center; justify-content:center; min-width:16px; height:16px; border-radius:6px; font-size:10px; font-weight:900; font-family:ui-monospace,monospace; }
   .cell .importantMark { color:#14171C; background:var(--accent); }
   .cell .taskMark { color:#14171C; background:var(--danger); }
   .cell .taskMark.done { background:var(--line); color:var(--mut); }
+  .cell .notifyMark { color:#14171C; background:#7B8CE0; }
 
   /* Формы «Важные дни» и «Задачи» внутри аккордеона (бывший .dayBlock) */
   .dayForm { font-size:12.5px; }
@@ -196,6 +215,29 @@
   .ledgerTable .small { color:var(--dim); line-height:1.35; }
   .ledgerTable button { background:none; border:none; color:var(--dim); cursor:pointer; padding:0; font-size:12px; }
   .ledgerTable button:hover { color:var(--danger); }
+
+
+  .notifyCard { margin-top:12px; background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:10px; }
+  .notifyHead { display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+  .notifyHead .status { color:var(--accent); font-family:ui-monospace,monospace; font-weight:800; }
+  .notifyGrid { display:grid; grid-template-columns:repeat(2,minmax(220px,1fr)); gap:8px; margin:10px 0; }
+  @media (max-width: 740px) { .notifyGrid { grid-template-columns:1fr; } }
+  .notifyOpt { background:rgba(20,23,28,.45); border:1px solid var(--line); border-radius:10px; padding:8px; font-size:12px; color:var(--mut); display:flex; flex-wrap:wrap; align-items:center; gap:7px; }
+  .notifyOpt b { color:var(--text); }
+  .notifyOpt input[type=number] { width:72px; }
+  .notifyOpt input[type=time], .notifyOpt input[type=number] { background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:5px 7px; font-size:12px; font-family:ui-monospace,monospace; }
+  .notifyActions { display:flex; gap:7px; flex-wrap:wrap; align-items:center; margin:8px 0; }
+  .notifyActions button { background:transparent; color:var(--mut); border:1px dashed var(--dim); border-radius:7px; padding:6px 9px; font-size:12px; cursor:pointer; }
+  .notifyActions button.primary { background:var(--accent); color:#14171C; border-color:var(--accent); font-weight:800; }
+  .notifyActions button:hover { color:var(--accent); border-color:var(--accent); }
+  .notifyList { border:1px solid var(--line); border-radius:10px; overflow:hidden; font-size:12px; }
+  .notifyItem { display:grid; grid-template-columns:135px 120px 1fr; gap:8px; padding:7px 8px; border-bottom:1px solid var(--line); align-items:start; }
+  .notifyItem:last-child { border-bottom:none; }
+  .notifyType { font-family:ui-monospace,monospace; color:var(--accent); font-weight:800; }
+  .notifyWhen { font-family:ui-monospace,monospace; color:var(--mut); }
+  .notifyTitle { overflow-wrap:anywhere; }
+  .notifyDetails { color:var(--dim); font-size:11.5px; margin-top:2px; }
+  @media (max-width: 740px) { .notifyItem { grid-template-columns:1fr; } }
 
   .tabs { display:flex; gap:4px; margin:12px 0 8px; border-bottom:1px solid var(--line); }
   .tabs button { background:none; border:none; cursor:pointer; padding:6px 10px; font-size:13px; color:var(--dim); border-bottom:2px solid transparent; margin-bottom:-1px; }
@@ -282,6 +324,40 @@
             <tbody id="ledgerRows"></tbody>
           </table>
         </div>
+      </div>
+
+      <div class="notifyCard" id="notifyCard">
+        <div class="notifyHead">
+          <div>
+            <div class="eyebrow">Уведомления</div>
+            <div class="small" style="color:var(--dim);font-size:12px;">Backend уже считает напоминания для веба, Android и будущего Telegram-бота.</div>
+          </div>
+          <div class="status" id="notifyStatus">—</div>
+        </div>
+        <div class="notifyGrid">
+          <label class="notifyOpt"><input type="checkbox" id="notifBrowser"> <b>браузерные уведомления</b></label>
+          <label class="notifyOpt"><input type="checkbox" id="notifShift"> <b>перед сменой</b> за <input type="number" id="notifShiftBefore" min="0" max="1440" step="5"> мин</label>
+          <label class="notifyOpt"><input type="checkbox" id="notifDigest"> <b>вечерний дайджест</b> в <input type="time" id="notifDigestTime"></label>
+          <label class="notifyOpt"><input type="checkbox" id="notifTasks"> <b>задачи дня</b> в <input type="time" id="notifTaskTime"></label>
+          <label class="notifyOpt"><input type="checkbox" id="notifImportant"> <b>важные дни</b> за <input type="number" id="notifImportantDays" min="0" max="366" step="1"> дн. в <input type="time" id="notifImportantTime"></label>
+        </div>
+        <div class="notifyPresets">
+          <span>перед сменой:</span>
+          <button type="button" data-notif-shift-before="15">15 мин</button>
+          <button type="button" data-notif-shift-before="30">30 мин</button>
+          <button type="button" data-notif-shift-before="60">1 час</button>
+          <button type="button" data-notif-shift-before="90">1.5 часа</button>
+          <button type="button" data-notif-shift-before="120">2 часа</button>
+        </div>
+        <div class="notifyActions">
+          <button type="button" class="primary" id="notifSave">Сохранить настройки</button>
+          <button type="button" id="notifPermission">Разрешить в браузере</button>
+          <button type="button" id="notifTest">Тест</button>
+          <button type="button" id="notifRefresh">Текущий месяц</button>
+          <button type="button" id="notifTomorrow">Проверить завтра</button>
+        </div>
+        <div class="notifyListTitle" id="notifyListTitle">напоминания текущего месяца</div>
+        <div class="notifyList" id="notifyList"></div>
       </div>
     </div>
 
@@ -370,6 +446,45 @@
           <button id="creditCancel" class="cancelEdit" type="button" hidden>отмена</button>
           <div class="wideHint">Можно ввести полный интервал датами или коротко: дата начисления + 17:00–20:00. Если вводишь только переработку — план оставь 0; если всю фактическую смену — вычти план.</div>
         </div>
+        <div class="quickScenarioPanel">
+          <div class="quickScenarioHead">
+            <div>
+              <div class="quickScenarioTitle">Быстрые сценарии</div>
+              <div class="quickScenarioContext" id="quickScenarioContext">Выбери день и смену — подскажу подходящие сценарии.</div>
+            </div>
+            <button id="quickClearScenario" type="button" class="quickGhost">очистить поля</button>
+          </div>
+          <div class="scenarioGrid">
+            <button id="quickAfterShift2h" type="button" class="scenarioCard" data-scenario="after2">
+              <span>после смены</span>
+              <b>+2 часа</b>
+              <small>Начинает от конца смены и добавляет 2 часа сверх плана.</small>
+            </button>
+            <button id="quickAfterShift4h" type="button" class="scenarioCard" data-scenario="after4">
+              <span>после смены</span>
+              <b>+4 часа</b>
+              <small>То же самое, но сразу на 4 часа задержки.</small>
+            </button>
+            <button id="quickStayNight" type="button" class="scenarioCard recommended" data-scenario="stayNight">
+              <span>частый сценарий</span>
+              <b>Остался в ночь</b>
+              <small>Считает только время после смены до утра. План не вычитает.</small>
+            </button>
+            <button id="quickFullFact" type="button" class="scenarioCard" data-scenario="fullFact">
+              <span>проверочный режим</span>
+              <b>Смена + ночь</b>
+              <small>Вносит весь фактический интервал и вычитает план смены.</small>
+            </button>
+            <button id="quickSelectedShift" type="button" class="scenarioCard" data-scenario="selectedShift">
+              <span>по настройкам</span>
+              <b>Обычная смена</b>
+              <small>Заполняет интервал, обед и план по выбранной смене.</small>
+            </button>
+          </div>
+          <div class="quickScenarioTips" id="quickScenarioTips">
+            Сценарий только заполняет поля. Перед начислением можно поправить время, обед, план и причину.
+          </div>
+        </div>
         <div class="row">
           <span class="editNotice" id="usageEditNotice" hidden></span>
           <label>Дата <input type="date" id="usageDate"></label>
@@ -441,6 +556,11 @@ const state = {
   tasksByDate: {},                // { 'YYYY-MM-DD': [{id,date,text,done}] }
   importantByDate: {},            // { 'YYYY-MM-DD': [{id,date,title,repeatMode,color}] }
   overtimeAccount: { totalEarnedHours:0, totalUsedHours:0, balanceHours:0, credits:[], usages:[] },
+  notificationSettings: null,
+  reminders: [],
+  notificationPreview: null,
+  notificationPreviewTitle: "напоминания текущего месяца",
+  remindersByDate: {},
   ledgerFilters: { from:"", to:"", status:"all", q:"" },
   editingCreditId: null,
   editingUsageId: null,
@@ -490,6 +610,7 @@ function addToDateMap(map, item){
 }
 function tasksOf(k){ return state.tasksByDate[k] || []; }
 function importantOf(k){ return state.importantByDate[k] || []; }
+function remindersOf(k){ return state.remindersByDate[k] || []; }
 function activeTasksOf(k){ return tasksOf(k).filter(t => !t.done); }
 const repeatLabel = mode => mode === "YEARLY" ? "каждый год" : mode === "MONTHLY" ? "каждый месяц" : "один раз";
 function creditsOf(k){ return (state.overtimeAccount?.credits || []).filter(x => x.workedDate === k); }
@@ -557,6 +678,7 @@ const $ = id => document.getElementById(id);
 const api = {
   async shiftTypes()        { return jfetch("/api/shift-types"); },
   async createShiftType(b)  { return jfetch("/api/shift-types", { method:"POST", body:b }); },
+  async updateShiftType(id, b) { return jfetch(`/api/shift-types/${id}`, { method:"PATCH", body:b }); },
   async deleteShiftType(id) { return jfetch(`/api/shift-types/${id}`, { method:"DELETE" }); },
   async month(y, m)         { const r = monthFromTo(y, m); return jfetch(`/api/calendar?from=${r.from}&to=${r.to}`); },
   async upsertDay(k, b)     { return jfetch(`/api/days/${k}`, { method:"PUT", body:b }); },
@@ -573,6 +695,9 @@ const api = {
   async createOvertimeUsage(b) { return jfetch("/api/overtime/usages", { method:"POST", body:b }); },
   async updateOvertimeUsage(id, b) { return jfetch(`/api/overtime/usages/${id}`, { method:"PATCH", body:b }); },
   async deleteOvertimeUsage(id) { return jfetch(`/api/overtime/usages/${id}`, { method:"DELETE" }); },
+  async updateNotificationSettings(b) { return jfetch("/api/notifications/settings", { method:"PATCH", body:b }); },
+  async notificationUpcoming(from, to, includePast = true) { return jfetch(`/api/notifications/upcoming?from=${from}&to=${to}&includePast=${includePast ? "true" : "false"}`); },
+  async notificationTomorrow() { return jfetch("/api/notifications/tomorrow"); },
 };
 
 async function jfetch(url, opts = {}) {
@@ -713,7 +838,8 @@ function renderCalendar(){
     const important = importantOf(k);
     const activeTasks = activeTasksOf(k);
     const allTasks = tasksOf(k);
-    if (important.length || activeTasks.length || allTasks.length) {
+    const reminders = remindersOf(k);
+    if (important.length || activeTasks.length || allTasks.length || reminders.length) {
       const marks = document.createElement("span");
       marks.className = "miniMarks";
       if (important.length) {
@@ -736,6 +862,13 @@ function renderCalendar(){
         tm.textContent = "✓";
         tm.title = "Все задачи выполнены";
         marks.appendChild(tm);
+      }
+      if (reminders.length) {
+        const nm = document.createElement("span");
+        nm.className = "notifyMark";
+        nm.textContent = "🔔";
+        nm.title = `Напоминания: ${reminders.length}`;
+        marks.appendChild(nm);
       }
       cell.appendChild(marks);
     }
@@ -958,6 +1091,7 @@ function updateOvertimeBalanceLabel(){
 function renderOvertimeControls(){
   updateOvertimeBalanceLabel();
   renderOvertimeDayDetails();
+  renderQuickScenarioContext();
   updateAccSummaries();
 }
 
@@ -977,6 +1111,7 @@ function resetOvertimeForms(k = state.selected){
   if ($("creditHours")) $("creditHours").value = "0";
   if ($("creditReason")) $("creditReason").value = "";
   if ($("creditCalcHint")) $("creditCalcHint").textContent = "можно вручную";
+  clearScenarioHighlight();
   if ($("creditEditNotice")) { $("creditEditNotice").hidden = true; $("creditEditNotice").textContent = ""; }
   if ($("creditCancel")) $("creditCancel").hidden = true;
   if ($("creditAdd")) $("creditAdd").textContent = "Начислить";
@@ -1144,6 +1279,203 @@ function setNightOvertimePreset(){
   $("creditPlanned").value = "0";
   updateOvertimeCalcPreview();
 }
+function selectedCreditBaseDate(){
+  return state.selected || $("creditDate")?.value || todayKey();
+}
+
+function localDateTimeToDate(value){
+  if (!value) return null;
+  const [date, time] = value.split("T");
+  if (!date || !time) return null;
+  const [y, m, d] = date.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  const dt = new Date(y, m - 1, d, hh, mm || 0);
+  return Number.isFinite(dt.getTime()) ? dt : null;
+}
+
+function dateToLocalInputValue(dt){
+  return `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`;
+}
+
+function addMinutesToLocalInput(value, minutes){
+  const dt = localDateTimeToDate(value);
+  if (!dt) return "";
+  dt.setMinutes(dt.getMinutes() + minutes);
+  return dateToLocalInputValue(dt);
+}
+
+function defaultOvertimeEndAfterShift(base, st){
+  // Для дневной смены обычно удобно предлагать окончание в 08:00 следующего дня.
+  // Для ночной или неизвестной смены оставляем конец через 2 часа после окончания как безопасную заготовку.
+  const name = String(st?.name || "").toLowerCase();
+  if (name.includes("днев") || (st?.endTime && st.endTime >= "12:00" && st.endTime <= "23:59")) {
+    return setTimeOnDate(dateKeyOffset(base, 1), "08:00");
+  }
+  return addMinutesToLocalInput(setTimeOnDate(base, st?.endTime || "17:00"), 120);
+}
+
+function clearScenarioHighlight(){
+  document.querySelectorAll(".scenarioCard.active").forEach(x => x.classList.remove("active"));
+}
+
+function highlightScenario(id){
+  clearScenarioHighlight();
+  if (!id) return;
+  const el = document.querySelector(`[data-scenario="${id}"]`);
+  if (el) el.classList.add("active");
+}
+
+function formatDateHuman(k){
+  if (!k) return "—";
+  const [y, m, d] = k.split("-").map(Number);
+  if (!y || !m || !d) return k;
+  return `${pad(d)}.${pad(m)}.${y}`;
+}
+
+function quickScenarioRequirements(){
+  const st = stOf(state.selected);
+  return {
+    hasSelected: !!state.selected,
+    hasShift: !!st,
+    hasEnd: !!(st && st.endTime),
+    hasFullTime: !!(st && st.startTime && st.endTime),
+    shift: st
+  };
+}
+
+function renderQuickScenarioContext(){
+  const ctx = $("quickScenarioContext");
+  const tips = $("quickScenarioTips");
+  if (!ctx || !tips) return;
+  const r = quickScenarioRequirements();
+  const idsNeedEnd = ["quickAfterShift2h", "quickAfterShift4h", "quickStayNight"];
+  const idsNeedFull = ["quickFullFact", "quickSelectedShift"];
+
+  for (const id of [...idsNeedEnd, ...idsNeedFull]) {
+    const el = $(id);
+    if (!el) continue;
+    const ok = idsNeedFull.includes(id) ? r.hasFullTime : r.hasEnd;
+    el.disabled = !ok;
+  }
+
+  if (!r.hasSelected) {
+    ctx.textContent = "День не выбран. Сначала ткни дату в календаре.";
+    tips.textContent = "Карточки разблокируются, когда у выбранного дня будет смена со временем.";
+    return;
+  }
+  if (!r.hasShift) {
+    ctx.textContent = `${formatDateHuman(state.selected)} · смена не выбрана`;
+    tips.textContent = "Поставь дневную, ночную или кастомную смену — тогда сценарии смогут взять время начала/конца.";
+    return;
+  }
+
+  const st = r.shift;
+  const time = st.startTime && st.endTime ? `${st.startTime}–${st.endTime}` : "время не настроено";
+  const plan = shiftPlannedHours(st) ? `план ${fmtHours(shiftPlannedHours(st))} ч` : "план 0 ч";
+  const br = st.breakMinutes ? `обед ${st.breakMinutes} мин` : "обед 0 мин";
+  ctx.textContent = `${formatDateHuman(state.selected)} · ${st.name}: ${time}, ${plan}, ${br}`;
+  if (!r.hasEnd) {
+    tips.textContent = "У смены нет времени окончания. Нажми “настроить” в списке смен и задай время.";
+  } else if (!r.hasFullTime) {
+    tips.textContent = "Можно использовать сценарии после смены. Для “Смена + ночь” и “Обычная смена” нужно ещё время начала.";
+  } else {
+    tips.textContent = "Совет: если ты отработал смену и остался до утра — выбирай “Остался в ночь”. Если заносишь весь фактический интервал — “Смена + ночь”.";
+  }
+}
+
+function fillCreditScenario({start, end, breakMinutes = 0, plannedHours = 0, reason = "", hint = "сценарий"}){
+  if (!start || !end) return setSave("err", "не получилось собрать интервал сценария");
+  $("creditDate").value = start.slice(0, 10);
+  $("creditTimeRange").value = "";
+  $("creditStart").value = start;
+  $("creditEnd").value = end;
+  $("creditBreak").value = String(breakMinutes || 0);
+  $("creditPlanned").value = fmtHours(plannedHours || 0);
+  if (reason && !$("creditReason").value.trim()) $("creditReason").value = reason;
+  updateOvertimeCalcPreview();
+  setSave("saved", hint);
+}
+
+function currentSelectedShiftOrError(){
+  const st = stOf(state.selected);
+  if (!state.selected) { setSave("err", "сначала выбери день в календаре"); return null; }
+  if (!st) { setSave("err", "на выбранном дне нет смены"); return null; }
+  return st;
+}
+
+function quickAfterShift(hours){
+  highlightScenario(hours === 2 ? "after2" : "after4");
+  const st = currentSelectedShiftOrError();
+  if (!st) return;
+  if (!st.endTime) return setSave("err", "у смены не указано время окончания");
+  const base = selectedCreditBaseDate();
+  const start = setTimeOnDate(base, st.endTime);
+  const end = addMinutesToLocalInput(start, Math.round(hours * 60));
+  fillCreditScenario({
+    start,
+    end,
+    breakMinutes: 0,
+    plannedHours: 0,
+    reason: `задержался после смены на ${fmtHours(hours)} ч`,
+    hint: `+${fmtHours(hours)} ч после смены`
+  });
+}
+
+function quickStayNight(){
+  highlightScenario("stayNight");
+  const st = currentSelectedShiftOrError();
+  if (!st) return;
+  if (!st.endTime) return setSave("err", "у смены не указано время окончания");
+  const base = selectedCreditBaseDate();
+  const start = setTimeOnDate(base, st.endTime);
+  const end = defaultOvertimeEndAfterShift(base, st);
+  fillCreditScenario({
+    start,
+    end,
+    breakMinutes: 0,
+    plannedHours: 0,
+    reason: "остался в ночь",
+    hint: "остался в ночь"
+  });
+}
+
+function quickFullFactWithNight(){
+  highlightScenario("fullFact");
+  const st = currentSelectedShiftOrError();
+  if (!st) return;
+  if (!st.startTime || !st.endTime) return setSave("err", "у смены не указано время начала/конца");
+  const base = selectedCreditBaseDate();
+  const start = setTimeOnDate(base, st.startTime);
+  const end = defaultOvertimeEndAfterShift(base, st);
+  fillCreditScenario({
+    start,
+    end,
+    breakMinutes: st.breakMinutes || 0,
+    plannedHours: shiftPlannedHours(st),
+    reason: "смена + ППР/ночь",
+    hint: "вся фактическая смена с вычетом плана"
+  });
+}
+
+function quickSelectedShift(){
+  highlightScenario("selectedShift");
+  const st = currentSelectedShiftOrError();
+  if (!st) return;
+  if (!st.startTime || !st.endTime) return setSave("err", "у смены не указано время начала/конца");
+  const base = selectedCreditBaseDate();
+  const start = setTimeOnDate(base, st.startTime);
+  const endDate = st.endTime <= st.startTime ? dateKeyOffset(base, 1) : base;
+  const end = setTimeOnDate(endDate, st.endTime);
+  fillCreditScenario({
+    start,
+    end,
+    breakMinutes: st.breakMinutes || 0,
+    plannedHours: shiftPlannedHours(st),
+    reason: "обычная смена целиком",
+    hint: "обычная смена с вычетом плана"
+  });
+}
+
 
 function buildCreditPayload(){
   const calc = overtimeCalcFromInputs();
@@ -1490,6 +1822,12 @@ $("creditAdd").addEventListener("click", addOvertimeCredit);
 $("creditCancel").addEventListener("click", cancelCreditEdit);
 $("creditNightShiftPreset").addEventListener("click", setNightShiftPreset);
 $("creditNightPreset").addEventListener("click", setNightOvertimePreset);
+$("quickAfterShift2h").addEventListener("click", () => quickAfterShift(2));
+$("quickAfterShift4h").addEventListener("click", () => quickAfterShift(4));
+$("quickStayNight").addEventListener("click", quickStayNight);
+$("quickFullFact").addEventListener("click", quickFullFactWithNight);
+$("quickSelectedShift").addEventListener("click", quickSelectedShift);
+$("quickClearScenario").addEventListener("click", () => resetOvertimeForms(state.selected || $("creditDate")?.value || todayKey()));
 $("creditPlanByShift").addEventListener("click", () => {
   const st = stOf(state.selected);
   const plan = shiftPlannedHours(st);
@@ -1739,6 +2077,7 @@ function renderChips(){
   box.appendChild(plus);
   renderCustomList();
   if (!$("tplBox")?.hidden) renderScheduleControls();
+  renderQuickScenarioContext();
   updateAccSummaries();
 }
 
@@ -1916,8 +2255,9 @@ function renderCustomList(){
     const row = document.createElement("div");
     row.style.display = "flex"; row.style.alignItems = "center"; row.style.gap = "8px"; row.style.flexWrap = "wrap";
     const meta = shiftMetaText(s);
+    const notifyMeta = s.notificationsEnabled === false ? " · без уведомлений" : (s.notificationMinutesBefore != null ? ` · напомнить за ${s.notificationMinutesBefore}м` : "");
     row.innerHTML = `<span class="dot" style="width:10px;height:10px;border-radius:3px;background:${s.color};display:inline-block"></span>
-      <span>${esc(s.name)}${shiftPlannedHours(s) ? ` · план ${fmtHours(shiftPlannedHours(s))}ч` : ""}${meta ? ` <span style="color:var(--dim)">· ${esc(meta)}</span>` : ""}</span>`;
+      <span>${esc(s.name)}${shiftPlannedHours(s) ? ` · план ${fmtHours(shiftPlannedHours(s))}ч` : ""}${meta ? ` <span style="color:var(--dim)">· ${esc(meta)}</span>` : ""}<span style="color:var(--dim)">${esc(notifyMeta)}</span></span>`;
 
     const edit = document.createElement("button");
     edit.className = "del"; edit.textContent = "настроить";
@@ -1982,6 +2322,21 @@ async function editShiftType(id){
   if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) return setSave("err", "план: от 0 до 24 часов");
   patch.plannedHours = plannedHours;
 
+  const notifRaw = prompt("Уведомлять перед этой сменой? да/нет", s.notificationsEnabled === false ? "нет" : "да");
+  if (notifRaw === null) return;
+  const notifClean = notifRaw.trim().toLowerCase();
+  patch.notificationsEnabled = !(notifClean === "нет" || notifClean === "no" || notifClean === "0" || notifClean === "false");
+
+  const minutesRaw = prompt("За сколько минут напоминать именно эту смену? Пусто = глобальная настройка", s.notificationMinutesBefore ?? "");
+  if (minutesRaw === null) return;
+  if (minutesRaw.trim()) {
+    const minutes = Number(minutesRaw);
+    if (!Number.isFinite(minutes) || minutes < 0 || minutes > 1440) return setSave("err", "напоминание смены: от 0 до 1440 минут");
+    patch.notificationMinutesBefore = Math.round(minutes);
+  } else {
+    patch.notificationMinutesBefore = -1;
+  }
+
   setSave("saving");
   try {
     const updated = await api.updateShiftType(id, patch);
@@ -2028,6 +2383,126 @@ $("todayBtn").addEventListener("click", async () => {
   selectDay(todayKey());
 });
 
+
+
+/* ─── Уведомления ───────────────────────────────────────────── */
+function typeLabel(type){
+  return type === "SHIFT" ? "смена" : type === "TASK" ? "задача" : type === "IMPORTANT_DAY" ? "важно" : type === "TOMORROW_DIGEST" ? "дайджест" : type;
+}
+function fmtReminderAt(value){
+  if (!value) return "";
+  const d = value.slice(0,10), t = value.slice(11,16);
+  const [,m,day] = d.split("-");
+  return `${day}.${m} ${t}`;
+}
+function browserPermissionText(){
+  if (!("Notification" in window)) return "браузер не поддерживает";
+  return Notification.permission === "granted" ? "браузер: разрешено" : Notification.permission === "denied" ? "браузер: запрещено" : "браузер: не разрешено";
+}
+function renderNotifications(){
+  const s = state.notificationSettings;
+  if (!$("notifyCard") || !s) return;
+  $("notifBrowser").checked = !!s.browserNotificationsEnabled;
+  $("notifShift").checked = !!s.shiftRemindersEnabled;
+  $("notifShiftBefore").value = s.shiftReminderMinutesBefore ?? 60;
+  $("notifDigest").checked = !!s.tomorrowDigestEnabled;
+  $("notifDigestTime").value = s.tomorrowDigestTime || "19:00";
+  $("notifTasks").checked = !!s.taskRemindersEnabled;
+  $("notifTaskTime").value = s.taskReminderTime || "09:00";
+  $("notifImportant").checked = !!s.importantDayRemindersEnabled;
+  $("notifImportantDays").value = s.importantDayDaysBefore ?? 1;
+  $("notifImportantTime").value = s.importantDayReminderTime || "09:00";
+  const sourceItems = state.notificationPreview || state.reminders;
+  $("notifyStatus").textContent = `${sourceItems.length} шт · ${browserPermissionText()}`;
+  if ($("notifyListTitle")) $("notifyListTitle").textContent = state.notificationPreviewTitle || "напоминания текущего месяца";
+  const list = $("notifyList");
+  list.innerHTML = "";
+  const items = sourceItems.slice(0, 24);
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "notifyItem";
+    empty.innerHTML = `<span class="notifyWhen">—</span><span class="notifyType">пусто</span><span class="notifyTitle"><span class="notifyDetails">${esc(state.notificationPreview ? "На завтра напоминаний нет." : "На текущий месяц напоминаний нет.")}</span></span>`;
+    list.appendChild(empty);
+    return;
+  }
+  for (const r of items) {
+    const row = document.createElement("div");
+    row.className = "notifyItem";
+    row.innerHTML = `<span class="notifyWhen">${esc(fmtReminderAt(r.remindAt))}</span><span class="notifyType">${esc(typeLabel(r.type))}</span><span class="notifyTitle">${esc(r.title || "")}<div class="notifyDetails">${esc(r.details || "")}</div></span>`;
+    list.appendChild(row);
+  }
+}
+async function saveNotificationSettings(extra = {}){
+  setSave("saving");
+  try {
+    const body = {
+      browserNotificationsEnabled: $("notifBrowser").checked,
+      shiftRemindersEnabled: $("notifShift").checked,
+      shiftReminderMinutesBefore: Number($("notifShiftBefore").value || 0),
+      tomorrowDigestEnabled: $("notifDigest").checked,
+      tomorrowDigestTime: $("notifDigestTime").value || "19:00",
+      taskRemindersEnabled: $("notifTasks").checked,
+      taskReminderTime: $("notifTaskTime").value || "09:00",
+      importantDayRemindersEnabled: $("notifImportant").checked,
+      importantDayDaysBefore: Number($("notifImportantDays").value || 0),
+      importantDayReminderTime: $("notifImportantTime").value || "09:00",
+      ...extra
+    };
+    state.notificationSettings = await api.updateNotificationSettings(body);
+    state.notificationPreview = null;
+    state.notificationPreviewTitle = "напоминания текущего месяца";
+    const r = monthFromTo();
+    state.reminders = await api.notificationUpcoming(r.from, r.to);
+    state.remindersByDate = {};
+    for (const x of state.reminders) addToDateMap(state.remindersByDate, { ...x, date:x.sourceDate });
+    setSave("saved");
+    renderNotifications();
+    renderCalendar();
+  } catch (err) { console.error(err); setSave("err", err.message); }
+}
+async function requestNotificationPermission(){
+  if (!("Notification" in window)) { alert("Этот браузер не поддерживает Notification API"); return; }
+  const perm = await Notification.requestPermission();
+  await saveNotificationSettings({ browserNotificationsEnabled: perm === "granted" });
+}
+function testNotification(){
+  if (!("Notification" in window) || Notification.permission !== "granted") { alert("Сначала разреши уведомления в браузере"); return; }
+  new Notification("Shift Calendar", { body:"Тестовое уведомление работает. Надёжные будильники будем делать в Android." });
+}
+async function showTomorrowNotifications(){
+  setSave("saving");
+  try {
+    state.notificationPreview = await api.notificationTomorrow();
+    state.notificationPreviewTitle = "напоминания на завтра";
+    setSave("saved");
+    renderNotifications();
+  } catch (err) { console.error(err); setSave("err", err.message); }
+}
+async function showMonthNotifications(){
+  setSave("saving");
+  try {
+    const r = monthFromTo();
+    state.notificationPreview = null;
+    state.notificationPreviewTitle = "напоминания текущего месяца";
+    state.reminders = await api.notificationUpcoming(r.from, r.to, true);
+    state.remindersByDate = {};
+    for (const x of state.reminders) addToDateMap(state.remindersByDate, { ...x, date:x.sourceDate });
+    setSave("saved");
+    renderNotifications();
+    renderCalendar();
+  } catch (err) { console.error(err); setSave("err", err.message); }
+}
+
+$("notifSave").addEventListener("click", () => saveNotificationSettings());
+$("notifPermission").addEventListener("click", requestNotificationPermission);
+$("notifTest").addEventListener("click", testNotification);
+$("notifRefresh").addEventListener("click", showMonthNotifications);
+$("notifTomorrow").addEventListener("click", showTomorrowNotifications);
+document.querySelectorAll("[data-notif-shift-before]").forEach(btn => btn.addEventListener("click", () => {
+  $("notifShiftBefore").value = btn.dataset.notifShiftBefore;
+  $("notifShift").checked = true;
+}));
+
 /* ─── Загрузка данных ───────────────────────────────────────── */
 async function loadMonth(){
   try {
@@ -2037,19 +2512,25 @@ async function loadMonth(){
       state.days = {};
       state.tasksByDate = {};
       state.importantByDate = {};
+      state.remindersByDate = {};
       for (const e of bundle) state.days[e.date] = normalizeDay(e);
       state.overtimeAccount = await api.overtimeAccount();
     } else {
       state.days = {};
       state.tasksByDate = {};
       state.importantByDate = {};
+      state.remindersByDate = {};
       if (bundle.shiftTypes) state.shiftTypes = bundle.shiftTypes;
       for (const e of bundle.days || []) state.days[e.date] = normalizeDay(e);
       for (const t of bundle.tasks || []) addToDateMap(state.tasksByDate, t);
       for (const i of bundle.importantDays || []) addToDateMap(state.importantByDate, i);
+      state.notificationSettings = bundle.notificationSettings || state.notificationSettings;
+      state.reminders = bundle.reminders || [];
+      for (const r of state.reminders) addToDateMap(state.remindersByDate, { ...r, date:r.sourceDate });
       if (bundle.overtimeAccount) state.overtimeAccount = bundle.overtimeAccount;
     }
     setSave("");
+    renderNotifications();
   } catch (err) { console.error(err); setSave("err", err.message); }
 }
 

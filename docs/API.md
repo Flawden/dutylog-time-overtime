@@ -683,3 +683,94 @@ q=ППР                // необязательно, поиск по дате/
 ```
 
 CSV открывается в Excel с кириллицей за счёт UTF-8 BOM. XLS — Excel-совместимая HTML-таблица, поэтому не требует отдельной зависимости вроде Apache POI.
+
+## Notifications / reminders
+
+### GET `/api/notifications/settings`
+
+Возвращает настройки напоминаний текущего пользователя.
+
+### PATCH `/api/notifications/settings`
+
+Все поля опциональны.
+
+```json
+{
+  "browserNotificationsEnabled": true,
+  "shiftRemindersEnabled": true,
+  "shiftReminderMinutesBefore": 60,
+  "tomorrowDigestEnabled": false,
+  "tomorrowDigestTime": "19:00",
+  "taskRemindersEnabled": true,
+  "taskReminderTime": "09:00",
+  "importantDayRemindersEnabled": true,
+  "importantDayDaysBefore": 1,
+  "importantDayReminderTime": "09:00"
+}
+```
+
+### GET `/api/notifications/upcoming?from=2026-07-01&to=2026-07-31`
+
+Возвращает рассчитанные напоминания за диапазон. Эти данные может использовать веб, Android или Telegram-бот.
+
+Типы напоминаний:
+
+- `SHIFT` — перед сменой;
+- `TASK` — невыполненная задача дня;
+- `IMPORTANT_DAY` — важный день;
+- `TOMORROW_DIGEST` — вечерний дайджест на завтра.
+
+Пример ответа:
+
+```json
+[
+  {
+    "id": "shift:2026-07-04",
+    "type": "SHIFT",
+    "sourceDate": "2026-07-04",
+    "remindAt": "2026-07-04T05:30:00",
+    "title": "Смена: Дневная",
+    "details": "Начало 06:30, напоминание за 60 мин.",
+    "priority": 10
+  }
+]
+```
+
+## Уведомления v17.1
+
+### Настройки смены для уведомлений
+
+`ShiftTypeDto` теперь содержит:
+
+```json
+{
+  "notificationsEnabled": true,
+  "notificationMinutesBefore": 90
+}
+```
+
+`notificationMinutesBefore = null` означает: использовать глобальную настройку из `/api/notifications/settings`.
+
+Для сброса индивидуального значения через `PATCH /api/shift-types/{id}` можно передать:
+
+```json
+{
+  "notificationMinutesBefore": -1
+}
+```
+
+### Проверить напоминания на завтра
+
+```http
+GET /api/notifications/tomorrow
+```
+
+Возвращает список рассчитанных напоминаний для событий завтрашнего дня.
+
+### Напоминания за период
+
+```http
+GET /api/notifications/upcoming?from=2026-07-01&to=2026-07-31&includePast=true
+```
+
+`includePast=false` скрывает напоминания, время которых уже прошло.

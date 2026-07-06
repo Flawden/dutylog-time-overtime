@@ -13,6 +13,7 @@ import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.DayTask;
 import ru.daniil.shifts.model.ImportantDay;
 import ru.daniil.shifts.model.RepeatMode;
+import ru.daniil.shifts.model.NotificationSettings;
 import ru.daniil.shifts.model.ShiftType;
 
 import java.util.List;
@@ -35,7 +36,9 @@ public final class Dtos {
             String startTime,
             String endTime,
             int breakMinutes,
-            double plannedHours
+            double plannedHours,
+            boolean notificationsEnabled,
+            Integer notificationMinutesBefore
     ) {
         public static ShiftTypeDto from(ShiftType s) {
             return new ShiftTypeDto(
@@ -47,7 +50,9 @@ public final class Dtos {
                     s.getStartTime() != null ? s.getStartTime().toString() : null,
                     s.getEndTime() != null ? s.getEndTime().toString() : null,
                     s.getBreakMinutes(),
-                    s.effectivePlannedHours()
+                    s.effectivePlannedHours(),
+                    s.isNotificationsEnabled(),
+                    s.getNotificationMinutesBefore()
             );
         }
     }
@@ -77,7 +82,13 @@ public final class Dtos {
 
             @DecimalMin(value = "0.0", message = "Плановые часы не могут быть отрицательными")
             @DecimalMax(value = "24.0", message = "Плановые часы не могут быть больше 24")
-            Double plannedHours
+            Double plannedHours,
+
+            Boolean notificationsEnabled,
+
+            @Min(value = -1, message = "Напоминание смены не может быть меньше -1")
+            @Max(value = 1440, message = "Напоминание смены: максимум 1440 минут")
+            Integer notificationMinutesBefore
     ) {}
 
     /** Обновление типа смены. Все поля опциональны. */
@@ -104,7 +115,13 @@ public final class Dtos {
 
             @DecimalMin(value = "0.0", message = "Плановые часы не могут быть отрицательными")
             @DecimalMax(value = "24.0", message = "Плановые часы не могут быть больше 24")
-            Double plannedHours
+            Double plannedHours,
+
+            Boolean notificationsEnabled,
+
+            @Min(value = -1, message = "Напоминание смены не может быть меньше -1")
+            @Max(value = 1440, message = "Напоминание смены: максимум 1440 минут")
+            Integer notificationMinutesBefore
     ) {}
 
     /** Запись дня наружу: дата в ISO (yyyy-MM-dd). */
@@ -230,6 +247,70 @@ public final class Dtos {
             RepeatMode repeatMode,
             @Pattern(regexp = "#[0-9a-fA-F]{6}", message = "Цвет должен быть в формате #RRGGBB")
             String color
+    ) {}
+
+
+    /** Настройки уведомлений и напоминаний пользователя. */
+    public record NotificationSettingsDto(
+            boolean browserNotificationsEnabled,
+            boolean shiftRemindersEnabled,
+            int shiftReminderMinutesBefore,
+            boolean tomorrowDigestEnabled,
+            String tomorrowDigestTime,
+            boolean taskRemindersEnabled,
+            String taskReminderTime,
+            boolean importantDayRemindersEnabled,
+            int importantDayDaysBefore,
+            String importantDayReminderTime,
+            String updatedAt
+    ) {
+        public static NotificationSettingsDto from(NotificationSettings s) {
+            return new NotificationSettingsDto(
+                    s.isBrowserNotificationsEnabled(),
+                    s.isShiftRemindersEnabled(),
+                    s.getShiftReminderMinutesBefore(),
+                    s.isTomorrowDigestEnabled(),
+                    s.getTomorrowDigestTime().toString(),
+                    s.isTaskRemindersEnabled(),
+                    s.getTaskReminderTime().toString(),
+                    s.isImportantDayRemindersEnabled(),
+                    s.getImportantDayDaysBefore(),
+                    s.getImportantDayReminderTime().toString(),
+                    s.getUpdatedAt().toString()
+            );
+        }
+    }
+
+    /** Обновление настроек уведомлений. Все поля опциональны. */
+    public record NotificationSettingsUpdateRequest(
+            Boolean browserNotificationsEnabled,
+            Boolean shiftRemindersEnabled,
+            @Min(value = 0, message = "Напоминание перед сменой не может быть отрицательным")
+            @Max(value = 1440, message = "Напоминание перед сменой: максимум 1440 минут")
+            Integer shiftReminderMinutesBefore,
+            Boolean tomorrowDigestEnabled,
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время дайджеста должно быть в формате HH:mm")
+            String tomorrowDigestTime,
+            Boolean taskRemindersEnabled,
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время напоминаний о задачах должно быть в формате HH:mm")
+            String taskReminderTime,
+            Boolean importantDayRemindersEnabled,
+            @Min(value = 0, message = "Дней до важного дня не может быть меньше 0")
+            @Max(value = 366, message = "Дней до важного дня: максимум 366")
+            Integer importantDayDaysBefore,
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время напоминаний о важных днях должно быть в формате HH:mm")
+            String importantDayReminderTime
+    ) {}
+
+    /** Рассчитанное напоминание для веба, Android или будущего Telegram-бота. */
+    public record NotificationReminderDto(
+            String id,
+            String type,
+            String sourceDate,
+            String remindAt,
+            String title,
+            String details,
+            int priority
     ) {}
 
 
@@ -502,6 +583,8 @@ public final class Dtos {
             List<TaskDto> tasks,
             List<ImportantDayOccurrenceDto> importantDays,
             OvertimeSummaryDto overtime,
-            OvertimeAccountDto overtimeAccount
+            OvertimeAccountDto overtimeAccount,
+            NotificationSettingsDto notificationSettings,
+            List<NotificationReminderDto> reminders
     ) {}
 }

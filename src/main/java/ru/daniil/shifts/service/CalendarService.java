@@ -7,6 +7,8 @@ import ru.daniil.shifts.dto.Dtos.DayDto;
 import ru.daniil.shifts.dto.Dtos.ImportantDayOccurrenceDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeSummaryDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
+import ru.daniil.shifts.dto.Dtos.NotificationReminderDto;
+import ru.daniil.shifts.dto.Dtos.NotificationSettingsDto;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeDto;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.model.AppUser;
@@ -21,17 +23,20 @@ public class CalendarService {
     private final OvertimeService overtimeService;
     private final TaskService taskService;
     private final ImportantDayService importantDayService;
+    private final NotificationService notificationService;
 
     public CalendarService(DayEntryService dayEntryService,
                            ShiftTypeService shiftTypeService,
                            OvertimeService overtimeService,
                            TaskService taskService,
-                           ImportantDayService importantDayService) {
+                           ImportantDayService importantDayService,
+                           NotificationService notificationService) {
         this.dayEntryService = dayEntryService;
         this.shiftTypeService = shiftTypeService;
         this.overtimeService = overtimeService;
         this.taskService = taskService;
         this.importantDayService = importantDayService;
+        this.notificationService = notificationService;
     }
 
     @Transactional
@@ -43,6 +48,8 @@ public class CalendarService {
         List<ImportantDayOccurrenceDto> importantDays = importantDayService.occurrences(user, from, to);
         OvertimeSummaryDto overtime = overtimeService.summary(user, from, to);
         OvertimeAccountDto overtimeAccount = overtimeService.account(user);
-        return new CalendarRangeDto(from.toString(), to.toString(), shiftTypes, dayEntries, tasks, importantDays, overtime, overtimeAccount);
+        NotificationSettingsDto notificationSettings = notificationService.settings(user);
+        List<NotificationReminderDto> reminders = notificationService.upcoming(user, from, to);
+        return new CalendarRangeDto(from.toString(), to.toString(), shiftTypes, dayEntries, tasks, importantDays, overtime, overtimeAccount, notificationSettings, reminders);
     }
 }
