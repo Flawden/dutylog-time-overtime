@@ -10,6 +10,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import ru.daniil.shifts.repo.UserRepository;
 
@@ -39,11 +41,23 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, BearerTokenAuthenticationFilter bearerTokenAuthenticationFilter) throws Exception {
+        // CSRF для SPA: токен кладётся в cookie XSRF-TOKEN (доступную JS),
+        // фронтенд возвращает его заголовком X-XSRF-TOKEN на каждом
+        // изменяющем запросе (это делает jfetch в app.js).
+        CookieCsrfTokenRepository csrfRepo = CookieCsrfTokenRepository.withHttpOnlyFalse();
+        CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
+        // null = резолвить токен сразу на каждом запросе, чтобы cookie
+        // гарантированно появилась ещё до первого POST (стандартный SPA-рецепт).
+        csrfHandler.setCsrfRequestAttributeName(null);
+
         http
-            // CSRF отключён сознательно: без него fetch-запросы (PUT/POST/DELETE)
-            // работают без танцев с токенами. Перед выкладкой в интернет —
-            // включить обратно и пробрасывать токен, см. README.
-            .csrf(csrf -> csrf.disable())
+            .csrf(csrf -> csrf
+                .csrfTokenRepository(csrfRepo)
+                .csrfTokenRequestHandler(csrfHandler)
+                // Мобильный API stateless на Bearer-токенах — CSRF-атака на него
+                // невозможна (браузер не подставит Authorization сам), поэтому исключаем.
+                // h2-console — дев-инструмент со своими формами.
+                .ignoringRequestMatchers("/api/mobile/**", "/h2-console/**"))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers(
                         "/login.html",

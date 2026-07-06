@@ -6,7 +6,7 @@ services:
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-shift_calendar}
       POSTGRES_USER: ${POSTGRES_USER:-shift_calendar}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change_me_strong_password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Задай POSTGRES_PASSWORD в .env}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -26,7 +26,7 @@ services:
       SPRING_PROFILES_ACTIVE: prod
       SPRING_DATASOURCE_URL: ${SPRING_DATASOURCE_URL:-jdbc:postgresql://db:5432/shift_calendar}
       SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME:-shift_calendar}
-      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:-change_me_strong_password}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD:?Задай SPRING_DATASOURCE_PASSWORD в .env}
     ports:
       - "8080:8080"
 

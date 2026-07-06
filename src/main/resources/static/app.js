@@ -222,10 +222,22 @@ const api = {
   async deleteQuickScenario(id) { return jfetch(`/api/quick-scenarios/${id}`, { method:"DELETE" }); },
 };
 
+/* CSRF: Spring кладёт токен в cookie XSRF-TOKEN, мы возвращаем его заголовком */
+function csrfToken(){
+  const m = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
 async function jfetch(url, opts = {}) {
+  const method = opts.method || "GET";
+  const headers = opts.body ? { "Content-Type": "application/json" } : {};
+  if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+    const token = csrfToken();
+    if (token) headers["X-XSRF-TOKEN"] = token;
+  }
   const res = await fetch(url, {
-    method: opts.method || "GET",
-    headers: opts.body ? { "Content-Type": "application/json" } : {},
+    method,
+    headers,
     body: opts.body ? JSON.stringify(opts.body) : undefined,
   });
   if (res.status === 401) {
@@ -2612,7 +2624,7 @@ async function loadMonth(){
 /* ─── Пользователь ──────────────────────────────────────────── */
 $("logout").addEventListener("click", async () => {
   try { await flushPendingSave(); } catch (e) { /* не блокируем выход */ }
-  try { await fetch("/logout", { method: "POST" }); } catch (e) { /* пофиг, всё равно уходим */ }
+  try { await fetch("/logout", { method: "POST", headers: csrfToken() ? { "X-XSRF-TOKEN": csrfToken() } : {} }); } catch (e) { /* пофиг, всё равно уходим */ }
   window.location.href = "/login.html";
 });
 

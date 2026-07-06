@@ -45,6 +45,7 @@
 
   <!-- Форма входа: обычный POST, его обрабатывает Spring Security -->
   <form id="loginForm" method="post" action="/perform_login">
+    <input type="hidden" name="_csrf" id="csrfField">
     <label for="lu">Имя пользователя</label>
     <input id="lu" name="username" autocomplete="username" required>
     <label for="lp">Пароль</label>
@@ -67,6 +68,14 @@
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
+
+/* CSRF: Spring кладёт токен в cookie XSRF-TOKEN при загрузке страницы */
+function csrfToken(){
+  const m = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+  return m ? decodeURIComponent(m[1]) : "";
+}
+$("csrfField").value = csrfToken();
+$("loginForm").addEventListener("submit", () => { $("csrfField").value = csrfToken(); });
 
 function setTab(reg) {
   $("tabLogin").classList.toggle("on", !reg);
@@ -99,7 +108,7 @@ $("regForm").addEventListener("submit", async (e) => {
   try {
     const res = await fetch("/api/auth/register", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-XSRF-TOKEN": csrfToken() },
       body: JSON.stringify({ username, password }),
     });
     if (!res.ok) {
@@ -112,6 +121,7 @@ $("regForm").addEventListener("submit", async (e) => {
     setMsg("Готово, вхожу…", "ok");
     $("lu").value = username;
     $("lp").value = password;
+    $("csrfField").value = csrfToken();
     $("loginForm").submit();
   } catch (err) {
     setMsg("Сеть недоступна", "err");
