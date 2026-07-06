@@ -90,8 +90,28 @@
   .mgr .custom .tag { margin-left:auto; color:var(--dim); font-size:11px; font-family:ui-monospace,monospace; }
 
   .schedule { margin:10px 0 8px; border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:9px 0; }
-  .tplToggle { background:transparent; border:1px dashed var(--dim); color:var(--mut); border-radius:8px; padding:7px 10px; font-size:12.5px; font-weight:700; cursor:pointer; width:100%; text-align:left; }
-  .tplToggle:hover, .tplToggle.open { color:var(--accent); border-color:var(--accent); }
+  /* ── Аккордеон панели дня ── */
+  .acc { border-top:1px solid var(--line); }
+  .acc:last-of-type { border-bottom:1px solid var(--line); }
+  .acc > summary {
+    list-style:none; display:flex; align-items:center; gap:10px;
+    padding:10px 2px; cursor:pointer; user-select:none;
+  }
+  .acc > summary::-webkit-details-marker { display:none; }
+  .acc > summary::after {
+    content:"›"; margin-left:auto; color:var(--dim); font-size:16px;
+    transform:rotate(90deg); transition:transform .12s ease;
+  }
+  .acc[open] > summary::after { transform:rotate(-90deg); }
+  .acc > summary:hover .accT { color:var(--accent); }
+  .accT { font-size:12px; letter-spacing:1.5px; text-transform:uppercase;
+    color:var(--mut); font-weight:700; font-family:ui-monospace,monospace; flex:none; }
+  .acc[open] .accT { color:var(--text); }
+  .accS { font-size:12px; color:var(--dim); overflow:hidden; text-overflow:ellipsis;
+    white-space:nowrap; min-width:0; display:flex; align-items:center; gap:6px; }
+  .accS .dot { width:8px; height:8px; border-radius:3px; flex:none; display:inline-block; }
+  .accB { padding:0 2px 12px; }
+  @media (prefers-reduced-motion: reduce) { .acc > summary::after { transition:none; } }
   .tplBox { background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:10px; margin-top:8px; font-size:12.5px; }
   .tplBox .row { display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-top:8px; }
   .tplBox select, .tplBox input[type=number] { background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:6px 8px; font-size:12.5px; }
@@ -234,19 +254,25 @@
         </div>
         <button class="close" id="pClose" aria-label="Закрыть">×</button>
       </div>
-      <div class="chips" id="chips"></div>
-      <div class="mgr" id="mgr" hidden>
-        <div class="row">
-          <input type="text" id="nsName" placeholder="Название">
-          <input type="text" class="hrs" id="nsHours" placeholder="ч" inputmode="numeric">
+      <details class="acc" id="accShift" open>
+        <summary><span class="accT">Смена</span><span class="accS" id="sumShift"></span></summary>
+        <div class="accB">
+          <div class="chips" id="chips"></div>
+          <div class="mgr" id="mgr" hidden>
+            <div class="row">
+              <input type="text" id="nsName" placeholder="Название">
+              <input type="text" class="hrs" id="nsHours" placeholder="ч" inputmode="numeric">
+            </div>
+            <div class="row" id="swRow"></div>
+            <div class="custom" id="customList" hidden></div>
+          </div>
         </div>
-        <div class="row" id="swRow"></div>
-        <div class="custom" id="customList" hidden></div>
-      </div>
-      <div class="schedule">
-        <button class="tplToggle" id="tplToggle">Заполнить график от этого дня</button>
-        <div class="tplBox" id="tplBox" hidden>
-          <div class="eyebrow">Автозаполнение</div>
+      </details>
+
+      <details class="acc" id="accSched">
+        <summary><span class="accT">График</span><span class="accS" id="sumSched"></span></summary>
+        <div class="accB">
+        <div class="tplBox" id="tplBox">
           <div class="row">
             <select id="tplPreset">
               <option value="2x2-day">2 через 2: день / день / выходной / выходной</option>
@@ -264,9 +290,13 @@
           </div>
           <div class="tplHint" id="tplHint">По умолчанию заполняется 31 день вперёд, включая следующий месяц. Заметки не стираются.</div>
         </div>
-      </div>
-      <div class="ot">
-        <div class="eyebrow">Журнал переработки / отгулов</div>
+        </div>
+      </details>
+
+      <details class="acc" id="accOt">
+        <summary><span class="accT">Переработка</span><span class="accS" id="sumOt"></span></summary>
+        <div class="accB">
+        <div class="ot">
         <div class="row">
           <label>Время <input type="text" id="creditTime" placeholder="17:00–24:00"></label>
           <label>Часы <input type="number" id="creditHours" min="0" max="100" step="0.25" value="0"></label>
@@ -284,9 +314,12 @@
         </div>
         <div class="otHint" id="otDayDetails">FIFO: сначала списываются самые старые часы переработки. Пример: +2 ч за 20 число и +3 ч за 21 число; отгул 4 ч заберёт 2 ч с 20 и 2 ч с 21.</div>
       </div>
+        </div>
+      </details>
 
-      <div class="dayBlock">
-        <div class="eyebrow">Важные дни</div>
+      <details class="acc" id="accImp">
+        <summary><span class="accT">Важные дни</span><span class="accS" id="sumImp"></span></summary>
+        <div class="accB">
         <div class="importantList" id="importantList"></div>
         <div class="row">
           <input type="text" id="impTitle" placeholder="Например: день рождения Макса">
@@ -298,17 +331,23 @@
           <input type="color" id="impColor" value="#F5B841" title="Цвет важного дня">
           <button class="addSmall" id="impAdd" type="button">Добавить</button>
         </div>
-      </div>
+        </div>
+      </details>
 
-      <div class="dayBlock">
-        <div class="eyebrow">Задачи дня</div>
+      <details class="acc" id="accTasks">
+        <summary><span class="accT">Задачи</span><span class="accS" id="sumTasks"></span></summary>
+        <div class="accB">
         <div class="taskList" id="taskList"></div>
         <div class="row">
           <input type="text" id="taskText" placeholder="Задача на этот день">
           <button class="addSmall" id="taskAdd" type="button">Добавить</button>
         </div>
-      </div>
+        </div>
+      </details>
 
+      <details class="acc" id="accNote">
+        <summary><span class="accT">Заметка</span><span class="accS" id="sumNote"></span></summary>
+        <div class="accB">
       <div class="tabs">
         <button id="tabEdit" class="on">Заметка</button>
         <button id="tabPrev">Превью</button>
@@ -316,6 +355,8 @@
       <textarea id="noteEdit" spellcheck="false"
         placeholder="# Заголовок&#10;**жирный**, *курсив*, `код`&#10;- [ ] задача&#10;- список"></textarea>
       <div id="notePrev" hidden></div>
+        </div>
+      </details>
     </div>
   </div>
 </div>
@@ -732,12 +773,68 @@ async function applyScheduleTemplate(){
   }
 }
 
-$("tplToggle").addEventListener("click", () => {
-  const box = $("tplBox");
-  box.hidden = !box.hidden;
-  $("tplToggle").classList.toggle("open", !box.hidden);
-  if (!box.hidden) renderScheduleControls();
-});
+/* ─── Аккордеон панели дня ──────────────────────────────────── */
+const ACC_IDS = ["accShift", "accSched", "accOt", "accImp", "accTasks", "accNote"];
+const ACC_STORE = "acc-open-v1";
+
+// Восстанавливаем, какие секции пользователь держал открытыми
+(function initAccordion(){
+  let open = null;
+  try { open = JSON.parse(localStorage.getItem(ACC_STORE)); } catch (e) { /* битые данные — дефолт */ }
+  if (Array.isArray(open)) {
+    for (const id of ACC_IDS) $(id).open = open.includes(id);
+  }
+  for (const id of ACC_IDS) {
+    $(id).addEventListener("toggle", () => {
+      localStorage.setItem(ACC_STORE, JSON.stringify(ACC_IDS.filter(i => $(i).open)));
+      if (id === "accSched" && $(id).open) renderScheduleControls();
+    });
+  }
+})();
+
+/* Выжимки в заголовках свёрнутых секций — панель читается не раскрывая */
+function updateAccSummaries(){
+  const k = state.selected;
+  if (!k) return;
+
+  // Смена
+  const st = state.shiftTypes.find(s => s.id === state.days[k]?.shiftTypeId);
+  $("sumShift").innerHTML = st
+    ? `<span class="dot" style="background:${st.color}"></span><span style="color:${st.color}">${esc(st.name)}${st.hours ? " · " + fmtHours(st.hours) + "ч" : ""}</span>`
+    : "не отмечена";
+
+  // График — какой шаблон сейчас выбран
+  const tpl = SCHEDULE_TEMPLATES[$("tplPreset").value];
+  $("sumSched").textContent = tpl ? tpl.label : "";
+
+  // Переработка: движение за день, иначе общий баланс
+  const dayNet = ledgerNetOf(k);
+  const bal = numOr0(state.overtimeAccount?.balanceHours);
+  $("sumOt").textContent = Math.abs(dayNet) > 0.001
+    ? `за день ${dayNet > 0 ? "+" : ""}${fmtHours(dayNet)} ч`
+    : `баланс ${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
+  $("sumOt").style.color = Math.abs(dayNet) > 0.001 ? "var(--accent)" : "";
+
+  // Важные дни
+  const imp = importantOf(k);
+  $("sumImp").innerHTML = imp.length
+    ? `<span style="color:var(--accent)">★ ${imp.length}</span>&nbsp;${esc(imp[0].title)}${imp.length > 1 ? "…" : ""}`
+    : "—";
+
+  // Задачи: сделано/всего
+  const all = tasksOf(k);
+  const undone = activeTasksOf(k).length;
+  $("sumTasks").textContent = all.length ? `${all.length - undone}/${all.length} сделано` : "—";
+  $("sumTasks").style.color = undone > 0 ? "var(--accent)" : "";
+
+  // Заметка: первая строка
+  const note = (state.days[k]?.note || "").trim();
+  const firstLine = note.split("\n")[0].replace(/^#+\s*/, "");
+  $("sumNote").textContent = note
+    ? (firstLine.length > 34 ? firstLine.slice(0, 34) + "…" : firstLine)
+    : "—";
+}
+
 $("tplPreset").addEventListener("change", renderScheduleControls);
 $("tplDays").addEventListener("input", () => { $("tplDays").dataset.userTouched = "1"; });
 $("tplApply").addEventListener("click", applyScheduleTemplate);
@@ -753,6 +850,7 @@ function updateOvertimeBalanceLabel(){
 function renderOvertimeControls(){
   updateOvertimeBalanceLabel();
   renderOvertimeDayDetails();
+  updateAccSummaries();
 }
 
 function readHoursInput(id){
@@ -949,6 +1047,7 @@ function renderImportantDays(){
     row.append(dot, title, mode, del);
     box.appendChild(row);
   }
+  updateAccSummaries();
 }
 
 async function addImportantDay(){
@@ -1024,6 +1123,7 @@ function renderTasks(){
     row.append(cb, text, del);
     box.appendChild(row);
   }
+  updateAccSummaries();
 }
 
 async function addTask(){
@@ -1113,6 +1213,7 @@ function renderChips(){
   box.appendChild(plus);
   renderCustomList();
   if (!$("tplBox")?.hidden) renderScheduleControls();
+  updateAccSummaries();
 }
 
 async function toggleShift(id){
@@ -1125,6 +1226,7 @@ async function toggleShift(id){
     timeOffHours: numOr0(cur.timeOffHours),
   };
   applyLocal(k, next);
+  updateAccSummaries();
   renderChips(); renderCalendar();
   await pushDaySnapshot(k, next);
 }
@@ -1197,6 +1299,7 @@ $("noteEdit").addEventListener("input", () => {
     timeOffHours: numOr0(cur.timeOffHours),
   };
   applyLocal(k, next);
+  updateAccSummaries();
   renderCalendar();
   scheduleDaySave(k, next);
 });
