@@ -180,7 +180,7 @@
             <select id="tplPreset">
               <option value="2x2-day">2 через 2: день / день / выходной / выходной</option>
               <option value="day-night-48">День / ночь / 48 часов отдыха</option>
-              <option value="5x2">Пятидневка: 5 рабочих / 2 выходных</option>
+              <option value="5x2">Пятидневка: Пн–Пт рабочие / Сб–Вс выходные</option>
               <option value="1x3-day">День / 72 часа отдыха</option>
               <option value="1x3-night">Ночь / 72 часа отдыха</option>
             </select>
@@ -191,7 +191,7 @@
             <label><input type="checkbox" id="tplOverwrite" checked> перезаписывать уже отмеченные смены</label>
             <button class="apply" id="tplApply">Заполнить</button>
           </div>
-          <div class="tplHint" id="tplHint">Заметки не стираются. Потом любой день можно открыть и поправить вручную.</div>
+          <div class="tplHint" id="tplHint">По умолчанию заполняется 31 день вперёд, включая следующий месяц. Заметки не стираются.</div>
         </div>
       </div>
       <div class="tabs">
@@ -224,10 +224,16 @@ const MONTHS_GEN = ["января","февраля","марта","апреля",
 const WEEKDAYS = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
 const SWATCHES = ["#F5B841","#E0653A","#C97BB8","#7B8CE0","#4FA3A5","#6FBF73","#B5A642","#8B929E"];
 
+const DEFAULT_SCHEDULE_DAYS = 31;
+
 const SCHEDULE_TEMPLATES = {
   "2x2-day": { label:"2 через 2", names:["Дневная","Дневная","Выходной","Выходной"] },
   "day-night-48": { label:"День / ночь / 48", names:["Дневная","Ночная","Выходной","Выходной"] },
-  "5x2": { label:"Пятидневка", names:["Дневная","Дневная","Дневная","Дневная","Дневная","Выходной","Выходной"] },
+  "5x2": {
+    label:"Пятидневка",
+    names:["Дневная","Дневная","Дневная","Дневная","Дневная","Выходной","Выходной"],
+    weekly:true
+  },
   "1x3-day": { label:"День / 72", names:["Дневная","Выходной","Выходной","Выходной"] },
   "1x3-night": { label:"Ночь / 72", names:["Ночная","Выходной","Выходной","Выходной"] },
 };
@@ -237,9 +243,14 @@ const keyOf = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
 const todayKey = () => { const t = new Date(); return keyOf(t.getFullYear(), t.getMonth(), t.getDate()); };
 
 const monthPrefix = () => `${state.y}-${pad(state.m + 1)}-`;
-function daysLeftInMonth(k){
+function weekdayIndex(k){
   const [y, m, d] = k.split("-").map(Number);
-  return new Date(y, m, 0).getDate() - d + 1;
+  return (new Date(y, m - 1, d).getDay() + 6) % 7; // Пн=0, Вс=6
+}
+function effectiveTemplateNames(tpl, startDateKey){
+  if (!tpl.weekly) return tpl.names;
+  const offset = weekdayIndex(startDateKey);
+  return tpl.names.slice(offset).concat(tpl.names.slice(0, offset));
 }
 function findShiftByName(name){
   return state.shiftTypes.find(s => s.name === name) || null;
@@ -439,16 +450,20 @@ function selectDay(k){
 function renderScheduleControls(){
   if (!state.selected) return;
   const input = $("tplDays");
-  if (!input.dataset.userTouched) input.value = daysLeftInMonth(state.selected);
+  if (!input.dataset.userTouched) input.value = DEFAULT_SCHEDULE_DAYS;
 
   const tpl = SCHEDULE_TEMPLATES[$("tplPreset").value];
-  const missing = tpl.names.filter(name => !findShiftByName(name));
+  const names = effectiveTemplateNames(tpl, state.selected);
+  const missing = [...new Set(tpl.names)].filter(name => !findShiftByName(name));
   const hint = $("tplHint");
   if (missing.length) {
     hint.textContent = `Не хватает смен: ${missing.join(", ")}. Перезагрузи страницу или создай их вручную.`;
     $("tplApply").disabled = true;
+  } else if (tpl.weekly) {
+    hint.textContent = `Пятидневка привязана к дням недели: Пн–Пт рабочие, Сб–Вс выходные. От выбранного дня пойдёт так: ${names.join(" → ")}.`;
+    $("tplApply").disabled = false;
   } else {
-    hint.textContent = `Шаблон: ${tpl.names.join(" → ")}. Заметки не стираются, меняется только тип смены.`;
+    hint.textContent = `Шаблон от выбранного дня: ${names.join(" → ")}. Заметки не стираются, меняется только тип смены.`;
     $("tplApply").disabled = false;
   }
 }
@@ -459,7 +474,8 @@ async function applyScheduleTemplate(){
   await flushPendingSave();
 
   const tpl = SCHEDULE_TEMPLATES[$("tplPreset").value];
-  const shifts = tpl.names.map(findShiftByName);
+  const names = effectiveTemplateNames(tpl, k);
+  const shifts = names.map(findShiftByName);
   if (shifts.some(s => !s)) {
     renderScheduleControls();
     return setSave("err", "не хватает смен для шаблона");
