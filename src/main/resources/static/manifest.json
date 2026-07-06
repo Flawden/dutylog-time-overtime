@@ -1,7 +1,7 @@
 {
-  "name": "Журнал смен",
-  "short_name": "Смены",
-  "description": "Календарь смен с Markdown-заметками",
+  "name": "DutyLog: Time & Overtime",
+  "short_name": "DutyLog",
+  "description": "Календарь смен, переработок, отгулов, задач и важных дней",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

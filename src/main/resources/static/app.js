@@ -20,6 +20,7 @@ const state = {
   remindersByDate: {},
   quickScenarios: [],
   timeSettings: null,
+  telegramStatus: null,
   activeScenarioId: null,
   ledgerFilters: { from:"", to:"", status:"all", q:"" },
   editingCreditId: null,
@@ -220,6 +221,9 @@ const api = {
   async createQuickScenario(b) { return jfetch("/api/quick-scenarios", { method:"POST", body:b }); },
   async updateQuickScenario(id, b) { return jfetch(`/api/quick-scenarios/${id}`, { method:"PATCH", body:b }); },
   async deleteQuickScenario(id) { return jfetch(`/api/quick-scenarios/${id}`, { method:"DELETE" }); },
+  async telegramStatus() { return jfetch("/api/telegram/status"); },
+  async telegramCode() { return jfetch("/api/telegram/link-code", { method:"POST" }); },
+  async telegramUnlink() { return jfetch("/api/telegram/link", { method:"DELETE" }); },
 };
 
 /* CSRF: Spring кладёт токен в cookie XSRF-TOKEN, мы возвращаем его заголовком */
@@ -2469,6 +2473,8 @@ function renderSettingsPanels(){
   renderCustomList();
   renderImportantSettings();
   renderNotifications();
+  renderTelegramPanel();
+  loadTelegramStatus();
 }
 
 /* ─── Уведомления ───────────────────────────────────────────── */
@@ -2553,7 +2559,7 @@ async function requestNotificationPermission(){
 }
 function testNotification(){
   if (!("Notification" in window) || Notification.permission !== "granted") { alert("Сначала разреши уведомления в браузере"); return; }
-  new Notification("Shift Calendar", { body:"Тестовое уведомление работает. Надёжные будильники будем делать в Android." });
+  new Notification("DutyLog: Time & Overtime", { body:"Тестовое уведомление работает. Надёжные будильники будем делать в Android." });
 }
 async function showTomorrowNotifications(){
   setSave("saving");
@@ -2857,6 +2863,84 @@ async function loadSessions(){
     box.innerHTML = '<div class="sessionRow"><span class="meta">Не удалось загрузить сессии.</span></div>';
   }
 }
+
+
+/* ─── Telegram: привязка бота ───────────────────────────────── */
+function telegramName(status){
+  return status?.botUsername ? "@" + status.botUsername : "бот";
+}
+function renderTelegramPanel(){
+  const box = $("telegramBox");
+  if (!box) return;
+  const s = state.telegramStatus;
+  const status = $("telegramStatus");
+  const codeBox = $("telegramCodeBox");
+  const unlink = $("telegramUnlinkBtn");
+  if (!s) {
+    status.textContent = "загружаю…";
+    status.className = "telegramStatus";
+    if (unlink) unlink.disabled = true;
+    return;
+  }
+  if (unlink) unlink.disabled = !s.linked;
+  if (!s.configured) {
+    status.textContent = "Бот не настроен на сервере: задай DUTYLOG_TELEGRAM_BOT_TOKEN и включи polling.";
+    status.className = "telegramStatus warn";
+  } else if (s.linked) {
+    const name = s.username ? "@" + s.username : "chat " + s.chatId;
+    status.textContent = "Подключено: " + name;
+    status.className = "telegramStatus ok";
+  } else {
+    status.textContent = "Не подключено. Создай код и отправь его " + telegramName(s) + ".";
+    status.className = "telegramStatus";
+  }
+  if (s.pendingCode && codeBox.hidden) {
+    showTelegramCode({ code:s.pendingCode, expiresAt:s.pendingCodeExpiresAt, startCommand:"/start " + s.pendingCode, deepLink:s.botUsername ? "https://t.me/" + s.botUsername + "?start=" + s.pendingCode : null });
+  }
+}
+async function loadTelegramStatus(){
+  if (!$("telegramBox")) return;
+  try {
+    state.telegramStatus = await api.telegramStatus();
+    renderTelegramPanel();
+  } catch (e) {
+    const status = $("telegramStatus");
+    if (status) { status.textContent = "Не удалось загрузить статус Telegram."; status.className = "telegramStatus warn"; }
+  }
+}
+function showTelegramCode(c){
+  const box = $("telegramCodeBox");
+  if (!box) return;
+  box.hidden = false;
+  const exp = c.expiresAt ? c.expiresAt.slice(11,16) : "через 15 минут";
+  const link = c.deepLink ? `<a href="${esc(c.deepLink)}" target="_blank" rel="noreferrer">открыть бота</a>` : "укажи username бота в .env, чтобы появилась ссылка";
+  box.innerHTML = `<div class="code">${esc(c.code)}</div><div>Отправь боту: <b>${esc(c.startCommand)}</b></div><div class="meta">Код действует до ${esc(exp)} · ${link}</div>`;
+}
+$("telegramCodeBtn")?.addEventListener("click", async () => {
+  const btn = $("telegramCodeBtn");
+  try {
+    btn.disabled = true;
+    const code = await api.telegramCode();
+    showTelegramCode(code);
+    await loadTelegramStatus();
+  } catch (e) {
+    const status = $("telegramStatus");
+    if (status) { status.textContent = e.message; status.className = "telegramStatus warn"; }
+  } finally {
+    btn.disabled = false;
+  }
+});
+$("telegramUnlinkBtn")?.addEventListener("click", async () => {
+  if (!confirm("Отключить Telegram от этого аккаунта?")) return;
+  try {
+    await api.telegramUnlink();
+    $("telegramCodeBox").hidden = true;
+    await loadTelegramStatus();
+  } catch (e) {
+    const status = $("telegramStatus");
+    if (status) { status.textContent = e.message; status.className = "telegramStatus warn"; }
+  }
+});
 
 loadProfile();
 loadSessions();

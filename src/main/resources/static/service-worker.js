@@ -1,4 +1,4 @@
-const CACHE_NAME = "shift-calendar-shell-v19.10.1"; // bump: сбрасывает старый кэш при активации
+const CACHE_NAME = "dutylog-shell-v20.0"; // bump: сбрасывает старый кэш при активации
 
 const SHELL = [
   "/manifest.json",

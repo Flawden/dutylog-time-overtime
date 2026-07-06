@@ -1,9 +1,66 @@
-# Shift Calendar API v19.10.1
+# DutyLog API v20.0
+
+Проект: **DutyLog: Time & Overtime**.
 
 Веб-версия работает через `JSESSIONID`, Android/PWA-клиенты могут использовать `Authorization: Bearer <accessToken>`. Старые endpoint'ы сохранены, поверх них добавлен mobile-слой.
 
 
 
+
+
+## Telegram web API
+
+Эти endpoint’ы используются браузерной вкладкой `⚙ → Telegram` и защищены обычной web-сессией + CSRF. Mobile/Bearer API они не заменяют.
+
+### GET `/api/telegram/status`
+
+Возвращает состояние Telegram-интеграции для текущего пользователя:
+
+```json
+{
+  "configured": true,
+  "pollingEnabled": true,
+  "linked": false,
+  "enabled": true,
+  "botUsername": "DutyLogBot",
+  "chatId": null,
+  "username": null,
+  "linkedAt": null,
+  "pendingCode": null,
+  "pendingCodeExpiresAt": null
+}
+```
+
+### POST `/api/telegram/link-code`
+
+Создаёт одноразовый код привязки Telegram. Старый неиспользованный код пользователя удаляется.
+
+```json
+{
+  "code": "DL-123456",
+  "expiresAt": "2026-07-06T10:30:00Z",
+  "startCommand": "/start DL-123456",
+  "deepLink": "https://t.me/DutyLogBot?start=DL-123456"
+}
+```
+
+### DELETE `/api/telegram/link`
+
+Отключает Telegram от текущего аккаунта и удаляет активные коды привязки.
+
+## Telegram bot commands
+
+Команды обрабатываются backend’ом через long polling, если включены `DUTYLOG_TELEGRAM_ENABLED=true`, `DUTYLOG_TELEGRAM_BOT_TOKEN=...`, `DUTYLOG_TELEGRAM_POLLING_ENABLED=true`.
+
+- `/start DL-123456` — привязать Telegram к аккаунту.
+- `/today`, `/сегодня` — сводка на сегодня.
+- `/tomorrow`, `/завтра` — сводка на завтра.
+- `/week`, `/неделя` — ближайшие 7 дней.
+- `/tasks`, `/задачи` — открытые задачи.
+- `/balance`, `/баланс`, `/overtime` — баланс переработок.
+- `/help` — список команд.
+
+В v20.0 бот работает только на чтение. Создание задач, переработок и списаний отгула запланировано отдельно, чтобы не смешивать фундамент и изменяющие команды.
 
 ## Web profile sessions
 

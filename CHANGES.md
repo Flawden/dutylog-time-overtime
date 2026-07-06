@@ -1,10 +1,32 @@
+# v20.0 — Telegram foundation
+
+- Telegram-бот поселён внутри текущего Spring Boot backend, не отдельным сервисом.
+- Добавлены сущности и таблицы `telegram_links` и `telegram_link_codes` + миграция `V12__telegram_foundation.sql`.
+- Во вкладке `⚙` в профиле появился блок Telegram: статус, создание кода привязки, отключение Telegram и список первых команд.
+- Привязка работает через одноразовый код: создать в DutyLog → отправить боту `/start DL-123456`.
+- Добавлены web endpoint’ы `/api/telegram/status`, `/api/telegram/link-code`, `/api/telegram/link`. Они защищены web-сессией и CSRF.
+- Добавлен long polling для Telegram Bot API, выключен по умолчанию и включается env-переменными.
+- Первые команды: `/today`, `/tomorrow`, `/week`, `/tasks`, `/balance`, `/help`, плюс русские алиасы `/сегодня`, `/завтра`, `/неделя`, `/задачи`, `/баланс`.
+- Бот пока read-only: показывает смены, задачи, важные дни и баланс переработок, но ещё не создаёт задачи/переработки.
+- Добавлены env-настройки `DUTYLOG_TELEGRAM_*` в `.env.example`, `docker-compose.yml`, `application.properties` и `application-prod.properties`.
+- Frontend-кэш поднят до `v20.0`: `app.css?v=20.0`, `app.js?v=20.0`, `dutylog-shell-v20.0`.
+
+# v19.10.2-branding
+
+- Приложение переименовано в **DutyLog: Time & Overtime**.
+- Обновлены: `index.html`, `login.html`, `manifest.json`, тестовое уведомление, README, CHANGES и API-документация.
+- `app.css` и `app.js` подключаются как `?v=19.10.2`.
+- Service worker получил новый cache name: `dutylog-shell-v19.10.2`.
+- Maven `artifactId` переименован в `dutylog`, display-name проекта — `DutyLog: Time & Overtime`.
+- Технические имена БД/пакетов сохранены: `shift_calendar`, `ru.daniil.shifts`, endpoint'ы `/api/shift-types` и т.п. не переименовывались, чтобы не ломать миграции, API и существующие данные.
+
 ## v19.10.1 — cleanup после слияния
 
-- Корневая папка архива приведена к `v19.10.1/shift-calendar`.
+- Корневая папка архива в v19.10.1 была приведена к `v19.10.1/shift-calendar`.
 - Свежие изменения `v19.5–v19.10` перенесены в `CHANGES.md`, чтобы журнал релизов жил рядом с проектом.
 - Убрана устаревшая документация о том, что CSRF отключён: web-cookie интерфейс теперь работает с `XSRF-TOKEN`/`X-XSRF-TOKEN`, а `/api/mobile/**` остаётся stateless под Bearer.
 - `index.html` подключает `app.css` и `app.js` с версией `?v=19.10.1`.
-- Service worker обновлён до `shift-calendar-shell-v19.10.1`; JS/CSS теперь network-first, чтобы свежий HTML не получал старый кэшированный frontend.
+- Service worker обновлён до `dutylog-shell-v19.10.2`; JS/CSS теперь network-first, чтобы свежий HTML не получал старый кэшированный frontend.
 - Web UI профиля больше не вызывает `/api/mobile/auth/sessions`; добавлены CSRF-защищённые web endpoint’ы `/api/profile/sessions`.
 
 ## v19.10 — профиль
