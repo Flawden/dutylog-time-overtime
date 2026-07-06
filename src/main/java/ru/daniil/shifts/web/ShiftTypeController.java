@@ -1,5 +1,6 @@
 package ru.daniil.shifts.web;
 
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,10 +15,13 @@ import ru.daniil.shifts.repo.UserRepository;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/shift-types")
 public class ShiftTypeController {
+
+    private static final String DEFAULT_COLOR = "#8B929E";
 
     private final ShiftTypeRepository shiftTypes;
     private final DayEntryRepository days;
@@ -39,41 +43,49 @@ public class ShiftTypeController {
     }
 
     @PostMapping
-    public ResponseEntity<ShiftTypeDto> create(@RequestBody ShiftTypeCreateRequest req, Principal principal) {
-        if (req.name() == null || req.name().isBlank()) {
-            return ResponseEntity.badRequest().build();
+    public ResponseEntity<?> create(@Valid @RequestBody(required = false) ShiftTypeCreateRequest req, Principal principal) {
+        if (req == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Некорректный JSON в запросе"));
         }
-        String color = (req.color() != null && req.color().matches("#[0-9a-fA-F]{6}"))
-                ? req.color() : "#8B929E";
-        double hours = req.hours() != null ? req.hours() : 0;
 
-        ShiftType saved = shiftTypes.save(
-                new ShiftType(me(principal), req.name().trim(), hours, color, false));
+        String name = req.name().trim();
+        double hours = req.hours() != null ? req.hours() : 0;
+        String color = req.color() != null ? req.color() : DEFAULT_COLOR;
+
+        ShiftType saved = shiftTypes.save(new ShiftType(me(principal), name, hours, color, false));
         return ResponseEntity.status(HttpStatus.CREATED).body(ShiftTypeDto.from(saved));
     }
 
     /**
      * Удаление своего типа смены. Чужой удалить нельзя (404).
-     * У дней, где он был назначен, смена снимается; пустые записи удаляются.
+     * Встроенные типы не удаляются (409).
+     * У дней, где был удаляемый тип, смена снимается; пустые записи удаляются.
      */
     @DeleteMapping("/{id}")
     @Transactional
-    public ResponseEntity<Void> delete(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<?> delete(@PathVariable Long id, Principal principal) {
         AppUser current = me(principal);
-        return shiftTypes.findById(id)
-                .filter(st -> st.getOwner().getId().equals(current.getId()))
-                .map(st -> {
-                    days.findByShiftType(st).forEach(entry -> {
-                        entry.setShiftType(null);
-                        if (entry.isEmpty()) {
-                            days.delete(entry);
-                        } else {
-                            days.save(entry);
-                        }
-                    });
-                    shiftTypes.delete(st);
-                    return ResponseEntity.noContent().<Void>build();
-                })
-                .orElse(ResponseEntity.notFound().build());
+        ShiftType st = shiftTypes.findById(id)
+                .filter(type -> type.getOwner().getId().equals(current.getId()))
+                .orElse(null);
+
+        if (st == null) {
+            return ResponseEntity.notFound().build();
+        }
+        if (st.isBuiltin()) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("error", "Встроенную смену удалить нельзя"));
+        }
+
+        days.findByShiftType(st).forEach(entry -> {
+            entry.setShiftType(null);
+            if (entry.isEmpty()) {
+                days.delete(entry);
+            } else {
+                days.save(entry);
+            }
+        });
+        shiftTypes.delete(st);
+        return ResponseEntity.noContent().build();
     }
 }

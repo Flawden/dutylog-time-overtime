@@ -1,5 +1,10 @@
 package ru.daniil.shifts.dto;
 
+import jakarta.validation.constraints.DecimalMax;
+import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.ShiftType;
 
@@ -18,7 +23,18 @@ public final class Dtos {
     }
 
     /** Создание нового типа смены. */
-    public record ShiftTypeCreateRequest(String name, Double hours, String color) {}
+    public record ShiftTypeCreateRequest(
+            @NotBlank(message = "Название смены не должно быть пустым")
+            @Size(max = 60, message = "Название смены: максимум 60 символов")
+            String name,
+
+            @DecimalMin(value = "0.0", message = "Часы не могут быть отрицательными")
+            @DecimalMax(value = "24.0", message = "Часы не могут быть больше 24")
+            Double hours,
+
+            @Pattern(regexp = "#[0-9a-fA-F]{6}", message = "Цвет должен быть в формате #RRGGBB")
+            String color
+    ) {}
 
     /** Запись дня наружу: дата в ISO (yyyy-MM-dd). */
     public record DayDto(String date, Long shiftTypeId, String note) {
@@ -32,5 +48,10 @@ public final class Dtos {
     }
 
     /** Upsert записи дня. Оба поля могут быть null. */
-    public record DayUpsertRequest(Long shiftTypeId, String note) {}
+    public record DayUpsertRequest(
+            Long shiftTypeId,
+
+            @Size(max = 20000, message = "Заметка слишком длинная: максимум 20 000 символов")
+            String note
+    ) {}
 }

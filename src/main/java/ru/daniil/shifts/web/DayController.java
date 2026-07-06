@@ -1,5 +1,6 @@
 package ru.daniil.shifts.web;
 
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/days")
@@ -38,9 +40,15 @@ public class DayController {
 
     /** Записи месяца текущего пользователя: GET /api/days?year=2026&month=7. */
     @GetMapping
-    public ResponseEntity<List<DayDto>> month(@RequestParam int year, @RequestParam int month,
-                                              Principal principal) {
-        if (month < 1 || month > 12) return ResponseEntity.badRequest().build();
+    public ResponseEntity<?> month(@RequestParam int year, @RequestParam int month,
+                                   Principal principal) {
+        if (year < 1900 || year > 2200) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Год должен быть в диапазоне 1900–2200"));
+        }
+        if (month < 1 || month > 12) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Месяц должен быть от 1 до 12"));
+        }
+
         YearMonth ym = YearMonth.of(year, month);
         List<DayDto> result = days
                 .findByOwnerAndDateBetween(me(principal), ym.atDay(1), ym.atEndOfMonth())
@@ -55,13 +63,18 @@ public class DayController {
      */
     @PutMapping("/{date}")
     @Transactional
-    public ResponseEntity<DayDto> upsert(@PathVariable String date, @RequestBody DayUpsertRequest req,
-                                         Principal principal) {
+    public ResponseEntity<?> upsert(@PathVariable String date,
+                                    @Valid @RequestBody(required = false) DayUpsertRequest req,
+                                    Principal principal) {
+        if (req == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Некорректный JSON в запросе"));
+        }
+
         LocalDate d;
         try {
             d = LocalDate.parse(date);
         } catch (DateTimeParseException e) {
-            return ResponseEntity.badRequest().build();
+            return ResponseEntity.badRequest().body(Map.of("error", "Дата должна быть в формате yyyy-MM-dd"));
         }
 
         AppUser current = me(principal);
@@ -71,18 +84,24 @@ public class DayController {
             st = shiftTypes.findById(req.shiftTypeId())
                     .filter(t -> t.getOwner().getId().equals(current.getId()))
                     .orElse(null);
-            if (st == null) return ResponseEntity.badRequest().build();
+            if (st == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Такой смены нет у текущего пользователя"));
+            }
         }
 
         DayEntry entry = days.findByOwnerAndDate(current, d)
                 .orElseGet(() -> new DayEntry(current, d));
         entry.setShiftType(st);
-        entry.setNote(req.note());
+        entry.setNote(normalizeNote(req.note()));
 
         if (entry.isEmpty()) {
             if (entry.getId() != null) days.delete(entry);
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(DayDto.from(days.save(entry)));
+    }
+
+    private String normalizeNote(String note) {
+        return note == null || note.isBlank() ? null : note;
     }
 }

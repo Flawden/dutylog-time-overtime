@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Журнал смен</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#14171C">
 <style>
   :root {
     --bg:#14171C; --panel:#1C2027; --panel2:#22262E; --line:#2E333C;
@@ -85,6 +87,7 @@
   .mgr .add:disabled { background:var(--line); cursor:default; }
   .mgr .custom { border-top:1px solid var(--line); padding-top:8px; display:flex; flex-direction:column; gap:4px; font-size:12.5px; }
   .mgr .custom .del { margin-left:auto; background:none; border:none; color:var(--dim); cursor:pointer; font-size:12px; }
+  .mgr .custom .tag { margin-left:auto; color:var(--dim); font-size:11px; font-family:ui-monospace,monospace; }
 
   .tabs { display:flex; gap:4px; margin:12px 0 8px; border-bottom:1px solid var(--line); }
   .tabs button { background:none; border:none; cursor:pointer; padding:6px 10px; font-size:13px; color:var(--dim); border-bottom:2px solid transparent; margin-bottom:-1px; }
@@ -212,15 +215,22 @@ async function jfetch(url, opts = {}) {
     window.location.href = "/login.html";
     throw new Error("401: не авторизован");
   }
-  if (!res.ok) throw new Error(`${opts.method || "GET"} ${url} → ${res.status}`);
+  if (!res.ok) {
+    let msg = `${opts.method || "GET"} ${url} → ${res.status}`;
+    try {
+      const body = await res.json();
+      if (body?.error) msg = body.error;
+    } catch (_) { /* ответ был не JSON */ }
+    throw new Error(msg);
+  }
   if (res.status === 204) return null;
   return res.json();
 }
 
-function setSave(s) {
+function setSave(s, msg = "") {
   const el = $("saveState");
   el.classList.toggle("err", s === "err");
-  el.textContent = s === "saving" ? "сохраняю…" : s === "saved" ? "✓" : s === "err" ? "ошибка сети" : "";
+  el.textContent = s === "saving" ? "сохраняю…" : s === "saved" ? "✓" : s === "err" ? (msg || "ошибка сети") : "";
   if (s === "saved") setTimeout(() => { if (el.textContent === "✓") el.textContent = ""; }, 1500);
 }
 
@@ -408,37 +418,69 @@ async function toggleShift(id){
   const next = { shiftTypeId: cur.shiftTypeId === id ? null : id, note: cur.note || null };
   applyLocal(k, next);
   renderChips(); renderCalendar();
-  await pushDay(k);
+  await pushDaySnapshot(k, next);
 }
 
 function applyLocal(k, next){
-  if (!next.shiftTypeId && !(next.note || "").trim()) delete state.days[k];
-  else state.days[k] = next;
+  const clean = {
+    shiftTypeId: next.shiftTypeId ?? null,
+    note: next.note ?? null,
+  };
+  if (!clean.shiftTypeId && !(clean.note || "").trim()) delete state.days[k];
+  else state.days[k] = clean;
 }
 
-/* Отправка дня на сервер */
-async function pushDay(k){
+/*
+ * Отправка дня на сервер. Важно: сохраняем снимок данных, а не читаем
+ * state.days[k] внутри setTimeout. Иначе можно потерять заметку, если
+ * пользователь напечатал текст и сразу переключил месяц.
+ */
+async function pushDaySnapshot(k, payload){
   setSave("saving");
   try {
-    const e = state.days[k] || { shiftTypeId: null, note: null };
-    await api.upsertDay(k, { shiftTypeId: e.shiftTypeId ?? null, note: e.note ?? null });
+    await api.upsertDay(k, {
+      shiftTypeId: payload.shiftTypeId ?? null,
+      note: payload.note ?? null,
+    });
     setSave("saved");
   } catch (err) {
     console.error(err);
-    setSave("err");
+    setSave("err", err.message);
   }
 }
 
 /* Заметка: локально сразу, на сервер — с задержкой */
 let noteTimer = null;
+let pendingDaySave = null;
+
+function scheduleDaySave(k, payload){
+  clearTimeout(noteTimer);
+  pendingDaySave = { k, payload: { ...payload } };
+  noteTimer = setTimeout(() => {
+    const p = pendingDaySave;
+    pendingDaySave = null;
+    noteTimer = null;
+    if (p) pushDaySnapshot(p.k, p.payload);
+  }, 600);
+}
+
+async function flushPendingSave(){
+  if (!pendingDaySave) return;
+  clearTimeout(noteTimer);
+  const p = pendingDaySave;
+  pendingDaySave = null;
+  noteTimer = null;
+  await pushDaySnapshot(p.k, p.payload);
+}
+
 $("noteEdit").addEventListener("input", () => {
   const k = state.selected;
   if (!k) return;
   const cur = state.days[k] || {};
-  applyLocal(k, { shiftTypeId: cur.shiftTypeId ?? null, note: $("noteEdit").value });
+  const next = { shiftTypeId: cur.shiftTypeId ?? null, note: $("noteEdit").value };
+  applyLocal(k, next);
   renderCalendar();
-  clearTimeout(noteTimer);
-  noteTimer = setTimeout(() => pushDay(k), 600);
+  scheduleDaySave(k, next);
 });
 
 function setTab(t){
@@ -485,16 +527,21 @@ function renderSwatches(){
 
 async function addShiftType(){
   const name = $("nsName").value.trim();
-  if (!name) return;
-  const hours = parseFloat($("nsHours").value.replace(",", ".")) || 0;
+  if (!name) return setSave("err", "укажи название смены");
+  const rawHours = $("nsHours").value.trim().replace(",", ".");
+  const hours = rawHours ? Number(rawHours) : 0;
+  if (!Number.isFinite(hours) || hours < 0 || hours > 24) {
+    return setSave("err", "часы: от 0 до 24");
+  }
+
   setSave("saving");
   try {
     const created = await api.createShiftType({ name, hours, color: state.swColor });
     state.shiftTypes.push(created);
     $("nsName").value = ""; $("nsHours").value = "";
     setSave("saved");
-    renderChips(); renderSummary();
-  } catch (err) { console.error(err); setSave("err"); }
+    renderChips(); renderSummary(); renderCustomList();
+  } catch (err) { console.error(err); setSave("err", err.message); }
 }
 
 function renderCustomList(){
@@ -506,11 +553,17 @@ function renderCustomList(){
     row.style.display = "flex"; row.style.alignItems = "center"; row.style.gap = "8px";
     row.innerHTML = `<span class="dot" style="width:10px;height:10px;border-radius:3px;background:${s.color};display:inline-block"></span>
       <span>${esc(s.name)}${s.hours ? ` · ${s.hours}ч` : ""}</span>`;
-    const del = document.createElement("button");
-    del.className = "del"; del.textContent = "удалить";
-    del.title = "Смена снимется с дней, где стояла. Заметки останутся.";
-    del.addEventListener("click", () => removeShiftType(s.id));
-    row.appendChild(del);
+    if (s.builtin) {
+      const tag = document.createElement("span");
+      tag.className = "tag"; tag.textContent = "встроенная";
+      row.appendChild(tag);
+    } else {
+      const del = document.createElement("button");
+      del.className = "del"; del.textContent = "удалить";
+      del.title = "Смена снимется с дней, где стояла. Заметки останутся.";
+      del.addEventListener("click", () => removeShiftType(s.id));
+      row.appendChild(del);
+    }
     box.appendChild(row);
   }
 }
@@ -529,11 +582,12 @@ async function removeShiftType(id){
     }
     setSave("saved");
     renderChips(); renderCalendar();
-  } catch (err) { console.error(err); setSave("err"); }
+  } catch (err) { console.error(err); setSave("err", err.message); }
 }
 
 /* ─── Навигация по месяцам ──────────────────────────────────── */
 async function goto(y, m){
+  await flushPendingSave();
   const d = new Date(y, m, 1);
   state.y = d.getFullYear(); state.m = d.getMonth();
   state.selected = null;
@@ -556,14 +610,19 @@ async function loadMonth(){
     state.days = {};
     for (const e of list) state.days[e.date] = { shiftTypeId: e.shiftTypeId, note: e.note };
     setSave("");
-  } catch (err) { console.error(err); setSave("err"); }
+  } catch (err) { console.error(err); setSave("err", err.message); }
 }
 
 /* ─── Пользователь ──────────────────────────────────────────── */
 $("logout").addEventListener("click", async () => {
+  try { await flushPendingSave(); } catch (e) { /* не блокируем выход */ }
   try { await fetch("/logout", { method: "POST" }); } catch (e) { /* пофиг, всё равно уходим */ }
   window.location.href = "/login.html";
 });
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker.js").catch(() => {}));
+}
 
 async function init(){
   renderSwatches();
@@ -573,7 +632,7 @@ async function init(){
     state.shiftTypes = await api.shiftTypes();
   } catch (err) {
     console.error(err);
-    setSave("err");
+    setSave("err", err.message);
     return; // при 401 нас уже уносит на login.html
   }
   await loadMonth();

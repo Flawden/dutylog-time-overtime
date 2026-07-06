@@ -37,11 +37,18 @@ public class AuthController {
     @PostMapping("/register")
     @Transactional
     public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
+        if (req == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Некорректный JSON в запросе"));
+        }
+
         String username = req.username() == null ? "" : req.username().trim();
         String password = req.password() == null ? "" : req.password();
 
         if (username.length() < 3 || username.length() > 40) {
             return ResponseEntity.badRequest().body(Map.of("error", "Имя: от 3 до 40 символов"));
+        }
+        if (!username.matches("[A-Za-zА-Яа-яЁё0-9_.-]+")) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Имя: только буквы, цифры, точка, дефис и подчёркивание"));
         }
         if (password.length() < 6) {
             return ResponseEntity.badRequest().body(Map.of("error", "Пароль: минимум 6 символов"));
@@ -61,11 +68,20 @@ public class AuthController {
         return Map.of("username", principal.getName());
     }
 
-    /** Стартовый набор для нового пользователя — минимум, остальное он создаст сам. */
+    /**
+     * Минимальный стартовый набор для нового пользователя.
+     *
+     * По ТЗ встроенными остаются только базовые «Дневная» и «Ночная».
+     * Все остальные варианты — выходной, 5 часов, 12 часов, сутки и т.д. —
+     * пользователь создаёт сам как кастомные смены с собственным названием,
+     * цветом и количеством часов.
+     *
+     * builtin=true: базовые смены видны в списке, но не удаляются случайным кликом.
+     */
     private void seedDefaults(AppUser user) {
         shiftTypes.saveAll(List.of(
-                new ShiftType(user, "Дневная", 8, "#F5B841", false),
-                new ShiftType(user, "Ночная",  8, "#7B8CE0", false)
+                new ShiftType(user, "Дневная", 8, "#F5B841", true),
+                new ShiftType(user, "Ночная", 8, "#7B8CE0", true)
         ));
     }
 }
