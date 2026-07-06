@@ -189,3 +189,18 @@ Telegram пока не вынесен в отдельный сервис. При
 4. Изменения в переработках покрывать тестами `OvertimeServiceTest`.
 5. Не хранить секреты в Git: `.env`, токены, реальные backup-файлы и дампы БД не коммитятся.
 6. Пользовательский интерфейс не должен показывать внутренние формулировки вроде `backend`, `frontend`, `VPS`, `CSRF`, если это не экран диагностики.
+
+
+## Backup and restore
+
+DutyLog does not store backups inside the application database. Backup and restore are operational scripts in `deploy/scripts`:
+
+```text
+deploy/scripts/backup-postgres.sh
+deploy/scripts/restore-postgres.sh
+deploy/scripts/list-backups.sh
+```
+
+The scripts work with the Docker Compose PostgreSQL service and create PostgreSQL custom-format dumps in `backups/`. Backup files and `.env` are intentionally excluded from Git.
+
+Daily backup examples for systemd live in `deploy/systemd`.

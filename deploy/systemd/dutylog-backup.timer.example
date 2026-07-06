@@ -1,0 +1,10 @@
+[Unit]
+Description=Daily DutyLog PostgreSQL backup
+
+[Timer]
+OnCalendar=*-*-* 03:30:00
+Persistent=true
+Unit=dutylog-backup.service
+
+[Install]
+WantedBy=timers.target

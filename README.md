@@ -16,6 +16,7 @@ DutyLog — приложение для учёта смен, переработ�
 - Telegram-бот для просмотра данных и быстрых действий.
 - Профиль пользователя, смена пароля и управление мобильными сессиями.
 - Служебная диагностика состояния приложения, сервера, базы данных и Telegram-интеграции в отдельном профиле администратора.
+- Скрипты резервного копирования и восстановления PostgreSQL.
 
 ## Стек
 
@@ -87,6 +88,28 @@ docker compose down
 docker compose down -v
 ```
 
+## Резервные копии
+
+Создать backup PostgreSQL:
+
+```bash
+./deploy/scripts/backup-postgres.sh
+```
+
+Посмотреть список backup-файлов:
+
+```bash
+./deploy/scripts/list-backups.sh
+```
+
+Восстановить базу из backup:
+
+```bash
+./deploy/scripts/restore-postgres.sh backups/dutylog-YYYY-MM-DD_HH-MM-SS.dump
+```
+
+Подробно: [`docs/BACKUP.md`](docs/BACKUP.md).
+
 ## Production-профиль
 
 В production используется PostgreSQL и Flyway-миграции. Hibernate работает в режиме валидации схемы, поэтому изменения БД должны оформляться новыми файлами миграций в `src/main/resources/db/migration`.
@@ -154,15 +177,18 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — архитектура приложения.
 - [`docs/API.md`](docs/API.md) — HTTP API.
 - [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md) — Git-история, теги и откаты.
+- [`docs/BACKUP.md`](docs/BACKUP.md) — резервные копии и восстановление PostgreSQL.
+- [`docs/DEPLOY.md`](docs/DEPLOY.md) — запуск на VPS через Docker Compose.
+- [`docs/VPS_CHECKLIST.md`](docs/VPS_CHECKLIST.md) — чеклист боевого запуска.
 - [`docs/ANDROID_API_PLAN.md`](docs/ANDROID_API_PLAN.md) — мобильный API.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — идеи развития.
 - [`docs/PRODUCT_COPY.md`](docs/PRODUCT_COPY.md) — стиль пользовательских текстов.
 
 ## Текущая версия
 
-`v20.6 — admin diagnostics profile`
+`v20.7 — backup and restore`
 
-В этой версии интерфейсные тексты приведены к пользовательскому стилю, технические подсказки вынесены из пользовательских сценариев, README стал product-ready, а архитектура описана отдельным документом.
+В этой версии добавлены безопасные скрипты резервного копирования и восстановления PostgreSQL, документация для деплоя на VPS и чеклист запуска.
 
 
 ## Служебный профиль администратора

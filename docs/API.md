@@ -964,7 +964,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "20.6",
+  "version": "20.7",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],
@@ -995,3 +995,16 @@ GET /api/admin/status -> 200 (12 ms, requestId=1a2b3c4d)
 ```env
 DUTYLOG_REQUEST_LOG_LEVEL=INFO
 ```
+
+
+## Backup and restore
+
+Backup and restore are intentionally not exposed as public HTTP API in this version. They are operational actions performed on the server through scripts:
+
+```text
+deploy/scripts/backup-postgres.sh
+deploy/scripts/restore-postgres.sh
+deploy/scripts/list-backups.sh
+```
+
+This keeps database dumps, secrets and file-system access outside the user-facing web API.

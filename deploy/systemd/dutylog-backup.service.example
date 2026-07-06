@@ -1,0 +1,11 @@
+[Unit]
+Description=DutyLog PostgreSQL backup
+Wants=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/dutylog
+Environment=BACKUP_DIR=/opt/dutylog/backups
+Environment=BACKUP_KEEP_LAST=30
+ExecStart=/opt/dutylog/deploy/scripts/backup-postgres.sh

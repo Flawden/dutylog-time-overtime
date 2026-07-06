@@ -847,7 +847,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
 }
 
 
-/* v20.6: служебная диагностика вынесена из пользовательских настроек */
+/* v20.7: backup and restore docs/scripts */
 #adminOpen[hidden]{ display:none !important; }
 #adminOpen{
   border-color:rgba(245,184,65,.45);

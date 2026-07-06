@@ -1,3 +1,15 @@
+# v20.7 — Backup and restore
+
+- Добавлены production-ready скрипты для PostgreSQL: `deploy/scripts/backup-postgres.sh`, `deploy/scripts/restore-postgres.sh`, `deploy/scripts/list-backups.sh`.
+- Backup теперь создаётся в PostgreSQL custom format `.dump` с `--no-owner`, `--no-privileges` и checksum `.sha256`, если доступен `sha256sum`.
+- Restore поддерживает `.dump`, `.dump.gz`, `.sql`, `.sql.gz`, спрашивает подтверждение и останавливает app-контейнер перед восстановлением.
+- Добавлены переменные `.env.example` для backup-скриптов: `BACKUP_DIR`, `BACKUP_KEEP_LAST`, `DUTYLOG_DB_SERVICE`, `DUTYLOG_APP_SERVICE`.
+- Добавлены systemd-примеры ежедневного backup: `deploy/systemd/dutylog-backup.service.example`, `deploy/systemd/dutylog-backup.timer.example`.
+- Добавлены документы `docs/BACKUP.md`, `docs/DEPLOY.md`, `docs/VPS_CHECKLIST.md`.
+- README обновлён: backup/restore, безопасная остановка Docker, документация для VPS.
+- Frontend-кэш поднят до `v20.7`: `app.css?v=20.7`, `app.js?v=20.7`, `dutylog-shell-v20.7`.
+- Backend-версия в диагностике поднята до `20.7`.
+
 # v20.6 — Admin diagnostics profile
 
 - Служебная диагностика вынесена из обычных пользовательских настроек в отдельный раздел `Система`.

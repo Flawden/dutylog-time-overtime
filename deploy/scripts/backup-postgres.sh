@@ -1,18 +1,65 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 
-# Запускать из корня проекта: ./deploy/scripts/backup-postgres.sh
-# Скрипт создаёт gzip-бэкап PostgreSQL из docker-compose сервиса db.
+# DutyLog PostgreSQL backup.
+# Run from any directory:
+#   ./deploy/scripts/backup-postgres.sh
+#
+# Creates a PostgreSQL custom-format dump that is suitable for pg_restore.
+# The script reads .env from the project root when it exists.
 
-BACKUP_DIR="${BACKUP_DIR:-./backups}"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$PROJECT_ROOT"
+
+if [[ -f .env ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  . ./.env
+  set +a
+fi
+
+DB_SERVICE="${DUTYLOG_DB_SERVICE:-db}"
+POSTGRES_DB="${POSTGRES_DB:-shift_calendar}"
+POSTGRES_USER="${POSTGRES_USER:-shift_calendar}"
+BACKUP_DIR="${BACKUP_DIR:-$PROJECT_ROOT/backups}"
+KEEP_LAST="${BACKUP_KEEP_LAST:-20}"
+
 mkdir -p "$BACKUP_DIR"
 
 STAMP="$(date +%Y-%m-%d_%H-%M-%S)"
-OUT="$BACKUP_DIR/shift-calendar-$STAMP.sql.gz"
+OUT="$BACKUP_DIR/dutylog-$STAMP.dump"
+TMP="$OUT.tmp"
 
-# Значения можно брать из .env. По умолчанию используются compose-дефолты.
-POSTGRES_DB="${POSTGRES_DB:-shift_calendar}"
-POSTGRES_USER="${POSTGRES_USER:-shift_calendar}"
+echo "DutyLog backup"
+echo "Project:  $PROJECT_ROOT"
+echo "Service:  $DB_SERVICE"
+echo "Database: $POSTGRES_DB"
+echo "Output:   $OUT"
 
-docker compose exec -T db pg_dump -U "$POSTGRES_USER" "$POSTGRES_DB" | gzip > "$OUT"
-echo "Backup saved: $OUT"
+docker compose exec -T "$DB_SERVICE" pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null
+
+docker compose exec -T "$DB_SERVICE" \
+  pg_dump \
+    --format=custom \
+    --compress=9 \
+    --no-owner \
+    --no-privileges \
+    -U "$POSTGRES_USER" \
+    -d "$POSTGRES_DB" > "$TMP"
+
+mv "$TMP" "$OUT"
+
+if command -v sha256sum >/dev/null 2>&1; then
+  sha256sum "$OUT" > "$OUT.sha256"
+fi
+
+if [[ "$KEEP_LAST" =~ ^[0-9]+$ ]] && (( KEEP_LAST > 0 )); then
+  mapfile -t OLD_BACKUPS < <(find "$BACKUP_DIR" -maxdepth 1 -type f -name 'dutylog-*.dump' -printf '%T@ %p\n' | sort -nr | awk '{print $2}' | tail -n +$((KEEP_LAST + 1)))
+  for file in "${OLD_BACKUPS[@]:-}"; do
+    rm -f "$file" "$file.sha256"
+  done
+fi
+
+SIZE="$(du -h "$OUT" | awk '{print $1}')"
+echo "Backup saved: $OUT ($SIZE)"
