@@ -19,6 +19,7 @@ const state = {
   notificationPreviewTitle: "напоминания текущего месяца",
   remindersByDate: {},
   quickScenarios: [],
+  timeSettings: null,
   activeScenarioId: null,
   ledgerFilters: { from:"", to:"", status:"all", q:"" },
   editingCreditId: null,
@@ -34,6 +35,45 @@ const WEEKDAYS = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
 const SWATCHES = ["#F5B841","#E0653A","#C97BB8","#7B8CE0","#4FA3A5","#6FBF73","#B5A642","#8B929E"];
 
 const DEFAULT_SCHEDULE_DAYS = 31;
+
+const TIME_SETTINGS_KEY = "shiftCalendar.timeRegionSettings.v1";
+const DEFAULT_TIME_SETTINGS = {
+  workRegionName: "",
+  workTimezone: "Europe/Moscow",
+  workOffsetMoscow: 0,
+  timeFormat: "24h",
+  dayStart: "08:30",
+  dayEnd: "17:00",
+  dayBreakMinutes: 30,
+  dayPlannedHours: 8,
+  nightStart: "20:00",
+  nightEnd: "08:00",
+  nightBreakMinutes: 60,
+  nightPlannedHours: 11,
+};
+
+function browserTimeZone(){
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone || "Europe/Moscow"; }
+  catch (e) { return "Europe/Moscow"; }
+}
+function loadTimeSettings(){
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem(TIME_SETTINGS_KEY) || "{}"); }
+  catch (e) { saved = {}; }
+  return { ...DEFAULT_TIME_SETTINGS, workTimezone: browserTimeZone(), ...saved };
+}
+function storeTimeSettings(settings){
+  state.timeSettings = { ...DEFAULT_TIME_SETTINGS, ...settings };
+  try { localStorage.setItem(TIME_SETTINGS_KEY, JSON.stringify(state.timeSettings)); }
+  catch (e) { console.warn("time settings not saved", e); }
+}
+function safeTzLabel(tz){
+  try {
+    return new Intl.DateTimeFormat("ru-RU", { dateStyle:"short", timeStyle:"short", timeZone:tz }).format(new Date());
+  } catch (e) {
+    return "часовой пояс не распознан";
+  }
+}
 
 const SCHEDULE_TEMPLATES = {
   "2x2-day": { label:"2 через 2", names:["Дневная","Дневная","Выходной","Выходной"] },
@@ -421,6 +461,7 @@ function renderSummary(){
 function selectDay(k){
   state.selected = k;
   $("layout").classList.toggle("with-panel", !!k);
+  document.body.classList.toggle("panel-open", !!k);
   $("panel").hidden = !k;
   if (k) {
     const [y, m, d] = k.split("-").map(Number);
@@ -2288,7 +2329,131 @@ $("todayBtn").addEventListener("click", async () => {
 
 
 
+
+/* ─── Время и регион ───────────────────────────────────────── */
+function readTimeSettingsForm(){
+  const val = id => ($(id)?.value ?? "").trim();
+  const num = (id, fallback = 0) => {
+    const raw = val(id).replace(",", ".");
+    const n = raw === "" ? fallback : Number(raw);
+    return Number.isFinite(n) ? n : fallback;
+  };
+  return {
+    workRegionName: val("workRegionName"),
+    workTimezone: val("workTimezone") || browserTimeZone(),
+    workOffsetMoscow: Math.round(num("workOffsetMoscow", 0)),
+    timeFormat: val("timeFormatPref") || "24h",
+    dayStart: val("defDayStart") || "08:30",
+    dayEnd: val("defDayEnd") || "17:00",
+    dayBreakMinutes: Math.max(0, Math.min(1440, Math.round(num("defDayBreak", 30)))),
+    dayPlannedHours: Math.max(0, Math.min(24, num("defDayPlan", 8))),
+    nightStart: val("defNightStart") || "20:00",
+    nightEnd: val("defNightEnd") || "08:00",
+    nightBreakMinutes: Math.max(0, Math.min(1440, Math.round(num("defNightBreak", 60)))),
+    nightPlannedHours: Math.max(0, Math.min(24, num("defNightPlan", 11))),
+  };
+}
+function renderTimeSettings(){
+  if (!$("timeSettingsCard")) return;
+  if (!state.timeSettings) state.timeSettings = loadTimeSettings();
+  const t = state.timeSettings;
+  const set = (id, v) => { if ($(id)) $(id).value = v ?? ""; };
+  set("workRegionName", t.workRegionName);
+  set("workTimezone", t.workTimezone);
+  set("workOffsetMoscow", t.workOffsetMoscow);
+  set("timeFormatPref", t.timeFormat || "24h");
+  set("defDayStart", t.dayStart);
+  set("defDayEnd", t.dayEnd);
+  set("defDayBreak", t.dayBreakMinutes);
+  set("defDayPlan", t.dayPlannedHours);
+  set("defNightStart", t.nightStart);
+  set("defNightEnd", t.nightEnd);
+  set("defNightBreak", t.nightBreakMinutes);
+  set("defNightPlan", t.nightPlannedHours);
+
+  const browserTz = browserTimeZone();
+  const region = t.workRegionName ? `${esc(t.workRegionName)} · ` : "";
+  $("timeNowBox").innerHTML = `${region}рабочее время: <b>${esc(safeTzLabel(t.workTimezone))}</b> <span>(${esc(t.workTimezone)})</span><br>` +
+    `браузер: <b>${esc(safeTzLabel(browserTz))}</b> <span>(${esc(browserTz)})</span>` +
+    (Number(t.workOffsetMoscow || 0) ? `<br>пометка: Москва ${Number(t.workOffsetMoscow) > 0 ? "+" : ""}${Number(t.workOffsetMoscow)} ч` : "");
+  $("timeSettingsStatus").textContent = "локально";
+}
+function saveTimeSettings(){
+  storeTimeSettings(readTimeSettingsForm());
+  renderTimeSettings();
+  setSave("saved", "настройки времени сохранены");
+}
+function fillShiftFormFromDefaults(kind){
+  const t = state.timeSettings || loadTimeSettings();
+  if (kind === "night") {
+    $("nsName").value = $("nsName").value || "Ночная кастомная";
+    $("nsHours").value = fmtHours(t.nightPlannedHours);
+    $("nsStart").value = t.nightStart;
+    $("nsEnd").value = t.nightEnd;
+    $("nsBreak").value = t.nightBreakMinutes;
+    $("nsPlan").value = fmtHours(t.nightPlannedHours);
+  } else {
+    $("nsName").value = $("nsName").value || "Дневная кастомная";
+    $("nsHours").value = fmtHours(t.dayPlannedHours);
+    $("nsStart").value = t.dayStart;
+    $("nsEnd").value = t.dayEnd;
+    $("nsBreak").value = t.dayBreakMinutes;
+    $("nsPlan").value = fmtHours(t.dayPlannedHours);
+  }
+  location.hash = "#settings";
+  setSave("", "");
+}
+function patchForBuiltInShift(name, t){
+  if (name === "Ночная") return {
+    startTime: t.nightStart,
+    endTime: t.nightEnd,
+    breakMinutes: t.nightBreakMinutes,
+    plannedHours: t.nightPlannedHours,
+    hours: t.nightPlannedHours,
+  };
+  return {
+    startTime: t.dayStart,
+    endTime: t.dayEnd,
+    breakMinutes: t.dayBreakMinutes,
+    plannedHours: t.dayPlannedHours,
+    hours: t.dayPlannedHours,
+  };
+}
+async function applyTimeSettingsToBuiltins(){
+  const t = readTimeSettingsForm();
+  storeTimeSettings(t);
+  const targets = state.shiftTypes.filter(s => s.name === "Дневная" || s.name === "Ночная");
+  if (!targets.length) return setSave("err", "не нашёл Дневную/Ночную смену");
+  setSave("saving");
+  try {
+    for (const s of targets) {
+      const updated = await api.updateShiftType(s.id, patchForBuiltInShift(s.name, t));
+      const idx = state.shiftTypes.findIndex(x => Number(x.id) === Number(s.id));
+      if (idx >= 0) state.shiftTypes[idx] = updated;
+    }
+    setSave("saved", "встроенные смены обновлены");
+    renderTimeSettings();
+    renderCustomList();
+    renderChips();
+    renderCalendar();
+    renderOvertimeControls();
+  } catch (err) { console.error(err); setSave("err", err.message); }
+}
+function initTimeSettingsEvents(){
+  if (!$("timeSettingsCard")) return;
+  $("timeSave").addEventListener("click", saveTimeSettings);
+  $("timeDetectBrowser").addEventListener("click", () => { $("workTimezone").value = browserTimeZone(); saveTimeSettings(); });
+  $("timeApplyBuiltins").addEventListener("click", applyTimeSettingsToBuiltins);
+  $("timeFillDayForm").addEventListener("click", () => fillShiftFormFromDefaults("day"));
+  $("timeFillNightForm").addEventListener("click", () => fillShiftFormFromDefaults("night"));
+  for (const id of ["workRegionName","workTimezone","workOffsetMoscow","timeFormatPref","defDayStart","defDayEnd","defDayBreak","defDayPlan","defNightStart","defNightEnd","defNightBreak","defNightPlan"]) {
+    const el = $(id);
+    if (el) el.addEventListener("change", () => { storeTimeSettings(readTimeSettingsForm()); renderTimeSettings(); });
+  }
+}
+
 function renderSettingsPanels(){
+  renderTimeSettings();
   renderCustomList();
   renderImportantSettings();
   renderNotifications();
@@ -2456,7 +2621,9 @@ if ("serviceWorker" in navigator) {
 }
 
 async function init(){
+  state.timeSettings = loadTimeSettings();
   renderSwatches();
+  initTimeSettingsEvents();
   try {
     const me = await jfetch("/api/auth/me");
     $("whoami").textContent = me.username;
@@ -2479,6 +2646,8 @@ const VIEWS = { calendar:"view-calendar", overtime:"view-overtime", tasks:"view-
 function applyRoute(){
   const name = (location.hash || "#calendar").slice(1);
   const active = VIEWS[name] ? name : "calendar";
+  document.body.dataset.view = active;
+  if (active !== "calendar") selectDay(null);
   for (const [key, id] of Object.entries(VIEWS)) {
     const el = document.getElementById(id);
     if (el) el.hidden = key !== active;

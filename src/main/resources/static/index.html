@@ -278,7 +278,69 @@
 <div class="taskBoardList" id="taskBoardList"></div>
 </div>
 </section>
-<section class="view settingsView" hidden="" id="view-settings"><div class="settingsCard" id="shiftSettingsCard">
+<section class="view settingsView" hidden="" id="view-settings">
+<section class="settingsCard" id="timeSettingsCard">
+<div class="settingsHead">
+<div>
+<div class="eyebrow">Время и регион</div>
+<div class="settingsTitle">Рабочее время, часовой пояс и дефолты смен</div>
+<div class="settingsHint">Эти настройки помогают не путаться между местным временем, рабочим регионом и шаблонами смен. Они применяются к подсказкам и могут обновить встроенные смены.</div>
+</div>
+<div class="status" id="timeSettingsStatus">—</div>
+</div>
+<div class="timeSettingsGrid">
+<label>Регион / объект
+<input id="workRegionName" placeholder="Например: участок, город, объект" type="text"/>
+</label>
+<label>Рабочий часовой пояс
+<input id="workTimezone" list="tzSuggestions" placeholder="Europe/Moscow" type="text"/>
+<datalist id="tzSuggestions">
+<option value="Europe/Moscow"></option>
+<option value="Europe/Chisinau"></option>
+<option value="Europe/Berlin"></option>
+<option value="Asia/Yekaterinburg"></option>
+<option value="Asia/Omsk"></option>
+<option value="Asia/Novosibirsk"></option>
+<option value="UTC"></option>
+</datalist>
+</label>
+<label>Сдвиг от Москвы, ч
+<input id="workOffsetMoscow" max="12" min="-12" step="1" type="number" value="0"/>
+</label>
+<label>Формат времени
+<select id="timeFormatPref">
+<option value="24h">24 часа</option>
+</select>
+</label>
+</div>
+<div class="timeNowBox" id="timeNowBox">—</div>
+<div class="timeDefaults">
+<div class="timeDefaultsHead">Дефолты смен</div>
+<div class="timeDefaultRow">
+<b>Дневная</b>
+<label>Начало <input id="defDayStart" type="time"/></label>
+<label>Конец <input id="defDayEnd" type="time"/></label>
+<label>Обед, мин <input id="defDayBreak" max="1440" min="0" step="5" type="number"/></label>
+<label>План, ч <input id="defDayPlan" max="24" min="0" step="0.25" type="number"/></label>
+<button id="timeFillDayForm" type="button">в форму смены</button>
+</div>
+<div class="timeDefaultRow">
+<b>Ночная</b>
+<label>Начало <input id="defNightStart" type="time"/></label>
+<label>Конец <input id="defNightEnd" type="time"/></label>
+<label>Обед, мин <input id="defNightBreak" max="1440" min="0" step="5" type="number"/></label>
+<label>План, ч <input id="defNightPlan" max="24" min="0" step="0.25" type="number"/></label>
+<button id="timeFillNightForm" type="button">в форму смены</button>
+</div>
+</div>
+<div class="timeSettingsActions">
+<button class="primary" id="timeSave" type="button">Сохранить время</button>
+<button id="timeDetectBrowser" type="button">взять часовой пояс браузера</button>
+<button id="timeApplyBuiltins" type="button">применить к Дневной/Ночной</button>
+</div>
+<div class="wideHint">Пока эти настройки хранятся в браузере и помогают с дефолтами. Чтобы уведомления и сценарии считались по ним, нажми «применить к Дневной/Ночной» — тогда обновятся сами типы смен.</div>
+</section>
+<div class="settingsCard" id="shiftSettingsCard">
 <div class="settingsHead">
 <div>
 <div class="eyebrow">Смены</div>

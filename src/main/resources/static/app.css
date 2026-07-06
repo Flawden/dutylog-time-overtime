@@ -374,3 +374,175 @@
   .settingsForm input[type=text], .settingsForm input[type=date], .settingsForm select, .settingsForm button { width:100%; }
   .settingsImportantItem .importantTitle { min-width:0; }
 }
+
+/* ── v19.3: мобильная полировка и UX после вкладок ─────────────── */
+@media (max-width: 700px) {
+  html { scroll-padding-bottom: 84px; }
+  body { padding-bottom: 76px; }
+  body.panel-open { overflow:hidden; }
+  .wrap { padding:14px 10px 92px; }
+  .head { align-items:flex-start; margin-bottom:10px; gap:8px; }
+  .head h1 { font-size:24px; line-height:1.15; }
+  .eyebrow { font-size:10px; letter-spacing:1.8px; }
+  .nav { width:100%; justify-content:space-between; gap:6px; }
+  .nav button { min-height:40px; padding:8px 11px; margin-left:0; }
+  #whoami { margin-left:auto !important; max-width:42vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #logout { margin-left:0 !important; }
+
+  .tabbar {
+    position:fixed; left:10px; right:10px; bottom:10px; z-index:80;
+    margin:0; padding:6px; border:1px solid var(--line); border-radius:18px;
+    background:rgba(28,32,39,.94); backdrop-filter: blur(12px);
+    box-shadow:0 12px 34px rgba(0,0,0,.42); gap:4px;
+  }
+  .tabbar a { flex:1; display:flex; align-items:center; justify-content:center; min-height:44px;
+    padding:8px 6px; border-radius:13px; border-bottom:none; margin-bottom:0; font-size:12px; }
+  .tabbar a.on { background:rgba(245,184,65,.14); color:var(--accent); border-bottom:none; }
+  .tabbar a[data-view="settings"] { margin-left:0; font-size:18px; padding:8px 6px; }
+
+  .card { padding:10px; border-radius:13px; }
+  .wd { gap:4px; margin-bottom:5px; }
+  .wd div { font-size:10px; padding:2px 0; }
+  .grid { gap:4px; }
+  .cell { min-height:58px; border-radius:9px; padding:5px 6px; }
+  .cell:hover { transform:none; }
+  .cell .num { font-size:13px; }
+  .cell .num.today::after { display:block; margin-left:0; margin-top:1px; font-size:8px; }
+  .cell .shift { font-size:10px; }
+  .cell .otMark { font-size:9.5px; }
+  .cell .miniMarks { gap:2px; }
+  .cell .importantMark, .cell .taskMark, .cell .notifyMark { min-width:14px; height:14px; font-size:9px; border-radius:5px; }
+  .sum { font-size:11.5px; gap:6px 10px; }
+  .sum .hrs { margin-left:0; }
+
+  .layout.with-panel::before {
+    content:""; position:fixed; inset:0; z-index:49;
+    background:rgba(0,0,0,.45); backdrop-filter: blur(2px);
+  }
+  .layout.with-panel #panel {
+    position:fixed; left:0; right:0; bottom:0; top:auto; z-index:50;
+    max-height:92dvh; overflow-y:auto; -webkit-overflow-scrolling:touch;
+    border:none; border-radius:22px 22px 0 0; padding:12px 12px 92px;
+    box-shadow:0 -18px 42px rgba(0,0,0,.48);
+  }
+  #panel .pt { position:sticky; top:-12px; background:linear-gradient(var(--panel) 78%, rgba(28,32,39,0)); z-index:2;
+    padding:12px 0 16px; margin:-12px 0 8px; align-items:center; }
+  #panel .pt::before { content:""; position:absolute; left:50%; top:6px; transform:translateX(-50%); width:44px; height:4px; border-radius:99px; background:var(--line); }
+  #panel .pt .d { font-size:19px; padding-top:8px; }
+  #panel .close { width:44px; height:44px; border-radius:14px; background:rgba(20,23,28,.75); border:1px solid var(--line); color:var(--text); font-size:30px; line-height:1; }
+
+  .acc > summary { min-height:44px; padding:12px 0; }
+  .accB { padding:9px 0 14px; }
+  .chips { gap:7px; }
+  .chip { min-height:40px; display:inline-flex; align-items:center; padding:8px 11px; }
+  .tplBox .row, .ot .row, .dayForm .row, .settingsForm .row, .scenarioEditor .row { gap:8px; }
+  .tplBox input, .tplBox select, .ot input, .ot select, .dayForm input[type=text], .dayForm input[type=date], .dayForm select,
+  .settingsForm input, .settingsForm select, .scenarioEditor input, .scenarioEditor select, .notifyOpt input {
+    min-height:40px; font-size:14px;
+  }
+  .tplBox button, .ot button, .dayForm .addSmall, .settingsForm button, .scenarioEditor button,
+  .notifyActions button, .ledgerFilters button, .taskBoardFilters button {
+    min-height:40px; padding:8px 11px; font-size:13px;
+  }
+  .ot label, .dayForm label { width:100%; justify-content:space-between; }
+  .ot input[type=datetime-local], .ot input[type=date], .ot input[type=text], .ot input[type=number], .ot select,
+  .dayForm input[type=text], .dayForm input[type=date], .dayForm select { flex:1; min-width:0; width:100%; }
+  .ot .bal { margin-left:0; width:100%; text-align:right; }
+  .quickScenarioPanel { padding:10px; }
+  .scenarioGrid { grid-template-columns:1fr; }
+  .scenarioCard { min-height:82px; }
+  .taskOptions { grid-template-columns:1fr; }
+  #noteEdit, #notePrev { min-height:180px; }
+
+  .ledgerCard, .taskBoardCard, .notifyCard, .settingsCard { padding:10px; border-radius:13px; }
+  .ledgerFilters input[type=date], .taskBoardFilters input[type=date], .ledgerFilters input[type=text], .taskBoardFilters input[type=text],
+  .ledgerFilters select, .taskBoardFilters select { width:100%; min-width:0; min-height:40px; }
+  .ledgerFilters button, .taskBoardFilters button { flex:1; }
+  .ledgerTableWrap { margin-left:-2px; margin-right:-2px; border-radius:9px; }
+  .ledgerTable { min-width:720px; }
+  .taskBoardList { max-height:none; }
+  .taskBoardItem { padding:9px; }
+  .notifyGrid { grid-template-columns:1fr; }
+  .notifyOpt { min-height:46px; }
+  .notifyItem { grid-template-columns:1fr; }
+
+  .settingsView { gap:10px; }
+  .settingsHead { gap:6px; }
+  .settingsTitle { font-size:15px; }
+  .mgr .row { gap:8px; }
+  .mgr .add { margin-left:0; width:100%; min-height:40px; }
+}
+
+@media (max-width: 420px) {
+  .wrap { padding-left:8px; padding-right:8px; }
+  .head h1 { font-size:22px; }
+  .cell { min-height:54px; padding:4px 5px; }
+  .cell .shift { font-size:9.5px; }
+  .tabbar { left:8px; right:8px; bottom:8px; }
+}
+
+
+/* v19.4: время и регион */
+.timeSettingsGrid{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:10px;
+  margin-top:12px;
+}
+.timeSettingsGrid label,
+.timeDefaultRow label{
+  color:var(--mut);
+  font-size:12px;
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+}
+.timeNowBox{
+  margin:12px 0;
+  padding:10px 12px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  color:var(--mut);
+  line-height:1.5;
+  background:rgba(255,255,255,.025);
+}
+.timeNowBox b{ color:var(--txt); }
+.timeNowBox span{ color:var(--dim); }
+.timeDefaults{
+  border:1px solid var(--line);
+  border-radius:14px;
+  padding:12px;
+  background:rgba(0,0,0,.12);
+}
+.timeDefaultsHead{
+  text-transform:uppercase;
+  letter-spacing:.16em;
+  color:var(--mut);
+  font-size:11px;
+  margin-bottom:10px;
+}
+.timeDefaultRow{
+  display:grid;
+  grid-template-columns:120px repeat(4,minmax(0,1fr)) auto;
+  gap:10px;
+  align-items:end;
+  padding:8px 0;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+.timeDefaultRow:first-of-type{ border-top:0; }
+.timeDefaultRow b{ align-self:center; }
+.timeSettingsActions{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:12px;
+}
+@media (max-width: 900px){
+  .timeSettingsGrid{ grid-template-columns:1fr 1fr; }
+  .timeDefaultRow{ grid-template-columns:1fr 1fr; }
+  .timeDefaultRow b{ grid-column:1/-1; }
+}
+@media (max-width: 560px){
+  .timeSettingsGrid{ grid-template-columns:1fr; }
+  .timeDefaultRow{ grid-template-columns:1fr; }
+}
