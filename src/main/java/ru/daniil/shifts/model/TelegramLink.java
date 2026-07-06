@@ -42,6 +42,9 @@ public class TelegramLink {
     @Column(nullable = false)
     private boolean enabled = true;
 
+    @Column(name = "notifications_enabled", nullable = false)
+    private boolean notificationsEnabled = true;
+
     @Column(name = "linked_at", nullable = false)
     private Instant linkedAt = Instant.now();
 
@@ -71,6 +74,8 @@ public class TelegramLink {
     public void setLastName(String lastName) { this.lastName = lastName; touch(); }
     public boolean isEnabled() { return enabled; }
     public void setEnabled(boolean enabled) { this.enabled = enabled; touch(); }
+    public boolean isNotificationsEnabled() { return notificationsEnabled; }
+    public void setNotificationsEnabled(boolean notificationsEnabled) { this.notificationsEnabled = notificationsEnabled; touch(); }
     public Instant getLinkedAt() { return linkedAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 

@@ -223,6 +223,7 @@ const api = {
   async deleteQuickScenario(id) { return jfetch(`/api/quick-scenarios/${id}`, { method:"DELETE" }); },
   async telegramStatus() { return jfetch("/api/telegram/status"); },
   async telegramCode() { return jfetch("/api/telegram/link-code", { method:"POST" }); },
+  async telegramSettings(b) { return jfetch("/api/telegram/settings", { method:"PATCH", body:b }); },
   async telegramUnlink() { return jfetch("/api/telegram/link", { method:"DELETE" }); },
 };
 
@@ -2876,19 +2877,25 @@ function renderTelegramPanel(){
   const status = $("telegramStatus");
   const codeBox = $("telegramCodeBox");
   const unlink = $("telegramUnlinkBtn");
+  const notifyToggle = $("telegramNotificationsEnabled");
   if (!s) {
     status.textContent = "загружаю…";
     status.className = "telegramStatus";
     if (unlink) unlink.disabled = true;
+    if (notifyToggle) notifyToggle.disabled = true;
     return;
   }
   if (unlink) unlink.disabled = !s.linked;
+  if (notifyToggle) {
+    notifyToggle.checked = !!s.notificationsEnabled;
+    notifyToggle.disabled = !s.configured || !s.linked;
+  }
   if (!s.configured) {
     status.textContent = "Бот не настроен на сервере: задай DUTYLOG_TELEGRAM_BOT_TOKEN и включи polling.";
     status.className = "telegramStatus warn";
   } else if (s.linked) {
     const name = s.username ? "@" + s.username : "chat " + s.chatId;
-    status.textContent = "Подключено: " + name;
+    status.textContent = "Подключено: " + name + (s.notificationsEnabled ? " · напоминания включены" : " · напоминания выключены");
     status.className = "telegramStatus ok";
   } else {
     status.textContent = "Не подключено. Создай код и отправь его " + telegramName(s) + ".";
@@ -2930,6 +2937,23 @@ $("telegramCodeBtn")?.addEventListener("click", async () => {
     btn.disabled = false;
   }
 });
+
+$("telegramNotificationsEnabled")?.addEventListener("change", async () => {
+  const toggle = $("telegramNotificationsEnabled");
+  if (!toggle) return;
+  try {
+    toggle.disabled = true;
+    state.telegramStatus = await api.telegramSettings({ notificationsEnabled: toggle.checked });
+    renderTelegramPanel();
+  } catch (e) {
+    toggle.checked = !toggle.checked;
+    const status = $("telegramStatus");
+    if (status) { status.textContent = e.message; status.className = "telegramStatus warn"; }
+  } finally {
+    toggle.disabled = !(state.telegramStatus?.configured && state.telegramStatus?.linked);
+  }
+});
+
 $("telegramUnlinkBtn")?.addEventListener("click", async () => {
   if (!confirm("Отключить Telegram от этого аккаунта?")) return;
   try {

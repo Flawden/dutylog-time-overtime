@@ -1,4 +1,4 @@
-# DutyLog API v20.0
+# DutyLog API v20.2.1
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -22,6 +22,7 @@
   "pollingEnabled": true,
   "linked": false,
   "enabled": true,
+  "notificationsEnabled": false,
   "botUsername": "DutyLogBot",
   "chatId": null,
   "username": null,
@@ -48,6 +49,18 @@
 
 Отключает Telegram от текущего аккаунта и удаляет активные коды привязки.
 
+### PATCH `/api/telegram/settings`
+
+Обновляет настройки Telegram-привязки текущего web-пользователя. Сейчас используется для включения/выключения Telegram-напоминаний. Endpoint защищён web-сессией + CSRF.
+
+```json
+{
+  "notificationsEnabled": true
+}
+```
+
+Ответ совпадает с `GET /api/telegram/status`.
+
 ## Telegram bot commands
 
 Команды обрабатываются backend’ом через long polling, если включены `DUTYLOG_TELEGRAM_ENABLED=true`, `DUTYLOG_TELEGRAM_BOT_TOKEN=...`, `DUTYLOG_TELEGRAM_POLLING_ENABLED=true`.
@@ -60,7 +73,18 @@
 - `/balance`, `/баланс`, `/overtime` — баланс переработок.
 - `/help` — список команд.
 
-В v20.0 бот работает только на чтение. Создание задач, переработок и списаний отгула запланировано отдельно, чтобы не смешивать фундамент и изменяющие команды.
+Изменяющие команды v20.2:
+
+- `/task текст` — создать задачу на сегодня.
+- `/task завтра текст` или `/task 2026-07-10 текст` — создать задачу на указанную дату.
+- `/done 12` — закрыть задачу по id из `/tasks`.
+- `/ppr 17-08 причина` — начислить переработку интервалом; если конец раньше начала, конец переносится на следующий день.
+- `/ppr 2 причина` — ручное начисление 2 часов.
+- `/timeoff 8 причина` — списать 8 часов отгула по FIFO.
+
+Для команд с датой первым аргументом принимаются `yyyy-MM-dd`, `dd.MM`, `dd.MM.yyyy`, `сегодня`, `завтра`. Для интервальной переработки можно добавить служебные токены `обед60` и `план8/план0`, например `/ppr 10.07 17-08 обед60 план0 ППР после смены`.
+
+Telegram-напоминания v20.1 работают отдельно от команд. Для них должны быть включены Telegram, polling и `DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true`.
 
 ## Web profile sessions
 

@@ -17,8 +17,11 @@
   h1 .yr { color:var(--mut); font-weight:400; font-family:ui-monospace,monospace; }
   #saveState { font-size:11px; color:var(--dim); font-family:ui-monospace,monospace; margin-left:12px; }
   #saveState.err { color:var(--danger); }
-  .nav button { background:var(--panel); border:1px solid var(--line); color:var(--text); border-radius:8px; padding:7px 13px; font-size:14px; cursor:pointer; margin-left:8px; }
+  .nav { gap:8px; }
+  .nav button { background:var(--panel); border:1px solid var(--line); color:var(--text); border-radius:8px; padding:7px 13px; font-size:14px; cursor:pointer; margin-left:0; }
   .nav button:hover { border-color:var(--dim); }
+  #headerAvatar { margin-left:14px; }
+  #whoami { margin-left:0 !important; }
 
   /* Сетка */
   .layout { display:grid; grid-template-columns:1fr; gap:16px; align-items:start; }
@@ -385,9 +388,10 @@
   .head { align-items:flex-start; margin-bottom:10px; gap:8px; }
   .head h1 { font-size:24px; line-height:1.15; }
   .eyebrow { font-size:10px; letter-spacing:1.8px; }
-  .nav { width:100%; justify-content:space-between; gap:6px; }
+  .nav { width:100%; justify-content:flex-start; gap:6px; }
   .nav button { min-height:40px; padding:8px 11px; margin-left:0; }
-  #whoami { margin-left:auto !important; max-width:42vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  #headerAvatar { margin-left:auto; }
+  #whoami { max-width:34vw; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   #logout { margin-left:0 !important; }
 
   .tabbar {
@@ -659,7 +663,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
 @media (max-width:900px){ .profileGrid { grid-template-columns:1fr 1fr; } }
 @media (max-width:600px){ .profileGrid { grid-template-columns:1fr; } }
 
-/* v20.0: Telegram foundation */
+/* v20.2.1: header profile spacing fix */
 .telegramBox{ margin-top:8px; border:1px solid var(--line); border-radius:12px; padding:10px; background:rgba(255,255,255,.025); }
 .telegramStatus{ font-weight:800; color:var(--text); margin-bottom:8px; }
 .telegramStatus.ok{ color:var(--ok); }
@@ -672,4 +676,6 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
 .telegramCode a{ color:var(--accent); font-weight:800; }
 .telegramCommands{ display:flex; flex-wrap:wrap; gap:6px; margin-top:8px; }
 .telegramCommands span{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:11px; color:var(--mut); border:1px solid var(--line); border-radius:999px; padding:4px 7px; background:var(--panel); }
-@media (max-width:700px){ .telegramActions button{ width:100%; } .telegramCode .code{ font-size:20px; } }
+.telegramNotifyToggle{ display:flex; align-items:center; gap:8px; margin:10px 0 2px; padding:9px 10px; border:1px solid var(--line); border-radius:10px; background:rgba(255,255,255,.025); font-weight:800; }
+.telegramNotifyHint{ margin-top:4px; }
+@media (max-width:700px){ .telegramActions button{ width:100%; } .telegramCode .code{ font-size:20px; } .telegramNotifyToggle{ min-height:44px; } }

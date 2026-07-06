@@ -97,20 +97,26 @@ public class TelegramBotService {
             return;
         }
 
-        String answer = commandService.handle(user, text);
-        sendMessage(chatId, answer);
+        try {
+            String answer = commandService.handle(user, text);
+            sendMessage(chatId, answer);
+        } catch (ApiException e) {
+            sendMessage(chatId, e.getMessage());
+        }
     }
 
-    public void sendMessage(Long chatId, String text) {
-        if (!linkService.isConfigured() || chatId == null || text == null || text.isBlank()) return;
+    public boolean sendMessage(Long chatId, String text) {
+        if (!linkService.isConfigured() || chatId == null || text == null || text.isBlank()) return false;
         try {
             Map<String, Object> body = new HashMap<>();
             body.put("chat_id", chatId);
             body.put("text", text.length() > 3900 ? text.substring(0, 3900) + "…" : text);
             body.put("disable_web_page_preview", true);
-            restTemplate.postForObject(apiUrl(linkService.token(), "sendMessage"), body, JsonNode.class);
+            JsonNode root = restTemplate.postForObject(apiUrl(linkService.token(), "sendMessage"), body, JsonNode.class);
+            return root == null || root.path("ok").asBoolean(true);
         } catch (Exception e) {
             log.warn("Telegram send failed: {}", e.getMessage());
+            return false;
         }
     }
 

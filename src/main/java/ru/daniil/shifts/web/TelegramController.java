@@ -7,6 +7,7 @@ import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.telegram.TelegramLinkService;
 import ru.daniil.shifts.telegram.TelegramLinkService.TelegramCodeDto;
 import ru.daniil.shifts.telegram.TelegramLinkService.TelegramStatusDto;
+import ru.daniil.shifts.telegram.TelegramLinkService.TelegramSettingsRequest;
 
 import java.security.Principal;
 
@@ -36,6 +37,12 @@ public class TelegramController {
     public TelegramCodeDto createLinkCode(Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         return telegramLinkService.createCode(current);
+    }
+
+    @PatchMapping("/settings")
+    public TelegramStatusDto updateSettings(Principal principal, @RequestBody TelegramSettingsRequest request) {
+        AppUser current = currentUserService.requireUser(principal);
+        return telegramLinkService.updateSettings(current, request);
     }
 
     @DeleteMapping("/link")

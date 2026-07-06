@@ -46,6 +46,7 @@ public class TelegramLinkService {
             boolean pollingEnabled,
             boolean linked,
             boolean enabled,
+            boolean notificationsEnabled,
             String botUsername,
             String chatId,
             String username,
@@ -61,6 +62,8 @@ public class TelegramLinkService {
             String deepLink
     ) {}
 
+    public record TelegramSettingsRequest(Boolean notificationsEnabled) {}
+
     @Transactional(readOnly = true)
     public TelegramStatusDto status(AppUser user) {
         TelegramLink link = links.findByOwner(user).orElse(null);
@@ -73,6 +76,7 @@ public class TelegramLinkService {
                 pollingEnabled,
                 link != null,
                 link == null || link.isEnabled(),
+                link != null && link.isNotificationsEnabled(),
                 cleanBotUsername(),
                 link != null ? String.valueOf(link.getTelegramChatId()) : null,
                 link != null ? link.getUsername() : null,
@@ -139,6 +143,17 @@ public class TelegramLinkService {
         return links.findByTelegramChatId(telegramChatId)
                 .filter(TelegramLink::isEnabled)
                 .map(TelegramLink::getOwner);
+    }
+
+    @Transactional
+    public TelegramStatusDto updateSettings(AppUser user, TelegramSettingsRequest request) {
+        TelegramLink link = links.findByOwner(user)
+                .orElseThrow(() -> ApiException.badRequest("Telegram ещё не подключён"));
+        if (request != null && request.notificationsEnabled() != null) {
+            link.setNotificationsEnabled(request.notificationsEnabled());
+        }
+        links.save(link);
+        return status(user);
     }
 
     @Transactional

@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=20.0" rel="stylesheet"/>
+<link href="app.css?v=20.2.1" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -323,13 +323,15 @@
 <div class="telegramBox" id="telegramBox">
   <div class="telegramStatus" id="telegramStatus">загружаю…</div>
   <div class="settingsHint">Бот работает внутри этого же backend. Подключение: создай код здесь и отправь его боту командой /start DL-123456.</div>
+  <label class="telegramNotifyToggle"><input id="telegramNotificationsEnabled" type="checkbox"/> присылать напоминания в Telegram</label>
+  <div class="settingsHint telegramNotifyHint">Используются те же правила, что в блоке «Уведомления»: смены, задачи, важные дни и вечерний дайджест.</div>
   <div class="telegramActions">
     <button class="primary" id="telegramCodeBtn" type="button">Создать код привязки</button>
     <button id="telegramUnlinkBtn" type="button">Отключить Telegram</button>
   </div>
   <div class="telegramCode" id="telegramCodeBox" hidden></div>
   <div class="telegramCommands">
-    <span>/today</span><span>/tomorrow</span><span>/week</span><span>/tasks</span><span>/balance</span>
+    <span>/today</span><span>/tasks</span><span>/task</span><span>/done</span><span>/ppr</span><span>/timeoff</span><span>/balance</span>
   </div>
 </div>
 </div>
@@ -536,6 +538,6 @@
     <div class="noteFsPrev" id="noteFsPrev"></div>
   </div>
 </div>
-<script src="app.js?v=20.0"></script>
+<script src="app.js?v=20.2.1"></script>
 </body>
 </html>
