@@ -291,9 +291,47 @@ public final class Dtos {
             String reason
     ) {}
 
+    /** Обновление начисления переработки. Все поля опциональны; пустые start/end переводят запись в ручной режим. */
+    public record OvertimeCreditUpdateRequest(
+            String date,
+
+            @Size(max = 50, message = "Время переработки: максимум 50 символов")
+            String timeRange,
+
+            String startDateTime,
+            String endDateTime,
+
+            @DecimalMin(value = "0", message = "Обед не может быть отрицательным")
+            @DecimalMax(value = "1440", message = "Обед не может быть больше 1440 минут")
+            Integer breakMinutes,
+
+            @DecimalMin(value = "0.0", message = "Плановые часы не могут быть отрицательными")
+            @DecimalMax(value = "100.0", message = "Плановые часы: максимум 100")
+            Double plannedHours,
+
+            @DecimalMin(value = "0.01", message = "Переработка должна быть больше 0")
+            @DecimalMax(value = "100.0", message = "Переработка за запись: максимум 100 часов")
+            Double hours,
+
+            @Size(max = 1000, message = "Причина переработки: максимум 1000 символов")
+            String reason
+    ) {}
+
     /** Списание часов переработки в отгул. Распределяется по старым начислениям автоматически. */
     public record OvertimeUsageCreateRequest(
             @NotBlank(message = "Дата списания должна быть в формате yyyy-MM-dd")
+            String date,
+
+            @DecimalMin(value = "0.01", message = "Списание должно быть больше 0")
+            @DecimalMax(value = "100.0", message = "Списание за запись: максимум 100 часов")
+            Double hours,
+
+            @Size(max = 1000, message = "Причина списания: максимум 1000 символов")
+            String reason
+    ) {}
+
+    /** Обновление списания отгула. Если часы изменились, распределение FIFO пересобирается заново. */
+    public record OvertimeUsageUpdateRequest(
             String date,
 
             @DecimalMin(value = "0.01", message = "Списание должно быть больше 0")

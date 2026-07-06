@@ -6,10 +6,12 @@ import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAllocationDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditRowDto;
+import ru.daniil.shifts.dto.Dtos.OvertimeCreditUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeLedgerItemDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeSummaryDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageDto;
+import ru.daniil.shifts.dto.Dtos.OvertimeUsageUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageRefDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
@@ -130,7 +132,7 @@ public class OvertimeService {
         }
 
         for (CreditSegment segment : segments) {
-            ensureNoOvertimeOverlap(user, segment.startAt(), segment.endAt());
+            ensureNoOvertimeOverlap(user, segment.startAt(), segment.endAt(), null);
         }
 
         String reason = normalize(req.reason());
@@ -159,32 +161,115 @@ public class OvertimeService {
         LocalDate date = dayEntryService.parseDate(req.date(), "Дата списания должна быть в формате yyyy-MM-dd");
         double requested = requirePositiveHours(req.hours(), "Укажи часы списания больше 0");
 
-        List<OvertimeCredit> creditList = credits.findByOwnerOrderByWorkDateAscIdAsc(user);
-        Map<Long, Double> usedByCredit = allocations.findAllByOwner(user).stream()
-                .collect(Collectors.groupingBy(a -> a.getCredit().getId(), Collectors.summingDouble(OvertimeAllocation::getHours)));
-
-        double available = creditList.stream()
-                .mapToDouble(c -> c.getHours() - usedByCredit.getOrDefault(c.getId(), 0.0))
-                .filter(v -> v > 0.00001)
-                .sum();
-
-        if (requested - available > 0.00001) {
-            throw ApiException.badRequest("Недостаточно переработки: доступно " + fmt(available) + " ч, списать хочешь " + fmt(requested) + " ч");
-        }
-
         OvertimeUsage usage = usages.save(new OvertimeUsage(user, date, requested, normalize(req.reason())));
-        double left = requested;
-        for (OvertimeCredit credit : creditList) {
-            if (left <= 0.00001) break;
-            double alreadyUsed = usedByCredit.getOrDefault(credit.getId(), 0.0);
-            double remain = credit.getHours() - alreadyUsed;
-            if (remain <= 0.00001) continue;
-            double take = round2(Math.min(remain, left));
-            if (take <= 0.00001) continue;
-            allocations.save(new OvertimeAllocation(credit, usage, take));
-            left = round2(left - take);
+        allocateUsageFifo(user, usage, requested);
+        return account(user);
+    }
+
+    @Transactional
+    public OvertimeAccountDto updateCredit(AppUser user, long id, OvertimeCreditUpdateRequest req) {
+        if (req == null) {
+            throw ApiException.badRequest("Некорректный JSON в запросе");
+        }
+        OvertimeCredit credit = credits.findByOwnerAndId(user, id)
+                .orElseThrow(() -> ApiException.notFound("Начисление переработки не найдено"));
+        double used = allocations.sumHoursByCredit(credit);
+
+        OvertimeCreditCreateRequest normalized = normalizeCreditUpdateRequest(credit, req);
+        CalculatedCredit calculated = calculateCredit(normalized);
+        String reason = req.reason() != null ? normalize(req.reason()) : credit.getReason();
+
+        if (!calculated.calculated()) {
+            if (calculated.hours() + 0.00001 < used) {
+                throw ApiException.badRequest("Нельзя уменьшить начисление до " + fmt(calculated.hours())
+                        + " ч: из него уже списано " + fmt(used) + " ч");
+            }
+            LocalDate date = dayEntryService.parseDate(normalized.date(), "Дата переработки должна быть в формате yyyy-MM-dd");
+            credit.setWorkDate(date);
+            credit.setTimeRange(normalize(calculated.timeRange()));
+            credit.setStartAt(null);
+            credit.setEndAt(null);
+            credit.setBreakMinutes(0);
+            credit.setPlannedHours(0.0);
+            credit.setCalculated(false);
+            credit.setHours(calculated.hours());
+            credit.setReason(reason);
+            credits.save(credit);
+            return account(user);
         }
 
+        List<CreditSegment> segments = splitCalculatedCredit(calculated);
+        if (segments.isEmpty()) {
+            throw ApiException.badRequest("После разбиения по датам переработка получилась 0 или меньше");
+        }
+
+        for (CreditSegment segment : segments) {
+            ensureNoOvertimeOverlap(user, segment.startAt(), segment.endAt(), credit.getId());
+        }
+
+        if (segments.size() > 1) {
+            if (used > 0.00001) {
+                throw ApiException.badRequest("Нельзя заменить уже использованное начисление на несколько строк. Сначала удали списания, которые его используют.");
+            }
+            credits.delete(credit);
+            for (CreditSegment segment : segments) {
+                credits.save(new OvertimeCredit(
+                        user,
+                        segment.workDate(),
+                        formatTimeRange(segment.startAt(), segment.endAt()),
+                        segment.hours(),
+                        reason,
+                        segment.startAt(),
+                        segment.endAt(),
+                        segment.breakMinutes(),
+                        segment.plannedHours(),
+                        true
+                ));
+            }
+            return account(user);
+        }
+
+        CreditSegment segment = segments.get(0);
+        if (segment.hours() + 0.00001 < used) {
+            throw ApiException.badRequest("Нельзя уменьшить начисление до " + fmt(segment.hours())
+                    + " ч: из него уже списано " + fmt(used) + " ч");
+        }
+        credit.setWorkDate(segment.workDate());
+        credit.setTimeRange(formatTimeRange(segment.startAt(), segment.endAt()));
+        credit.setStartAt(segment.startAt());
+        credit.setEndAt(segment.endAt());
+        credit.setBreakMinutes(segment.breakMinutes());
+        credit.setPlannedHours(segment.plannedHours());
+        credit.setCalculated(true);
+        credit.setHours(segment.hours());
+        credit.setReason(reason);
+        credits.save(credit);
+        return account(user);
+    }
+
+    @Transactional
+    public OvertimeAccountDto updateUsage(AppUser user, long id, OvertimeUsageUpdateRequest req) {
+        if (req == null) {
+            throw ApiException.badRequest("Некорректный JSON в запросе");
+        }
+        OvertimeUsage usage = usages.findByOwnerAndId(user, id)
+                .orElseThrow(() -> ApiException.notFound("Списание отгула не найдено"));
+
+        LocalDate date = hasText(req.date())
+                ? dayEntryService.parseDate(req.date(), "Дата списания должна быть в формате yyyy-MM-dd")
+                : usage.getUsageDate();
+        double hours = req.hours() != null
+                ? requirePositiveHours(req.hours(), "Укажи часы списания больше 0")
+                : usage.getHours();
+        String reason = req.reason() != null ? normalize(req.reason()) : usage.getReason();
+
+        allocations.deleteByUsage(usage);
+        allocations.flush();
+        usage.setUsageDate(date);
+        usage.setHours(hours);
+        usage.setReason(reason);
+        usages.save(usage);
+        allocateUsageFifo(user, usage, hours);
         return account(user);
     }
 
@@ -207,6 +292,62 @@ public class OvertimeService {
         allocations.deleteByUsage(usage);
         usages.delete(usage);
         return account(user);
+    }
+
+    private void allocateUsageFifo(AppUser user, OvertimeUsage usage, double requested) {
+        List<OvertimeCredit> creditList = credits.findByOwnerOrderByWorkDateAscIdAsc(user);
+        Map<Long, Double> usedByCredit = allocations.findAllByOwner(user).stream()
+                .collect(Collectors.groupingBy(a -> a.getCredit().getId(), Collectors.summingDouble(OvertimeAllocation::getHours)));
+
+        double available = creditList.stream()
+                .mapToDouble(c -> c.getHours() - usedByCredit.getOrDefault(c.getId(), 0.0))
+                .filter(v -> v > 0.00001)
+                .sum();
+
+        if (requested - available > 0.00001) {
+            throw ApiException.badRequest("Недостаточно переработки: доступно " + fmt(available) + " ч, списать хочешь " + fmt(requested) + " ч");
+        }
+
+        double left = requested;
+        for (OvertimeCredit credit : creditList) {
+            if (left <= 0.00001) break;
+            double alreadyUsed = usedByCredit.getOrDefault(credit.getId(), 0.0);
+            double remain = credit.getHours() - alreadyUsed;
+            if (remain <= 0.00001) continue;
+            double take = round2(Math.min(remain, left));
+            if (take <= 0.00001) continue;
+            allocations.save(new OvertimeAllocation(credit, usage, take));
+            left = round2(left - take);
+        }
+    }
+
+    private OvertimeCreditCreateRequest normalizeCreditUpdateRequest(OvertimeCredit old, OvertimeCreditUpdateRequest req) {
+        String date = hasText(req.date()) ? req.date().trim() : old.getWorkDate().toString();
+        String start = req.startDateTime() != null ? normalize(req.startDateTime()) : (old.getStartAt() == null ? null : old.getStartAt().toString());
+        String end = req.endDateTime() != null ? normalize(req.endDateTime()) : (old.getEndAt() == null ? null : old.getEndAt().toString());
+        boolean calculated = hasText(start) || hasText(end);
+        String timeRange = req.timeRange() != null ? normalize(req.timeRange()) : old.getTimeRange();
+        Integer breakMinutes = req.breakMinutes() != null ? req.breakMinutes() : old.getBreakMinutes();
+        Double plannedHours = req.plannedHours() != null ? req.plannedHours() : old.getPlannedHours();
+        Double hours = req.hours() != null ? req.hours() : old.getHours();
+
+        if (!calculated) {
+            start = null;
+            end = null;
+            breakMinutes = 0;
+            plannedHours = 0.0;
+        }
+
+        return new OvertimeCreditCreateRequest(
+                date,
+                timeRange,
+                start,
+                end,
+                breakMinutes,
+                plannedHours,
+                hours,
+                req.reason() != null ? normalize(req.reason()) : old.getReason()
+        );
     }
 
     private OvertimeCreditRowDto creditRow(OvertimeCredit credit, List<OvertimeAllocation> allocationList) {
@@ -358,8 +499,10 @@ public class OvertimeService {
      * Запрещаем пересечения по времени. Это защищает от двойного начисления
      * одного и того же периода, например два раза 03.07 20:00 → 04.07 08:00.
      */
-    private void ensureNoOvertimeOverlap(AppUser user, LocalDateTime start, LocalDateTime end) {
-        List<OvertimeCredit> overlaps = credits.findByOwnerAndStartAtLessThanAndEndAtGreaterThan(user, end, start);
+    private void ensureNoOvertimeOverlap(AppUser user, LocalDateTime start, LocalDateTime end, Long ignoreCreditId) {
+        List<OvertimeCredit> overlaps = credits.findByOwnerAndStartAtLessThanAndEndAtGreaterThan(user, end, start).stream()
+                .filter(c -> ignoreCreditId == null || !ignoreCreditId.equals(c.getId()))
+                .toList();
         if (overlaps.isEmpty()) return;
 
         OvertimeCredit first = overlaps.get(0);

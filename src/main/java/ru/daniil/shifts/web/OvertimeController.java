@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -11,9 +12,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
+import ru.daniil.shifts.dto.Dtos.OvertimeCreditUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeLedgerItemDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeSummaryDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest;
+import ru.daniil.shifts.dto.Dtos.OvertimeUsageUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.DayEntryService;
@@ -54,6 +57,15 @@ public class OvertimeController {
         return overtimeService.createCredit(current, req);
     }
 
+    /** PATCH /api/overtime/credits/{id} — отредактировать начисление и безопасно пересчитать часы. */
+    @PatchMapping("/credits/{id}")
+    public OvertimeAccountDto updateCredit(@PathVariable long id,
+                                           @Valid @RequestBody OvertimeCreditUpdateRequest req,
+                                           Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        return overtimeService.updateCredit(current, id, req);
+    }
+
     /** DELETE /api/overtime/credits/{id} — удалить начисление, если из него ещё ничего не списано. */
     @DeleteMapping("/credits/{id}")
     public OvertimeAccountDto deleteCredit(@PathVariable long id, Principal principal) {
@@ -67,6 +79,15 @@ public class OvertimeController {
                                           Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         return overtimeService.createUsage(current, req);
+    }
+
+    /** PATCH /api/overtime/usages/{id} — изменить дату/часы/причину списания и пересобрать FIFO. */
+    @PatchMapping("/usages/{id}")
+    public OvertimeAccountDto updateUsage(@PathVariable long id,
+                                          @Valid @RequestBody OvertimeUsageUpdateRequest req,
+                                          Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        return overtimeService.updateUsage(current, id, req);
     }
 
     /** DELETE /api/overtime/usages/{id} — удалить списание и вернуть часы в остатки начислений. */
