@@ -2824,7 +2824,7 @@ $("pwChange").addEventListener("click", async () => {
 async function loadSessions(){
   const box = $("sessionsList");
   try {
-    const list = await jfetch("/api/mobile/auth/sessions");
+    const list = await jfetch("/api/profile/sessions");
     box.innerHTML = "";
     if (!list.length) {
       box.innerHTML = '<div class="sessionRow"><span class="meta">Мобильных сессий нет — только этот браузер.</span></div>';
@@ -2846,7 +2846,7 @@ async function loadSessions(){
         del.type = "button";
         del.textContent = "отозвать";
         del.addEventListener("click", async () => {
-          try { await jfetch("/api/mobile/auth/sessions/" + sess.id, { method: "DELETE" }); loadSessions(); }
+          try { await jfetch("/api/profile/sessions/" + sess.id, { method: "DELETE" }); loadSessions(); }
           catch (e) { console.error(e); }
         });
         row.appendChild(del);

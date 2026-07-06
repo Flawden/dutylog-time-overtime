@@ -4,6 +4,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import ru.daniil.shifts.dto.Dtos.MobileAuthTokenDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.CurrentUserService;
@@ -14,6 +15,7 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -80,6 +82,25 @@ public class ProfileController {
 
         users.save(user);
         return get(principal);
+    }
+
+
+    /**
+     * Web-friendly список мобильных устройств.
+     * Не используем /api/mobile/** из браузерного UI, чтобы mobile API
+     * оставался stateless/Bearer и был исключён из CSRF только для Android.
+     */
+    @GetMapping("/sessions")
+    public List<MobileAuthTokenDto> sessions(Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        return mobileAuthService.sessions(current);
+    }
+
+    @DeleteMapping("/sessions/{id}")
+    public ResponseEntity<Void> revokeSession(@PathVariable Long id, Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        mobileAuthService.revokeSession(current, id);
+        return ResponseEntity.noContent().build();
     }
 
     /**

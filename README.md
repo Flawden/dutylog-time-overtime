@@ -309,11 +309,18 @@ GET    /api/mobile/auth/sessions
 DELETE /api/mobile/auth/sessions/{id}
 ```
 
+Для браузерного профиля используются CSRF-защищённые web endpoint’ы:
+
+```text
+GET    /api/profile/sessions
+DELETE /api/profile/sessions/{id}
+```
+
 Access token короткий, refresh token длиннее. При обновлении refresh token ротируется: старая пара заменяется новой. В базе хранятся не сами токены, а SHA-256 хэши.
 
 Пароли хранятся через BCrypt. Данные пользователей изолированы: каждый запрос берёт текущего пользователя из сессии или Bearer-токена и работает только с его сменами/днями.
 
-Важное ограничение текущей версии: CSRF пока отключён для удобства fetch-запросов. Для публичного web-приложения потом стоит разделить security-конфиги: CSRF для cookie-web и stateless Bearer API для mobile.
+CSRF для web-интерфейса включён: Spring кладёт токен в cookie `XSRF-TOKEN`, а frontend отправляет его в заголовке `X-XSRF-TOKEN` на изменяющих запросах. Мобильный API `/api/mobile/**` остаётся stateless под `Authorization: Bearer ...` и исключён из CSRF.
 
 ## Что внутри
 
@@ -518,6 +525,15 @@ GET   /api/notifications/upcoming?from=2026-07-01&to=2026-07-31
 В v19.3 улучшен мобильный UX: вкладки становятся нижней навигацией, панель выбранного дня открывается как нижняя шторка, кнопки и поля стали крупнее под палец, а формы и фильтры лучше адаптируются к узкому экрану. Backend не менялся.
 
 
+
+
+## v19.10.1 — cleanup после слияния
+
+- Архив приведён к структуре `v19.10.1/shift-calendar`.
+- `CHANGES.md` дополнен релизами `v19.5–v19.10`.
+- Уточнена документация по CSRF: web-cookie интерфейс защищён, mobile Bearer API остаётся stateless.
+- `app.css`/`app.js` подключаются с `?v=19.10.1`, а service worker отдаёт JS/CSS по network-first.
+- UI профиля больше не ходит в `/api/mobile/auth/sessions`; для браузера добавлены CSRF-защищённые `/api/profile/sessions`.
 
 ## v19.5 — слияние веток: безопасность и тесты из v20
 

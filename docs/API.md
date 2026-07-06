@@ -1,8 +1,21 @@
-# Shift Calendar API v14.6
+# Shift Calendar API v19.10.1
 
 Веб-версия работает через `JSESSIONID`, Android/PWA-клиенты могут использовать `Authorization: Bearer <accessToken>`. Старые endpoint'ы сохранены, поверх них добавлен mobile-слой.
 
 
+
+
+## Web profile sessions
+
+Эти endpoint’ы используются браузерным UI профиля и защищены обычной web-сессией + CSRF. Они дублируют управление мобильными устройствами, но живут вне `/api/mobile/**`, чтобы mobile API оставался stateless/Bearer.
+
+### GET `/api/profile/sessions`
+
+Возвращает список мобильных устройств пользователя. Формат ответа совпадает с `GET /api/mobile/auth/sessions`.
+
+### DELETE `/api/profile/sessions/{id}`
+
+Отзывает мобильную сессию пользователя. Используется кнопкой `отозвать` во вкладке профиля.
 
 ## Mobile auth
 

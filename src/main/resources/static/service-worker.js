@@ -1,4 +1,4 @@
-const CACHE_NAME = "shift-calendar-shell-v7"; // bump: сбрасывает старый кэш при активации
+const CACHE_NAME = "shift-calendar-shell-v19.10.1"; // bump: сбрасывает старый кэш при активации
 
 const SHELL = [
   "/manifest.json",
@@ -44,7 +44,22 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // Статика (иконки, манифест): cache-first, это безопасно.
+  // JS/CSS — network-first: HTML может обновиться раньше shell-кэша.
+  // Если отдать старый app.js к новому index.html, получим фантомные баги.
+  if (url.pathname.endsWith(".js") || url.pathname.endsWith(".css")) {
+    event.respondWith(
+      fetch(event.request)
+        .then(res => {
+          const copy = res.clone();
+          caches.open(CACHE_NAME).then(c => c.put(event.request, copy));
+          return res;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Иконки и манифест: cache-first, это безопасно.
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request))
   );
