@@ -61,14 +61,11 @@ public class AuthController {
         return Map.of("username", principal.getName());
     }
 
-    /** Стартовый набор смен для нового пользователя. */
+    /** Стартовый набор для нового пользователя — минимум, остальное он создаст сам. */
     private void seedDefaults(AppUser user) {
         shiftTypes.saveAll(List.of(
-                new ShiftType(user, "Дневная",  8,  "#F5B841", true),
-                new ShiftType(user, "Ночная",   8,  "#7B8CE0", true),
-                new ShiftType(user, "12 часов", 12, "#4FA3A5", true),
-                new ShiftType(user, "5 часов",  5,  "#C97BB8", true),
-                new ShiftType(user, "Выходной", 0,  "#5A6270", true)
+                new ShiftType(user, "Дневная", 8, "#F5B841", false),
+                new ShiftType(user, "Ночная",  8, "#7B8CE0", false)
         ));
     }
 }
