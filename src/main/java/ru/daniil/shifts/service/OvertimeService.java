@@ -110,22 +110,44 @@ public class OvertimeService {
         if (req == null) {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
+
         CalculatedCredit calculated = calculateCredit(req);
-        LocalDate date = calculated.startAt() != null
-                ? calculated.startAt().toLocalDate()
-                : dayEntryService.parseDate(req.date(), "Дата переработки должна быть в формате yyyy-MM-dd");
-        credits.save(new OvertimeCredit(
-                user,
-                date,
-                normalize(calculated.timeRange()),
-                calculated.hours(),
-                normalize(req.reason()),
-                calculated.startAt(),
-                calculated.endAt(),
-                calculated.breakMinutes(),
-                calculated.plannedHours(),
-                calculated.calculated()
-        ));
+        if (!calculated.calculated()) {
+            LocalDate date = dayEntryService.parseDate(req.date(), "Дата переработки должна быть в формате yyyy-MM-dd");
+            credits.save(new OvertimeCredit(
+                    user,
+                    date,
+                    normalize(calculated.timeRange()),
+                    calculated.hours(),
+                    normalize(req.reason())
+            ));
+            return account(user);
+        }
+
+        List<CreditSegment> segments = splitCalculatedCredit(calculated);
+        if (segments.isEmpty()) {
+            throw ApiException.badRequest("После разбиения по датам переработка получилась 0 или меньше");
+        }
+
+        for (CreditSegment segment : segments) {
+            ensureNoOvertimeOverlap(user, segment.startAt(), segment.endAt());
+        }
+
+        String reason = normalize(req.reason());
+        for (CreditSegment segment : segments) {
+            credits.save(new OvertimeCredit(
+                    user,
+                    segment.workDate(),
+                    formatTimeRange(segment.startAt(), segment.endAt()),
+                    segment.hours(),
+                    reason,
+                    segment.startAt(),
+                    segment.endAt(),
+                    segment.breakMinutes(),
+                    segment.plannedHours(),
+                    true
+            ));
+        }
         return account(user);
     }
 
@@ -265,6 +287,89 @@ public class OvertimeService {
         return new CalculatedCredit(normalize(req.timeRange()), hours, null, null, 0, 0.0, false);
     }
 
+    /**
+     * Рассчитанную переработку раскладываем на отдельные начисления.
+     * Так сутки не падают одной строкой на дату начала, а становятся несколькими строками журнала.
+     *
+     * Правила:
+     * - обычные интервалы через полночь режутся по календарной полуночи;
+     * - ровные сутки вида 08:00 → 08:00 следующего дня режутся пополам,
+     *   чтобы в календаре было две понятные половины: дата начала и дата конца;
+     * - обед и вычтенный план снимаются с самых ранних минут интервала.
+     */
+    private List<CreditSegment> splitCalculatedCredit(CalculatedCredit credit) {
+        LocalDateTime start = credit.startAt();
+        LocalDateTime end = credit.endAt();
+        long totalMinutes = Duration.between(start, end).toMinutes();
+        if (totalMinutes <= 0) {
+            return List.of();
+        }
+
+        List<RawSegment> rawSegments = new ArrayList<>();
+        long daysBetween = Duration.between(start.toLocalDate().atStartOfDay(), end.toLocalDate().atStartOfDay()).toDays();
+        boolean oneExactDaySameTime = daysBetween == 1 && start.toLocalTime().equals(end.toLocalTime());
+
+        if (oneExactDaySameTime) {
+            LocalDateTime mid = start.plusMinutes(totalMinutes / 2);
+            rawSegments.add(new RawSegment(start.toLocalDate(), start, mid));
+            rawSegments.add(new RawSegment(end.toLocalDate(), mid, end));
+        } else {
+            LocalDateTime cursor = start;
+            while (cursor.isBefore(end)) {
+                LocalDateTime nextMidnight = cursor.toLocalDate().plusDays(1).atStartOfDay();
+                LocalDateTime segmentEnd = nextMidnight.isBefore(end) ? nextMidnight : end;
+                rawSegments.add(new RawSegment(cursor.toLocalDate(), cursor, segmentEnd));
+                cursor = segmentEnd;
+            }
+        }
+
+        int breakLeft = credit.breakMinutes();
+        int plannedLeft = (int) Math.round(credit.plannedHours() * 60.0);
+        List<CreditSegment> result = new ArrayList<>();
+
+        for (RawSegment raw : rawSegments) {
+            int rawMinutes = (int) Duration.between(raw.startAt(), raw.endAt()).toMinutes();
+            if (rawMinutes <= 0) continue;
+
+            int segmentBreak = Math.min(breakLeft, rawMinutes);
+            breakLeft -= segmentBreak;
+
+            int afterBreak = rawMinutes - segmentBreak;
+            int segmentPlan = Math.min(plannedLeft, Math.max(0, afterBreak));
+            plannedLeft -= segmentPlan;
+
+            int creditedMinutes = rawMinutes - segmentBreak - segmentPlan;
+            if (creditedMinutes <= 0) continue;
+
+            result.add(new CreditSegment(
+                    raw.workDate(),
+                    raw.startAt(),
+                    raw.endAt(),
+                    segmentBreak,
+                    round2(segmentPlan / 60.0),
+                    requirePositiveHours(creditedMinutes / 60.0, "Переработка должна быть больше 0")
+            ));
+        }
+
+        return result;
+    }
+
+    /**
+     * Запрещаем пересечения по времени. Это защищает от двойного начисления
+     * одного и того же периода, например два раза 03.07 20:00 → 04.07 08:00.
+     */
+    private void ensureNoOvertimeOverlap(AppUser user, LocalDateTime start, LocalDateTime end) {
+        List<OvertimeCredit> overlaps = credits.findByOwnerAndStartAtLessThanAndEndAtGreaterThan(user, end, start);
+        if (overlaps.isEmpty()) return;
+
+        OvertimeCredit first = overlaps.get(0);
+        throw ApiException.badRequest(
+                "Этот период пересекается с уже записанной переработкой: "
+                        + formatTimeRange(first.getStartAt(), first.getEndAt())
+                        + " (" + fmt(first.getHours()) + " ч). Удали старую запись или измени время."
+        );
+    }
+
     private LocalDateTime parseDateTime(String value, String message) {
         try {
             return LocalDateTime.parse(value.trim());
@@ -336,5 +441,20 @@ public class OvertimeService {
             int breakMinutes,
             double plannedHours,
             boolean calculated
+    ) {}
+
+    private record RawSegment(
+            LocalDate workDate,
+            LocalDateTime startAt,
+            LocalDateTime endAt
+    ) {}
+
+    private record CreditSegment(
+            LocalDate workDate,
+            LocalDateTime startAt,
+            LocalDateTime endAt,
+            int breakMinutes,
+            double plannedHours,
+            double hours
     ) {}
 }

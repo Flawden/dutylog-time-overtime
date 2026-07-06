@@ -5,6 +5,7 @@ import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.OvertimeCredit;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,4 +13,10 @@ public interface OvertimeCreditRepository extends JpaRepository<OvertimeCredit, 
     List<OvertimeCredit> findByOwnerOrderByWorkDateAscIdAsc(AppUser owner);
     List<OvertimeCredit> findByOwnerAndWorkDateBetweenOrderByWorkDateAscIdAsc(AppUser owner, LocalDate from, LocalDate to);
     Optional<OvertimeCredit> findByOwnerAndId(AppUser owner, Long id);
+
+    /**
+     * Для начислений с точным временем запрещаем пересечения,
+     * иначе один и тот же ночной/суточный период можно засчитать дважды.
+     */
+    List<OvertimeCredit> findByOwnerAndStartAtLessThanAndEndAtGreaterThan(AppUser owner, LocalDateTime endAt, LocalDateTime startAt);
 }

@@ -326,7 +326,7 @@
           <button id="usageAdd" class="primary" type="button">Списать FIFO</button>
           <span class="bal" id="otBalance">0 ч</span>
         </div>
-        <div class="otHint" id="otDayDetails">FIFO: сначала списываются самые старые часы переработки. Начисление с интервалом ложится на дату из поля «Начало», даже если открыт другой день календаря.</div>
+        <div class="otHint" id="otDayDetails">FIFO: сначала списываются самые старые часы переработки. Начисления с интервалом сервер раскладывает по датам и не даёт записать пересекающийся период дважды.</div>
       </div>
         </div>
       </details>
@@ -949,7 +949,12 @@ function overtimeCalcFromInputs(){
     return null;
   }
   $("creditHours").value = fmtHours(hours);
-  $("creditCalcHint").textContent = `${fmtHours(totalMinutes / 60)}ч - ${breakMinutes}м${plannedHours ? " - " + fmtHours(plannedHours) + "ч плана" : ""} = ${fmtHours(hours)}ч`;
+  let splitHint = "";
+  if (startValue.slice(0, 10) !== endValue.slice(0, 10)) {
+    const sameClock = startValue.slice(11, 16) === endValue.slice(11, 16);
+    splitHint = sameClock ? "; сервер разобьёт ровные сутки пополам" : "; сервер разобьёт по датам";
+  }
+  $("creditCalcHint").textContent = `${fmtHours(totalMinutes / 60)}ч - ${breakMinutes}м${plannedHours ? " - " + fmtHours(plannedHours) + "ч плана" : ""} = ${fmtHours(hours)}ч${splitHint}`;
   return { startValue, endValue, breakMinutes, plannedHours, hours, timeRange: displayDateTimeRange(startValue, endValue) };
 }
 
