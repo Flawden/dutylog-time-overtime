@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=20.2.1" rel="stylesheet"/>
+<link href="app.css?v=20.3" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -280,7 +280,16 @@
 </div>
 </section>
 <section class="view settingsView" hidden="" id="view-settings">
-<div class="settingsCard" id="profileCard">
+<div class="settingsIndex" aria-label="Разделы настроек">
+  <a href="#settings-profile">Профиль</a>
+  <a href="#settings-time">Время</a>
+  <a href="#settings-shifts">Смены</a>
+  <a href="#settings-scenarios">Сценарии</a>
+  <a href="#settings-notifications">Уведомления</a>
+  <a href="#settings-diagnostics">Диагностика</a>
+</div>
+<div class="settingsCard" id="profileCard" data-settings-section="profile">
+<a class="settingsAnchor" id="settings-profile"></a>
 <div class="settingsHead">
 <div>
 <div class="eyebrow">Профиль</div>
@@ -335,12 +344,13 @@
   </div>
 </div>
 </div>
-<section class="settingsCard" id="timeSettingsCard">
+<section class="settingsCard" id="timeSettingsCard" data-settings-section="time">
+<a class="settingsAnchor" id="settings-time"></a>
 <div class="settingsHead">
 <div>
 <div class="eyebrow">Время и регион</div>
 <div class="settingsTitle">Рабочее время, часовой пояс и дефолты смен</div>
-<div class="settingsHint">Эти настройки помогают не путаться между местным временем, рабочим регионом и шаблонами смен. Они применяются к подсказкам и могут обновить встроенные смены.</div>
+<div class="settingsHint">Меняешь дефолт дневной или ночной — DutyLog сохраняет настройку и применяет её к встроенным сменам. Отдельная кнопка нужна только чтобы принудительно повторить применение.</div>
 </div>
 <div class="status" id="timeSettingsStatus">—</div>
 </div>
@@ -390,13 +400,13 @@
 </div>
 </div>
 <div class="timeSettingsActions">
-<button class="primary" id="timeSave" type="button">Сохранить время</button>
+<button class="primary" id="timeApplyBuiltins" type="button">Сохранить и применить к сменам</button>
 <button id="timeDetectBrowser" type="button">взять часовой пояс браузера</button>
-<button id="timeApplyBuiltins" type="button">применить к Дневной/Ночной</button>
 </div>
-<div class="wideHint">Пока эти настройки хранятся в браузере и помогают с дефолтами. Чтобы уведомления и сценарии считались по ним, нажми «применить к Дневной/Ночной» — тогда обновятся сами типы смен.</div>
+<div class="wideHint">Регион и часовой пояс хранятся в браузере. Дефолты дневной и ночной смены автоматически применяются к встроенным типам смен, поэтому уведомления, сценарии и «план по смене» берут уже обновлённое время.</div>
 </section>
-<div class="settingsCard" id="shiftSettingsCard">
+<div class="settingsCard" id="shiftSettingsCard" data-settings-section="shifts">
+<a class="settingsAnchor" id="settings-shifts"></a>
 <div class="settingsHead">
 <div>
 <div class="eyebrow">Смены</div>
@@ -418,7 +428,8 @@
 <div class="small" style="color:var(--dim);font-size:12px;line-height:1.35;">Время смены пригодится для подсказок, будущих уведомлений и кнопки «план по смене».</div>
 <div class="row" id="swRow"></div>
 <div class="custom" hidden="" id="customList"></div>
-</div></div><div class="settingsCard" id="quickScenarioSettingsCard">
+</div></div><div class="settingsCard" id="quickScenarioSettingsCard" data-settings-section="scenarios">
+<a class="settingsAnchor" id="settings-scenarios"></a>
 <div class="settingsHead">
 <div>
 <div class="eyebrow">Быстрые сценарии</div>
@@ -477,7 +488,8 @@
 <button class="ghostBtn" id="scReset" type="button">сброс формы</button>
 </div>
 <div class="quickScenarioTips">Сценарии сохраняются в профиле. Их можно удалить кнопкой × на карточке.</div>
-</details></div><div class="notifyCard" id="notifyCard">
+</details></div><div class="notifyCard settingsCard" id="notifyCard" data-settings-section="notifications">
+<a class="settingsAnchor" id="settings-notifications"></a>
 <div class="notifyHead">
 <div>
 <div class="eyebrow">Уведомления</div>
@@ -510,6 +522,28 @@
 <div class="notifyListTitle" id="notifyListTitle">напоминания текущего месяца</div>
 <div class="notifyList" id="notifyList"></div>
 </div>
+<div class="settingsCard" id="diagnosticsCard" data-settings-section="diagnostics">
+<a class="settingsAnchor" id="settings-diagnostics"></a>
+<div class="settingsHead">
+<div>
+<div class="eyebrow">Диагностика</div>
+<div class="settingsTitle">Состояние приложения и сервера</div>
+<div class="settingsHint">Быстрый чек для локального запуска, будущего VPS и Telegram-бота. Тут видно версию фронта, серверное время, профиль Spring, БД и Telegram.</div>
+</div>
+<div class="status" id="diagnosticsStatus">—</div>
+</div>
+<div class="diagnosticsGrid" id="diagnosticsGrid">
+  <div class="diagItem"><span>Frontend</span><b id="diagFrontend">v20.3</b></div>
+  <div class="diagItem"><span>Service Worker</span><b id="diagSw">проверяется…</b></div>
+  <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
+  <div class="diagItem"><span>Cookie/CSRF</span><b id="diagCsrf">—</b></div>
+</div>
+<div class="diagnosticsList" id="diagnosticsList"><span class="emptyLine">Нажми «Обновить диагностику».</span></div>
+<div class="diagnosticsActions">
+  <button class="primary" id="diagnosticsRefresh" type="button">Обновить диагностику</button>
+  <button id="diagnosticsCopy" type="button">Скопировать отчёт</button>
+</div>
+</div>
 <div class="settingsCard" id="importantSettingsCard">
 <div class="settingsHead">
 <div>
@@ -538,6 +572,6 @@
     <div class="noteFsPrev" id="noteFsPrev"></div>
   </div>
 </div>
-<script src="app.js?v=20.2.1"></script>
+<script src="app.js?v=20.3"></script>
 </body>
 </html>

@@ -1,6 +1,8 @@
 
 "use strict";
 
+const DUTYLOG_VERSION = "20.3";
+
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
   y: new Date().getFullYear(),
@@ -225,6 +227,7 @@ const api = {
   async telegramCode() { return jfetch("/api/telegram/link-code", { method:"POST" }); },
   async telegramSettings(b) { return jfetch("/api/telegram/settings", { method:"PATCH", body:b }); },
   async telegramUnlink() { return jfetch("/api/telegram/link", { method:"DELETE" }); },
+  async systemStatus() { return jfetch("/api/system/status"); },
 };
 
 /* CSRF: Spring кладёт токен в cookie XSRF-TOKEN, мы возвращаем его заголовком */
@@ -2393,12 +2396,17 @@ function renderTimeSettings(){
   $("timeNowBox").innerHTML = `${region}рабочее время: <b>${esc(safeTzLabel(t.workTimezone))}</b> <span>(${esc(t.workTimezone)})</span><br>` +
     `браузер: <b>${esc(safeTzLabel(browserTz))}</b> <span>(${esc(browserTz)})</span>` +
     (Number(t.workOffsetMoscow || 0) ? `<br>пометка: Москва ${Number(t.workOffsetMoscow) > 0 ? "+" : ""}${Number(t.workOffsetMoscow)} ч` : "");
-  $("timeSettingsStatus").textContent = "локально";
+  $("timeSettingsStatus").textContent = "автосохранение";
 }
 function saveTimeSettings(){
   storeTimeSettings(readTimeSettingsForm());
   renderTimeSettings();
   setSave("saved", "настройки времени сохранены");
+}
+let timeAutoApplyTimer = null;
+function scheduleTimeSettingsApply(){
+  if (timeAutoApplyTimer) clearTimeout(timeAutoApplyTimer);
+  timeAutoApplyTimer = setTimeout(() => applyTimeSettingsToBuiltins(true), 700);
 }
 function fillShiftFormFromDefaults(kind){
   const t = state.timeSettings || loadTimeSettings();
@@ -2436,19 +2444,19 @@ function patchForBuiltInShift(name, t){
     hours: t.dayPlannedHours,
   };
 }
-async function applyTimeSettingsToBuiltins(){
+async function applyTimeSettingsToBuiltins(silent = false){
   const t = readTimeSettingsForm();
   storeTimeSettings(t);
   const targets = state.shiftTypes.filter(s => s.name === "Дневная" || s.name === "Ночная");
   if (!targets.length) return setSave("err", "не нашёл Дневную/Ночную смену");
-  setSave("saving");
+  if (!silent) setSave("saving");
   try {
     for (const s of targets) {
       const updated = await api.updateShiftType(s.id, patchForBuiltInShift(s.name, t));
       const idx = state.shiftTypes.findIndex(x => Number(x.id) === Number(s.id));
       if (idx >= 0) state.shiftTypes[idx] = updated;
     }
-    setSave("saved", "встроенные смены обновлены");
+    setSave("saved", silent ? "время смен применено" : "встроенные смены обновлены");
     renderTimeSettings();
     renderCustomList();
     renderChips();
@@ -2458,19 +2466,97 @@ async function applyTimeSettingsToBuiltins(){
 }
 function initTimeSettingsEvents(){
   if (!$("timeSettingsCard")) return;
-  $("timeSave").addEventListener("click", saveTimeSettings);
-  $("timeDetectBrowser").addEventListener("click", () => { $("workTimezone").value = browserTimeZone(); saveTimeSettings(); });
-  $("timeApplyBuiltins").addEventListener("click", applyTimeSettingsToBuiltins);
-  $("timeFillDayForm").addEventListener("click", () => fillShiftFormFromDefaults("day"));
-  $("timeFillNightForm").addEventListener("click", () => fillShiftFormFromDefaults("night"));
-  for (const id of ["workRegionName","workTimezone","workOffsetMoscow","timeFormatPref","defDayStart","defDayEnd","defDayBreak","defDayPlan","defNightStart","defNightEnd","defNightBreak","defNightPlan"]) {
+  $("timeDetectBrowser")?.addEventListener("click", () => { $("workTimezone").value = browserTimeZone(); saveTimeSettings(); });
+  $("timeApplyBuiltins")?.addEventListener("click", () => applyTimeSettingsToBuiltins(false));
+  $("timeFillDayForm")?.addEventListener("click", () => fillShiftFormFromDefaults("day"));
+  $("timeFillNightForm")?.addEventListener("click", () => fillShiftFormFromDefaults("night"));
+  const shiftDefaultIds = ["defDayStart","defDayEnd","defDayBreak","defDayPlan","defNightStart","defNightEnd","defNightBreak","defNightPlan"];
+  for (const id of ["workRegionName","workTimezone","workOffsetMoscow","timeFormatPref", ...shiftDefaultIds]) {
     const el = $(id);
-    if (el) el.addEventListener("change", () => { storeTimeSettings(readTimeSettingsForm()); renderTimeSettings(); });
+    if (!el) continue;
+    el.addEventListener("change", () => {
+      storeTimeSettings(readTimeSettingsForm());
+      renderTimeSettings();
+      if (shiftDefaultIds.includes(id)) scheduleTimeSettingsApply();
+    });
   }
+}
+
+function renderDiagnosticsClient(){
+  const set = (id, value) => { if ($(id)) $(id).textContent = value; };
+  set("diagFrontend", "v" + DUTYLOG_VERSION);
+  set("diagBrowser", navigator.userAgent.replace(/\s+/g, " ").slice(0, 90));
+  set("diagCsrf", csrfToken() ? "cookie есть" : "cookie не найден");
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.getRegistration().then(reg => set("diagSw", reg ? "активен" : "не зарегистрирован")).catch(() => set("diagSw", "ошибка"));
+  } else set("diagSw", "не поддерживается");
+}
+function diagnosticRow(label, value, ok = null){
+  const cls = ok === true ? " ok" : ok === false ? " warn" : "";
+  return `<div class="diagRow${cls}"><span>${esc(label)}</span><b>${esc(value ?? "—")}</b></div>`;
+}
+function renderDiagnosticsStatus(data){
+  const box = $("diagnosticsList");
+  if (!box) return;
+  const rows = [];
+  rows.push(diagnosticRow("Версия backend", data.version || "—"));
+  rows.push(diagnosticRow("Профили Spring", (data.profiles || []).join(", ") || "default/dev"));
+  rows.push(diagnosticRow("Серверное время", data.serverTime || "—"));
+  rows.push(diagnosticRow("Часовой пояс сервера", data.serverTimezone || "—"));
+  rows.push(diagnosticRow("База данных", data.database?.ok ? "ok" : (data.database?.error || "ошибка"), !!data.database?.ok));
+  rows.push(diagnosticRow("Telegram bot", data.telegram?.enabled ? "включён" : "выключен", data.telegram?.enabled ? true : null));
+  rows.push(diagnosticRow("Telegram token", data.telegram?.tokenConfigured ? "задан" : "не задан", data.telegram?.tokenConfigured ? true : null));
+  rows.push(diagnosticRow("Telegram polling", data.telegram?.pollingEnabled ? "включён" : "выключен", data.telegram?.pollingEnabled ? true : null));
+  rows.push(diagnosticRow("Telegram уведомления", data.telegram?.notificationsEnabled ? "включены" : "выключены", data.telegram?.notificationsEnabled ? true : null));
+  rows.push(diagnosticRow("Аккаунт подключен к Telegram", data.telegram?.linked ? "да" : "нет", data.telegram?.linked ? true : null));
+  box.innerHTML = rows.join("");
+  const st = $("diagnosticsStatus");
+  if (st) st.textContent = data.database?.ok ? "ok" : "проверь";
+}
+async function refreshDiagnostics(){
+  renderDiagnosticsClient();
+  const st = $("diagnosticsStatus");
+  if (st) st.textContent = "проверяю…";
+  try {
+    const data = await api.systemStatus();
+    state.lastDiagnostics = data;
+    renderDiagnosticsStatus(data);
+  } catch (err) {
+    if (st) st.textContent = "ошибка";
+    const box = $("diagnosticsList");
+    if (box) box.innerHTML = diagnosticRow("Ошибка диагностики", err.message || String(err), false);
+  }
+}
+function diagnosticsReportText(){
+  const d = state.lastDiagnostics || {};
+  return [
+    `DutyLog frontend: v${DUTYLOG_VERSION}`,
+    `Backend: ${d.version || "—"}`,
+    `Profiles: ${(d.profiles || []).join(", ") || "default/dev"}`,
+    `Server time: ${d.serverTime || "—"}`,
+    `Server timezone: ${d.serverTimezone || "—"}`,
+    `Database: ${d.database?.ok ? "ok" : (d.database?.error || "unknown")}`,
+    `Telegram enabled: ${!!d.telegram?.enabled}`,
+    `Telegram token: ${!!d.telegram?.tokenConfigured}`,
+    `Telegram polling: ${!!d.telegram?.pollingEnabled}`,
+    `Telegram notifications: ${!!d.telegram?.notificationsEnabled}`,
+    `Telegram linked: ${!!d.telegram?.linked}`,
+    `Browser: ${navigator.userAgent}`,
+  ].join("\n");
+}
+function initDiagnosticsEvents(){
+  if (!$("diagnosticsCard")) return;
+  $("diagnosticsRefresh")?.addEventListener("click", refreshDiagnostics);
+  $("diagnosticsCopy")?.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(diagnosticsReportText()); setSave("saved", "отчёт диагностики скопирован"); }
+    catch (err) { setSave("err", "не удалось скопировать отчёт"); }
+  });
+  renderDiagnosticsClient();
 }
 
 function renderSettingsPanels(){
   renderTimeSettings();
+  renderDiagnosticsClient();
   renderCustomList();
   renderImportantSettings();
   renderNotifications();
@@ -2643,6 +2729,7 @@ async function init(){
   state.timeSettings = loadTimeSettings();
   renderSwatches();
   initTimeSettingsEvents();
+initDiagnosticsEvents();
   try {
     const me = await jfetch("/api/auth/me");
     $("whoami").textContent = me.username;

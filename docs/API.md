@@ -951,3 +951,47 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```
 
 Ответ: массив `TaskDto`.
+
+
+## System diagnostics
+
+### GET `/api/system/status`
+
+Web-safe диагностика для вкладки `⚙ → Диагностика`. Endpoint требует обычную web-сессию и CSRF-cookie не нужен, потому что это `GET`. Секреты не отдаются: токен Telegram, пароли и URL базы данных не раскрываются.
+
+Пример ответа:
+
+```json
+{
+  "app": "DutyLog: Time & Overtime",
+  "version": "20.3",
+  "serverTime": "2026-07-06T11:40:00Z",
+  "serverTimezone": "Europe/Moscow",
+  "profiles": ["prod"],
+  "database": { "ok": true },
+  "telegram": {
+    "enabled": true,
+    "tokenConfigured": true,
+    "pollingEnabled": true,
+    "notificationsEnabled": true,
+    "configured": true,
+    "linked": true,
+    "accountNotificationsEnabled": true,
+    "botUsername": "DutyLogBot"
+  }
+}
+```
+
+### Request diagnostics logs
+
+`RequestDiagnosticsFilter` добавляет в ответ заголовок `X-Request-Id` и пишет в логи:
+
+```text
+GET /api/system/status -> 200 (12 ms, requestId=1a2b3c4d)
+```
+
+Уровень логирования можно поменять переменной окружения:
+
+```env
+DUTYLOG_REQUEST_LOG_LEVEL=INFO
+```
