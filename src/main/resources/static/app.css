@@ -601,6 +601,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
 .noteExpandBtn:hover { color:var(--accent); border-color:var(--accent); }
 
 .noteFs { position:fixed; inset:0; z-index:100; background:var(--bg); display:flex; flex-direction:column; }
+.noteFs[hidden] { display:none; } /* authors' display:flex сильнее атрибута hidden — возвращаем ему власть */
 .noteFsHead { display:flex; justify-content:space-between; align-items:center; gap:10px;
   padding:12px 20px; border-bottom:1px solid var(--line); flex:none; }
 .noteFsTitle { font-size:18px; font-weight:800; }
@@ -626,3 +627,6 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
   .noteFs.showPrev #noteFsEdit { display:none; }
   #noteFsEdit { border-right:none; }
 }
+
+/* hidden обязан прятать, что бы ни говорил display у класса */
+[hidden] { display: none !important; }
