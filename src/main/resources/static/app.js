@@ -11,6 +11,7 @@ const state = {
   taskFilters: { status:"all", category:"all" },
   taskBoard: { items: [], filters: { status:"open", category:"all", priority:"all", q:"", from:"", to:"" } },
   importantByDate: {},            // { 'YYYY-MM-DD': [{id,date,title,repeatMode,color}] }
+  importantDays: [],               // настройки важных дней: [{id,date,title,repeatMode,color}]
   overtimeAccount: { totalEarnedHours:0, totalUsedHours:0, balanceHours:0, credits:[], usages:[] },
   notificationSettings: null,
   reminders: [],
@@ -162,6 +163,7 @@ const api = {
     for (const [k, v] of Object.entries(filters)) if (v !== undefined && v !== null && String(v).trim() !== "") qs.set(k, v);
     return jfetch(`/api/tasks/board?${qs.toString()}`);
   },
+  async importantDays() { return jfetch("/api/important-days"); },
   async createImportantDay(b) { return jfetch("/api/important-days", { method:"POST", body:b }); },
   async deleteImportantDay(id) { return jfetch(`/api/important-days/${id}`, { method:"DELETE" }); },
   async overtimeAccount() { return jfetch("/api/overtime/account"); },
@@ -853,7 +855,7 @@ function renderQuickScenarios(){
   if (!grid) return;
   const scenarios = (state.quickScenarios || []).slice().sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || (a.id ?? 0) - (b.id ?? 0));
   if (!scenarios.length) {
-    grid.innerHTML = `<div class="emptyLine">Сценариев пока нет. Открой «свои сценарии» и добавь первый.</div>`;
+    grid.innerHTML = `<div class="emptyLine">Сценариев пока нет. Добавь первый во вкладке ⚙ Настройки.</div>`;
     return;
   }
   grid.innerHTML = scenarios.map(sc => {
@@ -1475,6 +1477,53 @@ for (const id of ["creditDate", "creditTimeRange", "creditStart", "creditEnd", "
 }
 
 /* ─── Важные дни ───────────────────────────────────────────── */
+async function refreshImportantSettings(){
+  try {
+    state.importantDays = await api.importantDays();
+    renderImportantSettings();
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+function renderImportantSettings(){
+  const box = $("importantSettingsList");
+  if (!box) return;
+  const items = (state.importantDays || []).slice().sort((a,b) => String(a.date).localeCompare(String(b.date)) || String(a.title).localeCompare(String(b.title), "ru"));
+  box.innerHTML = "";
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "emptyLine";
+    empty.textContent = "Важных дней пока нет.";
+    box.appendChild(empty);
+    return;
+  }
+  for (const item of items) {
+    const row = document.createElement("div");
+    row.className = "importantItem settingsImportantItem";
+    const dot = document.createElement("span");
+    dot.className = "importantDot";
+    dot.style.background = item.color || "var(--accent)";
+    const title = document.createElement("span");
+    title.className = "importantTitle";
+    title.textContent = item.title;
+    const date = document.createElement("span");
+    date.className = "importantMode mono";
+    date.textContent = (item.date || "").split("-").reverse().join(".");
+    const mode = document.createElement("span");
+    mode.className = "importantMode";
+    mode.textContent = repeatLabel(item.repeatMode);
+    const del = document.createElement("button");
+    del.className = "tinyDel";
+    del.type = "button";
+    del.textContent = "удалить";
+    del.title = "Удалить важный день полностью, включая повторения";
+    del.addEventListener("click", () => removeImportantDay(item.id));
+    row.append(dot, title, date, mode, del);
+    box.appendChild(row);
+  }
+}
+
 function renderImportantDays(){
   const box = $("importantList");
   if (!box || !state.selected) return;
@@ -1512,8 +1561,8 @@ function renderImportantDays(){
 }
 
 async function addImportantDay(){
-  const k = state.selected;
-  if (!k) return;
+  const k = $("impDate")?.value || state.selected;
+  if (!k) return setSave("err", "укажи дату важного дня");
   const title = $("impTitle").value.trim();
   if (!title) return setSave("err", "укажи название важного дня");
   setSave("saving");
@@ -1525,9 +1574,12 @@ async function addImportantDay(){
       color: $("impColor").value || "#F5B841",
     });
     $("impTitle").value = "";
+    if ($("impDate")) $("impDate").value = k;
+    await refreshImportantSettings();
     await loadMonth();
     setSave("saved");
     renderImportantDays();
+    renderImportantSettings();
     renderCalendar();
   } catch (err) {
     console.error(err);
@@ -1536,12 +1588,15 @@ async function addImportantDay(){
 }
 
 async function removeImportantDay(id){
+  if (!confirm("Удалить важный день целиком, включая повторения?")) return;
   setSave("saving");
   try {
     await api.deleteImportantDay(id);
+    await refreshImportantSettings();
     await loadMonth();
     setSave("saved");
     renderImportantDays();
+    renderImportantSettings();
     renderCalendar();
   } catch (err) {
     console.error(err);
@@ -1551,6 +1606,8 @@ async function removeImportantDay(id){
 
 $("impAdd").addEventListener("click", addImportantDay);
 $("impTitle").addEventListener("keydown", e => { if (e.key === "Enter") addImportantDay(); });
+$("impDateSelected")?.addEventListener("click", () => { if (!state.selected) return setSave("err", "сначала выбери день в календаре"); $("impDate").value = state.selected; });
+$("impDateToday")?.addEventListener("click", () => { $("impDate").value = todayKey(); });
 
 /* ─── Задачи дня ────────────────────────────────────────────── */
 function renderTaskCategoryFilter(){
@@ -1910,16 +1967,14 @@ function renderChips(){
     b.addEventListener("click", () => toggleShift(s.id));
     box.appendChild(b);
   }
-  // Плюсик — создать свою смену
+  // Плюсик — переход к настройкам смен
   const plus = document.createElement("button");
-  plus.className = "chip plus" + ($("mgr").hidden ? "" : " open");
+  plus.className = "chip plus";
   plus.textContent = "+";
-  plus.title = "Своя смена";
+  plus.title = "Создать или настроить смену в настройках";
   plus.addEventListener("click", () => {
-    const m = $("mgr");
-    m.hidden = !m.hidden;
-    plus.classList.toggle("open", !m.hidden);
-    if (!m.hidden) $("nsName").focus();
+    location.hash = "#settings";
+    setTimeout(() => { $("shiftSettingsCard")?.scrollIntoView({behavior:"smooth", block:"start"}); $("nsName")?.focus(); }, 50);
   });
   box.appendChild(plus);
   renderCustomList();
@@ -2233,6 +2288,12 @@ $("todayBtn").addEventListener("click", async () => {
 
 
 
+function renderSettingsPanels(){
+  renderCustomList();
+  renderImportantSettings();
+  renderNotifications();
+}
+
 /* ─── Уведомления ───────────────────────────────────────────── */
 function typeLabel(type){
   return type === "SHIFT" ? "смена" : type === "TASK" ? "задача" : type === "IMPORTANT_DAY" ? "важно" : type === "TOMORROW_DIGEST" ? "дайджест" : type;
@@ -2401,6 +2462,7 @@ async function init(){
     $("whoami").textContent = me.username;
     state.shiftTypes = await api.shiftTypes();
     state.quickScenarios = await api.quickScenarios();
+    await refreshImportantSettings();
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
@@ -2428,6 +2490,7 @@ function applyRoute(){
   document.querySelector(".nav #todayBtn").style.visibility =
   document.querySelector(".nav #next").style.visibility =
     active === "calendar" ? "visible" : "hidden";
+  if (active === "settings") renderSettingsPanels();
 }
 window.addEventListener("hashchange", applyRoute);
 applyRoute();

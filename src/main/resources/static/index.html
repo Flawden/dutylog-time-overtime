@@ -1,394 +1,408 @@
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
 <title>Журнал смен</title>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#14171C">
-<link rel="stylesheet" href="app.css">
+<link href="/manifest.json" rel="manifest"/>
+<meta content="#14171C" name="theme-color"/>
+<link href="app.css" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
-  <div class="head">
-    <div>
-      <div class="eyebrow">Журнал смен</div>
-      <h1><span id="monthName"></span> <span class="yr" id="yearName"></span><span id="saveState"></span></h1>
-    </div>
-    <div class="nav" style="display:flex;align-items:center;">
-      <button id="prev">‹</button>
-      <button id="todayBtn">Сегодня</button>
-      <button id="next">›</button>
-      <span id="whoami" class="mono" style="margin-left:14px;font-size:12.5px;color:var(--mut)"></span>
-      <button id="logout" title="Выйти" style="margin-left:8px;">Выйти</button>
-    </div>
-  </div>
-  <nav class="tabbar" id="tabbar">
-    <a href="#calendar" data-view="calendar">Календарь</a>
-    <a href="#overtime" data-view="overtime">Переработки</a>
-    <a href="#tasks" data-view="tasks">Задачи</a>
-    <a href="#settings" data-view="settings" title="Настройки">⚙</a>
-  </nav>
-
-
-  <section class="view" id="view-calendar">
+<div class="head">
+<div>
+<div class="eyebrow">Журнал смен</div>
+<h1><span id="monthName"></span> <span class="yr" id="yearName"></span><span id="saveState"></span></h1>
+</div>
+<div class="nav" style="display:flex;align-items:center;">
+<button id="prev">‹</button>
+<button id="todayBtn">Сегодня</button>
+<button id="next">›</button>
+<span class="mono" id="whoami" style="margin-left:14px;font-size:12.5px;color:var(--mut)"></span>
+<button id="logout" style="margin-left:8px;" title="Выйти">Выйти</button>
+</div>
+</div>
+<nav class="tabbar" id="tabbar">
+<a data-view="calendar" href="#calendar">Календарь</a>
+<a data-view="overtime" href="#overtime">Переработки</a>
+<a data-view="tasks" href="#tasks">Задачи</a>
+<a data-view="settings" href="#settings" title="Настройки">⚙</a>
+</nav>
+<section class="view" id="view-calendar">
 <div class="layout" id="layout">
-    <div class="card">
-      <div class="wd">
-        <div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div class="we">Сб</div><div class="we">Вс</div>
-      </div>
-      <div class="grid" id="grid"></div>
-      <div class="sum" id="summary"></div>
-      
-
-      
-
-
-      
-    </div>
-
-    <div class="card" id="panel" hidden>
-      <div class="pt">
-        <div>
-          <div class="eyebrow" id="pWeekday"></div>
-          <div class="d" id="pDate"></div>
-        </div>
-        <button class="close" id="pClose" aria-label="Закрыть">×</button>
-      </div>
-      <details class="acc" id="accShift" open>
-        <summary><span class="accT">Смена</span><span class="accS" id="sumShift"></span></summary>
-        <div class="accB">
-          <div class="chips" id="chips"></div>
-          <div class="mgr" id="mgr" hidden>
-            <div class="row">
-              <input type="text" id="nsName" placeholder="Название">
-              <input type="text" class="hrs" id="nsHours" placeholder="ч" inputmode="numeric" title="Короткие часы для календаря">
-            </div>
-            <div class="row">
-              <label class="mini">Начало <input type="time" id="nsStart"></label>
-              <label class="mini">Конец <input type="time" id="nsEnd"></label>
-              <label class="mini">Обед, мин <input type="number" id="nsBreak" min="0" max="1440" step="5" value="0"></label>
-              <label class="mini">План, ч <input type="number" id="nsPlan" min="0" max="24" step="0.25" placeholder="=ч"></label>
-            </div>
-            <div class="small" style="color:var(--dim);font-size:12px;line-height:1.35;">Время смены пригодится для подсказок, будущих уведомлений и кнопки «план по смене».</div>
-            <div class="row" id="swRow"></div>
-            <div class="custom" id="customList" hidden></div>
-          </div>
-        </div>
-      </details>
-
-      <details class="acc" id="accSched">
-        <summary><span class="accT">График</span><span class="accS" id="sumSched"></span></summary>
-        <div class="accB">
-        <div class="tplBox" id="tplBox">
-          <div class="row">
-            <select id="tplPreset">
-              <option value="2x2-day">2 через 2: день / день / выходной / выходной</option>
-              <option value="day-night-48">День / ночь / 48 часов отдыха</option>
-              <option value="5x2">Пятидневка: Пн–Пт рабочие / Сб–Вс выходные</option>
-              <option value="1x3-day">День / 72 часа отдыха</option>
-              <option value="1x3-night">Ночь / 72 часа отдыха</option>
-            </select>
-          </div>
-          <div class="row">
-            <span style="color:var(--mut)">Дней:</span>
-            <input type="number" id="tplDays" min="1" max="366" value="31">
-            <label><input type="checkbox" id="tplOverwrite" checked> перезаписывать уже отмеченные смены</label>
-            <button class="apply" id="tplApply">Заполнить</button>
-          </div>
-          <div class="tplHint" id="tplHint">По умолчанию заполняется 31 день вперёд, включая следующий месяц. Заметки не стираются.</div>
-        </div>
-        </div>
-      </details>
-
-      <details class="acc" id="accOt">
-        <summary><span class="accT">Переработка</span><span class="accS" id="sumOt"></span></summary>
-        <div class="accB">
-        <div class="ot">
-        <div class="row">
-          <span class="editNotice" id="creditEditNotice" hidden></span>
-          <label>Дата начисления <input type="date" id="creditDate"></label>
-          <button id="creditDateSelected" type="button">выбранный день</button>
-          <button id="creditDateToday" type="button">сегодня</button>
-          <input type="text" id="creditTimeRange" placeholder="Коротко: 17:00–20:00 или 17–08">
-        </div>
-        <div class="row">
-          <label>Начало <input type="datetime-local" id="creditStart"></label>
-          <label>Конец <input type="datetime-local" id="creditEnd"></label>
-        </div>
-        <div class="row">
-          <label>Обед, мин <input type="number" id="creditBreak" min="0" max="1440" step="5" value="0"></label>
-          <label>Вычесть план, ч <input type="number" id="creditPlanned" min="0" max="100" step="0.25" value="0"></label>
-          <button id="creditPlanByShift" type="button">план по смене</button>
-          <button id="creditTimeByShift" type="button">время по смене</button>
-          <label>Итого <input type="number" id="creditHours" min="0" max="100" step="0.25" value="0"></label>
-          <span class="calc" id="creditCalcHint">можно вручную</span>
-        </div>
-        <div class="row">
-          <input type="text" id="creditReason" placeholder="Причина переработки: ППР, авария, замена смены…">
-          <button id="creditNightShiftPreset" type="button">20–08 обед 60</button>
-          <button id="creditNightPreset" type="button">17–08</button>
-          <button id="creditAdd" class="primary" type="button">Начислить</button>
-          <button id="creditCancel" class="cancelEdit" type="button" hidden>отмена</button>
-          <div class="wideHint">Можно ввести полный интервал датами или коротко: дата начисления + 17:00–20:00. Если вводишь только переработку — план оставь 0; если всю фактическую смену — вычти план.</div>
-        </div>
-        <div class="quickScenarioPanel">
-          <div class="quickScenarioHead">
-            <div>
-              <div class="quickScenarioTitle">Быстрые сценарии</div>
-              <div class="quickScenarioContext" id="quickScenarioContext">Выбери день и смену — подскажу подходящие сценарии.</div>
-            </div>
-            <button id="quickClearScenario" type="button" class="quickGhost">очистить поля</button>
-          </div>
-          <div class="scenarioGrid" id="scenarioGrid"></div>
-          <div class="quickScenarioTips" id="quickScenarioTips">
-            Сценарий только заполняет поля. Перед начислением можно поправить время, обед, план и причину.
-          </div>
-          <details class="scenarioEditor" id="scenarioEditor">
-            <summary>свои сценарии</summary>
-            <div class="row">
-              <input type="text" id="scName" placeholder="Название, например: После дневной до 22">
-              <input type="text" id="scGroup" placeholder="Метка: после смены">
-            </div>
-            <div class="row">
-              <input type="text" id="scDesc" placeholder="Описание сценария">
-            </div>
-            <div class="row">
-              <label>Старт
-                <select id="scStartMode">
-                  <option value="SHIFT_END">от конца смены</option>
-                  <option value="SHIFT_START">от начала смены</option>
-                </select>
-              </label>
-              <label>Конец
-                <select id="scEndMode">
-                  <option value="ADD_MINUTES">через N минут</option>
-                  <option value="FIXED_TIME">в указанное время</option>
-                  <option value="SHIFT_END">конец смены</option>
-                </select>
-              </label>
-              <label>+ минут <input type="number" id="scEndOffset" min="0" max="4320" step="15" value="120"></label>
-              <label>время <input type="time" id="scEndFixed" value="08:00"></label>
-              <label><input type="checkbox" id="scEndNextDay"> следующий день</label>
-            </div>
-            <div class="row">
-              <label>Обед
-                <select id="scBreakMode">
-                  <option value="ZERO">0</option>
-                  <option value="SHIFT">из смены</option>
-                  <option value="CUSTOM">свой</option>
-                </select>
-              </label>
-              <label>мин <input type="number" id="scBreakCustom" min="0" max="1440" step="5" value="0"></label>
-              <label>План
-                <select id="scPlannedMode">
-                  <option value="ZERO">0</option>
-                  <option value="SHIFT">из смены</option>
-                  <option value="CUSTOM">свой</option>
-                </select>
-              </label>
-              <label>ч <input type="number" id="scPlannedCustom" min="0" max="100" step="0.25" value="0"></label>
-            </div>
-            <div class="row">
-              <input type="text" id="scReason" placeholder="Причина по умолчанию">
-              <button id="scSave" type="button">добавить сценарий</button>
-              <button id="scReset" type="button" class="ghostBtn">сброс формы</button>
-            </div>
-            <div class="quickScenarioTips">Сценарии сохраняются в профиле. Их можно удалить кнопкой × на карточке.</div>
-          </details>
-        </div>
-        <div class="row">
-          <span class="editNotice" id="usageEditNotice" hidden></span>
-          <label>Дата <input type="date" id="usageDate"></label>
-          <label>Списать <input type="number" id="usageHours" min="0" max="100" step="0.25" value="0"></label>
-          <input type="text" id="usageReason" placeholder="Зачем списал: отгул, не вышел после ППР…">
-          <button id="usageByShift" type="button">по смене</button>
-          <button id="usageAdd" class="primary" type="button">Списать FIFO</button>
-          <button id="usageCancel" class="cancelEdit" type="button" hidden>отмена</button>
-          <span class="bal" id="otBalance">0 ч</span>
-        </div>
-        <div class="otHint" id="otDayDetails">FIFO: сначала списываются самые старые часы переработки. Начисления с интервалом сервер раскладывает по датам и не даёт записать пересекающийся период дважды.</div>
-      </div>
-        </div>
-      </details>
-
-      <details class="acc" id="accImp">
-        <summary><span class="accT">Важные дни</span><span class="accS" id="sumImp"></span></summary>
-        <div class="accB dayForm">
-        <div class="importantList" id="importantList"></div>
-        <div class="row">
-          <input type="text" id="impTitle" placeholder="Например: день рождения Макса">
-          <select id="impRepeat">
-            <option value="YEARLY">каждый год</option>
-            <option value="MONTHLY">каждый месяц</option>
-            <option value="NONE">один раз</option>
-          </select>
-          <input type="color" id="impColor" value="#F5B841" title="Цвет важного дня">
-          <button class="addSmall" id="impAdd" type="button">Добавить</button>
-        </div>
-        </div>
-      </details>
-
-      <details class="acc" id="accTasks">
-        <summary><span class="accT">Задачи</span><span class="accS" id="sumTasks"></span></summary>
-        <div class="accB dayForm">
-        <div class="taskFilters">
-          <select id="taskStatusFilter" title="Фильтр задач">
-            <option value="all">все</option>
-            <option value="open">открытые</option>
-            <option value="overdue">просроченные</option>
-            <option value="done">выполненные</option>
-          </select>
-          <select id="taskCategoryFilter" title="Категория">
-            <option value="all">все категории</option>
-          </select>
-        </div>
-        <div class="taskList" id="taskList"></div>
-        <div class="row">
-          <input type="text" id="taskText" placeholder="Задача на этот день">
-          <button class="addSmall" id="taskAdd" type="button">Добавить</button>
-        </div>
-        <div class="taskOptions">
-          <label>Категория<input type="text" id="taskCategory" placeholder="работа, дом, здоровье"></label>
-          <label>Приоритет<select id="taskPriority"><option value="NORMAL">обычная</option><option value="LOW">низкая</option><option value="HIGH">важная</option><option value="URGENT">срочная</option></select></label>
-          <label>Срок<input type="date" id="taskDueDate"></label>
-          <label>Время срока<input type="time" id="taskDueTime"></label>
-          <label class="inlineCheck"><input type="checkbox" id="taskReminderEnabled"> напомнить</label>
-          <label>За минут<input type="number" id="taskReminderBefore" min="0" max="10080" value="60"></label>
-        </div>
-        </div>
-      </details>
-
-      <details class="acc" id="accNote">
-        <summary><span class="accT">Заметка</span><span class="accS" id="sumNote"></span></summary>
-        <div class="accB">
-      <div class="tabs">
-        <button id="tabEdit" class="on">Заметка</button>
-        <button id="tabPrev">Превью</button>
-      </div>
-      <textarea id="noteEdit" spellcheck="false"
-        placeholder="# Заголовок&#10;**жирный**, *курсив*, `код`&#10;- [ ] задача&#10;- список"></textarea>
-      <div id="notePrev" hidden></div>
-        </div>
-      </details>
-    </div>
-  </div>
-</section>
-
-  <section class="view" id="view-overtime" hidden>
-    <div class="ledgerCard" id="ledgerCard">
-        <div class="ledgerHead">
-          <div>
-            <div class="eyebrow">Таблица переработок</div>
-            <div class="small" style="color:var(--dim);font-size:12px;">Начисления живут до полного списания. Отгулы списываются со старых остатков.</div>
-          </div>
-          <div class="balance" id="ledgerBalance">0 ч</div>
-        </div>
-        <div class="ledgerFilters">
-          <button type="button" id="ledgerThisMonth">этот месяц</button>
-          <button type="button" id="ledgerAllTime">всё время</button>
-          <label class="mono" style="color:var(--dim);font-size:11px;">с <input type="date" id="ledgerFrom"></label>
-          <label class="mono" style="color:var(--dim);font-size:11px;">по <input type="date" id="ledgerTo"></label>
-          <select id="ledgerStatus" title="Статус начисления">
-            <option value="all">все начисления</option>
-            <option value="open">только с остатком</option>
-            <option value="partial">частично списанные</option>
-            <option value="closed">полностью списанные</option>
-          </select>
-          <input type="text" id="ledgerSearch" placeholder="поиск: причина, дата, куда списано…">
-          <button type="button" id="ledgerExportCsv">CSV</button>
-          <button type="button" id="ledgerExportXls">Excel</button>
-          <button type="button" id="ledgerClear">сброс</button>
-        </div>
-        <div class="ledgerStats" id="ledgerStats"></div>
-        <div class="ledgerTableWrap">
-          <table class="ledgerTable">
-            <thead><tr>
-              <th>День</th><th>Время</th><th>Начислено</th><th>Причина</th><th>Использовано</th><th>Куда списано</th><th>Остаток</th><th></th>
-            </tr></thead>
-            <tbody id="ledgerRows"></tbody>
-          </table>
-        </div>
-      </div>
-  </section>
-
-  <section class="view" id="view-tasks" hidden>
-    <div class="taskBoardCard" id="taskBoardCard">
-        <div class="taskBoardHead">
-          <div>
-            <div class="eyebrow">Все задачи</div>
-            <div class="small" style="color:var(--dim);font-size:12px;">Единый список открытых, просроченных и выполненных задач без прыжков по дням календаря.</div>
-          </div>
-          <div class="status" id="taskBoardStatus">—</div>
-        </div>
-        <div class="taskBoardFilters">
-          <button type="button" id="taskBoardOpen">открытые</button>
-          <button type="button" id="taskBoardOverdue">просроченные</button>
-          <button type="button" id="taskBoardAll">все</button>
-          <label class="mono" style="color:var(--dim);font-size:11px;">с <input type="date" id="taskBoardFrom"></label>
-          <label class="mono" style="color:var(--dim);font-size:11px;">по <input type="date" id="taskBoardTo"></label>
-          <select id="taskBoardStatusFilter" title="Статус задач">
-            <option value="open">открытые</option>
-            <option value="overdue">просроченные</option>
-            <option value="upcoming">открытые не просроченные</option>
-            <option value="done">выполненные</option>
-            <option value="all">все задачи</option>
-          </select>
-          <select id="taskBoardCategory" title="Категория"><option value="all">все категории</option></select>
-          <select id="taskBoardPriority" title="Приоритет">
-            <option value="all">любой приоритет</option>
-            <option value="URGENT">срочные</option>
-            <option value="HIGH">важные</option>
-            <option value="NORMAL">обычные</option>
-            <option value="LOW">низкие</option>
-          </select>
-          <input type="text" id="taskBoardSearch" placeholder="поиск: текст, категория, дата…">
-          <button type="button" id="taskBoardThisMonth">этот месяц</button>
-          <button type="button" id="taskBoardClear">сброс</button>
-        </div>
-        <div class="taskBoardStats" id="taskBoardStats"></div>
-        <div class="taskBoardList" id="taskBoardList"></div>
-      </div>
-  </section>
-
-  <section class="view" id="view-settings" hidden>
-    <div class="notifyCard" id="notifyCard">
-        <div class="notifyHead">
-          <div>
-            <div class="eyebrow">Уведомления</div>
-            <div class="small" style="color:var(--dim);font-size:12px;">Backend уже считает напоминания для веба, Android и будущего Telegram-бота.</div>
-          </div>
-          <div class="status" id="notifyStatus">—</div>
-        </div>
-        <div class="notifyGrid">
-          <label class="notifyOpt"><input type="checkbox" id="notifBrowser"> <b>браузерные уведомления</b></label>
-          <label class="notifyOpt"><input type="checkbox" id="notifShift"> <b>перед сменой</b> за <input type="number" id="notifShiftBefore" min="0" max="1440" step="5"> мин</label>
-          <label class="notifyOpt"><input type="checkbox" id="notifDigest"> <b>вечерний дайджест</b> в <input type="time" id="notifDigestTime"></label>
-          <label class="notifyOpt"><input type="checkbox" id="notifTasks"> <b>задачи дня</b> в <input type="time" id="notifTaskTime"></label>
-          <label class="notifyOpt"><input type="checkbox" id="notifImportant"> <b>важные дни</b> за <input type="number" id="notifImportantDays" min="0" max="366" step="1"> дн. в <input type="time" id="notifImportantTime"></label>
-        </div>
-        <div class="notifyPresets">
-          <span>перед сменой:</span>
-          <button type="button" data-notif-shift-before="15">15 мин</button>
-          <button type="button" data-notif-shift-before="30">30 мин</button>
-          <button type="button" data-notif-shift-before="60">1 час</button>
-          <button type="button" data-notif-shift-before="90">1.5 часа</button>
-          <button type="button" data-notif-shift-before="120">2 часа</button>
-        </div>
-        <div class="notifyActions">
-          <button type="button" class="primary" id="notifSave">Сохранить настройки</button>
-          <button type="button" id="notifPermission">Разрешить в браузере</button>
-          <button type="button" id="notifTest">Тест</button>
-          <button type="button" id="notifRefresh">Текущий месяц</button>
-          <button type="button" id="notifTomorrow">Проверить завтра</button>
-        </div>
-        <div class="notifyListTitle" id="notifyListTitle">напоминания текущего месяца</div>
-        <div class="notifyList" id="notifyList"></div>
-      </div>
-  </section>
+<div class="card">
+<div class="wd">
+<div>Пн</div><div>Вт</div><div>Ср</div><div>Чт</div><div>Пт</div><div class="we">Сб</div><div class="we">Вс</div>
+</div>
+<div class="grid" id="grid"></div>
+<div class="sum" id="summary"></div>
+</div>
+<div class="card" hidden="" id="panel">
+<div class="pt">
+<div>
+<div class="eyebrow" id="pWeekday"></div>
+<div class="d" id="pDate"></div>
+</div>
+<button aria-label="Закрыть" class="close" id="pClose">×</button>
+</div>
+<details class="acc" id="accShift" open="">
+<summary><span class="accT">Смена</span><span class="accS" id="sumShift"></span></summary>
+<div class="accB">
+<div class="chips" id="chips"></div>
 
 </div>
+</details>
+<details class="acc" id="accSched">
+<summary><span class="accT">График</span><span class="accS" id="sumSched"></span></summary>
+<div class="accB">
+<div class="tplBox" id="tplBox">
+<div class="row">
+<select id="tplPreset">
+<option value="2x2-day">2 через 2: день / день / выходной / выходной</option>
+<option value="day-night-48">День / ночь / 48 часов отдыха</option>
+<option value="5x2">Пятидневка: Пн–Пт рабочие / Сб–Вс выходные</option>
+<option value="1x3-day">День / 72 часа отдыха</option>
+<option value="1x3-night">Ночь / 72 часа отдыха</option>
+</select>
+</div>
+<div class="row">
+<span style="color:var(--mut)">Дней:</span>
+<input id="tplDays" max="366" min="1" type="number" value="31"/>
+<label><input checked="" id="tplOverwrite" type="checkbox"/> перезаписывать уже отмеченные смены</label>
+<button class="apply" id="tplApply">Заполнить</button>
+</div>
+<div class="tplHint" id="tplHint">По умолчанию заполняется 31 день вперёд, включая следующий месяц. Заметки не стираются.</div>
+</div>
+</div>
+</details>
+<details class="acc" id="accOt">
+<summary><span class="accT">Переработка</span><span class="accS" id="sumOt"></span></summary>
+<div class="accB">
+<div class="ot">
+<div class="row">
+<span class="editNotice" hidden="" id="creditEditNotice"></span>
+<label>Дата начисления <input id="creditDate" type="date"/></label>
+<button id="creditDateSelected" type="button">выбранный день</button>
+<button id="creditDateToday" type="button">сегодня</button>
+<input id="creditTimeRange" placeholder="Коротко: 17:00–20:00 или 17–08" type="text"/>
+</div>
+<div class="row">
+<label>Начало <input id="creditStart" type="datetime-local"/></label>
+<label>Конец <input id="creditEnd" type="datetime-local"/></label>
+</div>
+<div class="row">
+<label>Обед, мин <input id="creditBreak" max="1440" min="0" step="5" type="number" value="0"/></label>
+<label>Вычесть план, ч <input id="creditPlanned" max="100" min="0" step="0.25" type="number" value="0"/></label>
+<button id="creditPlanByShift" type="button">план по смене</button>
+<button id="creditTimeByShift" type="button">время по смене</button>
+<label>Итого <input id="creditHours" max="100" min="0" step="0.25" type="number" value="0"/></label>
+<span class="calc" id="creditCalcHint">можно вручную</span>
+</div>
+<div class="row">
+<input id="creditReason" placeholder="Причина переработки: ППР, авария, замена смены…" type="text"/>
+<button id="creditNightShiftPreset" type="button">20–08 обед 60</button>
+<button id="creditNightPreset" type="button">17–08</button>
+<button class="primary" id="creditAdd" type="button">Начислить</button>
+<button class="cancelEdit" hidden="" id="creditCancel" type="button">отмена</button>
+<div class="wideHint">Можно ввести полный интервал датами или коротко: дата начисления + 17:00–20:00. Если вводишь только переработку — план оставь 0; если всю фактическую смену — вычти план.</div>
+</div>
+<div class="quickScenarioPanel">
+<div class="quickScenarioHead">
+<div>
+<div class="quickScenarioTitle">Быстрые сценарии</div>
+<div class="quickScenarioContext" id="quickScenarioContext">Выбери день и смену — подскажу подходящие сценарии.</div>
+</div>
+<button class="quickGhost" id="quickClearScenario" type="button">очистить поля</button>
+</div>
+<div class="scenarioGrid" id="scenarioGrid"></div>
+<div class="quickScenarioTips" id="quickScenarioTips">
+            Сценарий только заполняет поля. Перед начислением можно поправить время, обед, план и причину.
+          </div>
 
+</div>
+<div class="row">
+<span class="editNotice" hidden="" id="usageEditNotice"></span>
+<label>Дата <input id="usageDate" type="date"/></label>
+<label>Списать <input id="usageHours" max="100" min="0" step="0.25" type="number" value="0"/></label>
+<input id="usageReason" placeholder="Зачем списал: отгул, не вышел после ППР…" type="text"/>
+<button id="usageByShift" type="button">по смене</button>
+<button class="primary" id="usageAdd" type="button">Списать FIFO</button>
+<button class="cancelEdit" hidden="" id="usageCancel" type="button">отмена</button>
+<span class="bal" id="otBalance">0 ч</span>
+</div>
+<div class="otHint" id="otDayDetails">FIFO: сначала списываются самые старые часы переработки. Начисления с интервалом сервер раскладывает по датам и не даёт записать пересекающийся период дважды.</div>
+</div>
+</div>
+</details>
+<details class="acc" id="accImp">
+<summary><span class="accT">Важные дни</span><span class="accS" id="sumImp"></span></summary>
+<div class="accB dayForm"><div class="importantList" id="importantList"></div><div class="dayPanelHint">Добавление и настройка важных дней переехали в ⚙ Настройки.</div></div>
+</details>
+<details class="acc" id="accTasks">
+<summary><span class="accT">Задачи</span><span class="accS" id="sumTasks"></span></summary>
+<div class="accB dayForm">
+<div class="taskFilters">
+<select id="taskStatusFilter" title="Фильтр задач">
+<option value="all">все</option>
+<option value="open">открытые</option>
+<option value="overdue">просроченные</option>
+<option value="done">выполненные</option>
+</select>
+<select id="taskCategoryFilter" title="Категория">
+<option value="all">все категории</option>
+</select>
+</div>
+<div class="taskList" id="taskList"></div>
+<div class="row">
+<input id="taskText" placeholder="Задача на этот день" type="text"/>
+<button class="addSmall" id="taskAdd" type="button">Добавить</button>
+</div>
+<div class="taskOptions">
+<label>Категория<input id="taskCategory" placeholder="работа, дом, здоровье" type="text"/></label>
+<label>Приоритет<select id="taskPriority"><option value="NORMAL">обычная</option><option value="LOW">низкая</option><option value="HIGH">важная</option><option value="URGENT">срочная</option></select></label>
+<label>Срок<input id="taskDueDate" type="date"/></label>
+<label>Время срока<input id="taskDueTime" type="time"/></label>
+<label class="inlineCheck"><input id="taskReminderEnabled" type="checkbox"/> напомнить</label>
+<label>За минут<input id="taskReminderBefore" max="10080" min="0" type="number" value="60"/></label>
+</div>
+</div>
+</details>
+<details class="acc" id="accNote">
+<summary><span class="accT">Заметка</span><span class="accS" id="sumNote"></span></summary>
+<div class="accB">
+<div class="tabs">
+<button class="on" id="tabEdit">Заметка</button>
+<button id="tabPrev">Превью</button>
+</div>
+<textarea id="noteEdit" placeholder="# Заголовок
+**жирный**, *курсив*, `код`
+- [ ] задача
+- список" spellcheck="false"></textarea>
+<div hidden="" id="notePrev"></div>
+</div>
+</details>
+</div>
+</div>
+</section>
+<section class="view" hidden="" id="view-overtime">
+<div class="ledgerCard" id="ledgerCard">
+<div class="ledgerHead">
+<div>
+<div class="eyebrow">Таблица переработок</div>
+<div class="small" style="color:var(--dim);font-size:12px;">Начисления живут до полного списания. Отгулы списываются со старых остатков.</div>
+</div>
+<div class="balance" id="ledgerBalance">0 ч</div>
+</div>
+<div class="ledgerFilters">
+<button id="ledgerThisMonth" type="button">этот месяц</button>
+<button id="ledgerAllTime" type="button">всё время</button>
+<label class="mono" style="color:var(--dim);font-size:11px;">с <input id="ledgerFrom" type="date"/></label>
+<label class="mono" style="color:var(--dim);font-size:11px;">по <input id="ledgerTo" type="date"/></label>
+<select id="ledgerStatus" title="Статус начисления">
+<option value="all">все начисления</option>
+<option value="open">только с остатком</option>
+<option value="partial">частично списанные</option>
+<option value="closed">полностью списанные</option>
+</select>
+<input id="ledgerSearch" placeholder="поиск: причина, дата, куда списано…" type="text"/>
+<button id="ledgerExportCsv" type="button">CSV</button>
+<button id="ledgerExportXls" type="button">Excel</button>
+<button id="ledgerClear" type="button">сброс</button>
+</div>
+<div class="ledgerStats" id="ledgerStats"></div>
+<div class="ledgerTableWrap">
+<table class="ledgerTable">
+<thead><tr>
+<th>День</th><th>Время</th><th>Начислено</th><th>Причина</th><th>Использовано</th><th>Куда списано</th><th>Остаток</th><th></th>
+</tr></thead>
+<tbody id="ledgerRows"></tbody>
+</table>
+</div>
+</div>
+</section>
+<section class="view" hidden="" id="view-tasks">
+<div class="taskBoardCard" id="taskBoardCard">
+<div class="taskBoardHead">
+<div>
+<div class="eyebrow">Все задачи</div>
+<div class="small" style="color:var(--dim);font-size:12px;">Единый список открытых, просроченных и выполненных задач без прыжков по дням календаря.</div>
+</div>
+<div class="status" id="taskBoardStatus">—</div>
+</div>
+<div class="taskBoardFilters">
+<button id="taskBoardOpen" type="button">открытые</button>
+<button id="taskBoardOverdue" type="button">просроченные</button>
+<button id="taskBoardAll" type="button">все</button>
+<label class="mono" style="color:var(--dim);font-size:11px;">с <input id="taskBoardFrom" type="date"/></label>
+<label class="mono" style="color:var(--dim);font-size:11px;">по <input id="taskBoardTo" type="date"/></label>
+<select id="taskBoardStatusFilter" title="Статус задач">
+<option value="open">открытые</option>
+<option value="overdue">просроченные</option>
+<option value="upcoming">открытые не просроченные</option>
+<option value="done">выполненные</option>
+<option value="all">все задачи</option>
+</select>
+<select id="taskBoardCategory" title="Категория"><option value="all">все категории</option></select>
+<select id="taskBoardPriority" title="Приоритет">
+<option value="all">любой приоритет</option>
+<option value="URGENT">срочные</option>
+<option value="HIGH">важные</option>
+<option value="NORMAL">обычные</option>
+<option value="LOW">низкие</option>
+</select>
+<input id="taskBoardSearch" placeholder="поиск: текст, категория, дата…" type="text"/>
+<button id="taskBoardThisMonth" type="button">этот месяц</button>
+<button id="taskBoardClear" type="button">сброс</button>
+</div>
+<div class="taskBoardStats" id="taskBoardStats"></div>
+<div class="taskBoardList" id="taskBoardList"></div>
+</div>
+</section>
+<section class="view settingsView" hidden="" id="view-settings"><div class="settingsCard" id="shiftSettingsCard">
+<div class="settingsHead">
+<div>
+<div class="eyebrow">Смены</div>
+<div class="settingsTitle">Типы смен и их время</div>
+<div class="settingsHint">Здесь создаются кастомные смены и настраиваются встроенные: начало, конец, обед, плановые часы и уведомления.</div>
+</div>
+</div>
+<div class="mgr" id="mgr">
+<div class="row">
+<input id="nsName" placeholder="Название" type="text"/>
+<input class="hrs" id="nsHours" inputmode="numeric" placeholder="ч" title="Короткие часы для календаря" type="text"/>
+</div>
+<div class="row">
+<label class="mini">Начало <input id="nsStart" type="time"/></label>
+<label class="mini">Конец <input id="nsEnd" type="time"/></label>
+<label class="mini">Обед, мин <input id="nsBreak" max="1440" min="0" step="5" type="number" value="0"/></label>
+<label class="mini">План, ч <input id="nsPlan" max="24" min="0" placeholder="=ч" step="0.25" type="number"/></label>
+</div>
+<div class="small" style="color:var(--dim);font-size:12px;line-height:1.35;">Время смены пригодится для подсказок, будущих уведомлений и кнопки «план по смене».</div>
+<div class="row" id="swRow"></div>
+<div class="custom" hidden="" id="customList"></div>
+</div></div><div class="settingsCard" id="quickScenarioSettingsCard">
+<div class="settingsHead">
+<div>
+<div class="eyebrow">Быстрые сценарии</div>
+<div class="settingsTitle">Шаблоны для переработок</div>
+<div class="settingsHint">Сценарии создаются здесь, а применяются в панели выбранного дня. Они только заполняют поля переработки — начисление всё равно подтверждаешь отдельно.</div>
+</div>
+</div>
+<details class="scenarioEditor" id="scenarioEditor" open="">
+<summary>свои сценарии</summary>
+<div class="row">
+<input id="scName" placeholder="Название, например: После дневной до 22" type="text"/>
+<input id="scGroup" placeholder="Метка: после смены" type="text"/>
+</div>
+<div class="row">
+<input id="scDesc" placeholder="Описание сценария" type="text"/>
+</div>
+<div class="row">
+<label>Старт
+                <select id="scStartMode">
+<option value="SHIFT_END">от конца смены</option>
+<option value="SHIFT_START">от начала смены</option>
+</select>
+</label>
+<label>Конец
+                <select id="scEndMode">
+<option value="ADD_MINUTES">через N минут</option>
+<option value="FIXED_TIME">в указанное время</option>
+<option value="SHIFT_END">конец смены</option>
+</select>
+</label>
+<label>+ минут <input id="scEndOffset" max="4320" min="0" step="15" type="number" value="120"/></label>
+<label>время <input id="scEndFixed" type="time" value="08:00"/></label>
+<label><input id="scEndNextDay" type="checkbox"/> следующий день</label>
+</div>
+<div class="row">
+<label>Обед
+                <select id="scBreakMode">
+<option value="ZERO">0</option>
+<option value="SHIFT">из смены</option>
+<option value="CUSTOM">свой</option>
+</select>
+</label>
+<label>мин <input id="scBreakCustom" max="1440" min="0" step="5" type="number" value="0"/></label>
+<label>План
+                <select id="scPlannedMode">
+<option value="ZERO">0</option>
+<option value="SHIFT">из смены</option>
+<option value="CUSTOM">свой</option>
+</select>
+</label>
+<label>ч <input id="scPlannedCustom" max="100" min="0" step="0.25" type="number" value="0"/></label>
+</div>
+<div class="row">
+<input id="scReason" placeholder="Причина по умолчанию" type="text"/>
+<button id="scSave" type="button">добавить сценарий</button>
+<button class="ghostBtn" id="scReset" type="button">сброс формы</button>
+</div>
+<div class="quickScenarioTips">Сценарии сохраняются в профиле. Их можно удалить кнопкой × на карточке.</div>
+</details></div><div class="settingsCard" id="importantSettingsCard">
+<div class="settingsHead">
+<div>
+<div class="eyebrow">Важные дни</div>
+<div class="settingsTitle">Дни рождения, платежи и повторяющиеся события</div>
+<div class="settingsHint">Важные дни живут отдельно от заметок. На календаре они показываются меткой ★.</div>
+</div>
+</div>
+<div class="importantSettingsList" id="importantSettingsList"></div>
+<div class="settingsForm dayForm">
+<div class="row">
+<label>Дата <input id="impDate" type="date"/></label>
+<button id="impDateSelected" type="button">выбранный день</button>
+<button id="impDateToday" type="button">сегодня</button>
+</div>
+<div class="row">
+<input id="impTitle" placeholder="Например: день рождения Макса" type="text"/>
+<select id="impRepeat">
+<option value="YEARLY">каждый год</option>
+<option value="MONTHLY">каждый месяц</option>
+<option value="NONE">один раз</option>
+</select>
+<input id="impColor" title="Цвет важного дня" type="color" value="#F5B841"/>
+<button class="addSmall" id="impAdd" type="button">Добавить</button>
+</div>
+</div>
+</div>
+<div class="notifyCard" id="notifyCard">
+<div class="notifyHead">
+<div>
+<div class="eyebrow">Уведомления</div>
+<div class="small" style="color:var(--dim);font-size:12px;">Backend уже считает напоминания для веба, Android и будущего Telegram-бота.</div>
+</div>
+<div class="status" id="notifyStatus">—</div>
+</div>
+<div class="notifyGrid">
+<label class="notifyOpt"><input id="notifBrowser" type="checkbox"/> <b>браузерные уведомления</b></label>
+<label class="notifyOpt"><input id="notifShift" type="checkbox"/> <b>перед сменой</b> за <input id="notifShiftBefore" max="1440" min="0" step="5" type="number"/> мин</label>
+<label class="notifyOpt"><input id="notifDigest" type="checkbox"/> <b>вечерний дайджест</b> в <input id="notifDigestTime" type="time"/></label>
+<label class="notifyOpt"><input id="notifTasks" type="checkbox"/> <b>задачи дня</b> в <input id="notifTaskTime" type="time"/></label>
+<label class="notifyOpt"><input id="notifImportant" type="checkbox"/> <b>важные дни</b> за <input id="notifImportantDays" max="366" min="0" step="1" type="number"/> дн. в <input id="notifImportantTime" type="time"/></label>
+</div>
+<div class="notifyPresets">
+<span>перед сменой:</span>
+<button data-notif-shift-before="15" type="button">15 мин</button>
+<button data-notif-shift-before="30" type="button">30 мин</button>
+<button data-notif-shift-before="60" type="button">1 час</button>
+<button data-notif-shift-before="90" type="button">1.5 часа</button>
+<button data-notif-shift-before="120" type="button">2 часа</button>
+</div>
+<div class="notifyActions">
+<button class="primary" id="notifSave" type="button">Сохранить настройки</button>
+<button id="notifPermission" type="button">Разрешить в браузере</button>
+<button id="notifTest" type="button">Тест</button>
+<button id="notifRefresh" type="button">Текущий месяц</button>
+<button id="notifTomorrow" type="button">Проверить завтра</button>
+</div>
+<div class="notifyListTitle" id="notifyListTitle">напоминания текущего месяца</div>
+<div class="notifyList" id="notifyList"></div>
+</div>
+</section>
+</div>
 <script src="app.js"></script>
 </body>
 </html>
