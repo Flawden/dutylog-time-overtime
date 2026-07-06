@@ -28,9 +28,15 @@ public class ShiftType {
     @Column(nullable = false)
     private boolean builtin = false;
 
+    /** Владелец. У каждого пользователя — свой набор типов смен. */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private AppUser owner;
+
     protected ShiftType() {} // для JPA
 
-    public ShiftType(String name, double hours, String color, boolean builtin) {
+    public ShiftType(AppUser owner, String name, double hours, String color, boolean builtin) {
+        this.owner = owner;
         this.name = name;
         this.hours = hours;
         this.color = color;
@@ -45,4 +51,5 @@ public class ShiftType {
     public String getColor() { return color; }
     public void setColor(String color) { this.color = color; }
     public boolean isBuiltin() { return builtin; }
+    public AppUser getOwner() { return owner; }
 }

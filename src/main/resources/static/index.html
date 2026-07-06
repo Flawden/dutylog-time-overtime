@@ -120,10 +120,12 @@
       <div class="eyebrow">Журнал смен</div>
       <h1><span id="monthName"></span> <span class="yr" id="yearName"></span><span id="saveState"></span></h1>
     </div>
-    <div class="nav">
+    <div class="nav" style="display:flex;align-items:center;">
       <button id="prev">‹</button>
       <button id="todayBtn">Сегодня</button>
       <button id="next">›</button>
+      <span id="whoami" class="mono" style="margin-left:14px;font-size:12.5px;color:var(--mut)"></span>
+      <button id="logout" title="Выйти" style="margin-left:8px;">Выйти</button>
     </div>
   </div>
 
@@ -204,6 +206,11 @@ async function jfetch(url, opts = {}) {
     headers: opts.body ? { "Content-Type": "application/json" } : {},
     body: opts.body ? JSON.stringify(opts.body) : undefined,
   });
+  if (res.status === 401) {
+    // Сессия истекла или не залогинен — на страницу входа
+    window.location.href = "/login.html";
+    throw new Error("401: не авторизован");
+  }
   if (!res.ok) throw new Error(`${opts.method || "GET"} ${url} → ${res.status}`);
   if (res.status === 204) return null;
   return res.json();
@@ -539,13 +546,22 @@ async function loadMonth(){
   } catch (err) { console.error(err); setSave("err"); }
 }
 
+/* ─── Пользователь ──────────────────────────────────────────── */
+$("logout").addEventListener("click", async () => {
+  try { await fetch("/logout", { method: "POST" }); } catch (e) { /* пофиг, всё равно уходим */ }
+  window.location.href = "/login.html";
+});
+
 async function init(){
   renderSwatches();
   try {
+    const me = await jfetch("/api/auth/me");
+    $("whoami").textContent = me.username;
     state.shiftTypes = await api.shiftTypes();
   } catch (err) {
     console.error(err);
     setSave("err");
+    return; // при 401 нас уже уносит на login.html
   }
   await loadMonth();
   renderCalendar();

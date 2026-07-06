@@ -9,12 +9,18 @@ import java.time.LocalDate;
  * Если нет ни смены, ни заметки — запись удаляется целиком.
  */
 @Entity
-@Table(name = "day_entries", uniqueConstraints = @UniqueConstraint(columnNames = "entry_date"))
+@Table(name = "day_entries",
+        uniqueConstraints = @UniqueConstraint(columnNames = {"user_id", "entry_date"}))
 public class DayEntry {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    /** Владелец записи. Один и тот же день у разных пользователей — разные записи. */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id", nullable = false)
+    private AppUser owner;
 
     @Column(name = "entry_date", nullable = false)
     private LocalDate date;
@@ -29,11 +35,13 @@ public class DayEntry {
 
     protected DayEntry() {} // для JPA
 
-    public DayEntry(LocalDate date) {
+    public DayEntry(AppUser owner, LocalDate date) {
+        this.owner = owner;
         this.date = date;
     }
 
     public Long getId() { return id; }
+    public AppUser getOwner() { return owner; }
     public LocalDate getDate() { return date; }
     public ShiftType getShiftType() { return shiftType; }
     public void setShiftType(ShiftType shiftType) { this.shiftType = shiftType; }

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вход — Журнал смен</title>
+<style>
+  :root {
+    --bg:#14171C; --panel:#1C2027; --panel2:#22262E; --line:#2E333C;
+    --text:#E8EAED; --mut:#8B929E; --dim:#5A6270; --accent:#F5B841; --danger:#E0653A; --ok:#6FBF73;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; min-height:100vh; background:var(--bg); color:var(--text);
+    font-family:'Segoe UI',system-ui,sans-serif; display:flex; align-items:center; justify-content:center; padding:16px; }
+  .card { width:100%; max-width:380px; background:var(--panel); border:1px solid var(--line); border-radius:14px; padding:22px; }
+  .eyebrow { font-size:11px; letter-spacing:2px; color:var(--dim); text-transform:uppercase; font-family:ui-monospace,monospace; }
+  h1 { font-size:24px; font-weight:800; margin:2px 0 16px; }
+  .tabs { display:flex; gap:4px; margin-bottom:14px; border-bottom:1px solid var(--line); }
+  .tabs button { background:none; border:none; cursor:pointer; padding:8px 12px; font-size:14px;
+    color:var(--dim); border-bottom:2px solid transparent; margin-bottom:-1px; font-family:inherit; }
+  .tabs button.on { color:var(--text); font-weight:700; border-bottom-color:var(--accent); }
+  label { display:block; font-size:12px; color:var(--mut); margin:10px 0 4px; }
+  input { width:100%; background:var(--bg); border:1px solid var(--line); border-radius:8px;
+    color:var(--text); padding:9px 11px; font-size:14px; font-family:inherit; }
+  input:focus-visible { outline:2px solid var(--accent); outline-offset:1px; border-color:transparent; }
+  .btn { width:100%; margin-top:16px; background:var(--accent); color:#14171C; border:none;
+    border-radius:8px; padding:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
+  .btn:disabled { background:var(--line); color:var(--dim); cursor:default; }
+  .msg { min-height:18px; margin-top:10px; font-size:12.5px; }
+  .msg.err { color:var(--danger); }
+  .msg.ok { color:var(--ok); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="eyebrow">Журнал смен</div>
+  <h1 id="title">Вход</h1>
+
+  <div class="tabs">
+    <button id="tabLogin" class="on">Вход</button>
+    <button id="tabReg">Регистрация</button>
+  </div>
+
+  <!-- Форма входа: обычный POST, его обрабатывает Spring Security -->
+  <form id="loginForm" method="post" action="/perform_login">
+    <label for="lu">Имя пользователя</label>
+    <input id="lu" name="username" autocomplete="username" required>
+    <label for="lp">Пароль</label>
+    <input id="lp" name="password" type="password" autocomplete="current-password" required>
+    <button class="btn" type="submit">Войти</button>
+  </form>
+
+  <!-- Форма регистрации: fetch на /api/auth/register, потом автологин -->
+  <form id="regForm" hidden>
+    <label for="ru">Имя пользователя <span style="color:var(--dim)">(от 3 символов)</span></label>
+    <input id="ru" autocomplete="username" required>
+    <label for="rp">Пароль <span style="color:var(--dim)">(от 6 символов)</span></label>
+    <input id="rp" type="password" autocomplete="new-password" required>
+    <button class="btn" type="submit" id="regBtn">Создать аккаунт</button>
+  </form>
+
+  <div class="msg" id="msg"></div>
+</div>
+
+<script>
+"use strict";
+const $ = id => document.getElementById(id);
+
+function setTab(reg) {
+  $("tabLogin").classList.toggle("on", !reg);
+  $("tabReg").classList.toggle("on", reg);
+  $("loginForm").hidden = reg;
+  $("regForm").hidden = !reg;
+  $("title").textContent = reg ? "Регистрация" : "Вход";
+  setMsg("");
+}
+$("tabLogin").addEventListener("click", () => setTab(false));
+$("tabReg").addEventListener("click", () => setTab(true));
+
+function setMsg(text, cls) {
+  const m = $("msg");
+  m.textContent = text;
+  m.className = "msg" + (cls ? " " + cls : "");
+}
+
+// ?error в URL — Spring Security вернул нас после неудачного входа
+if (new URLSearchParams(location.search).has("error")) {
+  setMsg("Неверное имя или пароль", "err");
+}
+
+$("regForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const username = $("ru").value.trim();
+  const password = $("rp").value;
+  $("regBtn").disabled = true;
+  setMsg("Создаю аккаунт…");
+  try {
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ username, password }),
+    });
+    if (!res.ok) {
+      const body = await res.json().catch(() => ({}));
+      setMsg(body.error || `Ошибка ${res.status}`, "err");
+      $("regBtn").disabled = false;
+      return;
+    }
+    // Аккаунт создан — входим теми же данными через обычную форму
+    setMsg("Готово, вхожу…", "ok");
+    $("lu").value = username;
+    $("lp").value = password;
+    $("loginForm").submit();
+  } catch (err) {
+    setMsg("Сеть недоступна", "err");
+    $("regBtn").disabled = false;
+  }
+});
+</script>
+</body>
+</html>
