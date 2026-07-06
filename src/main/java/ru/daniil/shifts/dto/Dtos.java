@@ -3,10 +3,15 @@ package ru.daniil.shifts.dto;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.ShiftType;
+
+import java.util.List;
 
 /**
  * DTO-шки API. Вложенные records — легальный способ держать
@@ -46,6 +51,22 @@ public final class Dtos {
             );
         }
     }
+
+
+    /** Массовое заполнение графика от выбранной даты. Заметки при этом сохраняются. */
+    public record DayFillRequest(
+            @NotBlank(message = "Дата начала должна быть в формате yyyy-MM-dd")
+            String startDate,
+
+            @Min(value = 1, message = "Количество дней: минимум 1")
+            @Max(value = 366, message = "Количество дней: максимум 366")
+            Integer days,
+
+            @NotEmpty(message = "Шаблон графика не должен быть пустым")
+            List<Long> shiftTypeIds,
+
+            Boolean overwriteExistingShift
+    ) {}
 
     /** Upsert записи дня. Оба поля могут быть null. */
     public record DayUpsertRequest(

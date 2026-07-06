@@ -8,4 +8,5 @@ import java.util.List;
 
 public interface ShiftTypeRepository extends JpaRepository<ShiftType, Long> {
     List<ShiftType> findByOwner(AppUser owner);
+    List<ShiftType> findByOwnerAndName(AppUser owner, String name);
 }

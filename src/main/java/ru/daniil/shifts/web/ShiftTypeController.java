@@ -38,8 +38,35 @@ public class ShiftTypeController {
     }
 
     @GetMapping
+    @Transactional
     public List<ShiftTypeDto> list(Principal principal) {
-        return shiftTypes.findByOwner(me(principal)).stream().map(ShiftTypeDto::from).toList();
+        AppUser current = me(principal);
+        ensureBuiltinShiftTypes(current);
+        return shiftTypes.findByOwner(current).stream().map(ShiftTypeDto::from).toList();
+    }
+
+    /**
+     * Подстраховка для старых пользователей из предыдущих версий проекта:
+     * если у них ещё нет встроенного «Выходного», он появится при следующей загрузке.
+     */
+    private void ensureBuiltinShiftTypes(AppUser user) {
+        ensureBuiltin(user, "Дневная", 8, "#F5B841");
+        ensureBuiltin(user, "Ночная", 8, "#7B8CE0");
+        ensureBuiltin(user, "Выходной", 0, "#6FBF73");
+    }
+
+    private void ensureBuiltin(AppUser user, String name, double hours, String color) {
+        List<ShiftType> existing = shiftTypes.findByOwnerAndName(user, name);
+        if (existing.isEmpty()) {
+            shiftTypes.save(new ShiftType(user, name, hours, color, true));
+            return;
+        }
+
+        ShiftType first = existing.get(0);
+        if (!first.isBuiltin()) {
+            first.setBuiltin(true);
+            shiftTypes.save(first);
+        }
     }
 
     @PostMapping

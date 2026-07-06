@@ -3,8 +3,8 @@ package ru.daniil.shifts.model;
 import jakarta.persistence.*;
 
 /**
- * Тип смены: «Дневная», «Ночная» или пользовательская смена
- * вроде «5 часов», «12 часов», «Сутки», «Выходной» и т.д.
+ * Тип смены: «Дневная», «Ночная», «Выходной» или пользовательская смена
+ * вроде «5 часов», «12 часов», «Сутки» и т.д.
  * builtin = true у базовых типов — их фронтенд не даёт удалять.
  */
 @Entity
@@ -52,5 +52,6 @@ public class ShiftType {
     public String getColor() { return color; }
     public void setColor(String color) { this.color = color; }
     public boolean isBuiltin() { return builtin; }
+    public void setBuiltin(boolean builtin) { this.builtin = builtin; }
     public AppUser getOwner() { return owner; }
 }

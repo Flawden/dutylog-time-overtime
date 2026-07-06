@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.shifts.dto.Dtos.DayDto;
+import ru.daniil.shifts.dto.Dtos.DayFillRequest;
 import ru.daniil.shifts.dto.Dtos.DayUpsertRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
@@ -17,6 +18,7 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -99,6 +101,70 @@ public class DayController {
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(DayDto.from(days.save(entry)));
+    }
+
+
+    /**
+     * Массовое заполнение графика от выбранной даты.
+     * Пример тела:
+     * {
+     *   "startDate": "2026-07-02",
+     *   "days": 31,
+     *   "shiftTypeIds": [1, 2, 3, 3],
+     *   "overwriteExistingShift": true
+     * }
+     *
+     * Важно: заметки в днях не трогаются, меняется только тип смены.
+     */
+    @PostMapping("/fill")
+    @Transactional
+    public ResponseEntity<?> fillSchedule(@Valid @RequestBody(required = false) DayFillRequest req,
+                                          Principal principal) {
+        if (req == null) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Некорректный JSON в запросе"));
+        }
+
+        LocalDate start;
+        try {
+            start = LocalDate.parse(req.startDate());
+        } catch (DateTimeParseException e) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Дата начала должна быть в формате yyyy-MM-dd"));
+        }
+
+        int dayCount = req.days() != null ? req.days() : 31;
+        boolean overwrite = req.overwriteExistingShift() == null || req.overwriteExistingShift();
+        AppUser current = me(principal);
+
+        List<ShiftType> pattern = new ArrayList<>();
+        for (Long shiftTypeId : req.shiftTypeIds()) {
+            if (shiftTypeId == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Шаблон графика содержит пустую смену"));
+            }
+            ShiftType st = shiftTypes.findById(shiftTypeId)
+                    .filter(t -> t.getOwner().getId().equals(current.getId()))
+                    .orElse(null);
+            if (st == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "В шаблоне есть смена не текущего пользователя"));
+            }
+            pattern.add(st);
+        }
+
+        List<DayDto> changed = new ArrayList<>();
+        for (int i = 0; i < dayCount; i++) {
+            LocalDate d = start.plusDays(i);
+            ShiftType plannedShift = pattern.get(i % pattern.size());
+            DayEntry entry = days.findByOwnerAndDate(current, d)
+                    .orElseGet(() -> new DayEntry(current, d));
+
+            if (!overwrite && entry.getShiftType() != null) {
+                continue;
+            }
+
+            entry.setShiftType(plannedShift);
+            changed.add(DayDto.from(days.save(entry)));
+        }
+
+        return ResponseEntity.ok(changed);
     }
 
     private String normalizeNote(String note) {
