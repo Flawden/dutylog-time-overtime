@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=20.3" rel="stylesheet"/>
+<link href="app.css?v=20.4" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -280,14 +280,22 @@
 </div>
 </section>
 <section class="view settingsView" hidden="" id="view-settings">
-<div class="settingsIndex" aria-label="Разделы настроек">
-  <a href="#settings-profile">Профиль</a>
-  <a href="#settings-time">Время</a>
-  <a href="#settings-shifts">Смены</a>
-  <a href="#settings-scenarios">Сценарии</a>
-  <a href="#settings-notifications">Уведомления</a>
-  <a href="#settings-diagnostics">Диагностика</a>
-</div>
+<div class="settingsShell">
+  <aside class="settingsIndex" aria-label="Разделы настроек">
+    <div class="settingsIndexTitle">Настройки</div>
+    <a data-settings-jump="profile" href="#settings-profile"><b>Профиль</b><span>имя, пароль, Telegram</span></a>
+    <a data-settings-jump="time" href="#settings-time"><b>Время</b><span>регион, пояс, дефолты</span></a>
+    <a data-settings-jump="shifts" href="#settings-shifts"><b>Смены</b><span>типы, часы, уведомления</span></a>
+    <a data-settings-jump="scenarios" href="#settings-scenarios"><b>Сценарии</b><span>шаблоны переработок</span></a>
+    <a data-settings-jump="notifications" href="#settings-notifications"><b>Уведомления</b><span>браузер и расписания</span></a>
+    <a data-settings-jump="important" href="#settings-important"><b>Важные даты</b><span>общий список событий</span></a>
+    <a data-settings-jump="diagnostics" href="#settings-diagnostics"><b>Диагностика</b><span>сервер, БД, Telegram</span></a>
+    <div class="settingsIndexActions">
+      <button id="settingsExpandAll" type="button">развернуть всё</button>
+      <button id="settingsCollapseAll" type="button">свернуть всё</button>
+    </div>
+  </aside>
+  <div class="settingsContent">
 <div class="settingsCard" id="profileCard" data-settings-section="profile">
 <a class="settingsAnchor" id="settings-profile"></a>
 <div class="settingsHead">
@@ -533,7 +541,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Frontend</span><b id="diagFrontend">v20.3</b></div>
+  <div class="diagItem"><span>Frontend</span><b id="diagFrontend">v20.4</b></div>
   <div class="diagItem"><span>Service Worker</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Cookie/CSRF</span><b id="diagCsrf">—</b></div>
@@ -544,7 +552,8 @@
   <button id="diagnosticsCopy" type="button">Скопировать отчёт</button>
 </div>
 </div>
-<div class="settingsCard" id="importantSettingsCard">
+<div class="settingsCard" id="importantSettingsCard" data-settings-section="important">
+<a class="settingsAnchor" id="settings-important"></a>
 <div class="settingsHead">
 <div>
 <div class="eyebrow">Важные дни</div>
@@ -553,6 +562,8 @@
 </div>
 </div>
 <div class="importantList" id="importantSettingsList"></div>
+</div>
+  </div>
 </div>
 </section>
 </div>
@@ -572,6 +583,6 @@
     <div class="noteFsPrev" id="noteFsPrev"></div>
   </div>
 </div>
-<script src="app.js?v=20.3"></script>
+<script src="app.js?v=20.4"></script>
 </body>
 </html>

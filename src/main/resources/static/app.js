@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "20.3";
+const DUTYLOG_VERSION = "20.4";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -2554,7 +2554,102 @@ function initDiagnosticsEvents(){
   renderDiagnosticsClient();
 }
 
+function initSettingsAccordion(){
+  const root = $("view-settings");
+  if (!root || root.dataset.accordionReady === "1") return;
+  root.dataset.accordionReady = "1";
+  const cards = [...root.querySelectorAll(".settingsCard[data-settings-section]")];
+  const titles = {
+    profile: "Имя, пароль, устройства и Telegram",
+    time: "Регион, часовой пояс и дефолты дневной/ночной",
+    shifts: "Кастомные и встроенные типы смен",
+    scenarios: "Шаблоны, которые заполняют переработку в панели дня",
+    notifications: "Браузерные, сменные, задачные и важные напоминания",
+    important: "Общий список важных дат с удалением",
+    diagnostics: "Состояние frontend, backend, БД и Telegram"
+  };
+  let saved = localStorage.getItem("dutylog.settings.openSection") || "profile";
+  const known = new Set(cards.map(c => c.dataset.settingsSection));
+  if (!known.has(saved)) saved = "profile";
+
+  function setNavActive(section){
+    root.querySelectorAll("[data-settings-jump]").forEach(a => a.classList.toggle("on", a.dataset.settingsJump === section));
+  }
+  function setCardOpen(card, open){
+    card.classList.toggle("is-collapsed", !open);
+    card.classList.toggle("is-open", open);
+    const btn = card.querySelector(".settingsToggle");
+    if (btn) {
+      btn.textContent = open ? "свернуть" : "открыть";
+      btn.setAttribute("aria-expanded", String(open));
+    }
+  }
+  function openSection(section, scroll = false){
+    for (const card of cards) setCardOpen(card, card.dataset.settingsSection === section);
+    localStorage.setItem("dutylog.settings.openSection", section);
+    setNavActive(section);
+    if (scroll) document.getElementById("settings-" + section)?.scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+  function expandAll(){
+    for (const card of cards) setCardOpen(card, true);
+    localStorage.setItem("dutylog.settings.openSection", "all");
+    root.querySelectorAll("[data-settings-jump]").forEach(a => a.classList.remove("on"));
+  }
+  function collapseAll(){
+    for (const card of cards) setCardOpen(card, false);
+    localStorage.setItem("dutylog.settings.openSection", "none");
+    root.querySelectorAll("[data-settings-jump]").forEach(a => a.classList.remove("on"));
+  }
+
+  for (const card of cards) {
+    const section = card.dataset.settingsSection;
+    const head = card.querySelector(":scope > .settingsHead, :scope > .notifyHead");
+    if (!head) continue;
+    if (!card.querySelector(":scope > .settingsCollapsedNote")) {
+      const note = document.createElement("div");
+      note.className = "settingsCollapsedNote";
+      note.textContent = titles[section] || "Раздел настроек";
+      head.after(note);
+    }
+    if (!head.querySelector(".settingsToggle")) {
+      const toggle = document.createElement("button");
+      toggle.className = "settingsToggle";
+      toggle.type = "button";
+      toggle.setAttribute("aria-controls", card.id || "settings-" + section);
+      toggle.addEventListener("click", (ev) => {
+        ev.preventDefault(); ev.stopPropagation();
+        if (card.classList.contains("is-collapsed")) openSection(section, false);
+        else collapseAll();
+      });
+      head.appendChild(toggle);
+    }
+    head.addEventListener("click", (ev) => {
+      if (ev.target.closest("button,a,input,select,textarea,label")) return;
+      if (card.classList.contains("is-collapsed")) openSection(section, false);
+      else collapseAll();
+    });
+  }
+
+  root.querySelectorAll("[data-settings-jump]").forEach(a => {
+    a.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      openSection(a.dataset.settingsJump, true);
+      history.replaceState(null, "", "#settings");
+    });
+  });
+  $("settingsExpandAll")?.addEventListener("click", expandAll);
+  $("settingsCollapseAll")?.addEventListener("click", collapseAll);
+
+  if (location.hash.startsWith("#settings-") && known.has(location.hash.replace("#settings-", ""))) {
+    saved = location.hash.replace("#settings-", "");
+  }
+  if (saved === "all") expandAll();
+  else if (saved === "none") collapseAll();
+  else openSection(saved, false);
+}
+
 function renderSettingsPanels(){
+  initSettingsAccordion();
   renderTimeSettings();
   renderDiagnosticsClient();
   renderCustomList();
@@ -2729,7 +2824,8 @@ async function init(){
   state.timeSettings = loadTimeSettings();
   renderSwatches();
   initTimeSettingsEvents();
-initDiagnosticsEvents();
+  initDiagnosticsEvents();
+  initSettingsAccordion();
   try {
     const me = await jfetch("/api/auth/me");
     $("whoami").textContent = me.username;
@@ -2750,7 +2846,8 @@ init();
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */
 const VIEWS = { calendar:"view-calendar", overtime:"view-overtime", tasks:"view-tasks", settings:"view-settings" };
 function applyRoute(){
-  const name = (location.hash || "#calendar").slice(1);
+  const rawRoute = (location.hash || "#calendar").slice(1);
+  const name = rawRoute.startsWith("settings-") ? "settings" : rawRoute;
   const active = VIEWS[name] ? name : "calendar";
   document.body.dataset.view = active;
   if (active !== "calendar") selectDay(null);
