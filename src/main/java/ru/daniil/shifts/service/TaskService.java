@@ -14,7 +14,9 @@ import ru.daniil.shifts.service.exception.ApiException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
 @Service
@@ -39,6 +41,93 @@ public class TaskService {
         dayEntryService.validateRange(from, to);
         return tasks.findByOwnerAndDateBetweenOrderByDateAscCreatedAtAscIdAsc(user, from, to).stream()
                 .map(TaskDto::from).toList();
+    }
+
+
+    @Transactional(readOnly = true)
+    public List<TaskDto> listBoard(AppUser user,
+                                   String status,
+                                   String category,
+                                   String priority,
+                                   String q,
+                                   String from,
+                                   String to) {
+        LocalDate fromDate = parseOptionalDate(from, "Дата from должна быть в формате yyyy-MM-dd");
+        LocalDate toDate = parseOptionalDate(to, "Дата to должна быть в формате yyyy-MM-dd");
+        if (fromDate != null && toDate != null) dayEntryService.validateRange(fromDate, toDate);
+
+        String st = cleanOptional(status);
+        if (st == null) st = "open";
+        String cat = cleanOptional(category);
+        String pr = cleanOptional(priority);
+        String query = cleanOptional(q);
+        String queryLower = query != null ? query.toLowerCase(Locale.ROOT) : null;
+        TaskPriority priorityFilter = null;
+        if (pr != null && !"all".equalsIgnoreCase(pr)) {
+            try { priorityFilter = TaskPriority.valueOf(pr.toUpperCase(Locale.ROOT)); }
+            catch (IllegalArgumentException e) { throw ApiException.badRequest("Неизвестный приоритет задачи"); }
+        }
+
+        final String statusFilter = st.toLowerCase(Locale.ROOT);
+        final String categoryFilter = cat;
+        final TaskPriority priorityFinal = priorityFilter;
+        return tasks.findByOwnerOrderByDoneAscDueDateAscDueTimeAscDateAscCreatedAtAscIdAsc(user).stream()
+                .filter(t -> matchStatus(t, statusFilter))
+                .filter(t -> categoryFilter == null || "all".equalsIgnoreCase(categoryFilter) || categoryFilter.equalsIgnoreCase(t.getCategory() == null ? "" : t.getCategory()))
+                .filter(t -> priorityFinal == null || t.getPriority() == priorityFinal)
+                .filter(t -> withinTaskBoardRange(t, fromDate, toDate))
+                .filter(t -> queryLower == null || taskMatchesQuery(t, queryLower))
+                .sorted(Comparator
+                        .comparing(DayTask::isDone)
+                        .thenComparing((DayTask t) -> taskSortDate(t), Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(t -> t.getDueTime(), Comparator.nullsLast(Comparator.naturalOrder()))
+                        .thenComparing(DayTask::getDate)
+                        .thenComparing(DayTask::getCreatedAt)
+                        .thenComparing(DayTask::getId))
+                .map(TaskDto::from)
+                .toList();
+    }
+
+    private boolean matchStatus(DayTask task, String status) {
+        return switch (status) {
+            case "all" -> true;
+            case "open" -> !task.isDone();
+            case "done" -> task.isDone();
+            case "overdue" -> isOverdue(task);
+            case "upcoming" -> !task.isDone() && !isOverdue(task);
+            default -> throw ApiException.badRequest("Неизвестный статус задач");
+        };
+    }
+
+    private boolean withinTaskBoardRange(DayTask task, LocalDate from, LocalDate to) {
+        LocalDate d = taskSortDate(task);
+        if (d == null) return from == null && to == null;
+        if (from != null && d.isBefore(from)) return false;
+        return to == null || !d.isAfter(to);
+    }
+
+    private LocalDate taskSortDate(DayTask task) {
+        return task.getDueDate() != null ? task.getDueDate() : task.getDate();
+    }
+
+    private boolean taskMatchesQuery(DayTask task, String q) {
+        return contains(task.getText(), q)
+                || contains(task.getCategory(), q)
+                || contains(task.getDate() != null ? task.getDate().toString() : null, q)
+                || contains(task.getDueDate() != null ? task.getDueDate().toString() : null, q)
+                || contains(task.getPriority() != null ? task.getPriority().name() : null, q);
+    }
+
+    private boolean contains(String value, String q) {
+        return value != null && value.toLowerCase(Locale.ROOT).contains(q);
+    }
+
+    private boolean isOverdue(DayTask task) {
+        if (task.isDone() || task.getDueDate() == null) return false;
+        LocalDate today = LocalDate.now();
+        if (task.getDueDate().isBefore(today)) return true;
+        if (task.getDueDate().isAfter(today) || task.getDueTime() == null) return false;
+        return task.getDueTime().isBefore(LocalTime.now());
     }
 
     @Transactional

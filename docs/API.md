@@ -834,3 +834,26 @@ GET /api/notifications/upcoming?from=2026-07-01&to=2026-07-31&includePast=true
 ```
 
 `POST /api/tasks` и `PATCH /api/tasks/{id}` принимают эти поля. Старые клиенты могут продолжать отправлять только `date` и `text`.
+
+### GET `/api/tasks/board`
+
+Общий список задач для отдельного экрана задач в Web/PWA и будущего Android-клиента.
+
+Параметры:
+
+- `status`: `open`, `overdue`, `upcoming`, `done`, `all`; по умолчанию `open`;
+- `category`: фильтр по категории, опционально;
+- `priority`: `LOW`, `NORMAL`, `HIGH`, `URGENT`, опционально;
+- `q`: поиск по тексту, категории, дате и приоритету;
+- `from`, `to`: период в формате `yyyy-MM-dd`. Для фильтра используется срок задачи, а если срока нет — дата задачи.
+
+Примеры:
+
+```http
+GET /api/tasks/board?status=open
+GET /api/tasks/board?status=overdue
+GET /api/tasks/board?category=здоровье&priority=HIGH
+GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
+```
+
+Ответ: массив `TaskDto`.

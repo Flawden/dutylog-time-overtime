@@ -45,6 +45,20 @@ public class TaskController {
         return taskService.listRange(current, fromDate, toDate);
     }
 
+
+    /** Общий экран задач: открытые, просроченные, выполненные, категории и поиск. */
+    @GetMapping("/board")
+    public List<TaskDto> board(@RequestParam(required = false, defaultValue = "open") String status,
+                               @RequestParam(required = false) String category,
+                               @RequestParam(required = false) String priority,
+                               @RequestParam(required = false) String q,
+                               @RequestParam(required = false) String from,
+                               @RequestParam(required = false) String to,
+                               Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        return taskService.listBoard(current, status, category, priority, q, from, to);
+    }
+
     @PostMapping
     public TaskDto create(@Valid @RequestBody(required = false) TaskCreateRequest req,
                           Principal principal) {
