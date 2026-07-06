@@ -16,6 +16,9 @@ public interface DayEntryRepository extends JpaRepository<DayEntry, Long> {
     /** Все записи пользователя в диапазоне дат включительно — для загрузки месяца. */
     List<DayEntry> findByOwnerAndDateBetween(AppUser owner, LocalDate from, LocalDate to);
 
+    /** То же самое, но сразу отсортировано по дате — удобно для Android и отчётов. */
+    List<DayEntry> findByOwnerAndDateBetweenOrderByDateAsc(AppUser owner, LocalDate from, LocalDate to);
+
     /** Записи, ссылающиеся на тип смены — нужно при удалении типа. */
     List<DayEntry> findByShiftType(ShiftType shiftType);
 }

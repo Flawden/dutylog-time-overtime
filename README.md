@@ -1,6 +1,6 @@
 # Журнал смен
 
-Календарь смен с Markdown-заметками, автозаполнением графиков и учётом переработки/отгулов.
+Календарь смен с Markdown-заметками, автозаполнением графиков, важными днями, задачами и учётом переработки/отгулов.
 
 Текущий стек:
 
@@ -19,6 +19,10 @@
 
 В каждый день можно провалиться и написать заметку в Markdown. Если в дне есть заметка, на клетке календаря появляется отметка.
 
+Также у дня теперь есть отдельные задачи с чекбоксами. Это не Markdown-задачи внутри заметки, а отдельные сущности: если есть невыполненные задачи, на клетке календаря появляется `!`; когда задачи выполнены, индикатор гаснет/становится спокойным.
+
+Важные дни вынесены отдельно: дни рождения, годовщины, платежи, техосмотры и любые повторяющиеся события. Поддерживаются режимы: один раз, каждый месяц, каждый год. В календаре такие дни помечаются `★`.
+
 От выбранного дня можно запустить автозаполнение графика: 2/2, день/ночь/48, пятидневка 5/2, день/72, ночь/72. По умолчанию график заполняется на 31 день вперёд, включая следующий месяц. Пятидневка привязана к реальным дням недели: Пн–Пт рабочие, Сб–Вс выходные. После заполнения каждый день всё равно редактируется вручную.
 
 Добавлен простой учёт переработки и отгулов: в дне можно отдельно указать дополнительные часы, например ППР после смены, и отдельно часы, которые списаны как отгул. Баланс периода считается как:
@@ -28,6 +32,20 @@
 ```
 
 Пример: 18 июня остался с 17:00 до 24:00 — ставишь `+7`. 19 июня продолжил с 00:00 до 08:00 — ставишь `+8`, но если из-за этого не вышел на дневную смену, списываешь `-8`. Итого за два дня остаётся `+7` часов.
+
+## Что добавлено в v11-important-days-tasks
+
+Эта версия добавляет поверх v10 новый продуктовый слой:
+
+- отдельные задачи дня с чекбоксами;
+- индикатор `!` в календаре, пока есть невыполненные задачи;
+- отдельные важные дни;
+- повторения важных дней: один раз, каждый месяц, каждый год;
+- индикатор `★` на календаре для важных дней;
+- новые сущности `DayTask` и `ImportantDay`;
+- новые endpoint’ы `/api/tasks` и `/api/important-days`;
+- `/api/calendar?from=&to=` теперь отдаёт ещё `tasks` и `importantDays`;
+- добавлена миграция `V2__important_days_and_tasks.sql`.
 
 ## Что добавлено в v9-production-foundation
 
@@ -190,21 +208,40 @@ src/main/java/ru/daniil/shifts/
 ├── model/
 │   ├── AppUser.java
 │   ├── ShiftType.java
-│   └── DayEntry.java
+│   ├── DayEntry.java
+│   ├── DayTask.java
+│   ├── ImportantDay.java
+│   └── RepeatMode.java
 ├── repo/
 │   ├── UserRepository.java
 │   ├── ShiftTypeRepository.java
-│   └── DayEntryRepository.java
+│   ├── DayEntryRepository.java
+│   ├── DayTaskRepository.java
+│   └── ImportantDayRepository.java
+├── service/
+│   ├── CurrentUserService.java
+│   ├── ShiftTypeService.java
+│   ├── DayEntryService.java
+│   ├── CalendarService.java
+│   ├── OvertimeService.java
+│   ├── TaskService.java
+│   ├── ImportantDayService.java
+│   └── exception/ApiException.java
 └── web/
     ├── ApiExceptionHandler.java
     ├── AuthController.java
     ├── ShiftTypeController.java
-    └── DayController.java
+    ├── DayController.java
+    ├── CalendarController.java
+    ├── OvertimeController.java
+    ├── TaskController.java
+    └── ImportantDayController.java
 
 src/main/resources/
 ├── application.properties
 ├── application-prod.properties
 ├── db/migration/postgresql/V1__init.sql
+├── db/migration/postgresql/V2__important_days_and_tasks.sql
 └── static/
     ├── index.html
     ├── login.html
@@ -216,6 +253,14 @@ deploy/
 ├── nginx/shift-calendar.conf.example
 └── scripts/backup-postgres.sh
 ```
+
+## v11-important-days-tasks
+
+В v11 добавлены задачи дня и важные дни. Это отдельные сущности, поэтому Android и Telegram потом смогут работать с ними напрямую: показывать список задач, чекать выполнение, присылать уведомления по важным датам.
+
+## v10-api-architecture
+
+В v10 бизнес-логика вынесена из контроллеров в сервисы, а для Android/PWA добавлен диапазонный календарный endpoint. Старые endpoint’ы веб-версии сохранены, поэтому текущий интерфейс продолжает работать.
 
 ## API
 
@@ -230,9 +275,12 @@ deploy/
 | GET | `/api/shift-types` | список типов смен |
 | POST | `/api/shift-types` | создать тип смены |
 | DELETE | `/api/shift-types/{id}` | удалить пользовательский тип |
-| GET | `/api/days?year=2026&month=7` | записи месяца |
+| GET | `/api/calendar?from=2026-06-01&to=2026-07-31` | Android-friendly календарь диапазоном: смены + дни + баланс |
+| GET | `/api/days?year=2026&month=7` | записи месяца для текущего веба |
 | PUT | `/api/days/2026-07-02` | сохранить день |
 | POST | `/api/days/fill` | заполнить график |
+| GET | `/api/overtime/balance?from=&to=` | сводка переработок и отгулов |
+| GET | `/api/overtime/ledger?from=&to=` | журнал переработок/отгулов |
 | GET | `/actuator/health` | health check |
 
 Пример сохранения дня:
@@ -260,4 +308,5 @@ deploy/
 ```text
 docs/ROADMAP.md
 docs/ANDROID_API_PLAN.md
+docs/API.md
 ```

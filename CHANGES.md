@@ -1,5 +1,62 @@
 # Изменения
 
+## v11-important-days-tasks
+
+Новый продуктовый слой поверх календаря смен.
+
+### Задачи
+
+- Добавлены отдельные задачи дня с чекбоксами.
+- Добавлены endpoint’ы `GET/POST/PATCH/DELETE /api/tasks`.
+- На клетке календаря появляется `!`, если в дне есть невыполненные задачи.
+- Когда все задачи выполнены, красный индикатор гаснет и превращается в спокойную отметку `✓`.
+- Задачи не смешиваются с Markdown-заметкой и готовы для Android/Telegram.
+
+### Важные дни
+
+- Добавлены важные дни: дни рождения, годовщины, платежи, техосмотры и любые пользовательские события.
+- Поддерживаются повторы: `NONE`, `MONTHLY`, `YEARLY`.
+- Добавлены endpoint’ы `GET/POST/PATCH/DELETE /api/important-days`.
+- Добавлен endpoint `GET /api/important-days/occurrences?from=&to=` для развёрнутых повторений в диапазоне.
+- На календаре важные дни помечаются `★`.
+- 29 февраля в невисокосный год показывается 28 февраля, чтобы ежегодное событие не пропадало.
+- Ежемесячное событие на 31 число в коротких месяцах показывается в последний день месяца.
+
+### API и БД
+
+- `GET /api/calendar?from=&to=` теперь отдаёт `tasks` и `importantDays`.
+- Добавлены сущности `DayTask`, `ImportantDay`, `RepeatMode`.
+- Добавлены репозитории и сервисы `TaskService`, `ImportantDayService`.
+- Добавлена миграция `V2__important_days_and_tasks.sql`.
+
+
+## v10-api-architecture
+
+Следующий шаг к полноценному продукту и Android-клиенту.
+
+### API
+
+- Добавлен Android-friendly endpoint `GET /api/calendar?from=&to=`.
+- Ответ `/api/calendar` включает типы смен, дни диапазона и сводку переработки.
+- Добавлен endpoint `GET /api/overtime/balance?from=&to=`.
+- Добавлен endpoint `GET /api/overtime/ledger?from=&to=`.
+- Старые endpoint’ы веб-версии `/api/days`, `/api/days/{date}`, `/api/days/fill` сохранены.
+- Ограничен диапазон запросов календаря/переработок: максимум 366 дней.
+
+### Архитектура
+
+- Добавлен сервисный слой: `CurrentUserService`, `ShiftTypeService`, `DayEntryService`, `CalendarService`, `OvertimeService`.
+- Контроллеры стали тоньше и больше не держат основную бизнес-логику.
+- Добавлено доменное исключение `ApiException`.
+- `ApiExceptionHandler` теперь обрабатывает сервисные ошибки единым JSON-форматом.
+- В `DayEntryRepository` добавлен метод сортированной загрузки диапазона по дате.
+
+### Документация
+
+- Добавлен `docs/API.md` с описанием основных endpoint’ов.
+- Обновлён `docs/ANDROID_API_PLAN.md` под новую архитектуру.
+- Обновлён README.
+
 ## v9-production-foundation
 
 Первый шаг от MVP к нормальному продукту и серверному запуску.

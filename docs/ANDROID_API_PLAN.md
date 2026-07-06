@@ -1,31 +1,48 @@
-# План API под Android
+# Android API plan
 
-## Общая схема
+## Текущее состояние v11
+
+Backend уже получил Android-friendly endpoint:
 
 ```text
-Android app ─┐
-             ├── Spring Boot API ── PostgreSQL
-Web app ─────┘
-Telegram bot ┘
+GET /api/calendar?from=2026-06-01&to=2026-07-31
 ```
 
-Backend — единственный источник правды. Web, Android и Telegram только отображают и меняют данные через API.
+Он отдаёт одним ответом:
 
-## Что Android должен уметь
+- диапазон календарных дней;
+- типы смен пользователя;
+- заметки и отметки по дням;
+- переработку и списания отгула;
+- задачи дня;
+- важные дни и их повторения;
+- сводку баланса переработки/отгулов.
 
-- войти в аккаунт;
-- загрузить календарь за диапазон дат;
-- изменить смену дня;
-- изменить заметку;
-- записать переработку;
-- списать отгул;
-- заполнить график;
-- посмотреть баланс переработки;
-- работать без интернета и синхронизироваться позже.
+Также есть отдельные endpoint'ы:
 
-## Рекомендуемые endpoint'ы
+```text
+GET /api/overtime/balance?from=&to=
+GET /api/overtime/ledger?from=&to=
+GET/POST/PATCH/DELETE /api/tasks
+GET/POST/PATCH/DELETE /api/important-days
+GET /api/important-days/occurrences?from=&to=
+```
 
-### Auth
+Это уже удобно для Android-экранов:
+
+- календарь;
+- экран дня;
+- задачи дня;
+- важные дни/дни рождения;
+- баланс переработок;
+- журнал переработок;
+- список смен.
+
+## Что ещё нужно для настоящего Android-клиента
+
+### v12 — авторизация для Android
+
+Сейчас авторизация сессионная через cookie `JSESSIONID`. Для браузера это удобно, но Android лучше перевести на токены:
 
 ```text
 POST /api/auth/login
@@ -34,96 +51,76 @@ POST /api/auth/logout
 GET  /api/auth/me
 ```
 
-### Calendar
+План:
+
+- access token на короткое время;
+- refresh token на долгий срок;
+- хранение refresh token в БД;
+- возможность выйти со всех устройств;
+- Android хранит токены в EncryptedSharedPreferences.
+
+### v13 — offline-first Android
+
+Android должен хранить календарь локально:
 
 ```text
-GET /api/calendar?from=2026-06-01&to=2026-07-31
-PUT /api/days/{date}
-POST /api/days/fill
-```
-
-### Shift types
-
-```text
-GET    /api/shift-types
-POST   /api/shift-types
-PUT    /api/shift-types/{id}
-DELETE /api/shift-types/{id}
-```
-
-### Overtime
-
-```text
-GET  /api/overtime/balance?from=2026-01-01&to=2026-12-31
-GET  /api/overtime/journal?from=2026-06-01&to=2026-06-30
-POST /api/overtime/night-work
-POST /api/overtime/write-off
-```
-
-## Пример ответа календаря
-
-```json
-{
-  "from": "2026-06-01",
-  "to": "2026-07-31",
-  "shiftTypes": [
-    {"id": 1, "name": "Дневная", "hours": 8, "color": "#F5B841", "builtin": true},
-    {"id": 2, "name": "Ночная", "hours": 8, "color": "#7B8CE0", "builtin": true},
-    {"id": 3, "name": "Выходной", "hours": 0, "color": "#6FBF73", "builtin": true}
-  ],
-  "days": [
-    {
-      "date": "2026-06-18",
-      "shiftTypeId": 1,
-      "note": "ППР после смены",
-      "overtimeHours": 7,
-      "timeOffHours": 0,
-      "overtimeBalanceHours": 7
-    }
-  ],
-  "summary": {
-    "plannedHours": 168,
-    "overtimeHours": 15,
-    "timeOffHours": 8,
-    "balanceHours": 7
-  }
-}
-```
-
-## Offline-режим Android
-
-Рекомендуемая схема:
-
-```text
-Room local DB
-├─ days
+Room DB
 ├─ shift_types
-└─ pending_sync_operations
+├─ day_entries
+├─ day_tasks
+├─ important_days
+└─ sync_queue
 ```
 
-Когда интернета нет, Android пишет изменения локально и добавляет операцию в очередь. Когда интернет появился, приложение отправляет очередь на backend.
+Алгоритм:
 
-## Конфликты синхронизации
+1. Приложение загружает `/api/calendar?from=&to=`.
+2. Сохраняет ответ в Room.
+3. Пользователь может редактировать без интернета.
+4. Изменения попадают в `sync_queue`.
+5. WorkManager отправляет очередь на backend, когда сеть появилась.
 
-В будущем стоит добавить поля:
+### v14 — уведомления и будильник
+
+Для смен нужны поля:
 
 ```text
-createdAt
-updatedAt
-version
+startTime
+endTime
+notifyBeforeMinutes
+alarmEnabled
 ```
 
-Тогда Android сможет понять, что запись менялась на другом устройстве.
+Для задач и важных дней:
 
-## Push/будильник
+```text
+notifyAt
+notifyBeforeMinutes
+notificationEnabled
+```
 
-Для обычных напоминаний:
+Android:
 
-- WorkManager;
-- локальные notifications.
+- обычные напоминания через WorkManager/notifications;
+- серьёзный будильник через AlarmManager;
+- экран подтверждения “я проснулся / смена началась”.
 
-Для настоящего будильника перед сменой:
+### v15 — Telegram bot
 
-- AlarmManager;
-- разрешение на точные будильники;
-- отдельное поле `alarmEnabled` у смены или события.
+Бот должен быть отдельным клиентом к тому же backend:
+
+```text
+Telegram Bot → Spring API → PostgreSQL
+```
+
+Команды:
+
+```text
+/сегодня
+/завтра
+/баланс
+/ппр 7
+/отгул 8
+/задача Передать документы
+/др Макс 18.06
+```

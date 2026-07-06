@@ -111,6 +111,29 @@
   .otHint { color:var(--dim); line-height:1.45; margin-top:7px; }
   .cell .otMark { font-size:10.5px; font-weight:700; font-family:ui-monospace,monospace; color:var(--accent); line-height:1.1; }
   .sum .over { color:var(--accent); font-family:ui-monospace,monospace; }
+  .cell .miniMarks { display:flex; gap:4px; align-items:center; min-height:14px; }
+  .cell .importantMark, .cell .taskMark { display:inline-flex; align-items:center; justify-content:center; min-width:16px; height:16px; border-radius:6px; font-size:10px; font-weight:900; font-family:ui-monospace,monospace; }
+  .cell .importantMark { color:#14171C; background:var(--accent); }
+  .cell .taskMark { color:#14171C; background:var(--danger); }
+  .cell .taskMark.done { background:var(--line); color:var(--mut); }
+
+  .dayBlock { margin:10px 0 8px; background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:10px; font-size:12.5px; }
+  .dayBlock .row { display:flex; gap:7px; align-items:center; flex-wrap:wrap; margin-top:8px; }
+  .dayBlock input[type=text], .dayBlock input[type=date], .dayBlock select { background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:6px 8px; font-size:12.5px; }
+  .dayBlock input[type=text] { flex:1; min-width:140px; }
+  .dayBlock select { min-width:130px; }
+  .dayBlock input[type=color] { width:28px; height:28px; padding:0; border:1px solid var(--line); border-radius:7px; background:none; cursor:pointer; }
+  .dayBlock .addSmall { margin-left:auto; background:var(--accent); color:#14171C; border:none; border-radius:7px; padding:6px 10px; font-size:12px; font-weight:800; cursor:pointer; }
+  .emptyLine { color:var(--dim); line-height:1.45; margin-top:7px; }
+  .importantList, .taskList { display:flex; flex-direction:column; gap:6px; margin-top:8px; }
+  .importantItem, .taskItem { display:flex; gap:8px; align-items:center; background:rgba(20,23,28,.45); border:1px solid var(--line); border-radius:8px; padding:6px 8px; }
+  .importantDot { width:10px; height:10px; border-radius:4px; flex:none; }
+  .importantTitle, .taskText { flex:1; min-width:0; overflow-wrap:anywhere; }
+  .importantMode { color:var(--dim); font-family:ui-monospace,monospace; font-size:11px; }
+  .taskItem input[type=checkbox] { width:16px; height:16px; accent-color:var(--accent); }
+  .taskItem.done .taskText { color:var(--dim); text-decoration:line-through; }
+  .tinyDel { background:none; border:none; color:var(--dim); cursor:pointer; font-size:12px; padding:3px 4px; }
+  .tinyDel:hover { color:var(--danger); }
 
   .tabs { display:flex; gap:4px; margin:12px 0 8px; border-bottom:1px solid var(--line); }
   .tabs button { background:none; border:none; cursor:pointer; padding:6px 10px; font-size:13px; color:var(--dim); border-bottom:2px solid transparent; margin-bottom:-1px; }
@@ -215,6 +238,31 @@
         </div>
         <div class="otHint">Пример: обычную дневную оставь как смену дня, в ППР поставь +15 ч. На следующий плановый день нажми «Списать по смене» — уйдёт 8 ч, баланс станет +7 ч.</div>
       </div>
+
+      <div class="dayBlock">
+        <div class="eyebrow">Важные дни</div>
+        <div class="importantList" id="importantList"></div>
+        <div class="row">
+          <input type="text" id="impTitle" placeholder="Например: день рождения Макса">
+          <select id="impRepeat">
+            <option value="YEARLY">каждый год</option>
+            <option value="MONTHLY">каждый месяц</option>
+            <option value="NONE">один раз</option>
+          </select>
+          <input type="color" id="impColor" value="#F5B841" title="Цвет важного дня">
+          <button class="addSmall" id="impAdd" type="button">Добавить</button>
+        </div>
+      </div>
+
+      <div class="dayBlock">
+        <div class="eyebrow">Задачи дня</div>
+        <div class="taskList" id="taskList"></div>
+        <div class="row">
+          <input type="text" id="taskText" placeholder="Задача на этот день">
+          <button class="addSmall" id="taskAdd" type="button">Добавить</button>
+        </div>
+      </div>
+
       <div class="tabs">
         <button id="tabEdit" class="on">Заметка</button>
         <button id="tabPrev">Превью</button>
@@ -235,6 +283,8 @@ const state = {
   m: new Date().getMonth(),      // 0–11
   shiftTypes: [],                 // [{id,name,hours,color,builtin}]
   days: {},                       // { 'YYYY-MM-DD': {shiftTypeId, note, overtimeHours, timeOffHours} }
+  tasksByDate: {},                // { 'YYYY-MM-DD': [{id,date,text,done}] }
+  importantByDate: {},            // { 'YYYY-MM-DD': [{id,date,title,repeatMode,color}] }
   selected: null,                 // ключ даты
   tab: "edit",
   swColor: "#F5B841",
@@ -274,7 +324,21 @@ const normalizeDay = e => ({
   timeOffHours: numOr0(e?.timeOffHours),
 });
 
+function addToDateMap(map, item){
+  const k = item.date;
+  if (!map[k]) map[k] = [];
+  map[k].push(item);
+}
+function tasksOf(k){ return state.tasksByDate[k] || []; }
+function importantOf(k){ return state.importantByDate[k] || []; }
+function activeTasksOf(k){ return tasksOf(k).filter(t => !t.done); }
+const repeatLabel = mode => mode === "YEARLY" ? "каждый год" : mode === "MONTHLY" ? "каждый месяц" : "один раз";
+
 const monthPrefix = () => `${state.y}-${pad(state.m + 1)}-`;
+function monthFromTo(y = state.y, m = state.m){
+  const last = new Date(y, m + 1, 0).getDate();
+  return { from: keyOf(y, m, 1), to: keyOf(y, m, last) };
+}
 function weekdayIndex(k){
   const [y, m, d] = k.split("-").map(Number);
   return (new Date(y, m - 1, d).getDay() + 6) % 7; // Пн=0, Вс=6
@@ -294,9 +358,14 @@ const api = {
   async shiftTypes()        { return jfetch("/api/shift-types"); },
   async createShiftType(b)  { return jfetch("/api/shift-types", { method:"POST", body:b }); },
   async deleteShiftType(id) { return jfetch(`/api/shift-types/${id}`, { method:"DELETE" }); },
-  async month(y, m)         { return jfetch(`/api/days?year=${y}&month=${m + 1}`); },
+  async month(y, m)         { const r = monthFromTo(y, m); return jfetch(`/api/calendar?from=${r.from}&to=${r.to}`); },
   async upsertDay(k, b)     { return jfetch(`/api/days/${k}`, { method:"PUT", body:b }); },
   async fillDays(b)        { return jfetch("/api/days/fill", { method:"POST", body:b }); },
+  async createTask(b)      { return jfetch("/api/tasks", { method:"POST", body:b }); },
+  async updateTask(id, b)  { return jfetch(`/api/tasks/${id}`, { method:"PATCH", body:b }); },
+  async deleteTask(id)     { return jfetch(`/api/tasks/${id}`, { method:"DELETE" }); },
+  async createImportantDay(b) { return jfetch("/api/important-days", { method:"POST", body:b }); },
+  async deleteImportantDay(id) { return jfetch(`/api/important-days/${id}`, { method:"DELETE" }); },
 };
 
 async function jfetch(url, opts = {}) {
@@ -431,6 +500,36 @@ function renderCalendar(){
       ot.textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)}ч`;
       cell.appendChild(ot);
     }
+
+    const important = importantOf(k);
+    const activeTasks = activeTasksOf(k);
+    const allTasks = tasksOf(k);
+    if (important.length || activeTasks.length || allTasks.length) {
+      const marks = document.createElement("span");
+      marks.className = "miniMarks";
+      if (important.length) {
+        const im = document.createElement("span");
+        im.className = "importantMark";
+        im.textContent = "★";
+        im.style.background = important[0].color || "var(--accent)";
+        im.title = important.map(x => x.title).join(", ");
+        marks.appendChild(im);
+      }
+      if (activeTasks.length) {
+        const tm = document.createElement("span");
+        tm.className = "taskMark";
+        tm.textContent = "!";
+        tm.title = `Невыполненные задачи: ${activeTasks.length}`;
+        marks.appendChild(tm);
+      } else if (allTasks.length) {
+        const tm = document.createElement("span");
+        tm.className = "taskMark done";
+        tm.textContent = "✓";
+        tm.title = "Все задачи выполнены";
+        marks.appendChild(tm);
+      }
+      cell.appendChild(marks);
+    }
     cell.addEventListener("click", () => selectDay(state.selected === k ? null : k));
     grid.appendChild(cell);
   }
@@ -492,6 +591,8 @@ function selectDay(k){
     renderChips();
     renderScheduleControls();
     renderOvertimeControls();
+    renderImportantDays();
+    renderTasks();
   }
   renderCalendar();
 }
@@ -622,6 +723,175 @@ $("offByShift").addEventListener("click", () => {
   $("offHours").value = fmtHours(st.hours);
   saveOvertimeControls();
 });
+
+/* ─── Важные дни ───────────────────────────────────────────── */
+function renderImportantDays(){
+  const box = $("importantList");
+  if (!box || !state.selected) return;
+  const items = importantOf(state.selected);
+  box.innerHTML = "";
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "emptyLine";
+    empty.textContent = "В этот день важных событий нет.";
+    box.appendChild(empty);
+    return;
+  }
+  for (const item of items) {
+    const row = document.createElement("div");
+    row.className = "importantItem";
+    const dot = document.createElement("span");
+    dot.className = "importantDot";
+    dot.style.background = item.color || "var(--accent)";
+    const title = document.createElement("span");
+    title.className = "importantTitle";
+    title.textContent = item.title;
+    const mode = document.createElement("span");
+    mode.className = "importantMode";
+    mode.textContent = repeatLabel(item.repeatMode);
+    const del = document.createElement("button");
+    del.className = "tinyDel";
+    del.type = "button";
+    del.textContent = "удалить";
+    del.title = "Удалить важный день полностью, включая повторения";
+    del.addEventListener("click", () => removeImportantDay(item.id));
+    row.append(dot, title, mode, del);
+    box.appendChild(row);
+  }
+}
+
+async function addImportantDay(){
+  const k = state.selected;
+  if (!k) return;
+  const title = $("impTitle").value.trim();
+  if (!title) return setSave("err", "укажи название важного дня");
+  setSave("saving");
+  try {
+    await api.createImportantDay({
+      title,
+      date: k,
+      repeatMode: $("impRepeat").value,
+      color: $("impColor").value || "#F5B841",
+    });
+    $("impTitle").value = "";
+    await loadMonth();
+    setSave("saved");
+    renderImportantDays();
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+
+async function removeImportantDay(id){
+  setSave("saving");
+  try {
+    await api.deleteImportantDay(id);
+    await loadMonth();
+    setSave("saved");
+    renderImportantDays();
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+
+$("impAdd").addEventListener("click", addImportantDay);
+$("impTitle").addEventListener("keydown", e => { if (e.key === "Enter") addImportantDay(); });
+
+/* ─── Задачи дня ────────────────────────────────────────────── */
+function renderTasks(){
+  const box = $("taskList");
+  if (!box || !state.selected) return;
+  const items = tasksOf(state.selected);
+  box.innerHTML = "";
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "emptyLine";
+    empty.textContent = "Задач пока нет. Добавишь — на дне появится восклицательный знак.";
+    box.appendChild(empty);
+    return;
+  }
+  for (const task of items) {
+    const row = document.createElement("div");
+    row.className = "taskItem" + (task.done ? " done" : "");
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = !!task.done;
+    cb.addEventListener("change", () => toggleTask(task.id, cb.checked));
+    const text = document.createElement("span");
+    text.className = "taskText";
+    text.textContent = task.text;
+    const del = document.createElement("button");
+    del.className = "tinyDel";
+    del.type = "button";
+    del.textContent = "×";
+    del.title = "Удалить задачу";
+    del.addEventListener("click", () => removeTask(task.id));
+    row.append(cb, text, del);
+    box.appendChild(row);
+  }
+}
+
+async function addTask(){
+  const k = state.selected;
+  if (!k) return;
+  const text = $("taskText").value.trim();
+  if (!text) return setSave("err", "напиши текст задачи");
+  setSave("saving");
+  try {
+    const created = await api.createTask({ date: k, text });
+    addToDateMap(state.tasksByDate, created);
+    $("taskText").value = "";
+    setSave("saved");
+    renderTasks();
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+
+async function toggleTask(id, done){
+  setSave("saving");
+  try {
+    const updated = await api.updateTask(id, { done });
+    const list = state.tasksByDate[updated.date] || [];
+    const idx = list.findIndex(t => t.id === id);
+    if (idx >= 0) list[idx] = updated;
+    setSave("saved");
+    renderTasks();
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+    await loadMonth();
+    renderTasks();
+    renderCalendar();
+  }
+}
+
+async function removeTask(id){
+  const k = state.selected;
+  if (!k) return;
+  setSave("saving");
+  try {
+    await api.deleteTask(id);
+    state.tasksByDate[k] = tasksOf(k).filter(t => t.id !== id);
+    if (!state.tasksByDate[k].length) delete state.tasksByDate[k];
+    setSave("saved");
+    renderTasks();
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+
+$("taskAdd").addEventListener("click", addTask);
+$("taskText").addEventListener("keydown", e => { if (e.key === "Enter") addTask(); });
 
 function renderChips(){
   const box = $("chips");
@@ -834,7 +1104,8 @@ async function removeShiftType(id){
     for (const [k, v] of Object.entries(state.days)) {
       if (v.shiftTypeId === id) {
         v.shiftTypeId = null;
-        if (!(v.note || "").trim()) delete state.days[k];
+        const hasOvertime = Math.abs(numOr0(v.overtimeHours)) > 0.0001 || Math.abs(numOr0(v.timeOffHours)) > 0.0001;
+        if (!(v.note || "").trim() && !hasOvertime) delete state.days[k];
       }
     }
     setSave("saved");
@@ -863,9 +1134,22 @@ $("todayBtn").addEventListener("click", async () => {
 /* ─── Загрузка данных ───────────────────────────────────────── */
 async function loadMonth(){
   try {
-    const list = await api.month(state.y, state.m);
-    state.days = {};
-    for (const e of list) state.days[e.date] = normalizeDay(e);
+    const bundle = await api.month(state.y, state.m);
+    if (Array.isArray(bundle)) {
+      // На всякий случай оставлен fallback под старый endpoint.
+      state.days = {};
+      state.tasksByDate = {};
+      state.importantByDate = {};
+      for (const e of bundle) state.days[e.date] = normalizeDay(e);
+    } else {
+      state.days = {};
+      state.tasksByDate = {};
+      state.importantByDate = {};
+      if (bundle.shiftTypes) state.shiftTypes = bundle.shiftTypes;
+      for (const e of bundle.days || []) state.days[e.date] = normalizeDay(e);
+      for (const t of bundle.tasks || []) addToDateMap(state.tasksByDate, t);
+      for (const i of bundle.importantDays || []) addToDateMap(state.importantByDate, i);
+    }
     setSave("");
   } catch (err) { console.error(err); setSave("err", err.message); }
 }

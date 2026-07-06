@@ -1,4 +1,4 @@
-const CACHE_NAME = "shift-calendar-shell-v4";
+const CACHE_NAME = "shift-calendar-shell-v5";
 const SHELL = [
   "/login.html",
   "/manifest.json",
