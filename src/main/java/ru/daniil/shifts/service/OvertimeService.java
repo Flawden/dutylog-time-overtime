@@ -110,8 +110,10 @@ public class OvertimeService {
         if (req == null) {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
-        LocalDate date = dayEntryService.parseDate(req.date(), "Дата переработки должна быть в формате yyyy-MM-dd");
         CalculatedCredit calculated = calculateCredit(req);
+        LocalDate date = calculated.startAt() != null
+                ? calculated.startAt().toLocalDate()
+                : dayEntryService.parseDate(req.date(), "Дата переработки должна быть в формате yyyy-MM-dd");
         credits.save(new OvertimeCredit(
                 user,
                 date,

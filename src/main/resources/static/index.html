@@ -326,7 +326,7 @@
           <button id="usageAdd" class="primary" type="button">Списать FIFO</button>
           <span class="bal" id="otBalance">0 ч</span>
         </div>
-        <div class="otHint" id="otDayDetails">FIFO: сначала списываются самые старые часы переработки. Пример: +2 ч за 20 число и +3 ч за 21 число; отгул 4 ч заберёт 2 ч с 20 и 2 ч с 21.</div>
+        <div class="otHint" id="otDayDetails">FIFO: сначала списываются самые старые часы переработки. Начисление с интервалом ложится на дату из поля «Начало», даже если открыт другой день календаря.</div>
       </div>
         </div>
       </details>
@@ -983,8 +983,9 @@ async function addOvertimeCredit(){
   if (!Number.isFinite(hours) || hours <= 0) return setSave("err", "укажи часы переработки больше 0");
   setSave("saving");
   try {
+    const creditDate = calc ? calc.startValue.slice(0, 10) : k;
     const payload = {
-      date: k,
+      date: creditDate,
       timeRange: calc ? calc.timeRange : null,
       hours,
       reason: $("creditReason").value.trim() || null,
