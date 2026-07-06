@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=20.4" rel="stylesheet"/>
+<link href="app.css?v=20.5" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -112,13 +112,13 @@
 <div class="quickScenarioHead">
 <div>
 <div class="quickScenarioTitle">Быстрые сценарии</div>
-<div class="quickScenarioContext" id="quickScenarioContext">Выбери день и смену — подскажу подходящие сценарии.</div>
+<div class="quickScenarioContext" id="quickScenarioContext">Выберите день и смену, чтобы увидеть подходящие сценарии.</div>
 </div>
 <button class="quickGhost" id="quickClearScenario" type="button">очистить поля</button>
 </div>
 <div class="scenarioGrid" id="scenarioGrid"></div>
 <div class="quickScenarioTips" id="quickScenarioTips">
-            Сценарий только заполняет поля. Перед начислением можно поправить время, обед, план и причину.
+            Сценарий заполняет поля. Перед сохранением можно изменить время, обед, план и причину.
           </div>
 
 </div>
@@ -128,11 +128,11 @@
 <label>Списать <input id="usageHours" max="100" min="0" step="0.25" type="number" value="0"/></label>
 <input id="usageReason" placeholder="Зачем списал: отгул, не вышел после ППР…" type="text"/>
 <button id="usageByShift" type="button">по смене</button>
-<button class="primary" id="usageAdd" type="button">Списать FIFO</button>
+<button class="primary" id="usageAdd" type="button">Списать отгул</button>
 <button class="cancelEdit" hidden="" id="usageCancel" type="button">отмена</button>
 <span class="bal" id="otBalance">0 ч</span>
 </div>
-<div class="otHint" id="otDayDetails">FIFO: сначала списываются самые старые часы переработки. Начисления с интервалом сервер раскладывает по датам и не даёт записать пересекающийся период дважды.</div>
+<div class="otHint" id="otDayDetails">При списании отгула система сначала использует самые старые остатки переработки. Интервальные начисления автоматически распределяются по датам.</div>
 </div>
 </div>
 </details>
@@ -301,8 +301,8 @@
 <div class="settingsHead">
 <div>
 <div class="eyebrow">Профиль</div>
-<div class="settingsTitle">Кто ты в этом журнале</div>
-<div class="settingsHint">Всё опционально. Имя показывается в шапке, в день рождения календарь тебя поздравит.</div>
+<div class="settingsTitle">Профиль пользователя</div>
+<div class="settingsHint">Имя отображается в шапке приложения. День рождения используется для поздравительного баннера в календаре.</div>
 </div>
 <div class="avatar avatarBig" id="profileAvatar">?</div>
 </div>
@@ -331,16 +331,16 @@
 <button class="primary" id="pwChange" type="button">Сменить пароль</button>
 </div>
 <div class="profileMsg" id="pwMsg"></div>
-<div class="settingsHint">После смены пароля все мобильные сессии будут разлогинены.</div>
+<div class="settingsHint">После смены пароля активные мобильные сессии будут завершены.</div>
 
 <div class="profileSub">Активные устройства</div>
-<div class="sessionsList" id="sessionsList"><span class="emptyLine">загружаю…</span></div>
+<div class="sessionsList" id="sessionsList"><span class="emptyLine">загрузка…</span></div>
 
 <div class="profileSub">Telegram-бот</div>
 <div class="telegramBox" id="telegramBox">
-  <div class="telegramStatus" id="telegramStatus">загружаю…</div>
-  <div class="settingsHint">Бот работает внутри этого же backend. Подключение: создай код здесь и отправь его боту командой /start DL-123456.</div>
-  <label class="telegramNotifyToggle"><input id="telegramNotificationsEnabled" type="checkbox"/> присылать напоминания в Telegram</label>
+  <div class="telegramStatus" id="telegramStatus">загрузка…</div>
+  <div class="settingsHint">Создайте код привязки и отправьте его Telegram-боту командой /start DL-123456.</div>
+  <label class="telegramNotifyToggle"><input id="telegramNotificationsEnabled" type="checkbox"/> Получать напоминания в Telegram</label>
   <div class="settingsHint telegramNotifyHint">Используются те же правила, что в блоке «Уведомления»: смены, задачи, важные дни и вечерний дайджест.</div>
   <div class="telegramActions">
     <button class="primary" id="telegramCodeBtn" type="button">Создать код привязки</button>
@@ -357,8 +357,8 @@
 <div class="settingsHead">
 <div>
 <div class="eyebrow">Время и регион</div>
-<div class="settingsTitle">Рабочее время, часовой пояс и дефолты смен</div>
-<div class="settingsHint">Меняешь дефолт дневной или ночной — DutyLog сохраняет настройку и применяет её к встроенным сменам. Отдельная кнопка нужна только чтобы принудительно повторить применение.</div>
+<div class="settingsTitle">Рабочее время и часовой пояс</div>
+<div class="settingsHint">Настройки дневной и ночной смены сохраняются автоматически и применяются к встроенным типам смен.</div>
 </div>
 <div class="status" id="timeSettingsStatus">—</div>
 </div>
@@ -389,14 +389,14 @@
 </div>
 <div class="timeNowBox" id="timeNowBox">—</div>
 <div class="timeDefaults">
-<div class="timeDefaultsHead">Дефолты смен</div>
+<div class="timeDefaultsHead">Шаблоны смен</div>
 <div class="timeDefaultRow">
 <b>Дневная</b>
 <label>Начало <input id="defDayStart" type="time"/></label>
 <label>Конец <input id="defDayEnd" type="time"/></label>
 <label>Обед, мин <input id="defDayBreak" max="1440" min="0" step="5" type="number"/></label>
 <label>План, ч <input id="defDayPlan" max="24" min="0" step="0.25" type="number"/></label>
-<button id="timeFillDayForm" type="button">в форму смены</button>
+<button id="timeFillDayForm" type="button">Заполнить форму смены</button>
 </div>
 <div class="timeDefaultRow">
 <b>Ночная</b>
@@ -404,14 +404,14 @@
 <label>Конец <input id="defNightEnd" type="time"/></label>
 <label>Обед, мин <input id="defNightBreak" max="1440" min="0" step="5" type="number"/></label>
 <label>План, ч <input id="defNightPlan" max="24" min="0" step="0.25" type="number"/></label>
-<button id="timeFillNightForm" type="button">в форму смены</button>
+<button id="timeFillNightForm" type="button">Заполнить форму смены</button>
 </div>
 </div>
 <div class="timeSettingsActions">
-<button class="primary" id="timeApplyBuiltins" type="button">Сохранить и применить к сменам</button>
-<button id="timeDetectBrowser" type="button">взять часовой пояс браузера</button>
+<button class="primary" id="timeApplyBuiltins" type="button">Сохранить параметры смен</button>
+<button id="timeDetectBrowser" type="button">Определить часовой пояс</button>
 </div>
-<div class="wideHint">Регион и часовой пояс хранятся в браузере. Дефолты дневной и ночной смены автоматически применяются к встроенным типам смен, поэтому уведомления, сценарии и «план по смене» берут уже обновлённое время.</div>
+<div class="wideHint">Регион и часовой пояс используются для отображения времени. Параметры дневной и ночной смены применяются к встроенным типам смен и используются в уведомлениях, сценариях и расчётах.</div>
 </section>
 <div class="settingsCard" id="shiftSettingsCard" data-settings-section="shifts">
 <a class="settingsAnchor" id="settings-shifts"></a>
@@ -419,7 +419,7 @@
 <div>
 <div class="eyebrow">Смены</div>
 <div class="settingsTitle">Типы смен и их время</div>
-<div class="settingsHint">Здесь создаются кастомные смены и настраиваются встроенные: начало, конец, обед, плановые часы и уведомления.</div>
+<div class="settingsHint">Создание пользовательских смен и настройка встроенных типов: время, обед, плановые часы и уведомления.</div>
 </div>
 </div>
 <div class="mgr" id="mgr">
@@ -433,7 +433,7 @@
 <label class="mini">Обед, мин <input id="nsBreak" max="1440" min="0" step="5" type="number" value="0"/></label>
 <label class="mini">План, ч <input id="nsPlan" max="24" min="0" placeholder="=ч" step="0.25" type="number"/></label>
 </div>
-<div class="small" style="color:var(--dim);font-size:12px;line-height:1.35;">Время смены пригодится для подсказок, будущих уведомлений и кнопки «план по смене».</div>
+<div class="small" style="color:var(--dim);font-size:12px;line-height:1.35;">Время смены используется в подсказках, уведомлениях и расчётах по кнопке «план по смене».</div>
 <div class="row" id="swRow"></div>
 <div class="custom" hidden="" id="customList"></div>
 </div></div><div class="settingsCard" id="quickScenarioSettingsCard" data-settings-section="scenarios">
@@ -442,11 +442,11 @@
 <div>
 <div class="eyebrow">Быстрые сценарии</div>
 <div class="settingsTitle">Шаблоны для переработок</div>
-<div class="settingsHint">Сценарии создаются здесь, а применяются в панели выбранного дня. Они только заполняют поля переработки — начисление всё равно подтверждаешь отдельно.</div>
+<div class="settingsHint">Сценарии применяются в выбранном дне и заполняют форму переработки. Начисление подтверждается отдельно.</div>
 </div>
 </div>
 <details class="scenarioEditor" id="scenarioEditor" open="">
-<summary>свои сценарии</summary>
+<summary>Мои сценарии</summary>
 <div class="row">
 <input id="scName" placeholder="Название, например: После дневной до 22" type="text"/>
 <input id="scGroup" placeholder="Метка: после смены" type="text"/>
@@ -492,21 +492,21 @@
 </div>
 <div class="row">
 <input id="scReason" placeholder="Причина по умолчанию" type="text"/>
-<button id="scSave" type="button">добавить сценарий</button>
-<button class="ghostBtn" id="scReset" type="button">сброс формы</button>
+<button id="scSave" type="button">Добавить сценарий</button>
+<button class="ghostBtn" id="scReset" type="button">Очистить форму</button>
 </div>
-<div class="quickScenarioTips">Сценарии сохраняются в профиле. Их можно удалить кнопкой × на карточке.</div>
+<div class="quickScenarioTips">Сценарии сохраняются в профиле пользователя и доступны в панели выбранного дня.</div>
 </details></div><div class="notifyCard settingsCard" id="notifyCard" data-settings-section="notifications">
 <a class="settingsAnchor" id="settings-notifications"></a>
 <div class="notifyHead">
 <div>
 <div class="eyebrow">Уведомления</div>
-<div class="small" style="color:var(--dim);font-size:12px;">Backend уже считает напоминания для веба, Android и будущего Telegram-бота.</div>
+<div class="small" style="color:var(--dim);font-size:12px;">Сервер рассчитывает напоминания для браузера, Telegram и мобильных клиентов.</div>
 </div>
 <div class="status" id="notifyStatus">—</div>
 </div>
 <div class="notifyGrid">
-<label class="notifyOpt"><input id="notifBrowser" type="checkbox"/> <b>браузерные уведомления</b></label>
+<label class="notifyOpt"><input id="notifBrowser" type="checkbox"/> <b>Уведомления браузера</b></label>
 <label class="notifyOpt"><input id="notifShift" type="checkbox"/> <b>перед сменой</b> за <input id="notifShiftBefore" max="1440" min="0" step="5" type="number"/> мин</label>
 <label class="notifyOpt"><input id="notifDigest" type="checkbox"/> <b>вечерний дайджест</b> в <input id="notifDigestTime" type="time"/></label>
 <label class="notifyOpt"><input id="notifTasks" type="checkbox"/> <b>задачи дня</b> в <input id="notifTaskTime" type="time"/></label>
@@ -523,11 +523,11 @@
 <div class="notifyActions">
 <button class="primary" id="notifSave" type="button">Сохранить настройки</button>
 <button id="notifPermission" type="button">Разрешить в браузере</button>
-<button id="notifTest" type="button">Тест</button>
+<button id="notifTest" type="button">Проверить</button>
 <button id="notifRefresh" type="button">Текущий месяц</button>
-<button id="notifTomorrow" type="button">Проверить завтра</button>
+<button id="notifTomorrow" type="button">Завтра</button>
 </div>
-<div class="notifyListTitle" id="notifyListTitle">напоминания текущего месяца</div>
+<div class="notifyListTitle" id="notifyListTitle">Напоминания текущего месяца</div>
 <div class="notifyList" id="notifyList"></div>
 </div>
 <div class="settingsCard" id="diagnosticsCard" data-settings-section="diagnostics">
@@ -535,18 +535,18 @@
 <div class="settingsHead">
 <div>
 <div class="eyebrow">Диагностика</div>
-<div class="settingsTitle">Состояние приложения и сервера</div>
-<div class="settingsHint">Быстрый чек для локального запуска, будущего VPS и Telegram-бота. Тут видно версию фронта, серверное время, профиль Spring, БД и Telegram.</div>
+<div class="settingsTitle">Состояние системы</div>
+<div class="settingsHint">Проверка версии приложения, подключения к серверу, базы данных, кэша браузера и Telegram-интеграции.</div>
 </div>
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Frontend</span><b id="diagFrontend">v20.4</b></div>
-  <div class="diagItem"><span>Service Worker</span><b id="diagSw">проверяется…</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v20.5</b></div>
+  <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
-  <div class="diagItem"><span>Cookie/CSRF</span><b id="diagCsrf">—</b></div>
+  <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
 </div>
-<div class="diagnosticsList" id="diagnosticsList"><span class="emptyLine">Нажми «Обновить диагностику».</span></div>
+<div class="diagnosticsList" id="diagnosticsList"><span class="emptyLine">Нажмите «Обновить диагностику», чтобы получить отчёт.</span></div>
 <div class="diagnosticsActions">
   <button class="primary" id="diagnosticsRefresh" type="button">Обновить диагностику</button>
   <button id="diagnosticsCopy" type="button">Скопировать отчёт</button>
@@ -557,8 +557,8 @@
 <div class="settingsHead">
 <div>
 <div class="eyebrow">Важные дни</div>
-<div class="settingsTitle">Все важные даты в одном списке</div>
-<div class="settingsHint">Добавляются из панели выбранного дня в календаре. Здесь — полный список с удалением, чтобы не искать событие по месяцам.</div>
+<div class="settingsTitle">Важные даты</div>
+<div class="settingsHint">Полный список важных дат. Новые события добавляются из панели выбранного дня в календаре.</div>
 </div>
 </div>
 <div class="importantList" id="importantSettingsList"></div>
@@ -583,6 +583,6 @@
     <div class="noteFsPrev" id="noteFsPrev"></div>
   </div>
 </div>
-<script src="app.js?v=20.4"></script>
+<script src="app.js?v=20.5"></script>
 </body>
 </html>

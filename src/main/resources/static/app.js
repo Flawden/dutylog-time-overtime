@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "20.4";
+const DUTYLOG_VERSION = "20.5";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -18,7 +18,7 @@ const state = {
   notificationSettings: null,
   reminders: [],
   notificationPreview: null,
-  notificationPreviewTitle: "напоминания текущего месяца",
+  notificationPreviewTitle: "Напоминания текущего месяца",
   remindersByDate: {},
   quickScenarios: [],
   timeSettings: null,
@@ -471,7 +471,7 @@ function renderSummary(){
   }
   if (!any) {
     const s = document.createElement("span");
-    s.style.color = "var(--dim)"; s.textContent = "смены пока не отмечены — тыкни в день";
+    s.style.color = "var(--dim)"; s.textContent = "Смены ещё не отмечены. Выберите день в календаре.";
     el.appendChild(s);
   }
   renderLedgerTable();
@@ -672,7 +672,7 @@ function resetOvertimeForms(k = state.selected){
   if ($("usageReason")) $("usageReason").value = "";
   if ($("usageEditNotice")) { $("usageEditNotice").hidden = true; $("usageEditNotice").textContent = ""; }
   if ($("usageCancel")) $("usageCancel").hidden = true;
-  if ($("usageAdd")) $("usageAdd").textContent = "Списать FIFO";
+  if ($("usageAdd")) $("usageAdd").textContent = "Списать отгул";
 }
 
 function cancelCreditEdit(){
@@ -689,7 +689,7 @@ function cancelUsageEdit(){
   if ($("usageReason")) $("usageReason").value = "";
   if ($("usageEditNotice")) { $("usageEditNotice").hidden = true; $("usageEditNotice").textContent = ""; }
   if ($("usageCancel")) $("usageCancel").hidden = true;
-  if ($("usageAdd")) $("usageAdd").textContent = "Списать FIFO";
+  if ($("usageAdd")) $("usageAdd").textContent = "Списать отгул";
   state.editingCreditId = creditId;
 }
 
@@ -916,7 +916,7 @@ function renderQuickScenarios(){
   if (!grid) return;
   const scenarios = (state.quickScenarios || []).slice().sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || (a.id ?? 0) - (b.id ?? 0));
   if (!scenarios.length) {
-    grid.innerHTML = `<div class="emptyLine">Сценариев пока нет. Добавь первый во вкладке ⚙ Настройки.</div>`;
+    grid.innerHTML = `<div class="emptyLine">Сценарии пока не созданы. Добавьте первый сценарий в настройках.</div>`;
     return;
   }
   grid.innerHTML = scenarios.map(sc => {
@@ -967,9 +967,9 @@ function renderQuickScenarioContext(){
   const br = st.breakMinutes ? `обед ${st.breakMinutes} мин` : "обед 0 мин";
   ctx.textContent = `${formatDateHuman(state.selected)} · ${st.name}: ${time}, ${plan}, ${br}`;
   if (!r.hasEnd) {
-    tips.textContent = "У смены нет времени окончания. Нажми “настроить” в списке смен и задай время.";
+    tips.textContent = "У смены не указано время окончания. Откройте настройки смены и задайте время.";
   } else if (!r.hasFullTime) {
-    tips.textContent = "Можно использовать сценарии от конца смены. Для сценариев от начала смены нужно время начала.";
+    tips.textContent = "Доступны сценарии от конца смены. Для сценариев от начала смены укажите время начала.";
   } else {
     tips.textContent = "Карточки только заполняют поля. Перед начислением можно поправить время, обед, план и причину.";
   }
@@ -1377,7 +1377,7 @@ function renderLedgerTable(){
     const td = document.createElement("td");
     td.colSpan = 8;
     td.className = "small";
-    td.textContent = "Пока нет начислений переработки. Добавь запись в выбранном дне — она появится здесь и будет жить до списания.";
+    td.textContent = "Начислений переработки пока нет. Новые записи добавляются из панели выбранного дня и сохраняются до полного списания.";
     tr.appendChild(td);
     tbody.appendChild(tr);
     return;
@@ -1555,7 +1555,7 @@ function renderImportantSettings(){
   if (!items.length) {
     const empty = document.createElement("div");
     empty.className = "emptyLine";
-    empty.textContent = "Важных дней пока нет.";
+    empty.textContent = "Важных дат пока нет.";
     box.appendChild(empty);
     return;
   }
@@ -1706,7 +1706,7 @@ function renderTasks(){
   if (!all.length) {
     const empty = document.createElement("div");
     empty.className = "emptyLine";
-    empty.textContent = "Задач пока нет. Добавишь — на дне появится восклицательный знак.";
+    empty.textContent = "Задач пока нет. После добавления открытые задачи будут отмечены в календаре.";
     box.appendChild(empty);
     updateAccSummaries();
     return;
@@ -2499,7 +2499,7 @@ function renderDiagnosticsStatus(data){
   const box = $("diagnosticsList");
   if (!box) return;
   const rows = [];
-  rows.push(diagnosticRow("Версия backend", data.version || "—"));
+  rows.push(diagnosticRow("Версия сервера", data.version || "—"));
   rows.push(diagnosticRow("Профили Spring", (data.profiles || []).join(", ") || "default/dev"));
   rows.push(diagnosticRow("Серверное время", data.serverTime || "—"));
   rows.push(diagnosticRow("Часовой пояс сервера", data.serverTimezone || "—"));
@@ -2530,8 +2530,8 @@ async function refreshDiagnostics(){
 function diagnosticsReportText(){
   const d = state.lastDiagnostics || {};
   return [
-    `DutyLog frontend: v${DUTYLOG_VERSION}`,
-    `Backend: ${d.version || "—"}`,
+    `DutyLog UI: v${DUTYLOG_VERSION}`,
+    `Server: ${d.version || "—"}`,
     `Profiles: ${(d.profiles || []).join(", ") || "default/dev"}`,
     `Server time: ${d.serverTime || "—"}`,
     `Server timezone: ${d.serverTimezone || "—"}`,
@@ -2566,7 +2566,7 @@ function initSettingsAccordion(){
     scenarios: "Шаблоны, которые заполняют переработку в панели дня",
     notifications: "Браузерные, сменные, задачные и важные напоминания",
     important: "Общий список важных дат с удалением",
-    diagnostics: "Состояние frontend, backend, БД и Telegram"
+    diagnostics: "Состояние интерфейса, сервера, БД и Telegram"
   };
   let saved = localStorage.getItem("dutylog.settings.openSection") || "profile";
   const known = new Set(cards.map(c => c.dataset.settingsSection));
@@ -2688,7 +2688,7 @@ function renderNotifications(){
   $("notifImportantTime").value = s.importantDayReminderTime || "09:00";
   const sourceItems = state.notificationPreview || state.reminders;
   $("notifyStatus").textContent = `${sourceItems.length} шт · ${browserPermissionText()}`;
-  if ($("notifyListTitle")) $("notifyListTitle").textContent = state.notificationPreviewTitle || "напоминания текущего месяца";
+  if ($("notifyListTitle")) $("notifyListTitle").textContent = state.notificationPreviewTitle || "Напоминания текущего месяца";
   const list = $("notifyList");
   list.innerHTML = "";
   const items = sourceItems.slice(0, 24);
@@ -2724,7 +2724,7 @@ async function saveNotificationSettings(extra = {}){
     };
     state.notificationSettings = await api.updateNotificationSettings(body);
     state.notificationPreview = null;
-    state.notificationPreviewTitle = "напоминания текущего месяца";
+    state.notificationPreviewTitle = "Напоминания текущего месяца";
     const r = monthFromTo();
     state.reminders = await api.notificationUpcoming(r.from, r.to);
     state.remindersByDate = {};
@@ -2740,8 +2740,8 @@ async function requestNotificationPermission(){
   await saveNotificationSettings({ browserNotificationsEnabled: perm === "granted" });
 }
 function testNotification(){
-  if (!("Notification" in window) || Notification.permission !== "granted") { alert("Сначала разреши уведомления в браузере"); return; }
-  new Notification("DutyLog: Time & Overtime", { body:"Тестовое уведомление работает. Надёжные будильники будем делать в Android." });
+  if (!("Notification" in window) || Notification.permission !== "granted") { alert("Сначала разрешите уведомления в браузере"); return; }
+  new Notification("DutyLog: Time & Overtime", { body:"Тестовое уведомление отправлено." });
 }
 async function showTomorrowNotifications(){
   setSave("saving");
@@ -2757,7 +2757,7 @@ async function showMonthNotifications(){
   try {
     const r = monthFromTo();
     state.notificationPreview = null;
-    state.notificationPreviewTitle = "напоминания текущего месяца";
+    state.notificationPreviewTitle = "Напоминания текущего месяца";
     state.reminders = await api.notificationUpcoming(r.from, r.to, true);
     state.remindersByDate = {};
     for (const x of state.reminders) addToDateMap(state.remindersByDate, { ...x, date:x.sourceDate });
@@ -3007,7 +3007,7 @@ $("pwChange").addEventListener("click", async () => {
   try {
     await jfetch("/api/profile/password", { method: "POST", body: { currentPassword: cur, newPassword: nw } });
     for (const id of ["pwCurrent", "pwNew", "pwRepeat"]) $(id).value = "";
-    setProfileMsg("pwMsg", "Пароль сменён, мобильные сессии разлогинены", true);
+    setProfileMsg("pwMsg", "Пароль изменён. Активные мобильные сессии завершены.", true);
     loadSessions();
   } catch (e) { setProfileMsg("pwMsg", e.message); }
 });
@@ -3063,7 +3063,7 @@ function renderTelegramPanel(){
   const unlink = $("telegramUnlinkBtn");
   const notifyToggle = $("telegramNotificationsEnabled");
   if (!s) {
-    status.textContent = "загружаю…";
+    status.textContent = "загрузка…";
     status.className = "telegramStatus";
     if (unlink) unlink.disabled = true;
     if (notifyToggle) notifyToggle.disabled = true;
@@ -3075,14 +3075,14 @@ function renderTelegramPanel(){
     notifyToggle.disabled = !s.configured || !s.linked;
   }
   if (!s.configured) {
-    status.textContent = "Бот не настроен на сервере: задай DUTYLOG_TELEGRAM_BOT_TOKEN и включи polling.";
+    status.textContent = "Бот не настроен на сервере: укажите DUTYLOG_TELEGRAM_BOT_TOKEN и включите polling.";
     status.className = "telegramStatus warn";
   } else if (s.linked) {
     const name = s.username ? "@" + s.username : "chat " + s.chatId;
     status.textContent = "Подключено: " + name + (s.notificationsEnabled ? " · напоминания включены" : " · напоминания выключены");
     status.className = "telegramStatus ok";
   } else {
-    status.textContent = "Не подключено. Создай код и отправь его " + telegramName(s) + ".";
+    status.textContent = "Не подключено. Создайте код и отправьте его " + telegramName(s) + ".";
     status.className = "telegramStatus";
   }
   if (s.pendingCode && codeBox.hidden) {
@@ -3104,8 +3104,8 @@ function showTelegramCode(c){
   if (!box) return;
   box.hidden = false;
   const exp = c.expiresAt ? c.expiresAt.slice(11,16) : "через 15 минут";
-  const link = c.deepLink ? `<a href="${esc(c.deepLink)}" target="_blank" rel="noreferrer">открыть бота</a>` : "укажи username бота в .env, чтобы появилась ссылка";
-  box.innerHTML = `<div class="code">${esc(c.code)}</div><div>Отправь боту: <b>${esc(c.startCommand)}</b></div><div class="meta">Код действует до ${esc(exp)} · ${link}</div>`;
+  const link = c.deepLink ? `<a href="${esc(c.deepLink)}" target="_blank" rel="noreferrer">открыть бота</a>` : "Укажите username бота в настройках сервера, чтобы появилась ссылка";
+  box.innerHTML = `<div class="code">${esc(c.code)}</div><div>Отправьте боту: <b>${esc(c.startCommand)}</b></div><div class="meta">Код действует до ${esc(exp)} · ${link}</div>`;
 }
 $("telegramCodeBtn")?.addEventListener("click", async () => {
   const btn = $("telegramCodeBtn");

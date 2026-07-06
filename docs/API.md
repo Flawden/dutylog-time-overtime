@@ -964,7 +964,7 @@ Web-safe диагностика для вкладки `⚙ → Диагност�
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "20.4",
+  "version": "20.5",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],

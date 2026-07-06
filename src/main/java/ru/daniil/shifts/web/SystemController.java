@@ -56,7 +56,7 @@ public class SystemController {
     public Map<String, Object> status(Principal principal) {
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("app", "DutyLog: Time & Overtime");
-        result.put("version", "20.4");
+        result.put("version", "20.5");
         result.put("serverTime", Instant.now().toString());
         result.put("serverTimezone", ZoneId.systemDefault().toString());
         result.put("profiles", Arrays.asList(environment.getActiveProfiles()));

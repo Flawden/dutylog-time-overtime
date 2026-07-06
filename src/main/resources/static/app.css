@@ -755,6 +755,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
 }
 
 /* v20.4: навигация настроек и аккордеон */
+/* v20.5: product-copy cleanup */
 .settingsShell{
   display:grid;
   grid-template-columns: 230px minmax(0,1fr);
