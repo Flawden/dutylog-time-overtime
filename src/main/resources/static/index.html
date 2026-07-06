@@ -280,6 +280,45 @@
 </div>
 </section>
 <section class="view settingsView" hidden="" id="view-settings">
+<div class="settingsCard" id="profileCard">
+<div class="settingsHead">
+<div>
+<div class="eyebrow">Профиль</div>
+<div class="settingsTitle">Кто ты в этом журнале</div>
+<div class="settingsHint">Всё опционально. Имя показывается в шапке, в день рождения календарь тебя поздравит.</div>
+</div>
+<div class="avatar avatarBig" id="profileAvatar">?</div>
+</div>
+<div class="profileGrid">
+<label>Отображаемое имя
+<input id="profileName" maxlength="60" placeholder="Например: Даниил" type="text"/>
+</label>
+<label>День рождения
+<input id="profileBirthday" type="date"/>
+</label>
+<button class="primary" id="profileSave" type="button">Сохранить</button>
+</div>
+<div class="profileMsg" id="profileMsg"></div>
+
+<div class="profileSub">Смена пароля</div>
+<div class="profileGrid">
+<label>Текущий пароль
+<input id="pwCurrent" autocomplete="current-password" type="password"/>
+</label>
+<label>Новый пароль
+<input id="pwNew" autocomplete="new-password" type="password"/>
+</label>
+<label>Ещё раз
+<input id="pwRepeat" autocomplete="new-password" type="password"/>
+</label>
+<button class="primary" id="pwChange" type="button">Сменить пароль</button>
+</div>
+<div class="profileMsg" id="pwMsg"></div>
+<div class="settingsHint">После смены пароля все мобильные сессии будут разлогинены.</div>
+
+<div class="profileSub">Активные устройства</div>
+<div class="sessionsList" id="sessionsList"><span class="emptyLine">загружаю…</span></div>
+</div>
 <section class="settingsCard" id="timeSettingsCard">
 <div class="settingsHead">
 <div>

@@ -151,6 +151,17 @@ public class MobileAuthService {
                 .toList();
     }
 
+    /** Отзывает все мобильные сессии пользователя — вызывается при смене пароля. */
+    @Transactional
+    public void revokeAllSessions(AppUser user) {
+        tokens.findByOwnerOrderByCreatedAtDesc(user).forEach(token -> {
+            if (!token.isRevoked()) {
+                token.revoke();
+                tokens.save(token);
+            }
+        });
+    }
+
     @Transactional
     public void revokeSession(AppUser user, Long id) {
         if (id == null) {

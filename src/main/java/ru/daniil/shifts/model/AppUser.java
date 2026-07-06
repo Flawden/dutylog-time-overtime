@@ -22,6 +22,14 @@ public class AppUser {
     @Column(nullable = false, length = 100)
     private String passwordHash;
 
+    /** Отображаемое имя (опционально). В шапке показывается оно, а не логин. */
+    @Column(name = "display_name", length = 60)
+    private String displayName;
+
+    /** День рождения (опционально) — календарь поздравляет в этот день. */
+    @Column(name = "birthday")
+    private java.time.LocalDate birthday;
+
     protected AppUser() {} // для JPA
 
     public AppUser(String username, String passwordHash) {
@@ -32,4 +40,9 @@ public class AppUser {
     public Long getId() { return id; }
     public String getUsername() { return username; }
     public String getPasswordHash() { return passwordHash; }
+    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public String getDisplayName() { return displayName; }
+    public void setDisplayName(String displayName) { this.displayName = displayName; }
+    public java.time.LocalDate getBirthday() { return birthday; }
+    public void setBirthday(java.time.LocalDate birthday) { this.birthday = birthday; }
 }

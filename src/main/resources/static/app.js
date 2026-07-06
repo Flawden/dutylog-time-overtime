@@ -2729,3 +2729,134 @@ $("noteFsTab").addEventListener("click", () => {
   $("noteFsTab").textContent = prev ? "редактор" : "превью";
   if (prev) renderNoteFsPrev();
 });
+
+/* ─── Профиль: имя, аватар, ДР, пароль, сессии ──────────────── */
+const AVATAR_COLORS = ["#F5B841","#E0653A","#C97BB8","#7B8CE0","#4FA3A5","#6FBF73","#B5A642"];
+
+function avatarInitials(name){
+  const parts = (name || "?").trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return "?";
+  return parts.length === 1
+    ? parts[0].slice(0, 2).toUpperCase()
+    : (parts[0][0] + parts[1][0]).toUpperCase();
+}
+function avatarColor(seed){
+  let h = 0;
+  for (const ch of String(seed)) h = (h * 31 + ch.charCodeAt(0)) >>> 0;
+  return AVATAR_COLORS[h % AVATAR_COLORS.length];
+}
+
+function renderHeaderIdentity(p){
+  const shown = p.displayName || p.username;
+  const who = $("whoami");
+  who.textContent = shown;
+  let av = document.getElementById("headerAvatar");
+  if (!av) {
+    av = document.createElement("span");
+    av.id = "headerAvatar";
+    av.className = "avatar avatarSmall";
+    who.parentNode.insertBefore(av, who);
+  }
+  av.textContent = avatarInitials(shown);
+  av.style.background = avatarColor(p.username);
+}
+
+function maybeBirthdayBanner(p){
+  if (!p.birthday) return;
+  const today = new Date();
+  const [ , m, d ] = p.birthday.split("-").map(Number);
+  if (today.getMonth() + 1 !== m || today.getDate() !== d) return;
+  if (document.getElementById("bdayBanner")) return;
+  const el = document.createElement("div");
+  el.id = "bdayBanner";
+  el.className = "bdayBanner";
+  el.textContent = "🎉 С днём рождения, " + (p.displayName || p.username) + "! Смену сегодня прогуливаем?";
+  const tabbar = document.getElementById("tabbar");
+  if (tabbar) tabbar.insertAdjacentElement("afterend", el);
+}
+
+function setProfileMsg(id, text, ok){
+  const el = $(id);
+  el.textContent = text || "";
+  el.className = "profileMsg" + (text ? (ok ? " ok" : " err") : "");
+}
+
+async function loadProfile(){
+  try {
+    const p = await jfetch("/api/profile");
+    state.profile = p;
+    renderHeaderIdentity(p);
+    maybeBirthdayBanner(p);
+    $("profileName").value = p.displayName || "";
+    $("profileBirthday").value = p.birthday || "";
+    const av = $("profileAvatar");
+    av.textContent = avatarInitials(p.displayName || p.username);
+    av.style.background = avatarColor(p.username);
+  } catch (e) { console.error(e); }
+}
+
+$("profileSave").addEventListener("click", async () => {
+  try {
+    const p = await jfetch("/api/profile", { method: "PUT", body: {
+      displayName: $("profileName").value,
+      birthday: $("profileBirthday").value || null,
+    }});
+    state.profile = p;
+    renderHeaderIdentity(p);
+    const av = $("profileAvatar");
+    av.textContent = avatarInitials(p.displayName || p.username);
+    setProfileMsg("profileMsg", "Сохранено", true);
+    setTimeout(() => setProfileMsg("profileMsg", ""), 2000);
+  } catch (e) { setProfileMsg("profileMsg", e.message); }
+});
+
+$("pwChange").addEventListener("click", async () => {
+  const cur = $("pwCurrent").value, nw = $("pwNew").value, rep = $("pwRepeat").value;
+  if (nw !== rep) { setProfileMsg("pwMsg", "Новые пароли не совпадают"); return; }
+  try {
+    await jfetch("/api/profile/password", { method: "POST", body: { currentPassword: cur, newPassword: nw } });
+    for (const id of ["pwCurrent", "pwNew", "pwRepeat"]) $(id).value = "";
+    setProfileMsg("pwMsg", "Пароль сменён, мобильные сессии разлогинены", true);
+    loadSessions();
+  } catch (e) { setProfileMsg("pwMsg", e.message); }
+});
+
+async function loadSessions(){
+  const box = $("sessionsList");
+  try {
+    const list = await jfetch("/api/mobile/auth/sessions");
+    box.innerHTML = "";
+    if (!list.length) {
+      box.innerHTML = '<div class="sessionRow"><span class="meta">Мобильных сессий нет — только этот браузер.</span></div>';
+      return;
+    }
+    for (const sess of list) {
+      const row = document.createElement("div");
+      row.className = "sessionRow";
+      const dev = document.createElement("span");
+      dev.className = "dev" + (sess.active ? "" : " dead");
+      dev.textContent = sess.deviceName || "устройство";
+      const meta = document.createElement("span");
+      meta.className = "meta";
+      const last = sess.lastUsedAt ? sess.lastUsedAt.slice(0, 16).replace("T", " ") : "не использовалась";
+      meta.textContent = (sess.active ? "активна · " : "отозвана · ") + last;
+      row.append(dev, meta);
+      if (sess.active) {
+        const del = document.createElement("button");
+        del.type = "button";
+        del.textContent = "отозвать";
+        del.addEventListener("click", async () => {
+          try { await jfetch("/api/mobile/auth/sessions/" + sess.id, { method: "DELETE" }); loadSessions(); }
+          catch (e) { console.error(e); }
+        });
+        row.appendChild(del);
+      }
+      box.appendChild(row);
+    }
+  } catch (e) {
+    box.innerHTML = '<div class="sessionRow"><span class="meta">Не удалось загрузить сессии.</span></div>';
+  }
+}
+
+loadProfile();
+loadSessions();
