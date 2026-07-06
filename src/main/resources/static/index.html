@@ -138,7 +138,25 @@
 </details>
 <details class="acc" id="accImp">
 <summary><span class="accT">Важные дни</span><span class="accS" id="sumImp"></span></summary>
-<div class="accB dayForm"><div class="importantList" id="importantList"></div><div class="dayPanelHint">Добавление и настройка важных дней переехали в ⚙ Настройки.</div></div>
+<div class="accB dayForm">
+<div class="importantList" id="importantList"></div>
+<div class="row">
+<label>Дата <input id="impDate" type="date"/></label>
+<button id="impDateSelected" type="button">выбранный день</button>
+<button id="impDateToday" type="button">сегодня</button>
+</div>
+<div class="row">
+<input id="impTitle" placeholder="Например: день рождения Макса" type="text"/>
+<select id="impRepeat">
+<option value="YEARLY">каждый год</option>
+<option value="MONTHLY">каждый месяц</option>
+<option value="NONE">один раз</option>
+</select>
+<input id="impColor" title="Цвет важного дня" type="color" value="#F5B841"/>
+<button class="addSmall" id="impAdd" type="button">Добавить</button>
+</div>
+<div class="dayPanelHint">Важные дни добавляются прямо из выбранного дня. Для повтора выбирай: каждый год, каждый месяц или один раз.</div>
+</div>
 </details>
 <details class="acc" id="accTasks">
 <summary><span class="accT">Задачи</span><span class="accS" id="sumTasks"></span></summary>
@@ -341,34 +359,7 @@
 <button class="ghostBtn" id="scReset" type="button">сброс формы</button>
 </div>
 <div class="quickScenarioTips">Сценарии сохраняются в профиле. Их можно удалить кнопкой × на карточке.</div>
-</details></div><div class="settingsCard" id="importantSettingsCard">
-<div class="settingsHead">
-<div>
-<div class="eyebrow">Важные дни</div>
-<div class="settingsTitle">Дни рождения, платежи и повторяющиеся события</div>
-<div class="settingsHint">Важные дни живут отдельно от заметок. На календаре они показываются меткой ★.</div>
-</div>
-</div>
-<div class="importantSettingsList" id="importantSettingsList"></div>
-<div class="settingsForm dayForm">
-<div class="row">
-<label>Дата <input id="impDate" type="date"/></label>
-<button id="impDateSelected" type="button">выбранный день</button>
-<button id="impDateToday" type="button">сегодня</button>
-</div>
-<div class="row">
-<input id="impTitle" placeholder="Например: день рождения Макса" type="text"/>
-<select id="impRepeat">
-<option value="YEARLY">каждый год</option>
-<option value="MONTHLY">каждый месяц</option>
-<option value="NONE">один раз</option>
-</select>
-<input id="impColor" title="Цвет важного дня" type="color" value="#F5B841"/>
-<button class="addSmall" id="impAdd" type="button">Добавить</button>
-</div>
-</div>
-</div>
-<div class="notifyCard" id="notifyCard">
+</details></div><div class="notifyCard" id="notifyCard">
 <div class="notifyHead">
 <div>
 <div class="eyebrow">Уведомления</div>

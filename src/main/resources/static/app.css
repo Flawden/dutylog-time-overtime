@@ -339,6 +339,10 @@
 }
 
 /* ── v19.1: настройки как отдельные секции ─────────────────── */
+
+/* Гарантированно прячем неактивные вкладки: .settingsView задаёт display:flex, поэтому без этого настройки могли показываться под календарём. */
+.view[hidden] { display: none !important; }
+
 .settingsView { display:flex; flex-direction:column; gap:12px; }
 .settingsCard {
   background:var(--panel2);

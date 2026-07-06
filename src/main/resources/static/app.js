@@ -1487,7 +1487,7 @@ async function refreshImportantSettings(){
 }
 
 function renderImportantSettings(){
-  const box = $("importantSettingsList");
+  const box = document.getElementById("importantSettingsList");
   if (!box) return;
   const items = (state.importantDays || []).slice().sort((a,b) => String(a.date).localeCompare(String(b.date)) || String(a.title).localeCompare(String(b.title), "ru"));
   box.innerHTML = "";
