@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=20.5" rel="stylesheet"/>
+<link href="app.css?v=20.6" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -21,6 +21,7 @@
 <button id="todayBtn">Сегодня</button>
 <button id="next">›</button>
 <span class="mono" id="whoami" style="margin-left:14px;font-size:12.5px;color:var(--mut)"></span>
+<button id="adminOpen" hidden title="Администрирование">Система</button>
 <button id="logout" style="margin-left:8px;" title="Выйти">Выйти</button>
 </div>
 </div>
@@ -289,7 +290,6 @@
     <a data-settings-jump="scenarios" href="#settings-scenarios"><b>Сценарии</b><span>шаблоны переработок</span></a>
     <a data-settings-jump="notifications" href="#settings-notifications"><b>Уведомления</b><span>браузер и расписания</span></a>
     <a data-settings-jump="important" href="#settings-important"><b>Важные даты</b><span>общий список событий</span></a>
-    <a data-settings-jump="diagnostics" href="#settings-diagnostics"><b>Диагностика</b><span>сервер, БД, Telegram</span></a>
     <div class="settingsIndexActions">
       <button id="settingsExpandAll" type="button">развернуть всё</button>
       <button id="settingsCollapseAll" type="button">свернуть всё</button>
@@ -530,28 +530,6 @@
 <div class="notifyListTitle" id="notifyListTitle">Напоминания текущего месяца</div>
 <div class="notifyList" id="notifyList"></div>
 </div>
-<div class="settingsCard" id="diagnosticsCard" data-settings-section="diagnostics">
-<a class="settingsAnchor" id="settings-diagnostics"></a>
-<div class="settingsHead">
-<div>
-<div class="eyebrow">Диагностика</div>
-<div class="settingsTitle">Состояние системы</div>
-<div class="settingsHint">Проверка версии приложения, подключения к серверу, базы данных, кэша браузера и Telegram-интеграции.</div>
-</div>
-<div class="status" id="diagnosticsStatus">—</div>
-</div>
-<div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v20.5</b></div>
-  <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
-  <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
-  <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
-</div>
-<div class="diagnosticsList" id="diagnosticsList"><span class="emptyLine">Нажмите «Обновить диагностику», чтобы получить отчёт.</span></div>
-<div class="diagnosticsActions">
-  <button class="primary" id="diagnosticsRefresh" type="button">Обновить диагностику</button>
-  <button id="diagnosticsCopy" type="button">Скопировать отчёт</button>
-</div>
-</div>
 <div class="settingsCard" id="importantSettingsCard" data-settings-section="important">
 <a class="settingsAnchor" id="settings-important"></a>
 <div class="settingsHead">
@@ -564,6 +542,42 @@
 <div class="importantList" id="importantSettingsList"></div>
 </div>
   </div>
+</div>
+</section>
+<section class="view adminView" hidden="" id="view-admin">
+<div class="adminShell">
+  <div class="adminIntro settingsCard">
+    <div class="settingsHead">
+      <div>
+        <div class="eyebrow">Администрирование</div>
+        <div class="settingsTitle">Служебный профиль</div>
+        <div class="settingsHint">Техническая диагностика вынесена отдельно от пользовательских настроек. Этот раздел доступен только администратору приложения.</div>
+      </div>
+      <button id="adminBack" type="button">Назад к настройкам</button>
+    </div>
+  </div>
+<div class="settingsCard" id="diagnosticsCard" data-settings-section="diagnostics">
+<div class="settingsHead">
+<div>
+<div class="eyebrow">Диагностика</div>
+<div class="settingsTitle">Состояние системы</div>
+<div class="settingsHint">Проверка версии приложения, подключения к серверу, базы данных, кэша браузера и Telegram-интеграции.</div>
+</div>
+<div class="status" id="diagnosticsStatus">—</div>
+</div>
+<div class="diagnosticsGrid" id="diagnosticsGrid">
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v20.6</b></div>
+  <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
+  <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
+  <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
+</div>
+<div class="diagnosticsList" id="diagnosticsList"><span class="emptyLine">Нажмите «Обновить диагностику», чтобы получить отчёт.</span></div>
+<div class="diagnosticsActions">
+  <button class="primary" id="diagnosticsRefresh" type="button">Обновить диагностику</button>
+  <button id="diagnosticsCopy" type="button">Скопировать отчёт</button>
+</div>
+</div>
+
 </div>
 </section>
 </div>
@@ -583,6 +597,6 @@
     <div class="noteFsPrev" id="noteFsPrev"></div>
   </div>
 </div>
-<script src="app.js?v=20.5"></script>
+<script src="app.js?v=20.6"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "20.5";
+const DUTYLOG_VERSION = "20.6";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -227,7 +227,7 @@ const api = {
   async telegramCode() { return jfetch("/api/telegram/link-code", { method:"POST" }); },
   async telegramSettings(b) { return jfetch("/api/telegram/settings", { method:"PATCH", body:b }); },
   async telegramUnlink() { return jfetch("/api/telegram/link", { method:"DELETE" }); },
-  async systemStatus() { return jfetch("/api/system/status"); },
+  async systemStatus() { return jfetch("/api/admin/status"); },
 };
 
 /* CSRF: Spring кладёт токен в cookie XSRF-TOKEN, мы возвращаем его заголовком */
@@ -2524,7 +2524,7 @@ async function refreshDiagnostics(){
   } catch (err) {
     if (st) st.textContent = "ошибка";
     const box = $("diagnosticsList");
-    if (box) box.innerHTML = diagnosticRow("Ошибка диагностики", err.message || String(err), false);
+    if (box) box.innerHTML = diagnosticRow("Ошибка диагностики", err.message || String(err), false) + diagnosticRow("Доступ", "только администратор", false);
   }
 }
 function diagnosticsReportText(){
@@ -2566,7 +2566,7 @@ function initSettingsAccordion(){
     scenarios: "Шаблоны, которые заполняют переработку в панели дня",
     notifications: "Браузерные, сменные, задачные и важные напоминания",
     important: "Общий список важных дат с удалением",
-    diagnostics: "Состояние интерфейса, сервера, БД и Telegram"
+    admin: "Служебная диагностика вынесена в отдельный профиль"
   };
   let saved = localStorage.getItem("dutylog.settings.openSection") || "profile";
   const known = new Set(cards.map(c => c.dataset.settingsSection));
@@ -2651,7 +2651,6 @@ function initSettingsAccordion(){
 function renderSettingsPanels(){
   initSettingsAccordion();
   renderTimeSettings();
-  renderDiagnosticsClient();
   renderCustomList();
   renderImportantSettings();
   renderNotifications();
@@ -2844,11 +2843,12 @@ async function init(){
 init();
 
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */
-const VIEWS = { calendar:"view-calendar", overtime:"view-overtime", tasks:"view-tasks", settings:"view-settings" };
+const VIEWS = { calendar:"view-calendar", overtime:"view-overtime", tasks:"view-tasks", settings:"view-settings", admin:"view-admin" };
 function applyRoute(){
   const rawRoute = (location.hash || "#calendar").slice(1);
   const name = rawRoute.startsWith("settings-") ? "settings" : rawRoute;
-  const active = VIEWS[name] ? name : "calendar";
+  let active = VIEWS[name] ? name : "calendar";
+  if (active === "admin" && state.profile && !state.profile.admin) active = "calendar";
   document.body.dataset.view = active;
   if (active !== "calendar") selectDay(null);
   for (const [key, id] of Object.entries(VIEWS)) {
@@ -2863,6 +2863,10 @@ function applyRoute(){
   document.querySelector(".nav #next").style.visibility =
     active === "calendar" ? "visible" : "hidden";
   if (active === "settings") renderSettingsPanels();
+  if (active === "admin") {
+    renderDiagnosticsClient();
+    refreshDiagnostics();
+  }
 }
 window.addEventListener("hashchange", applyRoute);
 applyRoute();
@@ -2941,6 +2945,8 @@ function renderHeaderIdentity(p){
   const shown = p.displayName || p.username;
   const who = $("whoami");
   who.textContent = shown;
+  const adminOpen = $("adminOpen");
+  if (adminOpen) adminOpen.hidden = !p.admin;
   let av = document.getElementById("headerAvatar");
   if (!av) {
     av = document.createElement("span");
@@ -2983,8 +2989,13 @@ async function loadProfile(){
     const av = $("profileAvatar");
     av.textContent = avatarInitials(p.displayName || p.username);
     av.style.background = avatarColor(p.username);
+    if (location.hash === "#admin" && !p.admin) location.hash = "#calendar";
+    applyRoute();
   } catch (e) { console.error(e); }
 }
+
+$("adminOpen")?.addEventListener("click", () => { location.hash = "#admin"; });
+$("adminBack")?.addEventListener("click", () => { location.hash = "#settings"; });
 
 $("profileSave").addEventListener("click", async () => {
   try {

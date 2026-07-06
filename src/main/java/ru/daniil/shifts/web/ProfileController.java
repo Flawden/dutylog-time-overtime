@@ -52,6 +52,7 @@ public class ProfileController {
         out.put("username", user.getUsername());
         out.put("displayName", user.getDisplayName());
         out.put("birthday", user.getBirthday() != null ? user.getBirthday().toString() : null);
+        out.put("admin", user.isAdmin());
         return out;
     }
 

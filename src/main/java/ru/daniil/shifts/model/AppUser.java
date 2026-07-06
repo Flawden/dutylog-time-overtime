@@ -30,6 +30,10 @@ public class AppUser {
     @Column(name = "birthday")
     private java.time.LocalDate birthday;
 
+    /** Роль пользователя. ADMIN видит служебный профиль диагностики. */
+    @Column(length = 20)
+    private String role = "USER";
+
     protected AppUser() {} // для JPA
 
     public AppUser(String username, String passwordHash) {
@@ -45,4 +49,7 @@ public class AppUser {
     public void setDisplayName(String displayName) { this.displayName = displayName; }
     public java.time.LocalDate getBirthday() { return birthday; }
     public void setBirthday(java.time.LocalDate birthday) { this.birthday = birthday; }
+    public String getRole() { return role == null || role.isBlank() ? "USER" : role; }
+    public void setRole(String role) { this.role = role == null || role.isBlank() ? "USER" : role.trim().toUpperCase(); }
+    public boolean isAdmin() { return "ADMIN".equalsIgnoreCase(getRole()); }
 }

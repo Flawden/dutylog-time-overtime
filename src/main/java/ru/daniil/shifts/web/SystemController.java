@@ -3,9 +3,11 @@ package ru.daniil.shifts.web;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.telegram.TelegramLinkService;
@@ -19,11 +21,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * Лёгкая диагностика для вкладки настроек.
+ * Служебная диагностика для администратора.
  * Ничего секретного не отдаёт: токены, пароли и URL БД здесь не светятся.
  */
 @RestController
-@RequestMapping("/api/system")
+@RequestMapping("/api/admin")
 public class SystemController {
     private final Environment environment;
     private final JdbcTemplate jdbcTemplate;
@@ -54,15 +56,25 @@ public class SystemController {
 
     @GetMapping("/status")
     public Map<String, Object> status(Principal principal) {
+        AppUser user = requireAdmin(principal);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("app", "DutyLog: Time & Overtime");
-        result.put("version", "20.5");
+        result.put("version", "20.6");
+        result.put("admin", user.getUsername());
         result.put("serverTime", Instant.now().toString());
         result.put("serverTimezone", ZoneId.systemDefault().toString());
         result.put("profiles", Arrays.asList(environment.getActiveProfiles()));
         result.put("database", databaseStatus());
         result.put("telegram", telegramStatus(principal));
         return result;
+    }
+
+    private AppUser requireAdmin(Principal principal) {
+        AppUser user = currentUserService.requireUser(principal);
+        if (!user.isAdmin()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Диагностика доступна только администратору");
+        }
+        return user;
     }
 
     private Map<String, Object> databaseStatus() {

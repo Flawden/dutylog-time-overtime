@@ -955,16 +955,16 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 
 ## System diagnostics
 
-### GET `/api/system/status`
+### GET `/api/admin/status`
 
-Web-safe диагностика для вкладки `⚙ → Диагностика`. Endpoint требует обычную web-сессию и CSRF-cookie не нужен, потому что это `GET`. Секреты не отдаются: токен Telegram, пароли и URL базы данных не раскрываются.
+Служебная диагностика для профиля администратора `Система`. Endpoint требует обычную web-сессию и роль `ADMIN`; для обычного пользователя возвращает `403`. CSRF-cookie не нужен, потому что это `GET`. Секреты не отдаются: токен Telegram, пароли и URL базы данных не раскрываются.
 
 Пример ответа:
 
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "20.5",
+  "version": "20.6",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],
@@ -987,7 +987,7 @@ Web-safe диагностика для вкладки `⚙ → Диагност�
 `RequestDiagnosticsFilter` добавляет в ответ заголовок `X-Request-Id` и пишет в логи:
 
 ```text
-GET /api/system/status -> 200 (12 ms, requestId=1a2b3c4d)
+GET /api/admin/status -> 200 (12 ms, requestId=1a2b3c4d)
 ```
 
 Уровень логирования можно поменять переменной окружения:

@@ -58,7 +58,11 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Имя уже занято"));
         }
 
-        AppUser user = users.save(new AppUser(username, encoder.encode(password)));
+        AppUser user = new AppUser(username, encoder.encode(password));
+        if (users.count() == 0) {
+            user.setRole("ADMIN");
+        }
+        user = users.save(user);
         seedDefaults(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("username", username));
     }

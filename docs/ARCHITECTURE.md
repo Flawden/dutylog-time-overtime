@@ -152,7 +152,7 @@ SystemController
 RequestDiagnosticsFilter
 ```
 
-`GET /api/system/status` отдаёт безопасный статус системы без секретов. `RequestDiagnosticsFilter` добавляет `X-Request-Id` и пишет краткие request-логи.
+`GET /api/admin/status` отдаёт безопасный статус системы без секретов и доступен только пользователю с ролью `ADMIN`. `RequestDiagnosticsFilter` добавляет `X-Request-Id` и пишет краткие request-логи.
 
 ## База данных
 

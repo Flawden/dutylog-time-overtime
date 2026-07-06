@@ -845,3 +845,25 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
   .settingsCard > .settingsHead,
   .settingsCard > .notifyHead{ align-items:flex-start; }
 }
+
+
+/* v20.6: служебная диагностика вынесена из пользовательских настроек */
+#adminOpen[hidden]{ display:none !important; }
+#adminOpen{
+  border-color:rgba(245,184,65,.45);
+  color:var(--accent);
+}
+.adminView{ max-width:1100px; margin:0 auto; }
+.adminShell{ display:flex; flex-direction:column; gap:12px; }
+.adminIntro .settingsHead{ cursor:default; align-items:flex-start; }
+.adminIntro button{
+  background:transparent; color:var(--mut); border:1px solid var(--line);
+  border-radius:10px; padding:8px 12px; cursor:pointer; font-family:inherit;
+}
+.adminIntro button:hover{ color:var(--accent); border-color:var(--accent); }
+.adminView #diagnosticsCard{ border-color:rgba(245,184,65,.24); }
+.adminView #diagnosticsCard .settingsHead{ cursor:default; }
+@media (max-width:700px){
+  .adminIntro .settingsHead{ flex-direction:column; }
+  .adminIntro button{ width:100%; min-height:42px; }
+}
