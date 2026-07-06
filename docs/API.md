@@ -812,3 +812,25 @@ GET /api/notifications/upcoming?from=2026-07-01&to=2026-07-31&includePast=true
 ### DELETE /api/quick-scenarios/{id}
 
 Удаляет сценарий.
+
+## Tasks 2.0
+
+`TaskDto` теперь содержит дополнительные поля:
+
+```json
+{
+  "id": 1,
+  "date": "2026-08-13",
+  "text": "Позвонить врачу",
+  "done": false,
+  "category": "здоровье",
+  "priority": "HIGH",
+  "dueDate": "2026-08-13",
+  "dueTime": "18:00",
+  "reminderEnabled": true,
+  "reminderMinutesBefore": 60,
+  "overdue": false
+}
+```
+
+`POST /api/tasks` и `PATCH /api/tasks/{id}` принимают эти поля. Старые клиенты могут продолжать отправлять только `date` и `text`.

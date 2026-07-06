@@ -117,17 +117,28 @@ public class NotificationService {
         if (s.isTaskRemindersEnabled()) {
             for (DayTask task : tasks) {
                 if (task.isDone()) continue;
-                LocalDateTime remindAt = LocalDateTime.of(task.getDate(), s.getTaskReminderTime());
+                LocalDate sourceDate = task.getDueDate() != null ? task.getDueDate() : task.getDate();
+                LocalDateTime remindAt;
+                String details;
+                if (task.isReminderEnabled() && task.getDueDate() != null) {
+                    LocalTime dueTime = task.getDueTime() != null ? task.getDueTime() : s.getTaskReminderTime();
+                    int before = task.getReminderMinutesBefore() != null ? task.getReminderMinutesBefore() : 0;
+                    remindAt = LocalDateTime.of(task.getDueDate(), dueTime).minusMinutes(before);
+                    details = "Срок " + task.getDueDate() + (task.getDueTime() != null ? " " + task.getDueTime() : "") + (before > 0 ? ", за " + before + " мин." : "");
+                } else {
+                    remindAt = LocalDateTime.of(task.getDate(), s.getTaskReminderTime());
+                    details = task.getDueDate() != null ? "Невыполненная задача, срок " + task.getDueDate() : "Невыполненная задача дня";
+                }
                 out.add(new NotificationReminderDto(
                         "task:" + task.getId(),
                         "TASK",
-                        task.getDate().toString(),
+                        sourceDate.toString(),
                         remindAt.toString(),
                         "Задача: " + task.getText(),
-                        "Невыполненная задача дня",
+                        details,
                         30
                 ));
-                digestParts.computeIfAbsent(task.getDate(), k -> new ArrayList<>()).add("задача: " + task.getText());
+                digestParts.computeIfAbsent(sourceDate, k -> new ArrayList<>()).add("задача: " + task.getText());
             }
         }
 

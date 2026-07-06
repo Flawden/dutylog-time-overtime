@@ -11,6 +11,7 @@ import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.DayTask;
+import ru.daniil.shifts.model.TaskPriority;
 import ru.daniil.shifts.model.ImportantDay;
 import ru.daniil.shifts.model.RepeatMode;
 import ru.daniil.shifts.model.NotificationSettings;
@@ -317,9 +318,40 @@ public final class Dtos {
     ) {}
 
     /** Задача дня. */
-    public record TaskDto(Long id, String date, String text, boolean done) {
+    public record TaskDto(
+            Long id,
+            String date,
+            String text,
+            boolean done,
+            String category,
+            TaskPriority priority,
+            String dueDate,
+            String dueTime,
+            boolean reminderEnabled,
+            Integer reminderMinutesBefore,
+            boolean overdue
+    ) {
         public static TaskDto from(DayTask task) {
-            return new TaskDto(task.getId(), task.getDate().toString(), task.getText(), task.isDone());
+            return new TaskDto(
+                    task.getId(),
+                    task.getDate().toString(),
+                    task.getText(),
+                    task.isDone(),
+                    task.getCategory(),
+                    task.getPriority(),
+                    task.getDueDate() != null ? task.getDueDate().toString() : null,
+                    task.getDueTime() != null ? task.getDueTime().toString() : null,
+                    task.isReminderEnabled(),
+                    task.getReminderMinutesBefore(),
+                    isOverdue(task)
+            );
+        }
+        private static boolean isOverdue(DayTask task) {
+            if (task.isDone() || task.getDueDate() == null) return false;
+            java.time.LocalDate today = java.time.LocalDate.now();
+            if (task.getDueDate().isBefore(today)) return true;
+            if (task.getDueDate().isAfter(today) || task.getDueTime() == null) return false;
+            return task.getDueTime().isBefore(java.time.LocalTime.now());
         }
     }
 
@@ -330,14 +362,38 @@ public final class Dtos {
 
             @NotBlank(message = "Текст задачи не должен быть пустым")
             @Size(max = 500, message = "Текст задачи: максимум 500 символов")
-            String text
+            String text,
+
+            @Size(max = 80, message = "Категория: максимум 80 символов")
+            String category,
+
+            TaskPriority priority,
+
+            String dueDate,
+            String dueTime,
+
+            Boolean reminderEnabled,
+
+            @Min(value = 0, message = "Напоминание не может быть отрицательным")
+            @Max(value = 10080, message = "Напоминание: максимум 7 дней")
+            Integer reminderMinutesBefore
     ) {}
 
     /** Обновление задачи. Поля опциональны. */
     public record TaskUpdateRequest(
             @Size(max = 500, message = "Текст задачи: максимум 500 символов")
             String text,
-            Boolean done
+            Boolean done,
+            String date,
+            @Size(max = 80, message = "Категория: максимум 80 символов")
+            String category,
+            TaskPriority priority,
+            String dueDate,
+            String dueTime,
+            Boolean reminderEnabled,
+            @Min(value = 0, message = "Напоминание не может быть отрицательным")
+            @Max(value = 10080, message = "Напоминание: максимум 7 дней")
+            Integer reminderMinutesBefore
     ) {}
 
     /** Важный день как настройка: дата-основа + режим повтора. */

@@ -176,6 +176,7 @@
   .cell .importantMark, .cell .taskMark, .cell .notifyMark { display:inline-flex; align-items:center; justify-content:center; min-width:16px; height:16px; border-radius:6px; font-size:10px; font-weight:900; font-family:ui-monospace,monospace; }
   .cell .importantMark { color:#14171C; background:var(--accent); }
   .cell .taskMark { color:#14171C; background:var(--danger); }
+  .cell .taskMark.overdue { background:#ff4d4d; color:#14171C; min-width:20px; }
   .cell .taskMark.done { background:var(--line); color:var(--mut); }
   .cell .notifyMark { color:#14171C; background:#7B8CE0; }
 
@@ -193,8 +194,24 @@
   .importantDot { width:10px; height:10px; border-radius:4px; flex:none; }
   .importantTitle, .taskText { flex:1; min-width:0; overflow-wrap:anywhere; }
   .importantMode { color:var(--dim); font-family:ui-monospace,monospace; font-size:11px; }
-  .taskItem input[type=checkbox] { width:16px; height:16px; accent-color:var(--accent); }
+  .taskItem { align-items:flex-start; }
+  .taskItem.overdue { border-color:rgba(224,101,58,.75); background:rgba(224,101,58,.08); }
+  .taskItem input[type=checkbox] { width:16px; height:16px; accent-color:var(--accent); margin-top:2px; }
   .taskItem.done .taskText { color:var(--dim); text-decoration:line-through; }
+  .taskMeta { display:flex; flex-wrap:wrap; gap:4px; margin-top:4px; }
+  .taskBadge { display:inline-flex; border-radius:999px; padding:2px 6px; font-size:10.5px; font-family:ui-monospace,monospace; background:rgba(20,23,28,.6); border:1px solid var(--line); color:var(--mut); }
+  .taskBadge.cat { color:var(--accent); }
+  .taskBadge.high { color:#14171C; background:#E0653A; border-color:#E0653A; }
+  .taskBadge.urgent { color:#14171C; background:#ff4d4d; border-color:#ff4d4d; }
+  .taskBadge.overdue { color:#14171C; background:#ff4d4d; border-color:#ff4d4d; }
+  .taskFilters { display:flex; flex-wrap:wrap; gap:7px; margin-top:8px; }
+  .taskFilters select, .taskFilters input { background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:6px 8px; font-size:12px; }
+  .taskOptions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; margin-top:8px; }
+  .taskOptions input, .taskOptions select { width:100%; background:var(--bg); border:1px solid var(--line); border-radius:7px; color:var(--text); padding:6px 8px; font-size:12px; }
+  .taskOptions label { color:var(--mut); font-size:11.5px; display:flex; flex-direction:column; gap:3px; }
+  .taskOptions .inlineCheck { flex-direction:row; align-items:center; gap:6px; }
+  .taskOptions .inlineCheck input { width:auto; }
+  @media (max-width:520px){ .taskOptions { grid-template-columns:1fr; } }
   .tinyDel { background:none; border:none; color:var(--dim); cursor:pointer; font-size:12px; padding:3px 4px; }
   .tinyDel:hover { color:var(--danger); }
 
@@ -558,10 +575,29 @@
       <details class="acc" id="accTasks">
         <summary><span class="accT">Задачи</span><span class="accS" id="sumTasks"></span></summary>
         <div class="accB dayForm">
+        <div class="taskFilters">
+          <select id="taskStatusFilter" title="Фильтр задач">
+            <option value="all">все</option>
+            <option value="open">открытые</option>
+            <option value="overdue">просроченные</option>
+            <option value="done">выполненные</option>
+          </select>
+          <select id="taskCategoryFilter" title="Категория">
+            <option value="all">все категории</option>
+          </select>
+        </div>
         <div class="taskList" id="taskList"></div>
         <div class="row">
           <input type="text" id="taskText" placeholder="Задача на этот день">
           <button class="addSmall" id="taskAdd" type="button">Добавить</button>
+        </div>
+        <div class="taskOptions">
+          <label>Категория<input type="text" id="taskCategory" placeholder="работа, дом, здоровье"></label>
+          <label>Приоритет<select id="taskPriority"><option value="NORMAL">обычная</option><option value="LOW">низкая</option><option value="HIGH">важная</option><option value="URGENT">срочная</option></select></label>
+          <label>Срок<input type="date" id="taskDueDate"></label>
+          <label>Время срока<input type="time" id="taskDueTime"></label>
+          <label class="inlineCheck"><input type="checkbox" id="taskReminderEnabled"> напомнить</label>
+          <label>За минут<input type="number" id="taskReminderBefore" min="0" max="10080" value="60"></label>
         </div>
         </div>
       </details>
@@ -591,7 +627,8 @@ const state = {
   m: new Date().getMonth(),      // 0–11
   shiftTypes: [],                 // [{id,name,hours,color,builtin,startTime,endTime,breakMinutes,plannedHours}]
   days: {},                       // { 'YYYY-MM-DD': {shiftTypeId, note, overtimeHours, timeOffHours} }
-  tasksByDate: {},                // { 'YYYY-MM-DD': [{id,date,text,done}] }
+  tasksByDate: {},                // { 'YYYY-MM-DD': [{id,date,text,done,category,priority,dueDate,dueTime,overdue}] }
+  taskFilters: { status:"all", category:"all" },
   importantByDate: {},            // { 'YYYY-MM-DD': [{id,date,title,repeatMode,color}] }
   overtimeAccount: { totalEarnedHours:0, totalUsedHours:0, balanceHours:0, credits:[], usages:[] },
   notificationSettings: null,
@@ -652,6 +689,18 @@ function tasksOf(k){ return state.tasksByDate[k] || []; }
 function importantOf(k){ return state.importantByDate[k] || []; }
 function remindersOf(k){ return state.remindersByDate[k] || []; }
 function activeTasksOf(k){ return tasksOf(k).filter(t => !t.done); }
+function overdueTasksOf(k){ return tasksOf(k).filter(t => t.overdue && !t.done); }
+function taskPriorityLabel(p){ return p === "URGENT" ? "срочно" : p === "HIGH" ? "важно" : p === "LOW" ? "низкий" : "обычно"; }
+function taskDueLabel(t){
+  if (!t.dueDate) return "";
+  const d = t.dueDate.split("-").reverse().join(".");
+  return `срок ${d}${t.dueTime ? " " + t.dueTime : ""}`;
+}
+function allTaskCategories(){
+  const set = new Set();
+  for (const arr of Object.values(state.tasksByDate)) for (const t of arr) if ((t.category || "").trim()) set.add(t.category.trim());
+  return Array.from(set).sort((a,b) => a.localeCompare(b, "ru"));
+}
 const repeatLabel = mode => mode === "YEARLY" ? "каждый год" : mode === "MONTHLY" ? "каждый месяц" : "один раз";
 function creditsOf(k){ return (state.overtimeAccount?.credits || []).filter(x => x.workedDate === k); }
 function usagesOf(k){ return (state.overtimeAccount?.usages || []).filter(x => x.usageDate === k); }
@@ -894,7 +943,14 @@ function renderCalendar(){
         im.title = important.map(x => x.title).join(", ");
         marks.appendChild(im);
       }
-      if (activeTasks.length) {
+      const overdueTasks = overdueTasksOf(k);
+      if (overdueTasks.length) {
+        const tm = document.createElement("span");
+        tm.className = "taskMark overdue";
+        tm.textContent = "!!";
+        tm.title = `Просроченные задачи: ${overdueTasks.length}`;
+        marks.appendChild(tm);
+      } else if (activeTasks.length) {
         const tm = document.createElement("span");
         tm.className = "taskMark";
         tm.textContent = "!";
@@ -1109,8 +1165,9 @@ function updateAccSummaries(){
   // Задачи: сделано/всего
   const all = tasksOf(k);
   const undone = activeTasksOf(k).length;
-  $("sumTasks").textContent = all.length ? `${all.length - undone}/${all.length} сделано` : "—";
-  $("sumTasks").style.color = undone > 0 ? "var(--accent)" : "";
+  const overdue = overdueTasksOf(k).length;
+  $("sumTasks").textContent = all.length ? (overdue ? `${overdue} просроч. · ${all.length - undone}/${all.length}` : `${all.length - undone}/${all.length} сделано`) : "—";
+  $("sumTasks").style.color = overdue ? "var(--danger)" : (undone > 0 ? "var(--accent)" : "");
 
   // Заметка: первая строка
   const note = (state.days[k]?.note || "").trim();
@@ -2109,40 +2166,103 @@ $("impAdd").addEventListener("click", addImportantDay);
 $("impTitle").addEventListener("keydown", e => { if (e.key === "Enter") addImportantDay(); });
 
 /* ─── Задачи дня ────────────────────────────────────────────── */
+function renderTaskCategoryFilter(){
+  const sel = $("taskCategoryFilter");
+  if (!sel) return;
+  const current = sel.value || state.taskFilters.category || "all";
+  sel.innerHTML = `<option value="all">все категории</option>`;
+  for (const cat of allTaskCategories()) {
+    const opt = document.createElement("option");
+    opt.value = cat; opt.textContent = cat;
+    sel.appendChild(opt);
+  }
+  sel.value = [...sel.options].some(o => o.value === current) ? current : "all";
+  state.taskFilters.category = sel.value;
+}
+function filteredTasksForSelected(){
+  const items = tasksOf(state.selected);
+  const status = state.taskFilters.status || "all";
+  const category = state.taskFilters.category || "all";
+  return items.filter(t => {
+    if (category !== "all" && (t.category || "") !== category) return false;
+    if (status === "open" && t.done) return false;
+    if (status === "done" && !t.done) return false;
+    if (status === "overdue" && (!t.overdue || t.done)) return false;
+    return true;
+  });
+}
 function renderTasks(){
   const box = $("taskList");
   if (!box || !state.selected) return;
-  const items = tasksOf(state.selected);
+  renderTaskCategoryFilter();
+  const all = tasksOf(state.selected);
+  const items = filteredTasksForSelected();
   box.innerHTML = "";
-  if (!items.length) {
+  if (!all.length) {
     const empty = document.createElement("div");
     empty.className = "emptyLine";
     empty.textContent = "Задач пока нет. Добавишь — на дне появится восклицательный знак.";
     box.appendChild(empty);
+    updateAccSummaries();
+    return;
+  }
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "emptyLine";
+    empty.textContent = "По фильтрам задач нет.";
+    box.appendChild(empty);
+    updateAccSummaries();
     return;
   }
   for (const task of items) {
     const row = document.createElement("div");
-    row.className = "taskItem" + (task.done ? " done" : "");
+    row.className = "taskItem" + (task.done ? " done" : "") + (task.overdue && !task.done ? " overdue" : "");
     const cb = document.createElement("input");
     cb.type = "checkbox";
     cb.checked = !!task.done;
     cb.addEventListener("change", () => toggleTask(task.id, cb.checked));
+    const body = document.createElement("div");
+    body.style.flex = "1";
+    body.style.minWidth = "0";
     const text = document.createElement("span");
     text.className = "taskText";
     text.textContent = task.text;
+    const meta = document.createElement("div");
+    meta.className = "taskMeta";
+    if (task.category) {
+      const b = document.createElement("span"); b.className = "taskBadge cat"; b.textContent = task.category; meta.appendChild(b);
+    }
+    if (task.priority && task.priority !== "NORMAL") {
+      const b = document.createElement("span"); b.className = "taskBadge " + task.priority.toLowerCase(); b.textContent = taskPriorityLabel(task.priority); meta.appendChild(b);
+    }
+    const due = taskDueLabel(task);
+    if (due) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = due; meta.appendChild(b); }
+    if (task.reminderEnabled) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = `🔔 ${task.reminderMinutesBefore ?? 0}м`; meta.appendChild(b); }
+    if (task.overdue && !task.done) { const b = document.createElement("span"); b.className = "taskBadge overdue"; b.textContent = "просрочено"; meta.appendChild(b); }
+    body.append(text, meta);
+    const edit = document.createElement("button");
+    edit.className = "tinyDel"; edit.type = "button"; edit.textContent = "ред."; edit.title = "Редактировать задачу";
+    edit.addEventListener("click", () => editTask(task));
     const del = document.createElement("button");
     del.className = "tinyDel";
     del.type = "button";
     del.textContent = "×";
     del.title = "Удалить задачу";
     del.addEventListener("click", () => removeTask(task.id));
-    row.append(cb, text, del);
+    row.append(cb, body, edit, del);
     box.appendChild(row);
   }
   updateAccSummaries();
 }
-
+function editTask(task){
+  const text = prompt("Текст задачи", task.text || "");
+  if (text === null) return;
+  const category = prompt("Категория", task.category || "") ?? task.category;
+  const dueDate = prompt("Срок yyyy-MM-dd, пусто — без срока", task.dueDate || "") ?? task.dueDate;
+  const dueTime = prompt("Время срока HH:mm, пусто — без времени", task.dueTime || "") ?? task.dueTime;
+  const reminder = confirm("Включить напоминание для этой задачи?");
+  updateTaskDetails(task.id, { text, category, dueDate, dueTime, reminderEnabled: reminder, reminderMinutesBefore: reminder ? (task.reminderMinutesBefore ?? 60) : null });
+}
 async function addTask(){
   const k = state.selected;
   if (!k) return;
@@ -2150,9 +2270,36 @@ async function addTask(){
   if (!text) return setSave("err", "напиши текст задачи");
   setSave("saving");
   try {
-    const created = await api.createTask({ date: k, text });
+    const created = await api.createTask({
+      date: k,
+      text,
+      category: $("taskCategory").value.trim() || null,
+      priority: $("taskPriority").value || "NORMAL",
+      dueDate: $("taskDueDate").value || null,
+      dueTime: $("taskDueTime").value || null,
+      reminderEnabled: $("taskReminderEnabled").checked,
+      reminderMinutesBefore: $("taskReminderEnabled").checked ? Number($("taskReminderBefore").value || 0) : null,
+    });
     addToDateMap(state.tasksByDate, created);
     $("taskText").value = "";
+    setSave("saved");
+    renderTasks();
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+
+async function updateTaskDetails(id, patch){
+  setSave("saving");
+  try {
+    const updated = await api.updateTask(id, patch);
+    for (const k of Object.keys(state.tasksByDate)) {
+      state.tasksByDate[k] = state.tasksByDate[k].filter(t => t.id !== id);
+      if (!state.tasksByDate[k].length) delete state.tasksByDate[k];
+    }
+    addToDateMap(state.tasksByDate, updated);
     setSave("saved");
     renderTasks();
     renderCalendar();
@@ -2200,6 +2347,9 @@ async function removeTask(id){
 
 $("taskAdd").addEventListener("click", addTask);
 $("taskText").addEventListener("keydown", e => { if (e.key === "Enter") addTask(); });
+$("taskStatusFilter").addEventListener("change", () => { state.taskFilters.status = $("taskStatusFilter").value; renderTasks(); });
+$("taskCategoryFilter").addEventListener("change", () => { state.taskFilters.category = $("taskCategoryFilter").value; renderTasks(); });
+$("taskDueDate").addEventListener("change", () => { if ($("taskDueDate").value) $("taskReminderEnabled").checked = true; });
 
 function renderChips(){
   const box = $("chips");

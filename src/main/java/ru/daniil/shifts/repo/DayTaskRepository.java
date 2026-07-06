@@ -10,4 +10,5 @@ import java.util.List;
 public interface DayTaskRepository extends JpaRepository<DayTask, Long> {
     List<DayTask> findByOwnerAndDateOrderByCreatedAtAscIdAsc(AppUser owner, LocalDate date);
     List<DayTask> findByOwnerAndDateBetweenOrderByDateAscCreatedAtAscIdAsc(AppUser owner, LocalDate from, LocalDate to);
+    List<DayTask> findByOwnerAndDueDateBetweenOrderByDueDateAscDueTimeAscCreatedAtAscIdAsc(AppUser owner, LocalDate from, LocalDate to);
 }
