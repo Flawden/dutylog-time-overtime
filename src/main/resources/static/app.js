@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "21.0";
+const DUTYLOG_VERSION = "21.1";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -37,6 +37,8 @@ const state = {
     failed: [],
     syncing: false,
     cacheReady: false,
+    syncLockedByOther: false,
+    stale: false,
   },
 };
 
@@ -244,10 +246,22 @@ function csrfToken(){
   return m ? decodeURIComponent(m[1]) : null;
 }
 
+function offlineRequiredMessage(url){
+  if (url.startsWith("/api/overtime")) return "Переработки и отгулы можно изменять только при подключении к серверу. Смены, заметки и галочки задач сохраняются оффлайн.";
+  if (url.startsWith("/api/days/fill")) return "Автозаполнение графика требует связи с сервером. Отдельную смену выбранного дня можно изменить оффлайн.";
+  if (url.startsWith("/api/shift-types")) return "Типы смен и их расписание меняются только при подключении к серверу.";
+  if (url.startsWith("/api/quick-scenarios")) return "Шаблоны переработок меняются только при подключении к серверу.";
+  if (url.startsWith("/api/notifications")) return "Настройки уведомлений требуют связи с сервером.";
+  if (url.startsWith("/api/telegram")) return "Telegram-интеграция настраивается только при подключении к серверу.";
+  if (url.startsWith("/api/profile")) return "Профиль и сессии меняются только при подключении к серверу.";
+  if (url.startsWith("/api/important-days")) return "Важные даты меняются только при подключении к серверу.";
+  return "Эта операция требует связи с сервером. Смена дня, заметки и галочки задач сохраняются оффлайн.";
+}
+
 async function jfetch(url, opts = {}) {
   const method = opts.method || "GET";
   if (!navigator.onLine && !["GET", "HEAD", "OPTIONS"].includes(method)) {
-    const err = new Error("Эта операция требует связи с сервером");
+    const err = new Error(offlineRequiredMessage(url));
     err.status = 0;
     throw err;
   }
@@ -298,6 +312,17 @@ const OFFLINE_DB_NAME = "dutylog-offline";
 const OFFLINE_DB_VERSION = 1;
 const OFFLINE_SNAPSHOT_KEY = "bootstrap";
 const OFFLINE_META_FAILED_KEY = "failedMutations";
+const OFFLINE_SYNC_LOCK_KEY = "dutylog.offline.syncLock.v1";
+const OFFLINE_SYNC_LOCK_TTL_MS = 2 * 60 * 1000;
+const OFFLINE_STALE_MS = 24 * 60 * 60 * 1000;
+const OFFLINE_CLIENT_ID = (() => {
+  try {
+    const key = "dutylog.offline.clientId.v1";
+    let id = sessionStorage.getItem(key);
+    if (!id) { id = uuid(); sessionStorage.setItem(key, id); }
+    return id;
+  } catch (_) { return uuid(); }
+})();
 
 function isNetworkError(err){
   return !err || err.name === "TypeError" || err.message === "Failed to fetch" || err.message === "NetworkError" || err.status === 0;
@@ -310,6 +335,71 @@ function fmtSyncTime(iso){
   if (!iso) return "нет синхронизации";
   try { return new Intl.DateTimeFormat("ru-RU", { dateStyle:"short", timeStyle:"short" }).format(new Date(iso)); }
   catch (_) { return String(iso).slice(0, 16).replace("T", " "); }
+}
+function syncAgeMs(iso){
+  if (!iso) return null;
+  const t = new Date(iso).getTime();
+  return Number.isFinite(t) ? Date.now() - t : null;
+}
+function fmtSyncAge(iso){
+  const age = syncAgeMs(iso);
+  if (age == null || age < 0) return "";
+  const min = Math.floor(age / 60000);
+  if (min < 1) return "только что";
+  if (min < 60) return `${min} мин назад`;
+  const h = Math.floor(min / 60);
+  if (h < 24) return `${h} ч назад`;
+  const d = Math.floor(h / 24);
+  return `${d} дн назад`;
+}
+function escapeHtml(v){
+  return String(v ?? "").replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch] || ch));
+}
+function describeOfflineOperation(item){
+  if (!item) return "Операция";
+  if (item.type === "putDay") {
+    const d = item.payload?.day || {};
+    const parts = [];
+    if (d.shiftTypeId) parts.push("смена");
+    if ((d.note || "").trim()) parts.push("заметка");
+    if (!parts.length) parts.push("день");
+    return `${item.payload?.date || "дата"}: ${parts.join(" + ")}`;
+  }
+  if (item.type === "toggleTask") return `Задача #${item.payload?.taskId}: ${item.payload?.done ? "выполнена" : "открыта"}`;
+  return item.type || "Операция";
+}
+function acquireOfflineSyncLock(){
+  try {
+    const now = Date.now();
+    const raw = localStorage.getItem(OFFLINE_SYNC_LOCK_KEY);
+    const current = raw ? JSON.parse(raw) : null;
+    if (current?.owner && current.owner !== OFFLINE_CLIENT_ID && Number(current.expiresAt || 0) > now) {
+      return null;
+    }
+    const lock = { owner:OFFLINE_CLIENT_ID, token:uuid(), startedAt:new Date().toISOString(), expiresAt:now + OFFLINE_SYNC_LOCK_TTL_MS };
+    localStorage.setItem(OFFLINE_SYNC_LOCK_KEY, JSON.stringify(lock));
+    const saved = JSON.parse(localStorage.getItem(OFFLINE_SYNC_LOCK_KEY) || "{}");
+    return saved.token === lock.token ? lock : null;
+  } catch (_) { return { owner:OFFLINE_CLIENT_ID, token:"memory", expiresAt:Date.now() + OFFLINE_SYNC_LOCK_TTL_MS }; }
+}
+function refreshOfflineSyncLock(lock){
+  if (!lock || lock.token === "memory") return;
+  try {
+    const raw = localStorage.getItem(OFFLINE_SYNC_LOCK_KEY);
+    const current = raw ? JSON.parse(raw) : null;
+    if (current?.token === lock.token) {
+      current.expiresAt = Date.now() + OFFLINE_SYNC_LOCK_TTL_MS;
+      localStorage.setItem(OFFLINE_SYNC_LOCK_KEY, JSON.stringify(current));
+    }
+  } catch (_) {}
+}
+function releaseOfflineSyncLock(lock){
+  if (!lock || lock.token === "memory") return;
+  try {
+    const raw = localStorage.getItem(OFFLINE_SYNC_LOCK_KEY);
+    const current = raw ? JSON.parse(raw) : null;
+    if (current?.token === lock.token) localStorage.removeItem(OFFLINE_SYNC_LOCK_KEY);
+  } catch (_) {}
 }
 function requestToPromise(req){
   return new Promise((resolve, reject) => {
@@ -410,10 +500,57 @@ const dataLayer = {
   },
   async refreshQueueState(){
     if (!state.offline.cacheReady) { state.offline.pending = 0; return; }
-    const q = await offlineDb.all("queue");
-    const failed = await offlineDb.get("meta", OFFLINE_META_FAILED_KEY);
+    const q = await this.getQueueItems();
+    const failed = await this.getFailedItems();
     state.offline.pending = q.length;
-    state.offline.failed = failed?.items || [];
+    state.offline.failed = failed;
+  },
+  async getQueueItems(){
+    if (!state.offline.cacheReady) return [];
+    return (await offlineDb.all("queue")).sort((a,b) => String(a.createdAt).localeCompare(String(b.createdAt)) || String(a.id).localeCompare(String(b.id)));
+  },
+  async getFailedItems(){
+    if (!state.offline.cacheReady) return [];
+    const failed = await offlineDb.get("meta", OFFLINE_META_FAILED_KEY);
+    return failed?.items || [];
+  },
+  async setFailedItems(items){
+    if (!state.offline.cacheReady) return;
+    await offlineDb.put("meta", { key:OFFLINE_META_FAILED_KEY, items:items || [] });
+    await this.refreshQueueState();
+    updateOfflineStatus();
+  },
+  async removeFailed(index){
+    const items = await this.getFailedItems();
+    items.splice(index, 1);
+    await this.setFailedItems(items);
+  },
+  async retryFailed(index){
+    const items = await this.getFailedItems();
+    const item = items.splice(index, 1)[0];
+    if (!item) return;
+    await offlineDb.put("queue", { ...item, id:uuid(), attempts:0, lastError:null, createdAt:new Date().toISOString() });
+    await this.setFailedItems(items);
+  },
+  async exportOfflineData(){
+    if (!state.offline.cacheReady) throw new Error("Локальное хранилище недоступно");
+    const data = {
+      exportedAt:new Date().toISOString(),
+      version:DUTYLOG_VERSION,
+      snapshot:await this.readSnapshot(),
+      queue:await this.getQueueItems(),
+      meta:await offlineDb.all("meta"),
+      userAgent:navigator.userAgent,
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type:"application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `dutylog-offline-${new Date().toISOString().replace(/[:.]/g,"-")}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 1000);
   },
   async loadCalendar(y, m, applyBundle){
     let hadCache = false;
@@ -487,12 +624,21 @@ const dataLayer = {
   async syncQueue(){
     if (!state.offline.cacheReady || state.offline.syncing) return;
     if (!navigator.onLine) { state.offline.online = false; updateOfflineStatus(); return; }
+    const lock = acquireOfflineSyncLock();
+    if (!lock) {
+      state.offline.syncLockedByOther = true;
+      updateOfflineStatus();
+      setSave("err", "Синхронизация уже запущена в другой вкладке");
+      return;
+    }
+    state.offline.syncLockedByOther = false;
     state.offline.syncing = true;
     updateOfflineStatus();
     try {
-      const items = (await offlineDb.all("queue")).sort((a,b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+      const items = await this.getQueueItems();
       const failed = [];
       for (const item of items) {
+        refreshOfflineSyncLock(lock);
         try {
           if (item.type === "putDay") {
             await api.upsertDay(item.payload.date, item.payload.day);
@@ -517,7 +663,7 @@ const dataLayer = {
       }
       if (failed.length) {
         const prev = await offlineDb.get("meta", OFFLINE_META_FAILED_KEY);
-        await offlineDb.put("meta", { key:OFFLINE_META_FAILED_KEY, items:[...(prev?.items || []), ...failed].slice(-20) });
+        await offlineDb.put("meta", { key:OFFLINE_META_FAILED_KEY, items:[...(prev?.items || []), ...failed].slice(-30) });
       }
       await this.refreshQueueState();
       if (state.offline.pending === 0) {
@@ -535,36 +681,103 @@ const dataLayer = {
       if (err.status !== 401) setSave("err", err.message || "синхронизация не удалась");
       state.offline.online = navigator.onLine;
     } finally {
+      releaseOfflineSyncLock(lock);
       state.offline.syncing = false;
       await this.refreshQueueState();
       updateOfflineStatus();
+      if (document.body.classList.contains("syncDialogOpen")) renderOfflineSyncDialog();
     }
-  },
-};
+  },};
 
 function updateOfflineStatus(){
   const online = navigator.onLine && state.offline.online !== false;
+  const stale = !!state.offline.lastSyncAt && (syncAgeMs(state.offline.lastSyncAt) || 0) > OFFLINE_STALE_MS;
+  state.offline.stale = stale;
   document.body.classList.toggle("offline", !online);
+  document.body.classList.toggle("offline-stale", stale);
   document.body.classList.toggle("has-pending-sync", state.offline.pending > 0);
   const el = $("offlineStatus");
   if (!el) return;
   const parts = [];
   if (state.offline.syncing) parts.push("синхронизация…");
+  else if (state.offline.syncLockedByOther) parts.push("синхронизация в другой вкладке");
   else parts.push(online ? "онлайн" : "оффлайн");
   if (state.offline.pending) parts.push(`${state.offline.pending} не отправлено`);
   if (state.offline.failed?.length) parts.push(`${state.offline.failed.length} не применилось`);
-  if (!online && state.offline.lastSyncAt) parts.push("данные от " + fmtSyncTime(state.offline.lastSyncAt));
+  if (state.offline.lastSyncAt) {
+    if (stale) parts.push("данные устарели");
+    else if (!online) parts.push("данные от " + fmtSyncTime(state.offline.lastSyncAt));
+  }
   el.textContent = parts.join(" · ");
-  el.className = "offlineStatus" + (!online ? " off" : "") + (state.offline.pending ? " pending" : "") + (state.offline.failed?.length ? " failed" : "");
+  el.className = "offlineStatus" + (!online ? " off" : "") + (state.offline.pending ? " pending" : "") + (state.offline.failed?.length ? " failed" : "") + (stale ? " stale" : "");
+  const age = state.offline.lastSyncAt ? `Последняя синхронизация: ${fmtSyncTime(state.offline.lastSyncAt)} (${fmtSyncAge(state.offline.lastSyncAt)})` : "Локальной копии пока нет";
   el.title = state.offline.failed?.length
-    ? "Есть операции, которые сервер не принял. Проверьте данные после синхронизации."
-    : (state.offline.pending ? "Нажмите, чтобы синхронизировать изменения" : "Состояние подключения");
+    ? "Есть операции, которые сервер не принял. Нажмите, чтобы открыть синхронизацию. " + age
+    : (state.offline.pending ? "Есть изменения, ожидающие отправки. Нажмите, чтобы открыть синхронизацию. " + age : "Состояние подключения. " + age);
+}
+
+async function renderOfflineSyncDialog(){
+  const pendingList = $("offlinePendingList");
+  const failedList = $("offlineFailedList");
+  const meta = $("offlineSyncMeta");
+  if (!pendingList || !failedList || !meta) return;
+  const queue = await dataLayer.getQueueItems();
+  const failed = await dataLayer.getFailedItems();
+  const online = navigator.onLine && state.offline.online !== false;
+  const syncAge = state.offline.lastSyncAt ? `${fmtSyncTime(state.offline.lastSyncAt)} · ${fmtSyncAge(state.offline.lastSyncAt)}` : "локальной копии пока нет";
+  meta.innerHTML = `
+    <div><b>${online ? "Онлайн" : "Оффлайн"}</b></div>
+    <div>Последняя синхронизация: ${escapeHtml(syncAge)}</div>
+    ${state.offline.stale ? '<div class="syncWarn">Локальные данные старше суток. Проверьте их после подключения к серверу.</div>' : ''}
+  `;
+  pendingList.innerHTML = queue.length ? queue.map(item => `
+    <div class="syncItem">
+      <div><b>${escapeHtml(describeOfflineOperation(item))}</b><span>${escapeHtml(fmtSyncTime(item.createdAt))}${item.attempts ? ` · попыток: ${item.attempts}` : ""}</span></div>
+      ${item.lastError ? `<small>${escapeHtml(item.lastError)}</small>` : ""}
+    </div>`).join("") : '<span class="emptyLine">Нет изменений, ожидающих отправки.</span>';
+  failedList.innerHTML = failed.length ? failed.map((item, idx) => `
+    <div class="syncItem failed">
+      <div><b>${escapeHtml(describeOfflineOperation(item))}</b><span>${escapeHtml(fmtSyncTime(item.failedAt || item.createdAt))}</span></div>
+      <small>${escapeHtml(item.lastError || "сервер не применил операцию")}</small>
+      <div class="syncItemActions">
+        <button type="button" data-failed-retry="${idx}">Вернуть в очередь</button>
+        <button type="button" data-failed-remove="${idx}">Убрать из списка</button>
+      </div>
+    </div>`).join("") : '<span class="emptyLine">Ошибок синхронизации нет.</span>';
+}
+
+async function openOfflineSyncDialog(){
+  const dlg = $("offlineSyncDialog");
+  if (!dlg) return;
+  await dataLayer.refreshQueueState();
+  await renderOfflineSyncDialog();
+  dlg.hidden = false;
+  document.body.classList.add("syncDialogOpen");
+}
+function closeOfflineSyncDialog(){
+  const dlg = $("offlineSyncDialog");
+  if (dlg) dlg.hidden = true;
+  document.body.classList.remove("syncDialogOpen");
 }
 
 window.addEventListener("online", () => { state.offline.online = true; updateOfflineStatus(); dataLayer.syncQueue(); });
 window.addEventListener("offline", () => { state.offline.online = false; updateOfflineStatus(); });
-document.addEventListener("click", e => {
-  if (e.target?.id === "offlineStatus") dataLayer.syncQueue();
+window.addEventListener("storage", e => {
+  if (e.key === OFFLINE_SYNC_LOCK_KEY) updateOfflineStatus();
+});
+document.addEventListener("keydown", e => {
+  if (e.key === "Escape" && document.body.classList.contains("syncDialogOpen")) closeOfflineSyncDialog();
+});
+document.addEventListener("click", async e => {
+  if (e.target?.id === "offlineStatus") { await openOfflineSyncDialog(); return; }
+  if (e.target?.id === "offlineSyncClose" || e.target?.id === "offlineSyncBackdrop") { closeOfflineSyncDialog(); return; }
+  if (e.target?.id === "offlineSyncNow") { await dataLayer.syncQueue(); await renderOfflineSyncDialog(); return; }
+  if (e.target?.id === "offlineExport") { await dataLayer.exportOfflineData(); return; }
+  if (e.target?.id === "offlineFailedClear") { await dataLayer.setFailedItems([]); await renderOfflineSyncDialog(); return; }
+  const retry = e.target?.dataset?.failedRetry;
+  if (retry != null) { await dataLayer.retryFailed(Number(retry)); await renderOfflineSyncDialog(); return; }
+  const remove = e.target?.dataset?.failedRemove;
+  if (remove != null) { await dataLayer.removeFailed(Number(remove)); await renderOfflineSyncDialog(); return; }
 });
 
 /* ─── Markdown (мини-парсер) ────────────────────────────────── */

@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=21.0" rel="stylesheet"/>
+<link href="app.css?v=21.1" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -567,7 +567,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v21.0</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v21.1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -598,6 +598,33 @@
     <div class="noteFsPrev" id="noteFsPrev"></div>
   </div>
 </div>
-<script src="app.js?v=21.0"></script>
+
+<div class="offlineSyncDialog" id="offlineSyncDialog" hidden>
+  <button class="offlineSyncBackdrop" id="offlineSyncBackdrop" type="button" aria-label="Закрыть"></button>
+  <div class="offlineSyncPanel" role="dialog" aria-modal="true" aria-labelledby="offlineSyncTitle">
+    <div class="offlineSyncHead">
+      <div>
+        <div class="eyebrow">Оффлайн-режим</div>
+        <div class="offlineSyncTitle" id="offlineSyncTitle">Синхронизация данных</div>
+      </div>
+      <button id="offlineSyncClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div class="offlineSyncMeta" id="offlineSyncMeta"></div>
+    <div class="offlineSyncBlock">
+      <div class="offlineSyncBlockTitle">Ожидают отправки</div>
+      <div class="offlineSyncList" id="offlinePendingList"></div>
+    </div>
+    <div class="offlineSyncBlock">
+      <div class="offlineSyncBlockTitle">Не применилось</div>
+      <div class="offlineSyncList" id="offlineFailedList"></div>
+    </div>
+    <div class="offlineSyncActions">
+      <button class="primary" id="offlineSyncNow" type="button">Синхронизировать</button>
+      <button id="offlineExport" type="button">Скачать локальные данные</button>
+      <button id="offlineFailedClear" type="button">Очистить ошибки</button>
+    </div>
+  </div>
+</div>
+<script src="app.js?v=21.1"></script>
 </body>
 </html>
