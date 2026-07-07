@@ -3,6 +3,7 @@ package ru.daniil.shifts.config;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -14,6 +15,9 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import ru.daniil.shifts.repo.UserRepository;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Гибридная авторизация:
@@ -32,10 +36,17 @@ public class SecurityConfig {
     @Bean
     public UserDetailsService userDetailsService(UserRepository users) {
         return username -> users.findByUsername(username)
-                .map(u -> User.withUsername(u.getUsername())
-                        .password(u.getPasswordHash())
-                        .roles("USER")
-                        .build())
+                .map(u -> {
+                    List<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                    authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+                    if (u.isAdmin()) {
+                        authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+                    }
+                    return User.withUsername(u.getUsername())
+                            .password(u.getPasswordHash())
+                            .authorities(authorities)
+                            .build();
+                })
                 .orElseThrow(() -> new UsernameNotFoundException(username));
     }
 

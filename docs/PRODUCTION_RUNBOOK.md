@@ -72,11 +72,18 @@ Open:
 https://your-domain.example
 ```
 
-The first registered user becomes administrator.
+The administrator is no longer selected by “first registration”. Set it explicitly in `.env` before startup:
+
+```env
+DUTYLOG_ADMIN_USERNAME=your_admin_login
+DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
+```
+
+The backend creates or updates this account on startup, refreshes its password from the env value and demotes unexpected `ADMIN` accounts back to `USER`. Every public registration creates a regular `USER`.
 
 ## 2. Post-launch checks
 
-Run smoke test. In v22.0 it also verifies static asset versions and service worker cache version:
+Run smoke test. In v22.1 it also verifies static asset versions and service worker cache version:
 
 ```bash
 DUTYLOG_BASE_URL=https://your-domain.example ./deploy/scripts/smoke-test.sh

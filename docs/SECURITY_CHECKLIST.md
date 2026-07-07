@@ -8,6 +8,8 @@ This checklist is for a personal production deployment of DutyLog.
 - [ ] `.env.production.example` contains only placeholders.
 - [ ] `./deploy/scripts/check-production-env.sh` passes before public launch.
 - [ ] PostgreSQL password is long and unique.
+- [ ] `DUTYLOG_ADMIN_USERNAME` is set to the expected administrator login.
+- [ ] `DUTYLOG_ADMIN_PASSWORD` is long, unique and not reused anywhere else.
 - [ ] Telegram bot token is not shown in screenshots, logs or diagnostics.
 - [ ] Backups are not committed to Git.
 
@@ -21,7 +23,9 @@ This checklist is for a personal production deployment of DutyLog.
 
 ## Application
 
-- [ ] First account is the expected administrator.
+- [ ] Public registration does not create administrators automatically.
+- [ ] Bootstrap admin from `DUTYLOG_ADMIN_USERNAME` can log in and sees `Система`.
+- [ ] Any unexpected old/admin-by-first-registration account is demoted to `USER` after startup.
 - [ ] `Система` is visible only to administrator.
 - [ ] Regular user receives `403` from `/api/admin/status`.
 - [ ] CSRF cookie is present in the web interface.

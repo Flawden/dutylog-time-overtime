@@ -895,7 +895,7 @@ body.offline #telegramBox::before{content:"Эта операция требуе�
 @media (max-width:700px){.offlineBar{width:100%}.offlineStatus{max-width:100%;white-space:normal;line-height:1.25}}
 
 /* v21.1: Offline hardening */
-/* v22.0: Production launch */
+/* v22.1: Production launch */
 .offlineStatus.stale{color:#ff8c7a;border-color:rgba(224,101,58,.42);background:rgba(224,101,58,.10)}
 .offlineStatus.stale::before{background:#e0653a;box-shadow:0 0 0 2px rgba(224,101,58,.16)}
 .offlineSyncDialog[hidden]{display:none!important}

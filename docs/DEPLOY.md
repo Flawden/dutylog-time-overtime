@@ -109,7 +109,16 @@ Run smoke test:
 ./deploy/scripts/smoke-test.sh https://your-domain.example
 ```
 
-## Register first user
+## Configure bootstrap administrator
+
+Before the first start, set the administrator in `.env`:
+
+```env
+DUTYLOG_ADMIN_USERNAME=your_admin_login
+DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
+```
+
+The app creates or updates this account on startup, refreshes its password from the env value and demotes unexpected `ADMIN` accounts back to `USER`. Public registration always creates regular `USER` accounts.
 
 Open:
 
@@ -117,7 +126,7 @@ Open:
 https://your-domain.example
 ```
 
-Create the first account. On a new installation, the first registered user becomes administrator. The administrator sees the `Система` section in the header.
+Log in with the bootstrap admin account and check that `Система` is visible in the header. Then register a second regular user and confirm that `Система` is hidden for it.
 
 ## Local Docker run
 
@@ -205,7 +214,7 @@ The `-v` flag removes Docker volumes and can delete the PostgreSQL database.
 
 See:
 
-- [`PRODUCTION_LAUNCH.md`](PRODUCTION_LAUNCH.md) — compact v22.0 first-launch procedure.
+- [`PRODUCTION_LAUNCH.md`](PRODUCTION_LAUNCH.md) — compact v22.1 first-launch procedure.
 - [`PRODUCTION_RUNBOOK.md`](PRODUCTION_RUNBOOK.md) — first launch, updates, rollback and emergency backup.
 - [`SECURITY_CHECKLIST.md`](SECURITY_CHECKLIST.md) — security checklist before public usage.
 - [`VPS_CHECKLIST.md`](VPS_CHECKLIST.md) — compact launch checklist.

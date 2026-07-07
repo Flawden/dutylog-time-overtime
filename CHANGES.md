@@ -1,3 +1,14 @@
+# v22.1 — Secure admin bootstrap
+
+- Удалён риск “кто первый зарегистрировался — тот админ”: публичная регистрация теперь всегда создаёт пользователя с ролью `USER`.
+- Добавлен backend bootstrap администратора через переменные окружения `DUTYLOG_ADMIN_USERNAME` и `DUTYLOG_ADMIN_PASSWORD`. При старте приложение создаёт такого пользователя или повышает существующего до `ADMIN`, обновляет пароль и демоутит неожиданные `ADMIN`-аккаунты до `USER`.
+- Стартовый набор смен вынесен в `DefaultShiftSeedService`, чтобы его получали и обычные регистрации, и создаваемый bootstrap-админ.
+- Spring Security `UserDetailsService` теперь отражает роль из БД: администратор получает `ROLE_ADMIN`, обычный пользователь — `ROLE_USER`.
+- `docker-compose.prod.yml`, `.env.production.example`, `.env.example` и `application*.properties` обновлены под явный admin bootstrap.
+- `deploy/scripts/check-production-env.sh` теперь требует явные admin-переменные и проверяет длину/формат без вывода секретов.
+- Добавлен `docs/ADMIN_BOOTSTRAP.md` и обновлены production-документы/чеклисты: первый администратор больше не зависит от порядка регистрации.
+- Версии frontend/backend/smoke-test подняты до `22.1`.
+
 # v22.0 — Production launch
 
 - Добавлен `docs/PRODUCTION_LAUNCH.md`: короткий боевой сценарий первого VPS-запуска от `.env` до smoke test, backup и проверки PWA на телефоне.

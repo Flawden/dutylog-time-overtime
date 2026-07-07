@@ -6,13 +6,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.shifts.model.AppUser;
-import ru.daniil.shifts.model.ShiftType;
-import ru.daniil.shifts.repo.ShiftTypeRepository;
 import ru.daniil.shifts.repo.UserRepository;
+import ru.daniil.shifts.service.DefaultShiftSeedService;
 
 import java.security.Principal;
-import java.time.LocalTime;
-import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -20,13 +17,13 @@ import java.util.Map;
 public class AuthController {
 
     private final UserRepository users;
-    private final ShiftTypeRepository shiftTypes;
     private final PasswordEncoder encoder;
+    private final DefaultShiftSeedService defaultShiftSeedService;
 
-    public AuthController(UserRepository users, ShiftTypeRepository shiftTypes, PasswordEncoder encoder) {
+    public AuthController(UserRepository users, PasswordEncoder encoder, DefaultShiftSeedService defaultShiftSeedService) {
         this.users = users;
-        this.shiftTypes = shiftTypes;
         this.encoder = encoder;
+        this.defaultShiftSeedService = defaultShiftSeedService;
     }
 
     public record RegisterRequest(String username, String password) {}
@@ -59,11 +56,8 @@ public class AuthController {
         }
 
         AppUser user = new AppUser(username, encoder.encode(password));
-        if (users.count() == 0) {
-            user.setRole("ADMIN");
-        }
         user = users.save(user);
-        seedDefaults(user);
+        defaultShiftSeedService.seedDefaults(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("username", username));
     }
 
@@ -73,21 +67,4 @@ public class AuthController {
         return Map.of("username", principal.getName());
     }
 
-    /**
-     * Минимальный стартовый набор для нового пользователя.
-     *
-     * По уточнённому ТЗ встроенными остаются базовые «Дневная», «Ночная»
-     * и «Выходной». Все остальные варианты — 5 часов, 12 часов, сутки и т.д. —
-     * пользователь создаёт сам как кастомные смены с собственным названием,
-     * цветом и количеством часов.
-     *
-     * builtin=true: базовые смены видны в списке, но не удаляются случайным кликом.
-     */
-    private void seedDefaults(AppUser user) {
-        shiftTypes.saveAll(List.of(
-                new ShiftType(user, "Дневная", 8, "#F5B841", true, LocalTime.parse("08:30"), LocalTime.parse("17:00"), 30, 8.0),
-                new ShiftType(user, "Ночная", 8, "#7B8CE0", true, LocalTime.parse("20:00"), LocalTime.parse("08:00"), 60, 11.0),
-                new ShiftType(user, "Выходной", 0, "#6FBF73", true, null, null, 0, 0.0)
-        ));
-    }
 }

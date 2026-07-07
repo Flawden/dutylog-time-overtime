@@ -1,13 +1,15 @@
-# v22.0 Production launch
+# v22.1 Production launch
 
 Этот документ — короткий боевой сценарий первого запуска DutyLog на VPS. Он не заменяет `PRODUCTION_RUNBOOK.md`, а помогает не потеряться в день деплоя.
 
-Текущий клиент: **web/PWA внутри Spring Boot-монолита**. Отдельного native mobile-приложения в v22.0 нет.
+Текущий клиент: **web/PWA внутри Spring Boot-монолита**. Отдельного native mobile-приложения в v22.1 нет.
 
 ## Что считается успешным запуском
 
 - Приложение открывается по HTTPS-домену.
-- Первый пользователь создан и получил роль администратора.
+- Bootstrap-администратор из `.env` создан или обновлён.
+- Публично зарегистрированный пользователь не получает `ADMIN`.
+- Неожиданные старые `ADMIN`-аккаунты демоутятся до `USER`, если bootstrap env настроен.
 - Администратор видит `Система`.
 - `/actuator/health` возвращает `UP`.
 - `./deploy/scripts/smoke-test.sh https://domain` проходит.
@@ -25,7 +27,7 @@ cd /opt/dutylog
 
 ```bash
 git clone <repo-url> .
-git checkout v22.0
+git checkout v22.1
 ```
 
 Проверить, что домен уже смотрит на IP сервера:
@@ -108,8 +110,8 @@ docker compose -f docker-compose.prod.yml logs --tail=100 caddy
 - `login.html`;
 - app shell;
 - `manifest.json`;
-- `service-worker.js` версии `v22.0`;
-- `app.js` версии `22.0`;
+- `service-worker.js` версии `v22.1`;
+- `app.js` версии `22.1`;
 - защищённый admin API не падает.
 
 ## 7. Первый пользователь
@@ -120,12 +122,20 @@ docker compose -f docker-compose.prod.yml logs --tail=100 caddy
 https://dutylog.example.com
 ```
 
-Создать первый аккаунт. На новой базе первый пользователь становится администратором.
+Администратор создаётся из `.env`, а не из первой публичной регистрации:
+
+```env
+DUTYLOG_ADMIN_USERNAME=your_admin_login
+DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
+```
+
+Войти под этим пользователем. Затем создать обычного пользователя и убедиться, что он не админ.
 
 Проверить:
 
-- в шапке есть `Система`;
-- в `Система` версия сервера `22.0`;
+- у bootstrap-админа в шапке есть `Система`;
+- у обычного пользователя `Система` скрыта;
+- в `Система` версия сервера `22.1`;
 - база данных `ok`;
 - Telegram-статус соответствует `.env`.
 

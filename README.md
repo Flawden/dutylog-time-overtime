@@ -185,8 +185,9 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/BACKUP.md`](docs/BACKUP.md) — резервные копии и восстановление PostgreSQL.
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — запуск на VPS через Docker Compose.
 - [`docs/PRODUCTION_RUNBOOK.md`](docs/PRODUCTION_RUNBOOK.md) — эксплуатация, обновление и откат на VPS.
-- [`docs/PRODUCTION_LAUNCH.md`](docs/PRODUCTION_LAUNCH.md) — короткий сценарий первого запуска v22.0 на VPS.
+- [`docs/PRODUCTION_LAUNCH.md`](docs/PRODUCTION_LAUNCH.md) — короткий сценарий первого запуска v22.1 на VPS.
 - [`docs/SECURITY_CHECKLIST.md`](docs/SECURITY_CHECKLIST.md) — чеклист безопасности перед публикацией.
+- [`docs/ADMIN_BOOTSTRAP.md`](docs/ADMIN_BOOTSTRAP.md) — безопасное создание стартового администратора через env.
 - [`docs/VPS_CHECKLIST.md`](docs/VPS_CHECKLIST.md) — чеклист боевого запуска.
 - [`docs/ANDROID_API_PLAN.md`](docs/ANDROID_API_PLAN.md) — мобильный API.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — идеи развития.
@@ -196,13 +197,20 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v22.0 — production launch`
+`v22.1 — secure admin bootstrap`
 
-В этой версии проект переведён в состояние первого production-запуска: добавлен preflight production-конфигурации, усилен smoke test, оформлен launch-документ для VPS и обновлены эксплуатационные чеклисты. Клиент по-прежнему web/PWA внутри Spring Boot-монолита; отдельного native mobile-приложения в v22.0 нет.
+В этой версии закрыт риск “первый зарегистрированный пользователь становится админом”. Публичная регистрация теперь всегда создаёт обычного пользователя `USER`, а стартовый администратор создаётся или обновляется backend’ом только из production-переменных `DUTYLOG_ADMIN_USERNAME` и `DUTYLOG_ADMIN_PASSWORD`. Клиент по-прежнему web/PWA внутри Spring Boot-монолита; отдельного native mobile-приложения в v22.1 нет.
 
 
 ## Служебный профиль администратора
 
 Диагностика не показывается в обычных пользовательских настройках. Администратор видит в шапке кнопку `Система`, где доступны версия интерфейса и сервера, состояние БД, Service Worker, Telegram-интеграция и безопасный отчёт без секретов.
 
-Первый пользователь существующей установки получает роль `ADMIN` миграцией `V14__admin_role_and_diagnostics.sql`. На новой установке первым администратором становится первый зарегистрированный пользователь.
+Публичная регистрация больше не выдаёт `ADMIN` автоматически. На новой production-установке первый администратор задаётся в `.env`:
+
+```env
+DUTYLOG_ADMIN_USERNAME=your_admin_login
+DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
+```
+
+При старте backend создаёт этого пользователя, если его ещё нет, или повышает существующего пользователя с таким логином до `ADMIN`, обновляет его пароль и демоутит неожиданные `ADMIN`-аккаунты обратно в `USER`. Все остальные регистрации получают только `USER`.

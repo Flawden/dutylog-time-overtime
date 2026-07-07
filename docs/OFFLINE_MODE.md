@@ -75,7 +75,7 @@ Emergency export содержит:
 {
   "exportedAt": "...",
   "app": "DutyLog",
-  "version": "22.0",
+  "version": "22.1",
   "snapshot": {},
   "queue": [],
   "failed": [],
@@ -109,6 +109,6 @@ Emergency export содержит:
 Текущий клиент приложения — web/PWA внутри Spring Boot-монолита. Отдельного native mobile-приложения в этом релизе нет, поэтому offline QA выполняется в браузере и в установленной PWA-оболочке.
 
 
-## v22.0 offline scope
+## v22.1 offline scope
 
-В production launch offline-логика не расширялась. v22.0 сохраняет scope v21.x: смена выбранного дня, заметка дня и целевое состояние задачи `done: true/false`.
+В production launch offline-логика не расширялась. v22.1 сохраняет scope v21.x: смена выбранного дня, заметка дня и целевое состояние задачи `done: true/false`.

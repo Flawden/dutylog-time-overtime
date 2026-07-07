@@ -7,7 +7,7 @@ set -Eeuo pipefail
 #   ENV_FILE=.env.production ./deploy/scripts/check-production-env.sh
 #
 # The script is intentionally conservative: it checks configuration files before
-# the first VPS start and before risky updates. It does not print secrets.
+# the first VPS start, admin bootstrap checks and before risky updates. It does not print secrets.
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -52,6 +52,21 @@ require_value() {
     fail "$name is empty or still looks like a placeholder"
   else
     ok "$name is set"
+  fi
+}
+
+
+require_admin_username() {
+  local name="$1"
+  local value="${!name:-}"
+  if is_placeholder "$value"; then
+    fail "$name is empty or still looks like a placeholder"
+    return
+  fi
+  if [[ ${#value} -lt 3 || ${#value} -gt 40 || ! "$value" =~ ^[A-Za-zА-Яа-яЁё0-9_.-]+$ ]]; then
+    fail "$name must be 3-40 chars: letters, digits, dot, dash or underscore"
+  else
+    ok "$name is valid"
   fi
 }
 
@@ -104,6 +119,8 @@ else
   require_value SPRING_DATASOURCE_URL
   require_value SPRING_DATASOURCE_USERNAME
   require_secret SPRING_DATASOURCE_PASSWORD
+  require_admin_username DUTYLOG_ADMIN_USERNAME
+  require_secret DUTYLOG_ADMIN_PASSWORD
 
   if [[ "${SPRING_PROFILES_ACTIVE:-}" != "prod" ]]; then
     fail "SPRING_PROFILES_ACTIVE should be 'prod' for VPS launch"

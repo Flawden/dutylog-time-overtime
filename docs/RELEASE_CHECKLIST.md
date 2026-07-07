@@ -1,6 +1,6 @@
 # Release checklist для DutyLog
 
-Этот чеклист нужен перед выдачей архива, тегом и VPS-деплоем. Текущая клиентская часть — web/PWA внутри Spring Boot-монолита. Отдельного native mobile-приложения в v22.0 нет, поэтому мобильная проверка означает проверку PWA в браузере телефона и установленной web-оболочке.
+Этот чеклист нужен перед выдачей архива, тегом и VPS-деплоем. Текущая клиентская часть — web/PWA внутри Spring Boot-монолита. Отдельного native mobile-приложения в v22.1 нет, поэтому мобильная проверка означает проверку PWA в браузере телефона и установленной web-оболочке.
 
 ## 1. Статические проверки
 
@@ -94,7 +94,7 @@ DevTools → Network → Offline:
 5. Проверить, что кнопки в панели синхронизации не ломают мобильную вёрстку.
 
 
-## 6. Production preflight для v22.0
+## 6. Production preflight для v22.1
 
 Перед первым VPS-запуском:
 
@@ -111,7 +111,7 @@ cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
 ./deploy/scripts/backup-postgres.sh
 ```
 
-Проверить в админском разделе `Система`, что серверная версия — `22.0`, база `ok`, Telegram-статус соответствует `.env`.
+Проверить в админском разделе `Система`, что серверная версия — `22.1`, база `ok`, Telegram-статус соответствует `.env`.
 
 ## 7. Перед production-деплоем
 
@@ -128,5 +128,5 @@ cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
 ```bash
 git add -A
 git commit -m "chore: prepare production launch"
-git tag -a v22.0 -m "v22.0 — production launch"
+git tag -a v22.1 -m "v22.1 — production launch"
 ```
