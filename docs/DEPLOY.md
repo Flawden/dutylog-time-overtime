@@ -79,6 +79,12 @@ Prepare Caddy config:
 cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
 ```
 
+Run production preflight before the first start:
+
+```bash
+./deploy/scripts/check-production-env.sh
+```
+
 ## First start
 
 ```bash
@@ -145,14 +151,14 @@ docker compose -f docker-compose.prod.yml up -d --build
 If the update did not include DB migrations, code rollback may be enough:
 
 ```bash
-git checkout v20.7
+git checkout <previous-good-tag>
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 If the update applied DB migrations, restore matching DB backup too:
 
 ```bash
-git checkout v20.7
+git checkout <previous-good-tag>
 ./deploy/scripts/restore-postgres.sh backups/dutylog-before-update.dump
 docker compose -f docker-compose.prod.yml up -d --build
 ```
@@ -199,6 +205,7 @@ The `-v` flag removes Docker volumes and can delete the PostgreSQL database.
 
 See:
 
+- [`PRODUCTION_LAUNCH.md`](PRODUCTION_LAUNCH.md) — compact v22.0 first-launch procedure.
 - [`PRODUCTION_RUNBOOK.md`](PRODUCTION_RUNBOOK.md) — first launch, updates, rollback and emergency backup.
 - [`SECURITY_CHECKLIST.md`](SECURITY_CHECKLIST.md) — security checklist before public usage.
 - [`VPS_CHECKLIST.md`](VPS_CHECKLIST.md) — compact launch checklist.

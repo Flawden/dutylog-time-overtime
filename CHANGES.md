@@ -1,3 +1,14 @@
+# v22.0 — Production launch
+
+- Добавлен `docs/PRODUCTION_LAUNCH.md`: короткий боевой сценарий первого VPS-запуска от `.env` до smoke test, backup и проверки PWA на телефоне.
+- Добавлен `deploy/scripts/check-production-env.sh`: preflight production-конфигурации без вывода секретов. Проверяет `.env`, домен, пароли, Telegram-настройки, Caddyfile, compose и базовые команды.
+- Усилен `deploy/scripts/smoke-test.sh`: теперь проверяются health, login page, app shell, manifest, service worker версии `v22.0`, static assets и защищённый admin API.
+- Обновлены `README.md`, `docs/DEPLOY.md`, `docs/PRODUCTION_RUNBOOK.md`, `docs/VPS_CHECKLIST.md`, `docs/SECURITY_CHECKLIST.md`, `docs/BACKUP.md` и `docs/RELEASE_CHECKLIST.md` под первый production launch.
+- Добавлена metadata для `/actuator/info`: имя приложения, версия `22.0`, текущий тип клиента `web/PWA inside Spring Boot monolith`.
+- Frontend-кэш поднят до `v22.0`: `app.css?v=22.0`, `app.js?v=22.0`, `dutylog-shell-v22.0`.
+- Backend-версия в админской диагностике поднята до `22.0`.
+- Product scope не расширялся: offline scope остался прежним, native mobile-приложение в релиз не добавлялось.
+
 # v21.2 — Offline QA and release candidate
 
 - Добавлена пользовательская диагностика оффлайна прямо в панели синхронизации: online/offline, доступность IndexedDB, возраст snapshot, очередь, ошибки и состояние sync-lock.

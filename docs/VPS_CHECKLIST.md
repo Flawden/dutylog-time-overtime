@@ -13,6 +13,7 @@
 - [ ] `DUTYLOG_DOMAIN` is set correctly.
 - [ ] Telegram token is added if Telegram is enabled.
 - [ ] `deploy/caddy/Caddyfile` is created from the example.
+- [ ] `./deploy/scripts/check-production-env.sh` passes or all warnings are understood.
 
 ## First start
 
@@ -20,9 +21,9 @@
 - [ ] `docker compose -f docker-compose.prod.yml ps` shows healthy/running containers.
 - [ ] `docker compose -f docker-compose.prod.yml logs -f app` shows no startup errors.
 - [ ] Application opens through HTTPS.
-- [ ] `./deploy/scripts/smoke-test.sh https://domain` passes.
+- [ ] `./deploy/scripts/smoke-test.sh https://domain` passes and confirms `v22.0` static assets.
 - [ ] First user is created and has administrator access.
-- [ ] `Система` page is visible to administrator.
+- [ ] `Система` page is visible to administrator and shows server version `22.0`.
 - [ ] `/api/admin/status` returns healthy database status for administrator.
 - [ ] Regular user does not see `Система`.
 - [ ] Telegram linking works with `/start DL-XXXXXX` if Telegram is enabled.

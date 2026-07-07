@@ -47,6 +47,12 @@ Copy Caddy config:
 cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
 ```
 
+Run production preflight:
+
+```bash
+./deploy/scripts/check-production-env.sh
+```
+
 Start production stack:
 
 ```bash
@@ -70,7 +76,7 @@ The first registered user becomes administrator.
 
 ## 2. Post-launch checks
 
-Run smoke test:
+Run smoke test. In v22.0 it also verifies static asset versions and service worker cache version:
 
 ```bash
 DUTYLOG_BASE_URL=https://your-domain.example ./deploy/scripts/smoke-test.sh
@@ -117,15 +123,15 @@ Example:
 ```bash
 cd /opt/dutylog
 ./deploy/scripts/backup-postgres.sh
-git checkout v20.7
-./deploy/scripts/restore-postgres.sh backups/dutylog-before-v20.8.dump
+git checkout <previous-good-tag>
+./deploy/scripts/restore-postgres.sh backups/dutylog-before-update.dump
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 For small frontend-only fixes, a code-only rollback may be enough:
 
 ```bash
-git checkout v20.7
+git checkout <previous-good-tag>
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 

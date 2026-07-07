@@ -128,6 +128,12 @@ docker compose down -v
 
 Пароли в compose настроены fail-hard: пустые production-пароли не должны приводить к тихому запуску небезопасной конфигурации.
 
+Перед первым запуском на VPS можно прогнать production preflight:
+
+```bash
+./deploy/scripts/check-production-env.sh
+```
+
 ## Telegram
 
 Telegram-бот работает внутри основного backend. Для включения задайте:
@@ -179,6 +185,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/BACKUP.md`](docs/BACKUP.md) — резервные копии и восстановление PostgreSQL.
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — запуск на VPS через Docker Compose.
 - [`docs/PRODUCTION_RUNBOOK.md`](docs/PRODUCTION_RUNBOOK.md) — эксплуатация, обновление и откат на VPS.
+- [`docs/PRODUCTION_LAUNCH.md`](docs/PRODUCTION_LAUNCH.md) — короткий сценарий первого запуска v22.0 на VPS.
 - [`docs/SECURITY_CHECKLIST.md`](docs/SECURITY_CHECKLIST.md) — чеклист безопасности перед публикацией.
 - [`docs/VPS_CHECKLIST.md`](docs/VPS_CHECKLIST.md) — чеклист боевого запуска.
 - [`docs/ANDROID_API_PLAN.md`](docs/ANDROID_API_PLAN.md) — мобильный API.
@@ -189,9 +196,9 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v21.2 — offline QA and release candidate`
+`v22.0 — production launch`
 
-В этой версии offline-режим не расширяется новыми возможностями. Релиз стабилизирует web/PWA-клиент внутри Spring Boot-монолита: добавлена пользовательская диагностика оффлайна в панели синхронизации, документирован ручной QA и подготовлен общий release checklist перед production-деплоем.
+В этой версии проект переведён в состояние первого production-запуска: добавлен preflight production-конфигурации, усилен smoke test, оформлен launch-документ для VPS и обновлены эксплуатационные чеклисты. Клиент по-прежнему web/PWA внутри Spring Boot-монолита; отдельного native mobile-приложения в v22.0 нет.
 
 
 ## Служебный профиль администратора

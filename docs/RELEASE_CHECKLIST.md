@@ -1,6 +1,6 @@
 # Release checklist для DutyLog
 
-Этот чеклист нужен перед выдачей архива, тегом и VPS-деплоем. Текущая клиентская часть — web/PWA внутри Spring Boot-монолита. Отдельного native mobile-приложения в v21.2 нет, поэтому мобильная проверка означает проверку PWA в браузере телефона и установленной web-оболочке.
+Этот чеклист нужен перед выдачей архива, тегом и VPS-деплоем. Текущая клиентская часть — web/PWA внутри Spring Boot-монолита. Отдельного native mobile-приложения в v22.0 нет, поэтому мобильная проверка означает проверку PWA в браузере телефона и установленной web-оболочке.
 
 ## 1. Статические проверки
 
@@ -93,7 +93,27 @@ DevTools → Network → Offline:
 4. Повторить минимальный offline-сценарий: открыть онлайн → выключить сеть → перезагрузить → изменить заметку → включить сеть.
 5. Проверить, что кнопки в панели синхронизации не ломают мобильную вёрстку.
 
-## 6. Перед production-деплоем
+
+## 6. Production preflight для v22.0
+
+Перед первым VPS-запуском:
+
+```bash
+cp .env.production.example .env
+cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
+./deploy/scripts/check-production-env.sh
+```
+
+После запуска:
+
+```bash
+./deploy/scripts/smoke-test.sh https://your-domain.example
+./deploy/scripts/backup-postgres.sh
+```
+
+Проверить в админском разделе `Система`, что серверная версия — `22.0`, база `ok`, Telegram-статус соответствует `.env`.
+
+## 7. Перед production-деплоем
 
 - Проверить `.env.production`.
 - Проверить `docker-compose.prod.yml`.
@@ -103,10 +123,10 @@ DevTools → Network → Offline:
 - Проверить `/login.html`, `/manifest.json`, `/actuator/health`.
 - Проверить Telegram long polling/уведомления, если они включены.
 
-## 7. Git
+## 8. Git
 
 ```bash
 git add -A
-git commit -m "chore: add offline QA checklist and release diagnostics"
-git tag -a v21.2 -m "v21.2 — offline QA and release candidate"
+git commit -m "chore: prepare production launch"
+git tag -a v22.0 -m "v22.0 — production launch"
 ```

@@ -175,3 +175,15 @@ For real usage, keep at least:
 1 backup before every update
 1 copy outside the VPS
 ```
+
+
+## After first production launch
+
+Immediately after the first successful v22.0 launch:
+
+```bash
+./deploy/scripts/backup-postgres.sh
+./deploy/scripts/list-backups.sh
+```
+
+Copy the backup outside the VPS before making further changes.

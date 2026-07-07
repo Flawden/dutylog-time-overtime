@@ -6,6 +6,7 @@ This checklist is for a personal production deployment of DutyLog.
 
 - [ ] `.env` is not committed to Git.
 - [ ] `.env.production.example` contains only placeholders.
+- [ ] `./deploy/scripts/check-production-env.sh` passes before public launch.
 - [ ] PostgreSQL password is long and unique.
 - [ ] Telegram bot token is not shown in screenshots, logs or diagnostics.
 - [ ] Backups are not committed to Git.
@@ -26,6 +27,7 @@ This checklist is for a personal production deployment of DutyLog.
 - [ ] CSRF cookie is present in the web interface.
 - [ ] Changing password revokes mobile sessions.
 - [ ] `/actuator/health` is public, but detailed diagnostics are not public.
+- [ ] `/actuator/info` contains only non-secret app metadata.
 
 ## Docker
 
