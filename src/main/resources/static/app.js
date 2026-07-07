@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "24.0"
+const DUTYLOG_VERSION = "24.0.1"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -139,8 +139,8 @@ const I18N_EN = {
   "Персонализация":"Personalization", "Пресет":"Preset", "Готовая тема":"Theme preset", "Базовый режим":"Base mode", "Акцент":"Accent", "Точная настройка":"Fine tuning", "Фон приложения":"App background", "Карточки":"Cards", "Внутренние блоки":"Inner blocks", "Основной текст":"Primary text", "Вторичный текст":"Secondary text", "Границы":"Borders", "Стиль кнопок":"Button style", "Стиль карточек":"Card style", "Тени":"Shadows", "Плотность":"Density", "Скругление карточек":"Card radius", "Сохранить внешний вид":"Save appearance", "Сбросить локально":"Reset locally",
   "как в системе":"system", "тёмная":"dark", "светлая":"light", "заливка":"solid", "мягкие":"soft", "контурные":"outline", "призрачные":"ghost", "стандартные":"standard", "плоские":"flat", "контрастные":"contrast", "тёплые":"warm", "без теней":"no shadows", "лёгкие":"light", "средние":"medium", "сильные":"strong", "компактно":"compact", "обычно":"comfortable", "просторно":"spacious",
   "Время и регион":"Time and region", "Рабочее время и часовой пояс":"Working hours and timezone", "Регион / объект":"Region / site", "Рабочий часовой пояс":"Work timezone", "Определить часовой пояс":"Detect timezone", "Формат времени":"Time format", "Сохранить настройки":"Save settings",
-  "Типы смен и их время":"Shift types and time", "Короткие часы для календаря":"Short calendar hours", "Название смены":"Shift name", "Добавить":"Add", "Сохранить параметры смен":"Save shift settings", "Дневная":"Day shift", "Ночная":"Night shift", "Выходной":"Day off",
-  "Быстрые сценарии":"Quick scenarios", "Мои сценарии":"My scenarios", "Добавить сценарий":"Add scenario", "Название":"Name", "Старт":"Start", "Конец":"End", "Обед":"Break", "План":"Plan", "Причина по умолчанию":"Default reason", "Описание сценария":"Scenario description",
+  "Типы смен и их время":"Shift types and time", "Короткие часы для календаря":"Short calendar hours", "Календарь, ч":"Calendar label, h", "Норма, ч":"Norm, h", "Название смены":"Shift name", "Добавить":"Add", "Сохранить параметры смен":"Save shift settings", "Дневная":"Day shift", "Ночная":"Night shift", "Выходной":"Day off",
+  "Быстрые сценарии":"Quick scenarios", "Мои сценарии":"My scenarios", "Добавить сценарий":"Add scenario", "Название":"Name", "Старт":"Start", "Конец":"End", "Обед":"Break", "План":"Plan", "Норма":"Norm", "Причина по умолчанию":"Default reason", "Описание сценария":"Scenario description",
   "Уведомления браузера":"Browser notifications", "Разрешить в браузере":"Allow in browser", "Напоминания текущего месяца":"Current month reminders", "Проверить":"Check", "Текущий месяц":"Current month", "Завтра":"Tomorrow", "Сервер рассчитывает напоминания для браузера, Telegram и мобильных клиентов.":"The server calculates reminders for browser, Telegram and mobile clients.",
   "Календарь":"Calendar", "Переработки":"Overtime", "Задачи":"Tasks", "Сегодня":"Today", "Система":"System", "Выйти":"Logout",
   "Смена":"Shift", "Маркер":"Marker", "График":"Schedule", "Переработка":"Overtime", "Важные дни":"Important days", "Заметка":"Note", "Превью":"Preview", "Очистить":"Clear", "Поставить":"Apply", "Заполнить":"Fill", "выбранный день":"selected day", "сегодня":"today", "Начислить":"Add credit", "Списать отгул":"Use time off", "отмена":"cancel",
@@ -171,6 +171,9 @@ Object.assign(I18N_EN, {
   "Коротко: 17:00–20:00 или 17–08":"Short: 17:00–20:00 or 17–08",
   "Начало":"Start",
   "Вычесть план, ч":"Subtract plan, h",
+  "Календарь, ч — короткая метка для календаря. Норма, ч — сколько часов вычитается при расчёте переработки. Если оставить норму пустой, она посчитается по началу, концу и обеду.":"Calendar label, h is a short label for the calendar. Norm, h is subtracted when calculating overtime. If norm is empty, it is calculated from start, end and break.",
+  "Норма рассчитана по времени смены:":"Norm calculated from shift time:",
+  "норма по смене":"norm by shift",
   "план по смене":"plan by shift",
   "время по смене":"time by shift",
   "Итого":"Total",
@@ -274,6 +277,7 @@ function applyLanguage(lang){
   document.title = 'DutyLog: Time & Overtime';
   renderLanguageControls();
   if (typeof renderCalendar === 'function') renderCalendar();
+  if (typeof updateShiftPlanHint === 'function') updateShiftPlanHint();
   translateStaticTree();
 }
 function renderLanguageControls(){
@@ -523,6 +527,35 @@ const fmtHours = v => {
   const n = Math.round(numOr0(v) * 100) / 100;
   return n.toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
 };
+function timeToMinutes(hhmm){
+  const m = String(hhmm || "").match(/^(\d{2}):(\d{2})$/);
+  if (!m) return null;
+  const h = Number(m[1]), min = Number(m[2]);
+  if (!Number.isFinite(h) || !Number.isFinite(min) || h > 23 || min > 59) return null;
+  return h * 60 + min;
+}
+function shiftDurationHours(startTime, endTime, breakMinutes = 0){
+  const start = timeToMinutes(startTime);
+  const endRaw = timeToMinutes(endTime);
+  const br = Number(breakMinutes || 0);
+  if (start == null || endRaw == null || !Number.isFinite(br) || br < 0) return 0;
+  let end = endRaw;
+  if (end <= start) end += 24 * 60;
+  const total = Math.max(0, end - start - br);
+  return Math.round((total / 60) * 100) / 100;
+}
+function currentShiftFormNorm(){
+  return shiftDurationHours($("nsStart")?.value, $("nsEnd")?.value, readIntInput("nsBreak"));
+}
+function updateShiftPlanHint(){
+  const hint = $("shiftPlanHint");
+  const norm = currentShiftFormNorm();
+  if ($("nsPlan") && !String($("nsPlan").value || "").trim()) $("nsPlan").placeholder = norm ? fmtHours(norm) : "авто";
+  if ($("nsHours") && !String($("nsHours").value || "").trim()) $("nsHours").placeholder = norm ? fmtHours(norm) : "ч";
+  if (hint) hint.textContent = norm
+    ? `${t("Норма рассчитана по времени смены:")} ${fmtHours(norm)} ${state.language === "en" ? "h" : "ч"}. ${t("Календарь, ч — короткая метка для календаря. Норма, ч — сколько часов вычитается при расчёте переработки. Если оставить норму пустой, она посчитается по началу, концу и обеду.")}`
+    : t("Календарь, ч — короткая метка для календаря. Норма, ч — сколько часов вычитается при расчёте переработки. Если оставить норму пустой, она посчитается по началу, концу и обеду.");
+}
 const normalizeDay = e => ({
   shiftTypeId: e?.shiftTypeId ?? null,
   note: e?.note ?? null,
@@ -610,7 +643,7 @@ function shiftMetaText(s){
   const time = shiftTimeText(s);
   if (time) parts.push(time);
   const plan = shiftPlannedHours(s);
-  if (plan) parts.push(`план ${fmtHours(plan)}ч`);
+  if (plan) parts.push(`${state.language === "en" ? "norm" : "норма"} ${fmtHours(plan)}ч`);
   return parts.join(" · " );
 }
 const $ = id => document.getElementById(id);
@@ -2731,6 +2764,7 @@ function renderImportantDays(){
     empty.className = "emptyLine";
     empty.textContent = "В этот день важных событий нет.";
     box.appendChild(empty);
+    updateAccSummaries();
     return;
   }
   for (const item of items) {
@@ -2778,6 +2812,7 @@ async function addImportantDay(){
     renderImportantDays();
     renderImportantSettings();
     renderCalendar();
+    updateAccSummaries();
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
@@ -2795,6 +2830,7 @@ async function removeImportantDay(id){
     renderImportantDays();
     renderImportantSettings();
     renderCalendar();
+    updateAccSummaries();
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
@@ -3191,8 +3227,7 @@ function renderChips(){
   plus.textContent = "+";
   plus.title = "Создать или настроить смену в настройках";
   plus.addEventListener("click", () => {
-    location.hash = "#settings";
-    setTimeout(() => { $("shiftSettingsCard")?.scrollIntoView({behavior:"smooth", block:"start"}); $("nsName")?.focus(); }, 50);
+    openSettingsSection("shifts", true, "nsName");
   });
   box.appendChild(plus);
   renderCustomList();
@@ -3357,6 +3392,10 @@ $("pClose").addEventListener("click", () => selectDay(null));
 for (const id of ["nsName", "nsHours", "nsStart", "nsEnd", "nsBreak", "nsPlan"]) {
   $(id).addEventListener("keydown", e => { if (e.key === "Enter") addShiftType(); });
 }
+for (const id of ["nsHours", "nsStart", "nsEnd", "nsBreak", "nsPlan"]) {
+  $(id)?.addEventListener("input", updateShiftPlanHint);
+}
+updateShiftPlanHint();
 
 function renderSwatches(){
   const row = $("swRow");
@@ -3381,19 +3420,22 @@ function renderSwatches(){
 async function addShiftType(){
   const name = $("nsName").value.trim();
   if (!name) return setSave("err", "укажи название смены");
-  const rawHours = $("nsHours").value.trim().replace(",", ".");
-  const hours = rawHours ? Number(rawHours) : 0;
-  if (!Number.isFinite(hours) || hours < 0 || hours > 24) {
-    return setSave("err", "часы: от 0 до 24");
-  }
+  const startTime = $("nsStart").value || null;
+  const endTime = $("nsEnd").value || null;
   const breakMinutes = readIntInput("nsBreak");
-  const rawPlan = $("nsPlan").value.trim().replace(",", ".");
-  const plannedHours = rawPlan ? Number(rawPlan) : hours;
   if (!Number.isFinite(breakMinutes) || breakMinutes < 0 || breakMinutes > 1440) {
     return setSave("err", "обед: от 0 до 1440 минут");
   }
+  const calculatedNorm = shiftDurationHours(startTime, endTime, breakMinutes);
+  const rawPlan = $("nsPlan").value.trim().replace(",", ".");
+  const rawHours = $("nsHours").value.trim().replace(",", ".");
+  const plannedHours = rawPlan ? Number(rawPlan) : (calculatedNorm || (rawHours ? Number(rawHours) : 0));
+  const hours = rawHours ? Number(rawHours) : plannedHours;
+  if (!Number.isFinite(hours) || hours < 0 || hours > 24) {
+    return setSave("err", "часы: от 0 до 24");
+  }
   if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) {
-    return setSave("err", "план: от 0 до 24 часов");
+    return setSave("err", "норма: от 0 до 24 часов");
   }
 
   setSave("saving");
@@ -3402,13 +3444,14 @@ async function addShiftType(){
       name,
       hours,
       color: state.swColor,
-      startTime: $("nsStart").value || null,
-      endTime: $("nsEnd").value || null,
+      startTime,
+      endTime,
       breakMinutes,
       plannedHours,
     });
     state.shiftTypes.push(created);
     $("nsName").value = ""; $("nsHours").value = ""; $("nsStart").value = ""; $("nsEnd").value = ""; $("nsBreak").value = "0"; $("nsPlan").value = "";
+    updateShiftPlanHint();
     setSave("saved");
     renderChips(); renderSummary(); renderCustomList();
   } catch (err) { console.error(err); setSave("err", err.message); }
@@ -3424,7 +3467,7 @@ function renderCustomList(){
     const meta = shiftMetaText(s);
     const notifyMeta = s.notificationsEnabled === false ? " · без уведомлений" : (s.notificationMinutesBefore != null ? ` · напомнить за ${s.notificationMinutesBefore}м` : "");
     row.innerHTML = `<span class="dot" style="width:10px;height:10px;border-radius:3px;background:${s.color};display:inline-block"></span>
-      <span>${esc(s.name)}${shiftPlannedHours(s) ? ` · план ${fmtHours(shiftPlannedHours(s))}ч` : ""}${meta ? ` <span style="color:var(--dim)">· ${esc(meta)}</span>` : ""}<span style="color:var(--dim)">${esc(notifyMeta)}</span></span>`;
+      <span>${esc(s.name)}${shiftPlannedHours(s) ? `${state.language === "en" ? " · norm " : " · норма "}${fmtHours(shiftPlannedHours(s))}ч` : ""}${meta ? ` <span style="color:var(--dim)">· ${esc(meta)}</span>` : ""}<span style="color:var(--dim)">${esc(notifyMeta)}</span></span>`;
 
     const edit = document.createElement("button");
     edit.className = "del"; edit.textContent = "настроить";
@@ -3483,10 +3526,10 @@ async function editShiftType(id){
   if (!Number.isFinite(breakMinutes) || breakMinutes < 0 || breakMinutes > 1440) return setSave("err", "обед: от 0 до 1440 минут");
   patch.breakMinutes = Math.round(breakMinutes);
 
-  const planRaw = prompt("Плановые часы", fmtHours(shiftPlannedHours(s)));
+  const planRaw = prompt("Норма для расчёта переработки, ч", fmtHours(shiftPlannedHours(s)));
   if (planRaw === null) return;
   const plannedHours = Number(planRaw.replace(",", "."));
-  if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) return setSave("err", "план: от 0 до 24 часов");
+  if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) return setSave("err", "норма: от 0 до 24 часов");
   patch.plannedHours = plannedHours;
 
   const notifRaw = prompt("Уведомлять перед этой сменой? да/нет", s.notificationsEnabled === false ? "нет" : "да");
@@ -4002,6 +4045,8 @@ function initSettingsAccordion(){
     });
   }
 
+  root.__openSettingsSection = openSection;
+
   root.querySelectorAll("[data-settings-jump]").forEach(a => {
     a.addEventListener("click", (ev) => {
       ev.preventDefault();
@@ -4018,6 +4063,22 @@ function initSettingsAccordion(){
   if (saved === "all") expandAll();
   else if (saved === "none") collapseAll();
   else openSection(saved, false);
+}
+
+function openSettingsSection(section, scroll = true, focusId = null){
+  const hash = `#settings-${section}`;
+  if (location.hash !== hash) location.hash = hash;
+  setTimeout(() => {
+    renderSettingsPanels();
+    const root = $("view-settings");
+    root?.__openSettingsSection?.(section, scroll);
+    const card = document.querySelector(`[data-settings-section="${section}"]`);
+    if (card) {
+      card.classList.add("is-attention");
+      setTimeout(() => card.classList.remove("is-attention"), 1200);
+    }
+    if (focusId) $(focusId)?.focus();
+  }, 80);
 }
 
 function renderSettingsPanels(){
@@ -4253,7 +4314,13 @@ function applyRoute(){
   document.querySelector(".nav #todayBtn").style.visibility =
   document.querySelector(".nav #next").style.visibility =
     active === "calendar" ? "visible" : "hidden";
-  if (active === "settings") renderSettingsPanels();
+  if (active === "settings") {
+    renderSettingsPanels();
+    if (rawRoute.startsWith("settings-")) {
+      const section = rawRoute.replace("settings-", "");
+      $("view-settings")?.__openSettingsSection?.(section, true);
+    }
+  }
   if (active === "admin") {
     renderDiagnosticsClient();
     refreshDiagnostics();

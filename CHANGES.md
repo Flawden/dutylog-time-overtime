@@ -1,3 +1,10 @@
+# v24.0.1 — Shift settings UX and important-day refresh
+
+- The `+` shift button in the selected-day panel now opens Settings directly on the expanded `Shifts` section, scrolls to it and focuses the custom shift name field.
+- Important-day deletion now refreshes the selected-day summary immediately, including the `0 important days` state, without requiring a browser reload.
+- Custom shift form copy clarified: `Calendar, h` is only a short calendar label, while `Norm, h` is used for overtime calculations. Empty norm is auto-calculated from start/end/break.
+- Frontend/backend/service-worker versions bumped to `24.0.1`.
+
 # v24.0 — Notification status polish
 
 - Notification settings header now uses compact status chips instead of raw text like `0 шт · браузер: разрешено`.

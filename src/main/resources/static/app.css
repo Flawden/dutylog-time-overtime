@@ -1126,7 +1126,7 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
 }
 
 
-/* v23.1.1-v24.0: visual polish for status chips */
+/* v23.1.1-v24.0.1: visual polish for status chips */
 .settingsHead > .status,
 .notifyHead > .status{
   display:flex;
@@ -1283,4 +1283,15 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
   padding:7px 12px;
   font-weight:900;
   white-space:nowrap;
+}
+
+
+/* v24.0.1: guided jump from day panel to shift settings */
+.settingsCard.is-attention{
+  animation:dutylogAttentionPulse 1.15s ease-out;
+}
+@keyframes dutylogAttentionPulse{
+  0%{ box-shadow:0 0 0 0 color-mix(in srgb, var(--accent) 44%, transparent); border-color:color-mix(in srgb, var(--accent) 70%, var(--line)); }
+  60%{ box-shadow:0 0 0 7px color-mix(in srgb, var(--accent) 0%, transparent); }
+  100%{ box-shadow:var(--theme-shadow); }
 }
