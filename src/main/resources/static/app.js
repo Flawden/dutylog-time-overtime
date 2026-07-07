@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "23.1";
+const DUTYLOG_VERSION = "23.1.1";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -307,7 +307,11 @@ function renderAppearanceControls(){
   }
   const preview = byId('appearancePreview');
   const presetLabel = THEME_PRESETS[prefs.themePreset]?.label || "Custom";
-  if (preview) preview.textContent = `${presetLabel} · ${prefs.themePreference === "system" ? "как в системе" : prefs.themePreference === "light" ? "светлая" : "тёмная"} · ${prefs.accentColor}`;
+  const modeLabel = prefs.themePreference === "system" ? "как в системе" : prefs.themePreference === "light" ? "светлая" : "тёмная";
+  if (preview) {
+    preview.className = "status statusThemeSummary";
+    preview.innerHTML = `<span class="statusChip statusChipPrimary">${esc(presetLabel)}</span><span class="statusChip">${esc(modeLabel)}</span><span class="statusChip statusChipAccent"><span class="statusChipSwatch" style="background:${prefs.accentColor}"></span>${esc(prefs.accentColor)}</span>`;
+  }
 }
 function applyPreset(key){
   const preset = THEME_PRESETS[key] || THEME_PRESETS.default;
@@ -3320,7 +3324,8 @@ function renderTimeSettings(){
   $("timeNowBox").innerHTML = `${region}рабочее время: <b>${esc(safeTzLabel(t.workTimezone))}</b> <span>(${esc(t.workTimezone)})</span><br>` +
     `браузер: <b>${esc(safeTzLabel(browserTz))}</b> <span>(${esc(browserTz)})</span>` +
     (Number(t.workOffsetMoscow || 0) ? `<br>пометка: Москва ${Number(t.workOffsetMoscow) > 0 ? "+" : ""}${Number(t.workOffsetMoscow)} ч` : "");
-  $("timeSettingsStatus").textContent = "автосохранение";
+  $("timeSettingsStatus").className = "status statusAutoSave";
+  $("timeSettingsStatus").innerHTML = '<span class="statusChip statusChipAuto"><span class="statusDot"></span>автосохранение</span>';
 }
 function saveTimeSettings(){
   storeTimeSettings(readTimeSettingsForm());
@@ -3467,8 +3472,8 @@ function renderAdminUsers(users = []){
   if (!box) return;
   if (status) {
     const admins = users.filter(u => u.role === "ADMIN").length;
-    status.textContent = `${users.length} / админов ${admins}`;
-    status.className = "status " + (admins > 0 ? "ok" : "warn");
+    status.className = "status statusMetrics";
+    status.innerHTML = `<span class="statusChip"><b>Пользователей:</b> ${users.length}</span><span class="statusChip ${admins > 0 ? 'statusChipOk' : 'statusChipWarn'}"><b>Админов:</b> ${admins}</span>`;
   }
   if (!users.length) {
     box.innerHTML = '<span class="emptyLine">Пользователей пока нет.</span>';

@@ -1,3 +1,10 @@
+# v23.1.1 — Visual polish
+
+- Theme summary in `Внешний вид` redesigned from raw text into compact chips: preset, base mode and accent color.
+- `Автосохранение` in time settings is now shown as a status badge integrated into the card header.
+- Users/roles admin header now shows clean metric chips: `Пользователей` and `Админов`, fixing the broken line wrap.
+- Frontend/backend/service-worker versions bumped to `23.1.1`.
+
 # v23.1 — Theme Builder
 
 - Расширен раздел `Внешний вид` до безопасного Theme Builder без доступа к CSS.

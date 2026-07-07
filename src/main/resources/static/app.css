@@ -980,7 +980,7 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
   .adminUserActions select, .adminUserActions button{ width:100%; min-height:40px; }
 }
 
-/* v23.0/v23.1: personalization, light theme, day emoji markers and safe theme builder */
+/* v23.0/v23.1/v23.1.1: personalization, light theme, day emoji markers and safe theme builder */
 :root[data-theme="dark"] {
   color-scheme: dark;
 }
@@ -1124,4 +1124,73 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
 @media (max-width: 860px) {
   .themeBuilder { grid-template-columns:1fr; }
   .themePreviewBox { position:static; }
+}
+
+
+/* v23.1.1: visual polish for theme summary, autosave badge and admin metrics */
+.settingsHead > .status{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  align-items:center;
+  gap:8px;
+  max-width:min(100%, 420px);
+}
+.statusThemeSummary, .statusMetrics, .statusAutoSave{ color:var(--text); }
+.statusChip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  min-height:32px;
+  padding:6px 11px;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.035);
+  color:var(--text);
+  font-size:12px;
+  font-weight:800;
+  line-height:1;
+  white-space:nowrap;
+}
+.statusChip b{ color:inherit; font-weight:900; }
+.statusChipPrimary{
+  background:color-mix(in srgb, var(--accent) 14%, var(--panel));
+  border-color:color-mix(in srgb, var(--accent) 42%, var(--line));
+}
+.statusChipAccent{ color:var(--text); }
+.statusChipSwatch{
+  width:10px;
+  height:10px;
+  border-radius:999px;
+  flex:0 0 10px;
+  box-shadow:0 0 0 2px rgba(255,255,255,.08);
+}
+.statusChipAuto{
+  color:var(--ok);
+  border-color:color-mix(in srgb, var(--ok) 42%, var(--line));
+  background:color-mix(in srgb, var(--ok) 10%, rgba(255,255,255,.025));
+}
+.statusDot{
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:currentColor;
+  box-shadow:0 0 0 4px color-mix(in srgb, currentColor 18%, transparent);
+}
+.statusChipOk{
+  color:var(--ok);
+  border-color:color-mix(in srgb, var(--ok) 42%, var(--line));
+  background:color-mix(in srgb, var(--ok) 10%, rgba(255,255,255,.025));
+}
+.statusChipWarn{
+  color:var(--danger);
+  border-color:color-mix(in srgb, var(--danger) 42%, var(--line));
+  background:color-mix(in srgb, var(--danger) 10%, rgba(255,255,255,.025));
+}
+#appearanceCard .settingsHead > .status{ max-width:min(100%, 520px); }
+#timeSettingsCard .settingsHead > .status{ max-width:none; }
+#adminUsersCard .settingsHead > .status{ max-width:none; }
+@media (max-width:700px){
+  .settingsHead > .status{ justify-content:flex-start; max-width:100%; }
+  .statusChip{ min-height:30px; }
 }
