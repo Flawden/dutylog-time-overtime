@@ -27,7 +27,7 @@ DutyLog — приложение для учёта смен, переработ�
 - PostgreSQL + Flyway для production
 - H2 для локальной разработки
 - HTML/CSS/JavaScript без frontend-фреймворка
-- PWA: manifest, service worker, installable shell
+- PWA: manifest, service worker, installable web shell
 - Docker Compose
 - Telegram Bot API через long polling
 
@@ -165,7 +165,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 - Web-интерфейс работает через `JSESSIONID` и CSRF-защиту.
 - Изменяющие web-запросы отправляют `X-XSRF-TOKEN`.
-- Mobile API использует `Authorization: Bearer <accessToken>`.
+- Mobile API использует `Authorization: Bearer <accessToken>`, но отдельного native mobile-приложения в этом релизе ещё нет. Текущий клиент — web/PWA внутри Spring Boot-монолита.
 - Refresh tokens хранятся только в виде SHA-256-хэшей.
 - Пароли пользователей хранятся через BCrypt.
 - Диагностический endpoint не раскрывает секреты: Telegram token, пароли и URL базы данных не отдаются.
@@ -185,12 +185,13 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — идеи развития.
 - [`docs/PRODUCT_COPY.md`](docs/PRODUCT_COPY.md) — стиль пользовательских текстов.
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
+- [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 
 ## Текущая версия
 
-`v21.1 — offline hardening`
+`v21.2 — offline QA and release candidate`
 
-В этой версии offline-режим усилен: появилась подробная панель синхронизации, защита от параллельной синхронизации в двух вкладках, предупреждение об устаревших локальных данных и экспорт локального offline-состояния в JSON.
+В этой версии offline-режим не расширяется новыми возможностями. Релиз стабилизирует web/PWA-клиент внутри Spring Boot-монолита: добавлена пользовательская диагностика оффлайна в панели синхронизации, документирован ручной QA и подготовлен общий release checklist перед production-деплоем.
 
 
 ## Служебный профиль администратора

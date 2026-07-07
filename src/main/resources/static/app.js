@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "21.1";
+const DUTYLOG_VERSION = "21.2";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -401,6 +401,79 @@ function releaseOfflineSyncLock(lock){
     if (current?.token === lock.token) localStorage.removeItem(OFFLINE_SYNC_LOCK_KEY);
   } catch (_) {}
 }
+function offlineSyncLockInfo(){
+  try {
+    const raw = localStorage.getItem(OFFLINE_SYNC_LOCK_KEY);
+    if (!raw) return { active:false, label:"нет", raw:null };
+    const lock = JSON.parse(raw);
+    const expiresAt = Number(lock?.expiresAt || 0);
+    const expired = expiresAt > 0 && expiresAt <= Date.now();
+    const mine = lock?.owner === OFFLINE_CLIENT_ID;
+    return {
+      active:!expired,
+      expired,
+      mine,
+      owner:lock?.owner || "—",
+      startedAt:lock?.startedAt || null,
+      expiresAt:expiresAt ? new Date(expiresAt).toISOString() : null,
+      label: expired ? "протух" : (mine ? "активен в этой вкладке" : "активен в другой вкладке"),
+      raw:lock,
+    };
+  } catch (err) {
+    return { active:false, label:"не читается", error:err.message || String(err) };
+  }
+}
+
+function offlineDiagnosticsRows(queue, failed){
+  const online = navigator.onLine && state.offline.online !== false;
+  const lock = offlineSyncLockInfo();
+  const rows = [
+    ["Подключение", online ? "онлайн" : "оффлайн", online],
+    ["IndexedDB", state.offline.cacheReady ? "доступна" : "недоступна", !!state.offline.cacheReady],
+    ["Последняя синхронизация", state.offline.lastSyncAt ? `${fmtSyncTime(state.offline.lastSyncAt)} · ${fmtSyncAge(state.offline.lastSyncAt)}` : "ещё нет", !!state.offline.lastSyncAt],
+    ["Возраст snapshot", state.offline.lastSyncAt ? fmtSyncAge(state.offline.lastSyncAt) : "нет локальной копии", state.offline.lastSyncAt ? !state.offline.stale : false],
+    ["Очередь", `${queue.length} ожидает отправки`, queue.length === 0],
+    ["Не применилось", `${failed.length} ошибок`, failed.length === 0],
+    ["Sync lock", lock.label, !lock.active || lock.mine],
+  ];
+  if (lock.startedAt) rows.push(["Lock запущен", fmtSyncTime(lock.startedAt), !lock.expired]);
+  if (lock.expiresAt) rows.push(["Lock истекает", fmtSyncTime(lock.expiresAt), !lock.expired]);
+  return rows;
+}
+
+function renderOfflineDiagnostics(queue, failed){
+  const box = $("offlineDiagnosticsList");
+  if (!box) return;
+  const rows = offlineDiagnosticsRows(queue || [], failed || []);
+  box.innerHTML = rows.map(([label, value, ok]) => {
+    const cls = ok === true ? " ok" : ok === false ? " warn" : "";
+    return `<div class="diagRow${cls}"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></div>`;
+  }).join("");
+}
+
+function offlineDiagnosticsReportText(){
+  const q = state.offline.pending || 0;
+  const f = state.offline.failed?.length || 0;
+  const lock = offlineSyncLockInfo();
+  return [
+    `DutyLog UI: v${DUTYLOG_VERSION}`,
+    `Client: web/PWA inside Spring Boot monolith`,
+    `Native mobile app: not present`,
+    `Online: ${navigator.onLine && state.offline.online !== false}`,
+    `IndexedDB ready: ${!!state.offline.cacheReady}`,
+    `Last sync: ${state.offline.lastSyncAt || "—"}`,
+    `Snapshot age: ${state.offline.lastSyncAt ? fmtSyncAge(state.offline.lastSyncAt) : "—"}`,
+    `Snapshot stale: ${!!state.offline.stale}`,
+    `Queue pending: ${q}`,
+    `Failed mutations: ${f}`,
+    `Syncing: ${!!state.offline.syncing}`,
+    `Sync locked by other tab: ${!!state.offline.syncLockedByOther}`,
+    `Sync lock: ${lock.label}`,
+    `Sync lock owner: ${lock.owner || "—"}`,
+    `Browser: ${navigator.userAgent}`,
+  ].join("\n");
+}
+
 function requestToPromise(req){
   return new Promise((resolve, reject) => {
     req.onsuccess = () => resolve(req.result);
@@ -532,15 +605,38 @@ const dataLayer = {
     await offlineDb.put("queue", { ...item, id:uuid(), attempts:0, lastError:null, createdAt:new Date().toISOString() });
     await this.setFailedItems(items);
   },
+  async retryAllFailed(){
+    const items = await this.getFailedItems();
+    if (!items.length) return;
+    for (const item of items) {
+      await offlineDb.put("queue", { ...item, id:uuid(), attempts:0, lastError:null, createdAt:new Date().toISOString() });
+    }
+    await this.setFailedItems([]);
+  },
   async exportOfflineData(){
     if (!state.offline.cacheReady) throw new Error("Локальное хранилище недоступно");
+    const failed = await this.getFailedItems();
+    const storageMeta = await offlineDb.all("meta");
     const data = {
       exportedAt:new Date().toISOString(),
+      app:"DutyLog",
       version:DUTYLOG_VERSION,
       snapshot:await this.readSnapshot(),
       queue:await this.getQueueItems(),
-      meta:await offlineDb.all("meta"),
-      userAgent:navigator.userAgent,
+      failed,
+      meta:{
+        lastSyncAt:state.offline.lastSyncAt,
+        pending:state.offline.pending,
+        failedCount:failed.length,
+        online:navigator.onLine && state.offline.online !== false,
+        stale:state.offline.stale,
+        cacheReady:state.offline.cacheReady,
+        storage:storageMeta,
+        browser:{
+          userAgent:navigator.userAgent,
+          language:navigator.language || null,
+        },
+      },
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type:"application/json" });
     const url = URL.createObjectURL(blob);
@@ -740,10 +836,11 @@ async function renderOfflineSyncDialog(){
       <div><b>${escapeHtml(describeOfflineOperation(item))}</b><span>${escapeHtml(fmtSyncTime(item.failedAt || item.createdAt))}</span></div>
       <small>${escapeHtml(item.lastError || "сервер не применил операцию")}</small>
       <div class="syncItemActions">
-        <button type="button" data-failed-retry="${idx}">Вернуть в очередь</button>
-        <button type="button" data-failed-remove="${idx}">Убрать из списка</button>
+        <button type="button" data-failed-retry="${idx}">Повторить ошибку</button>
+        <button type="button" data-failed-remove="${idx}">Удалить ошибочную операцию</button>
       </div>
     </div>`).join("") : '<span class="emptyLine">Ошибок синхронизации нет.</span>';
+  renderOfflineDiagnostics(queue, failed);
 }
 
 async function openOfflineSyncDialog(){
@@ -772,7 +869,13 @@ document.addEventListener("click", async e => {
   if (e.target?.id === "offlineStatus") { await openOfflineSyncDialog(); return; }
   if (e.target?.id === "offlineSyncClose" || e.target?.id === "offlineSyncBackdrop") { closeOfflineSyncDialog(); return; }
   if (e.target?.id === "offlineSyncNow") { await dataLayer.syncQueue(); await renderOfflineSyncDialog(); return; }
+  if (e.target?.id === "offlineFailedRetryAll") { await dataLayer.retryAllFailed(); await renderOfflineSyncDialog(); return; }
   if (e.target?.id === "offlineExport") { await dataLayer.exportOfflineData(); return; }
+  if (e.target?.id === "offlineDiagnosticsCopy") {
+    try { await navigator.clipboard.writeText(offlineDiagnosticsReportText()); setSave("saved", "диагностика оффлайна скопирована"); }
+    catch (err) { setSave("err", "не удалось скопировать диагностику"); }
+    return;
+  }
   if (e.target?.id === "offlineFailedClear") { await dataLayer.setFailedItems([]); await renderOfflineSyncDialog(); return; }
   const retry = e.target?.dataset?.failedRetry;
   if (retry != null) { await dataLayer.retryFailed(Number(retry)); await renderOfflineSyncDialog(); return; }
@@ -3049,6 +3152,8 @@ function diagnosticsReportText(){
   const d = state.lastDiagnostics || {};
   return [
     `DutyLog UI: v${DUTYLOG_VERSION}`,
+    `Client: web/PWA inside Spring Boot monolith`,
+    `Native mobile app: not present`,
     `Server: ${d.version || "—"}`,
     `Profiles: ${(d.profiles || []).join(", ") || "default/dev"}`,
     `Server time: ${d.serverTime || "—"}`,

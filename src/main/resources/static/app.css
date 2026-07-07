@@ -895,6 +895,7 @@ body.offline #telegramBox::before{content:"Эта операция требуе�
 @media (max-width:700px){.offlineBar{width:100%}.offlineStatus{max-width:100%;white-space:normal;line-height:1.25}}
 
 /* v21.1: Offline hardening */
+/* v21.2: Offline QA and release diagnostics */
 .offlineStatus.stale{color:#ff8c7a;border-color:rgba(224,101,58,.42);background:rgba(224,101,58,.10)}
 .offlineStatus.stale::before{background:#e0653a;box-shadow:0 0 0 2px rgba(224,101,58,.16)}
 .offlineSyncDialog[hidden]{display:none!important}
@@ -918,6 +919,9 @@ body.offline #telegramBox::before{content:"Эта операция требуе�
 .syncItemActions button{font-size:12px;padding:7px 9px;border-radius:10px}
 .offlineSyncActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
 .offlineSyncActions button{min-height:40px}
+.offlineDiagnosticsList .diagRow{background:rgba(255,255,255,.03);border-radius:12px;padding:8px 10px;border-bottom:0}
+.offlineDiagnosticsList .diagRow + .diagRow{margin-top:6px}
+
 body.offline #accOt .accB::before{content:"Переработки и отгулы требуют связи с сервером. Смена, заметки и галочки задач сохраняются оффлайн."}
 body.offline #accSched .accB::before{content:"Автозаполнение графика требует связи с сервером. Отдельную смену выбранного дня можно изменить оффлайн."}
 body.offline #settings-scenarios::before{content:"Шаблоны переработок меняются только при подключении к серверу."}
