@@ -1,0 +1,3 @@
+ALTER TABLE users
+    ADD COLUMN IF NOT EXISTS theme_preset VARCHAR(40) NOT NULL DEFAULT 'default',
+    ADD COLUMN IF NOT EXISTS theme_config TEXT;

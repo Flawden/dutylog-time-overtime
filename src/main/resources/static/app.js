@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "23.0";
+const DUTYLOG_VERSION = "23.1";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -53,8 +53,59 @@ const APPEARANCE_SWATCHES = ["#F5B841","#E0653A","#C97BB8","#7B8CE0","#4FA3A5","
 const DAY_EMOJI_PRESETS = ["🔥","😴","✅","⚠️","💰","🏥","🎉","🛠️","🌙","☕","🚗","💪","📌","🧠","🛌","❤️"];
 
 const DEFAULT_SCHEDULE_DAYS = 31;
-const APPEARANCE_KEY = "dutylog.appearance.v1";
-const DEFAULT_APPEARANCE = { themePreference:"system", accentColor:"#F5B841" };
+const APPEARANCE_KEY = "dutylog.appearance.v2";
+const THEME_PRESETS = {
+  default: {
+    label:"DutyLog Default",
+    themePreference:"system",
+    accentColor:"#F5B841",
+    themeConfig:{ appBg:"", panelBg:"", panelAltBg:"", textColor:"", mutedColor:"", borderColor:"", buttonStyle:"solid", cardStyle:"default", cardRadius:14, shadowLevel:"medium", density:"comfortable" }
+  },
+  custom: {
+    label:"Custom",
+    themePreference:"system",
+    accentColor:"#F5B841",
+    themeConfig:{ appBg:"", panelBg:"", panelAltBg:"", textColor:"", mutedColor:"", borderColor:"", buttonStyle:"solid", cardStyle:"default", cardRadius:14, shadowLevel:"medium", density:"comfortable" }
+  },
+  midnight: {
+    label:"Midnight",
+    themePreference:"dark",
+    accentColor:"#7B8CE0",
+    themeConfig:{ appBg:"#0F1220", panelBg:"#181C2B", panelAltBg:"#20263A", textColor:"#EEF2FF", mutedColor:"#A7B0C9", borderColor:"#2D3550", buttonStyle:"soft", cardStyle:"contrast", cardRadius:16, shadowLevel:"medium", density:"comfortable" }
+  },
+  oled: {
+    label:"OLED Black",
+    themePreference:"dark",
+    accentColor:"#00D1B2",
+    themeConfig:{ appBg:"#000000", panelBg:"#080A0D", panelAltBg:"#11151A", textColor:"#F2F5F7", mutedColor:"#9AA4AE", borderColor:"#20262E", buttonStyle:"solid", cardStyle:"flat", cardRadius:12, shadowLevel:"none", density:"compact" }
+  },
+  forest: {
+    label:"Forest",
+    themePreference:"dark",
+    accentColor:"#6FBF73",
+    themeConfig:{ appBg:"#101812", panelBg:"#182219", panelAltBg:"#203020", textColor:"#EAF4EA", mutedColor:"#9CAF9E", borderColor:"#314335", buttonStyle:"soft", cardStyle:"default", cardRadius:18, shadowLevel:"soft", density:"comfortable" }
+  },
+  sunset: {
+    label:"Sunset",
+    themePreference:"dark",
+    accentColor:"#E0653A",
+    themeConfig:{ appBg:"#1C1413", panelBg:"#2A1B19", panelAltBg:"#35231F", textColor:"#FFF0E8", mutedColor:"#C9A397", borderColor:"#4A302A", buttonStyle:"solid", cardStyle:"warm", cardRadius:18, shadowLevel:"medium", density:"comfortable" }
+  },
+  industrial: {
+    label:"Industrial",
+    themePreference:"dark",
+    accentColor:"#B5A642",
+    themeConfig:{ appBg:"#121417", panelBg:"#1B1F24", panelAltBg:"#242A31", textColor:"#ECEFF3", mutedColor:"#A0A8B2", borderColor:"#343C46", buttonStyle:"outline", cardStyle:"contrast", cardRadius:8, shadowLevel:"low", density:"compact" }
+  },
+  softPurple: {
+    label:"Soft Purple",
+    themePreference:"light",
+    accentColor:"#9B7BE0",
+    themeConfig:{ appBg:"#F7F3FF", panelBg:"#FFFFFF", panelAltBg:"#EFE7FF", textColor:"#231B33", mutedColor:"#685B79", borderColor:"#D8C9F5", buttonStyle:"soft", cardStyle:"soft", cardRadius:20, shadowLevel:"soft", density:"comfortable" }
+  }
+};
+const DEFAULT_THEME_CONFIG = THEME_PRESETS.default.themeConfig;
+const DEFAULT_APPEARANCE = { themePreference:"system", accentColor:"#F5B841", themePreset:"default", themeConfig:{ ...DEFAULT_THEME_CONFIG } };
 
 const TIME_SETTINGS_KEY = "shiftCalendar.timeRegionSettings.v1";
 const DEFAULT_TIME_SETTINGS = {
@@ -95,18 +146,40 @@ function safeTzLabel(tz){
   }
 }
 
+function isHexColor(value){ return /^#[0-9a-fA-F]{6}$/.test(String(value || "")); }
+function clampNumber(value, min, max, fallback){
+  const n = Number(value);
+  if (!Number.isFinite(n)) return fallback;
+  return Math.max(min, Math.min(max, n));
+}
+function normalizeThemeConfig(config = {}){
+  const base = { ...DEFAULT_THEME_CONFIG };
+  const c = (config && typeof config === "object") ? config : {};
+  const out = { ...base };
+  for (const key of ["appBg","panelBg","panelAltBg","textColor","mutedColor","borderColor"]) {
+    const val = String(c[key] || "").trim();
+    out[key] = isHexColor(val) ? val.toUpperCase() : "";
+  }
+  out.buttonStyle = ["solid","soft","outline","ghost"].includes(String(c.buttonStyle || "")) ? String(c.buttonStyle) : base.buttonStyle;
+  out.cardStyle = ["default","flat","soft","contrast","warm"].includes(String(c.cardStyle || "")) ? String(c.cardStyle) : base.cardStyle;
+  out.shadowLevel = ["none","low","soft","medium","strong"].includes(String(c.shadowLevel || "")) ? String(c.shadowLevel) : base.shadowLevel;
+  out.density = ["compact","comfortable","spacious"].includes(String(c.density || "")) ? String(c.density) : base.density;
+  out.cardRadius = Math.round(clampNumber(c.cardRadius, 6, 28, base.cardRadius));
+  return out;
+}
 function normalizeAppearance(p = {}){
   const theme = ["system","light","dark"].includes(String(p.themePreference || "").toLowerCase())
     ? String(p.themePreference).toLowerCase()
     : DEFAULT_APPEARANCE.themePreference;
-  const accent = /^#[0-9a-fA-F]{6}$/.test(String(p.accentColor || ""))
-    ? String(p.accentColor).toUpperCase()
-    : DEFAULT_APPEARANCE.accentColor;
-  return { themePreference:theme, accentColor:accent };
+  const accent = isHexColor(p.accentColor) ? String(p.accentColor).toUpperCase() : DEFAULT_APPEARANCE.accentColor;
+  const preset = Object.prototype.hasOwnProperty.call(THEME_PRESETS, String(p.themePreset || ""))
+    ? String(p.themePreset)
+    : DEFAULT_APPEARANCE.themePreset;
+  return { themePreference:theme, accentColor:accent, themePreset:preset, themeConfig:normalizeThemeConfig(p.themeConfig) };
 }
 function loadLocalAppearance(){
   try { return normalizeAppearance(JSON.parse(localStorage.getItem(APPEARANCE_KEY) || "{}")); }
-  catch (_) { return { ...DEFAULT_APPEARANCE }; }
+  catch (_) { return normalizeAppearance(DEFAULT_APPEARANCE); }
 }
 function storeLocalAppearance(p){
   const prefs = normalizeAppearance(p);
@@ -118,22 +191,103 @@ function effectiveTheme(themePreference){
   try { return matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"; }
   catch (_) { return "dark"; }
 }
+function themeShadow(level){
+  return {
+    none:"none",
+    low:"0 4px 14px rgba(0,0,0,.12)",
+    soft:"0 10px 28px rgba(0,0,0,.14)",
+    medium:"0 14px 40px rgba(0,0,0,.20)",
+    strong:"0 22px 60px rgba(0,0,0,.32)"
+  }[level] || "0 14px 40px rgba(0,0,0,.20)";
+}
+function applyThemeCssVariables(prefs){
+  const cfg = normalizeThemeConfig(prefs.themeConfig);
+  const root = document.documentElement;
+  const variables = {
+    "--accent": prefs.accentColor,
+    "--theme-card-radius": `${cfg.cardRadius}px`,
+    "--theme-shadow": themeShadow(cfg.shadowLevel),
+  };
+  if (cfg.appBg) variables["--bg"] = cfg.appBg;
+  if (cfg.panelBg) variables["--panel"] = cfg.panelBg;
+  if (cfg.panelAltBg) variables["--panel2"] = cfg.panelAltBg;
+  if (cfg.textColor) variables["--text"] = cfg.textColor;
+  if (cfg.mutedColor) variables["--mut"] = cfg.mutedColor;
+  if (cfg.borderColor) variables["--line"] = cfg.borderColor;
+  for (const name of ["--bg","--panel","--panel2","--text","--mut","--line","--accent","--theme-card-radius","--theme-shadow"]) {
+    root.style.removeProperty(name);
+  }
+  for (const [name, value] of Object.entries(variables)) {
+    root.style.setProperty(name, value);
+  }
+  root.dataset.buttonStyle = cfg.buttonStyle;
+  root.dataset.cardStyle = cfg.cardStyle;
+  root.dataset.density = cfg.density;
+}
 function applyAppearance(p = state.preferences){
   const prefs = normalizeAppearance(p);
   state.preferences = prefs;
   const theme = effectiveTheme(prefs.themePreference);
   document.documentElement.dataset.theme = theme;
-  document.documentElement.style.setProperty("--accent", prefs.accentColor);
+  applyThemeCssVariables(prefs);
   const meta = document.querySelector('meta[name="theme-color"]');
-  if (meta) meta.setAttribute("content", theme === "light" ? "#F6F7FB" : "#14171C");
+  const metaColor = prefs.themeConfig.appBg || (theme === "light" ? "#F6F7FB" : "#14171C");
+  if (meta) meta.setAttribute("content", metaColor);
   renderAppearanceControls();
+}
+function setPickerValue(id, value){
+  const el = document.getElementById(id);
+  if (el && isHexColor(value)) el.value = value;
+}
+function readAppearanceFromControls(){
+  return normalizeAppearance({
+    themePreference:$('appearanceTheme')?.value || state.preferences.themePreference,
+    accentColor:$('appearanceAccent')?.value || state.preferences.accentColor,
+    themePreset:$('appearancePreset')?.value || state.preferences.themePreset,
+    themeConfig:{
+      appBg:$('themeAppBg')?.value || "",
+      panelBg:$('themePanelBg')?.value || "",
+      panelAltBg:$('themePanelAltBg')?.value || "",
+      textColor:$('themeTextColor')?.value || "",
+      mutedColor:$('themeMutedColor')?.value || "",
+      borderColor:$('themeBorderColor')?.value || "",
+      buttonStyle:$('themeButtonStyle')?.value || "solid",
+      cardStyle:$('themeCardStyle')?.value || "default",
+      cardRadius:$('themeCardRadius')?.value || 14,
+      shadowLevel:$('themeShadowLevel')?.value || "medium",
+      density:$('themeDensity')?.value || "comfortable",
+    }
+  });
+}
+function setThemeBuilderControls(prefs){
+  const byId = id => document.getElementById(id);
+  const cfg = normalizeThemeConfig(prefs.themeConfig);
+  if (byId('appearanceTheme')) byId('appearanceTheme').value = prefs.themePreference;
+  if (byId('appearancePreset')) byId('appearancePreset').value = prefs.themePreset;
+  setPickerValue('appearanceAccent', prefs.accentColor);
+  setPickerValue('themeAppBg', cfg.appBg || (effectiveTheme(prefs.themePreference) === "light" ? "#F6F7FB" : "#14171C"));
+  setPickerValue('themePanelBg', cfg.panelBg || (effectiveTheme(prefs.themePreference) === "light" ? "#FFFFFF" : "#1C2027"));
+  setPickerValue('themePanelAltBg', cfg.panelAltBg || (effectiveTheme(prefs.themePreference) === "light" ? "#EEF1F6" : "#22262E"));
+  setPickerValue('themeTextColor', cfg.textColor || (effectiveTheme(prefs.themePreference) === "light" ? "#18202B" : "#E8EAED"));
+  setPickerValue('themeMutedColor', cfg.mutedColor || (effectiveTheme(prefs.themePreference) === "light" ? "#586274" : "#8B929E"));
+  setPickerValue('themeBorderColor', cfg.borderColor || (effectiveTheme(prefs.themePreference) === "light" ? "#D7DDE8" : "#2E333C"));
+  if (byId('themeButtonStyle')) byId('themeButtonStyle').value = cfg.buttonStyle;
+  if (byId('themeCardStyle')) byId('themeCardStyle').value = cfg.cardStyle;
+  if (byId('themeShadowLevel')) byId('themeShadowLevel').value = cfg.shadowLevel;
+  if (byId('themeDensity')) byId('themeDensity').value = cfg.density;
+  if (byId('themeCardRadius')) byId('themeCardRadius').value = cfg.cardRadius;
+  if (byId('themeCardRadiusValue')) byId('themeCardRadiusValue').textContent = `${cfg.cardRadius}px`;
 }
 function renderAppearanceControls(){
   const byId = id => document.getElementById(id);
   if (!byId('appearanceTheme')) return;
   const prefs = normalizeAppearance(state.preferences);
-  byId('appearanceTheme').value = prefs.themePreference;
-  byId('appearanceAccent').value = prefs.accentColor;
+  const presetSelect = byId('appearancePreset');
+  if (presetSelect && !presetSelect.dataset.ready) {
+    presetSelect.innerHTML = Object.entries(THEME_PRESETS).map(([key, preset]) => `<option value="${key}">${preset.label}</option>`).join("");
+    presetSelect.dataset.ready = "1";
+  }
+  setThemeBuilderControls(prefs);
   const row = byId('appearanceAccentRow');
   if (row) {
     row.innerHTML = "";
@@ -144,14 +298,27 @@ function renderAppearanceControls(){
       b.style.background = color;
       b.title = color;
       b.addEventListener("click", () => {
-        state.preferences = normalizeAppearance({ ...state.preferences, accentColor:color });
+        state.preferences = normalizeAppearance({ ...readAppearanceFromControls(), accentColor:color, themePreset:"custom" });
+        if ($('appearancePreset')) $('appearancePreset').value = state.preferences.themePreset;
         applyAppearance(state.preferences);
       });
       row.appendChild(b);
     }
   }
   const preview = byId('appearancePreview');
-  if (preview) preview.textContent = `Тема: ${prefs.themePreference === "system" ? "как в системе" : prefs.themePreference === "light" ? "светлая" : "тёмная"} · акцент ${prefs.accentColor}`;
+  const presetLabel = THEME_PRESETS[prefs.themePreset]?.label || "Custom";
+  if (preview) preview.textContent = `${presetLabel} · ${prefs.themePreference === "system" ? "как в системе" : prefs.themePreference === "light" ? "светлая" : "тёмная"} · ${prefs.accentColor}`;
+}
+function applyPreset(key){
+  const preset = THEME_PRESETS[key] || THEME_PRESETS.default;
+  state.preferences = normalizeAppearance({ ...preset, themePreset:key });
+  applyAppearance(state.preferences);
+}
+function markCustomAndPreview(){
+  const prefs = readAppearanceFromControls();
+  state.preferences = normalizeAppearance({ ...prefs, themePreset:"custom" });
+  if ($('appearancePreset')) $('appearancePreset').value = "custom";
+  applyAppearance(state.preferences);
 }
 applyAppearance(loadLocalAppearance());
 try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => applyAppearance(state.preferences)); } catch (_) {}
@@ -3906,7 +4073,7 @@ async function loadProfile(){
     maybeBirthdayBanner(p);
     $("profileName").value = p.displayName || "";
     $("profileBirthday").value = p.birthday || "";
-    state.preferences = storeLocalAppearance({ themePreference:p.themePreference, accentColor:p.accentColor });
+    state.preferences = storeLocalAppearance({ themePreference:p.themePreference, accentColor:p.accentColor, themePreset:p.themePreset, themeConfig:p.themeConfig });
     applyAppearance(state.preferences);
     const av = $("profileAvatar");
     av.textContent = avatarInitials(p.displayName || p.username);
@@ -3942,27 +4109,27 @@ function currentProfilePayload(extra = {}){
     ...extra,
   };
 }
-$('appearanceTheme')?.addEventListener('change', () => {
-  state.preferences = normalizeAppearance({ ...state.preferences, themePreference:$('appearanceTheme').value });
-  applyAppearance(state.preferences);
-});
-$('appearanceAccent')?.addEventListener('input', () => {
-  state.preferences = normalizeAppearance({ ...state.preferences, accentColor:$('appearanceAccent').value });
-  applyAppearance(state.preferences);
-});
+$('appearancePreset')?.addEventListener('change', e => applyPreset(e.target.value));
+$('appearanceTheme')?.addEventListener('change', markCustomAndPreview);
+$('appearanceAccent')?.addEventListener('input', markCustomAndPreview);
+for (const id of ['themeAppBg','themePanelBg','themePanelAltBg','themeTextColor','themeMutedColor','themeBorderColor','themeButtonStyle','themeCardStyle','themeShadowLevel','themeDensity','themeCardRadius']) {
+  $(id)?.addEventListener('input', markCustomAndPreview);
+  $(id)?.addEventListener('change', markCustomAndPreview);
+}
+$('themeCardRadius')?.addEventListener('input', e => { if ($('themeCardRadiusValue')) $('themeCardRadiusValue').textContent = `${e.target.value}px`; });
 $('appearanceSave')?.addEventListener('click', async () => {
   try {
-    const prefs = normalizeAppearance({ themePreference:$('appearanceTheme').value, accentColor:$('appearanceAccent').value });
+    const prefs = readAppearanceFromControls();
     const p = await jfetch('/api/profile', { method:'PUT', body: currentProfilePayload(prefs) });
     state.profile = p;
-    state.preferences = storeLocalAppearance({ themePreference:p.themePreference, accentColor:p.accentColor });
+    state.preferences = storeLocalAppearance({ themePreference:p.themePreference, accentColor:p.accentColor, themePreset:p.themePreset, themeConfig:p.themeConfig });
     applyAppearance(state.preferences);
     setProfileMsg('appearanceMsg', 'Внешний вид сохранён', true);
     setTimeout(() => setProfileMsg('appearanceMsg', ''), 2000);
   } catch (e) { setProfileMsg('appearanceMsg', e.message); }
 });
 $('appearanceReset')?.addEventListener('click', () => {
-  state.preferences = { ...DEFAULT_APPEARANCE };
+  state.preferences = normalizeAppearance(DEFAULT_APPEARANCE);
   applyAppearance(state.preferences);
 });
 $('dayEmojiClear')?.addEventListener('click', () => setDayEmoji(null));

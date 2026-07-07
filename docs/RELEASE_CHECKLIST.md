@@ -1,6 +1,6 @@
 # Release checklist для DutyLog
 
-Этот чеклист нужен перед выдачей архива, тегом и VPS-деплоем. Текущая клиентская часть — web/PWA внутри Spring Boot-монолита. Отдельного native mobile-приложения в v23.0 нет, поэтому мобильная проверка означает проверку PWA в браузере телефона и установленной web-оболочке.
+Этот чеклист нужен перед выдачей архива, тегом и VPS-деплоем. Текущая клиентская часть — web/PWA внутри Spring Boot-монолита. Отдельного native mobile-приложения в v23.1 нет, поэтому мобильная проверка означает проверку PWA в браузере телефона и установленной web-оболочке.
 
 ## 1. Статические проверки
 
@@ -94,7 +94,7 @@ DevTools → Network → Offline:
 5. Проверить, что кнопки в панели синхронизации не ломают мобильную вёрстку.
 
 
-## 6. Production preflight для v23.0
+## 6. Production preflight для v23.1
 
 Перед первым VPS-запуском:
 
@@ -111,7 +111,7 @@ cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
 ./deploy/scripts/backup-postgres.sh
 ```
 
-Проверить в админском разделе `Система`, что серверная версия — `23.0`, база `ok`, Telegram-статус соответствует `.env`, публичная регистрация имеет ожидаемый статус.
+Проверить в админском разделе `Система`, что серверная версия — `23.1`, база `ok`, Telegram-статус соответствует `.env`, публичная регистрация имеет ожидаемый статус.
 
 ## 7. Перед production-деплоем
 
@@ -128,5 +128,5 @@ cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
 ```bash
 git add -A
 git commit -m "fix: harden public registration"
-git tag -a v23.0 -m "v23.0 — personalization and day emoji"
+git tag -a v23.1 -m "v23.1 — personalization and day emoji"
 ```

@@ -1,8 +1,8 @@
-# v23.0 Production launch
+# v23.1 Production launch
 
 Этот документ — короткий боевой сценарий первого запуска DutyLog на VPS. Он не заменяет `PRODUCTION_RUNBOOK.md`, а помогает не потеряться в день деплоя.
 
-Текущий клиент: **web/PWA внутри Spring Boot-монолита**. Отдельного native mobile-приложения в v23.0 нет.
+Текущий клиент: **web/PWA внутри Spring Boot-монолита**. Отдельного native mobile-приложения в v23.1 нет.
 
 ## Что считается успешным запуском
 
@@ -27,7 +27,7 @@ cd /opt/dutylog
 
 ```bash
 git clone <repo-url> .
-git checkout v23.0
+git checkout v23.1
 ```
 
 Проверить, что домен уже смотрит на IP сервера:
@@ -110,8 +110,8 @@ docker compose -f docker-compose.prod.yml logs --tail=100 caddy
 - `login.html`;
 - app shell;
 - `manifest.json`;
-- `service-worker.js` версии `v23.0`;
-- `app.js` версии `23.0`;
+- `service-worker.js` версии `v23.1`;
+- `app.js` версии `23.1`;
 - защищённый admin API не падает.
 
 ## 7. Первый пользователь
@@ -136,7 +136,7 @@ DUTYLOG_ADMIN_FORCE_PASSWORD_RESET=false
 
 - у bootstrap-админа в шапке есть `Система`;
 - у обычного пользователя `Система` скрыта;
-- в `Система` версия сервера `23.0`;
+- в `Система` версия сервера `23.1`;
 - база данных `ok`;
 - Telegram-статус соответствует `.env`;
 - публичная регистрация имеет ожидаемый статус: `открыта` или `закрыта`.
@@ -199,7 +199,7 @@ docker compose -f docker-compose.prod.yml up -d --build
 Перед каждым обновлением — backup. Перед любыми рискованными действиями — backup. Команду `docker compose down -v` не использовать, если не нужно специально удалить базу.
 
 
-## v23.0 users/roles and personalization smoke check
+## v23.1 users/roles and personalization smoke check
 
 After login as bootstrap admin, open `Система` → `Пользователи и роли` and verify:
 

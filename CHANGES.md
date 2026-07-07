@@ -1,16 +1,15 @@
-# v23.0 — Personalization and day emoji
+# v23.1 — Theme Builder
 
-- Добавлен раздел настроек `Внешний вид`: системная, тёмная и светлая тема.
-- Добавлен пользовательский акцентный цвет интерфейса с быстрыми swatches и color input.
-- В профиль пользователя добавлены настройки `themePreference` и `accentColor`; они не смешиваются с ролями `USER/ADMIN` и будущим `accountTier` `FREE/PAID/VIP`.
-- Добавлен emoji-маркер выбранного дня: быстрый набор emoji, поле для своего Unicode emoji и очистка маркера.
-- В БД добавлено поле `day_entries.day_emoji VARCHAR(32)` через миграцию `V17__personalization_day_emoji.sql`.
-- `DayDto`, `DayUpsertRequest` и mobile day sync получили поле `dayEmoji`.
-- Emoji отображается в клетке календаря и в панели выбранного дня. Картинки, загрузки файлов, CDN и base64-хранилище не добавлялись.
-- Offline snapshot/queue теперь сохраняет `dayEmoji` как часть безопасного `putDay`; сложные offline-операции по-прежнему не расширялись.
-- Добавлена документация `docs/PERSONALIZATION.md`.
-- Обновлены `README.md`, `docs/OFFLINE_MODE.md`, production/release docs и smoke-test под версию `23.0`.
-- Frontend/backend/service-worker версии подняты до `23.0`.
+- Расширен раздел `Внешний вид` до безопасного Theme Builder без доступа к CSS.
+- Добавлены пресеты: `DutyLog Default`, `Midnight`, `OLED Black`, `Forest`, `Sunset`, `Industrial`, `Soft Purple` и режим `Custom`.
+- Добавлена точная настройка через контролы: фон приложения, цвет карточек, внутренние блоки, текст, вторичный текст, границы, стиль кнопок, стиль карточек, тени, плотность и скругление.
+- Добавлен live preview прямо в настройках: календарные клетки, карточка и кнопки показывают изменения до сохранения.
+- Настройки темы сохраняются в профиле пользователя как безопасный JSON `theme_config`, содержащий только whitelist-поля, не пользовательский CSS.
+- В БД добавлены `users.theme_preset` и `users.theme_config` через миграцию `V18__theme_builder.sql`.
+- Backend валидирует значения Theme Builder: только `#RRGGBB`, разрешённые enum-значения и ограниченный диапазон скругления.
+- Роли `USER/ADMIN`, будущий `account_tier` `FREE/PAID/VIP` и внешний вид остаются отдельными слоями.
+- Emoji-маркеры дней из v23.0 сохранены; картинки/стикерпаки/загрузка файлов по-прежнему не добавлялись.
+- Frontend/backend/service-worker версии подняты до `23.1`.
 
 # v22.3 — Users and roles admin panel
 

@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=23.0" rel="stylesheet"/>
+<link href="app.css?v=23.1" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -374,29 +374,106 @@
 <div>
 <div class="eyebrow">Персонализация</div>
 <div class="settingsTitle">Внешний вид</div>
-<div class="settingsHint">Тема и акцент сохраняются в профиле пользователя. Emoji-маркеры дней хранятся как Unicode-текст, без картинок и загрузок файлов.</div>
+<div class="settingsHint">Безопасный Theme Builder: только пресеты, color picker, списки и ползунки. Пользовательский CSS не поддерживается и не хранится.</div>
 </div>
 <div class="status" id="appearancePreview">—</div>
 </div>
-<div class="appearanceGrid">
-<label>Тема
-<select id="appearanceTheme">
-<option value="system">как в системе</option>
-<option value="dark">тёмная</option>
-<option value="light">светлая</option>
-</select>
-</label>
-<label>Акцент
-<input id="appearanceAccent" type="color" value="#F5B841"/>
-</label>
+
+<div class="themeBuilder">
+  <div class="themeBuilderMain">
+    <div class="profileSub">Пресет</div>
+    <div class="appearanceGrid">
+      <label>Готовая тема
+        <select id="appearancePreset"></select>
+      </label>
+      <label>Базовый режим
+        <select id="appearanceTheme">
+          <option value="system">как в системе</option>
+          <option value="dark">тёмная</option>
+          <option value="light">светлая</option>
+        </select>
+      </label>
+      <label>Акцент
+        <input id="appearanceAccent" type="color" value="#F5B841"/>
+      </label>
+    </div>
+    <div class="appearanceAccentRow" id="appearanceAccentRow"></div>
+
+    <div class="profileSub">Точная настройка</div>
+    <div class="appearanceGrid themeColorGrid">
+      <label>Фон приложения <input id="themeAppBg" type="color" value="#14171C"/></label>
+      <label>Карточки <input id="themePanelBg" type="color" value="#1C2027"/></label>
+      <label>Внутренние блоки <input id="themePanelAltBg" type="color" value="#22262E"/></label>
+      <label>Основной текст <input id="themeTextColor" type="color" value="#E8EAED"/></label>
+      <label>Вторичный текст <input id="themeMutedColor" type="color" value="#8B929E"/></label>
+      <label>Границы <input id="themeBorderColor" type="color" value="#2E333C"/></label>
+    </div>
+
+    <div class="appearanceGrid themeShapeGrid">
+      <label>Стиль кнопок
+        <select id="themeButtonStyle">
+          <option value="solid">заливка</option>
+          <option value="soft">мягкие</option>
+          <option value="outline">контурные</option>
+          <option value="ghost">призрачные</option>
+        </select>
+      </label>
+      <label>Стиль карточек
+        <select id="themeCardStyle">
+          <option value="default">стандартные</option>
+          <option value="flat">плоские</option>
+          <option value="soft">мягкие</option>
+          <option value="contrast">контрастные</option>
+          <option value="warm">тёплые</option>
+        </select>
+      </label>
+      <label>Тени
+        <select id="themeShadowLevel">
+          <option value="none">без теней</option>
+          <option value="low">лёгкие</option>
+          <option value="soft">мягкие</option>
+          <option value="medium">средние</option>
+          <option value="strong">сильные</option>
+        </select>
+      </label>
+      <label>Плотность
+        <select id="themeDensity">
+          <option value="compact">компактно</option>
+          <option value="comfortable">обычно</option>
+          <option value="spacious">просторно</option>
+        </select>
+      </label>
+      <label>Скругление карточек <span class="rangeValue" id="themeCardRadiusValue">14px</span>
+        <input id="themeCardRadius" type="range" min="6" max="28" step="1" value="14"/>
+      </label>
+    </div>
+  </div>
+
+  <div class="themePreviewBox" aria-label="Предпросмотр темы">
+    <div class="themePreviewTitle">Live preview</div>
+    <div class="themePreviewCalendar">
+      <div class="themePreviewCell today"><b>7</b><span>🔥 Дневная</span></div>
+      <div class="themePreviewCell"><b>8</b><span>🌙 Ночная</span></div>
+      <div class="themePreviewCell muted"><b>9</b><span>Выходной</span></div>
+    </div>
+    <div class="themePreviewCard">
+      <div class="eyebrow">Карточка</div>
+      <b>Выбранный день</b>
+      <p>Так будут выглядеть фон, границы, текст, скругление и тени.</p>
+      <div class="themePreviewActions">
+        <button class="primary" type="button">Главная кнопка</button>
+        <button type="button">Обычная</button>
+      </div>
+    </div>
+  </div>
 </div>
-<div class="appearanceAccentRow" id="appearanceAccentRow"></div>
+
 <div class="appearanceActions">
 <button class="primary" id="appearanceSave" type="button">Сохранить внешний вид</button>
 <button id="appearanceReset" type="button">Сбросить локально</button>
 </div>
 <div class="profileMsg" id="appearanceMsg"></div>
-<div class="settingsHint">Разделение на будущее: роли USER/ADMIN отвечают за права, account tier FREE/PAID/VIP — за тариф, а эти настройки — только за внешний вид.</div>
+<div class="settingsHint">Роли `USER/ADMIN`, будущий тариф `FREE/PAID/VIP` и внешний вид остаются разными слоями. Theme Builder хранит только разрешённые параметры, не CSS.</div>
 </div>
 <section class="settingsCard" id="timeSettingsCard" data-settings-section="time">
 <a class="settingsAnchor" id="settings-time"></a>
@@ -647,7 +724,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v23.0</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v23.1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -713,6 +790,6 @@
     </div>
   </div>
 </div>
-<script src="app.js?v=23.0"></script>
+<script src="app.js?v=23.1"></script>
 </body>
 </html>

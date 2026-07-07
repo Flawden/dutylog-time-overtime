@@ -1,4 +1,4 @@
-# DutyLog API v23.0
+# DutyLog API v23.1
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -111,20 +111,48 @@ Telegram-напоминания v20.1 работают отдельно от к�
   "role": "ADMIN",
   "accountTier": "FREE",
   "themePreference": "system",
-  "accentColor": "#F5B841"
+  "accentColor": "#F5B841",
+  "themePreset": "midnight",
+  "themeConfig": {
+    "appBg": "#0F1220",
+    "panelBg": "#181C2B",
+    "panelAltBg": "#20263A",
+    "textColor": "#EEF2FF",
+    "mutedColor": "#A7B0C9",
+    "borderColor": "#2D3550",
+    "buttonStyle": "soft",
+    "cardStyle": "contrast",
+    "shadowLevel": "medium",
+    "density": "comfortable",
+    "cardRadius": 16
+  }
 }
 ```
 
 ### PUT `/api/profile`
 
-Обновляет профиль и/или внешний вид. `themePreference`: `system`, `light`, `dark`. `accentColor`: `#RRGGBB`.
+Обновляет профиль и/или внешний вид. `themePreference`: `system`, `light`, `dark`. `accentColor`: `#RRGGBB`. `themeConfig` принимает только whitelist-поля Theme Builder, без пользовательского CSS.
 
 ```json
 {
   "displayName": "Алексей",
   "birthday": "2000-07-07",
   "themePreference": "dark",
-  "accentColor": "#7B8CE0"
+  "accentColor": "#7B8CE0",
+  "themePreset": "custom",
+  "themeConfig": {
+    "appBg": "#0F1220",
+    "panelBg": "#181C2B",
+    "panelAltBg": "#20263A",
+    "textColor": "#EEF2FF",
+    "mutedColor": "#A7B0C9",
+    "borderColor": "#2D3550",
+    "buttonStyle": "soft",
+    "cardStyle": "contrast",
+    "shadowLevel": "medium",
+    "density": "comfortable",
+    "cardRadius": 16
+  }
 }
 ```
 
@@ -1025,7 +1053,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "23.0",
+  "version": "23.1",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],

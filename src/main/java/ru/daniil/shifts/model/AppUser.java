@@ -55,6 +55,14 @@ public class AppUser {
     @Column(name = "accent_color", length = 20)
     private String accentColor = "#F5B841";
 
+    /** Пресет Theme Builder: default/custom/midnight/oled/forest/sunset/industrial/softPurple. */
+    @Column(name = "theme_preset", length = 40)
+    private String themePreset = "default";
+
+    /** Безопасный JSON с разрешёнными настройками темы. Не содержит пользовательский CSS. */
+    @Column(name = "theme_config", columnDefinition = "TEXT")
+    private String themeConfig;
+
     protected AppUser() {} // для JPA
 
     public AppUser(String username, String passwordHash) {
@@ -81,6 +89,10 @@ public class AppUser {
     public void setThemePreference(String themePreference) { this.themePreference = themePreference == null || themePreference.isBlank() ? "system" : themePreference.trim().toLowerCase(); }
     public String getAccentColor() { return accentColor == null || accentColor.isBlank() ? "#F5B841" : accentColor; }
     public void setAccentColor(String accentColor) { this.accentColor = accentColor == null || accentColor.isBlank() ? "#F5B841" : accentColor.trim(); }
+    public String getThemePreset() { return themePreset == null || themePreset.isBlank() ? "default" : themePreset; }
+    public void setThemePreset(String themePreset) { this.themePreset = themePreset == null || themePreset.isBlank() ? "default" : themePreset.trim(); }
+    public String getThemeConfig() { return themeConfig; }
+    public void setThemeConfig(String themeConfig) { this.themeConfig = themeConfig == null || themeConfig.isBlank() ? null : themeConfig.trim(); }
 
     @PrePersist
     void onCreate() {
@@ -91,6 +103,8 @@ public class AppUser {
         setAccountTier(accountTier);
         setThemePreference(themePreference);
         setAccentColor(accentColor);
+        setThemePreset(themePreset);
+        setThemeConfig(themeConfig);
     }
 
     @PreUpdate
@@ -100,5 +114,7 @@ public class AppUser {
         setAccountTier(accountTier);
         setThemePreference(themePreference);
         setAccentColor(accentColor);
+        setThemePreset(themePreset);
+        setThemeConfig(themeConfig);
     }
 }

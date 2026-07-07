@@ -1,5 +1,7 @@
 package ru.daniil.shifts.web;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +17,7 @@ import java.security.Principal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -30,6 +33,9 @@ public class ProfileController {
     private final UserRepository users;
     private final CurrentUserService currentUserService;
     private final MobileAuthService mobileAuthService;
+    private static final ObjectMapper JSON = new ObjectMapper();
+    private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
+
     private final PasswordEncoder encoder;
 
     public ProfileController(UserRepository users,
@@ -42,7 +48,7 @@ public class ProfileController {
         this.encoder = encoder;
     }
 
-    public record ProfileUpdateRequest(String displayName, String birthday, String themePreference, String accentColor) {}
+    public record ProfileUpdateRequest(String displayName, String birthday, String themePreference, String accentColor, String themePreset, Map<String, Object> themeConfig) {}
     public record PasswordChangeRequest(String currentPassword, String newPassword) {}
 
     @GetMapping
@@ -57,6 +63,8 @@ public class ProfileController {
         out.put("accountTier", user.getAccountTier());
         out.put("themePreference", user.getThemePreference());
         out.put("accentColor", user.getAccentColor());
+        out.put("themePreset", user.getThemePreset());
+        out.put("themeConfig", readThemeConfig(user.getThemeConfig()));
         return out;
     }
 
@@ -101,8 +109,79 @@ public class ProfileController {
             user.setAccentColor(accent.toUpperCase());
         }
 
+        if (req.themePreset() != null) {
+            String preset = req.themePreset().trim();
+            if (!preset.matches("[A-Za-z0-9_-]{1,40}")) {
+                throw ApiException.badRequest("Пресет темы должен быть коротким безопасным идентификатором");
+            }
+            user.setThemePreset(preset);
+        }
+
+        if (req.themeConfig() != null) {
+            user.setThemeConfig(writeSafeThemeConfig(req.themeConfig()));
+        }
+
         users.save(user);
         return get(principal);
+    }
+
+    private Map<String, Object> readThemeConfig(String raw) {
+        if (raw == null || raw.isBlank()) return Map.of();
+        try {
+            Map<String, Object> parsed = JSON.readValue(raw, MAP_TYPE);
+            return safeThemeConfig(parsed);
+        } catch (Exception e) {
+            return Map.of();
+        }
+    }
+
+    private String writeSafeThemeConfig(Map<String, Object> input) {
+        try {
+            return JSON.writeValueAsString(safeThemeConfig(input));
+        } catch (Exception e) {
+            throw ApiException.badRequest("Не удалось сохранить настройки темы");
+        }
+    }
+
+    private Map<String, Object> safeThemeConfig(Map<String, Object> input) {
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("appBg", safeColor(input.get("appBg"), ""));
+        out.put("panelBg", safeColor(input.get("panelBg"), ""));
+        out.put("panelAltBg", safeColor(input.get("panelAltBg"), ""));
+        out.put("textColor", safeColor(input.get("textColor"), ""));
+        out.put("mutedColor", safeColor(input.get("mutedColor"), ""));
+        out.put("borderColor", safeColor(input.get("borderColor"), ""));
+        out.put("buttonStyle", safeEnum(input.get("buttonStyle"), "solid", "solid", "soft", "outline", "ghost"));
+        out.put("cardStyle", safeEnum(input.get("cardStyle"), "default", "default", "flat", "soft", "contrast", "warm"));
+        out.put("shadowLevel", safeEnum(input.get("shadowLevel"), "medium", "none", "low", "soft", "medium", "strong"));
+        out.put("density", safeEnum(input.get("density"), "comfortable", "compact", "comfortable", "spacious"));
+        out.put("cardRadius", clampInt(input.get("cardRadius"), 14, 6, 28));
+        return out;
+    }
+
+    private String safeColor(Object value, String fallback) {
+        String s = value == null ? "" : value.toString().trim();
+        if (s.isEmpty()) return fallback;
+        if (!s.matches("#[0-9a-fA-F]{6}")) {
+            throw ApiException.badRequest("Цвет темы должен быть в формате #RRGGBB");
+        }
+        return s.toUpperCase();
+    }
+
+    private String safeEnum(Object value, String fallback, String... allowed) {
+        String s = value == null ? fallback : value.toString().trim();
+        for (String option : allowed) if (option.equals(s)) return s;
+        throw ApiException.badRequest("Недопустимый параметр темы: " + s);
+    }
+
+    private int clampInt(Object value, int fallback, int min, int max) {
+        int n;
+        if (value instanceof Number number) n = number.intValue();
+        else {
+            try { n = Integer.parseInt(value == null ? String.valueOf(fallback) : value.toString()); }
+            catch (NumberFormatException e) { n = fallback; }
+        }
+        return Math.max(min, Math.min(max, n));
     }
 
 
