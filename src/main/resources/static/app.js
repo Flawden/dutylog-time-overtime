@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "23.1.4"
+const DUTYLOG_VERSION = "23.1.5"
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -729,7 +729,7 @@ function offlineDiagnosticsRows(queue, failed){
     ["Последняя синхронизация", state.offline.lastSyncAt ? `${fmtSyncTime(state.offline.lastSyncAt)} · ${fmtSyncAge(state.offline.lastSyncAt)}` : "ещё нет", !!state.offline.lastSyncAt],
     ["Возраст snapshot", state.offline.lastSyncAt ? fmtSyncAge(state.offline.lastSyncAt) : "нет локальной копии", state.offline.lastSyncAt ? !state.offline.stale : false],
     ["Очередь", `${queue.length} ожидает отправки`, queue.length === 0],
-    ["Не применилось", `${failed.length} ошибок`, failed.length === 0],
+    ["Неудачные операции", `${failed.length} не применилось`, failed.length === 0],
     ["Sync lock", lock.label, !lock.active || lock.mine],
   ];
   if (lock.startedAt) rows.push(["Lock запущен", fmtSyncTime(lock.startedAt), !lock.expired]);
@@ -1133,10 +1133,10 @@ async function renderOfflineSyncDialog(){
       <div><b>${escapeHtml(describeOfflineOperation(item))}</b><span>${escapeHtml(fmtSyncTime(item.failedAt || item.createdAt))}</span></div>
       <small>${escapeHtml(item.lastError || "сервер не применил операцию")}</small>
       <div class="syncItemActions">
-        <button type="button" data-failed-retry="${idx}">Повторить ошибку</button>
-        <button type="button" data-failed-remove="${idx}">Удалить ошибочную операцию</button>
+        <button type="button" data-failed-retry="${idx}">Повторить операцию</button>
+        <button type="button" data-failed-remove="${idx}">Убрать из списка</button>
       </div>
-    </div>`).join("") : '<span class="emptyLine">Ошибок синхронизации нет.</span>';
+    </div>`).join("") : '<span class="emptyLine">Неудачных операций синхронизации нет.</span>';
   renderOfflineDiagnostics(queue, failed);
 }
 

@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -73,7 +74,7 @@ public class SystemController {
         AppUser user = requireAdmin(principal);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("app", "DutyLog: Time & Overtime");
-        result.put("version", "23.1.4");
+        result.put("version", "23.1.5");
         result.put("admin", user.getUsername());
         result.put("serverTime", Instant.now().toString());
         result.put("serverTimezone", ZoneId.systemDefault().toString());

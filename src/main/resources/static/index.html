@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=23.1.4" rel="stylesheet"/>
+<link href="app.css?v=23.1.5" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -735,7 +735,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v23.1.4</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v23.1.5</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -783,7 +783,7 @@
       <div class="offlineSyncList" id="offlinePendingList"></div>
     </div>
     <div class="offlineSyncBlock">
-      <div class="offlineSyncBlockTitle">Не применилось</div>
+      <div class="offlineSyncBlockTitle">Неудачные операции</div>
       <div class="offlineSyncList" id="offlineFailedList"></div>
     </div>
     <div class="offlineSyncBlock">
@@ -795,12 +795,12 @@
     </div>
     <div class="offlineSyncActions">
       <button class="primary" id="offlineSyncNow" type="button">Синхронизировать</button>
-      <button id="offlineFailedRetryAll" type="button">Повторить ошибки</button>
+      <button id="offlineFailedRetryAll" type="button">Повторить неудачные операции</button>
       <button id="offlineExport" type="button">Скачать локальные данные</button>
-      <button id="offlineFailedClear" type="button">Очистить все ошибки</button>
+      <button id="offlineFailedClear" type="button">Очистить неудачные операции</button>
     </div>
   </div>
 </div>
-<script src="app.js?v=23.1.4"></script>
+<script src="app.js?v=23.1.5"></script>
 </body>
 </html>

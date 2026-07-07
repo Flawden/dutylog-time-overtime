@@ -1,3 +1,10 @@
+# v23.1.5 — Offline sync copy and compile polish
+
+- Added missing `PostMapping` import in `SystemController` for the admin password reset endpoint.
+- Renamed confusing offline sync UI copy: `Повторить ошибки` is now `Повторить неудачные операции`.
+- Renamed related failed-operation actions so the dialog talks about operations, not “repeating errors”.
+- Frontend/backend/service-worker versions bumped to `23.1.5`.
+
 # v23.1.4 — Telegram tasks pagination compile fix
 
 - Fixed Telegram `/tasks` command after `TaskService.listBoard(...)` was changed to return a paged result.
@@ -101,8 +108,8 @@
 
 # v21.1 — Offline hardening
 
-- Добавлена подробная панель синхронизации из индикатора в шапке: ожидающие операции, ошибки применения, последняя синхронизация и состояние подключения.
-- Добавлена ручная синхронизация из панели, массовый повтор ошибочных операций, повтор одной ошибки и удаление ошибочной операции из списка.
+- Добавлена подробная панель синхронизации из индикатора в шапке: ожидающие операции, неудачные операции, последняя синхронизация и состояние подключения.
+- Добавлена ручная синхронизация из панели, массовый повтор неудачных операций, повтор одной неудачной операции и удаление неудачной операции из списка.
 - Добавлен emergency export локального offline-состояния в JSON: `app`, `version`, `snapshot`, `queue`, `failed`, `meta` и сведения браузера.
 - Добавлена защита от двух вкладок: синхронизация берёт короткий lock в `localStorage`, чтобы очередь не проигрывалась параллельно.
 - Индикатор теперь показывает устаревшие данные, если последний локальный снимок старше суток.
