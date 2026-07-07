@@ -281,11 +281,13 @@ public class TelegramCommandService {
     }
 
     private String tasksSummary(AppUser user) {
-        List<TaskDto> tasks = taskService.listBoard(user, "open", "all", "all", "", null, null);
+        var taskPage = taskService.listBoard(user, "open", "all", "all", "", null, null, 0, 50);
+        List<TaskDto> tasks = taskPage.items();
+        long total = taskPage.total();
         if (tasks.isEmpty()) return "Открытых задач нет. Красота.";
-        StringBuilder sb = new StringBuilder("Открытые задачи: ").append(tasks.size()).append("\n");
+        StringBuilder sb = new StringBuilder("Открытые задачи: ").append(total).append("\n");
         tasks.stream().limit(12).forEach(t -> sb.append("\n• ").append(taskLine(t)));
-        if (tasks.size() > 12) sb.append("\n…и ещё ").append(tasks.size() - 12);
+        if (total > 12) sb.append("\n…и ещё ").append(total - 12);
         sb.append("\n\nЗакрыть задачу: /done 12");
         return sb.toString();
     }

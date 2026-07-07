@@ -1,3 +1,9 @@
+# v23.1.4 — Telegram tasks pagination compile fix
+
+- Fixed Telegram `/tasks` command after `TaskService.listBoard(...)` was changed to return a paged result.
+- Telegram now requests the first page of open tasks and uses the page total for the summary.
+- Frontend/backend/service-worker versions bumped to `23.1.4`.
+
 # v23.1.3 — Large list pagination hardening
 
 - Admin users list now loads by pages instead of sending all users to the browser.
