@@ -83,7 +83,7 @@ The backend creates or updates this account on startup, refreshes its password f
 
 ## 2. Post-launch checks
 
-Run smoke test. In v22.1 it also verifies static asset versions and service worker cache version:
+Run smoke test. In v22.2 it also verifies static asset versions and service worker cache version:
 
 ```bash
 DUTYLOG_BASE_URL=https://your-domain.example ./deploy/scripts/smoke-test.sh

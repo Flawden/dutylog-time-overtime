@@ -7,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
+import ru.daniil.shifts.service.AppSettingsService;
 import ru.daniil.shifts.service.DefaultShiftSeedService;
 
 import java.security.Principal;
@@ -19,14 +20,25 @@ public class AuthController {
     private final UserRepository users;
     private final PasswordEncoder encoder;
     private final DefaultShiftSeedService defaultShiftSeedService;
+    private final AppSettingsService appSettingsService;
 
-    public AuthController(UserRepository users, PasswordEncoder encoder, DefaultShiftSeedService defaultShiftSeedService) {
+    public AuthController(UserRepository users,
+                          PasswordEncoder encoder,
+                          DefaultShiftSeedService defaultShiftSeedService,
+                          AppSettingsService appSettingsService) {
         this.users = users;
         this.encoder = encoder;
         this.defaultShiftSeedService = defaultShiftSeedService;
+        this.appSettingsService = appSettingsService;
     }
 
     public record RegisterRequest(String username, String password) {}
+
+    /** Публичный статус регистрации для страницы входа. */
+    @GetMapping("/registration-status")
+    public Map<String, Object> registrationStatus() {
+        return appSettingsService.registrationStatus();
+    }
 
     /**
      * Регистрация. После создания пользователю выдаётся стартовый набор смен.
@@ -35,6 +47,10 @@ public class AuthController {
     @PostMapping("/register")
     @Transactional
     public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
+        if (!appSettingsService.isRegistrationEnabled()) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("error", "Регистрация закрыта администратором"));
+        }
         if (req == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Некорректный JSON в запросе"));
         }

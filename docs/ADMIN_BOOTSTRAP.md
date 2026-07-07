@@ -34,3 +34,8 @@ Do not commit `.env` with real values.
 ## Local development
 
 In local development these variables may be empty. In that case no administrator is created automatically and all public registrations are regular users. Set the same variables locally if you need the `Система` diagnostics page.
+
+
+## Public registration control
+
+Since v22.2 public registration is controlled from the administrator section `Система` → `Публичная регистрация`. This setting affects only ordinary `USER` self-registration. Administrator bootstrap remains environment-only and must not be exposed as a UI registration flow. See [`REGISTRATION_SETTINGS.md`](REGISTRATION_SETTINGS.md).

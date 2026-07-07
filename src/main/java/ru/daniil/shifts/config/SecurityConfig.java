@@ -76,6 +76,7 @@ public class SecurityConfig {
                         "/service-worker.js",
                         "/icons/**",
                         "/api/auth/register",
+                        "/api/auth/registration-status",
                         "/api/mobile/auth/login",
                         "/api/mobile/auth/refresh",
                         "/api/mobile/auth/logout",

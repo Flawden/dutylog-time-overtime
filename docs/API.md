@@ -955,6 +955,35 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 
 ## System diagnostics
 
+
+### GET `/api/auth/registration-status`
+
+Публичный endpoint для страницы входа. Авторизация не нужна. Возвращает, можно ли показывать форму регистрации обычных пользователей. Backend всё равно проверяет эту настройку при `POST /api/auth/register`.
+
+```json
+{
+  "enabled": false,
+  "mode": "closed",
+  "source": "database",
+  "updatedAt": "2026-07-07T09:45:00Z",
+  "updatedBy": "admin"
+}
+```
+
+### GET `/api/admin/settings/registration`
+
+Возвращает ту же настройку публичной регистрации, но только для администратора. Используется карточкой `Система` → `Публичная регистрация`.
+
+### PATCH `/api/admin/settings/registration`
+
+Меняет публичную регистрацию. Требует web-сессию администратора и CSRF-заголовок.
+
+```json
+{ "enabled": false }
+```
+
+Если регистрация закрыта, `POST /api/auth/register` возвращает `403` и JSON-ошибку. UI-регистрация администраторов отсутствует: стартовый админ создаётся только через env bootstrap.
+
 ### GET `/api/admin/status`
 
 Служебная диагностика для профиля администратора `Система`. Endpoint требует обычную web-сессию и роль `ADMIN`; для обычного пользователя возвращает `403`. CSRF-cookie не нужен, потому что это `GET`. Секреты не отдаются: токен Telegram, пароли и URL базы данных не раскрываются.
@@ -964,11 +993,18 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "22.1",
+  "version": "22.2",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],
   "database": { "ok": true },
+  "registration": {
+    "enabled": false,
+    "mode": "closed",
+    "source": "database",
+    "updatedAt": "2026-07-07T09:45:00Z",
+    "updatedBy": "admin"
+  },
   "telegram": {
     "enabled": true,
     "tokenConfigured": true,

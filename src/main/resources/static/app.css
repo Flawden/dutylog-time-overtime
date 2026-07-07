@@ -933,3 +933,13 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
   .offlineSyncActions{display:grid;grid-template-columns:1fr}
   .offlineSyncActions button{width:100%}
 }
+
+/* v22.2: admin-controlled public registration */
+.adminView #registrationAdminCard{ border-color:rgba(245,184,65,.24); }
+.adminView #registrationAdminCard .settingsHead{ cursor:default; align-items:flex-start; }
+.status.ok{ color:var(--ok); }
+.status.warn{ color:var(--danger); }
+.settingsGrid.one{ display:grid; grid-template-columns:1fr; gap:8px; margin:10px 0; }
+.checkline{ display:flex; align-items:center; gap:10px; border:1px solid var(--line); border-radius:12px; padding:10px 12px; background:rgba(255,255,255,.025); font-weight:800; color:var(--text); }
+.checkline input{ width:auto; }
+@media (max-width:700px){ .checkline{ align-items:flex-start; } }

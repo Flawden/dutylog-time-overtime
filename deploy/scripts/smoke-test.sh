@@ -45,15 +45,19 @@ fetch "$BASE_URL/manifest.json" | grep -qi 'DutyLog'
 echo "   ok"
 
 echo "5) Service worker"
-fetch "$BASE_URL/service-worker.js" | grep -q 'dutylog-shell-v22.1'
+fetch "$BASE_URL/service-worker.js" | grep -q 'dutylog-shell-v22.2'
 echo "   ok"
 
 echo "6) Static assets"
-fetch "$BASE_URL/app.js" | grep -q 'DUTYLOG_VERSION = "22.1"'
+fetch "$BASE_URL/app.js" | grep -q 'DUTYLOG_VERSION = "22.2"'
 fetch "$BASE_URL/app.css" | grep -q ':root'
 echo "   ok"
 
-echo "7) Protected API returns unauthorized/redirected/forbidden instead of crashing"
+echo "7) Public registration status endpoint"
+fetch "$BASE_URL/api/auth/registration-status" | grep -q '"enabled"'
+echo "   ok"
+
+echo "8) Protected API returns unauthorized/redirected/forbidden instead of crashing"
 HTTP_CODE="$(status_code "$BASE_URL/api/admin/status")"
 case "$HTTP_CODE" in
   200|401|302|403) echo "   ok ($HTTP_CODE)" ;;

@@ -5,10 +5,13 @@ import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 import ru.daniil.shifts.model.AppUser;
+import ru.daniil.shifts.service.AppSettingsService;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.telegram.TelegramLinkService;
 import ru.daniil.shifts.telegram.TelegramLinkService.TelegramStatusDto;
@@ -31,6 +34,7 @@ public class SystemController {
     private final JdbcTemplate jdbcTemplate;
     private final CurrentUserService currentUserService;
     private final TelegramLinkService telegramLinkService;
+    private final AppSettingsService appSettingsService;
 
     @Value("${dutylog.telegram.enabled:false}")
     private boolean telegramEnabled;
@@ -47,11 +51,13 @@ public class SystemController {
     public SystemController(Environment environment,
                             JdbcTemplate jdbcTemplate,
                             CurrentUserService currentUserService,
-                            TelegramLinkService telegramLinkService) {
+                            TelegramLinkService telegramLinkService,
+                            AppSettingsService appSettingsService) {
         this.environment = environment;
         this.jdbcTemplate = jdbcTemplate;
         this.currentUserService = currentUserService;
         this.telegramLinkService = telegramLinkService;
+        this.appSettingsService = appSettingsService;
     }
 
     @GetMapping("/status")
@@ -59,14 +65,34 @@ public class SystemController {
         AppUser user = requireAdmin(principal);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("app", "DutyLog: Time & Overtime");
-        result.put("version", "22.1");
+        result.put("version", "22.2");
         result.put("admin", user.getUsername());
         result.put("serverTime", Instant.now().toString());
         result.put("serverTimezone", ZoneId.systemDefault().toString());
         result.put("profiles", Arrays.asList(environment.getActiveProfiles()));
         result.put("database", databaseStatus());
+        result.put("registration", appSettingsService.registrationStatus());
         result.put("telegram", telegramStatus(principal));
         return result;
+    }
+
+
+    public record RegistrationSettingsRequest(Boolean enabled) {}
+
+    @GetMapping("/settings/registration")
+    public Map<String, Object> registrationSettings(Principal principal) {
+        requireAdmin(principal);
+        return appSettingsService.registrationStatus();
+    }
+
+    @PatchMapping("/settings/registration")
+    public Map<String, Object> updateRegistrationSettings(@RequestBody RegistrationSettingsRequest request, Principal principal) {
+        AppUser user = requireAdmin(principal);
+        if (request == null || request.enabled() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Нужно передать enabled: true/false");
+        }
+        appSettingsService.setRegistrationEnabled(request.enabled(), user.getUsername());
+        return appSettingsService.registrationStatus();
     }
 
     private AppUser requireAdmin(Principal principal) {

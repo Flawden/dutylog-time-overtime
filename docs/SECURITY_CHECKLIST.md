@@ -24,6 +24,8 @@ This checklist is for a personal production deployment of DutyLog.
 ## Application
 
 - [ ] Public registration does not create administrators automatically.
+- [ ] Public registration is closed in `Система` if the deployment is private/personal.
+- [ ] Direct `POST /api/auth/register` returns `403` when registration is closed.
 - [ ] Bootstrap admin from `DUTYLOG_ADMIN_USERNAME` can log in and sees `Система`.
 - [ ] Any unexpected old/admin-by-first-registration account is demoted to `USER` after startup.
 - [ ] `Система` is visible only to administrator.

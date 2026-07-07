@@ -13,7 +13,6 @@ import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.MobileAuthService;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Optional;
 
 /**
@@ -36,7 +35,8 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
         return "/api/mobile/auth/login".equals(path)
                 || "/api/mobile/auth/refresh".equals(path)
                 || "/api/mobile/auth/logout".equals(path)
-                || "/api/auth/register".equals(path);
+                || "/api/auth/register".equals(path)
+                || "/api/auth/registration-status".equals(path);
     }
 
     @Override
@@ -59,10 +59,15 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
         }
 
         AppUser appUser = user.get();
+        java.util.ArrayList<SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
+        authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
+        if (appUser.isAdmin()) {
+            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        }
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                 appUser.getUsername(),
                 null,
-                List.of(new SimpleGrantedAuthority("ROLE_USER"))
+                authorities
         );
         SecurityContextHolder.getContext().setAuthentication(authentication);
         mobileAuthService.touchAccessToken(token);

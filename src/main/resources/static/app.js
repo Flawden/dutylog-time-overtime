@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "22.1";
+const DUTYLOG_VERSION = "22.2";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -23,6 +23,7 @@ const state = {
   quickScenarios: [],
   timeSettings: null,
   telegramStatus: null,
+  registrationSettings: null,
   activeScenarioId: null,
   ledgerFilters: { from:"", to:"", status:"all", q:"" },
   editingCreditId: null,
@@ -238,6 +239,8 @@ const api = {
   async telegramSettings(b) { return jfetch("/api/telegram/settings", { method:"PATCH", body:b }); },
   async telegramUnlink() { return jfetch("/api/telegram/link", { method:"DELETE" }); },
   async systemStatus() { return jfetch("/api/admin/status"); },
+  async registrationSettings() { return jfetch("/api/admin/settings/registration"); },
+  async updateRegistrationSettings(enabled) { return jfetch("/api/admin/settings/registration", { method:"PATCH", body:{ enabled } }); },
 };
 
 /* CSRF: Spring кладёт токен в cookie XSRF-TOKEN, мы возвращаем его заголовком */
@@ -255,6 +258,7 @@ function offlineRequiredMessage(url){
   if (url.startsWith("/api/telegram")) return "Telegram-интеграция настраивается только при подключении к серверу.";
   if (url.startsWith("/api/profile")) return "Профиль и сессии меняются только при подключении к серверу.";
   if (url.startsWith("/api/important-days")) return "Важные даты меняются только при подключении к серверу.";
+  if (url.startsWith("/api/admin")) return "Админские настройки меняются только при подключении к серверу.";
   return "Эта операция требует связи с сервером. Смена дня, заметки и галочки задач сохраняются оффлайн.";
 }
 
@@ -3112,6 +3116,50 @@ function renderDiagnosticsClient(){
     navigator.serviceWorker.getRegistration().then(reg => set("diagSw", reg ? "активен" : "не зарегистрирован")).catch(() => set("diagSw", "ошибка"));
   } else set("diagSw", "не поддерживается");
 }
+function renderRegistrationAdmin(status = null){
+  const enabled = status?.enabled === true;
+  const statusEl = $("registrationAdminStatus");
+  const detailsEl = $("registrationAdminDetails");
+  const toggle = $("registrationEnabledToggle");
+  const stateLabel = enabled ? "открыта" : "закрыта";
+  if (statusEl) {
+    statusEl.textContent = stateLabel;
+    statusEl.className = "status " + (enabled ? "warn" : "ok");
+  }
+  if (toggle) toggle.checked = enabled;
+  if (detailsEl) {
+    const source = status?.source === "database" ? "из админки" : "значение по умолчанию";
+    const changed = status?.updatedAt ? ` · изменено ${fmtSyncTime(status.updatedAt)}${status.updatedBy ? " пользователем " + status.updatedBy : ""}` : "";
+    detailsEl.textContent = `Публичная регистрация: ${stateLabel} · ${source}${changed}`;
+  }
+}
+async function refreshRegistrationAdmin(){
+  try {
+    const status = await api.registrationSettings();
+    state.registrationSettings = status;
+    renderRegistrationAdmin(status);
+  } catch (err) {
+    const detailsEl = $("registrationAdminDetails");
+    if (detailsEl) detailsEl.textContent = "Не удалось загрузить настройку регистрации: " + (err.message || String(err));
+  }
+}
+async function saveRegistrationAdmin(enabled){
+  const toggle = $("registrationEnabledToggle");
+  const statusEl = $("registrationAdminStatus");
+  if (toggle) toggle.disabled = true;
+  if (statusEl) statusEl.textContent = "сохраняю…";
+  try {
+    const status = await api.updateRegistrationSettings(enabled);
+    state.registrationSettings = status;
+    renderRegistrationAdmin(status);
+    setSave("saved", enabled ? "публичная регистрация открыта" : "публичная регистрация закрыта");
+  } catch (err) {
+    setSave("err", err.message || "не удалось сохранить настройку регистрации");
+    renderRegistrationAdmin(state.registrationSettings);
+  } finally {
+    if (toggle) toggle.disabled = false;
+  }
+}
 function diagnosticRow(label, value, ok = null){
   const cls = ok === true ? " ok" : ok === false ? " warn" : "";
   return `<div class="diagRow${cls}"><span>${esc(label)}</span><b>${esc(value ?? "—")}</b></div>`;
@@ -3125,6 +3173,8 @@ function renderDiagnosticsStatus(data){
   rows.push(diagnosticRow("Серверное время", data.serverTime || "—"));
   rows.push(diagnosticRow("Часовой пояс сервера", data.serverTimezone || "—"));
   rows.push(diagnosticRow("База данных", data.database?.ok ? "ok" : (data.database?.error || "ошибка"), !!data.database?.ok));
+  rows.push(diagnosticRow("Публичная регистрация", data.registration?.enabled ? "открыта" : "закрыта", data.registration?.enabled ? false : true));
+  rows.push(diagnosticRow("Источник настройки регистрации", data.registration?.source === "database" ? "админка" : "по умолчанию"));
   rows.push(diagnosticRow("Telegram bot", data.telegram?.enabled ? "включён" : "выключен", data.telegram?.enabled ? true : null));
   rows.push(diagnosticRow("Telegram token", data.telegram?.tokenConfigured ? "задан" : "не задан", data.telegram?.tokenConfigured ? true : null));
   rows.push(diagnosticRow("Telegram polling", data.telegram?.pollingEnabled ? "включён" : "выключен", data.telegram?.pollingEnabled ? true : null));
@@ -3159,6 +3209,8 @@ function diagnosticsReportText(){
     `Server time: ${d.serverTime || "—"}`,
     `Server timezone: ${d.serverTimezone || "—"}`,
     `Database: ${d.database?.ok ? "ok" : (d.database?.error || "unknown")}`,
+    `Registration enabled: ${!!d.registration?.enabled}`,
+    `Registration source: ${d.registration?.source || "unknown"}`,
     `Telegram enabled: ${!!d.telegram?.enabled}`,
     `Telegram token: ${!!d.telegram?.tokenConfigured}`,
     `Telegram polling: ${!!d.telegram?.pollingEnabled}`,
@@ -3175,6 +3227,9 @@ function initDiagnosticsEvents(){
     catch (err) { setSave("err", "не удалось скопировать отчёт"); }
   });
   renderDiagnosticsClient();
+  refreshRegistrationAdmin();
+  $("registrationRefresh")?.addEventListener("click", refreshRegistrationAdmin);
+  $("registrationEnabledToggle")?.addEventListener("change", e => saveRegistrationAdmin(e.target.checked));
 }
 
 function initSettingsAccordion(){

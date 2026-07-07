@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=22.1" rel="stylesheet"/>
+<link href="app.css?v=22.2" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -557,6 +557,27 @@
       <button id="adminBack" type="button">Назад к настройкам</button>
     </div>
   </div>
+<div class="settingsCard" id="registrationAdminCard" data-settings-section="registration">
+<div class="settingsHead">
+<div>
+<div class="eyebrow">Доступ</div>
+<div class="settingsTitle">Публичная регистрация</div>
+<div class="settingsHint">Администратор может открыть или закрыть создание новых обычных аккаунтов. Стартовый админ по-прежнему создаётся только через переменные окружения.</div>
+</div>
+<div class="status" id="registrationAdminStatus">—</div>
+</div>
+<div class="settingsGrid one">
+  <label class="checkline">
+    <input id="registrationEnabledToggle" type="checkbox">
+    <span>Разрешить публичную регистрацию пользователей</span>
+  </label>
+</div>
+<div class="settingsHint" id="registrationAdminDetails">Загрузка настройки регистрации…</div>
+<div class="diagnosticsActions">
+  <button id="registrationRefresh" type="button">Обновить статус регистрации</button>
+</div>
+</div>
+
 <div class="settingsCard" id="diagnosticsCard" data-settings-section="diagnostics">
 <div class="settingsHead">
 <div>
@@ -567,7 +588,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v22.1</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v22.2</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -633,6 +654,6 @@
     </div>
   </div>
 </div>
-<script src="app.js?v=22.1"></script>
+<script src="app.js?v=22.2"></script>
 </body>
 </html>

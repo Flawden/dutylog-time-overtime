@@ -29,6 +29,7 @@
     border-radius:8px; padding:10px; font-size:14px; font-weight:700; cursor:pointer; font-family:inherit; }
   .btn:disabled { background:var(--line); color:var(--dim); cursor:default; }
   .msg { min-height:18px; margin-top:10px; font-size:12.5px; }
+  .hint { margin-top:10px; color:var(--dim); font-size:12px; line-height:1.35; }
   .msg.err { color:var(--danger); }
   .msg.ok { color:var(--ok); }
 </style>
@@ -63,6 +64,7 @@
   </form>
 
   <div class="msg" id="msg"></div>
+  <div class="hint" id="regStatusHint"></div>
 </div>
 
 <script>
@@ -83,6 +85,27 @@ async function ensureCsrf(){
   return csrfToken();
 }
 ensureCsrf().then(t => { $("csrfField").value = t || ""; });
+
+let registrationEnabled = true;
+async function loadRegistrationStatus(){
+  try {
+    const res = await fetch("/api/auth/registration-status", { cache:"no-store", credentials:"same-origin" });
+    if (!res.ok) return;
+    const data = await res.json();
+    registrationEnabled = data.enabled !== false;
+  } catch (e) {
+    // Backend всё равно проверит POST. Если статус не загрузился, не ломаем вход.
+    registrationEnabled = true;
+  }
+  applyRegistrationStatus();
+}
+function applyRegistrationStatus(){
+  const closed = !registrationEnabled;
+  $("tabReg").hidden = closed;
+  $("regStatusHint").textContent = closed ? "Публичная регистрация закрыта администратором. Войдите в существующий аккаунт." : "";
+  if (closed) setTab(false);
+}
+
 $("loginForm").addEventListener("submit", (e) => {
   if (!csrfToken()) {
     // токена всё ещё нет — добываем и отправляем форму сами
@@ -94,6 +117,10 @@ $("loginForm").addEventListener("submit", (e) => {
 });
 
 function setTab(reg) {
+  if (reg && !registrationEnabled) {
+    setMsg("Регистрация закрыта администратором", "err");
+    return;
+  }
   $("tabLogin").classList.toggle("on", !reg);
   $("tabReg").classList.toggle("on", reg);
   $("loginForm").hidden = reg;
@@ -117,6 +144,10 @@ if (new URLSearchParams(location.search).has("error")) {
 
 $("regForm").addEventListener("submit", async (e) => {
   e.preventDefault();
+  if (!registrationEnabled) {
+    setMsg("Регистрация закрыта администратором", "err");
+    return;
+  }
   const username = $("ru").value.trim();
   const password = $("rp").value;
   $("regBtn").disabled = true;
@@ -145,6 +176,8 @@ $("regForm").addEventListener("submit", async (e) => {
     $("regBtn").disabled = false;
   }
 });
+loadRegistrationStatus();
+
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker.js").catch(() => {}));
 }
