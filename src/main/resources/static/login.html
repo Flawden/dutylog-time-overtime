@@ -32,10 +32,14 @@
   .hint { margin-top:10px; color:var(--dim); font-size:12px; line-height:1.35; }
   .msg.err { color:var(--danger); }
   .msg.ok { color:var(--ok); }
+  .loginLang { display:flex; justify-content:flex-end; gap:6px; margin-bottom:10px; }
+  .loginLang button { border:1px solid var(--line); background:transparent; color:var(--mut); border-radius:999px; padding:5px 9px; cursor:pointer; font-family:inherit; font-weight:700; }
+  .loginLang button.on { color:#14171C; background:var(--accent); border-color:var(--accent); }
 </style>
 </head>
 <body>
 <div class="card">
+  <div class="loginLang"><button type="button" data-login-lang="ru">RU</button><button type="button" data-login-lang="en">EN</button></div>
   <div class="eyebrow">DutyLog: Time & Overtime</div>
   <h1 id="title">Вход</h1>
 
@@ -70,6 +74,29 @@
 <script>
 "use strict";
 const $ = id => document.getElementById(id);
+const LANGUAGE_KEY = "dutylog.language.v1";
+const L_EN = {
+  "Вход":"Login", "Регистрация":"Registration", "Имя пользователя":"Username", "Пароль":"Password", "Войти":"Sign in", "Создать аккаунт":"Create account", "Имя пользователя (от 3 символов)":"Username (min. 3 characters)", "Пароль (от 6 символов)":"Password (min. 6 characters)", "Неверное имя или пароль":"Invalid username or password", "Регистрация закрыта администратором":"Registration is closed by administrator", "Публичная регистрация закрыта администратором. Войдите в существующий аккаунт.":"Public registration is closed by administrator. Sign in to an existing account.", "Создаю аккаунт…":"Creating account…", "Готово, вхожу…":"Done, signing in…", "Сеть недоступна":"Network unavailable"
+};
+const L_RU = Object.fromEntries(Object.entries(L_EN).map(([ru,en]) => [en, ru]));
+function loginLang(){ try { return (localStorage.getItem(LANGUAGE_KEY) || (navigator.language || "").slice(0,2)) === "en" ? "en" : "ru"; } catch (_) { return "ru"; } }
+let currentLang = loginLang();
+function lt(s){ return currentLang === "en" ? (L_EN[s] || s) : (L_RU[s] || s); }
+function applyLoginLanguage(lang){
+  currentLang = lang === "en" ? "en" : "ru";
+  try { localStorage.setItem(LANGUAGE_KEY, currentLang); } catch (_) {}
+  document.documentElement.lang = currentLang;
+  document.querySelectorAll('[data-login-lang]').forEach(b => b.classList.toggle('on', b.dataset.loginLang === currentLang));
+  const pairs = [["title", "Вход"], ["tabLogin", "Вход"], ["tabReg", "Регистрация"]];
+  for (const [id, ru] of pairs) if ($(id)) $(id).textContent = lt(ru);
+  document.querySelector('label[for="lu"]').textContent = lt("Имя пользователя");
+  document.querySelector('label[for="lp"]').textContent = lt("Пароль");
+  document.querySelector('#loginForm .btn').textContent = lt("Войти");
+  document.querySelector('label[for="ru"]').innerHTML = currentLang === 'en' ? 'Username <span style="color:var(--dim)">(min. 3 characters)</span>' : 'Имя пользователя <span style="color:var(--dim)">(от 3 символов)</span>';
+  document.querySelector('label[for="rp"]').innerHTML = currentLang === 'en' ? 'Password <span style="color:var(--dim)">(min. 6 characters)</span>' : 'Пароль <span style="color:var(--dim)">(от 6 символов)</span>';
+  $("regBtn").textContent = lt("Создать аккаунт");
+}
+document.querySelectorAll('[data-login-lang]').forEach(b => b.addEventListener('click', () => applyLoginLanguage(b.dataset.loginLang)));
 
 /* CSRF: Spring кладёт токен в cookie XSRF-TOKEN при загрузке страницы */
 function csrfToken(){
@@ -102,7 +129,7 @@ async function loadRegistrationStatus(){
 function applyRegistrationStatus(){
   const closed = !registrationEnabled;
   $("tabReg").hidden = closed;
-  $("regStatusHint").textContent = closed ? "Публичная регистрация закрыта администратором. Войдите в существующий аккаунт." : "";
+  $("regStatusHint").textContent = closed ? lt("Публичная регистрация закрыта администратором. Войдите в существующий аккаунт.") : "";
   if (closed) setTab(false);
 }
 
@@ -118,7 +145,7 @@ $("loginForm").addEventListener("submit", (e) => {
 
 function setTab(reg) {
   if (reg && !registrationEnabled) {
-    setMsg("Регистрация закрыта администратором", "err");
+    setMsg(lt("Регистрация закрыта администратором"), "err");
     return;
   }
   $("tabLogin").classList.toggle("on", !reg);
@@ -139,19 +166,19 @@ function setMsg(text, cls) {
 
 // ?error в URL — Spring Security вернул нас после неудачного входа
 if (new URLSearchParams(location.search).has("error")) {
-  setMsg("Неверное имя или пароль", "err");
+  setMsg(lt("Неверное имя или пароль"), "err");
 }
 
 $("regForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   if (!registrationEnabled) {
-    setMsg("Регистрация закрыта администратором", "err");
+    setMsg(lt("Регистрация закрыта администратором"), "err");
     return;
   }
   const username = $("ru").value.trim();
   const password = $("rp").value;
   $("regBtn").disabled = true;
-  setMsg("Создаю аккаунт…");
+  setMsg(lt("Создаю аккаунт…"));
   try {
     await ensureCsrf();
     const res = await fetch("/api/auth/register", {
@@ -161,21 +188,22 @@ $("regForm").addEventListener("submit", async (e) => {
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
-      setMsg(body.error || `Ошибка ${res.status}`, "err");
+      setMsg(body.error || (currentLang === "en" ? `Error ${res.status}` : `Ошибка ${res.status}`), "err");
       $("regBtn").disabled = false;
       return;
     }
     // Аккаунт создан — входим теми же данными через обычную форму
-    setMsg("Готово, вхожу…", "ok");
+    setMsg(lt("Готово, вхожу…"), "ok");
     $("lu").value = username;
     $("lp").value = password;
     $("csrfField").value = csrfToken();
     $("loginForm").submit();
   } catch (err) {
-    setMsg("Сеть недоступна", "err");
+    setMsg(lt("Сеть недоступна"), "err");
     $("regBtn").disabled = false;
   }
 });
+applyLoginLanguage(currentLang);
 loadRegistrationStatus();
 
 if ("serviceWorker" in navigator) {

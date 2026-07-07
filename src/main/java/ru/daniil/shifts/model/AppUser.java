@@ -63,6 +63,10 @@ public class AppUser {
     @Column(name = "theme_config", columnDefinition = "TEXT")
     private String themeConfig;
 
+    /** Язык интерфейса: ru/en. Пользовательская настройка i18n, не влияет на права. */
+    @Column(name = "language_preference", length = 10)
+    private String languagePreference = "ru";
+
     protected AppUser() {} // для JPA
 
     public AppUser(String username, String passwordHash) {
@@ -93,6 +97,11 @@ public class AppUser {
     public void setThemePreset(String themePreset) { this.themePreset = themePreset == null || themePreset.isBlank() ? "default" : themePreset.trim(); }
     public String getThemeConfig() { return themeConfig; }
     public void setThemeConfig(String themeConfig) { this.themeConfig = themeConfig == null || themeConfig.isBlank() ? null : themeConfig.trim(); }
+    public String getLanguagePreference() { return languagePreference == null || languagePreference.isBlank() ? "ru" : languagePreference; }
+    public void setLanguagePreference(String languagePreference) {
+        String lang = languagePreference == null || languagePreference.isBlank() ? "ru" : languagePreference.trim().toLowerCase();
+        this.languagePreference = (lang.equals("en") || lang.equals("ru")) ? lang : "ru";
+    }
 
     @PrePersist
     void onCreate() {
@@ -105,6 +114,7 @@ public class AppUser {
         setAccentColor(accentColor);
         setThemePreset(themePreset);
         setThemeConfig(themeConfig);
+        setLanguagePreference(languagePreference);
     }
 
     @PreUpdate
@@ -116,5 +126,6 @@ public class AppUser {
         setAccentColor(accentColor);
         setThemePreset(themePreset);
         setThemeConfig(themeConfig);
+        setLanguagePreference(languagePreference);
     }
 }

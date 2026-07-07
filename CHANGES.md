@@ -1,8 +1,8 @@
-# v23.1.6 — Notification status polish
+# v24.0 — Notification status polish
 
 - Notification settings header now uses compact status chips instead of raw text like `0 шт · браузер: разрешено`.
 - Reminder count and browser permission status are visually aligned with theme/admin/time status chips.
-- Frontend/backend/service-worker versions bumped to `23.1.6`.
+- Frontend/backend/service-worker versions bumped to `24.0`.
 
 # v23.1.5 — Offline sync copy and compile polish
 

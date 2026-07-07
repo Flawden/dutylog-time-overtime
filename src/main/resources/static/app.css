@@ -1126,7 +1126,7 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
 }
 
 
-/* v23.1.1-v23.1.6: visual polish for status chips */
+/* v23.1.1-v24.0: visual polish for status chips */
 .settingsHead > .status,
 .notifyHead > .status{
   display:flex;
@@ -1244,4 +1244,43 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
   .pagerRow button, .pagerRow select, .adminUserFilters input, .adminUserFilters select{ width:100%; }
   .pagerRow label{ width:100%; align-items:stretch; flex-direction:column; }
   .pagerText{ width:100%; justify-content:center; }
+}
+
+/* v24.0: language switch / i18n */
+.languageChoiceGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
+  gap:10px;
+  margin-top:12px;
+}
+.languageChoice{
+  text-align:left;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.025);
+  color:var(--text);
+  border-radius:14px;
+  padding:12px 14px;
+  cursor:pointer;
+  font-family:inherit;
+  transition:border-color .15s ease, box-shadow .15s ease, transform .15s ease, background .15s ease;
+}
+.languageChoice:hover{
+  transform:translateY(-1px);
+  border-color:color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+.languageChoice.on{
+  border-color:var(--accent);
+  background:color-mix(in srgb, var(--accent) 12%, var(--panel));
+  box-shadow:0 0 0 1px color-mix(in srgb, var(--accent) 60%, transparent);
+}
+.languageChoice b{ display:block; font-size:15px; margin-bottom:4px; }
+.languageChoice span{ display:block; color:var(--mut); font-size:12px; }
+.statusLanguageSummary{
+  color:var(--text);
+  border:1px solid color-mix(in srgb, var(--accent) 35%, var(--line));
+  background:color-mix(in srgb, var(--accent) 10%, rgba(255,255,255,.025));
+  border-radius:999px;
+  padding:7px 12px;
+  font-weight:900;
+  white-space:nowrap;
 }

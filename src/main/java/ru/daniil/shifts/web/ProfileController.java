@@ -48,7 +48,7 @@ public class ProfileController {
         this.encoder = encoder;
     }
 
-    public record ProfileUpdateRequest(String displayName, String birthday, String themePreference, String accentColor, String themePreset, Map<String, Object> themeConfig) {}
+    public record ProfileUpdateRequest(String displayName, String birthday, String themePreference, String accentColor, String themePreset, Map<String, Object> themeConfig, String languagePreference) {}
     public record PasswordChangeRequest(String currentPassword, String newPassword) {}
 
     @GetMapping
@@ -65,6 +65,7 @@ public class ProfileController {
         out.put("accentColor", user.getAccentColor());
         out.put("themePreset", user.getThemePreset());
         out.put("themeConfig", readThemeConfig(user.getThemeConfig()));
+        out.put("languagePreference", user.getLanguagePreference());
         return out;
     }
 
@@ -119,6 +120,14 @@ public class ProfileController {
 
         if (req.themeConfig() != null) {
             user.setThemeConfig(writeSafeThemeConfig(req.themeConfig()));
+        }
+
+        if (req.languagePreference() != null) {
+            String lang = req.languagePreference().trim().toLowerCase();
+            if (!lang.equals("ru") && !lang.equals("en")) {
+                throw ApiException.badRequest("Язык интерфейса должен быть ru или en");
+            }
+            user.setLanguagePreference(lang);
         }
 
         users.save(user);

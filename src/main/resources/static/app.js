@@ -1,7 +1,17 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "23.1.6"
+const DUTYLOG_VERSION = "24.0"
+
+const LANGUAGE_KEY = "dutylog.language.v1";
+function normalizeLanguage(value){
+  const lang = String(value || "").trim().toLowerCase();
+  return lang === "en" ? "en" : "ru";
+}
+function initialLanguage(){
+  try { return normalizeLanguage(localStorage.getItem(LANGUAGE_KEY) || (navigator.language || "").slice(0,2)); }
+  catch (_) { return "ru"; }
+}
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -27,6 +37,7 @@ const state = {
   adminUsers: [],
   adminUsersPage: { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false },
   preferences: { themePreference:"system", accentColor:"#F5B841" },
+  language: initialLanguage(),
   activeScenarioId: null,
   ledgerFilters: { from:"", to:"", status:"all", q:"" },
   ledgerPage: { items: [], page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false },
@@ -47,9 +58,16 @@ const state = {
   },
 };
 
-const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
-const MONTHS_GEN = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
-const WEEKDAYS = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+const MONTHS_RU = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
+const MONTHS_GEN_RU = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
+const WEEKDAYS_RU = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
+const MONTHS_EN = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const MONTHS_GEN_EN = MONTHS_EN;
+const WEEKDAYS_EN = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+function monthName(index){ return (state.language === "en" ? MONTHS_EN : MONTHS_RU)[index]; }
+function monthNameGen(index){ return (state.language === "en" ? MONTHS_GEN_EN : MONTHS_GEN_RU)[index]; }
+function weekdayName(index){ return (state.language === "en" ? WEEKDAYS_EN : WEEKDAYS_RU)[index]; }
+function currentLocale(){ return state.language === "en" ? "en-US" : "ru-RU"; }
 const SWATCHES = ["#F5B841","#E0653A","#C97BB8","#7B8CE0","#4FA3A5","#6FBF73","#B5A642","#8B929E"];
 const APPEARANCE_SWATCHES = ["#F5B841","#E0653A","#C97BB8","#7B8CE0","#4FA3A5","#6FBF73","#9B7BE0","#E05780"];
 const DAY_EMOJI_PRESETS = ["🔥","😴","✅","⚠️","💰","🏥","🎉","🛠️","🌙","☕","🚗","💪","📌","🧠","🛌","❤️"];
@@ -109,6 +127,161 @@ const THEME_PRESETS = {
 const DEFAULT_THEME_CONFIG = THEME_PRESETS.default.themeConfig;
 const DEFAULT_APPEARANCE = { themePreference:"system", accentColor:"#F5B841", themePreset:"default", themeConfig:{ ...DEFAULT_THEME_CONFIG } };
 
+
+const I18N_EN = {
+  "Настройки":"Settings", "Профиль":"Profile", "Язык":"Language", "русский / English":"Russian / English",
+  "Внешний вид":"Appearance", "Время":"Time", "Смены":"Shifts", "Сценарии":"Scenarios", "Уведомления":"Notifications", "Важные даты":"Important dates",
+  "имя, пароль, Telegram":"name, password, Telegram", "тема, акцент, маркеры":"theme, accent, markers", "регион, пояс, дефолты":"region, timezone, defaults", "типы, часы, уведомления":"types, hours, notifications", "шаблоны переработок":"overtime templates", "браузер и расписания":"browser and schedules", "общий список событий":"shared event list",
+  "развернуть всё":"expand all", "свернуть всё":"collapse all", "открыть":"open", "свернуть":"collapse",
+  "Профиль пользователя":"User profile", "Отображаемое имя":"Display name", "День рождения":"Birthday", "Сохранить":"Save",
+  "Смена пароля":"Change password", "Текущий пароль":"Current password", "Новый пароль":"New password", "Ещё раз":"Repeat", "Сменить пароль":"Change password", "Активные устройства":"Active devices", "Telegram-бот":"Telegram bot",
+  "Интерфейс":"Interface", "Язык приложения":"App language", "Русский":"Russian", "Основной язык":"Main language", "Дополнительный язык":"Additional language", "Язык сохранён":"Language saved",
+  "Персонализация":"Personalization", "Пресет":"Preset", "Готовая тема":"Theme preset", "Базовый режим":"Base mode", "Акцент":"Accent", "Точная настройка":"Fine tuning", "Фон приложения":"App background", "Карточки":"Cards", "Внутренние блоки":"Inner blocks", "Основной текст":"Primary text", "Вторичный текст":"Secondary text", "Границы":"Borders", "Стиль кнопок":"Button style", "Стиль карточек":"Card style", "Тени":"Shadows", "Плотность":"Density", "Скругление карточек":"Card radius", "Сохранить внешний вид":"Save appearance", "Сбросить локально":"Reset locally",
+  "как в системе":"system", "тёмная":"dark", "светлая":"light", "заливка":"solid", "мягкие":"soft", "контурные":"outline", "призрачные":"ghost", "стандартные":"standard", "плоские":"flat", "контрастные":"contrast", "тёплые":"warm", "без теней":"no shadows", "лёгкие":"light", "средние":"medium", "сильные":"strong", "компактно":"compact", "обычно":"comfortable", "просторно":"spacious",
+  "Время и регион":"Time and region", "Рабочее время и часовой пояс":"Working hours and timezone", "Регион / объект":"Region / site", "Рабочий часовой пояс":"Work timezone", "Определить часовой пояс":"Detect timezone", "Формат времени":"Time format", "Сохранить настройки":"Save settings",
+  "Типы смен и их время":"Shift types and time", "Короткие часы для календаря":"Short calendar hours", "Название смены":"Shift name", "Добавить":"Add", "Сохранить параметры смен":"Save shift settings", "Дневная":"Day shift", "Ночная":"Night shift", "Выходной":"Day off",
+  "Быстрые сценарии":"Quick scenarios", "Мои сценарии":"My scenarios", "Добавить сценарий":"Add scenario", "Название":"Name", "Старт":"Start", "Конец":"End", "Обед":"Break", "План":"Plan", "Причина по умолчанию":"Default reason", "Описание сценария":"Scenario description",
+  "Уведомления браузера":"Browser notifications", "Разрешить в браузере":"Allow in browser", "Напоминания текущего месяца":"Current month reminders", "Проверить":"Check", "Текущий месяц":"Current month", "Завтра":"Tomorrow", "Сервер рассчитывает напоминания для браузера, Telegram и мобильных клиентов.":"The server calculates reminders for browser, Telegram and mobile clients.",
+  "Календарь":"Calendar", "Переработки":"Overtime", "Задачи":"Tasks", "Сегодня":"Today", "Система":"System", "Выйти":"Logout",
+  "Смена":"Shift", "Маркер":"Marker", "График":"Schedule", "Переработка":"Overtime", "Важные дни":"Important days", "Заметка":"Note", "Превью":"Preview", "Очистить":"Clear", "Поставить":"Apply", "Заполнить":"Fill", "выбранный день":"selected day", "сегодня":"today", "Начислить":"Add credit", "Списать отгул":"Use time off", "отмена":"cancel",
+  "Таблица переработок":"Overtime ledger", "Начислено":"Earned", "Использовано":"Used", "Куда списано":"Used for", "Остаток":"Remaining", "Причина":"Reason", "День":"Day", "Время":"Time", "этот месяц":"this month", "всё время":"all time", "сброс":"reset", "все начисления":"all credits", "только с остатком":"only remaining", "частично списанные":"partially used", "полностью списанные":"fully used",
+  "Все задачи":"All tasks", "Статус задач":"Task status", "Фильтр задач":"Task filter", "Категория":"Category", "Приоритет":"Priority", "Срок":"Due date", "Время срока":"Due time", "напомнить":"remind", "За минут":"Minutes before", "все задачи":"all tasks", "открытые":"open", "просроченные":"overdue", "выполненные":"done", "все категории":"all categories", "любой приоритет":"any priority", "срочные":"urgent", "важные":"high", "обычные":"normal", "низкие":"low",
+  "Пользователи":"Users", "Пользователи и роли":"Users and roles", "Фильтр по роли":"Role filter", "Обновить пользователей":"Refresh users", "Публичная регистрация":"Public registration", "Обновить статус регистрации":"Refresh registration status", "Диагностика":"Diagnostics", "Состояние системы":"System status", "Обновить диагностику":"Refresh diagnostics", "Скопировать отчёт":"Copy report",
+  "Оффлайн-режим":"Offline mode", "Синхронизация данных":"Data sync", "Ожидают отправки":"Pending upload", "Неудачные операции":"Failed operations", "Диагностика оффлайна":"Offline diagnostics", "Синхронизировать":"Sync", "Повторить неудачные операции":"Retry failed operations", "Скачать локальные данные":"Download local data", "Очистить неудачные операции":"Clear failed operations", "Скопировать диагностику":"Copy diagnostics", "Подключение":"Connection", "Последняя синхронизация":"Last sync", "Возраст snapshot":"Snapshot age", "Очередь":"Queue", "Sync lock":"Sync lock", "Онлайн":"Online", "Оффлайн":"Offline", "онлайн":"online", "нет":"no", "доступна":"available",
+  "Пн":"Mon", "Вт":"Tue", "Ср":"Wed", "Чт":"Thu", "Пт":"Fri", "Сб":"Sat", "Вс":"Sun",
+  "загрузка…":"loading…", "Загрузка пользователей…":"Loading users…", "Загрузка настройки регистрации…":"Loading registration setting…", "Маркер не выбран.":"No marker selected.", "Выбранный день":"Selected day", "Главная кнопка":"Primary button", "Обычная":"Secondary", "Карточка":"Card", "Live preview":"Live preview",
+  "Внешний вид сохранён":"Appearance saved", "Сохранено":"Saved", "настройки времени сохранены":"time settings saved", "отчёт диагностики скопирован":"diagnostics report copied", "не удалось скопировать отчёт":"failed to copy report",
+  "браузер":"browser", "разрешено":"allowed", "запрещено":"blocked", "не разрешено":"not allowed", "не поддерживает":"not supported",
+  "Показано:":"Shown:", "Админов на странице:":"Admins on page:", "Пользователей:":"Users:", "Админов:":"Admins:", "Назад":"Back", "Вперёд":"Next", "на странице":"per page", "стр.":"page",
+  "смена":"shift", "задача":"task", "важно":"important", "дайджест":"digest", "Раздел настроек":"Settings section"
+};
+const I18N_RU = Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru]));
+Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие" });
+Object.assign(I18N_EN, {
+  "Вставь emoji с клавиатуры":"Paste an emoji from keyboard",
+  "Маркер не выбран.":"No marker selected.",
+  "2 через 2: день / день / выходной / выходной":"2 on / 2 off: day / day / off / off",
+  "День / ночь / 48 часов отдыха":"Day / night / 48 hours off",
+  "Пятидневка: Пн–Пт рабочие / Сб–Вс выходные":"Five-day week: Mon–Fri work / Sat–Sun off",
+  "День / 72 часа отдыха":"Day / 72 hours off",
+  "Ночь / 72 часа отдыха":"Night / 72 hours off",
+  "Дней:":"Days:",
+  "перезаписывать уже отмеченные смены":"overwrite already marked shifts",
+  "Дата начисления":"Credit date",
+  "Коротко: 17:00–20:00 или 17–08":"Short: 17:00–20:00 or 17–08",
+  "Начало":"Start",
+  "Вычесть план, ч":"Subtract plan, h",
+  "план по смене":"plan by shift",
+  "время по смене":"time by shift",
+  "Итого":"Total",
+  "Причина переработки: ППР, авария, замена смены…":"Overtime reason: planned work, incident, shift replacement…",
+  "Зачем списал: отгул, не вышел после ППР…":"Why used: time off, missed after planned work…",
+  "Списать":"Use",
+  "Дата":"Date",
+  "Например: день рождения Макса":"Example: Max's birthday",
+  "каждый год":"every year",
+  "каждый месяц":"every month",
+  "один раз":"one time",
+  "Задача на этот день":"Task for this day",
+  "работа, дом, здоровье":"work, home, health",
+  "обычная":"normal",
+  "низкая":"low",
+  "важная":"important",
+  "срочная":"urgent",
+  "Редактор на весь экран":"Fullscreen editor",
+  "⛶ развернуть":"⛶ expand",
+  "поиск: причина, дата, куда списано…":"search: reason, date, usage…",
+  "поиск: текст, категория, дата…":"search: text, category, date…",
+  "с":"from",
+  "по":"to",
+  "CSV":"CSV",
+  "Excel":"Excel",
+  "все роли":"all roles",
+  "Пользователь":"User",
+  "Администратор":"Administrator",
+  "Общий список важных дат с удалением":"Shared important-date list with deletion",
+  "Имя, пароль, устройства и Telegram":"Name, password, devices and Telegram",
+  "Тема, акцентный цвет и emoji-маркеры дней":"Theme, accent color and day emoji markers",
+  "Регион, часовой пояс и дефолты дневной/ночной":"Region, timezone and day/night defaults",
+  "Кастомные и встроенные типы смен":"Custom and built-in shift types",
+  "Шаблоны, которые заполняют переработку в панели дня":"Templates that fill overtime in the day panel",
+  "Браузерные, сменные, задачные и важные напоминания":"Browser, shift, task and important reminders",
+  "Русский / English":"Russian / English"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие" });
+
+function t(value){
+  const s = String(value ?? "");
+  return state.language === "en" ? (I18N_EN[s] || s) : (I18N_RU[s] || s);
+}
+function translateTextValue(value){
+  if (!value || !String(value).trim()) return value;
+  const raw = String(value);
+  const leading = raw.match(/^\s*/)?.[0] || "";
+  const trailing = raw.match(/\s*$/)?.[0] || "";
+  const core = raw.trim();
+  const map = state.language === "en" ? I18N_EN : I18N_RU;
+  return Object.prototype.hasOwnProperty.call(map, core) ? leading + map[core] + trailing : value;
+}
+let translationBusy = false;
+function translateStaticTree(root = document.body){
+  if (!root || translationBusy) return;
+  translationBusy = true;
+  try {
+    const skip = el => el && el.closest && el.closest('script,style,textarea,code,pre,[data-no-i18n]');
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, { acceptNode(node){
+      const parent = node.parentElement;
+      if (!parent || skip(parent)) return NodeFilter.FILTER_REJECT;
+      return /[A-Za-zА-Яа-яЁё]/.test(node.nodeValue || "") ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT;
+    }});
+    const nodes = [];
+    while (walker.nextNode()) nodes.push(walker.currentNode);
+    for (const node of nodes) {
+      const next = translateTextValue(node.nodeValue);
+      if (next !== node.nodeValue) node.nodeValue = next;
+    }
+    const attrs = ['placeholder','title','aria-label'];
+    for (const el of root.querySelectorAll ? root.querySelectorAll('*') : []) {
+      if (skip(el)) continue;
+      for (const attr of attrs) {
+        if (el.hasAttribute(attr)) {
+          const old = el.getAttribute(attr);
+          const next = translateTextValue(old);
+          if (next !== old) el.setAttribute(attr, next);
+        }
+      }
+    }
+  } finally {
+    translationBusy = false;
+  }
+}
+let translationObserverReady = false;
+function ensureTranslationObserver(){
+  if (translationObserverReady || !document.body) return;
+  translationObserverReady = true;
+  const observer = new MutationObserver(() => {
+    if (translationBusy) return;
+    clearTimeout(window.__dutylogI18nTimer);
+    window.__dutylogI18nTimer = setTimeout(() => translateStaticTree(), 40);
+  });
+  observer.observe(document.body, { childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['placeholder','title','aria-label'] });
+}
+function applyLanguage(lang){
+  state.language = normalizeLanguage(lang);
+  try { localStorage.setItem(LANGUAGE_KEY, state.language); } catch (_) {}
+  document.documentElement.lang = state.language;
+  document.title = 'DutyLog: Time & Overtime';
+  renderLanguageControls();
+  if (typeof renderCalendar === 'function') renderCalendar();
+  translateStaticTree();
+}
+function renderLanguageControls(){
+  document.querySelectorAll('[data-language-choice]').forEach(btn => btn.classList.toggle('on', btn.dataset.languageChoice === state.language));
+  const status = document.getElementById('languageStatus');
+  if (status) status.textContent = state.language === 'en' ? 'English' : 'Русский';
+}
+
 const TIME_SETTINGS_KEY = "shiftCalendar.timeRegionSettings.v1";
 const DEFAULT_TIME_SETTINGS = {
   workRegionName: "",
@@ -142,7 +315,7 @@ function storeTimeSettings(settings){
 }
 function safeTzLabel(tz){
   try {
-    return new Intl.DateTimeFormat("ru-RU", { dateStyle:"short", timeStyle:"short", timeZone:tz }).format(new Date());
+    return new Intl.DateTimeFormat(currentLocale(), { dateStyle:"short", timeStyle:"short", timeZone:tz }).format(new Date());
   } catch (e) {
     return "часовой пояс не распознан";
   }
@@ -309,7 +482,7 @@ function renderAppearanceControls(){
   }
   const preview = byId('appearancePreview');
   const presetLabel = THEME_PRESETS[prefs.themePreset]?.label || "Custom";
-  const modeLabel = prefs.themePreference === "system" ? "как в системе" : prefs.themePreference === "light" ? "светлая" : "тёмная";
+  const modeLabel = t(prefs.themePreference === "system" ? "как в системе" : prefs.themePreference === "light" ? "светлая" : "тёмная");
   if (preview) {
     preview.className = "status statusThemeSummary";
     preview.innerHTML = `<span class="statusChip statusChipPrimary">${esc(presetLabel)}</span><span class="statusChip">${esc(modeLabel)}</span><span class="statusChip statusChipAccent"><span class="statusChipSwatch" style="background:${prefs.accentColor}"></span>${esc(prefs.accentColor)}</span>`;
@@ -368,11 +541,11 @@ function importantOf(k){ return state.importantByDate[k] || []; }
 function remindersOf(k){ return state.remindersByDate[k] || []; }
 function activeTasksOf(k){ return tasksOf(k).filter(t => !t.done); }
 function overdueTasksOf(k){ return tasksOf(k).filter(t => t.overdue && !t.done); }
-function taskPriorityLabel(p){ return p === "URGENT" ? "срочно" : p === "HIGH" ? "важно" : p === "LOW" ? "низкий" : "обычно"; }
+function taskPriorityLabel(p){ return p === "URGENT" ? t("срочные") : p === "HIGH" ? t("важные") : p === "LOW" ? t("низкие") : t("обычно"); }
 function taskDueLabel(t){
   if (!t.dueDate) return "";
   const d = t.dueDate.split("-").reverse().join(".");
-  return `срок ${d}${t.dueTime ? " " + t.dueTime : ""}`;
+  return `${state.language === "en" ? "due" : "срок"} ${d}${t.dueTime ? " " + t.dueTime : ""}`;
 }
 function allTaskCategories(){
   const set = new Set();
@@ -519,10 +692,10 @@ function renderPager(id, pageInfo, onPage, onSize) {
   if (!box) return;
   const p = pageInfo || { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false, items:[] };
   box.innerHTML = `
-    <button type="button" data-pager-prev ${p.hasPrevious ? "" : "disabled"}>Назад</button>
-    <span class="pagerText">${pageRangeText(p)} · стр. ${Number(p.totalPages || 0) ? Number(p.page || 0) + 1 : 0}/${Number(p.totalPages || 0)}</span>
-    <button type="button" data-pager-next ${p.hasNext ? "" : "disabled"}>Вперёд</button>
-    <label>на странице
+    <button type="button" data-pager-prev ${p.hasPrevious ? "" : "disabled"}>${t("Назад")}</button>
+    <span class="pagerText">${pageRangeText(p)} · ${t("стр.")} ${Number(p.totalPages || 0) ? Number(p.page || 0) + 1 : 0}/${Number(p.totalPages || 0)}</span>
+    <button type="button" data-pager-next ${p.hasNext ? "" : "disabled"}>${t("Вперёд")}</button>
+    <label>${t("на странице")}
       <select data-pager-size>
         <option value="25" ${Number(p.size) === 25 ? "selected" : ""}>25</option>
         <option value="50" ${Number(p.size) === 50 ? "selected" : ""}>50</option>
@@ -1231,7 +1404,7 @@ function renderMd(src){
 function stOf(k){ const e = state.days[k]; return e ? state.shiftTypes.find(s => s.id === e.shiftTypeId) : null; }
 
 function renderCalendar(){
-  $("monthName").textContent = MONTHS[state.m];
+  $("monthName").textContent = monthName(state.m);
   $("yearName").textContent = state.y;
 
   const grid = $("grid");
@@ -1401,8 +1574,8 @@ function selectDay(k){
   if (k) {
     const [y, m, d] = k.split("-").map(Number);
     const date = new Date(y, m - 1, d);
-    $("pWeekday").textContent = WEEKDAYS[(date.getDay() + 6) % 7];
-    $("pDate").innerHTML = `${d} ${MONTHS_GEN[m - 1]} <span class="yr mono">${y}</span>`;
+    $("pWeekday").textContent = weekdayName((date.getDay() + 6) % 7);
+    $("pDate").innerHTML = state.language === "en" ? `${monthNameGen(m - 1)} ${d} <span class="yr mono">${y}</span>` : `${d} ${monthNameGen(m - 1)} <span class="yr mono">${y}</span>`;
     $("noteEdit").value = state.days[k]?.note || "";
     resetOvertimeForms(k);
     setTab("edit");
@@ -3758,6 +3931,7 @@ function initSettingsAccordion(){
   const cards = [...root.querySelectorAll(".settingsCard[data-settings-section]")];
   const titles = {
     profile: "Имя, пароль, устройства и Telegram",
+    language: "Русский / English",
     appearance: "Тема, акцентный цвет и emoji-маркеры дней",
     time: "Регион, часовой пояс и дефолты дневной/ночной",
     shifts: "Кастомные и встроенные типы смен",
@@ -3778,7 +3952,7 @@ function initSettingsAccordion(){
     card.classList.toggle("is-open", open);
     const btn = card.querySelector(".settingsToggle");
     if (btn) {
-      btn.textContent = open ? "свернуть" : "открыть";
+      btn.textContent = open ? t("свернуть") : t("открыть");
       btn.setAttribute("aria-expanded", String(open));
     }
   }
@@ -3806,7 +3980,7 @@ function initSettingsAccordion(){
     if (!card.querySelector(":scope > .settingsCollapsedNote")) {
       const note = document.createElement("div");
       note.className = "settingsCollapsedNote";
-      note.textContent = titles[section] || "Раздел настроек";
+      note.textContent = t(titles[section] || "Раздел настроек");
       head.after(note);
     }
     if (!head.querySelector(".settingsToggle")) {
@@ -3859,7 +4033,7 @@ function renderSettingsPanels(){
 
 /* ─── Уведомления ───────────────────────────────────────────── */
 function typeLabel(type){
-  return type === "SHIFT" ? "смена" : type === "TASK" ? "задача" : type === "IMPORTANT_DAY" ? "важно" : type === "TOMORROW_DIGEST" ? "дайджест" : type;
+  return type === "SHIFT" ? t("смена") : type === "TASK" ? t("задача") : type === "IMPORTANT_DAY" ? t("важно") : type === "TOMORROW_DIGEST" ? t("дайджест") : type;
 }
 function fmtReminderAt(value){
   if (!value) return "";
@@ -3868,10 +4042,10 @@ function fmtReminderAt(value){
   return `${day}.${m} ${t}`;
 }
 function browserPermissionStatus(){
-  if (!("Notification" in window)) return { label:"браузер", value:"не поддерживает", tone:"warn" };
-  if (Notification.permission === "granted") return { label:"браузер", value:"разрешено", tone:"ok" };
-  if (Notification.permission === "denied") return { label:"браузер", value:"запрещено", tone:"warn" };
-  return { label:"браузер", value:"не разрешено", tone:"warn" };
+  if (!("Notification" in window)) return { label:t("браузер"), value:t("не поддерживает"), tone:"warn" };
+  if (Notification.permission === "granted") return { label:t("браузер"), value:t("разрешено"), tone:"ok" };
+  if (Notification.permission === "denied") return { label:t("браузер"), value:t("запрещено"), tone:"warn" };
+  return { label:t("браузер"), value:t("не разрешено"), tone:"warn" };
 }
 function renderNotifyStatus(count){
   const box = $("notifyStatus");
@@ -4205,6 +4379,7 @@ async function loadProfile(){
     $("profileBirthday").value = p.birthday || "";
     state.preferences = storeLocalAppearance({ themePreference:p.themePreference, accentColor:p.accentColor, themePreset:p.themePreset, themeConfig:p.themeConfig });
     applyAppearance(state.preferences);
+    applyLanguage(p.languagePreference || state.language);
     const av = $("profileAvatar");
     av.textContent = avatarInitials(p.displayName || p.username);
     av.style.background = avatarColor(p.username);
@@ -4226,7 +4401,7 @@ $("profileSave").addEventListener("click", async () => {
     renderHeaderIdentity(p);
     const av = $("profileAvatar");
     av.textContent = avatarInitials(p.displayName || p.username);
-    setProfileMsg("profileMsg", "Сохранено", true);
+    setProfileMsg("profileMsg", t("Сохранено"), true);
     setTimeout(() => setProfileMsg("profileMsg", ""), 2000);
   } catch (e) { setProfileMsg("profileMsg", e.message); }
 });
@@ -4236,9 +4411,23 @@ function currentProfilePayload(extra = {}){
   return {
     displayName: $('profileName')?.value || "",
     birthday: $('profileBirthday')?.value || null,
+    languagePreference: state.language,
     ...extra,
   };
 }
+document.querySelectorAll('[data-language-choice]').forEach(btn => btn.addEventListener('click', async () => {
+  const lang = normalizeLanguage(btn.dataset.languageChoice);
+  applyLanguage(lang);
+  try {
+    const p = await jfetch('/api/profile', { method:'PUT', body: currentProfilePayload({ languagePreference:lang }) });
+    state.profile = p;
+    applyLanguage(p.languagePreference || lang);
+    setProfileMsg('languageMsg', t('Язык сохранён'), true);
+    setTimeout(() => setProfileMsg('languageMsg', ''), 2000);
+  } catch (e) {
+    setProfileMsg('languageMsg', e.message || 'Language was changed locally');
+  }
+}));
 $('appearancePreset')?.addEventListener('change', e => applyPreset(e.target.value));
 $('appearanceTheme')?.addEventListener('change', markCustomAndPreview);
 $('appearanceAccent')?.addEventListener('input', markCustomAndPreview);
@@ -4254,7 +4443,8 @@ $('appearanceSave')?.addEventListener('click', async () => {
     state.profile = p;
     state.preferences = storeLocalAppearance({ themePreference:p.themePreference, accentColor:p.accentColor, themePreset:p.themePreset, themeConfig:p.themeConfig });
     applyAppearance(state.preferences);
-    setProfileMsg('appearanceMsg', 'Внешний вид сохранён', true);
+    applyLanguage(p.languagePreference || state.language);
+    setProfileMsg('appearanceMsg', t('Внешний вид сохранён'), true);
     setTimeout(() => setProfileMsg('appearanceMsg', ''), 2000);
   } catch (e) { setProfileMsg('appearanceMsg', e.message); }
 });
@@ -4415,5 +4605,7 @@ $("telegramUnlinkBtn")?.addEventListener("click", async () => {
   }
 });
 
+ensureTranslationObserver();
+applyLanguage(state.language);
 loadProfile();
 loadSessions();
