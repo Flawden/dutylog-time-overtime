@@ -131,6 +131,7 @@ public final class Dtos {
             String date,
             Long shiftTypeId,
             String note,
+            String dayEmoji,
             double overtimeHours,
             double timeOffHours,
             double overtimeBalanceHours
@@ -142,6 +143,7 @@ public final class Dtos {
                     e.getDate().toString(),
                     e.getShiftType() != null ? e.getShiftType().getId() : null,
                     e.getNote(),
+                    e.getDayEmoji(),
                     overtime,
                     timeOff,
                     overtime - timeOff
@@ -170,6 +172,9 @@ public final class Dtos {
 
             @Size(max = 20000, message = "Заметка слишком длинная: максимум 20 000 символов")
             String note,
+
+            @Size(max = 32, message = "Emoji дня: максимум 32 символа")
+            String dayEmoji,
 
             @DecimalMin(value = "0.0", message = "Переработка не может быть отрицательной")
             @DecimalMax(value = "100.0", message = "Переработка за день: максимум 100 часов")
@@ -571,6 +576,10 @@ public final class Dtos {
             @Size(max = 20000, message = "Заметка слишком длинная: максимум 20 000 символов")
             String note,
             Boolean clearNote,
+
+            @Size(max = 32, message = "Emoji дня: максимум 32 символа")
+            String dayEmoji,
+            Boolean clearDayEmoji,
 
             @DecimalMin(value = "0.0", message = "Переработка не может быть отрицательной")
             @DecimalMax(value = "100.0", message = "Переработка за день: максимум 100 часов")

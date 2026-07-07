@@ -65,6 +65,9 @@ public class DayEntryService {
                 .orElseGet(() -> new DayEntry(user, d));
         entry.setShiftType(st);
         entry.setNote(normalizeNote(req.note()));
+        if (req.dayEmoji() != null) {
+            entry.setDayEmoji(normalizeDayEmoji(req.dayEmoji()));
+        }
         entry.setOvertimeHours(req.overtimeHours() != null ? req.overtimeHours() : 0.0);
         entry.setTimeOffHours(req.timeOffHours() != null ? req.timeOffHours() : 0.0);
 
@@ -140,6 +143,12 @@ public class DayEntryService {
             entry.setNote(normalizeNote(req.note()));
         }
 
+        if (Boolean.TRUE.equals(req.clearDayEmoji())) {
+            entry.setDayEmoji(null);
+        } else if (req.dayEmoji() != null) {
+            entry.setDayEmoji(normalizeDayEmoji(req.dayEmoji()));
+        }
+
         if (req.overtimeHours() != null) {
             entry.setOvertimeHours(req.overtimeHours());
         }
@@ -178,5 +187,11 @@ public class DayEntryService {
 
     private String normalizeNote(String note) {
         return note == null || note.isBlank() ? null : note;
+    }
+
+    private String normalizeDayEmoji(String emoji) {
+        if (emoji == null || emoji.isBlank()) return null;
+        String normalized = emoji.trim();
+        return normalized.length() > 32 ? normalized.substring(0, 32) : normalized;
     }
 }

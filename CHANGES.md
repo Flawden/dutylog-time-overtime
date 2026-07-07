@@ -1,3 +1,17 @@
+# v23.0 — Personalization and day emoji
+
+- Добавлен раздел настроек `Внешний вид`: системная, тёмная и светлая тема.
+- Добавлен пользовательский акцентный цвет интерфейса с быстрыми swatches и color input.
+- В профиль пользователя добавлены настройки `themePreference` и `accentColor`; они не смешиваются с ролями `USER/ADMIN` и будущим `accountTier` `FREE/PAID/VIP`.
+- Добавлен emoji-маркер выбранного дня: быстрый набор emoji, поле для своего Unicode emoji и очистка маркера.
+- В БД добавлено поле `day_entries.day_emoji VARCHAR(32)` через миграцию `V17__personalization_day_emoji.sql`.
+- `DayDto`, `DayUpsertRequest` и mobile day sync получили поле `dayEmoji`.
+- Emoji отображается в клетке календаря и в панели выбранного дня. Картинки, загрузки файлов, CDN и base64-хранилище не добавлялись.
+- Offline snapshot/queue теперь сохраняет `dayEmoji` как часть безопасного `putDay`; сложные offline-операции по-прежнему не расширялись.
+- Добавлена документация `docs/PERSONALIZATION.md`.
+- Обновлены `README.md`, `docs/OFFLINE_MODE.md`, production/release docs и smoke-test под версию `23.0`.
+- Frontend/backend/service-worker версии подняты до `23.0`.
+
 # v22.3 — Users and roles admin panel
 
 - Добавлен админский список пользователей в разделе `Система` → `Пользователи и роли`.

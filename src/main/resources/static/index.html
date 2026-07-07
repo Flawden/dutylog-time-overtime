@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=22.3" rel="stylesheet"/>
+<link href="app.css?v=23.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -54,6 +54,20 @@
 <div class="accB">
 <div class="chips" id="chips"></div>
 
+</div>
+</details>
+<details class="acc" id="accEmoji">
+<summary><span class="accT">Маркер</span><span class="accS" id="sumEmoji"></span></summary>
+<div class="accB">
+<div class="dayEmojiBox">
+<div class="dayEmojiGrid" id="dayEmojiGrid"></div>
+<div class="row dayEmojiCustomRow">
+<input id="dayEmojiCustom" maxlength="32" placeholder="Вставь emoji с клавиатуры" type="text"/>
+<button class="addSmall" id="dayEmojiApply" type="button">Поставить</button>
+<button id="dayEmojiClear" type="button">Очистить</button>
+</div>
+<div class="dayPanelHint" id="dayEmojiPreview">Маркер не выбран.</div>
+</div>
 </div>
 </details>
 <details class="acc" id="accSched">
@@ -286,6 +300,7 @@
   <aside class="settingsIndex" aria-label="Разделы настроек">
     <div class="settingsIndexTitle">Настройки</div>
     <a data-settings-jump="profile" href="#settings-profile"><b>Профиль</b><span>имя, пароль, Telegram</span></a>
+    <a data-settings-jump="appearance" href="#settings-appearance"><b>Внешний вид</b><span>тема, акцент, маркеры</span></a>
     <a data-settings-jump="time" href="#settings-time"><b>Время</b><span>регион, пояс, дефолты</span></a>
     <a data-settings-jump="shifts" href="#settings-shifts"><b>Смены</b><span>типы, часы, уведомления</span></a>
     <a data-settings-jump="scenarios" href="#settings-scenarios"><b>Сценарии</b><span>шаблоны переработок</span></a>
@@ -352,6 +367,36 @@
     <span>/today</span><span>/tasks</span><span>/task</span><span>/done</span><span>/ppr</span><span>/timeoff</span><span>/balance</span>
   </div>
 </div>
+</div>
+<div class="settingsCard" id="appearanceCard" data-settings-section="appearance">
+<a class="settingsAnchor" id="settings-appearance"></a>
+<div class="settingsHead">
+<div>
+<div class="eyebrow">Персонализация</div>
+<div class="settingsTitle">Внешний вид</div>
+<div class="settingsHint">Тема и акцент сохраняются в профиле пользователя. Emoji-маркеры дней хранятся как Unicode-текст, без картинок и загрузок файлов.</div>
+</div>
+<div class="status" id="appearancePreview">—</div>
+</div>
+<div class="appearanceGrid">
+<label>Тема
+<select id="appearanceTheme">
+<option value="system">как в системе</option>
+<option value="dark">тёмная</option>
+<option value="light">светлая</option>
+</select>
+</label>
+<label>Акцент
+<input id="appearanceAccent" type="color" value="#F5B841"/>
+</label>
+</div>
+<div class="appearanceAccentRow" id="appearanceAccentRow"></div>
+<div class="appearanceActions">
+<button class="primary" id="appearanceSave" type="button">Сохранить внешний вид</button>
+<button id="appearanceReset" type="button">Сбросить локально</button>
+</div>
+<div class="profileMsg" id="appearanceMsg"></div>
+<div class="settingsHint">Разделение на будущее: роли USER/ADMIN отвечают за права, account tier FREE/PAID/VIP — за тариф, а эти настройки — только за внешний вид.</div>
 </div>
 <section class="settingsCard" id="timeSettingsCard" data-settings-section="time">
 <a class="settingsAnchor" id="settings-time"></a>
@@ -602,7 +647,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v22.3</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v23.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -668,6 +713,6 @@
     </div>
   </div>
 </div>
-<script src="app.js?v=22.3"></script>
+<script src="app.js?v=23.0"></script>
 </body>
 </html>

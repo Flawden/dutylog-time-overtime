@@ -1,4 +1,4 @@
-# DutyLog API v20.2.1
+# DutyLog API v23.0
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -97,6 +97,36 @@ Telegram-напоминания v20.1 работают отдельно от к�
 ### DELETE `/api/profile/sessions/{id}`
 
 Отзывает мобильную сессию пользователя. Используется кнопкой `отозвать` во вкладке профиля.
+
+### GET `/api/profile`
+
+Возвращает профиль текущего пользователя, включая персонализацию интерфейса:
+
+```json
+{
+  "username": "alex",
+  "displayName": "Алексей",
+  "birthday": "2000-07-07",
+  "admin": true,
+  "role": "ADMIN",
+  "accountTier": "FREE",
+  "themePreference": "system",
+  "accentColor": "#F5B841"
+}
+```
+
+### PUT `/api/profile`
+
+Обновляет профиль и/или внешний вид. `themePreference`: `system`, `light`, `dark`. `accentColor`: `#RRGGBB`.
+
+```json
+{
+  "displayName": "Алексей",
+  "birthday": "2000-07-07",
+  "themePreference": "dark",
+  "accentColor": "#7B8CE0"
+}
+```
 
 ## Mobile auth
 
@@ -500,6 +530,7 @@ Backend также запрещает пересекающиеся рассчи�
   "date": "2026-06-18",
   "shiftTypeId": 1,
   "note": "ППР после смены",
+  "dayEmoji": "🔥",
   "overtimeHours": 7,
   "timeOffHours": 0,
   "overtimeBalanceHours": 7
@@ -545,7 +576,7 @@ Backend также запрещает пересекающиеся рассчи�
     { "id": 3, "name": "Выходной", "hours": 0, "color": "#6FBF73", "builtin": true }
   ],
   "days": [
-    { "date": "2026-06-18", "shiftTypeId": 1, "note": null, "overtimeHours": 7, "timeOffHours": 0, "overtimeBalanceHours": 7 }
+    { "date": "2026-06-18", "shiftTypeId": 1, "note": null, "dayEmoji": "🔥", "overtimeHours": 7, "timeOffHours": 0, "overtimeBalanceHours": 7 }
   ],
   "tasks": [
     { "id": 10, "date": "2026-06-18", "text": "Передать документы", "done": false }
@@ -579,6 +610,7 @@ Backend также запрещает пересекающиеся рассчи�
 {
   "shiftTypeId": 1,
   "note": "# Markdown заметка",
+  "dayEmoji": "🔥",
   "overtimeHours": 7,
   "timeOffHours": 0
 }
@@ -993,7 +1025,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "22.3",
+  "version": "23.0",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],

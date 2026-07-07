@@ -44,6 +44,10 @@ public class DayEntry {
     @Column(name = "note", columnDefinition = "text")
     private String note; // Markdown, может быть null/пустой
 
+    /** Лёгкий визуальный маркер дня: Unicode emoji/короткая Unicode-строка, без картинок. */
+    @Column(name = "day_emoji", length = 32)
+    private String dayEmoji;
+
     protected DayEntry() {} // для JPA
 
     public DayEntry(AppUser owner, LocalDate date) {
@@ -62,12 +66,15 @@ public class DayEntry {
     public void setTimeOffHours(double timeOffHours) { this.timeOffHours = Math.max(0.0, timeOffHours); }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
+    public String getDayEmoji() { return dayEmoji; }
+    public void setDayEmoji(String dayEmoji) { this.dayEmoji = dayEmoji; }
 
     /** Пустая запись не имеет смысла и должна удаляться. */
     public boolean isEmpty() {
         return shiftType == null
                 && getOvertimeHours() <= 0.00001
                 && getTimeOffHours() <= 0.00001
-                && (note == null || note.isBlank());
+                && (note == null || note.isBlank())
+                && (dayEmoji == null || dayEmoji.isBlank());
     }
 }

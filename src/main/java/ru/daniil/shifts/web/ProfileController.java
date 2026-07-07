@@ -42,7 +42,7 @@ public class ProfileController {
         this.encoder = encoder;
     }
 
-    public record ProfileUpdateRequest(String displayName, String birthday) {}
+    public record ProfileUpdateRequest(String displayName, String birthday, String themePreference, String accentColor) {}
     public record PasswordChangeRequest(String currentPassword, String newPassword) {}
 
     @GetMapping
@@ -55,6 +55,8 @@ public class ProfileController {
         out.put("admin", user.isAdmin());
         out.put("role", user.getRole());
         out.put("accountTier", user.getAccountTier());
+        out.put("themePreference", user.getThemePreference());
+        out.put("accentColor", user.getAccentColor());
         return out;
     }
 
@@ -81,6 +83,22 @@ public class ProfileController {
             } catch (DateTimeParseException e) {
                 throw ApiException.badRequest("Дата рождения должна быть в формате yyyy-MM-dd");
             }
+        }
+
+        if (req.themePreference() != null) {
+            String theme = req.themePreference().trim().toLowerCase();
+            if (!theme.equals("system") && !theme.equals("light") && !theme.equals("dark")) {
+                throw ApiException.badRequest("Тема должна быть system, light или dark");
+            }
+            user.setThemePreference(theme);
+        }
+
+        if (req.accentColor() != null) {
+            String accent = req.accentColor().trim();
+            if (!accent.matches("#[0-9a-fA-F]{6}")) {
+                throw ApiException.badRequest("Акцентный цвет должен быть в формате #RRGGBB");
+            }
+            user.setAccentColor(accent.toUpperCase());
         }
 
         users.save(user);

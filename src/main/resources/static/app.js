@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "22.3";
+const DUTYLOG_VERSION = "23.0";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -25,6 +25,7 @@ const state = {
   telegramStatus: null,
   registrationSettings: null,
   adminUsers: [],
+  preferences: { themePreference:"system", accentColor:"#F5B841" },
   activeScenarioId: null,
   ledgerFilters: { from:"", to:"", status:"all", q:"" },
   editingCreditId: null,
@@ -48,8 +49,12 @@ const MONTHS = ["Январь","Февраль","Март","Апрель","Ма�
 const MONTHS_GEN = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
 const WEEKDAYS = ["Пн","Вт","Ср","Чт","Пт","Сб","Вс"];
 const SWATCHES = ["#F5B841","#E0653A","#C97BB8","#7B8CE0","#4FA3A5","#6FBF73","#B5A642","#8B929E"];
+const APPEARANCE_SWATCHES = ["#F5B841","#E0653A","#C97BB8","#7B8CE0","#4FA3A5","#6FBF73","#9B7BE0","#E05780"];
+const DAY_EMOJI_PRESETS = ["🔥","😴","✅","⚠️","💰","🏥","🎉","🛠️","🌙","☕","🚗","💪","📌","🧠","🛌","❤️"];
 
 const DEFAULT_SCHEDULE_DAYS = 31;
+const APPEARANCE_KEY = "dutylog.appearance.v1";
+const DEFAULT_APPEARANCE = { themePreference:"system", accentColor:"#F5B841" };
 
 const TIME_SETTINGS_KEY = "shiftCalendar.timeRegionSettings.v1";
 const DEFAULT_TIME_SETTINGS = {
@@ -90,6 +95,68 @@ function safeTzLabel(tz){
   }
 }
 
+function normalizeAppearance(p = {}){
+  const theme = ["system","light","dark"].includes(String(p.themePreference || "").toLowerCase())
+    ? String(p.themePreference).toLowerCase()
+    : DEFAULT_APPEARANCE.themePreference;
+  const accent = /^#[0-9a-fA-F]{6}$/.test(String(p.accentColor || ""))
+    ? String(p.accentColor).toUpperCase()
+    : DEFAULT_APPEARANCE.accentColor;
+  return { themePreference:theme, accentColor:accent };
+}
+function loadLocalAppearance(){
+  try { return normalizeAppearance(JSON.parse(localStorage.getItem(APPEARANCE_KEY) || "{}")); }
+  catch (_) { return { ...DEFAULT_APPEARANCE }; }
+}
+function storeLocalAppearance(p){
+  const prefs = normalizeAppearance(p);
+  try { localStorage.setItem(APPEARANCE_KEY, JSON.stringify(prefs)); } catch (_) {}
+  return prefs;
+}
+function effectiveTheme(themePreference){
+  if (themePreference === "light" || themePreference === "dark") return themePreference;
+  try { return matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark"; }
+  catch (_) { return "dark"; }
+}
+function applyAppearance(p = state.preferences){
+  const prefs = normalizeAppearance(p);
+  state.preferences = prefs;
+  const theme = effectiveTheme(prefs.themePreference);
+  document.documentElement.dataset.theme = theme;
+  document.documentElement.style.setProperty("--accent", prefs.accentColor);
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute("content", theme === "light" ? "#F6F7FB" : "#14171C");
+  renderAppearanceControls();
+}
+function renderAppearanceControls(){
+  const byId = id => document.getElementById(id);
+  if (!byId('appearanceTheme')) return;
+  const prefs = normalizeAppearance(state.preferences);
+  byId('appearanceTheme').value = prefs.themePreference;
+  byId('appearanceAccent').value = prefs.accentColor;
+  const row = byId('appearanceAccentRow');
+  if (row) {
+    row.innerHTML = "";
+    for (const color of APPEARANCE_SWATCHES) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "accentChoice" + (color.toUpperCase() === prefs.accentColor ? " on" : "");
+      b.style.background = color;
+      b.title = color;
+      b.addEventListener("click", () => {
+        state.preferences = normalizeAppearance({ ...state.preferences, accentColor:color });
+        applyAppearance(state.preferences);
+      });
+      row.appendChild(b);
+    }
+  }
+  const preview = byId('appearancePreview');
+  if (preview) preview.textContent = `Тема: ${prefs.themePreference === "system" ? "как в системе" : prefs.themePreference === "light" ? "светлая" : "тёмная"} · акцент ${prefs.accentColor}`;
+}
+applyAppearance(loadLocalAppearance());
+try { matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => applyAppearance(state.preferences)); } catch (_) {}
+
+
 const SCHEDULE_TEMPLATES = {
   "2x2-day": { label:"2 через 2", names:["Дневная","Дневная","Выходной","Выходной"] },
   "day-night-48": { label:"День / ночь / 48", names:["Дневная","Ночная","Выходной","Выходной"] },
@@ -113,6 +180,7 @@ const fmtHours = v => {
 const normalizeDay = e => ({
   shiftTypeId: e?.shiftTypeId ?? null,
   note: e?.note ?? null,
+  dayEmoji: e?.dayEmoji ?? null,
   overtimeHours: numOr0(e?.overtimeHours),
   timeOffHours: numOr0(e?.timeOffHours),
 });
@@ -370,6 +438,7 @@ function describeOfflineOperation(item){
     const parts = [];
     if (d.shiftTypeId) parts.push("смена");
     if ((d.note || "").trim()) parts.push("заметка");
+    if ((d.dayEmoji || "").trim()) parts.push("emoji " + d.dayEmoji);
     if (!parts.length) parts.push("день");
     return `${item.payload?.date || "дата"}: ${parts.join(" + ")}`;
   }
@@ -560,7 +629,7 @@ const dataLayer = {
     const days = Array.isArray(snap.bundle.days) ? snap.bundle.days.slice() : [];
     const clean = normalizeDay(day);
     const idx = days.findIndex(x => x.date === date);
-    const empty = !clean.shiftTypeId && !(clean.note || "").trim() && Math.abs(clean.overtimeHours) < 0.0001 && Math.abs(clean.timeOffHours) < 0.0001;
+    const empty = !clean.shiftTypeId && !(clean.note || "").trim() && !(clean.dayEmoji || "").trim() && Math.abs(clean.overtimeHours) < 0.0001 && Math.abs(clean.timeOffHours) < 0.0001;
     if (empty && idx >= 0) days.splice(idx, 1);
     else if (!empty && idx >= 0) days[idx] = { ...days[idx], date, ...clean };
     else if (!empty) days.push({ date, ...clean });
@@ -695,6 +764,7 @@ const dataLayer = {
         await api.upsertDay(date, {
           shiftTypeId: day.shiftTypeId ?? null,
           note: day.note ?? null,
+          dayEmoji: day.dayEmoji ?? null,
           overtimeHours: numOr0(day.overtimeHours),
           timeOffHours: numOr0(day.timeOffHours),
         });
@@ -977,6 +1047,13 @@ function renderCalendar(){
       ear.title = "Есть заметка";
       cell.appendChild(ear);
     }
+    if ((entry?.dayEmoji || "").trim()) {
+      const em = document.createElement("span");
+      em.className = "dayEmoji";
+      em.textContent = entry.dayEmoji;
+      em.title = "Маркер дня";
+      cell.appendChild(em);
+    }
     const num = document.createElement("span");
     num.className = "num" + (k === tk ? " today" : "");
     num.textContent = d;
@@ -1111,6 +1188,7 @@ function selectDay(k){
     resetOvertimeForms(k);
     setTab("edit");
     renderChips();
+    renderDayEmojiControls();
     renderScheduleControls();
     renderOvertimeControls();
     renderImportantDays();
@@ -1237,6 +1315,10 @@ function updateAccSummaries(){
   const overdue = overdueTasksOf(k).length;
   $("sumTasks").textContent = all.length ? (overdue ? `${overdue} просроч. · ${all.length - undone}/${all.length}` : `${all.length - undone}/${all.length} сделано`) : "—";
   $("sumTasks").style.color = overdue ? "var(--danger)" : (undone > 0 ? "var(--accent)" : "");
+
+  // Emoji-маркер
+  const emoji = (state.days[k]?.dayEmoji || "").trim();
+  if ($("sumEmoji")) $("sumEmoji").textContent = emoji || "—";
 
   // Заметка: первая строка
   const note = (state.days[k]?.note || "").trim();
@@ -2672,12 +2754,55 @@ function renderChips(){
   updateAccSummaries();
 }
 
+
+function normalizeDayEmojiValue(value){
+  const raw = String(value || "").trim();
+  return raw.length > 32 ? raw.slice(0, 32) : raw;
+}
+function renderDayEmojiControls(){
+  if (!$('dayEmojiGrid')) return;
+  const k = state.selected;
+  const cur = k ? normalizeDayEmojiValue(state.days[k]?.dayEmoji) : "";
+  const grid = $('dayEmojiGrid');
+  grid.innerHTML = "";
+  for (const emoji of DAY_EMOJI_PRESETS) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "emojiChoice" + (emoji === cur ? " on" : "");
+    b.textContent = emoji;
+    b.title = "Поставить маркер " + emoji;
+    b.addEventListener("click", () => setDayEmoji(emoji));
+    grid.appendChild(b);
+  }
+  const input = $('dayEmojiCustom');
+  if (input && document.activeElement !== input) input.value = cur;
+  if ($('dayEmojiPreview')) $('dayEmojiPreview').textContent = cur ? `В календаре будет видно: ${cur}` : "Маркер не выбран.";
+}
+async function setDayEmoji(value){
+  const k = state.selected;
+  if (!k) return;
+  const cur = state.days[k] || {};
+  const next = {
+    shiftTypeId: cur.shiftTypeId ?? null,
+    note: cur.note || null,
+    dayEmoji: normalizeDayEmojiValue(value) || "",
+    overtimeHours: numOr0(cur.overtimeHours),
+    timeOffHours: numOr0(cur.timeOffHours),
+  };
+  applyLocal(k, next);
+  renderCalendar();
+  renderDayEmojiControls();
+  updateAccSummaries();
+  await pushDaySnapshot(k, next);
+}
+
 async function toggleShift(id){
   const k = state.selected;
   const cur = state.days[k] || {};
   const next = {
     shiftTypeId: cur.shiftTypeId === id ? null : id,
     note: cur.note || null,
+    dayEmoji: cur.dayEmoji || null,
     overtimeHours: numOr0(cur.overtimeHours),
     timeOffHours: numOr0(cur.timeOffHours),
   };
@@ -2691,11 +2816,12 @@ function applyLocal(k, next){
   const clean = {
     shiftTypeId: next.shiftTypeId ?? null,
     note: next.note ?? null,
+    dayEmoji: next.dayEmoji ?? null,
     overtimeHours: numOr0(next.overtimeHours),
     timeOffHours: numOr0(next.timeOffHours),
   };
   const hasOvertime = Math.abs(clean.overtimeHours) > 0.0001 || Math.abs(clean.timeOffHours) > 0.0001;
-  if (!clean.shiftTypeId && !(clean.note || "").trim() && !hasOvertime) delete state.days[k];
+  if (!clean.shiftTypeId && !(clean.note || "").trim() && !(clean.dayEmoji || "").trim() && !hasOvertime) delete state.days[k];
   else state.days[k] = clean;
 }
 
@@ -2710,6 +2836,7 @@ async function pushDaySnapshot(k, payload){
     const res = await dataLayer.putDay(k, {
       shiftTypeId: payload.shiftTypeId ?? null,
       note: payload.note ?? null,
+      dayEmoji: payload.dayEmoji ?? null,
       overtimeHours: numOr0(payload.overtimeHours),
       timeOffHours: numOr0(payload.timeOffHours),
     });
@@ -2752,6 +2879,7 @@ $("noteEdit").addEventListener("input", () => {
   const next = {
     shiftTypeId: cur.shiftTypeId ?? null,
     note: $("noteEdit").value,
+    dayEmoji: cur.dayEmoji || null,
     overtimeHours: numOr0(cur.overtimeHours),
     timeOffHours: numOr0(cur.timeOffHours),
   };
@@ -3343,6 +3471,7 @@ function initSettingsAccordion(){
   const cards = [...root.querySelectorAll(".settingsCard[data-settings-section]")];
   const titles = {
     profile: "Имя, пароль, устройства и Telegram",
+    appearance: "Тема, акцентный цвет и emoji-маркеры дней",
     time: "Регион, часовой пояс и дефолты дневной/ночной",
     shifts: "Кастомные и встроенные типы смен",
     scenarios: "Шаблоны, которые заполняют переработку в панели дня",
@@ -3432,6 +3561,7 @@ function initSettingsAccordion(){
 
 function renderSettingsPanels(){
   initSettingsAccordion();
+  renderAppearanceControls();
   renderTimeSettings();
   renderCustomList();
   renderImportantSettings();
@@ -3776,6 +3906,8 @@ async function loadProfile(){
     maybeBirthdayBanner(p);
     $("profileName").value = p.displayName || "";
     $("profileBirthday").value = p.birthday || "";
+    state.preferences = storeLocalAppearance({ themePreference:p.themePreference, accentColor:p.accentColor });
+    applyAppearance(state.preferences);
     const av = $("profileAvatar");
     av.textContent = avatarInitials(p.displayName || p.username);
     av.style.background = avatarColor(p.username);
@@ -3801,6 +3933,41 @@ $("profileSave").addEventListener("click", async () => {
     setTimeout(() => setProfileMsg("profileMsg", ""), 2000);
   } catch (e) { setProfileMsg("profileMsg", e.message); }
 });
+
+
+function currentProfilePayload(extra = {}){
+  return {
+    displayName: $('profileName')?.value || "",
+    birthday: $('profileBirthday')?.value || null,
+    ...extra,
+  };
+}
+$('appearanceTheme')?.addEventListener('change', () => {
+  state.preferences = normalizeAppearance({ ...state.preferences, themePreference:$('appearanceTheme').value });
+  applyAppearance(state.preferences);
+});
+$('appearanceAccent')?.addEventListener('input', () => {
+  state.preferences = normalizeAppearance({ ...state.preferences, accentColor:$('appearanceAccent').value });
+  applyAppearance(state.preferences);
+});
+$('appearanceSave')?.addEventListener('click', async () => {
+  try {
+    const prefs = normalizeAppearance({ themePreference:$('appearanceTheme').value, accentColor:$('appearanceAccent').value });
+    const p = await jfetch('/api/profile', { method:'PUT', body: currentProfilePayload(prefs) });
+    state.profile = p;
+    state.preferences = storeLocalAppearance({ themePreference:p.themePreference, accentColor:p.accentColor });
+    applyAppearance(state.preferences);
+    setProfileMsg('appearanceMsg', 'Внешний вид сохранён', true);
+    setTimeout(() => setProfileMsg('appearanceMsg', ''), 2000);
+  } catch (e) { setProfileMsg('appearanceMsg', e.message); }
+});
+$('appearanceReset')?.addEventListener('click', () => {
+  state.preferences = { ...DEFAULT_APPEARANCE };
+  applyAppearance(state.preferences);
+});
+$('dayEmojiClear')?.addEventListener('click', () => setDayEmoji(null));
+$('dayEmojiApply')?.addEventListener('click', () => setDayEmoji($('dayEmojiCustom')?.value || ''));
+$('dayEmojiCustom')?.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); setDayEmoji(e.target.value); } });
 
 $("pwChange").addEventListener("click", async () => {
   const cur = $("pwCurrent").value, nw = $("pwNew").value, rep = $("pwRepeat").value;

@@ -47,6 +47,14 @@ public class AppUser {
     @Column(name = "updated_at")
     private java.time.Instant updatedAt;
 
+    /** Тема интерфейса: system/light/dark. Пользовательская настройка, не право доступа. */
+    @Column(name = "theme_preference", length = 20)
+    private String themePreference = "system";
+
+    /** Акцент интерфейса в формате #RRGGBB. */
+    @Column(name = "accent_color", length = 20)
+    private String accentColor = "#F5B841";
+
     protected AppUser() {} // для JPA
 
     public AppUser(String username, String passwordHash) {
@@ -69,6 +77,10 @@ public class AppUser {
     public void setAccountTier(String accountTier) { this.accountTier = accountTier == null || accountTier.isBlank() ? "FREE" : accountTier.trim().toUpperCase(); }
     public java.time.Instant getCreatedAt() { return createdAt; }
     public java.time.Instant getUpdatedAt() { return updatedAt; }
+    public String getThemePreference() { return themePreference == null || themePreference.isBlank() ? "system" : themePreference; }
+    public void setThemePreference(String themePreference) { this.themePreference = themePreference == null || themePreference.isBlank() ? "system" : themePreference.trim().toLowerCase(); }
+    public String getAccentColor() { return accentColor == null || accentColor.isBlank() ? "#F5B841" : accentColor; }
+    public void setAccentColor(String accentColor) { this.accentColor = accentColor == null || accentColor.isBlank() ? "#F5B841" : accentColor.trim(); }
 
     @PrePersist
     void onCreate() {
@@ -77,6 +89,8 @@ public class AppUser {
         updatedAt = now;
         setRole(role);
         setAccountTier(accountTier);
+        setThemePreference(themePreference);
+        setAccentColor(accentColor);
     }
 
     @PreUpdate
@@ -84,5 +98,7 @@ public class AppUser {
         updatedAt = java.time.Instant.now();
         setRole(role);
         setAccountTier(accountTier);
+        setThemePreference(themePreference);
+        setAccentColor(accentColor);
     }
 }

@@ -7,6 +7,7 @@ DutyLog — приложение для учёта смен, переработ�
 - Календарь смен с типами `Дневная`, `Ночная`, `Выходной` и пользовательскими сменами.
 - Автозаполнение графиков: 2/2, день/ночь/48, 5/2, день/72, ночь/72.
 - Markdown-заметки для каждого дня с полноэкранным редактором и живым превью.
+- Персонализация: светлая/тёмная/системная тема, акцентный цвет и emoji-маркеры дней без хранения картинок.
 - Задачи дня с категориями, приоритетами, сроками и напоминаниями.
 - Важные даты: разовые, ежемесячные и ежегодные события.
 - Журнал переработок и отгулов с FIFO-списанием старых остатков.
@@ -185,11 +186,12 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/BACKUP.md`](docs/BACKUP.md) — резервные копии и восстановление PostgreSQL.
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — запуск на VPS через Docker Compose.
 - [`docs/PRODUCTION_RUNBOOK.md`](docs/PRODUCTION_RUNBOOK.md) — эксплуатация, обновление и откат на VPS.
-- [`docs/PRODUCTION_LAUNCH.md`](docs/PRODUCTION_LAUNCH.md) — короткий сценарий первого запуска v22.3 на VPS.
+- [`docs/PRODUCTION_LAUNCH.md`](docs/PRODUCTION_LAUNCH.md) — короткий сценарий первого запуска на VPS.
 - [`docs/SECURITY_CHECKLIST.md`](docs/SECURITY_CHECKLIST.md) — чеклист безопасности перед публикацией.
 - [`docs/ADMIN_BOOTSTRAP.md`](docs/ADMIN_BOOTSTRAP.md) — безопасное создание стартового администратора через env.
 - [`docs/REGISTRATION_SETTINGS.md`](docs/REGISTRATION_SETTINGS.md) — управление публичной регистрацией из админки.
 - [`docs/USER_ROLES.md`](docs/USER_ROLES.md) — пользователи, роли ADMIN/USER и будущий задел FREE/PAID/VIP.
+- [`docs/PERSONALIZATION.md`](docs/PERSONALIZATION.md) — темы, акцентный цвет и Unicode emoji-маркеры дней.
 - [`docs/VPS_CHECKLIST.md`](docs/VPS_CHECKLIST.md) — чеклист боевого запуска.
 - [`docs/ANDROID_API_PLAN.md`](docs/ANDROID_API_PLAN.md) — мобильный API.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — идеи развития.
@@ -199,9 +201,9 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v22.3 — users and roles admin panel`
+`v23.0 — personalization and day emoji`
 
-В этой версии в админском разделе `Система` добавлено управление пользователями и ролями. Публичная регистрация по-прежнему создаёт только `USER`; дополнительных админов назначает действующий администратор. Стартовый env-админ остаётся защищённым, но его пароль теперь можно менять в приложении: обычный рестарт больше не перезатирает пароль из `.env`. Клиент по-прежнему web/PWA внутри Spring Boot-монолита; отдельного native mobile-приложения в v22.3 нет.
+В этой версии добавлена персонализация web/PWA-интерфейса: системная/тёмная/светлая тема, акцентный цвет и emoji-маркеры выбранных дней. Emoji хранится как Unicode-текст в записи дня, без картинок и файлового хранилища. Роли `USER/ADMIN`, будущий тариф `FREE/PAID/VIP` и личные предпочтения внешнего вида остаются разными слоями. Клиент по-прежнему web/PWA внутри Spring Boot-монолита; отдельного native mobile-приложения в v23.0 нет.
 
 
 ## Служебный профиль администратора
