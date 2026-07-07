@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.AppSettingsService;
 import ru.daniil.shifts.service.CurrentUserService;
@@ -66,7 +67,7 @@ public class SystemController {
         AppUser user = requireAdmin(principal);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("app", "DutyLog: Time & Overtime");
-        result.put("version", "23.1.2");
+        result.put("version", "23.1.3");
         result.put("admin", user.getUsername());
         result.put("serverTime", Instant.now().toString());
         result.put("serverTimezone", ZoneId.systemDefault().toString());
@@ -84,9 +85,13 @@ public class SystemController {
     public record UserPasswordResetRequest(String newPassword) {}
 
     @GetMapping("/users")
-    public List<UserAdminService.AdminUserDto> users(Principal principal) {
+    public PageDto<UserAdminService.AdminUserDto> users(@RequestParam(name = "page", required = false, defaultValue = "0") int page,
+                                                        @RequestParam(name = "size", required = false, defaultValue = "50") int size,
+                                                        @RequestParam(name = "q", required = false) String q,
+                                                        @RequestParam(name = "role", required = false, defaultValue = "all") String role,
+                                                        Principal principal) {
         AppUser admin = requireAdmin(principal);
-        return userAdminService.listUsers(admin);
+        return userAdminService.listUsers(admin, page, size, q, role);
     }
 
     @PatchMapping("/users/{id}/role")

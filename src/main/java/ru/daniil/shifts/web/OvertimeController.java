@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
+import ru.daniil.shifts.dto.Dtos.OvertimeAccountPageDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeLedgerItemDto;
@@ -50,6 +51,19 @@ public class OvertimeController {
     public OvertimeAccountDto account(Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         return overtimeService.account(current);
+    }
+
+    /** GET /api/overtime/account-page — журнал переработок страницами для UI. */
+    @GetMapping("/account-page")
+    public OvertimeAccountPageDto accountPage(@RequestParam(name = "from", required = false) String from,
+                                              @RequestParam(name = "to", required = false) String to,
+                                              @RequestParam(name = "status", required = false, defaultValue = "all") String status,
+                                              @RequestParam(name = "q", required = false, defaultValue = "") String q,
+                                              @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+                                              @RequestParam(name = "size", required = false, defaultValue = "50") int size,
+                                              Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        return overtimeService.accountPage(current, from, to, status, q, page, size);
     }
 
     /** GET /api/overtime/export.csv — выгрузить текущий журнал переработок в CSV. */

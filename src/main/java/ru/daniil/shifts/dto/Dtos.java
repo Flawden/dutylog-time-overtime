@@ -28,6 +28,32 @@ import java.util.Map;
 public final class Dtos {
     private Dtos() {}
 
+
+    /** Простая страница данных для больших списков: UI не получает тысячи строк одним ответом. */
+    public record PageDto<T>(
+            List<T> items,
+            int page,
+            int size,
+            long total,
+            int totalPages,
+            boolean hasPrevious,
+            boolean hasNext
+    ) {
+        public static <T> PageDto<T> of(List<T> items, int page, int size, long total) {
+            int safeSize = Math.max(1, size);
+            int totalPages = total <= 0 ? 0 : (int) Math.ceil((double) total / safeSize);
+            return new PageDto<>(
+                    items == null ? List.of() : items,
+                    Math.max(0, page),
+                    safeSize,
+                    Math.max(0, total),
+                    totalPages,
+                    page > 0,
+                    totalPages > 0 && page + 1 < totalPages
+            );
+        }
+    }
+
     /** Тип смены наружу. */
     public record ShiftTypeDto(
             Long id,
@@ -737,6 +763,14 @@ public final class Dtos {
             double balanceHours,
             List<OvertimeCreditRowDto> credits,
             List<OvertimeUsageDto> usages
+    ) {}
+
+    /** Страничный ответ для таблицы переработок: summary аккаунта + только текущая страница начислений. */
+    public record OvertimeAccountPageDto(
+            double totalEarnedHours,
+            double totalUsedHours,
+            double balanceHours,
+            PageDto<OvertimeCreditRowDto> credits
     ) {}
 
     /** Сводка переработок за диапазон. */

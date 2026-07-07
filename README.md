@@ -201,6 +201,10 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
+`v23.1.3 — large list pagination hardening`
+
+Админский список пользователей, глобальная доска задач и таблица переработок больше не отдают большие списки в UI одним куском. Добавлены серверные page/size-параметры, лимит размера страницы до 100 строк и pager-контролы в интерфейсе. Экспорт переработок в CSV/XLS по-прежнему выгружает все записи по выбранным фильтрам.
+
 `v23.1.2 — Spring parameter binding fix`
 
 Патч исправляет запуск из IntelliJ/IDEA, когда классы собраны без Java reflection parameter names: Spring MVC больше не падает на `@RequestParam`/`@PathVariable`, потому что все имена параметров явно указаны в контроллерах. Дополнительно Maven-сборка включает `-parameters`.

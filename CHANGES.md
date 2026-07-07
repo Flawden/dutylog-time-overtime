@@ -1,3 +1,11 @@
+# v23.1.3 — Large list pagination hardening
+
+- Admin users list now loads by pages instead of sending all users to the browser.
+- Global task board now uses backend response pagination with page size capped at 100.
+- Overtime ledger table now requests a paged ledger response; CSV/XLS export remains full for the selected filters.
+- Added pager controls and page-size selectors for users, tasks and overtime ledger.
+- Frontend/backend/service-worker versions bumped to `23.1.3`.
+
 # v23.1.2 — Spring parameter binding fix
 
 - Исправлен runtime-крэш Spring MVC: `Name for argument ... not specified` при запросах вроде `/api/calendar` и `/api/tasks/board`.

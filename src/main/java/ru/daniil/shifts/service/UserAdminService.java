@@ -8,7 +8,10 @@ import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
+import ru.daniil.shifts.dto.Dtos.PageDto;
+
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Админское управление пользователями.
@@ -47,10 +50,24 @@ public class UserAdminService {
     ) {}
 
     @Transactional(readOnly = true)
-    public List<AdminUserDto> listUsers(AppUser currentUser) {
-        return users.findAllByOrderByIdAsc().stream()
+    public PageDto<AdminUserDto> listUsers(AppUser currentUser, int page, int size, String query, String role) {
+        int safePage = safePage(page);
+        int safeSize = safeSize(size);
+        String q = clean(query);
+        String roleFilter = clean(role);
+        if (roleFilter != null) roleFilter = roleFilter.toUpperCase(Locale.ROOT);
+        final String roleFinal = roleFilter;
+
+        List<AdminUserDto> filtered = users.findAllByOrderByIdAsc().stream()
+                .filter(user -> roleFinal == null || "ALL".equals(roleFinal) || roleFinal.equalsIgnoreCase(user.getRole()))
+                .filter(user -> q == null
+                        || contains(user.getUsername(), q)
+                        || contains(user.getDisplayName(), q)
+                        || contains(user.getRole(), q)
+                        || contains(user.getAccountTier(), q))
                 .map(user -> toDto(user, currentUser))
                 .toList();
+        return PageDto.of(pageSlice(filtered, safePage, safeSize), safePage, safeSize, filtered.size());
     }
 
     @Transactional(readOnly = true)
@@ -96,6 +113,32 @@ public class UserAdminService {
         AppUser saved = users.save(target);
         mobileAuthService.revokeAllSessions(saved);
         return toDto(saved, currentUser);
+    }
+
+
+    private int safePage(int page) {
+        return Math.max(0, page);
+    }
+
+    private int safeSize(int size) {
+        if (size <= 0) return 50;
+        return Math.min(100, Math.max(10, size));
+    }
+
+    private <T> List<T> pageSlice(List<T> list, int page, int size) {
+        int from = Math.min(list.size(), page * size);
+        int to = Math.min(list.size(), from + size);
+        return list.subList(from, to);
+    }
+
+    private String clean(String value) {
+        if (value == null) return null;
+        String trimmed = value.trim();
+        return trimmed.isBlank() ? null : trimmed;
+    }
+
+    private boolean contains(String value, String q) {
+        return value != null && value.toLowerCase(Locale.ROOT).contains(q.toLowerCase(Locale.ROOT));
     }
 
     private AppUser findTarget(Long userId) {

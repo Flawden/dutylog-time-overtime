@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
+import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.DayEntryService;
@@ -48,15 +49,17 @@ public class TaskController {
 
     /** Общий экран задач: открытые, просроченные, выполненные, категории и поиск. */
     @GetMapping("/board")
-    public List<TaskDto> board(@RequestParam(name = "status", required = false, defaultValue = "open") String status,
-                               @RequestParam(name = "category", required = false) String category,
-                               @RequestParam(name = "priority", required = false) String priority,
-                               @RequestParam(name = "q", required = false) String q,
-                               @RequestParam(name = "from", required = false) String from,
-                               @RequestParam(name = "to", required = false) String to,
-                               Principal principal) {
+    public PageDto<TaskDto> board(@RequestParam(name = "status", required = false, defaultValue = "open") String status,
+                                  @RequestParam(name = "category", required = false) String category,
+                                  @RequestParam(name = "priority", required = false) String priority,
+                                  @RequestParam(name = "q", required = false) String q,
+                                  @RequestParam(name = "from", required = false) String from,
+                                  @RequestParam(name = "to", required = false) String to,
+                                  @RequestParam(name = "page", required = false, defaultValue = "0") int page,
+                                  @RequestParam(name = "size", required = false, defaultValue = "50") int size,
+                                  Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
-        return taskService.listBoard(current, status, category, priority, q, from, to);
+        return taskService.listBoard(current, status, category, priority, q, from, to, page, size);
     }
 
     @PostMapping

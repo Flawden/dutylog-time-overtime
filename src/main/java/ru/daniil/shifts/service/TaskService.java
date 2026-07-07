@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
+import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayTask;
 import ru.daniil.shifts.model.TaskPriority;
@@ -45,13 +46,15 @@ public class TaskService {
 
 
     @Transactional(readOnly = true)
-    public List<TaskDto> listBoard(AppUser user,
-                                   String status,
-                                   String category,
-                                   String priority,
-                                   String q,
-                                   String from,
-                                   String to) {
+    public PageDto<TaskDto> listBoard(AppUser user,
+                                      String status,
+                                      String category,
+                                      String priority,
+                                      String q,
+                                      String from,
+                                      String to,
+                                      int page,
+                                      int size) {
         LocalDate fromDate = parseOptionalDate(from, "Дата from должна быть в формате yyyy-MM-dd");
         LocalDate toDate = parseOptionalDate(to, "Дата to должна быть в формате yyyy-MM-dd");
         if (fromDate != null && toDate != null) dayEntryService.validateRange(fromDate, toDate);
@@ -71,7 +74,9 @@ public class TaskService {
         final String statusFilter = st.toLowerCase(Locale.ROOT);
         final String categoryFilter = cat;
         final TaskPriority priorityFinal = priorityFilter;
-        return tasks.findByOwnerOrderByDoneAscDueDateAscDueTimeAscDateAscCreatedAtAscIdAsc(user).stream()
+        int safePage = safePage(page);
+        int safeSize = safeSize(size);
+        List<TaskDto> filtered = tasks.findByOwnerOrderByDoneAscDueDateAscDueTimeAscDateAscCreatedAtAscIdAsc(user).stream()
                 .filter(t -> matchStatus(t, statusFilter))
                 .filter(t -> categoryFilter == null || "all".equalsIgnoreCase(categoryFilter) || categoryFilter.equalsIgnoreCase(t.getCategory() == null ? "" : t.getCategory()))
                 .filter(t -> priorityFinal == null || t.getPriority() == priorityFinal)
@@ -86,6 +91,23 @@ public class TaskService {
                         .thenComparing(DayTask::getId))
                 .map(TaskDto::from)
                 .toList();
+        return PageDto.of(pageSlice(filtered, safePage, safeSize), safePage, safeSize, filtered.size());
+    }
+
+
+    private int safePage(int page) {
+        return Math.max(0, page);
+    }
+
+    private int safeSize(int size) {
+        if (size <= 0) return 50;
+        return Math.min(100, Math.max(10, size));
+    }
+
+    private <T> List<T> pageSlice(List<T> list, int page, int size) {
+        int from = Math.min(list.size(), page * size);
+        int to = Math.min(list.size(), from + size);
+        return list.subList(from, to);
     }
 
     private boolean matchStatus(DayTask task, String status) {

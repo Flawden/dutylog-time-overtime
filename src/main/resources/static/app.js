@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "23.1.2";
+const DUTYLOG_VERSION = "23.1.3";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -11,7 +11,7 @@ const state = {
   days: {},                       // { 'YYYY-MM-DD': {shiftTypeId, note, overtimeHours, timeOffHours} }
   tasksByDate: {},                // { 'YYYY-MM-DD': [{id,date,text,done,category,priority,dueDate,dueTime,overdue}] }
   taskFilters: { status:"all", category:"all" },
-  taskBoard: { items: [], filters: { status:"open", category:"all", priority:"all", q:"", from:"", to:"" } },
+  taskBoard: { items: [], filters: { status:"open", category:"all", priority:"all", q:"", from:"", to:"" }, page: { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false } },
   importantByDate: {},            // { 'YYYY-MM-DD': [{id,date,title,repeatMode,color}] }
   importantDays: [],               // настройки важных дней: [{id,date,title,repeatMode,color}]
   overtimeAccount: { totalEarnedHours:0, totalUsedHours:0, balanceHours:0, credits:[], usages:[] },
@@ -25,9 +25,11 @@ const state = {
   telegramStatus: null,
   registrationSettings: null,
   adminUsers: [],
+  adminUsersPage: { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false },
   preferences: { themePreference:"system", accentColor:"#F5B841" },
   activeScenarioId: null,
   ledgerFilters: { from:"", to:"", status:"all", q:"" },
+  ledgerPage: { items: [], page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false },
   editingCreditId: null,
   editingUsageId: null,
   selected: null,                 // ключ даты
@@ -461,6 +463,7 @@ const api = {
   async createImportantDay(b) { return jfetch("/api/important-days", { method:"POST", body:b }); },
   async deleteImportantDay(id) { return jfetch(`/api/important-days/${id}`, { method:"DELETE" }); },
   async overtimeAccount() { return jfetch("/api/overtime/account"); },
+  async overtimeAccountPage(filters = {}) { const qs = new URLSearchParams(); for (const [k, v] of Object.entries(filters)) if (v !== undefined && v !== null && String(v).trim() !== "") qs.set(k, v); return jfetch(`/api/overtime/account-page?${qs.toString()}`); },
   async createOvertimeCredit(b) { return jfetch("/api/overtime/credits", { method:"POST", body:b }); },
   async updateOvertimeCredit(id, b) { return jfetch(`/api/overtime/credits/${id}`, { method:"PATCH", body:b }); },
   async deleteOvertimeCredit(id) { return jfetch(`/api/overtime/credits/${id}`, { method:"DELETE" }); },
@@ -479,12 +482,57 @@ const api = {
   async telegramSettings(b) { return jfetch("/api/telegram/settings", { method:"PATCH", body:b }); },
   async telegramUnlink() { return jfetch("/api/telegram/link", { method:"DELETE" }); },
   async systemStatus() { return jfetch("/api/admin/status"); },
-  async adminUsers() { return jfetch("/api/admin/users"); },
+  async adminUsers(params = {}) { const qs = new URLSearchParams(); for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== null && String(v).trim() !== "") qs.set(k, v); return jfetch(`/api/admin/users?${qs.toString()}`); },
   async updateAdminUserRole(id, role) { return jfetch(`/api/admin/users/${id}/role`, { method:"PATCH", body:{ role } }); },
   async resetAdminUserPassword(id, newPassword) { return jfetch(`/api/admin/users/${id}/password`, { method:"POST", body:{ newPassword } }); },
   async registrationSettings() { return jfetch("/api/admin/settings/registration"); },
   async updateRegistrationSettings(enabled) { return jfetch("/api/admin/settings/registration", { method:"PATCH", body:{ enabled } }); },
 };
+
+function normalizePageResponse(res, fallbackSize = 50) {
+  if (Array.isArray(res)) {
+    return { items: res, page:0, size:res.length || fallbackSize, total:res.length, totalPages:res.length ? 1 : 0, hasPrevious:false, hasNext:false };
+  }
+  const page = Number(res?.page || 0);
+  const size = Number(res?.size || fallbackSize);
+  const total = Number(res?.total || 0);
+  return {
+    items: Array.isArray(res?.items) ? res.items : [],
+    page: Number.isFinite(page) ? page : 0,
+    size: Number.isFinite(size) && size > 0 ? size : fallbackSize,
+    total: Number.isFinite(total) ? total : 0,
+    totalPages: Number(res?.totalPages || 0),
+    hasPrevious: !!res?.hasPrevious,
+    hasNext: !!res?.hasNext,
+  };
+}
+function pageRangeText(p) {
+  const total = Number(p?.total || 0);
+  const count = Number((p?.items || []).length || 0);
+  if (!total || !count) return "0 из 0";
+  const start = Number(p.page || 0) * Number(p.size || 50) + 1;
+  const end = Math.min(total, start + count - 1);
+  return `${start}–${end} из ${total}`;
+}
+function renderPager(id, pageInfo, onPage, onSize) {
+  const box = $(id);
+  if (!box) return;
+  const p = pageInfo || { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false, items:[] };
+  box.innerHTML = `
+    <button type="button" data-pager-prev ${p.hasPrevious ? "" : "disabled"}>Назад</button>
+    <span class="pagerText">${pageRangeText(p)} · стр. ${Number(p.totalPages || 0) ? Number(p.page || 0) + 1 : 0}/${Number(p.totalPages || 0)}</span>
+    <button type="button" data-pager-next ${p.hasNext ? "" : "disabled"}>Вперёд</button>
+    <label>на странице
+      <select data-pager-size>
+        <option value="25" ${Number(p.size) === 25 ? "selected" : ""}>25</option>
+        <option value="50" ${Number(p.size) === 50 ? "selected" : ""}>50</option>
+        <option value="100" ${Number(p.size) === 100 ? "selected" : ""}>100</option>
+      </select>
+    </label>`;
+  box.querySelector("[data-pager-prev]")?.addEventListener("click", () => onPage(Math.max(0, Number(p.page || 0) - 1)));
+  box.querySelector("[data-pager-next]")?.addEventListener("click", () => onPage(Number(p.page || 0) + 1));
+  box.querySelector("[data-pager-size]")?.addEventListener("change", e => onSize(Number(e.target.value || 50)));
+}
 
 /* CSRF: Spring кладёт токен в cookie XSRF-TOKEN, мы возвращаем его заголовком */
 function csrfToken(){
@@ -2052,7 +2100,7 @@ async function addOvertimeCredit(){
     setSave("saved");
     renderOvertimeControls();
     renderCalendar();
-    renderLedgerTable();
+    await loadLedgerPage(true);
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
@@ -2060,11 +2108,17 @@ async function addOvertimeCredit(){
 }
 
 function findUsageById(id){
-  return (state.overtimeAccount?.usages || []).find(u => Number(u.id) === Number(id)) || null;
+  const fromAccount = (state.overtimeAccount?.usages || []).find(u => Number(u.id) === Number(id));
+  if (fromAccount) return fromAccount;
+  for (const credit of state.ledgerPage?.items || []) {
+    const usage = (credit.usages || []).find(u => Number(u.usageId) === Number(id));
+    if (usage) return { id:usage.usageId, usageDate:usage.usageDate, hours:usage.hours, reason:usage.reason || "" };
+  }
+  return null;
 }
 
 function startEditOvertimeCredit(id){
-  const c = (state.overtimeAccount?.credits || []).find(x => Number(x.id) === Number(id));
+  const c = (state.overtimeAccount?.credits || []).find(x => Number(x.id) === Number(id)) || (state.ledgerPage?.items || []).find(x => Number(x.id) === Number(id));
   if (!c) return setSave("err", "начисление не найдено");
   if (state.selected !== c.workedDate) selectDay(c.workedDate);
   state.editingCreditId = Number(id);
@@ -2106,7 +2160,7 @@ async function addOvertimeUsage(){
     setSave("saved");
     renderOvertimeControls();
     renderCalendar();
-    renderLedgerTable();
+    await loadLedgerPage(true);
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
@@ -2130,7 +2184,7 @@ function startEditOvertimeUsage(id){
 }
 
 async function removeOvertimeCredit(id){
-  const credit = (state.overtimeAccount?.credits || []).find(c => Number(c.id) === Number(id));
+  const credit = (state.overtimeAccount?.credits || []).find(c => Number(c.id) === Number(id)) || (state.ledgerPage?.items || []).find(c => Number(c.id) === Number(id));
   const label = credit ? `${credit.workedDate} ${credit.timeRange || ""} +${fmtHours(credit.hours)} ч` : `#${id}`;
   if (!confirm(`Удалить начисление переработки ${label}?\n\nЭто действие нельзя отменить.`)) return;
   setSave("saving");
@@ -2140,7 +2194,7 @@ async function removeOvertimeCredit(id){
     setSave("saved");
     renderOvertimeControls();
     renderCalendar();
-    renderLedgerTable();
+    await loadLedgerPage(true);
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
@@ -2158,7 +2212,7 @@ async function removeOvertimeUsage(id){
     setSave("saved");
     renderOvertimeControls();
     renderCalendar();
-    renderLedgerTable();
+    await loadLedgerPage(true);
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
@@ -2226,8 +2280,9 @@ function renderLedgerTable(){
   tbody.innerHTML = "";
   syncLedgerFilterInputs();
 
+  const page = { ...(state.ledgerPage || {}), items: (state.ledgerPage?.items || []) };
   const allCredits = acc.credits || [];
-  const credits = getFilteredLedgerCredits();
+  const credits = page.items || [];
   const totalEarned = credits.reduce((sum, c) => sum + numOr0(c.hours), 0);
   const totalUsed = credits.reduce((sum, c) => sum + numOr0(c.usedHours), 0);
   const totalRemain = credits.reduce((sum, c) => sum + numOr0(c.remainingHours), 0);
@@ -2235,16 +2290,17 @@ function renderLedgerTable(){
   const closedCount = credits.filter(c => numOr0(c.remainingHours) <= 0.0001).length;
   if (statsEl) {
     statsEl.innerHTML = `
-      <span class="pill">показано: <b>${credits.length}</b> из <b>${allCredits.length}</b></span>
-      <span class="pill">начислено: <b>+${fmtHours(totalEarned)} ч</b></span>
+      <span class="pill">показано: <b>${pageRangeText(page)}</b></span>
+      <span class="pill">на странице начислено: <b>+${fmtHours(totalEarned)} ч</b></span>
       <span class="pill">использовано: <b>${fmtHours(totalUsed)} ч</b></span>
-      <span class="pill">остаток в таблице: <b>${fmtHours(totalRemain)} ч</b></span>
+      <span class="pill">остаток на странице: <b>${fmtHours(totalRemain)} ч</b></span>
       <span class="pill">с остатком: <b>${openCount}</b></span>
       <span class="pill">закрыто: <b>${closedCount}</b></span>
     `;
   }
+  renderPager("ledgerPager", page, nextPage => { state.ledgerPage.page = nextPage; loadLedgerPage(false); }, nextSize => { state.ledgerPage.size = nextSize; resetLedgerPage(); loadLedgerPage(false); });
 
-  if (!allCredits.length) {
+  if (!allCredits.length && !(page.total || 0)) {
     const tr = document.createElement("tr");
     const td = document.createElement("td");
     td.colSpan = 8;
@@ -2303,20 +2359,55 @@ function renderLedgerTable(){
   });
 }
 
+async function loadLedgerPage(silent = true){
+  try {
+    const f = state.ledgerFilters || {};
+    const page = state.ledgerPage || { page:0, size:50 };
+    const query = {
+      from: f.from || "",
+      to: f.to || "",
+      status: f.status && f.status !== "all" ? f.status : "",
+      q: f.q || "",
+      page: page.page || 0,
+      size: page.size || 50,
+    };
+    const res = await api.overtimeAccountPage(query);
+    const creditsPage = normalizePageResponse(res?.credits, page.size || 50);
+    state.ledgerPage = creditsPage;
+    state.overtimeAccount = {
+      ...(state.overtimeAccount || {}),
+      totalEarnedHours: numOr0(res?.totalEarnedHours),
+      totalUsedHours: numOr0(res?.totalUsedHours),
+      balanceHours: numOr0(res?.balanceHours),
+    };
+    renderLedgerTable();
+    updateOvertimeBalanceLabel();
+  } catch (err) {
+    console.error(err);
+    if (!silent) setSave("err", err.message);
+  }
+}
+function resetLedgerPage(){
+  state.ledgerPage = { ...(state.ledgerPage || {}), page:0 };
+}
+
 function setLedgerThisMonth(){
   const r = currentMonthRange();
   state.ledgerFilters.from = r.from;
   state.ledgerFilters.to = r.to;
-  renderLedgerTable();
+  resetLedgerPage();
+  loadLedgerPage(false);
 }
 function setLedgerAllTime(){
   state.ledgerFilters.from = "";
   state.ledgerFilters.to = "";
-  renderLedgerTable();
+  resetLedgerPage();
+  loadLedgerPage(false);
 }
 function clearLedgerFilters(){
   state.ledgerFilters = { from:"", to:"", status:"all", q:"" };
-  renderLedgerTable();
+  resetLedgerPage();
+  loadLedgerPage(false);
 }
 
 function ledgerExportUrl(ext){
@@ -2336,10 +2427,10 @@ function exportLedger(ext){
 $("ledgerThisMonth").addEventListener("click", setLedgerThisMonth);
 $("ledgerAllTime").addEventListener("click", setLedgerAllTime);
 $("ledgerClear").addEventListener("click", clearLedgerFilters);
-$("ledgerFrom").addEventListener("input", e => { state.ledgerFilters.from = e.target.value; renderLedgerTable(); });
-$("ledgerTo").addEventListener("input", e => { state.ledgerFilters.to = e.target.value; renderLedgerTable(); });
-$("ledgerStatus").addEventListener("change", e => { state.ledgerFilters.status = e.target.value; renderLedgerTable(); });
-$("ledgerSearch").addEventListener("input", e => { state.ledgerFilters.q = e.target.value; renderLedgerTable(); });
+$("ledgerFrom").addEventListener("input", e => { state.ledgerFilters.from = e.target.value; resetLedgerPage(); loadLedgerPage(false); });
+$("ledgerTo").addEventListener("input", e => { state.ledgerFilters.to = e.target.value; resetLedgerPage(); loadLedgerPage(false); });
+$("ledgerStatus").addEventListener("change", e => { state.ledgerFilters.status = e.target.value; resetLedgerPage(); loadLedgerPage(false); });
+$("ledgerSearch").addEventListener("input", e => { clearTimeout(window.__ledgerTimer); window.__ledgerTimer = setTimeout(() => { state.ledgerFilters.q = e.target.value.trim(); resetLedgerPage(); loadLedgerPage(true); }, 350); });
 $("ledgerExportCsv").addEventListener("click", () => exportLedger("csv"));
 $("ledgerExportXls").addEventListener("click", () => exportLedger("xls"));
 
@@ -2768,6 +2859,7 @@ function syncTaskBoardFiltersToInputs(){
 async function loadTaskBoard(silent = true){
   try {
     const f = state.taskBoard.filters;
+    const page = state.taskBoard.page || { page:0, size:50 };
     const query = {
       status: f.status || "open",
       category: f.category !== "all" ? f.category : "",
@@ -2775,13 +2867,20 @@ async function loadTaskBoard(silent = true){
       q: f.q || "",
       from: f.from || "",
       to: f.to || "",
+      page: page.page || 0,
+      size: page.size || 50,
     };
-    state.taskBoard.items = await api.taskBoard(query);
+    const res = normalizePageResponse(await api.taskBoard(query), page.size || 50);
+    state.taskBoard.items = res.items;
+    state.taskBoard.page = res;
     renderTaskBoard();
   } catch (err) {
     console.error(err);
     if (!silent) setSave("err", err.message);
   }
+}
+function resetTaskBoardPage(){
+  state.taskBoard.page = { ...(state.taskBoard.page || {}), page:0 };
 }
 function taskBoardDateLabel(task){
   const main = (task.dueDate || task.date || "").split("-").reverse().join(".");
@@ -2810,15 +2909,18 @@ function renderTaskBoard(){
   syncTaskBoardFiltersToInputs();
   renderTaskBoardCategoryFilter();
   const items = state.taskBoard.items || [];
+  const page = { ...(state.taskBoard.page || {}), items };
   const open = items.filter(t => !t.done).length;
   const overdue = items.filter(t => t.overdue && !t.done).length;
   const done = items.filter(t => t.done).length;
-  $("taskBoardStatus").textContent = `${open} откр. · ${overdue} проср.`;
+  $("taskBoardStatus").textContent = `${pageRangeText(page)}`;
   $("taskBoardStats").innerHTML = `
-    <span class="pill">показано <b>${items.length}</b></span>
-    <span class="pill">открытых <b>${open}</b></span>
-    <span class="pill">просроченных <b>${overdue}</b></span>
-    <span class="pill">выполненных <b>${done}</b></span>`;
+    <span class="pill">на странице <b>${items.length}</b></span>
+    <span class="pill">всего по фильтрам <b>${page.total || items.length}</b></span>
+    <span class="pill">открытых на странице <b>${open}</b></span>
+    <span class="pill">просроченных на странице <b>${overdue}</b></span>
+    <span class="pill">выполненных на странице <b>${done}</b></span>`;
+  renderPager("taskBoardPager", page, nextPage => { state.taskBoard.page.page = nextPage; loadTaskBoard(false); }, nextSize => { state.taskBoard.page.size = nextSize; resetTaskBoardPage(); loadTaskBoard(false); });
   list.innerHTML = "";
   if (!items.length) {
     const empty = document.createElement("div");
@@ -2871,6 +2973,7 @@ async function goToTaskDate(k){
 }
 function setTaskBoardQuickStatus(status){
   state.taskBoard.filters.status = status;
+  resetTaskBoardPage();
   loadTaskBoard(false);
 }
 
@@ -2883,14 +2986,14 @@ $("taskDueDate").addEventListener("change", () => { if ($("taskDueDate").value) 
 $("taskBoardOpen").addEventListener("click", () => setTaskBoardQuickStatus("open"));
 $("taskBoardOverdue").addEventListener("click", () => setTaskBoardQuickStatus("overdue"));
 $("taskBoardAll").addEventListener("click", () => setTaskBoardQuickStatus("all"));
-$("taskBoardThisMonth").addEventListener("click", () => { const r = monthFromTo(); state.taskBoard.filters.from = r.from; state.taskBoard.filters.to = r.to; loadTaskBoard(false); });
-$("taskBoardClear").addEventListener("click", () => { state.taskBoard.filters = { status:"open", category:"all", priority:"all", q:"", from:"", to:"" }; loadTaskBoard(false); });
-$("taskBoardStatusFilter").addEventListener("change", () => { state.taskBoard.filters.status = $("taskBoardStatusFilter").value; loadTaskBoard(false); });
-$("taskBoardCategory").addEventListener("change", () => { state.taskBoard.filters.category = $("taskBoardCategory").value; loadTaskBoard(false); });
-$("taskBoardPriority").addEventListener("change", () => { state.taskBoard.filters.priority = $("taskBoardPriority").value; loadTaskBoard(false); });
-$("taskBoardFrom").addEventListener("change", () => { state.taskBoard.filters.from = $("taskBoardFrom").value; loadTaskBoard(false); });
-$("taskBoardTo").addEventListener("change", () => { state.taskBoard.filters.to = $("taskBoardTo").value; loadTaskBoard(false); });
-$("taskBoardSearch").addEventListener("input", () => { clearTimeout(window.__taskBoardTimer); window.__taskBoardTimer = setTimeout(() => { state.taskBoard.filters.q = $("taskBoardSearch").value.trim(); loadTaskBoard(true); }, 350); });
+$("taskBoardThisMonth").addEventListener("click", () => { const r = monthFromTo(); state.taskBoard.filters.from = r.from; state.taskBoard.filters.to = r.to; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardClear").addEventListener("click", () => { state.taskBoard.filters = { status:"open", category:"all", priority:"all", q:"", from:"", to:"" }; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardStatusFilter").addEventListener("change", () => { state.taskBoard.filters.status = $("taskBoardStatusFilter").value; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardCategory").addEventListener("change", () => { state.taskBoard.filters.category = $("taskBoardCategory").value; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardPriority").addEventListener("change", () => { state.taskBoard.filters.priority = $("taskBoardPriority").value; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardFrom").addEventListener("change", () => { state.taskBoard.filters.from = $("taskBoardFrom").value; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardTo").addEventListener("change", () => { state.taskBoard.filters.to = $("taskBoardTo").value; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardSearch").addEventListener("input", () => { clearTimeout(window.__taskBoardTimer); window.__taskBoardTimer = setTimeout(() => { state.taskBoard.filters.q = $("taskBoardSearch").value.trim(); resetTaskBoardPage(); loadTaskBoard(true); }, 350); });
 
 function renderChips(){
   const box = $("chips");
@@ -3264,6 +3367,7 @@ async function goto(y, m){
   state.selected = null;
   $("panel").hidden = true; $("layout").classList.remove("with-panel");
   await loadMonth();
+  await loadLedgerPage(true);
   await loadTaskBoard(true);
   renderCalendar();
 }
@@ -3470,11 +3574,13 @@ function renderAdminUsers(users = []){
   const box = $("adminUsersList");
   const status = $("adminUsersStatus");
   if (!box) return;
+  const page = { ...(state.adminUsersPage || {}), items: users };
   if (status) {
     const admins = users.filter(u => u.role === "ADMIN").length;
     status.className = "status statusMetrics";
-    status.innerHTML = `<span class="statusChip"><b>Пользователей:</b> ${users.length}</span><span class="statusChip ${admins > 0 ? 'statusChipOk' : 'statusChipWarn'}"><b>Админов:</b> ${admins}</span>`;
+    status.innerHTML = `<span class="statusChip"><b>Показано:</b> ${pageRangeText(page)}</span><span class="statusChip ${admins > 0 ? 'statusChipOk' : 'statusChipWarn'}"><b>Админов на странице:</b> ${admins}</span>`;
   }
+  renderPager("adminUsersPager", page, nextPage => { state.adminUsersPage.page = nextPage; refreshAdminUsers(); }, nextSize => { state.adminUsersPage.size = nextSize; state.adminUsersPage.page = 0; refreshAdminUsers(); });
   if (!users.length) {
     box.innerHTML = '<span class="emptyLine">Пользователей пока нет.</span>';
     return;
@@ -3510,8 +3616,15 @@ async function refreshAdminUsers(){
   const status = $("adminUsersStatus");
   if (status) status.textContent = "загрузка…";
   try {
-    const users = await api.adminUsers();
-    state.adminUsers = users || [];
+    const page = state.adminUsersPage || { page:0, size:50 };
+    const res = normalizePageResponse(await api.adminUsers({
+      page: page.page || 0,
+      size: page.size || 50,
+      q: $("adminUsersSearch")?.value || "",
+      role: $("adminUsersRoleFilter")?.value || "all",
+    }), page.size || 50);
+    state.adminUsers = res.items || [];
+    state.adminUsersPage = res;
     renderAdminUsers(state.adminUsers);
   } catch (err) {
     if (status) status.textContent = "ошибка";
@@ -3626,6 +3739,8 @@ function initDiagnosticsEvents(){
   $("registrationRefresh")?.addEventListener("click", refreshRegistrationAdmin);
   $("registrationEnabledToggle")?.addEventListener("change", e => saveRegistrationAdmin(e.target.checked));
   $("adminUsersRefresh")?.addEventListener("click", refreshAdminUsers);
+  $("adminUsersRoleFilter")?.addEventListener("change", () => { state.adminUsersPage.page = 0; refreshAdminUsers(); });
+  $("adminUsersSearch")?.addEventListener("input", () => { clearTimeout(window.__adminUsersTimer); window.__adminUsersTimer = setTimeout(() => { state.adminUsersPage.page = 0; refreshAdminUsers(); }, 350); });
   $("adminUsersList")?.addEventListener("change", e => {
     const id = e.target?.dataset?.adminRole;
     if (id) saveAdminUserRole(id, e.target.value);
@@ -3928,6 +4043,7 @@ async function init(){
     setSave("err", "нет связи — открыта локальная копия");
   }
   await loadMonth();
+  await loadLedgerPage(true);
   await loadTaskBoard(true);
   renderCalendar();
   dataLayer.syncQueue();

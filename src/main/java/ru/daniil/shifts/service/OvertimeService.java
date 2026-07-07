@@ -3,6 +3,8 @@ package ru.daniil.shifts.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
+import ru.daniil.shifts.dto.Dtos.OvertimeAccountPageDto;
+import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAllocationDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditRowDto;
@@ -106,6 +108,24 @@ public class OvertimeService {
         double earned = creditList.stream().mapToDouble(OvertimeCredit::getHours).sum();
         double used = usageList.stream().mapToDouble(OvertimeUsage::getHours).sum();
         return new OvertimeAccountDto(round2(earned), round2(used), round2(earned - used), creditRows, usageRows);
+    }
+
+    /**
+     * Страничный ответ для таблицы переработок: итог аккаунта считается полностью,
+     * но клиент получает только текущую страницу строк журнала.
+     */
+    @Transactional(readOnly = true)
+    public OvertimeAccountPageDto accountPage(AppUser user, String from, String to, String status, String q, int page, int size) {
+        OvertimeAccountDto account = account(user);
+        List<OvertimeCreditRowDto> filtered = filterCreditRows(account.credits(), from, to, status, q);
+        int safePage = safePage(page);
+        int safeSize = safeSize(size);
+        return new OvertimeAccountPageDto(
+                account.totalEarnedHours(),
+                account.totalUsedHours(),
+                account.balanceHours(),
+                PageDto.of(pageSlice(filtered, safePage, safeSize), safePage, safeSize, filtered.size())
+        );
     }
 
     /**
@@ -481,6 +501,22 @@ public class OvertimeService {
     private List<DayEntry> entries(AppUser user, LocalDate from, LocalDate to) {
         dayEntryService.validateRange(from, to);
         return days.findByOwnerAndDateBetweenOrderByDateAsc(user, from, to);
+    }
+
+
+    private int safePage(int page) {
+        return Math.max(0, page);
+    }
+
+    private int safeSize(int size) {
+        if (size <= 0) return 50;
+        return Math.min(100, Math.max(10, size));
+    }
+
+    private <T> List<T> pageSlice(List<T> list, int page, int size) {
+        int from = Math.min(list.size(), page * size);
+        int to = Math.min(list.size(), from + size);
+        return list.subList(from, to);
     }
 
     private List<OvertimeCreditRowDto> filterCreditRows(List<OvertimeCreditRowDto> rows, String from, String to, String status, String q) {
