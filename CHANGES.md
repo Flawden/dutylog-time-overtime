@@ -1,3 +1,9 @@
+# v23.1.6 — Notification status polish
+
+- Notification settings header now uses compact status chips instead of raw text like `0 шт · браузер: разрешено`.
+- Reminder count and browser permission status are visually aligned with theme/admin/time status chips.
+- Frontend/backend/service-worker versions bumped to `23.1.6`.
+
 # v23.1.5 — Offline sync copy and compile polish
 
 - Added missing `PostMapping` import in `SystemController` for the admin password reset endpoint.

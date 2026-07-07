@@ -270,7 +270,6 @@
 
   .notifyCard { margin-top:12px; background:var(--panel2); border:1px solid var(--line); border-radius:12px; padding:10px; }
   .notifyHead { display:flex; align-items:baseline; justify-content:space-between; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
-  .notifyHead .status { color:var(--accent); font-family:ui-monospace,monospace; font-weight:800; }
   .notifyGrid { display:grid; grid-template-columns:repeat(2,minmax(220px,1fr)); gap:8px; margin:10px 0; }
   @media (max-width: 740px) { .notifyGrid { grid-template-columns:1fr; } }
   .notifyOpt { background:rgba(20,23,28,.45); border:1px solid var(--line); border-radius:10px; padding:8px; font-size:12px; color:var(--mut); display:flex; flex-wrap:wrap; align-items:center; gap:7px; }
@@ -1127,8 +1126,9 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
 }
 
 
-/* v23.1.1/v23.1.2: visual polish for theme summary, autosave badge and admin metrics */
-.settingsHead > .status{
+/* v23.1.1-v23.1.6: visual polish for status chips */
+.settingsHead > .status,
+.notifyHead > .status{
   display:flex;
   flex-wrap:wrap;
   justify-content:flex-end;
@@ -1136,7 +1136,7 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
   gap:8px;
   max-width:min(100%, 420px);
 }
-.statusThemeSummary, .statusMetrics, .statusAutoSave{ color:var(--text); }
+.statusThemeSummary, .statusMetrics, .statusAutoSave, .notifyStatusChips{ color:var(--text); }
 .statusChip{
   display:inline-flex;
   align-items:center;
@@ -1190,8 +1190,9 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
 #appearanceCard .settingsHead > .status{ max-width:min(100%, 520px); }
 #timeSettingsCard .settingsHead > .status{ max-width:none; }
 #adminUsersCard .settingsHead > .status{ max-width:none; }
+#notifyCard .notifyHead > .status{ max-width:none; }
 @media (max-width:700px){
-  .settingsHead > .status{ justify-content:flex-start; max-width:100%; }
+  .settingsHead > .status, .notifyHead > .status{ justify-content:flex-start; max-width:100%; }
   .statusChip{ min-height:30px; }
 }
 

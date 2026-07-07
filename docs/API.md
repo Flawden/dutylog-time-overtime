@@ -1,4 +1,4 @@
-# DutyLog API v23.1.5
+# DutyLog API v23.1.6
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -1053,7 +1053,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "23.1.5",
+  "version": "23.1.6",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],

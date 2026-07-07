@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "23.1.5"
+const DUTYLOG_VERSION = "23.1.6"
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -3867,9 +3867,18 @@ function fmtReminderAt(value){
   const [,m,day] = d.split("-");
   return `${day}.${m} ${t}`;
 }
-function browserPermissionText(){
-  if (!("Notification" in window)) return "браузер не поддерживает";
-  return Notification.permission === "granted" ? "браузер: разрешено" : Notification.permission === "denied" ? "браузер: запрещено" : "браузер: не разрешено";
+function browserPermissionStatus(){
+  if (!("Notification" in window)) return { label:"браузер", value:"не поддерживает", tone:"warn" };
+  if (Notification.permission === "granted") return { label:"браузер", value:"разрешено", tone:"ok" };
+  if (Notification.permission === "denied") return { label:"браузер", value:"запрещено", tone:"warn" };
+  return { label:"браузер", value:"не разрешено", tone:"warn" };
+}
+function renderNotifyStatus(count){
+  const box = $("notifyStatus");
+  if (!box) return;
+  const permission = browserPermissionStatus();
+  box.className = "status notifyStatusChips";
+  box.innerHTML = `<span class="statusChip statusChipPrimary"><b>${Number(count) || 0}</b> шт</span><span class="statusChip ${permission.tone === "ok" ? "statusChipOk" : "statusChipWarn"}"><b>${esc(permission.label)}:</b> ${esc(permission.value)}</span>`;
 }
 function renderNotifications(){
   const s = state.notificationSettings;
@@ -3885,7 +3894,7 @@ function renderNotifications(){
   $("notifImportantDays").value = s.importantDayDaysBefore ?? 1;
   $("notifImportantTime").value = s.importantDayReminderTime || "09:00";
   const sourceItems = state.notificationPreview || state.reminders;
-  $("notifyStatus").textContent = `${sourceItems.length} шт · ${browserPermissionText()}`;
+  renderNotifyStatus(sourceItems.length);
   if ($("notifyListTitle")) $("notifyListTitle").textContent = state.notificationPreviewTitle || "Напоминания текущего месяца";
   const list = $("notifyList");
   list.innerHTML = "";
