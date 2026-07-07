@@ -54,10 +54,10 @@ public class OvertimeController {
 
     /** GET /api/overtime/export.csv — выгрузить текущий журнал переработок в CSV. */
     @GetMapping("/export.csv")
-    public ResponseEntity<byte[]> exportCsv(@RequestParam(required = false) String from,
-                                            @RequestParam(required = false) String to,
-                                            @RequestParam(required = false, defaultValue = "all") String status,
-                                            @RequestParam(required = false, defaultValue = "") String q,
+    public ResponseEntity<byte[]> exportCsv(@RequestParam(name = "from", required = false) String from,
+                                            @RequestParam(name = "to", required = false) String to,
+                                            @RequestParam(name = "status", required = false, defaultValue = "all") String status,
+                                            @RequestParam(name = "q", required = false, defaultValue = "") String q,
                                             Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         byte[] body = overtimeService.exportAccountCsv(current, from, to, status, q);
@@ -69,10 +69,10 @@ public class OvertimeController {
 
     /** GET /api/overtime/export.xls — Excel-совместимый отчёт без дополнительной тяжёлой зависимости. */
     @GetMapping("/export.xls")
-    public ResponseEntity<byte[]> exportXls(@RequestParam(required = false) String from,
-                                            @RequestParam(required = false) String to,
-                                            @RequestParam(required = false, defaultValue = "all") String status,
-                                            @RequestParam(required = false, defaultValue = "") String q,
+    public ResponseEntity<byte[]> exportXls(@RequestParam(name = "from", required = false) String from,
+                                            @RequestParam(name = "to", required = false) String to,
+                                            @RequestParam(name = "status", required = false, defaultValue = "all") String status,
+                                            @RequestParam(name = "q", required = false, defaultValue = "") String q,
                                             Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         byte[] body = overtimeService.exportAccountXls(current, from, to, status, q);
@@ -92,7 +92,7 @@ public class OvertimeController {
 
     /** PATCH /api/overtime/credits/{id} — отредактировать начисление и безопасно пересчитать часы. */
     @PatchMapping("/credits/{id}")
-    public OvertimeAccountDto updateCredit(@PathVariable long id,
+    public OvertimeAccountDto updateCredit(@PathVariable("id") long id,
                                            @Valid @RequestBody OvertimeCreditUpdateRequest req,
                                            Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
@@ -101,7 +101,7 @@ public class OvertimeController {
 
     /** DELETE /api/overtime/credits/{id} — удалить начисление, если из него ещё ничего не списано. */
     @DeleteMapping("/credits/{id}")
-    public OvertimeAccountDto deleteCredit(@PathVariable long id, Principal principal) {
+    public OvertimeAccountDto deleteCredit(@PathVariable("id") long id, Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         return overtimeService.deleteCredit(current, id);
     }
@@ -116,7 +116,7 @@ public class OvertimeController {
 
     /** PATCH /api/overtime/usages/{id} — изменить дату/часы/причину списания и пересобрать FIFO. */
     @PatchMapping("/usages/{id}")
-    public OvertimeAccountDto updateUsage(@PathVariable long id,
+    public OvertimeAccountDto updateUsage(@PathVariable("id") long id,
                                           @Valid @RequestBody OvertimeUsageUpdateRequest req,
                                           Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
@@ -125,15 +125,15 @@ public class OvertimeController {
 
     /** DELETE /api/overtime/usages/{id} — удалить списание и вернуть часы в остатки начислений. */
     @DeleteMapping("/usages/{id}")
-    public OvertimeAccountDto deleteUsage(@PathVariable long id, Principal principal) {
+    public OvertimeAccountDto deleteUsage(@PathVariable("id") long id, Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         return overtimeService.deleteUsage(current, id);
     }
 
     /** GET /api/overtime/balance?from=2026-06-01&to=2026-06-30 — старый периодный отчёт по day_entries. */
     @GetMapping("/balance")
-    public OvertimeSummaryDto balance(@RequestParam String from,
-                                      @RequestParam String to,
+    public OvertimeSummaryDto balance(@RequestParam("from") String from,
+                                      @RequestParam("to") String to,
                                       Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         LocalDate fromDate = dayEntryService.parseDate(from, "Дата from должна быть в формате yyyy-MM-dd");
@@ -143,8 +143,8 @@ public class OvertimeController {
 
     /** GET /api/overtime/ledger?from=2026-06-01&to=2026-06-30 — старый журнал по day_entries. */
     @GetMapping("/ledger")
-    public List<OvertimeLedgerItemDto> ledger(@RequestParam String from,
-                                              @RequestParam String to,
+    public List<OvertimeLedgerItemDto> ledger(@RequestParam("from") String from,
+                                              @RequestParam("to") String to,
                                               Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         LocalDate fromDate = dayEntryService.parseDate(from, "Дата from должна быть в формате yyyy-MM-dd");

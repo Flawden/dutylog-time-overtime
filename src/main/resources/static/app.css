@@ -1127,7 +1127,7 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
 }
 
 
-/* v23.1.1: visual polish for theme summary, autosave badge and admin metrics */
+/* v23.1.1/v23.1.2: visual polish for theme summary, autosave badge and admin metrics */
 .settingsHead > .status{
   display:flex;
   flex-wrap:wrap;

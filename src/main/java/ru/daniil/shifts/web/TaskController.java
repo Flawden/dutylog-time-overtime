@@ -32,9 +32,9 @@ public class TaskController {
 
     /** GET /api/tasks?date=2026-07-02 или GET /api/tasks?from=...&to=... */
     @GetMapping
-    public List<TaskDto> list(@RequestParam(required = false) String date,
-                              @RequestParam(required = false) String from,
-                              @RequestParam(required = false) String to,
+    public List<TaskDto> list(@RequestParam(name = "date", required = false) String date,
+                              @RequestParam(name = "from", required = false) String from,
+                              @RequestParam(name = "to", required = false) String to,
                               Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         if (date != null && !date.isBlank()) {
@@ -48,12 +48,12 @@ public class TaskController {
 
     /** Общий экран задач: открытые, просроченные, выполненные, категории и поиск. */
     @GetMapping("/board")
-    public List<TaskDto> board(@RequestParam(required = false, defaultValue = "open") String status,
-                               @RequestParam(required = false) String category,
-                               @RequestParam(required = false) String priority,
-                               @RequestParam(required = false) String q,
-                               @RequestParam(required = false) String from,
-                               @RequestParam(required = false) String to,
+    public List<TaskDto> board(@RequestParam(name = "status", required = false, defaultValue = "open") String status,
+                               @RequestParam(name = "category", required = false) String category,
+                               @RequestParam(name = "priority", required = false) String priority,
+                               @RequestParam(name = "q", required = false) String q,
+                               @RequestParam(name = "from", required = false) String from,
+                               @RequestParam(name = "to", required = false) String to,
                                Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         return taskService.listBoard(current, status, category, priority, q, from, to);
@@ -67,7 +67,7 @@ public class TaskController {
     }
 
     @PatchMapping("/{id}")
-    public TaskDto update(@PathVariable Long id,
+    public TaskDto update(@PathVariable("id") Long id,
                           @Valid @RequestBody(required = false) TaskUpdateRequest req,
                           Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
@@ -75,7 +75,7 @@ public class TaskController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id, Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         taskService.delete(current, id);
         return ResponseEntity.noContent().build();

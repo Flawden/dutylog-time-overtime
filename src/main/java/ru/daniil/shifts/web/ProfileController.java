@@ -197,7 +197,7 @@ public class ProfileController {
     }
 
     @DeleteMapping("/sessions/{id}")
-    public ResponseEntity<Void> revokeSession(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<Void> revokeSession(@PathVariable("id") Long id, Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         mobileAuthService.revokeSession(current, id);
         return ResponseEntity.noContent().build();

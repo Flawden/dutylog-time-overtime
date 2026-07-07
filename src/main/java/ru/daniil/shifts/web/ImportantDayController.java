@@ -40,8 +40,8 @@ public class ImportantDayController {
 
     /** Развёрнутые появления важных дней в диапазоне календаря. */
     @GetMapping("/occurrences")
-    public List<ImportantDayOccurrenceDto> occurrences(@RequestParam String from,
-                                                       @RequestParam String to,
+    public List<ImportantDayOccurrenceDto> occurrences(@RequestParam("from") String from,
+                                                       @RequestParam("to") String to,
                                                        Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         LocalDate fromDate = dayEntryService.parseDate(from, "Дата from должна быть в формате yyyy-MM-dd");
@@ -57,7 +57,7 @@ public class ImportantDayController {
     }
 
     @PatchMapping("/{id}")
-    public ImportantDayDto update(@PathVariable Long id,
+    public ImportantDayDto update(@PathVariable("id") Long id,
                                   @Valid @RequestBody(required = false) ImportantDayUpdateRequest req,
                                   Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
@@ -65,7 +65,7 @@ public class ImportantDayController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id, Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         importantDayService.delete(current, id);
         return ResponseEntity.noContent().build();

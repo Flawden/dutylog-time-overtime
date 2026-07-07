@@ -42,9 +42,9 @@ public class NotificationController {
     }
 
     @GetMapping("/upcoming")
-    public List<NotificationReminderDto> upcoming(@RequestParam String from,
-                                                  @RequestParam String to,
-                                                  @RequestParam(defaultValue = "true") boolean includePast,
+    public List<NotificationReminderDto> upcoming(@RequestParam("from") String from,
+                                                  @RequestParam("to") String to,
+                                                  @RequestParam(name = "includePast", defaultValue = "true") boolean includePast,
                                                   Principal principal) {
         AppUser user = currentUserService.requireUser(principal);
         LocalDate fromDate = notificationService.parseDate(from, "Дата from должна быть в формате yyyy-MM-dd");

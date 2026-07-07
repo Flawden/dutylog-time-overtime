@@ -66,7 +66,7 @@ public class SystemController {
         AppUser user = requireAdmin(principal);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("app", "DutyLog: Time & Overtime");
-        result.put("version", "23.1.1");
+        result.put("version", "23.1.2");
         result.put("admin", user.getUsername());
         result.put("serverTime", Instant.now().toString());
         result.put("serverTimezone", ZoneId.systemDefault().toString());
@@ -90,7 +90,7 @@ public class SystemController {
     }
 
     @PatchMapping("/users/{id}/role")
-    public UserAdminService.AdminUserDto updateUserRole(@PathVariable Long id,
+    public UserAdminService.AdminUserDto updateUserRole(@PathVariable("id") Long id,
                                                         @RequestBody UserRoleRequest request,
                                                         Principal principal) {
         AppUser admin = requireAdmin(principal);
@@ -101,7 +101,7 @@ public class SystemController {
     }
 
     @PostMapping("/users/{id}/password")
-    public UserAdminService.AdminUserDto resetUserPassword(@PathVariable Long id,
+    public UserAdminService.AdminUserDto resetUserPassword(@PathVariable("id") Long id,
                                                            @RequestBody UserPasswordResetRequest request,
                                                            Principal principal) {
         AppUser admin = requireAdmin(principal);

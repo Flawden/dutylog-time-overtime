@@ -40,7 +40,7 @@ public class ShiftTypeController {
     }
 
     @PatchMapping("/{id}")
-    public ShiftTypeDto update(@PathVariable Long id,
+    public ShiftTypeDto update(@PathVariable("id") Long id,
                                @Valid @RequestBody(required = false) ShiftTypeUpdateRequest req,
                                Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
@@ -52,7 +52,7 @@ public class ShiftTypeController {
      * Встроенные типы не удаляются (409).
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id, Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         shiftTypeService.delete(current, id);
         return ResponseEntity.noContent().build();

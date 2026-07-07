@@ -44,8 +44,8 @@ public class MobileController {
      * Пример: GET /api/mobile/bootstrap?from=2026-07-01&to=2026-08-31
      */
     @GetMapping("/bootstrap")
-    public MobileBootstrapDto bootstrap(@RequestParam String from,
-                                        @RequestParam String to,
+    public MobileBootstrapDto bootstrap(@RequestParam("from") String from,
+                                        @RequestParam("to") String to,
                                         Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         LocalDate fromDate = dayEntryService.parseDate(from, "Дата from должна быть в формате yyyy-MM-dd");

@@ -39,7 +39,7 @@ public class QuickScenarioController {
     }
 
     @PatchMapping("/{id}")
-    public QuickScenarioDto update(@PathVariable Long id,
+    public QuickScenarioDto update(@PathVariable("id") Long id,
                                    @Valid @RequestBody(required = false) QuickScenarioUpdateRequest req,
                                    Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
@@ -47,7 +47,7 @@ public class QuickScenarioController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<Void> delete(@PathVariable("id") Long id, Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         quickScenarioService.delete(current, id);
         return ResponseEntity.noContent().build();

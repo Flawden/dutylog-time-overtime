@@ -1,3 +1,10 @@
+# v23.1.2 — Spring parameter binding fix
+
+- Исправлен runtime-крэш Spring MVC: `Name for argument ... not specified` при запросах вроде `/api/calendar` и `/api/tasks/board`.
+- Во всех контроллерах явно указаны имена `@RequestParam` и `@PathVariable`, чтобы приложение не зависело от reflection parameter names при сборке из IntelliJ/IDEA.
+- В `pom.xml` добавлен `maven-compiler-plugin` с `<parameters>true</parameters>` как дополнительная страховка для Maven-сборки.
+- Frontend/backend/service-worker версии подняты до `23.1.2`.
+
 # v23.1.1 — Visual polish
 
 - Theme summary in `Внешний вид` redesigned from raw text into compact chips: preset, base mode and accent color.

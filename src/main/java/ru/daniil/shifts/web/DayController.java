@@ -27,7 +27,7 @@ public class DayController {
 
     /** Старый endpoint для веба: GET /api/days?year=2026&month=7. */
     @GetMapping
-    public List<DayDto> month(@RequestParam int year, @RequestParam int month,
+    public List<DayDto> month(@RequestParam("year") int year, @RequestParam("month") int month,
                               Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         return dayEntryService.listMonth(current, year, month);
@@ -39,7 +39,7 @@ public class DayController {
      * Пустая запись удаляется и возвращает 204.
      */
     @PutMapping("/{date}")
-    public ResponseEntity<DayDto> upsert(@PathVariable String date,
+    public ResponseEntity<DayDto> upsert(@PathVariable("date") String date,
                                          @Valid @RequestBody(required = false) DayUpsertRequest req,
                                          Principal principal) {
         AppUser current = currentUserService.requireUser(principal);

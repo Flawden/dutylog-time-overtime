@@ -36,8 +36,8 @@ public class CalendarController {
      * GET /api/calendar?from=2026-06-01&to=2026-07-31
      */
     @GetMapping
-    public CalendarRangeDto range(@RequestParam String from,
-                                  @RequestParam String to,
+    public CalendarRangeDto range(@RequestParam("from") String from,
+                                  @RequestParam("to") String to,
                                   Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         LocalDate fromDate = dayEntryService.parseDate(from, "Дата from должна быть в формате yyyy-MM-dd");
