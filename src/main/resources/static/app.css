@@ -867,3 +867,29 @@ input[type=checkbox], input[type=radio] { accent-color: var(--accent); }
   .adminIntro .settingsHead{ flex-direction:column; }
   .adminIntro button{ width:100%; min-height:42px; }
 }
+
+/* v21.0: Offline Mode / local-first lite */
+.offlineBar{margin-top:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.offlineStatus{border:1px solid rgba(255,255,255,.10);background:rgba(255,255,255,.04);color:var(--mut);border-radius:999px;padding:5px 10px;font-size:12px;line-height:1;cursor:pointer}
+.offlineStatus::before{content:"";display:inline-block;width:7px;height:7px;border-radius:999px;background:#67c587;margin-right:7px;vertical-align:1px;box-shadow:0 0 0 2px rgba(103,197,135,.12)}
+.offlineStatus.off{color:#ffcd7a;border-color:rgba(245,184,65,.35);background:rgba(245,184,65,.10)}
+.offlineStatus.off::before{background:#f5b841;box-shadow:0 0 0 2px rgba(245,184,65,.16)}
+.offlineStatus.pending{color:#f5b841}
+.offlineStatus.failed{color:#ff8c7a;border-color:rgba(224,101,58,.4)}
+body.offline #creditAdd,
+body.offline #usageAdd,
+body.offline #tplApply,
+body.offline #impAdd,
+body.offline #scSave,
+body.offline #notifSave,
+body.offline #telegramCodeBtn,
+body.offline #telegramUnlinkBtn,
+body.offline #timeApplyBuiltins,
+body.offline #profileSave,
+body.offline #pwChange{opacity:.55;filter:saturate(.65)}
+body.offline #accOt .accB::before,
+body.offline #accSched .accB::before,
+body.offline #settings-scenarios::before,
+body.offline #settings-notifications::before,
+body.offline #telegramBox::before{content:"Эта операция требует связи с сервером.";display:block;margin:0 0 10px;padding:8px 10px;border:1px solid rgba(245,184,65,.25);background:rgba(245,184,65,.08);border-radius:12px;color:#ffcd7a;font-size:13px}
+@media (max-width:700px){.offlineBar{width:100%}.offlineStatus{max-width:100%;white-space:normal;line-height:1.25}}

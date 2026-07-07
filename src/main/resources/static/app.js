@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "20.8";
+const DUTYLOG_VERSION = "21.0";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -30,6 +30,14 @@ const state = {
   selected: null,                 // ключ даты
   tab: "edit",
   swColor: "#F5B841",
+  offline: {
+    online: navigator.onLine,
+    lastSyncAt: null,
+    pending: 0,
+    failed: [],
+    syncing: false,
+    cacheReady: false,
+  },
 };
 
 const MONTHS = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
@@ -238,6 +246,11 @@ function csrfToken(){
 
 async function jfetch(url, opts = {}) {
   const method = opts.method || "GET";
+  if (!navigator.onLine && !["GET", "HEAD", "OPTIONS"].includes(method)) {
+    const err = new Error("Эта операция требует связи с сервером");
+    err.status = 0;
+    throw err;
+  }
   const headers = opts.body ? { "Content-Type": "application/json" } : {};
   if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
     const token = csrfToken();
@@ -259,7 +272,11 @@ async function jfetch(url, opts = {}) {
       const body = await res.json();
       if (body?.error) msg = body.error;
     } catch (_) { /* ответ был не JSON */ }
-    throw new Error(msg);
+    const err = new Error(msg);
+    err.status = res.status;
+    err.url = url;
+    err.method = method;
+    throw err;
   }
   if (res.status === 204) return null;
   return res.json();
@@ -271,6 +288,284 @@ function setSave(s, msg = "") {
   el.textContent = s === "saving" ? "сохраняю…" : s === "saved" ? "✓" : s === "err" ? (msg || "ошибка сети") : "";
   if (s === "saved") setTimeout(() => { if (el.textContent === "✓") el.textContent = ""; }, 1500);
 }
+
+
+/* ─── Offline Mode / local-first lite ─────────────────────────
+ * Сервер остаётся главным источником истины. IndexedDB хранит последний
+ * снимок календаря и очередь безопасных мутаций: день/заметка и done-задачи.
+ */
+const OFFLINE_DB_NAME = "dutylog-offline";
+const OFFLINE_DB_VERSION = 1;
+const OFFLINE_SNAPSHOT_KEY = "bootstrap";
+const OFFLINE_META_FAILED_KEY = "failedMutations";
+
+function isNetworkError(err){
+  return !err || err.name === "TypeError" || err.message === "Failed to fetch" || err.message === "NetworkError" || err.status === 0;
+}
+function uuid(){
+  if (crypto?.randomUUID) return crypto.randomUUID();
+  return "op-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
+}
+function fmtSyncTime(iso){
+  if (!iso) return "нет синхронизации";
+  try { return new Intl.DateTimeFormat("ru-RU", { dateStyle:"short", timeStyle:"short" }).format(new Date(iso)); }
+  catch (_) { return String(iso).slice(0, 16).replace("T", " "); }
+}
+function requestToPromise(req){
+  return new Promise((resolve, reject) => {
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error);
+  });
+}
+function txDone(tx){
+  return new Promise((resolve, reject) => {
+    tx.oncomplete = () => resolve();
+    tx.onerror = () => reject(tx.error);
+    tx.onabort = () => reject(tx.error || new Error("IndexedDB transaction aborted"));
+  });
+}
+
+const offlineDb = {
+  db: null,
+  async open(){
+    if (this.db) return this.db;
+    if (!('indexedDB' in window)) throw new Error("Браузер не поддерживает локальное хранилище");
+    this.db = await new Promise((resolve, reject) => {
+      const req = indexedDB.open(OFFLINE_DB_NAME, OFFLINE_DB_VERSION);
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        if (!db.objectStoreNames.contains("snapshot")) db.createObjectStore("snapshot", { keyPath:"key" });
+        if (!db.objectStoreNames.contains("queue")) db.createObjectStore("queue", { keyPath:"id" });
+        if (!db.objectStoreNames.contains("meta")) db.createObjectStore("meta", { keyPath:"key" });
+      };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+    return this.db;
+  },
+  async get(store, key){
+    const db = await this.open();
+    return requestToPromise(db.transaction(store, "readonly").objectStore(store).get(key));
+  },
+  async put(store, value){
+    const db = await this.open();
+    const tx = db.transaction(store, "readwrite");
+    tx.objectStore(store).put(value);
+    await txDone(tx);
+  },
+  async delete(store, key){
+    const db = await this.open();
+    const tx = db.transaction(store, "readwrite");
+    tx.objectStore(store).delete(key);
+    await txDone(tx);
+  },
+  async all(store){
+    const db = await this.open();
+    return requestToPromise(db.transaction(store, "readonly").objectStore(store).getAll());
+  },
+};
+
+const dataLayer = {
+  async init(){
+    try { await offlineDb.open(); state.offline.cacheReady = true; }
+    catch (err) { console.warn("offline cache disabled", err); state.offline.cacheReady = false; }
+    await this.refreshQueueState();
+    updateOfflineStatus();
+  },
+  async readSnapshot(){
+    if (!state.offline.cacheReady) return null;
+    return (await offlineDb.get("snapshot", OFFLINE_SNAPSHOT_KEY)) || null;
+  },
+  async writeSnapshot(bundle, y = state.y, m = state.m){
+    if (!state.offline.cacheReady || !bundle) return;
+    const savedAt = new Date().toISOString();
+    await offlineDb.put("snapshot", { key:OFFLINE_SNAPSHOT_KEY, y, m, savedAt, bundle });
+    state.offline.lastSyncAt = savedAt;
+    updateOfflineStatus();
+  },
+  async updateSnapshotDay(date, day){
+    const snap = await this.readSnapshot();
+    if (!snap?.bundle) return;
+    const days = Array.isArray(snap.bundle.days) ? snap.bundle.days.slice() : [];
+    const clean = normalizeDay(day);
+    const idx = days.findIndex(x => x.date === date);
+    const empty = !clean.shiftTypeId && !(clean.note || "").trim() && Math.abs(clean.overtimeHours) < 0.0001 && Math.abs(clean.timeOffHours) < 0.0001;
+    if (empty && idx >= 0) days.splice(idx, 1);
+    else if (!empty && idx >= 0) days[idx] = { ...days[idx], date, ...clean };
+    else if (!empty) days.push({ date, ...clean });
+    snap.bundle.days = days;
+    await offlineDb.put("snapshot", snap);
+  },
+  async updateSnapshotTaskDone(taskId, done){
+    const snap = await this.readSnapshot();
+    if (!snap?.bundle || !Array.isArray(snap.bundle.tasks)) return;
+    snap.bundle.tasks = snap.bundle.tasks.map(t => Number(t.id) === Number(taskId) ? { ...t, done: !!done } : t);
+    await offlineDb.put("snapshot", snap);
+  },
+  async enqueue(type, payload){
+    if (!state.offline.cacheReady) throw new Error("Нет связи с сервером, а локальная очередь недоступна");
+    await offlineDb.put("queue", { id:uuid(), type, payload, createdAt:new Date().toISOString(), attempts:0, lastError:null });
+    await this.refreshQueueState();
+    updateOfflineStatus();
+  },
+  async refreshQueueState(){
+    if (!state.offline.cacheReady) { state.offline.pending = 0; return; }
+    const q = await offlineDb.all("queue");
+    const failed = await offlineDb.get("meta", OFFLINE_META_FAILED_KEY);
+    state.offline.pending = q.length;
+    state.offline.failed = failed?.items || [];
+  },
+  async loadCalendar(y, m, applyBundle){
+    let hadCache = false;
+    const snap = await this.readSnapshot();
+    if (snap?.bundle) {
+      hadCache = true;
+      state.offline.lastSyncAt = snap.savedAt || null;
+      applyBundle(snap.bundle, true);
+      updateOfflineStatus();
+      // Быстрый локальный рендер, пока сеть отвечает.
+      renderNotifications();
+      renderCalendar();
+    }
+    if (!navigator.onLine) {
+      state.offline.online = false;
+      updateOfflineStatus();
+      if (hadCache) return { fromCache:true };
+      throw new Error("Нет связи и ещё нет локальной копии данных");
+    }
+    try {
+      const bundle = await api.month(y, m);
+      state.offline.online = true;
+      await this.writeSnapshot(bundle, y, m);
+      applyBundle(bundle, false);
+      updateOfflineStatus();
+      return { fromCache:false };
+    } catch (err) {
+      state.offline.online = false;
+      updateOfflineStatus();
+      if (hadCache && isNetworkError(err)) return { fromCache:true };
+      throw err;
+    }
+  },
+  async putDay(date, day){
+    await this.updateSnapshotDay(date, day);
+    if (navigator.onLine) {
+      try {
+        await api.upsertDay(date, {
+          shiftTypeId: day.shiftTypeId ?? null,
+          note: day.note ?? null,
+          overtimeHours: numOr0(day.overtimeHours),
+          timeOffHours: numOr0(day.timeOffHours),
+        });
+        state.offline.online = true;
+        updateOfflineStatus();
+        return { queued:false };
+      } catch (err) {
+        if (!isNetworkError(err)) throw err;
+      }
+    }
+    state.offline.online = false;
+    await this.enqueue("putDay", { date, day: normalizeDay(day) });
+    return { queued:true };
+  },
+  async setTaskDone(taskId, done){
+    await this.updateSnapshotTaskDone(taskId, done);
+    if (navigator.onLine) {
+      try {
+        const updated = await api.updateTask(taskId, { done: !!done });
+        state.offline.online = true;
+        updateOfflineStatus();
+        return { queued:false, task:updated };
+      } catch (err) {
+        if (!isNetworkError(err)) throw err;
+      }
+    }
+    state.offline.online = false;
+    await this.enqueue("toggleTask", { taskId, done: !!done });
+    return { queued:true };
+  },
+  async syncQueue(){
+    if (!state.offline.cacheReady || state.offline.syncing) return;
+    if (!navigator.onLine) { state.offline.online = false; updateOfflineStatus(); return; }
+    state.offline.syncing = true;
+    updateOfflineStatus();
+    try {
+      const items = (await offlineDb.all("queue")).sort((a,b) => String(a.createdAt).localeCompare(String(b.createdAt)));
+      const failed = [];
+      for (const item of items) {
+        try {
+          if (item.type === "putDay") {
+            await api.upsertDay(item.payload.date, item.payload.day);
+          } else if (item.type === "toggleTask") {
+            await api.updateTask(item.payload.taskId, { done: !!item.payload.done });
+          } else {
+            throw Object.assign(new Error("Неизвестный тип операции: " + item.type), { status:400 });
+          }
+          await offlineDb.delete("queue", item.id);
+        } catch (err) {
+          if (err.status === 401) throw err;
+          if (err.status === 400 || err.status === 404 || err.status === 409) {
+            failed.push({ ...item, failedAt:new Date().toISOString(), lastError:err.message || "операция не применена" });
+            await offlineDb.delete("queue", item.id);
+            continue;
+          }
+          item.attempts = Number(item.attempts || 0) + 1;
+          item.lastError = err.message || "ошибка сети";
+          await offlineDb.put("queue", item);
+          break;
+        }
+      }
+      if (failed.length) {
+        const prev = await offlineDb.get("meta", OFFLINE_META_FAILED_KEY);
+        await offlineDb.put("meta", { key:OFFLINE_META_FAILED_KEY, items:[...(prev?.items || []), ...failed].slice(-20) });
+      }
+      await this.refreshQueueState();
+      if (state.offline.pending === 0) {
+        const bundle = await api.month(state.y, state.m);
+        await this.writeSnapshot(bundle, state.y, state.m);
+        applyCalendarBundle(bundle);
+        renderNotifications();
+        renderCalendar();
+        if (state.selected) { renderChips(); renderTasks(); renderImportantDays(); }
+        await loadTaskBoard(true);
+      }
+      state.offline.online = true;
+    } catch (err) {
+      console.error(err);
+      if (err.status !== 401) setSave("err", err.message || "синхронизация не удалась");
+      state.offline.online = navigator.onLine;
+    } finally {
+      state.offline.syncing = false;
+      await this.refreshQueueState();
+      updateOfflineStatus();
+    }
+  },
+};
+
+function updateOfflineStatus(){
+  const online = navigator.onLine && state.offline.online !== false;
+  document.body.classList.toggle("offline", !online);
+  document.body.classList.toggle("has-pending-sync", state.offline.pending > 0);
+  const el = $("offlineStatus");
+  if (!el) return;
+  const parts = [];
+  if (state.offline.syncing) parts.push("синхронизация…");
+  else parts.push(online ? "онлайн" : "оффлайн");
+  if (state.offline.pending) parts.push(`${state.offline.pending} не отправлено`);
+  if (state.offline.failed?.length) parts.push(`${state.offline.failed.length} не применилось`);
+  if (!online && state.offline.lastSyncAt) parts.push("данные от " + fmtSyncTime(state.offline.lastSyncAt));
+  el.textContent = parts.join(" · ");
+  el.className = "offlineStatus" + (!online ? " off" : "") + (state.offline.pending ? " pending" : "") + (state.offline.failed?.length ? " failed" : "");
+  el.title = state.offline.failed?.length
+    ? "Есть операции, которые сервер не принял. Проверьте данные после синхронизации."
+    : (state.offline.pending ? "Нажмите, чтобы синхронизировать изменения" : "Состояние подключения");
+}
+
+window.addEventListener("online", () => { state.offline.online = true; updateOfflineStatus(); dataLayer.syncQueue(); });
+window.addEventListener("offline", () => { state.offline.online = false; updateOfflineStatus(); });
+document.addEventListener("click", e => {
+  if (e.target?.id === "offlineStatus") dataLayer.syncQueue();
+});
 
 /* ─── Markdown (мини-парсер) ────────────────────────────────── */
 function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
@@ -1827,16 +2122,25 @@ async function updateTaskDetails(id, patch){
 
 async function toggleTask(id, done){
   setSave("saving");
+  const oldTask = Object.values(state.tasksByDate).flat().find(t => Number(t.id) === Number(id)) || null;
+  if (oldTask) upsertTaskInMaps({ ...oldTask, done: !!done });
+  renderTasks();
+  renderCalendar();
   try {
-    const updated = await api.updateTask(id, { done });
-    upsertTaskInMaps(updated);
-    await loadTaskBoard(true);
+    const res = await dataLayer.setTaskDone(id, done);
+    if (res.task) upsertTaskInMaps(res.task);
+    if (!res.queued) await loadTaskBoard(true);
+    else {
+      state.taskBoard.items = (state.taskBoard.items || []).map(t => Number(t.id) === Number(id) ? { ...t, done: !!done } : t);
+      renderTaskBoard();
+    }
     setSave("saved");
     renderTasks();
     renderCalendar();
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
+    if (oldTask) upsertTaskInMaps(oldTask);
     await loadMonth();
     renderTasks();
     renderCalendar();
@@ -2079,13 +2383,14 @@ function applyLocal(k, next){
 async function pushDaySnapshot(k, payload){
   setSave("saving");
   try {
-    await api.upsertDay(k, {
+    const res = await dataLayer.putDay(k, {
       shiftTypeId: payload.shiftTypeId ?? null,
       note: payload.note ?? null,
       overtimeHours: numOr0(payload.overtimeHours),
       timeOffHours: numOr0(payload.timeOffHours),
     });
-    setSave("saved");
+    setSave(res.queued ? "saved" : "saved");
+    if (res.queued) updateOfflineStatus();
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
@@ -2777,35 +3082,40 @@ document.querySelectorAll("[data-notif-shift-before]").forEach(btn => btn.addEve
 }));
 
 /* ─── Загрузка данных ───────────────────────────────────────── */
+function applyCalendarBundle(bundle){
+  if (Array.isArray(bundle)) {
+    // На всякий случай оставлен fallback под старый endpoint.
+    state.days = {};
+    state.tasksByDate = {};
+    state.importantByDate = {};
+    state.remindersByDate = {};
+    for (const e of bundle) state.days[e.date] = normalizeDay(e);
+    return;
+  }
+  state.days = {};
+  state.tasksByDate = {};
+  state.importantByDate = {};
+  state.remindersByDate = {};
+  if (bundle.shiftTypes) state.shiftTypes = bundle.shiftTypes;
+  for (const e of bundle.days || []) state.days[e.date] = normalizeDay(e);
+  for (const t of bundle.tasks || []) addToDateMap(state.tasksByDate, t);
+  for (const i of bundle.importantDays || []) addToDateMap(state.importantByDate, i);
+  state.notificationSettings = bundle.notificationSettings || state.notificationSettings;
+  state.quickScenarios = bundle.quickScenarios || state.quickScenarios || [];
+  state.reminders = bundle.reminders || [];
+  for (const r of state.reminders) addToDateMap(state.remindersByDate, { ...r, date:r.sourceDate });
+  if (bundle.overtimeAccount) state.overtimeAccount = bundle.overtimeAccount;
+}
+
 async function loadMonth(){
   try {
-    const bundle = await api.month(state.y, state.m);
-    if (Array.isArray(bundle)) {
-      // На всякий случай оставлен fallback под старый endpoint.
-      state.days = {};
-      state.tasksByDate = {};
-      state.importantByDate = {};
-      state.remindersByDate = {};
-      for (const e of bundle) state.days[e.date] = normalizeDay(e);
-      state.overtimeAccount = await api.overtimeAccount();
-    } else {
-      state.days = {};
-      state.tasksByDate = {};
-      state.importantByDate = {};
-      state.remindersByDate = {};
-      if (bundle.shiftTypes) state.shiftTypes = bundle.shiftTypes;
-      for (const e of bundle.days || []) state.days[e.date] = normalizeDay(e);
-      for (const t of bundle.tasks || []) addToDateMap(state.tasksByDate, t);
-      for (const i of bundle.importantDays || []) addToDateMap(state.importantByDate, i);
-      state.notificationSettings = bundle.notificationSettings || state.notificationSettings;
-      state.quickScenarios = bundle.quickScenarios || state.quickScenarios || [];
-      state.reminders = bundle.reminders || [];
-      for (const r of state.reminders) addToDateMap(state.remindersByDate, { ...r, date:r.sourceDate });
-      if (bundle.overtimeAccount) state.overtimeAccount = bundle.overtimeAccount;
-    }
-    setSave("");
+    const res = await dataLayer.loadCalendar(state.y, state.m, applyCalendarBundle);
+    setSave(res?.fromCache ? "" : "");
     renderNotifications();
-  } catch (err) { console.error(err); setSave("err", err.message); }
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
 }
 
 /* ─── Пользователь ──────────────────────────────────────────── */
@@ -2825,6 +3135,7 @@ async function init(){
   initTimeSettingsEvents();
   initDiagnosticsEvents();
   initSettingsAccordion();
+  await dataLayer.init();
   try {
     const me = await jfetch("/api/auth/me");
     $("whoami").textContent = me.username;
@@ -2833,12 +3144,14 @@ async function init(){
     await refreshImportantSettings();
   } catch (err) {
     console.error(err);
-    setSave("err", err.message);
-    return; // при 401 нас уже уносит на login.html
+    if (err.status === 401) return; // при 401 нас уже уносит на login.html
+    state.offline.online = false;
+    setSave("err", "нет связи — открыта локальная копия");
   }
   await loadMonth();
   await loadTaskBoard(true);
   renderCalendar();
+  dataLayer.syncQueue();
 }
 init();
 

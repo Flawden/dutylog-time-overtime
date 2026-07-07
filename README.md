@@ -184,12 +184,13 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/ANDROID_API_PLAN.md`](docs/ANDROID_API_PLAN.md) — мобильный API.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — идеи развития.
 - [`docs/PRODUCT_COPY.md`](docs/PRODUCT_COPY.md) — стиль пользовательских текстов.
+- [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 
 ## Текущая версия
 
-`v20.8 — production launch hardening`
+`v21.0 — offline mode / local-first lite`
 
-В этой версии добавлены production compose, Caddy-конфиг, healthchecks, production env-шаблон, smoke-test, runbook запуска/обновления/отката и чеклист безопасности.
+В этой версии добавлен offline-режим: приложение открывает последний локальный снимок без сети, сохраняет смены/заметки/галочки задач в очередь и синхронизирует их при появлении связи.
 
 
 ## Служебный профиль администратора

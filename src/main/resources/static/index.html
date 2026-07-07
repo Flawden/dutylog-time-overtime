@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=20.8" rel="stylesheet"/>
+<link href="app.css?v=21.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -15,6 +15,7 @@
 <div>
 <div class="eyebrow">DutyLog: Time &amp; Overtime</div>
 <h1><span id="monthName"></span> <span class="yr" id="yearName"></span><span id="saveState"></span></h1>
+<div class="offlineBar"><button id="offlineStatus" class="offlineStatus" type="button" title="Состояние подключения">онлайн</button></div>
 </div>
 <div class="nav" style="display:flex;align-items:center;">
 <button id="prev">‹</button>
@@ -566,7 +567,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v20.8</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v21.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -597,6 +598,6 @@
     <div class="noteFsPrev" id="noteFsPrev"></div>
   </div>
 </div>
-<script src="app.js?v=20.8"></script>
+<script src="app.js?v=21.0"></script>
 </body>
 </html>
