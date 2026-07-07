@@ -27,7 +27,7 @@ This checklist is for a personal production deployment of DutyLog.
 - [ ] Public registration is closed in `Система` if the deployment is private/personal.
 - [ ] Direct `POST /api/auth/register` returns `403` when registration is closed.
 - [ ] Bootstrap admin from `DUTYLOG_ADMIN_USERNAME` can log in and sees `Система`.
-- [ ] Any unexpected old/admin-by-first-registration account is demoted to `USER` after startup.
+- [ ] `Система` → `Пользователи и роли` contains only expected administrators.
 - [ ] `Система` is visible only to administrator.
 - [ ] Regular user receives `403` from `/api/admin/status`.
 - [ ] CSRF cookie is present in the web interface.
@@ -56,3 +56,13 @@ This checklist is for a personal production deployment of DutyLog.
 - [ ] Git tag is known before deployment.
 - [ ] Smoke test passes after update.
 - [ ] Logs are checked after update.
+
+
+## Users and roles
+
+- [ ] Public registration creates only `USER`.
+- [ ] `Система` → `Пользователи и роли` shows all users and current admin count.
+- [ ] Bootstrap env admin cannot be demoted to `USER`.
+- [ ] Additional admin can be promoted/demoted by an existing admin.
+- [ ] Admin password reset uses at least 12 characters and revokes mobile tokens.
+- [ ] `DUTYLOG_ADMIN_FORCE_PASSWORD_RESET` is `false` except during emergency recovery.

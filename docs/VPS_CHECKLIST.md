@@ -22,11 +22,11 @@
 - [ ] `docker compose -f docker-compose.prod.yml ps` shows healthy/running containers.
 - [ ] `docker compose -f docker-compose.prod.yml logs -f app` shows no startup errors.
 - [ ] Application opens through HTTPS.
-- [ ] `./deploy/scripts/smoke-test.sh https://domain` passes and confirms `v22.2` static assets.
+- [ ] `./deploy/scripts/smoke-test.sh https://domain` passes and confirms `v22.3` static assets.
 - [ ] Bootstrap admin from `.env` can log in.
 - [ ] Publicly registered user does not have administrator access.
-- [ ] Unexpected old `ADMIN` accounts are demoted to `USER` when bootstrap env is configured.
-- [ ] `Система` page is visible to administrator and shows server version `22.2`.
+- [ ] `Система` → `Пользователи и роли` shows bootstrap env admin and expected admin count.
+- [ ] `Система` page is visible to administrator and shows server version `22.3`.
 - [ ] `/api/admin/status` returns healthy database status for administrator.
 - [ ] Regular user does not see `Система`.
 - [ ] Telegram linking works with `/start DL-XXXXXX` if Telegram is enabled.

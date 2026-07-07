@@ -6,6 +6,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -13,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.AppSettingsService;
 import ru.daniil.shifts.service.CurrentUserService;
+import ru.daniil.shifts.service.UserAdminService;
 import ru.daniil.shifts.telegram.TelegramLinkService;
 import ru.daniil.shifts.telegram.TelegramLinkService.TelegramStatusDto;
 
@@ -22,6 +24,7 @@ import java.time.ZoneId;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.List;
 
 /**
  * Служебная диагностика для администратора.
@@ -35,6 +38,7 @@ public class SystemController {
     private final CurrentUserService currentUserService;
     private final TelegramLinkService telegramLinkService;
     private final AppSettingsService appSettingsService;
+    private final UserAdminService userAdminService;
 
     @Value("${dutylog.telegram.enabled:false}")
     private boolean telegramEnabled;
@@ -52,12 +56,14 @@ public class SystemController {
                             JdbcTemplate jdbcTemplate,
                             CurrentUserService currentUserService,
                             TelegramLinkService telegramLinkService,
-                            AppSettingsService appSettingsService) {
+                            AppSettingsService appSettingsService,
+                            UserAdminService userAdminService) {
         this.environment = environment;
         this.jdbcTemplate = jdbcTemplate;
         this.currentUserService = currentUserService;
         this.telegramLinkService = telegramLinkService;
         this.appSettingsService = appSettingsService;
+        this.userAdminService = userAdminService;
     }
 
     @GetMapping("/status")
@@ -65,15 +71,49 @@ public class SystemController {
         AppUser user = requireAdmin(principal);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("app", "DutyLog: Time & Overtime");
-        result.put("version", "22.2");
+        result.put("version", "22.3");
         result.put("admin", user.getUsername());
         result.put("serverTime", Instant.now().toString());
         result.put("serverTimezone", ZoneId.systemDefault().toString());
         result.put("profiles", Arrays.asList(environment.getActiveProfiles()));
         result.put("database", databaseStatus());
+        result.put("users", userManagementStatus());
         result.put("registration", appSettingsService.registrationStatus());
         result.put("telegram", telegramStatus(principal));
         return result;
+    }
+
+
+
+    public record UserRoleRequest(String role) {}
+    public record UserPasswordResetRequest(String newPassword) {}
+
+    @GetMapping("/users")
+    public List<UserAdminService.AdminUserDto> users(Principal principal) {
+        AppUser admin = requireAdmin(principal);
+        return userAdminService.listUsers(admin);
+    }
+
+    @PatchMapping("/users/{id}/role")
+    public UserAdminService.AdminUserDto updateUserRole(@PathVariable Long id,
+                                                        @RequestBody UserRoleRequest request,
+                                                        Principal principal) {
+        AppUser admin = requireAdmin(principal);
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Нужно передать role");
+        }
+        return userAdminService.changeRole(id, request.role(), admin);
+    }
+
+    @PostMapping("/users/{id}/password")
+    public UserAdminService.AdminUserDto resetUserPassword(@PathVariable Long id,
+                                                           @RequestBody UserPasswordResetRequest request,
+                                                           Principal principal) {
+        AppUser admin = requireAdmin(principal);
+        if (request == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Нужно передать newPassword");
+        }
+        return userAdminService.resetPassword(id, request.newPassword(), admin);
     }
 
 
@@ -101,6 +141,15 @@ public class SystemController {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Диагностика доступна только администратору");
         }
         return user;
+    }
+
+    private Map<String, Object> userManagementStatus() {
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("total", userAdminService.userCount());
+        out.put("admins", userAdminService.adminCount());
+        out.put("rolesAllowed", UserAdminService.ALLOWED_ROLES);
+        out.put("accountTiersReserved", List.of("FREE", "PAID", "VIP"));
+        return out;
     }
 
     private Map<String, Object> databaseStatus() {

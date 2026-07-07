@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=22.2" rel="stylesheet"/>
+<link href="app.css?v=22.3" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -557,6 +557,20 @@
       <button id="adminBack" type="button">Назад к настройкам</button>
     </div>
   </div>
+<div class="settingsCard" id="adminUsersCard" data-settings-section="users">
+<div class="settingsHead">
+<div>
+<div class="eyebrow">Пользователи</div>
+<div class="settingsTitle">Пользователи и роли</div>
+<div class="settingsHint">Публичная регистрация создаёт только USER. Дополнительных админов назначает действующий администратор. Тариф FREE показан как задел под будущие PAID/VIP, но пока не влияет на права.</div>
+</div>
+<div class="status" id="adminUsersStatus">—</div>
+</div>
+<div class="adminUsersList" id="adminUsersList"><span class="emptyLine">Загрузка пользователей…</span></div>
+<div class="diagnosticsActions">
+  <button class="primary" id="adminUsersRefresh" type="button">Обновить пользователей</button>
+</div>
+</div>
 <div class="settingsCard" id="registrationAdminCard" data-settings-section="registration">
 <div class="settingsHead">
 <div>
@@ -588,7 +602,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v22.2</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v22.3</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -654,6 +668,6 @@
     </div>
   </div>
 </div>
-<script src="app.js?v=22.2"></script>
+<script src="app.js?v=22.3"></script>
 </body>
 </html>

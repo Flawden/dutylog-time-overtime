@@ -179,7 +179,7 @@ For real usage, keep at least:
 
 ## After first production launch
 
-Immediately after the first successful v22.2 launch:
+Immediately after the first successful v22.3 launch:
 
 ```bash
 ./deploy/scripts/backup-postgres.sh

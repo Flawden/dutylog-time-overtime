@@ -121,6 +121,11 @@ else
   require_secret SPRING_DATASOURCE_PASSWORD
   require_admin_username DUTYLOG_ADMIN_USERNAME
   require_secret DUTYLOG_ADMIN_PASSWORD
+  if [[ "${DUTYLOG_ADMIN_FORCE_PASSWORD_RESET:-false}" == "true" ]]; then
+    warn "DUTYLOG_ADMIN_FORCE_PASSWORD_RESET=true; use only for emergency admin password recovery and disable after login"
+  else
+    ok "DUTYLOG_ADMIN_FORCE_PASSWORD_RESET is not enabled"
+  fi
 
   if [[ "${SPRING_PROFILES_ACTIVE:-}" != "prod" ]]; then
     fail "SPRING_PROFILES_ACTIVE should be 'prod' for VPS launch"

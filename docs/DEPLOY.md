@@ -118,7 +118,7 @@ DUTYLOG_ADMIN_USERNAME=your_admin_login
 DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 ```
 
-The app creates or updates this account on startup, refreshes its password from the env value and demotes unexpected `ADMIN` accounts back to `USER`. Public registration always creates regular `USER` accounts.
+The app creates this account on first startup or promotes it to `ADMIN` if it already exists. Since v22.3 the existing password is kept on normal restart; use `DUTYLOG_ADMIN_FORCE_PASSWORD_RESET=true` only for emergency recovery. Public registration always creates regular `USER` accounts, and additional admins are managed in `Система` → `Пользователи и роли`.
 
 Open:
 
@@ -214,7 +214,7 @@ The `-v` flag removes Docker volumes and can delete the PostgreSQL database.
 
 See:
 
-- [`PRODUCTION_LAUNCH.md`](PRODUCTION_LAUNCH.md) — compact v22.2 first-launch procedure.
+- [`PRODUCTION_LAUNCH.md`](PRODUCTION_LAUNCH.md) — compact v22.3 first-launch procedure.
 - [`PRODUCTION_RUNBOOK.md`](PRODUCTION_RUNBOOK.md) — first launch, updates, rollback and emergency backup.
 - [`SECURITY_CHECKLIST.md`](SECURITY_CHECKLIST.md) — security checklist before public usage.
 - [`VPS_CHECKLIST.md`](VPS_CHECKLIST.md) — compact launch checklist.

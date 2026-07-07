@@ -993,7 +993,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "22.2",
+  "version": "22.3",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],
@@ -1044,3 +1044,44 @@ deploy/scripts/list-backups.sh
 ```
 
 This keeps database dumps, secrets and file-system access outside the user-facing web API.
+
+
+## Admin users and roles
+
+All endpoints below require an authenticated `ADMIN` session.
+
+### GET /api/admin/users
+
+Returns all users with role metadata. Password hashes are never returned.
+
+```json
+[
+  {
+    "id": 1,
+    "username": "admin",
+    "displayName": null,
+    "role": "ADMIN",
+    "accountTier": "FREE",
+    "bootstrapAdmin": true,
+    "currentUser": true,
+    "createdAt": "2026-07-07T10:00:00Z",
+    "updatedAt": "2026-07-07T10:00:00Z"
+  }
+]
+```
+
+### PATCH /api/admin/users/{id}/role
+
+```json
+{ "role": "ADMIN" }
+```
+
+Allowed roles in v22.3: `USER`, `ADMIN`. Public registration still creates only `USER`.
+
+### POST /api/admin/users/{id}/password
+
+```json
+{ "newPassword": "long_new_password" }
+```
+
+Admin reset requires at least 12 characters and revokes mobile tokens for the target user.

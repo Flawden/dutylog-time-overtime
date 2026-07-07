@@ -1,6 +1,6 @@
 # Public registration settings
 
-Since v22.2 public registration is controlled by an administrator from the web/PWA admin section, not by an ordinary deployment-only toggle.
+Since v22.3 public registration is controlled by an administrator from the web/PWA admin section, not by an ordinary deployment-only toggle.
 
 ## Where to change it
 

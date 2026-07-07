@@ -1,15 +1,15 @@
-# v22.2 Production launch
+# v22.3 Production launch
 
 Этот документ — короткий боевой сценарий первого запуска DutyLog на VPS. Он не заменяет `PRODUCTION_RUNBOOK.md`, а помогает не потеряться в день деплоя.
 
-Текущий клиент: **web/PWA внутри Spring Boot-монолита**. Отдельного native mobile-приложения в v22.2 нет.
+Текущий клиент: **web/PWA внутри Spring Boot-монолита**. Отдельного native mobile-приложения в v22.3 нет.
 
 ## Что считается успешным запуском
 
 - Приложение открывается по HTTPS-домену.
 - Bootstrap-администратор из `.env` создан или обновлён.
 - Публично зарегистрированный пользователь не получает `ADMIN`.
-- Неожиданные старые `ADMIN`-аккаунты демоутятся до `USER`, если bootstrap env настроен.
+- Дополнительные админы назначаются только из `Система` → `Пользователи и роли`; публичная регистрация создаёт только `USER`.
 - Администратор видит `Система` и может закрыть публичную регистрацию.
 - `/actuator/health` возвращает `UP`.
 - `./deploy/scripts/smoke-test.sh https://domain` проходит.
@@ -27,7 +27,7 @@ cd /opt/dutylog
 
 ```bash
 git clone <repo-url> .
-git checkout v22.2
+git checkout v22.3
 ```
 
 Проверить, что домен уже смотрит на IP сервера:
@@ -110,8 +110,8 @@ docker compose -f docker-compose.prod.yml logs --tail=100 caddy
 - `login.html`;
 - app shell;
 - `manifest.json`;
-- `service-worker.js` версии `v22.2`;
-- `app.js` версии `22.2`;
+- `service-worker.js` версии `v22.3`;
+- `app.js` версии `22.3`;
 - защищённый admin API не падает.
 
 ## 7. Первый пользователь
@@ -127,6 +127,7 @@ https://dutylog.example.com
 ```env
 DUTYLOG_ADMIN_USERNAME=your_admin_login
 DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
+DUTYLOG_ADMIN_FORCE_PASSWORD_RESET=false
 ```
 
 Войти под этим пользователем. Затем создать обычного пользователя и убедиться, что он не админ. После создания нужных аккаунтов открыть `Система` → `Публичная регистрация` и закрыть регистрацию, если приложение личное и новых пользователей пока не ждём.
@@ -135,7 +136,7 @@ DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 
 - у bootstrap-админа в шапке есть `Система`;
 - у обычного пользователя `Система` скрыта;
-- в `Система` версия сервера `22.2`;
+- в `Система` версия сервера `22.3`;
 - база данных `ok`;
 - Telegram-статус соответствует `.env`;
 - публичная регистрация имеет ожидаемый статус: `открыта` или `закрыта`.
@@ -196,3 +197,14 @@ docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 Перед каждым обновлением — backup. Перед любыми рискованными действиями — backup. Команду `docker compose down -v` не использовать, если не нужно специально удалить базу.
+
+
+## v22.3 users/roles smoke check
+
+After login as bootstrap admin, open `Система` → `Пользователи и роли` and verify:
+
+- bootstrap user is marked as `env admin`;
+- at least one administrator exists;
+- ordinary users can be promoted to `ADMIN` and demoted back to `USER`;
+- bootstrap env admin cannot be demoted;
+- public registration still creates only `USER`.

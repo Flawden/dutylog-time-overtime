@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "22.2";
+const DUTYLOG_VERSION = "22.3";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {
@@ -24,6 +24,7 @@ const state = {
   timeSettings: null,
   telegramStatus: null,
   registrationSettings: null,
+  adminUsers: [],
   activeScenarioId: null,
   ledgerFilters: { from:"", to:"", status:"all", q:"" },
   editingCreditId: null,
@@ -239,6 +240,9 @@ const api = {
   async telegramSettings(b) { return jfetch("/api/telegram/settings", { method:"PATCH", body:b }); },
   async telegramUnlink() { return jfetch("/api/telegram/link", { method:"DELETE" }); },
   async systemStatus() { return jfetch("/api/admin/status"); },
+  async adminUsers() { return jfetch("/api/admin/users"); },
+  async updateAdminUserRole(id, role) { return jfetch(`/api/admin/users/${id}/role`, { method:"PATCH", body:{ role } }); },
+  async resetAdminUserPassword(id, newPassword) { return jfetch(`/api/admin/users/${id}/password`, { method:"POST", body:{ newPassword } }); },
   async registrationSettings() { return jfetch("/api/admin/settings/registration"); },
   async updateRegistrationSettings(enabled) { return jfetch("/api/admin/settings/registration", { method:"PATCH", body:{ enabled } }); },
 };
@@ -3160,6 +3164,88 @@ async function saveRegistrationAdmin(enabled){
     if (toggle) toggle.disabled = false;
   }
 }
+
+function roleLabel(role){ return role === "ADMIN" ? "админ" : "пользователь"; }
+function renderAdminUsers(users = []){
+  const box = $("adminUsersList");
+  const status = $("adminUsersStatus");
+  if (!box) return;
+  if (status) {
+    const admins = users.filter(u => u.role === "ADMIN").length;
+    status.textContent = `${users.length} / админов ${admins}`;
+    status.className = "status " + (admins > 0 ? "ok" : "warn");
+  }
+  if (!users.length) {
+    box.innerHTML = '<span class="emptyLine">Пользователей пока нет.</span>';
+    return;
+  }
+  box.innerHTML = users.map(u => {
+    const role = u.role || "USER";
+    const canChangeRole = !(u.bootstrapAdmin && role === "ADMIN") && !u.currentUser;
+    const badges = [
+      u.bootstrapAdmin ? '<span class="miniBadge warn">env admin</span>' : '',
+      u.currentUser ? '<span class="miniBadge">это вы</span>' : '',
+      `<span class="miniBadge">${esc(u.accountTier || "FREE")}</span>`
+    ].filter(Boolean).join(" ");
+    const created = u.createdAt ? fmtSyncTime(u.createdAt) : "—";
+    const updated = u.updatedAt ? fmtSyncTime(u.updatedAt) : "—";
+    return `
+      <div class="adminUserRow" data-user-id="${u.id}">
+        <div class="adminUserMain">
+          <b>${esc(u.displayName || u.username)}</b>
+          <span>@${esc(u.username)} · создан ${esc(created)} · обновлён ${esc(updated)}</span>
+          <div class="adminUserBadges">${badges}</div>
+        </div>
+        <div class="adminUserActions">
+          <select data-admin-role="${u.id}" ${canChangeRole ? "" : "disabled"} title="Роль пользователя">
+            <option value="USER" ${role === "USER" ? "selected" : ""}>USER</option>
+            <option value="ADMIN" ${role === "ADMIN" ? "selected" : ""}>ADMIN</option>
+          </select>
+          <button data-admin-password="${u.id}" data-username="${esc(u.username)}" type="button">Сменить пароль</button>
+        </div>
+      </div>`;
+  }).join("");
+}
+async function refreshAdminUsers(){
+  const status = $("adminUsersStatus");
+  if (status) status.textContent = "загрузка…";
+  try {
+    const users = await api.adminUsers();
+    state.adminUsers = users || [];
+    renderAdminUsers(state.adminUsers);
+  } catch (err) {
+    if (status) status.textContent = "ошибка";
+    const box = $("adminUsersList");
+    if (box) box.innerHTML = diagnosticRow("Ошибка списка пользователей", err.message || String(err), false);
+  }
+}
+async function saveAdminUserRole(id, role){
+  const previous = [...(state.adminUsers || [])];
+  try {
+    const updated = await api.updateAdminUserRole(id, role);
+    state.adminUsers = (state.adminUsers || []).map(u => Number(u.id) === Number(id) ? updated : u);
+    renderAdminUsers(state.adminUsers);
+    setSave("saved", `роль ${updated.username}: ${updated.role}`);
+  } catch (err) {
+    state.adminUsers = previous;
+    renderAdminUsers(previous);
+    setSave("err", err.message || "не удалось изменить роль");
+  }
+}
+async function resetAdminUserPassword(id, username){
+  const password = prompt(`Новый пароль для ${username} (минимум 12 символов)`);
+  if (password == null) return;
+  if (password.length < 12) return setSave("err", "пароль должен быть минимум 12 символов");
+  try {
+    const updated = await api.resetAdminUserPassword(id, password);
+    state.adminUsers = (state.adminUsers || []).map(u => Number(u.id) === Number(id) ? updated : u);
+    renderAdminUsers(state.adminUsers);
+    setSave("saved", `пароль ${updated.username} обновлён`);
+  } catch (err) {
+    setSave("err", err.message || "не удалось сменить пароль");
+  }
+}
+
 function diagnosticRow(label, value, ok = null){
   const cls = ok === true ? " ok" : ok === false ? " warn" : "";
   return `<div class="diagRow${cls}"><span>${esc(label)}</span><b>${esc(value ?? "—")}</b></div>`;
@@ -3173,6 +3259,10 @@ function renderDiagnosticsStatus(data){
   rows.push(diagnosticRow("Серверное время", data.serverTime || "—"));
   rows.push(diagnosticRow("Часовой пояс сервера", data.serverTimezone || "—"));
   rows.push(diagnosticRow("База данных", data.database?.ok ? "ok" : (data.database?.error || "ошибка"), !!data.database?.ok));
+  rows.push(diagnosticRow("Пользователи", data.users?.total != null ? String(data.users.total) : "—"));
+  rows.push(diagnosticRow("Администраторы", data.users?.admins != null ? String(data.users.admins) : "—", Number(data.users?.admins || 0) > 0));
+  rows.push(diagnosticRow("Роли доступа", (data.users?.rolesAllowed || []).join(", ") || "USER, ADMIN"));
+  rows.push(diagnosticRow("Будущие тарифы", (data.users?.accountTiersReserved || []).join(", ") || "FREE, PAID, VIP"));
   rows.push(diagnosticRow("Публичная регистрация", data.registration?.enabled ? "открыта" : "закрыта", data.registration?.enabled ? false : true));
   rows.push(diagnosticRow("Источник настройки регистрации", data.registration?.source === "database" ? "админка" : "по умолчанию"));
   rows.push(diagnosticRow("Telegram bot", data.telegram?.enabled ? "включён" : "выключен", data.telegram?.enabled ? true : null));
@@ -3209,6 +3299,10 @@ function diagnosticsReportText(){
     `Server time: ${d.serverTime || "—"}`,
     `Server timezone: ${d.serverTimezone || "—"}`,
     `Database: ${d.database?.ok ? "ok" : (d.database?.error || "unknown")}`,
+    `Users total: ${d.users?.total ?? "unknown"}`,
+    `Admins total: ${d.users?.admins ?? "unknown"}`,
+    `Roles allowed: ${(d.users?.rolesAllowed || []).join(", ") || "USER, ADMIN"}`,
+    `Account tiers reserved: ${(d.users?.accountTiersReserved || []).join(", ") || "FREE, PAID, VIP"}`,
     `Registration enabled: ${!!d.registration?.enabled}`,
     `Registration source: ${d.registration?.source || "unknown"}`,
     `Telegram enabled: ${!!d.telegram?.enabled}`,
@@ -3228,8 +3322,18 @@ function initDiagnosticsEvents(){
   });
   renderDiagnosticsClient();
   refreshRegistrationAdmin();
+  refreshAdminUsers();
   $("registrationRefresh")?.addEventListener("click", refreshRegistrationAdmin);
   $("registrationEnabledToggle")?.addEventListener("change", e => saveRegistrationAdmin(e.target.checked));
+  $("adminUsersRefresh")?.addEventListener("click", refreshAdminUsers);
+  $("adminUsersList")?.addEventListener("change", e => {
+    const id = e.target?.dataset?.adminRole;
+    if (id) saveAdminUserRole(id, e.target.value);
+  });
+  $("adminUsersList")?.addEventListener("click", e => {
+    const id = e.target?.dataset?.adminPassword;
+    if (id) resetAdminUserPassword(id, e.target.dataset.username || `#${id}`);
+  });
 }
 
 function initSettingsAccordion(){

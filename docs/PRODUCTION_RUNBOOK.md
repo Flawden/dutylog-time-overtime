@@ -79,11 +79,11 @@ DUTYLOG_ADMIN_USERNAME=your_admin_login
 DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 ```
 
-The backend creates or updates this account on startup, refreshes its password from the env value and demotes unexpected `ADMIN` accounts back to `USER`. Every public registration creates a regular `USER`.
+The backend creates this account on first startup or promotes it to `ADMIN` if it already exists. Since v22.3 normal restart keeps the current password; set `DUTYLOG_ADMIN_FORCE_PASSWORD_RESET=true` only for emergency recovery. Every public registration creates a regular `USER`.
 
 ## 2. Post-launch checks
 
-Run smoke test. In v22.2 it also verifies static asset versions and service worker cache version:
+Run smoke test. In v22.3 it also verifies static asset versions and service worker cache version:
 
 ```bash
 DUTYLOG_BASE_URL=https://your-domain.example ./deploy/scripts/smoke-test.sh

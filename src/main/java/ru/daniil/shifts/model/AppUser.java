@@ -30,9 +30,22 @@ public class AppUser {
     @Column(name = "birthday")
     private java.time.LocalDate birthday;
 
-    /** Роль пользователя. ADMIN видит служебный профиль диагностики. */
+    /** Роль доступа. Пока поддерживаются USER и ADMIN. */
     @Column(length = 20)
     private String role = "USER";
+
+    /**
+     * Тариф/уровень аккаунта — задел под будущие FREE/PAID/VIP.
+     * В v22.3 он только хранится и показывается, права от него не зависят.
+     */
+    @Column(name = "account_tier", length = 20)
+    private String accountTier = "FREE";
+
+    @Column(name = "created_at")
+    private java.time.Instant createdAt;
+
+    @Column(name = "updated_at")
+    private java.time.Instant updatedAt;
 
     protected AppUser() {} // для JPA
 
@@ -52,4 +65,24 @@ public class AppUser {
     public String getRole() { return role == null || role.isBlank() ? "USER" : role; }
     public void setRole(String role) { this.role = role == null || role.isBlank() ? "USER" : role.trim().toUpperCase(); }
     public boolean isAdmin() { return "ADMIN".equalsIgnoreCase(getRole()); }
+    public String getAccountTier() { return accountTier == null || accountTier.isBlank() ? "FREE" : accountTier; }
+    public void setAccountTier(String accountTier) { this.accountTier = accountTier == null || accountTier.isBlank() ? "FREE" : accountTier.trim().toUpperCase(); }
+    public java.time.Instant getCreatedAt() { return createdAt; }
+    public java.time.Instant getUpdatedAt() { return updatedAt; }
+
+    @PrePersist
+    void onCreate() {
+        java.time.Instant now = java.time.Instant.now();
+        if (createdAt == null) createdAt = now;
+        updatedAt = now;
+        setRole(role);
+        setAccountTier(accountTier);
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = java.time.Instant.now();
+        setRole(role);
+        setAccountTier(accountTier);
+    }
 }

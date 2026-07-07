@@ -53,6 +53,8 @@ public class ProfileController {
         out.put("displayName", user.getDisplayName());
         out.put("birthday", user.getBirthday() != null ? user.getBirthday().toString() : null);
         out.put("admin", user.isAdmin());
+        out.put("role", user.getRole());
+        out.put("accountTier", user.getAccountTier());
         return out;
     }
 
@@ -120,8 +122,9 @@ public class ProfileController {
         if (!encoder.matches(current, user.getPasswordHash())) {
             throw ApiException.badRequest("Текущий пароль неверный");
         }
-        if (next.length() < 6) {
-            throw ApiException.badRequest("Новый пароль: минимум 6 символов");
+        int minLength = user.isAdmin() ? 12 : 6;
+        if (next.length() < minLength) {
+            throw ApiException.badRequest("Новый пароль: минимум " + minLength + " символов");
         }
         if (next.equals(current)) {
             throw ApiException.badRequest("Новый пароль совпадает со старым");
