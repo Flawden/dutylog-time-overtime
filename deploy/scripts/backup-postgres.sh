@@ -19,6 +19,15 @@ if [[ -f .env ]]; then
   set +a
 fi
 
+COMPOSE_FILE="${DUTYLOG_COMPOSE_FILE:-}"
+COMPOSE_FILE_ARGS=()
+if [[ -n "$COMPOSE_FILE" ]]; then
+  COMPOSE_FILE_ARGS=(-f "$COMPOSE_FILE")
+fi
+compose() {
+  docker compose "${COMPOSE_FILE_ARGS[@]}" "$@"
+}
+
 DB_SERVICE="${DUTYLOG_DB_SERVICE:-db}"
 POSTGRES_DB="${POSTGRES_DB:-shift_calendar}"
 POSTGRES_USER="${POSTGRES_USER:-shift_calendar}"
@@ -37,9 +46,9 @@ echo "Service:  $DB_SERVICE"
 echo "Database: $POSTGRES_DB"
 echo "Output:   $OUT"
 
-docker compose exec -T "$DB_SERVICE" pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null
+compose exec -T "$DB_SERVICE" pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null
 
-docker compose exec -T "$DB_SERVICE" \
+compose exec -T "$DB_SERVICE" \
   pg_dump \
     --format=custom \
     --compress=9 \

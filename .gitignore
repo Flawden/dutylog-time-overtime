@@ -6,3 +6,8 @@ backups/
 *.iml
 *.log
 .DS_Store
+.env.local
+.env.production
+*.dump
+*.dump.gz
+*.sql.gz

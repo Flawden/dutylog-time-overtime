@@ -19,6 +19,15 @@ if [[ -f .env ]]; then
   set +a
 fi
 
+COMPOSE_FILE="${DUTYLOG_COMPOSE_FILE:-}"
+COMPOSE_FILE_ARGS=()
+if [[ -n "$COMPOSE_FILE" ]]; then
+  COMPOSE_FILE_ARGS=(-f "$COMPOSE_FILE")
+fi
+compose() {
+  docker compose "${COMPOSE_FILE_ARGS[@]}" "$@"
+}
+
 BACKUP_FILE="${1:-}"
 if [[ -z "$BACKUP_FILE" ]]; then
   echo "Usage: $0 <backup.dump|backup.sql|backup.sql.gz>"
@@ -55,19 +64,19 @@ if [[ "$FORCE" != "true" ]]; then
   fi
 fi
 
-docker compose exec -T "$DB_SERVICE" pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null
+compose exec -T "$DB_SERVICE" pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null
 
 APP_WAS_RUNNING="false"
-if [[ "$STOP_APP" == "true" ]] && docker compose ps -q "$APP_SERVICE" >/dev/null 2>&1; then
-  if [[ -n "$(docker compose ps -q "$APP_SERVICE")" ]]; then
+if [[ "$STOP_APP" == "true" ]] && compose ps -q "$APP_SERVICE" >/dev/null 2>&1; then
+  if [[ -n "$(compose ps -q "$APP_SERVICE")" ]]; then
     APP_WAS_RUNNING="true"
     echo "Stopping application service: $APP_SERVICE"
-    docker compose stop "$APP_SERVICE" >/dev/null || true
+    compose stop "$APP_SERVICE" >/dev/null || true
   fi
 fi
 
 restore_custom() {
-  docker compose exec -T "$DB_SERVICE" \
+  compose exec -T "$DB_SERVICE" \
     pg_restore \
       --clean \
       --if-exists \
@@ -79,7 +88,7 @@ restore_custom() {
 }
 
 restore_sql() {
-  docker compose exec -T "$DB_SERVICE" \
+  compose exec -T "$DB_SERVICE" \
     psql \
       -v ON_ERROR_STOP=1 \
       -U "$POSTGRES_USER" \
@@ -107,7 +116,7 @@ esac
 
 if [[ "$APP_WAS_RUNNING" == "true" ]]; then
   echo "Starting application service: $APP_SERVICE"
-  docker compose up -d "$APP_SERVICE" >/dev/null
+  compose up -d "$APP_SERVICE" >/dev/null
 fi
 
 echo "Restore completed."

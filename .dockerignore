@@ -5,3 +5,9 @@ target/
 .gitignore
 data/
 .env
+backups/
+.env.local
+.env.production
+*.dump
+*.dump.gz
+*.sql.gz

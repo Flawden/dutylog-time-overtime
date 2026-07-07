@@ -204,3 +204,34 @@ deploy/scripts/list-backups.sh
 The scripts work with the Docker Compose PostgreSQL service and create PostgreSQL custom-format dumps in `backups/`. Backup files and `.env` are intentionally excluded from Git.
 
 Daily backup examples for systemd live in `deploy/systemd`.
+
+## Production deployment
+
+Recommended VPS deployment uses one Docker Compose stack:
+
+```text
+Internet
+   |
+   v
+Caddy :80/:443
+   |
+   v
+DutyLog app :8080, internal Docker network
+   |
+   v
+PostgreSQL :5432, internal Docker network
+```
+
+Files:
+
+```text
+docker-compose.prod.yml
+.env.production.example
+deploy/caddy/Caddyfile.example
+deploy/nginx/dutylog.conf.example
+deploy/scripts/smoke-test.sh
+```
+
+The production compose file does not publish the application port directly. Only Caddy exposes public HTTP/HTTPS ports. PostgreSQL is available only inside the Docker network.
+
+The app container and compose service include healthchecks against `/actuator/health`. Admin diagnostics remain behind `/api/admin/status` and require an administrator account.

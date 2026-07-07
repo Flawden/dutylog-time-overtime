@@ -1,3 +1,20 @@
+# v20.8 — Production launch hardening
+
+- Добавлен `docker-compose.prod.yml` для VPS: PostgreSQL, DutyLog app и Caddy reverse proxy в одной production-схеме.
+- Добавлен `.env.production.example` с production-переменными и безопасными placeholder-значениями.
+- Добавлен `deploy/caddy/Caddyfile.example` для HTTPS через Caddy.
+- Добавлен альтернативный пример nginx: `deploy/nginx/dutylog.conf.example`.
+- Исправлен `Dockerfile` после переименования проекта: теперь копируется `dutylog-*.jar`, а не старый `shift-calendar-*.jar`.
+- В runtime-образ добавлен `curl`, чтобы healthcheck контейнера мог проверять `/actuator/health`.
+- Добавлен Docker `HEALTHCHECK` и healthcheck app-сервиса в compose.
+- Добавлен `deploy/scripts/smoke-test.sh` для быстрой проверки health/login/manifest/protected API после запуска.
+- Добавлены документы:
+  - `docs/PRODUCTION_RUNBOOK.md`;
+  - `docs/SECURITY_CHECKLIST.md`.
+- Обновлены `README.md`, `docs/DEPLOY.md`, `docs/VPS_CHECKLIST.md`, `docs/ARCHITECTURE.md` и `docs/API.md`.
+- Frontend-кэш поднят до `v20.8`: `app.css?v=20.8`, `app.js?v=20.8`, `dutylog-shell-v20.8`.
+- Backend-версия в диагностике поднята до `20.8`.
+
 # v20.7 — Backup and restore
 
 - Добавлены production-ready скрипты для PostgreSQL: `deploy/scripts/backup-postgres.sh`, `deploy/scripts/restore-postgres.sh`, `deploy/scripts/list-backups.sh`.

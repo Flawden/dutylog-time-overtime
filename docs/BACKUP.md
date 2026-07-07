@@ -69,6 +69,13 @@ FORCE=true ./deploy/scripts/restore-postgres.sh backups/dutylog-YYYY-MM-DD_HH-MM
 
 ## Custom options
 
+On a VPS with `docker-compose.prod.yml`, set this in `.env` so backup/restore scripts always use the production compose file:
+
+```env
+DUTYLOG_COMPOSE_FILE=docker-compose.prod.yml
+```
+
+
 ```bash
 BACKUP_DIR=/mnt/backups ./deploy/scripts/backup-postgres.sh
 ```

@@ -8,7 +8,9 @@ RUN mvn -q -DskipTests package
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends curl ca-certificates && rm -rf /var/lib/apt/lists/*
 ENV SPRING_PROFILES_ACTIVE=prod
-COPY --from=build /app/target/shift-calendar-*.jar /app/shift-calendar.jar
+COPY --from=build /app/target/dutylog-*.jar /app/dutylog.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app/shift-calendar.jar"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=5 CMD curl -fsS http://localhost:8080/actuator/health | grep -q '"status":"UP"' || exit 1
+ENTRYPOINT ["java", "-jar", "/app/dutylog.jar"]

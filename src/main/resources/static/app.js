@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "20.7";
+const DUTYLOG_VERSION = "20.8";
 
 /* ─── Состояние ─────────────────────────────────────────────── */
 const state = {

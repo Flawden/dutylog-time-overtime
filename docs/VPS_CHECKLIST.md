@@ -3,20 +3,30 @@
 ## Before launch
 
 - [ ] VPS is created and accessible by SSH.
-- [ ] Domain points to the VPS IP.
-- [ ] Docker is installed.
+- [ ] Domain A-record points to the VPS IP.
+- [ ] Docker and Docker Compose plugin are installed.
+- [ ] Git is installed.
+- [ ] Firewall allows only required public ports: `22`, `80`, `443`.
 - [ ] Project is cloned to `/opt/dutylog` or another stable directory.
-- [ ] `.env` is created from `.env.example`.
+- [ ] `.env` is created from `.env.production.example`.
 - [ ] Production passwords are changed.
+- [ ] `DUTYLOG_DOMAIN` is set correctly.
 - [ ] Telegram token is added if Telegram is enabled.
-- [ ] `docker compose up -d --build` starts both `db` and `app`.
-- [ ] `docker compose logs -f app` shows no startup errors.
+- [ ] `deploy/caddy/Caddyfile` is created from the example.
+
+## First start
+
+- [ ] `docker compose -f docker-compose.prod.yml up -d --build` starts `db`, `app`, and `caddy`.
+- [ ] `docker compose -f docker-compose.prod.yml ps` shows healthy/running containers.
+- [ ] `docker compose -f docker-compose.prod.yml logs -f app` shows no startup errors.
 - [ ] Application opens through HTTPS.
+- [ ] `./deploy/scripts/smoke-test.sh https://domain` passes.
 - [ ] First user is created and has administrator access.
 - [ ] `Система` page is visible to administrator.
-- [ ] `/api/admin/status` returns healthy status for database.
-- [ ] Telegram linking works with `/start DL-XXXXXX`.
-- [ ] Test notification works.
+- [ ] `/api/admin/status` returns healthy database status for administrator.
+- [ ] Regular user does not see `Система`.
+- [ ] Telegram linking works with `/start DL-XXXXXX` if Telegram is enabled.
+- [ ] Test notification works if notifications are enabled.
 
 ## Backup readiness
 
@@ -31,7 +41,8 @@
 - [ ] Create backup.
 - [ ] Pull new Git version.
 - [ ] Build and restart containers.
-- [ ] Check logs.
+- [ ] Run smoke test.
+- [ ] Check app logs.
 - [ ] Check admin system status.
 - [ ] Check Telegram bot.
 
@@ -41,6 +52,7 @@
 cd /opt/dutylog
 ./deploy/scripts/backup-postgres.sh
 git pull
-docker compose up -d --build
-docker compose logs -f app
+docker compose -f docker-compose.prod.yml up -d --build
+./deploy/scripts/smoke-test.sh https://your-domain.example
+docker compose -f docker-compose.prod.yml logs -f app
 ```

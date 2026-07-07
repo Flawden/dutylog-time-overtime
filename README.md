@@ -17,6 +17,7 @@ DutyLog — приложение для учёта смен, переработ�
 - Профиль пользователя, смена пароля и управление мобильными сессиями.
 - Служебная диагностика состояния приложения, сервера, базы данных и Telegram-интеграции в отдельном профиле администратора.
 - Скрипты резервного копирования и восстановления PostgreSQL.
+- Production-ready compose, Caddy reverse proxy example, healthchecks and launch runbook.
 
 ## Стек
 
@@ -64,16 +65,19 @@ http://localhost:8080
 
 ## Запуск через Docker Compose
 
-Скопируйте пример переменных окружения:
+Для локального Docker-запуска:
 
 ```bash
 cp .env.example .env
+docker compose up -d --build
 ```
 
-Заполните значения в `.env`, затем запустите:
+Для VPS/production-запуска используйте отдельный compose-файл с Caddy и без публичного порта приложения:
 
 ```bash
-docker compose up -d --build
+cp .env.production.example .env
+cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
+docker compose -f docker-compose.prod.yml up -d --build
 ```
 
 Безопасная остановка:
@@ -114,20 +118,15 @@ docker compose down -v
 
 В production используется PostgreSQL и Flyway-миграции. Hibernate работает в режиме валидации схемы, поэтому изменения БД должны оформляться новыми файлами миграций в `src/main/resources/db/migration`.
 
-Минимальные переменные окружения:
+Для боевого запуска подготовлены:
 
-```env
-POSTGRES_DB=dutylog
-POSTGRES_USER=dutylog
-POSTGRES_PASSWORD=change-me
-DUTYLOG_DB_URL=jdbc:postgresql://postgres:5432/dutylog
-DUTYLOG_DB_USER=dutylog
-DUTYLOG_DB_PASSWORD=change-me
-DUTYLOG_ADMIN_USERNAME=admin
-DUTYLOG_ADMIN_PASSWORD=change-me
-```
+- `docker-compose.prod.yml` — PostgreSQL, приложение и Caddy;
+- `.env.production.example` — шаблон production-переменных;
+- `deploy/caddy/Caddyfile.example` — HTTPS reverse proxy;
+- `docs/PRODUCTION_RUNBOOK.md` — первый запуск, обновление, откат и emergency backup;
+- `docs/SECURITY_CHECKLIST.md` — чеклист безопасности.
 
-Пароли в `docker-compose.yml` настроены fail-hard: пустые production-пароли не должны приводить к тихому запуску небезопасной конфигурации.
+Пароли в compose настроены fail-hard: пустые production-пароли не должны приводить к тихому запуску небезопасной конфигурации.
 
 ## Telegram
 
@@ -179,6 +178,8 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md) — Git-история, теги и откаты.
 - [`docs/BACKUP.md`](docs/BACKUP.md) — резервные копии и восстановление PostgreSQL.
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — запуск на VPS через Docker Compose.
+- [`docs/PRODUCTION_RUNBOOK.md`](docs/PRODUCTION_RUNBOOK.md) — эксплуатация, обновление и откат на VPS.
+- [`docs/SECURITY_CHECKLIST.md`](docs/SECURITY_CHECKLIST.md) — чеклист безопасности перед публикацией.
 - [`docs/VPS_CHECKLIST.md`](docs/VPS_CHECKLIST.md) — чеклист боевого запуска.
 - [`docs/ANDROID_API_PLAN.md`](docs/ANDROID_API_PLAN.md) — мобильный API.
 - [`docs/ROADMAP.md`](docs/ROADMAP.md) — идеи развития.
@@ -186,9 +187,9 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v20.7 — backup and restore`
+`v20.8 — production launch hardening`
 
-В этой версии добавлены безопасные скрипты резервного копирования и восстановления PostgreSQL, документация для деплоя на VPS и чеклист запуска.
+В этой версии добавлены production compose, Caddy-конфиг, healthchecks, production env-шаблон, smoke-test, runbook запуска/обновления/отката и чеклист безопасности.
 
 
 ## Служебный профиль администратора
