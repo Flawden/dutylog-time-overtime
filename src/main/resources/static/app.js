@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "24.0.1"
+const DUTYLOG_VERSION = "24.0.2"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -214,6 +214,59 @@ Object.assign(I18N_EN, {
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие" });
 
+Object.assign(I18N_EN, {
+  "Имя отображается в шапке приложения. День рождения используется для поздравительного баннера в календаре.":"The name is shown in the app header. Birthday is used for the greeting banner in the calendar.",
+  "Например: Даниил":"Example: Daniel",
+  "После смены пароля активные мобильные сессии будут завершены.":"After changing the password, active mobile sessions will be revoked.",
+  "Мобильных сессий нет — только этот браузер.":"No mobile sessions — only this browser.",
+  "Не удалось загрузить сессии.":"Failed to load sessions.",
+  "Новые пароли не совпадают":"New passwords do not match",
+  "Пароль изменён. Активные мобильные сессии завершены.":"Password changed. Active mobile sessions were revoked.",
+  "устройство":"device",
+  "не использовалась":"not used",
+  "активна":"active",
+  "отозвана":"revoked",
+  "отозвать":"revoke",
+  "Telegram-бот":"Telegram bot",
+  "загрузка…":"loading…",
+  "Создайте код привязки и отправьте его Telegram-боту командой /start DL-123456.":"Create a linking code and send it to the Telegram bot with /start DL-123456.",
+  "Получать напоминания в Telegram":"Receive reminders in Telegram",
+  "Используются те же правила, что в блоке «Уведомления»: смены, задачи, важные дни и вечерний дайджест.":"Uses the same rules as the Notifications section: shifts, tasks, important dates, and the evening digest.",
+  "Создать код привязки":"Create linking code",
+  "Отключить Telegram":"Disconnect Telegram",
+  "Не подключено. Создайте код и отправьте его боту.":"Not connected. Create a code and send it to the bot.",
+  "Бот не настроен на сервере: укажите DUTYLOG_TELEGRAM_BOT_TOKEN и включите polling.":"Bot is not configured on the server: set DUTYLOG_TELEGRAM_BOT_TOKEN and enable polling.",
+  "Не удалось загрузить статус Telegram.":"Failed to load Telegram status.",
+  "Отключить Telegram от этого аккаунта?":"Disconnect Telegram from this account?",
+  "Подключено":"Connected",
+  "напоминания включены":"reminders enabled",
+  "напоминания выключены":"reminders disabled",
+  "бот":"bot",
+  "Отправьте боту:":"Send to bot:",
+  "Код действует до":"Code is valid until",
+  "через 15 минут":"in 15 minutes",
+  "открыть бота":"open bot",
+  "Укажите username бота в настройках сервера, чтобы появилась ссылка":"Set the bot username in server settings to show a link",
+  "Выбор языка хранится в профиле пользователя и применяется к web/PWA интерфейсу. Сейчас доступны русский и английский.":"Language choice is stored in the user profile and applied to the web/PWA interface. Russian and English are available now.",
+  "Перевод сделан безопасным словарём приложения: пользовательский JS/CSS не используется, язык не влияет на роли и тариф.":"Translation uses the app's safe dictionary: no user JS/CSS is used, and language does not affect roles or plan.",
+  "Безопасный Theme Builder: только пресеты, color picker, списки и ползунки. Пользовательский CSS не поддерживается и не хранится.":"Safe Theme Builder: presets, color pickers, selects, and sliders only. Custom CSS is not supported or stored.",
+  "Создание пользовательских смен и настройка встроенных типов: время, обед, норма и уведомления.":"Create custom shifts and configure built-in types: time, break, norm, and notifications.",
+  "Календарь, ч — короткая метка для календаря. Норма, ч — сколько часов вычитается при расчёте переработки.":"Calendar label, h is the short label shown in the calendar. Norm, h is subtracted when calculating overtime.",
+  "Настройки дневной и ночной смены сохраняются автоматически и применяются к встроенным типам смен.":"Day and night shift settings are saved automatically and applied to built-in shift types.",
+  "Полный список важных дат. Новые события добавляются из панели выбранного дня в календаре.":"Full list of important dates. New events are added from the selected-day panel in the calendar.",
+  "Публичная регистрация создаёт только USER. Дополнительных админов назначает действующий администратор. Тариф FREE показан как задел под будущие PAID/VIP, но пока не влияет на права.":"Public registration creates USER accounts only. Additional admins are assigned by an existing administrator. FREE is shown as groundwork for future PAID/VIP tiers, but does not affect permissions yet.",
+  "Проверка версии приложения, подключения к серверу, базы данных, кэша браузера и Telegram-интеграции.":"Checks app version, server connection, database, browser cache, and Telegram integration.",
+  "Нажмите «Обновить диагностику», чтобы получить отчёт.":"Click “Refresh diagnostics” to get a report.",
+  "Активные устройства":"Active devices",
+  "Серверное время":"Server time",
+  "Профили Spring":"Spring profiles",
+  "Часовой пояс сервера":"Server timezone",
+  "Защита сессии":"Session security",
+  "Кэш приложения":"App cache"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие" });
+
 function t(value){
   const s = String(value ?? "");
   return state.language === "en" ? (I18N_EN[s] || s) : (I18N_RU[s] || s);
@@ -278,6 +331,7 @@ function applyLanguage(lang){
   renderLanguageControls();
   if (typeof renderCalendar === 'function') renderCalendar();
   if (typeof updateShiftPlanHint === 'function') updateShiftPlanHint();
+  if (typeof renderTelegramPanel === 'function') renderTelegramPanel();
   translateStaticTree();
 }
 function renderLanguageControls(){
@@ -321,7 +375,7 @@ function safeTzLabel(tz){
   try {
     return new Intl.DateTimeFormat(currentLocale(), { dateStyle:"short", timeStyle:"short", timeZone:tz }).format(new Date());
   } catch (e) {
-    return "часовой пояс не распознан";
+    return t("часовой пояс не распознан");
   }
 }
 
@@ -4525,11 +4579,11 @@ $('dayEmojiCustom')?.addEventListener('keydown', e => { if (e.key === 'Enter') {
 
 $("pwChange").addEventListener("click", async () => {
   const cur = $("pwCurrent").value, nw = $("pwNew").value, rep = $("pwRepeat").value;
-  if (nw !== rep) { setProfileMsg("pwMsg", "Новые пароли не совпадают"); return; }
+  if (nw !== rep) { setProfileMsg("pwMsg", t("Новые пароли не совпадают")); return; }
   try {
     await jfetch("/api/profile/password", { method: "POST", body: { currentPassword: cur, newPassword: nw } });
     for (const id of ["pwCurrent", "pwNew", "pwRepeat"]) $(id).value = "";
-    setProfileMsg("pwMsg", "Пароль изменён. Активные мобильные сессии завершены.", true);
+    setProfileMsg("pwMsg", t("Пароль изменён. Активные мобильные сессии завершены."), true);
     loadSessions();
   } catch (e) { setProfileMsg("pwMsg", e.message); }
 });
@@ -4540,7 +4594,7 @@ async function loadSessions(){
     const list = await jfetch("/api/profile/sessions");
     box.innerHTML = "";
     if (!list.length) {
-      box.innerHTML = '<div class="sessionRow"><span class="meta">Мобильных сессий нет — только этот браузер.</span></div>';
+      box.innerHTML = `<div class="sessionRow"><span class="meta">${esc(t("Мобильных сессий нет — только этот браузер."))}</span></div>`;
       return;
     }
     for (const sess of list) {
@@ -4548,16 +4602,16 @@ async function loadSessions(){
       row.className = "sessionRow";
       const dev = document.createElement("span");
       dev.className = "dev" + (sess.active ? "" : " dead");
-      dev.textContent = sess.deviceName || "устройство";
+      dev.textContent = sess.deviceName || t("устройство");
       const meta = document.createElement("span");
       meta.className = "meta";
-      const last = sess.lastUsedAt ? sess.lastUsedAt.slice(0, 16).replace("T", " ") : "не использовалась";
-      meta.textContent = (sess.active ? "активна · " : "отозвана · ") + last;
+      const last = sess.lastUsedAt ? sess.lastUsedAt.slice(0, 16).replace("T", " ") : t("не использовалась");
+      meta.textContent = (sess.active ? t("активна") + " · " : t("отозвана") + " · ") + last;
       row.append(dev, meta);
       if (sess.active) {
         const del = document.createElement("button");
         del.type = "button";
-        del.textContent = "отозвать";
+        del.textContent = t("отозвать");
         del.addEventListener("click", async () => {
           try { await jfetch("/api/profile/sessions/" + sess.id, { method: "DELETE" }); loadSessions(); }
           catch (e) { console.error(e); }
@@ -4567,14 +4621,14 @@ async function loadSessions(){
       box.appendChild(row);
     }
   } catch (e) {
-    box.innerHTML = '<div class="sessionRow"><span class="meta">Не удалось загрузить сессии.</span></div>';
+    box.innerHTML = `<div class="sessionRow"><span class="meta">${esc(t("Не удалось загрузить сессии."))}</span></div>`;
   }
 }
 
 
 /* ─── Telegram: привязка бота ───────────────────────────────── */
 function telegramName(status){
-  return status?.botUsername ? "@" + status.botUsername : "бот";
+  return status?.botUsername ? "@" + status.botUsername : t("бот");
 }
 function renderTelegramPanel(){
   const box = $("telegramBox");
@@ -4585,7 +4639,7 @@ function renderTelegramPanel(){
   const unlink = $("telegramUnlinkBtn");
   const notifyToggle = $("telegramNotificationsEnabled");
   if (!s) {
-    status.textContent = "загрузка…";
+    status.textContent = t("загрузка…");
     status.className = "telegramStatus";
     if (unlink) unlink.disabled = true;
     if (notifyToggle) notifyToggle.disabled = true;
@@ -4597,14 +4651,16 @@ function renderTelegramPanel(){
     notifyToggle.disabled = !s.configured || !s.linked;
   }
   if (!s.configured) {
-    status.textContent = "Бот не настроен на сервере: укажите DUTYLOG_TELEGRAM_BOT_TOKEN и включите polling.";
+    status.textContent = t("Бот не настроен на сервере: укажите DUTYLOG_TELEGRAM_BOT_TOKEN и включите polling.");
     status.className = "telegramStatus warn";
   } else if (s.linked) {
     const name = s.username ? "@" + s.username : "chat " + s.chatId;
-    status.textContent = "Подключено: " + name + (s.notificationsEnabled ? " · напоминания включены" : " · напоминания выключены");
+    status.textContent = t("Подключено") + ": " + name + (s.notificationsEnabled ? " · " + t("напоминания включены") : " · " + t("напоминания выключены"));
     status.className = "telegramStatus ok";
   } else {
-    status.textContent = "Не подключено. Создайте код и отправьте его " + telegramName(s) + ".";
+    status.textContent = state.language === "en"
+      ? `Not connected. Create a code and send it to ${telegramName(s)}.`
+      : "Не подключено. Создайте код и отправьте его " + telegramName(s) + ".";
     status.className = "telegramStatus";
   }
   if (s.pendingCode && codeBox.hidden) {
@@ -4618,16 +4674,16 @@ async function loadTelegramStatus(){
     renderTelegramPanel();
   } catch (e) {
     const status = $("telegramStatus");
-    if (status) { status.textContent = "Не удалось загрузить статус Telegram."; status.className = "telegramStatus warn"; }
+    if (status) { status.textContent = t("Не удалось загрузить статус Telegram."); status.className = "telegramStatus warn"; }
   }
 }
 function showTelegramCode(c){
   const box = $("telegramCodeBox");
   if (!box) return;
   box.hidden = false;
-  const exp = c.expiresAt ? c.expiresAt.slice(11,16) : "через 15 минут";
-  const link = c.deepLink ? `<a href="${esc(c.deepLink)}" target="_blank" rel="noreferrer">открыть бота</a>` : "Укажите username бота в настройках сервера, чтобы появилась ссылка";
-  box.innerHTML = `<div class="code">${esc(c.code)}</div><div>Отправьте боту: <b>${esc(c.startCommand)}</b></div><div class="meta">Код действует до ${esc(exp)} · ${link}</div>`;
+  const exp = c.expiresAt ? c.expiresAt.slice(11,16) : t("через 15 минут");
+  const link = c.deepLink ? `<a href="${esc(c.deepLink)}" target="_blank" rel="noreferrer">${esc(t("открыть бота"))}</a>` : esc(t("Укажите username бота в настройках сервера, чтобы появилась ссылка"));
+  box.innerHTML = `<div class="code">${esc(c.code)}</div><div>${esc(t("Отправьте боту:"))} <b>${esc(c.startCommand)}</b></div><div class="meta">${esc(t("Код действует до"))} ${esc(exp)} · ${link}</div>`;
 }
 $("telegramCodeBtn")?.addEventListener("click", async () => {
   const btn = $("telegramCodeBtn");
@@ -4661,7 +4717,7 @@ $("telegramNotificationsEnabled")?.addEventListener("change", async () => {
 });
 
 $("telegramUnlinkBtn")?.addEventListener("click", async () => {
-  if (!confirm("Отключить Telegram от этого аккаунта?")) return;
+  if (!confirm(t("Отключить Telegram от этого аккаунта?"))) return;
   try {
     await api.telegramUnlink();
     $("telegramCodeBox").hidden = true;

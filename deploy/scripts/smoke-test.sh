@@ -45,11 +45,11 @@ fetch "$BASE_URL/manifest.json" | grep -qi 'DutyLog'
 echo "   ok"
 
 echo "5) Service worker"
-fetch "$BASE_URL/service-worker.js" | grep -q 'dutylog-shell-v24.0.1'
+fetch "$BASE_URL/service-worker.js" | grep -q 'dutylog-shell-v24.0.2'
 echo "   ok"
 
 echo "6) Static assets"
-fetch "$BASE_URL/app.js" | grep -q 'DUTYLOG_VERSION = "24.0.1"'
+fetch "$BASE_URL/app.js" | grep -q 'DUTYLOG_VERSION = "24.0.2"'
 fetch "$BASE_URL/app.css" | grep -q ':root'
 echo "   ok"
 

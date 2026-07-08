@@ -1,3 +1,9 @@
+# v24.0.2 — I18N coverage polish
+
+- Expanded English translation coverage for profile, password, active sessions, Telegram linking, settings hints and diagnostics copy.
+- Dynamic profile/session/Telegram messages now use the app dictionary instead of hardcoded Russian strings.
+- Frontend/backend/service-worker versions bumped to `24.0.2`.
+
 # v24.0.1 — Shift settings UX and important-day refresh
 
 - The `+` shift button in the selected-day panel now opens Settings directly on the expanded `Shifts` section, scrolls to it and focuses the custom shift name field.

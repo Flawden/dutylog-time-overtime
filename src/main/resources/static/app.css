@@ -1295,3 +1295,10 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
   60%{ box-shadow:0 0 0 7px color-mix(in srgb, var(--accent) 0%, transparent); }
   100%{ box-shadow:var(--theme-shadow); }
 }
+
+/* v24.0.2: English offline pseudo-copy */
+html[lang="en"] body.offline #accOt .accB::before{content:"Overtime and time off require a server connection. Shifts, notes and task checkboxes are saved offline."}
+html[lang="en"] body.offline #accSched .accB::before{content:"Schedule auto-fill requires a server connection. A single shift for the selected day can be changed offline."}
+html[lang="en"] body.offline #settings-scenarios::before{content:"Overtime templates can be changed only while connected to the server."}
+html[lang="en"] body.offline #settings-notifications::before{content:"Notification settings require a server connection."}
+html[lang="en"] body.offline #telegramBox::before{content:"Telegram integration can be configured only while connected to the server."}
