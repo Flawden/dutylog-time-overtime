@@ -1,6 +1,6 @@
 # Module contracts
 
-Status: v25.3.
+Status: v26.0.
 
 DutyLog uses a modular-monolith approach. A module is not a separate service yet; it is a bounded feature area with a stable key, API guards, UI slots and optional offline queue operation types.
 

@@ -7,9 +7,28 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=25.3" rel="stylesheet"/>
+<link href="app.css?v=26.0" rel="stylesheet"/>
 </head>
 <body>
+
+<div class="onboardingOverlay" id="firstRunOnboarding" hidden>
+  <div class="onboardingCard" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+    <div class="eyebrow">DutyLog setup</div>
+    <h2 id="onboardingTitle">Настрой DutyLog под себя</h2>
+    <p class="onboardingLead">Выбери модули, которые нужны прямо сейчас. Остальное можно включить позже в настройках, данные не удаляются.</p>
+    <div class="onboardingPresets" aria-label="Быстрые наборы модулей">
+      <button type="button" data-onboarding-preset="basic">Минимум</button>
+      <button type="button" data-onboarding-preset="work" class="primarySoft">Работа + переработки</button>
+      <button type="button" data-onboarding-preset="full">Всё включить</button>
+    </div>
+    <div class="onboardingModuleGrid" id="onboardingModuleGrid"></div>
+    <div class="onboardingFooter">
+      <button id="onboardingSkip" type="button">Пропустить</button>
+      <button id="onboardingStart" class="primary" type="button">Начать</button>
+    </div>
+    <div class="profileMsg" id="onboardingMsg"></div>
+  </div>
+</div>
 <div class="wrap">
 <div class="head">
 <div>
@@ -769,7 +788,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v25.3</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v26.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -835,6 +854,6 @@
     </div>
   </div>
 </div>
-<script src="app.js?v=25.3"></script>
+<script src="app.js?v=26.0"></script>
 </body>
 </html>

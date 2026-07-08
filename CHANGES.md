@@ -1,3 +1,15 @@
+# v26.0 — First-run onboarding
+
+- Added first-run module onboarding for new users.
+- New users choose a calmer module set before landing in the full interface.
+- Added module presets: minimum, work + overtime, enable all.
+- Added per-module onboarding toggles powered by the existing module registry.
+- Added `users.onboarding_completed` via `V21__user_onboarding.sql`; existing users are marked completed by default during upgrade.
+- Profile API now exposes and accepts `onboardingCompleted`.
+- Onboarding saves module choices through `PATCH /api/modules`; skipped onboarding keeps current/default module settings.
+- Added `docs/ONBOARDING.md`.
+- Frontend/backend/service-worker versions bumped to `26.0`.
+
 # v25.3 — Developer module contracts
 
 - Added backend package `ru.daniil.shifts.module` with stable `ModuleKeys`, `ModuleCategory`, `ModuleContract` and canonical `DutyLogModules` registry.

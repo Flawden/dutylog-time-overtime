@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "25.3"
+const DUTYLOG_VERSION = "26.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -37,7 +37,9 @@ const state = {
   adminUsers: [],
   adminUsersPage: { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false },
   preferences: { themePreference:"system", accentColor:"#F5B841" },
+  profile: null,
   language: initialLanguage(),
+  onboardingDraft: null,
   modulesLoaded: false,
   modulesList: [],
   modules: { core:true, calendar:true, shifts:true, notes:true, tasks:true, overtime:true, important_dates:true, notifications:true, telegram:false, scenarios:true, admin:false },
@@ -1323,6 +1325,7 @@ async function loadModules(){
   try {
     const list = await api.modules();
     setModuleList(list);
+    maybeShowOnboarding();
   } catch (err) {
     console.warn("modules unavailable", err);
     state.modulesLoaded = false;
@@ -1388,6 +1391,135 @@ function renderModuleSettings(){
   }
   grid.querySelectorAll('[data-module-toggle]').forEach(input => input.addEventListener('change', e => saveModuleEnabled(e.target.dataset.moduleToggle, e.target.checked)));
 }
+
+const ONBOARDING_OPTIONAL_MODULES = ["notes","tasks","overtime","important_dates","notifications","telegram","scenarios"];
+const ONBOARDING_PRESETS = {
+  basic: { notes:false, tasks:false, overtime:false, important_dates:false, notifications:false, telegram:false, scenarios:false },
+  work: { notes:true, tasks:false, overtime:true, important_dates:true, notifications:false, telegram:false, scenarios:true },
+  full: { notes:true, tasks:true, overtime:true, important_dates:true, notifications:true, telegram:true, scenarios:true },
+};
+function onboardingModules(){
+  return (state.modulesList || [])
+    .filter(m => ONBOARDING_OPTIONAL_MODULES.includes(m.key) && !m.hidden)
+    .sort((a,b) => (Number(a.order || 0) - Number(b.order || 0)) || moduleTitle(a).localeCompare(moduleTitle(b)));
+}
+function applyOnboardingDependencies(draft){
+  const out = { ...draft };
+  let changed;
+  do {
+    changed = false;
+    for (const m of onboardingModules()) {
+      if (!out[m.key]) continue;
+      for (const dep of (m.dependencies || [])) {
+        if (ONBOARDING_OPTIONAL_MODULES.includes(dep) && out[dep] !== true) {
+          out[dep] = true;
+          changed = true;
+        }
+      }
+    }
+  } while (changed);
+  return out;
+}
+function disableOnboardingDependents(draft, disabledKey){
+  const out = { ...draft };
+  const disabled = new Set([disabledKey]);
+  let changed;
+  do {
+    changed = false;
+    for (const m of onboardingModules()) {
+      if (out[m.key] === false) continue;
+      if ((m.dependencies || []).some(dep => disabled.has(dep))) {
+        out[m.key] = false;
+        disabled.add(m.key);
+        changed = true;
+      }
+    }
+  } while (changed);
+  return out;
+}
+function setOnboardingDraft(next, changedKey = null, checked = true){
+  let draft = { ...(next || {}) };
+  if (changedKey && checked === false) draft = disableOnboardingDependents(draft, changedKey);
+  state.onboardingDraft = applyOnboardingDependencies(draft);
+  renderOnboardingModules();
+}
+function ensureOnboardingDraft(){
+  if (state.onboardingDraft) return state.onboardingDraft;
+  const draft = { ...ONBOARDING_PRESETS.work };
+  for (const m of onboardingModules()) {
+    if (!(m.key in draft)) draft[m.key] = !!m.enabled;
+  }
+  state.onboardingDraft = applyOnboardingDependencies(draft);
+  return state.onboardingDraft;
+}
+function renderOnboardingModules(){
+  const grid = $("onboardingModuleGrid");
+  if (!grid) return;
+  const draft = ensureOnboardingDraft();
+  const modules = onboardingModules();
+  if (!modules.length) {
+    grid.innerHTML = `<div class="settingsHint">${esc(t("модули загружаются…"))}</div>`;
+    return;
+  }
+  grid.innerHTML = "";
+  for (const m of modules) {
+    const checked = draft[m.key] !== false;
+    const deps = (m.dependencies || []).filter(d => ONBOARDING_OPTIONAL_MODULES.includes(d)).map(moduleDisplayName);
+    const card = document.createElement("label");
+    card.className = "onboardingModuleCard" + (checked ? " on" : "");
+    card.innerHTML = `
+      <input type="checkbox" data-onboarding-module="${esc(m.key)}" ${checked ? "checked" : ""}/>
+      <span>
+        <b>${esc(moduleTitle(m))}</b>
+        <span>${esc(moduleDescription(m))}</span>
+        ${deps.length ? `<small>${esc(t("зависит от"))}: ${esc(deps.join(", "))}</small>` : ""}
+      </span>`;
+    grid.appendChild(card);
+  }
+  grid.querySelectorAll('[data-onboarding-module]').forEach(input => input.addEventListener('change', e => {
+    const key = e.target.dataset.onboardingModule;
+    setOnboardingDraft({ ...ensureOnboardingDraft(), [key]: e.target.checked }, key, e.target.checked);
+  }));
+}
+function maybeShowOnboarding(){
+  const overlay = $("firstRunOnboarding");
+  if (!overlay || !state.profile || !state.modulesLoaded) return;
+  if (state.profile.onboardingCompleted === false && overlay.hidden) {
+    state.onboardingDraft = null;
+    renderOnboardingModules();
+    overlay.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+}
+function hideOnboarding(){
+  const overlay = $("firstRunOnboarding");
+  if (overlay) overlay.hidden = true;
+  document.body.style.overflow = "";
+}
+async function finishOnboarding({ skip = false } = {}){
+  const msgId = "onboardingMsg";
+  setProfileMsg(msgId, t("сохраняю…"), true);
+  try {
+    if (!skip) {
+      const list = await api.updateModules(ensureOnboardingDraft());
+      setModuleList(list);
+      await loadMonth();
+      await refreshModuleAwareData();
+    }
+    const p = await jfetch('/api/profile', { method:'PUT', body: currentProfilePayload({ onboardingCompleted:true }) });
+    state.profile = p;
+    hideOnboarding();
+    applyModuleVisibility();
+    renderCalendar();
+    setProfileMsg(msgId, "");
+  } catch (err) {
+    setProfileMsg(msgId, err.message || t("ошибка"));
+  }
+}
+
+document.querySelectorAll('[data-onboarding-preset]').forEach(btn => btn.addEventListener('click', () => setOnboardingDraft(ONBOARDING_PRESETS[btn.dataset.onboardingPreset] || ONBOARDING_PRESETS.work)));
+$("onboardingStart")?.addEventListener("click", () => finishOnboarding({ skip:false }));
+$("onboardingSkip")?.addEventListener("click", () => finishOnboarding({ skip:true }));
 
 function normalizePageResponse(res, fallbackSize = 50) {
   if (Array.isArray(res)) {
@@ -5211,6 +5343,7 @@ async function loadProfile(){
     av.style.background = avatarColor(p.username);
     if (location.hash === "#admin" && !p.admin) location.hash = "#calendar";
     applyRoute();
+    maybeShowOnboarding();
   } catch (e) { console.error(e); }
 }
 
@@ -5433,6 +5566,24 @@ $("telegramUnlinkBtn")?.addEventListener("click", async () => {
   }
 });
 
+
+// v26.0: first-run onboarding i18n.
+Object.assign(I18N_EN, {
+  "Настрой DutyLog под себя":"Set up DutyLog for yourself",
+  "Выбери модули, которые нужны прямо сейчас. Остальное можно включить позже в настройках, данные не удаляются.":"Choose the modules you need right now. You can enable everything else later in Settings; data is not deleted.",
+  "Быстрые наборы модулей":"Quick module presets",
+  "Минимум":"Minimum",
+  "Работа + переработки":"Work + overtime",
+  "Всё включить":"Enable all",
+  "Пропустить":"Skip",
+  "Начать":"Start",
+  "Первый запуск":"First run",
+  "выберите модули":"choose modules",
+  "Первичная настройка модулей":"Initial module setup",
+  "Новый пользователь сначала выбирает нужные функции, чтобы не попадать сразу в перегруженный интерфейс.":"A new user chooses the features they need first, instead of landing in an overloaded interface.",
+  "онбординг завершён":"onboarding completed"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 ensureTranslationObserver();
 applyLanguage(state.language);
 loadProfile();

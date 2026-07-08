@@ -1,4 +1,4 @@
-# DutyLog API v25.3
+# DutyLog API v26.0
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -125,7 +125,9 @@ Telegram-напоминания v20.1 работают отдельно от к�
     "shadowLevel": "medium",
     "density": "comfortable",
     "cardRadius": 16
-  }
+  },
+  "languagePreference": "ru",
+  "onboardingCompleted": true
 }
 ```
 
@@ -152,7 +154,9 @@ Telegram-напоминания v20.1 работают отдельно от к�
     "shadowLevel": "medium",
     "density": "comfortable",
     "cardRadius": 16
-  }
+  },
+  "languagePreference": "en",
+  "onboardingCompleted": true
 }
 ```
 
@@ -1053,7 +1057,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "25.3",
+  "version": "26.0",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],
@@ -1158,11 +1162,13 @@ Large UI lists are paged server-side before being returned to the browser. Suppo
 Backend caps `size` to max `100`. CSV/XLS export endpoints are intentionally not paged: they export all rows matching selected filters.
 
 
-## v25.0 profile language preference
+## v24.0/v26.0 profile preferences
 
-`GET /api/profile` includes `languagePreference` with allowed values `ru` or `en`.
+`GET /api/profile` includes `languagePreference` with allowed values `ru` or `en` and `onboardingCompleted` for first-run module setup.
 
 `PUT /api/profile` accepts `languagePreference` and validates it against `ru/en`. The setting controls the web/PWA interface language and does not affect roles or account tier.
+
+Since v26.0 `PUT /api/profile` also accepts `onboardingCompleted`. This is only a UX flag for the first-run module onboarding; it does not grant permissions and does not alter user data.
 
 
 ## v25.0 user modules

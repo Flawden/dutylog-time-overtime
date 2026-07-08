@@ -67,6 +67,10 @@ public class AppUser {
     @Column(name = "language_preference", length = 10)
     private String languagePreference = "ru";
 
+    /** Первичный онбординг выбора модулей. Existing users миграцией считаются завершившими. */
+    @Column(name = "onboarding_completed", nullable = false)
+    private boolean onboardingCompleted = false;
+
     protected AppUser() {} // для JPA
 
     public AppUser(String username, String passwordHash) {
@@ -102,6 +106,8 @@ public class AppUser {
         String lang = languagePreference == null || languagePreference.isBlank() ? "ru" : languagePreference.trim().toLowerCase();
         this.languagePreference = (lang.equals("en") || lang.equals("ru")) ? lang : "ru";
     }
+    public boolean isOnboardingCompleted() { return onboardingCompleted; }
+    public void setOnboardingCompleted(boolean onboardingCompleted) { this.onboardingCompleted = onboardingCompleted; }
 
     @PrePersist
     void onCreate() {
