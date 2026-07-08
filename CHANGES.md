@@ -1,3 +1,13 @@
+# v25.2 — Module-aware offline snapshot
+
+- Calendar snapshot responses now include the effective module list for the current user.
+- Calendar aggregation respects disabled modules server-side: disabled tasks, important dates, overtime, notifications and scenarios are omitted from the bundle.
+- Disabled notes/overtime fields are stripped from day entries in the calendar bundle, so offline cache does not expose hidden modules.
+- IndexedDB snapshots are sanitized according to enabled modules before being written.
+- Offline queue refuses new mutations that belong to disabled modules and moves stale disabled-module mutations to failed operations instead of replaying them.
+- Offline diagnostics/export now include module snapshot information.
+- Frontend/backend/service-worker versions bumped to `25.2`.
+
 # v25.1 — Module-aware day panel
 
 - Selected-day panel sections now have explicit module ownership.

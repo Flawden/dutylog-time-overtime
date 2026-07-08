@@ -841,6 +841,7 @@ public final class Dtos {
             OvertimeAccountDto overtimeAccount,
             NotificationSettingsDto notificationSettings,
             List<NotificationReminderDto> reminders,
-            List<QuickScenarioDto> quickScenarios
+            List<QuickScenarioDto> quickScenarios,
+            List<ModuleDto> modules
     ) {}
 }

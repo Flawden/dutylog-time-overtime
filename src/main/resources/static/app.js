@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "25.1"
+const DUTYLOG_VERSION = "25.2"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -138,7 +138,7 @@ const I18N_EN = {
   "развернуть всё":"expand all", "свернуть всё":"collapse all", "открыть":"open", "свернуть":"collapse",
   "Профиль пользователя":"User profile", "Отображаемое имя":"Display name", "День рождения":"Birthday", "Сохранить":"Save",
   "Смена пароля":"Change password", "Текущий пароль":"Current password", "Новый пароль":"New password", "Ещё раз":"Repeat", "Сменить пароль":"Change password", "Активные устройства":"Active devices", "Telegram-бот":"Telegram bot",
-  "Интерфейс":"Interface", "Модульность":"Modularity", "Модули приложения":"App modules", "Отключайте функции, которые сейчас не нужны. Данные не удаляются: модуль можно включить обратно в любой момент.":"Turn off features you do not need right now. Data is not deleted: you can enable a module again at any time.", "Ядро, календарь и смены всегда включены. Зависимости включаются автоматически, чтобы приложение не ломалось.":"Core, calendar and shifts are always enabled. Dependencies are enabled automatically so the app stays consistent.", "включено":"enabled", "выключено":"disabled", "всегда включён":"always on", "зависит от":"depends on", "модули сохранены":"modules saved", "модули загружаются…":"modules are loading…", "модуль выключен":"module disabled", "включено модулей":"modules enabled", "Язык приложения":"App language", "Русский":"Russian", "Основной язык":"Main language", "Дополнительный язык":"Additional language", "Язык сохранён":"Language saved",
+  "Интерфейс":"Interface", "Модульность":"Modularity", "Модули приложения":"App modules", "Отключайте функции, которые сейчас не нужны. Данные не удаляются: модуль можно включить обратно в любой момент.":"Turn off features you do not need right now. Data is not deleted: you can enable a module again at any time.", "Ядро, календарь и смены всегда включены. Зависимости включаются автоматически, чтобы приложение не ломалось.":"Core, calendar and shifts are always enabled. Dependencies are enabled automatically so the app stays consistent.", "включено":"enabled", "выключено":"disabled", "всегда включён":"always on", "зависит от":"depends on", "модули сохранены":"modules saved", "модули загружаются…":"modules are loading…", "модуль выключен":"module disabled", "включено модулей":"modules enabled", "snapshot модулей":"modules snapshot", "модули не загружены":"modules not loaded", "операция относится к выключенному модулю":"operation belongs to a disabled module", "Язык приложения":"App language", "Русский":"Russian", "Основной язык":"Main language", "Дополнительный язык":"Additional language", "Язык сохранён":"Language saved",
   "Персонализация":"Personalization", "Пресет":"Preset", "Готовая тема":"Theme preset", "Базовый режим":"Base mode", "Акцент":"Accent", "Точная настройка":"Fine tuning", "Фон приложения":"App background", "Карточки":"Cards", "Внутренние блоки":"Inner blocks", "Основной текст":"Primary text", "Вторичный текст":"Secondary text", "Границы":"Borders", "Стиль кнопок":"Button style", "Стиль карточек":"Card style", "Тени":"Shadows", "Плотность":"Density", "Скругление карточек":"Card radius", "Сохранить внешний вид":"Save appearance", "Сбросить локально":"Reset locally",
   "как в системе":"system", "тёмная":"dark", "светлая":"light", "заливка":"solid", "мягкие":"soft", "контурные":"outline", "призрачные":"ghost", "стандартные":"standard", "плоские":"flat", "контрастные":"contrast", "тёплые":"warm", "без теней":"no shadows", "лёгкие":"light", "средние":"medium", "сильные":"strong", "компактно":"compact", "обычно":"comfortable", "просторно":"spacious",
   "Время и регион":"Time and region", "Рабочее время и часовой пояс":"Working hours and timezone", "Регион / объект":"Region / site", "Рабочий часовой пояс":"Work timezone", "Определить часовой пояс":"Detect timezone", "Формат времени":"Time format", "Сохранить настройки":"Save settings",
@@ -1172,6 +1172,70 @@ function moduleEnabled(key){
 }
 function moduleTitle(m){ return state.language === "en" ? (m.titleEn || m.titleRu || m.key) : (m.titleRu || m.titleEn || m.key); }
 function moduleDescription(m){ return state.language === "en" ? (m.descriptionEn || m.descriptionRu || "") : (m.descriptionRu || m.descriptionEn || ""); }
+function moduleDisplayName(key){
+  const mod = (state.modulesList || []).find(m => m.key === key);
+  return mod ? moduleTitle(mod) : key;
+}
+function requireModuleEnabled(key){
+  if (!moduleEnabled(key)) {
+    const err = new Error(`${t("модуль выключен")}: ${moduleDisplayName(key)}`);
+    err.status = 403;
+    throw err;
+  }
+}
+function applyModulesFromBundle(bundle){
+  if (Array.isArray(bundle?.modules)) setModuleList(bundle.modules);
+}
+function sanitizeDayForModules(day = {}){
+  return {
+    shiftTypeId: day.shiftTypeId ?? null,
+    note: moduleEnabled("notes") ? (day.note ?? null) : null,
+    dayEmoji: day.dayEmoji ?? null,
+    overtimeHours: moduleEnabled("overtime") ? numOr0(day.overtimeHours) : 0,
+    timeOffHours: moduleEnabled("overtime") ? numOr0(day.timeOffHours) : 0,
+  };
+}
+function sanitizeCalendarBundleForModules(bundle){
+  if (!bundle || Array.isArray(bundle)) return bundle;
+  applyModulesFromBundle(bundle);
+  const clean = { ...bundle };
+  clean.modules = Array.isArray(bundle.modules) ? bundle.modules : (state.modulesList || []);
+  clean.days = (bundle.days || []).map(sanitizeDayForModules);
+  if (!moduleEnabled("tasks")) clean.tasks = [];
+  if (!moduleEnabled("important_dates")) clean.importantDays = [];
+  if (!moduleEnabled("overtime")) {
+    clean.overtime = { from:bundle.from, to:bundle.to, overtimeHours:0, timeOffHours:0, balanceHours:0 };
+    clean.overtimeAccount = { totalEarnedHours:0, totalUsedHours:0, balanceHours:0, credits:[], usages:[] };
+  }
+  if (!moduleEnabled("notifications")) {
+    clean.notificationSettings = null;
+    clean.reminders = [];
+  }
+  if (!moduleEnabled("scenarios") || !moduleEnabled("overtime")) clean.quickScenarios = [];
+  return clean;
+}
+function offlineOperationRequiredModules(item){
+  if (!item) return [];
+  if (item.type === "toggleTask") return ["tasks"];
+  if (item.type === "putDay") {
+    const day = item.payload?.day || {};
+    const modules = [];
+    if ((day.note || "").trim()) modules.push("notes");
+    if (Math.abs(numOr0(day.overtimeHours)) > 0.0001 || Math.abs(numOr0(day.timeOffHours)) > 0.0001) modules.push("overtime");
+    return modules;
+  }
+  return [];
+}
+function offlineOperationDisabledReason(item){
+  const disabled = offlineOperationRequiredModules(item).filter(key => !moduleEnabled(key));
+  return disabled.length ? disabled.map(moduleDisplayName).join(", ") : "";
+}
+function offlineModulesSummary(){
+  if (!state.modulesLoaded) return t("модули не загружены");
+  const visible = (state.modulesList || []).filter(m => !m.locked && !m.hidden);
+  const enabled = visible.filter(m => m.enabled).length;
+  return `${enabled}/${visible.length} ${t("включено")}`;
+}
 const DAY_PANEL_SECTIONS = [
   { id:"accShift", module:"shifts", titleRu:"Смена", titleEn:"Shift" },
   { id:"accEmoji", module:"core", titleRu:"Маркер", titleEn:"Marker" },
@@ -1258,6 +1322,7 @@ async function saveModuleEnabled(key, enabled){
   try {
     const list = await api.updateModules({ [key]: !!enabled });
     setModuleList(list);
+    await loadMonth();
     await refreshModuleAwareData();
     if (msg) { setProfileMsg("modulesMsg", t("модули сохранены"), true); setTimeout(() => setProfileMsg("modulesMsg", ""), 1800); }
   } catch (err) {
@@ -1445,7 +1510,7 @@ function uuid(){
 }
 function fmtSyncTime(iso){
   if (!iso) return t("нет синхронизации");
-  try { return new Intl.DateTimeFormat("ru-RU", { dateStyle:"short", timeStyle:"short" }).format(new Date(iso)); }
+  try { return new Intl.DateTimeFormat(currentLocale(), { dateStyle:"short", timeStyle:"short" }).format(new Date(iso)); }
   catch (_) { return String(iso).slice(0, 16).replace("T", " "); }
 }
 function syncAgeMs(iso){
@@ -1545,6 +1610,7 @@ function offlineDiagnosticsRows(queue, failed){
     ["IndexedDB", state.offline.cacheReady ? "доступна" : "недоступна", !!state.offline.cacheReady],
     ["Последняя синхронизация", state.offline.lastSyncAt ? `${fmtSyncTime(state.offline.lastSyncAt)} · ${fmtSyncAge(state.offline.lastSyncAt)}` : "ещё нет", !!state.offline.lastSyncAt],
     ["Возраст snapshot", state.offline.lastSyncAt ? fmtSyncAge(state.offline.lastSyncAt) : "нет локальной копии", state.offline.lastSyncAt ? !state.offline.stale : false],
+    ["snapshot модулей", offlineModulesSummary(), state.modulesLoaded],
     ["Очередь", `${queue.length} ожидает отправки`, queue.length === 0],
     ["Неудачные операции", `${failed.length} не применилось`, failed.length === 0],
     ["Sync lock", lock.label, !lock.active || lock.mine],
@@ -1560,7 +1626,7 @@ function renderOfflineDiagnostics(queue, failed){
   const rows = offlineDiagnosticsRows(queue || [], failed || []);
   box.innerHTML = rows.map(([label, value, ok]) => {
     const cls = ok === true ? " ok" : ok === false ? " warn" : "";
-    return `<div class="diagRow${cls}"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b></div>`;
+    return `<div class="diagRow${cls}"><span>${escapeHtml(t(label))}</span><b>${escapeHtml(t(value))}</b></div>`;
   }).join("");
 }
 
@@ -1577,6 +1643,8 @@ function offlineDiagnosticsReportText(){
     `Last sync: ${state.offline.lastSyncAt || "—"}`,
     `Snapshot age: ${state.offline.lastSyncAt ? fmtSyncAge(state.offline.lastSyncAt) : "—"}`,
     `Snapshot stale: ${!!state.offline.stale}`,
+    `Modules loaded: ${!!state.modulesLoaded}`,
+    `Modules enabled: ${JSON.stringify(state.modules || {})}`,
     `Queue pending: ${q}`,
     `Failed mutations: ${f}`,
     `Syncing: ${!!state.offline.syncing}`,
@@ -1655,7 +1723,8 @@ const dataLayer = {
   async writeSnapshot(bundle, y = state.y, m = state.m){
     if (!state.offline.cacheReady || !bundle) return;
     const savedAt = new Date().toISOString();
-    await offlineDb.put("snapshot", { key:OFFLINE_SNAPSHOT_KEY, y, m, savedAt, bundle });
+    const cleanBundle = sanitizeCalendarBundleForModules(bundle);
+    await offlineDb.put("snapshot", { key:OFFLINE_SNAPSHOT_KEY, y, m, savedAt, modules:cleanBundle?.modules || state.modulesList || [], bundle:cleanBundle });
     state.offline.lastSyncAt = savedAt;
     updateOfflineStatus();
   },
@@ -1663,7 +1732,7 @@ const dataLayer = {
     const snap = await this.readSnapshot();
     if (!snap?.bundle) return;
     const days = Array.isArray(snap.bundle.days) ? snap.bundle.days.slice() : [];
-    const clean = normalizeDay(day);
+    const clean = normalizeDay(sanitizeDayForModules(day));
     const idx = days.findIndex(x => x.date === date);
     const empty = !clean.shiftTypeId && !(clean.note || "").trim() && !(clean.dayEmoji || "").trim() && Math.abs(clean.overtimeHours) < 0.0001 && Math.abs(clean.timeOffHours) < 0.0001;
     if (empty && idx >= 0) days.splice(idx, 1);
@@ -1680,6 +1749,8 @@ const dataLayer = {
   },
   async enqueue(type, payload){
     if (!state.offline.cacheReady) throw new Error(t("Нет связи с сервером, а локальная очередь недоступна"));
+    const disabledReason = offlineOperationDisabledReason({ type, payload });
+    if (disabledReason) throw new Error(`${t("модуль выключен")}: ${disabledReason}`);
     await offlineDb.put("queue", { id:uuid(), type, payload, createdAt:new Date().toISOString(), attempts:0, lastError:null });
     await this.refreshQueueState();
     updateOfflineStatus();
@@ -1745,6 +1816,8 @@ const dataLayer = {
         stale:state.offline.stale,
         cacheReady:state.offline.cacheReady,
         storage:storageMeta,
+        modules:state.modulesList || [],
+        moduleMap:state.modules || {},
         browser:{
           userAgent:navigator.userAgent,
           language:navigator.language || null,
@@ -1767,6 +1840,7 @@ const dataLayer = {
     if (snap?.bundle) {
       hadCache = true;
       state.offline.lastSyncAt = snap.savedAt || null;
+      if (Array.isArray(snap.modules) && !Array.isArray(snap.bundle.modules)) snap.bundle.modules = snap.modules;
       applyBundle(snap.bundle, true);
       updateOfflineStatus();
       // Быстрый локальный рендер, пока сеть отвечает.
@@ -1794,15 +1868,16 @@ const dataLayer = {
     }
   },
   async putDay(date, day){
-    await this.updateSnapshotDay(date, day);
+    const cleanDay = sanitizeDayForModules(day);
+    await this.updateSnapshotDay(date, cleanDay);
     if (navigator.onLine) {
       try {
         await api.upsertDay(date, {
-          shiftTypeId: day.shiftTypeId ?? null,
-          note: day.note ?? null,
-          dayEmoji: day.dayEmoji ?? null,
-          overtimeHours: numOr0(day.overtimeHours),
-          timeOffHours: numOr0(day.timeOffHours),
+          shiftTypeId: cleanDay.shiftTypeId ?? null,
+          note: cleanDay.note ?? null,
+          dayEmoji: cleanDay.dayEmoji ?? null,
+          overtimeHours: numOr0(cleanDay.overtimeHours),
+          timeOffHours: numOr0(cleanDay.timeOffHours),
         });
         state.offline.online = true;
         updateOfflineStatus();
@@ -1812,10 +1887,11 @@ const dataLayer = {
       }
     }
     state.offline.online = false;
-    await this.enqueue("putDay", { date, day: normalizeDay(day) });
+    await this.enqueue("putDay", { date, day: normalizeDay(cleanDay) });
     return { queued:true };
   },
   async setTaskDone(taskId, done){
+    requireModuleEnabled("tasks");
     await this.updateSnapshotTaskDone(taskId, done);
     if (navigator.onLine) {
       try {
@@ -1850,6 +1926,10 @@ const dataLayer = {
       for (const item of items) {
         refreshOfflineSyncLock(lock);
         try {
+          const disabledReason = offlineOperationDisabledReason(item);
+          if (disabledReason) {
+            throw Object.assign(new Error(`${t("операция относится к выключенному модулю")}: ${disabledReason}`), { status:403 });
+          }
           if (item.type === "putDay") {
             await api.upsertDay(item.payload.date, item.payload.day);
           } else if (item.type === "toggleTask") {
@@ -3938,13 +4018,7 @@ async function toggleShift(id){
 }
 
 function applyLocal(k, next){
-  const clean = {
-    shiftTypeId: next.shiftTypeId ?? null,
-    note: next.note ?? null,
-    dayEmoji: next.dayEmoji ?? null,
-    overtimeHours: numOr0(next.overtimeHours),
-    timeOffHours: numOr0(next.timeOffHours),
-  };
+  const clean = sanitizeDayForModules(next);
   const hasOvertime = Math.abs(clean.overtimeHours) > 0.0001 || Math.abs(clean.timeOffHours) > 0.0001;
   if (!clean.shiftTypeId && !(clean.note || "").trim() && !(clean.dayEmoji || "").trim() && !hasOvertime) delete state.days[k];
   else state.days[k] = clean;
@@ -3958,12 +4032,13 @@ function applyLocal(k, next){
 async function pushDaySnapshot(k, payload){
   setSave("saving");
   try {
+    const cleanPayload = sanitizeDayForModules(payload);
     const res = await dataLayer.putDay(k, {
-      shiftTypeId: payload.shiftTypeId ?? null,
-      note: payload.note ?? null,
-      dayEmoji: payload.dayEmoji ?? null,
-      overtimeHours: numOr0(payload.overtimeHours),
-      timeOffHours: numOr0(payload.timeOffHours),
+      shiftTypeId: cleanPayload.shiftTypeId ?? null,
+      note: cleanPayload.note ?? null,
+      dayEmoji: cleanPayload.dayEmoji ?? null,
+      overtimeHours: numOr0(cleanPayload.overtimeHours),
+      timeOffHours: numOr0(cleanPayload.timeOffHours),
     });
     setSave(res.queued ? "saved" : "saved");
     if (res.queued) updateOfflineStatus();
@@ -4874,6 +4949,8 @@ document.querySelectorAll("[data-notif-shift-before]").forEach(btn => btn.addEve
 
 /* ─── Загрузка данных ───────────────────────────────────────── */
 function applyCalendarBundle(bundle){
+  applyModulesFromBundle(bundle);
+  bundle = sanitizeCalendarBundleForModules(bundle);
   if (Array.isArray(bundle)) {
     // На всякий случай оставлен fallback под старый endpoint.
     state.days = {};
