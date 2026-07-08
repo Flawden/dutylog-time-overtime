@@ -1,6 +1,6 @@
 # DutyLog Modules
 
-Status: v25.0.
+Status: v25.1.
 
 DutyLog is now a modular monolith. The application still ships as one Spring Boot backend and one web/PWA frontend, but user-facing features are grouped into modules that can be enabled or disabled per user.
 
@@ -74,3 +74,16 @@ The first v25.0 step guards major feature APIs and hides major UI blocks. Later 
 - module-aware offline snapshots;
 - first-run onboarding;
 - package-level boundaries under `ru.daniil.shifts.modules`.
+
+## v25.1 selected-day panel
+
+The selected-day panel is now module-aware. Each day block has an explicit module owner:
+
+- `shifts`: shift selector and schedule fill helpers.
+- `notes`: note editor and note calendar marker.
+- `tasks`: day task list and task calendar markers.
+- `overtime`: overtime/time-off controls and overtime balance markers.
+- `important_dates`: important-day list and star markers.
+- `notifications`: reminder markers.
+
+Disabling a module hides its day-panel block and prevents its calendar markers from rendering. The data is preserved and appears again when the module is re-enabled.

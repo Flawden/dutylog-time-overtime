@@ -1311,7 +1311,7 @@ html[lang="en"] body.offline #settings-scenarios::before{content:"Overtime templ
 html[lang="en"] body.offline #settings-notifications::before{content:"Notification settings require connection to the server."}
 html[lang="en"] body.offline #telegramBox::before{content:"Telegram integration can be configured only when connected to the server."}
 
-/* v25.0: module settings */
+/* v25.0/v25.1: module settings and module-aware day panel */
 .moduleHidden{display:none!important;}
 .moduleGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;margin-top:16px;}
 .moduleCard{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:12px;padding:14px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025);cursor:pointer;transition:.18s ease;}
@@ -1326,3 +1326,26 @@ html[lang="en"] body.offline #telegramBox::before{content:"Telegram integration 
 .moduleCard.on .moduleBadge{color:var(--ok);border-color:color-mix(in srgb,var(--ok) 42%,var(--line));background:color-mix(in srgb,var(--ok) 10%,rgba(255,255,255,.025));}
 .moduleCard.locked .moduleBadge{color:var(--mut);}
 @media(max-width:700px){.moduleCard{grid-template-columns:auto 1fr;}.moduleBadge{grid-column:2;justify-self:start;}}
+
+
+/* v25.1: module-aware selected-day panel */
+.dayPanelModule.moduleHidden{display:none!important;}
+.dayModulesHint{
+  margin-top:10px;
+  padding:10px 12px;
+  border:1px dashed color-mix(in srgb,var(--accent) 34%,var(--line));
+  border-radius:14px;
+  background:color-mix(in srgb,var(--accent) 7%,rgba(255,255,255,.02));
+  color:var(--mut);
+  font-size:12px;
+  line-height:1.45;
+}
+.dayModulesHint b{color:var(--text);}
+.dayModulesHint button{
+  margin-left:8px;
+  min-height:26px;
+  padding:4px 9px;
+  border-radius:999px;
+  font-size:12px;
+}
+@media(max-width:700px){.dayModulesHint button{display:block;margin:8px 0 0;}}

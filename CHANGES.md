@@ -1,3 +1,13 @@
+# v25.1 — Module-aware day panel
+
+- Selected-day panel sections now have explicit module ownership.
+- Disabled modules hide their day panel blocks through one module-aware registry instead of scattered ad-hoc toggles.
+- Calendar day markers now respect modules: notes, tasks, important dates, overtime and reminders no longer show when their module is off.
+- Day panel rendering skips disabled module renderers and avoids touching their controls.
+- Added an inline day-panel hint when blocks are hidden by disabled modules; data is not deleted and modules can be re-enabled in settings.
+- Fixed the note preview tab handler shadowing the translation function.
+- Frontend/backend/service-worker versions bumped to `25.1`.
+
 # v25.0 — User modules
 
 - Added modular-monolith foundation: backend module registry plus per-user module switches.

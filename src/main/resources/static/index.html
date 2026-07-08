@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=25.0" rel="stylesheet"/>
+<link href="app.css?v=25.1" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -49,14 +49,14 @@
 </div>
 <button aria-label="Закрыть" class="close" id="pClose">×</button>
 </div>
-<details class="acc" id="accShift" open="">
+<details class="acc dayPanelModule" data-day-module="shifts" id="accShift" open="">
 <summary><span class="accT">Смена</span><span class="accS" id="sumShift"></span></summary>
 <div class="accB">
 <div class="chips" id="chips"></div>
 
 </div>
 </details>
-<details class="acc" id="accEmoji">
+<details class="acc dayPanelModule" data-day-module="core" id="accEmoji">
 <summary><span class="accT">Маркер</span><span class="accS" id="sumEmoji"></span></summary>
 <div class="accB">
 <div class="dayEmojiBox">
@@ -70,7 +70,7 @@
 </div>
 </div>
 </details>
-<details class="acc" id="accSched">
+<details class="acc dayPanelModule" data-day-module="shifts" id="accSched">
 <summary><span class="accT">График</span><span class="accS" id="sumSched"></span></summary>
 <div class="accB">
 <div class="tplBox" id="tplBox">
@@ -93,7 +93,7 @@
 </div>
 </div>
 </details>
-<details class="acc" id="accOt">
+<details class="acc dayPanelModule" data-day-module="overtime" id="accOt">
 <summary><span class="accT">Переработка</span><span class="accS" id="sumOt"></span></summary>
 <div class="accB">
 <div class="ot">
@@ -152,7 +152,7 @@
 </div>
 </div>
 </details>
-<details class="acc" id="accImp">
+<details class="acc dayPanelModule" data-day-module="important_dates" id="accImp">
 <summary><span class="accT">Важные дни</span><span class="accS" id="sumImp"></span></summary>
 <div class="accB dayForm">
 <div class="importantList" id="importantList"></div>
@@ -174,7 +174,7 @@
 <div class="dayPanelHint">Важные дни добавляются прямо из выбранного дня. Для повтора выбирай: каждый год, каждый месяц или один раз.</div>
 </div>
 </details>
-<details class="acc" id="accTasks">
+<details class="acc dayPanelModule" data-day-module="tasks" id="accTasks">
 <summary><span class="accT">Задачи</span><span class="accS" id="sumTasks"></span></summary>
 <div class="accB dayForm">
 <div class="taskFilters">
@@ -203,7 +203,7 @@
 </div>
 </div>
 </details>
-<details class="acc" id="accNote">
+<details class="acc dayPanelModule" data-day-module="notes" id="accNote">
 <summary><span class="accT">Заметка</span><span class="accS" id="sumNote"></span></summary>
 <div class="accB">
 <div class="tabs">
@@ -218,6 +218,7 @@
 <div hidden="" id="notePrev"></div>
 </div>
 </details>
+<div class="dayModulesHint" id="dayModulesHint" hidden=""></div>
 </div>
 </div>
 </section>
@@ -768,7 +769,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v25.0</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v25.1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -834,6 +835,6 @@
     </div>
   </div>
 </div>
-<script src="app.js?v=25.0"></script>
+<script src="app.js?v=25.1"></script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "25.0"
+const DUTYLOG_VERSION = "25.1"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -734,6 +734,7 @@ function applyLanguage(lang){
   if (typeof updateShiftPlanHint === 'function') updateShiftPlanHint();
   if (typeof renderTelegramPanel === 'function') renderTelegramPanel();
   if (typeof renderModuleSettings === 'function') renderModuleSettings();
+  if (typeof renderSelectedDayModules === 'function') renderSelectedDayModules();
   applyLanguagePolish();
   translateStaticTree();
   applyLanguagePolish();
@@ -1171,16 +1172,61 @@ function moduleEnabled(key){
 }
 function moduleTitle(m){ return state.language === "en" ? (m.titleEn || m.titleRu || m.key) : (m.titleRu || m.titleEn || m.key); }
 function moduleDescription(m){ return state.language === "en" ? (m.descriptionEn || m.descriptionRu || "") : (m.descriptionRu || m.descriptionEn || ""); }
+const DAY_PANEL_SECTIONS = [
+  { id:"accShift", module:"shifts", titleRu:"Смена", titleEn:"Shift" },
+  { id:"accEmoji", module:"core", titleRu:"Маркер", titleEn:"Marker" },
+  { id:"accSched", module:"shifts", titleRu:"График", titleEn:"Schedule" },
+  { id:"accOt", module:"overtime", titleRu:"Переработка", titleEn:"Overtime" },
+  { id:"accImp", module:"important_dates", titleRu:"Важные дни", titleEn:"Important days" },
+  { id:"accTasks", module:"tasks", titleRu:"Задачи", titleEn:"Tasks" },
+  { id:"accNote", module:"notes", titleRu:"Заметка", titleEn:"Note" },
+];
+function dayPanelSectionEnabled(section){
+  return !section.module || section.module === "core" || moduleEnabled(section.module);
+}
+function setDayPanelSectionVisibility(){
+  const hidden = [];
+  for (const section of DAY_PANEL_SECTIONS) {
+    const el = $(section.id);
+    if (!el) continue;
+    const enabled = dayPanelSectionEnabled(section);
+    el.classList.toggle("moduleHidden", !enabled);
+    el.hidden = !enabled;
+    if (!enabled) {
+      el.open = false;
+      hidden.push(state.language === "en" ? section.titleEn : section.titleRu);
+    }
+  }
+  const hint = $("dayModulesHint");
+  if (hint) {
+    const optionalEnabled = DAY_PANEL_SECTIONS.some(s => !["core","shifts"].includes(s.module) && dayPanelSectionEnabled(s));
+    hint.hidden = !state.selected || hidden.length === 0;
+    if (!hint.hidden) {
+      hint.innerHTML = `<b>${esc(t("Скрытые блоки"))}:</b> ${esc(hidden.join(", "))}. ${esc(t("Отключённый модуль не удаляет данные — его можно включить обратно в настройках."))} <button type="button" id="dayModulesSettingsBtn">${esc(t("Настроить модули"))}</button>`;
+      $("dayModulesSettingsBtn")?.addEventListener("click", () => openSettingsSection("modules", true));
+      if (!optionalEnabled) hint.insertAdjacentHTML("beforeend", `<br>${esc(t("Сейчас включены только базовые блоки дня."))}`);
+    }
+  }
+}
+function renderSelectedDayModules(){
+  setDayPanelSectionVisibility();
+  if (!state.selected) return;
+  renderChips();
+  renderDayEmojiControls();
+  renderScheduleControls();
+  if (moduleEnabled("overtime")) renderOvertimeControls();
+  if (moduleEnabled("important_dates")) renderImportantDays();
+  if (moduleEnabled("tasks")) renderTasks();
+  if (moduleEnabled("notes")) setTab(state.tab || "edit");
+  updateAccSummaries();
+}
 function applyModuleVisibility(){
   const toggle = (el, enabled) => { if (el) el.classList.toggle("moduleHidden", !enabled); };
   toggle(document.querySelector('#tabbar a[data-view="overtime"]'), moduleEnabled("overtime"));
   toggle($("view-overtime"), moduleEnabled("overtime"));
   toggle(document.querySelector('#tabbar a[data-view="tasks"]'), moduleEnabled("tasks"));
   toggle($("view-tasks"), moduleEnabled("tasks"));
-  toggle($("accNote"), moduleEnabled("notes"));
-  toggle($("accTasks"), moduleEnabled("tasks"));
-  toggle($("accOt"), moduleEnabled("overtime"));
-  toggle($("accImp"), moduleEnabled("important_dates"));
+  setDayPanelSectionVisibility();
   document.querySelectorAll('.quickScenarioPanel').forEach(el => toggle(el, moduleEnabled("scenarios") && moduleEnabled("overtime")));
   toggle($("quickScenarioSettingsCard"), moduleEnabled("scenarios") && moduleEnabled("overtime"));
   toggle(document.querySelector('[data-settings-jump="scenarios"]'), moduleEnabled("scenarios") && moduleEnabled("overtime"));
@@ -1227,7 +1273,7 @@ async function refreshModuleAwareData(){
   if (moduleEnabled("scenarios")) { try { state.quickScenarios = await api.quickScenarios(); } catch (_) {} } else state.quickScenarios = [];
   if (moduleEnabled("telegram")) loadTelegramStatus(); else state.telegramStatus = null;
   renderCalendar();
-  if (state.selected) { renderTasks(); renderImportantDays(); renderOvertimeControls(); }
+  if (state.selected) renderSelectedDayModules();
 }
 function renderModuleSettings(){
   const grid = $("moduleSettingsGrid");
@@ -2011,6 +2057,11 @@ function renderCalendar(){
   const offset = (first.getDay() + 6) % 7;
   const count = new Date(state.y, state.m + 1, 0).getDate();
   const tk = todayKey();
+  const showNotes = moduleEnabled("notes");
+  const showTasks = moduleEnabled("tasks");
+  const showImportant = moduleEnabled("important_dates");
+  const showOvertime = moduleEnabled("overtime");
+  const showNotifications = moduleEnabled("notifications");
 
   for (let i = 0; i < offset; i++) {
     const c = document.createElement("div");
@@ -2030,7 +2081,7 @@ function renderCalendar(){
       bar.className = "bar"; bar.style.background = st.color;
       cell.appendChild(bar);
     }
-    if (entry?.note?.trim()) {
+    if (showNotes && entry?.note?.trim()) {
       const ear = document.createElement("div");
       ear.className = "ear";
       ear.style.borderTop = `14px solid ${st ? st.color : "var(--dim)"}`;
@@ -2053,20 +2104,20 @@ function renderCalendar(){
       nm.className = "shift"; nm.style.color = st.color; nm.textContent = st.name;
       cell.appendChild(nm);
     }
-    const ledgerBal = ledgerNetOf(k);
-    const legacyBal = numOr0(entry?.overtimeHours) - numOr0(entry?.timeOffHours);
+    const ledgerBal = showOvertime ? ledgerNetOf(k) : 0;
+    const legacyBal = showOvertime ? numOr0(entry?.overtimeHours) - numOr0(entry?.timeOffHours) : 0;
     const bal = Math.abs(ledgerBal) > 0.0001 ? ledgerBal : legacyBal;
-    if (Math.abs(bal) > 0.0001) {
+    if (showOvertime && Math.abs(bal) > 0.0001) {
       const ot = document.createElement("span");
       ot.className = "otMark";
       ot.textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)}ч`;
       cell.appendChild(ot);
     }
 
-    const important = importantOf(k);
-    const activeTasks = activeTasksOf(k);
-    const allTasks = tasksOf(k);
-    const reminders = remindersOf(k);
+    const important = showImportant ? importantOf(k) : [];
+    const activeTasks = showTasks ? activeTasksOf(k) : [];
+    const allTasks = showTasks ? tasksOf(k) : [];
+    const reminders = showNotifications ? remindersOf(k) : [];
     if (important.length || activeTasks.length || allTasks.length || reminders.length) {
       const marks = document.createElement("span");
       marks.className = "miniMarks";
@@ -2083,13 +2134,13 @@ function renderCalendar(){
         const tm = document.createElement("span");
         tm.className = "taskMark overdue";
         tm.textContent = "!!";
-        tm.title = `Просроченные задачи: ${overdueTasks.length}`;
+        tm.title = `${t("Просроченные задачи")}: ${overdueTasks.length}`;
         marks.appendChild(tm);
       } else if (activeTasks.length) {
         const tm = document.createElement("span");
         tm.className = "taskMark";
         tm.textContent = "!";
-        tm.title = `Невыполненные задачи: ${activeTasks.length}`;
+        tm.title = `${t("Невыполненные задачи")}: ${activeTasks.length}`;
         marks.appendChild(tm);
       } else if (allTasks.length) {
         const tm = document.createElement("span");
@@ -2102,7 +2153,7 @@ function renderCalendar(){
         const nm = document.createElement("span");
         nm.className = "notifyMark";
         nm.textContent = "🔔";
-        nm.title = `Напоминания: ${reminders.length}`;
+        nm.title = `${t("Напоминания")}: ${reminders.length}`;
         marks.appendChild(nm);
       }
       cell.appendChild(marks);
@@ -2116,8 +2167,10 @@ function renderCalendar(){
 function renderSummary(){
   const counts = {}; let hours = 0, overtime = 0, timeOff = 0;
   for (const [k, v] of Object.entries(state.days)) {
-    overtime += numOr0(v.overtimeHours);
-    timeOff += numOr0(v.timeOffHours);
+    if (moduleEnabled("overtime")) {
+      overtime += numOr0(v.overtimeHours);
+      timeOff += numOr0(v.timeOffHours);
+    }
     if (!v.shiftTypeId) continue;
     counts[v.shiftTypeId] = (counts[v.shiftTypeId] || 0) + 1;
     const st = state.shiftTypes.find(s => s.id === v.shiftTypeId);
@@ -2147,7 +2200,7 @@ function renderSummary(){
     el.appendChild(h);
   }
   const acc = state.overtimeAccount;
-  if (acc && (numOr0(acc.totalEarnedHours) > 0 || numOr0(acc.totalUsedHours) > 0)) {
+  if (moduleEnabled("overtime") && acc && (numOr0(acc.totalEarnedHours) > 0 || numOr0(acc.totalUsedHours) > 0)) {
     const global = document.createElement("span");
     global.className = "over";
     global.textContent = `общий остаток переработки: ${numOr0(acc.balanceHours) > 0 ? "+" : ""}${fmtHours(acc.balanceHours)} ч`;
@@ -2160,7 +2213,7 @@ function renderSummary(){
     s.style.color = "var(--dim)"; s.textContent = t("Смены ещё не отмечены. Выберите день в календаре.");
     el.appendChild(s);
   }
-  renderLedgerTable();
+  if (moduleEnabled("overtime")) renderLedgerTable();
 }
 
 /* ─── Панель дня ────────────────────────────────────────────── */
@@ -2174,15 +2227,10 @@ function selectDay(k){
     const date = new Date(y, m - 1, d);
     $("pWeekday").textContent = weekdayName((date.getDay() + 6) % 7);
     $("pDate").innerHTML = state.language === "en" ? `${monthNameGen(m - 1)} ${d} <span class="yr mono">${y}</span>` : `${d} ${monthNameGen(m - 1)} <span class="yr mono">${y}</span>`;
-    $("noteEdit").value = state.days[k]?.note || "";
-    resetOvertimeForms(k);
-    setTab("edit");
-    renderChips();
-    renderDayEmojiControls();
-    renderScheduleControls();
-    renderOvertimeControls();
-    renderImportantDays();
-    renderTasks();
+    if (moduleEnabled("notes")) $("noteEdit").value = state.days[k]?.note || "";
+    if (moduleEnabled("overtime")) resetOvertimeForms(k);
+    if (moduleEnabled("notes")) setTab("edit");
+    renderSelectedDayModules();
   }
   renderCalendar();
 }
@@ -2252,7 +2300,7 @@ async function applyScheduleTemplate(){
 }
 
 /* ─── Аккордеон панели дня ──────────────────────────────────── */
-const ACC_IDS = ["accShift", "accSched", "accOt", "accImp", "accTasks", "accNote"];
+const ACC_IDS = ["accShift", "accEmoji", "accSched", "accOt", "accImp", "accTasks", "accNote"];
 const ACC_STORE = "acc-open-v1";
 
 // Восстанавливаем, какие секции пользователь держал открытыми
@@ -2260,12 +2308,14 @@ const ACC_STORE = "acc-open-v1";
   let open = null;
   try { open = JSON.parse(localStorage.getItem(ACC_STORE)); } catch (e) { /* битые данные — дефолт */ }
   if (Array.isArray(open)) {
-    for (const id of ACC_IDS) $(id).open = open.includes(id);
+    for (const id of ACC_IDS) if ($(id)) $(id).open = open.includes(id);
   }
   for (const id of ACC_IDS) {
-    $(id).addEventListener("toggle", () => {
-      localStorage.setItem(ACC_STORE, JSON.stringify(ACC_IDS.filter(i => $(i).open)));
-      if (id === "accSched" && $(id).open) renderScheduleControls();
+    const el = $(id);
+    if (!el) continue;
+    el.addEventListener("toggle", () => {
+      localStorage.setItem(ACC_STORE, JSON.stringify(ACC_IDS.filter(i => $(i) && !$(i).hidden && $(i).open)));
+      if (id === "accSched" && el.open) renderScheduleControls();
     });
   }
 })();
@@ -2286,36 +2336,44 @@ function updateAccSummaries(){
   $("sumSched").textContent = tpl ? tpl.label : "";
 
   // Переработка: движение за день, иначе общий баланс
-  const dayNet = ledgerNetOf(k);
-  const bal = numOr0(state.overtimeAccount?.balanceHours);
-  $("sumOt").textContent = Math.abs(dayNet) > 0.001
-    ? `за день ${dayNet > 0 ? "+" : ""}${fmtHours(dayNet)} ч`
-    : `баланс ${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
-  $("sumOt").style.color = Math.abs(dayNet) > 0.001 ? "var(--accent)" : "";
+  if ($("sumOt")) {
+    if (moduleEnabled("overtime")) {
+      const dayNet = ledgerNetOf(k);
+      const bal = numOr0(state.overtimeAccount?.balanceHours);
+      $("sumOt").textContent = Math.abs(dayNet) > 0.001
+        ? `${t("за день")} ${dayNet > 0 ? "+" : ""}${fmtHours(dayNet)} ${state.language === "en" ? "h" : "ч"}`
+        : `${t("баланс")} ${bal > 0 ? "+" : ""}${fmtHours(bal)} ${state.language === "en" ? "h" : "ч"}`;
+      $("sumOt").style.color = Math.abs(dayNet) > 0.001 ? "var(--accent)" : "";
+    } else { $("sumOt").textContent = t("Скрыто модулем"); $("sumOt").style.color = ""; }
+  }
 
   // Важные дни
-  const imp = importantOf(k);
-  $("sumImp").innerHTML = imp.length
-    ? `<span style="color:var(--accent)">★ ${imp.length}</span>&nbsp;${esc(imp[0].title)}${imp.length > 1 ? "…" : ""}`
-    : "—";
+  if ($("sumImp")) {
+    const imp = moduleEnabled("important_dates") ? importantOf(k) : [];
+    $("sumImp").innerHTML = !moduleEnabled("important_dates")
+      ? esc(t("Скрыто модулем"))
+      : (imp.length ? `<span style="color:var(--accent)">★ ${imp.length}</span>&nbsp;${esc(imp[0].title)}${imp.length > 1 ? "…" : ""}` : "—");
+  }
 
   // Задачи: сделано/всего
-  const all = tasksOf(k);
-  const undone = activeTasksOf(k).length;
-  const overdue = overdueTasksOf(k).length;
-  $("sumTasks").textContent = all.length ? (overdue ? `${overdue} просроч. · ${all.length - undone}/${all.length}` : `${all.length - undone}/${all.length} сделано`) : "—";
-  $("sumTasks").style.color = overdue ? "var(--danger)" : (undone > 0 ? "var(--accent)" : "");
+  if ($("sumTasks")) {
+    const all = moduleEnabled("tasks") ? tasksOf(k) : [];
+    const undone = moduleEnabled("tasks") ? activeTasksOf(k).length : 0;
+    const overdue = moduleEnabled("tasks") ? overdueTasksOf(k).length : 0;
+    $("sumTasks").textContent = !moduleEnabled("tasks") ? t("Скрыто модулем") : (all.length ? (overdue ? `${overdue} ${t("просроч.")} · ${all.length - undone}/${all.length}` : `${all.length - undone}/${all.length} ${t("сделано")}`) : "—");
+    $("sumTasks").style.color = overdue ? "var(--danger)" : (undone > 0 ? "var(--accent)" : "");
+  }
 
   // Emoji-маркер
   const emoji = (state.days[k]?.dayEmoji || "").trim();
   if ($("sumEmoji")) $("sumEmoji").textContent = emoji || "—";
 
   // Заметка: первая строка
-  const note = (state.days[k]?.note || "").trim();
+  const note = moduleEnabled("notes") ? (state.days[k]?.note || "").trim() : "";
   const firstLine = note.split("\n")[0].replace(/^#+\s*/, "");
-  $("sumNote").textContent = note
+  if ($("sumNote")) $("sumNote").textContent = !moduleEnabled("notes") ? t("Скрыто модулем") : (note
     ? (firstLine.length > 34 ? firstLine.slice(0, 34) + "…" : firstLine)
-    : "—";
+    : "—");
 }
 
 $("tplPreset").addEventListener("change", renderScheduleControls);
@@ -2331,6 +2389,7 @@ function updateOvertimeBalanceLabel(){
 }
 
 function renderOvertimeControls(){
+  if (!moduleEnabled("overtime")) { updateAccSummaries(); return; }
   updateOvertimeBalanceLabel();
   renderOvertimeDayDetails();
   renderQuickScenarioContext();
@@ -2399,6 +2458,7 @@ function readIntInput(id){
 }
 
 function renderOvertimeDayDetails(){
+  if (!moduleEnabled("overtime")) return;
   const k = state.selected;
   const el = $("otDayDetails");
   if (!k || !el) return;
@@ -3326,6 +3386,7 @@ function renderImportantSettings(){
 }
 
 function renderImportantDays(){
+  if (!moduleEnabled("important_dates")) { updateAccSummaries(); return; }
   const box = $("importantList");
   if (!box || !state.selected) return;
   const items = importantOf(state.selected);
@@ -3363,6 +3424,7 @@ function renderImportantDays(){
 }
 
 async function addImportantDay(){
+  if (!moduleEnabled("important_dates")) return setSave("err", t("модуль выключен"));
   const k = $("impDate")?.value || state.selected;
   if (!k) return setSave("err", t("укажи дату важного дня"));
   const title = $("impTitle").value.trim();
@@ -3440,6 +3502,7 @@ function filteredTasksForSelected(){
   });
 }
 function renderTasks(){
+  if (!moduleEnabled("tasks")) { updateAccSummaries(); return; }
   const box = $("taskList");
   if (!box || !state.selected) return;
   renderTaskCategoryFilter();
@@ -3525,6 +3588,7 @@ function upsertTaskInMaps(task){
 }
 
 async function addTask(){
+  if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
   const k = state.selected;
   if (!k) return;
   const text = $("taskText").value.trim();
@@ -3569,6 +3633,7 @@ async function updateTaskDetails(id, patch){
 }
 
 async function toggleTask(id, done){
+  if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
   setSave("saving");
   const oldTask = Object.values(state.tasksByDate).flat().find(t => Number(t.id) === Number(id)) || null;
   if (oldTask) upsertTaskInMaps({ ...oldTask, done: !!done });
@@ -3596,6 +3661,7 @@ async function toggleTask(id, done){
 }
 
 async function removeTask(id){
+  if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
   if (!confirm(t("Удалить задачу?"))) return;
   setSave("saving");
   try {
@@ -3932,6 +3998,7 @@ async function flushPendingSave(){
 }
 
 $("noteEdit").addEventListener("input", () => {
+  if (!moduleEnabled("notes")) return;
   const k = state.selected;
   if (!k) return;
   const cur = state.days[k] || {};
@@ -3948,13 +4015,13 @@ $("noteEdit").addEventListener("input", () => {
   scheduleDaySave(k, next);
 });
 
-function setTab(t){
-  state.tab = t;
-  $("tabEdit").classList.toggle("on", t === "edit");
-  $("tabPrev").classList.toggle("on", t === "preview");
-  $("noteEdit").hidden = t !== "edit";
-  $("notePrev").hidden = t !== "preview";
-  if (t === "preview") {
+function setTab(tabName){
+  state.tab = tabName;
+  $("tabEdit").classList.toggle("on", tabName === "edit");
+  $("tabPrev").classList.toggle("on", tabName === "preview");
+  $("noteEdit").hidden = tabName !== "edit";
+  $("notePrev").hidden = tabName !== "preview";
+  if (tabName === "preview") {
     const note = $("noteEdit").value;
     $("notePrev").innerHTML = note.trim() ? renderMd(note) : `<span class="empty">${esc(t("Заметка пустая — нечего показывать."))}</span>`;
   }
@@ -4866,7 +4933,7 @@ async function init(){
     await loadModules();
     state.shiftTypes = await api.shiftTypes();
     state.quickScenarios = moduleEnabled("scenarios") ? await api.quickScenarios() : [];
-    await refreshImportantSettings();
+    if (moduleEnabled("important_dates")) await refreshImportantSettings();
   } catch (err) {
     console.error(err);
     if (err.status === 401) return; // при 401 нас уже уносит на login.html
@@ -4927,6 +4994,7 @@ function renderNoteFsPrev(){
 }
 
 function openNoteFullscreen(){
+  if (!moduleEnabled("notes")) return;
   if (!state.selected) return;
   $("noteFsEdit").value = $("noteEdit").value;
   $("noteFsDate").textContent = ($("pWeekday")?.textContent || "") + " · " + ($("pDate")?.textContent || state.selected);
