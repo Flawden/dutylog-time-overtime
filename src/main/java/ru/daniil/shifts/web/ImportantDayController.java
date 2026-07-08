@@ -9,6 +9,7 @@ import ru.daniil.shifts.dto.Dtos.ImportantDayOccurrenceDto;
 import ru.daniil.shifts.dto.Dtos.ImportantDayUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CurrentUserService;
+import ru.daniil.shifts.service.ModuleService;
 import ru.daniil.shifts.service.DayEntryService;
 import ru.daniil.shifts.service.ImportantDayService;
 
@@ -20,13 +21,16 @@ import java.util.List;
 @RequestMapping("/api/important-days")
 public class ImportantDayController {
     private final CurrentUserService currentUserService;
+    private final ModuleService moduleService;
     private final DayEntryService dayEntryService;
     private final ImportantDayService importantDayService;
 
     public ImportantDayController(CurrentUserService currentUserService,
+                          ModuleService moduleService,
                                   DayEntryService dayEntryService,
                                   ImportantDayService importantDayService) {
         this.currentUserService = currentUserService;
+        this.moduleService = moduleService;
         this.dayEntryService = dayEntryService;
         this.importantDayService = importantDayService;
     }
@@ -35,6 +39,7 @@ public class ImportantDayController {
     @GetMapping
     public List<ImportantDayDto> list(Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.IMPORTANT_DATES);
         return importantDayService.list(current);
     }
 
@@ -44,6 +49,7 @@ public class ImportantDayController {
                                                        @RequestParam("to") String to,
                                                        Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.IMPORTANT_DATES);
         LocalDate fromDate = dayEntryService.parseDate(from, "Дата from должна быть в формате yyyy-MM-dd");
         LocalDate toDate = dayEntryService.parseDate(to, "Дата to должна быть в формате yyyy-MM-dd");
         return importantDayService.occurrences(current, fromDate, toDate);
@@ -53,6 +59,7 @@ public class ImportantDayController {
     public ImportantDayDto create(@Valid @RequestBody(required = false) ImportantDayCreateRequest req,
                                   Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.IMPORTANT_DATES);
         return importantDayService.create(current, req);
     }
 
@@ -61,12 +68,14 @@ public class ImportantDayController {
                                   @Valid @RequestBody(required = false) ImportantDayUpdateRequest req,
                                   Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.IMPORTANT_DATES);
         return importantDayService.update(current, id, req);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") Long id, Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.IMPORTANT_DATES);
         importantDayService.delete(current, id);
         return ResponseEntity.noContent().build();
     }

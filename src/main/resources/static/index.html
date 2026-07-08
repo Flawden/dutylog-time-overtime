@@ -7,7 +7,7 @@
 <title>DutyLog: Time & Overtime</title>
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=24.0.4" rel="stylesheet"/>
+<link href="app.css?v=25.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="wrap">
@@ -303,6 +303,7 @@
     <div class="settingsIndexTitle">Настройки</div>
     <a data-settings-jump="profile" href="#settings-profile"><b>Профиль</b><span>имя, пароль, Telegram</span></a>
     <a data-settings-jump="language" href="#settings-language"><b>Язык</b><span>русский / English</span></a>
+    <a data-settings-jump="modules" href="#settings-modules"><b>Модули</b><span>включить нужные функции</span></a>
     <a data-settings-jump="appearance" href="#settings-appearance"><b>Внешний вид</b><span>тема, акцент, маркеры</span></a>
     <a data-settings-jump="time" href="#settings-time"><b>Время</b><span>регион, пояс, дефолты</span></a>
     <a data-settings-jump="shifts" href="#settings-shifts"><b>Смены</b><span>типы, часы, уведомления</span></a>
@@ -355,7 +356,7 @@
 <div class="profileSub">Активные устройства</div>
 <div class="sessionsList" id="sessionsList"><span class="emptyLine">загрузка…</span></div>
 
-<div class="profileSub">Telegram-бот</div>
+<div class="profileSub" id="telegramProfileTitle">Telegram-бот</div>
 <div class="telegramBox" id="telegramBox">
   <div class="telegramStatus" id="telegramStatus">загрузка…</div>
   <div class="settingsHint">Создайте код привязки и отправьте его Telegram-боту командой /start DL-123456.</div>
@@ -387,6 +388,20 @@
 </div>
 <div class="profileMsg" id="languageMsg"></div>
 <div class="settingsHint">Перевод сделан безопасным словарём приложения: пользовательский JS/CSS не используется, язык не влияет на роли и тариф.</div>
+</div>
+<div class="settingsCard" id="modulesCard" data-settings-section="modules">
+<a class="settingsAnchor" id="settings-modules"></a>
+<div class="settingsHead">
+<div>
+<div class="eyebrow">Модульность</div>
+<div class="settingsTitle">Модули приложения</div>
+<div class="settingsHint">Отключайте функции, которые сейчас не нужны. Данные не удаляются: модуль можно включить обратно в любой момент.</div>
+</div>
+<div class="status statusMetrics" id="modulesStatus">—</div>
+</div>
+<div class="moduleGrid" id="moduleSettingsGrid"></div>
+<div class="profileMsg" id="modulesMsg"></div>
+<div class="settingsHint">Ядро, календарь и смены всегда включены. Зависимости включаются автоматически, чтобы приложение не ломалось.</div>
 </div>
 <div class="settingsCard" id="appearanceCard" data-settings-section="appearance">
 <a class="settingsAnchor" id="settings-appearance"></a>
@@ -753,7 +768,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v24.0.4</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v25.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -819,6 +834,6 @@
     </div>
   </div>
 </div>
-<script src="app.js?v=24.0.4"></script>
+<script src="app.js?v=25.0"></script>
 </body>
 </html>

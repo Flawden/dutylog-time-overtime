@@ -54,6 +54,24 @@ public final class Dtos {
         }
     }
 
+
+    /** Модуль приложения: UI может скрыть отключённые возможности, backend охраняет API. */
+    public record ModuleDto(
+            String key,
+            String titleRu,
+            String titleEn,
+            String descriptionRu,
+            String descriptionEn,
+            boolean enabled,
+            boolean locked,
+            boolean defaultEnabled,
+            List<String> dependencies,
+            boolean hidden
+    ) {}
+
+    /** Безопасное обновление модулей: ключи берутся только из backend registry. */
+    public record ModuleSettingsUpdateRequest(Map<String, Boolean> enabled) {}
+
     /** Тип смены наружу. */
     public record ShiftTypeDto(
             Long id,

@@ -12,6 +12,7 @@ import ru.daniil.shifts.dto.Dtos.NotificationSettingsDto;
 import ru.daniil.shifts.dto.Dtos.NotificationSettingsUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CurrentUserService;
+import ru.daniil.shifts.service.ModuleService;
 import ru.daniil.shifts.service.NotificationService;
 
 import java.security.Principal;
@@ -22,22 +23,27 @@ import java.util.List;
 @RequestMapping("/api/notifications")
 public class NotificationController {
     private final CurrentUserService currentUserService;
+    private final ModuleService moduleService;
     private final NotificationService notificationService;
 
-    public NotificationController(CurrentUserService currentUserService, NotificationService notificationService) {
+    public NotificationController(CurrentUserService currentUserService,
+                          ModuleService moduleService, NotificationService notificationService) {
         this.currentUserService = currentUserService;
+        this.moduleService = moduleService;
         this.notificationService = notificationService;
     }
 
     @GetMapping("/settings")
     public NotificationSettingsDto settings(Principal principal) {
         AppUser user = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(user, ModuleService.NOTIFICATIONS);
         return notificationService.settings(user);
     }
 
     @PatchMapping("/settings")
     public NotificationSettingsDto update(@Valid @RequestBody NotificationSettingsUpdateRequest req, Principal principal) {
         AppUser user = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(user, ModuleService.NOTIFICATIONS);
         return notificationService.update(user, req);
     }
 
@@ -47,6 +53,7 @@ public class NotificationController {
                                                   @RequestParam(name = "includePast", defaultValue = "true") boolean includePast,
                                                   Principal principal) {
         AppUser user = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(user, ModuleService.NOTIFICATIONS);
         LocalDate fromDate = notificationService.parseDate(from, "Дата from должна быть в формате yyyy-MM-dd");
         LocalDate toDate = notificationService.parseDate(to, "Дата to должна быть в формате yyyy-MM-dd");
         return notificationService.upcoming(user, fromDate, toDate, includePast);
@@ -55,6 +62,7 @@ public class NotificationController {
     @GetMapping("/tomorrow")
     public List<NotificationReminderDto> tomorrow(Principal principal) {
         AppUser user = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(user, ModuleService.NOTIFICATIONS);
         return notificationService.tomorrow(user);
     }
 }

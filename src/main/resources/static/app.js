@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "24.0.4"
+const DUTYLOG_VERSION = "25.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -38,6 +38,9 @@ const state = {
   adminUsersPage: { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false },
   preferences: { themePreference:"system", accentColor:"#F5B841" },
   language: initialLanguage(),
+  modulesLoaded: false,
+  modulesList: [],
+  modules: { core:true, calendar:true, shifts:true, notes:true, tasks:true, overtime:true, important_dates:true, notifications:true, telegram:false, scenarios:true, admin:false },
   activeScenarioId: null,
   ledgerFilters: { from:"", to:"", status:"all", q:"" },
   ledgerPage: { items: [], page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false },
@@ -129,13 +132,13 @@ const DEFAULT_APPEARANCE = { themePreference:"system", accentColor:"#F5B841", th
 
 
 const I18N_EN = {
-  "Настройки":"Settings", "Профиль":"Profile", "Язык":"Language", "русский / English":"Russian / English",
+  "Настройки":"Settings", "Профиль":"Profile", "Язык":"Language", "Модули":"Modules", "русский / English":"Russian / English", "включить нужные функции":"enable needed features",
   "Внешний вид":"Appearance", "Время":"Time", "Смены":"Shifts", "Сценарии":"Scenarios", "Уведомления":"Notifications", "Важные даты":"Important dates",
   "имя, пароль, Telegram":"name, password, Telegram", "тема, акцент, маркеры":"theme, accent, markers", "регион, пояс, дефолты":"region, timezone, defaults", "типы, часы, уведомления":"types, hours, notifications", "шаблоны переработок":"overtime templates", "браузер и расписания":"browser and schedules", "общий список событий":"shared event list",
   "развернуть всё":"expand all", "свернуть всё":"collapse all", "открыть":"open", "свернуть":"collapse",
   "Профиль пользователя":"User profile", "Отображаемое имя":"Display name", "День рождения":"Birthday", "Сохранить":"Save",
   "Смена пароля":"Change password", "Текущий пароль":"Current password", "Новый пароль":"New password", "Ещё раз":"Repeat", "Сменить пароль":"Change password", "Активные устройства":"Active devices", "Telegram-бот":"Telegram bot",
-  "Интерфейс":"Interface", "Язык приложения":"App language", "Русский":"Russian", "Основной язык":"Main language", "Дополнительный язык":"Additional language", "Язык сохранён":"Language saved",
+  "Интерфейс":"Interface", "Модульность":"Modularity", "Модули приложения":"App modules", "Отключайте функции, которые сейчас не нужны. Данные не удаляются: модуль можно включить обратно в любой момент.":"Turn off features you do not need right now. Data is not deleted: you can enable a module again at any time.", "Ядро, календарь и смены всегда включены. Зависимости включаются автоматически, чтобы приложение не ломалось.":"Core, calendar and shifts are always enabled. Dependencies are enabled automatically so the app stays consistent.", "включено":"enabled", "выключено":"disabled", "всегда включён":"always on", "зависит от":"depends on", "модули сохранены":"modules saved", "модули загружаются…":"modules are loading…", "модуль выключен":"module disabled", "включено модулей":"modules enabled", "Язык приложения":"App language", "Русский":"Russian", "Основной язык":"Main language", "Дополнительный язык":"Additional language", "Язык сохранён":"Language saved",
   "Персонализация":"Personalization", "Пресет":"Preset", "Готовая тема":"Theme preset", "Базовый режим":"Base mode", "Акцент":"Accent", "Точная настройка":"Fine tuning", "Фон приложения":"App background", "Карточки":"Cards", "Внутренние блоки":"Inner blocks", "Основной текст":"Primary text", "Вторичный текст":"Secondary text", "Границы":"Borders", "Стиль кнопок":"Button style", "Стиль карточек":"Card style", "Тени":"Shadows", "Плотность":"Density", "Скругление карточек":"Card radius", "Сохранить внешний вид":"Save appearance", "Сбросить локально":"Reset locally",
   "как в системе":"system", "тёмная":"dark", "светлая":"light", "заливка":"solid", "мягкие":"soft", "контурные":"outline", "призрачные":"ghost", "стандартные":"standard", "плоские":"flat", "контрастные":"contrast", "тёплые":"warm", "без теней":"no shadows", "лёгкие":"light", "средние":"medium", "сильные":"strong", "компактно":"compact", "обычно":"comfortable", "просторно":"spacious",
   "Время и регион":"Time and region", "Рабочее время и часовой пояс":"Working hours and timezone", "Регион / объект":"Region / site", "Рабочий часовой пояс":"Work timezone", "Определить часовой пояс":"Detect timezone", "Формат времени":"Time format", "Сохранить настройки":"Save settings",
@@ -730,6 +733,7 @@ function applyLanguage(lang){
   if (typeof renderCalendar === 'function') renderCalendar();
   if (typeof updateShiftPlanHint === 'function') updateShiftPlanHint();
   if (typeof renderTelegramPanel === 'function') renderTelegramPanel();
+  if (typeof renderModuleSettings === 'function') renderModuleSettings();
   applyLanguagePolish();
   translateStaticTree();
   applyLanguagePolish();
@@ -1111,6 +1115,8 @@ const api = {
   async month(y, m)         { const r = monthFromTo(y, m); return jfetch(`/api/calendar?from=${r.from}&to=${r.to}`); },
   async upsertDay(k, b)     { return jfetch(`/api/days/${k}`, { method:"PUT", body:b }); },
   async fillDays(b)        { return jfetch("/api/days/fill", { method:"POST", body:b }); },
+  async modules()          { return jfetch("/api/modules"); },
+  async updateModules(enabled) { return jfetch("/api/modules", { method:"PATCH", body:{ enabled } }); },
   async createTask(b)      { return jfetch("/api/tasks", { method:"POST", body:b }); },
   async updateTask(id, b)  { return jfetch(`/api/tasks/${id}`, { method:"PATCH", body:b }); },
   async deleteTask(id)     { return jfetch(`/api/tasks/${id}`, { method:"DELETE" }); },
@@ -1148,6 +1154,105 @@ const api = {
   async registrationSettings() { return jfetch("/api/admin/settings/registration"); },
   async updateRegistrationSettings(enabled) { return jfetch("/api/admin/settings/registration", { method:"PATCH", body:{ enabled } }); },
 };
+
+const MODULE_KEYS = ["core","calendar","shifts","notes","tasks","overtime","important_dates","notifications","telegram","scenarios","admin"];
+function setModuleList(list){
+  state.modulesList = Array.isArray(list) ? list.filter(m => !m.hidden) : [];
+  const map = { ...state.modules };
+  for (const m of state.modulesList) map[m.key] = !!m.enabled;
+  state.modules = map;
+  state.modulesLoaded = true;
+  applyModuleVisibility();
+}
+function moduleEnabled(key){
+  if (!key || key === "core") return true;
+  if (!state.modulesLoaded) return true;
+  return state.modules[key] !== false;
+}
+function moduleTitle(m){ return state.language === "en" ? (m.titleEn || m.titleRu || m.key) : (m.titleRu || m.titleEn || m.key); }
+function moduleDescription(m){ return state.language === "en" ? (m.descriptionEn || m.descriptionRu || "") : (m.descriptionRu || m.descriptionEn || ""); }
+function applyModuleVisibility(){
+  const toggle = (el, enabled) => { if (el) el.classList.toggle("moduleHidden", !enabled); };
+  toggle(document.querySelector('#tabbar a[data-view="overtime"]'), moduleEnabled("overtime"));
+  toggle($("view-overtime"), moduleEnabled("overtime"));
+  toggle(document.querySelector('#tabbar a[data-view="tasks"]'), moduleEnabled("tasks"));
+  toggle($("view-tasks"), moduleEnabled("tasks"));
+  toggle($("accNote"), moduleEnabled("notes"));
+  toggle($("accTasks"), moduleEnabled("tasks"));
+  toggle($("accOt"), moduleEnabled("overtime"));
+  toggle($("accImp"), moduleEnabled("important_dates"));
+  document.querySelectorAll('.quickScenarioPanel').forEach(el => toggle(el, moduleEnabled("scenarios") && moduleEnabled("overtime")));
+  toggle($("quickScenarioSettingsCard"), moduleEnabled("scenarios") && moduleEnabled("overtime"));
+  toggle(document.querySelector('[data-settings-jump="scenarios"]'), moduleEnabled("scenarios") && moduleEnabled("overtime"));
+  toggle($("notifyCard"), moduleEnabled("notifications"));
+  toggle(document.querySelector('[data-settings-jump="notifications"]'), moduleEnabled("notifications"));
+  toggle($("importantSettingsCard"), moduleEnabled("important_dates"));
+  toggle(document.querySelector('[data-settings-jump="important"]'), moduleEnabled("important_dates"));
+  toggle($("telegramProfileTitle"), moduleEnabled("telegram"));
+  toggle($("telegramBox"), moduleEnabled("telegram"));
+  if (location.hash === "#tasks" && !moduleEnabled("tasks")) location.hash = "#calendar";
+  if (location.hash === "#overtime" && !moduleEnabled("overtime")) location.hash = "#calendar";
+  if (location.hash === "#settings-scenarios" && !moduleEnabled("scenarios")) location.hash = "#settings-modules";
+  if (location.hash === "#settings-notifications" && !moduleEnabled("notifications")) location.hash = "#settings-modules";
+  if (location.hash === "#settings-important" && !moduleEnabled("important_dates")) location.hash = "#settings-modules";
+  renderModuleSettings();
+}
+async function loadModules(){
+  try {
+    const list = await api.modules();
+    setModuleList(list);
+  } catch (err) {
+    console.warn("modules unavailable", err);
+    state.modulesLoaded = false;
+  }
+}
+async function saveModuleEnabled(key, enabled){
+  const msg = $("modulesMsg");
+  if (msg) setProfileMsg("modulesMsg", t("сохраняю…"), true);
+  try {
+    const list = await api.updateModules({ [key]: !!enabled });
+    setModuleList(list);
+    await refreshModuleAwareData();
+    if (msg) { setProfileMsg("modulesMsg", t("модули сохранены"), true); setTimeout(() => setProfileMsg("modulesMsg", ""), 1800); }
+  } catch (err) {
+    console.error(err);
+    if (msg) setProfileMsg("modulesMsg", err.message || t("ошибка"));
+  }
+}
+async function refreshModuleAwareData(){
+  if (moduleEnabled("important_dates")) await refreshImportantSettings(); else { state.importantDays = []; state.importantByDate = {}; }
+  if (moduleEnabled("tasks")) await loadTaskBoard(true); else { state.tasksByDate = {}; state.taskBoard.items = []; }
+  if (moduleEnabled("overtime")) await loadLedgerPage(true); else { state.ledgerPage.items = []; state.overtimeAccount = { totalEarnedHours:0,totalUsedHours:0,balanceHours:0,credits:[],usages:[] }; }
+  if (moduleEnabled("notifications")) await showMonthNotifications(); else { state.reminders=[]; state.remindersByDate={}; state.notificationSettings=null; }
+  if (moduleEnabled("scenarios")) { try { state.quickScenarios = await api.quickScenarios(); } catch (_) {} } else state.quickScenarios = [];
+  if (moduleEnabled("telegram")) loadTelegramStatus(); else state.telegramStatus = null;
+  renderCalendar();
+  if (state.selected) { renderTasks(); renderImportantDays(); renderOvertimeControls(); }
+}
+function renderModuleSettings(){
+  const grid = $("moduleSettingsGrid");
+  if (!grid) return;
+  const list = (state.modulesList || []).filter(m => !["core","calendar","shifts","admin"].includes(m.key) || m.key === "admin");
+  if (!list.length) { grid.innerHTML = `<div class="settingsHint">${esc(t("модули загружаются…"))}</div>`; return; }
+  const enabledCount = list.filter(m => m.enabled).length;
+  const status = $("modulesStatus");
+  if (status) {
+    status.className = "status statusMetrics";
+    status.innerHTML = `<span class="statusChip statusChipOk"><b>${enabledCount}</b> ${esc(t("включено модулей"))}</span>`;
+  }
+  grid.innerHTML = "";
+  for (const m of list) {
+    const card = document.createElement("label");
+    card.className = "moduleCard" + (m.enabled ? " on" : "") + (m.locked ? " locked" : "");
+    const deps = (m.dependencies || []).filter(d => !["core","calendar","shifts"].includes(d));
+    card.innerHTML = `
+      <input type="checkbox" ${m.enabled ? "checked" : ""} ${m.locked ? "disabled" : ""} data-module-toggle="${esc(m.key)}"/>
+      <span class="moduleMain"><b>${esc(moduleTitle(m))}</b><span>${esc(moduleDescription(m))}</span>${deps.length ? `<small>${esc(t("зависит от"))}: ${esc(deps.join(", "))}</small>` : ""}</span>
+      <span class="moduleBadge">${esc(m.locked ? t("всегда включён") : (m.enabled ? t("включено") : t("выключено")))}</span>`;
+    grid.appendChild(card);
+  }
+  grid.querySelectorAll('[data-module-toggle]').forEach(input => input.addEventListener('change', e => saveModuleEnabled(e.target.dataset.moduleToggle, e.target.checked)));
+}
 
 function normalizePageResponse(res, fallbackSize = 50) {
   if (Array.isArray(res)) {
@@ -1208,6 +1313,7 @@ function offlineRequiredMessage(url){
   if (url.startsWith("/api/notifications")) return "Настройки уведомлений требуют связи с сервером.";
   if (url.startsWith("/api/telegram")) return "Telegram-интеграция настраивается только при подключении к серверу.";
   if (url.startsWith("/api/profile")) return "Профиль и сессии меняются только при подключении к серверу.";
+  if (url.startsWith("/api/modules")) return "Настройки модулей меняются только при подключении к серверу.";
   if (url.startsWith("/api/important-days")) return "Важные даты меняются только при подключении к серверу.";
   if (url.startsWith("/api/admin")) return "Админские настройки меняются только при подключении к серверу.";
   return "Эта операция требует связи с сервером. Смена дня, заметки и галочки задач сохраняются оффлайн.";
@@ -1240,6 +1346,11 @@ async function jfetch(url, opts = {}) {
     try {
       const body = await res.json();
       if (body?.error) msg = body.error;
+      if (String(msg).startsWith("MODULE_DISABLED:")) {
+        const key = String(msg).split(":")[1] || "";
+        const mod = (state.modulesList || []).find(m => m.key === key);
+        msg = `${t("модуль выключен")}: ${mod ? moduleTitle(mod) : key}`;
+      }
     } catch (_) { /* ответ был не JSON */ }
     const err = new Error(msg);
     err.status = res.status;
@@ -1703,7 +1814,7 @@ const dataLayer = {
           await offlineDb.delete("queue", item.id);
         } catch (err) {
           if (err.status === 401) throw err;
-          if (err.status === 400 || err.status === 404 || err.status === 409) {
+          if (err.status === 400 || err.status === 403 || err.status === 404 || err.status === 409) {
             failed.push({ ...item, failedAt:new Date().toISOString(), lastError:err.message || "операция не применена" });
             await offlineDb.delete("queue", item.id);
             continue;
@@ -1726,7 +1837,7 @@ const dataLayer = {
         renderNotifications();
         renderCalendar();
         if (state.selected) { renderChips(); renderTasks(); renderImportantDays(); }
-        await loadTaskBoard(true);
+        if (moduleEnabled("tasks")) await loadTaskBoard(true);
       }
       state.offline.online = true;
     } catch (err) {
@@ -3020,6 +3131,11 @@ function renderLedgerTable(){
 }
 
 async function loadLedgerPage(silent = true){
+  if (!moduleEnabled("overtime")) {
+    state.ledgerPage = { items:[], page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false };
+    renderLedgerTable();
+    return;
+  }
   try {
     const f = state.ledgerFilters || {};
     const page = state.ledgerPage || { page:0, size:50 };
@@ -3162,6 +3278,7 @@ for (const id of ["creditDate", "creditTimeRange", "creditStart", "creditEnd", "
 
 /* ─── Важные дни ───────────────────────────────────────────── */
 async function refreshImportantSettings(){
+  if (!moduleEnabled("important_dates")) { state.importantDays = []; renderImportantSettings(); return; }
   try {
     state.importantDays = await api.importantDays();
     renderImportantSettings();
@@ -3520,6 +3637,12 @@ function syncTaskBoardFiltersToInputs(){
   if ($("taskBoardTo")) $("taskBoardTo").value = f.to || "";
 }
 async function loadTaskBoard(silent = true){
+  if (!moduleEnabled("tasks")) {
+    state.taskBoard.items = [];
+    state.taskBoard.page = { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false };
+    renderTaskBoard();
+    return;
+  }
   try {
     const f = state.taskBoard.filters;
     const page = state.taskBoard.page || { page:0, size:50 };
@@ -4037,8 +4160,9 @@ async function goto(y, m){
   state.selected = null;
   $("panel").hidden = true; $("layout").classList.remove("with-panel");
   await loadMonth();
-  await loadLedgerPage(true);
-  await loadTaskBoard(true);
+  if (moduleEnabled("overtime")) await loadLedgerPage(true);
+  if (moduleEnabled("tasks")) await loadTaskBoard(true);
+  applyModuleVisibility();
   renderCalendar();
 }
 $("prev").addEventListener("click", () => goto(state.y, state.m - 1));
@@ -4542,8 +4666,10 @@ function renderSettingsPanels(){
   renderCustomList();
   renderImportantSettings();
   renderNotifications();
+  renderModuleSettings();
+  applyModuleVisibility();
   renderTelegramPanel();
-  loadTelegramStatus();
+  if (moduleEnabled("telegram")) loadTelegramStatus();
 }
 
 /* ─── Уведомления ───────────────────────────────────────────── */
@@ -4570,6 +4696,7 @@ function renderNotifyStatus(count){
   box.innerHTML = `<span class="statusChip statusChipPrimary"><b>${Number(count) || 0}</b> шт</span><span class="statusChip ${permission.tone === "ok" ? "statusChipOk" : "statusChipWarn"}"><b>${esc(permission.label)}:</b> ${esc(permission.value)}</span>`;
 }
 function renderNotifications(){
+  if (!moduleEnabled("notifications")) return;
   const s = state.notificationSettings;
   if (!$("notifyCard") || !s) return;
   $("notifBrowser").checked = !!s.browserNotificationsEnabled;
@@ -4603,6 +4730,7 @@ function renderNotifications(){
   }
 }
 async function saveNotificationSettings(extra = {}){
+  if (!moduleEnabled("notifications")) { setSave("err", t("модуль выключен")); return; }
   setSave("saving");
   try {
     const body = {
@@ -4631,15 +4759,18 @@ async function saveNotificationSettings(extra = {}){
   } catch (err) { console.error(err); setSave("err", err.message); }
 }
 async function requestNotificationPermission(){
+  if (!moduleEnabled("notifications")) { alert(t("модуль выключен")); return; }
   if (!("Notification" in window)) { alert(t("Этот браузер не поддерживает Notification API")); return; }
   const perm = await Notification.requestPermission();
   await saveNotificationSettings({ browserNotificationsEnabled: perm === "granted" });
 }
 function testNotification(){
+  if (!moduleEnabled("notifications")) { alert(t("модуль выключен")); return; }
   if (!("Notification" in window) || Notification.permission !== "granted") { alert(t("Сначала разрешите уведомления в браузере")); return; }
   new Notification("DutyLog: Time & Overtime", { body:"Тестовое уведомление отправлено." });
 }
 async function showTomorrowNotifications(){
+  if (!moduleEnabled("notifications")) return;
   setSave("saving");
   try {
     state.notificationPreview = await api.notificationTomorrow();
@@ -4649,6 +4780,7 @@ async function showTomorrowNotifications(){
   } catch (err) { console.error(err); setSave("err", err.message); }
 }
 async function showMonthNotifications(){
+  if (!moduleEnabled("notifications")) return;
   setSave("saving");
   try {
     const r = monthFromTo();
@@ -4690,13 +4822,13 @@ function applyCalendarBundle(bundle){
   state.remindersByDate = {};
   if (bundle.shiftTypes) state.shiftTypes = bundle.shiftTypes;
   for (const e of bundle.days || []) state.days[e.date] = normalizeDay(e);
-  for (const t of bundle.tasks || []) addToDateMap(state.tasksByDate, t);
-  for (const i of bundle.importantDays || []) addToDateMap(state.importantByDate, i);
-  state.notificationSettings = bundle.notificationSettings || state.notificationSettings;
-  state.quickScenarios = bundle.quickScenarios || state.quickScenarios || [];
-  state.reminders = bundle.reminders || [];
+  if (moduleEnabled("tasks")) for (const t of bundle.tasks || []) addToDateMap(state.tasksByDate, t);
+  if (moduleEnabled("important_dates")) for (const i of bundle.importantDays || []) addToDateMap(state.importantByDate, i);
+  state.notificationSettings = moduleEnabled("notifications") ? (bundle.notificationSettings || state.notificationSettings) : null;
+  state.quickScenarios = moduleEnabled("scenarios") ? (bundle.quickScenarios || state.quickScenarios || []) : [];
+  state.reminders = moduleEnabled("notifications") ? (bundle.reminders || []) : [];
   for (const r of state.reminders) addToDateMap(state.remindersByDate, { ...r, date:r.sourceDate });
-  if (bundle.overtimeAccount) state.overtimeAccount = bundle.overtimeAccount;
+  if (moduleEnabled("overtime") && bundle.overtimeAccount) state.overtimeAccount = bundle.overtimeAccount;
 }
 
 async function loadMonth(){
@@ -4731,8 +4863,9 @@ async function init(){
   try {
     const me = await jfetch("/api/auth/me");
     $("whoami").textContent = me.username;
+    await loadModules();
     state.shiftTypes = await api.shiftTypes();
-    state.quickScenarios = await api.quickScenarios();
+    state.quickScenarios = moduleEnabled("scenarios") ? await api.quickScenarios() : [];
     await refreshImportantSettings();
   } catch (err) {
     console.error(err);
@@ -4741,8 +4874,9 @@ async function init(){
     setSave("err", t("нет связи — открыта локальная копия"));
   }
   await loadMonth();
-  await loadLedgerPage(true);
-  await loadTaskBoard(true);
+  if (moduleEnabled("overtime")) await loadLedgerPage(true);
+  if (moduleEnabled("tasks")) await loadTaskBoard(true);
+  applyModuleVisibility();
   renderCalendar();
   dataLayer.syncQueue();
 }
@@ -4755,6 +4889,8 @@ function applyRoute(){
   const name = rawRoute.startsWith("settings-") ? "settings" : rawRoute;
   let active = VIEWS[name] ? name : "calendar";
   if (active === "admin" && state.profile && !state.profile.admin) active = "calendar";
+  if (active === "tasks" && !moduleEnabled("tasks")) active = "calendar";
+  if (active === "overtime" && !moduleEnabled("overtime")) active = "calendar";
   document.body.dataset.view = active;
   if (active !== "calendar") selectDay(null);
   for (const [key, id] of Object.entries(VIEWS)) {
@@ -5068,7 +5204,7 @@ function renderTelegramPanel(){
   }
 }
 async function loadTelegramStatus(){
-  if (!$("telegramBox")) return;
+  if (!$("telegramBox") || !moduleEnabled("telegram")) return;
   try {
     state.telegramStatus = await api.telegramStatus();
     renderTelegramPanel();

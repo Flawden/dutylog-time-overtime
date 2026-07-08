@@ -23,6 +23,7 @@ import ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CurrentUserService;
+import ru.daniil.shifts.service.ModuleService;
 import ru.daniil.shifts.service.DayEntryService;
 import ru.daniil.shifts.service.OvertimeService;
 
@@ -35,13 +36,16 @@ import java.util.List;
 @RequestMapping("/api/overtime")
 public class OvertimeController {
     private final CurrentUserService currentUserService;
+    private final ModuleService moduleService;
     private final DayEntryService dayEntryService;
     private final OvertimeService overtimeService;
 
     public OvertimeController(CurrentUserService currentUserService,
+                          ModuleService moduleService,
                               DayEntryService dayEntryService,
                               OvertimeService overtimeService) {
         this.currentUserService = currentUserService;
+        this.moduleService = moduleService;
         this.dayEntryService = dayEntryService;
         this.overtimeService = overtimeService;
     }
@@ -50,6 +54,7 @@ public class OvertimeController {
     @GetMapping("/account")
     public OvertimeAccountDto account(Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
         return overtimeService.account(current);
     }
 
@@ -63,6 +68,7 @@ public class OvertimeController {
                                               @RequestParam(name = "size", required = false, defaultValue = "50") int size,
                                               Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
         return overtimeService.accountPage(current, from, to, status, q, page, size);
     }
 
@@ -74,6 +80,7 @@ public class OvertimeController {
                                             @RequestParam(name = "q", required = false, defaultValue = "") String q,
                                             Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
         byte[] body = overtimeService.exportAccountCsv(current, from, to, status, q);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"overtime-ledger.csv\"")
@@ -89,6 +96,7 @@ public class OvertimeController {
                                             @RequestParam(name = "q", required = false, defaultValue = "") String q,
                                             Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
         byte[] body = overtimeService.exportAccountXls(current, from, to, status, q);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"overtime-ledger.xls\"")
@@ -101,6 +109,7 @@ public class OvertimeController {
     public OvertimeAccountDto createCredit(@Valid @RequestBody OvertimeCreditCreateRequest req,
                                            Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
         return overtimeService.createCredit(current, req);
     }
 
@@ -110,6 +119,7 @@ public class OvertimeController {
                                            @Valid @RequestBody OvertimeCreditUpdateRequest req,
                                            Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
         return overtimeService.updateCredit(current, id, req);
     }
 
@@ -117,6 +127,7 @@ public class OvertimeController {
     @DeleteMapping("/credits/{id}")
     public OvertimeAccountDto deleteCredit(@PathVariable("id") long id, Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
         return overtimeService.deleteCredit(current, id);
     }
 
@@ -125,6 +136,7 @@ public class OvertimeController {
     public OvertimeAccountDto createUsage(@Valid @RequestBody OvertimeUsageCreateRequest req,
                                           Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
         return overtimeService.createUsage(current, req);
     }
 
@@ -134,6 +146,7 @@ public class OvertimeController {
                                           @Valid @RequestBody OvertimeUsageUpdateRequest req,
                                           Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
         return overtimeService.updateUsage(current, id, req);
     }
 
@@ -141,6 +154,7 @@ public class OvertimeController {
     @DeleteMapping("/usages/{id}")
     public OvertimeAccountDto deleteUsage(@PathVariable("id") long id, Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
         return overtimeService.deleteUsage(current, id);
     }
 
@@ -150,6 +164,7 @@ public class OvertimeController {
                                       @RequestParam("to") String to,
                                       Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
         LocalDate fromDate = dayEntryService.parseDate(from, "Дата from должна быть в формате yyyy-MM-dd");
         LocalDate toDate = dayEntryService.parseDate(to, "Дата to должна быть в формате yyyy-MM-dd");
         return overtimeService.summary(current, fromDate, toDate);
@@ -161,6 +176,7 @@ public class OvertimeController {
                                               @RequestParam("to") String to,
                                               Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
         LocalDate fromDate = dayEntryService.parseDate(from, "Дата from должна быть в формате yyyy-MM-dd");
         LocalDate toDate = dayEntryService.parseDate(to, "Дата to должна быть в формате yyyy-MM-dd");
         return overtimeService.ledger(current, fromDate, toDate);

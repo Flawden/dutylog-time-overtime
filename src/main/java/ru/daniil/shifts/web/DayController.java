@@ -9,6 +9,7 @@ import ru.daniil.shifts.dto.Dtos.DayDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.DayEntryService;
+import ru.daniil.shifts.service.ModuleService;
 
 import java.security.Principal;
 import java.util.List;
@@ -19,10 +20,12 @@ public class DayController {
 
     private final CurrentUserService currentUserService;
     private final DayEntryService dayEntryService;
+    private final ModuleService moduleService;
 
-    public DayController(CurrentUserService currentUserService, DayEntryService dayEntryService) {
+    public DayController(CurrentUserService currentUserService, DayEntryService dayEntryService, ModuleService moduleService) {
         this.currentUserService = currentUserService;
         this.dayEntryService = dayEntryService;
+        this.moduleService = moduleService;
     }
 
     /** Старый endpoint для веба: GET /api/days?year=2026&month=7. */
@@ -43,6 +46,8 @@ public class DayController {
                                          @Valid @RequestBody(required = false) DayUpsertRequest req,
                                          Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        if (req != null && req.note() != null) moduleService.requireEnabled(current, ModuleService.NOTES);
+        if (req != null && (req.overtimeHours() != null || req.timeOffHours() != null)) moduleService.requireEnabled(current, ModuleService.OVERTIME);
         DayDto saved = dayEntryService.upsert(current, date, req);
         return saved == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(saved);
     }

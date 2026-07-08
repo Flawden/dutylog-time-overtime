@@ -9,6 +9,7 @@ import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CurrentUserService;
+import ru.daniil.shifts.service.ModuleService;
 import ru.daniil.shifts.service.DayEntryService;
 import ru.daniil.shifts.service.TaskService;
 
@@ -20,13 +21,16 @@ import java.util.List;
 @RequestMapping("/api/tasks")
 public class TaskController {
     private final CurrentUserService currentUserService;
+    private final ModuleService moduleService;
     private final DayEntryService dayEntryService;
     private final TaskService taskService;
 
     public TaskController(CurrentUserService currentUserService,
+                          ModuleService moduleService,
                           DayEntryService dayEntryService,
                           TaskService taskService) {
         this.currentUserService = currentUserService;
+        this.moduleService = moduleService;
         this.dayEntryService = dayEntryService;
         this.taskService = taskService;
     }
@@ -38,6 +42,7 @@ public class TaskController {
                               @RequestParam(name = "to", required = false) String to,
                               Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.TASKS);
         if (date != null && !date.isBlank()) {
             return taskService.listDay(current, date);
         }
@@ -59,6 +64,7 @@ public class TaskController {
                                   @RequestParam(name = "size", required = false, defaultValue = "50") int size,
                                   Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.TASKS);
         return taskService.listBoard(current, status, category, priority, q, from, to, page, size);
     }
 
@@ -66,6 +72,7 @@ public class TaskController {
     public TaskDto create(@Valid @RequestBody(required = false) TaskCreateRequest req,
                           Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.TASKS);
         return taskService.create(current, req);
     }
 
@@ -74,12 +81,14 @@ public class TaskController {
                           @Valid @RequestBody(required = false) TaskUpdateRequest req,
                           Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.TASKS);
         return taskService.update(current, id, req);
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable("id") Long id, Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.TASKS);
         taskService.delete(current, id);
         return ResponseEntity.noContent().build();
     }

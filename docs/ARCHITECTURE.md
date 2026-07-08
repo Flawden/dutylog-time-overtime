@@ -235,3 +235,8 @@ deploy/scripts/smoke-test.sh
 The production compose file does not publish the application port directly. Only Caddy exposes public HTTP/HTTPS ports. PostgreSQL is available only inside the Docker network.
 
 The app container and compose service include healthchecks against `/actuator/health`. Admin diagnostics remain behind `/api/admin/status` and require an administrator account.
+
+
+## Modular monolith layer
+
+Since v25.0 DutyLog has a user-module layer. Modules are registered in backend code and stored per user in `user_module_settings`. This is not a microservice split: the app remains one Spring Boot monolith, but large features such as notes, tasks, overtime, important dates, notifications, Telegram and scenarios have explicit enable/disable boundaries. Disabled modules are hidden in the UI and guarded by backend APIs with `MODULE_DISABLED:<key>`. Data is never deleted by disabling a module. See `docs/MODULES.md`.

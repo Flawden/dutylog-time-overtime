@@ -1,3 +1,14 @@
+# v25.0 — User modules
+
+- Added modular-monolith foundation: backend module registry plus per-user module switches.
+- Added `user_module_settings` table via `V20__user_modules.sql`.
+- Added `GET /api/modules` and `PATCH /api/modules`.
+- Added Settings → Modules UI with safe toggles, module descriptions and dependency hints.
+- Disabled modules are hidden from main navigation, selected-day panel and related settings sections.
+- Major feature APIs now return `403 MODULE_DISABLED:<key>` when the module is disabled.
+- Disabling a module does not delete user data; it only hides and guards the feature.
+- Frontend/backend/service-worker versions bumped to `25.0`.
+
 # v24.0.4 — i18n full coverage polish
 
 - Expanded English translations across the web/PWA UI: day panel, overtime, tasks, shift settings, scenarios, notifications, admin, diagnostics, offline sync and common dynamic statuses.
