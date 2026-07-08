@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "24.0.2"
+const DUTYLOG_VERSION = "24.0.3"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -267,9 +267,344 @@ Object.assign(I18N_EN, {
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие" });
 
+
+
+// v24.0.3: broader web/PWA i18n coverage for static markup and common dynamic UI strings.
+Object.assign(I18N_EN, {
+  "Состояние подключения":"Connection status",
+  "Сегодня":"Today",
+  "Система":"System",
+  "Выйти":"Logout",
+  "Календарь":"Calendar",
+  "Переработки":"Overtime",
+  "Задачи":"Tasks",
+  "Закрыть":"Close",
+  "Смена":"Shift",
+  "Маркер":"Marker",
+  "Поставить":"Set",
+  "Очистить":"Clear",
+  "График":"Schedule",
+  "Дней:":"Days:",
+  "Заполнить":"Fill",
+  "По умолчанию заполняется 31 день вперёд, включая следующий месяц. Заметки не стираются.":"By default, fills 31 days ahead, including the next month. Notes are not deleted.",
+  "Начислить":"Add overtime",
+  "отмена":"cancel",
+  "Быстрые сценарии":"Quick scenarios",
+  "Выберите день и смену, чтобы увидеть подходящие сценарии.":"Select a day and shift to see matching scenarios.",
+  "очистить поля":"clear fields",
+  "Сценарий заполняет поля. Перед сохранением можно изменить время, обед, план и причину.":"A scenario fills the fields. Before saving, you can adjust time, break, plan, and reason.",
+  "Списать отгул":"Use time off",
+  "При списании отгула система сначала использует самые старые остатки переработки. Интервальные начисления автоматически распределяются по датам.":"When using time off, the system uses the oldest overtime balance first. Interval credits are automatically split by dates.",
+  "Важные дни":"Important days",
+  "В этот день важных событий нет.":"No important events on this day.",
+  "Важные дни добавляются прямо из выбранного дня. Для повтора выбирай: каждый год, каждый месяц или один раз.":"Important days are added directly from the selected day. For repeats, choose every year, every month, or one time.",
+  "Фильтр задач":"Task filter",
+  "Категория":"Category",
+  "все":"all",
+  "открытые":"open",
+  "просроченные":"overdue",
+  "выполненные":"done",
+  "все категории":"all categories",
+  "Приоритет":"Priority",
+  "Срок":"Due date",
+  "Время срока":"Due time",
+  "напомнить":"remind",
+  "За минут":"Minutes before",
+  "Заметка":"Note",
+  "Превью":"Preview",
+  "Таблица переработок":"Overtime table",
+  "Начисления живут до полного списания. Отгулы списываются со старых остатков.":"Credits stay until fully used. Time off is taken from the oldest balances.",
+  "этот месяц":"this month",
+  "всё время":"all time",
+  "Статус начисления":"Credit status",
+  "все начисления":"all credits",
+  "только с остатком":"with balance only",
+  "частично списанные":"partially used",
+  "полностью списанные":"fully used",
+  "сброс":"reset",
+  "День":"Day",
+  "Время":"Time",
+  "Начислено":"Earned",
+  "Причина":"Reason",
+  "Использовано":"Used",
+  "Куда списано":"Used for",
+  "Остаток":"Balance",
+  "Все задачи":"All tasks",
+  "Единый список открытых, просроченных и выполненных задач без прыжков по дням календаря.":"One list of open, overdue, and done tasks without jumping between calendar days.",
+  "открытые не просроченные":"open, not overdue",
+  "все задачи":"all tasks",
+  "любой приоритет":"any priority",
+  "срочные":"urgent",
+  "важные":"important",
+  "обычные":"normal",
+  "низкие":"low",
+  "Создать задачу":"Create task",
+  "Отфильтрованные задачи":"Filtered tasks",
+  "Разделы настроек":"Settings sections",
+  "Интерфейс":"Interface",
+  "Предпросмотр темы":"Theme preview",
+  "Дневная":"Day shift",
+  "Ночная":"Night shift",
+  "Выходной":"Day off",
+  "Так будут выглядеть фон, границы, текст, скругление и тени.":"This is how background, borders, text, radius, and shadows will look.",
+  "Роли `USER/ADMIN`, будущий тариф `FREE/PAID/VIP` и внешний вид остаются разными слоями. Theme Builder хранит только разрешённые параметры, не CSS.":"Roles `USER/ADMIN`, future `FREE/PAID/VIP` tier, and appearance remain separate layers. Theme Builder stores only allowed parameters, not CSS.",
+  "Время и регион":"Time and region",
+  "Регион / объект":"Region / site",
+  "Например: участок, город, объект":"Example: site, city, facility",
+  "Рабочий часовой пояс":"Work timezone",
+  "Сдвиг от Москвы, ч":"Offset from Moscow, h",
+  "Формат времени":"Time format",
+  "24 часа":"24 hours",
+  "Шаблоны смен":"Shift presets",
+  "Обед, мин":"Break, min",
+  "План, ч":"Plan, h",
+  "Заполнить форму смены":"Fill shift form",
+  "Сохранить параметры смен":"Save shift parameters",
+  "Определить часовой пояс":"Detect timezone",
+  "Регион и часовой пояс используются для отображения времени. Параметры дневной и ночной смены применяются к встроенным типам смен и используются в уведомлениях, сценариях и расчётах.":"Region and timezone are used to display time. Day/night shift parameters are applied to built-in shift types and used in notifications, scenarios, and calculations.",
+  "Типы смен и их время":"Shift types and times",
+  "Название":"Name",
+  "Календарь, ч":"Calendar, h",
+  "Короткая метка часов в календаре; если пусто — берётся норма":"Short hour label in the calendar; if empty, norm is used",
+  "Норма, ч":"Norm, h",
+  "Норма для расчёта переработки; если пусто — считается по началу, концу и обеду":"Norm for overtime calculation; if empty, calculated from start, end, and break",
+  "Шаблоны для переработок":"Overtime templates",
+  "Сценарии применяются в выбранном дне и заполняют форму переработки. Начисление подтверждается отдельно.":"Scenarios are applied on the selected day and fill the overtime form. The credit is confirmed separately.",
+  "Мои сценарии":"My scenarios",
+  "Название, например: После дневной до 22":"Name, e.g. After day shift until 22",
+  "Метка: после смены":"Tag: after shift",
+  "Описание сценария":"Scenario description",
+  "Старт":"Start",
+  "от конца смены":"from shift end",
+  "от начала смены":"from shift start",
+  "Конец":"End",
+  "через N минут":"after N minutes",
+  "в указанное время":"at fixed time",
+  "конец смены":"shift end",
+  "+ минут":"+ minutes",
+  "время":"time",
+  "следующий день":"next day",
+  "Обед":"Break",
+  "из смены":"from shift",
+  "свой":"custom",
+  "мин":"min",
+  "План":"Plan",
+  "ч":"h",
+  "Причина по умолчанию":"Default reason",
+  "Добавить сценарий":"Add scenario",
+  "Очистить форму":"Clear form",
+  "Сценарии сохраняются в профиле пользователя и доступны в панели выбранного дня.":"Scenarios are saved in the user profile and available in the selected-day panel.",
+  "Сервер рассчитывает напоминания для браузера, Telegram и мобильных клиентов.":"The server calculates reminders for browser, Telegram, and mobile clients.",
+  "Уведомления браузера":"Browser notifications",
+  "перед сменой":"before shift",
+  "за":"before",
+  "вечерний дайджест":"evening digest",
+  "задачи дня":"day tasks",
+  "дн.":"days",
+  "1 час":"1 hour",
+  "1.5 часа":"1.5 hours",
+  "2 часа":"2 hours",
+  "Сохранить настройки":"Save settings",
+  "Разрешить в браузере":"Allow in browser",
+  "Проверить":"Test",
+  "Текущий месяц":"Current month",
+  "Завтра":"Tomorrow",
+  "Напоминания текущего месяца":"Current month reminders",
+  "Администрирование":"Administration",
+  "Служебный профиль":"System profile",
+  "Техническая диагностика вынесена отдельно от пользовательских настроек. Этот раздел доступен только администратору приложения.":"Technical diagnostics are separated from user settings. This section is available only to the app administrator.",
+  "Назад к настройкам":"Back to settings",
+  "Пользователи":"Users",
+  "Пользователи и роли":"Users and roles",
+  "поиск: логин, имя, роль…":"search: login, name, role…",
+  "Фильтр по роли":"Role filter",
+  "Обновить пользователей":"Refresh users",
+  "Доступ":"Access",
+  "Публичная регистрация":"Public registration",
+  "Администратор может открыть или закрыть создание новых обычных аккаунтов. Стартовый админ по-прежнему создаётся только через переменные окружения.":"An administrator can open or close creation of regular accounts. The bootstrap admin is still created only through environment variables.",
+  "Разрешить публичную регистрацию пользователей":"Allow public user registration",
+  "Обновить статус регистрации":"Refresh registration status",
+  "Диагностика":"Diagnostics",
+  "Состояние системы":"System status",
+  "Интерфейс":"Interface",
+  "проверяется…":"checking…",
+  "Браузер":"Browser",
+  "Нажмите «Обновить диагностику», чтобы получить отчёт.":"Click “Refresh diagnostics” to get a report.",
+  "Обновить диагностику":"Refresh diagnostics",
+  "Скопировать отчёт":"Copy report",
+  "Заметка пустая — нечего показывать.":"Note is empty — nothing to preview.",
+  "Пусто. Пиши слева — превью живое.":"Empty. Type on the left — preview is live.",
+  "сохраняется автоматически":"autosaves",
+  "редактор":"editor",
+  "Синхронизация данных":"Data sync",
+  "Оффлайн-режим":"Offline mode",
+  "Ожидают отправки":"Waiting to upload",
+  "Диагностика оффлайна":"Offline diagnostics",
+  "Синхронизировать":"Sync",
+  "Повторить неудачные операции":"Retry failed operations",
+  "Скачать локальные данные":"Download local data",
+  "Очистить неудачные операции":"Clear failed operations",
+  "Неудачных операций синхронизации нет.":"No failed sync operations.",
+  "Нет изменений, ожидающих отправки.":"No pending changes.",
+  "Локальные данные старше суток. Проверьте их после подключения к серверу.":"Local data is older than a day. Check it after reconnecting to the server.",
+  "Повторить операцию":"Retry operation",
+  "Убрать из списка":"Remove from list"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие", "Browser":"Браузер" });
+Object.assign(I18N_EN, {
+  "Создание пользовательских смен и настройка встроенных типов: время, обед, норма для расчёта переработки и уведомления.":"Create custom shifts and configure built-in types: time, break, overtime norm, and notifications.",
+  "Можно ввести полный интервал датами или коротко: дата начисления + 17:00–20:00. Если вводишь только переработку — план оставь 0; если всю фактическую смену — вычти план.":"You can enter a full date-time interval or a short one: credit date + 17:00–20:00. If you enter only overtime, leave plan as 0; if you enter the whole actual shift, subtract the plan.",
+  "по смене":"by shift",
+  "перед сменой:":"before shift:",
+  "дн. в":"days at",
+  "важные дни":"important dates",
+  "в":"at",
+  "авто":"auto",
+  "0 ч":"0 h",
+  "15 мин":"15 min",
+  "30 мин":"30 min",
+  "20–08 обед 60":"20–08 break 60",
+  "Закрыть (Esc)":"Close (Esc)",
+  "Цвет важного дня":"Important day color",
+  "превью":"preview",
+  "🔥 Дневная":"🔥 Day shift",
+  "🌙 Ночная":"🌙 Night shift",
+  "# Заголовок\n**жирный**, *курсив*, `код`\n- [ ] задача\n- список":"# Heading\n**bold**, *italic*, `code`\n- [ ] task\n- list",
+  "# Заголовок&#10;**жирный**, *курсив*, `код`&#10;- [ ] задача&#10;> цитата&#10;```&#10;код блоком&#10;```":"# Heading&#10;**bold**, *italic*, `code`&#10;- [ ] task&#10;> quote&#10;```&#10;code block&#10;```"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+Object.assign(I18N_EN, {
+  "Январь":"January", "Февраль":"February", "Март":"March", "Апрель":"April", "Май":"May", "Июнь":"June", "Июль":"July", "Август":"August", "Сентябрь":"September", "Октябрь":"October", "Ноябрь":"November", "Декабрь":"December",
+  "января":"January", "февраля":"February", "марта":"March", "апреля":"April", "мая":"May", "июня":"June", "июля":"July", "августа":"August", "сентября":"September", "октября":"October", "ноября":"November", "декабря":"December",
+  "День / 72":"Day / 72", "Ночь / 72":"Night / 72", "День / ночь / 48":"Day / night / 48", "2 через 2":"2 on / 2 off", "Пятидневка":"Five-day week",
+  "Дневная кастомная":"Custom day shift", "Ночная кастомная":"Custom night shift",
+  "Администраторы":"Administrators", "Будущие тарифы":"Future tiers", "Роли доступа":"Access roles", "Роль пользователя":"User role", "База данных":"Database", "Версия сервера":"Server version", "Источник настройки регистрации":"Registration setting source",
+  "Аккаунт подключен к Telegram":"Account connected to Telegram", "Telegram уведомления":"Telegram notifications",
+  "Служебная диагностика вынесена в отдельный профиль":"Service diagnostics are moved to a separate profile",
+  "Время срока HH:mm, пусто — без времени":"Due time HH:mm, empty means no time", "Срок yyyy-MM-dd, пусто — без срока":"Due date yyyy-MM-dd, empty means no due date",
+  "Текст задачи":"Task text", "Сценарий":"Scenario", "сценарий":"scenario", "сценарий переработки":"overtime scenario",
+  "Конец смены HH:mm, можно пусто":"Shift end HH:mm, can be empty", "Начало смены HH:mm, можно пусто":"Shift start HH:mm, can be empty", "Обед/перерыв, минут":"Break, minutes", "Норма для расчёта переработки, ч":"Overtime calculation norm, h", "Цвет #RRGGBB":"Color #RRGGBB", "Уведомлять перед этой сменой? да/нет":"Notify before this shift? yes/no", "За сколько минут напоминать именно эту смену? Пусто = глобальная настройка":"How many minutes before this shift to remind? Empty = global setting",
+  "время не настроено":"time is not configured", "обед 0 мин":"break 0 min", "план 0 ч":"plan 0 h", "короткий ввод":"short input", "полный интервал":"full interval", "сервер разобьёт по датам":"server will split by dates", "вычтено плана":"plan subtracted", "взято":"taken from",
+  "от конца смены":"from shift end", "до конца смены":"until shift end", "от начала смены":"from shift start", "через 15 минут":"in 15 minutes",
+  "значение по умолчанию":"default value", "по умолчанию":"default", "не задан":"not set", "не зарегистрирован":"not registered", "выключен":"off", "выключены":"off",
+  "публичная регистрация закрыта":"public registration closed", "публичная регистрация открыта":"public registration open", "отчёт диагностики скопирован":"diagnostics report copied", "диагностика оффлайна скопирована":"offline diagnostics copied", "тестовое уведомление отправлено":"test notification sent", "Тестовое уведомление отправлено.":"Test notification sent.",
+  "ошибка сети":"network error", "синхронизация не удалась":"sync failed", "операция не применена":"operation was not applied", "сервер не применил операцию":"server did not apply the operation", "Неизвестный тип операции: ":"Unknown operation type: ", "cookie не найден":"cookie not found",
+  "Эта операция требует связи с сервером. Смена дня, заметки и галочки задач сохраняются оффлайн.":"This operation requires connection to the server. Day shift, notes, and task checkboxes are saved offline.",
+  "Переработки и отгулы можно изменять только при подключении к серверу. Смены, заметки и галочки задач сохраняются оффлайн.":"Overtime and time off can be changed only when connected to the server. Shifts, notes, and task checkboxes are saved offline.",
+  "Автозаполнение графика требует связи с сервером. Отдельную смену выбранного дня можно изменить оффлайн.":"Schedule autofill requires connection to the server. The selected day's shift can be changed offline.",
+  "Типы смен и их расписание меняются только при подключении к серверу.":"Shift types and their schedule can be changed only when connected to the server.",
+  "Шаблоны переработок меняются только при подключении к серверу.":"Overtime templates can be changed only when connected to the server.",
+  "Настройки уведомлений требуют связи с сервером.":"Notification settings require connection to the server.",
+  "Telegram-интеграция настраивается только при подключении к серверу.":"Telegram integration can be configured only when connected to the server.",
+  "Профиль и сессии меняются только при подключении к серверу.":"Profile and sessions can be changed only when connected to the server.",
+  "Важные даты меняются только при подключении к серверу.":"Important dates can be changed only when connected to the server.",
+  "Админские настройки меняются только при подключении к серверу.":"Admin settings can be changed only when connected to the server.",
+  "На текущий месяц напоминаний нет.":"No reminders for the current month.", "На завтра напоминаний нет.":"No reminders for tomorrow.", "Напоминания на завтра":"Tomorrow's reminders", "напоминания на завтра":"tomorrow's reminders",
+  "На этот день в журнале переработок записей нет. Начисления не сгорают при переходе между месяцами.":"No overtime journal entries for this day. Credits do not expire when moving between months.",
+  "Начислений переработки пока нет. Новые записи добавляются из панели выбранного дня и сохраняются до полного списания.":"No overtime credits yet. New entries are added from the selected-day panel and remain until fully used.",
+  "По текущим фильтрам записей нет. Сбрось фильтры или выбери другой период.":"No entries for current filters. Reset filters or choose another period.", "По фильтрам задач нет.":"No tasks for the filters.", "По этим фильтрам задач нет.":"No tasks for these filters.",
+  "День не выбран. Сначала ткни дату в календаре.":"No day selected. Pick a date in the calendar first.", "Поставь дневную, ночную или кастомную смену — тогда сценарии смогут взять время начала/конца.":"Set a day, night, or custom shift so scenarios can use start/end time.", "Карточки разблокируются, когда у выбранного дня будет смена со временем.":"Cards unlock when the selected day has a shift with time.", "Карточки только заполняют поля. Перед начислением можно поправить время, обед, план и причину.":"Cards only fill fields. You can adjust time, break, plan, and reason before crediting.", "У смены не указано время окончания. Откройте настройки смены и задайте время.":"The shift has no end time. Open shift settings and set it.", "Доступны сценарии от конца смены. Для сценариев от начала смены укажите время начала.":"Scenarios from shift end are available. For start-based scenarios, set shift start time.",
+  "Все задачи выполнены":"All tasks done", "Есть заметка":"Has note", "Маркер дня":"Day marker", "Смены ещё не отмечены. Выберите день в календаре.":"No shifts marked yet. Select a day in the calendar.", "Сначала удали списания, которые используют это начисление":"Delete usages that use this credit first", "сначала списания":"delete usages first",
+  "Создать или настроить смену в настройках":"Create or configure a shift in settings", "Изменить время, обед и плановые часы смены":"Change shift time, break, and planned hours", "Смена снимется с дней, где стояла. Заметки останутся.":"The shift will be removed from days where it was set. Notes will remain.",
+  "Удалить быстрый сценарий?":"Delete quick scenario?", "Удалить важный день целиком, включая повторения?":"Delete the important day completely, including repeats?", "Удалить задачу?":"Delete task?", "Включить напоминание для этой задачи?":"Enable reminder for this task?",
+  "назови сценарий":"name the scenario", "сценарий добавлен":"scenario added", "не получилось собрать интервал сценария":"failed to build scenario interval", "сценарию не хватает времени начала/конца смены":"scenario needs shift start/end time", "не получилось определить конец сценария":"failed to determine scenario end", "конец сценария должен быть позже начала":"scenario end must be after start",
+  "для автоподсчёта нужны и начало, и конец":"start and end are required for auto calculation", "укажи часы переработки больше 0":"enter overtime hours greater than 0", "укажи дату переработки":"enter overtime date", "начисление не найдено":"credit not found", "укажи часы списания больше 0":"enter usage hours greater than 0", "укажи дату списания":"enter usage date", "списание не найдено":"usage not found",
+  "укажи дату важного дня":"enter important day date", "укажи название важного дня":"enter important day title", "напиши текст задачи":"enter task text", "укажи название смены":"enter shift name", "название не может быть пустым":"name cannot be empty", "смена не найдена":"shift not found", "не хватает смен для шаблона":"not enough shifts for template", "количество дней: от 1 до 366":"number of days: 1 to 366",
+  "обед: от 0 до 1440 минут":"break: 0 to 1440 minutes", "часы: от 0 до 24":"hours: 0 to 24", "норма: от 0 до 24 часов":"norm: 0 to 24 hours", "напоминание смены: от 0 до 1440 минут":"shift reminder: 0 to 1440 minutes", "не нашёл Дневную/Ночную смену":"could not find Day/Night shift", "встроенные смены обновлены":"built-in shifts updated", "время смен применено":"shift time applied", "настройки времени сохранены":"time settings saved",
+  "на этом дне нет смены с плановыми часами":"selected day has no shift with planned hours", "у выбранной смены не указано время начала/конца":"selected shift has no start/end time", "на этом дне нет смены с плановыми часами для списания":"selected day has no shift with planned hours for usage",
+  "Ошибка диагностики":"Diagnostics error", "Ошибка списка пользователей":"Users list error", "только администратор":"administrator only", "не удалось изменить роль":"failed to change role", "не удалось сменить пароль":"failed to change password", "пароль должен быть минимум 12 символов":"password must be at least 12 characters", "не удалось сохранить настройку регистрации":"failed to save registration setting",
+  "Не удалось загрузить настройку регистрации: ":"Failed to load registration setting: ", "Состояние подключения. ":"Connection status. ", "Есть изменения, ожидающие отправки. Нажмите, чтобы открыть синхронизацию. ":"There are changes waiting to upload. Click to open sync. ", "Есть операции, которые сервер не принял. Нажмите, чтобы открыть синхронизацию. ":"There are operations the server did not accept. Click to open sync. "
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие", "Browser":"Браузер" });
+Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие", "Browser":"Браузер" });
+
+
+function translateDynamicEn(core){
+  let s = String(core ?? "");
+  const exact = I18N_EN[s];
+  if (exact) return exact;
+  const patterns = [
+    [/^(\d+) шт$/, "$1 pcs"],
+    [/^(\d+) из (\d+)$/, "$1 of $2"],
+    [/^(\d+) просроч\. · (\d+)\/(\d+)$/, "$1 overdue · $2/$3"],
+    [/^(\d+)\/(\d+) сделано$/, "$1/$2 done"],
+    [/^за день ([+\-]?\d+(?:[.,]\d+)?) ч$/, "day: $1 h"],
+    [/^баланс ([+\-]?\d+(?:[.,]\d+)?) ч$/, "balance $1 h"],
+    [/^доступно ([+\-]?\d+(?:[.,]\d+)?) ч$/, "available $1 h"],
+    [/^переработка: ([+\-]?\d+(?:[.,]\d+)?) ч$/, "overtime: $1 h"],
+    [/^общий остаток переработки: ([+\-]?\d+(?:[.,]\d+)?) ч$/, "total overtime balance: $1 h"],
+    [/^Начислено: ([\d.,]+) ч, списано: ([\d.,]+) ч$/, "Earned: $1 h, used: $2 h"],
+    [/^Всего начислено: ([\d.,]+) ч, всего списано: ([\d.,]+) ч$/, "Total earned: $1 h, total used: $2 h"],
+    [/^Просроченные задачи: (\d+)$/, "Overdue tasks: $1"],
+    [/^Невыполненные задачи: (\d+)$/, "Open tasks: $1"],
+    [/^Напоминания: (\d+)$/, "Reminders: $1"],
+    [/^Открыть день (.+)$/, "Open day $1"],
+    [/^Маркер дня$/, "Day marker"],
+    [/^Поставить маркер (.+)$/, "Set marker $1"],
+    [/^В календаре будет видно: (.+)$/, "Visible in calendar: $1"],
+    [/^Публичная регистрация: (.+) · (.+)$/, "Public registration: $1 · $2"],
+    [/^Не удалось загрузить настройку регистрации: (.+)$/, "Failed to load registration setting: $1"],
+    [/^роль (.+): (.+)$/, "role $1: $2"],
+    [/^пароль (.+) обновлён$/, "password for $1 updated"],
+    [/^Новый пароль для (.+) \(минимум 12 символов\)$/, "New password for $1 (minimum 12 characters)"],
+    [/^Редактируется начисление #(\d+)\. Если сделать период через несколько дат, сервер заменит строку на несколько начислений\.$/, "Editing credit #$1. If you make a multi-day period, the server will replace the row with several credits."],
+    [/^Редактируется списание #(\d+)\. Если изменить часы, FIFO-распределение пересоберётся заново\.$/, "Editing usage #$1. If you change hours, FIFO allocation will be rebuilt."],
+    [/^Удалить начисление переработки (.+)\?\n\nЭто действие нельзя отменить\.$/, "Delete overtime credit $1?\n\nThis action cannot be undone."],
+    [/^Удалить списание отгула (.+)\?\n\nЧасы вернутся в остаток переработки\.$/, "Delete time-off usage $1?\n\nHours will return to the overtime balance."],
+    [/^С днём рождения, (.+)! Смену сегодня прогуливаем\?$/, "Happy birthday, $1! Skipping the shift today?"],
+    [/^🎉 С днём рождения, (.+)! Смену сегодня прогуливаем\?$/, "🎉 Happy birthday, $1! Skipping the shift today?"],
+    [/^(\d+) мин назад$/, "$1 min ago"],
+    [/^(\d+) ч назад$/, "$1 h ago"],
+    [/^(\d+) дн назад$/, "$1 d ago"],
+    [/^(\d+) ожидает отправки$/, "$1 pending upload"],
+    [/^(\d+) не применилось$/, "$1 failed"],
+    [/^Задача #(\d+): выполнена$/, "Task #$1: done"],
+    [/^Задача #(\d+): открыта$/, "Task #$1: open"],
+    [/^последняя синхронизация: (.+)$/i, "last sync: $1"],
+    [/^Последняя синхронизация: (.+)$/, "Last sync: $1"],
+    [/^Шаблон от выбранного дня: (.+)\. Заметки не стираются, меняется только тип смены\.$/, "Template from selected day: $1. Notes are not deleted; only shift type changes."],
+    [/^Не хватает смен: (.+)\. Перезагрузи страницу или создай их вручную\.$/, "Missing shifts: $1. Reload the page or create them manually."],
+    [/^Пятидневка привязана к дням недели: Пн–Пт рабочие, Сб–Вс выходные\. От выбранного дня пойдёт так: (.+)\.$/, "Five-day week is tied to weekdays: Mon–Fri work, Sat–Sun off. From the selected day it will go: $1."],
+    [/^(.+) · смена не выбрана$/, "$1 · no shift selected"],
+    [/^(.+) · (.+): (.+), (.+), (.+)$/, "$1 · $2: $3, $4, $5"]
+  ];
+  for (const [re, repl] of patterns) {
+    if (re.test(s)) return s.replace(re, repl);
+  }
+  const replacePairs = [
+    ["пользователем", "by"], ["создан", "created"], ["обновлён", "updated"],
+    ["на странице", "on page"], ["показано", "shown"], ["всего по фильтрам", "total filtered"],
+    ["просроченных", "overdue"], ["открытых", "open"], ["выполненных", "done"],
+    ["закрыто", "closed"], ["использовано", "used"], ["остаток", "balance"],
+    ["начислено", "earned"], ["списано", "used"], ["не списывалось", "not used"],
+    ["сначала списания", "delete usages first"], ["удалить", "delete"], ["ред.", "edit"],
+    ["настроить", "configure"], ["встроенная", "built-in"], ["автосохранение", "autosave"],
+    ["сохраняю…", "saving…"], ["ошибка сети", "network error"], ["ошибка", "error"],
+    ["проверяю…", "checking…"], ["проверь", "check"], ["срок", "due"],
+    ["просрочено", "overdue"], ["выполнено", "done"], ["обед", "break"], ["план", "plan"], ["норма", "norm"],
+    ["сегодня", "today"], ["выбранный день", "selected day"], ["свой цвет", "custom color"],
+    ["частично", "partial"], ["закрыта", "closed"], ["дата", "date"], ["смена", "shift"], ["заметка", "note"], ["день", "day"],
+    ["выполнена", "done"], ["открыта", "open"], ["только что", "just now"], ["ещё нет", "not yet"],
+    ["локальной копии пока нет", "no local copy yet"], ["нет локальной копии", "no local copy"], ["нет синхронизации", "no sync"],
+    ["данные устарели", "data is stale"], ["данные от", "data from"], ["не отправлено", "not uploaded"],
+    ["синхронизация…", "syncing…"], ["синхронизация в другой вкладке", "syncing in another tab"],
+    ["активен в другой вкладке", "active in another tab"], ["активен в этой вкладке", "active in this tab"], ["протух", "expired"], ["не читается", "unreadable"],
+    ["доступна", "available"], ["недоступна", "unavailable"], ["онлайн", "online"], ["оффлайн", "offline"]
+  ];
+  if (/[А-Яа-яЁё]/.test(s) && /(ч|мин|дн|обед|план|норма|срок|создан|обновл|страниц|показано|на странице|синхронизац|остаток|баланс|ошибка|удалить|ред\.|настроить|встроенная|просроч|выполн|открыт|данные|локальн|онлайн|оффлайн|пользовател)/i.test(s)) {
+    for (const [from, to] of replacePairs) s = s.split(from).join(to);
+    s = s.replace(/([\d.,]+) ч\b/g, "$1 h").replace(/([\d.,]+)м\b/g, "$1 min").replace(/([\d.,]+) мин\b/g, "$1 min").replace(/([\d.,]+) дн\b/g, "$1 d");
+    return s;
+  }
+  return core;
+}
+
 function t(value){
   const s = String(value ?? "");
-  return state.language === "en" ? (I18N_EN[s] || s) : (I18N_RU[s] || s);
+  if (state.language === "en") return I18N_EN[s] || translateDynamicEn(s) || s;
+  return I18N_RU[s] || s;
 }
 function translateTextValue(value){
   if (!value || !String(value).trim()) return value;
@@ -278,7 +613,12 @@ function translateTextValue(value){
   const trailing = raw.match(/\s*$/)?.[0] || "";
   const core = raw.trim();
   const map = state.language === "en" ? I18N_EN : I18N_RU;
-  return Object.prototype.hasOwnProperty.call(map, core) ? leading + map[core] + trailing : value;
+  if (Object.prototype.hasOwnProperty.call(map, core)) return leading + map[core] + trailing;
+  if (state.language === "en") {
+    const dynamic = translateDynamicEn(core);
+    if (dynamic !== core) return leading + dynamic + trailing;
+  }
+  return value;
 }
 let translationBusy = false;
 function translateStaticTree(root = document.body){
@@ -640,7 +980,7 @@ function allTaskCategories(){
   for (const t of state.taskBoard?.items || []) if ((t.category || "").trim()) set.add(t.category.trim());
   return Array.from(set).sort((a,b) => a.localeCompare(b, "ru"));
 }
-const repeatLabel = mode => mode === "YEARLY" ? "каждый год" : mode === "MONTHLY" ? "каждый месяц" : "один раз";
+const repeatLabel = mode => t(mode === "YEARLY" ? "каждый год" : mode === "MONTHLY" ? "каждый месяц" : "один раз");
 function creditsOf(k){ return (state.overtimeAccount?.credits || []).filter(x => x.workedDate === k); }
 function usagesOf(k){ return (state.overtimeAccount?.usages || []).filter(x => x.usageDate === k); }
 function ledgerNetOf(k){
@@ -689,7 +1029,7 @@ function shiftPlannedHours(s){
 function shiftTimeText(s){
   if (!s || !s.startTime || !s.endTime) return "";
   const br = numOr0(s.breakMinutes);
-  return `${s.startTime}–${s.endTime}${br ? ` · обед ${br}м` : ""}`;
+  return `${s.startTime}–${s.endTime}${br ? ` · ${t("обед")} ${br}${t("м")}` : ""}`;
 }
 function shiftMetaText(s){
   if (!s) return "";
@@ -769,10 +1109,10 @@ function normalizePageResponse(res, fallbackSize = 50) {
 function pageRangeText(p) {
   const total = Number(p?.total || 0);
   const count = Number((p?.items || []).length || 0);
-  if (!total || !count) return "0 из 0";
+  if (!total || !count) return state.language === "en" ? "0 of 0" : "0 из 0";
   const start = Number(p.page || 0) * Number(p.size || 50) + 1;
   const end = Math.min(total, start + count - 1);
-  return `${start}–${end} из ${total}`;
+  return state.language === "en" ? `${start}–${end} of ${total}` : `${start}–${end} из ${total}`;
 }
 function renderPager(id, pageInfo, onPage, onSize) {
   const box = $(id);
@@ -833,7 +1173,7 @@ async function jfetch(url, opts = {}) {
   if (res.status === 401) {
     // Сессия истекла или не залогинен — на страницу входа
     window.location.href = "/login.html";
-    throw new Error("401: не авторизован");
+    throw new Error(t("401: не авторизован"));
   }
   if (!res.ok) {
     let msg = `${opts.method || "GET"} ${url} → ${res.status}`;
@@ -854,7 +1194,7 @@ async function jfetch(url, opts = {}) {
 function setSave(s, msg = "") {
   const el = $("saveState");
   el.classList.toggle("err", s === "err");
-  el.textContent = s === "saving" ? "сохраняю…" : s === "saved" ? "✓" : s === "err" ? (msg || "ошибка сети") : "";
+  el.textContent = s === "saving" ? t("сохраняю…") : s === "saved" ? "✓" : s === "err" ? (msg || t("ошибка сети")) : "";
   if (s === "saved") setTimeout(() => { if (el.textContent === "✓") el.textContent = ""; }, 1500);
 }
 
@@ -887,7 +1227,7 @@ function uuid(){
   return "op-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2);
 }
 function fmtSyncTime(iso){
-  if (!iso) return "нет синхронизации";
+  if (!iso) return t("нет синхронизации");
   try { return new Intl.DateTimeFormat("ru-RU", { dateStyle:"short", timeStyle:"short" }).format(new Date(iso)); }
   catch (_) { return String(iso).slice(0, 16).replace("T", " "); }
 }
@@ -900,7 +1240,7 @@ function fmtSyncAge(iso){
   const age = syncAgeMs(iso);
   if (age == null || age < 0) return "";
   const min = Math.floor(age / 60000);
-  if (min < 1) return "только что";
+  if (min < 1) return t("только что");
   if (min < 60) return `${min} мин назад`;
   const h = Math.floor(min / 60);
   if (h < 24) return `${h} ч назад`;
@@ -911,17 +1251,17 @@ function escapeHtml(v){
   return String(v ?? "").replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch] || ch));
 }
 function describeOfflineOperation(item){
-  if (!item) return "Операция";
+  if (!item) return t("Операция");
   if (item.type === "putDay") {
     const d = item.payload?.day || {};
     const parts = [];
-    if (d.shiftTypeId) parts.push("смена");
-    if ((d.note || "").trim()) parts.push("заметка");
+    if (d.shiftTypeId) parts.push(t("смена"));
+    if ((d.note || "").trim()) parts.push(t("заметка"));
     if ((d.dayEmoji || "").trim()) parts.push("emoji " + d.dayEmoji);
-    if (!parts.length) parts.push("день");
-    return `${item.payload?.date || "дата"}: ${parts.join(" + ")}`;
+    if (!parts.length) parts.push(t("день"));
+    return `${item.payload?.date || t("дата")}: ${parts.join(" + ")}`;
   }
-  if (item.type === "toggleTask") return `Задача #${item.payload?.taskId}: ${item.payload?.done ? "выполнена" : "открыта"}`;
+  if (item.type === "toggleTask") return `${t("Задача")} #${item.payload?.taskId}: ${item.payload?.done ? t("выполнена") : t("открыта")}`;
   return item.type || "Операция";
 }
 function acquireOfflineSyncLock(){
@@ -960,7 +1300,7 @@ function releaseOfflineSyncLock(lock){
 function offlineSyncLockInfo(){
   try {
     const raw = localStorage.getItem(OFFLINE_SYNC_LOCK_KEY);
-    if (!raw) return { active:false, label:"нет", raw:null };
+    if (!raw) return { active:false, label:t("нет"), raw:null };
     const lock = JSON.parse(raw);
     const expiresAt = Number(lock?.expiresAt || 0);
     const expired = expiresAt > 0 && expiresAt <= Date.now();
@@ -972,11 +1312,11 @@ function offlineSyncLockInfo(){
       owner:lock?.owner || "—",
       startedAt:lock?.startedAt || null,
       expiresAt:expiresAt ? new Date(expiresAt).toISOString() : null,
-      label: expired ? "протух" : (mine ? "активен в этой вкладке" : "активен в другой вкладке"),
+      label: expired ? t("протух") : (mine ? t("активен в этой вкладке") : t("активен в другой вкладке")),
       raw:lock,
     };
   } catch (err) {
-    return { active:false, label:"не читается", error:err.message || String(err) };
+    return { active:false, label:t("не читается"), error:err.message || String(err) };
   }
 }
 
@@ -1048,7 +1388,7 @@ const offlineDb = {
   db: null,
   async open(){
     if (this.db) return this.db;
-    if (!('indexedDB' in window)) throw new Error("Браузер не поддерживает локальное хранилище");
+    if (!('indexedDB' in window)) throw new Error(t("Браузер не поддерживает локальное хранилище"));
     this.db = await new Promise((resolve, reject) => {
       const req = indexedDB.open(OFFLINE_DB_NAME, OFFLINE_DB_VERSION);
       req.onupgradeneeded = () => {
@@ -1122,7 +1462,7 @@ const dataLayer = {
     await offlineDb.put("snapshot", snap);
   },
   async enqueue(type, payload){
-    if (!state.offline.cacheReady) throw new Error("Нет связи с сервером, а локальная очередь недоступна");
+    if (!state.offline.cacheReady) throw new Error(t("Нет связи с сервером, а локальная очередь недоступна"));
     await offlineDb.put("queue", { id:uuid(), type, payload, createdAt:new Date().toISOString(), attempts:0, lastError:null });
     await this.refreshQueueState();
     updateOfflineStatus();
@@ -1170,7 +1510,7 @@ const dataLayer = {
     await this.setFailedItems([]);
   },
   async exportOfflineData(){
-    if (!state.offline.cacheReady) throw new Error("Локальное хранилище недоступно");
+    if (!state.offline.cacheReady) throw new Error(t("Локальное хранилище недоступно"));
     const failed = await this.getFailedItems();
     const storageMeta = await offlineDb.all("meta");
     const data = {
@@ -1220,7 +1560,7 @@ const dataLayer = {
       state.offline.online = false;
       updateOfflineStatus();
       if (hadCache) return { fromCache:true };
-      throw new Error("Нет связи и ещё нет локальной копии данных");
+      throw new Error(t("Нет связи и ещё нет локальной копии данных"));
     }
     try {
       const bundle = await api.month(y, m);
@@ -1281,7 +1621,7 @@ const dataLayer = {
     if (!lock) {
       state.offline.syncLockedByOther = true;
       updateOfflineStatus();
-      setSave("err", "Синхронизация уже запущена в другой вкладке");
+      setSave("err", t("Синхронизация уже запущена в другой вкладке"));
       return;
     }
     state.offline.syncLockedByOther = false;
@@ -1331,7 +1671,7 @@ const dataLayer = {
       state.offline.online = true;
     } catch (err) {
       console.error(err);
-      if (err.status !== 401) setSave("err", err.message || "синхронизация не удалась");
+      if (err.status !== 401) setSave("err", err.message || t("синхронизация не удалась"));
       state.offline.online = navigator.onLine;
     } finally {
       releaseOfflineSyncLock(lock);
@@ -1429,8 +1769,8 @@ document.addEventListener("click", async e => {
   if (e.target?.id === "offlineFailedRetryAll") { await dataLayer.retryAllFailed(); await renderOfflineSyncDialog(); return; }
   if (e.target?.id === "offlineExport") { await dataLayer.exportOfflineData(); return; }
   if (e.target?.id === "offlineDiagnosticsCopy") {
-    try { await navigator.clipboard.writeText(offlineDiagnosticsReportText()); setSave("saved", "диагностика оффлайна скопирована"); }
-    catch (err) { setSave("err", "не удалось скопировать диагностику"); }
+    try { await navigator.clipboard.writeText(offlineDiagnosticsReportText()); setSave("saved", t("диагностика оффлайна скопирована")); }
+    catch (err) { setSave("err", t("не удалось скопировать диагностику")); }
     return;
   }
   if (e.target?.id === "offlineFailedClear") { await dataLayer.setFailedItems([]); await renderOfflineSyncDialog(); return; }
@@ -1523,14 +1863,14 @@ function renderCalendar(){
       const ear = document.createElement("div");
       ear.className = "ear";
       ear.style.borderTop = `14px solid ${st ? st.color : "var(--dim)"}`;
-      ear.title = "Есть заметка";
+      ear.title = t("Есть заметка");
       cell.appendChild(ear);
     }
     if ((entry?.dayEmoji || "").trim()) {
       const em = document.createElement("span");
       em.className = "dayEmoji";
       em.textContent = entry.dayEmoji;
-      em.title = "Маркер дня";
+      em.title = t("Маркер дня");
       cell.appendChild(em);
     }
     const num = document.createElement("span");
@@ -1584,7 +1924,7 @@ function renderCalendar(){
         const tm = document.createElement("span");
         tm.className = "taskMark done";
         tm.textContent = "✓";
-        tm.title = "Все задачи выполнены";
+        tm.title = t("Все задачи выполнены");
         marks.appendChild(tm);
       }
       if (reminders.length) {
@@ -1613,7 +1953,7 @@ function renderSummary(){
     if (st) hours += shiftPlannedHours(st);
   }
   const el = $("summary");
-  el.innerHTML = '<span class="lbl">Итого:</span>';
+  el.innerHTML = `<span class="lbl">${esc(t("Итого:"))}</span>`;
   let any = Math.abs(overtime) > 0.0001 || Math.abs(timeOff) > 0.0001;
   for (const s of state.shiftTypes) {
     if (!counts[s.id]) continue;
@@ -1646,7 +1986,7 @@ function renderSummary(){
   }
   if (!any) {
     const s = document.createElement("span");
-    s.style.color = "var(--dim)"; s.textContent = "Смены ещё не отмечены. Выберите день в календаре.";
+    s.style.color = "var(--dim)"; s.textContent = t("Смены ещё не отмечены. Выберите день в календаре.");
     el.appendChild(s);
   }
   renderLedgerTable();
@@ -1708,12 +2048,12 @@ async function applyScheduleTemplate(){
   const shifts = names.map(findShiftByName);
   if (shifts.some(s => !s)) {
     renderScheduleControls();
-    return setSave("err", "не хватает смен для шаблона");
+    return setSave("err", t("не хватает смен для шаблона"));
   }
 
   const count = Number($("tplDays").value);
   if (!Number.isInteger(count) || count < 1 || count > 366) {
-    return setSave("err", "количество дней: от 1 до 366");
+    return setSave("err", t("количество дней: от 1 до 366"));
   }
 
   setSave("saving");
@@ -1841,18 +2181,18 @@ function resetOvertimeForms(k = state.selected){
   if ($("creditPlanned")) $("creditPlanned").value = "0";
   if ($("creditHours")) $("creditHours").value = "0";
   if ($("creditReason")) $("creditReason").value = "";
-  if ($("creditCalcHint")) $("creditCalcHint").textContent = "можно вручную";
+  if ($("creditCalcHint")) $("creditCalcHint").textContent = t("можно вручную");
   clearScenarioHighlight();
   if ($("creditEditNotice")) { $("creditEditNotice").hidden = true; $("creditEditNotice").textContent = ""; }
   if ($("creditCancel")) $("creditCancel").hidden = true;
-  if ($("creditAdd")) $("creditAdd").textContent = "Начислить";
+  if ($("creditAdd")) $("creditAdd").textContent = t("Начислить");
 
   if ($("usageDate")) $("usageDate").value = k || todayKey();
   if ($("usageHours")) $("usageHours").value = "0";
   if ($("usageReason")) $("usageReason").value = "";
   if ($("usageEditNotice")) { $("usageEditNotice").hidden = true; $("usageEditNotice").textContent = ""; }
   if ($("usageCancel")) $("usageCancel").hidden = true;
-  if ($("usageAdd")) $("usageAdd").textContent = "Списать отгул";
+  if ($("usageAdd")) $("usageAdd").textContent = t("Списать отгул");
 }
 
 function cancelCreditEdit(){
@@ -1869,7 +2209,7 @@ function cancelUsageEdit(){
   if ($("usageReason")) $("usageReason").value = "";
   if ($("usageEditNotice")) { $("usageEditNotice").hidden = true; $("usageEditNotice").textContent = ""; }
   if ($("usageCancel")) $("usageCancel").hidden = true;
-  if ($("usageAdd")) $("usageAdd").textContent = "Списать отгул";
+  if ($("usageAdd")) $("usageAdd").textContent = t("Списать отгул");
   state.editingCreditId = creditId;
 }
 
@@ -1983,7 +2323,7 @@ function overtimeCalcFromInputs(){
     return calcOvertimeInterval(start, end, "короткий ввод");
   }
 
-  $("creditCalcHint").textContent = "можно вручную";
+  $("creditCalcHint").textContent = t("можно вручную");
   return null;
 }
 
@@ -2171,8 +2511,8 @@ function fillCreditScenario({start, end, breakMinutes = 0, plannedHours = 0, rea
 
 function currentSelectedShiftOrError(){
   const st = stOf(state.selected);
-  if (!state.selected) { setSave("err", "сначала выбери день в календаре"); return null; }
-  if (!st) { setSave("err", "на выбранном дне нет смены"); return null; }
+  if (!state.selected) { setSave("err", t("сначала выбери день в календаре")); return null; }
+  if (!st) { setSave("err", t("на выбранном дне нет смены")); return null; }
   return st;
 }
 
@@ -2225,11 +2565,11 @@ function applyQuickScenario(sc){
   if (!st) return;
   const base = selectedCreditBaseDate();
   const start = scenarioStartValue(base, st, sc);
-  if (!start) return setSave("err", "сценарию не хватает времени начала/конца смены");
+  if (!start) return setSave("err", t("сценарию не хватает времени начала/конца смены"));
   const end = scenarioEndValue(base, st, sc, start);
-  if (!end) return setSave("err", "не получилось определить конец сценария");
+  if (!end) return setSave("err", t("не получилось определить конец сценария"));
   const sdt = localDateTimeToDate(start), edt = localDateTimeToDate(end);
-  if (!sdt || !edt || edt <= sdt) return setSave("err", "конец сценария должен быть позже начала");
+  if (!sdt || !edt || edt <= sdt) return setSave("err", t("конец сценария должен быть позже начала"));
   fillCreditScenario({
     start,
     end,
@@ -2259,7 +2599,7 @@ function resetScenarioEditor(){
 
 function buildScenarioPayload(){
   const name = $("scName").value.trim();
-  if (!name) { setSave("err", "назови сценарий"); return null; }
+  if (!name) { setSave("err", t("назови сценарий")); return null; }
   return {
     name,
     groupLabel: $("scGroup").value.trim() || null,
@@ -2287,7 +2627,7 @@ async function saveQuickScenario(){
     state.quickScenarios = await api.quickScenarios();
     resetScenarioEditor();
     renderQuickScenarioContext();
-    setSave("saved", "сценарий добавлен");
+    setSave("saved", t("сценарий добавлен"));
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
@@ -2295,7 +2635,7 @@ async function saveQuickScenario(){
 }
 
 async function deleteQuickScenario(id){
-  if (!confirm("Удалить быстрый сценарий?")) return;
+  if (!confirm(t("Удалить быстрый сценарий?"))) return;
   setSave("saving");
   try {
     await api.deleteQuickScenario(id);
@@ -2313,17 +2653,17 @@ async function deleteQuickScenario(id){
 function buildCreditPayload(){
   const calc = overtimeCalcFromInputs();
   if (!calc && ($("creditStart").value || $("creditEnd").value)) {
-    setSave("err", "для автоподсчёта нужны и начало, и конец");
+    setSave("err", t("для автоподсчёта нужны и начало, и конец"));
     return null;
   }
   const hours = calc ? calc.hours : readHoursInput("creditHours");
   if (!Number.isFinite(hours) || hours <= 0) {
-    setSave("err", "укажи часы переработки больше 0");
+    setSave("err", t("укажи часы переработки больше 0"));
     return null;
   }
   const manualDate = $("creditDate")?.value || state.selected;
   if (!calc && !manualDate) {
-    setSave("err", "укажи дату переработки");
+    setSave("err", t("укажи дату переработки"));
     return null;
   }
   const payload = {
@@ -2379,7 +2719,7 @@ function findUsageById(id){
 
 function startEditOvertimeCredit(id){
   const c = (state.overtimeAccount?.credits || []).find(x => Number(x.id) === Number(id)) || (state.ledgerPage?.items || []).find(x => Number(x.id) === Number(id));
-  if (!c) return setSave("err", "начисление не найдено");
+  if (!c) return setSave("err", t("начисление не найдено"));
   if (state.selected !== c.workedDate) selectDay(c.workedDate);
   state.editingCreditId = Number(id);
   $("creditDate").value = c.workedDate;
@@ -2401,9 +2741,9 @@ function startEditOvertimeCredit(id){
 
 async function addOvertimeUsage(){
   const hours = readHoursInput("usageHours");
-  if (!Number.isFinite(hours) || hours <= 0) return setSave("err", "укажи часы списания больше 0");
+  if (!Number.isFinite(hours) || hours <= 0) return setSave("err", t("укажи часы списания больше 0"));
   const date = $("usageDate")?.value || state.selected;
-  if (!date) return setSave("err", "укажи дату списания");
+  if (!date) return setSave("err", t("укажи дату списания"));
   setSave("saving");
   try {
     const payload = {
@@ -2429,7 +2769,7 @@ async function addOvertimeUsage(){
 
 function startEditOvertimeUsage(id){
   const u = findUsageById(id);
-  if (!u) return setSave("err", "списание не найдено");
+  if (!u) return setSave("err", t("списание не найдено"));
   if (state.selected !== u.usageDate) selectDay(u.usageDate);
   state.editingUsageId = Number(id);
   $("usageDate").value = u.usageDate;
@@ -2494,9 +2834,9 @@ function creditStatus(c){
 }
 
 function statusLabel(status){
-  if (status === "closed") return "списано";
-  if (status === "partial") return "частично";
-  return "остаток";
+  if (status === "closed") return t("списано");
+  if (status === "partial") return t("частично");
+  return t("остаток");
 }
 
 function creditSearchHaystack(c){
@@ -2716,14 +3056,14 @@ $("scReset").addEventListener("click", resetScenarioEditor);
 $("creditPlanByShift").addEventListener("click", () => {
   const st = stOf(state.selected);
   const plan = shiftPlannedHours(st);
-  if (!st || !plan) return setSave("err", "на этом дне нет смены с плановыми часами");
+  if (!st || !plan) return setSave("err", t("на этом дне нет смены с плановыми часами"));
   $("creditPlanned").value = fmtHours(plan);
   updateOvertimeCalcPreview();
 });
 $("creditTimeByShift").addEventListener("click", () => {
   const st = stOf(state.selected);
   const base = state.selected || $("creditDate")?.value;
-  if (!st || !base || !st.startTime || !st.endTime) return setSave("err", "у выбранной смены не указано время начала/конца");
+  if (!st || !base || !st.startTime || !st.endTime) return setSave("err", t("у выбранной смены не указано время начала/конца"));
   $("creditDate").value = base;
   $("creditStart").value = setTimeOnDate(base, st.startTime);
   const endDate = st.endTime <= st.startTime ? dateKeyOffset(base, 1) : base;
@@ -2733,7 +3073,7 @@ $("creditTimeByShift").addEventListener("click", () => {
   updateOvertimeCalcPreview();
 });
 $("creditDateSelected").addEventListener("click", () => {
-  if (!state.selected) return setSave("err", "сначала выбери день в календаре");
+  if (!state.selected) return setSave("err", t("сначала выбери день в календаре"));
   $("creditDate").value = state.selected;
   updateOvertimeCalcPreview();
 });
@@ -2749,7 +3089,7 @@ $("usageCancel").addEventListener("click", cancelUsageEdit);
 $("usageByShift").addEventListener("click", () => {
   const st = stOf(state.selected);
   const plan = shiftPlannedHours(st);
-  if (!st || !plan) return setSave("err", "на этом дне нет смены с плановыми часами для списания");
+  if (!st || !plan) return setSave("err", t("на этом дне нет смены с плановыми часами для списания"));
   $("usageHours").value = fmtHours(plan);
 });
 for (const id of ["creditDate", "creditTimeRange", "creditStart", "creditEnd", "creditBreak", "creditPlanned", "creditHours", "creditReason", "usageDate", "usageHours", "usageReason"]) {
@@ -2778,7 +3118,7 @@ function renderImportantSettings(){
   if (!items.length) {
     const empty = document.createElement("div");
     empty.className = "emptyLine";
-    empty.textContent = "Важных дат пока нет.";
+    empty.textContent = t("Важных дат пока нет.");
     box.appendChild(empty);
     return;
   }
@@ -2800,8 +3140,8 @@ function renderImportantSettings(){
     const del = document.createElement("button");
     del.className = "tinyDel";
     del.type = "button";
-    del.textContent = "удалить";
-    del.title = "Удалить важный день полностью, включая повторения";
+    del.textContent = t("удалить");
+    del.title = t("Удалить важный день полностью, включая повторения");
     del.addEventListener("click", () => removeImportantDay(item.id));
     row.append(dot, title, date, mode, del);
     box.appendChild(row);
@@ -2816,7 +3156,7 @@ function renderImportantDays(){
   if (!items.length) {
     const empty = document.createElement("div");
     empty.className = "emptyLine";
-    empty.textContent = "В этот день важных событий нет.";
+    empty.textContent = t("В этот день важных событий нет.");
     box.appendChild(empty);
     updateAccSummaries();
     return;
@@ -2836,8 +3176,8 @@ function renderImportantDays(){
     const del = document.createElement("button");
     del.className = "tinyDel";
     del.type = "button";
-    del.textContent = "удалить";
-    del.title = "Удалить важный день полностью, включая повторения";
+    del.textContent = t("удалить");
+    del.title = t("Удалить важный день полностью, включая повторения");
     del.addEventListener("click", () => removeImportantDay(item.id));
     row.append(dot, title, mode, del);
     box.appendChild(row);
@@ -2847,9 +3187,9 @@ function renderImportantDays(){
 
 async function addImportantDay(){
   const k = $("impDate")?.value || state.selected;
-  if (!k) return setSave("err", "укажи дату важного дня");
+  if (!k) return setSave("err", t("укажи дату важного дня"));
   const title = $("impTitle").value.trim();
-  if (!title) return setSave("err", "укажи название важного дня");
+  if (!title) return setSave("err", t("укажи название важного дня"));
   setSave("saving");
   try {
     await api.createImportantDay({
@@ -2874,7 +3214,7 @@ async function addImportantDay(){
 }
 
 async function removeImportantDay(id){
-  if (!confirm("Удалить важный день целиком, включая повторения?")) return;
+  if (!confirm(t("Удалить важный день целиком, включая повторения?"))) return;
   setSave("saving");
   try {
     await api.deleteImportantDay(id);
@@ -2893,7 +3233,7 @@ async function removeImportantDay(id){
 
 $("impAdd").addEventListener("click", addImportantDay);
 $("impTitle").addEventListener("keydown", e => { if (e.key === "Enter") addImportantDay(); });
-$("impDateSelected")?.addEventListener("click", () => { if (!state.selected) return setSave("err", "сначала выбери день в календаре"); $("impDate").value = state.selected; });
+$("impDateSelected")?.addEventListener("click", () => { if (!state.selected) return setSave("err", t("сначала выбери день в календаре")); $("impDate").value = state.selected; });
 $("impDateToday")?.addEventListener("click", () => { $("impDate").value = todayKey(); });
 
 /* ─── Задачи дня ────────────────────────────────────────────── */
@@ -2932,7 +3272,7 @@ function renderTasks(){
   if (!all.length) {
     const empty = document.createElement("div");
     empty.className = "emptyLine";
-    empty.textContent = "Задач пока нет. После добавления открытые задачи будут отмечены в календаре.";
+    empty.textContent = t("Задач пока нет. После добавления открытые задачи будут отмечены в календаре.");
     box.appendChild(empty);
     updateAccSummaries();
     return;
@@ -2940,7 +3280,7 @@ function renderTasks(){
   if (!items.length) {
     const empty = document.createElement("div");
     empty.className = "emptyLine";
-    empty.textContent = "По фильтрам задач нет.";
+    empty.textContent = t("По фильтрам задач нет.");
     box.appendChild(empty);
     updateAccSummaries();
     return;
@@ -2969,16 +3309,16 @@ function renderTasks(){
     const due = taskDueLabel(task);
     if (due) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = due; meta.appendChild(b); }
     if (task.reminderEnabled) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = `🔔 ${task.reminderMinutesBefore ?? 0}м`; meta.appendChild(b); }
-    if (task.overdue && !task.done) { const b = document.createElement("span"); b.className = "taskBadge overdue"; b.textContent = "просрочено"; meta.appendChild(b); }
+    if (task.overdue && !task.done) { const b = document.createElement("span"); b.className = "taskBadge overdue"; b.textContent = t("просрочено"); meta.appendChild(b); }
     body.append(text, meta);
     const edit = document.createElement("button");
-    edit.className = "tinyDel"; edit.type = "button"; edit.textContent = "ред."; edit.title = "Редактировать задачу";
+    edit.className = "tinyDel"; edit.type = "button"; edit.textContent = t("ред."); edit.title = t("Редактировать задачу");
     edit.addEventListener("click", () => editTask(task));
     const del = document.createElement("button");
     del.className = "tinyDel";
     del.type = "button";
     del.textContent = "×";
-    del.title = "Удалить задачу";
+    del.title = t("Удалить задачу");
     del.addEventListener("click", () => removeTask(task.id));
     row.append(cb, body, edit, del);
     box.appendChild(row);
@@ -2991,7 +3331,7 @@ function editTask(task){
   const category = prompt("Категория", task.category || "") ?? task.category;
   const dueDate = prompt("Срок yyyy-MM-dd, пусто — без срока", task.dueDate || "") ?? task.dueDate;
   const dueTime = prompt("Время срока HH:mm, пусто — без времени", task.dueTime || "") ?? task.dueTime;
-  const reminder = confirm("Включить напоминание для этой задачи?");
+  const reminder = confirm(t("Включить напоминание для этой задачи?"));
   updateTaskDetails(task.id, { text, category, dueDate, dueTime, reminderEnabled: reminder, reminderMinutesBefore: reminder ? (task.reminderMinutesBefore ?? 60) : null });
 }
 
@@ -3011,7 +3351,7 @@ async function addTask(){
   const k = state.selected;
   if (!k) return;
   const text = $("taskText").value.trim();
-  if (!text) return setSave("err", "напиши текст задачи");
+  if (!text) return setSave("err", t("напиши текст задачи"));
   setSave("saving");
   try {
     const created = await api.createTask({
@@ -3079,7 +3419,7 @@ async function toggleTask(id, done){
 }
 
 async function removeTask(id){
-  if (!confirm("Удалить задачу?")) return;
+  if (!confirm(t("Удалить задачу?"))) return;
   setSave("saving");
   try {
     await api.deleteTask(id);
@@ -3162,8 +3502,8 @@ function buildTaskMeta(task){
   const due = taskDueLabel(task);
   if (due) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = due; meta.appendChild(b); }
   if (task.reminderEnabled) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = `🔔 ${task.reminderMinutesBefore ?? 0}м`; meta.appendChild(b); }
-  if (task.overdue && !task.done) { const b = document.createElement("span"); b.className = "taskBadge overdue"; b.textContent = "просрочено"; meta.appendChild(b); }
-  if (task.done) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = "выполнено"; meta.appendChild(b); }
+  if (task.overdue && !task.done) { const b = document.createElement("span"); b.className = "taskBadge overdue"; b.textContent = t("просрочено"); meta.appendChild(b); }
+  if (task.done) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = t("выполнено"); meta.appendChild(b); }
   return meta;
 }
 function renderTaskBoard(){
@@ -3188,7 +3528,7 @@ function renderTaskBoard(){
   if (!items.length) {
     const empty = document.createElement("div");
     empty.className = "emptyLine";
-    empty.textContent = "По этим фильтрам задач нет.";
+    empty.textContent = t("По этим фильтрам задач нет.");
     list.appendChild(empty);
     return;
   }
@@ -3214,10 +3554,10 @@ function renderTaskBoard(){
     const actions = document.createElement("div");
     actions.className = "taskBoardActions";
     const edit = document.createElement("button");
-    edit.type = "button"; edit.textContent = "ред."; edit.title = "Редактировать задачу";
+    edit.type = "button"; edit.textContent = t("ред."); edit.title = t("Редактировать задачу");
     edit.addEventListener("click", () => editTask(task));
     const del = document.createElement("button");
-    del.type = "button"; del.textContent = "×"; del.title = "Удалить задачу";
+    del.type = "button"; del.textContent = "×"; del.title = t("Удалить задачу");
     del.addEventListener("click", () => removeTask(task.id));
     actions.append(edit, del);
     row.append(cb, date, body, actions);
@@ -3279,7 +3619,7 @@ function renderChips(){
   const plus = document.createElement("button");
   plus.className = "chip plus";
   plus.textContent = "+";
-  plus.title = "Создать или настроить смену в настройках";
+  plus.title = t("Создать или настроить смену в настройках");
   plus.addEventListener("click", () => {
     openSettingsSection("shifts", true, "nsName");
   });
@@ -3306,7 +3646,7 @@ function renderDayEmojiControls(){
     b.type = "button";
     b.className = "emojiChoice" + (emoji === cur ? " on" : "");
     b.textContent = emoji;
-    b.title = "Поставить маркер " + emoji;
+    b.title = t("Поставить маркер ") + emoji;
     b.addEventListener("click", () => setDayEmoji(emoji));
     grid.appendChild(b);
   }
@@ -3462,23 +3802,23 @@ function renderSwatches(){
     row.appendChild(b);
   }
   const picker = document.createElement("input");
-  picker.type = "color"; picker.value = state.swColor; picker.title = "Свой цвет";
+  picker.type = "color"; picker.value = state.swColor; picker.title = t("Свой цвет");
   picker.addEventListener("input", () => { state.swColor = picker.value; });
   row.appendChild(picker);
   const add = document.createElement("button");
-  add.className = "add"; add.textContent = "Добавить";
+  add.className = "add"; add.textContent = t("Добавить");
   add.addEventListener("click", addShiftType);
   row.appendChild(add);
 }
 
 async function addShiftType(){
   const name = $("nsName").value.trim();
-  if (!name) return setSave("err", "укажи название смены");
+  if (!name) return setSave("err", t("укажи название смены"));
   const startTime = $("nsStart").value || null;
   const endTime = $("nsEnd").value || null;
   const breakMinutes = readIntInput("nsBreak");
   if (!Number.isFinite(breakMinutes) || breakMinutes < 0 || breakMinutes > 1440) {
-    return setSave("err", "обед: от 0 до 1440 минут");
+    return setSave("err", t("обед: от 0 до 1440 минут"));
   }
   const calculatedNorm = shiftDurationHours(startTime, endTime, breakMinutes);
   const rawPlan = $("nsPlan").value.trim().replace(",", ".");
@@ -3486,10 +3826,10 @@ async function addShiftType(){
   const plannedHours = rawPlan ? Number(rawPlan) : (calculatedNorm || (rawHours ? Number(rawHours) : 0));
   const hours = rawHours ? Number(rawHours) : plannedHours;
   if (!Number.isFinite(hours) || hours < 0 || hours > 24) {
-    return setSave("err", "часы: от 0 до 24");
+    return setSave("err", t("часы: от 0 до 24"));
   }
   if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) {
-    return setSave("err", "норма: от 0 до 24 часов");
+    return setSave("err", t("норма: от 0 до 24 часов"));
   }
 
   setSave("saving");
@@ -3524,19 +3864,19 @@ function renderCustomList(){
       <span>${esc(s.name)}${shiftPlannedHours(s) ? `${state.language === "en" ? " · norm " : " · норма "}${fmtHours(shiftPlannedHours(s))}ч` : ""}${meta ? ` <span style="color:var(--dim)">· ${esc(meta)}</span>` : ""}<span style="color:var(--dim)">${esc(notifyMeta)}</span></span>`;
 
     const edit = document.createElement("button");
-    edit.className = "del"; edit.textContent = "настроить";
-    edit.title = "Изменить время, обед и плановые часы смены";
+    edit.className = "del"; edit.textContent = t("настроить");
+    edit.title = t("Изменить время, обед и плановые часы смены");
     edit.addEventListener("click", () => editShiftType(s.id));
     row.appendChild(edit);
 
     if (s.builtin) {
       const tag = document.createElement("span");
-      tag.className = "tag"; tag.textContent = "встроенная";
+      tag.className = "tag"; tag.textContent = t("встроенная");
       row.appendChild(tag);
     } else {
       const del = document.createElement("button");
-      del.className = "del"; del.textContent = "удалить";
-      del.title = "Смена снимется с дней, где стояла. Заметки останутся.";
+      del.className = "del"; del.textContent = t("удалить");
+      del.title = t("Смена снимется с дней, где стояла. Заметки останутся.");
       del.addEventListener("click", () => removeShiftType(s.id));
       row.appendChild(del);
     }
@@ -3546,13 +3886,13 @@ function renderCustomList(){
 
 async function editShiftType(id){
   const s = state.shiftTypes.find(x => Number(x.id) === Number(id));
-  if (!s) return setSave("err", "смена не найдена");
+  if (!s) return setSave("err", t("смена не найдена"));
 
   const patch = {};
   if (!s.builtin) {
     const name = prompt("Название смены", s.name || "");
     if (name === null) return;
-    if (!name.trim()) return setSave("err", "название не может быть пустым");
+    if (!name.trim()) return setSave("err", t("название не может быть пустым"));
     patch.name = name.trim();
 
     const color = prompt("Цвет #RRGGBB", s.color || state.swColor);
@@ -3563,7 +3903,7 @@ async function editShiftType(id){
   const hoursRaw = prompt("Короткие часы для календаря", fmtHours(s.hours));
   if (hoursRaw === null) return;
   const hours = Number(hoursRaw.replace(",", "."));
-  if (!Number.isFinite(hours) || hours < 0 || hours > 24) return setSave("err", "часы: от 0 до 24");
+  if (!Number.isFinite(hours) || hours < 0 || hours > 24) return setSave("err", t("часы: от 0 до 24"));
   patch.hours = hours;
 
   const startTime = prompt("Начало смены HH:mm, можно пусто", s.startTime || "");
@@ -3577,13 +3917,13 @@ async function editShiftType(id){
   const brRaw = prompt("Обед/перерыв, минут", String(s.breakMinutes || 0));
   if (brRaw === null) return;
   const breakMinutes = Number(brRaw);
-  if (!Number.isFinite(breakMinutes) || breakMinutes < 0 || breakMinutes > 1440) return setSave("err", "обед: от 0 до 1440 минут");
+  if (!Number.isFinite(breakMinutes) || breakMinutes < 0 || breakMinutes > 1440) return setSave("err", t("обед: от 0 до 1440 минут"));
   patch.breakMinutes = Math.round(breakMinutes);
 
   const planRaw = prompt("Норма для расчёта переработки, ч", fmtHours(shiftPlannedHours(s)));
   if (planRaw === null) return;
   const plannedHours = Number(planRaw.replace(",", "."));
-  if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) return setSave("err", "норма: от 0 до 24 часов");
+  if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) return setSave("err", t("норма: от 0 до 24 часов"));
   patch.plannedHours = plannedHours;
 
   const notifRaw = prompt("Уведомлять перед этой сменой? да/нет", s.notificationsEnabled === false ? "нет" : "да");
@@ -3595,7 +3935,7 @@ async function editShiftType(id){
   if (minutesRaw === null) return;
   if (minutesRaw.trim()) {
     const minutes = Number(minutesRaw);
-    if (!Number.isFinite(minutes) || minutes < 0 || minutes > 1440) return setSave("err", "напоминание смены: от 0 до 1440 минут");
+    if (!Number.isFinite(minutes) || minutes < 0 || minutes > 1440) return setSave("err", t("напоминание смены: от 0 до 1440 минут"));
     patch.notificationMinutesBefore = Math.round(minutes);
   } else {
     patch.notificationMinutesBefore = -1;
@@ -3699,12 +4039,12 @@ function renderTimeSettings(){
     `браузер: <b>${esc(safeTzLabel(browserTz))}</b> <span>(${esc(browserTz)})</span>` +
     (Number(t.workOffsetMoscow || 0) ? `<br>пометка: Москва ${Number(t.workOffsetMoscow) > 0 ? "+" : ""}${Number(t.workOffsetMoscow)} ч` : "");
   $("timeSettingsStatus").className = "status statusAutoSave";
-  $("timeSettingsStatus").innerHTML = '<span class="statusChip statusChipAuto"><span class="statusDot"></span>автосохранение</span>';
+  $("timeSettingsStatus").innerHTML = `<span class="statusChip statusChipAuto"><span class="statusDot"></span>${esc(t("автосохранение"))}</span>`;
 }
 function saveTimeSettings(){
   storeTimeSettings(readTimeSettingsForm());
   renderTimeSettings();
-  setSave("saved", "настройки времени сохранены");
+  setSave("saved", t("настройки времени сохранены"));
 }
 let timeAutoApplyTimer = null;
 function scheduleTimeSettingsApply(){
@@ -3751,7 +4091,7 @@ async function applyTimeSettingsToBuiltins(silent = false){
   const t = readTimeSettingsForm();
   storeTimeSettings(t);
   const targets = state.shiftTypes.filter(s => s.name === "Дневная" || s.name === "Ночная");
-  if (!targets.length) return setSave("err", "не нашёл Дневную/Ночную смену");
+  if (!targets.length) return setSave("err", t("не нашёл Дневную/Ночную смену"));
   if (!silent) setSave("saving");
   try {
     for (const s of targets) {
@@ -3884,7 +4224,7 @@ function renderAdminUsers(users = []){
 }
 async function refreshAdminUsers(){
   const status = $("adminUsersStatus");
-  if (status) status.textContent = "загрузка…";
+  if (status) status.textContent = t("загрузка…");
   try {
     const page = state.adminUsersPage || { page:0, size:50 };
     const res = normalizePageResponse(await api.adminUsers({
@@ -3897,7 +4237,7 @@ async function refreshAdminUsers(){
     state.adminUsersPage = res;
     renderAdminUsers(state.adminUsers);
   } catch (err) {
-    if (status) status.textContent = "ошибка";
+    if (status) status.textContent = t("ошибка");
     const box = $("adminUsersList");
     if (box) box.innerHTML = diagnosticRow("Ошибка списка пользователей", err.message || String(err), false);
   }
@@ -3918,7 +4258,7 @@ async function saveAdminUserRole(id, role){
 async function resetAdminUserPassword(id, username){
   const password = prompt(`Новый пароль для ${username} (минимум 12 символов)`);
   if (password == null) return;
-  if (password.length < 12) return setSave("err", "пароль должен быть минимум 12 символов");
+  if (password.length < 12) return setSave("err", t("пароль должен быть минимум 12 символов"));
   try {
     const updated = await api.resetAdminUserPassword(id, password);
     state.adminUsers = (state.adminUsers || []).map(u => Number(u.id) === Number(id) ? updated : u);
@@ -3960,7 +4300,7 @@ function renderDiagnosticsStatus(data){
 async function refreshDiagnostics(){
   renderDiagnosticsClient();
   const st = $("diagnosticsStatus");
-  if (st) st.textContent = "проверяю…";
+  if (st) st.textContent = t("проверяю…");
   try {
     const data = await api.systemStatus();
     state.lastDiagnostics = data;
@@ -4000,8 +4340,8 @@ function initDiagnosticsEvents(){
   if (!$("diagnosticsCard")) return;
   $("diagnosticsRefresh")?.addEventListener("click", refreshDiagnostics);
   $("diagnosticsCopy")?.addEventListener("click", async () => {
-    try { await navigator.clipboard.writeText(diagnosticsReportText()); setSave("saved", "отчёт диагностики скопирован"); }
-    catch (err) { setSave("err", "не удалось скопировать отчёт"); }
+    try { await navigator.clipboard.writeText(diagnosticsReportText()); setSave("saved", t("отчёт диагностики скопирован")); }
+    catch (err) { setSave("err", t("не удалось скопировать отчёт")); }
   });
   renderDiagnosticsClient();
   refreshRegistrationAdmin();
@@ -4231,12 +4571,12 @@ async function saveNotificationSettings(extra = {}){
   } catch (err) { console.error(err); setSave("err", err.message); }
 }
 async function requestNotificationPermission(){
-  if (!("Notification" in window)) { alert("Этот браузер не поддерживает Notification API"); return; }
+  if (!("Notification" in window)) { alert(t("Этот браузер не поддерживает Notification API")); return; }
   const perm = await Notification.requestPermission();
   await saveNotificationSettings({ browserNotificationsEnabled: perm === "granted" });
 }
 function testNotification(){
-  if (!("Notification" in window) || Notification.permission !== "granted") { alert("Сначала разрешите уведомления в браузере"); return; }
+  if (!("Notification" in window) || Notification.permission !== "granted") { alert(t("Сначала разрешите уведомления в браузере")); return; }
   new Notification("DutyLog: Time & Overtime", { body:"Тестовое уведомление отправлено." });
 }
 async function showTomorrowNotifications(){
@@ -4338,7 +4678,7 @@ async function init(){
     console.error(err);
     if (err.status === 401) return; // при 401 нас уже уносит на login.html
     state.offline.online = false;
-    setSave("err", "нет связи — открыта локальная копия");
+    setSave("err", t("нет связи — открыта локальная копия"));
   }
   await loadMonth();
   await loadLedgerPage(true);
@@ -4479,7 +4819,7 @@ function maybeBirthdayBanner(p){
   const el = document.createElement("div");
   el.id = "bdayBanner";
   el.className = "bdayBanner";
-  el.textContent = "🎉 С днём рождения, " + (p.displayName || p.username) + "! Смену сегодня прогуливаем?";
+  el.textContent = t("🎉 С днём рождения, ") + (p.displayName || p.username) + (state.language === "en" ? "! Skipping the shift today?" : "! Смену сегодня прогуливаем?");
   const tabbar = document.getElementById("tabbar");
   if (tabbar) tabbar.insertAdjacentElement("afterend", el);
 }

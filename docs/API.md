@@ -1,4 +1,4 @@
-# DutyLog API v24.0.2
+# DutyLog API v24.0.3
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -1053,7 +1053,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "24.0.2",
+  "version": "24.0.3",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],
@@ -1158,7 +1158,7 @@ Large UI lists are paged server-side before being returned to the browser. Suppo
 Backend caps `size` to max `100`. CSV/XLS export endpoints are intentionally not paged: they export all rows matching selected filters.
 
 
-## v24.0.2 profile language preference
+## v24.0.3 profile language preference
 
 `GET /api/profile` includes `languagePreference` with allowed values `ru` or `en`.
 
