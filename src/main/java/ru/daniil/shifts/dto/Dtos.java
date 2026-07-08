@@ -66,7 +66,12 @@ public final class Dtos {
             boolean locked,
             boolean defaultEnabled,
             List<String> dependencies,
-            boolean hidden
+            boolean hidden,
+            String category,
+            int order,
+            List<String> uiSlots,
+            List<String> apiPrefixes,
+            List<String> offlineQueueTypes
     ) {}
 
     /** Безопасное обновление модулей: ключи берутся только из backend registry. */

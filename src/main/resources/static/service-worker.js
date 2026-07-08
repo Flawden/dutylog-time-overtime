@@ -1,4 +1,4 @@
-const CACHE_NAME = "dutylog-shell-v25.2"; // bump: сбрасывает старый кэш при активации
+const CACHE_NAME = "dutylog-shell-v25.3"; // bump: сбрасывает старый кэш при активации
 
 const SHELL = [
   "/manifest.json",

@@ -1,6 +1,6 @@
 # DutyLog Modules
 
-Status: v25.2.
+Status: v25.3.
 
 DutyLog is now a modular monolith. The application still ships as one Spring Boot backend and one web/PWA frontend, but user-facing features are grouped into modules that can be enabled or disabled per user.
 
@@ -73,9 +73,9 @@ The first v25.0 step guards major feature APIs and hides major UI blocks. Later 
 - notification source contracts;
 - module-aware offline snapshots;
 - first-run onboarding;
-- package-level boundaries under `ru.daniil.shifts.modules`.
+- package-level boundaries under `ru.daniil.shifts.module`.
 
-## v25.2 selected-day panel
+## v25.1 selected-day panel
 
 The selected-day panel is now module-aware. Each day block has an explicit module owner:
 
@@ -101,3 +101,14 @@ Rules:
 - disabled `notes` -> note text is stripped from the calendar snapshot;
 - offline queue refuses new operations for disabled modules.
 
+
+## v25.3 developer contracts
+
+The backend now has explicit module contracts under `ru.daniil.shifts.module`:
+
+- `ModuleKeys` keeps stable persisted keys.
+- `ModuleContract` describes dependencies, UI slots, API prefixes and offline queue operation types.
+- `DutyLogModules` is the canonical registry.
+- `GET /api/modules/contracts` exposes the effective contract metadata for clients/tests.
+
+See `docs/MODULE_CONTRACTS.md` for the developer checklist.

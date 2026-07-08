@@ -1,3 +1,13 @@
+# v25.3 — Developer module contracts
+
+- Added backend package `ru.daniil.shifts.module` with stable `ModuleKeys`, `ModuleCategory`, `ModuleContract` and canonical `DutyLogModules` registry.
+- `ModuleService` now uses the contract registry instead of local ad-hoc definitions while preserving existing `ModuleService.*` constants for controllers.
+- Module API payload now includes contract metadata: category, display order, UI slots, API prefixes and offline queue types.
+- Added `GET /api/modules/contracts` for clients/tests that explicitly need module contract metadata.
+- Module settings UI now shows module category and contract summary, and dependency names are rendered as user-facing module titles.
+- Added `docs/MODULE_CONTRACTS.md` and updated module/API documentation.
+- Frontend/backend/service-worker versions bumped to `25.3`.
+
 # v25.2 — Module-aware offline snapshot
 
 - Calendar snapshot responses now include the effective module list for the current user.

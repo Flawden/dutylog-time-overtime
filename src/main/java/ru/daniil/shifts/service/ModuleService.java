@@ -6,56 +6,44 @@ import ru.daniil.shifts.dto.Dtos.ModuleDto;
 import ru.daniil.shifts.dto.Dtos.ModuleSettingsUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.UserModuleSetting;
+import ru.daniil.shifts.module.DutyLogModules;
+import ru.daniil.shifts.module.ModuleContract;
+import ru.daniil.shifts.module.ModuleKeys;
 import ru.daniil.shifts.repo.UserModuleSettingRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Registry and per-user switches for DutyLog modules.
- * v25.0 keeps this as a modular-monolith layer: one app, explicit module boundaries.
+ *
+ * v25.3 keeps DutyLog as a modular monolith: one deployable application,
+ * explicit module contracts, guarded API boundaries and module-aware PWA/offline UI.
  */
 @Service
 public class ModuleService {
-    public static final String CORE = "core";
-    public static final String CALENDAR = "calendar";
-    public static final String SHIFTS = "shifts";
-    public static final String NOTES = "notes";
-    public static final String TASKS = "tasks";
-    public static final String OVERTIME = "overtime";
-    public static final String IMPORTANT_DATES = "important_dates";
-    public static final String NOTIFICATIONS = "notifications";
-    public static final String TELEGRAM = "telegram";
-    public static final String SCENARIOS = "scenarios";
-    public static final String ADMIN = "admin";
+    public static final String CORE = ModuleKeys.CORE;
+    public static final String CALENDAR = ModuleKeys.CALENDAR;
+    public static final String SHIFTS = ModuleKeys.SHIFTS;
+    public static final String NOTES = ModuleKeys.NOTES;
+    public static final String TASKS = ModuleKeys.TASKS;
+    public static final String OVERTIME = ModuleKeys.OVERTIME;
+    public static final String IMPORTANT_DATES = ModuleKeys.IMPORTANT_DATES;
+    public static final String NOTIFICATIONS = ModuleKeys.NOTIFICATIONS;
+    public static final String TELEGRAM = ModuleKeys.TELEGRAM;
+    public static final String SCENARIOS = ModuleKeys.SCENARIOS;
+    public static final String ADMIN = ModuleKeys.ADMIN;
 
-    private static final List<ModuleDefinition> DEFINITIONS = List.of(
-            new ModuleDefinition(CORE, "Ядро", "Core", "Профиль, язык, тема и базовая оболочка приложения.", "Profile, language, theme and the base app shell.", true, true, List.of()),
-            new ModuleDefinition(CALENDAR, "Календарь", "Calendar", "Месяц, выбор дня и назначение смен.", "Month view, selected day and shift assignment.", true, true, List.of(CORE)),
-            new ModuleDefinition(SHIFTS, "Смены", "Shifts", "Типы смен, часы, нормы и графики.", "Shift types, hours, norms and schedule templates.", true, true, List.of(CALENDAR)),
-            new ModuleDefinition(NOTES, "Заметки", "Notes", "Markdown-заметки внутри выбранного дня.", "Markdown notes inside the selected day.", false, true, List.of(CALENDAR)),
-            new ModuleDefinition(TASKS, "Задачи", "Tasks", "Задачи по дням, дедлайны и общая доска.", "Daily tasks, due dates and the global board.", false, true, List.of(CALENDAR)),
-            new ModuleDefinition(OVERTIME, "Переработки", "Overtime", "Начисления, отгулы, FIFO-баланс и журнал.", "Credits, time off, FIFO balance and ledger.", false, true, List.of(CALENDAR, SHIFTS)),
-            new ModuleDefinition(IMPORTANT_DATES, "Важные даты", "Important dates", "Дни рождения, события и повторяющиеся даты.", "Birthdays, events and repeating dates.", false, true, List.of(CALENDAR)),
-            new ModuleDefinition(NOTIFICATIONS, "Уведомления", "Notifications", "Браузерные, сменные, задачные и важные напоминания.", "Browser, shift, task and important-date reminders.", false, true, List.of(CALENDAR)),
-            new ModuleDefinition(TELEGRAM, "Telegram", "Telegram", "Привязка Telegram-бота и получение напоминаний.", "Telegram bot linking and reminder delivery.", false, false, List.of(NOTIFICATIONS)),
-            new ModuleDefinition(SCENARIOS, "Сценарии", "Scenarios", "Шаблоны, которые быстро заполняют форму переработки.", "Templates that quickly fill the overtime form.", false, true, List.of(OVERTIME)),
-            new ModuleDefinition(ADMIN, "Админка", "Admin tools", "Пользователи, роли, регистрация и диагностика.", true, true, List.of(CORE))
-    );
+    private static final List<ModuleContract> DEFINITIONS = DutyLogModules.ALL;
 
     private final UserModuleSettingRepository settings;
 
     public ModuleService(UserModuleSettingRepository settings) {
         this.settings = settings;
     }
-
-    public record ModuleDefinition(String key, String titleRu, String titleEn, String descriptionRu, String descriptionEn, boolean locked, boolean defaultEnabled, List<String> dependencies) {}
 
     @Transactional(readOnly = true)
     public List<ModuleDto> list(AppUser user) {
@@ -66,23 +54,29 @@ public class ModuleService {
                 .toList();
     }
 
+    /** Same payload as list(), named for clients and developers that want the contract explicitly. */
+    @Transactional(readOnly = true)
+    public List<ModuleDto> contracts(AppUser user) {
+        return list(user);
+    }
+
     @Transactional
     public List<ModuleDto> update(AppUser user, ModuleSettingsUpdateRequest req) {
         Map<String, Boolean> values = effectiveMap(user);
         Map<String, Boolean> requested = req == null || req.enabled() == null ? Map.of() : req.enabled();
-        Set<String> known = DEFINITIONS.stream().map(ModuleDefinition::key).collect(Collectors.toSet());
+        Set<String> known = DutyLogModules.knownKeys();
 
         for (Map.Entry<String, Boolean> entry : requested.entrySet()) {
             String key = normalizeKey(entry.getKey());
             if (!known.contains(key)) continue;
-            ModuleDefinition def = definition(key);
+            ModuleContract def = definition(key);
             if (def == null || def.locked()) continue;
             if (ADMIN.equals(key) && !user.isAdmin()) continue;
             values.put(key, Boolean.TRUE.equals(entry.getValue()));
         }
 
         // Locked/core modules are always enabled; admin is visible only for admins.
-        for (ModuleDefinition def : DEFINITIONS) {
+        for (ModuleContract def : DEFINITIONS) {
             if (def.locked()) values.put(def.key(), !ADMIN.equals(def.key()) || user.isAdmin());
         }
 
@@ -90,7 +84,7 @@ public class ModuleService {
         boolean changed;
         do {
             changed = false;
-            for (ModuleDefinition def : DEFINITIONS) {
+            for (ModuleContract def : DEFINITIONS) {
                 if (!values.getOrDefault(def.key(), def.defaultEnabled())) continue;
                 for (String dep : def.dependencies()) {
                     if (!values.getOrDefault(dep, false)) {
@@ -121,24 +115,24 @@ public class ModuleService {
     @Transactional(readOnly = true)
     public Map<String, Boolean> effectiveMap(AppUser user) {
         Map<String, Boolean> values = new LinkedHashMap<>();
-        for (ModuleDefinition def : DEFINITIONS) {
+        for (ModuleContract def : DEFINITIONS) {
             values.put(def.key(), def.locked() ? (!ADMIN.equals(def.key()) || user.isAdmin()) : def.defaultEnabled());
         }
         for (UserModuleSetting setting : settings.findByOwner(user)) {
             String key = normalizeKey(setting.getModuleKey());
-            ModuleDefinition def = definition(key);
+            ModuleContract def = definition(key);
             if (def == null || def.locked()) continue;
             values.put(key, setting.isEnabled());
         }
         if (!user.isAdmin()) values.put(ADMIN, false);
-        for (ModuleDefinition def : DEFINITIONS) {
+        for (ModuleContract def : DEFINITIONS) {
             if (def.locked()) values.put(def.key(), !ADMIN.equals(def.key()) || user.isAdmin());
         }
         return values;
     }
 
     private void persist(AppUser user, Map<String, Boolean> values) {
-        for (ModuleDefinition def : DEFINITIONS) {
+        for (ModuleContract def : DEFINITIONS) {
             if (def.locked()) continue;
             boolean enabled = values.getOrDefault(def.key(), def.defaultEnabled());
             UserModuleSetting setting = settings.findByOwnerAndModuleKey(user, def.key())
@@ -148,7 +142,7 @@ public class ModuleService {
         }
     }
 
-    private ModuleDto toDto(ModuleDefinition def, boolean enabled, AppUser user) {
+    private ModuleDto toDto(ModuleContract def, boolean enabled, AppUser user) {
         return new ModuleDto(
                 def.key(),
                 def.titleRu(),
@@ -159,16 +153,20 @@ public class ModuleService {
                 def.locked(),
                 def.defaultEnabled(),
                 def.dependencies(),
-                ADMIN.equals(def.key()) && !user.isAdmin()
+                ADMIN.equals(def.key()) && !user.isAdmin(),
+                def.category().name().toLowerCase(),
+                def.order(),
+                def.uiSlots(),
+                def.apiPrefixes(),
+                def.offlineQueueTypes()
         );
     }
 
-    private static ModuleDefinition definition(String key) {
-        String normalized = normalizeKey(key);
-        return DEFINITIONS.stream().filter(d -> d.key().equals(normalized)).findFirst().orElse(null);
+    private static ModuleContract definition(String key) {
+        return DutyLogModules.find(key).orElse(null);
     }
 
     private static String normalizeKey(String key) {
-        return key == null ? "" : key.trim().toLowerCase(Locale.ROOT);
+        return DutyLogModules.normalize(key);
     }
 }

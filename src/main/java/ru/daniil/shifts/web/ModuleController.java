@@ -32,6 +32,12 @@ public class ModuleController {
         return moduleService.list(current);
     }
 
+    @GetMapping("/contracts")
+    public List<ModuleDto> contracts(Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        return moduleService.contracts(current);
+    }
+
     @PatchMapping
     public List<ModuleDto> update(@Valid @RequestBody(required = false) ModuleSettingsUpdateRequest req, Principal principal) {
         AppUser current = currentUserService.requireUser(principal);

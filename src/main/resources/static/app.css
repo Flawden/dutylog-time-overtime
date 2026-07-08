@@ -1349,3 +1349,8 @@ html[lang="en"] body.offline #telegramBox::before{content:"Telegram integration 
   font-size:12px;
 }
 @media(max-width:700px){.dayModulesHint button{display:block;margin:8px 0 0;}}
+
+/* v25.3: developer module contracts */
+.moduleMeta{display:flex;flex-wrap:wrap;gap:6px;margin-top:2px;}
+.moduleMeta span{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:999px;padding:3px 7px;background:rgba(255,255,255,.03);font-size:10.5px;font-weight:750;color:var(--mut);}
+.moduleDevDetails{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;opacity:.72;}

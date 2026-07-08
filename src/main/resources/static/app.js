@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "25.2"
+const DUTYLOG_VERSION = "25.3"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -138,7 +138,7 @@ const I18N_EN = {
   "развернуть всё":"expand all", "свернуть всё":"collapse all", "открыть":"open", "свернуть":"collapse",
   "Профиль пользователя":"User profile", "Отображаемое имя":"Display name", "День рождения":"Birthday", "Сохранить":"Save",
   "Смена пароля":"Change password", "Текущий пароль":"Current password", "Новый пароль":"New password", "Ещё раз":"Repeat", "Сменить пароль":"Change password", "Активные устройства":"Active devices", "Telegram-бот":"Telegram bot",
-  "Интерфейс":"Interface", "Модульность":"Modularity", "Модули приложения":"App modules", "Отключайте функции, которые сейчас не нужны. Данные не удаляются: модуль можно включить обратно в любой момент.":"Turn off features you do not need right now. Data is not deleted: you can enable a module again at any time.", "Ядро, календарь и смены всегда включены. Зависимости включаются автоматически, чтобы приложение не ломалось.":"Core, calendar and shifts are always enabled. Dependencies are enabled automatically so the app stays consistent.", "включено":"enabled", "выключено":"disabled", "всегда включён":"always on", "зависит от":"depends on", "модули сохранены":"modules saved", "модули загружаются…":"modules are loading…", "модуль выключен":"module disabled", "включено модулей":"modules enabled", "snapshot модулей":"modules snapshot", "модули не загружены":"modules not loaded", "операция относится к выключенному модулю":"operation belongs to a disabled module", "Язык приложения":"App language", "Русский":"Russian", "Основной язык":"Main language", "Дополнительный язык":"Additional language", "Язык сохранён":"Language saved",
+  "Интерфейс":"Interface", "Модульность":"Modularity", "Модули приложения":"App modules", "Отключайте функции, которые сейчас не нужны. Данные не удаляются: модуль можно включить обратно в любой момент.":"Turn off features you do not need right now. Data is not deleted: you can enable a module again at any time.", "Ядро, календарь и смены всегда включены. Зависимости включаются автоматически, чтобы приложение не ломалось.":"Core, calendar and shifts are always enabled. Dependencies are enabled automatically so the app stays consistent.", "включено":"enabled", "выключено":"disabled", "всегда включён":"always on", "зависит от":"depends on", "модули сохранены":"modules saved", "модули загружаются…":"modules are loading…", "модуль выключен":"module disabled", "включено модулей":"modules enabled", "snapshot модулей":"modules snapshot", "модули не загружены":"modules not loaded", "операция относится к выключенному модулю":"operation belongs to a disabled module", "контракт":"contract", "слоты":"slots", "API":"API", "offline":"offline", "категория":"category", "ядро":"core", "календарь":"calendar", "продуктивность":"productivity", "учёт времени":"time accounting", "интеграции":"integrations", "администрирование":"administration", "Язык приложения":"App language", "Русский":"Russian", "Основной язык":"Main language", "Дополнительный язык":"Additional language", "Язык сохранён":"Language saved",
   "Персонализация":"Personalization", "Пресет":"Preset", "Готовая тема":"Theme preset", "Базовый режим":"Base mode", "Акцент":"Accent", "Точная настройка":"Fine tuning", "Фон приложения":"App background", "Карточки":"Cards", "Внутренние блоки":"Inner blocks", "Основной текст":"Primary text", "Вторичный текст":"Secondary text", "Границы":"Borders", "Стиль кнопок":"Button style", "Стиль карточек":"Card style", "Тени":"Shadows", "Плотность":"Density", "Скругление карточек":"Card radius", "Сохранить внешний вид":"Save appearance", "Сбросить локально":"Reset locally",
   "как в системе":"system", "тёмная":"dark", "светлая":"light", "заливка":"solid", "мягкие":"soft", "контурные":"outline", "призрачные":"ghost", "стандартные":"standard", "плоские":"flat", "контрастные":"contrast", "тёплые":"warm", "без теней":"no shadows", "лёгкие":"light", "средние":"medium", "сильные":"strong", "компактно":"compact", "обычно":"comfortable", "просторно":"spacious",
   "Время и регион":"Time and region", "Рабочее время и часовой пояс":"Working hours and timezone", "Регион / объект":"Region / site", "Рабочий часовой пояс":"Work timezone", "Определить часовой пояс":"Detect timezone", "Формат времени":"Time format", "Сохранить настройки":"Save settings",
@@ -1117,6 +1117,7 @@ const api = {
   async upsertDay(k, b)     { return jfetch(`/api/days/${k}`, { method:"PUT", body:b }); },
   async fillDays(b)        { return jfetch("/api/days/fill", { method:"POST", body:b }); },
   async modules()          { return jfetch("/api/modules"); },
+  async moduleContracts()  { return jfetch("/api/modules/contracts"); },
   async updateModules(enabled) { return jfetch("/api/modules", { method:"PATCH", body:{ enabled } }); },
   async createTask(b)      { return jfetch("/api/tasks", { method:"POST", body:b }); },
   async updateTask(id, b)  { return jfetch(`/api/tasks/${id}`, { method:"PATCH", body:b }); },
@@ -1175,6 +1176,17 @@ function moduleDescription(m){ return state.language === "en" ? (m.descriptionEn
 function moduleDisplayName(key){
   const mod = (state.modulesList || []).find(m => m.key === key);
   return mod ? moduleTitle(mod) : key;
+}
+function moduleCategoryLabel(category){
+  const key = String(category || "").toLowerCase();
+  const ru = { core:"ядро", calendar:"календарь", productivity:"продуктивность", time_accounting:"учёт времени", integration:"интеграции", admin:"администрирование" }[key] || key;
+  return t(ru);
+}
+function moduleContractCounts(m){
+  const ui = Array.isArray(m?.uiSlots) ? m.uiSlots.length : 0;
+  const api = Array.isArray(m?.apiPrefixes) ? m.apiPrefixes.length : 0;
+  const offline = Array.isArray(m?.offlineQueueTypes) ? m.offlineQueueTypes.length : 0;
+  return `${ui} UI · ${api} ${t("API")} · ${offline} ${t("offline")}`;
 }
 function requireModuleEnabled(key){
   if (!moduleEnabled(key)) {
@@ -1343,7 +1355,9 @@ async function refreshModuleAwareData(){
 function renderModuleSettings(){
   const grid = $("moduleSettingsGrid");
   if (!grid) return;
-  const list = (state.modulesList || []).filter(m => !["core","calendar","shifts","admin"].includes(m.key) || m.key === "admin");
+  const list = (state.modulesList || [])
+    .filter(m => !["core","calendar","shifts","admin"].includes(m.key) || m.key === "admin")
+    .sort((a,b) => (Number(a.order || 0) - Number(b.order || 0)) || moduleTitle(a).localeCompare(moduleTitle(b)));
   if (!list.length) { grid.innerHTML = `<div class="settingsHint">${esc(t("модули загружаются…"))}</div>`; return; }
   const enabledCount = list.filter(m => m.enabled).length;
   const status = $("modulesStatus");
@@ -1355,10 +1369,20 @@ function renderModuleSettings(){
   for (const m of list) {
     const card = document.createElement("label");
     card.className = "moduleCard" + (m.enabled ? " on" : "") + (m.locked ? " locked" : "");
-    const deps = (m.dependencies || []).filter(d => !["core","calendar","shifts"].includes(d));
+    const deps = (m.dependencies || []).filter(d => !["core","calendar","shifts"].includes(d)).map(moduleDisplayName);
+    const details = [];
+    if (Array.isArray(m.uiSlots) && m.uiSlots.length) details.push(`${t("слоты")}: ${m.uiSlots.join(", ")}`);
+    if (Array.isArray(m.apiPrefixes) && m.apiPrefixes.length) details.push(`${t("API")}: ${m.apiPrefixes.join(", ")}`);
+    if (Array.isArray(m.offlineQueueTypes) && m.offlineQueueTypes.length) details.push(`${t("offline")}: ${m.offlineQueueTypes.join(", ")}`);
     card.innerHTML = `
       <input type="checkbox" ${m.enabled ? "checked" : ""} ${m.locked ? "disabled" : ""} data-module-toggle="${esc(m.key)}"/>
-      <span class="moduleMain"><b>${esc(moduleTitle(m))}</b><span>${esc(moduleDescription(m))}</span>${deps.length ? `<small>${esc(t("зависит от"))}: ${esc(deps.join(", "))}</small>` : ""}</span>
+      <span class="moduleMain">
+        <b>${esc(moduleTitle(m))}</b>
+        <span>${esc(moduleDescription(m))}</span>
+        <span class="moduleMeta"><span>${esc(moduleCategoryLabel(m.category))}</span><span>${esc(t("контракт"))}: ${esc(moduleContractCounts(m))}</span></span>
+        ${deps.length ? `<small>${esc(t("зависит от"))}: ${esc(deps.join(", "))}</small>` : ""}
+        ${details.length ? `<small class="moduleDevDetails">${esc(details.join(" · "))}</small>` : ""}
+      </span>
       <span class="moduleBadge">${esc(m.locked ? t("всегда включён") : (m.enabled ? t("включено") : t("выключено")))}</span>`;
     grid.appendChild(card);
   }
