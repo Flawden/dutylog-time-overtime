@@ -1,7 +1,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "24.0.3"
+const DUTYLOG_VERSION = "24.0.4"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -521,6 +521,32 @@ Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":
 Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие", "Browser":"Браузер" });
 
 
+
+// v24.0.4: final small i18n cleanups reported from real UI.
+Object.assign(I18N_EN, {
+  "не отмечена":"not marked",
+  "Не отмечена":"Not marked",
+  "Формат даты":"Date format",
+  "Формат даты: дд.мм.гггг":"Date format: yyyy-mm-dd",
+  "Формат даты и времени: дд.мм.гггг чч:мм":"Date and time format: yyyy-mm-dd hh:mm",
+  "дд.мм.гггг":"yyyy-mm-dd",
+  "ДД.ММ.ГГГГ":"YYYY-MM-DD",
+  "сохраняется автоматически":"saved automatically",
+  "редактор":"editor",
+  "превью":"preview",
+  "Пусто. Пиши слева — превью живое.":"Empty. Write on the left — preview updates live.",
+  "# Заголовок\n**жирный**, *курсив*, `код`\n- [ ] задача\n- список":"# Heading\n**bold**, *italic*, `code`\n- [ ] task\n- list",
+  "# Заголовок\n**жирный**, *курсив*, `код`\n- [ ] задача\n> цитата\n```\nкод блоком\n```":"# Heading\n**bold**, *italic*, `code`\n- [ ] task\n> quote\n```\ncode block\n```",
+  "рабочее время":"work time",
+  "пометка":"note",
+  "Москва":"Moscow",
+  "24 часа":"24 hours",
+  "Шаблоны смен":"Shift templates",
+  "Закрыть (Esc)":"Close (Esc)"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие", "Browser":"Браузер" });
+
 function translateDynamicEn(core){
   let s = String(core ?? "");
   const exact = I18N_EN[s];
@@ -638,8 +664,9 @@ function translateStaticTree(root = document.body){
       if (next !== node.nodeValue) node.nodeValue = next;
     }
     const attrs = ['placeholder','title','aria-label'];
+    const skipAttr = el => el && el.closest && el.closest('script,style,code,pre,[data-no-i18n]');
     for (const el of root.querySelectorAll ? root.querySelectorAll('*') : []) {
-      if (skip(el)) continue;
+      if (skipAttr(el)) continue;
       for (const attr of attrs) {
         if (el.hasAttribute(attr)) {
           const old = el.getAttribute(attr);
@@ -663,6 +690,37 @@ function ensureTranslationObserver(){
   });
   observer.observe(document.body, { childList:true, subtree:true, characterData:true, attributes:true, attributeFilter:['placeholder','title','aria-label'] });
 }
+function applyLanguagePolish(){
+  const en = state.language === "en";
+  const dateLang = en ? "en-CA" : "ru-RU";
+  document.querySelectorAll('input[type="date"], input[type="datetime-local"]').forEach(el => {
+    el.setAttribute('lang', dateLang);
+    if (el.type === 'date') el.setAttribute('title', en ? 'Date format: yyyy-mm-dd' : 'Формат даты: дд.мм.гггг');
+    if (el.type === 'datetime-local') el.setAttribute('title', en ? 'Date and time format: yyyy-mm-dd hh:mm' : 'Формат даты и времени: дд.мм.гггг чч:мм');
+  });
+  const setText = (id, ru) => { const el = $(id); if (el) el.textContent = t(ru); };
+  setText('todayBtn', 'Сегодня');
+  setText('creditDateToday', 'сегодня');
+  setText('impDateToday', 'сегодня');
+  setText('tabEdit', 'Заметка');
+  setText('tabPrev', 'Превью');
+  const noteExpand = $('noteExpand');
+  if (noteExpand) { noteExpand.textContent = t('⛶ развернуть'); noteExpand.title = t('Редактор на весь экран'); }
+  const noteEdit = $('noteEdit');
+  if (noteEdit) noteEdit.placeholder = en
+    ? '# Heading\n**bold**, *italic*, `code`\n- [ ] task\n- list'
+    : '# Заголовок\n**жирный**, *курсив*, `код`\n- [ ] задача\n- список';
+  const noteFsEdit = $('noteFsEdit');
+  if (noteFsEdit) noteFsEdit.placeholder = en
+    ? '# Heading\n**bold**, *italic*, `code`\n- [ ] task\n> quote\n```\ncode block\n```'
+    : '# Заголовок\n**жирный**, *курсив*, `код`\n- [ ] задача\n> цитата\n```\nкод блоком\n```';
+  const noteFsTitle = document.querySelector('.noteFsTitle');
+  if (noteFsTitle) noteFsTitle.innerHTML = `${esc(t('Заметка'))} <span class="noteFsAuto">${esc(t('сохраняется автоматически'))}</span>`;
+  const noteFsTab = $('noteFsTab');
+  if (noteFsTab) noteFsTab.textContent = t(($('noteFullscreen')?.classList.contains('showPrev')) ? 'редактор' : 'превью');
+  const noteFsClose = $('noteFsClose');
+  if (noteFsClose) noteFsClose.title = t('Закрыть (Esc)');
+}
 function applyLanguage(lang){
   state.language = normalizeLanguage(lang);
   try { localStorage.setItem(LANGUAGE_KEY, state.language); } catch (_) {}
@@ -672,7 +730,9 @@ function applyLanguage(lang){
   if (typeof renderCalendar === 'function') renderCalendar();
   if (typeof updateShiftPlanHint === 'function') updateShiftPlanHint();
   if (typeof renderTelegramPanel === 'function') renderTelegramPanel();
+  applyLanguagePolish();
   translateStaticTree();
+  applyLanguagePolish();
 }
 function renderLanguageControls(){
   document.querySelectorAll('[data-language-choice]').forEach(btn => btn.classList.toggle('on', btn.dataset.languageChoice === state.language));
@@ -2108,7 +2168,7 @@ function updateAccSummaries(){
   const st = state.shiftTypes.find(s => s.id === state.days[k]?.shiftTypeId);
   $("sumShift").innerHTML = st
     ? `<span class="dot" style="background:${st.color}"></span><span style="color:${st.color}">${esc(st.name)}${shiftPlannedHours(st) ? " · " + fmtHours(shiftPlannedHours(st)) + "ч" : ""}</span>`
-    : "не отмечена";
+    : t("не отмечена");
 
   // График — какой шаблон сейчас выбран
   const tpl = SCHEDULE_TEMPLATES[$("tplPreset").value];
@@ -3773,7 +3833,7 @@ function setTab(t){
   $("notePrev").hidden = t !== "preview";
   if (t === "preview") {
     const note = $("noteEdit").value;
-    $("notePrev").innerHTML = note.trim() ? renderMd(note) : '<span class="empty">Заметка пустая — нечего показывать.</span>';
+    $("notePrev").innerHTML = note.trim() ? renderMd(note) : `<span class="empty">${esc(t("Заметка пустая — нечего показывать."))}</span>`;
   }
 }
 $("tabEdit").addEventListener("click", () => setTab("edit"));
@@ -4035,9 +4095,9 @@ function renderTimeSettings(){
 
   const browserTz = browserTimeZone();
   const region = t.workRegionName ? `${esc(t.workRegionName)} · ` : "";
-  $("timeNowBox").innerHTML = `${region}рабочее время: <b>${esc(safeTzLabel(t.workTimezone))}</b> <span>(${esc(t.workTimezone)})</span><br>` +
-    `браузер: <b>${esc(safeTzLabel(browserTz))}</b> <span>(${esc(browserTz)})</span>` +
-    (Number(t.workOffsetMoscow || 0) ? `<br>пометка: Москва ${Number(t.workOffsetMoscow) > 0 ? "+" : ""}${Number(t.workOffsetMoscow)} ч` : "");
+  $("timeNowBox").innerHTML = `${region}${esc(t("рабочее время"))}: <b>${esc(safeTzLabel(t.workTimezone))}</b> <span>(${esc(t.workTimezone)})</span><br>` +
+    `${esc(t("браузер"))}: <b>${esc(safeTzLabel(browserTz))}</b> <span>(${esc(browserTz)})</span>` +
+    (Number(t.workOffsetMoscow || 0) ? `<br>${esc(t("пометка"))}: ${esc(t("Москва"))} ${Number(t.workOffsetMoscow) > 0 ? "+" : ""}${Number(t.workOffsetMoscow)} ${state.language === "en" ? "h" : "ч"}` : "");
   $("timeSettingsStatus").className = "status statusAutoSave";
   $("timeSettingsStatus").innerHTML = `<span class="statusChip statusChipAuto"><span class="statusDot"></span>${esc(t("автосохранение"))}</span>`;
 }
@@ -4727,7 +4787,7 @@ applyRoute();
 function renderNoteFsPrev(){
   const v = $("noteFsEdit").value;
   $("noteFsPrev").innerHTML = v.trim() ? renderMd(v)
-    : '<span class="noteFsEmpty">Пусто. Пиши слева — превью живое.</span>';
+    : `<span class="noteFsEmpty">${esc(t("Пусто. Пиши слева — превью живое."))}</span>`;
 }
 
 function openNoteFullscreen(){
@@ -4773,7 +4833,7 @@ $("noteFsTab").addEventListener("click", () => {
   const fs = $("noteFullscreen");
   fs.classList.toggle("showPrev");
   const prev = fs.classList.contains("showPrev");
-  $("noteFsTab").textContent = prev ? "редактор" : "превью";
+  $("noteFsTab").textContent = prev ? t("редактор") : t("превью");
   if (prev) renderNoteFsPrev();
 });
 

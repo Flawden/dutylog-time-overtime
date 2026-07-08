@@ -1,9 +1,9 @@
-# v24.0.3 — i18n full coverage polish
+# v24.0.4 — i18n full coverage polish
 
 - Expanded English translations across the web/PWA UI: day panel, overtime, tasks, shift settings, scenarios, notifications, admin, diagnostics, offline sync and common dynamic statuses.
 - Added dynamic translation helpers for counters, page ranges, statuses, sync messages, confirmation text and calculated labels.
 - Added English CSS pseudo-content for offline-only warnings.
-- Bumped frontend/backend/service-worker runtime version to `24.0.3`.
+- Bumped frontend/backend/service-worker runtime version to `24.0.4`.
 
 # v24.0.2 — I18N coverage polish
 

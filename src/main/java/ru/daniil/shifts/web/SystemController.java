@@ -74,7 +74,7 @@ public class SystemController {
         AppUser user = requireAdmin(principal);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("app", "DutyLog: Time & Overtime");
-        result.put("version", "24.0.3");
+        result.put("version", "24.0.4");
         result.put("admin", user.getUsername());
         result.put("serverTime", Instant.now().toString());
         result.put("serverTimezone", ZoneId.systemDefault().toString());

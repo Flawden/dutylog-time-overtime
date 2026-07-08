@@ -251,7 +251,7 @@ DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 
 
 
-`v24.0.3 — i18n full coverage polish`
+`v24.0.4 — i18n final small polish`
 
 Продолжена локализация web/PWA: переведены оставшиеся видимые строки интерфейса, динамические статусы, счётчики, offline sync, задачи, переработки, сценарии, уведомления, админка и диагностика.
 
