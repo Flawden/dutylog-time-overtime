@@ -207,16 +207,17 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/UX_COMPACT_HOTFIX.md`](docs/UX_COMPACT_HOTFIX.md) — компактная правка экрана модулей и панели дня после UX-polish.
 - [`docs/UX_CONSOLE_HOTFIX.md`](docs/UX_CONSOLE_HOTFIX.md) — скрытие технических деталей от обычных пользователей и чистка console-noise.
 - [`docs/TEST_CONFIG_HOTFIX.md`](docs/TEST_CONFIG_HOTFIX.md) — правка `.properties`, тестовых ожиданий и cascade-зависимостей модулей.
+- [`docs/ONBOARDING_TODAY_HOTFIX.md`](docs/ONBOARDING_TODAY_HOTFIX.md) — выделение выбранного onboarding-набора и более заметный текущий день.
 
 ## Текущая версия
 
-`v26.6.6 — CI permission hotfix`
+`v26.6.7 — onboarding and today highlight hotfix`
 
 DutyLog находится в фазе стабилизации перед релизом: новые крупные фичи заморожены, фокус — безопасность, тесты, CI, конфиги, миграции, smoke-test, документация, читаемость, предсказуемый деплой и ощущение готового продукта.
 
 Главные изменения текущего UX-релиза:
 
-- единая версия `26.6.6` во frontend, backend, service worker, smoke-test и документации;
+- единая версия `26.6.7` во frontend, backend, service worker, smoke-test и документации;
 - добавлен аккуратный boot-state при старте web/PWA;
 - добавлены loading-состояния для календаря, списка задач и FIFO-журнала переработок;
 - пустые состояния задач, важных дат и журнала переработок стали понятными и action-oriented;
@@ -226,9 +227,12 @@ DutyLog находится в фазе стабилизации перед ре�
 - настройки модулей компактнее: бейджи не налезают на текст, выключенные модули не растягивают карточки;
 - технические контрактные детали модулей показываются только администраторам;
 - убраны лишние admin-запросы на старте, чтобы обычные пользователи не получали 403 в консоли;
-- исправлена ошибка настроек времени из-за shadowing функции перевода `t()`.
+- исправлена ошибка настроек времени из-за shadowing функции перевода `t()`;
+- onboarding-набор `Работа + переработки` переименован в `Стандарт`;
+- выбранный onboarding-набор теперь подсвечивается динамически;
+- сегодняшний день в календаре выделяется заметнее отдельной подсветкой ячейки.
 
-Test/config stabilization in v26.6.6:
+Test/config stabilization in v26.6.7:
 
 - `.properties` comments are ASCII English to avoid broken Cyrillic text in misconfigured editors;
 - test config explicitly disables Open Session in View;
@@ -296,7 +300,7 @@ DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 Since v25.3 the module registry has explicit developer contracts. See `docs/MODULE_CONTRACTS.md`.
 
 
-CI permission stabilization in v26.6.6:
+CI permission stabilization in v26.6.7:
 
 - GitHub Actions runs release checks through `bash ./deploy/scripts/release-check.sh`.
 - CI no longer fails when executable bits are lost on Windows/archive checkouts.

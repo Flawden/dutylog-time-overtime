@@ -92,7 +92,7 @@ function renderCalendar(){
     const st = stOf(k);
     const entry = state.days[k];
     const cell = document.createElement("button");
-    cell.className = "cell" + (state.selected === k ? " sel" : "");
+    cell.className = "cell" + (state.selected === k ? " sel" : "") + (k === tk ? " todayCell" : "");
     if (st) {
       cell.style.background = st.color + "26";
       if (state.selected !== k) cell.style.borderColor = st.color + "55";

@@ -508,7 +508,7 @@ Object.assign(I18N_EN, {
   "Выбери модули, которые нужны прямо сейчас. Остальное можно включить позже в настройках, данные не удаляются.":"Choose the modules you need right now. You can enable everything else later in Settings; data is not deleted.",
   "Быстрые наборы модулей":"Quick module presets",
   "Минимум":"Minimum",
-  "Работа + переработки":"Work + overtime",
+  "Стандарт":"Standard",
   "Всё включить":"Enable all",
   "Пропустить":"Skip",
   "Начать":"Start",

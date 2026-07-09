@@ -370,10 +370,23 @@ function ensureOnboardingDraft(){
   state.onboardingDraft = applyOnboardingDependencies(draft);
   return state.onboardingDraft;
 }
+function onboardingDraftMatchesPreset(draft, preset){
+  const normalized = applyOnboardingDependencies({ ...preset });
+  return ONBOARDING_OPTIONAL_MODULES.every(key => (draft[key] !== false) === (normalized[key] !== false));
+}
+function renderOnboardingPresetState(draft){
+  document.querySelectorAll('[data-onboarding-preset]').forEach(btn => {
+    const preset = ONBOARDING_PRESETS[btn.dataset.onboardingPreset];
+    const active = !!preset && onboardingDraftMatchesPreset(draft, preset);
+    btn.classList.toggle('primarySoft', active);
+    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+  });
+}
 function renderOnboardingModules(){
   const grid = $("onboardingModuleGrid");
   if (!grid) return;
   const draft = ensureOnboardingDraft();
+  renderOnboardingPresetState(draft);
   const modules = onboardingModules();
   if (!modules.length) {
     grid.innerHTML = `<div class="settingsHint">${esc(t("модули загружаются…"))}</div>`;

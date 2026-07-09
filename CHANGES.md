@@ -1,3 +1,11 @@
+## v26.6.7 — onboarding and today highlight hotfix
+
+- Renamed the onboarding preset `Работа + переработки` to the shorter `Стандарт`.
+- The selected onboarding preset is now highlighted dynamically; choosing `Минимум`, `Стандарт` or `Всё включить` updates the active pill immediately.
+- Manual module changes clear the preset highlight unless the selection exactly matches a preset again.
+- Made the current day in the calendar more visible with a dedicated highlighted cell style, not only a small text label.
+- Added release-check guardrails for the onboarding preset state and today-cell highlight.
+
 ## v26.6.6 — CI permission hotfix
 
 - Fixed GitHub Actions release gate startup on checkouts where shell scripts lose executable bit.
