@@ -1,3 +1,12 @@
+## v26.6.9 — English i18n polish hotfix
+
+- Fixed Russian leftovers after switching the interface to English: today marker, calendar total label, working-time box, autosave chip and notification browser status.
+- Re-render settings panels when language changes so dynamic cards do not keep stale Russian text.
+- Localized built-in shift names (`Дневная`, `Ночная`, `Выходной`) in calendar chips, selected-day summaries and shift settings while keeping custom shift names unchanged.
+- Localized quick-scenario hints, notification empty states and common admin/status strings.
+- Added CSS language-specific text for the current-day marker.
+- Added release-check guardrails for the i18n hotfix.
+
 ## v26.6.8 — today clarity and dismissible hidden-blocks hotfix
 
 - Made the current-day calendar marker visually different from the selected-day outline: today now uses a subtle tinted/dashed cell, corner dot and text label, while the clicked day keeps the strong solid accent outline.

@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.8}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.9}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -302,10 +302,10 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "v26.6.8"
-contains docs/TEST_CONFIG_HOTFIX.md "v26.6.8"
+contains docs/SECURITY_REVIEW.md "v26.6.9"
+contains docs/TEST_CONFIG_HOTFIX.md "v26.6.9"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
-contains docs/CI_PERMISSION_HOTFIX.md "v26.6.8"
+contains docs/CI_PERMISSION_HOTFIX.md "v26.6.9"
 contains src/main/resources/static/index.html 'data-onboarding-preset="work"'
 contains src/main/resources/static/index.html ">Стандарт</button>"
 not_contains src/main/resources/static/index.html "Работа + переработки"
@@ -317,8 +317,15 @@ contains src/main/resources/static/app.css ".cell.todayCell::before"
 contains src/main/resources/static/js/20-data.js "DAY_MODULES_HINT_DISMISSED_KEY"
 contains src/main/resources/static/js/20-data.js "dayModulesHintCloseBtn"
 contains src/main/resources/static/app.css ".dayModulesHintClose"
-contains docs/ONBOARDING_TODAY_HOTFIX.md "v26.6.8"
-contains docs/DAY_HINT_DISMISS_HOTFIX.md "v26.6.8"
+contains docs/ONBOARDING_TODAY_HOTFIX.md "v26.6.9"
+contains docs/DAY_HINT_DISMISS_HOTFIX.md "v26.6.9"
+contains docs/I18N_POLISH_HOTFIX.md "v26.6.9"
+contains src/main/resources/static/app.css 'html[lang="en"] .cell .num.today::after'
+contains src/main/resources/static/js/10-core.js 'function shiftDisplayName'
+contains src/main/resources/static/js/10-core.js "if (typeof renderSettingsPanels === 'function') renderSettingsPanels();"
+contains src/main/resources/static/js/30-calendar.js 'esc(t("Итого:"))'
+contains src/main/resources/static/js/60-settings.js 'const workLabel = state.language === "en" ? "work time"'
+contains src/main/resources/static/js/60-settings.js 'esc(t("шт"))'
 
 echo
 

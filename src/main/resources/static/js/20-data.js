@@ -518,17 +518,17 @@ function csrfToken(){
 }
 
 function offlineRequiredMessage(url){
-  if (url.startsWith("/api/overtime")) return "Переработки и отгулы можно изменять только при подключении к серверу. Смены, заметки и галочки задач сохраняются оффлайн.";
-  if (url.startsWith("/api/days/fill")) return "Автозаполнение графика требует связи с сервером. Отдельную смену выбранного дня можно изменить оффлайн.";
-  if (url.startsWith("/api/shift-types")) return "Типы смен и их расписание меняются только при подключении к серверу.";
-  if (url.startsWith("/api/quick-scenarios")) return "Шаблоны переработок меняются только при подключении к серверу.";
-  if (url.startsWith("/api/notifications")) return "Настройки уведомлений требуют связи с сервером.";
-  if (url.startsWith("/api/telegram")) return "Telegram-интеграция настраивается только при подключении к серверу.";
-  if (url.startsWith("/api/profile")) return "Профиль и сессии меняются только при подключении к серверу.";
-  if (url.startsWith("/api/modules")) return "Настройки модулей меняются только при подключении к серверу.";
-  if (url.startsWith("/api/important-days")) return "Важные даты меняются только при подключении к серверу.";
-  if (url.startsWith("/api/admin")) return "Админские настройки меняются только при подключении к серверу.";
-  return "Эта операция требует связи с сервером. Смена дня, заметки и галочки задач сохраняются оффлайн.";
+  if (url.startsWith("/api/overtime")) return t("Переработки и отгулы можно изменять только при подключении к серверу. Смены, заметки и галочки задач сохраняются оффлайн.");
+  if (url.startsWith("/api/days/fill")) return t("Автозаполнение графика требует связи с сервером. Отдельную смену выбранного дня можно изменить оффлайн.");
+  if (url.startsWith("/api/shift-types")) return t("Типы смен и их расписание меняются только при подключении к серверу.");
+  if (url.startsWith("/api/quick-scenarios")) return t("Шаблоны переработок меняются только при подключении к серверу.");
+  if (url.startsWith("/api/notifications")) return t("Настройки уведомлений требуют связи с сервером.");
+  if (url.startsWith("/api/telegram")) return t("Telegram-интеграция настраивается только при подключении к серверу.");
+  if (url.startsWith("/api/profile")) return t("Профиль и сессии меняются только при подключении к серверу.");
+  if (url.startsWith("/api/modules")) return t("Настройки модулей меняются только при подключении к серверу.");
+  if (url.startsWith("/api/important-days")) return t("Важные даты меняются только при подключении к серверу.");
+  if (url.startsWith("/api/admin")) return t("Админские настройки меняются только при подключении к серверу.");
+  return t("Эта операция требует связи с сервером. Смена дня, заметки и галочки задач сохраняются оффлайн.");
 }
 
 async function jfetch(url, opts = {}) {

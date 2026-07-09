@@ -1,6 +1,6 @@
 # Code cleanup
 
-Status: v26.6.8.
+Status: v26.6.9.
 
 DutyLog is in release stabilization. This document defines the current cleanup rules so the project can be polished without accidentally turning cleanup into a new feature cycle.
 

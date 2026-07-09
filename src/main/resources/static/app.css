@@ -54,6 +54,7 @@
   .cell .num { font-size:14px; font-weight:500; font-family:ui-monospace,monospace; }
   .cell .num.today { color:var(--accent); font-weight:900; text-shadow:0 0 10px color-mix(in srgb,var(--accent) 20%,transparent); }
   .cell .num.today::after { content:"сегодня"; font-size:9px; margin-left:4px; letter-spacing:.8px; text-transform:uppercase; }
+  html[lang="en"] .cell .num.today::after { content:"today"; }
   .cell .shift { font-size:11px; font-weight:600; line-height:1.15; }
   .cell .bar { position:absolute; left:0; top:0; bottom:0; width:4px; }
   .cell .ear { position:absolute; top:0; right:0; width:0; height:0; border-left:14px solid transparent; }

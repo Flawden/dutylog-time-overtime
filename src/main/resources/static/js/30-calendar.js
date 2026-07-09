@@ -120,7 +120,7 @@ function renderCalendar(){
     cell.appendChild(num);
     if (st) {
       const nm = document.createElement("span");
-      nm.className = "shift"; nm.style.color = st.color; nm.textContent = st.name;
+      nm.className = "shift"; nm.style.color = st.color; nm.textContent = shiftDisplayName(st);
       cell.appendChild(nm);
     }
     const ledgerBal = showOvertime ? ledgerNetOf(k) : 0;
@@ -129,7 +129,7 @@ function renderCalendar(){
     if (showOvertime && Math.abs(bal) > 0.0001) {
       const ot = document.createElement("span");
       ot.className = "otMark";
-      ot.textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)}ч`;
+      ot.textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)}${state.language === "en" ? "h" : "ч"}`;
       cell.appendChild(ot);
     }
 
@@ -202,28 +202,28 @@ function renderSummary(){
     if (!counts[s.id]) continue;
     any = true;
     const span = document.createElement("span");
-    span.innerHTML = `<span class="dot" style="background:${s.color}"></span>${esc(s.name)} — <b>${counts[s.id]}</b>`;
+    span.innerHTML = `<span class="dot" style="background:${s.color}"></span>${esc(shiftDisplayName(s))} — <b>${counts[s.id]}</b>`;
     el.appendChild(span);
   }
   const balance = overtime - timeOff;
   if (Math.abs(overtime) > 0.0001 || Math.abs(timeOff) > 0.0001) {
     const o = document.createElement("span");
     o.className = "over";
-    o.textContent = `переработка: ${balance > 0 ? "+" : ""}${fmtHours(balance)} ч`;
-    o.title = `Начислено: ${fmtHours(overtime)} ч, списано: ${fmtHours(timeOff)} ч`;
+    o.textContent = t(`переработка: ${balance > 0 ? "+" : ""}${fmtHours(balance)} ч`);
+    o.title = t(`Начислено: ${fmtHours(overtime)} ч, списано: ${fmtHours(timeOff)} ч`);
     el.appendChild(o);
   }
   if (hours > 0) {
     const h = document.createElement("span");
-    h.className = "hrs"; h.textContent = `${fmtHours(hours)} ч`;
+    h.className = "hrs"; h.textContent = `${fmtHours(hours)} ${state.language === "en" ? "h" : "ч"}`;
     el.appendChild(h);
   }
   const acc = state.overtimeAccount;
   if (moduleEnabled("overtime") && acc && (numOr0(acc.totalEarnedHours) > 0 || numOr0(acc.totalUsedHours) > 0)) {
     const global = document.createElement("span");
     global.className = "over";
-    global.textContent = `общий остаток переработки: ${numOr0(acc.balanceHours) > 0 ? "+" : ""}${fmtHours(acc.balanceHours)} ч`;
-    global.title = `Всего начислено: ${fmtHours(acc.totalEarnedHours)} ч, всего списано: ${fmtHours(acc.totalUsedHours)} ч`;
+    global.textContent = t(`общий остаток переработки: ${numOr0(acc.balanceHours) > 0 ? "+" : ""}${fmtHours(acc.balanceHours)} ч`);
+    global.title = t(`Всего начислено: ${fmtHours(acc.totalEarnedHours)} ч, всего списано: ${fmtHours(acc.totalUsedHours)} ч`);
     el.appendChild(global);
     any = true;
   }
@@ -261,17 +261,17 @@ function renderScheduleControls(){
   if (!input.dataset.userTouched) input.value = DEFAULT_SCHEDULE_DAYS;
 
   const tpl = SCHEDULE_TEMPLATES[$("tplPreset").value];
-  const names = effectiveTemplateNames(tpl, state.selected);
+  const names = effectiveTemplateNames(tpl, state.selected).map(shiftDisplayName);
   const missing = [...new Set(tpl.names)].filter(name => !findShiftByName(name));
   const hint = $("tplHint");
   if (missing.length) {
-    hint.textContent = `Не хватает смен: ${missing.join(", ")}. Перезагрузи страницу или создай их вручную.`;
+    hint.textContent = t(`Не хватает смен: ${missing.map(shiftDisplayName).join(", ")}. Перезагрузи страницу или создай их вручную.`);
     $("tplApply").disabled = true;
   } else if (tpl.weekly) {
-    hint.textContent = `Пятидневка привязана к дням недели: Пн–Пт рабочие, Сб–Вс выходные. От выбранного дня пойдёт так: ${names.join(" → ")}.`;
+    hint.textContent = t(`Пятидневка привязана к дням недели: Пн–Пт рабочие, Сб–Вс выходные. От выбранного дня пойдёт так: ${names.join(" → ")}.`);
     $("tplApply").disabled = false;
   } else {
-    hint.textContent = `Шаблон от выбранного дня: ${names.join(" → ")}. Заметки не стираются, меняется только тип смены.`;
+    hint.textContent = t(`Шаблон от выбранного дня: ${names.join(" → ")}. Заметки не стираются, меняется только тип смены.`);
     $("tplApply").disabled = false;
   }
 }
@@ -283,6 +283,7 @@ async function applyScheduleTemplate(){
 
   const tpl = SCHEDULE_TEMPLATES[$("tplPreset").value];
   const names = effectiveTemplateNames(tpl, k);
+  const displayNames = names.map(shiftDisplayName);
   const shifts = names.map(findShiftByName);
   if (shifts.some(s => !s)) {
     renderScheduleControls();
@@ -347,12 +348,12 @@ function updateAccSummaries(){
   // Смена
   const st = state.shiftTypes.find(s => s.id === state.days[k]?.shiftTypeId);
   $("sumShift").innerHTML = st
-    ? `<span class="dot" style="background:${st.color}"></span><span style="color:${st.color}">${esc(st.name)}${shiftPlannedHours(st) ? " · " + fmtHours(shiftPlannedHours(st)) + "ч" : ""}</span>`
+    ? `<span class="dot" style="background:${st.color}"></span><span style="color:${st.color}">${esc(shiftDisplayName(st))}${shiftPlannedHours(st) ? " · " + fmtHours(shiftPlannedHours(st)) + (state.language === "en" ? "h" : "ч") : ""}</span>`
     : t("не отмечена");
 
   // График — какой шаблон сейчас выбран
   const tpl = SCHEDULE_TEMPLATES[$("tplPreset").value];
-  $("sumSched").textContent = tpl ? tpl.label : "";
+  $("sumSched").textContent = scheduleTemplateLabel(tpl);
 
   // Переработка: движение за день, иначе общий баланс
   if ($("sumOt")) {

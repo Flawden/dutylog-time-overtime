@@ -91,7 +91,7 @@ function renderOvertimeDayDetails(){
   const credits = creditsOf(k);
   const usages = usagesOf(k);
   if (!credits.length && !usages.length) {
-    el.textContent = "На этот день в журнале переработок записей нет. Начисления не сгорают при переходе между месяцами.";
+    el.textContent = t("На этот день в журнале переработок записей нет. Начисления не сгорают при переходе между месяцами.");
     return;
   }
   const parts = [];
@@ -132,20 +132,20 @@ function calcOvertimeInterval(startValue, endValue, sourceLabel){
   const start = new Date(startValue);
   const end = new Date(endValue);
   if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start) {
-    $("creditCalcHint").textContent = "конец должен быть позже";
+    $("creditCalcHint").textContent = t("конец должен быть позже");
     return null;
   }
   const breakMinutes = readIntInput("creditBreak");
   const plannedHours = readHoursInput("creditPlanned");
   if (!Number.isFinite(breakMinutes) || !Number.isFinite(plannedHours)) {
-    $("creditCalcHint").textContent = "проверь обед/план";
+    $("creditCalcHint").textContent = t("проверь обед/план");
     return null;
   }
   const totalMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
   const creditedMinutes = totalMinutes - breakMinutes - Math.round(plannedHours * 60);
   const hours = Math.round((creditedMinutes / 60) * 100) / 100;
   if (hours <= 0) {
-    $("creditCalcHint").textContent = "итого 0 или меньше";
+    $("creditCalcHint").textContent = t("итого 0 или меньше");
     return null;
   }
   $("creditHours").value = fmtHours(hours);
@@ -164,7 +164,7 @@ function overtimeCalcFromInputs(){
   const endValue = $("creditEnd").value;
   if (startValue || endValue) {
     if (!startValue || !endValue) {
-      $("creditCalcHint").textContent = "нужны начало и конец";
+      $("creditCalcHint").textContent = t("нужны начало и конец");
       return null;
     }
     return calcOvertimeInterval(startValue, endValue, "полный интервал");
@@ -293,7 +293,7 @@ function renderQuickScenarios(){
   if (!grid) return;
   const scenarios = (state.quickScenarios || []).slice().sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || (a.id ?? 0) - (b.id ?? 0));
   if (!scenarios.length) {
-    grid.innerHTML = `<div class="emptyLine">Сценарии пока не созданы. Добавьте первый сценарий в настройках.</div>`;
+    grid.innerHTML = `<div class="emptyLine">${esc(t("Сценарии пока не созданы. Добавьте первый сценарий в настройках."))}</div>`;
     return;
   }
   grid.innerHTML = scenarios.map(sc => {
@@ -301,21 +301,21 @@ function renderQuickScenarios(){
     const active = String(state.activeScenarioId || "") === String(sc.id || "");
     return `<div class="scenarioWrap">
       <button type="button" class="scenarioCard ${active ? "active" : ""}" data-scenario-id="${sc.id}" ${disabled ? "disabled" : ""}>
-        <span>${esc(sc.groupLabel || "сценарий")}</span>
-        <b>${esc(sc.name || "Сценарий")}</b>
+        <span>${esc(sc.groupLabel || t("сценарий"))}</span>
+        <b>${esc(sc.name || t("Сценарий"))}</b>
         <small>${esc(sc.description || scenarioHumanDescription(sc))}</small>
       </button>
-      <button type="button" class="scenarioDel" data-scenario-del="${sc.id}" title="удалить сценарий">×</button>
+      <button type="button" class="scenarioDel" data-scenario-del="${sc.id}" title="${esc(t("удалить сценарий"))}">×</button>
     </div>`;
   }).join("");
 }
 
 function scenarioHumanDescription(sc){
-  const start = sc.startMode === "SHIFT_START" ? "от начала смены" : "от конца смены";
+  const start = sc.startMode === "SHIFT_START" ? t("от начала смены") : t("от конца смены");
   let end = "";
-  if (sc.endMode === "ADD_MINUTES") end = `+${sc.endOffsetMinutes || 0} мин`;
-  else if (sc.endMode === "FIXED_TIME") end = `${sc.endFixedTime || "--:--"}${sc.endNextDay ? " на следующий день" : ""}`;
-  else end = "до конца смены";
+  if (sc.endMode === "ADD_MINUTES") end = `+${sc.endOffsetMinutes || 0} ${state.language === "en" ? "min" : "мин"}`;
+  else if (sc.endMode === "FIXED_TIME") end = `${sc.endFixedTime || "--:--"}${sc.endNextDay ? " " + t("на следующий день") : ""}`;
+  else end = t("до конца смены");
   return `${start} → ${end}`;
 }
 
@@ -326,29 +326,29 @@ function renderQuickScenarioContext(){
   const r = quickScenarioRequirements();
 
   if (!r.hasSelected) {
-    ctx.textContent = "День не выбран. Сначала ткни дату в календаре.";
-    tips.textContent = "Карточки разблокируются, когда у выбранного дня будет смена со временем.";
+    ctx.textContent = t("День не выбран. Сначала ткни дату в календаре.");
+    tips.textContent = t("Карточки разблокируются, когда у выбранного дня будет смена со временем.");
     renderQuickScenarios();
     return;
   }
   if (!r.hasShift) {
-    ctx.textContent = `${formatDateHuman(state.selected)} · смена не выбрана`;
-    tips.textContent = "Поставь дневную, ночную или кастомную смену — тогда сценарии смогут взять время начала/конца.";
+    ctx.textContent = t(`${formatDateHuman(state.selected)} · смена не выбрана`);
+    tips.textContent = t("Поставь дневную, ночную или кастомную смену — тогда сценарии смогут взять время начала/конца.");
     renderQuickScenarios();
     return;
   }
 
   const st = r.shift;
-  const time = st.startTime && st.endTime ? `${st.startTime}–${st.endTime}` : "время не настроено";
-  const plan = shiftPlannedHours(st) ? `план ${fmtHours(shiftPlannedHours(st))} ч` : "план 0 ч";
-  const br = st.breakMinutes ? `обед ${st.breakMinutes} мин` : "обед 0 мин";
-  ctx.textContent = `${formatDateHuman(state.selected)} · ${st.name}: ${time}, ${plan}, ${br}`;
+  const time = st.startTime && st.endTime ? `${st.startTime}–${st.endTime}` : t("время не настроено");
+  const plan = shiftPlannedHours(st) ? `${t("план")} ${fmtHours(shiftPlannedHours(st))} ${state.language === "en" ? "h" : "ч"}` : `${t("план")} 0 ${state.language === "en" ? "h" : "ч"}`;
+  const br = st.breakMinutes ? `${t("обед")} ${st.breakMinutes} ${state.language === "en" ? "min" : "мин"}` : `${t("обед")} 0 ${state.language === "en" ? "min" : "мин"}`;
+  ctx.textContent = `${formatDateHuman(state.selected)} · ${shiftDisplayName(st)}: ${time}, ${plan}, ${br}`;
   if (!r.hasEnd) {
-    tips.textContent = "У смены не указано время окончания. Откройте настройки смены и задайте время.";
+    tips.textContent = t("У смены не указано время окончания. Откройте настройки смены и задайте время.");
   } else if (!r.hasFullTime) {
-    tips.textContent = "Доступны сценарии от конца смены. Для сценариев от начала смены укажите время начала.";
+    tips.textContent = t("Доступны сценарии от конца смены. Для сценариев от начала смены укажите время начала.");
   } else {
-    tips.textContent = "Карточки только заполняют поля. Перед начислением можно поправить время, обед, план и причину.";
+    tips.textContent = t("Карточки только заполняют поля. Перед начислением можно поправить время, обед, план и причину.");
   }
   renderQuickScenarios();
 }
@@ -587,7 +587,7 @@ function startEditOvertimeCredit(id){
   $("creditPlanned").value = fmtHours(c.plannedHours || 0);
   $("creditHours").value = fmtHours(c.hours);
   $("creditReason").value = c.reason || "";
-  $("creditAdd").textContent = "Сохранить";
+  $("creditAdd").textContent = t("Сохранить");
   $("creditCancel").hidden = false;
   $("creditEditNotice").hidden = false;
   $("creditEditNotice").textContent = `Редактируется начисление #${id}. Если сделать период через несколько дат, сервер заменит строку на несколько начислений.`;
@@ -632,7 +632,7 @@ function startEditOvertimeUsage(id){
   $("usageDate").value = u.usageDate;
   $("usageHours").value = fmtHours(u.hours);
   $("usageReason").value = u.reason || "";
-  $("usageAdd").textContent = "Сохранить";
+  $("usageAdd").textContent = t("Сохранить");
   $("usageCancel").hidden = false;
   $("usageEditNotice").hidden = false;
   $("usageEditNotice").textContent = `Редактируется списание #${id}. Если изменить часы, FIFO-распределение пересоберётся заново.`;
@@ -807,12 +807,12 @@ function renderLedgerTable(){
     if (state.selected && c.workedDate === state.selected) tr.style.background = "rgba(245,184,65,.06)";
     const status = creditStatus(c);
     const usedText = (c.usages || []).length
-      ? (c.usages || []).map(u => `${esc(u.usageDate)}: ${fmtHours(u.hours)} ч${u.reason ? " — " + esc(u.reason) : ""} · <button type="button" data-edit-usage="${u.usageId}">ред.</button> · <button type="button" data-del-usage="${u.usageId}">удалить</button>`).join("<br>")
-      : '<span class="small">не списывалось</span>';
-    const calcInfo = c.calculated ? `<div class="small">обед: ${c.breakMinutes || 0} мин${numOr0(c.plannedHours) ? ` · план: ${fmtHours(c.plannedHours)} ч` : ""}</div>` : "";
+      ? (c.usages || []).map(u => `${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""} · <button type="button" data-edit-usage="${u.usageId}">${esc(t("ред."))}</button> · <button type="button" data-del-usage="${u.usageId}">${esc(t("удалить"))}</button>`).join("<br>")
+      : `<span class="small">${esc(t("не списывалось"))}</span>`;
+    const calcInfo = c.calculated ? `<div class="small">${esc(t("обед"))}: ${c.breakMinutes || 0} ${state.language === "en" ? "min" : "мин"}${numOr0(c.plannedHours) ? ` · ${esc(t("план"))}: ${fmtHours(c.plannedHours)} ${state.language === "en" ? "h" : "ч"}` : ""}</div>` : "";
     const deleteBtn = numOr0(c.usedHours) <= 0.0001
-      ? `<button type="button" data-del-credit="${c.id}">удалить</button>`
-      : `<span class="small" title="Сначала удали списания, которые используют это начисление">сначала списания</span>`;
+      ? `<button type="button" data-del-credit="${c.id}">${esc(t("удалить"))}</button>`
+      : `<span class="small" title="${esc(t("Сначала удали списания, которые используют это начисление"))}">${esc(t("сначала списания"))}</span>`;
     tr.innerHTML = `
       <td class="mono">${esc(c.workedDate)}<div class="ledgerStatus ${status}">${statusLabel(status)}</div></td>
       <td>${esc(c.timeRange || "—")}${calcInfo}</td>

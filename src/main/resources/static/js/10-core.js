@@ -21,7 +21,7 @@ function esc(value){
     .replace(/'/g, "&#39;");
 }
 
-const DUTYLOG_VERSION = "26.6.8"
+const DUTYLOG_VERSION = "26.6.9"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -247,6 +247,9 @@ Object.assign(I18N_EN, {
   "После смены пароля активные мобильные сессии будут завершены.":"After changing the password, active mobile sessions will be revoked.",
   "Мобильных сессий нет — только этот браузер.":"No mobile sessions — only this browser.",
   "Не удалось загрузить сессии.":"Failed to load sessions.",
+  "Пользователей пока нет.":"No users yet.",
+  "изменено":"changed",
+  "пользователем":"by",
   "Новые пароли не совпадают":"New passwords do not match",
   "Пароль изменён. Активные мобильные сессии завершены.":"Password changed. Active mobile sessions were revoked.",
   "устройство":"device",
@@ -569,7 +572,54 @@ Object.assign(I18N_EN, {
   "Москва":"Moscow",
   "24 часа":"24 hours",
   "Шаблоны смен":"Shift templates",
-  "Закрыть (Esc)":"Close (Esc)"
+  "Закрыть (Esc)":"Close (Esc)",
+  "Итого:":"Total:",
+  "Итого":"Total",
+  "шт":"pcs",
+  "автосохранение":"autosave",
+  "рабочее время":"work time",
+  "браузер":"browser",
+  "браузер:":"browser:",
+  "рабочее время:":"work time:",
+  "Дневная":"Day shift",
+  "Ночная":"Night shift",
+  "Выходной":"Day off",
+  "Дневная кастомная":"Custom day shift",
+  "Ночная кастомная":"Custom night shift",
+  "конец должен быть позже":"end must be later",
+  "проверь обед/план":"check break/plan",
+  "итого 0 или меньше":"total is 0 or less",
+  "нужны начало и конец":"start and end required",
+  "Сценарии пока не созданы. Добавьте первый сценарий в настройках.":"No scenarios yet. Add the first scenario in settings.",
+  "сценарий":"scenario",
+  "Сценарий":"Scenario",
+  "без уведомлений":"notifications off",
+  "напомнить за":"remind before",
+  "да":"yes",
+  "cookie есть":"cookie present",
+  "активен":"active",
+  "не зарегистрирован":"not registered",
+  "не поддерживается":"not supported",
+  "из админки":"from admin",
+  "админ":"admin",
+  "пользователь":"user",
+  "Роль пользователя":"User role",
+  "Не удалось загрузить сессии.":"Failed to load sessions.",
+  "удалить сценарий":"delete scenario",
+  "на следующий день":"next day",
+  "план":"plan",
+  "обед":"break",
+  "2 через 2":"2 on / 2 off",
+  "День / ночь / 48":"Day / night / 48",
+  "Пятидневка":"Five-day week",
+  "День / 72":"Day / 72",
+  "Ночь / 72":"Night / 72",
+  "2 через 2: день / день / выходной / выходной":"2 on / 2 off: day / day / off / off",
+  "День / ночь / 48 часов отдыха":"Day / night / 48 hours off",
+  "Пятидневка: Пн–Пт рабочие / Сб–Вс выходные":"Five-day week: Mon–Fri work / Sat–Sun off",
+  "День / 72 часа отдыха":"Day / 72 hours off",
+  "Ночь / 72 часа отдыха":"Night / 72 hours off",
+  "Дней:":"Days:"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие", "Browser":"Браузер" });
@@ -659,6 +709,14 @@ function t(value){
   if (state.language === "en") return I18N_EN[s] || translateDynamicEn(s) || s;
   return I18N_RU[s] || s;
 }
+function shiftDisplayName(shiftOrName){
+  const name = typeof shiftOrName === "string" ? shiftOrName : (shiftOrName?.name || "");
+  return ["Дневная", "Ночная", "Выходной", "Дневная кастомная", "Ночная кастомная"].includes(name) ? t(name) : name;
+}
+function scheduleTemplateLabel(tpl){
+  return tpl ? t(tpl.label) : "";
+}
+function localUnit(value){ return state.language === "en" ? String(value || "").replace(/ч/g, "h").replace(/м/g, "min") : value; }
 
 function htmlSafe(value){
   return String(value ?? "")
@@ -840,6 +898,7 @@ function applyLanguage(lang){
   if (typeof updateShiftPlanHint === 'function') updateShiftPlanHint();
   if (typeof renderTelegramPanel === 'function') renderTelegramPanel();
   if (typeof renderModuleSettings === 'function') renderModuleSettings();
+  if (typeof renderSettingsPanels === 'function') renderSettingsPanels();
   if (typeof renderSelectedDayModules === 'function') renderSelectedDayModules();
   applyLanguagePolish();
   translateStaticTree();

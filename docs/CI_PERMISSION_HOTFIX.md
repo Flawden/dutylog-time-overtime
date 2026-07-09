@@ -1,6 +1,6 @@
-# v26.6.8 — CI permission hotfix
+# v26.6.9 — CI permission hotfix
 
-Status: v26.6.8.
+Status: v26.6.9.
 
 This hotfix fixes the GitHub Actions release gate on repositories cloned from
 Windows or archives where executable bits can be lost.

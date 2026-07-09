@@ -212,13 +212,19 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v26.6.8 — today clarity and dismissible hidden-blocks hotfix`
+`v26.6.9 — English i18n polish hotfix`
 
 DutyLog находится в фазе стабилизации перед релизом: новые крупные фичи заморожены, фокус — безопасность, тесты, CI, конфиги, миграции, smoke-test, документация, читаемость, предсказуемый деплой и ощущение готового продукта.
 
 Главные изменения текущего UX-релиза:
 
-- единая версия `26.6.8` во frontend, backend, service worker, smoke-test и документации;
+- единая версия `26.6.9` во frontend, backend, service worker, smoke-test и документации;
+
+English/i18n polish in v26.6.9:
+
+- fixed Russian leftovers in English UI for calendar today/total labels, settings time box, autosave and notification browser chips;
+- built-in shift names are translated for display while custom names remain untouched;
+- language switching re-renders dynamic settings panels to avoid stale copy.
 - добавлен аккуратный boot-state при старте web/PWA;
 - добавлены loading-состояния для календаря, списка задач и FIFO-журнала переработок;
 - пустые состояния задач, важных дат и журнала переработок стали понятными и action-oriented;
@@ -235,7 +241,7 @@ DutyLog находится в фазе стабилизации перед ре�
 - выбранный onboarding-набор теперь подсвечивается динамически;
 - сегодняшний день в календаре выделяется заметнее отдельной подсветкой ячейки.
 
-Test/config stabilization in v26.6.8:
+Test/config stabilization in v26.6.9:
 
 - `.properties` comments are ASCII English to avoid broken Cyrillic text in misconfigured editors;
 - test config explicitly disables Open Session in View;
@@ -303,7 +309,7 @@ DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 Since v25.3 the module registry has explicit developer contracts. See `docs/MODULE_CONTRACTS.md`.
 
 
-CI permission stabilization in v26.6.8:
+CI permission stabilization in v26.6.9:
 
 - GitHub Actions runs release checks through `bash ./deploy/scripts/release-check.sh`.
 - CI no longer fails when executable bits are lost on Windows/archive checkouts.

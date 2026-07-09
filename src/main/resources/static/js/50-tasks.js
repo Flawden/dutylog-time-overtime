@@ -149,7 +149,7 @@ function renderTaskCategoryFilter(){
   const sel = $("taskCategoryFilter");
   if (!sel) return;
   const current = sel.value || state.taskFilters.category || "all";
-  sel.innerHTML = `<option value="all">все категории</option>`;
+  sel.innerHTML = `<option value="all">${esc(t("все категории"))}</option>`;
   for (const cat of allTaskCategories()) {
     const opt = document.createElement("option");
     opt.value = cat; opt.textContent = cat;
@@ -353,7 +353,7 @@ function renderTaskBoardCategoryFilter(){
   const sel = $("taskBoardCategory");
   if (!sel) return;
   const current = sel.value || state.taskBoard.filters.category || "all";
-  sel.innerHTML = `<option value="all">все категории</option>`;
+  sel.innerHTML = `<option value="all">${esc(t("все категории"))}</option>`;
   for (const cat of allTaskCategories()) {
     const opt = document.createElement("option");
     opt.value = cat; opt.textContent = cat;
@@ -540,7 +540,7 @@ function renderChips(){
     b.style.background = on ? s.color : s.color + "1F";
     b.style.color = on ? "#14171C" : s.color;
     b.style.border = `1px solid ${on ? s.color : s.color + "55"}`;
-    b.innerHTML = esc(s.name) + (shiftPlannedHours(s) ? ` <span class="h">·${fmtHours(shiftPlannedHours(s))}ч</span>` : "");
+    b.innerHTML = esc(shiftDisplayName(s)) + (shiftPlannedHours(s) ? ` <span class="h">·${fmtHours(shiftPlannedHours(s))}${state.language === "en" ? "h" : "ч"}</span>` : "");
     const meta = shiftMetaText(s);
     if (meta) b.title = meta;
     b.addEventListener("click", () => toggleShift(s.id));

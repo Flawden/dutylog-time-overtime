@@ -85,9 +85,9 @@ function renderCustomList(){
     const row = document.createElement("div");
     row.style.display = "flex"; row.style.alignItems = "center"; row.style.gap = "8px"; row.style.flexWrap = "wrap";
     const meta = shiftMetaText(s);
-    const notifyMeta = s.notificationsEnabled === false ? " · без уведомлений" : (s.notificationMinutesBefore != null ? ` · напомнить за ${s.notificationMinutesBefore}м` : "");
+    const notifyMeta = s.notificationsEnabled === false ? ` · ${t("без уведомлений")}` : (s.notificationMinutesBefore != null ? ` · ${t("напомнить за")} ${s.notificationMinutesBefore}${state.language === "en" ? "min" : "м"}` : "");
     row.innerHTML = `<span class="dot" style="width:10px;height:10px;border-radius:3px;background:${s.color};display:inline-block"></span>
-      <span>${esc(s.name)}${shiftPlannedHours(s) ? `${state.language === "en" ? " · norm " : " · норма "}${fmtHours(shiftPlannedHours(s))}ч` : ""}${meta ? ` <span style="color:var(--dim)">· ${esc(meta)}</span>` : ""}<span style="color:var(--dim)">${esc(notifyMeta)}</span></span>`;
+      <span>${esc(shiftDisplayName(s))}${shiftPlannedHours(s) ? `${state.language === "en" ? " · norm " : " · норма "}${fmtHours(shiftPlannedHours(s))}${state.language === "en" ? "h" : "ч"}` : ""}${meta ? ` <span style="color:var(--dim)">· ${esc(meta)}</span>` : ""}<span style="color:var(--dim)">${esc(notifyMeta)}</span></span>`;
 
     const edit = document.createElement("button");
     edit.className = "del"; edit.textContent = t("настроить");
@@ -116,48 +116,48 @@ async function editShiftType(id){
 
   const patch = {};
   if (!s.builtin) {
-    const name = prompt("Название смены", s.name || "");
+    const name = prompt(t("Название смены"), s.name || "");
     if (name === null) return;
     if (!name.trim()) return setSave("err", t("название не может быть пустым"));
     patch.name = name.trim();
 
-    const color = prompt("Цвет #RRGGBB", s.color || state.swColor);
+    const color = prompt(t("Цвет #RRGGBB"), s.color || state.swColor);
     if (color === null) return;
     patch.color = color.trim();
   }
 
-  const hoursRaw = prompt("Короткие часы для календаря", fmtHours(s.hours));
+  const hoursRaw = prompt(t("Короткие часы для календаря"), fmtHours(s.hours));
   if (hoursRaw === null) return;
   const hours = Number(hoursRaw.replace(",", "."));
   if (!Number.isFinite(hours) || hours < 0 || hours > 24) return setSave("err", t("часы: от 0 до 24"));
   patch.hours = hours;
 
-  const startTime = prompt("Начало смены HH:mm, можно пусто", s.startTime || "");
+  const startTime = prompt(t("Начало смены HH:mm, можно пусто"), s.startTime || "");
   if (startTime === null) return;
   patch.startTime = startTime.trim();
 
-  const endTime = prompt("Конец смены HH:mm, можно пусто", s.endTime || "");
+  const endTime = prompt(t("Конец смены HH:mm, можно пусто"), s.endTime || "");
   if (endTime === null) return;
   patch.endTime = endTime.trim();
 
-  const brRaw = prompt("Обед/перерыв, минут", String(s.breakMinutes || 0));
+  const brRaw = prompt(t("Обед/перерыв, минут"), String(s.breakMinutes || 0));
   if (brRaw === null) return;
   const breakMinutes = Number(brRaw);
   if (!Number.isFinite(breakMinutes) || breakMinutes < 0 || breakMinutes > 1440) return setSave("err", t("обед: от 0 до 1440 минут"));
   patch.breakMinutes = Math.round(breakMinutes);
 
-  const planRaw = prompt("Норма для расчёта переработки, ч", fmtHours(shiftPlannedHours(s)));
+  const planRaw = prompt(t("Норма для расчёта переработки, ч"), fmtHours(shiftPlannedHours(s)));
   if (planRaw === null) return;
   const plannedHours = Number(planRaw.replace(",", "."));
   if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) return setSave("err", t("норма: от 0 до 24 часов"));
   patch.plannedHours = plannedHours;
 
-  const notifRaw = prompt("Уведомлять перед этой сменой? да/нет", s.notificationsEnabled === false ? "нет" : "да");
+  const notifRaw = prompt(t("Уведомлять перед этой сменой? да/нет"), s.notificationsEnabled === false ? t("нет") : t("да"));
   if (notifRaw === null) return;
   const notifClean = notifRaw.trim().toLowerCase();
   patch.notificationsEnabled = !(notifClean === "нет" || notifClean === "no" || notifClean === "0" || notifClean === "false");
 
-  const minutesRaw = prompt("За сколько минут напоминать именно эту смену? Пусто = глобальная настройка", s.notificationMinutesBefore ?? "");
+  const minutesRaw = prompt(t("За сколько минут напоминать именно эту смену? Пусто = глобальная настройка"), s.notificationMinutesBefore ?? "");
   if (minutesRaw === null) return;
   if (minutesRaw.trim()) {
     const minutes = Number(minutesRaw);
@@ -262,11 +262,14 @@ function renderTimeSettings(){
 
   const browserTz = browserTimeZone();
   const region = timeSettings.workRegionName ? `${esc(timeSettings.workRegionName)} · ` : "";
-  $("timeNowBox").innerHTML = `${region}${esc(t("рабочее время"))}: <b>${esc(safeTzLabel(timeSettings.workTimezone))}</b> <span>(${esc(timeSettings.workTimezone)})</span><br>` +
-    `${esc(t("браузер"))}: <b>${esc(safeTzLabel(browserTz))}</b> <span>(${esc(browserTz)})</span>` +
+  const workLabel = state.language === "en" ? "work time" : "рабочее время";
+  const browserLabel = state.language === "en" ? "browser" : "браузер";
+  const autosaveLabel = state.language === "en" ? "autosave" : "автосохранение";
+  $("timeNowBox").innerHTML = `${region}${esc(workLabel)}: <b>${esc(safeTzLabel(timeSettings.workTimezone))}</b> <span>(${esc(timeSettings.workTimezone)})</span><br>` +
+    `${esc(browserLabel)}: <b>${esc(safeTzLabel(browserTz))}</b> <span>(${esc(browserTz)})</span>` +
     (Number(timeSettings.workOffsetMoscow || 0) ? `<br>${esc(t("пометка"))}: ${esc(t("Москва"))} ${Number(timeSettings.workOffsetMoscow) > 0 ? "+" : ""}${Number(timeSettings.workOffsetMoscow)} ${state.language === "en" ? "h" : "ч"}` : "");
   $("timeSettingsStatus").className = "status statusAutoSave";
-  $("timeSettingsStatus").innerHTML = `<span class="statusChip statusChipAuto"><span class="statusDot"></span>${esc(t("автосохранение"))}</span>`;
+  $("timeSettingsStatus").innerHTML = `<span class="statusChip statusChipAuto"><span class="statusDot"></span>${esc(autosaveLabel)}</span>`;
 }
 function saveTimeSettings(){
   storeTimeSettings(readTimeSettingsForm());
@@ -326,7 +329,7 @@ async function applyTimeSettingsToBuiltins(silent = false){
       const idx = state.shiftTypes.findIndex(x => Number(x.id) === Number(s.id));
       if (idx >= 0) state.shiftTypes[idx] = updated;
     }
-    setSave("saved", silent ? "время смен применено" : "встроенные смены обновлены");
+    setSave("saved", silent ? t("время смен применено") : t("встроенные смены обновлены"));
     renderTimeSettings();
     renderCustomList();
     renderChips();
@@ -356,26 +359,26 @@ function renderDiagnosticsClient(){
   const set = (id, value) => { if ($(id)) $(id).textContent = value; };
   set("diagFrontend", "v" + DUTYLOG_VERSION);
   set("diagBrowser", navigator.userAgent.replace(/\s+/g, " ").slice(0, 90));
-  set("diagCsrf", csrfToken() ? "cookie есть" : "cookie не найден");
+  set("diagCsrf", csrfToken() ? t("cookie есть") : t("cookie не найден"));
   if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.getRegistration().then(reg => set("diagSw", reg ? "активен" : "не зарегистрирован")).catch(() => set("diagSw", "ошибка"));
-  } else set("diagSw", "не поддерживается");
+    navigator.serviceWorker.getRegistration().then(reg => set("diagSw", reg ? t("активен") : t("не зарегистрирован"))).catch(() => set("diagSw", t("ошибка")));
+  } else set("diagSw", t("не поддерживается"));
 }
 function renderRegistrationAdmin(status = null){
   const enabled = status?.enabled === true;
   const statusEl = $("registrationAdminStatus");
   const detailsEl = $("registrationAdminDetails");
   const toggle = $("registrationEnabledToggle");
-  const stateLabel = enabled ? "открыта" : "закрыта";
+  const stateLabel = enabled ? t("открыта") : t("закрыта");
   if (statusEl) {
     statusEl.textContent = stateLabel;
     statusEl.className = "status " + (enabled ? "warn" : "ok");
   }
   if (toggle) toggle.checked = enabled;
   if (detailsEl) {
-    const source = status?.source === "database" ? "из админки" : "значение по умолчанию";
-    const changed = status?.updatedAt ? ` · изменено ${fmtSyncTime(status.updatedAt)}${status.updatedBy ? " пользователем " + status.updatedBy : ""}` : "";
-    detailsEl.textContent = `Публичная регистрация: ${stateLabel} · ${source}${changed}`;
+    const source = status?.source === "database" ? t("из админки") : t("значение по умолчанию");
+    const changed = status?.updatedAt ? ` · ${t("изменено")} ${fmtSyncTime(status.updatedAt)}${status.updatedBy ? " " + t("пользователем") + " " + status.updatedBy : ""}` : "";
+    detailsEl.textContent = `${t("Публичная регистрация")}: ${stateLabel} · ${source}${changed}`;
   }
 }
 async function refreshRegistrationAdmin(){
@@ -385,28 +388,28 @@ async function refreshRegistrationAdmin(){
     renderRegistrationAdmin(status);
   } catch (err) {
     const detailsEl = $("registrationAdminDetails");
-    if (detailsEl) detailsEl.textContent = "Не удалось загрузить настройку регистрации: " + (err.message || String(err));
+    if (detailsEl) detailsEl.textContent = t("Не удалось загрузить настройку регистрации: ") + (err.message || String(err));
   }
 }
 async function saveRegistrationAdmin(enabled){
   const toggle = $("registrationEnabledToggle");
   const statusEl = $("registrationAdminStatus");
   if (toggle) toggle.disabled = true;
-  if (statusEl) statusEl.textContent = "сохраняю…";
+  if (statusEl) statusEl.textContent = t("сохраняю…");
   try {
     const status = await api.updateRegistrationSettings(enabled);
     state.registrationSettings = status;
     renderRegistrationAdmin(status);
-    setSave("saved", enabled ? "публичная регистрация открыта" : "публичная регистрация закрыта");
+    setSave("saved", enabled ? t("публичная регистрация открыта") : t("публичная регистрация закрыта"));
   } catch (err) {
-    setSave("err", err.message || "не удалось сохранить настройку регистрации");
+    setSave("err", err.message || t("не удалось сохранить настройку регистрации"));
     renderRegistrationAdmin(state.registrationSettings);
   } finally {
     if (toggle) toggle.disabled = false;
   }
 }
 
-function roleLabel(role){ return role === "ADMIN" ? "админ" : "пользователь"; }
+function roleLabel(role){ return role === "ADMIN" ? t("админ") : t("пользователь"); }
 function renderAdminUsers(users = []){
   const box = $("adminUsersList");
   const status = $("adminUsersStatus");
@@ -415,11 +418,11 @@ function renderAdminUsers(users = []){
   if (status) {
     const admins = users.filter(u => u.role === "ADMIN").length;
     status.className = "status statusMetrics";
-    status.innerHTML = `<span class="statusChip"><b>Показано:</b> ${pageRangeText(page)}</span><span class="statusChip ${admins > 0 ? 'statusChipOk' : 'statusChipWarn'}"><b>Админов на странице:</b> ${admins}</span>`;
+    status.innerHTML = `<span class="statusChip"><b>${esc(t("Показано:"))}</b> ${pageRangeText(page)}</span><span class="statusChip ${admins > 0 ? 'statusChipOk' : 'statusChipWarn'}"><b>${esc(t("Админов на странице:"))}</b> ${admins}</span>`;
   }
   renderPager("adminUsersPager", page, nextPage => { state.adminUsersPage.page = nextPage; refreshAdminUsers(); }, nextSize => { state.adminUsersPage.size = nextSize; state.adminUsersPage.page = 0; refreshAdminUsers(); });
   if (!users.length) {
-    box.innerHTML = '<span class="emptyLine">Пользователей пока нет.</span>';
+    box.innerHTML = `<span class="emptyLine">${esc(t("Пользователей пока нет."))}</span>`;
     return;
   }
   box.innerHTML = users.map(u => {
@@ -440,7 +443,7 @@ function renderAdminUsers(users = []){
           <div class="adminUserBadges">${badges}</div>
         </div>
         <div class="adminUserActions">
-          <select data-admin-role="${u.id}" ${canChangeRole ? "" : "disabled"} title="Роль пользователя">
+          <select data-admin-role="${u.id}" ${canChangeRole ? "" : "disabled"} title="${esc(t("Роль пользователя"))}">
             <option value="USER" ${role === "USER" ? "selected" : ""}>USER</option>
             <option value="ADMIN" ${role === "ADMIN" ? "selected" : ""}>ADMIN</option>
           </select>
@@ -479,7 +482,7 @@ async function saveAdminUserRole(id, role){
   } catch (err) {
     state.adminUsers = previous;
     renderAdminUsers(previous);
-    setSave("err", err.message || "не удалось изменить роль");
+    setSave("err", err.message || t("не удалось изменить роль"));
   }
 }
 async function resetAdminUserPassword(id, username){
@@ -492,7 +495,7 @@ async function resetAdminUserPassword(id, username){
     renderAdminUsers(state.adminUsers);
     setSave("saved", `пароль ${updated.username} обновлён`);
   } catch (err) {
-    setSave("err", err.message || "не удалось сменить пароль");
+    setSave("err", err.message || t("не удалось сменить пароль"));
   }
 }
 
@@ -533,7 +536,7 @@ async function refreshDiagnostics(){
     state.lastDiagnostics = data;
     renderDiagnosticsStatus(data);
   } catch (err) {
-    if (st) st.textContent = "ошибка";
+    if (st) st.textContent = t("ошибка");
     const box = $("diagnosticsList");
     if (box) box.innerHTML = diagnosticRow("Ошибка диагностики", err.message || String(err), false) + diagnosticRow("Доступ", "только администратор", false);
   }
@@ -741,7 +744,7 @@ function renderNotifyStatus(count){
   if (!box) return;
   const permission = browserPermissionStatus();
   box.className = "status notifyStatusChips";
-  box.innerHTML = `<span class="statusChip statusChipPrimary"><b>${Number(count) || 0}</b> шт</span><span class="statusChip ${permission.tone === "ok" ? "statusChipOk" : "statusChipWarn"}"><b>${esc(permission.label)}:</b> ${esc(permission.value)}</span>`;
+  box.innerHTML = `<span class="statusChip statusChipPrimary"><b>${Number(count) || 0}</b> ${esc(t("шт"))}</span><span class="statusChip ${permission.tone === "ok" ? "statusChipOk" : "statusChipWarn"}"><b>${esc(permission.label)}:</b> ${esc(permission.value)}</span>`;
 }
 function renderNotifications(){
   if (!moduleEnabled("notifications")) return;
@@ -759,14 +762,14 @@ function renderNotifications(){
   $("notifImportantTime").value = s.importantDayReminderTime || "09:00";
   const sourceItems = state.notificationPreview || state.reminders;
   renderNotifyStatus(sourceItems.length);
-  if ($("notifyListTitle")) $("notifyListTitle").textContent = state.notificationPreviewTitle || "Напоминания текущего месяца";
+  if ($("notifyListTitle")) $("notifyListTitle").textContent = t(state.notificationPreviewTitle || "Напоминания текущего месяца");
   const list = $("notifyList");
   list.innerHTML = "";
   const items = sourceItems.slice(0, 24);
   if (!items.length) {
     const empty = document.createElement("div");
     empty.className = "notifyItem";
-    empty.innerHTML = `<span class="notifyWhen">—</span><span class="notifyType">пусто</span><span class="notifyTitle"><span class="notifyDetails">${esc(state.notificationPreview ? "На завтра напоминаний нет." : "На текущий месяц напоминаний нет.")}</span></span>`;
+    empty.innerHTML = `<span class="notifyWhen">—</span><span class="notifyType">${esc(t("пусто"))}</span><span class="notifyTitle"><span class="notifyDetails">${esc(t(state.notificationPreview ? "На завтра напоминаний нет." : "На текущий месяц напоминаний нет."))}</span></span>`;
     list.appendChild(empty);
     return;
   }
@@ -796,7 +799,7 @@ async function saveNotificationSettings(extra = {}){
     };
     state.notificationSettings = await api.updateNotificationSettings(body);
     state.notificationPreview = null;
-    state.notificationPreviewTitle = "Напоминания текущего месяца";
+    state.notificationPreviewTitle = t("Напоминания текущего месяца");
     const r = monthFromTo();
     state.reminders = await api.notificationUpcoming(r.from, r.to);
     state.remindersByDate = {};
@@ -815,14 +818,14 @@ async function requestNotificationPermission(){
 function testNotification(){
   if (!moduleEnabled("notifications")) { alert(t("модуль выключен")); return; }
   if (!("Notification" in window) || Notification.permission !== "granted") { alert(t("Сначала разрешите уведомления в браузере")); return; }
-  new Notification("DutyLog: Time & Overtime", { body:"Тестовое уведомление отправлено." });
+  new Notification("DutyLog: Time & Overtime", { body:t("Тестовое уведомление отправлено.") });
 }
 async function showTomorrowNotifications(){
   if (!moduleEnabled("notifications")) return;
   setSave("saving");
   try {
     state.notificationPreview = await api.notificationTomorrow();
-    state.notificationPreviewTitle = "напоминания на завтра";
+    state.notificationPreviewTitle = t("напоминания на завтра");
     setSave("saved");
     renderNotifications();
   } catch (err) { console.error(err); setSave("err", err.message); }
@@ -833,7 +836,7 @@ async function showMonthNotifications(){
   try {
     const r = monthFromTo();
     state.notificationPreview = null;
-    state.notificationPreviewTitle = "Напоминания текущего месяца";
+    state.notificationPreviewTitle = t("Напоминания текущего месяца");
     state.reminders = await api.notificationUpcoming(r.from, r.to, true);
     state.remindersByDate = {};
     for (const x of state.reminders) addToDateMap(state.remindersByDate, { ...x, date:x.sourceDate });
