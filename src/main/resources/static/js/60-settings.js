@@ -1,0 +1,847 @@
+/*
+ * 60-settings.js — Настройки: типы смен, навигация по месяцам, время/регион, уведомления
+ * Часть бывшего app.js (распил v26.1). Файлы делят ГЛОБАЛЬНУЮ область
+ * видимости (это не ES-модули); порядок подключения в index.html — закон.
+ * Инвариант: склейка всех js/*.js по порядку === старый app.js.
+ */
+/* ─── Управление типами смен ────────────────────────────────── */
+
+// Enter в полях новой смены = «Добавить» (вешается один раз)
+for (const id of ["nsName", "nsHours", "nsStart", "nsEnd", "nsBreak", "nsPlan"]) {
+  $(id).addEventListener("keydown", e => { if (e.key === "Enter") addShiftType(); });
+}
+for (const id of ["nsHours", "nsStart", "nsEnd", "nsBreak", "nsPlan"]) {
+  $(id)?.addEventListener("input", updateShiftPlanHint);
+}
+updateShiftPlanHint();
+
+function renderSwatches(){
+  const row = $("swRow");
+  row.innerHTML = "";
+  for (const c of SWATCHES) {
+    const b = document.createElement("button");
+    b.className = "sw" + (state.swColor === c ? " on" : "");
+    b.style.background = c;
+    b.addEventListener("click", () => { state.swColor = c; renderSwatches(); });
+    row.appendChild(b);
+  }
+  const picker = document.createElement("input");
+  picker.type = "color"; picker.value = state.swColor; picker.title = t("Свой цвет");
+  picker.addEventListener("input", () => { state.swColor = picker.value; });
+  row.appendChild(picker);
+  const add = document.createElement("button");
+  add.className = "add"; add.textContent = t("Добавить");
+  add.addEventListener("click", addShiftType);
+  row.appendChild(add);
+}
+
+async function addShiftType(){
+  const name = $("nsName").value.trim();
+  if (!name) return setSave("err", t("укажи название смены"));
+  const startTime = $("nsStart").value || null;
+  const endTime = $("nsEnd").value || null;
+  const breakMinutes = readIntInput("nsBreak");
+  if (!Number.isFinite(breakMinutes) || breakMinutes < 0 || breakMinutes > 1440) {
+    return setSave("err", t("обед: от 0 до 1440 минут"));
+  }
+  const calculatedNorm = shiftDurationHours(startTime, endTime, breakMinutes);
+  const rawPlan = $("nsPlan").value.trim().replace(",", ".");
+  const rawHours = $("nsHours").value.trim().replace(",", ".");
+  const plannedHours = rawPlan ? Number(rawPlan) : (calculatedNorm || (rawHours ? Number(rawHours) : 0));
+  const hours = rawHours ? Number(rawHours) : plannedHours;
+  if (!Number.isFinite(hours) || hours < 0 || hours > 24) {
+    return setSave("err", t("часы: от 0 до 24"));
+  }
+  if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) {
+    return setSave("err", t("норма: от 0 до 24 часов"));
+  }
+
+  setSave("saving");
+  try {
+    const created = await api.createShiftType({
+      name,
+      hours,
+      color: state.swColor,
+      startTime,
+      endTime,
+      breakMinutes,
+      plannedHours,
+    });
+    state.shiftTypes.push(created);
+    $("nsName").value = ""; $("nsHours").value = ""; $("nsStart").value = ""; $("nsEnd").value = ""; $("nsBreak").value = "0"; $("nsPlan").value = "";
+    updateShiftPlanHint();
+    setSave("saved");
+    renderChips(); renderSummary(); renderCustomList();
+  } catch (err) { console.error(err); setSave("err", err.message); }
+}
+
+function renderCustomList(){
+  const box = $("customList");
+  box.hidden = state.shiftTypes.length === 0;
+  box.innerHTML = "";
+  for (const s of state.shiftTypes) {
+    const row = document.createElement("div");
+    row.style.display = "flex"; row.style.alignItems = "center"; row.style.gap = "8px"; row.style.flexWrap = "wrap";
+    const meta = shiftMetaText(s);
+    const notifyMeta = s.notificationsEnabled === false ? " · без уведомлений" : (s.notificationMinutesBefore != null ? ` · напомнить за ${s.notificationMinutesBefore}м` : "");
+    row.innerHTML = `<span class="dot" style="width:10px;height:10px;border-radius:3px;background:${s.color};display:inline-block"></span>
+      <span>${esc(s.name)}${shiftPlannedHours(s) ? `${state.language === "en" ? " · norm " : " · норма "}${fmtHours(shiftPlannedHours(s))}ч` : ""}${meta ? ` <span style="color:var(--dim)">· ${esc(meta)}</span>` : ""}<span style="color:var(--dim)">${esc(notifyMeta)}</span></span>`;
+
+    const edit = document.createElement("button");
+    edit.className = "del"; edit.textContent = t("настроить");
+    edit.title = t("Изменить время, обед и плановые часы смены");
+    edit.addEventListener("click", () => editShiftType(s.id));
+    row.appendChild(edit);
+
+    if (s.builtin) {
+      const tag = document.createElement("span");
+      tag.className = "tag"; tag.textContent = t("встроенная");
+      row.appendChild(tag);
+    } else {
+      const del = document.createElement("button");
+      del.className = "del"; del.textContent = t("удалить");
+      del.title = t("Смена снимется с дней, где стояла. Заметки останутся.");
+      del.addEventListener("click", () => removeShiftType(s.id));
+      row.appendChild(del);
+    }
+    box.appendChild(row);
+  }
+}
+
+async function editShiftType(id){
+  const s = state.shiftTypes.find(x => Number(x.id) === Number(id));
+  if (!s) return setSave("err", t("смена не найдена"));
+
+  const patch = {};
+  if (!s.builtin) {
+    const name = prompt("Название смены", s.name || "");
+    if (name === null) return;
+    if (!name.trim()) return setSave("err", t("название не может быть пустым"));
+    patch.name = name.trim();
+
+    const color = prompt("Цвет #RRGGBB", s.color || state.swColor);
+    if (color === null) return;
+    patch.color = color.trim();
+  }
+
+  const hoursRaw = prompt("Короткие часы для календаря", fmtHours(s.hours));
+  if (hoursRaw === null) return;
+  const hours = Number(hoursRaw.replace(",", "."));
+  if (!Number.isFinite(hours) || hours < 0 || hours > 24) return setSave("err", t("часы: от 0 до 24"));
+  patch.hours = hours;
+
+  const startTime = prompt("Начало смены HH:mm, можно пусто", s.startTime || "");
+  if (startTime === null) return;
+  patch.startTime = startTime.trim();
+
+  const endTime = prompt("Конец смены HH:mm, можно пусто", s.endTime || "");
+  if (endTime === null) return;
+  patch.endTime = endTime.trim();
+
+  const brRaw = prompt("Обед/перерыв, минут", String(s.breakMinutes || 0));
+  if (brRaw === null) return;
+  const breakMinutes = Number(brRaw);
+  if (!Number.isFinite(breakMinutes) || breakMinutes < 0 || breakMinutes > 1440) return setSave("err", t("обед: от 0 до 1440 минут"));
+  patch.breakMinutes = Math.round(breakMinutes);
+
+  const planRaw = prompt("Норма для расчёта переработки, ч", fmtHours(shiftPlannedHours(s)));
+  if (planRaw === null) return;
+  const plannedHours = Number(planRaw.replace(",", "."));
+  if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) return setSave("err", t("норма: от 0 до 24 часов"));
+  patch.plannedHours = plannedHours;
+
+  const notifRaw = prompt("Уведомлять перед этой сменой? да/нет", s.notificationsEnabled === false ? "нет" : "да");
+  if (notifRaw === null) return;
+  const notifClean = notifRaw.trim().toLowerCase();
+  patch.notificationsEnabled = !(notifClean === "нет" || notifClean === "no" || notifClean === "0" || notifClean === "false");
+
+  const minutesRaw = prompt("За сколько минут напоминать именно эту смену? Пусто = глобальная настройка", s.notificationMinutesBefore ?? "");
+  if (minutesRaw === null) return;
+  if (minutesRaw.trim()) {
+    const minutes = Number(minutesRaw);
+    if (!Number.isFinite(minutes) || minutes < 0 || minutes > 1440) return setSave("err", t("напоминание смены: от 0 до 1440 минут"));
+    patch.notificationMinutesBefore = Math.round(minutes);
+  } else {
+    patch.notificationMinutesBefore = -1;
+  }
+
+  setSave("saving");
+  try {
+    const updated = await api.updateShiftType(id, patch);
+    const idx = state.shiftTypes.findIndex(x => Number(x.id) === Number(id));
+    if (idx >= 0) state.shiftTypes[idx] = updated;
+    setSave("saved");
+    renderChips(); renderSummary(); renderCalendar(); renderOvertimeControls();
+  } catch (err) { console.error(err); setSave("err", err.message); }
+}
+
+async function removeShiftType(id){
+  setSave("saving");
+  try {
+    await api.deleteShiftType(id);
+    state.shiftTypes = state.shiftTypes.filter(s => s.id !== id);
+    // локально снимаем смену с дней, где она стояла
+    for (const [k, v] of Object.entries(state.days)) {
+      if (v.shiftTypeId === id) {
+        v.shiftTypeId = null;
+        const hasOvertime = Math.abs(numOr0(v.overtimeHours)) > 0.0001 || Math.abs(numOr0(v.timeOffHours)) > 0.0001;
+        if (!(v.note || "").trim() && !hasOvertime) delete state.days[k];
+      }
+    }
+    setSave("saved");
+    renderChips(); renderCalendar();
+  } catch (err) { console.error(err); setSave("err", err.message); }
+}
+
+/* ─── Навигация по месяцам ──────────────────────────────────── */
+async function goto(y, m){
+  await flushPendingSave();
+  const d = new Date(y, m, 1);
+  state.y = d.getFullYear(); state.m = d.getMonth();
+  state.selected = null;
+  $("panel").hidden = true; $("layout").classList.remove("with-panel");
+  await loadMonth();
+  if (moduleEnabled("overtime")) await loadLedgerPage(true);
+  if (moduleEnabled("tasks")) await loadTaskBoard(true);
+  applyModuleVisibility();
+  renderCalendar();
+}
+$("prev").addEventListener("click", () => goto(state.y, state.m - 1));
+$("next").addEventListener("click", () => goto(state.y, state.m + 1));
+$("todayBtn").addEventListener("click", async () => {
+  const t = new Date();
+  await goto(t.getFullYear(), t.getMonth());
+  selectDay(todayKey());
+});
+
+
+
+
+/* ─── Время и регион ───────────────────────────────────────── */
+function readTimeSettingsForm(){
+  const val = id => ($(id)?.value ?? "").trim();
+  const num = (id, fallback = 0) => {
+    const raw = val(id).replace(",", ".");
+    const n = raw === "" ? fallback : Number(raw);
+    return Number.isFinite(n) ? n : fallback;
+  };
+  return {
+    workRegionName: val("workRegionName"),
+    workTimezone: val("workTimezone") || browserTimeZone(),
+    workOffsetMoscow: Math.round(num("workOffsetMoscow", 0)),
+    timeFormat: val("timeFormatPref") || "24h",
+    dayStart: val("defDayStart") || "08:30",
+    dayEnd: val("defDayEnd") || "17:00",
+    dayBreakMinutes: Math.max(0, Math.min(1440, Math.round(num("defDayBreak", 30)))),
+    dayPlannedHours: Math.max(0, Math.min(24, num("defDayPlan", 8))),
+    nightStart: val("defNightStart") || "20:00",
+    nightEnd: val("defNightEnd") || "08:00",
+    nightBreakMinutes: Math.max(0, Math.min(1440, Math.round(num("defNightBreak", 60)))),
+    nightPlannedHours: Math.max(0, Math.min(24, num("defNightPlan", 11))),
+  };
+}
+function renderTimeSettings(){
+  if (!$("timeSettingsCard")) return;
+  if (!state.timeSettings) state.timeSettings = loadTimeSettings();
+  const t = state.timeSettings;
+  const set = (id, v) => { if ($(id)) $(id).value = v ?? ""; };
+  set("workRegionName", t.workRegionName);
+  set("workTimezone", t.workTimezone);
+  set("workOffsetMoscow", t.workOffsetMoscow);
+  set("timeFormatPref", t.timeFormat || "24h");
+  set("defDayStart", t.dayStart);
+  set("defDayEnd", t.dayEnd);
+  set("defDayBreak", t.dayBreakMinutes);
+  set("defDayPlan", t.dayPlannedHours);
+  set("defNightStart", t.nightStart);
+  set("defNightEnd", t.nightEnd);
+  set("defNightBreak", t.nightBreakMinutes);
+  set("defNightPlan", t.nightPlannedHours);
+
+  const browserTz = browserTimeZone();
+  const region = t.workRegionName ? `${esc(t.workRegionName)} · ` : "";
+  $("timeNowBox").innerHTML = `${region}${esc(t("рабочее время"))}: <b>${esc(safeTzLabel(t.workTimezone))}</b> <span>(${esc(t.workTimezone)})</span><br>` +
+    `${esc(t("браузер"))}: <b>${esc(safeTzLabel(browserTz))}</b> <span>(${esc(browserTz)})</span>` +
+    (Number(t.workOffsetMoscow || 0) ? `<br>${esc(t("пометка"))}: ${esc(t("Москва"))} ${Number(t.workOffsetMoscow) > 0 ? "+" : ""}${Number(t.workOffsetMoscow)} ${state.language === "en" ? "h" : "ч"}` : "");
+  $("timeSettingsStatus").className = "status statusAutoSave";
+  $("timeSettingsStatus").innerHTML = `<span class="statusChip statusChipAuto"><span class="statusDot"></span>${esc(t("автосохранение"))}</span>`;
+}
+function saveTimeSettings(){
+  storeTimeSettings(readTimeSettingsForm());
+  renderTimeSettings();
+  setSave("saved", t("настройки времени сохранены"));
+}
+let timeAutoApplyTimer = null;
+function scheduleTimeSettingsApply(){
+  if (timeAutoApplyTimer) clearTimeout(timeAutoApplyTimer);
+  timeAutoApplyTimer = setTimeout(() => applyTimeSettingsToBuiltins(true), 700);
+}
+function fillShiftFormFromDefaults(kind){
+  const t = state.timeSettings || loadTimeSettings();
+  if (kind === "night") {
+    $("nsName").value = $("nsName").value || "Ночная кастомная";
+    $("nsHours").value = fmtHours(t.nightPlannedHours);
+    $("nsStart").value = t.nightStart;
+    $("nsEnd").value = t.nightEnd;
+    $("nsBreak").value = t.nightBreakMinutes;
+    $("nsPlan").value = fmtHours(t.nightPlannedHours);
+  } else {
+    $("nsName").value = $("nsName").value || "Дневная кастомная";
+    $("nsHours").value = fmtHours(t.dayPlannedHours);
+    $("nsStart").value = t.dayStart;
+    $("nsEnd").value = t.dayEnd;
+    $("nsBreak").value = t.dayBreakMinutes;
+    $("nsPlan").value = fmtHours(t.dayPlannedHours);
+  }
+  location.hash = "#settings";
+  setSave("", "");
+}
+function patchForBuiltInShift(name, t){
+  if (name === "Ночная") return {
+    startTime: t.nightStart,
+    endTime: t.nightEnd,
+    breakMinutes: t.nightBreakMinutes,
+    plannedHours: t.nightPlannedHours,
+    hours: t.nightPlannedHours,
+  };
+  return {
+    startTime: t.dayStart,
+    endTime: t.dayEnd,
+    breakMinutes: t.dayBreakMinutes,
+    plannedHours: t.dayPlannedHours,
+    hours: t.dayPlannedHours,
+  };
+}
+async function applyTimeSettingsToBuiltins(silent = false){
+  const t = readTimeSettingsForm();
+  storeTimeSettings(t);
+  const targets = state.shiftTypes.filter(s => s.name === "Дневная" || s.name === "Ночная");
+  if (!targets.length) return setSave("err", t("не нашёл Дневную/Ночную смену"));
+  if (!silent) setSave("saving");
+  try {
+    for (const s of targets) {
+      const updated = await api.updateShiftType(s.id, patchForBuiltInShift(s.name, t));
+      const idx = state.shiftTypes.findIndex(x => Number(x.id) === Number(s.id));
+      if (idx >= 0) state.shiftTypes[idx] = updated;
+    }
+    setSave("saved", silent ? "время смен применено" : "встроенные смены обновлены");
+    renderTimeSettings();
+    renderCustomList();
+    renderChips();
+    renderCalendar();
+    renderOvertimeControls();
+  } catch (err) { console.error(err); setSave("err", err.message); }
+}
+function initTimeSettingsEvents(){
+  if (!$("timeSettingsCard")) return;
+  $("timeDetectBrowser")?.addEventListener("click", () => { $("workTimezone").value = browserTimeZone(); saveTimeSettings(); });
+  $("timeApplyBuiltins")?.addEventListener("click", () => applyTimeSettingsToBuiltins(false));
+  $("timeFillDayForm")?.addEventListener("click", () => fillShiftFormFromDefaults("day"));
+  $("timeFillNightForm")?.addEventListener("click", () => fillShiftFormFromDefaults("night"));
+  const shiftDefaultIds = ["defDayStart","defDayEnd","defDayBreak","defDayPlan","defNightStart","defNightEnd","defNightBreak","defNightPlan"];
+  for (const id of ["workRegionName","workTimezone","workOffsetMoscow","timeFormatPref", ...shiftDefaultIds]) {
+    const el = $(id);
+    if (!el) continue;
+    el.addEventListener("change", () => {
+      storeTimeSettings(readTimeSettingsForm());
+      renderTimeSettings();
+      if (shiftDefaultIds.includes(id)) scheduleTimeSettingsApply();
+    });
+  }
+}
+
+function renderDiagnosticsClient(){
+  const set = (id, value) => { if ($(id)) $(id).textContent = value; };
+  set("diagFrontend", "v" + DUTYLOG_VERSION);
+  set("diagBrowser", navigator.userAgent.replace(/\s+/g, " ").slice(0, 90));
+  set("diagCsrf", csrfToken() ? "cookie есть" : "cookie не найден");
+  if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.getRegistration().then(reg => set("diagSw", reg ? "активен" : "не зарегистрирован")).catch(() => set("diagSw", "ошибка"));
+  } else set("diagSw", "не поддерживается");
+}
+function renderRegistrationAdmin(status = null){
+  const enabled = status?.enabled === true;
+  const statusEl = $("registrationAdminStatus");
+  const detailsEl = $("registrationAdminDetails");
+  const toggle = $("registrationEnabledToggle");
+  const stateLabel = enabled ? "открыта" : "закрыта";
+  if (statusEl) {
+    statusEl.textContent = stateLabel;
+    statusEl.className = "status " + (enabled ? "warn" : "ok");
+  }
+  if (toggle) toggle.checked = enabled;
+  if (detailsEl) {
+    const source = status?.source === "database" ? "из админки" : "значение по умолчанию";
+    const changed = status?.updatedAt ? ` · изменено ${fmtSyncTime(status.updatedAt)}${status.updatedBy ? " пользователем " + status.updatedBy : ""}` : "";
+    detailsEl.textContent = `Публичная регистрация: ${stateLabel} · ${source}${changed}`;
+  }
+}
+async function refreshRegistrationAdmin(){
+  try {
+    const status = await api.registrationSettings();
+    state.registrationSettings = status;
+    renderRegistrationAdmin(status);
+  } catch (err) {
+    const detailsEl = $("registrationAdminDetails");
+    if (detailsEl) detailsEl.textContent = "Не удалось загрузить настройку регистрации: " + (err.message || String(err));
+  }
+}
+async function saveRegistrationAdmin(enabled){
+  const toggle = $("registrationEnabledToggle");
+  const statusEl = $("registrationAdminStatus");
+  if (toggle) toggle.disabled = true;
+  if (statusEl) statusEl.textContent = "сохраняю…";
+  try {
+    const status = await api.updateRegistrationSettings(enabled);
+    state.registrationSettings = status;
+    renderRegistrationAdmin(status);
+    setSave("saved", enabled ? "публичная регистрация открыта" : "публичная регистрация закрыта");
+  } catch (err) {
+    setSave("err", err.message || "не удалось сохранить настройку регистрации");
+    renderRegistrationAdmin(state.registrationSettings);
+  } finally {
+    if (toggle) toggle.disabled = false;
+  }
+}
+
+function roleLabel(role){ return role === "ADMIN" ? "админ" : "пользователь"; }
+function renderAdminUsers(users = []){
+  const box = $("adminUsersList");
+  const status = $("adminUsersStatus");
+  if (!box) return;
+  const page = { ...(state.adminUsersPage || {}), items: users };
+  if (status) {
+    const admins = users.filter(u => u.role === "ADMIN").length;
+    status.className = "status statusMetrics";
+    status.innerHTML = `<span class="statusChip"><b>Показано:</b> ${pageRangeText(page)}</span><span class="statusChip ${admins > 0 ? 'statusChipOk' : 'statusChipWarn'}"><b>Админов на странице:</b> ${admins}</span>`;
+  }
+  renderPager("adminUsersPager", page, nextPage => { state.adminUsersPage.page = nextPage; refreshAdminUsers(); }, nextSize => { state.adminUsersPage.size = nextSize; state.adminUsersPage.page = 0; refreshAdminUsers(); });
+  if (!users.length) {
+    box.innerHTML = '<span class="emptyLine">Пользователей пока нет.</span>';
+    return;
+  }
+  box.innerHTML = users.map(u => {
+    const role = u.role || "USER";
+    const canChangeRole = !(u.bootstrapAdmin && role === "ADMIN") && !u.currentUser;
+    const badges = [
+      u.bootstrapAdmin ? '<span class="miniBadge warn">env admin</span>' : '',
+      u.currentUser ? '<span class="miniBadge">это вы</span>' : '',
+      `<span class="miniBadge">${esc(u.accountTier || "FREE")}</span>`
+    ].filter(Boolean).join(" ");
+    const created = u.createdAt ? fmtSyncTime(u.createdAt) : "—";
+    const updated = u.updatedAt ? fmtSyncTime(u.updatedAt) : "—";
+    return `
+      <div class="adminUserRow" data-user-id="${u.id}">
+        <div class="adminUserMain">
+          <b>${esc(u.displayName || u.username)}</b>
+          <span>@${esc(u.username)} · создан ${esc(created)} · обновлён ${esc(updated)}</span>
+          <div class="adminUserBadges">${badges}</div>
+        </div>
+        <div class="adminUserActions">
+          <select data-admin-role="${u.id}" ${canChangeRole ? "" : "disabled"} title="Роль пользователя">
+            <option value="USER" ${role === "USER" ? "selected" : ""}>USER</option>
+            <option value="ADMIN" ${role === "ADMIN" ? "selected" : ""}>ADMIN</option>
+          </select>
+          <button data-admin-password="${u.id}" data-username="${esc(u.username)}" type="button">Сменить пароль</button>
+        </div>
+      </div>`;
+  }).join("");
+}
+async function refreshAdminUsers(){
+  const status = $("adminUsersStatus");
+  if (status) status.textContent = t("загрузка…");
+  try {
+    const page = state.adminUsersPage || { page:0, size:50 };
+    const res = normalizePageResponse(await api.adminUsers({
+      page: page.page || 0,
+      size: page.size || 50,
+      q: $("adminUsersSearch")?.value || "",
+      role: $("adminUsersRoleFilter")?.value || "all",
+    }), page.size || 50);
+    state.adminUsers = res.items || [];
+    state.adminUsersPage = res;
+    renderAdminUsers(state.adminUsers);
+  } catch (err) {
+    if (status) status.textContent = t("ошибка");
+    const box = $("adminUsersList");
+    if (box) box.innerHTML = diagnosticRow("Ошибка списка пользователей", err.message || String(err), false);
+  }
+}
+async function saveAdminUserRole(id, role){
+  const previous = [...(state.adminUsers || [])];
+  try {
+    const updated = await api.updateAdminUserRole(id, role);
+    state.adminUsers = (state.adminUsers || []).map(u => Number(u.id) === Number(id) ? updated : u);
+    renderAdminUsers(state.adminUsers);
+    setSave("saved", `роль ${updated.username}: ${updated.role}`);
+  } catch (err) {
+    state.adminUsers = previous;
+    renderAdminUsers(previous);
+    setSave("err", err.message || "не удалось изменить роль");
+  }
+}
+async function resetAdminUserPassword(id, username){
+  const password = prompt(`Новый пароль для ${username} (минимум 12 символов)`);
+  if (password == null) return;
+  if (password.length < 12) return setSave("err", t("пароль должен быть минимум 12 символов"));
+  try {
+    const updated = await api.resetAdminUserPassword(id, password);
+    state.adminUsers = (state.adminUsers || []).map(u => Number(u.id) === Number(id) ? updated : u);
+    renderAdminUsers(state.adminUsers);
+    setSave("saved", `пароль ${updated.username} обновлён`);
+  } catch (err) {
+    setSave("err", err.message || "не удалось сменить пароль");
+  }
+}
+
+function diagnosticRow(label, value, ok = null){
+  const cls = ok === true ? " ok" : ok === false ? " warn" : "";
+  return `<div class="diagRow${cls}"><span>${esc(label)}</span><b>${esc(value ?? "—")}</b></div>`;
+}
+function renderDiagnosticsStatus(data){
+  const box = $("diagnosticsList");
+  if (!box) return;
+  const rows = [];
+  rows.push(diagnosticRow("Версия сервера", data.version || "—"));
+  rows.push(diagnosticRow("Профили Spring", (data.profiles || []).join(", ") || "default/dev"));
+  rows.push(diagnosticRow("Серверное время", data.serverTime || "—"));
+  rows.push(diagnosticRow("Часовой пояс сервера", data.serverTimezone || "—"));
+  rows.push(diagnosticRow("База данных", data.database?.ok ? "ok" : (data.database?.error || "ошибка"), !!data.database?.ok));
+  rows.push(diagnosticRow("Пользователи", data.users?.total != null ? String(data.users.total) : "—"));
+  rows.push(diagnosticRow("Администраторы", data.users?.admins != null ? String(data.users.admins) : "—", Number(data.users?.admins || 0) > 0));
+  rows.push(diagnosticRow("Роли доступа", (data.users?.rolesAllowed || []).join(", ") || "USER, ADMIN"));
+  rows.push(diagnosticRow("Будущие тарифы", (data.users?.accountTiersReserved || []).join(", ") || "FREE, PAID, VIP"));
+  rows.push(diagnosticRow("Публичная регистрация", data.registration?.enabled ? "открыта" : "закрыта", data.registration?.enabled ? false : true));
+  rows.push(diagnosticRow("Источник настройки регистрации", data.registration?.source === "database" ? "админка" : "по умолчанию"));
+  rows.push(diagnosticRow("Telegram bot", data.telegram?.enabled ? "включён" : "выключен", data.telegram?.enabled ? true : null));
+  rows.push(diagnosticRow("Telegram token", data.telegram?.tokenConfigured ? "задан" : "не задан", data.telegram?.tokenConfigured ? true : null));
+  rows.push(diagnosticRow("Telegram polling", data.telegram?.pollingEnabled ? "включён" : "выключен", data.telegram?.pollingEnabled ? true : null));
+  rows.push(diagnosticRow("Telegram уведомления", data.telegram?.notificationsEnabled ? "включены" : "выключены", data.telegram?.notificationsEnabled ? true : null));
+  rows.push(diagnosticRow("Аккаунт подключен к Telegram", data.telegram?.linked ? "да" : "нет", data.telegram?.linked ? true : null));
+  box.innerHTML = rows.join("");
+  const st = $("diagnosticsStatus");
+  if (st) st.textContent = data.database?.ok ? "ok" : "проверь";
+}
+async function refreshDiagnostics(){
+  renderDiagnosticsClient();
+  const st = $("diagnosticsStatus");
+  if (st) st.textContent = t("проверяю…");
+  try {
+    const data = await api.systemStatus();
+    state.lastDiagnostics = data;
+    renderDiagnosticsStatus(data);
+  } catch (err) {
+    if (st) st.textContent = "ошибка";
+    const box = $("diagnosticsList");
+    if (box) box.innerHTML = diagnosticRow("Ошибка диагностики", err.message || String(err), false) + diagnosticRow("Доступ", "только администратор", false);
+  }
+}
+function diagnosticsReportText(){
+  const d = state.lastDiagnostics || {};
+  return [
+    `DutyLog UI: v${DUTYLOG_VERSION}`,
+    `Client: web/PWA inside Spring Boot monolith`,
+    `Native mobile app: not present`,
+    `Server: ${d.version || "—"}`,
+    `Profiles: ${(d.profiles || []).join(", ") || "default/dev"}`,
+    `Server time: ${d.serverTime || "—"}`,
+    `Server timezone: ${d.serverTimezone || "—"}`,
+    `Database: ${d.database?.ok ? "ok" : (d.database?.error || "unknown")}`,
+    `Users total: ${d.users?.total ?? "unknown"}`,
+    `Admins total: ${d.users?.admins ?? "unknown"}`,
+    `Roles allowed: ${(d.users?.rolesAllowed || []).join(", ") || "USER, ADMIN"}`,
+    `Account tiers reserved: ${(d.users?.accountTiersReserved || []).join(", ") || "FREE, PAID, VIP"}`,
+    `Registration enabled: ${!!d.registration?.enabled}`,
+    `Registration source: ${d.registration?.source || "unknown"}`,
+    `Telegram enabled: ${!!d.telegram?.enabled}`,
+    `Telegram token: ${!!d.telegram?.tokenConfigured}`,
+    `Telegram polling: ${!!d.telegram?.pollingEnabled}`,
+    `Telegram notifications: ${!!d.telegram?.notificationsEnabled}`,
+    `Telegram linked: ${!!d.telegram?.linked}`,
+    `Browser: ${navigator.userAgent}`,
+  ].join("\n");
+}
+function initDiagnosticsEvents(){
+  if (!$("diagnosticsCard")) return;
+  $("diagnosticsRefresh")?.addEventListener("click", refreshDiagnostics);
+  $("diagnosticsCopy")?.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(diagnosticsReportText()); setSave("saved", t("отчёт диагностики скопирован")); }
+    catch (err) { setSave("err", t("не удалось скопировать отчёт")); }
+  });
+  renderDiagnosticsClient();
+  refreshRegistrationAdmin();
+  refreshAdminUsers();
+  $("registrationRefresh")?.addEventListener("click", refreshRegistrationAdmin);
+  $("registrationEnabledToggle")?.addEventListener("change", e => saveRegistrationAdmin(e.target.checked));
+  $("adminUsersRefresh")?.addEventListener("click", refreshAdminUsers);
+  $("adminUsersRoleFilter")?.addEventListener("change", () => { state.adminUsersPage.page = 0; refreshAdminUsers(); });
+  $("adminUsersSearch")?.addEventListener("input", () => { clearTimeout(window.__adminUsersTimer); window.__adminUsersTimer = setTimeout(() => { state.adminUsersPage.page = 0; refreshAdminUsers(); }, 350); });
+  $("adminUsersList")?.addEventListener("change", e => {
+    const id = e.target?.dataset?.adminRole;
+    if (id) saveAdminUserRole(id, e.target.value);
+  });
+  $("adminUsersList")?.addEventListener("click", e => {
+    const id = e.target?.dataset?.adminPassword;
+    if (id) resetAdminUserPassword(id, e.target.dataset.username || `#${id}`);
+  });
+}
+
+function initSettingsAccordion(){
+  const root = $("view-settings");
+  if (!root || root.dataset.accordionReady === "1") return;
+  root.dataset.accordionReady = "1";
+  const cards = [...root.querySelectorAll(".settingsCard[data-settings-section]")];
+  const titles = {
+    profile: "Имя, пароль, устройства и Telegram",
+    language: "Русский / English",
+    appearance: "Тема, акцентный цвет и emoji-маркеры дней",
+    time: "Регион, часовой пояс и дефолты дневной/ночной",
+    shifts: "Кастомные и встроенные типы смен",
+    scenarios: "Шаблоны, которые заполняют переработку в панели дня",
+    notifications: "Браузерные, сменные, задачные и важные напоминания",
+    important: "Общий список важных дат с удалением",
+    admin: "Служебная диагностика вынесена в отдельный профиль"
+  };
+  let saved = localStorage.getItem("dutylog.settings.openSection") || "profile";
+  const known = new Set(cards.map(c => c.dataset.settingsSection));
+  if (!known.has(saved)) saved = "profile";
+
+  function setNavActive(section){
+    root.querySelectorAll("[data-settings-jump]").forEach(a => a.classList.toggle("on", a.dataset.settingsJump === section));
+  }
+  function setCardOpen(card, open){
+    card.classList.toggle("is-collapsed", !open);
+    card.classList.toggle("is-open", open);
+    const btn = card.querySelector(".settingsToggle");
+    if (btn) {
+      btn.textContent = open ? t("свернуть") : t("открыть");
+      btn.setAttribute("aria-expanded", String(open));
+    }
+  }
+  function openSection(section, scroll = false){
+    for (const card of cards) setCardOpen(card, card.dataset.settingsSection === section);
+    localStorage.setItem("dutylog.settings.openSection", section);
+    setNavActive(section);
+    if (scroll) document.getElementById("settings-" + section)?.scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+  function expandAll(){
+    for (const card of cards) setCardOpen(card, true);
+    localStorage.setItem("dutylog.settings.openSection", "all");
+    root.querySelectorAll("[data-settings-jump]").forEach(a => a.classList.remove("on"));
+  }
+  function collapseAll(){
+    for (const card of cards) setCardOpen(card, false);
+    localStorage.setItem("dutylog.settings.openSection", "none");
+    root.querySelectorAll("[data-settings-jump]").forEach(a => a.classList.remove("on"));
+  }
+
+  for (const card of cards) {
+    const section = card.dataset.settingsSection;
+    const head = card.querySelector(":scope > .settingsHead, :scope > .notifyHead");
+    if (!head) continue;
+    if (!card.querySelector(":scope > .settingsCollapsedNote")) {
+      const note = document.createElement("div");
+      note.className = "settingsCollapsedNote";
+      note.textContent = t(titles[section] || "Раздел настроек");
+      head.after(note);
+    }
+    if (!head.querySelector(".settingsToggle")) {
+      const toggle = document.createElement("button");
+      toggle.className = "settingsToggle";
+      toggle.type = "button";
+      toggle.setAttribute("aria-controls", card.id || "settings-" + section);
+      toggle.addEventListener("click", (ev) => {
+        ev.preventDefault(); ev.stopPropagation();
+        if (card.classList.contains("is-collapsed")) openSection(section, false);
+        else collapseAll();
+      });
+      head.appendChild(toggle);
+    }
+    head.addEventListener("click", (ev) => {
+      if (ev.target.closest("button,a,input,select,textarea,label")) return;
+      if (card.classList.contains("is-collapsed")) openSection(section, false);
+      else collapseAll();
+    });
+  }
+
+  root.__openSettingsSection = openSection;
+
+  root.querySelectorAll("[data-settings-jump]").forEach(a => {
+    a.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      openSection(a.dataset.settingsJump, true);
+      history.replaceState(null, "", "#settings");
+    });
+  });
+  $("settingsExpandAll")?.addEventListener("click", expandAll);
+  $("settingsCollapseAll")?.addEventListener("click", collapseAll);
+
+  if (location.hash.startsWith("#settings-") && known.has(location.hash.replace("#settings-", ""))) {
+    saved = location.hash.replace("#settings-", "");
+  }
+  if (saved === "all") expandAll();
+  else if (saved === "none") collapseAll();
+  else openSection(saved, false);
+}
+
+function openSettingsSection(section, scroll = true, focusId = null){
+  const hash = `#settings-${section}`;
+  if (location.hash !== hash) location.hash = hash;
+  setTimeout(() => {
+    renderSettingsPanels();
+    const root = $("view-settings");
+    root?.__openSettingsSection?.(section, scroll);
+    const card = document.querySelector(`[data-settings-section="${section}"]`);
+    if (card) {
+      card.classList.add("is-attention");
+      setTimeout(() => card.classList.remove("is-attention"), 1200);
+    }
+    if (focusId) $(focusId)?.focus();
+  }, 80);
+}
+
+function renderSettingsPanels(){
+  initSettingsAccordion();
+  renderAppearanceControls();
+  renderTimeSettings();
+  renderCustomList();
+  renderImportantSettings();
+  renderNotifications();
+  renderModuleSettings();
+  applyModuleVisibility();
+  renderTelegramPanel();
+  if (moduleEnabled("telegram")) loadTelegramStatus();
+}
+
+/* ─── Уведомления ───────────────────────────────────────────── */
+function typeLabel(type){
+  return type === "SHIFT" ? t("смена") : type === "TASK" ? t("задача") : type === "IMPORTANT_DAY" ? t("важно") : type === "TOMORROW_DIGEST" ? t("дайджест") : type;
+}
+function fmtReminderAt(value){
+  if (!value) return "";
+  const d = value.slice(0,10), t = value.slice(11,16);
+  const [,m,day] = d.split("-");
+  return `${day}.${m} ${t}`;
+}
+function browserPermissionStatus(){
+  if (!("Notification" in window)) return { label:t("браузер"), value:t("не поддерживает"), tone:"warn" };
+  if (Notification.permission === "granted") return { label:t("браузер"), value:t("разрешено"), tone:"ok" };
+  if (Notification.permission === "denied") return { label:t("браузер"), value:t("запрещено"), tone:"warn" };
+  return { label:t("браузер"), value:t("не разрешено"), tone:"warn" };
+}
+function renderNotifyStatus(count){
+  const box = $("notifyStatus");
+  if (!box) return;
+  const permission = browserPermissionStatus();
+  box.className = "status notifyStatusChips";
+  box.innerHTML = `<span class="statusChip statusChipPrimary"><b>${Number(count) || 0}</b> шт</span><span class="statusChip ${permission.tone === "ok" ? "statusChipOk" : "statusChipWarn"}"><b>${esc(permission.label)}:</b> ${esc(permission.value)}</span>`;
+}
+function renderNotifications(){
+  if (!moduleEnabled("notifications")) return;
+  const s = state.notificationSettings;
+  if (!$("notifyCard") || !s) return;
+  $("notifBrowser").checked = !!s.browserNotificationsEnabled;
+  $("notifShift").checked = !!s.shiftRemindersEnabled;
+  $("notifShiftBefore").value = s.shiftReminderMinutesBefore ?? 60;
+  $("notifDigest").checked = !!s.tomorrowDigestEnabled;
+  $("notifDigestTime").value = s.tomorrowDigestTime || "19:00";
+  $("notifTasks").checked = !!s.taskRemindersEnabled;
+  $("notifTaskTime").value = s.taskReminderTime || "09:00";
+  $("notifImportant").checked = !!s.importantDayRemindersEnabled;
+  $("notifImportantDays").value = s.importantDayDaysBefore ?? 1;
+  $("notifImportantTime").value = s.importantDayReminderTime || "09:00";
+  const sourceItems = state.notificationPreview || state.reminders;
+  renderNotifyStatus(sourceItems.length);
+  if ($("notifyListTitle")) $("notifyListTitle").textContent = state.notificationPreviewTitle || "Напоминания текущего месяца";
+  const list = $("notifyList");
+  list.innerHTML = "";
+  const items = sourceItems.slice(0, 24);
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "notifyItem";
+    empty.innerHTML = `<span class="notifyWhen">—</span><span class="notifyType">пусто</span><span class="notifyTitle"><span class="notifyDetails">${esc(state.notificationPreview ? "На завтра напоминаний нет." : "На текущий месяц напоминаний нет.")}</span></span>`;
+    list.appendChild(empty);
+    return;
+  }
+  for (const r of items) {
+    const row = document.createElement("div");
+    row.className = "notifyItem";
+    row.innerHTML = `<span class="notifyWhen">${esc(fmtReminderAt(r.remindAt))}</span><span class="notifyType">${esc(typeLabel(r.type))}</span><span class="notifyTitle">${esc(r.title || "")}<div class="notifyDetails">${esc(r.details || "")}</div></span>`;
+    list.appendChild(row);
+  }
+}
+async function saveNotificationSettings(extra = {}){
+  if (!moduleEnabled("notifications")) { setSave("err", t("модуль выключен")); return; }
+  setSave("saving");
+  try {
+    const body = {
+      browserNotificationsEnabled: $("notifBrowser").checked,
+      shiftRemindersEnabled: $("notifShift").checked,
+      shiftReminderMinutesBefore: Number($("notifShiftBefore").value || 0),
+      tomorrowDigestEnabled: $("notifDigest").checked,
+      tomorrowDigestTime: $("notifDigestTime").value || "19:00",
+      taskRemindersEnabled: $("notifTasks").checked,
+      taskReminderTime: $("notifTaskTime").value || "09:00",
+      importantDayRemindersEnabled: $("notifImportant").checked,
+      importantDayDaysBefore: Number($("notifImportantDays").value || 0),
+      importantDayReminderTime: $("notifImportantTime").value || "09:00",
+      ...extra
+    };
+    state.notificationSettings = await api.updateNotificationSettings(body);
+    state.notificationPreview = null;
+    state.notificationPreviewTitle = "Напоминания текущего месяца";
+    const r = monthFromTo();
+    state.reminders = await api.notificationUpcoming(r.from, r.to);
+    state.remindersByDate = {};
+    for (const x of state.reminders) addToDateMap(state.remindersByDate, { ...x, date:x.sourceDate });
+    setSave("saved");
+    renderNotifications();
+    renderCalendar();
+  } catch (err) { console.error(err); setSave("err", err.message); }
+}
+async function requestNotificationPermission(){
+  if (!moduleEnabled("notifications")) { alert(t("модуль выключен")); return; }
+  if (!("Notification" in window)) { alert(t("Этот браузер не поддерживает Notification API")); return; }
+  const perm = await Notification.requestPermission();
+  await saveNotificationSettings({ browserNotificationsEnabled: perm === "granted" });
+}
+function testNotification(){
+  if (!moduleEnabled("notifications")) { alert(t("модуль выключен")); return; }
+  if (!("Notification" in window) || Notification.permission !== "granted") { alert(t("Сначала разрешите уведомления в браузере")); return; }
+  new Notification("DutyLog: Time & Overtime", { body:"Тестовое уведомление отправлено." });
+}
+async function showTomorrowNotifications(){
+  if (!moduleEnabled("notifications")) return;
+  setSave("saving");
+  try {
+    state.notificationPreview = await api.notificationTomorrow();
+    state.notificationPreviewTitle = "напоминания на завтра";
+    setSave("saved");
+    renderNotifications();
+  } catch (err) { console.error(err); setSave("err", err.message); }
+}
+async function showMonthNotifications(){
+  if (!moduleEnabled("notifications")) return;
+  setSave("saving");
+  try {
+    const r = monthFromTo();
+    state.notificationPreview = null;
+    state.notificationPreviewTitle = "Напоминания текущего месяца";
+    state.reminders = await api.notificationUpcoming(r.from, r.to, true);
+    state.remindersByDate = {};
+    for (const x of state.reminders) addToDateMap(state.remindersByDate, { ...x, date:x.sourceDate });
+    setSave("saved");
+    renderNotifications();
+    renderCalendar();
+  } catch (err) { console.error(err); setSave("err", err.message); }
+}
+
+$("notifSave").addEventListener("click", () => saveNotificationSettings());
+$("notifPermission").addEventListener("click", requestNotificationPermission);
+$("notifTest").addEventListener("click", testNotification);
+$("notifRefresh").addEventListener("click", showMonthNotifications);
+$("notifTomorrow").addEventListener("click", showTomorrowNotifications);
+document.querySelectorAll("[data-notif-shift-before]").forEach(btn => btn.addEventListener("click", () => {
+  $("notifShiftBefore").value = btn.dataset.notifShiftBefore;
+  $("notifShift").checked = true;
+}));

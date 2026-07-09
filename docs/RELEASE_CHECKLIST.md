@@ -5,7 +5,7 @@
 ## 1. Статические проверки
 
 ```bash
-node --check src/main/resources/static/app.js
+for f in src/main/resources/static/js/*.js; do node --check "$f"; done
 node --check src/main/resources/static/service-worker.js
 python3 -m json.tool src/main/resources/static/manifest.json
 ```
@@ -17,7 +17,7 @@ python3 - <<'PY'
 from pathlib import Path
 import re
 html = Path('src/main/resources/static/index.html').read_text(encoding='utf-8')
-js = Path('src/main/resources/static/app.js').read_text(encoding='utf-8')
+js = '\n'.join(p.read_text(encoding='utf-8') for p in sorted(Path('src/main/resources/static/js').glob('*.js')))
 ids = set(re.findall(r'\bid=["\']([^"\']+)["\']', html))
 refs = set(re.findall(r'\$\(["\']([^"\']+)["\']\)', js)) | set(re.findall(r'getElementById\(["\']([^"\']+)["\']\)', js))
 print("missing ids:", sorted(refs - ids))

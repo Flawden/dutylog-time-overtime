@@ -1,5 +1,11 @@
 # Alternative nginx reverse proxy example.
 # Caddy is recommended for first launch because it obtains HTTPS certificates automatically.
+# NOTE: unlike Caddy, this config includes brute-force rate limiting on auth endpoints.
+
+# Зона для лимита попыток входа: ключ — IP, 5 запросов в минуту.
+# Директива limit_req_zone живёт на уровне http {} — если этот файл
+# подключается внутрь http (стандартный include в conf.d/), всё сработает как есть.
+limit_req_zone $binary_remote_addr zone=dutylog_auth:10m rate=5r/m;
 
 server {
     listen 80;
@@ -23,6 +29,19 @@ server {
     ssl_certificate_key /etc/letsencrypt/live/dutylog.example.com/privkey.pem;
 
     client_max_body_size 10m;
+
+    # Брутфорс-защита: логин, регистрация, мобильный вход.
+    # burst=5 — небольшая очередь на легитимные повторы, nodelay — без искусственной задержки.
+    location ~ ^/(perform_login|api/auth/register|api/mobile/auth/login)$ {
+        limit_req zone=dutylog_auth burst=5 nodelay;
+        limit_req_status 429;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto https;
+    }
 
     location / {
         proxy_pass http://127.0.0.1:8080;

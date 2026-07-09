@@ -84,6 +84,10 @@ public class SecurityConfig {
                         "/actuator/health",
                         "/actuator/health/**"
                 ).permitAll()
+                // Админка: второй, декларативный замок поверх ручного requireAdmin()
+                // в SystemController. Порядок важен: matcher'ы читаются сверху вниз,
+                // частные правила — строго до anyRequest().
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .anyRequest().authenticated())
             .formLogin(form -> form
                 .loginPage("/login.html")
