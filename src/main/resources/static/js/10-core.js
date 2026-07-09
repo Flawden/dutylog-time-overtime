@@ -8,7 +8,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "26.6"
+const DUTYLOG_VERSION = "26.6.1"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -680,10 +680,15 @@ function renderLoadingState(target, text = "загрузка…", rows = 3){
   </div>`;
 }
 function setAppBooting(booting, text = "загрузка…"){
+  if (!state.ui) state.ui = {};
   state.ui.booting = !!booting;
-  document.body?.classList.toggle("appBooting", !!booting);
+  if (document.body) document.body.classList.toggle("appBooting", !!booting);
   const el = $("appBootStatus");
   if (el) el.textContent = t(text);
+}
+function hideBootOnStartupError(message = "ошибка загрузки"){
+  try { setAppBooting(false); } catch (_) { if (document.body) document.body.classList.remove("appBooting"); }
+  try { setSave("err", t(message)); } catch (_) { /* UI may not be ready yet */ }
 }
 
 Object.assign(I18N_EN, {
@@ -714,7 +719,9 @@ Object.assign(I18N_EN, {
   "модуль отключён":"module disabled",
   "Данные не удаляются":"Data is not deleted",
   "Отлично. Здесь пока чисто.":"Great. Nothing here yet.",
-  "нет записей":"no records"
+  "нет записей":"no records",
+  "загрузка заняла слишком много времени — интерфейс разблокирован":"Loading is taking too long — the interface has been unlocked",
+  "ошибка загрузки":"loading error"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 

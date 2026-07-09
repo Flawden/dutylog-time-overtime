@@ -1,6 +1,6 @@
 # UX release polish
 
-Status: v26.6.
+Status: v26.6.1.
 
 DutyLog is in feature freeze. This release does not add new product modules; it improves the feeling of readiness around the existing web/PWA experience.
 
@@ -25,7 +25,7 @@ Explicitly out of scope until after v27.0 RC:
 - native mobile app work;
 - new chart types or dashboard features.
 
-## Changes in v26.6
+## Changes in v26.6.1
 
 ### Boot state
 

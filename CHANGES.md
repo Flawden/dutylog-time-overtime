@@ -1,12 +1,19 @@
-# v26.6 — UX release polish
+## v26.6.1 — UX boot hotfix
+
+- Fixed a release UX blocker where the PWA could remain visually stuck on the boot overlay.
+- Boot overlay is no longer shipped as the initial static body state.
+- Added startup failsafe and error/rejection handlers to unlock the interface if boot fails.
+- Added release-check guardrail against reintroducing initial `appBooting` body state.
+
+# v26.6.1 — UX release polish
 
 - Kept feature freeze: no new large product scope.
-- Bumped frontend/backend/service-worker/smoke-test versions to `26.6`.
+- Bumped frontend/backend/service-worker/smoke-test versions to `26.6.1`.
 - Added a visible boot/loading state while the PWA prepares profile, modules and the calendar.
 - Added calendar, task board and overtime ledger loading skeletons so navigation does not feel frozen on slow links.
 - Reworked empty states for tasks, important days and the overtime ledger into compact explanatory cards.
 - Polished module settings with enabled/disabled/basic counters and explicit disabled-module copy explaining that data is preserved.
-- Added `docs/UX_RELEASE_POLISH.md` and updated release checklist commands for the v26.6 tag.
+- Added `docs/UX_RELEASE_POLISH.md` and updated release checklist commands for the v26.6.1 tag.
 
 # v26.5 — Security review
 

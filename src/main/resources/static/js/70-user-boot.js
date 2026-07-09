@@ -60,7 +60,26 @@ if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker.js").catch(() => {}));
 }
 
+let bootFailsafeTimer = null;
+function armBootFailsafe(){
+  clearTimeout(bootFailsafeTimer);
+  bootFailsafeTimer = setTimeout(() => {
+    if (state.ui?.booting) hideBootOnStartupError("загрузка заняла слишком много времени — интерфейс разблокирован");
+  }, 15000);
+}
+function clearBootFailsafe(){
+  clearTimeout(bootFailsafeTimer);
+  bootFailsafeTimer = null;
+}
+window.addEventListener("error", () => {
+  if (state.ui?.booting) hideBootOnStartupError("ошибка загрузки");
+});
+window.addEventListener("unhandledrejection", () => {
+  if (state.ui?.booting) hideBootOnStartupError("ошибка загрузки");
+});
+
 async function init(){
+  armBootFailsafe();
   setAppBooting(true, "Подготавливаем интерфейс…");
   state.timeSettings = loadTimeSettings();
   renderSwatches();
@@ -88,13 +107,14 @@ async function init(){
   if (moduleEnabled("tasks")) await loadTaskBoard(true);
   applyModuleVisibility();
   renderCalendar();
+  clearBootFailsafe();
   setAppBooting(false);
   dataLayer.syncQueue();
 }
 init().catch(err => {
   console.error(err);
-  setAppBooting(false);
-  setSave("err", err.message || t("ошибка"));
+  clearBootFailsafe();
+  hideBootOnStartupError(err.message || "ошибка загрузки");
 });
 
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */

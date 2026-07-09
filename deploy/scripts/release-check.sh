@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-26.6}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.1}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -88,6 +88,8 @@ contains deploy/scripts/smoke-test.sh "VERSION=\"\${DUTYLOG_RELEASE_VERSION:-$VE
 contains deploy/scripts/smoke-test.sh "dutylog-shell-v\$VERSION"
 contains deploy/scripts/smoke-test.sh "DUTYLOG_VERSION = \\\"\$VERSION\\\""
 not_contains src/main/resources/static/index.html "app.js?v="
+not_contains src/main/resources/static/index.html "<body class=\"appBooting\">"
+contains src/main/resources/static/js/70-user-boot.js "armBootFailsafe"
 
 if grep -R "result.put(\"version\", \"" -n src/main/java >/tmp/dutylog-version-hardcode.txt; then
   cat /tmp/dutylog-version-hardcode.txt >&2
@@ -238,7 +240,7 @@ contains src/main/resources/application-prod.properties "server.servlet.session.
 contains src/main/java/ru/daniil/shifts/web/MobileController.java "requireEnabledModulesForMobileDayChange"
 contains src/main/java/ru/daniil/shifts/telegram/TelegramLinkService.java "moduleService.requireEnabled(owner, ModuleService.TELEGRAM)"
 contains src/test/java/ru/daniil/shifts/web/ModuleSecurityTest.java "mobileSyncCannotWriteNotesWhenNotesModuleDisabled"
-contains docs/SECURITY_REVIEW.md "v26.6"
+contains docs/SECURITY_REVIEW.md "v26.6.1"
 
 echo
 
