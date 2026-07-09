@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.11}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.12}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -302,10 +302,10 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "v26.6.11"
-contains docs/TEST_CONFIG_HOTFIX.md "v26.6.11"
+contains docs/SECURITY_REVIEW.md "v26.6.12"
+contains docs/TEST_CONFIG_HOTFIX.md "v26.6.12"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
-contains docs/CI_PERMISSION_HOTFIX.md "v26.6.11"
+contains docs/CI_PERMISSION_HOTFIX.md "v26.6.12"
 contains src/main/resources/static/index.html 'data-onboarding-preset="work"'
 contains src/main/resources/static/index.html ">Стандарт</button>"
 not_contains src/main/resources/static/index.html "Работа + переработки"
@@ -317,13 +317,13 @@ contains src/main/resources/static/app.css ".cell.todayCell::before"
 contains src/main/resources/static/js/20-data.js "DAY_MODULES_HINT_DISMISSED_KEY"
 contains src/main/resources/static/js/20-data.js "dayModulesHintCloseBtn"
 contains src/main/resources/static/app.css ".dayModulesHintClose"
-contains docs/ONBOARDING_TODAY_HOTFIX.md "v26.6.11"
-contains docs/DAY_HINT_DISMISS_HOTFIX.md "v26.6.11"
-contains docs/I18N_POLISH_HOTFIX.md "v26.6.11"
-contains docs/LOGIN_LANGUAGE_HOTFIX.md "v26.6.11"
-contains docs/UI_ALIGNMENT_TEST_HOTFIX.md "v26.6.11"
+contains docs/ONBOARDING_TODAY_HOTFIX.md "v26.6.12"
+contains docs/DAY_HINT_DISMISS_HOTFIX.md "v26.6.12"
+contains docs/I18N_POLISH_HOTFIX.md "v26.6.12"
+contains docs/LOGIN_LANGUAGE_HOTFIX.md "v26.6.12"
+contains docs/UI_ALIGNMENT_TEST_HOTFIX.md "v26.6.12"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "private static String body(String username, String password, String languagePreference)"
-contains src/main/resources/static/app.css "v26.6.11: stable right-side controls"
+contains src/main/resources/static/app.css "v26.6.12: stable right-side controls"
 contains src/main/resources/static/app.css "#timeSettingsCard .settingsHead > .status"
 contains src/main/resources/static/app.css "#profileCard .settingsHead > .avatarBig"
 contains src/main/resources/static/login.html "languagePreference: currentLang"
@@ -335,6 +335,15 @@ contains src/main/resources/static/js/10-core.js "if (typeof renderSettingsPanel
 contains src/main/resources/static/js/30-calendar.js 'esc(t("Итого:"))'
 contains src/main/resources/static/js/60-settings.js 'const workLabel = state.language === "en" ? "work time"'
 contains src/main/resources/static/js/60-settings.js 'esc(t("шт"))'
+contains docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md "v26.6.12"
+contains src/main/resources/static/app.css "v26.6.12: notifications header alignment"
+contains src/main/resources/static/app.css "#notifyCard > .notifyHead"
+contains src/main/resources/static/app.css ".adminShell.settingsShell"
+contains src/main/resources/static/index.html 'data-admin-jump="users"'
+contains src/main/resources/static/index.html 'data-admin-jump="registration"'
+contains src/main/resources/static/index.html 'data-admin-jump="diagnostics"'
+contains src/main/resources/static/js/60-settings.js "function initAdminNavigation"
+contains src/main/resources/static/js/60-settings.js "notificationsActive"
 
 echo
 

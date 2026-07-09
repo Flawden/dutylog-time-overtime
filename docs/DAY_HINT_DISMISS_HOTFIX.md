@@ -1,6 +1,6 @@
-# v26.6.11 — today clarity and dismissible hidden-blocks hotfix
+# v26.6.12 — today clarity and dismissible hidden-blocks hotfix
 
-Status: v26.6.11.
+Status: v26.6.12.
 
 This hotfix keeps the stabilization scope: no new large features, only UX clarity for the release candidate path.
 

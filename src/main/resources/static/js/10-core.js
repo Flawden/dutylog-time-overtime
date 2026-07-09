@@ -21,7 +21,7 @@ function esc(value){
     .replace(/'/g, "&#39;");
 }
 
-const DUTYLOG_VERSION = "26.6.11"
+const DUTYLOG_VERSION = "26.6.12"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -620,6 +620,19 @@ Object.assign(I18N_EN, {
   "День / 72 часа отдыха":"Day / 72 hours off",
   "Ночь / 72 часа отдыха":"Night / 72 hours off",
   "Дней:":"Days:"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие", "Browser":"Браузер" });
+
+
+// v26.6.12: admin navigation labels and notification polish copy.
+Object.assign(I18N_EN, {
+  "Админка":"Admin",
+  "Регистрация":"Registration",
+  "роли и пароли":"roles and passwords",
+  "доступ новых аккаунтов":"new account access",
+  "сервер, база, кэш":"server, database, cache",
+  "назад к настройкам":"back to settings"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие", "Browser":"Браузер" });

@@ -147,6 +147,7 @@ function applyRoute(){
     }
   }
   if (active === "admin") {
+    if (typeof initAdminNavigation === "function") initAdminNavigation();
     renderDiagnosticsClient();
     if (state.profile?.admin) refreshAdminPanel();
   }
@@ -284,6 +285,7 @@ async function loadProfile(){
 
 $("adminOpen")?.addEventListener("click", () => { location.hash = "#admin"; });
 $("adminBack")?.addEventListener("click", () => { location.hash = "#settings"; });
+$("adminBackNav")?.addEventListener("click", () => { location.hash = "#settings"; });
 
 $("profileSave").addEventListener("click", async () => {
   try {

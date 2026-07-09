@@ -1442,7 +1442,7 @@ body.appBooting .appBoot{display:flex;}
 @media (prefers-reduced-motion: reduce){.loadingState i,.calendarSkeleton span,.calendarSkeleton i,.calendarSkeleton em{animation:none;}}
 @media (max-width:560px){.emptyState{gap:10px;padding:12px}.emptyIcon{width:30px;height:30px;border-radius:10px}.emptyState.board{min-height:84px}.appBootCard{border-radius:18px;padding:16px}}
 
-/* v26.6.11: stable right-side controls in settings headers.
+/* v26.6.12: stable right-side controls in settings headers.
    Status chips and the profile avatar stay pinned to the right even when RU/EN text length changes. */
 .settingsHead > :first-child,
 .notifyHead > :first-child{
@@ -1481,3 +1481,110 @@ body.appBooting .appBoot{display:flex;}
     margin-left:0;
   }
 }
+
+/* v26.6.12: notifications header alignment and admin side navigation. */
+#notifyCard > .notifyHead{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) max-content max-content;
+  align-items:center;
+  gap:10px 12px;
+}
+#notifyCard > .notifyHead > :first-child{ min-width:0; }
+#notifyCard .notifyStatusChips{
+  justify-self:end;
+  justify-content:flex-end;
+  flex-wrap:nowrap;
+  min-width:0;
+  max-width:none;
+}
+#notifyCard .settingsToggle{ justify-self:end; margin-left:0; }
+#notifyCard .notifyCountChip{ min-width:72px; justify-content:center; }
+#notifyCard .notifyPermissionGranted{
+  color:var(--text);
+  border-color:color-mix(in srgb, var(--accent) 58%, var(--line));
+  background:color-mix(in srgb, var(--accent) 12%, rgba(255,255,255,.035));
+}
+#notifyCard .notifyPermissionWarn{
+  color:var(--mut);
+  border-color:color-mix(in srgb, var(--danger) 42%, var(--line));
+  background:color-mix(in srgb, var(--danger) 8%, rgba(255,255,255,.025));
+}
+#notifyCard.notificationsActive{
+  border-color:color-mix(in srgb, var(--accent) 32%, var(--line));
+}
+#notifyCard .notifyOpt:has(input:checked){
+  border-color:color-mix(in srgb, var(--accent) 42%, var(--line));
+  background:color-mix(in srgb, var(--accent) 9%, rgba(255,255,255,.035));
+  color:var(--mut);
+}
+#notifyCard .notifyOpt:has(input:checked) b{ color:var(--text); }
+
+.adminShell.settingsShell{
+  display:grid;
+  grid-template-columns:230px minmax(0,1fr);
+  gap:12px;
+  align-items:start;
+}
+.adminShell .adminIndex{
+  position:sticky;
+  top:10px;
+  z-index:6;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  flex-wrap:nowrap;
+  margin:0;
+  padding:10px;
+  align-self:start;
+  max-height:calc(100vh - 24px);
+  overflow:auto;
+}
+.adminContent{ display:flex; flex-direction:column; gap:12px; min-width:0; }
+.adminShell .adminIndex a{
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+  text-align:left;
+  padding:9px 10px;
+  border-radius:12px;
+}
+.adminShell .adminIndex a b{ color:var(--mut); font-size:12.5px; }
+.adminShell .adminIndex a span{ color:var(--dim); font-size:10.5px; line-height:1.25; }
+.adminShell .adminIndex a:hover,
+.adminShell .adminIndex a.on{
+  background:rgba(245,184,65,.10);
+  border-color:rgba(245,184,65,.32);
+}
+.adminShell .adminIndex a:hover b,
+.adminShell .adminIndex a.on b{ color:var(--accent); }
+@media (max-width:980px){
+  .adminShell.settingsShell{ grid-template-columns:1fr; }
+  .adminShell .adminIndex{
+    position:sticky;
+    top:0;
+    flex-direction:row;
+    flex-wrap:nowrap;
+    overflow-x:auto;
+    overflow-y:hidden;
+    max-height:none;
+    margin:-2px 0 2px;
+    padding:8px;
+  }
+  .adminShell .adminIndex .settingsIndexTitle{ display:none; }
+  .adminShell .adminIndex a{ min-width:132px; }
+  .adminShell .adminIndex a span{ display:none; }
+  .adminShell .adminIndex .settingsIndexActions{ grid-template-columns:auto; margin-left:auto; min-width:max-content; }
+}
+@media (max-width:700px){
+  #notifyCard > .notifyHead{
+    display:flex;
+    align-items:flex-start;
+    flex-direction:column;
+  }
+  #notifyCard .notifyStatusChips{ justify-content:flex-start; flex-wrap:wrap; width:100%; }
+  .adminShell .adminIndex{ position:static; }
+  .adminShell .adminIndex a{ flex:0 0 auto; min-width:116px; text-align:center; }
+  .adminShell .adminIndex a b{ font-size:12px; }
+  .adminShell .adminIndex .settingsIndexActions{ width:100%; min-width:180px; }
+}
+#notifyCard.notificationsActive > .notifyHead .eyebrow{ color:var(--accent); }

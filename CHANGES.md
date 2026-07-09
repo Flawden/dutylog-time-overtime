@@ -1,9 +1,18 @@
+## v26.6.12 — notifications alignment and admin navigation hotfix
+
+- Pinned notification status chips to the right side of the notifications settings header so RU/EN labels no longer drift into the middle of the card.
+- Made the browser-permission chip and active notification settings feel less disabled by using clearer active-state styling.
+- Added a settings-style side navigation to the administrator view: Users, Registration and Diagnostics.
+- Added release-check guardrails for the notification header layout and admin navigation.
+
+
 ## v26.6.11 — UI alignment and registration test hotfix
 
 - Fixed `RegistrationTest` compilation after the login-language hotfix: the JSON body helper now supports `languagePreference`.
 - Kept settings header controls pinned on the right across RU/EN so autosave, browser-permission chips and the profile avatar do not drift when labels change length.
 - Documented the Java 25 Tomcat Native warning as a local runtime warning, not an application startup failure.
 - Added release-check guardrails for the helper overload and right-side settings alignment.
+
 
 ## v26.6.10 — login language registration hotfix
 

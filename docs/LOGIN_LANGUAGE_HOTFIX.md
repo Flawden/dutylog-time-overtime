@@ -1,6 +1,6 @@
-# v26.6.11 — login language registration hotfix
+# v26.6.12 — login language registration hotfix
 
-Status: v26.6.11.
+Status: v26.6.12.
 
 Goal: when a new user chooses RU/EN on `login.html` before registration, the first logged-in app screen must keep that language instead of being reset by the default profile language.
 

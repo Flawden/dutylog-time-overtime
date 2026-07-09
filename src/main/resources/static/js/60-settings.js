@@ -573,8 +573,41 @@ function refreshAdminPanel(){
   refreshRegistrationAdmin();
   refreshAdminUsers();
 }
+function initAdminNavigation(){
+  const root = $("view-admin");
+  if (!root || root.dataset.adminNavReady === "1") return;
+  root.dataset.adminNavReady = "1";
+  const cards = [...root.querySelectorAll(".settingsCard[data-settings-section]")].filter(c => c.dataset.settingsSection !== "admin");
+  function setActive(section){
+    root.querySelectorAll("[data-admin-jump]").forEach(a => a.classList.toggle("on", a.dataset.adminJump === section));
+  }
+  function go(section, scroll = true){
+    const card = root.querySelector(`[data-settings-section="${section}"]`);
+    if (!card) return;
+    setActive(section);
+    history.replaceState(null, "", "#admin");
+    if (scroll) card.scrollIntoView({ behavior:"smooth", block:"start" });
+  }
+  root.querySelectorAll("[data-admin-jump]").forEach(a => {
+    a.addEventListener("click", ev => {
+      ev.preventDefault();
+      go(a.dataset.adminJump, true);
+    });
+  });
+  $("adminBackNav")?.addEventListener("click", () => { location.hash = "#settings"; });
+  const observer = "IntersectionObserver" in window ? new IntersectionObserver(entries => {
+    const visible = entries
+      .filter(e => e.isIntersecting)
+      .sort((a,b) => b.intersectionRatio - a.intersectionRatio)[0];
+    if (visible?.target?.dataset?.settingsSection) setActive(visible.target.dataset.settingsSection);
+  }, { threshold:[0.22,0.55], rootMargin:"-15% 0px -55% 0px" }) : null;
+  if (observer) cards.forEach(c => observer.observe(c));
+  setActive("users");
+}
+
 function initDiagnosticsEvents(){
   if (!$("diagnosticsCard")) return;
+  initAdminNavigation();
   $("diagnosticsRefresh")?.addEventListener("click", refreshDiagnostics);
   $("diagnosticsCopy")?.addEventListener("click", async () => {
     try { await navigator.clipboard.writeText(diagnosticsReportText()); setSave("saved", t("отчёт диагностики скопирован")); }
@@ -743,13 +776,16 @@ function renderNotifyStatus(count){
   const box = $("notifyStatus");
   if (!box) return;
   const permission = browserPermissionStatus();
+  const toneClass = permission.tone === "ok" ? "statusChipOk notifyPermissionGranted" : "statusChipWarn notifyPermissionWarn";
   box.className = "status notifyStatusChips";
-  box.innerHTML = `<span class="statusChip statusChipPrimary"><b>${Number(count) || 0}</b> ${esc(t("шт"))}</span><span class="statusChip ${permission.tone === "ok" ? "statusChipOk" : "statusChipWarn"}"><b>${esc(permission.label)}:</b> ${esc(permission.value)}</span>`;
+  box.innerHTML = `<span class="statusChip statusChipPrimary notifyCountChip"><b>${Number(count) || 0}</b> ${esc(t("шт"))}</span><span class="statusChip ${toneClass}"><b>${esc(permission.label)}:</b> ${esc(permission.value)}</span>`;
 }
 function renderNotifications(){
   if (!moduleEnabled("notifications")) return;
   const s = state.notificationSettings;
   if (!$("notifyCard") || !s) return;
+  const active = !!(s.browserNotificationsEnabled || s.shiftRemindersEnabled || s.tomorrowDigestEnabled || s.taskRemindersEnabled || s.importantDayRemindersEnabled);
+  $("notifyCard")?.classList.toggle("notificationsActive", active);
   $("notifBrowser").checked = !!s.browserNotificationsEnabled;
   $("notifShift").checked = !!s.shiftRemindersEnabled;
   $("notifShiftBefore").value = s.shiftReminderMinutesBefore ?? 60;
