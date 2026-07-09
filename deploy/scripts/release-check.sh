@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.2}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.3}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -154,6 +154,10 @@ PY
 contains src/main/resources/static/service-worker.js "url.origin !== self.location.origin"
 contains src/main/resources/static/service-worker.js "includes(url.protocol)"
 contains src/main/resources/static/service-worker.js "catch(() => {})"
+contains src/main/resources/static/app.css "align-items:start"
+contains src/main/resources/static/app.css "moduleDevDetails summary"
+contains src/main/resources/static/js/20-data.js "dayModulesHintText"
+contains src/main/resources/static/js/20-data.js "Технические детали"
 
 python3 - <<'PY'
 from pathlib import Path
@@ -261,7 +265,7 @@ contains src/main/resources/application-prod.properties "server.servlet.session.
 contains src/main/java/ru/daniil/shifts/web/MobileController.java "requireEnabledModulesForMobileDayChange"
 contains src/main/java/ru/daniil/shifts/telegram/TelegramLinkService.java "moduleService.requireEnabled(owner, ModuleService.TELEGRAM)"
 contains src/test/java/ru/daniil/shifts/web/ModuleSecurityTest.java "mobileSyncCannotWriteNotesWhenNotesModuleDisabled"
-contains docs/SECURITY_REVIEW.md "v26.6.2"
+contains docs/SECURITY_REVIEW.md "v26.6.3"
 
 echo
 

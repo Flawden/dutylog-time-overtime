@@ -177,9 +177,14 @@ function setDayPanelSectionVisibility(){
     const optionalEnabled = DAY_PANEL_SECTIONS.some(s => !["core","shifts"].includes(s.module) && dayPanelSectionEnabled(s));
     hint.hidden = !state.selected || hidden.length === 0;
     if (!hint.hidden) {
-      hint.innerHTML = `<b>${esc(t("Скрытые блоки"))}:</b> ${esc(hidden.join(", "))}. ${esc(t("Отключённый модуль не удаляет данные — его можно включить обратно в настройках."))} <button type="button" id="dayModulesSettingsBtn">${esc(t("Настроить модули"))}</button>`;
+      hint.innerHTML = `
+        <div class="dayModulesHintText">
+          <b>${esc(t("Скрытые блоки"))}:</b> ${esc(hidden.join(", "))}.
+          ${esc(t("Отключённый модуль не удаляет данные — его можно включить обратно в настройках."))}
+          ${!optionalEnabled ? `<span class="dayModulesHintExtra">${esc(t("Сейчас включены только базовые блоки дня."))}</span>` : ""}
+        </div>
+        <button type="button" id="dayModulesSettingsBtn">${esc(t("Настроить модули"))}</button>`;
       $("dayModulesSettingsBtn")?.addEventListener("click", () => openSettingsSection("modules", true));
-      if (!optionalEnabled) hint.insertAdjacentHTML("beforeend", `<br>${esc(t("Сейчас включены только базовые блоки дня."))}`);
     }
   }
 }
@@ -272,27 +277,34 @@ function renderModuleSettings(){
   }
   grid.innerHTML = "";
   for (const m of list) {
-    const card = document.createElement("label");
+    const card = document.createElement("div");
     card.className = "moduleCard" + (m.enabled ? " on" : "") + (m.locked ? " locked" : "");
     const deps = (m.dependencies || []).filter(d => !["core","calendar","shifts"].includes(d)).map(moduleDisplayName);
     const details = [];
     if (Array.isArray(m.uiSlots) && m.uiSlots.length) details.push(`${t("слоты")}: ${m.uiSlots.join(", ")}`);
     if (Array.isArray(m.apiPrefixes) && m.apiPrefixes.length) details.push(`${t("API")}: ${m.apiPrefixes.join(", ")}`);
     if (Array.isArray(m.offlineQueueTypes) && m.offlineQueueTypes.length) details.push(`${t("offline")}: ${m.offlineQueueTypes.join(", ")}`);
+    const badge = esc(m.locked ? t("всегда включён") : (m.enabled ? t("включено") : t("выключено")));
     card.innerHTML = `
       <input type="checkbox" ${m.enabled ? "checked" : ""} ${m.locked ? "disabled" : ""} data-module-toggle="${esc(m.key)}"/>
       <span class="moduleMain">
-        <b>${esc(moduleTitle(m))}</b>
-        <span>${esc(moduleDescription(m))}</span>
+        <span class="moduleTop"><b>${esc(moduleTitle(m))}</b><span class="moduleBadge">${badge}</span></span>
+        <span class="moduleDescription">${esc(moduleDescription(m))}</span>
         <span class="moduleMeta"><span>${esc(moduleCategoryLabel(m.category))}</span><span>${esc(t("контракт"))}: ${esc(moduleContractCounts(m))}</span></span>
         ${deps.length ? `<small>${esc(t("зависит от"))}: ${esc(deps.join(", "))}</small>` : ""}
-        ${!m.enabled && !m.locked ? `<small class="moduleDisabledHint">${esc(t("Отключено, данные сохранены"))}. ${esc(t("Модуль можно включить обратно в любой момент. Данные остаются в базе и локальный оффлайн-снимок очищается только от лишнего отображения."))}</small>` : ""}
-        ${details.length ? `<small class="moduleDevDetails">${esc(details.join(" · "))}</small>` : ""}
-      </span>
-      <span class="moduleBadge">${esc(m.locked ? t("всегда включён") : (m.enabled ? t("включено") : t("выключено")))}</span>`;
+        ${!m.enabled && !m.locked ? `<small class="moduleDisabledHint">${esc(t("Отключено. Данные сохранены."))} ${esc(t("Можно включить обратно."))}</small>` : ""}
+        ${details.length ? `<details class="moduleDevDetails"><summary>${esc(t("Технические детали"))}</summary><span>${esc(details.join(" · "))}</span></details>` : ""}
+      </span>`;
     grid.appendChild(card);
   }
   grid.querySelectorAll('[data-module-toggle]').forEach(input => input.addEventListener('change', e => saveModuleEnabled(e.target.dataset.moduleToggle, e.target.checked)));
+  grid.querySelectorAll('.moduleCard').forEach(card => card.addEventListener('click', e => {
+    if (e.target.closest('input, details, summary, button, a')) return;
+    const input = card.querySelector('[data-module-toggle]');
+    if (!input || input.disabled) return;
+    input.checked = !input.checked;
+    input.dispatchEvent(new Event('change', { bubbles:true }));
+  }));
 }
 
 const ONBOARDING_OPTIONAL_MODULES = ["notes","tasks","overtime","important_dates","notifications","telegram","scenarios"];
@@ -368,7 +380,7 @@ function renderOnboardingModules(){
   for (const m of modules) {
     const checked = draft[m.key] !== false;
     const deps = (m.dependencies || []).filter(d => ONBOARDING_OPTIONAL_MODULES.includes(d)).map(moduleDisplayName);
-    const card = document.createElement("label");
+    const card = document.createElement("div");
     card.className = "onboardingModuleCard" + (checked ? " on" : "");
     card.innerHTML = `
       <input type="checkbox" data-onboarding-module="${esc(m.key)}" ${checked ? "checked" : ""}/>

@@ -21,7 +21,7 @@ function esc(value){
     .replace(/'/g, "&#39;");
 }
 
-const DUTYLOG_VERSION = "26.6.2"
+const DUTYLOG_VERSION = "26.6.3"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -724,6 +724,9 @@ Object.assign(I18N_EN, {
   "Начислений переработки пока нет. Новые записи добавляются из панели выбранного дня и сохраняются до полного списания.":"No overtime credits yet. New records are added from the selected day panel and remain until fully used.",
   "По текущим фильтрам записей нет. Сбрось фильтры или выбери другой период.":"No records match the current filters. Clear filters or choose another period.",
   "Отключено, данные сохранены":"Disabled, data preserved",
+  "Отключено. Данные сохранены.":"Disabled. Data preserved.",
+  "Можно включить обратно.":"Can be enabled again.",
+  "Технические детали":"Technical details",
   "Модуль можно включить обратно в любой момент. Данные остаются в базе и локальный оффлайн-снимок очищается только от лишнего отображения.":"You can enable the module again at any time. Data stays in the database; the local offline snapshot is only cleaned for display.",
   "Включены":"Enabled",
   "Выключены":"Disabled",

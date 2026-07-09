@@ -1,3 +1,11 @@
+## v26.6.3 — compact modules UX hotfix
+
+- Made the modules settings screen more compact: shorter cards, independent grid row height and no oversized stretch from disabled module copy.
+- Moved module runtime/API/offline contract details behind collapsed technical details.
+- Shortened disabled-module copy while keeping the data-preservation message.
+- Fixed module badge/text overlap in narrow cards, including the Admin module card.
+- Reworked the selected-day hidden-blocks notice so the “Configure modules” button no longer collides with the text.
+
 ## v26.6.2 — frontend runtime hotfix
 
 - Fixed boot-time helper ordering in split JS: `$` and `esc()` are now defined before `applyAppearance(loadLocalAppearance())`.
