@@ -1,6 +1,6 @@
 # Production launch
 
-Status: v26.6.7.
+Status: v26.6.8.
 
 This is the short first-launch procedure for DutyLog on a VPS. For daily operations and rollback, use `docs/PRODUCTION_RUNBOOK.md`.
 
@@ -27,7 +27,7 @@ cd /opt/dutylog
 
 ```bash
 git clone <repo-url> .
-git checkout v26.6.7
+git checkout v26.6.8
 ```
 
 Check that the domain points to the server:
@@ -109,7 +109,7 @@ https://dutylog.example.com
 Log in with the bootstrap admin from `.env`. Then check:
 
 - `Система` is visible;
-- server version is `26.6.7`;
+- server version is `26.6.8`;
 - database status is `ok`;
 - public registration has the expected status;
 - module settings open;

@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.7}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.8}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -302,18 +302,23 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "v26.6.7"
-contains docs/TEST_CONFIG_HOTFIX.md "v26.6.7"
+contains docs/SECURITY_REVIEW.md "v26.6.8"
+contains docs/TEST_CONFIG_HOTFIX.md "v26.6.8"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
-contains docs/CI_PERMISSION_HOTFIX.md "v26.6.7"
+contains docs/CI_PERMISSION_HOTFIX.md "v26.6.8"
 contains src/main/resources/static/index.html 'data-onboarding-preset="work"'
 contains src/main/resources/static/index.html ">Стандарт</button>"
 not_contains src/main/resources/static/index.html "Работа + переработки"
 contains src/main/resources/static/js/20-data.js "renderOnboardingPresetState"
 contains src/main/resources/static/js/20-data.js "aria-pressed"
 contains src/main/resources/static/js/30-calendar.js "todayCell"
-contains src/main/resources/static/app.css ".cell.todayCell"
-contains docs/ONBOARDING_TODAY_HOTFIX.md "v26.6.7"
+contains src/main/resources/static/app.css ".cell.todayCell:not(.sel)"
+contains src/main/resources/static/app.css ".cell.todayCell::before"
+contains src/main/resources/static/js/20-data.js "DAY_MODULES_HINT_DISMISSED_KEY"
+contains src/main/resources/static/js/20-data.js "dayModulesHintCloseBtn"
+contains src/main/resources/static/app.css ".dayModulesHintClose"
+contains docs/ONBOARDING_TODAY_HOTFIX.md "v26.6.8"
+contains docs/DAY_HINT_DISMISS_HOTFIX.md "v26.6.8"
 
 echo
 

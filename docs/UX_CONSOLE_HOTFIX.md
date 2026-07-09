@@ -1,6 +1,6 @@
-# v26.6.7 — console and module details UX hotfix
+# v26.6.8 — console and module details UX hotfix
 
-Status: v26.6.7.
+Status: v26.6.8.
 
 This hotfix keeps the feature freeze. It only corrects UX/runtime polish regressions found after the compact modules screen.
 

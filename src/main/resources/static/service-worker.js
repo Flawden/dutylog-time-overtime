@@ -1,4 +1,4 @@
-const CACHE_NAME = "dutylog-shell-v26.6.7"; // bump: resets old cache on activation
+const CACHE_NAME = "dutylog-shell-v26.6.8"; // bump: resets old cache on activation
 
 const SHELL = [
   "/manifest.json",

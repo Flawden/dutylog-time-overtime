@@ -159,6 +159,16 @@ const DAY_PANEL_SECTIONS = [
 function dayPanelSectionEnabled(section){
   return !section.module || section.module === "core" || moduleEnabled(section.module);
 }
+const DAY_MODULES_HINT_DISMISSED_KEY = "dutylog.dayModulesHint.dismissed.v1";
+function isDayModulesHintDismissed(){
+  try { return localStorage.getItem(DAY_MODULES_HINT_DISMISSED_KEY) === "1"; }
+  catch (_) { return false; }
+}
+function dismissDayModulesHint(){
+  try { localStorage.setItem(DAY_MODULES_HINT_DISMISSED_KEY, "1"); } catch (_) {}
+  const hint = $("dayModulesHint");
+  if (hint) hint.hidden = true;
+}
 function setDayPanelSectionVisibility(){
   const hidden = [];
   for (const section of DAY_PANEL_SECTIONS) {
@@ -175,7 +185,7 @@ function setDayPanelSectionVisibility(){
   const hint = $("dayModulesHint");
   if (hint) {
     const optionalEnabled = DAY_PANEL_SECTIONS.some(s => !["core","shifts"].includes(s.module) && dayPanelSectionEnabled(s));
-    hint.hidden = !state.selected || hidden.length === 0;
+    hint.hidden = !state.selected || hidden.length === 0 || isDayModulesHintDismissed();
     if (!hint.hidden) {
       hint.innerHTML = `
         <div class="dayModulesHintText">
@@ -183,8 +193,12 @@ function setDayPanelSectionVisibility(){
           ${esc(t("Отключённый модуль не удаляет данные — его можно включить обратно в настройках."))}
           ${!optionalEnabled ? `<span class="dayModulesHintExtra">${esc(t("Сейчас включены только базовые блоки дня."))}</span>` : ""}
         </div>
-        <button type="button" id="dayModulesSettingsBtn">${esc(t("Настроить модули"))}</button>`;
+        <div class="dayModulesHintActions">
+          <button type="button" id="dayModulesSettingsBtn">${esc(t("Настроить модули"))}</button>
+          <button type="button" id="dayModulesHintCloseBtn" class="dayModulesHintClose" aria-label="${esc(t("Скрыть подсказку"))}" title="${esc(t("Скрыть подсказку"))}">×</button>
+        </div>`;
       $("dayModulesSettingsBtn")?.addEventListener("click", () => openSettingsSection("modules", true));
+      $("dayModulesHintCloseBtn")?.addEventListener("click", dismissDayModulesHint);
     }
   }
 }

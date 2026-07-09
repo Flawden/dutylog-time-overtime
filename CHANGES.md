@@ -1,3 +1,11 @@
+## v26.6.8 — today clarity and dismissible hidden-blocks hotfix
+
+- Made the current-day calendar marker visually different from the selected-day outline: today now uses a subtle tinted/dashed cell, corner dot and text label, while the clicked day keeps the strong solid accent outline.
+- Added a close button to the selected-day `Скрытые блоки` notice.
+- The hidden-blocks notice dismissal is stored in localStorage and stays hidden on future visits for that browser.
+- Kept `Настроить модули` available while the notice is visible, but removed the always-on nagging after dismissal.
+- Added release-check guardrails for the dismissible notice and less-confusing today styling.
+
 ## v26.6.7 — onboarding and today highlight hotfix
 
 - Renamed the onboarding preset `Работа + переработки` to the shorter `Стандарт`.
