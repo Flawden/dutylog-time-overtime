@@ -1,6 +1,6 @@
-# v26.6.10 — English i18n polish hotfix
+# v26.6.11 — English i18n polish hotfix
 
-Status: v26.6.10.
+Status: v26.6.11.
 
 Scope: release stabilization only. No new features.
 

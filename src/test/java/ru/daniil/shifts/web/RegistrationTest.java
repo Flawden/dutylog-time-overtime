@@ -33,6 +33,11 @@ class RegistrationTest {
         return "{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}";
     }
 
+    private static String body(String username, String password, String languagePreference) {
+        return "{\"username\":\"" + username + "\",\"password\":\"" + password
+                + "\",\"languagePreference\":\"" + languagePreference + "\"}";
+    }
+
     @Test
     void приВыключеннойРегистрацииДверьЗакрыта() throws Exception {
         settings.setRegistrationEnabled(false, "test");

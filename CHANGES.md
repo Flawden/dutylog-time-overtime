@@ -1,3 +1,10 @@
+## v26.6.11 — UI alignment and registration test hotfix
+
+- Fixed `RegistrationTest` compilation after the login-language hotfix: the JSON body helper now supports `languagePreference`.
+- Kept settings header controls pinned on the right across RU/EN so autosave, browser-permission chips and the profile avatar do not drift when labels change length.
+- Documented the Java 25 Tomcat Native warning as a local runtime warning, not an application startup failure.
+- Added release-check guardrails for the helper overload and right-side settings alignment.
+
 ## v26.6.10 — login language registration hotfix
 
 - Registration now preserves the language selected on the login page.

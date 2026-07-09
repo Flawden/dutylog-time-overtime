@@ -209,17 +209,23 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/TEST_CONFIG_HOTFIX.md`](docs/TEST_CONFIG_HOTFIX.md) — правка `.properties`, тестовых ожиданий и cascade-зависимостей модулей.
 - [`docs/ONBOARDING_TODAY_HOTFIX.md`](docs/ONBOARDING_TODAY_HOTFIX.md) — выделение выбранного onboarding-набора и более заметный текущий день.
 - [`docs/DAY_HINT_DISMISS_HOTFIX.md`](docs/DAY_HINT_DISMISS_HOTFIX.md) — различение сегодняшнего и выбранного дня, закрываемая подсказка скрытых блоков.
+- [`docs/UI_ALIGNMENT_TEST_HOTFIX.md`](docs/UI_ALIGNMENT_TEST_HOTFIX.md) — стабильное выравнивание правых controls в настройках и правка компиляции тестов.
 
 ## Текущая версия
 
-`v26.6.10 — login language registration hotfix`
+`v26.6.11 — UI alignment and registration test hotfix`
 
 DutyLog находится в фазе стабилизации перед релизом: новые крупные фичи заморожены, фокус — безопасность, тесты, CI, конфиги, миграции, smoke-test, документация, читаемость, предсказуемый деплой и ощущение готового продукта.
 
 Главные изменения текущего UX-релиза:
 
-- единая версия `26.6.10` во frontend, backend, service worker, smoke-test и документации;
+- единая версия `26.6.11` во frontend, backend, service worker, smoke-test и документации;
 
+UI alignment/test hotfix in v26.6.11:
+
+- fixed `RegistrationTest` compilation after adding `languagePreference` to registration;
+- settings header controls now stay pinned to the right across RU/EN;
+- Java 25 Tomcat Native warning is documented as non-fatal for local development.
 
 Login language hotfix in v26.6.10:
 
@@ -227,7 +233,7 @@ Login language hotfix in v26.6.10:
 - new users keep EN/RU choice during first onboarding;
 - existing registration clients remain compatible.
 
-English/i18n polish in v26.6.10:
+English/i18n polish in v26.6.11:
 
 - fixed Russian leftovers in English UI for calendar today/total labels, settings time box, autosave and notification browser chips;
 - built-in shift names are translated for display while custom names remain untouched;
@@ -248,7 +254,7 @@ English/i18n polish in v26.6.10:
 - выбранный onboarding-набор теперь подсвечивается динамически;
 - сегодняшний день в календаре выделяется заметнее отдельной подсветкой ячейки.
 
-Test/config stabilization in v26.6.10:
+Test/config stabilization in v26.6.11:
 
 - `.properties` comments are ASCII English to avoid broken Cyrillic text in misconfigured editors;
 - test config explicitly disables Open Session in View;
@@ -316,7 +322,7 @@ DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 Since v25.3 the module registry has explicit developer contracts. See `docs/MODULE_CONTRACTS.md`.
 
 
-CI permission stabilization in v26.6.10:
+CI permission stabilization in v26.6.11:
 
 - GitHub Actions runs release checks through `bash ./deploy/scripts/release-check.sh`.
 - CI no longer fails when executable bits are lost on Windows/archive checkouts.
