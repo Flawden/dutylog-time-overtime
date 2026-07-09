@@ -12,6 +12,7 @@ import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CalendarService;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.DayEntryService;
+import ru.daniil.shifts.service.ModuleService;
 
 import java.security.Principal;
 import java.time.Instant;
@@ -30,13 +31,16 @@ public class MobileController {
     private final CurrentUserService currentUserService;
     private final DayEntryService dayEntryService;
     private final CalendarService calendarService;
+    private final ModuleService moduleService;
 
     public MobileController(CurrentUserService currentUserService,
                             DayEntryService dayEntryService,
-                            CalendarService calendarService) {
+                            CalendarService calendarService,
+                            ModuleService moduleService) {
         this.currentUserService = currentUserService;
         this.dayEntryService = dayEntryService;
         this.calendarService = calendarService;
+        this.moduleService = moduleService;
     }
 
     /**
@@ -68,6 +72,7 @@ public class MobileController {
         AppUser current = currentUserService.requireUser(principal);
         List<DayDto> changed = new ArrayList<>();
         if (req != null && req.days() != null) {
+            req.days().forEach(dayChange -> requireEnabledModulesForMobileDayChange(current, dayChange));
             req.days().forEach(dayChange -> {
                 DayDto saved = dayEntryService.patchMobileDay(current, dayChange);
                 if (saved != null) {
@@ -80,5 +85,17 @@ public class MobileController {
                 changed,
                 new LinkedHashMap<>()
         );
+    }
+
+    private void requireEnabledModulesForMobileDayChange(AppUser current, ru.daniil.shifts.dto.Dtos.MobileDayChangeRequest dayChange) {
+        if (dayChange == null) {
+            return;
+        }
+        if (dayChange.note() != null || Boolean.TRUE.equals(dayChange.clearNote())) {
+            moduleService.requireEnabled(current, ModuleService.NOTES);
+        }
+        if (dayChange.overtimeHours() != null || dayChange.timeOffHours() != null) {
+            moduleService.requireEnabled(current, ModuleService.OVERTIME);
+        }
     }
 }

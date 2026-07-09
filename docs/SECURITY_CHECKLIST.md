@@ -31,6 +31,11 @@ This checklist is for a personal production deployment of DutyLog.
 - [ ] `Система` is visible only to administrator.
 - [ ] Regular user receives `403` from `/api/admin/status`.
 - [ ] CSRF cookie is present in the web interface.
+- [ ] Browser responses include security headers (`CSP`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`).
+- [ ] Production session cookie is `HttpOnly`, `Secure`, and `SameSite=Lax`.
+- [ ] Disabled modules return `403 MODULE_DISABLED:<key>` from their API boundaries.
+- [ ] `/api/mobile/sync` cannot write notes/overtime when those modules are disabled.
+- [ ] Telegram link codes cannot link accounts after the Telegram module is disabled.
 - [ ] Changing password revokes mobile sessions.
 - [ ] `/actuator/health` is public, but detailed diagnostics are not public.
 - [ ] `/actuator/info` contains only non-secret app metadata.

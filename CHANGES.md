@@ -1,3 +1,15 @@
+# v26.5 — Security review
+
+- Kept release stabilization freeze: no new user-facing features.
+- Bumped frontend/backend/service-worker/smoke-test versions to `26.5`.
+- Added application-level security headers through `SecurityHeadersFilter` so the baseline browser policy is present even before/without reverse-proxy hardening.
+- Added production session cookie hardening: `HttpOnly`, `Secure`, `SameSite=Lax` and explicit session timeout.
+- Closed a module-boundary gap in `/api/mobile/sync`: mobile day sync can no longer write notes or overtime fields when the corresponding modules are disabled.
+- Closed a Telegram module-boundary gap: pending Telegram link codes no longer link an account after the user disables the Telegram module.
+- Added `ModuleSecurityTest` regressions for mobile sync module guards and browser security headers.
+- Extended `release-check.sh` with security review guardrails for headers, session cookie settings, mobile module guards, Telegram module guards and regression tests.
+- Added `docs/SECURITY_REVIEW.md` with the reviewed threat boundaries and follow-up policy.
+
 # v26.4 — Code cleanup
 
 - Kept release stabilization freeze: no new user-facing features.

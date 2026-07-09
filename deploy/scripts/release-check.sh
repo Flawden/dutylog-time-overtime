@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-26.4}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-26.5}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -226,6 +226,19 @@ fi
 contains deploy/caddy/Caddyfile.example "X-Content-Type-Options nosniff"
 contains deploy/caddy/Caddyfile.example "Strict-Transport-Security"
 contains deploy/nginx/dutylog.conf.example "limit_req_zone"
+
+
+echo
+echo "5) Security review guardrails"
+contains src/main/java/ru/daniil/shifts/config/SecurityHeadersFilter.java "Content-Security-Policy"
+contains src/main/java/ru/daniil/shifts/config/SecurityHeadersFilter.java "Strict-Transport-Security"
+contains src/main/resources/application-prod.properties "server.servlet.session.cookie.secure=true"
+contains src/main/resources/application-prod.properties "server.servlet.session.cookie.http-only=true"
+contains src/main/resources/application-prod.properties "server.servlet.session.cookie.same-site=lax"
+contains src/main/java/ru/daniil/shifts/web/MobileController.java "requireEnabledModulesForMobileDayChange"
+contains src/main/java/ru/daniil/shifts/telegram/TelegramLinkService.java "moduleService.requireEnabled(owner, ModuleService.TELEGRAM)"
+contains src/test/java/ru/daniil/shifts/web/ModuleSecurityTest.java "mobileSyncCannotWriteNotesWhenNotesModuleDisabled"
+contains docs/SECURITY_REVIEW.md "v26.5"
 
 echo
 

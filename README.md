@@ -190,6 +190,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/PRODUCTION_RUNBOOK.md`](docs/PRODUCTION_RUNBOOK.md) — эксплуатация, обновление и откат на VPS.
 - [`docs/PRODUCTION_LAUNCH.md`](docs/PRODUCTION_LAUNCH.md) — короткий сценарий первого запуска на VPS.
 - [`docs/SECURITY_CHECKLIST.md`](docs/SECURITY_CHECKLIST.md) — чеклист безопасности перед публикацией.
+- [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md) — обзор security hardening текущей стабилизации.
 - [`docs/ADMIN_BOOTSTRAP.md`](docs/ADMIN_BOOTSTRAP.md) — безопасное создание стартового администратора через env.
 - [`docs/REGISTRATION_SETTINGS.md`](docs/REGISTRATION_SETTINGS.md) — управление публичной регистрацией из админки.
 - [`docs/USER_ROLES.md`](docs/USER_ROLES.md) — пользователи, роли ADMIN/USER и будущий задел FREE/PAID/VIP.
@@ -205,18 +206,25 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v26.4 — code cleanup`
+`v26.5 — security review`
 
 DutyLog находится в фазе стабилизации перед релизом: новые крупные фичи заморожены, фокус — безопасность, тесты, CI, конфиги, миграции, smoke-test, документация, читаемость и предсказуемый деплой.
 
-Главные изменения текущего cleanup-релиза:
+Главные изменения текущего security-релиза:
 
-- единая версия `26.4` во frontend, backend, service worker, smoke-test и документации;
-- frontend split получил более точные заголовки файлов и меньше ссылок на старый монолитный `app.js`;
-- `release-check.sh` теперь проверяет точный порядок split JS-файлов в `index.html`;
-- `release-check.sh` падает, если в runtime-статике снова появится legacy `app.js` reference;
-- `smoke-test.sh` и `release-check.sh` используют единый список split static assets;
-- добавлен `docs/CODE_CLEANUP.md` с правилами безопасной чистки кода во время freeze.
+- единая версия `26.5` во frontend, backend, service worker, smoke-test и документации;
+- добавлен application-level `SecurityHeadersFilter` с базовыми браузерными security headers;
+- production session cookie теперь явно `HttpOnly`, `Secure`, `SameSite=Lax`;
+- `/api/mobile/sync` теперь уважает выключенные модули Notes и Overtime;
+- Telegram link code больше не привязывает аккаунт, если Telegram-модуль у пользователя уже выключен;
+- добавлены регрессионные security-тесты `ModuleSecurityTest`;
+- `release-check.sh` проверяет security guardrails перед упаковкой релиза.
+
+Предыдущий cleanup-релиз:
+
+`v26.4 — code cleanup`
+
+Фронтенд-разделение стало чище: точный порядок split JS-файлов, меньше legacy-ссылок на старый `app.js`, усиленный release-check и отдельные правила безопасной чистки кода во время freeze.
 
 Предыдущий крупный технический релиз:
 

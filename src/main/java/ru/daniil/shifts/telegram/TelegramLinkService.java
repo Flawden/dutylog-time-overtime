@@ -8,6 +8,7 @@ import ru.daniil.shifts.model.TelegramLink;
 import ru.daniil.shifts.model.TelegramLinkCode;
 import ru.daniil.shifts.repo.TelegramLinkCodeRepository;
 import ru.daniil.shifts.repo.TelegramLinkRepository;
+import ru.daniil.shifts.service.ModuleService;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.security.SecureRandom;
@@ -23,6 +24,7 @@ public class TelegramLinkService {
 
     private final TelegramLinkRepository links;
     private final TelegramLinkCodeRepository codes;
+    private final ModuleService moduleService;
 
     @Value("${dutylog.telegram.enabled:false}")
     private boolean telegramEnabled;
@@ -36,9 +38,12 @@ public class TelegramLinkService {
     @Value("${dutylog.telegram.bot-username:}")
     private String botUsername;
 
-    public TelegramLinkService(TelegramLinkRepository links, TelegramLinkCodeRepository codes) {
+    public TelegramLinkService(TelegramLinkRepository links,
+                               TelegramLinkCodeRepository codes,
+                               ModuleService moduleService) {
         this.links = links;
         this.codes = codes;
+        this.moduleService = moduleService;
     }
 
     public record TelegramStatusDto(
@@ -114,6 +119,8 @@ public class TelegramLinkService {
         }
 
         AppUser owner = linkCode.getOwner();
+        moduleService.requireEnabled(owner, ModuleService.TELEGRAM);
+
         Optional<TelegramLink> existingChat = links.findByTelegramChatId(telegramChatId);
         if (existingChat.isPresent() && !existingChat.get().getOwner().getId().equals(owner.getId())) {
             throw ApiException.conflict("Этот Telegram уже привязан к другому аккаунту DutyLog");
