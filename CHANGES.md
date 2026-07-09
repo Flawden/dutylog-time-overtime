@@ -1,3 +1,13 @@
+# v26.4 — Code cleanup
+
+- Kept release stabilization freeze: no new user-facing features.
+- Bumped frontend/backend/service-worker/smoke-test versions to `26.4`.
+- Cleaned split frontend file headers so they describe the current ordered-script runtime instead of the old monolithic `app.js` history.
+- Removed stale runtime comments that still pointed to `app.js` as the active frontend entrypoint.
+- Hardened `deploy/scripts/release-check.sh` with exact split-JS order validation and a legacy runtime `app.js` reference guard.
+- Refactored `deploy/scripts/smoke-test.sh` and `release-check.sh` to use an explicit `STATIC_JS` list instead of repeating split asset names in scattered checks.
+- Added `docs/CODE_CLEANUP.md` with stabilization-safe cleanup rules and postponed technical debt.
+
 # v26.3 — Release hardening
 
 - Entered release stabilization: no new user-facing feature scope in this release.

@@ -201,24 +201,28 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/RELEASE_HARDENING.md`](docs/RELEASE_HARDENING.md) — фаза стабилизации, release gate и правила freeze.
+- [`docs/CODE_CLEANUP.md`](docs/CODE_CLEANUP.md) — правила безопасной чистки кода во время стабилизации.
 
 ## Текущая версия
 
-`v26.3 — release hardening`
+`v26.4 — code cleanup`
 
-DutyLog находится в фазе стабилизации перед релизом: новые крупные фичи заморожены, фокус — безопасность, тесты, CI, конфиги, миграции, smoke-test, документация и предсказуемый деплой.
+DutyLog находится в фазе стабилизации перед релизом: новые крупные фичи заморожены, фокус — безопасность, тесты, CI, конфиги, миграции, smoke-test, документация, читаемость и предсказуемый деплой.
 
-Главные изменения текущего hardening-релиза:
+Главные изменения текущего cleanup-релиза:
 
-- единая версия `26.3` во frontend, backend, service worker, smoke-test и документации;
-- серверная диагностика берёт версию из `info.app.version`, а не из hardcode;
-- добавлен `deploy/scripts/release-check.sh` — локальный release gate перед архивом/тегом;
-- CI запускает `mvn test`, затем тот же release gate;
-- production preflight стал строже к секретам, домену, порту `8080` и security headers;
-- Caddy example получил HSTS и базовый CSP;
-- `PRODUCTION_LAUNCH.md` и `RELEASE_CHECKLIST.md` обновлены под актуальную версию.
+- единая версия `26.4` во frontend, backend, service worker, smoke-test и документации;
+- frontend split получил более точные заголовки файлов и меньше ссылок на старый монолитный `app.js`;
+- `release-check.sh` теперь проверяет точный порядок split JS-файлов в `index.html`;
+- `release-check.sh` падает, если в runtime-статике снова появится legacy `app.js` reference;
+- `smoke-test.sh` и `release-check.sh` используют единый список split static assets;
+- добавлен `docs/CODE_CLEANUP.md` с правилами безопасной чистки кода во время freeze.
 
 Предыдущий крупный технический релиз:
+
+`v26.3 — release hardening`
+
+Добавлен release gate, усилены prod checks, CI запускает `mvn test` и статические проверки, а системная диагностика берёт версию из `info.app.version`.
 
 `v26.2 — tests, CI and frontend split`
 

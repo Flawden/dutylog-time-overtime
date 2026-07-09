@@ -9,8 +9,17 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-26.3}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-26.4}"
 ERRORS=0
+STATIC_JS=(
+  "js/10-core.js"
+  "js/20-data.js"
+  "js/30-calendar.js"
+  "js/40-overtime.js"
+  "js/50-tasks.js"
+  "js/60-settings.js"
+  "js/70-user-boot.js"
+)
 
 fail() {
   echo "ERROR: $*" >&2
@@ -39,6 +48,16 @@ contains() {
   fi
 }
 
+not_contains() {
+  local file="$1"
+  local text="$2"
+  if grep -Fq "$text" "$file"; then
+    fail "$file contains forbidden text: $text"
+  else
+    ok "$file does not contain forbidden text: $text"
+  fi
+}
+
 echo "DutyLog release check"
 echo "Project: $PROJECT_ROOT"
 echo "Version: $VERSION"
@@ -59,11 +78,16 @@ echo "1) Version consistency"
 contains src/main/resources/static/js/10-core.js "DUTYLOG_VERSION = \"$VERSION\""
 contains src/main/resources/static/service-worker.js "dutylog-shell-v$VERSION"
 contains src/main/resources/static/index.html "app.css?v=$VERSION"
-contains src/main/resources/static/index.html "js/10-core.js?v=$VERSION"
+for asset in "${STATIC_JS[@]}"; do
+  contains src/main/resources/static/index.html "$asset?v=$VERSION"
+done
 contains src/main/resources/application.properties "info.app.version=$VERSION"
 contains src/main/resources/application-prod.properties "info.app.version=$VERSION"
-contains deploy/scripts/smoke-test.sh "dutylog-shell-v$VERSION"
-contains deploy/scripts/smoke-test.sh "DUTYLOG_VERSION = \"$VERSION\""
+contains pom.xml "<version>${VERSION}.0</version>"
+contains deploy/scripts/smoke-test.sh "VERSION=\"\${DUTYLOG_RELEASE_VERSION:-$VERSION}\""
+contains deploy/scripts/smoke-test.sh "dutylog-shell-v\$VERSION"
+contains deploy/scripts/smoke-test.sh "DUTYLOG_VERSION = \\\"\$VERSION\\\""
+not_contains src/main/resources/static/index.html "app.js?v="
 
 if grep -R "result.put(\"version\", \"" -n src/main/java >/tmp/dutylog-version-hardcode.txt; then
   cat /tmp/dutylog-version-hardcode.txt >&2
@@ -84,6 +108,30 @@ ok "node --check service-worker.js"
 python3 -m json.tool src/main/resources/static/manifest.json >/dev/null
 ok "manifest.json is valid JSON"
 
+python3 - "$VERSION" <<'PY'
+from pathlib import Path
+import re, sys
+version = sys.argv[1]
+html = Path('src/main/resources/static/index.html').read_text(encoding='utf-8')
+expected = [
+    'js/10-core.js',
+    'js/20-data.js',
+    'js/30-calendar.js',
+    'js/40-overtime.js',
+    'js/50-tasks.js',
+    'js/60-settings.js',
+    'js/70-user-boot.js',
+]
+actual = re.findall(r'<script\s+src="(js/\d+-[^"]+\.js)\?v=([^"]+)"', html)
+actual_paths = [p for p, v in actual]
+actual_versions = {v for p, v in actual}
+if actual_paths != expected:
+    raise SystemExit(f'static js order mismatch: {actual_paths}, expected {expected}')
+if actual_versions != {version}:
+    raise SystemExit(f'static js versions mismatch: {actual_versions}, expected {version}')
+print('OK:    static js order and cache-busting version')
+PY
+
 python3 - <<'PY'
 from pathlib import Path
 import re
@@ -102,6 +150,21 @@ if missing:
 if dups:
     raise SystemExit(f'duplicate html ids: {dups}')
 print('OK:    html/js id crosscheck')
+PY
+
+python3 - <<'PY'
+from pathlib import Path
+runtime_files = list(Path('src/main/resources/static').glob('**/*'))
+legacy = []
+for p in runtime_files:
+    if not p.is_file() or p.suffix not in {'.html', '.js', '.css'}:
+        continue
+    text = p.read_text(encoding='utf-8')
+    if 'app.js' in text:
+        legacy.append(str(p))
+if legacy:
+    raise SystemExit(f'legacy app.js runtime references found: {legacy}')
+print('OK:    no legacy app.js runtime references')
 PY
 
 echo

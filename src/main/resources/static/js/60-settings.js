@@ -1,9 +1,11 @@
 /*
- * 60-settings.js — Настройки: типы смен, навигация по месяцам, время/регион, уведомления
- * Часть бывшего app.js (распил v26.1). Файлы делят ГЛОБАЛЬНУЮ область
- * видимости (это не ES-модули); порядок подключения в index.html — закон.
- * Инвариант: склейка всех js/*.js по порядку === старый app.js.
+ * 60-settings.js — Settings: shifts, navigation, notifications, modules and diagnostics
+ *
+ * DutyLog uses ordered browser scripts, not ES modules yet.
+ * Keep the order in index.html stable: 10-core → 20-data → 30-calendar
+ * → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
  */
+
 /* ─── Управление типами смен ────────────────────────────────── */
 
 // Enter в полях новой смены = «Добавить» (вешается один раз)

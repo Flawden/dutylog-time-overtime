@@ -4,6 +4,16 @@ set -euo pipefail
 BASE_URL="${1:-${DUTYLOG_BASE_URL:-http://localhost:8080}}"
 BASE_URL="${BASE_URL%/}"
 TIMEOUT="${DUTYLOG_SMOKE_TIMEOUT:-10}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-26.4}"
+STATIC_JS=(
+  "js/10-core.js"
+  "js/20-data.js"
+  "js/30-calendar.js"
+  "js/40-overtime.js"
+  "js/50-tasks.js"
+  "js/60-settings.js"
+  "js/70-user-boot.js"
+)
 
 need() {
   if ! command -v "$1" >/dev/null 2>&1; then
@@ -23,6 +33,7 @@ status_code() {
 need curl
 
 echo "DutyLog smoke test: $BASE_URL"
+echo "Expected version: $VERSION"
 
 if [[ "$BASE_URL" == http://* && "$BASE_URL" != "http://localhost"* && "$BASE_URL" != "http://127.0.0.1"* ]]; then
   echo "WARN: public smoke test URL is not HTTPS: $BASE_URL" >&2
@@ -39,8 +50,10 @@ echo "   ok"
 echo "3) App shell"
 APP_HTML="$(fetch "$BASE_URL/")"
 echo "$APP_HTML" | grep -qi 'DutyLog'
-echo "$APP_HTML" | grep -q 'js/10-core.js?v=26.3'
-echo "$APP_HTML" | grep -q 'app.css?v=26.3'
+echo "$APP_HTML" | grep -q "app.css?v=$VERSION"
+for asset in "${STATIC_JS[@]}"; do
+  echo "$APP_HTML" | grep -q "$asset?v=$VERSION"
+done
 if echo "$APP_HTML" | grep -q 'app.js?v='; then
   echo "Unexpected legacy app.js reference in app shell" >&2
   exit 1
@@ -52,12 +65,12 @@ fetch "$BASE_URL/manifest.json" | grep -qi 'DutyLog'
 echo "   ok"
 
 echo "5) Service worker"
-fetch "$BASE_URL/service-worker.js" | grep -q 'dutylog-shell-v26.3'
+fetch "$BASE_URL/service-worker.js" | grep -q "dutylog-shell-v$VERSION"
 echo "   ok"
 
 echo "6) Static assets"
-fetch "$BASE_URL/js/10-core.js" | grep -q 'DUTYLOG_VERSION = "26.3"'
-for asset in js/20-data.js js/30-calendar.js js/40-overtime.js js/50-tasks.js js/60-settings.js js/70-user-boot.js; do
+fetch "$BASE_URL/js/10-core.js" | grep -q "DUTYLOG_VERSION = \"$VERSION\""
+for asset in "${STATIC_JS[@]:1}"; do
   fetch "$BASE_URL/$asset" >/dev/null
 done
 fetch "$BASE_URL/app.css" | grep -q ':root'

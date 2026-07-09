@@ -1,9 +1,11 @@
 /*
- * 20-data.js — Данные: API-обёртки (jfetch/CSRF) и оффлайн-слой (IndexedDB, очередь мутаций)
- * Часть бывшего app.js (распил v26.1). Файлы делят ГЛОБАЛЬНУЮ область
- * видимости (это не ES-модули); порядок подключения в index.html — закон.
- * Инвариант: склейка всех js/*.js по порядку === старый app.js.
+ * 20-data.js — Data: API wrappers, CSRF, IndexedDB snapshot and offline queue
+ *
+ * DutyLog uses ordered browser scripts, not ES modules yet.
+ * Keep the order in index.html stable: 10-core → 20-data → 30-calendar
+ * → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
  */
+
 /* ─── API ───────────────────────────────────────────────────── */
 const api = {
   async shiftTypes()        { return jfetch("/api/shift-types"); },

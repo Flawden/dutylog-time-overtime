@@ -54,7 +54,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, BearerTokenAuthenticationFilter bearerTokenAuthenticationFilter) throws Exception {
         // CSRF для SPA: токен кладётся в cookie XSRF-TOKEN (доступную JS),
         // фронтенд возвращает его заголовком X-XSRF-TOKEN на каждом
-        // изменяющем запросе (это делает jfetch в app.js).
+        // изменяющем запросе (это делает общий frontend helper jfetch).
         CookieCsrfTokenRepository csrfRepo = CookieCsrfTokenRepository.withHttpOnlyFalse();
         CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
         // null = резолвить токен сразу на каждом запросе, чтобы cookie
