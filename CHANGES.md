@@ -1,3 +1,10 @@
+## v26.6.4 — console and module details UX hotfix
+
+- Hid module contract counts and technical details from regular users; they remain visible only to administrators.
+- Stopped admin registration/user-list requests from running during generic settings initialization, removing avoidable `403` console noise for non-admin sessions.
+- Fixed `renderTimeSettings()` shadowing the translation helper `t()`, which caused a settings-route runtime error.
+- Added release-check guardrails for the settings-time shadowing bug, admin auto-fetch noise, and admin-only module developer details.
+
 ## v26.6.3 — compact modules UX hotfix
 
 - Made the modules settings screen more compact: shorter cards, independent grid row height and no oversized stretch from disabled module copy.

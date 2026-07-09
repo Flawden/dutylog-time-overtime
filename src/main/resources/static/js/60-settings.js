@@ -245,26 +245,26 @@ function readTimeSettingsForm(){
 function renderTimeSettings(){
   if (!$("timeSettingsCard")) return;
   if (!state.timeSettings) state.timeSettings = loadTimeSettings();
-  const t = state.timeSettings;
+  const timeSettings = state.timeSettings;
   const set = (id, v) => { if ($(id)) $(id).value = v ?? ""; };
-  set("workRegionName", t.workRegionName);
-  set("workTimezone", t.workTimezone);
-  set("workOffsetMoscow", t.workOffsetMoscow);
-  set("timeFormatPref", t.timeFormat || "24h");
-  set("defDayStart", t.dayStart);
-  set("defDayEnd", t.dayEnd);
-  set("defDayBreak", t.dayBreakMinutes);
-  set("defDayPlan", t.dayPlannedHours);
-  set("defNightStart", t.nightStart);
-  set("defNightEnd", t.nightEnd);
-  set("defNightBreak", t.nightBreakMinutes);
-  set("defNightPlan", t.nightPlannedHours);
+  set("workRegionName", timeSettings.workRegionName);
+  set("workTimezone", timeSettings.workTimezone);
+  set("workOffsetMoscow", timeSettings.workOffsetMoscow);
+  set("timeFormatPref", timeSettings.timeFormat || "24h");
+  set("defDayStart", timeSettings.dayStart);
+  set("defDayEnd", timeSettings.dayEnd);
+  set("defDayBreak", timeSettings.dayBreakMinutes);
+  set("defDayPlan", timeSettings.dayPlannedHours);
+  set("defNightStart", timeSettings.nightStart);
+  set("defNightEnd", timeSettings.nightEnd);
+  set("defNightBreak", timeSettings.nightBreakMinutes);
+  set("defNightPlan", timeSettings.nightPlannedHours);
 
   const browserTz = browserTimeZone();
-  const region = t.workRegionName ? `${esc(t.workRegionName)} · ` : "";
-  $("timeNowBox").innerHTML = `${region}${esc(t("рабочее время"))}: <b>${esc(safeTzLabel(t.workTimezone))}</b> <span>(${esc(t.workTimezone)})</span><br>` +
+  const region = timeSettings.workRegionName ? `${esc(timeSettings.workRegionName)} · ` : "";
+  $("timeNowBox").innerHTML = `${region}${esc(t("рабочее время"))}: <b>${esc(safeTzLabel(timeSettings.workTimezone))}</b> <span>(${esc(timeSettings.workTimezone)})</span><br>` +
     `${esc(t("браузер"))}: <b>${esc(safeTzLabel(browserTz))}</b> <span>(${esc(browserTz)})</span>` +
-    (Number(t.workOffsetMoscow || 0) ? `<br>${esc(t("пометка"))}: ${esc(t("Москва"))} ${Number(t.workOffsetMoscow) > 0 ? "+" : ""}${Number(t.workOffsetMoscow)} ${state.language === "en" ? "h" : "ч"}` : "");
+    (Number(timeSettings.workOffsetMoscow || 0) ? `<br>${esc(t("пометка"))}: ${esc(t("Москва"))} ${Number(timeSettings.workOffsetMoscow) > 0 ? "+" : ""}${Number(timeSettings.workOffsetMoscow)} ${state.language === "en" ? "h" : "ч"}` : "");
   $("timeSettingsStatus").className = "status statusAutoSave";
   $("timeSettingsStatus").innerHTML = `<span class="statusChip statusChipAuto"><span class="statusDot"></span>${esc(t("автосохранение"))}</span>`;
 }
@@ -279,50 +279,50 @@ function scheduleTimeSettingsApply(){
   timeAutoApplyTimer = setTimeout(() => applyTimeSettingsToBuiltins(true), 700);
 }
 function fillShiftFormFromDefaults(kind){
-  const t = state.timeSettings || loadTimeSettings();
+  const timeSettings = state.timeSettings || loadTimeSettings();
   if (kind === "night") {
     $("nsName").value = $("nsName").value || "Ночная кастомная";
-    $("nsHours").value = fmtHours(t.nightPlannedHours);
-    $("nsStart").value = t.nightStart;
-    $("nsEnd").value = t.nightEnd;
-    $("nsBreak").value = t.nightBreakMinutes;
-    $("nsPlan").value = fmtHours(t.nightPlannedHours);
+    $("nsHours").value = fmtHours(timeSettings.nightPlannedHours);
+    $("nsStart").value = timeSettings.nightStart;
+    $("nsEnd").value = timeSettings.nightEnd;
+    $("nsBreak").value = timeSettings.nightBreakMinutes;
+    $("nsPlan").value = fmtHours(timeSettings.nightPlannedHours);
   } else {
     $("nsName").value = $("nsName").value || "Дневная кастомная";
-    $("nsHours").value = fmtHours(t.dayPlannedHours);
-    $("nsStart").value = t.dayStart;
-    $("nsEnd").value = t.dayEnd;
-    $("nsBreak").value = t.dayBreakMinutes;
-    $("nsPlan").value = fmtHours(t.dayPlannedHours);
+    $("nsHours").value = fmtHours(timeSettings.dayPlannedHours);
+    $("nsStart").value = timeSettings.dayStart;
+    $("nsEnd").value = timeSettings.dayEnd;
+    $("nsBreak").value = timeSettings.dayBreakMinutes;
+    $("nsPlan").value = fmtHours(timeSettings.dayPlannedHours);
   }
   location.hash = "#settings";
   setSave("", "");
 }
-function patchForBuiltInShift(name, t){
+function patchForBuiltInShift(name, timeSettings){
   if (name === "Ночная") return {
-    startTime: t.nightStart,
-    endTime: t.nightEnd,
-    breakMinutes: t.nightBreakMinutes,
-    plannedHours: t.nightPlannedHours,
-    hours: t.nightPlannedHours,
+    startTime: timeSettings.nightStart,
+    endTime: timeSettings.nightEnd,
+    breakMinutes: timeSettings.nightBreakMinutes,
+    plannedHours: timeSettings.nightPlannedHours,
+    hours: timeSettings.nightPlannedHours,
   };
   return {
-    startTime: t.dayStart,
-    endTime: t.dayEnd,
-    breakMinutes: t.dayBreakMinutes,
-    plannedHours: t.dayPlannedHours,
-    hours: t.dayPlannedHours,
+    startTime: timeSettings.dayStart,
+    endTime: timeSettings.dayEnd,
+    breakMinutes: timeSettings.dayBreakMinutes,
+    plannedHours: timeSettings.dayPlannedHours,
+    hours: timeSettings.dayPlannedHours,
   };
 }
 async function applyTimeSettingsToBuiltins(silent = false){
-  const t = readTimeSettingsForm();
-  storeTimeSettings(t);
+  const timeSettings = readTimeSettingsForm();
+  storeTimeSettings(timeSettings);
   const targets = state.shiftTypes.filter(s => s.name === "Дневная" || s.name === "Ночная");
   if (!targets.length) return setSave("err", t("не нашёл Дневную/Ночную смену"));
   if (!silent) setSave("saving");
   try {
     for (const s of targets) {
-      const updated = await api.updateShiftType(s.id, patchForBuiltInShift(s.name, t));
+      const updated = await api.updateShiftType(s.id, patchForBuiltInShift(s.name, timeSettings));
       const idx = state.shiftTypes.findIndex(x => Number(x.id) === Number(s.id));
       if (idx >= 0) state.shiftTypes[idx] = updated;
     }
@@ -563,6 +563,13 @@ function diagnosticsReportText(){
     `Browser: ${navigator.userAgent}`,
   ].join("\n");
 }
+function refreshAdminPanel(){
+  if (!state.profile?.admin) return;
+  renderDiagnosticsClient();
+  refreshDiagnostics();
+  refreshRegistrationAdmin();
+  refreshAdminUsers();
+}
 function initDiagnosticsEvents(){
   if (!$("diagnosticsCard")) return;
   $("diagnosticsRefresh")?.addEventListener("click", refreshDiagnostics);
@@ -571,8 +578,6 @@ function initDiagnosticsEvents(){
     catch (err) { setSave("err", t("не удалось скопировать отчёт")); }
   });
   renderDiagnosticsClient();
-  refreshRegistrationAdmin();
-  refreshAdminUsers();
   $("registrationRefresh")?.addEventListener("click", refreshRegistrationAdmin);
   $("registrationEnabledToggle")?.addEventListener("change", e => saveRegistrationAdmin(e.target.checked));
   $("adminUsersRefresh")?.addEventListener("click", refreshAdminUsers);

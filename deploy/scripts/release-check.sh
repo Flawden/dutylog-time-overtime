@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.3}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.4}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -151,13 +151,32 @@ if late_const != -1 and late_const > boot:
     raise SystemExit('late const $ creates temporal dead zone for top-level boot code')
 print('OK:    boot-time shared helpers are defined before use')
 PY
+
+python3 - <<'PY'
+from pathlib import Path
+import re
+settings = Path('src/main/resources/static/js/60-settings.js').read_text(encoding='utf-8')
+match = re.search(r'function initDiagnosticsEvents\(\)\{(?P<body>.*?)\n\}', settings, re.S)
+if not match:
+    raise SystemExit('initDiagnosticsEvents() not found')
+body = match.group('body')
+for forbidden in ['refreshRegistrationAdmin', 'refreshAdminUsers']:
+    if re.search(r'^\s*' + re.escape(forbidden) + r'\(\);\s*$', body, re.M):
+        raise SystemExit(f'admin endpoint auto-fetch still runs during settings init: {forbidden}()')
+print('OK:    admin endpoints do not auto-fetch during generic settings init')
+PY
 contains src/main/resources/static/service-worker.js "url.origin !== self.location.origin"
 contains src/main/resources/static/service-worker.js "includes(url.protocol)"
 contains src/main/resources/static/service-worker.js "catch(() => {})"
 contains src/main/resources/static/app.css "align-items:start"
 contains src/main/resources/static/app.css "moduleDevDetails summary"
 contains src/main/resources/static/js/20-data.js "dayModulesHintText"
-contains src/main/resources/static/js/20-data.js "Технические детали"
+contains src/main/resources/static/js/20-data.js "showDeveloperDetails = !!state.profile?.admin"
+contains src/main/resources/static/js/20-data.js 'details.length ? `<details class="moduleDevDetails"'
+contains src/main/resources/static/js/60-settings.js "const timeSettings = state.timeSettings"
+not_contains src/main/resources/static/js/60-settings.js "const t = state.timeSettings"
+contains src/main/resources/static/js/60-settings.js "function refreshAdminPanel()"
+contains src/main/resources/static/js/70-user-boot.js "if (state.profile?.admin) refreshAdminPanel();"
 
 python3 - <<'PY'
 from pathlib import Path
@@ -265,7 +284,7 @@ contains src/main/resources/application-prod.properties "server.servlet.session.
 contains src/main/java/ru/daniil/shifts/web/MobileController.java "requireEnabledModulesForMobileDayChange"
 contains src/main/java/ru/daniil/shifts/telegram/TelegramLinkService.java "moduleService.requireEnabled(owner, ModuleService.TELEGRAM)"
 contains src/test/java/ru/daniil/shifts/web/ModuleSecurityTest.java "mobileSyncCannotWriteNotesWhenNotesModuleDisabled"
-contains docs/SECURITY_REVIEW.md "v26.6.3"
+contains docs/SECURITY_REVIEW.md "v26.6.4"
 
 echo
 

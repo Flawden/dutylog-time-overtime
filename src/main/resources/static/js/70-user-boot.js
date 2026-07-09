@@ -148,7 +148,7 @@ function applyRoute(){
   }
   if (active === "admin") {
     renderDiagnosticsClient();
-    refreshDiagnostics();
+    if (state.profile?.admin) refreshAdminPanel();
   }
 }
 window.addEventListener("hashchange", applyRoute);

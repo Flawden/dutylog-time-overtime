@@ -280,17 +280,20 @@ function renderModuleSettings(){
     const card = document.createElement("div");
     card.className = "moduleCard" + (m.enabled ? " on" : "") + (m.locked ? " locked" : "");
     const deps = (m.dependencies || []).filter(d => !["core","calendar","shifts"].includes(d)).map(moduleDisplayName);
+    const showDeveloperDetails = !!state.profile?.admin;
     const details = [];
-    if (Array.isArray(m.uiSlots) && m.uiSlots.length) details.push(`${t("слоты")}: ${m.uiSlots.join(", ")}`);
-    if (Array.isArray(m.apiPrefixes) && m.apiPrefixes.length) details.push(`${t("API")}: ${m.apiPrefixes.join(", ")}`);
-    if (Array.isArray(m.offlineQueueTypes) && m.offlineQueueTypes.length) details.push(`${t("offline")}: ${m.offlineQueueTypes.join(", ")}`);
+    if (showDeveloperDetails && Array.isArray(m.uiSlots) && m.uiSlots.length) details.push(`${t("слоты")}: ${m.uiSlots.join(", ")}`);
+    if (showDeveloperDetails && Array.isArray(m.apiPrefixes) && m.apiPrefixes.length) details.push(`${t("API")}: ${m.apiPrefixes.join(", ")}`);
+    if (showDeveloperDetails && Array.isArray(m.offlineQueueTypes) && m.offlineQueueTypes.length) details.push(`${t("offline")}: ${m.offlineQueueTypes.join(", ")}`);
+    const meta = [moduleCategoryLabel(m.category)];
+    if (showDeveloperDetails) meta.push(`${t("контракт")}: ${moduleContractCounts(m)}`);
     const badge = esc(m.locked ? t("всегда включён") : (m.enabled ? t("включено") : t("выключено")));
     card.innerHTML = `
       <input type="checkbox" ${m.enabled ? "checked" : ""} ${m.locked ? "disabled" : ""} data-module-toggle="${esc(m.key)}"/>
       <span class="moduleMain">
         <span class="moduleTop"><b>${esc(moduleTitle(m))}</b><span class="moduleBadge">${badge}</span></span>
         <span class="moduleDescription">${esc(moduleDescription(m))}</span>
-        <span class="moduleMeta"><span>${esc(moduleCategoryLabel(m.category))}</span><span>${esc(t("контракт"))}: ${esc(moduleContractCounts(m))}</span></span>
+        <span class="moduleMeta">${meta.map(item => `<span>${esc(item)}</span>`).join("")}</span>
         ${deps.length ? `<small>${esc(t("зависит от"))}: ${esc(deps.join(", "))}</small>` : ""}
         ${!m.enabled && !m.locked ? `<small class="moduleDisabledHint">${esc(t("Отключено. Данные сохранены."))} ${esc(t("Можно включить обратно."))}</small>` : ""}
         ${details.length ? `<details class="moduleDevDetails"><summary>${esc(t("Технические детали"))}</summary><span>${esc(details.join(" · "))}</span></details>` : ""}
