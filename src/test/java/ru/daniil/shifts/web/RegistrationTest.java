@@ -100,6 +100,6 @@ class RegistrationTest {
         mvc.perform(post("/api/auth/register")
                         .contentType("application/json")
                         .content(body("no-csrf", "secret123")))
-                .andExpect(status().isUnauthorized()); // аноним + CSRF-отказ → entry point /api/** → 401
+                .andExpect(status().isForbidden()); // missing CSRF is rejected before controller/auth entry point
     }
 }

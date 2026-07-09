@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.4}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.5}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -83,6 +83,7 @@ for asset in "${STATIC_JS[@]}"; do
 done
 contains src/main/resources/application.properties "info.app.version=$VERSION"
 contains src/main/resources/application-prod.properties "info.app.version=$VERSION"
+contains src/test/resources/application.properties "spring.jpa.open-in-view=false"
 contains pom.xml "<version>${VERSION}.0</version>"
 contains deploy/scripts/smoke-test.sh "VERSION=\"\${DUTYLOG_RELEASE_VERSION:-$VERSION}\""
 contains deploy/scripts/smoke-test.sh "dutylog-shell-v\$VERSION"
@@ -243,6 +244,18 @@ PY
 
 python3 - <<'PY'
 from pathlib import Path
+bad=[]
+for p in Path('src').rglob('*.properties'):
+    text=p.read_text(encoding='utf-8')
+    if any(ord(ch) > 127 for ch in text):
+        bad.append(str(p))
+if bad:
+    raise SystemExit(f'non-ASCII text found in .properties files: {bad}')
+print('OK:    .properties files use ASCII-safe comments')
+PY
+
+python3 - <<'PY'
+from pathlib import Path
 import re
 root=Path('src/main/resources/db/migration/postgresql')
 files=sorted(root.glob('V*__*.sql'))
@@ -284,7 +297,13 @@ contains src/main/resources/application-prod.properties "server.servlet.session.
 contains src/main/java/ru/daniil/shifts/web/MobileController.java "requireEnabledModulesForMobileDayChange"
 contains src/main/java/ru/daniil/shifts/telegram/TelegramLinkService.java "moduleService.requireEnabled(owner, ModuleService.TELEGRAM)"
 contains src/test/java/ru/daniil/shifts/web/ModuleSecurityTest.java "mobileSyncCannotWriteNotesWhenNotesModuleDisabled"
-contains docs/SECURITY_REVIEW.md "v26.6.4"
+contains src/main/java/ru/daniil/shifts/service/ModuleService.java "cascadeDisableBrokenDependencies"
+contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDisabled"
+contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
+contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
+contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
+contains docs/SECURITY_REVIEW.md "v26.6.5"
+contains docs/TEST_CONFIG_HOTFIX.md "v26.6.5"
 
 echo
 

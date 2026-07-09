@@ -1,3 +1,13 @@
+## v26.6.5 — properties and tests hotfix
+
+- Replaced Cyrillic comments in `.properties` files with ASCII English comments to avoid mojibake in editors/terminals with the wrong file encoding.
+- Added `spring.jpa.open-in-view=false` to test properties to match the application baseline and remove the test warning.
+- Fixed Telegram link tests after the Telegram module guard: tests now enable the Telegram module explicitly where linking is expected.
+- Fixed the expired Telegram-code test fixture to use the real `DL-123456` code format.
+- Updated the registration CSRF regression to expect Spring Security's `403 Forbidden` for missing CSRF.
+- Fixed module dependency semantics: disabling a module now disables dependent modules too, so disabling Overtime also disables Scenarios and mobile sync guards stay effective.
+- Added release-check guardrails for ASCII `.properties`, module dependency cascade and the updated test expectations.
+
 ## v26.6.4 — console and module details UX hotfix
 
 - Hid module contract counts and technical details from regular users; they remain visible only to administrators.

@@ -9,9 +9,12 @@ import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.TelegramLinkCode;
 import ru.daniil.shifts.repo.TelegramLinkCodeRepository;
 import ru.daniil.shifts.repo.UserRepository;
+import ru.daniil.shifts.service.ModuleService;
+import ru.daniil.shifts.dto.Dtos.ModuleSettingsUpdateRequest;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.Instant;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -27,16 +30,22 @@ class TelegramLinkServiceTest {
     @Autowired TelegramLinkService service;
     @Autowired UserRepository users;
     @Autowired TelegramLinkCodeRepository codes;
+    @Autowired ModuleService modules;
 
     AppUser user;
 
     @BeforeEach
     void setUp() {
         user = users.save(new AppUser("tg-test-user", "{noop}x"));
+        enableTelegram(user);
     }
 
     private String freshCode() {
         return service.createCode(user).code();
+    }
+
+    private void enableTelegram(AppUser target) {
+        modules.update(target, new ModuleSettingsUpdateRequest(Map.of("telegram", true)));
     }
 
     @Test
@@ -64,7 +73,7 @@ class TelegramLinkServiceTest {
         // Код с истёкшим сроком кладём напрямую в репозиторий —
         // машину времени в тестах заменяет прямая запись прошлого.
         TelegramLinkCode expired = codes.save(
-                new TelegramLinkCode(user, "DEADBEEF", Instant.now().minusSeconds(60)));
+                new TelegramLinkCode(user, "DL-000001", Instant.now().minusSeconds(60)));
 
         ApiException ex = assertThrows(ApiException.class,
                 () -> service.linkByCode(expired.getCode(), 111L, 222L, null, null, null));
@@ -84,6 +93,7 @@ class TelegramLinkServiceTest {
 
         // Второй пользователь пытается привязать ТОТ ЖЕ чат своим кодом
         AppUser other = users.save(new AppUser("tg-other-user", "{noop}x"));
+        enableTelegram(other);
         String otherCode = service.createCode(other).code();
 
         ApiException ex = assertThrows(ApiException.class,

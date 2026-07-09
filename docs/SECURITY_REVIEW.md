@@ -1,6 +1,6 @@
 # Security review
 
-Status: v26.6.4.
+Status: v26.6.5.
 
 DutyLog is in release stabilization. This review is not a feature roadmap; it is a guardrail document for keeping the existing product safe enough to publish and operate.
 

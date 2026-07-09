@@ -206,16 +206,17 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/UX_RELEASE_POLISH.md`](docs/UX_RELEASE_POLISH.md) — UX-полировка релизной стабилизации.
 - [`docs/UX_COMPACT_HOTFIX.md`](docs/UX_COMPACT_HOTFIX.md) — компактная правка экрана модулей и панели дня после UX-polish.
 - [`docs/UX_CONSOLE_HOTFIX.md`](docs/UX_CONSOLE_HOTFIX.md) — скрытие технических деталей от обычных пользователей и чистка console-noise.
+- [`docs/TEST_CONFIG_HOTFIX.md`](docs/TEST_CONFIG_HOTFIX.md) — правка `.properties`, тестовых ожиданий и cascade-зависимостей модулей.
 
 ## Текущая версия
 
-`v26.6.4 — console and module details UX hotfix`
+`v26.6.5 — properties and tests hotfix`
 
 DutyLog находится в фазе стабилизации перед релизом: новые крупные фичи заморожены, фокус — безопасность, тесты, CI, конфиги, миграции, smoke-test, документация, читаемость, предсказуемый деплой и ощущение готового продукта.
 
 Главные изменения текущего UX-релиза:
 
-- единая версия `26.6.4` во frontend, backend, service worker, smoke-test и документации;
+- единая версия `26.6.5` во frontend, backend, service worker, smoke-test и документации;
 - добавлен аккуратный boot-state при старте web/PWA;
 - добавлены loading-состояния для календаря, списка задач и FIFO-журнала переработок;
 - пустые состояния задач, важных дат и журнала переработок стали понятными и action-oriented;
@@ -226,6 +227,13 @@ DutyLog находится в фазе стабилизации перед ре�
 - технические контрактные детали модулей показываются только администраторам;
 - убраны лишние admin-запросы на старте, чтобы обычные пользователи не получали 403 в консоли;
 - исправлена ошибка настроек времени из-за shadowing функции перевода `t()`.
+
+Test/config stabilization in v26.6.5:
+
+- `.properties` comments are ASCII English to avoid broken Cyrillic text in misconfigured editors;
+- test config explicitly disables Open Session in View;
+- Telegram, CSRF and module-dependency regression tests were aligned with the current module/security behavior;
+- disabling a module now cascades to dependent modules.
 
 Предыдущий security-релиз:
 

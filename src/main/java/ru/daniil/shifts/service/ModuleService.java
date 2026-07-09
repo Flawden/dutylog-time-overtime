@@ -16,6 +16,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.HashSet;
 
 /**
  * Registry and per-user switches for DutyLog modules.
@@ -76,24 +77,33 @@ public class ModuleService {
         }
 
         // Locked/core modules are always enabled; admin is visible only for admins.
-        for (ModuleContract def : DEFINITIONS) {
-            if (def.locked()) values.put(def.key(), !ADMIN.equals(def.key()) || user.isAdmin());
-        }
+        enforceLockedModules(user, values);
 
-        // Enabling a module enables its dependencies. This keeps the UI coherent.
-        boolean changed;
-        do {
-            changed = false;
-            for (ModuleContract def : DEFINITIONS) {
-                if (!values.getOrDefault(def.key(), def.defaultEnabled())) continue;
-                for (String dep : def.dependencies()) {
-                    if (!values.getOrDefault(dep, false)) {
-                        values.put(dep, true);
-                        changed = true;
-                    }
-                }
+        // Directly enabling a module also enables its dependency chain.
+        // Directly disabling a dependency wins: dependent modules are disabled below.
+        Set<String> explicitlyDisabled = new HashSet<>();
+        for (Map.Entry<String, Boolean> entry : requested.entrySet()) {
+            String key = normalizeKey(entry.getKey());
+            ModuleContract def = definition(key);
+            if (def == null || def.locked()) continue;
+            if (Boolean.FALSE.equals(entry.getValue())) {
+                explicitlyDisabled.add(key);
             }
-        } while (changed);
+        }
+        for (Map.Entry<String, Boolean> entry : requested.entrySet()) {
+            String key = normalizeKey(entry.getKey());
+            ModuleContract def = definition(key);
+            if (def == null || def.locked()) continue;
+            if (Boolean.TRUE.equals(entry.getValue())) {
+                enableDependencies(key, values, explicitlyDisabled);
+            }
+        }
+        enforceLockedModules(user, values);
+
+        // Disabling a module must also disable modules that depend on it.
+        // Example: Overtime off => Scenarios off, so mobile guards and UI stay honest.
+        cascadeDisableBrokenDependencies(values);
+        enforceLockedModules(user, values);
 
         persist(user, values);
         return list(user);
@@ -124,11 +134,56 @@ public class ModuleService {
             if (def == null || def.locked()) continue;
             values.put(key, setting.isEnabled());
         }
-        if (!user.isAdmin()) values.put(ADMIN, false);
-        for (ModuleContract def : DEFINITIONS) {
-            if (def.locked()) values.put(def.key(), !ADMIN.equals(def.key()) || user.isAdmin());
-        }
+        enforceLockedModules(user, values);
+        cascadeDisableBrokenDependencies(values);
+        enforceLockedModules(user, values);
         return values;
+    }
+
+    private void enforceLockedModules(AppUser user, Map<String, Boolean> values) {
+        for (ModuleContract def : DEFINITIONS) {
+            if (def.locked()) {
+                values.put(def.key(), !ADMIN.equals(def.key()) || user.isAdmin());
+            }
+        }
+        if (!user.isAdmin()) {
+            values.put(ADMIN, false);
+        }
+    }
+
+    private void enableDependencies(String key, Map<String, Boolean> values, Set<String> explicitlyDisabled) {
+        ModuleContract def = definition(key);
+        if (def == null) {
+            return;
+        }
+        for (String dep : def.dependencies()) {
+            if (explicitlyDisabled.contains(dep)) {
+                continue;
+            }
+            if (!values.getOrDefault(dep, false)) {
+                values.put(dep, true);
+            }
+            enableDependencies(dep, values, explicitlyDisabled);
+        }
+    }
+
+    private void cascadeDisableBrokenDependencies(Map<String, Boolean> values) {
+        boolean changed;
+        do {
+            changed = false;
+            for (ModuleContract def : DEFINITIONS) {
+                if (def.locked() || !values.getOrDefault(def.key(), false)) {
+                    continue;
+                }
+                for (String dep : def.dependencies()) {
+                    if (!values.getOrDefault(dep, false)) {
+                        values.put(def.key(), false);
+                        changed = true;
+                        break;
+                    }
+                }
+            }
+        } while (changed);
     }
 
     private void persist(AppUser user, Map<String, Boolean> values) {
