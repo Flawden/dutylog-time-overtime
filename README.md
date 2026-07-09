@@ -210,13 +210,13 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v26.6.5 — properties and tests hotfix`
+`v26.6.6 — CI permission hotfix`
 
 DutyLog находится в фазе стабилизации перед релизом: новые крупные фичи заморожены, фокус — безопасность, тесты, CI, конфиги, миграции, smoke-test, документация, читаемость, предсказуемый деплой и ощущение готового продукта.
 
 Главные изменения текущего UX-релиза:
 
-- единая версия `26.6.5` во frontend, backend, service worker, smoke-test и документации;
+- единая версия `26.6.6` во frontend, backend, service worker, smoke-test и документации;
 - добавлен аккуратный boot-state при старте web/PWA;
 - добавлены loading-состояния для календаря, списка задач и FIFO-журнала переработок;
 - пустые состояния задач, важных дат и журнала переработок стали понятными и action-oriented;
@@ -228,7 +228,7 @@ DutyLog находится в фазе стабилизации перед ре�
 - убраны лишние admin-запросы на старте, чтобы обычные пользователи не получали 403 в консоли;
 - исправлена ошибка настроек времени из-за shadowing функции перевода `t()`.
 
-Test/config stabilization in v26.6.5:
+Test/config stabilization in v26.6.6:
 
 - `.properties` comments are ASCII English to avoid broken Cyrillic text in misconfigured editors;
 - test config explicitly disables Open Session in View;
@@ -294,3 +294,9 @@ DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 ## Module contracts
 
 Since v25.3 the module registry has explicit developer contracts. See `docs/MODULE_CONTRACTS.md`.
+
+
+CI permission stabilization in v26.6.6:
+
+- GitHub Actions runs release checks through `bash ./deploy/scripts/release-check.sh`.
+- CI no longer fails when executable bits are lost on Windows/archive checkouts.

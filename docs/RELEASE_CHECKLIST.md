@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v26.6.5.
+Status: v26.6.6.
 
 This checklist is used before creating an archive, Git tag or VPS deployment. DutyLog is currently a web/PWA inside a Spring Boot monolith. There is no native mobile app in this release.
 
@@ -80,7 +80,7 @@ Check in browser:
 - module settings open;
 - admin sees `Система`;
 - regular user does not see `Система`;
-- server version is `26.6.5`;
+- server version is `26.6.6`;
 - registration status is expected;
 - Telegram status matches `.env`;
 - language switch still works;
@@ -120,5 +120,5 @@ On phone, repeat a minimal PWA scenario: open online → install/open as PWA →
 ```bash
 git add -A
 git commit -m "chore: review security hardening"
-git tag -a v26.6.5 -m "v26.6.5 — properties and tests hotfix"
+git tag -a v26.6.6 -m "v26.6.6 — properties and tests hotfix"
 ```

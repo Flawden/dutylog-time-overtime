@@ -1,3 +1,9 @@
+## v26.6.6 — CI permission hotfix
+
+- Fixed GitHub Actions release gate startup on checkouts where shell scripts lose executable bit.
+- CI now runs `bash ./deploy/scripts/release-check.sh` instead of executing the script directly.
+- Added `docs/CI_PERMISSION_HOTFIX.md` and release-check guardrails for the CI invocation.
+
 ## v26.6.5 — properties and tests hotfix
 
 - Replaced Cyrillic comments in `.properties` files with ASCII English comments to avoid mojibake in editors/terminals with the wrong file encoding.

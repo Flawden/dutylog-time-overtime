@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.5}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.6}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -302,8 +302,10 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "v26.6.5"
-contains docs/TEST_CONFIG_HOTFIX.md "v26.6.5"
+contains docs/SECURITY_REVIEW.md "v26.6.6"
+contains docs/TEST_CONFIG_HOTFIX.md "v26.6.6"
+contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
+contains docs/CI_PERMISSION_HOTFIX.md "v26.6.6"
 
 echo
 

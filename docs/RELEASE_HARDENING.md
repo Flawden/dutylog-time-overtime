@@ -1,6 +1,6 @@
 # Release hardening
 
-Status: v26.6.5.
+Status: v26.6.6.
 
 This document is the stabilization checklist for DutyLog before a public or semi-public VPS launch. The current goal is not to add features, but to make the existing product predictable, testable and recoverable.
 

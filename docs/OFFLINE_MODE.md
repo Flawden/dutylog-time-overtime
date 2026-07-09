@@ -83,7 +83,7 @@ Emergency export содержит:
 {
   "exportedAt": "...",
   "app": "DutyLog",
-  "version": "26.6.5",
+  "version": "26.6.6",
   "snapshot": {},
   "queue": [],
   "failed": [],
