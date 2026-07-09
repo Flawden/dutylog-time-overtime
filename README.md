@@ -201,6 +201,10 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/PRODUCT_COPY.md`](docs/PRODUCT_COPY.md) — стиль пользовательских текстов.
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
+- [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.0-rc1 и как принимать RC.
+- [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) — короткая пользовательская инструкция.
+- [`docs/PRODUCTION_DEPLOY.md`](docs/PRODUCTION_DEPLOY.md) — пошаговый production deployment.
+- [`docs/BACKUP_RESTORE.md`](docs/BACKUP_RESTORE.md) — резервное копирование и восстановление.
 - [`docs/RELEASE_HARDENING.md`](docs/RELEASE_HARDENING.md) — фаза стабилизации, release gate и правила freeze.
 - [`docs/CODE_CLEANUP.md`](docs/CODE_CLEANUP.md) — правила безопасной чистки кода во время стабилизации.
 - [`docs/UX_RELEASE_POLISH.md`](docs/UX_RELEASE_POLISH.md) — UX-полировка релизной стабилизации.
@@ -214,94 +218,28 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v26.6.12 — notifications alignment and admin navigation hotfix`
+`v27.0-rc1 — Release Candidate`
 
-DutyLog находится в фазе стабилизации перед релизом: новые крупные фичи заморожены, фокус — безопасность, тесты, CI, конфиги, миграции, smoke-test, документация, читаемость, предсказуемый деплой и ощущение готового продукта.
+DutyLog находится в release-candidate фазе. Новые крупные функции заморожены. Разрешены только bugfix, security fix, документация, тесты, CI и правки, без которых релиз нельзя считать стабильным.
 
-Главные изменения текущего UX-релиза:
+Что вошло в RC:
 
-- единая версия `26.6.12` во frontend, backend, service worker, smoke-test и документации;
+- версия `27.0-rc1` синхронизирована во frontend, backend, service worker, smoke-test, README и docs;
+- v26.6.12 зафиксирована как UX-polished baseline;
+- CI запускает `mvn test` и release static checks;
+- release-check проверяет split JS, service worker, версии, production safety, security guardrails и ключевые UX/i18n фиксы;
+- добавлены финальные документы для релиза: `RELEASE_CANDIDATE`, `USER_GUIDE`, `PRODUCTION_DEPLOY`, `BACKUP_RESTORE`;
+- production запуск остаётся через Spring Boot монолит + PostgreSQL + Caddy/nginx reverse proxy;
+- offline/PWA, modules, onboarding, i18n, themes, admin/roles и security hardening сохранены без расширения scope.
 
-Notifications/admin navigation hotfix in v26.6.12:
+Критерии принятия RC:
 
-- notification status chips stay pinned to the right and no longer float through the middle of the card;
-- active notification settings use clearer active-state styling;
-- administrator view now has settings-style side navigation for Users, Registration and Diagnostics.
+- локально или в CI зелёный `mvn test`;
+- зелёный `bash deploy/scripts/release-check.sh`;
+- на VPS проходит `./deploy/scripts/smoke-test.sh https://domain`;
+- ручной smoke по календарю, модулям, языку, offline, админке и backup/restore не выявляет блокеров.
 
-UI alignment/test hotfix in v26.6.11:
-
-- fixed `RegistrationTest` compilation after adding `languagePreference` to registration;
-- settings header controls now stay pinned to the right across RU/EN;
-- Java 25 Tomcat Native warning is documented as non-fatal for local development.
-
-Login language hotfix in v26.6.10:
-
-- language selected on `login.html` is included in registration payload;
-- new users keep EN/RU choice during first onboarding;
-- existing registration clients remain compatible.
-
-English/i18n polish in v26.6.12:
-
-- fixed Russian leftovers in English UI for calendar today/total labels, settings time box, autosave and notification browser chips;
-- built-in shift names are translated for display while custom names remain untouched;
-- language switching re-renders dynamic settings panels to avoid stale copy.
-- добавлен аккуратный boot-state при старте web/PWA;
-- добавлены loading-состояния для календаря, списка задач и FIFO-журнала переработок;
-- пустые состояния задач, важных дат и журнала переработок стали понятными и action-oriented;
-- настройки модулей теперь явно показывают включённые, выключенные и базовые модули;
-- для выключенных модулей добавлен пользовательский текст: данные не удаляются, модуль можно включить обратно;
-- финальная CSS-полировка под мобильные экраны и reduced motion.
-- настройки модулей компактнее: бейджи не налезают на текст, выключенные модули не растягивают карточки;
-- технические контрактные детали модулей показываются только администраторам;
-- убраны лишние admin-запросы на старте, чтобы обычные пользователи не получали 403 в консоли;
-- исправлена ошибка настроек времени из-за shadowing функции перевода `t()`;
-- сегодняшний день теперь отличается от выбранного дня: выбранный день — сильная рамка, сегодня — мягкая метка/точка;
-- подсказку `Скрытые блоки` в панели дня можно закрыть, и она больше не появляется в этом браузере;
-- onboarding-набор `Работа + переработки` переименован в `Стандарт`;
-- выбранный onboarding-набор теперь подсвечивается динамически;
-- сегодняшний день в календаре выделяется заметнее отдельной подсветкой ячейки.
-
-Test/config stabilization in v26.6.12:
-
-- `.properties` comments are ASCII English to avoid broken Cyrillic text in misconfigured editors;
-- test config explicitly disables Open Session in View;
-- Telegram, CSRF and module-dependency regression tests were aligned with the current module/security behavior;
-- disabling a module now cascades to dependent modules.
-
-Предыдущий security-релиз:
-
-`v26.5 — security review`
-
-Security hardening: application-level `SecurityHeadersFilter`, production session cookie hardening, закрытие module-boundary gap в `/api/mobile/sync`, guard для Telegram pending link code, security tests и release-check guardrails.
-
-Предыдущий cleanup-релиз:
-
-`v26.4 — code cleanup`
-
-Фронтенд-разделение стало чище: точный порядок split JS-файлов, меньше legacy-ссылок на старый `app.js`, усиленный release-check и отдельные правила безопасной чистки кода во время freeze.
-
-Предыдущий крупный технический релиз:
-
-`v26.3 — release hardening`
-
-Добавлен release gate, усилены prod checks, CI запускает `mvn test` и статические проверки, а системная диагностика берёт версию из `info.app.version`.
-
-`v26.2 — tests, CI and frontend split`
-
-Frontend был разделён на несколько файлов `static/js/*.js`, добавлены GitHub Actions CI и тесты. Это подготовило проект к дальнейшей стабилизации без роста хаоса в одном огромном `app.js`.
-
-`v26.0 — first-run onboarding`
-
-Новый пользователь сначала проходит спокойную настройку модулей: минимум, работа + переработки или полный набор. Состояние хранится в профиле, существующих пользователей миграция не трогает, а отключение модулей не удаляет данные.
-
-`v25.0 — user modules`
-
-DutyLog получил первый слой модульного монолита: пользователь может включать и выключать Notes, Tasks, Overtime, Important dates, Notifications, Telegram и Scenarios в настройках. Отключение модуля скрывает UI и защищает API, но не удаляет данные.
-
-`v24.0 — language switch / i18n`
-
-Добавлена смена языка интерфейса: русский и английский. Настройка хранится в профиле пользователя и имеет локальный fallback для страницы входа и PWA-оболочки.
-
+Следующий шаг после спокойной проверки: `v27.0` stable или `v27.0-rc2`, если найдутся блокеры.
 
 ## Служебный профиль администратора
 
@@ -329,7 +267,7 @@ DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 Since v25.3 the module registry has explicit developer contracts. See `docs/MODULE_CONTRACTS.md`.
 
 
-CI permission stabilization in v26.6.12:
+CI permission stabilization in v27.0-rc1:
 
 - GitHub Actions runs release checks through `bash ./deploy/scripts/release-check.sh`.
 - CI no longer fails when executable bits are lost on Windows/archive checkouts.

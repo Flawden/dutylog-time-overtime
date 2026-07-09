@@ -1,6 +1,6 @@
 # First-run onboarding
 
-Status: v26.6.12.
+Status: v27.0-rc1.
 
 DutyLog can be feature-rich, so new users should not land directly in the full interface.
 The first-run onboarding lets a user choose the modules they need right now.

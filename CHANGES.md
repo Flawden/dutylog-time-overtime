@@ -1,3 +1,11 @@
+## v27.0-rc1 — Release Candidate
+
+- Froze v26.6.12 as the UX-polished release-candidate baseline.
+- Bumped app, service worker, static cache-busting, smoke-test and documentation version to `27.0-rc1`.
+- Added release-candidate documentation: production deploy guide, backup/restore guide, user guide and RC checklist.
+- Kept feature freeze: no new product features, only release documentation and final static guardrails.
+- CI and local release gate are expected to pass before deploying this candidate.
+
 ## v26.6.12 — notifications alignment and admin navigation hotfix
 
 - Pinned notification status chips to the right side of the notifications settings header so RU/EN labels no longer drift into the middle of the card.
