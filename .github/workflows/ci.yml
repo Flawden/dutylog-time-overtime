@@ -1,0 +1,48 @@
+# CI: на каждый push и pull request собирает проект и гоняет все тесты.
+# Смысл: тесты, которые запускает робот, невозможно "забыть запустить".
+# Красный крестик на коммите = что-то сломано, чинить до продолжения работы.
+#
+# Работает на GitHub из коробки. Для Gitea/GitLab синтаксис почти тот же —
+# см. их документацию по actions/ci.
+
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven   # кэш зависимостей: первый прогон ~минуты, дальше секунды
+
+      - name: Build & test
+        run: mvn -B --no-transfer-progress test
+
+      # Статические проверки фронтенда — те же, что в RELEASE_CHECKLIST.md
+      - name: Frontend static checks
+        run: |
+          for f in src/main/resources/static/js/*.js; do node --check "$f"; done
+          node --check src/main/resources/static/service-worker.js
+          python3 -m json.tool src/main/resources/static/manifest.json > /dev/null
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          html = Path('src/main/resources/static/index.html').read_text(encoding='utf-8')
+          js = '\n'.join(p.read_text(encoding='utf-8') for p in sorted(Path('src/main/resources/static/js').glob('*.js')))
+          ids = set(re.findall(r'\bid=["\']([^"\']+)["\']', html)) | set(re.findall(r'id=\\?"([\w-]+)\\?"', js))
+          refs = set(re.findall(r'\$\(["\']([^"\']+)["\']\)', js)) | set(re.findall(r'getElementById\(["\']([^"\']+)["\']\)', js))
+          dynamic = {'headerAvatar', 'bdayBanner'}
+          missing = sorted(refs - ids - dynamic)
+          assert not missing, f"JS ссылается на несуществующие id: {missing}"
+          print("id crosscheck OK")
+          PY
