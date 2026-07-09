@@ -7,7 +7,6 @@
  */
 
 /* ─── Markdown (мини-парсер) ────────────────────────────────── */
-function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
 function inlineMd(s){
   return s
     .replace(/`([^`]+)`/g, '<code class="mdc">$1</code>')

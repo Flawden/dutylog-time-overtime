@@ -1,4 +1,4 @@
-const CACHE_NAME = "dutylog-shell-v26.6.1"; // bump: сбрасывает старый кэш при активации
+const CACHE_NAME = "dutylog-shell-v26.6.2"; // bump: сбрасывает старый кэш при активации
 
 const SHELL = [
   "/manifest.json",
@@ -23,6 +23,13 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const url = new URL(event.request.url);
 
+  // Браузерные расширения и внешние URL нельзя класть в Cache API.
+  // Иначе service worker может шуметь ошибками вида
+  // "Request scheme 'chrome-extension' is unsupported".
+  if (url.origin !== self.location.origin || !["http:", "https:"].includes(url.protocol)) {
+    return;
+  }
+
   // API и авторизацию не трогаем вообще.
   if (url.pathname.startsWith("/api/") || url.pathname === "/perform_login" || url.pathname === "/logout") {
     return;
@@ -35,8 +42,10 @@ self.addEventListener("fetch", event => {
     event.respondWith(
       fetch(event.request)
         .then(res => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(event.request, copy));
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(event.request, copy)).catch(() => {});
+          }
           return res;
         })
         .catch(() => caches.match(event.request))
@@ -50,8 +59,10 @@ self.addEventListener("fetch", event => {
     event.respondWith(
       fetch(event.request)
         .then(res => {
-          const copy = res.clone();
-          caches.open(CACHE_NAME).then(c => c.put(event.request, copy));
+          if (res && res.ok) {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then(c => c.put(event.request, copy)).catch(() => {});
+          }
           return res;
         })
         .catch(() => caches.match(event.request))

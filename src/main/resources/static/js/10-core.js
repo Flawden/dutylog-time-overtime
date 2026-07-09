@@ -8,7 +8,20 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "26.6.1"
+// Shared DOM/HTML helpers must be available before any boot-time code runs.
+// Several ordered scripts call these helpers at top level; keep them in 10-core
+// and before applyAppearance(loadLocalAppearance()).
+function $(id){ return document.getElementById(id); }
+function esc(value){
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+const DUTYLOG_VERSION = "26.6.2"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -1195,4 +1208,3 @@ function shiftMetaText(s){
   if (plan) parts.push(`${state.language === "en" ? "norm" : "норма"} ${fmtHours(plan)}ч`);
   return parts.join(" · " );
 }
-const $ = id => document.getElementById(id);

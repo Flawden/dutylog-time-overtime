@@ -1377,7 +1377,7 @@ html[lang="en"] body.offline #telegramBox::before{content:"Telegram integration 
 .onboardingFooter .primary:hover{color:#14171C;filter:brightness(1.04);}
 @media(max-width:640px){.onboardingCard{padding:16px;border-radius:18px;}.onboardingCard h2{font-size:23px;}.onboardingFooter{justify-content:stretch;}.onboardingFooter button{flex:1;}}
 
-/* v26.6.1: UX release polish — boot/loading/empty states */
+/* v26.6.2: UX release polish — boot/loading/empty states */
 .appBoot{position:fixed;inset:0;z-index:1400;display:none;align-items:center;justify-content:center;background:rgba(8,10,14,.68);backdrop-filter:blur(10px);padding:18px;}
 body.appBooting .appBoot{display:flex;}
 .appBootCard{display:flex;align-items:center;gap:14px;width:min(360px,100%);border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:22px;background:linear-gradient(180deg,color-mix(in srgb,var(--panel) 96%,transparent),color-mix(in srgb,var(--panel2) 96%,transparent));box-shadow:0 24px 80px rgba(0,0,0,.45);padding:18px;}

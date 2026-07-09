@@ -1,3 +1,10 @@
+## v26.6.2 — frontend runtime hotfix
+
+- Fixed boot-time helper ordering in split JS: `$` and `esc()` are now defined before `applyAppearance(loadLocalAppearance())`.
+- Fixed the blank calendar/tabs regression caused by `ReferenceError: esc is not defined` and cascading `$ is not defined` errors.
+- Hardened the service worker against unsupported request schemes such as `chrome-extension://` and made runtime cache writes non-fatal.
+- Added release-check guardrails for boot helper order and unsupported service-worker cache writes.
+
 ## v26.6.1 — UX boot hotfix
 
 - Fixed a release UX blocker where the PWA could remain visually stuck on the boot overlay.
@@ -5,15 +12,15 @@
 - Added startup failsafe and error/rejection handlers to unlock the interface if boot fails.
 - Added release-check guardrail against reintroducing initial `appBooting` body state.
 
-# v26.6.1 — UX release polish
+# v26.6 — UX release polish
 
 - Kept feature freeze: no new large product scope.
-- Bumped frontend/backend/service-worker/smoke-test versions to `26.6.1`.
+- Bumped frontend/backend/service-worker/smoke-test versions to `26.6`.
 - Added a visible boot/loading state while the PWA prepares profile, modules and the calendar.
 - Added calendar, task board and overtime ledger loading skeletons so navigation does not feel frozen on slow links.
 - Reworked empty states for tasks, important days and the overtime ledger into compact explanatory cards.
 - Polished module settings with enabled/disabled/basic counters and explicit disabled-module copy explaining that data is preserved.
-- Added `docs/UX_RELEASE_POLISH.md` and updated release checklist commands for the v26.6.1 tag.
+- Added `docs/UX_RELEASE_POLISH.md` and updated release checklist commands for the v26.6 tag.
 
 # v26.5 — Security review
 

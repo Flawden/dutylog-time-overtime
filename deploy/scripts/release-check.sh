@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.1}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-26.6.2}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -136,6 +136,27 @@ PY
 
 python3 - <<'PY'
 from pathlib import Path
+core = Path('src/main/resources/static/js/10-core.js').read_text(encoding='utf-8')
+boot = core.find('applyAppearance(loadLocalAppearance());')
+helper_dom = core.find('function $(id)')
+helper_esc = core.find('function esc(')
+late_const = core.find('const $ =')
+if boot == -1:
+    raise SystemExit('boot appearance call not found')
+if helper_dom == -1 or helper_dom > boot:
+    raise SystemExit('shared $ helper must be defined before boot-time appearance apply')
+if helper_esc == -1 or helper_esc > boot:
+    raise SystemExit('shared esc helper must be defined before boot-time appearance apply')
+if late_const != -1 and late_const > boot:
+    raise SystemExit('late const $ creates temporal dead zone for top-level boot code')
+print('OK:    boot-time shared helpers are defined before use')
+PY
+contains src/main/resources/static/service-worker.js "url.origin !== self.location.origin"
+contains src/main/resources/static/service-worker.js "includes(url.protocol)"
+contains src/main/resources/static/service-worker.js "catch(() => {})"
+
+python3 - <<'PY'
+from pathlib import Path
 import re
 html = Path('src/main/resources/static/index.html').read_text(encoding='utf-8')
 js = '\n'.join(p.read_text(encoding='utf-8') for p in sorted(Path('src/main/resources/static/js').glob('*.js')))
@@ -240,7 +261,7 @@ contains src/main/resources/application-prod.properties "server.servlet.session.
 contains src/main/java/ru/daniil/shifts/web/MobileController.java "requireEnabledModulesForMobileDayChange"
 contains src/main/java/ru/daniil/shifts/telegram/TelegramLinkService.java "moduleService.requireEnabled(owner, ModuleService.TELEGRAM)"
 contains src/test/java/ru/daniil/shifts/web/ModuleSecurityTest.java "mobileSyncCannotWriteNotesWhenNotesModuleDisabled"
-contains docs/SECURITY_REVIEW.md "v26.6.1"
+contains docs/SECURITY_REVIEW.md "v26.6.2"
 
 echo
 
