@@ -1376,3 +1376,34 @@ html[lang="en"] body.offline #telegramBox::before{content:"Telegram integration 
 .onboardingFooter .primary{background:var(--accent);border-color:var(--accent);color:#14171C;}
 .onboardingFooter .primary:hover{color:#14171C;filter:brightness(1.04);}
 @media(max-width:640px){.onboardingCard{padding:16px;border-radius:18px;}.onboardingCard h2{font-size:23px;}.onboardingFooter{justify-content:stretch;}.onboardingFooter button{flex:1;}}
+
+/* v26.6: UX release polish — boot/loading/empty states */
+.appBoot{position:fixed;inset:0;z-index:1400;display:none;align-items:center;justify-content:center;background:rgba(8,10,14,.68);backdrop-filter:blur(10px);padding:18px;}
+body.appBooting .appBoot{display:flex;}
+.appBootCard{display:flex;align-items:center;gap:14px;width:min(360px,100%);border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:22px;background:linear-gradient(180deg,color-mix(in srgb,var(--panel) 96%,transparent),color-mix(in srgb,var(--panel2) 96%,transparent));box-shadow:0 24px 80px rgba(0,0,0,.45);padding:18px;}
+.appBootLogo{display:flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:16px;background:var(--accent);color:#14171C;font-weight:900;font-family:ui-monospace,monospace;box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 12%,transparent);}
+.appBootCard b{display:block;font-size:18px;margin-bottom:3px;}
+.appBootCard span{display:block;color:var(--mut);font-size:13px;line-height:1.4;}
+.emptyState{display:flex;align-items:flex-start;gap:12px;border:1px dashed color-mix(in srgb,var(--accent) 28%,var(--line));border-radius:16px;background:color-mix(in srgb,var(--accent) 6%,rgba(255,255,255,.025));padding:14px;color:var(--mut);}
+.emptyState.compact{padding:10px 12px;border-radius:13px;margin-top:7px;}
+.emptyState.board{padding:18px;min-height:96px;align-items:center;}
+.emptyIcon{flex:none;display:flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:12px;background:color-mix(in srgb,var(--accent) 16%,rgba(255,255,255,.03));color:var(--accent);font-weight:900;font-family:ui-monospace,monospace;}
+.emptyBody{display:flex;flex-direction:column;gap:4px;min-width:0;}
+.emptyBody b{color:var(--text);font-size:13.5px;line-height:1.25;}
+.emptyBody span{color:var(--mut);font-size:12px;line-height:1.45;}
+.emptyBody button{align-self:flex-start;margin-top:4px;border:1px solid var(--line);border-radius:999px;background:transparent;color:var(--text);padding:6px 10px;cursor:pointer;}
+.emptyTableCell{padding:14px!important;background:transparent!important;}
+.emptyTableCell .emptyState,.emptyTableCell .loadingState{margin:0;}
+.loadingState{display:grid;gap:8px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.025);padding:14px;color:var(--mut);}
+.loadingState span{font-size:12px;font-family:ui-monospace,monospace;color:var(--dim);}
+.loadingState i,.calendarSkeleton span,.calendarSkeleton i,.calendarSkeleton em{display:block;border-radius:999px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.10),rgba(255,255,255,.04));background-size:220% 100%;animation:dutylogShimmer 1.25s ease-in-out infinite;}
+.loadingState i{height:12px;}
+.loadingState i:nth-child(3){width:74%;}.loadingState i:nth-child(4){width:52%;}
+.calendarSkeleton{cursor:default;pointer-events:none;justify-content:flex-start;gap:8px;}
+.calendarSkeleton span{width:24px;height:13px;}
+.calendarSkeleton i{width:70%;height:11px;margin-top:auto;}
+.calendarSkeleton em{width:42%;height:10px;}
+@keyframes dutylogShimmer{0%{background-position:120% 0}100%{background-position:-120% 0}}
+.moduleDisabledHint{color:var(--danger)!important;border-left:3px solid color-mix(in srgb,var(--danger) 55%,var(--line));padding-left:8px;}
+@media (prefers-reduced-motion: reduce){.loadingState i,.calendarSkeleton span,.calendarSkeleton i,.calendarSkeleton em{animation:none;}}
+@media (max-width:560px){.emptyState{gap:10px;padding:12px}.emptyIcon{width:30px;height:30px;border-radius:10px}.emptyState.board{min-height:84px}.appBootCard{border-radius:18px;padding:16px}}

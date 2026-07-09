@@ -737,6 +737,19 @@ function renderLedgerTable(){
   tbody.innerHTML = "";
   syncLedgerFilterInputs();
 
+  if (state.ui?.loadingLedger) {
+    if (statsEl) statsEl.innerHTML = "";
+    $("ledgerPager").innerHTML = "";
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 8;
+    td.className = "emptyTableCell";
+    td.innerHTML = `<div class="loadingState" role="status" aria-live="polite"><span>${htmlSafe(t("Загружаю переработки…"))}</span><i></i><i></i><i></i></div>`;
+    tr.appendChild(td);
+    tbody.appendChild(tr);
+    return;
+  }
+
   const page = { ...(state.ledgerPage || {}), items: (state.ledgerPage?.items || []) };
   const allCredits = acc.credits || [];
   const credits = page.items || [];
@@ -761,8 +774,13 @@ function renderLedgerTable(){
     const tr = document.createElement("tr");
     const td = document.createElement("td");
     td.colSpan = 8;
-    td.className = "small";
-    td.textContent = "Начислений переработки пока нет. Новые записи добавляются из панели выбранного дня и сохраняются до полного списания.";
+    td.className = "emptyTableCell";
+    td.innerHTML = emptyStateHtml({
+      icon:"+",
+      title:"Данных пока нет",
+      text:"Добавь запись из панели выбранного дня в календаре.",
+      variant:"board"
+    });
     tr.appendChild(td);
     tbody.appendChild(tr);
     return;
@@ -772,8 +790,13 @@ function renderLedgerTable(){
     const tr = document.createElement("tr");
     const td = document.createElement("td");
     td.colSpan = 8;
-    td.className = "small";
-    td.textContent = "По текущим фильтрам записей нет. Сбрось фильтры или выбери другой период.";
+    td.className = "emptyTableCell";
+    td.innerHTML = emptyStateHtml({
+      icon:"⌕",
+      title:"Ничего не найдено",
+      text:"Попробуй сбросить фильтры или выбрать другой период.",
+      variant:"board"
+    });
     tr.appendChild(td);
     tbody.appendChild(tr);
     return;
@@ -823,6 +846,8 @@ async function loadLedgerPage(silent = true){
     return;
   }
   try {
+    state.ui.loadingLedger = true;
+    if (!silent) renderLedgerTable();
     const f = state.ledgerFilters || {};
     const page = state.ledgerPage || { page:0, size:50 };
     const query = {
@@ -847,6 +872,9 @@ async function loadLedgerPage(silent = true){
   } catch (err) {
     console.error(err);
     if (!silent) setSave("err", err.message);
+  } finally {
+    state.ui.loadingLedger = false;
+    renderLedgerTable();
   }
 }
 function resetLedgerPage(){

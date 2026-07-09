@@ -203,22 +203,29 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/RELEASE_HARDENING.md`](docs/RELEASE_HARDENING.md) — фаза стабилизации, release gate и правила freeze.
 - [`docs/CODE_CLEANUP.md`](docs/CODE_CLEANUP.md) — правила безопасной чистки кода во время стабилизации.
+- [`docs/UX_RELEASE_POLISH.md`](docs/UX_RELEASE_POLISH.md) — UX-полировка релизной стабилизации.
 
 ## Текущая версия
 
+`v26.6 — UX release polish`
+
+DutyLog находится в фазе стабилизации перед релизом: новые крупные фичи заморожены, фокус — безопасность, тесты, CI, конфиги, миграции, smoke-test, документация, читаемость, предсказуемый деплой и ощущение готового продукта.
+
+Главные изменения текущего UX-релиза:
+
+- единая версия `26.6` во frontend, backend, service worker, smoke-test и документации;
+- добавлен аккуратный boot-state при старте web/PWA;
+- добавлены loading-состояния для календаря, списка задач и FIFO-журнала переработок;
+- пустые состояния задач, важных дат и журнала переработок стали понятными и action-oriented;
+- настройки модулей теперь явно показывают включённые, выключенные и базовые модули;
+- для выключенных модулей добавлен пользовательский текст: данные не удаляются, модуль можно включить обратно;
+- финальная CSS-полировка под мобильные экраны и reduced motion.
+
+Предыдущий security-релиз:
+
 `v26.5 — security review`
 
-DutyLog находится в фазе стабилизации перед релизом: новые крупные фичи заморожены, фокус — безопасность, тесты, CI, конфиги, миграции, smoke-test, документация, читаемость и предсказуемый деплой.
-
-Главные изменения текущего security-релиза:
-
-- единая версия `26.5` во frontend, backend, service worker, smoke-test и документации;
-- добавлен application-level `SecurityHeadersFilter` с базовыми браузерными security headers;
-- production session cookie теперь явно `HttpOnly`, `Secure`, `SameSite=Lax`;
-- `/api/mobile/sync` теперь уважает выключенные модули Notes и Overtime;
-- Telegram link code больше не привязывает аккаунт, если Telegram-модуль у пользователя уже выключен;
-- добавлены регрессионные security-тесты `ModuleSecurityTest`;
-- `release-check.sh` проверяет security guardrails перед упаковкой релиза.
+Security hardening: application-level `SecurityHeadersFilter`, production session cookie hardening, закрытие module-boundary gap в `/api/mobile/sync`, guard для Telegram pending link code, security tests и release-check guardrails.
 
 Предыдущий cleanup-релиз:
 

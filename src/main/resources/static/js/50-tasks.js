@@ -23,10 +23,12 @@ function renderImportantSettings(){
   const items = (state.importantDays || []).slice().sort((a,b) => String(a.date).localeCompare(String(b.date)) || String(a.title).localeCompare(String(b.title), "ru"));
   box.innerHTML = "";
   if (!items.length) {
-    const empty = document.createElement("div");
-    empty.className = "emptyLine";
-    empty.textContent = t("Важных дат пока нет.");
-    box.appendChild(empty);
+    renderEmptyState(box, {
+      icon:"★",
+      title:"Важных дат пока нет.",
+      text:"Добавь запись из панели выбранного дня в календаре.",
+      variant:"compact"
+    });
     return;
   }
   for (const item of items) {
@@ -62,10 +64,7 @@ function renderImportantDays(){
   const items = importantOf(state.selected);
   box.innerHTML = "";
   if (!items.length) {
-    const empty = document.createElement("div");
-    empty.className = "emptyLine";
-    empty.textContent = t("В этот день важных событий нет.");
-    box.appendChild(empty);
+    renderEmptyState(box, { icon:"★", title:"В этот день важных событий нет.", text:"Отлично. Здесь пока чисто.", variant:"compact" });
     updateAccSummaries();
     return;
   }
@@ -180,18 +179,17 @@ function renderTasks(){
   const items = filteredTasksForSelected();
   box.innerHTML = "";
   if (!all.length) {
-    const empty = document.createElement("div");
-    empty.className = "emptyLine";
-    empty.textContent = t("Задач пока нет. После добавления открытые задачи будут отмечены в календаре.");
-    box.appendChild(empty);
+    renderEmptyState(box, {
+      icon:"✓",
+      title:"Задач пока нет. После добавления открытые задачи будут отмечены в календаре.",
+      text:"Выбери день в календаре и добавь первую задачу.",
+      variant:"compact"
+    });
     updateAccSummaries();
     return;
   }
   if (!items.length) {
-    const empty = document.createElement("div");
-    empty.className = "emptyLine";
-    empty.textContent = t("По фильтрам задач нет.");
-    box.appendChild(empty);
+    renderEmptyState(box, { icon:"⌕", title:"По фильтрам задач нет.", text:"Попробуй сбросить фильтры или выбрать другой период.", variant:"compact" });
     updateAccSummaries();
     return;
   }
@@ -380,6 +378,8 @@ async function loadTaskBoard(silent = true){
     return;
   }
   try {
+    state.ui.loadingTasks = true;
+    if (!silent) renderTaskBoard();
     const f = state.taskBoard.filters;
     const page = state.taskBoard.page || { page:0, size:50 };
     const query = {
@@ -399,6 +399,9 @@ async function loadTaskBoard(silent = true){
   } catch (err) {
     console.error(err);
     if (!silent) setSave("err", err.message);
+  } finally {
+    state.ui.loadingTasks = false;
+    renderTaskBoard();
   }
 }
 function resetTaskBoardPage(){
@@ -430,6 +433,13 @@ function renderTaskBoard(){
   if (!list) return;
   syncTaskBoardFiltersToInputs();
   renderTaskBoardCategoryFilter();
+  if (state.ui?.loadingTasks) {
+    $("taskBoardStatus").textContent = t("загрузка…");
+    $("taskBoardStats").innerHTML = "";
+    $("taskBoardPager").innerHTML = "";
+    renderLoadingState(list, "Загружаю задачи…", 4);
+    return;
+  }
   const items = state.taskBoard.items || [];
   const page = { ...(state.taskBoard.page || {}), items };
   const open = items.filter(t => !t.done).length;
@@ -445,10 +455,12 @@ function renderTaskBoard(){
   renderPager("taskBoardPager", page, nextPage => { state.taskBoard.page.page = nextPage; loadTaskBoard(false); }, nextSize => { state.taskBoard.page.size = nextSize; resetTaskBoardPage(); loadTaskBoard(false); });
   list.innerHTML = "";
   if (!items.length) {
-    const empty = document.createElement("div");
-    empty.className = "emptyLine";
-    empty.textContent = t("По этим фильтрам задач нет.");
-    list.appendChild(empty);
+    renderEmptyState(list, {
+      icon:"✓",
+      title: page.total ? "Ничего не найдено" : "Пустой список",
+      text: page.total ? "Попробуй сбросить фильтры или выбрать другой период." : "Выбери день в календаре и добавь первую задачу.",
+      variant:"board"
+    });
     return;
   }
   for (const task of items) {

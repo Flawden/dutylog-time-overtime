@@ -8,7 +8,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "26.5"
+const DUTYLOG_VERSION = "26.6"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -57,6 +57,8 @@ const state = {
   editingUsageId: null,
   selected: null,                 // ключ даты
   tab: "edit",
+  ui: { booting:true, loadingCalendar:false, loadingTasks:false, loadingLedger:false },
+  toasts: [],
   swColor: "#F5B841",
   offline: {
     online: navigator.onLine,
@@ -644,6 +646,78 @@ function t(value){
   if (state.language === "en") return I18N_EN[s] || translateDynamicEn(s) || s;
   return I18N_RU[s] || s;
 }
+
+function htmlSafe(value){
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+function emptyStateHtml({ icon = "•", title = "", text = "", actionText = "", actionId = "", variant = "" } = {}){
+  const action = actionText && actionId ? `<button type="button" id="${htmlSafe(actionId)}">${htmlSafe(t(actionText))}</button>` : "";
+  return `<div class="emptyState${variant ? " " + htmlSafe(variant) : ""}" role="status">
+    <div class="emptyIcon" aria-hidden="true">${htmlSafe(icon)}</div>
+    <div class="emptyBody">
+      ${title ? `<b>${htmlSafe(t(title))}</b>` : ""}
+      ${text ? `<span>${htmlSafe(t(text))}</span>` : ""}
+      ${action}
+    </div>
+  </div>`;
+}
+function renderEmptyState(target, options = {}){
+  const el = typeof target === "string" ? $(target) : target;
+  if (!el) return;
+  el.innerHTML = emptyStateHtml(options);
+}
+function renderLoadingState(target, text = "загрузка…", rows = 3){
+  const el = typeof target === "string" ? $(target) : target;
+  if (!el) return;
+  el.innerHTML = `<div class="loadingState" role="status" aria-live="polite">
+    <span>${htmlSafe(t(text))}</span>
+    ${Array.from({ length: rows }).map(() => '<i></i>').join("")}
+  </div>`;
+}
+function setAppBooting(booting, text = "загрузка…"){
+  state.ui.booting = !!booting;
+  document.body?.classList.toggle("appBooting", !!booting);
+  const el = $("appBootStatus");
+  if (el) el.textContent = t(text);
+}
+
+Object.assign(I18N_EN, {
+  "Подготавливаем интерфейс…":"Preparing the interface…",
+  "Загружаю модули…":"Loading modules…",
+  "Загружаю календарь…":"Loading calendar…",
+  "Загружаю задачи…":"Loading tasks…",
+  "Загружаю переработки…":"Loading overtime…",
+  "Данных пока нет":"No data yet",
+  "Пустой список":"Empty list",
+  "Ничего не найдено":"Nothing found",
+  "Попробуй сбросить фильтры или выбрать другой период.":"Try clearing filters or choosing another period.",
+  "Добавь запись из панели выбранного дня в календаре.":"Add a record from the selected day panel in Calendar.",
+  "Выбери день в календаре и добавь первую задачу.":"Select a day in Calendar and add your first task.",
+  "Важных дат пока нет.":"No important dates yet.",
+  "В этот день важных событий нет.":"No important events on this day.",
+  "Задач пока нет. После добавления открытые задачи будут отмечены в календаре.":"No tasks yet. After adding, open tasks will be marked in the calendar.",
+  "По фильтрам задач нет.":"No tasks match the filters.",
+  "По этим фильтрам задач нет.":"No tasks match these filters.",
+  "Начислений переработки пока нет. Новые записи добавляются из панели выбранного дня и сохраняются до полного списания.":"No overtime credits yet. New records are added from the selected day panel and remain until fully used.",
+  "По текущим фильтрам записей нет. Сбрось фильтры или выбери другой период.":"No records match the current filters. Clear filters or choose another period.",
+  "Отключено, данные сохранены":"Disabled, data preserved",
+  "Модуль можно включить обратно в любой момент. Данные остаются в базе и локальный оффлайн-снимок очищается только от лишнего отображения.":"You can enable the module again at any time. Data stays in the database; the local offline snapshot is only cleaned for display.",
+  "Включены":"Enabled",
+  "Выключены":"Disabled",
+  "Базовые":"Basic",
+  "скрыто":"hidden",
+  "модуль отключён":"module disabled",
+  "Данные не удаляются":"Data is not deleted",
+  "Отлично. Здесь пока чисто.":"Great. Nothing here yet.",
+  "нет записей":"no records"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+
 function translateTextValue(value){
   if (!value || !String(value).trim()) return value;
   const raw = String(value);

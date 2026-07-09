@@ -62,6 +62,17 @@ function renderCalendar(){
 
   const grid = $("grid");
   grid.innerHTML = "";
+  if (state.ui?.loadingCalendar) {
+    for (let i = 0; i < 35; i++) {
+      const c = document.createElement("div");
+      c.className = "cell calendarSkeleton";
+      c.innerHTML = "<span></span><i></i><em></em>";
+      grid.appendChild(c);
+    }
+    const summary = $("summary");
+    if (summary) summary.innerHTML = `<span class="lbl">${esc(t("загрузка…"))}</span><span style="color:var(--dim)">${esc(t("Загружаю календарь…"))}</span>`;
+    return;
+  }
   const first = new Date(state.y, state.m, 1);
   const offset = (first.getDay() + 6) % 7;
   const count = new Date(state.y, state.m + 1, 0).getDate();

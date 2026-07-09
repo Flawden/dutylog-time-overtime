@@ -1,3 +1,13 @@
+# v26.6 — UX release polish
+
+- Kept feature freeze: no new large product scope.
+- Bumped frontend/backend/service-worker/smoke-test versions to `26.6`.
+- Added a visible boot/loading state while the PWA prepares profile, modules and the calendar.
+- Added calendar, task board and overtime ledger loading skeletons so navigation does not feel frozen on slow links.
+- Reworked empty states for tasks, important days and the overtime ledger into compact explanatory cards.
+- Polished module settings with enabled/disabled/basic counters and explicit disabled-module copy explaining that data is preserved.
+- Added `docs/UX_RELEASE_POLISH.md` and updated release checklist commands for the v26.6 tag.
+
 # v26.5 — Security review
 
 - Kept release stabilization freeze: no new user-facing features.

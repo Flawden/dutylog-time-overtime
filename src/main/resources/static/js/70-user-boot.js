@@ -35,6 +35,8 @@ function applyCalendarBundle(bundle){
 }
 
 async function loadMonth(){
+  state.ui.loadingCalendar = true;
+  renderCalendar();
   try {
     const res = await dataLayer.loadCalendar(state.y, state.m, applyCalendarBundle);
     setSave(res?.fromCache ? "" : "");
@@ -42,6 +44,8 @@ async function loadMonth(){
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
+  } finally {
+    state.ui.loadingCalendar = false;
   }
 }
 
@@ -57,6 +61,7 @@ if ("serviceWorker" in navigator) {
 }
 
 async function init(){
+  setAppBooting(true, "Подготавливаем интерфейс…");
   state.timeSettings = loadTimeSettings();
   renderSwatches();
   initTimeSettingsEvents();
@@ -66,7 +71,9 @@ async function init(){
   try {
     const me = await jfetch("/api/auth/me");
     $("whoami").textContent = me.username;
+    setAppBooting(true, "Загружаю модули…");
     await loadModules();
+    setAppBooting(true, "Загружаю календарь…");
     state.shiftTypes = await api.shiftTypes();
     state.quickScenarios = moduleEnabled("scenarios") ? await api.quickScenarios() : [];
     if (moduleEnabled("important_dates")) await refreshImportantSettings();
@@ -81,9 +88,14 @@ async function init(){
   if (moduleEnabled("tasks")) await loadTaskBoard(true);
   applyModuleVisibility();
   renderCalendar();
+  setAppBooting(false);
   dataLayer.syncQueue();
 }
-init();
+init().catch(err => {
+  console.error(err);
+  setAppBooting(false);
+  setSave("err", err.message || t("ошибка"));
+});
 
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */
 const VIEWS = { calendar:"view-calendar", overtime:"view-overtime", tasks:"view-tasks", settings:"view-settings", admin:"view-admin" };

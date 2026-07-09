@@ -260,10 +260,15 @@ function renderModuleSettings(){
     .sort((a,b) => (Number(a.order || 0) - Number(b.order || 0)) || moduleTitle(a).localeCompare(moduleTitle(b)));
   if (!list.length) { grid.innerHTML = `<div class="settingsHint">${esc(t("модули загружаются…"))}</div>`; return; }
   const enabledCount = list.filter(m => m.enabled).length;
+  const disabledCount = list.filter(m => !m.enabled && !m.locked).length;
+  const baseCount = list.filter(m => m.locked).length;
   const status = $("modulesStatus");
   if (status) {
     status.className = "status statusMetrics";
-    status.innerHTML = `<span class="statusChip statusChipOk"><b>${enabledCount}</b> ${esc(t("включено модулей"))}</span>`;
+    status.innerHTML = `
+      <span class="statusChip statusChipOk"><b>${enabledCount}</b> ${esc(t("Включены"))}</span>
+      <span class="statusChip"><b>${disabledCount}</b> ${esc(t("Выключены"))}</span>
+      <span class="statusChip"><b>${baseCount}</b> ${esc(t("Базовые"))}</span>`;
   }
   grid.innerHTML = "";
   for (const m of list) {
@@ -281,6 +286,7 @@ function renderModuleSettings(){
         <span>${esc(moduleDescription(m))}</span>
         <span class="moduleMeta"><span>${esc(moduleCategoryLabel(m.category))}</span><span>${esc(t("контракт"))}: ${esc(moduleContractCounts(m))}</span></span>
         ${deps.length ? `<small>${esc(t("зависит от"))}: ${esc(deps.join(", "))}</small>` : ""}
+        ${!m.enabled && !m.locked ? `<small class="moduleDisabledHint">${esc(t("Отключено, данные сохранены"))}. ${esc(t("Модуль можно включить обратно в любой момент. Данные остаются в базе и локальный оффлайн-снимок очищается только от лишнего отображения."))}</small>` : ""}
         ${details.length ? `<small class="moduleDevDetails">${esc(details.join(" · "))}</small>` : ""}
       </span>
       <span class="moduleBadge">${esc(m.locked ? t("всегда включён") : (m.enabled ? t("включено") : t("выключено")))}</span>`;
