@@ -1,4 +1,21 @@
-# v26.0 — First-run onboarding
+# v26.3 — Release hardening
+
+- Entered release stabilization: no new user-facing feature scope in this release.
+- Bumped frontend/backend/service-worker/smoke-test versions to `26.3`.
+- Fixed admin system status version source: `/api/admin/status` now uses `info.app.version` instead of hardcoded `26.0`.
+- Added `deploy/scripts/release-check.sh` as a local release gate for version consistency, frontend checks, Flyway migration sequence, shell syntax, Java brace balance and production config safety.
+- CI now runs `mvn test` and then the same release gate.
+- Hardened production preflight: stricter domain validation, distinct secret checks, public app-port check and Caddy security header check.
+- Added HSTS and a basic CSP to Caddy examples.
+- Updated release, production launch and runbook docs for the current split-frontend release.
+
+# v26.2 — Tests, CI and frontend split
+
+- Split the former `app.js` into ordered static JS files under `static/js/`.
+- Added GitHub Actions CI with Maven tests and frontend static checks.
+- Added service and web regression tests for calendar, overtime, Telegram linking, registration, profile password and admin access.
+- Added nginx auth rate-limit example and Caddy warning.
+- Updated smoke-test for split frontend assets.
 
 - Added first-run module onboarding for new users.
 - New users choose a calmer module set before landing in the full interface.
@@ -8,7 +25,7 @@
 - Profile API now exposes and accepts `onboardingCompleted`.
 - Onboarding saves module choices through `PATCH /api/modules`; skipped onboarding keeps current/default module settings.
 - Added `docs/ONBOARDING.md`.
-- Frontend/backend/service-worker versions bumped to `26.0`.
+- Frontend/backend/service-worker versions bumped to `26.2`.
 
 # v25.3 — Developer module contracts
 

@@ -37,7 +37,14 @@ fetch "$BASE_URL/login.html" | grep -qi 'DutyLog'
 echo "   ok"
 
 echo "3) App shell"
-fetch "$BASE_URL/" | grep -qi 'DutyLog'
+APP_HTML="$(fetch "$BASE_URL/")"
+echo "$APP_HTML" | grep -qi 'DutyLog'
+echo "$APP_HTML" | grep -q 'js/10-core.js?v=26.3'
+echo "$APP_HTML" | grep -q 'app.css?v=26.3'
+if echo "$APP_HTML" | grep -q 'app.js?v='; then
+  echo "Unexpected legacy app.js reference in app shell" >&2
+  exit 1
+fi
 echo "   ok"
 
 echo "4) Manifest"
@@ -45,11 +52,14 @@ fetch "$BASE_URL/manifest.json" | grep -qi 'DutyLog'
 echo "   ok"
 
 echo "5) Service worker"
-fetch "$BASE_URL/service-worker.js" | grep -q 'dutylog-shell-v26.0'
+fetch "$BASE_URL/service-worker.js" | grep -q 'dutylog-shell-v26.3'
 echo "   ok"
 
 echo "6) Static assets"
-fetch "$BASE_URL/app.js" | grep -q 'DUTYLOG_VERSION = "26.0"'
+fetch "$BASE_URL/js/10-core.js" | grep -q 'DUTYLOG_VERSION = "26.3"'
+for asset in js/20-data.js js/30-calendar.js js/40-overtime.js js/50-tasks.js js/60-settings.js js/70-user-boot.js; do
+  fetch "$BASE_URL/$asset" >/dev/null
+done
 fetch "$BASE_URL/app.css" | grep -q ':root'
 echo "   ok"
 

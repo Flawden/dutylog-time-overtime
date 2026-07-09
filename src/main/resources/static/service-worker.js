@@ -1,4 +1,4 @@
-const CACHE_NAME = "dutylog-shell-v26.0"; // bump: сбрасывает старый кэш при активации
+const CACHE_NAME = "dutylog-shell-v26.3"; // bump: сбрасывает старый кэш при активации
 
 const SHELL = [
   "/manifest.json",
@@ -45,7 +45,7 @@ self.addEventListener("fetch", event => {
   }
 
   // JS/CSS — network-first: HTML может обновиться раньше shell-кэша.
-  // Если отдать старый app.js к новому index.html, получим фантомные баги.
+  // Если отдать старые JS-файлы к новому index.html, получим фантомные баги.
   if (url.pathname.endsWith(".js") || url.pathname.endsWith(".css")) {
     event.respondWith(
       fetch(event.request)

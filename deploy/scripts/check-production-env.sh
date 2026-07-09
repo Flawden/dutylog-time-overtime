@@ -84,6 +84,32 @@ require_secret() {
   fi
 }
 
+require_distinct() {
+  local left_name="$1"
+  local right_name="$2"
+  local left_value="${!left_name:-}"
+  local right_value="${!right_name:-}"
+  if [[ -n "$left_value" && -n "$right_value" && "$left_value" == "$right_value" ]]; then
+    fail "$left_name and $right_name must be different secrets"
+  else
+    ok "$left_name and $right_name are distinct"
+  fi
+}
+
+require_domain_value() {
+  local name="$1"
+  local value="${!name:-}"
+  if is_placeholder "$value"; then
+    fail "$name is empty or still looks like a placeholder"
+    return
+  fi
+  if [[ "$value" == http://* || "$value" == https://* || "$value" == */* ]]; then
+    fail "$name should be a bare domain, not a URL: $value"
+  else
+    ok "$name looks like a bare domain"
+  fi
+}
+
 require_command() {
   if command -v "$1" >/dev/null 2>&1; then
     ok "command available: $1"
@@ -112,7 +138,7 @@ else
   . "$ENV_FILE"
   set +a
 
-  require_value DUTYLOG_DOMAIN
+  require_domain_value DUTYLOG_DOMAIN
   require_value POSTGRES_DB
   require_value POSTGRES_USER
   require_secret POSTGRES_PASSWORD
@@ -121,6 +147,8 @@ else
   require_secret SPRING_DATASOURCE_PASSWORD
   require_admin_username DUTYLOG_ADMIN_USERNAME
   require_secret DUTYLOG_ADMIN_PASSWORD
+  require_distinct DUTYLOG_ADMIN_PASSWORD POSTGRES_PASSWORD
+  require_distinct DUTYLOG_ADMIN_PASSWORD SPRING_DATASOURCE_PASSWORD
   if [[ "${DUTYLOG_ADMIN_FORCE_PASSWORD_RESET:-false}" == "true" ]]; then
     warn "DUTYLOG_ADMIN_FORCE_PASSWORD_RESET=true; use only for emergency admin password recovery and disable after login"
   else
@@ -156,6 +184,20 @@ if [[ -d "backups" ]]; then
   ok "backup directory exists"
 else
   warn "backup directory does not exist yet; backup script will create it"
+fi
+
+if grep -Eq '^[[:space:]]+-[[:space:]]+"?8080:8080"?' docker-compose.prod.yml; then
+  fail "docker-compose.prod.yml exposes app port 8080 publicly; production should expose only Caddy ports 80/443"
+else
+  ok "production compose does not publish app port 8080"
+fi
+
+if [[ -f "deploy/caddy/Caddyfile" ]]; then
+  if grep -q "Strict-Transport-Security" deploy/caddy/Caddyfile && grep -q "X-Content-Type-Options nosniff" deploy/caddy/Caddyfile; then
+    ok "Caddyfile contains basic security headers"
+  else
+    warn "Caddyfile is missing one or more recommended security headers"
+  fi
 fi
 
 require_command docker

@@ -55,6 +55,9 @@ public class SystemController {
     @Value("${dutylog.telegram.notifications-enabled:true}")
     private boolean telegramNotificationsEnabled;
 
+    @Value("${info.app.version:dev}")
+    private String appVersion;
+
     public SystemController(Environment environment,
                             JdbcTemplate jdbcTemplate,
                             CurrentUserService currentUserService,
@@ -74,7 +77,7 @@ public class SystemController {
         AppUser user = requireAdmin(principal);
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("app", "DutyLog: Time & Overtime");
-        result.put("version", "26.0");
+        result.put("version", appVersion);
         result.put("admin", user.getUsername());
         result.put("serverTime", Instant.now().toString());
         result.put("serverTimezone", ZoneId.systemDefault().toString());

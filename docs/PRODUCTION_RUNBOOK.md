@@ -31,6 +31,8 @@ Minimum values to replace:
 DUTYLOG_DOMAIN=dutylog.example.com
 POSTGRES_PASSWORD=...
 SPRING_DATASOURCE_PASSWORD=...
+DUTYLOG_ADMIN_USERNAME=your_admin_login
+DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 DUTYLOG_TELEGRAM_BOT_TOKEN=...
 ```
 
@@ -83,7 +85,7 @@ The backend creates this account on first startup or promotes it to `ADMIN` if i
 
 ## 2. Post-launch checks
 
-Run smoke test. In v23.1 it also verifies static asset versions and service worker cache version:
+Run smoke test. In v26.3 it verifies split static asset versions and service worker cache version:
 
 ```bash
 DUTYLOG_BASE_URL=https://your-domain.example ./deploy/scripts/smoke-test.sh

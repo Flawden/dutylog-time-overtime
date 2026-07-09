@@ -1,23 +1,23 @@
-# v23.1 Production launch
+# Production launch
 
-Этот документ — короткий боевой сценарий первого запуска DutyLog на VPS. Он не заменяет `PRODUCTION_RUNBOOK.md`, а помогает не потеряться в день деплоя.
+Status: v26.3.
 
-Текущий клиент: **web/PWA внутри Spring Boot-монолита**. Отдельного native mobile-приложения в v23.1 нет.
+This is the short first-launch procedure for DutyLog on a VPS. For daily operations and rollback, use `docs/PRODUCTION_RUNBOOK.md`.
 
-## Что считается успешным запуском
+## Success criteria
 
-- Приложение открывается по HTTPS-домену.
-- Bootstrap-администратор из `.env` создан или обновлён.
-- Публично зарегистрированный пользователь не получает `ADMIN`.
-- Дополнительные админы назначаются только из `Система` → `Пользователи и роли`; публичная регистрация создаёт только `USER`.
-- Администратор видит `Система` и может закрыть публичную регистрацию.
-- `/actuator/health` возвращает `UP`.
-- `./deploy/scripts/smoke-test.sh https://domain` проходит.
-- Backup PostgreSQL создаётся и копируется за пределы VPS.
-- PWA открывается на телефоне, календарь и offline snapshot работают.
-- Telegram включён и проверен, либо явно оставлен выключенным.
+- App opens on HTTPS domain.
+- Bootstrap admin from `.env` can log in.
+- Public registration creates only `USER`.
+- Admin sees `Система`.
+- Regular user does not see `Система`.
+- `/actuator/health` returns `UP`.
+- `./deploy/scripts/smoke-test.sh https://domain` passes.
+- PostgreSQL backup is created and copied outside the VPS.
+- PWA/offline smoke works.
+- Telegram is checked if enabled, or explicitly disabled.
 
-## 1. Подготовить VPS
+## 1. Prepare VPS directory
 
 ```bash
 sudo mkdir -p /opt/dutylog
@@ -27,70 +27,64 @@ cd /opt/dutylog
 
 ```bash
 git clone <repo-url> .
-git checkout v23.1
+git checkout v26.3
 ```
 
-Проверить, что домен уже смотрит на IP сервера:
+Check that the domain points to the server:
 
 ```bash
 getent hosts dutylog.example.com
 ```
 
-## 2. Создать production `.env`
+## 2. Create production env
 
 ```bash
 cp .env.production.example .env
 nano .env
 ```
 
-Минимально заменить:
+Minimum values to replace:
 
 ```env
 DUTYLOG_DOMAIN=dutylog.example.com
 POSTGRES_PASSWORD=<long-random-password>
 SPRING_DATASOURCE_PASSWORD=<long-random-password>
+DUTYLOG_ADMIN_USERNAME=<admin-login>
+DUTYLOG_ADMIN_PASSWORD=<long-random-admin-password>
+DUTYLOG_ADMIN_FORCE_PASSWORD_RESET=false
 ```
 
-Если Telegram пока не нужен:
+Keep Telegram disabled until configured:
 
 ```env
 DUTYLOG_TELEGRAM_ENABLED=false
 DUTYLOG_TELEGRAM_POLLING_ENABLED=false
 ```
 
-Если Telegram нужен сразу:
-
-```env
-DUTYLOG_TELEGRAM_ENABLED=true
-DUTYLOG_TELEGRAM_BOT_TOKEN=<botfather-token>
-DUTYLOG_TELEGRAM_BOT_USERNAME=<bot-username-without-at>
-DUTYLOG_TELEGRAM_POLLING_ENABLED=true
-DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
-```
-
-## 3. Подготовить Caddy
+## 3. Prepare Caddy
 
 ```bash
 cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
 ```
 
-Обычно менять `Caddyfile` не нужно: домен берётся из `DUTYLOG_DOMAIN`.
+The default Caddy config uses `DUTYLOG_DOMAIN`, HTTPS and basic security headers. Caddy does not provide rate limiting out of the box; for public deployments choose nginx rate limit, fail2ban or a Caddy plugin.
 
-## 4. Прогнать preflight
+## 4. Preflight
 
 ```bash
 ./deploy/scripts/check-production-env.sh
+./deploy/scripts/release-check.sh
 ```
 
-Ошибки надо исправить до запуска. Предупреждения можно оставить только осознанно.
+Fix errors before launch.
 
-## 5. Первый старт
+## 5. First start
 
 ```bash
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-Проверить контейнеры:
+Check containers and logs:
 
 ```bash
 docker compose -f docker-compose.prod.yml ps
@@ -104,78 +98,57 @@ docker compose -f docker-compose.prod.yml logs --tail=100 caddy
 ./deploy/scripts/smoke-test.sh https://dutylog.example.com
 ```
 
-Проверяется:
+## 7. First login
 
-- `/actuator/health`;
-- `login.html`;
-- app shell;
-- `manifest.json`;
-- `service-worker.js` версии `v23.1`;
-- `app.js` версии `23.1`;
-- защищённый admin API не падает.
-
-## 7. Первый пользователь
-
-Открыть:
+Open:
 
 ```text
 https://dutylog.example.com
 ```
 
-Администратор создаётся из `.env`, а не из первой публичной регистрации:
+Log in with the bootstrap admin from `.env`. Then check:
 
-```env
-DUTYLOG_ADMIN_USERNAME=your_admin_login
-DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
-DUTYLOG_ADMIN_FORCE_PASSWORD_RESET=false
-```
+- `Система` is visible;
+- server version is `26.3`;
+- database status is `ok`;
+- public registration has the expected status;
+- module settings open;
+- onboarding does not appear for existing users and appears for new users as expected.
 
-Войти под этим пользователем. Затем создать обычного пользователя и убедиться, что он не админ. После создания нужных аккаунтов открыть `Система` → `Публичная регистрация` и закрыть регистрацию, если приложение личное и новых пользователей пока не ждём.
-
-Проверить:
-
-- у bootstrap-админа в шапке есть `Система`;
-- у обычного пользователя `Система` скрыта;
-- в `Система` версия сервера `23.1`;
-- база данных `ok`;
-- Telegram-статус соответствует `.env`;
-- публичная регистрация имеет ожидаемый статус: `открыта` или `закрыта`.
-
-## 8. Backup сразу после первого запуска
+## 8. Backup immediately after launch
 
 ```bash
 ./deploy/scripts/backup-postgres.sh
 ./deploy/scripts/list-backups.sh
 ```
 
-Скопировать backup за пределы VPS:
+Copy the backup outside the VPS:
 
 ```bash
 scp /opt/dutylog/backups/dutylog-*.dump user@other-host:/safe/place/
 ```
 
-## 9. PWA/offline smoke на телефоне
+## 9. PWA/offline smoke
 
-- Открыть сайт на телефоне.
-- Войти в аккаунт.
-- Открыть календарь и дождаться загрузки.
-- Установить PWA, если браузер предлагает.
-- Выключить сеть.
-- Перезагрузить страницу.
-- Проверить, что календарь открылся из локального snapshot.
-- Изменить заметку.
-- Включить сеть.
-- Проверить, что очередь ушла.
+- Open the site on a phone.
+- Log in.
+- Open calendar and wait for data.
+- Install as PWA if offered.
+- Disable network.
+- Reload.
+- Confirm calendar opens from local snapshot.
+- Change a note.
+- Enable network and confirm sync.
 
-## 10. Telegram smoke, если включён
+## 10. Telegram smoke if enabled
 
-В профиле DutyLog создать код привязки и отправить боту:
+Create a link code in DutyLog profile and send the bot:
 
 ```text
 /start DL-XXXXXX
 ```
 
-Проверить команды:
+Check:
 
 ```text
 /today
@@ -183,30 +156,3 @@ scp /opt/dutylog/backups/dutylog-*.dump user@other-host:/safe/place/
 /balance
 /help
 ```
-
-## 11. После запуска
-
-Минимальная эксплуатационная привычка:
-
-```bash
-cd /opt/dutylog
-./deploy/scripts/backup-postgres.sh
-git pull
-docker compose -f docker-compose.prod.yml up -d --build
-./deploy/scripts/smoke-test.sh https://dutylog.example.com
-```
-
-Перед каждым обновлением — backup. Перед любыми рискованными действиями — backup. Команду `docker compose down -v` не использовать, если не нужно специально удалить базу.
-
-
-## v23.1 users/roles and personalization smoke check
-
-After login as bootstrap admin, open `Система` → `Пользователи и роли` and verify:
-
-- bootstrap user is marked as `env admin`;
-- at least one administrator exists;
-- ordinary users can be promoted to `ADMIN` and demoted back to `USER`;
-- bootstrap env admin cannot be demoted;
-- public registration still creates only `USER`;
-- `Настройки` → `Внешний вид` сохраняет тему и акцент;
-- выбранный день принимает emoji-маркер, показывает его в календаре и позволяет очистить.

@@ -7,7 +7,7 @@
 
 "use strict";
 
-const DUTYLOG_VERSION = "26.0"
+const DUTYLOG_VERSION = "26.3"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){

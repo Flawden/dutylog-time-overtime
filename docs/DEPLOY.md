@@ -214,7 +214,7 @@ The `-v` flag removes Docker volumes and can delete the PostgreSQL database.
 
 See:
 
-- [`PRODUCTION_LAUNCH.md`](PRODUCTION_LAUNCH.md) — compact v23.1 first-launch procedure.
+- [`PRODUCTION_LAUNCH.md`](PRODUCTION_LAUNCH.md) — compact current first-launch procedure.
 - [`PRODUCTION_RUNBOOK.md`](PRODUCTION_RUNBOOK.md) — first launch, updates, rollback and emergency backup.
 - [`SECURITY_CHECKLIST.md`](SECURITY_CHECKLIST.md) — security checklist before public usage.
 - [`VPS_CHECKLIST.md`](VPS_CHECKLIST.md) — compact launch checklist.

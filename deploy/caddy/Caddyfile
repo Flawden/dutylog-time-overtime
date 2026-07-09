@@ -1,3 +1,5 @@
+# ВНИМАНИЕ: у Caddy из коробки НЕТ rate limiting — брутфорс-защита логина
+# должна быть решена отдельно: nginx example, fail2ban или Caddy plugin.
 {$DUTYLOG_DOMAIN} {
     encode zstd gzip
 
@@ -9,6 +11,8 @@
         Referrer-Policy strict-origin-when-cross-origin
         X-Frame-Options SAMEORIGIN
         Permissions-Policy "geolocation=(), microphone=(), camera=()"
+        Strict-Transport-Security "max-age=31536000"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'"
     }
 
     log {
