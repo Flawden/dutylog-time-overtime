@@ -1,3 +1,11 @@
+## v26.6.10 — login language registration hotfix
+
+- Registration now preserves the language selected on the login page.
+- `login.html` sends `languagePreference` during account creation.
+- New users created with EN selected land in the English onboarding/app shell instead of falling back to RU.
+- Added registration language persistence test.
+- Release/check docs updated to v26.6.10.
+
 ## v26.6.9 — English i18n polish hotfix
 
 - Fixed Russian leftovers after switching the interface to English: today marker, calendar total label, working-time box, autosave chip and notification browser status.

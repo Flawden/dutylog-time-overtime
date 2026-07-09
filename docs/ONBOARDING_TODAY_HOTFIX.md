@@ -1,6 +1,6 @@
-# v26.6.9 — onboarding and today highlight hotfix
+# v26.6.10 — onboarding and today highlight hotfix
 
-Status: v26.6.9.
+Status: v26.6.10.
 
 This hotfix keeps the stabilization scope: no new product features, only UI clarity.
 

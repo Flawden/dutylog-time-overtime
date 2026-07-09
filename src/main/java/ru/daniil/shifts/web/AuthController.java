@@ -32,7 +32,7 @@ public class AuthController {
         this.appSettingsService = appSettingsService;
     }
 
-    public record RegisterRequest(String username, String password) {}
+    public record RegisterRequest(String username, String password, String languagePreference) {}
 
     /** Публичный статус регистрации для страницы входа. */
     @GetMapping("/registration-status")
@@ -72,9 +72,13 @@ public class AuthController {
         }
 
         AppUser user = new AppUser(username, encoder.encode(password));
+        user.setLanguagePreference(req.languagePreference());
         user = users.save(user);
         defaultShiftSeedService.seedDefaults(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of("username", username));
+        return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
+                "username", username,
+                "languagePreference", user.getLanguagePreference()
+        ));
     }
 
     /** Кто я — фронтенд показывает имя в шапке. */

@@ -6,6 +6,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.AppSettingsService;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -26,6 +27,7 @@ class RegistrationTest {
 
     @Autowired MockMvc mvc;
     @Autowired AppSettingsService settings;
+    @Autowired UserRepository users;
 
     private static String body(String username, String password) {
         return "{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}";
@@ -55,6 +57,21 @@ class RegistrationTest {
                         .content(body("newcomer", "secret123")))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.username").value("newcomer"));
+    }
+
+    @Test
+    void языкСоСтраницыВходаСохраняетсяПриРегистрации() throws Exception {
+        settings.setRegistrationEnabled(true, "test");
+
+        mvc.perform(post("/api/auth/register").with(csrf())
+                        .contentType("application/json")
+                        .content(body("english-user", "secret123", "en")))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.username").value("english-user"))
+                .andExpect(jsonPath("$.languagePreference").value("en"));
+
+        var user = users.findByUsername("english-user").orElseThrow();
+        org.junit.jupiter.api.Assertions.assertEquals("en", user.getLanguagePreference());
     }
 
     @Test

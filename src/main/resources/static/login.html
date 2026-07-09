@@ -87,7 +87,8 @@ function applyLoginLanguage(lang){
   try { localStorage.setItem(LANGUAGE_KEY, currentLang); } catch (_) {}
   document.documentElement.lang = currentLang;
   document.querySelectorAll('[data-login-lang]').forEach(b => b.classList.toggle('on', b.dataset.loginLang === currentLang));
-  const pairs = [["title", "Вход"], ["tabLogin", "Вход"], ["tabReg", "Регистрация"]];
+  if ($("title")) $("title").textContent = $("regForm")?.hidden === false ? lt("Регистрация") : lt("Вход");
+  const pairs = [["tabLogin", "Вход"], ["tabReg", "Регистрация"]];
   for (const [id, ru] of pairs) if ($(id)) $(id).textContent = lt(ru);
   document.querySelector('label[for="lu"]').textContent = lt("Имя пользователя");
   document.querySelector('label[for="lp"]').textContent = lt("Пароль");
@@ -95,6 +96,7 @@ function applyLoginLanguage(lang){
   document.querySelector('label[for="ru"]').innerHTML = currentLang === 'en' ? 'Username <span style="color:var(--dim)">(min. 3 characters)</span>' : 'Имя пользователя <span style="color:var(--dim)">(от 3 символов)</span>';
   document.querySelector('label[for="rp"]').innerHTML = currentLang === 'en' ? 'Password <span style="color:var(--dim)">(min. 6 characters)</span>' : 'Пароль <span style="color:var(--dim)">(от 6 символов)</span>';
   $("regBtn").textContent = lt("Создать аккаунт");
+  if (typeof applyRegistrationStatus === "function") applyRegistrationStatus();
 }
 document.querySelectorAll('[data-login-lang]').forEach(b => b.addEventListener('click', () => applyLoginLanguage(b.dataset.loginLang)));
 
@@ -152,7 +154,7 @@ function setTab(reg) {
   $("tabReg").classList.toggle("on", reg);
   $("loginForm").hidden = reg;
   $("regForm").hidden = !reg;
-  $("title").textContent = reg ? "Регистрация" : "Вход";
+  $("title").textContent = reg ? lt("Регистрация") : lt("Вход");
   setMsg("");
 }
 $("tabLogin").addEventListener("click", () => setTab(false));
@@ -184,7 +186,7 @@ $("regForm").addEventListener("submit", async (e) => {
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json", "X-XSRF-TOKEN": csrfToken() },
-      body: JSON.stringify({ username, password }),
+      body: JSON.stringify({ username, password, languagePreference: currentLang }),
     });
     if (!res.ok) {
       const body = await res.json().catch(() => ({}));
