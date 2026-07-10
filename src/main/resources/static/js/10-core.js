@@ -156,6 +156,9 @@ const DEFAULT_APPEARANCE = { themePreference:"system", accentColor:"#F5B841", th
 
 
 const I18N_EN = {
+  "Мои данные": "My data",
+  "Скачать все заметки (.zip)": "Download all notes (.zip)",
+  "Markdown-файлы по датам — открываются в Obsidian.": "Markdown files by date — opens in Obsidian.",
   "Настройки":"Settings", "Профиль":"Profile", "Язык":"Language", "Модули":"Modules", "русский / English":"Russian / English", "включить нужные функции":"enable needed features",
   "Внешний вид":"Appearance", "Время":"Time", "Смены":"Shifts", "Сценарии":"Scenarios", "Уведомления":"Notifications", "Важные даты":"Important dates",
   "имя, пароль, Telegram":"name, password, Telegram", "тема, акцент, маркеры":"theme, accent, markers", "регион, пояс, дефолты":"region, timezone, defaults", "типы, часы, уведомления":"types, hours, notifications", "шаблоны переработок":"overtime templates", "браузер и расписания":"browser and schedules", "общий список событий":"shared event list",

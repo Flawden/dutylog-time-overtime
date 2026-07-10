@@ -525,3 +525,9 @@ ensureTranslationObserver();
 applyLanguage(state.language);
 loadProfile();
 loadSessions();
+
+/* ─── Экспорт заметок ───────────────────────────────────────── */
+$("exportNotesBtn")?.addEventListener("click", () => {
+  // обычная навигация: сессионная cookie уедет сама, браузер скачает файл
+  window.location.href = "/api/export/notes";
+});

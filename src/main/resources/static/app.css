@@ -1588,3 +1588,8 @@ body.appBooting .appBoot{display:flex;}
   .adminShell .adminIndex .settingsIndexActions{ width:100%; min-width:180px; }
 }
 #notifyCard.notificationsActive > .notifyHead .eyebrow{ color:var(--accent); }
+
+/* Пунктирная кнопка общего назначения (экспорт и т.п.) */
+.dashedBtn { background:transparent; color:var(--mut); border:1px dashed var(--dim);
+  border-radius:7px; padding:6px 11px; font-size:12.5px; cursor:pointer; font-family:inherit; }
+.dashedBtn:hover { color:var(--accent); border-color:var(--accent); }
