@@ -11,3 +11,7 @@ backups/
 *.dump
 *.dump.gz
 *.sql.gz
+
+.deploy-state
+.deploy-state.tmp
+.deploy.lock

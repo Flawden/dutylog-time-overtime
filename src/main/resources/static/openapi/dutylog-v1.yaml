@@ -354,7 +354,10 @@ components:
         entityId: { type: string, format: date }
         serverVersion: { type: integer, format: int64, nullable: true }
         entity: { $ref: '#/components/schemas/Day' }
-        errorCode: { type: string, nullable: true }
+        errorCode:
+          type: string
+          nullable: true
+          enum: [VERSION_CONFLICT, NO_CHANGES, MODULE_DISABLED, NOT_FOUND, VALIDATION_FAILED, REJECTED]
         message: { type: string, nullable: true }
     MobileSyncResponse:
       type: object

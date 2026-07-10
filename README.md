@@ -3,11 +3,11 @@
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.1.0 — Android API contract freeze
+## Текущая версия: v27.2.1 — Staging and CI/CD foundation
 
-Backend получил стабильный `/api/v1/**` для будущего Android-клиента: Bearer-аутентификацию, мобильную регистрацию, единый формат ошибок, OpenAPI и идемпотентную offline-синхронизацию дней с защитой от конфликтов версий. Старые web/PWA и `/api/mobile/**` маршруты сохранены для совместимости.
+DutyLog получил безопасный путь доставки изменений: ветка `test` разворачивает изолированный staging, а `main`/`master` продвигает в production тот же самый проверенный Docker-образ по immutable digest. Перед production-обновлением создаётся и проверяется PostgreSQL backup, после запуска выполняются health/smoke checks, а неуспешный образ откатывается без автоматического отката базы.
 
-Документация: [`docs/ANDROID_API_V1.md`](docs/ANDROID_API_V1.md) · OpenAPI: [`src/main/resources/static/openapi/dutylog-v1.yaml`](src/main/resources/static/openapi/dutylog-v1.yaml)
+Документация: [`docs/CICD.md`](docs/CICD.md) · [`docs/STAGING.md`](docs/STAGING.md) · [`docs/MIGRATION_SAFETY.md`](docs/MIGRATION_SAFETY.md)
 
 ## Возможности
 
@@ -28,7 +28,7 @@ Backend получил стабильный `/api/v1/**` для будущего
 - Версионированный Android API v1 с Bearer-токенами, OpenAPI, idempotency keys и optimistic conflict detection.
 - Служебная диагностика состояния приложения, сервера, базы данных и Telegram-интеграции в отдельном профиле администратора.
 - Скрипты резервного копирования и восстановления PostgreSQL.
-- Production-ready compose, Caddy reverse proxy example, healthchecks and launch runbook.
+- Staging/production CI/CD с immutable GHCR images, проверенными backup, health/smoke gates и application rollback.
 
 ## Стек
 
@@ -131,7 +131,10 @@ docker compose down -v
 
 Для боевого запуска подготовлены:
 
-- `docker-compose.prod.yml` — PostgreSQL, приложение и Caddy;
+- `deploy/compose/docker-compose.deploy.yml` — изолированный staging/production runtime;
+- `deploy/compose/docker-compose.edge.yml` — общий Caddy edge;
+- `.github/workflows/deploy-staging.yml` и `deploy-production.yml` — автоматическая доставка;
+- `docker-compose.prod.yml` — прежний ручной emergency/local вариант;
 - `.env.production.example` — шаблон production-переменных;
 - `deploy/caddy/Caddyfile.example` — HTTPS reverse proxy;
 - `docs/PRODUCTION_RUNBOOK.md` — первый запуск, обновление, откат и emergency backup;
@@ -196,6 +199,9 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — архитектура приложения.
 - [`docs/API.md`](docs/API.md) — HTTP API.
 - [`docs/GIT_WORKFLOW.md`](docs/GIT_WORKFLOW.md) — Git-история, теги и откаты.
+- [`docs/CICD.md`](docs/CICD.md) — ветки `test`/`main`/`master`, GitHub Environments и автоматический deploy.
+- [`docs/STAGING.md`](docs/STAGING.md) — изоляция и безопасный сброс тестовой среды.
+- [`docs/MIGRATION_SAFETY.md`](docs/MIGRATION_SAFETY.md) — правила Flyway и защита production-данных.
 - [`docs/BACKUP.md`](docs/BACKUP.md) — резервные копии и восстановление PostgreSQL.
 - [`docs/DEPLOY.md`](docs/DEPLOY.md) — запуск на VPS через Docker Compose.
 - [`docs/PRODUCTION_RUNBOOK.md`](docs/PRODUCTION_RUNBOOK.md) — эксплуатация, обновление и откат на VPS.
@@ -215,7 +221,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/PRODUCT_COPY.md`](docs/PRODUCT_COPY.md) — стиль пользовательских текстов.
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
-- [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.1.0 и как принимать RC.
+- [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.2.1 и как принимать RC.
 - [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) — короткая пользовательская инструкция.
 - [`docs/PRODUCTION_DEPLOY.md`](docs/PRODUCTION_DEPLOY.md) — пошаговый production deployment.
 - [`docs/BACKUP_RESTORE.md`](docs/BACKUP_RESTORE.md) — резервное копирование и восстановление.
@@ -232,36 +238,21 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v27.1.0 — Android API contract freeze`
+`v27.2.1 — Staging and CI/CD foundation`
 
-DutyLog остаётся в feature freeze, но backend теперь готов быть стабильной базой для нативного Android-клиента.
+Функциональный и Android API v1 контракты не менялись. Этот этап добавляет инфраструктуру доставки:
 
-Что вошло:
+- `test` автоматически собирает immutable image, разворачивает staging и помечает digest как проверенный;
+- `main`/`master` не пересобирает приложение, а продвигает тот же staging-tested digest;
+- production deploy отказывается работать для дерева исходников, которое не прошло staging;
+- staging и production используют разные Compose projects, PostgreSQL volumes и credentials;
+- production делает `pg_dump` и проверяет архив через `pg_restore --list` до обновления;
+- CI запускает реальный контейнер против чистого PostgreSQL и проверяет Flyway V1..latest;
+- health/smoke failure запускает application-only rollback, но никогда не откатывает БД автоматически;
+- service worker получает уникальный build identity, а `/actuator/info` показывает commit/environment/build metadata;
+- staging можно снести только явной guarded-командой, production reset отсутствует.
 
-- стабильный `/api/v1/**` с additive-only правилами совместимости;
-- отдельный Bearer-only `/api/v1/mobile/**`;
-- мобильная регистрация с немедленной выдачей access/refresh token pair;
-- единый формат ошибок с `code`, `fields`, `requestId` и `timestamp`;
-- OpenAPI-контракт;
-- оптимистическая версия дня (`version`, `updatedAt`);
-- идемпотентная offline-очередь с `operationId`;
-- item-level результаты `APPLIED`, `ALREADY_APPLIED`, `CONFLICT`, `REJECTED`;
-- защита от stale write через `baseVersion`;
-- V22 migration для row versions и sync ledger;
-- throttling `lastUsedAt` и автоочистка старых idempotency records;
-- старые web/PWA и `/api/mobile/**` маршруты сохранены.
-
-Критерии принятия:
-
-- зелёный `mvn test`;
-- зелёный `bash deploy/scripts/release-check.sh`;
-- V22 успешно накатывается на копию production-shaped PostgreSQL;
-- повтор одного `operationId` не повторяет запись;
-- stale `baseVersion` даёт `VERSION_CONFLICT`;
-- browser session не может войти в `/api/v1/mobile/**`;
-- OpenAPI доступен на `/openapi/dutylog-v1.yaml`.
-
-Следующий инфраструктурный этап после проверки — `v27.2 Staging & CI/CD foundation`.
+Следующий практический шаг — один раз подготовить VPS и GitHub Environments по [`docs/CICD.md`](docs/CICD.md), затем проверить полный путь `test → staging → main/master → production`.
 
 ## Служебный профиль администратора
 
@@ -289,7 +280,7 @@ DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 Since v25.3 the module registry has explicit developer contracts. See `docs/MODULE_CONTRACTS.md`.
 
 
-CI permission stabilization in v27.1.0:
+CI permission stabilization in v27.2.1:
 
 - GitHub Actions runs release checks through `bash ./deploy/scripts/release-check.sh`.
 - CI no longer fails when executable bits are lost on Windows/archive checkouts.

@@ -1,0 +1,259 @@
+#!/usr/bin/env bash
+set -Eeuo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
+cd "$PROJECT_ROOT"
+
+usage() {
+  cat <<'EOF'
+Usage: deploy-environment.sh \
+  --environment staging|production \
+  --image ghcr.io/owner/repo@sha256:... \
+  --release-version 27.2.1 \
+  --build-version 27.2.1+tree.abc123 \
+  --tree <git-tree-sha> \
+  --commit <git-sha> \
+  --build-time <ISO-8601> \
+  [--env-file .env] [--base-url https://...]
+EOF
+}
+
+ENVIRONMENT=""
+IMAGE_REF=""
+RELEASE_VERSION="27.2.1"
+BUILD_VERSION=""
+BUILD_TREE=""
+BUILD_COMMIT="unknown"
+BUILD_TIME="unknown"
+ENV_FILE=".env"
+BASE_URL=""
+
+while (( $# > 0 )); do
+  case "$1" in
+    --environment) ENVIRONMENT="${2:-}"; shift 2 ;;
+    --image) IMAGE_REF="${2:-}"; shift 2 ;;
+    --release-version) RELEASE_VERSION="${2:-}"; shift 2 ;;
+    --build-version) BUILD_VERSION="${2:-}"; shift 2 ;;
+    --tree) BUILD_TREE="${2:-}"; shift 2 ;;
+    --commit) BUILD_COMMIT="${2:-}"; shift 2 ;;
+    --build-time) BUILD_TIME="${2:-}"; shift 2 ;;
+    --env-file) ENV_FILE="${2:-}"; shift 2 ;;
+    --base-url) BASE_URL="${2:-}"; shift 2 ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "Unknown argument: $1" >&2; usage >&2; exit 2 ;;
+  esac
+done
+
+if [[ "$ENVIRONMENT" != "staging" && "$ENVIRONMENT" != "production" ]]; then
+  echo "--environment must be staging or production" >&2
+  exit 2
+fi
+if [[ ! "$IMAGE_REF" =~ @sha256:[0-9a-fA-F]{64}$ ]]; then
+  echo "--image must be an immutable image digest reference (@sha256:...)" >&2
+  exit 2
+fi
+if [[ ! -f "$ENV_FILE" ]]; then
+  echo "Environment file not found: $ENV_FILE" >&2
+  exit 2
+fi
+BUILD_VERSION="${BUILD_VERSION:-$RELEASE_VERSION-local}"
+if [[ ! "$BUILD_TREE" =~ ^[0-9a-fA-F]{40}$ ]]; then
+  echo "--tree must be the exact 40-character Git tree SHA used to build the image" >&2
+  exit 2
+fi
+
+set -a
+# shellcheck disable=SC1090
+. "$ENV_FILE"
+set +a
+
+if [[ "${DUTYLOG_ENVIRONMENT:-}" != "$ENVIRONMENT" ]]; then
+  echo "DUTYLOG_ENVIRONMENT in $ENV_FILE must equal $ENVIRONMENT" >&2
+  exit 2
+fi
+
+COMPOSE_FILE="${DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml}"
+PROJECT_NAME="${DUTYLOG_PROJECT_NAME:-dutylog-$ENVIRONMENT}"
+BASE_URL="${BASE_URL:-${DUTYLOG_BASE_URL:-}}"
+STATE_FILE="${DUTYLOG_STATE_FILE:-.deploy-state}"
+LOCK_FILE="${DUTYLOG_LOCK_FILE:-.deploy.lock}"
+BACKUP_BEFORE_DEPLOY="${DUTYLOG_BACKUP_BEFORE_DEPLOY:-$([[ "$ENVIRONMENT" == production ]] && echo true || echo false)}"
+
+for command in docker curl flock; do
+  command -v "$command" >/dev/null 2>&1 || { echo "Required command missing: $command" >&2; exit 2; }
+done
+docker compose version >/dev/null
+
+exec 9>"$LOCK_FILE"
+if ! flock -n 9; then
+  echo "Another deployment is already running for $PROJECT_ROOT" >&2
+  exit 1
+fi
+
+export DUTYLOG_IMAGE="$IMAGE_REF"
+export DUTYLOG_DEPLOY_COMMIT="$BUILD_COMMIT"
+export DUTYLOG_DEPLOY_TIME="$BUILD_TIME"
+export DUTYLOG_ENVIRONMENT="$ENVIRONMENT"
+
+compose() {
+  docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" -p "$PROJECT_NAME" "$@"
+}
+
+wait_for_health() {
+  local service="$1"
+  local timeout_seconds="${2:-180}"
+  local started now container status
+  started="$(date +%s)"
+  while true; do
+    container="$(compose ps -q "$service")"
+    if [[ -n "$container" ]]; then
+      status="$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}{{.State.Status}}{{end}}' "$container" 2>/dev/null || true)"
+      case "$status" in
+        healthy|running) echo "$service is $status"; return 0 ;;
+        unhealthy|exited|dead) echo "$service became $status" >&2; return 1 ;;
+      esac
+    fi
+    now="$(date +%s)"
+    if (( now - started >= timeout_seconds )); then
+      echo "Timed out waiting for $service health" >&2
+      return 1
+    fi
+    sleep 3
+  done
+}
+
+write_state() {
+  local current_image="$1" current_release="$2" current_build="$3" current_tree="$4" current_commit="$5" current_time="$6"
+  local previous_image="$7" previous_release="$8" previous_build="$9" previous_tree="${10}" previous_commit="${11}" previous_time="${12}"
+  {
+    printf 'CURRENT_IMAGE=%q\n' "$current_image"
+    printf 'CURRENT_RELEASE_VERSION=%q\n' "$current_release"
+    printf 'CURRENT_BUILD_VERSION=%q\n' "$current_build"
+    printf 'CURRENT_TREE=%q\n' "$current_tree"
+    printf 'CURRENT_COMMIT=%q\n' "$current_commit"
+    printf 'CURRENT_BUILD_TIME=%q\n' "$current_time"
+    printf 'PREVIOUS_IMAGE=%q\n' "$previous_image"
+    printf 'PREVIOUS_RELEASE_VERSION=%q\n' "$previous_release"
+    printf 'PREVIOUS_BUILD_VERSION=%q\n' "$previous_build"
+    printf 'PREVIOUS_TREE=%q\n' "$previous_tree"
+    printf 'PREVIOUS_COMMIT=%q\n' "$previous_commit"
+    printf 'PREVIOUS_BUILD_TIME=%q\n' "$previous_time"
+    printf 'DEPLOYED_AT=%q\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  } > "$STATE_FILE.tmp"
+  chmod 600 "$STATE_FILE.tmp"
+  mv "$STATE_FILE.tmp" "$STATE_FILE"
+}
+
+OLD_IMAGE=""
+OLD_RELEASE=""
+OLD_BUILD=""
+OLD_TREE=""
+OLD_COMMIT=""
+OLD_BUILD_TIME=""
+if [[ -f "$STATE_FILE" ]]; then
+  # State is generated by this script and permission-restricted.
+  # shellcheck disable=SC1090
+  . "$STATE_FILE"
+  OLD_IMAGE="${CURRENT_IMAGE:-}"
+  OLD_RELEASE="${CURRENT_RELEASE_VERSION:-}"
+  OLD_BUILD="${CURRENT_BUILD_VERSION:-}"
+  OLD_TREE="${CURRENT_TREE:-}"
+  OLD_COMMIT="${CURRENT_COMMIT:-}"
+  OLD_BUILD_TIME="${CURRENT_BUILD_TIME:-}"
+fi
+
+rollback_application() {
+  if [[ -z "$OLD_IMAGE" ]]; then
+    echo "No previous application image is recorded; automatic app rollback is unavailable." >&2
+    return 1
+  fi
+  echo "Attempting application-only rollback to $OLD_IMAGE"
+  export DUTYLOG_IMAGE="$OLD_IMAGE"
+  export DUTYLOG_DEPLOY_COMMIT="${OLD_COMMIT:-unknown}"
+  export DUTYLOG_DEPLOY_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  compose up -d --no-deps app
+  wait_for_health app 180
+  local rollback_container rollback_version rollback_tree
+  rollback_container="$(compose ps -q app)"
+  rollback_version="$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' "$rollback_container")"
+  rollback_tree="$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.source-tree"}}' "$rollback_container")"
+  if [[ -n "$OLD_BUILD" && "$rollback_version" != "$OLD_BUILD" ]]; then
+    echo "Rollback image version mismatch: expected $OLD_BUILD, got ${rollback_version:-missing}" >&2
+    return 1
+  fi
+  if [[ -n "$OLD_TREE" && "$rollback_tree" != "$OLD_TREE" ]]; then
+    echo "Rollback image tree mismatch: expected $OLD_TREE, got ${rollback_tree:-missing}" >&2
+    return 1
+  fi
+  if [[ -n "$BASE_URL" ]]; then
+    DUTYLOG_RELEASE_VERSION="${OLD_RELEASE:-$RELEASE_VERSION}" bash deploy/scripts/smoke-test.sh "$BASE_URL"
+  fi
+  echo "Previous application image restored. Database migrations were not rolled back."
+}
+
+on_error() {
+  local code=$?
+  trap - ERR
+  echo "Deployment failed (exit $code). Recent application logs:" >&2
+  compose logs --tail=120 app >&2 || true
+  rollback_application || true
+  exit "$code"
+}
+trap on_error ERR
+
+echo "DutyLog deployment"
+echo "Environment: $ENVIRONMENT"
+echo "Project:     $PROJECT_NAME"
+echo "Image:       $IMAGE_REF"
+echo "Build:       $BUILD_VERSION"
+echo "Tree:        $BUILD_TREE"
+echo "Commit:      $BUILD_COMMIT"
+
+if ! docker network inspect "${DUTYLOG_EDGE_NETWORK:-dutylog_edge}" >/dev/null 2>&1; then
+  echo "External edge network does not exist. Run bootstrap-cicd-host.sh first." >&2
+  exit 1
+fi
+
+DUTYLOG_ENV_FILE="$ENV_FILE" bash deploy/scripts/check-deploy-env.sh "$ENVIRONMENT"
+compose config -q
+compose pull app
+compose up -d db
+wait_for_health db 120
+
+if [[ "$BACKUP_BEFORE_DEPLOY" == "true" ]]; then
+  echo "Creating verified pre-deploy backup..."
+  SAFE_BUILD="$(printf '%s' "$BUILD_VERSION" | tr -cs 'A-Za-z0-9._-' '-')"
+  DUTYLOG_ENV_FILE="$ENV_FILE" \
+  DUTYLOG_COMPOSE_FILE="$COMPOSE_FILE" \
+  DUTYLOG_PROJECT_NAME="$PROJECT_NAME" \
+  BACKUP_PREFIX="pre-deploy-${ENVIRONMENT}-${SAFE_BUILD}" \
+    bash deploy/scripts/backup-postgres.sh
+else
+  echo "Pre-deploy backup disabled for this environment."
+fi
+
+compose up -d app
+wait_for_health app 240
+
+APP_CONTAINER="$(compose ps -q app)"
+IMAGE_VERSION="$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' "$APP_CONTAINER")"
+IMAGE_TREE="$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.source-tree"}}' "$APP_CONTAINER")"
+if [[ "$IMAGE_VERSION" != "$BUILD_VERSION" || "$IMAGE_TREE" != "$BUILD_TREE" ]]; then
+  echo "Running container metadata does not match the requested immutable build." >&2
+  echo "Expected version/tree: $BUILD_VERSION / $BUILD_TREE" >&2
+  echo "Running version/tree:  ${IMAGE_VERSION:-missing} / ${IMAGE_TREE:-missing}" >&2
+  exit 1
+fi
+
+if [[ -n "$BASE_URL" ]]; then
+  DUTYLOG_RELEASE_VERSION="$RELEASE_VERSION" bash deploy/scripts/smoke-test.sh "$BASE_URL"
+else
+  echo "DUTYLOG_BASE_URL is empty; external smoke test skipped." >&2
+fi
+
+write_state "$IMAGE_REF" "$RELEASE_VERSION" "$BUILD_VERSION" "$BUILD_TREE" "$BUILD_COMMIT" "$BUILD_TIME" \
+  "$OLD_IMAGE" "$OLD_RELEASE" "$OLD_BUILD" "$OLD_TREE" "$OLD_COMMIT" "$OLD_BUILD_TIME"
+
+trap - ERR
+echo "Deployment completed successfully."

@@ -1,6 +1,6 @@
 # v26.6.9 — English i18n polish hotfix
 
-Carried into release candidate: v27.1.0.
+Carried into release candidate: v27.2.1.
 Status: v26.6.9.
 
 Scope: release stabilization only. No new features.

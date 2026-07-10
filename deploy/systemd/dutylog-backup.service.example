@@ -1,11 +1,15 @@
 [Unit]
-Description=DutyLog PostgreSQL backup
+Description=DutyLog production PostgreSQL backup
 Wants=docker.service
 After=docker.service
 
 [Service]
 Type=oneshot
-WorkingDirectory=/opt/dutylog
-Environment=BACKUP_DIR=/opt/dutylog/backups
+# Replace with the same unprivileged user used by GitHub Actions SSH deploys.
+User=CHANGE_ME_DEPLOY_USER
+Group=CHANGE_ME_DEPLOY_USER
+WorkingDirectory=/opt/dutylog/production
+Environment=DUTYLOG_ENV_FILE=.env
+Environment=BACKUP_DIR=/opt/dutylog/production/backups
 Environment=BACKUP_KEEP_LAST=30
-ExecStart=/opt/dutylog/deploy/scripts/backup-postgres.sh
+ExecStart=/usr/bin/bash /opt/dutylog/production/deploy/scripts/backup-postgres.sh

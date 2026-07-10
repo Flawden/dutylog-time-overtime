@@ -1,6 +1,6 @@
 # v26.6.6 — CI permission hotfix
 
-Carried into release candidate: v27.1.0.
+Carried into release candidate: v27.2.1.
 Status: v26.6.6.
 
 This hotfix fixes the GitHub Actions release gate on repositories cloned from

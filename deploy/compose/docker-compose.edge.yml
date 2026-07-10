@@ -1,0 +1,26 @@
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    environment:
+      DUTYLOG_PRODUCTION_DOMAIN: ${DUTYLOG_PRODUCTION_DOMAIN:?Set production domain}
+      DUTYLOG_STAGING_DOMAIN: ${DUTYLOG_STAGING_DOMAIN:?Set staging domain}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ../caddy/Caddyfile.cicd:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - edge
+
+volumes:
+  caddy_data:
+  caddy_config:
+
+networks:
+  edge:
+    external: true
+    name: ${DUTYLOG_EDGE_NETWORK:-dutylog_edge}

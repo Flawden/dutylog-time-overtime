@@ -1,6 +1,6 @@
 # DutyLog Android API v1
 
-Version: **27.1.0**
+Version: **27.2.1**
 
 `/api/v1/**` is the first frozen mobile contract. Existing v1 response fields are additive-only. A breaking rename, removal, semantic change or incompatible validation change requires `/api/v2`.
 

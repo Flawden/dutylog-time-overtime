@@ -1,48 +1,51 @@
 # Backup and restore
 
-Status: v27.1.0.
+Status: v27.2.1.
 
-DutyLog production data is stored in PostgreSQL. Backups should be created before every update and copied outside the VPS.
+Production deployment creates a verified PostgreSQL custom-format dump before every application update. Staging backup is optional because staging is disposable.
 
-## Create backup
+## List backups
 
-```bash
-./deploy/scripts/backup-postgres.sh
-./deploy/scripts/list-backups.sh
-```
-
-Backups are stored in `./backups` by default.
-
-## Copy backup off the VPS
-
-Example:
+On the relevant environment directory:
 
 ```bash
-scp /opt/dutylog/backups/dutylog-*.dump user@backup-host:/safe/place/
+cd /opt/dutylog/production
+bash deploy/scripts/list-backups.sh
 ```
+
+Backups are stored in `./backups` unless `BACKUP_DIR` says otherwise. Every new dump is parsed with `pg_restore --list` before deployment continues. A SHA-256 sidecar is written when `sha256sum` is available.
+
+## Manual backup
+
+```bash
+cd /opt/dutylog/production
+bash deploy/scripts/backup-postgres.sh
+```
+
+Keep recent copies outside the VPS. A dump on the same disk is not disaster recovery.
 
 ## Restore
 
-Restore only when you understand that the current database may be replaced.
+Database restore is deliberately manual and is never performed by CI/CD.
 
 ```bash
-./deploy/scripts/restore-postgres.sh backups/dutylog-YYYY-MM-DD_HH-MM-SS.dump
+cd /opt/dutylog/production
+CONFIRM_RESTORE=RESTORE \
+  bash deploy/scripts/restore-postgres.sh backups/<file>.dump
 ```
+
+Before replacing the database, the script checks an adjacent SHA-256 sidecar when present, validates custom-format archives with `pg_restore --list`, and creates another verified `pre-restore` backup unless `SKIP_PRE_RESTORE_BACKUP=true` is explicitly set.
 
 After restore:
 
 ```bash
-docker compose -f docker-compose.prod.yml restart app
-./deploy/scripts/smoke-test.sh https://your-domain.example
+bash deploy/scripts/smoke-test.sh https://app.dutylog.example.com
 ```
 
-## Restore test policy
+## Safety rules
 
-Before stable release, test restore on a safe copy or staging machine at least once. A backup that was never restored is only a hope, not a recovery plan.
-
-## Safety notes
-
-- Do not commit backups to Git.
-- Do not store backups only on the same VPS.
-- Keep at least one recent backup outside the server.
-- Avoid `docker compose down -v` unless data deletion is intentional.
+- test restore on staging before relying on it in an incident;
+- never commit dumps or copy personal production data into ordinary staging;
+- never use `docker compose down -v` in production;
+- application rollback does not reverse Flyway migrations;
+- do not automate database restore after a failed deployment because it may discard new writes.

@@ -1,212 +1,62 @@
 # Production runbook
 
-This runbook is the practical checklist for launching and maintaining DutyLog on a VPS.
+Status: v27.2.1.
 
-## 1. First launch on a clean VPS
+## Normal release
 
-Recommended directory:
+1. Merge completed work into `test`.
+2. Wait for `Deploy staging` to finish.
+3. Test the staging site and persistent staging migration.
+4. Merge the same tree into the repository's production branch (`main` or `master`).
+5. Approve the protected `production` GitHub Environment when approval is enabled.
+6. Confirm backup, health and smoke steps are green.
 
-```bash
-sudo mkdir -p /opt/dutylog
-sudo chown -R "$USER":"$USER" /opt/dutylog
-cd /opt/dutylog
-```
+Production is never rebuilt independently. It pulls the staging-tested image digest.
 
-Clone the repository:
-
-```bash
-git clone <repo-url> .
-```
-
-Create production environment file:
+## Check production
 
 ```bash
-cp .env.production.example .env
-nano .env
+cd /opt/dutylog/production
+docker compose --env-file .env -f deploy/compose/docker-compose.deploy.yml -p dutylog-production ps
+docker compose --env-file .env -f deploy/compose/docker-compose.deploy.yml -p dutylog-production logs --tail=200 app
+bash deploy/scripts/smoke-test.sh https://app.dutylog.example.com
 ```
 
-Minimum values to replace:
-
-```env
-DUTYLOG_DOMAIN=dutylog.example.com
-POSTGRES_PASSWORD=...
-SPRING_DATASOURCE_PASSWORD=...
-DUTYLOG_ADMIN_USERNAME=your_admin_login
-DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
-DUTYLOG_TELEGRAM_BOT_TOKEN=...
-DUTYLOG_REGISTRATION_DEFAULT_ENABLED=false
-DUTYLOG_SECURITY_RATE_LIMIT_ENABLED=true
-```
-
-If Telegram is not ready yet, keep it disabled:
-
-```env
-DUTYLOG_TELEGRAM_ENABLED=false
-DUTYLOG_TELEGRAM_POLLING_ENABLED=false
-```
-
-Copy Caddy config:
+## Backup
 
 ```bash
-cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
+cd /opt/dutylog/production
+bash deploy/scripts/backup-postgres.sh
+bash deploy/scripts/list-backups.sh
 ```
 
-Run production preflight:
+Copy recent backups off the VPS.
+
+## Application rollback
 
 ```bash
-./deploy/scripts/check-production-env.sh
+cd /opt/dutylog/production
+CONFIRM_ROLLBACK=ROLLBACK bash deploy/scripts/rollback-environment.sh
 ```
 
-Start production stack:
+This changes the application image only. It does not reverse Flyway.
+
+## Database restore
+
+Restore is manual and should first be rehearsed on staging:
 
 ```bash
-docker compose -f docker-compose.prod.yml up -d --build
+cd /opt/dutylog/production
+CONFIRM_RESTORE=RESTORE bash deploy/scripts/restore-postgres.sh backups/<file>.dump
 ```
 
-Check status:
+Do not automate a database restore after deployment failure. It can destroy writes made after the backup.
+
+## Logs
 
 ```bash
-docker compose -f docker-compose.prod.yml ps
-docker compose -f docker-compose.prod.yml logs -f app
+docker compose --env-file .env -f deploy/compose/docker-compose.deploy.yml -p dutylog-production logs -f app
+docker compose --env-file .env -f deploy/compose/docker-compose.deploy.yml -p dutylog-production logs -f db
 ```
 
-Open:
-
-```text
-https://your-domain.example
-```
-
-The administrator is no longer selected by “first registration”. Set it explicitly in `.env` before startup:
-
-```env
-DUTYLOG_ADMIN_USERNAME=your_admin_login
-DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
-```
-
-The backend creates this account on first startup or promotes it to `ADMIN` if it already exists. Since v22.3 normal restart keeps the current password; set `DUTYLOG_ADMIN_FORCE_PASSWORD_RESET=true` only for emergency recovery. Every public registration creates a regular `USER`.
-
-## 2. Post-launch checks
-
-Run smoke test. In v27.1.0 it verifies split static asset versions and service worker cache version:
-
-```bash
-DUTYLOG_BASE_URL=https://your-domain.example ./deploy/scripts/smoke-test.sh
-```
-
-Then check manually:
-
-- registration starts closed and login rate limiting is active;
-- calendar opens;
-- admin sees `Система` in the header;
-- `Система` shows database status `ok`;
-- regular user does not see `Система`;
-- Telegram linking works if Telegram is enabled;
-- notes ZIP export opens and contains only the current user's data;
-- `SECURITY_AUDIT` logs contain metadata but no secrets;
-- backup script creates a dump.
-
-## 3. Safe update
-
-Always create a backup before updating:
-
-```bash
-cd /opt/dutylog
-./deploy/scripts/backup-postgres.sh
-git pull
-docker compose -f docker-compose.prod.yml up -d --build
-./deploy/scripts/smoke-test.sh https://your-domain.example
-```
-
-Check logs:
-
-```bash
-docker compose -f docker-compose.prod.yml logs --tail=200 app
-```
-
-## 4. Rollback
-
-Code rollback without database rollback can fail if the new version has already applied migrations. The safest rollback is:
-
-1. checkout the previous Git tag;
-2. restore a database backup from the same period;
-3. rebuild containers.
-
-Example:
-
-```bash
-cd /opt/dutylog
-./deploy/scripts/backup-postgres.sh
-git checkout <previous-good-tag>
-./deploy/scripts/restore-postgres.sh backups/dutylog-before-update.dump
-docker compose -f docker-compose.prod.yml up -d --build
-```
-
-For small frontend-only fixes, a code-only rollback may be enough:
-
-```bash
-git checkout <previous-good-tag>
-docker compose -f docker-compose.prod.yml up -d --build
-```
-
-## 5. Emergency backup
-
-If something looks wrong but the database is still reachable, take a backup before touching anything:
-
-```bash
-cd /opt/dutylog
-./deploy/scripts/backup-postgres.sh
-```
-
-Then copy it outside the VPS:
-
-```bash
-scp /opt/dutylog/backups/dutylog-*.dump user@other-host:/safe/place/
-```
-
-## 6. Logs
-
-Application/security logs are available through Docker stdout and the bounded `app_logs` volume:
-
-```bash
-docker compose -f docker-compose.prod.yml logs -f app
-docker compose -f docker-compose.prod.yml exec app sh -lc 'tail -f /app/logs/dutylog.log'
-```
-
-Database logs:
-
-```bash
-docker compose -f docker-compose.prod.yml logs -f db
-```
-
-Reverse proxy logs:
-
-```bash
-docker compose -f docker-compose.prod.yml logs -f caddy
-```
-
-## 7. Safe and dangerous commands
-
-Safe stop:
-
-```bash
-docker compose -f docker-compose.prod.yml down
-```
-
-Dangerous stop:
-
-```bash
-docker compose -f docker-compose.prod.yml down -v
-```
-
-The `-v` flag removes Docker volumes and can delete PostgreSQL data.
-
-## 8. Regular maintenance
-
-Recommended routine:
-
-- update OS packages;
-- keep Docker images up to date;
-- create backup before every DutyLog update;
-- keep at least one backup outside the VPS;
-- periodically test restore on a non-production database;
-- check admin `Система` page after every update.
+The shared edge proxy lives in `/opt/dutylog/edge`.

@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.1.0}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.1}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -41,7 +41,7 @@ need() {
 contains() {
   local file="$1"
   local text="$2"
-  if grep -Fq "$text" "$file"; then
+  if grep -Fq -- "$text" "$file"; then
     ok "$file contains: $text"
   else
     fail "$file does not contain expected text: $text"
@@ -51,7 +51,7 @@ contains() {
 not_contains() {
   local file="$1"
   local text="$2"
-  if grep -Fq "$text" "$file"; then
+  if grep -Fq -- "$text" "$file"; then
     fail "$file contains forbidden text: $text"
   else
     ok "$file does not contain forbidden text: $text"
@@ -82,8 +82,10 @@ contains src/main/resources/static/login.html "/js/login.js?v=$VERSION"
 for asset in "${STATIC_JS[@]}"; do
   contains src/main/resources/static/index.html "$asset?v=$VERSION"
 done
-contains src/main/resources/application.properties "info.app.version=$VERSION"
-contains src/main/resources/application-prod.properties "info.app.version=$VERSION"
+contains src/main/resources/application.properties "info.app.version=\${DUTYLOG_BUILD_VERSION:$VERSION}"
+contains src/main/resources/application-prod.properties "info.app.version=\${DUTYLOG_BUILD_VERSION:$VERSION}"
+contains src/main/resources/application.properties "info.app.release-version=$VERSION"
+contains src/main/resources/application-prod.properties "info.app.release-version=$VERSION"
 contains src/test/resources/application.properties "spring.jpa.open-in-view=false"
 contains pom.xml "<version>${VERSION}</version>"
 contains deploy/scripts/smoke-test.sh "VERSION=\"\${DUTYLOG_RELEASE_VERSION:-$VERSION}\""
@@ -320,10 +322,10 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "v27.1.0"
-contains docs/TEST_CONFIG_HOTFIX.md "v27.1.0"
+contains docs/SECURITY_REVIEW.md "v27.2.1"
+contains docs/TEST_CONFIG_HOTFIX.md "v27.2.1"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
-contains docs/CI_PERMISSION_HOTFIX.md "v27.1.0"
+contains docs/CI_PERMISSION_HOTFIX.md "v27.2.1"
 contains src/main/resources/static/index.html 'data-onboarding-preset="work"'
 contains src/main/resources/static/index.html ">Стандарт</button>"
 not_contains src/main/resources/static/index.html "Работа + переработки"
@@ -335,13 +337,13 @@ contains src/main/resources/static/app.css ".cell.todayCell::before"
 contains src/main/resources/static/js/20-data.js "DAY_MODULES_HINT_DISMISSED_KEY"
 contains src/main/resources/static/js/20-data.js "dayModulesHintCloseBtn"
 contains src/main/resources/static/app.css ".dayModulesHintClose"
-contains docs/ONBOARDING_TODAY_HOTFIX.md "v27.1.0"
-contains docs/DAY_HINT_DISMISS_HOTFIX.md "v27.1.0"
-contains docs/I18N_POLISH_HOTFIX.md "v27.1.0"
-contains docs/LOGIN_LANGUAGE_HOTFIX.md "v27.1.0"
-contains docs/UI_ALIGNMENT_TEST_HOTFIX.md "v27.1.0"
+contains docs/ONBOARDING_TODAY_HOTFIX.md "v27.2.1"
+contains docs/DAY_HINT_DISMISS_HOTFIX.md "v27.2.1"
+contains docs/I18N_POLISH_HOTFIX.md "v27.2.1"
+contains docs/LOGIN_LANGUAGE_HOTFIX.md "v27.2.1"
+contains docs/UI_ALIGNMENT_TEST_HOTFIX.md "v27.2.1"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "private static String body(String username, String password, String languagePreference)"
-contains src/main/resources/static/app.css "v27.1.0: stable right-side controls"
+contains src/main/resources/static/app.css "v27.2.1: stable right-side controls"
 contains src/main/resources/static/app.css "#timeSettingsCard .settingsHead > .status"
 contains src/main/resources/static/app.css "#profileCard .settingsHead > .avatarBig"
 contains src/main/resources/static/js/login.js "languagePreference: currentLang"
@@ -353,8 +355,8 @@ contains src/main/resources/static/js/10-core.js "if (typeof renderSettingsPanel
 contains src/main/resources/static/js/30-calendar.js 'esc(t("Итого:"))'
 contains src/main/resources/static/js/60-settings.js 'const workLabel = state.language === "en" ? "work time"'
 contains src/main/resources/static/js/60-settings.js 'esc(t("шт"))'
-contains docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md "v27.1.0"
-contains src/main/resources/static/app.css "v27.1.0: notifications header alignment"
+contains docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md "v27.2.1"
+contains src/main/resources/static/app.css "v27.2.1: notifications header alignment"
 contains src/main/resources/static/app.css "#notifyCard > .notifyHead"
 contains src/main/resources/static/app.css ".adminShell.settingsShell"
 contains src/main/resources/static/index.html 'data-admin-jump="users"'
@@ -363,7 +365,7 @@ contains src/main/resources/static/index.html 'data-admin-jump="diagnostics"'
 contains src/main/resources/static/js/60-settings.js "function initAdminNavigation"
 contains src/main/resources/static/js/60-settings.js "notificationsActive"
 
-# v27.1.0 Android API contract freeze
+# Android API v1 contract (introduced in v27.1.0, retained in v27.2.1)
 contains src/main/resources/static/js/login.js "languagePreference: currentLang"
 not_contains src/main/resources/static/login.html "<script>"
 not_contains src/main/java/ru/daniil/shifts/config/SecurityHeadersFilter.java "script-src 'self' 'unsafe-inline'"
@@ -391,7 +393,7 @@ contains docs/SECURITY_CONSOLIDATION.md "Status: v27.0-rc4."
 contains docs/NOTES_EXPORT.md "GET /api/export/notes"
 contains docs/SUPPLY_CHAIN.md "Dependabot"
 
-# v27.1.0 Android API contract freeze
+# Android API v1 contract (introduced in v27.1.0, retained in v27.2.1)
 contains src/main/java/ru/daniil/shifts/web/MobileV1Controller.java '@RequestMapping("/api/v1/mobile")'
 contains src/main/java/ru/daniil/shifts/web/MobileV1AuthController.java '@RequestMapping("/api/v1/mobile/auth")'
 contains src/main/java/ru/daniil/shifts/service/MobileSyncService.java 'ALREADY_APPLIED'
@@ -403,7 +405,7 @@ contains src/main/java/ru/daniil/shifts/web/ApiErrorResponse.java 'String reques
 contains src/main/java/ru/daniil/shifts/config/ApiVersionFilter.java 'X-DutyLog-Api-Version'
 contains src/main/resources/db/migration/postgresql/V22__android_api_contract.sql 'mobile_sync_operations'
 contains src/main/resources/static/openapi/dutylog-v1.yaml '/api/v1/mobile/sync:'
-contains docs/ANDROID_API_V1.md 'Version: **27.1.0**'
+contains docs/ANDROID_API_V1.md 'Version: **27.2.1**'
 contains src/test/java/ru/daniil/shifts/web/MobileV1ContractTest.java 'ALREADY_APPLIED'
 contains src/test/java/ru/daniil/shifts/web/MobileV1ContractTest.java 'VERSION_CONFLICT'
 contains src/test/java/ru/daniil/shifts/web/ApiV1OpenApiContractTest.java 'OpenAPI v1 file must be packaged'
@@ -413,10 +415,69 @@ contains src/main/java/ru/daniil/shifts/dto/Dtos.java 'e.getSyncVersion()'
 contains src/main/java/ru/daniil/shifts/service/MobileSyncService.java 'current == null ? 0L : current.getSyncVersion()'
 contains src/test/java/ru/daniil/shifts/web/MobileV1ContractTest.java 'op-android-stale-absent'
 contains src/main/java/ru/daniil/shifts/web/ApiExceptionHandler.java '"INTERNAL_ERROR"'
-contains docs/ANDROID_API_PLAN.md 'Current backend milestone: **v27.1.0 — Android API contract freeze**.'
+contains docs/ANDROID_API_PLAN.md 'Current backend milestone: **v27.2.1 — Staging and CI/CD foundation**.'
 contains src/main/resources/application.properties 'dutylog.mobile.sync.idempotency-retention-days=${DUTYLOG_MOBILE_SYNC_RETENTION_DAYS:90}'
 contains src/main/resources/application-prod.properties 'dutylog.mobile.sync.idempotency-retention-days=${DUTYLOG_MOBILE_SYNC_RETENTION_DAYS:90}'
 contains docker-compose.prod.yml 'DUTYLOG_MOBILE_SYNC_RETENTION_DAYS: ${DUTYLOG_MOBILE_SYNC_RETENTION_DAYS:-90}'
+
+# v27.2.1 staging and CI/CD foundation
+contains .github/workflows/deploy-staging.yml "branches: [test]"
+contains .github/workflows/deploy-staging.yml 'refs/heads/test'
+contains .github/workflows/deploy-staging.yml "staging-tested-tree-"
+contains .github/workflows/deploy-staging.yml "docker/build-push-action@v6"
+contains .github/workflows/deploy-staging.yml 'Verify the exact image on clean PostgreSQL'
+contains .github/workflows/deploy-production.yml "branches: [main, master]"
+contains .github/workflows/deploy-production.yml 'refs/heads/main'
+contains .github/workflows/deploy-production.yml 'refs/heads/master'
+contains .github/workflows/deploy-production.yml "staging-tested-tree-"
+contains .github/workflows/deploy-production.yml "This exact source tree was not successfully deployed to staging."
+contains .github/workflows/deploy-production.yml "needs: validate"
+contains .github/workflows/deploy-production.yml "environment: production"
+contains .github/workflows/deploy-production.yml 'DUTYLOG_BUILD_TREE: ${{ needs.validate.outputs.tree_sha }}'
+not_contains .github/workflows/deploy-production.yml "docker/build-push-action"
+contains deploy/compose/docker-compose.deploy.yml 'DUTYLOG_IMAGE:?DUTYLOG_IMAGE must be an immutable registry reference'
+contains deploy/env/.env.staging.example 'ghcr.io/invalid/dutylog-bootstrap@sha256:0000000000000000000000000000000000000000000000000000000000000000'
+contains deploy/env/.env.production.cicd.example 'ghcr.io/invalid/dutylog-bootstrap@sha256:0000000000000000000000000000000000000000000000000000000000000000'
+contains deploy/compose/docker-compose.deploy.yml 'name: ${DUTYLOG_EDGE_NETWORK:-dutylog_edge}'
+not_contains deploy/compose/docker-compose.deploy.yml "container_name:"
+contains deploy/scripts/deploy-environment.sh 'must be an immutable image digest reference'
+contains deploy/scripts/deploy-environment.sh 'Creating verified pre-deploy backup'
+contains deploy/scripts/deploy-environment.sh 'check-deploy-env.sh'
+contains deploy/scripts/check-deploy-env.sh 'production requires DUTYLOG_BACKUP_BEFORE_DEPLOY=true'
+contains deploy/scripts/check-deploy-env.sh 'production project name must be dutylog-production'
+contains deploy/scripts/check-deploy-env.sh 'staging project name must be dutylog-staging'
+contains deploy/scripts/bootstrap-cicd-host.sh 'currently publishes linux/amd64 images'
+contains deploy/scripts/deploy-environment.sh 'Database migrations were not rolled back.'
+contains deploy/scripts/deploy-environment.sh 'Running container metadata does not match the requested immutable build.'
+contains deploy/scripts/deploy-environment.sh '--tree must be the exact 40-character Git tree SHA used to build the image'
+contains deploy/scripts/deploy-environment.sh '"$IMAGE_TREE" != "$BUILD_TREE"'
+contains deploy/scripts/remote-deploy.sh 'DUTYLOG_BUILD_VERSION DUTYLOG_BUILD_TREE DUTYLOG_BUILD_COMMIT'
+contains deploy/scripts/rollback-environment.sh 'PREVIOUS_TREE'
+contains deploy/scripts/backup-postgres.sh 'pg_restore --list'
+contains deploy/scripts/backup-postgres.sh 'sha256sum "$(basename "$OUT")"'
+contains deploy/scripts/restore-postgres.sh 'Backup SHA-256 verification failed'
+contains deploy/scripts/reset-staging.sh 'Refusing to reset a non-staging environment.'
+not_contains deploy/scripts/reset-staging.sh 'rm -rf'
+contains deploy/scripts/remote-deploy.sh 'StrictHostKeyChecking=yes'
+contains deploy/scripts/remote-deploy.sh 'deploy/scripts/check-deploy-env.sh'
+contains deploy/scripts/restore-postgres.sh 'CONFIRM_RESTORE'
+contains deploy/scripts/restore-postgres.sh 'pre-restore'
+contains deploy/scripts/migration-smoke-test.sh 'Clean PostgreSQL migration and container startup passed.'
+contains deploy/scripts/smoke-test.sh '401|302|403)'
+not_contains deploy/scripts/smoke-test.sh '200|401|302|403)'
+contains Dockerfile 'DUTYLOG_BUILD_ID=local'
+contains Dockerfile 'org.opencontainers.image.revision'
+contains Dockerfile 'org.opencontainers.image.source-tree'
+contains Dockerfile 'DUTYLOG_BUILD_TREE'
+contains Dockerfile 'USER 10001:10001'
+contains src/main/resources/static/service-worker.js '__DUTYLOG_BUILD_ID__'
+contains src/main/resources/static/service-worker.js 'dutylog-shell-v27.2.1-${BUILD_ID}'
+contains src/main/resources/static/js/70-user-boot.js 'updateViaCache: "none"'
+contains src/main/resources/static/js/login.js 'updateViaCache: "none"'
+contains docs/CICD.md 'Production does not rebuild source code.'
+contains docs/STAGING.md 'Refusing to reset a non-staging environment.'
+contains docs/MIGRATION_SAFETY.md 'Automatic database restore is intentionally forbidden'
+contains docs/GIT_WORKFLOW.md 'feature/*  isolated work'
 
 python3 - <<'PY_SECURITY'
 from pathlib import Path
@@ -429,13 +490,13 @@ for path in ['src/main/resources/static/login.html', 'src/main/resources/static/
 print('OK:    no inline script tags in runtime HTML')
 PY_SECURITY
 
-contains CHANGES.md "v27.1.0 — Android API contract freeze"
-contains README.md "v27.1.0 — Android API contract freeze"
-contains docs/RELEASE_CANDIDATE.md "v27.1.0 — Android API contract freeze"
-contains docs/USER_GUIDE.md "Status: v27.1.0."
-contains docs/PRODUCTION_DEPLOY.md "git checkout v27.1.0"
-contains docs/BACKUP_RESTORE.md "Status: v27.1.0."
-contains docs/RELEASE_CHECKLIST.md "git tag -a v27.1.0"
+contains CHANGES.md "v27.2.1 — Staging and CI/CD foundation"
+contains README.md "v27.2.1 — Staging and CI/CD foundation"
+contains docs/RELEASE_CANDIDATE.md "v27.2.1 — Staging and CI/CD foundation"
+contains docs/USER_GUIDE.md "Status: v27.2.1."
+contains docs/PRODUCTION_DEPLOY.md "same GHCR digest that already passed staging"
+contains docs/BACKUP_RESTORE.md "Status: v27.2.1."
+contains docs/RELEASE_CHECKLIST.md "git tag -a v27.2.1"
 
 echo
 

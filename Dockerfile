@@ -1,13 +1,35 @@
-# Multi-stage build: compile with Maven, then run from a small JRE image.
+# Multi-stage build: compile with Maven, then run from a small non-root JRE image.
 FROM maven:3.9.9-eclipse-temurin-17 AS build
 WORKDIR /app
+
+ARG DUTYLOG_BUILD_ID=local
 COPY pom.xml .
 RUN mvn -q -DskipTests dependency:go-offline
 COPY src ./src
-RUN mvn -q -DskipTests package
+# A unique service-worker body per immutable image prevents stale PWA shell caches
+# even when multiple CI builds share the same semantic release version.
+RUN find src/main/resources/static -type f -name '*.js' -exec \
+      sed -i "s/__DUTYLOG_BUILD_ID__/${DUTYLOG_BUILD_ID}/g" {} + \
+    && mvn -q -DskipTests package
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
+ARG DUTYLOG_BUILD_VERSION=27.2.1-local
+ARG DUTYLOG_BUILD_COMMIT=local
+ARG DUTYLOG_BUILD_TREE=local
+ARG DUTYLOG_BUILD_TIME=unknown
+ARG DUTYLOG_SOURCE_URL=unknown
+LABEL org.opencontainers.image.title="DutyLog: Time & Overtime" \
+      org.opencontainers.image.version="$DUTYLOG_BUILD_VERSION" \
+      org.opencontainers.image.revision="$DUTYLOG_BUILD_COMMIT" \
+      org.opencontainers.image.source-tree="$DUTYLOG_BUILD_TREE" \
+      org.opencontainers.image.created="$DUTYLOG_BUILD_TIME" \
+      org.opencontainers.image.source="$DUTYLOG_SOURCE_URL"
+ENV SPRING_PROFILES_ACTIVE=prod \
+    DUTYLOG_BUILD_VERSION=$DUTYLOG_BUILD_VERSION \
+    DUTYLOG_BUILD_COMMIT=$DUTYLOG_BUILD_COMMIT \
+    DUTYLOG_BUILD_TREE=$DUTYLOG_BUILD_TREE \
+    DUTYLOG_BUILD_TIME=$DUTYLOG_BUILD_TIME
 RUN apt-get update \
     && apt-get install -y --no-install-recommends curl ca-certificates \
     && groupadd --system --gid 10001 dutylog \
@@ -15,7 +37,6 @@ RUN apt-get update \
     && mkdir -p /app/logs \
     && chown -R dutylog:dutylog /app \
     && rm -rf /var/lib/apt/lists/*
-ENV SPRING_PROFILES_ACTIVE=prod
 COPY --from=build --chown=dutylog:dutylog /app/target/dutylog-*.jar /app/dutylog.jar
 USER 10001:10001
 EXPOSE 8080

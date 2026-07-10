@@ -1,19 +1,16 @@
-# CI: на каждый push и pull request собирает проект и гоняет все тесты.
-# Смысл: тесты, которые запускает робот, невозможно "забыть запустить".
-# Красный крестик на коммите = что-то сломано, чинить до продолжения работы.
-#
-# Работает на GitHub из коробки. Для Gitea/GitLab синтаксис почти тот же —
-# см. их документацию по actions/ci.
-
 name: CI
 
 on:
   push:
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
-  test:
+  test-and-package:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,10 +20,25 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
-          cache: maven   # кэш зависимостей: первый прогон ~минуты, дальше секунды
+          cache: maven
 
-      - name: Build & test
+      - name: Build and test
         run: mvn -B --no-transfer-progress test
 
       - name: Release static checks
         run: bash ./deploy/scripts/release-check.sh
+
+      - name: Build deployment image
+        run: |
+          BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          docker build \
+            --build-arg DUTYLOG_BUILD_ID="ci-${GITHUB_SHA::12}" \
+            --build-arg DUTYLOG_BUILD_VERSION="27.2.1-ci.${GITHUB_RUN_NUMBER}" \
+            --build-arg DUTYLOG_BUILD_COMMIT="$GITHUB_SHA" \
+            --build-arg DUTYLOG_BUILD_TREE="$(git rev-parse HEAD^{tree})" \
+            --build-arg DUTYLOG_BUILD_TIME="${BUILD_TIME:-unknown}" \
+            --build-arg DUTYLOG_SOURCE_URL="${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}" \
+            -t dutylog:ci .
+
+      - name: Clean PostgreSQL migration smoke test
+        run: bash ./deploy/scripts/migration-smoke-test.sh dutylog:ci
