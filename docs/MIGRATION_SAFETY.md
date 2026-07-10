@@ -1,6 +1,6 @@
 # Flyway migration safety
 
-Status: v27.2.0.
+Status: v27.2.1.
 
 Production schema changes are owned only by Flyway:
 

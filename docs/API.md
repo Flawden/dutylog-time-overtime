@@ -1,4 +1,4 @@
-# DutyLog API v27.2.0
+# DutyLog API v27.2.1
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -1057,7 +1057,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "27.2.0",
+  "version": "27.2.1",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],
@@ -1234,7 +1234,7 @@ Security/limits:
 
 ---
 
-## Android API v1 (v27.2.0)
+## Android API v1 (v27.2.1)
 
 New Android code must use `/api/v1/**`. The complete contract and compatibility rules are in [`ANDROID_API_V1.md`](ANDROID_API_V1.md); the canonical OpenAPI file is served from `/openapi/dutylog-v1.yaml`.
 

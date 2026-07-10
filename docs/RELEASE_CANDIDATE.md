@@ -1,4 +1,4 @@
-# v27.2.0 — Staging and CI/CD foundation
+# v27.2.1 — Staging and CI/CD foundation
 
 Status: infrastructure release candidate.
 

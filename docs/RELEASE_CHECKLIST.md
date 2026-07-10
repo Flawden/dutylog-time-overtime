@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.2.0.
+Status: v27.2.1.
 
 ## Local gate
 
@@ -48,6 +48,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.2.0 -m "v27.2.0 — Staging and CI/CD foundation"
-git push origin v27.2.0
+git tag -a v27.2.1 -m "v27.2.1 — Staging and CI/CD foundation"
+git push origin v27.2.1
 ```

@@ -56,7 +56,7 @@ jobs:
           SHORT_TREE="${TREE_SHA:0:12}"
           echo "image_name=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
           echo "tree_sha=$TREE_SHA" >> "$GITHUB_OUTPUT"
-          echo "build_version=27.2.0+tree.$SHORT_TREE" >> "$GITHUB_OUTPUT"
+          echo "build_version=27.2.1+tree.$SHORT_TREE" >> "$GITHUB_OUTPUT"
 
   deploy:
     needs: validate
@@ -124,7 +124,7 @@ jobs:
           DUTYLOG_GHCR_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
           DUTYLOG_DEPLOY_ENVIRONMENT: production
           DUTYLOG_IMAGE_REF: ${{ needs.validate.outputs.image_name }}@${{ steps.image.outputs.digest }}
-          DUTYLOG_RELEASE_VERSION: 27.2.0
+          DUTYLOG_RELEASE_VERSION: 27.2.1
           DUTYLOG_BUILD_VERSION: ${{ needs.validate.outputs.build_version }}
           DUTYLOG_BUILD_TREE: ${{ needs.validate.outputs.tree_sha }}
           DUTYLOG_BUILD_COMMIT: ${{ github.sha }}

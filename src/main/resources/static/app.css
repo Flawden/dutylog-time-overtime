@@ -1442,7 +1442,7 @@ body.appBooting .appBoot{display:flex;}
 @media (prefers-reduced-motion: reduce){.loadingState i,.calendarSkeleton span,.calendarSkeleton i,.calendarSkeleton em{animation:none;}}
 @media (max-width:560px){.emptyState{gap:10px;padding:12px}.emptyIcon{width:30px;height:30px;border-radius:10px}.emptyState.board{min-height:84px}.appBootCard{border-radius:18px;padding:16px}}
 
-/* v27.2.0: stable right-side controls in settings headers.
+/* v27.2.1: stable right-side controls in settings headers.
    Status chips and the profile avatar stay pinned to the right even when RU/EN text length changes. */
 .settingsHead > :first-child,
 .notifyHead > :first-child{
@@ -1482,7 +1482,7 @@ body.appBooting .appBoot{display:flex;}
   }
 }
 
-/* v27.2.0: notifications header alignment and admin side navigation. */
+/* v27.2.1: notifications header alignment and admin side navigation. */
 #notifyCard > .notifyHead{
   display:grid;
   grid-template-columns:minmax(0,1fr) max-content max-content;

@@ -1,6 +1,6 @@
 # Deployment guide
 
-Status: v27.2.0.
+Status: v27.2.1.
 
 The recommended deployment path is now automated and documented in [`CICD.md`](CICD.md).
 
@@ -21,6 +21,6 @@ Use:
 - [`MIGRATION_SAFETY.md`](MIGRATION_SAFETY.md) before schema changes;
 - [`BACKUP_RESTORE.md`](BACKUP_RESTORE.md) for recovery.
 
-The old `docker-compose.prod.yml` remains available for manual/local emergency operation, but it is not the normal update path after v27.2.0.
+The old `docker-compose.prod.yml` remains available for manual/local emergency operation, but it is not the normal update path after v27.2.1.
 
 Never run `docker compose down -v` against production.

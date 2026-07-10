@@ -1,4 +1,4 @@
-## v27.2.0 — Staging and CI/CD foundation
+## v27.2.1 — Staging and CI/CD foundation
 
 - Added automatic `test` -> staging and `main` -> production GitHub Actions workflows.
 - Production promotes the exact staging-tested GHCR image digest identified by Git tree hash; untested trees fail closed, and the host verifies the running image tree before accepting the deployment.

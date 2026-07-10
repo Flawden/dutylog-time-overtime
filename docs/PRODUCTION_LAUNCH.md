@@ -1,6 +1,6 @@
 # Production launch
 
-Status: v27.2.0.
+Status: v27.2.1.
 
 This is the short path. Full details are in [`CICD.md`](CICD.md).
 
