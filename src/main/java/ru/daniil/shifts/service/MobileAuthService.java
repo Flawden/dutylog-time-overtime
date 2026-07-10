@@ -28,6 +28,7 @@ import java.util.Optional;
 public class MobileAuthService {
     private static final Duration ACCESS_TTL = Duration.ofMinutes(30);
     private static final Duration REFRESH_TTL = Duration.ofDays(45);
+    private static final Duration LAST_USED_WRITE_INTERVAL = Duration.ofMinutes(5);
     private static final SecureRandom RANDOM = new SecureRandom();
 
     private final UserRepository users;
@@ -55,7 +56,7 @@ public class MobileAuthService {
         AppUser user = users.findByUsername(username).orElse(null);
         if (user == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
             securityEvents.warn("AUTH_LOGIN_FAILED", username, "rejected", "channel=mobile");
-            throw ApiException.badRequest("Неверный логин или пароль");
+            throw ApiException.unauthorized("AUTH_INVALID_CREDENTIALS", "Неверный логин или пароль");
         }
         securityEvents.info("AUTH_LOGIN_SUCCEEDED", username, "accepted", "channel=mobile");
         return issueNewTokenPair(user, normalizeDeviceName(req.deviceName()));
@@ -70,7 +71,7 @@ public class MobileAuthService {
         MobileAuthToken existing = tokens.findByRefreshTokenHash(hash(refreshToken))
                 .orElseThrow(() -> {
                     securityEvents.warn("AUTH_TOKEN_REJECTED", null, "rejected", "reason=unknown_refresh_token");
-                    return ApiException.badRequest("Refresh token недействителен");
+                    return ApiException.unauthorized("TOKEN_INVALID", "Refresh token недействителен");
                 });
 
         Instant now = Instant.now();
@@ -79,7 +80,7 @@ public class MobileAuthService {
             tokens.save(existing);
             securityEvents.warn("AUTH_TOKEN_REJECTED", existing.getOwner().getUsername(), "rejected",
                     "reason=expired_or_revoked_refresh_token");
-            throw ApiException.badRequest("Refresh token истёк или был отозван");
+            throw ApiException.unauthorized("TOKEN_INVALID", "Refresh token истёк или был отозван");
         }
 
         // Ротация: старый access и refresh заменяются новой парой.
@@ -115,10 +116,13 @@ public class MobileAuthService {
         if (accessToken == null || accessToken.isBlank()) {
             return;
         }
+        Instant now = Instant.now();
         tokens.findByAccessTokenHash(hash(accessToken))
                 .filter(token -> !token.isRevoked())
+                .filter(token -> token.getLastUsedAt() == null
+                        || token.getLastUsedAt().plus(LAST_USED_WRITE_INTERVAL).isBefore(now))
                 .ifPresent(token -> {
-                    token.setLastUsedAt(Instant.now());
+                    token.setLastUsedAt(now);
                     tokens.save(token);
                 });
     }
@@ -196,6 +200,14 @@ public class MobileAuthService {
         tokens.save(token);
         securityEvents.info("MOBILE_TOKEN_REVOKED", user.getUsername(), "accepted",
                 "source=session_revoke id=" + id);
+    }
+
+    @Transactional
+    public MobileTokenResponse issueTokenPairForRegisteredUser(AppUser user, String deviceName) {
+        if (user == null) {
+            throw ApiException.badRequest("USER_REQUIRED", "Пользователь не указан");
+        }
+        return issueNewTokenPair(user, normalizeDeviceName(deviceName));
     }
 
     private MobileTokenResponse issueNewTokenPair(AppUser user, String deviceName) {

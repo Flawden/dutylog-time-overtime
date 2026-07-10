@@ -20,7 +20,7 @@ import java.time.format.DateTimeFormatter;
 
 /** Owner-scoped export endpoints. */
 @RestController
-@RequestMapping("/api/export")
+@RequestMapping({"/api/export", "/api/v1/export"})
 public class ExportController {
     private final NoteExportService noteExportService;
     private final CurrentUserService currentUserService;

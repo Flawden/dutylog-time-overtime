@@ -1,6 +1,6 @@
 # Production deploy
 
-Status: v27.0-rc4.
+Status: v27.1.0.
 
 Use this guide for a VPS deployment. For detailed operations and rollback, see `docs/PRODUCTION_RUNBOOK.md`.
 
@@ -19,7 +19,7 @@ sudo mkdir -p /opt/dutylog
 sudo chown -R "$USER":"$USER" /opt/dutylog
 cd /opt/dutylog
 git clone <repo-url> .
-git checkout v27.0-rc4
+git checkout v27.1.0
 cp .env.production.example .env
 cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
 ```

@@ -1,6 +1,8 @@
 package ru.daniil.shifts.config;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import ru.daniil.shifts.web.ApiErrorWriter;
 import org.springframework.mock.web.MockFilterChain;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -19,6 +21,7 @@ class AuthenticationRateLimitFilterTest {
     void authEndpointIsLimitedPerIp() throws Exception {
         AuthenticationRateLimitFilter filter = new AuthenticationRateLimitFilter(
                 mock(SecurityEventLogger.class),
+                new ApiErrorWriter(new ObjectMapper()),
                 Clock.fixed(Instant.parse("2026-07-10T00:00:00Z"), ZoneOffset.UTC),
                 true,
                 2,
@@ -39,6 +42,7 @@ class AuthenticationRateLimitFilterTest {
     void unrelatedEndpointIsNotLimited() throws Exception {
         AuthenticationRateLimitFilter filter = new AuthenticationRateLimitFilter(
                 mock(SecurityEventLogger.class),
+                new ApiErrorWriter(new ObjectMapper()),
                 Clock.systemUTC(),
                 true,
                 1,
@@ -49,6 +53,24 @@ class AuthenticationRateLimitFilterTest {
         for (int i = 0; i < 5; i++) {
             assertEquals(200, perform(filter, "/api/calendar", "203.0.113.20").getStatus());
         }
+    }
+
+    @Test
+    void mobileV1RegistrationUsesRegistrationBucket() throws Exception {
+        AuthenticationRateLimitFilter filter = new AuthenticationRateLimitFilter(
+                mock(SecurityEventLogger.class),
+                new ApiErrorWriter(new ObjectMapper()),
+                Clock.fixed(Instant.parse("2026-07-10T00:00:00Z"), ZoneOffset.UTC),
+                true,
+                5,
+                60,
+                1,
+                3600);
+
+        assertEquals(200, perform(filter, "/api/v1/mobile/auth/register", "203.0.113.30").getStatus());
+        MockHttpServletResponse rejected = perform(filter, "/api/v1/mobile/auth/register", "203.0.113.30");
+        assertEquals(429, rejected.getStatus());
+        assertTrue(rejected.getContentAsString().contains("RATE_LIMITED"));
     }
 
     private MockHttpServletResponse perform(AuthenticationRateLimitFilter filter,

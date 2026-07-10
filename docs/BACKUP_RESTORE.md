@@ -1,6 +1,6 @@
 # Backup and restore
 
-Status: v27.0-rc4.
+Status: v27.1.0.
 
 DutyLog production data is stored in PostgreSQL. Backups should be created before every update and copied outside the VPS.
 

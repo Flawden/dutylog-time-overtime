@@ -18,7 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/important-days")
+@RequestMapping({"/api/important-days", "/api/v1/important-days"})
 public class ImportantDayController {
     private final CurrentUserService currentUserService;
     private final ModuleService moduleService;

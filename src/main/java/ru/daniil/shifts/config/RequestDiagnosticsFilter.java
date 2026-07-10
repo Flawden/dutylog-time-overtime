@@ -29,8 +29,8 @@ public class RequestDiagnosticsFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
-        String requestId = request.getHeader(REQUEST_ID_HEADER);
-        if (requestId == null || requestId.isBlank()) requestId = UUID.randomUUID().toString().substring(0, 8);
+        String requestId = normalizedRequestId(request.getHeader(REQUEST_ID_HEADER));
+        if (requestId == null) requestId = UUID.randomUUID().toString().substring(0, 8);
         response.setHeader(REQUEST_ID_HEADER, requestId);
         request.setAttribute(REQUEST_ID_ATTRIBUTE, requestId);
 
@@ -51,6 +51,12 @@ public class RequestDiagnosticsFilter extends OncePerRequestFilter {
                 }
             }
         }
+    }
+
+    private String normalizedRequestId(String candidate) {
+        if (candidate == null) return null;
+        String trimmed = candidate.trim();
+        return trimmed.matches("[A-Za-z0-9._-]{1,64}") ? trimmed : null;
     }
 
     private boolean shouldLog(String uri) {

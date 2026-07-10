@@ -74,10 +74,11 @@ public class DayEntryService {
         if (entry.isEmpty()) {
             if (entry.getId() != null) {
                 days.delete(entry);
+                days.flush();
             }
             return null;
         }
-        return DayDto.from(days.save(entry));
+        return DayDto.from(days.saveAndFlush(entry));
     }
 
     @Transactional
@@ -119,11 +120,25 @@ public class DayEntryService {
 
 
     /**
-     * Patch-семантика для Android sync: меняются только присланные поля.
-     * clearShiftType/clearNote позволяют явно очистить смену или заметку.
+     * Legacy mobile patch: empty rows are removed to keep the old API behaviour.
      */
     @Transactional
     public DayDto patchMobileDay(AppUser user, MobileDayChangeRequest req) {
+        return patchMobileDayInternal(user, req, false);
+    }
+
+    /**
+     * Android API v1 patch: an empty row is retained as a lightweight tombstone
+     * so optimistic versions remain monotonic across clear/delete operations.
+     */
+    @Transactional
+    public DayDto patchMobileDayVersioned(AppUser user, MobileDayChangeRequest req) {
+        return patchMobileDayInternal(user, req, true);
+    }
+
+    private DayDto patchMobileDayInternal(AppUser user,
+                                          MobileDayChangeRequest req,
+                                          boolean preserveEmptyVersionRow) {
         if (req == null) {
             throw ApiException.badRequest("Пустое изменение дня в sync-запросе");
         }
@@ -149,20 +164,17 @@ public class DayEntryService {
             entry.setDayEmoji(normalizeDayEmoji(req.dayEmoji()));
         }
 
-        if (req.overtimeHours() != null) {
-            entry.setOvertimeHours(req.overtimeHours());
-        }
-        if (req.timeOffHours() != null) {
-            entry.setTimeOffHours(req.timeOffHours());
-        }
+        if (req.overtimeHours() != null) entry.setOvertimeHours(req.overtimeHours());
+        if (req.timeOffHours() != null) entry.setTimeOffHours(req.timeOffHours());
 
-        if (entry.isEmpty()) {
+        if (entry.isEmpty() && !preserveEmptyVersionRow) {
             if (entry.getId() != null) {
                 days.delete(entry);
+                days.flush();
             }
             return null;
         }
-        return DayDto.from(days.save(entry));
+        return DayDto.from(days.saveAndFlush(entry));
     }
 
     public LocalDate parseDate(String date, String message) {

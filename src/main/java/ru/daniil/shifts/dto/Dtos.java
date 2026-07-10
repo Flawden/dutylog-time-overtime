@@ -7,6 +7,7 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import ru.daniil.shifts.model.DayEntry;
@@ -183,7 +184,9 @@ public final class Dtos {
             String dayEmoji,
             double overtimeHours,
             double timeOffHours,
-            double overtimeBalanceHours
+            double overtimeBalanceHours,
+            long version,
+            String updatedAt
     ) {
         public static DayDto from(DayEntry e) {
             double overtime = e.getOvertimeHours();
@@ -195,7 +198,9 @@ public final class Dtos {
                     e.getDayEmoji(),
                     overtime,
                     timeOff,
-                    overtime - timeOff
+                    overtime - timeOff,
+                    e.getSyncVersion(),
+                    e.getUpdatedAt() != null ? e.getUpdatedAt().toString() : null
             );
         }
     }
@@ -650,6 +655,68 @@ public final class Dtos {
             String serverTime,
             List<DayDto> days,
             Map<String, String> warnings
+    ) {}
+
+
+    /** Registration request for the stable Android API v1. */
+    public record MobileRegisterRequest(
+            @NotBlank(message = "Имя пользователя не должно быть пустым")
+            String username,
+            @NotBlank(message = "Пароль не должен быть пустым")
+            String password,
+            @Pattern(regexp = "ru|en", message = "languagePreference: ru или en")
+            String languagePreference,
+            @Size(max = 120, message = "Название устройства: максимум 120 символов")
+            String deviceName
+    ) {}
+
+    /** Stable bootstrap envelope for /api/v1/mobile. */
+    public record MobileV1BootstrapDto(
+            String apiVersion,
+            String serverTime,
+            MobileUserDto user,
+            CalendarRangeDto calendar
+    ) {}
+
+    /** One idempotent day mutation from the Android offline queue. */
+    public record MobileV1DayOperationRequest(
+            @NotBlank(message = "Нужен operationId")
+            @Size(max = 64, message = "operationId: максимум 64 символа")
+            @Pattern(regexp = "[A-Za-z0-9._:-]+", message = "operationId содержит недопустимые символы")
+            String operationId,
+
+            @NotNull(message = "Нужен baseVersion")
+            @Min(value = 0, message = "baseVersion не может быть отрицательным")
+            Long baseVersion,
+
+            @NotNull(message = "Нужно изменение day")
+            @Valid MobileDayChangeRequest day
+    ) {}
+
+    /** Batch of idempotent operations for the stable Android API v1. */
+    public record MobileV1SyncRequest(
+            @NotEmpty(message = "Список operations не должен быть пустым")
+            @Size(max = 366, message = "За один sync можно отправить максимум 366 операций")
+            List<@NotNull @Valid MobileV1DayOperationRequest> operations
+    ) {}
+
+    /** Per-operation result: one bad item never hides successful neighbours. */
+    public record MobileSyncItemResultDto(
+            String operationId,
+            String status,
+            String entityType,
+            String entityId,
+            Long serverVersion,
+            DayDto entity,
+            String errorCode,
+            String message
+    ) {}
+
+    /** Stable sync response for Android API v1. */
+    public record MobileV1SyncResultDto(
+            String apiVersion,
+            String serverTime,
+            List<MobileSyncItemResultDto> items
     ) {}
 
     /**

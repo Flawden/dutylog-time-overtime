@@ -20,6 +20,7 @@ import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 import ru.daniil.shifts.repo.UserRepository;
+import ru.daniil.shifts.web.ApiErrorWriter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -72,9 +73,10 @@ public class SecurityConfig {
     @Order(1)
     public SecurityFilterChain mobileFilterChain(HttpSecurity http,
                                                   BearerTokenAuthenticationFilter bearerTokenAuthenticationFilter,
-                                                  SecurityEventLogger securityEvents) throws Exception {
+                                                  SecurityEventLogger securityEvents,
+                                                  ApiErrorWriter apiErrors) throws Exception {
         http
-                .securityMatcher("/api/mobile/**")
+                .securityMatcher("/api/mobile/**", "/api/v1/mobile/**")
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .requestCache(cache -> cache.disable())
@@ -84,20 +86,27 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/mobile/auth/login",
                                 "/api/mobile/auth/refresh",
-                                "/api/mobile/auth/logout"
+                                "/api/mobile/auth/logout",
+                                "/api/v1/mobile/auth/login",
+                                "/api/v1/mobile/auth/register",
+                                "/api/v1/mobile/auth/registration-status",
+                                "/api/v1/mobile/auth/refresh",
+                                "/api/v1/mobile/auth/logout"
                         ).permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint((request, response, exception) -> {
                             securityEvents.warn(request, "AUTH_REQUIRED", null, "rejected", "channel=mobile");
-                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                            apiErrors.write(request, response, HttpServletResponse.SC_UNAUTHORIZED,
+                                    "AUTH_REQUIRED", "Требуется Bearer access token");
                         })
                         .accessDeniedHandler((request, response, exception) -> {
                             String username = request.getUserPrincipal() == null
                                     ? null
                                     : request.getUserPrincipal().getName();
                             securityEvents.warn(request, "AUTH_ACCESS_DENIED", username, "rejected", "channel=mobile");
-                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                            apiErrors.write(request, response, HttpServletResponse.SC_FORBIDDEN,
+                                    "FORBIDDEN", "Недостаточно прав");
                         }))
                 .addFilterBefore(bearerTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
@@ -108,7 +117,8 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain webFilterChain(HttpSecurity http,
                                                BearerTokenAuthenticationFilter bearerTokenAuthenticationFilter,
-                                               SecurityEventLogger securityEvents) throws Exception {
+                                               SecurityEventLogger securityEvents,
+                                               ApiErrorWriter apiErrors) throws Exception {
         CookieCsrfTokenRepository csrfRepo = CookieCsrfTokenRepository.withHttpOnlyFalse();
         CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
         RequestMatcher bearerRequest = request -> {
@@ -130,6 +140,7 @@ public class SecurityConfig {
                                 "/manifest.json",
                                 "/service-worker.js",
                                 "/icons/**",
+                                "/openapi/**",
                                 "/api/auth/register",
                                 "/api/auth/registration-status",
                                 "/h2-console/**",
@@ -154,7 +165,8 @@ public class SecurityConfig {
                         .defaultAuthenticationEntryPointFor(
                                 (request, response, exception) -> {
                                     securityEvents.warn(request, "AUTH_REQUIRED", null, "rejected", "channel=web-api");
-                                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                                    apiErrors.write(request, response, HttpServletResponse.SC_UNAUTHORIZED,
+                                            "AUTH_REQUIRED", "Требуется авторизация");
                                 },
                                 new AntPathRequestMatcher("/api/**"))
                         .accessDeniedHandler((request, response, exception) -> {
@@ -162,7 +174,8 @@ public class SecurityConfig {
                                     ? null
                                     : request.getUserPrincipal().getName();
                             securityEvents.warn(request, "AUTH_ACCESS_DENIED", username, "rejected", "channel=web");
-                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                            apiErrors.write(request, response, HttpServletResponse.SC_FORBIDDEN,
+                                    "FORBIDDEN", "Недостаточно прав");
                         }))
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
                 .addFilterBefore(bearerTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

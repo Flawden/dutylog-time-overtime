@@ -87,7 +87,7 @@ The backend creates this account on first startup or promotes it to `ADMIN` if i
 
 ## 2. Post-launch checks
 
-Run smoke test. In v27.0-rc4 it verifies split static asset versions and service worker cache version:
+Run smoke test. In v27.1.0 it verifies split static asset versions and service worker cache version:
 
 ```bash
 DUTYLOG_BASE_URL=https://your-domain.example ./deploy/scripts/smoke-test.sh

@@ -1,0 +1,367 @@
+openapi: 3.0.3
+info:
+  title: DutyLog Android API
+  version: 1.0.0
+  description: |
+    Stable v1 contract for DutyLog Android clients. Existing fields are additive-only.
+    Breaking changes require a new /api/v2 namespace.
+servers:
+  - url: https://app.example.com
+security:
+  - bearerAuth: []
+paths:
+  /api/v1/mobile/auth/registration-status:
+    get:
+      security: []
+      operationId: registrationStatus
+      responses:
+        '200':
+          description: Public registration switch
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: true
+  /api/v1/mobile/auth/register:
+    post:
+      security: []
+      operationId: registerMobileUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobileRegisterRequest'
+      responses:
+        '201':
+          description: User and first mobile session created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileTokenResponse'
+        '400': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+        '429': { $ref: '#/components/responses/ApiError' }
+  /api/v1/mobile/auth/login:
+    post:
+      security: []
+      operationId: loginMobile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobileLoginRequest'
+      responses:
+        '200':
+          description: New access and refresh token pair
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileTokenResponse'
+        '401': { $ref: '#/components/responses/ApiError' }
+        '429': { $ref: '#/components/responses/ApiError' }
+  /api/v1/mobile/auth/refresh:
+    post:
+      security: []
+      operationId: refreshMobileToken
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refreshToken]
+              properties:
+                refreshToken: { type: string }
+      responses:
+        '200':
+          description: Rotated token pair
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileTokenResponse'
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/mobile/auth/logout:
+    post:
+      security: []
+      operationId: logoutMobile
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refreshToken: { type: string, nullable: true }
+      responses:
+        '204': { description: Session revoked when a matching token is supplied }
+  /api/v1/mobile/auth/me:
+    get:
+      operationId: mobileMe
+      responses:
+        '200':
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileUser'
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/mobile/auth/sessions:
+    get:
+      operationId: listMobileSessions
+      responses:
+        '200':
+          description: Mobile devices/sessions
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/MobileSession' }
+  /api/v1/mobile/auth/sessions/{id}:
+    delete:
+      operationId: revokeMobileSession
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '204': { description: Session revoked }
+        '404': { $ref: '#/components/responses/ApiError' }
+  /api/v1/mobile/bootstrap:
+    get:
+      operationId: mobileBootstrap
+      parameters:
+        - in: query
+          name: from
+          required: true
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: Profile and calendar aggregate for the requested range
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileBootstrap'
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/mobile/sync:
+    post:
+      operationId: syncMobileQueue
+      description: |
+        Applies idempotent offline operations. Reusing operationId returns
+        ALREADY_APPLIED (or the original conflict/rejection) and never repeats a write.
+        Version 0 means the target day does not exist; persisted rows start at version 1.
+        A day object without any mutation is rejected with NO_CHANGES.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MobileSyncRequest'
+      responses:
+        '200':
+          description: Per-operation results
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MobileSyncResponse'
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/modules:
+    get:
+      operationId: listModules
+      responses:
+        '200': { description: User module contracts and enabled state }
+    patch:
+      operationId: updateModules
+      responses:
+        '200': { description: Updated module state }
+  /api/v1/calendar:
+    get:
+      operationId: calendarRange
+      responses:
+        '200': { description: Calendar aggregate }
+  /api/v1/days/{date}:
+    put:
+      operationId: upsertDay
+      parameters:
+        - in: path
+          name: date
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '200': { description: Updated day }
+  /api/v1/tasks:
+    get: { operationId: listTasks, responses: { '200': { description: Tasks } } }
+    post: { operationId: createTask, responses: { '200': { description: Created task } } }
+  /api/v1/important-days:
+    get: { operationId: listImportantDays, responses: { '200': { description: Important dates } } }
+    post: { operationId: createImportantDay, responses: { '200': { description: Created important date } } }
+  /api/v1/overtime/account:
+    get: { operationId: overtimeAccount, responses: { '200': { description: Overtime account } } }
+  /api/v1/shift-types:
+    get: { operationId: listShiftTypes, responses: { '200': { description: Shift types } } }
+  /api/v1/profile:
+    get: { operationId: getProfile, responses: { '200': { description: Profile } } }
+    put: { operationId: updateProfile, responses: { '200': { description: Updated profile } } }
+  /api/v1/notifications/settings:
+    get: { operationId: notificationSettings, responses: { '200': { description: Notification settings } } }
+    patch: { operationId: updateNotificationSettings, responses: { '200': { description: Updated notification settings } } }
+  /api/v1/quick-scenarios:
+    get: { operationId: quickScenarios, responses: { '200': { description: Quick scenarios } } }
+  /api/v1/export/notes:
+    get:
+      operationId: exportNotes
+      responses:
+        '200':
+          description: ZIP archive with Markdown notes
+          content:
+            application/zip:
+              schema: { type: string, format: binary }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+  responses:
+    ApiError:
+      description: Stable machine-readable error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ApiError'
+  schemas:
+    ApiError:
+      type: object
+      required: [code, message, error, timestamp]
+      properties:
+        code: { type: string, example: VALIDATION_FAILED }
+        message: { type: string }
+        error: { type: string, description: Legacy alias of message }
+        fields:
+          type: object
+          additionalProperties: { type: string }
+        requestId: { type: string, nullable: true }
+        timestamp: { type: string, format: date-time }
+    MobileRegisterRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string, minLength: 3, maxLength: 40 }
+        password: { type: string, minLength: 8, writeOnly: true }
+        languagePreference: { type: string, enum: [ru, en], default: ru }
+        deviceName: { type: string, maxLength: 120 }
+    MobileLoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username: { type: string }
+        password: { type: string, writeOnly: true }
+        deviceName: { type: string, maxLength: 120 }
+    MobileUser:
+      type: object
+      required: [username]
+      properties:
+        username: { type: string }
+    MobileTokenResponse:
+      type: object
+      required: [tokenType, accessToken, accessExpiresAt, refreshToken, refreshExpiresAt, user]
+      properties:
+        tokenType: { type: string, enum: [Bearer] }
+        accessToken: { type: string }
+        accessExpiresAt: { type: string, format: date-time }
+        refreshToken: { type: string }
+        refreshExpiresAt: { type: string, format: date-time }
+        user: { $ref: '#/components/schemas/MobileUser' }
+    MobileSession:
+      type: object
+      properties:
+        id: { type: integer, format: int64 }
+        deviceName: { type: string }
+        createdAt: { type: string, format: date-time }
+        lastUsedAt: { type: string, format: date-time, nullable: true }
+        refreshExpiresAt: { type: string, format: date-time }
+        revoked: { type: boolean }
+        active: { type: boolean }
+    Day:
+      type: object
+      required: [date, overtimeHours, timeOffHours, overtimeBalanceHours, version]
+      properties:
+        date: { type: string, format: date }
+        shiftTypeId: { type: integer, format: int64, nullable: true }
+        note: { type: string, nullable: true }
+        dayEmoji: { type: string, nullable: true }
+        overtimeHours: { type: number, format: double }
+        timeOffHours: { type: number, format: double }
+        overtimeBalanceHours: { type: number, format: double }
+        version: { type: integer, format: int64, minimum: 1, description: Persisted rows start at 1; version 0 means the row does not exist }
+        updatedAt: { type: string, format: date-time }
+    MobileBootstrap:
+      type: object
+      required: [apiVersion, serverTime, user, calendar]
+      properties:
+        apiVersion: { type: string, enum: [v1] }
+        serverTime: { type: string, format: date-time }
+        user: { $ref: '#/components/schemas/MobileUser' }
+        calendar: { type: object, additionalProperties: true }
+    MobileDayPatch:
+      type: object
+      required: [date]
+      properties:
+        date: { type: string, format: date }
+        shiftTypeId: { type: integer, format: int64, nullable: true }
+        clearShiftType: { type: boolean }
+        note: { type: string, maxLength: 20000, nullable: true }
+        clearNote: { type: boolean }
+        dayEmoji: { type: string, maxLength: 32, nullable: true }
+        clearDayEmoji: { type: boolean }
+        overtimeHours: { type: number, minimum: 0, maximum: 100 }
+        timeOffHours: { type: number, minimum: 0, maximum: 100 }
+    MobileSyncOperation:
+      type: object
+      required: [operationId, baseVersion, day]
+      properties:
+        operationId: { type: string, maxLength: 64, example: 550e8400-e29b-41d4-a716-446655440000 }
+        baseVersion: { type: integer, format: int64, minimum: 0 }
+        day: { $ref: '#/components/schemas/MobileDayPatch' }
+    MobileSyncRequest:
+      type: object
+      required: [operations]
+      properties:
+        operations:
+          type: array
+          minItems: 1
+          maxItems: 366
+          items: { $ref: '#/components/schemas/MobileSyncOperation' }
+    MobileSyncItemResult:
+      type: object
+      required: [operationId, status, entityType, entityId]
+      properties:
+        operationId: { type: string }
+        status:
+          type: string
+          enum: [APPLIED, ALREADY_APPLIED, CONFLICT, REJECTED]
+        entityType: { type: string, enum: [day] }
+        entityId: { type: string, format: date }
+        serverVersion: { type: integer, format: int64, nullable: true }
+        entity: { $ref: '#/components/schemas/Day' }
+        errorCode: { type: string, nullable: true }
+        message: { type: string, nullable: true }
+    MobileSyncResponse:
+      type: object
+      required: [apiVersion, serverTime, items]
+      properties:
+        apiVersion: { type: string, enum: [v1] }
+        serverTime: { type: string, format: date-time }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/MobileSyncItemResult' }

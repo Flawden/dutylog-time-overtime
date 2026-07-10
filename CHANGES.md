@@ -1,3 +1,17 @@
+## v27.1.0 — Android API contract freeze
+
+- Added stable `/api/v1/**` aliases and a dedicated Bearer-only `/api/v1/mobile/**` contract for Android.
+- Added mobile registration that returns the first access/refresh token pair immediately.
+- Standardized API failures as machine-readable envelopes with `code`, `message`, `fields`, `requestId` and `timestamp` while retaining legacy `error`; malformed parameters and unexpected controller failures use the same envelope.
+- Added optimistic `version`/`updatedAt` fields to day records and Flyway migration `V22__android_api_contract.sql`; version `0` is reserved for a missing row and persisted rows start at `1`.
+- Added durable per-user idempotency records for offline sync operations without storing note/task payloads.
+- Added per-operation sync results: `APPLIED`, `ALREADY_APPLIED`, `CONFLICT` and `REJECTED`, including explicit `NO_CHANGES` rejection for empty mutations.
+- Added version-conflict protection via `baseVersion` and preserved empty version rows as lightweight tombstones.
+- Added the canonical OpenAPI file at `/openapi/dutylog-v1.yaml` and contract documentation/tests.
+- Added `X-DutyLog-Api-Version: v1` and deprecation headers for legacy `/api/mobile/**` routes.
+- Throttled mobile-token `lastUsedAt` writes to once per five minutes and bounded idempotency retention to 90 days by default.
+- Kept web/PWA endpoints backward compatible; no frontend product feature was added.
+
 ## v27.0-rc4 — Security consolidation
 
 - Added bounded streaming export of all owner-scoped notes as Obsidian-friendly Markdown ZIP.

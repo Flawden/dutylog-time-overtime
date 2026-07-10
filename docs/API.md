@@ -1,4 +1,4 @@
-# DutyLog API v27.0-rc4
+# DutyLog API v27.1.0
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -1057,7 +1057,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "27.0-rc4",
+  "version": "27.1.0",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],
@@ -1231,3 +1231,26 @@ Security/limits:
 - ZIP paths are date-derived;
 - export count and uncompressed bytes are capped;
 - `413 Payload Too Large` is returned when a configured cap is exceeded.
+
+---
+
+## Android API v1 (v27.1.0)
+
+New Android code must use `/api/v1/**`. The complete contract and compatibility rules are in [`ANDROID_API_V1.md`](ANDROID_API_V1.md); the canonical OpenAPI file is served from `/openapi/dutylog-v1.yaml`.
+
+Key endpoints:
+
+```text
+GET    /api/v1/mobile/auth/registration-status
+POST   /api/v1/mobile/auth/register
+POST   /api/v1/mobile/auth/login
+POST   /api/v1/mobile/auth/refresh
+POST   /api/v1/mobile/auth/logout
+GET    /api/v1/mobile/auth/me
+GET    /api/v1/mobile/auth/sessions
+DELETE /api/v1/mobile/auth/sessions/{id}
+GET    /api/v1/mobile/bootstrap?from=YYYY-MM-DD&to=YYYY-MM-DD
+POST   /api/v1/mobile/sync
+```
+
+Shared user APIs also have `/api/v1` aliases for calendar, days, tasks, important dates, overtime, shift types, profile, modules, notifications, quick scenarios and note export.

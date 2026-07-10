@@ -64,6 +64,12 @@ class MobileSecurityBoundaryTest {
         mvc.perform(get("/api/mobile/auth/me").session(webSession))
                 .andExpect(status().isUnauthorized());
 
+        mvc.perform(post("/api/v1/mobile/sync")
+                        .session(webSession)
+                        .contentType("application/json")
+                        .content("{\"operations\":[]}"))
+                .andExpect(status().isUnauthorized());
+
         mvc.perform(post("/api/mobile/sync")
                         .session(webSession)
                         .contentType("application/json")
@@ -74,6 +80,10 @@ class MobileSecurityBoundaryTest {
     @Test
     void validBearerAuthenticatesMobileApi() throws Exception {
         mvc.perform(get("/api/mobile/auth/me")
+                        .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/v1/mobile/auth/me")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
                 .andExpect(status().isOk());
 

@@ -29,7 +29,7 @@ public final class DutyLogModules {
                     true,
                     List.of(),
                     List.of("app-shell", "profile", "profile:notes-export", "appearance", "language", "offline-shell"),
-                    List.of("/api/profile", "/api/modules", "/api/auth", "/api/mobile", "/api/export/notes"),
+                    List.of("/api/profile", "/api/v1/profile", "/api/modules", "/api/v1/modules", "/api/auth", "/api/mobile", "/api/v1/mobile", "/api/export/notes", "/api/v1/export/notes"),
                     List.of(),
                     10
             ),
@@ -44,7 +44,7 @@ public final class DutyLogModules {
                     true,
                     List.of(CORE),
                     List.of("nav:calendar", "calendar-grid", "selected-day"),
-                    List.of("/api/calendar", "/api/days"),
+                    List.of("/api/calendar", "/api/v1/calendar", "/api/days", "/api/v1/days"),
                     List.of("day.shift"),
                     20
             ),
@@ -59,7 +59,7 @@ public final class DutyLogModules {
                     true,
                     List.of(CALENDAR),
                     List.of("day:shift", "day:schedule", "settings:shift-types", "settings:time-region"),
-                    List.of("/api/shift-types"),
+                    List.of("/api/shift-types", "/api/v1/shift-types"),
                     List.of("day.shift"),
                     30
             ),
@@ -74,7 +74,7 @@ public final class DutyLogModules {
                     true,
                     List.of(CALENDAR),
                     List.of("day:note", "calendar-marker:note"),
-                    List.of("/api/days/{date}:note"),
+                    List.of("/api/days/{date}:note", "/api/v1/days/{date}:note"),
                     List.of("day.note"),
                     40
             ),
@@ -89,7 +89,7 @@ public final class DutyLogModules {
                     true,
                     List.of(CALENDAR),
                     List.of("nav:tasks", "day:tasks", "calendar-marker:tasks"),
-                    List.of("/api/tasks"),
+                    List.of("/api/tasks", "/api/v1/tasks"),
                     List.of("task.done"),
                     50
             ),
@@ -104,7 +104,7 @@ public final class DutyLogModules {
                     true,
                     List.of(CALENDAR, SHIFTS),
                     List.of("nav:overtime", "day:overtime", "calendar-marker:overtime"),
-                    List.of("/api/overtime"),
+                    List.of("/api/overtime", "/api/v1/overtime"),
                     List.of("day.overtime"),
                     60
             ),
@@ -119,7 +119,7 @@ public final class DutyLogModules {
                     true,
                     List.of(CALENDAR),
                     List.of("day:important-dates", "calendar-marker:important-dates", "settings:important-dates"),
-                    List.of("/api/important-days"),
+                    List.of("/api/important-days", "/api/v1/important-days"),
                     List.of(),
                     70
             ),
@@ -134,7 +134,7 @@ public final class DutyLogModules {
                     true,
                     List.of(CALENDAR),
                     List.of("settings:notifications", "calendar-marker:notifications"),
-                    List.of("/api/notifications"),
+                    List.of("/api/notifications", "/api/v1/notifications"),
                     List.of(),
                     80
             ),
@@ -164,7 +164,7 @@ public final class DutyLogModules {
                     true,
                     List.of(OVERTIME),
                     List.of("day:quick-scenarios", "settings:quick-scenarios"),
-                    List.of("/api/quick-scenarios"),
+                    List.of("/api/quick-scenarios", "/api/v1/quick-scenarios"),
                     List.of(),
                     100
             ),

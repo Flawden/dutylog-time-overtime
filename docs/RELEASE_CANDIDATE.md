@@ -1,75 +1,46 @@
-# v27.0-rc4 — Security consolidation
+# v27.1.0 — Android API contract freeze
 
-Status: v27.0-rc4.
+Status: release candidate for the server contract used by the future Android application.
 
-This release candidate freezes the current product scope and consolidates the notes-export and security review work. No new product features should be added before stable v27.0.
+This release is based on the v27.0-rc4 security consolidation. It does not add a native UI. It freezes the backend surface that Android development can safely target.
 
-## Scope
+## Included
 
-Included in this RC:
+- stable `/api/v1/**` namespace with additive-only compatibility rules;
+- stateless Bearer-only `/api/v1/mobile/**` security boundary;
+- mobile registration, login, refresh, logout and device/session management;
+- bootstrap aggregate for a bounded date range;
+- machine-readable error envelope with request IDs;
+- day `version` and `updatedAt` fields;
+- idempotent sync operations with durable user-scoped operation IDs;
+- item-level `APPLIED`, `ALREADY_APPLIED`, `CONFLICT` and `REJECTED` results;
+- optimistic conflict detection with `baseVersion`;
+- canonical OpenAPI and contract regression tests;
+- legacy mobile endpoint deprecation headers without removal;
+- bounded cleanup of old idempotency records;
+- throttled mobile-session last-used writes.
 
-- calendar, shifts, overtime/time off and FIFO balance;
-- notes, tasks, important dates, notifications and Telegram;
-- owner-scoped ZIP export of all non-empty Markdown notes;
-- module-aware UI/backend guards and first-run onboarding;
-- RU/EN web/PWA interface and personalization;
-- admin users, roles, registration and diagnostics;
-- local-first lite offline mode;
-- split browser-session and stateless bearer-only mobile security chains;
-- bounded app-level authentication rate limiting;
-- structured security-event logging and rolling production logs;
-- CSP without inline-script permission;
-- owner/IDOR, export, rate-limit and mobile-boundary regressions;
-- Dependabot and non-root application container;
-- GitHub Actions CI and release static checks.
+## Compatibility rule
 
-Not included before stable v27.0:
+Within `/api/v1`, changes may add optional fields/endpoints but may not rename/remove fields, change existing meanings, tighten accepted values incompatibly or change status semantics. Breaking work starts under `/api/v2`.
 
-- new analytics or paid-plan logic;
-- external calendar integrations;
-- native mobile app UI;
-- new Telegram commands;
-- multi-instance infrastructure;
-- MFA/account lockout;
-- live penetration testing or DAST automation.
-
-## Acceptance checklist
-
-Before marking v27.0 stable:
+## Acceptance
 
 ```bash
 mvn -B --no-transfer-progress test
 bash deploy/scripts/release-check.sh
 ```
 
-On the deployment host:
+Manual checks:
 
-```bash
-./deploy/scripts/check-production-env.sh
-./deploy/scripts/smoke-test.sh https://your-domain.example
-```
+1. mobile registration returns access/refresh tokens;
+2. browser JSESSIONID cannot authenticate `/api/v1/mobile/**`;
+3. valid Bearer token can use mobile and shared `/api/v1/**` endpoints;
+4. repeated `operationId` does not write twice;
+5. stale `baseVersion` returns item-level `VERSION_CONFLICT`;
+6. validation/auth failures contain `code`, `message`, `requestId` and `timestamp`;
+7. legacy `/api/mobile/**` still works and advertises deprecation;
+8. Flyway upgrades an existing production-shaped database through V22;
+9. OpenAPI file is packaged at `/openapi/dutylog-v1.yaml`.
 
-Manual smoke:
-
-- register a new user and verify the selected login language reaches onboarding;
-- verify production registration starts closed unless explicitly opened by an admin;
-- choose each onboarding preset;
-- create shifts, a note, task, important date and overtime entry;
-- download the notes ZIP and open it in Obsidian or inspect the Markdown files;
-- verify the ZIP contains only the current user's notes;
-- switch RU/EN and inspect dynamic settings/cards;
-- disable/re-enable modules and confirm data is preserved;
-- test hidden-block hint dismissal;
-- log out/in and verify password/session behavior;
-- verify a browser session cannot authenticate `/api/mobile/**`;
-- verify a valid mobile bearer token can use mobile/shared APIs;
-- check admin users, registration and diagnostics;
-- create a PostgreSQL backup and rehearse restore on a safe copy;
-- run a basic PWA/offline reload and sync scenario;
-- inspect `SECURITY_AUDIT` / request logs for expected events without secrets.
-
-## Decision rule
-
-- No blockers: tag stable `v27.0`.
-- Minor non-blocking issues: document them and continue RC observation.
-- Any startup, data-loss, security, migration, login, export, backup or offline-sync blocker: fix as `v27.0-rc5`.
+Any authentication, migration, conflict/idempotency or data-isolation failure blocks Android development and requires v27.1.1.

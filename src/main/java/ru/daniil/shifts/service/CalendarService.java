@@ -67,7 +67,9 @@ public class CalendarService {
                         day.dayEmoji(),
                         overtimeEnabled ? day.overtimeHours() : 0,
                         overtimeEnabled ? day.timeOffHours() : 0,
-                        overtimeEnabled ? day.overtimeBalanceHours() : 0
+                        overtimeEnabled ? day.overtimeBalanceHours() : 0,
+                        day.version(),
+                        day.updatedAt()
                 ))
                 .toList();
         List<TaskDto> tasks = tasksEnabled ? taskService.listRange(user, from, to) : List.of();

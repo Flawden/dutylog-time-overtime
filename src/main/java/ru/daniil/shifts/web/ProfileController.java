@@ -27,7 +27,7 @@ import java.util.Map;
  * ДР — поздравление в календаре. Полей «про запас» здесь нет сознательно.
  */
 @RestController
-@RequestMapping("/api/profile")
+@RequestMapping({"/api/profile", "/api/v1/profile"})
 public class ProfileController {
 
     private final UserRepository users;

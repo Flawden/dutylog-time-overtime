@@ -33,7 +33,7 @@ import java.util.List;
 
 /** Отдельные endpoint'ы под экран баланса переработок и отгулов. */
 @RestController
-@RequestMapping("/api/overtime")
+@RequestMapping({"/api/overtime", "/api/v1/overtime"})
 public class OvertimeController {
     private final CurrentUserService currentUserService;
     private final ModuleService moduleService;

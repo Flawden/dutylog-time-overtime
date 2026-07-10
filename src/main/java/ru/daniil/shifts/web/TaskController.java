@@ -18,7 +18,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/tasks")
+@RequestMapping({"/api/tasks", "/api/v1/tasks"})
 public class TaskController {
     private final CurrentUserService currentUserService;
     private final ModuleService moduleService;

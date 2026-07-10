@@ -16,7 +16,7 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/modules")
+@RequestMapping({"/api/modules", "/api/v1/modules"})
 public class ModuleController {
     private final CurrentUserService currentUserService;
     private final ModuleService moduleService;

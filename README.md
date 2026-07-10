@@ -2,6 +2,13 @@
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
+
+## Текущая версия: v27.1.0 — Android API contract freeze
+
+Backend получил стабильный `/api/v1/**` для будущего Android-клиента: Bearer-аутентификацию, мобильную регистрацию, единый формат ошибок, OpenAPI и идемпотентную offline-синхронизацию дней с защитой от конфликтов версий. Старые web/PWA и `/api/mobile/**` маршруты сохранены для совместимости.
+
+Документация: [`docs/ANDROID_API_V1.md`](docs/ANDROID_API_V1.md) · OpenAPI: [`src/main/resources/static/openapi/dutylog-v1.yaml`](src/main/resources/static/openapi/dutylog-v1.yaml)
+
 ## Возможности
 
 - Календарь смен с типами `Дневная`, `Ночная`, `Выходной` и пользовательскими сменами.
@@ -18,6 +25,7 @@ DutyLog — приложение для учёта смен, переработ�
 - Уведомления в браузере и Telegram.
 - Telegram-бот для просмотра данных и быстрых действий.
 - Профиль пользователя, смена пароля и управление мобильными сессиями.
+- Версионированный Android API v1 с Bearer-токенами, OpenAPI, idempotency keys и optimistic conflict detection.
 - Служебная диагностика состояния приложения, сервера, базы данных и Telegram-интеграции в отдельном профиле администратора.
 - Скрипты резервного копирования и восстановления PostgreSQL.
 - Production-ready compose, Caddy reverse proxy example, healthchecks and launch runbook.
@@ -207,7 +215,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/PRODUCT_COPY.md`](docs/PRODUCT_COPY.md) — стиль пользовательских текстов.
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
-- [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.0-rc4 и как принимать RC.
+- [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.1.0 и как принимать RC.
 - [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) — короткая пользовательская инструкция.
 - [`docs/PRODUCTION_DEPLOY.md`](docs/PRODUCTION_DEPLOY.md) — пошаговый production deployment.
 - [`docs/BACKUP_RESTORE.md`](docs/BACKUP_RESTORE.md) — резервное копирование и восстановление.
@@ -224,31 +232,36 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v27.0-rc4 — Security consolidation`
+`v27.1.0 — Android API contract freeze`
 
-DutyLog находится в release-candidate фазе. Новые крупные функции заморожены. RC4 объединяет экспорт Markdown-заметок и закрытие замечаний двух независимых security-review.
+DutyLog остаётся в feature freeze, но backend теперь готов быть стабильной базой для нативного Android-клиента.
 
 Что вошло:
 
-- версия `27.0-rc4` синхронизирована во frontend, backend, service worker, smoke-test и документации;
-- notes export owner-scoped, streamed, bounded, YAML-safe and `no-store`;
-- browser session и bearer-only mobile API разделены на две security chain;
-- IDOR-тесты проверяют точный `404` для чужих ресурсов;
-- production registration starts closed; auth endpoints are rate-limited inside the application;
-- добавлены структурированные security-события и ротация логов;
-- login JavaScript вынесен в отдельный файл, CSP больше не содержит `script-src 'unsafe-inline'`;
-- Caddy/nginx/Spring policies aligned; application container runs as non-root;
-- Dependabot следит за Maven, GitHub Actions и Docker;
-- release-check закрепляет новые security/export-инварианты.
+- стабильный `/api/v1/**` с additive-only правилами совместимости;
+- отдельный Bearer-only `/api/v1/mobile/**`;
+- мобильная регистрация с немедленной выдачей access/refresh token pair;
+- единый формат ошибок с `code`, `fields`, `requestId` и `timestamp`;
+- OpenAPI-контракт;
+- оптимистическая версия дня (`version`, `updatedAt`);
+- идемпотентная offline-очередь с `operationId`;
+- item-level результаты `APPLIED`, `ALREADY_APPLIED`, `CONFLICT`, `REJECTED`;
+- защита от stale write через `baseVersion`;
+- V22 migration для row versions и sync ledger;
+- throttling `lastUsedAt` и автоочистка старых idempotency records;
+- старые web/PWA и `/api/mobile/**` маршруты сохранены.
 
 Критерии принятия:
 
 - зелёный `mvn test`;
 - зелёный `bash deploy/scripts/release-check.sh`;
-- production preflight и smoke-test проходят на VPS;
-- ручная проверка notes export, mobile auth boundary, registration defaults, backup/restore и PWA/offline не выявляет блокеров.
+- V22 успешно накатывается на копию production-shaped PostgreSQL;
+- повтор одного `operationId` не повторяет запись;
+- stale `baseVersion` даёт `VERSION_CONFLICT`;
+- browser session не может войти в `/api/v1/mobile/**`;
+- OpenAPI доступен на `/openapi/dutylog-v1.yaml`.
 
-Следующий шаг: `v27.0` stable после периода спокойного использования либо `v27.0-rc5` только для блокирующих исправлений.
+Следующий инфраструктурный этап после проверки — `v27.2 Staging & CI/CD foundation`.
 
 ## Служебный профиль администратора
 
@@ -276,7 +289,7 @@ DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 Since v25.3 the module registry has explicit developer contracts. See `docs/MODULE_CONTRACTS.md`.
 
 
-CI permission stabilization in v27.0-rc4:
+CI permission stabilization in v27.1.0:
 
 - GitHub Actions runs release checks through `bash ./deploy/scripts/release-check.sh`.
 - CI no longer fails when executable bits are lost on Windows/archive checkouts.

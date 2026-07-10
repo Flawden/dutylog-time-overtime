@@ -4,12 +4,13 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import ru.daniil.shifts.web.ApiErrorWriter;
 
 import java.io.IOException;
 import java.time.Clock;
@@ -18,23 +19,20 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-/**
- * Small single-node rate limiter for authentication entry points.
- *
- * It lives in the application so the same protection works behind stock Caddy,
- * nginx or a direct local reverse proxy. For a multi-instance deployment this
- * should be replaced by a shared Redis/gateway limiter.
- */
+/** Single-node auth rate limiter shared by web, legacy mobile and Android API v1. */
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE + 25)
 public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
     private static final String WEB_LOGIN = "/perform_login";
     private static final String REGISTRATION = "/api/auth/register";
     private static final String MOBILE_LOGIN = "/api/mobile/auth/login";
+    private static final String MOBILE_V1_LOGIN = "/api/v1/mobile/auth/login";
+    private static final String MOBILE_V1_REGISTRATION = "/api/v1/mobile/auth/register";
 
     private final Map<String, WindowCounter> counters = new ConcurrentHashMap<>();
     private final AtomicLong requestsSeen = new AtomicLong();
     private final SecurityEventLogger securityEvents;
+    private final ApiErrorWriter apiErrors;
     private final Clock clock;
     private final boolean enabled;
     private final int loginLimit;
@@ -42,18 +40,21 @@ public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
     private final int registrationLimit;
     private final int registrationWindowSeconds;
 
+    @Autowired
     public AuthenticationRateLimitFilter(
             SecurityEventLogger securityEvents,
+            ApiErrorWriter apiErrors,
             @Value("${dutylog.security.rate-limit.enabled:false}") boolean enabled,
             @Value("${dutylog.security.rate-limit.login-attempts:5}") int loginLimit,
             @Value("${dutylog.security.rate-limit.login-window-seconds:60}") int loginWindowSeconds,
             @Value("${dutylog.security.rate-limit.registration-attempts:5}") int registrationLimit,
             @Value("${dutylog.security.rate-limit.registration-window-seconds:3600}") int registrationWindowSeconds) {
-        this(securityEvents, Clock.systemUTC(), enabled, loginLimit, loginWindowSeconds,
+        this(securityEvents, apiErrors, Clock.systemUTC(), enabled, loginLimit, loginWindowSeconds,
                 registrationLimit, registrationWindowSeconds);
     }
 
     AuthenticationRateLimitFilter(SecurityEventLogger securityEvents,
+                                  ApiErrorWriter apiErrors,
                                   Clock clock,
                                   boolean enabled,
                                   int loginLimit,
@@ -61,6 +62,7 @@ public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
                                   int registrationLimit,
                                   int registrationWindowSeconds) {
         this.securityEvents = securityEvents;
+        this.apiErrors = apiErrors;
         this.clock = clock;
         this.enabled = enabled;
         this.loginLimit = Math.max(1, loginLimit);
@@ -71,11 +73,13 @@ public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
-        if (!enabled || !"POST".equalsIgnoreCase(request.getMethod())) {
-            return true;
-        }
+        if (!enabled || !"POST".equalsIgnoreCase(request.getMethod())) return true;
         String path = request.getRequestURI();
-        return !WEB_LOGIN.equals(path) && !REGISTRATION.equals(path) && !MOBILE_LOGIN.equals(path);
+        return !WEB_LOGIN.equals(path)
+                && !REGISTRATION.equals(path)
+                && !MOBILE_LOGIN.equals(path)
+                && !MOBILE_V1_LOGIN.equals(path)
+                && !MOBILE_V1_REGISTRATION.equals(path);
     }
 
     @Override
@@ -83,17 +87,15 @@ public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String path = request.getRequestURI();
-        int limit = REGISTRATION.equals(path) ? registrationLimit : loginLimit;
-        int windowSeconds = REGISTRATION.equals(path) ? registrationWindowSeconds : loginWindowSeconds;
-        String ip = clientIp(request);
-        Decision decision = register(path + "|" + ip, limit, windowSeconds);
+        boolean registration = REGISTRATION.equals(path) || MOBILE_V1_REGISTRATION.equals(path);
+        int limit = registration ? registrationLimit : loginLimit;
+        int windowSeconds = registration ? registrationWindowSeconds : loginWindowSeconds;
+        Decision decision = register(path + "|" + clientIp(request), limit, windowSeconds);
 
         if (!decision.allowed()) {
-            response.setStatus(429);
             response.setHeader("Retry-After", Long.toString(decision.retryAfterSeconds()));
-            response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-            response.setCharacterEncoding("UTF-8");
-            response.getWriter().write("{\"error\":\"Слишком много попыток. Повтори позже\"}");
+            apiErrors.write(request, response, 429, "RATE_LIMITED",
+                    "Слишком много попыток. Повтори позже");
             securityEvents.warn(request, "AUTH_RATE_LIMITED", request.getParameter("username"), "rejected",
                     "endpoint=" + path + " retryAfterSeconds=" + decision.retryAfterSeconds());
             return;
@@ -108,12 +110,9 @@ public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
         long windowMillis = windowSeconds * 1000L;
         AtomicReference<WindowCounter> current = new AtomicReference<>();
         counters.compute(key, (ignored, old) -> {
-            WindowCounter next;
-            if (old == null || now - old.windowStartedAtMillis() >= windowMillis) {
-                next = new WindowCounter(now, 1, windowMillis);
-            } else {
-                next = new WindowCounter(old.windowStartedAtMillis(), old.count() + 1, windowMillis);
-            }
+            WindowCounter next = old == null || now - old.windowStartedAtMillis() >= windowMillis
+                    ? new WindowCounter(now, 1, windowMillis)
+                    : new WindowCounter(old.windowStartedAtMillis(), old.count() + 1, windowMillis);
             current.set(next);
             return next;
         });
@@ -124,9 +123,7 @@ public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
     }
 
     private void occasionallyCleanup() {
-        if ((requestsSeen.incrementAndGet() & 1023L) != 0L) {
-            return;
-        }
+        if ((requestsSeen.incrementAndGet() & 1023L) != 0L) return;
         long now = clock.millis();
         counters.entrySet().removeIf(entry ->
                 now - entry.getValue().windowStartedAtMillis() >= entry.getValue().windowMillis() * 2L);

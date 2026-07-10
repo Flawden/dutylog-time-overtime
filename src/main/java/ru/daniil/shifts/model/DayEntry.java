@@ -2,6 +2,7 @@ package ru.daniil.shifts.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.Instant;
 
 /**
  * Запись на конкретную дату: назначенная смена, заметка в Markdown,
@@ -48,6 +49,14 @@ public class DayEntry {
     @Column(name = "day_emoji", length = 32)
     private String dayEmoji;
 
+    /** Optimistic concurrency token used by Android offline sync. */
+    @Version
+    @Column(name = "row_version", nullable = false)
+    private Long rowVersion = 0L;
+
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt = Instant.now();
+
     protected DayEntry() {} // для JPA
 
     public DayEntry(AppUser owner, LocalDate date) {
@@ -68,6 +77,22 @@ public class DayEntry {
     public void setNote(String note) { this.note = note; }
     public String getDayEmoji() { return dayEmoji; }
     public void setDayEmoji(String dayEmoji) { this.dayEmoji = dayEmoji; }
+    public long getRowVersion() { return rowVersion == null ? 0L : rowVersion; }
+
+    /**
+     * API sync version. Version 0 is reserved for a row that does not exist;
+     * persisted rows therefore start at 1 even though Hibernate stores 0 for
+     * the first @Version value.
+     */
+    public long getSyncVersion() { return getRowVersion() + 1L; }
+
+    public Instant getUpdatedAt() { return updatedAt; }
+
+    @PrePersist
+    @PreUpdate
+    void touchUpdatedAt() {
+        updatedAt = Instant.now();
+    }
 
     /** Пустая запись не имеет смысла и должна удаляться. */
     public boolean isEmpty() {

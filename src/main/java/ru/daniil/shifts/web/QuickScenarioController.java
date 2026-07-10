@@ -16,7 +16,7 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/quick-scenarios")
+@RequestMapping({"/api/quick-scenarios", "/api/v1/quick-scenarios"})
 public class QuickScenarioController {
     private final CurrentUserService currentUserService;
     private final ModuleService moduleService;

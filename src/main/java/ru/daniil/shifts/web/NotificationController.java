@@ -20,7 +20,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/notifications")
+@RequestMapping({"/api/notifications", "/api/v1/notifications"})
 public class NotificationController {
     private final CurrentUserService currentUserService;
     private final ModuleService moduleService;

@@ -18,7 +18,7 @@ import java.time.LocalDate;
  * типы смен и сводку переработок.
  */
 @RestController
-@RequestMapping("/api/calendar")
+@RequestMapping({"/api/calendar", "/api/v1/calendar"})
 public class CalendarController {
     private final CurrentUserService currentUserService;
     private final DayEntryService dayEntryService;

@@ -15,7 +15,7 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/days")
+@RequestMapping({"/api/days", "/api/v1/days"})
 public class DayController {
 
     private final CurrentUserService currentUserService;

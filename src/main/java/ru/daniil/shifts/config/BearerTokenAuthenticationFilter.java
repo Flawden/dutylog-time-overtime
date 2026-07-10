@@ -11,26 +11,26 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.MobileAuthService;
+import ru.daniil.shifts.web.ApiErrorWriter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Optional;
 
-/**
- * Принимает Authorization: Bearer <accessToken> для Android/API-клиентов.
- * Веб-версия продолжает работать через обычную JSESSIONID-cookie.
- */
+/** Accepts Bearer access tokens for Android and shared API endpoints. */
 @Component
 public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
     private final MobileAuthService mobileAuthService;
     private final SecurityEventLogger securityEvents;
+    private final ApiErrorWriter apiErrors;
 
     public BearerTokenAuthenticationFilter(MobileAuthService mobileAuthService,
-                                           SecurityEventLogger securityEvents) {
+                                           SecurityEventLogger securityEvents,
+                                           ApiErrorWriter apiErrors) {
         this.mobileAuthService = mobileAuthService;
         this.securityEvents = securityEvents;
+        this.apiErrors = apiErrors;
     }
-
-
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
@@ -38,6 +38,11 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
         return "/api/mobile/auth/login".equals(path)
                 || "/api/mobile/auth/refresh".equals(path)
                 || "/api/mobile/auth/logout".equals(path)
+                || "/api/v1/mobile/auth/login".equals(path)
+                || "/api/v1/mobile/auth/register".equals(path)
+                || "/api/v1/mobile/auth/registration-status".equals(path)
+                || "/api/v1/mobile/auth/refresh".equals(path)
+                || "/api/v1/mobile/auth/logout".equals(path)
                 || "/api/auth/register".equals(path)
                 || "/api/auth/registration-status".equals(path);
     }
@@ -55,25 +60,19 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
         String token = header.substring("Bearer ".length()).trim();
         Optional<AppUser> user = mobileAuthService.authenticateAccessToken(token);
         if (user.isEmpty()) {
-            securityEvents.warn(request, "AUTH_TOKEN_REJECTED", null, "rejected", "reason=invalid_or_expired_access_token");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write("{\"error\":\"Access token недействителен или истёк\"}");
+            securityEvents.warn(request, "AUTH_TOKEN_REJECTED", null, "rejected",
+                    "reason=invalid_or_expired_access_token");
+            apiErrors.write(request, response, HttpServletResponse.SC_UNAUTHORIZED,
+                    "TOKEN_INVALID", "Access token недействителен или истёк");
             return;
         }
 
         AppUser appUser = user.get();
-        java.util.ArrayList<SimpleGrantedAuthority> authorities = new java.util.ArrayList<>();
+        ArrayList<SimpleGrantedAuthority> authorities = new ArrayList<>();
         authorities.add(new SimpleGrantedAuthority("ROLE_USER"));
-        if (appUser.isAdmin()) {
-            authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-        }
-        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                appUser.getUsername(),
-                null,
-                authorities
-        );
-        SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (appUser.isAdmin()) authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
+        SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(appUser.getUsername(), null, authorities));
         mobileAuthService.touchAccessToken(token);
         filterChain.doFilter(request, response);
     }

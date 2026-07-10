@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.0-rc4}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.1.0}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -85,7 +85,7 @@ done
 contains src/main/resources/application.properties "info.app.version=$VERSION"
 contains src/main/resources/application-prod.properties "info.app.version=$VERSION"
 contains src/test/resources/application.properties "spring.jpa.open-in-view=false"
-contains pom.xml "<version>${VERSION}.0</version>"
+contains pom.xml "<version>${VERSION}</version>"
 contains deploy/scripts/smoke-test.sh "VERSION=\"\${DUTYLOG_RELEASE_VERSION:-$VERSION}\""
 contains deploy/scripts/smoke-test.sh "dutylog-shell-v\$VERSION"
 contains deploy/scripts/smoke-test.sh "DUTYLOG_VERSION = \\\"\$VERSION\\\""
@@ -320,10 +320,10 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "v27.0-rc4"
-contains docs/TEST_CONFIG_HOTFIX.md "v27.0-rc4"
+contains docs/SECURITY_REVIEW.md "v27.1.0"
+contains docs/TEST_CONFIG_HOTFIX.md "v27.1.0"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
-contains docs/CI_PERMISSION_HOTFIX.md "v27.0-rc4"
+contains docs/CI_PERMISSION_HOTFIX.md "v27.1.0"
 contains src/main/resources/static/index.html 'data-onboarding-preset="work"'
 contains src/main/resources/static/index.html ">Стандарт</button>"
 not_contains src/main/resources/static/index.html "Работа + переработки"
@@ -335,17 +335,17 @@ contains src/main/resources/static/app.css ".cell.todayCell::before"
 contains src/main/resources/static/js/20-data.js "DAY_MODULES_HINT_DISMISSED_KEY"
 contains src/main/resources/static/js/20-data.js "dayModulesHintCloseBtn"
 contains src/main/resources/static/app.css ".dayModulesHintClose"
-contains docs/ONBOARDING_TODAY_HOTFIX.md "v27.0-rc4"
-contains docs/DAY_HINT_DISMISS_HOTFIX.md "v27.0-rc4"
-contains docs/I18N_POLISH_HOTFIX.md "v27.0-rc4"
-contains docs/LOGIN_LANGUAGE_HOTFIX.md "v27.0-rc4"
-contains docs/UI_ALIGNMENT_TEST_HOTFIX.md "v27.0-rc4"
+contains docs/ONBOARDING_TODAY_HOTFIX.md "v27.1.0"
+contains docs/DAY_HINT_DISMISS_HOTFIX.md "v27.1.0"
+contains docs/I18N_POLISH_HOTFIX.md "v27.1.0"
+contains docs/LOGIN_LANGUAGE_HOTFIX.md "v27.1.0"
+contains docs/UI_ALIGNMENT_TEST_HOTFIX.md "v27.1.0"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "private static String body(String username, String password, String languagePreference)"
-contains src/main/resources/static/app.css "v27.0-rc4: stable right-side controls"
+contains src/main/resources/static/app.css "v27.1.0: stable right-side controls"
 contains src/main/resources/static/app.css "#timeSettingsCard .settingsHead > .status"
 contains src/main/resources/static/app.css "#profileCard .settingsHead > .avatarBig"
 contains src/main/resources/static/js/login.js "languagePreference: currentLang"
-contains src/main/java/ru/daniil/shifts/web/AuthController.java "user.setLanguagePreference(req.languagePreference())"
+contains src/main/java/ru/daniil/shifts/service/UserRegistrationService.java "user.setLanguagePreference(languagePreference)"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "языкСоСтраницыВходаСохраняетсяПриРегистрации"
 contains src/main/resources/static/app.css 'html[lang="en"] .cell .num.today::after'
 contains src/main/resources/static/js/10-core.js 'function shiftDisplayName'
@@ -353,8 +353,8 @@ contains src/main/resources/static/js/10-core.js "if (typeof renderSettingsPanel
 contains src/main/resources/static/js/30-calendar.js 'esc(t("Итого:"))'
 contains src/main/resources/static/js/60-settings.js 'const workLabel = state.language === "en" ? "work time"'
 contains src/main/resources/static/js/60-settings.js 'esc(t("шт"))'
-contains docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md "v27.0-rc4"
-contains src/main/resources/static/app.css "v27.0-rc4: notifications header alignment"
+contains docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md "v27.1.0"
+contains src/main/resources/static/app.css "v27.1.0: notifications header alignment"
 contains src/main/resources/static/app.css "#notifyCard > .notifyHead"
 contains src/main/resources/static/app.css ".adminShell.settingsShell"
 contains src/main/resources/static/index.html 'data-admin-jump="users"'
@@ -363,11 +363,11 @@ contains src/main/resources/static/index.html 'data-admin-jump="diagnostics"'
 contains src/main/resources/static/js/60-settings.js "function initAdminNavigation"
 contains src/main/resources/static/js/60-settings.js "notificationsActive"
 
-# v27.0-rc4 security consolidation
+# v27.1.0 Android API contract freeze
 contains src/main/resources/static/js/login.js "languagePreference: currentLang"
 not_contains src/main/resources/static/login.html "<script>"
 not_contains src/main/java/ru/daniil/shifts/config/SecurityHeadersFilter.java "script-src 'self' 'unsafe-inline'"
-contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java 'securityMatcher("/api/mobile/**")'
+contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java 'securityMatcher("/api/mobile/**", "/api/v1/mobile/**")'
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java 'SessionCreationPolicy.STATELESS'
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java 'FilterRegistrationBean<BearerTokenAuthenticationFilter>'
 contains src/test/java/ru/daniil/shifts/web/MobileSecurityBoundaryTest.java "webSessionCannotAuthenticateMobileApi"
@@ -386,10 +386,37 @@ contains src/test/java/ru/daniil/shifts/config/AuthenticationRateLimitFilterTest
 contains src/main/java/ru/daniil/shifts/config/SecurityEventLogger.java 'LoggerFactory.getLogger("SECURITY_AUDIT")'
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "AUTHZ_OWNERSHIP_MISMATCH"
 contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "AUTHZ_OWNERSHIP_MISMATCH"
-contains src/main/java/ru/daniil/shifts/web/AuthController.java "password.length() < 8"
+contains src/main/java/ru/daniil/shifts/service/UserRegistrationService.java "password.length() < 8"
 contains docs/SECURITY_CONSOLIDATION.md "Status: v27.0-rc4."
 contains docs/NOTES_EXPORT.md "GET /api/export/notes"
 contains docs/SUPPLY_CHAIN.md "Dependabot"
+
+# v27.1.0 Android API contract freeze
+contains src/main/java/ru/daniil/shifts/web/MobileV1Controller.java '@RequestMapping("/api/v1/mobile")'
+contains src/main/java/ru/daniil/shifts/web/MobileV1AuthController.java '@RequestMapping("/api/v1/mobile/auth")'
+contains src/main/java/ru/daniil/shifts/service/MobileSyncService.java 'ALREADY_APPLIED'
+contains src/main/java/ru/daniil/shifts/service/MobileSyncService.java 'VERSION_CONFLICT'
+contains src/main/java/ru/daniil/shifts/model/DayEntry.java '@Version'
+contains src/main/java/ru/daniil/shifts/model/MobileSyncOperation.java 'uk_mobile_sync_owner_operation'
+contains src/main/java/ru/daniil/shifts/web/ApiErrorResponse.java 'String code'
+contains src/main/java/ru/daniil/shifts/web/ApiErrorResponse.java 'String requestId'
+contains src/main/java/ru/daniil/shifts/config/ApiVersionFilter.java 'X-DutyLog-Api-Version'
+contains src/main/resources/db/migration/postgresql/V22__android_api_contract.sql 'mobile_sync_operations'
+contains src/main/resources/static/openapi/dutylog-v1.yaml '/api/v1/mobile/sync:'
+contains docs/ANDROID_API_V1.md 'Version: **27.1.0**'
+contains src/test/java/ru/daniil/shifts/web/MobileV1ContractTest.java 'ALREADY_APPLIED'
+contains src/test/java/ru/daniil/shifts/web/MobileV1ContractTest.java 'VERSION_CONFLICT'
+contains src/test/java/ru/daniil/shifts/web/ApiV1OpenApiContractTest.java 'OpenAPI v1 file must be packaged'
+contains src/main/java/ru/daniil/shifts/service/MobileAuthService.java 'LAST_USED_WRITE_INTERVAL'
+contains src/main/java/ru/daniil/shifts/model/DayEntry.java 'public long getSyncVersion() { return getRowVersion() + 1L; }'
+contains src/main/java/ru/daniil/shifts/dto/Dtos.java 'e.getSyncVersion()'
+contains src/main/java/ru/daniil/shifts/service/MobileSyncService.java 'current == null ? 0L : current.getSyncVersion()'
+contains src/test/java/ru/daniil/shifts/web/MobileV1ContractTest.java 'op-android-stale-absent'
+contains src/main/java/ru/daniil/shifts/web/ApiExceptionHandler.java '"INTERNAL_ERROR"'
+contains docs/ANDROID_API_PLAN.md 'Current backend milestone: **v27.1.0 — Android API contract freeze**.'
+contains src/main/resources/application.properties 'dutylog.mobile.sync.idempotency-retention-days=${DUTYLOG_MOBILE_SYNC_RETENTION_DAYS:90}'
+contains src/main/resources/application-prod.properties 'dutylog.mobile.sync.idempotency-retention-days=${DUTYLOG_MOBILE_SYNC_RETENTION_DAYS:90}'
+contains docker-compose.prod.yml 'DUTYLOG_MOBILE_SYNC_RETENTION_DAYS: ${DUTYLOG_MOBILE_SYNC_RETENTION_DAYS:-90}'
 
 python3 - <<'PY_SECURITY'
 from pathlib import Path
@@ -402,13 +429,13 @@ for path in ['src/main/resources/static/login.html', 'src/main/resources/static/
 print('OK:    no inline script tags in runtime HTML')
 PY_SECURITY
 
-contains CHANGES.md "v27.0-rc4 — Security consolidation"
-contains README.md "v27.0-rc4 — Security consolidation"
-contains docs/RELEASE_CANDIDATE.md "v27.0-rc4 — Security consolidation"
-contains docs/USER_GUIDE.md "Status: v27.0-rc4."
-contains docs/PRODUCTION_DEPLOY.md "git checkout v27.0-rc4"
-contains docs/BACKUP_RESTORE.md "Status: v27.0-rc4."
-contains docs/RELEASE_CHECKLIST.md "git tag -a v27.0-rc4"
+contains CHANGES.md "v27.1.0 — Android API contract freeze"
+contains README.md "v27.1.0 — Android API contract freeze"
+contains docs/RELEASE_CANDIDATE.md "v27.1.0 — Android API contract freeze"
+contains docs/USER_GUIDE.md "Status: v27.1.0."
+contains docs/PRODUCTION_DEPLOY.md "git checkout v27.1.0"
+contains docs/BACKUP_RESTORE.md "Status: v27.1.0."
+contains docs/RELEASE_CHECKLIST.md "git tag -a v27.1.0"
 
 echo
 

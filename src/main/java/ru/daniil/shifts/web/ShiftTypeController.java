@@ -15,7 +15,7 @@ import java.security.Principal;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/shift-types")
+@RequestMapping({"/api/shift-types", "/api/v1/shift-types"})
 public class ShiftTypeController {
 
     private final CurrentUserService currentUserService;
