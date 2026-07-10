@@ -4,6 +4,8 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -16,10 +18,11 @@ import java.io.IOException;
  * misconfigured proxy or local production run from silently losing the baseline browser policy.
  */
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE + 15)
 public class SecurityHeadersFilter extends OncePerRequestFilter {
     private static final String CSP = String.join("; ",
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline'",
+            "script-src 'self'",
             "style-src 'self' 'unsafe-inline'",
             "img-src 'self' data:",
             "connect-src 'self'",

@@ -3,6 +3,7 @@ package ru.daniil.shifts.service;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.config.SecurityEventLogger;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeCreateRequest;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeDto;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeUpdateRequest;
@@ -21,10 +22,14 @@ public class ShiftTypeService {
 
     private final ShiftTypeRepository shiftTypes;
     private final DayEntryRepository days;
+    private final SecurityEventLogger securityEvents;
 
-    public ShiftTypeService(ShiftTypeRepository shiftTypes, DayEntryRepository days) {
+    public ShiftTypeService(ShiftTypeRepository shiftTypes,
+                            DayEntryRepository days,
+                            SecurityEventLogger securityEvents) {
         this.shiftTypes = shiftTypes;
         this.days = days;
+        this.securityEvents = securityEvents;
     }
 
     @Transactional
@@ -103,9 +108,14 @@ public class ShiftTypeService {
     }
 
     public ShiftType requireOwnedShiftType(AppUser user, Long id) {
-        return shiftTypes.findById(id)
-                .filter(type -> type.getOwner().getId().equals(user.getId()))
+        ShiftType type = shiftTypes.findById(id)
                 .orElseThrow(() -> ApiException.notFound("Смена не найдена"));
+        if (!type.getOwner().getId().equals(user.getId())) {
+            securityEvents.warn("AUTHZ_OWNERSHIP_MISMATCH", user.getUsername(), "rejected",
+                    "resource=shift_type id=" + id);
+            throw ApiException.notFound("Смена не найдена");
+        }
+        return type;
     }
 
     /**

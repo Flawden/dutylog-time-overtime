@@ -2,6 +2,7 @@ package ru.daniil.shifts.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.config.SecurityEventLogger;
 import ru.daniil.shifts.dto.Dtos.QuickScenarioCreateRequest;
 import ru.daniil.shifts.dto.Dtos.QuickScenarioDto;
 import ru.daniil.shifts.dto.Dtos.QuickScenarioUpdateRequest;
@@ -16,9 +17,12 @@ import java.util.List;
 @Service
 public class QuickScenarioService {
     private final QuickScenarioRepository scenarios;
+    private final SecurityEventLogger securityEvents;
 
-    public QuickScenarioService(QuickScenarioRepository scenarios) {
+    public QuickScenarioService(QuickScenarioRepository scenarios,
+                                SecurityEventLogger securityEvents) {
         this.scenarios = scenarios;
+        this.securityEvents = securityEvents;
     }
 
     @Transactional
@@ -63,9 +67,14 @@ public class QuickScenarioService {
     }
 
     public QuickScenario requireOwned(AppUser user, Long id) {
-        return scenarios.findById(id)
-                .filter(s -> s.getOwner().getId().equals(user.getId()))
+        QuickScenario scenario = scenarios.findById(id)
                 .orElseThrow(() -> ApiException.notFound("Сценарий не найден"));
+        if (!scenario.getOwner().getId().equals(user.getId())) {
+            securityEvents.warn("AUTHZ_OWNERSHIP_MISMATCH", user.getUsername(), "rejected",
+                    "resource=quick_scenario id=" + id);
+            throw ApiException.notFound("Сценарий не найден");
+        }
+        return scenario;
     }
 
     private void applyCreate(QuickScenario s, QuickScenarioCreateRequest req) {

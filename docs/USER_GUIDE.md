@@ -1,6 +1,6 @@
 # User guide
 
-Status: v27.0-rc1.
+Status: v27.0-rc4.
 
 This is a short guide for daily DutyLog use.
 

@@ -1,6 +1,6 @@
 # v26.6.11 — UI alignment and registration test hotfix
 
-Carried into release candidate: v27.0-rc1.
+Carried into release candidate: v27.0-rc4.
 This hotfix keeps the v26.6 release-polish scope and fixes two regressions found after v26.6.10.
 
 ## Fixed

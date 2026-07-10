@@ -22,9 +22,12 @@ import java.util.Optional;
 @Component
 public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
     private final MobileAuthService mobileAuthService;
+    private final SecurityEventLogger securityEvents;
 
-    public BearerTokenAuthenticationFilter(MobileAuthService mobileAuthService) {
+    public BearerTokenAuthenticationFilter(MobileAuthService mobileAuthService,
+                                           SecurityEventLogger securityEvents) {
         this.mobileAuthService = mobileAuthService;
+        this.securityEvents = securityEvents;
     }
 
 
@@ -52,6 +55,7 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
         String token = header.substring("Bearer ".length()).trim();
         Optional<AppUser> user = mobileAuthService.authenticateAccessToken(token);
         if (user.isEmpty()) {
+            securityEvents.warn(request, "AUTH_TOKEN_REJECTED", null, "rejected", "reason=invalid_or_expired_access_token");
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json;charset=UTF-8");
             response.getWriter().write("{\"error\":\"Access token недействителен или истёк\"}");

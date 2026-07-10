@@ -4,7 +4,7 @@ set -euo pipefail
 BASE_URL="${1:-${DUTYLOG_BASE_URL:-http://localhost:8080}}"
 BASE_URL="${BASE_URL%/}"
 TIMEOUT="${DUTYLOG_SMOKE_TIMEOUT:-10}"
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.0-rc1}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.0-rc4}"
 STATIC_JS=(
   "js/10-core.js"
   "js/20-data.js"
@@ -43,8 +43,11 @@ echo "1) Actuator health"
 fetch "$BASE_URL/actuator/health" | grep -q '"status":"UP"'
 echo "   ok"
 
-echo "2) Login page"
-fetch "$BASE_URL/login.html" | grep -qi 'DutyLog'
+echo "2) Login page and external login runtime"
+LOGIN_HTML="$(fetch "$BASE_URL/login.html")"
+echo "$LOGIN_HTML" | grep -qi 'DutyLog'
+echo "$LOGIN_HTML" | grep -q "/js/login.js?v=$VERSION"
+fetch "$BASE_URL/js/login.js" | grep -q 'languagePreference: currentLang'
 echo "   ok"
 
 echo "3) App shell"

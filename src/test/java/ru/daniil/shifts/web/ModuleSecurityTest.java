@@ -8,11 +8,18 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.model.AppUser;
+import ru.daniil.shifts.model.MobileAuthToken;
+import ru.daniil.shifts.repo.MobileAuthTokenRepository;
+import ru.daniil.shifts.service.MobileAuthService;
+
+import java.time.Instant;
 import ru.daniil.shifts.repo.UserRepository;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -32,12 +39,22 @@ class ModuleSecurityTest {
 
     @Autowired MockMvc mvc;
     @Autowired UserRepository users;
+    @Autowired MobileAuthTokenRepository mobileTokens;
 
     AppUser regular;
+    String accessToken;
 
     @BeforeEach
     void setUp() {
         regular = users.save(new AppUser("module-sec-user", "{noop}x"));
+        accessToken = "module-sec-access";
+        mobileTokens.saveAndFlush(new MobileAuthToken(
+                regular,
+                MobileAuthService.hash(accessToken),
+                MobileAuthService.hash("module-sec-refresh"),
+                Instant.now().plusSeconds(3600),
+                Instant.now().plusSeconds(7200),
+                "test-device"));
     }
 
     @Test
@@ -45,7 +62,7 @@ class ModuleSecurityTest {
         disableModule("notes");
 
         mvc.perform(post("/api/mobile/sync")
-                        .with(user(regular.getUsername()).roles("USER"))
+                        .header(AUTHORIZATION, "Bearer " + accessToken)
                         .contentType("application/json")
                         .content("{\"days\":[{\"date\":\"2026-07-10\",\"note\":\"hidden note\"}]}"))
                 .andExpect(status().isForbidden());
@@ -56,7 +73,7 @@ class ModuleSecurityTest {
         disableModule("overtime");
 
         mvc.perform(post("/api/mobile/sync")
-                        .with(user(regular.getUsername()).roles("USER"))
+                        .header(AUTHORIZATION, "Bearer " + accessToken)
                         .contentType("application/json")
                         .content("{\"days\":[{\"date\":\"2026-07-10\",\"overtimeHours\":2.5}]}"))
                 .andExpect(status().isForbidden());
@@ -70,7 +87,10 @@ class ModuleSecurityTest {
                 .andExpect(header().string("Referrer-Policy", "strict-origin-when-cross-origin"))
                 .andExpect(header().string("X-Frame-Options", "SAMEORIGIN"))
                 .andExpect(header().string("Permissions-Policy", containsString("geolocation=()")))
-                .andExpect(header().string("Content-Security-Policy", containsString("default-src 'self'")));
+                .andExpect(header().string("Content-Security-Policy", containsString("default-src 'self'")))
+                .andExpect(header().string("Content-Security-Policy", containsString("script-src 'self'")))
+                .andExpect(header().string("Content-Security-Policy",
+                        not(containsString("script-src 'self' 'unsafe-inline'"))));
     }
 
     private void disableModule(String key) throws Exception {

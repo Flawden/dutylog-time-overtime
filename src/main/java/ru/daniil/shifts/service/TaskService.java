@@ -2,6 +2,7 @@ package ru.daniil.shifts.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.config.SecurityEventLogger;
 import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
@@ -24,10 +25,14 @@ import java.util.Objects;
 public class TaskService {
     private final DayTaskRepository tasks;
     private final DayEntryService dayEntryService;
+    private final SecurityEventLogger securityEvents;
 
-    public TaskService(DayTaskRepository tasks, DayEntryService dayEntryService) {
+    public TaskService(DayTaskRepository tasks,
+                       DayEntryService dayEntryService,
+                       SecurityEventLogger securityEvents) {
         this.tasks = tasks;
         this.dayEntryService = dayEntryService;
+        this.securityEvents = securityEvents;
     }
 
     @Transactional(readOnly = true)
@@ -198,7 +203,11 @@ public class TaskService {
     private DayTask requireOwnedTask(AppUser user, Long id) {
         if (id == null) throw ApiException.badRequest("Не указан id задачи");
         DayTask task = tasks.findById(id).orElseThrow(() -> ApiException.notFound("Задача не найдена"));
-        if (!Objects.equals(task.getOwner().getId(), user.getId())) throw ApiException.notFound("Задача не найдена");
+        if (!Objects.equals(task.getOwner().getId(), user.getId())) {
+            securityEvents.warn("AUTHZ_OWNERSHIP_MISMATCH", user.getUsername(), "rejected",
+                    "resource=task id=" + id);
+            throw ApiException.notFound("Задача не найдена");
+        }
         return task;
     }
 

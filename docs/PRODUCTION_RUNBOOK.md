@@ -34,6 +34,8 @@ SPRING_DATASOURCE_PASSWORD=...
 DUTYLOG_ADMIN_USERNAME=your_admin_login
 DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 DUTYLOG_TELEGRAM_BOT_TOKEN=...
+DUTYLOG_REGISTRATION_DEFAULT_ENABLED=false
+DUTYLOG_SECURITY_RATE_LIMIT_ENABLED=true
 ```
 
 If Telegram is not ready yet, keep it disabled:
@@ -85,7 +87,7 @@ The backend creates this account on first startup or promotes it to `ADMIN` if i
 
 ## 2. Post-launch checks
 
-Run smoke test. In v27.0-rc1 it verifies split static asset versions and service worker cache version:
+Run smoke test. In v27.0-rc4 it verifies split static asset versions and service worker cache version:
 
 ```bash
 DUTYLOG_BASE_URL=https://your-domain.example ./deploy/scripts/smoke-test.sh
@@ -93,12 +95,14 @@ DUTYLOG_BASE_URL=https://your-domain.example ./deploy/scripts/smoke-test.sh
 
 Then check manually:
 
-- registration and login;
+- registration starts closed and login rate limiting is active;
 - calendar opens;
 - admin sees `Система` in the header;
 - `Система` shows database status `ok`;
 - regular user does not see `Система`;
 - Telegram linking works if Telegram is enabled;
+- notes ZIP export opens and contains only the current user's data;
+- `SECURITY_AUDIT` logs contain metadata but no secrets;
 - backup script creates a dump.
 
 ## 3. Safe update
@@ -161,10 +165,11 @@ scp /opt/dutylog/backups/dutylog-*.dump user@other-host:/safe/place/
 
 ## 6. Logs
 
-Application logs:
+Application/security logs are available through Docker stdout and the bounded `app_logs` volume:
 
 ```bash
 docker compose -f docker-compose.prod.yml logs -f app
+docker compose -f docker-compose.prod.yml exec app sh -lc 'tail -f /app/logs/dutylog.log'
 ```
 
 Database logs:

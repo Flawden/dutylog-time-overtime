@@ -1,6 +1,6 @@
 # Alternative nginx reverse proxy example.
 # Caddy is recommended for first launch because it obtains HTTPS certificates automatically.
-# NOTE: unlike Caddy, this config includes brute-force rate limiting on auth endpoints.
+# DutyLog also enforces auth rate limits in the application. The nginx zone below is optional defense in depth.
 
 # Зона для лимита попыток входа: ключ — IP, 5 запросов в минуту.
 # Директива limit_req_zone живёт на уровне http {} — если этот файл
@@ -30,7 +30,15 @@ server {
 
     client_max_body_size 10m;
 
-    # Брутфорс-защита: логин, регистрация, мобильный вход.
+    # Browser hardening parity with the Spring and Caddy policies.
+    add_header X-Content-Type-Options "nosniff" always;
+    add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+    add_header X-Frame-Options "SAMEORIGIN" always;
+    add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
+    add_header Strict-Transport-Security "max-age=31536000" always;
+    add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'" always;
+
+    # Optional proxy-level defense in depth: login, registration and mobile login.
     # burst=5 — небольшая очередь на легитимные повторы, nodelay — без искусственной задержки.
     location ~ ^/(perform_login|api/auth/register|api/mobile/auth/login)$ {
         limit_req zone=dutylog_auth burst=5 nodelay;

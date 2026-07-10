@@ -8,7 +8,7 @@ DutyLog — приложение для учёта смен, переработ�
 - Модульный режим: пользователь может включать и выключать Notes, Tasks, Overtime, Important dates, Notifications, Telegram и Scenarios без удаления данных.
 - Первый запуск: новый пользователь выбирает нужные модули через спокойный onboarding, а не сразу попадает в перегруженный интерфейс.
 - Автозаполнение графиков: 2/2, день/ночь/48, 5/2, день/72, ночь/72.
-- Markdown-заметки для каждого дня с полноэкранным редактором и живым превью.
+- Markdown-заметки для каждого дня с полноэкранным редактором, живым превью и ZIP-экспортом всей базы для Obsidian/резервной копии.
 - Персонализация: светлая/тёмная/системная тема, акцентный цвет и emoji-маркеры дней без хранения картинок.
 - Задачи дня с категориями, приоритетами, сроками и напоминаниями.
 - Важные даты: разовые, ежемесячные и ежегодные события.
@@ -174,7 +174,10 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 - Web-интерфейс работает через `JSESSIONID` и CSRF-защиту.
 - Изменяющие web-запросы отправляют `X-XSRF-TOKEN`.
-- Mobile API использует `Authorization: Bearer <accessToken>`, но отдельного native mobile-приложения в этом релизе ещё нет. Текущий клиент — web/PWA внутри Spring Boot-монолита.
+- `/api/mobile/**` работает отдельной stateless security chain и принимает только `Authorization: Bearer <accessToken>`; browser `JSESSIONID` для неё не подходит.
+- Production-регистрация по умолчанию закрыта, а login/registration/mobile-login ограничены app-level rate limiter.
+- Структурированные `SECURITY_AUDIT` события не содержат пароли, токены, Telegram-коды или заметки.
+- Notes export owner-scoped, bounded, streamed and marked `Cache-Control: no-store`.
 - Refresh tokens хранятся только в виде SHA-256-хэшей.
 - Пароли пользователей хранятся через BCrypt.
 - Диагностический endpoint не раскрывает секреты: Telegram token, пароли и URL базы данных не отдаются.
@@ -191,6 +194,9 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/PRODUCTION_LAUNCH.md`](docs/PRODUCTION_LAUNCH.md) — короткий сценарий первого запуска на VPS.
 - [`docs/SECURITY_CHECKLIST.md`](docs/SECURITY_CHECKLIST.md) — чеклист безопасности перед публикацией.
 - [`docs/SECURITY_REVIEW.md`](docs/SECURITY_REVIEW.md) — обзор security hardening текущей стабилизации.
+- [`docs/SECURITY_CONSOLIDATION.md`](docs/SECURITY_CONSOLIDATION.md) — сводка закрытых security-находок v27.0-rc4.
+- [`docs/NOTES_EXPORT.md`](docs/NOTES_EXPORT.md) — формат и ограничения ZIP-экспорта заметок.
+- [`docs/SUPPLY_CHAIN.md`](docs/SUPPLY_CHAIN.md) — Dependabot и правила обновления зависимостей/образов.
 - [`docs/ADMIN_BOOTSTRAP.md`](docs/ADMIN_BOOTSTRAP.md) — безопасное создание стартового администратора через env.
 - [`docs/REGISTRATION_SETTINGS.md`](docs/REGISTRATION_SETTINGS.md) — управление публичной регистрацией из админки.
 - [`docs/USER_ROLES.md`](docs/USER_ROLES.md) — пользователи, роли ADMIN/USER и будущий задел FREE/PAID/VIP.
@@ -201,7 +207,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/PRODUCT_COPY.md`](docs/PRODUCT_COPY.md) — стиль пользовательских текстов.
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
-- [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.0-rc1 и как принимать RC.
+- [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.0-rc4 и как принимать RC.
 - [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) — короткая пользовательская инструкция.
 - [`docs/PRODUCTION_DEPLOY.md`](docs/PRODUCTION_DEPLOY.md) — пошаговый production deployment.
 - [`docs/BACKUP_RESTORE.md`](docs/BACKUP_RESTORE.md) — резервное копирование и восстановление.
@@ -218,28 +224,31 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v27.0-rc1 — Release Candidate`
+`v27.0-rc4 — Security consolidation`
 
-DutyLog находится в release-candidate фазе. Новые крупные функции заморожены. Разрешены только bugfix, security fix, документация, тесты, CI и правки, без которых релиз нельзя считать стабильным.
+DutyLog находится в release-candidate фазе. Новые крупные функции заморожены. RC4 объединяет экспорт Markdown-заметок и закрытие замечаний двух независимых security-review.
 
-Что вошло в RC:
+Что вошло:
 
-- версия `27.0-rc1` синхронизирована во frontend, backend, service worker, smoke-test, README и docs;
-- v26.6.12 зафиксирована как UX-polished baseline;
-- CI запускает `mvn test` и release static checks;
-- release-check проверяет split JS, service worker, версии, production safety, security guardrails и ключевые UX/i18n фиксы;
-- добавлены финальные документы для релиза: `RELEASE_CANDIDATE`, `USER_GUIDE`, `PRODUCTION_DEPLOY`, `BACKUP_RESTORE`;
-- production запуск остаётся через Spring Boot монолит + PostgreSQL + Caddy/nginx reverse proxy;
-- offline/PWA, modules, onboarding, i18n, themes, admin/roles и security hardening сохранены без расширения scope.
+- версия `27.0-rc4` синхронизирована во frontend, backend, service worker, smoke-test и документации;
+- notes export owner-scoped, streamed, bounded, YAML-safe and `no-store`;
+- browser session и bearer-only mobile API разделены на две security chain;
+- IDOR-тесты проверяют точный `404` для чужих ресурсов;
+- production registration starts closed; auth endpoints are rate-limited inside the application;
+- добавлены структурированные security-события и ротация логов;
+- login JavaScript вынесен в отдельный файл, CSP больше не содержит `script-src 'unsafe-inline'`;
+- Caddy/nginx/Spring policies aligned; application container runs as non-root;
+- Dependabot следит за Maven, GitHub Actions и Docker;
+- release-check закрепляет новые security/export-инварианты.
 
-Критерии принятия RC:
+Критерии принятия:
 
-- локально или в CI зелёный `mvn test`;
+- зелёный `mvn test`;
 - зелёный `bash deploy/scripts/release-check.sh`;
-- на VPS проходит `./deploy/scripts/smoke-test.sh https://domain`;
-- ручной smoke по календарю, модулям, языку, offline, админке и backup/restore не выявляет блокеров.
+- production preflight и smoke-test проходят на VPS;
+- ручная проверка notes export, mobile auth boundary, registration defaults, backup/restore и PWA/offline не выявляет блокеров.
 
-Следующий шаг после спокойной проверки: `v27.0` stable или `v27.0-rc2`, если найдутся блокеры.
+Следующий шаг: `v27.0` stable после периода спокойного использования либо `v27.0-rc5` только для блокирующих исправлений.
 
 ## Служебный профиль администратора
 
@@ -267,7 +276,7 @@ DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 Since v25.3 the module registry has explicit developer contracts. See `docs/MODULE_CONTRACTS.md`.
 
 
-CI permission stabilization in v27.0-rc1:
+CI permission stabilization in v27.0-rc4:
 
 - GitHub Actions runs release checks through `bash ./deploy/scripts/release-check.sh`.
 - CI no longer fails when executable bits are lost on Windows/archive checkouts.

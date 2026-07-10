@@ -1,8 +1,5 @@
-# ВНИМАНИЕ: у Caddy из коробки НЕТ rate limiting — брутфорс-защита логина
-# здесь отсутствует. Варианты: (а) собрать Caddy с плагином caddy-ratelimit,
-# (б) использовать nginx-конфиг из deploy/nginx (лимиты уже настроены),
-# (в) fail2ban на журнал приложения. До выбора варианта не выставлять
-# наружу с открытой регистрацией.
+# Authentication rate limiting is enforced inside DutyLog, so stock Caddy and nginx
+# receive the same baseline brute-force protection.
 {$DUTYLOG_DOMAIN} {
     encode zstd gzip
 
@@ -15,7 +12,7 @@
         X-Frame-Options SAMEORIGIN
         Permissions-Policy "geolocation=(), microphone=(), camera=()"
         Strict-Transport-Security "max-age=31536000"
-        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'"
+        Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'"
     }
 
     log {

@@ -100,7 +100,7 @@ class RegistrationTest {
 
         mvc.perform(post("/api/auth/register").with(csrf())
                         .contentType("application/json")
-                        .content(body("ok-name", "12345")))
+                        .content(body("ok-name", "1234567")))
                 .andExpect(status().isBadRequest());
 
         mvc.perform(post("/api/auth/register").with(csrf())

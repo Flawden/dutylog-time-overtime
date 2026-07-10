@@ -24,14 +24,20 @@ This checklist is for a personal production deployment of DutyLog.
 ## Application
 
 - [ ] Public registration does not create administrators automatically.
-- [ ] Public registration is closed in `Система` if the deployment is private/personal.
+- [ ] Production starts with `DUTYLOG_REGISTRATION_DEFAULT_ENABLED=false`; registration is opened only intentionally in `Система`.
 - [ ] Direct `POST /api/auth/register` returns `403` when registration is closed.
 - [ ] Bootstrap admin from `DUTYLOG_ADMIN_USERNAME` can log in and sees `Система`.
 - [ ] `Система` → `Пользователи и роли` contains only expected administrators.
 - [ ] `Система` is visible only to administrator.
 - [ ] Regular user receives `403` from `/api/admin/status`.
 - [ ] CSRF cookie is present in the web interface.
+- [ ] A browser session cannot authenticate `/api/mobile/**`; a valid bearer token can.
+- [ ] Authentication rate limiting is enabled in production.
+- [ ] Normal registration passwords require at least 8 characters.
 - [ ] Browser responses include security headers (`CSP`, `nosniff`, `Referrer-Policy`, `Permissions-Policy`).
+- [ ] CSP does not allow inline scripts.
+- [ ] Notes export returns `no-store`, contains only the current user's notes and respects configured limits.
+- [ ] `SECURITY_AUDIT` events are present and do not include secrets/user note content.
 - [ ] Production session cookie is `HttpOnly`, `Secure`, and `SameSite=Lax`.
 - [ ] Disabled modules return `403 MODULE_DISABLED:<key>` from their API boundaries.
 - [ ] `/api/mobile/sync` cannot write notes/overtime when those modules are disabled.
@@ -46,6 +52,8 @@ This checklist is for a personal production deployment of DutyLog.
 - [ ] `docker compose down` is used for safe stop.
 - [ ] `docker compose down -v` is avoided unless database deletion is intentional.
 - [ ] App container healthcheck is healthy.
+- [ ] App process runs as non-root UID/GID `10001`.
+- [ ] `app_logs` volume is mounted and rolling logs are bounded.
 - [ ] Database container healthcheck is healthy.
 
 ## Backup
@@ -61,6 +69,7 @@ This checklist is for a personal production deployment of DutyLog.
 - [ ] Git tag is known before deployment.
 - [ ] Smoke test passes after update.
 - [ ] Logs are checked after update.
+- [ ] Dependabot is enabled for Maven, GitHub Actions and Docker.
 
 
 ## Users and roles

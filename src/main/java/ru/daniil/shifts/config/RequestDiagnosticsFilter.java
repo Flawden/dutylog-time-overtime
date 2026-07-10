@@ -6,6 +6,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -17,9 +19,11 @@ import java.util.UUID;
  * Полезно на VPS, когда нужно понять, что реально происходит без дебага в браузере.
  */
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE + 10)
 public class RequestDiagnosticsFilter extends OncePerRequestFilter {
     private static final Logger log = LoggerFactory.getLogger(RequestDiagnosticsFilter.class);
     private static final String REQUEST_ID_HEADER = "X-Request-Id";
+    public static final String REQUEST_ID_ATTRIBUTE = RequestDiagnosticsFilter.class.getName() + ".requestId";
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -28,6 +32,7 @@ public class RequestDiagnosticsFilter extends OncePerRequestFilter {
         String requestId = request.getHeader(REQUEST_ID_HEADER);
         if (requestId == null || requestId.isBlank()) requestId = UUID.randomUUID().toString().substring(0, 8);
         response.setHeader(REQUEST_ID_HEADER, requestId);
+        request.setAttribute(REQUEST_ID_ATTRIBUTE, requestId);
 
         long started = System.nanoTime();
         try {

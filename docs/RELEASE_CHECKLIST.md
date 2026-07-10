@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.0-rc1.
+Status: v27.0-rc4.
 
 This checklist is used before creating an archive, Git tag or VPS deployment. DutyLog is currently a web/PWA inside a Spring Boot monolith. There is no native mobile app in this release.
 
@@ -68,6 +68,7 @@ The smoke test checks:
 - service worker cache version;
 - split JS assets;
 - public registration status endpoint;
+- external `/js/login.js` runtime;
 - protected admin API does not crash.
 
 ## 7. Manual smoke
@@ -80,7 +81,7 @@ Check in browser:
 - module settings open;
 - admin sees `Система`;
 - regular user does not see `Система`;
-- server version is `27.0-rc1`;
+- server version is `27.0-rc4`;
 - registration status is expected;
 - Telegram status matches `.env`;
 - language switch still works;
@@ -114,11 +115,17 @@ On phone, repeat a minimal PWA scenario: open online → install/open as PWA →
 - Browser security headers are present.
 - Production session cookie is `HttpOnly`, `Secure`, and `SameSite=Lax`.
 - Disabled modules are guarded in normal API and aggregated mobile sync.
+- Browser `JSESSIONID` is rejected by `/api/mobile/**`; a valid bearer token succeeds.
+- Notes ZIP is owner-scoped, opens correctly and returns `Cache-Control: no-store`.
+- Production registration starts closed and app-level auth rate limiting is enabled.
+- CSP does not contain `script-src 'unsafe-inline'`.
+- `SECURITY_AUDIT` logs contain event metadata but no passwords, tokens, Telegram codes or notes.
+- The application container runs as non-root.
 
 ## 10. Git
 
 ```bash
 git add -A
-git commit -m "chore: prepare v27 release candidate"
-git tag -a v27.0-rc1 -m "v27.0-rc1 — Release Candidate"
+git commit -m "fix: consolidate release security and notes export"
+git tag -a v27.0-rc4 -m "v27.0-rc4 — Security consolidation"
 ```

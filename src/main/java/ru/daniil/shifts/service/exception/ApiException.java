@@ -33,4 +33,8 @@ public class ApiException extends RuntimeException {
     public static ApiException forbidden(String message) {
         return new ApiException(HttpStatus.FORBIDDEN, message);
     }
+
+    public static ApiException payloadTooLarge(String message) {
+        return new ApiException(HttpStatus.PAYLOAD_TOO_LARGE, message);
+    }
 }

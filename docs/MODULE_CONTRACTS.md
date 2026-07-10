@@ -1,6 +1,6 @@
 # Module contracts
 
-Status: v27.0-rc1.
+Status: v27.0-rc4.
 
 DutyLog uses a modular-monolith approach. A module is not a separate service yet; it is a bounded feature area with a stable key, API guards, UI slots and optional offline queue operation types.
 
@@ -58,7 +58,7 @@ PATCH /api/modules
 
 | Module | UI slots | API prefixes | Offline queue |
 | --- | --- | --- | --- |
-| `core` | app shell, profile, appearance, language, offline shell | `/api/profile`, `/api/modules`, `/api/auth`, `/api/mobile` | — |
+| `core` | app shell, profile, notes data export, appearance, language, offline shell | `/api/profile`, `/api/modules`, `/api/auth`, `/api/mobile`, `/api/export/notes` | — |
 | `calendar` | calendar grid, selected day | `/api/calendar`, `/api/days` | `day.shift` |
 | `shifts` | shift selector, schedule, shift settings | `/api/shift-types` | `day.shift` |
 | `notes` | day note, note marker | day note updates | `day.note` |
@@ -69,3 +69,5 @@ PATCH /api/modules
 | `telegram` | profile Telegram block | `/api/telegram` | — |
 | `scenarios` | quick scenario buttons/settings | `/api/quick-scenarios` | — |
 | `admin` | admin settings/system diagnostics | `/api/admin` | — |
+
+The notes ZIP export belongs to `core` as a data-portability operation. It remains available when the Notes UI module is disabled; module switches hide features but do not remove stored data or the user's ability to retrieve it.

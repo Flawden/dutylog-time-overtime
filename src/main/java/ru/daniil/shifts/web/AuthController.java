@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
+import ru.daniil.shifts.config.SecurityEventLogger;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.AppSettingsService;
@@ -21,15 +22,18 @@ public class AuthController {
     private final PasswordEncoder encoder;
     private final DefaultShiftSeedService defaultShiftSeedService;
     private final AppSettingsService appSettingsService;
+    private final SecurityEventLogger securityEvents;
 
     public AuthController(UserRepository users,
                           PasswordEncoder encoder,
                           DefaultShiftSeedService defaultShiftSeedService,
-                          AppSettingsService appSettingsService) {
+                          AppSettingsService appSettingsService,
+                          SecurityEventLogger securityEvents) {
         this.users = users;
         this.encoder = encoder;
         this.defaultShiftSeedService = defaultShiftSeedService;
         this.appSettingsService = appSettingsService;
+        this.securityEvents = securityEvents;
     }
 
     public record RegisterRequest(String username, String password, String languagePreference) {}
@@ -48,6 +52,7 @@ public class AuthController {
     @Transactional
     public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
         if (!appSettingsService.isRegistrationEnabled()) {
+            securityEvents.warn("REGISTRATION_REJECTED", null, "rejected", "reason=registration_closed");
             return ResponseEntity.status(HttpStatus.FORBIDDEN)
                     .body(Map.of("error", "Регистрация закрыта администратором"));
         }
@@ -64,8 +69,8 @@ public class AuthController {
         if (!username.matches("[A-Za-zА-Яа-яЁё0-9_.-]+")) {
             return ResponseEntity.badRequest().body(Map.of("error", "Имя: только буквы, цифры, точка, дефис и подчёркивание"));
         }
-        if (password.length() < 6) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Пароль: минимум 6 символов"));
+        if (password.length() < 8) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Пароль: минимум 8 символов"));
         }
         if (users.existsByUsername(username)) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(Map.of("error", "Имя уже занято"));
@@ -75,6 +80,7 @@ public class AuthController {
         user.setLanguagePreference(req.languagePreference());
         user = users.save(user);
         defaultShiftSeedService.seedDefaults(user);
+        securityEvents.info("REGISTRATION_SUCCEEDED", username, "accepted", "role=USER");
         return ResponseEntity.status(HttpStatus.CREATED).body(Map.of(
                 "username", username,
                 "languagePreference", user.getLanguagePreference()

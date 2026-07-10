@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.config.SecurityEventLogger;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.exception.ApiException;
@@ -25,15 +26,18 @@ public class UserAdminService {
     private final UserRepository users;
     private final PasswordEncoder encoder;
     private final MobileAuthService mobileAuthService;
+    private final SecurityEventLogger securityEvents;
     private final String bootstrapAdminUsername;
 
     public UserAdminService(UserRepository users,
                             PasswordEncoder encoder,
                             MobileAuthService mobileAuthService,
+                            SecurityEventLogger securityEvents,
                             @Value("${dutylog.admin.username:}") String bootstrapAdminUsername) {
         this.users = users;
         this.encoder = encoder;
         this.mobileAuthService = mobileAuthService;
+        this.securityEvents = securityEvents;
         this.bootstrapAdminUsername = bootstrapAdminUsername == null ? "" : bootstrapAdminUsername.trim();
     }
 
@@ -97,8 +101,11 @@ public class UserAdminService {
             }
         }
 
+        String previousRole = target.getRole();
         target.setRole(role);
         AppUser saved = users.save(target);
+        securityEvents.info("ADMIN_ROLE_CHANGED", currentUser.getUsername(), "accepted",
+                "target=" + target.getUsername() + " from=" + previousRole + " to=" + role);
         return toDto(saved, currentUser);
     }
 
@@ -112,6 +119,8 @@ public class UserAdminService {
         target.setPasswordHash(encoder.encode(password));
         AppUser saved = users.save(target);
         mobileAuthService.revokeAllSessions(saved);
+        securityEvents.warn("ADMIN_PASSWORD_RESET", currentUser.getUsername(), "accepted",
+                "target=" + target.getUsername());
         return toDto(saved, currentUser);
     }
 

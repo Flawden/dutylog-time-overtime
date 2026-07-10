@@ -1,3 +1,16 @@
+## v27.0-rc4 — Security consolidation
+
+- Added bounded streaming export of all owner-scoped notes as Obsidian-friendly Markdown ZIP.
+- Escaped YAML front matter, disabled response caching and documented export availability when Notes UI is disabled.
+- Split `/api/mobile/**` into a stateless Bearer-only security chain; browser sessions can no longer authenticate mobile endpoints.
+- Added explicit mobile-boundary, export and expanded IDOR regression tests with exact 404 assertions.
+- Added structured security events for login/authz/token/Telegram/admin-reset actions and bounded rolling production logs.
+- Added application-level authentication rate limiting shared by Caddy and nginx deployments.
+- Closed public registration by default in production and raised normal password minimum to 8 characters.
+- Removed `script-src 'unsafe-inline'` by extracting login JavaScript; synchronized CSP/HSTS headers across Spring, Caddy and nginx.
+- Added Dependabot for Maven, GitHub Actions and Docker, and made the runtime container non-root.
+- Synchronized runtime, service worker, docs, smoke checks and package layout on `27.0-rc4`.
+
 ## v27.0-rc1 — Release Candidate
 
 - Froze v26.6.12 as the UX-polished release-candidate baseline.

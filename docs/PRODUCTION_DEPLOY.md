@@ -1,6 +1,6 @@
 # Production deploy
 
-Status: v27.0-rc1.
+Status: v27.0-rc4.
 
 Use this guide for a VPS deployment. For detailed operations and rollback, see `docs/PRODUCTION_RUNBOOK.md`.
 
@@ -19,7 +19,7 @@ sudo mkdir -p /opt/dutylog
 sudo chown -R "$USER":"$USER" /opt/dutylog
 cd /opt/dutylog
 git clone <repo-url> .
-git checkout v27.0-rc1
+git checkout v27.0-rc4
 cp .env.production.example .env
 cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
 ```
@@ -33,7 +33,11 @@ SPRING_DATASOURCE_PASSWORD=<same-or-dedicated-db-password>
 DUTYLOG_ADMIN_USERNAME=<admin-login>
 DUTYLOG_ADMIN_PASSWORD=<long-random-admin-password>
 DUTYLOG_ADMIN_FORCE_PASSWORD_RESET=false
+DUTYLOG_REGISTRATION_DEFAULT_ENABLED=false
+DUTYLOG_SECURITY_RATE_LIMIT_ENABLED=true
 ```
+
+Keep public registration closed until the bootstrap admin intentionally opens it in System. Keep the application rate limiter enabled.
 
 Keep Telegram disabled until the bot is configured:
 
@@ -71,7 +75,7 @@ docker compose -f docker-compose.prod.yml logs --tail=100 caddy
 ./deploy/scripts/smoke-test.sh https://dutylog.example.com
 ```
 
-Then open the app, log in as the bootstrap admin and verify the System page.
+Then open the app, log in as the bootstrap admin and verify the System page. Check that registration is closed, download a notes ZIP, and inspect `docker compose -f docker-compose.prod.yml logs app` for sanitized `SECURITY_AUDIT` events. The application process runs as non-root and writes bounded rolling logs to the `app_logs` volume.
 
 ## Update
 

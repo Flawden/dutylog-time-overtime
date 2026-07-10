@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.0-rc1}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.0-rc4}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -78,6 +78,7 @@ echo "1) Version consistency"
 contains src/main/resources/static/js/10-core.js "DUTYLOG_VERSION = \"$VERSION\""
 contains src/main/resources/static/service-worker.js "dutylog-shell-v$VERSION"
 contains src/main/resources/static/index.html "app.css?v=$VERSION"
+contains src/main/resources/static/login.html "/js/login.js?v=$VERSION"
 for asset in "${STATIC_JS[@]}"; do
   contains src/main/resources/static/index.html "$asset?v=$VERSION"
 done
@@ -182,7 +183,10 @@ contains src/main/resources/static/js/70-user-boot.js "if (state.profile?.admin)
 python3 - <<'PY'
 from pathlib import Path
 import re
-html = Path('src/main/resources/static/index.html').read_text(encoding='utf-8')
+html = '\n'.join(
+    Path(path).read_text(encoding='utf-8')
+    for path in ['src/main/resources/static/index.html', 'src/main/resources/static/login.html']
+)
 js = '\n'.join(p.read_text(encoding='utf-8') for p in sorted(Path('src/main/resources/static/js').glob('*.js')))
 ids = re.findall(r'\bid=["\']([^"\']+)["\']', html)
 idset = set(ids) | set(re.findall(r'id=\\?["\']([\w-]+)\\?["\']', js))
@@ -284,7 +288,21 @@ else
 fi
 contains deploy/caddy/Caddyfile.example "X-Content-Type-Options nosniff"
 contains deploy/caddy/Caddyfile.example "Strict-Transport-Security"
+contains deploy/caddy/Caddyfile.example "script-src 'self'"
+not_contains deploy/caddy/Caddyfile.example "script-src 'self' 'unsafe-inline'"
 contains deploy/nginx/dutylog.conf.example "limit_req_zone"
+contains deploy/nginx/dutylog.conf.example "Strict-Transport-Security"
+contains deploy/nginx/dutylog.conf.example "script-src 'self'"
+not_contains deploy/nginx/dutylog.conf.example "script-src 'self' 'unsafe-inline'"
+contains src/main/resources/application-prod.properties 'dutylog.registration.default-enabled=${DUTYLOG_REGISTRATION_DEFAULT_ENABLED:false}'
+contains src/main/resources/application-prod.properties 'dutylog.security.rate-limit.enabled=${DUTYLOG_SECURITY_RATE_LIMIT_ENABLED:true}'
+contains docker-compose.prod.yml 'DUTYLOG_REGISTRATION_DEFAULT_ENABLED: ${DUTYLOG_REGISTRATION_DEFAULT_ENABLED:-false}'
+contains docker-compose.prod.yml 'DUTYLOG_SECURITY_RATE_LIMIT_ENABLED: ${DUTYLOG_SECURITY_RATE_LIMIT_ENABLED:-true}'
+contains docker-compose.prod.yml 'app_logs:/app/logs'
+contains Dockerfile 'USER 10001:10001'
+contains .github/dependabot.yml 'package-ecosystem: "maven"'
+contains .github/dependabot.yml 'package-ecosystem: "github-actions"'
+contains .github/dependabot.yml 'package-ecosystem: "docker"'
 
 
 echo
@@ -302,10 +320,10 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "v27.0-rc1"
-contains docs/TEST_CONFIG_HOTFIX.md "v27.0-rc1"
+contains docs/SECURITY_REVIEW.md "v27.0-rc4"
+contains docs/TEST_CONFIG_HOTFIX.md "v27.0-rc4"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
-contains docs/CI_PERMISSION_HOTFIX.md "v27.0-rc1"
+contains docs/CI_PERMISSION_HOTFIX.md "v27.0-rc4"
 contains src/main/resources/static/index.html 'data-onboarding-preset="work"'
 contains src/main/resources/static/index.html ">Стандарт</button>"
 not_contains src/main/resources/static/index.html "Работа + переработки"
@@ -317,16 +335,16 @@ contains src/main/resources/static/app.css ".cell.todayCell::before"
 contains src/main/resources/static/js/20-data.js "DAY_MODULES_HINT_DISMISSED_KEY"
 contains src/main/resources/static/js/20-data.js "dayModulesHintCloseBtn"
 contains src/main/resources/static/app.css ".dayModulesHintClose"
-contains docs/ONBOARDING_TODAY_HOTFIX.md "v27.0-rc1"
-contains docs/DAY_HINT_DISMISS_HOTFIX.md "v27.0-rc1"
-contains docs/I18N_POLISH_HOTFIX.md "v27.0-rc1"
-contains docs/LOGIN_LANGUAGE_HOTFIX.md "v27.0-rc1"
-contains docs/UI_ALIGNMENT_TEST_HOTFIX.md "v27.0-rc1"
+contains docs/ONBOARDING_TODAY_HOTFIX.md "v27.0-rc4"
+contains docs/DAY_HINT_DISMISS_HOTFIX.md "v27.0-rc4"
+contains docs/I18N_POLISH_HOTFIX.md "v27.0-rc4"
+contains docs/LOGIN_LANGUAGE_HOTFIX.md "v27.0-rc4"
+contains docs/UI_ALIGNMENT_TEST_HOTFIX.md "v27.0-rc4"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "private static String body(String username, String password, String languagePreference)"
-contains src/main/resources/static/app.css "v27.0-rc1: stable right-side controls"
+contains src/main/resources/static/app.css "v27.0-rc4: stable right-side controls"
 contains src/main/resources/static/app.css "#timeSettingsCard .settingsHead > .status"
 contains src/main/resources/static/app.css "#profileCard .settingsHead > .avatarBig"
-contains src/main/resources/static/login.html "languagePreference: currentLang"
+contains src/main/resources/static/js/login.js "languagePreference: currentLang"
 contains src/main/java/ru/daniil/shifts/web/AuthController.java "user.setLanguagePreference(req.languagePreference())"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "языкСоСтраницыВходаСохраняетсяПриРегистрации"
 contains src/main/resources/static/app.css 'html[lang="en"] .cell .num.today::after'
@@ -335,8 +353,8 @@ contains src/main/resources/static/js/10-core.js "if (typeof renderSettingsPanel
 contains src/main/resources/static/js/30-calendar.js 'esc(t("Итого:"))'
 contains src/main/resources/static/js/60-settings.js 'const workLabel = state.language === "en" ? "work time"'
 contains src/main/resources/static/js/60-settings.js 'esc(t("шт"))'
-contains docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md "v27.0-rc1"
-contains src/main/resources/static/app.css "v27.0-rc1: notifications header alignment"
+contains docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md "v27.0-rc4"
+contains src/main/resources/static/app.css "v27.0-rc4: notifications header alignment"
 contains src/main/resources/static/app.css "#notifyCard > .notifyHead"
 contains src/main/resources/static/app.css ".adminShell.settingsShell"
 contains src/main/resources/static/index.html 'data-admin-jump="users"'
@@ -345,14 +363,52 @@ contains src/main/resources/static/index.html 'data-admin-jump="diagnostics"'
 contains src/main/resources/static/js/60-settings.js "function initAdminNavigation"
 contains src/main/resources/static/js/60-settings.js "notificationsActive"
 
+# v27.0-rc4 security consolidation
+contains src/main/resources/static/js/login.js "languagePreference: currentLang"
+not_contains src/main/resources/static/login.html "<script>"
+not_contains src/main/java/ru/daniil/shifts/config/SecurityHeadersFilter.java "script-src 'self' 'unsafe-inline'"
+contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java 'securityMatcher("/api/mobile/**")'
+contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java 'SessionCreationPolicy.STATELESS'
+contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java 'FilterRegistrationBean<BearerTokenAuthenticationFilter>'
+contains src/test/java/ru/daniil/shifts/web/MobileSecurityBoundaryTest.java "webSessionCannotAuthenticateMobileApi"
+contains src/test/java/ru/daniil/shifts/web/MobileSecurityBoundaryTest.java "validBearerAuthenticatesMobileApi"
+contains src/main/java/ru/daniil/shifts/service/NoteExportService.java "countByOwnerAndNoteIsNotNull"
+contains src/main/java/ru/daniil/shifts/service/NoteExportService.java "maxUncompressedBytes"
+contains src/main/java/ru/daniil/shifts/service/NoteExportService.java 'replace("\\", "\\\\")'
+contains src/main/java/ru/daniil/shifts/web/ExportController.java "StreamingResponseBody"
+contains src/main/java/ru/daniil/shifts/web/ExportController.java "CacheControl.noStore()"
+contains src/test/java/ru/daniil/shifts/web/ExportControllerTest.java "чужиеЗаметкиНеУтекают"
+contains src/test/java/ru/daniil/shifts/service/NoteExportServiceTest.java "countLimitRejectsBeforeRowsAreLoaded"
+contains src/test/java/ru/daniil/shifts/service/OwnershipIsolationTest.java "assertEquals(HttpStatus.NOT_FOUND"
+contains src/test/java/ru/daniil/shifts/service/OwnershipIsolationTest.java "RepeatMode.YEARLY"
+contains src/main/java/ru/daniil/shifts/config/AuthenticationRateLimitFilter.java "AUTH_RATE_LIMITED"
+contains src/test/java/ru/daniil/shifts/config/AuthenticationRateLimitFilterTest.java "authEndpointIsLimitedPerIp"
+contains src/main/java/ru/daniil/shifts/config/SecurityEventLogger.java 'LoggerFactory.getLogger("SECURITY_AUDIT")'
+contains src/main/java/ru/daniil/shifts/service/TaskService.java "AUTHZ_OWNERSHIP_MISMATCH"
+contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "AUTHZ_OWNERSHIP_MISMATCH"
+contains src/main/java/ru/daniil/shifts/web/AuthController.java "password.length() < 8"
+contains docs/SECURITY_CONSOLIDATION.md "Status: v27.0-rc4."
+contains docs/NOTES_EXPORT.md "GET /api/export/notes"
+contains docs/SUPPLY_CHAIN.md "Dependabot"
 
-contains CHANGES.md "v27.0-rc1 — Release Candidate"
-contains README.md "v27.0-rc1 — Release Candidate"
-contains docs/RELEASE_CANDIDATE.md "Status: v27.0-rc1."
-contains docs/USER_GUIDE.md "Status: v27.0-rc1."
-contains docs/PRODUCTION_DEPLOY.md "git checkout v27.0-rc1"
-contains docs/BACKUP_RESTORE.md "Status: v27.0-rc1."
-contains docs/RELEASE_CHECKLIST.md "git tag -a v27.0-rc1"
+python3 - <<'PY_SECURITY'
+from pathlib import Path
+import re
+for path in ['src/main/resources/static/login.html', 'src/main/resources/static/index.html']:
+    html = Path(path).read_text(encoding='utf-8')
+    inline = [m.group(0) for m in re.finditer(r'<script(?![^>]*\bsrc=)[^>]*>', html, re.I)]
+    if inline:
+        raise SystemExit(f'inline script tags remain in {path}: {inline}')
+print('OK:    no inline script tags in runtime HTML')
+PY_SECURITY
+
+contains CHANGES.md "v27.0-rc4 — Security consolidation"
+contains README.md "v27.0-rc4 — Security consolidation"
+contains docs/RELEASE_CANDIDATE.md "v27.0-rc4 — Security consolidation"
+contains docs/USER_GUIDE.md "Status: v27.0-rc4."
+contains docs/PRODUCTION_DEPLOY.md "git checkout v27.0-rc4"
+contains docs/BACKUP_RESTORE.md "Status: v27.0-rc4."
+contains docs/RELEASE_CHECKLIST.md "git tag -a v27.0-rc4"
 
 echo
 

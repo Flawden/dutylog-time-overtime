@@ -26,7 +26,7 @@
 - [ ] Bootstrap admin from `.env` can log in.
 - [ ] Publicly registered user does not have administrator access.
 - [ ] `Система` → `Пользователи и роли` shows bootstrap env admin and expected admin count.
-- [ ] `Система` page is visible to administrator and shows server version `27.0-rc1`.
+- [ ] `Система` page is visible to administrator and shows server version `27.0-rc4`.
 - [ ] `/api/admin/status` returns healthy database status for administrator.
 - [ ] Regular user does not see `Система`.
 - [ ] Telegram linking works with `/start DL-XXXXXX` if Telegram is enabled.

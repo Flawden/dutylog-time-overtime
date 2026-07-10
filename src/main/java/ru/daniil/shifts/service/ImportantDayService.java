@@ -2,6 +2,7 @@ package ru.daniil.shifts.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.config.SecurityEventLogger;
 import ru.daniil.shifts.dto.Dtos.ImportantDayCreateRequest;
 import ru.daniil.shifts.dto.Dtos.ImportantDayDto;
 import ru.daniil.shifts.dto.Dtos.ImportantDayOccurrenceDto;
@@ -24,10 +25,14 @@ import java.util.Objects;
 public class ImportantDayService {
     private final ImportantDayRepository importantDays;
     private final DayEntryService dayEntryService;
+    private final SecurityEventLogger securityEvents;
 
-    public ImportantDayService(ImportantDayRepository importantDays, DayEntryService dayEntryService) {
+    public ImportantDayService(ImportantDayRepository importantDays,
+                               DayEntryService dayEntryService,
+                               SecurityEventLogger securityEvents) {
         this.importantDays = importantDays;
         this.dayEntryService = dayEntryService;
+        this.securityEvents = securityEvents;
     }
 
     @Transactional(readOnly = true)
@@ -99,6 +104,8 @@ public class ImportantDayService {
         ImportantDay day = importantDays.findById(id)
                 .orElseThrow(() -> ApiException.notFound("Важный день не найден"));
         if (!Objects.equals(day.getOwner().getId(), user.getId())) {
+            securityEvents.warn("AUTHZ_OWNERSHIP_MISMATCH", user.getUsername(), "rejected",
+                    "resource=important_day id=" + id);
             throw ApiException.notFound("Важный день не найден");
         }
         return day;

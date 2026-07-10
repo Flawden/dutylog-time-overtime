@@ -5,10 +5,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpHeaders;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.DayUpsertRequest;
 import ru.daniil.shifts.model.AppUser;
+import ru.daniil.shifts.model.ShiftType;
+import ru.daniil.shifts.repo.ShiftTypeRepository;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.DayEntryService;
 
@@ -21,13 +25,13 @@ import java.util.zip.ZipInputStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Экспорт заметок: файлы лежат по датам, содержимое не искажается,
- * и — главное — в архив не попадает ни байта чужих данных.
- */
+/** Owner-scoped, bounded and cache-safe notes export regressions. */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
@@ -36,6 +40,7 @@ class ExportControllerTest {
     @Autowired MockMvc mvc;
     @Autowired UserRepository users;
     @Autowired DayEntryService dayEntries;
+    @Autowired ShiftTypeRepository shiftTypes;
 
     AppUser owner;
 
@@ -48,20 +53,36 @@ class ExportControllerTest {
                 new DayUpsertRequest(null, "# Мой день\nтекст заметки", null, null, null));
         dayEntries.upsert(owner, "2025-12-31",
                 new DayUpsertRequest(null, "старый год", null, null, null));
-        // день без заметки — в экспорт попадать не должен
         dayEntries.upsert(owner, "2026-07-04",
                 new DayUpsertRequest(null, null, "🔥", null, null));
-        // чужая заметка — не должна попасть НИКОГДА
         dayEntries.upsert(stranger, "2026-07-03",
                 new DayUpsertRequest(null, "СЕКРЕТ ЧУЖОГО ЧЕЛОВЕКА", null, null, null));
+
+        ShiftType unusual = shiftTypes.save(new ShiftType(
+                owner, "Night \"Ops\"\nTeam\\", 8, "#123456", false));
+        dayEntries.upsert(owner, "2026-07-05",
+                new DayUpsertRequest(unusual.getId(), "yaml-safe", "🚀\nnext", null, null));
+    }
+
+    private byte[] fetchExport() throws Exception {
+        MvcResult started = mvc.perform(get("/api/export/notes")
+                        .with(user("export-owner").roles("USER")))
+                .andExpect(request().asyncStarted())
+                .andReturn();
+
+        return mvc.perform(asyncDispatch(started))
+                .andExpect(status().isOk())
+                .andExpect(header().string(HttpHeaders.CACHE_CONTROL, org.hamcrest.Matchers.containsString("no-store")))
+                .andExpect(header().string(HttpHeaders.PRAGMA, "no-cache"))
+                .andReturn().getResponse().getContentAsByteArray();
     }
 
     private Map<String, String> unzip(byte[] body) throws Exception {
         Map<String, String> files = new HashMap<>();
         try (ZipInputStream zip = new ZipInputStream(new ByteArrayInputStream(body), StandardCharsets.UTF_8)) {
-            ZipEntry e;
-            while ((e = zip.getNextEntry()) != null) {
-                files.put(e.getName(), new String(zip.readAllBytes(), StandardCharsets.UTF_8));
+            ZipEntry entry;
+            while ((entry = zip.getNextEntry()) != null) {
+                files.put(entry.getName(), new String(zip.readAllBytes(), StandardCharsets.UTF_8));
             }
         }
         return files;
@@ -69,32 +90,31 @@ class ExportControllerTest {
 
     @Test
     void экспортСодержитЗаметкиПоДатамИГодовымПапкам() throws Exception {
-        byte[] body = mvc.perform(get("/api/export/notes")
-                        .with(user("export-owner").roles("USER")))
-                .andExpect(status().isOk())
-                .andReturn().getResponse().getContentAsByteArray();
-
-        Map<String, String> files = unzip(body);
+        Map<String, String> files = unzip(fetchExport());
 
         assertTrue(files.containsKey("2026/2026-07-03.md"), "заметка лежит в папке года: " + files.keySet());
         assertTrue(files.containsKey("2025/2025-12-31.md"));
         assertTrue(files.containsKey("README.md"));
         assertFalse(files.containsKey("2026/2026-07-04.md"), "день без заметки не экспортируется");
 
-        String md = files.get("2026/2026-07-03.md");
-        assertTrue(md.contains("date: 2026-07-03"), "front matter с датой");
-        assertTrue(md.contains("# Мой день\nтекст заметки"), "текст заметки не искажён");
+        String markdown = files.get("2026/2026-07-03.md");
+        assertTrue(markdown.contains("date: 2026-07-03"));
+        assertTrue(markdown.contains("# Мой день\nтекст заметки"));
+    }
+
+    @Test
+    void yamlПоляЭкранируются() throws Exception {
+        String markdown = unzip(fetchExport()).get("2026/2026-07-05.md");
+
+        assertTrue(markdown.contains("shift: \"Night \\\"Ops\\\"\\nTeam\\\\\""), markdown);
+        assertTrue(markdown.contains("emoji: \"🚀\\nnext\""), markdown);
+        assertTrue(markdown.endsWith("yaml-safe\n"));
     }
 
     @Test
     void чужиеЗаметкиНеУтекают() throws Exception {
-        byte[] body = mvc.perform(get("/api/export/notes")
-                        .with(user("export-owner").roles("USER")))
-                .andReturn().getResponse().getContentAsByteArray();
-
-        String everything = String.join("\n", unzip(body).values());
-        assertFalse(everything.contains("СЕКРЕТ ЧУЖОГО"),
-                "в экспорте не должно быть ни байта чужих данных");
+        String everything = String.join("\n", unzip(fetchExport()).values());
+        assertFalse(everything.contains("СЕКРЕТ ЧУЖОГО"));
     }
 
     @Test

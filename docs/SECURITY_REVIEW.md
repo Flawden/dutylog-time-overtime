@@ -1,79 +1,110 @@
 # Security review
 
-Status: v27.0-rc1.
+Status: v27.0-rc4.
 
-DutyLog is in release stabilization. This review is not a feature roadmap; it is a guardrail document for keeping the existing product safe enough to publish and operate.
+DutyLog is in release stabilization. This document records the security boundaries that are enforced by code and tests in the current release candidate. It is a static review and regression baseline, not a substitute for a live penetration test.
 
-## Security posture in v26.5
+## Authentication boundaries
 
-### Authentication
+DutyLog now has two explicit Spring Security chains.
 
-- Browser users authenticate with Spring Security session cookies.
-- Mobile clients authenticate with explicit bearer access tokens and refresh-token rotation.
-- `/api/mobile/**` remains CSRF-exempt because browsers do not attach `Authorization: Bearer ...` automatically.
-- Browser-changing requests remain CSRF-protected through `XSRF-TOKEN` + `X-XSRF-TOKEN`.
+### Browser and shared web API
 
-### Authorization
+- Browser users authenticate with `JSESSIONID`.
+- State-changing browser requests require `XSRF-TOKEN` / `X-XSRF-TOKEN`.
+- Bearer-authenticated mobile clients may use shared endpoints without browser CSRF, but an invalid bearer token is rejected rather than falling back to a browser session.
+- Form-login failures, authentication challenges and access denials create structured security events.
 
-- `/api/admin/**` is protected twice:
-  - declarative Spring Security `hasRole("ADMIN")` matcher;
-  - controller/service-level admin checks for sensitive operations.
-- User data access stays owner-scoped in services and repositories.
-- Module switches are not just UI switches. Disabled modules must also guard their API boundaries.
+### Native mobile API
 
-### Module-boundary fixes in v26.5
+- `/api/mobile/**` is stateless (`SessionCreationPolicy.STATELESS`).
+- A browser `JSESSIONID` never authenticates this path.
+- Public endpoints are limited to login, refresh and logout.
+- Every other mobile endpoint requires a valid bearer access token.
+- `MobileSecurityBoundaryTest` proves that a web session is rejected and a valid bearer token succeeds.
 
-Two release-review gaps were closed:
+## Authorization and IDOR
 
-1. `/api/mobile/sync` could update note/overtime fields through the aggregated mobile endpoint even if the corresponding modules were disabled. It now checks:
-   - `notes` before writing or clearing day notes;
-   - `overtime` before writing overtime/time-off fields.
-2. A pending Telegram link code could theoretically be used after the user disabled the Telegram module. `TelegramLinkService.linkByCode(...)` now requires the owner's Telegram module to still be enabled before linking.
+- Every user-owned entity is fetched through owner-scoped repositories or an explicit ownership check.
+- Cross-user access returns `404`, not `403`, to avoid confirming that a foreign resource exists.
+- `OwnershipIsolationTest` checks the exact `404` status for tasks, quick scenarios, important dates, shift types, overtime credits/usages and mobile sessions.
+- `/api/admin/**` remains protected by both `hasRole("ADMIN")` and sensitive-operation service checks.
+- Disabled modules guard backend writes, including aggregated mobile sync.
 
-### Browser headers
+## Notes export
 
-`SecurityHeadersFilter` sets a baseline policy from the app itself:
+`GET /api/export/notes` is an authenticated data-portability endpoint.
 
-- `X-Content-Type-Options: nosniff`
-- `Referrer-Policy: strict-origin-when-cross-origin`
-- `X-Frame-Options: SAMEORIGIN`
-- `Permissions-Policy: geolocation=(), microphone=(), camera=()`
-- `Content-Security-Policy` limited to self-hosted app assets, with temporary `unsafe-inline` for the current inline login script and inline styles
-- `Strict-Transport-Security` when the request is HTTPS or arrives through an HTTPS reverse proxy
+- Querying is owner-scoped in the database.
+- Foreign notes are covered by a regression test.
+- The archive is streamed instead of first being materialized as one large `byte[]`.
+- A conservative database count is checked before loading export rows.
+- Note count and uncompressed byte limits are configurable.
+- ZIP paths are generated only from `LocalDate` values.
+- YAML front matter is escaped for quotes, backslashes and control characters.
+- Responses use `Cache-Control: no-store` and related no-cache headers.
+- Export remains available when the Notes UI module is disabled: disabling a module does not remove the user's right to retrieve stored data.
 
-The reverse-proxy examples still set the same edge headers. The application-level filter is defense in depth.
+## Browser policy
 
-### Session cookies
+The login runtime was moved to `/js/login.js`. The CSP no longer permits inline scripts:
 
-Production now explicitly sets:
-
-```properties
-server.servlet.session.cookie.http-only=true
-server.servlet.session.cookie.secure=true
-server.servlet.session.cookie.same-site=lax
-server.servlet.session.timeout=7d
+```text
+default-src 'self';
+script-src 'self';
+style-src 'self' 'unsafe-inline';
+img-src 'self' data:;
+connect-src 'self';
+manifest-src 'self';
+base-uri 'self';
+frame-ancestors 'self';
+form-action 'self'
 ```
 
-Local dev keeps `HttpOnly` and `SameSite=Lax`, but does not force `Secure` so `http://localhost:8080` continues to work.
+The same baseline headers are present in Spring, Caddy and nginx. HSTS is emitted for HTTPS traffic.
 
-## Regression tests added
+`style-src 'unsafe-inline'` remains because the current UI still uses inline styles. Removing it is a future refactor, not a release blocker. `script-src 'unsafe-inline'` is no longer present.
 
-`ModuleSecurityTest` covers:
+## Brute-force and registration defaults
 
-- mobile sync cannot write notes when `notes` is disabled;
-- mobile sync cannot write overtime when `overtime` is disabled;
-- baseline browser security headers are present.
+- Production public registration defaults to closed.
+- Authentication entry points are rate-limited in the application, so stock Caddy and nginx deployments receive the same protection.
+- nginx keeps an optional second rate-limit layer as defense in depth.
+- The limiter is intentionally single-instance. A future multi-instance deployment must use a shared gateway/Redis limiter.
+- Normal public-registration passwords require at least 8 characters; bootstrap admin passwords require at least 20.
 
-`release-check.sh` now also checks that the security review guardrails are still wired.
+## Security logging
 
-## Deferred hardening after 1.0
+`SECURITY_AUDIT` emits sanitized key-value events such as:
 
-These are intentionally deferred unless a concrete issue appears during release testing:
+- `AUTH_LOGIN_FAILED`
+- `AUTH_REQUIRED`
+- `AUTH_ACCESS_DENIED`
+- `AUTH_TOKEN_REJECTED`
+- `AUTH_RATE_LIMITED`
+- `AUTHZ_OWNERSHIP_MISMATCH`
+- `TELEGRAM_LINK_REJECTED`
+- `MOBILE_TOKEN_REVOKED`
+- `ADMIN_ROLE_CHANGED`
+- `ADMIN_PASSWORD_RESET`
+- `DATA_EXPORT_NOTES`
 
-- remove inline login script/styles and tighten CSP by dropping `unsafe-inline`;
-- add app-level login throttling if deployment uses Caddy without nginx/fail2ban/plugin rate limiting;
-- add audit log for admin actions;
-- add optional backup encryption at rest;
-- add structured security events for failed logins and token revocations.
+Fields include event type, result, username, source IP, method, path and request ID. Passwords, bearer/refresh tokens, Telegram link codes and note contents are never logged. Production writes stdout plus a bounded rolling file in the `app_logs` Docker volume.
 
-Do not add these as new product features during the current freeze unless they are required to fix a release-blocking security bug.
+## Supply-chain baseline
+
+- Maven, GitHub Actions and Docker Dependabot updates are enabled.
+- Runtime frontend assets are self-hosted; no CDN scripts are loaded.
+- The application container runs as UID/GID `10001`, not root.
+- CI runs Maven tests and static release checks on every push and pull request.
+
+Action commit-SHA and Docker image digest pinning are deliberately not fabricated in this offline review. They should be added only after verifying current trusted SHAs/digests from upstream sources. Dependabot now provides the update path meanwhile.
+
+## Remaining non-blocking work
+
+- live DAST/pentest against the deployed server;
+- immutable SHA/digest pinning after online verification;
+- shared rate limiting if more than one app instance is deployed;
+- removal of inline styles and `style-src 'unsafe-inline'`;
+- MFA/account lockout if DutyLog grows beyond a small trusted deployment;
+- operational alert routing for repeated `SECURITY_AUDIT` warnings.

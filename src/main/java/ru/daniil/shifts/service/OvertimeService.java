@@ -2,6 +2,7 @@ package ru.daniil.shifts.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.config.SecurityEventLogger;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountPageDto;
 import ru.daniil.shifts.dto.Dtos.PageDto;
@@ -48,17 +49,20 @@ public class OvertimeService {
     private final OvertimeCreditRepository credits;
     private final OvertimeUsageRepository usages;
     private final OvertimeAllocationRepository allocations;
+    private final SecurityEventLogger securityEvents;
 
     public OvertimeService(DayEntryRepository days,
                            DayEntryService dayEntryService,
                            OvertimeCreditRepository credits,
                            OvertimeUsageRepository usages,
-                           OvertimeAllocationRepository allocations) {
+                           OvertimeAllocationRepository allocations,
+                           SecurityEventLogger securityEvents) {
         this.days = days;
         this.dayEntryService = dayEntryService;
         this.credits = credits;
         this.usages = usages;
         this.allocations = allocations;
+        this.securityEvents = securityEvents;
     }
 
     /**
@@ -275,8 +279,7 @@ public class OvertimeService {
         if (req == null) {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
-        OvertimeCredit credit = credits.findByOwnerAndId(user, id)
-                .orElseThrow(() -> ApiException.notFound("Начисление переработки не найдено"));
+        OvertimeCredit credit = requireOwnedCredit(user, id);
         double used = allocations.sumHoursByCredit(credit);
 
         OvertimeCreditCreateRequest normalized = normalizeCreditUpdateRequest(credit, req);
@@ -356,8 +359,7 @@ public class OvertimeService {
         if (req == null) {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
-        OvertimeUsage usage = usages.findByOwnerAndId(user, id)
-                .orElseThrow(() -> ApiException.notFound("Списание отгула не найдено"));
+        OvertimeUsage usage = requireOwnedUsage(user, id);
 
         LocalDate date = hasText(req.date())
                 ? dayEntryService.parseDate(req.date(), "Дата списания должна быть в формате yyyy-MM-dd")
@@ -379,8 +381,7 @@ public class OvertimeService {
 
     @Transactional
     public OvertimeAccountDto deleteCredit(AppUser user, long id) {
-        OvertimeCredit credit = credits.findByOwnerAndId(user, id)
-                .orElseThrow(() -> ApiException.notFound("Начисление переработки не найдено"));
+        OvertimeCredit credit = requireOwnedCredit(user, id);
         double used = allocations.sumHoursByCredit(credit);
         if (used > 0.00001) {
             throw ApiException.badRequest("Нельзя удалить начисление, из которого уже списано " + fmt(used) + " ч. Сначала удали соответствующее списание.");
@@ -391,8 +392,7 @@ public class OvertimeService {
 
     @Transactional
     public OvertimeAccountDto deleteUsage(AppUser user, long id) {
-        OvertimeUsage usage = usages.findByOwnerAndId(user, id)
-                .orElseThrow(() -> ApiException.notFound("Списание отгула не найдено"));
+        OvertimeUsage usage = requireOwnedUsage(user, id);
         allocations.deleteByUsage(usage);
         usages.delete(usage);
         return account(user);
@@ -423,6 +423,27 @@ public class OvertimeService {
             allocations.save(new OvertimeAllocation(credit, usage, take));
             left = round2(left - take);
         }
+    }
+
+
+    private OvertimeCredit requireOwnedCredit(AppUser user, long id) {
+        return credits.findByOwnerAndId(user, id).orElseThrow(() -> {
+            if (credits.existsById(id)) {
+                securityEvents.warn("AUTHZ_OWNERSHIP_MISMATCH", user.getUsername(), "rejected",
+                        "resource=overtime_credit id=" + id);
+            }
+            return ApiException.notFound("Начисление переработки не найдено");
+        });
+    }
+
+    private OvertimeUsage requireOwnedUsage(AppUser user, long id) {
+        return usages.findByOwnerAndId(user, id).orElseThrow(() -> {
+            if (usages.existsById(id)) {
+                securityEvents.warn("AUTHZ_OWNERSHIP_MISMATCH", user.getUsername(), "rejected",
+                        "resource=overtime_usage id=" + id);
+            }
+            return ApiException.notFound("Списание отгула не найдено");
+        });
     }
 
     private OvertimeCreditCreateRequest normalizeCreditUpdateRequest(OvertimeCredit old, OvertimeCreditUpdateRequest req) {

@@ -161,6 +161,18 @@ else
     ok "SPRING_PROFILES_ACTIVE=prod"
   fi
 
+  if [[ "${DUTYLOG_REGISTRATION_DEFAULT_ENABLED:-false}" == "true" ]]; then
+    warn "DUTYLOG_REGISTRATION_DEFAULT_ENABLED=true; public registration starts open"
+  else
+    ok "public registration starts closed"
+  fi
+
+  if [[ "${DUTYLOG_SECURITY_RATE_LIMIT_ENABLED:-true}" != "true" ]]; then
+    fail "DUTYLOG_SECURITY_RATE_LIMIT_ENABLED must stay true for public production"
+  else
+    ok "application auth rate limiting enabled"
+  fi
+
   if [[ "${DUTYLOG_TELEGRAM_ENABLED:-false}" == "true" ]]; then
     require_value DUTYLOG_TELEGRAM_BOT_USERNAME
     require_secret DUTYLOG_TELEGRAM_BOT_TOKEN

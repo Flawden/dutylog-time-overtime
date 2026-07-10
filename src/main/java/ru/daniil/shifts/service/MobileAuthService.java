@@ -3,6 +3,7 @@ package ru.daniil.shifts.service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.config.SecurityEventLogger;
 import ru.daniil.shifts.dto.Dtos.MobileAuthTokenDto;
 import ru.daniil.shifts.dto.Dtos.MobileLoginRequest;
 import ru.daniil.shifts.dto.Dtos.MobileTokenResponse;
@@ -32,13 +33,16 @@ public class MobileAuthService {
     private final UserRepository users;
     private final MobileAuthTokenRepository tokens;
     private final PasswordEncoder passwordEncoder;
+    private final SecurityEventLogger securityEvents;
 
     public MobileAuthService(UserRepository users,
                              MobileAuthTokenRepository tokens,
-                             PasswordEncoder passwordEncoder) {
+                             PasswordEncoder passwordEncoder,
+                             SecurityEventLogger securityEvents) {
         this.users = users;
         this.tokens = tokens;
         this.passwordEncoder = passwordEncoder;
+        this.securityEvents = securityEvents;
     }
 
     @Transactional
@@ -48,11 +52,12 @@ public class MobileAuthService {
         }
         String username = req.username() == null ? "" : req.username().trim();
         String password = req.password() == null ? "" : req.password();
-        AppUser user = users.findByUsername(username)
-                .orElseThrow(() -> ApiException.badRequest("Неверный логин или пароль"));
-        if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+        AppUser user = users.findByUsername(username).orElse(null);
+        if (user == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
+            securityEvents.warn("AUTH_LOGIN_FAILED", username, "rejected", "channel=mobile");
             throw ApiException.badRequest("Неверный логин или пароль");
         }
+        securityEvents.info("AUTH_LOGIN_SUCCEEDED", username, "accepted", "channel=mobile");
         return issueNewTokenPair(user, normalizeDeviceName(req.deviceName()));
     }
 
@@ -63,12 +68,17 @@ public class MobileAuthService {
         }
 
         MobileAuthToken existing = tokens.findByRefreshTokenHash(hash(refreshToken))
-                .orElseThrow(() -> ApiException.badRequest("Refresh token недействителен"));
+                .orElseThrow(() -> {
+                    securityEvents.warn("AUTH_TOKEN_REJECTED", null, "rejected", "reason=unknown_refresh_token");
+                    return ApiException.badRequest("Refresh token недействителен");
+                });
 
         Instant now = Instant.now();
         if (existing.isRevoked() || !existing.getRefreshExpiresAt().isAfter(now)) {
             existing.revoke();
             tokens.save(existing);
+            securityEvents.warn("AUTH_TOKEN_REJECTED", existing.getOwner().getUsername(), "rejected",
+                    "reason=expired_or_revoked_refresh_token");
             throw ApiException.badRequest("Refresh token истёк или был отозван");
         }
 
@@ -121,6 +131,7 @@ public class MobileAuthService {
         tokens.findByRefreshTokenHash(hash(refreshToken)).ifPresent(token -> {
             token.revoke();
             tokens.save(token);
+            securityEvents.info("MOBILE_TOKEN_REVOKED", token.getOwner().getUsername(), "accepted", "source=refresh_token_logout");
         });
     }
 
@@ -132,6 +143,7 @@ public class MobileAuthService {
         tokens.findByAccessTokenHash(hash(accessToken)).ifPresent(token -> {
             token.revoke();
             tokens.save(token);
+            securityEvents.info("MOBILE_TOKEN_REVOKED", token.getOwner().getUsername(), "accepted", "source=access_token_logout");
         });
     }
 
@@ -154,12 +166,18 @@ public class MobileAuthService {
     /** Отзывает все мобильные сессии пользователя — вызывается при смене пароля. */
     @Transactional
     public void revokeAllSessions(AppUser user) {
+        int[] revoked = {0};
         tokens.findByOwnerOrderByCreatedAtDesc(user).forEach(token -> {
             if (!token.isRevoked()) {
                 token.revoke();
                 tokens.save(token);
+                revoked[0]++;
             }
         });
+        if (revoked[0] > 0) {
+            securityEvents.info("MOBILE_TOKEN_REVOKED", user.getUsername(), "accepted",
+                    "source=revoke_all count=" + revoked[0]);
+        }
     }
 
     @Transactional
@@ -170,10 +188,14 @@ public class MobileAuthService {
         MobileAuthToken token = tokens.findById(id)
                 .orElseThrow(() -> ApiException.notFound("Сессия не найдена"));
         if (!token.getOwner().getId().equals(user.getId())) {
+            securityEvents.warn("AUTHZ_OWNERSHIP_MISMATCH", user.getUsername(), "rejected",
+                    "resource=mobile_session id=" + id);
             throw ApiException.notFound("Сессия не найдена");
         }
         token.revoke();
         tokens.save(token);
+        securityEvents.info("MOBILE_TOKEN_REVOKED", user.getUsername(), "accepted",
+                "source=session_revoke id=" + id);
     }
 
     private MobileTokenResponse issueNewTokenPair(AppUser user, String deviceName) {

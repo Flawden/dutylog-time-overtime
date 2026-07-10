@@ -28,8 +28,8 @@ public final class DutyLogModules {
                     true,
                     true,
                     List.of(),
-                    List.of("app-shell", "profile", "appearance", "language", "offline-shell"),
-                    List.of("/api/profile", "/api/modules", "/api/auth", "/api/mobile"),
+                    List.of("app-shell", "profile", "profile:notes-export", "appearance", "language", "offline-shell"),
+                    List.of("/api/profile", "/api/modules", "/api/auth", "/api/mobile", "/api/export/notes"),
                     List.of(),
                     10
             ),

@@ -3,6 +3,7 @@ package ru.daniil.shifts.telegram;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.config.SecurityEventLogger;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.TelegramLink;
 import ru.daniil.shifts.model.TelegramLinkCode;
@@ -25,6 +26,7 @@ public class TelegramLinkService {
     private final TelegramLinkRepository links;
     private final TelegramLinkCodeRepository codes;
     private final ModuleService moduleService;
+    private final SecurityEventLogger securityEvents;
 
     @Value("${dutylog.telegram.enabled:false}")
     private boolean telegramEnabled;
@@ -40,10 +42,12 @@ public class TelegramLinkService {
 
     public TelegramLinkService(TelegramLinkRepository links,
                                TelegramLinkCodeRepository codes,
-                               ModuleService moduleService) {
+                               ModuleService moduleService,
+                               SecurityEventLogger securityEvents) {
         this.links = links;
         this.codes = codes;
         this.moduleService = moduleService;
+        this.securityEvents = securityEvents;
     }
 
     public record TelegramStatusDto(
@@ -113,16 +117,29 @@ public class TelegramLinkService {
                              String lastName) {
         String code = normalizeCode(rawCode);
         TelegramLinkCode linkCode = codes.findByCodeAndUsedAtIsNull(code)
-                .orElseThrow(() -> ApiException.badRequest("Код не найден или уже использован"));
+                .orElseThrow(() -> {
+                    securityEvents.warn("TELEGRAM_LINK_REJECTED", null, "rejected", "reason=unknown_or_used_code");
+                    return ApiException.badRequest("Код не найден или уже использован");
+                });
         if (linkCode.isExpired()) {
+            securityEvents.warn("TELEGRAM_LINK_REJECTED", linkCode.getOwner().getUsername(), "rejected",
+                    "reason=expired_code");
             throw ApiException.badRequest("Код истёк. Создай новый код в DutyLog → ⚙ → Telegram");
         }
 
         AppUser owner = linkCode.getOwner();
-        moduleService.requireEnabled(owner, ModuleService.TELEGRAM);
+        try {
+            moduleService.requireEnabled(owner, ModuleService.TELEGRAM);
+        } catch (ApiException ex) {
+            securityEvents.warn("TELEGRAM_LINK_REJECTED", owner.getUsername(), "rejected",
+                    "reason=module_disabled");
+            throw ex;
+        }
 
         Optional<TelegramLink> existingChat = links.findByTelegramChatId(telegramChatId);
         if (existingChat.isPresent() && !existingChat.get().getOwner().getId().equals(owner.getId())) {
+            securityEvents.warn("TELEGRAM_LINK_REJECTED", owner.getUsername(), "rejected",
+                    "reason=chat_owned_by_another_account");
             throw ApiException.conflict("Этот Telegram уже привязан к другому аккаунту DutyLog");
         }
 
@@ -137,6 +154,7 @@ public class TelegramLinkService {
 
         linkCode.setUsedAt(Instant.now());
         codes.save(linkCode);
+        securityEvents.info("TELEGRAM_LINKED", owner.getUsername(), "accepted", "chat_linked=true");
         return displayName(owner);
     }
 
@@ -196,6 +214,7 @@ public class TelegramLinkService {
             code = parts.length > 1 ? parts[1].trim() : "";
         }
         if (!code.matches("DL-\\d{6}")) {
+            securityEvents.warn("TELEGRAM_LINK_REJECTED", null, "rejected", "reason=invalid_code_format");
             throw ApiException.badRequest("Код должен выглядеть как DL-123456");
         }
         return code;

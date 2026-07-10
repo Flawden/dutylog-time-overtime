@@ -1,6 +1,6 @@
 # v26.6.8 — today clarity and dismissible hidden-blocks hotfix
 
-Carried into release candidate: v27.0-rc1.
+Carried into release candidate: v27.0-rc4.
 Status: v26.6.8.
 
 This hotfix keeps the stabilization scope: no new large features, only UX clarity for the release candidate path.

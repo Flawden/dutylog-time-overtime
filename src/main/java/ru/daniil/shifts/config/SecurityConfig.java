@@ -1,8 +1,12 @@
 package ru.daniil.shifts.config;
 
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -14,15 +18,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
 import ru.daniil.shifts.repo.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Гибридная авторизация:
- * - веб остаётся на классической сессии JSESSIONID;
- * - Android/PWA API может использовать Authorization: Bearer <accessToken>.
+ * Two explicit security boundaries:
+ * - /api/mobile/** is stateless and accepts Bearer tokens only;
+ * - the web UI and regular API keep JSESSIONID + CSRF, while also accepting
+ *   Bearer tokens for mobile clients that use shared endpoints such as tasks.
  */
 @Configuration
 public class SecurityConfig {
@@ -32,7 +38,7 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder();
     }
 
-    /** Учит Spring Security искать пользователей в нашей таблице users. */
+    /** Teaches Spring Security to resolve users from the application users table. */
     @Bean
     public UserDetailsService userDetailsService(UserRepository users) {
         return username -> users.findByUsername(username)
@@ -50,61 +56,116 @@ public class SecurityConfig {
                 .orElseThrow(() -> new UsernameNotFoundException(username));
     }
 
+    /**
+     * BearerTokenAuthenticationFilter belongs to Spring Security chains only.
+     * Disabling servlet auto-registration prevents it from running twice.
+     */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http, BearerTokenAuthenticationFilter bearerTokenAuthenticationFilter) throws Exception {
-        // CSRF для SPA: токен кладётся в cookie XSRF-TOKEN (доступную JS),
-        // фронтенд возвращает его заголовком X-XSRF-TOKEN на каждом
-        // изменяющем запросе (это делает общий frontend helper jfetch).
+    public FilterRegistrationBean<BearerTokenAuthenticationFilter> bearerFilterRegistration(
+            BearerTokenAuthenticationFilter filter) {
+        FilterRegistrationBean<BearerTokenAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    @Bean
+    @Order(1)
+    public SecurityFilterChain mobileFilterChain(HttpSecurity http,
+                                                  BearerTokenAuthenticationFilter bearerTokenAuthenticationFilter,
+                                                  SecurityEventLogger securityEvents) throws Exception {
+        http
+                .securityMatcher("/api/mobile/**")
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .requestCache(cache -> cache.disable())
+                .formLogin(form -> form.disable())
+                .logout(logout -> logout.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/api/mobile/auth/login",
+                                "/api/mobile/auth/refresh",
+                                "/api/mobile/auth/logout"
+                        ).permitAll()
+                        .anyRequest().authenticated())
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, exception) -> {
+                            securityEvents.warn(request, "AUTH_REQUIRED", null, "rejected", "channel=mobile");
+                            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                        })
+                        .accessDeniedHandler((request, response, exception) -> {
+                            String username = request.getUserPrincipal() == null
+                                    ? null
+                                    : request.getUserPrincipal().getName();
+                            securityEvents.warn(request, "AUTH_ACCESS_DENIED", username, "rejected", "channel=mobile");
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        }))
+                .addFilterBefore(bearerTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        return http.build();
+    }
+
+    @Bean
+    @Order(2)
+    public SecurityFilterChain webFilterChain(HttpSecurity http,
+                                               BearerTokenAuthenticationFilter bearerTokenAuthenticationFilter,
+                                               SecurityEventLogger securityEvents) throws Exception {
         CookieCsrfTokenRepository csrfRepo = CookieCsrfTokenRepository.withHttpOnlyFalse();
         CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
-        // null = резолвить токен сразу на каждом запросе, чтобы cookie
-        // гарантированно появилась ещё до первого POST (стандартный SPA-рецепт).
+        RequestMatcher bearerRequest = request -> {
+            String authorization = request.getHeader("Authorization");
+            return authorization != null && authorization.startsWith("Bearer ");
+        };
+        // Resolve immediately so the SPA receives XSRF-TOKEN before its first POST.
         csrfHandler.setCsrfRequestAttributeName(null);
 
         http
-            .csrf(csrf -> csrf
-                .csrfTokenRepository(csrfRepo)
-                .csrfTokenRequestHandler(csrfHandler)
-                // Мобильный API stateless на Bearer-токенах — CSRF-атака на него
-                // невозможна (браузер не подставит Authorization сам), поэтому исключаем.
-                // h2-console — дев-инструмент со своими формами.
-                .ignoringRequestMatchers("/api/mobile/**", "/h2-console/**"))
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers(
-                        "/login.html",
-                        "/manifest.json",
-                        "/service-worker.js",
-                        "/icons/**",
-                        "/api/auth/register",
-                        "/api/auth/registration-status",
-                        "/api/mobile/auth/login",
-                        "/api/mobile/auth/refresh",
-                        "/api/mobile/auth/logout",
-                        "/h2-console/**",
-                        "/actuator/health",
-                        "/actuator/health/**"
-                ).permitAll()
-                // Админка: второй, декларативный замок поверх ручного requireAdmin()
-                // в SystemController. Порядок важен: matcher'ы читаются сверху вниз,
-                // частные правила — строго до anyRequest().
-                .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .anyRequest().authenticated())
-            .formLogin(form -> form
-                .loginPage("/login.html")
-                .loginProcessingUrl("/perform_login") // сюда POST-ит форма входа
-                .defaultSuccessUrl("/", true)
-                .failureUrl("/login.html?error"))
-            .logout(logout -> logout
-                .logoutUrl("/logout")
-                .logoutSuccessUrl("/login.html"))
-            // Для fetch-запросов к API без сессии отдаём 401,
-            // а не редирект на страницу входа (фронт сам перекинет).
-            .exceptionHandling(ex -> ex.defaultAuthenticationEntryPointFor(
-                (req, res, e) -> res.sendError(401),
-                new AntPathRequestMatcher("/api/**")))
-            // h2-console живёт в iframe — разрешаем со своего origin
-            .headers(h -> h.frameOptions(f -> f.sameOrigin()))
-            .addFilterBefore(bearerTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(csrfRepo)
+                        .csrfTokenRequestHandler(csrfHandler)
+                        .ignoringRequestMatchers(bearerRequest, new AntPathRequestMatcher("/h2-console/**")))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers(
+                                "/login.html",
+                                "/js/login.js",
+                                "/manifest.json",
+                                "/service-worker.js",
+                                "/icons/**",
+                                "/api/auth/register",
+                                "/api/auth/registration-status",
+                                "/h2-console/**",
+                                "/actuator/health",
+                                "/actuator/health/**"
+                        ).permitAll()
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .anyRequest().authenticated())
+                .formLogin(form -> form
+                        .loginPage("/login.html")
+                        .loginProcessingUrl("/perform_login")
+                        .defaultSuccessUrl("/", true)
+                        .failureHandler((request, response, exception) -> {
+                            securityEvents.warn(request, "AUTH_LOGIN_FAILED", request.getParameter("username"),
+                                    "rejected", "channel=web");
+                            response.sendRedirect("/login.html?error");
+                        }))
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login.html"))
+                .exceptionHandling(ex -> ex
+                        .defaultAuthenticationEntryPointFor(
+                                (request, response, exception) -> {
+                                    securityEvents.warn(request, "AUTH_REQUIRED", null, "rejected", "channel=web-api");
+                                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                                },
+                                new AntPathRequestMatcher("/api/**"))
+                        .accessDeniedHandler((request, response, exception) -> {
+                            String username = request.getUserPrincipal() == null
+                                    ? null
+                                    : request.getUserPrincipal().getName();
+                            securityEvents.warn(request, "AUTH_ACCESS_DENIED", username, "rejected", "channel=web");
+                            response.sendError(HttpServletResponse.SC_FORBIDDEN);
+                        }))
+                .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
+                .addFilterBefore(bearerTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

@@ -1,6 +1,6 @@
 # v26.6.5 — properties and tests hotfix
 
-Carried into release candidate: v27.0-rc1.
+Carried into release candidate: v27.0-rc4.
 Status: v26.6.5.
 
 This hotfix keeps the feature freeze. It fixes release-stabilization regressions found while running the test suite and inspecting local configuration files.

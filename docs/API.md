@@ -1,4 +1,4 @@
-# DutyLog API v27.0-rc1
+# DutyLog API v27.0-rc4
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -1057,7 +1057,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "27.0-rc1",
+  "version": "27.0-rc4",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],
@@ -1197,3 +1197,37 @@ Request body:
 ```
 
 Unknown keys and locked modules are ignored. Dependencies are enabled automatically. Disabled feature APIs return HTTP 403 with `MODULE_DISABLED:<key>`.
+
+## Notes export
+
+### `GET /api/export/notes`
+
+Downloads every non-empty day note owned by the authenticated user as an Obsidian-friendly ZIP archive.
+
+Response:
+
+```http
+HTTP/1.1 200 OK
+Content-Type: application/zip
+Content-Disposition: attachment; filename="dutylog-notes-20260710.zip"
+Cache-Control: no-store, must-revalidate
+Pragma: no-cache
+```
+
+Archive layout:
+
+```text
+2025/2025-12-31.md
+2026/2026-07-03.md
+README.md
+```
+
+Security/limits:
+
+- authentication required;
+- owner filter is applied in the repository query;
+- blank notes are skipped;
+- YAML metadata is escaped;
+- ZIP paths are date-derived;
+- export count and uncompressed bytes are capped;
+- `413 Payload Too Large` is returned when a configured cap is exceeded.
