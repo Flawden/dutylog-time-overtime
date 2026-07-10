@@ -1,3 +1,14 @@
+## v27.2.0 — Staging and CI/CD foundation
+
+- Added automatic `test` -> staging and `main` -> production GitHub Actions workflows.
+- Production promotes the exact staging-tested GHCR image digest identified by Git tree hash; untested trees fail closed, and the host verifies the running image tree before accepting the deployment.
+- Added isolated staging/production Compose projects with separate PostgreSQL volumes and a shared Caddy edge network.
+- Added verified pre-deploy custom-format PostgreSQL backups, health/smoke gates and application-image rollback; production approval occurs only after validation succeeds.
+- Added clean PostgreSQL/Flyway migration smoke testing against the real deployment image in CI, and made public smoke checks fail if a protected admin endpoint ever returns `200`.
+- Added guarded staging reset, one-time host bootstrap and remote SSH deployment scripts with strict host-key checking.
+- Added build/commit/environment metadata, OCI labels, SBOM/provenance and per-build service-worker cache identity.
+- Added CI/CD, staging and migration-safety documentation; no product feature or Android API v1 contract was changed.
+
 ## v27.1.0 — Android API contract freeze
 
 - Added stable `/api/v1/**` aliases and a dedicated Bearer-only `/api/v1/mobile/**` contract for Android.

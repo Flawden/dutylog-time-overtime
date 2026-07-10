@@ -1,85 +1,41 @@
-# Git workflow для DutyLog
+# Git workflow for DutyLog
 
-DutyLog уже слишком большой для разработки архивами. Git нужен не для красоты, а чтобы спокойно откатываться и не терять ветки.
+Status: v27.2.0.
 
-## Что хранить в Git
+## Branches
 
-Храним:
-
-- `src/`
-- `docs/`
-- `deploy/`
-- `README.md`
-- `CHANGES.md`
-- `pom.xml`
-- `Dockerfile`
-- `docker-compose.yml`
-- `.env.example`
-
-Не храним:
-
-- `.env`
-- реальные пароли
-- Telegram bot token
-- backup-файлы с личными данными
-- папку `data/`
-- PostgreSQL volume
-
-## Коммит новой версии
-
-```bash
-git add -A
-git commit -m "feat: add diagnostics and settings polish"
-git tag -a v20.3 -m "v20.3 — diagnostics and settings polish"
-git push
-git push --tags
+```text
+main/master production source tree (use the branch that exists in the repository)
+test       staging source tree
+feature/*  isolated work
+fix/*      isolated fixes
 ```
 
-## Как снести код, но не базу
-
-Код можно удалять и клонировать заново. Данные живут в PostgreSQL volume, а не в папке с исходниками.
-
-Безопасно:
+Normal flow:
 
 ```bash
-docker compose down
-git pull
-docker compose up -d --build
+git switch -c feature/android-calendar
+# work and commit
+git push -u origin feature/android-calendar
+# merge feature into test after review
+# staging deploys automatically
+# merge the tested test tree into main/master
+# production promotes the same image automatically
 ```
 
-Опасно для данных:
+Do not develop directly in `main`/`master`. Production requires a matching staging-tested Git tree and fails before deployment when one does not exist.
+
+## Tags
+
+Create a release tag after production has passed smoke checks:
 
 ```bash
-docker compose down -v
+git tag -a v27.2.0 -m "v27.2.0 — Staging and CI/CD foundation"
+git push origin v27.2.0
 ```
 
-`-v` удаляет volumes, то есть может снести базу.
+## Data is not Git
 
-## Откат на прошлую версию
+Git stores source, migrations, configuration templates and documentation. It does not store `.env`, Docker volumes, database dumps, logs, tokens or personal data.
 
-```bash
-git checkout v20.2.1
-docker compose up -d --build
-```
-
-Перед откатом production-базы лучше сделать backup, потому что Flyway-миграции обычно идут только вперёд.
-
-## Полезные команды
-
-История:
-
-```bash
-git log --oneline --decorate --graph --all
-```
-
-Посмотреть теги:
-
-```bash
-git tag
-```
-
-Сравнить версии:
-
-```bash
-git diff v20.2.1..v20.3
-```
+Never use `docker compose down -v` in production. Code rollback and database restore are separate operations.

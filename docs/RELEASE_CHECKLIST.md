@@ -1,131 +1,53 @@
 # Release checklist
 
-Status: v27.1.0.
+Status: v27.2.0.
 
-This checklist is used before creating an archive, Git tag or VPS deployment. DutyLog is currently a web/PWA inside a Spring Boot monolith. There is no native mobile app in this release.
-
-## 1. Local release gate
-
-Run the bundled release check:
-
-```bash
-./deploy/scripts/release-check.sh
-```
-
-It covers version consistency, frontend static checks, manifest, shell scripts, basic Java structure, Flyway migration sequence and production config safety.
-
-## 2. Automated tests
-
-When Maven is available:
+## Local gate
 
 ```bash
 mvn -B --no-transfer-progress test
+bash deploy/scripts/release-check.sh
 ```
 
-GitHub Actions runs this automatically on push and pull request, then runs `release-check.sh`.
-
-## 3. Production preflight
-
-Before first launch or update on VPS:
+When Docker is available:
 
 ```bash
-cp .env.production.example .env
-cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
-./deploy/scripts/check-production-env.sh
+docker build -t dutylog:release-check .
+bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ```
 
-Fix errors before launching. Warnings are allowed only if they are intentional and understood.
+## Staging
 
-## 4. Backup before update
+- push the exact candidate tree to `test`;
+- confirm `Deploy staging` is green;
+- verify calendar, notes export, tasks, overtime, modules, admin and Android API v1;
+- verify `/actuator/info` shows staging, commit and build metadata;
+- test the migration against the persistent staging database;
+- optionally reset staging and verify a clean V1..latest install.
 
-```bash
-./deploy/scripts/backup-postgres.sh
-./deploy/scripts/list-backups.sh
-```
+## Production
 
-Copy at least one recent backup outside the VPS.
+- merge the tested tree into `main`/`master` without additional changes;
+- confirm production resolved `staging-tested-tree-*`;
+- confirm a verified pre-deploy dump was created;
+- confirm health and smoke checks passed;
+- verify production data remains intact;
+- copy a recent backup off the VPS.
 
-## 5. Deploy/update
+## Security and isolation
 
-```bash
-docker compose -f docker-compose.prod.yml up -d --build
-```
+- staging and production `.env` files use different secrets;
+- PostgreSQL is not attached to the shared edge network;
+- app images are referenced by `@sha256:` digest;
+- deployment SSH host keys use strict known-host checking;
+- host `.env` files are not overwritten by CI;
+- application container runs as non-root;
+- production registration starts closed;
+- no workflow runs `down -v` against production.
 
-Do not run `docker compose down -v` unless deleting the database is intentional.
-
-## 6. Smoke test after update
-
-```bash
-./deploy/scripts/smoke-test.sh https://your-domain.example
-```
-
-The smoke test checks:
-
-- `/actuator/health`;
-- `login.html`;
-- app shell;
-- manifest;
-- service worker cache version;
-- split JS assets;
-- public registration status endpoint;
-- external `/js/login.js` runtime;
-- protected admin API does not crash.
-
-## 7. Manual smoke
-
-Check in browser:
-
-- login/logout;
-- calendar opens;
-- selected-day panel opens;
-- module settings open;
-- admin sees `Система`;
-- regular user does not see `Система`;
-- server version is `27.1.0`;
-- registration status is expected;
-- Telegram status matches `.env`;
-- language switch still works;
-- theme settings still work.
-
-## 8. Offline/PWA smoke
-
-DevTools → Network → Offline:
-
-1. Open the app online and wait for calendar data.
-2. Open offline sync diagnostics.
-3. Disable network.
-4. Reload page.
-5. Confirm calendar opens from local snapshot.
-6. Change selected-day shift or note.
-7. Confirm queue counter grows.
-8. Enable network.
-9. Confirm queue syncs and diagnostics update.
-
-On phone, repeat a minimal PWA scenario: open online → install/open as PWA → go offline → reload → edit note → go online → sync.
-
-## 9. Security smoke
-
-- Public registration creates only `USER`.
-- Closed registration returns `403` for direct `POST /api/auth/register`.
-- `/api/admin/**` requires `ADMIN`.
-- Bootstrap env admin cannot be demoted.
-- Password reset revokes mobile sessions.
-- `/actuator/health` is public but detailed diagnostics are not public.
-- Production compose does not publish app port `8080`.
-- Browser security headers are present.
-- Production session cookie is `HttpOnly`, `Secure`, and `SameSite=Lax`.
-- Disabled modules are guarded in normal API and aggregated mobile sync.
-- Browser `JSESSIONID` is rejected by `/api/mobile/**`; a valid bearer token succeeds.
-- Notes ZIP is owner-scoped, opens correctly and returns `Cache-Control: no-store`.
-- Production registration starts closed and app-level auth rate limiting is enabled.
-- CSP does not contain `script-src 'unsafe-inline'`.
-- `SECURITY_AUDIT` logs contain event metadata but no passwords, tokens, Telegram codes or notes.
-- The application container runs as non-root.
-
-## 10. Git
+## Tag
 
 ```bash
-git add -A
-git commit -m "feat: freeze Android API v1 contract"
-git tag -a v27.1.0 -m "v27.1.0 — Android API contract freeze"
+git tag -a v27.2.0 -m "v27.2.0 — Staging and CI/CD foundation"
+git push origin v27.2.0
 ```

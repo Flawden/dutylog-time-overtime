@@ -1,6 +1,6 @@
 # v26.6.3 — compact modules UX hotfix
 
-Carried into release candidate: v27.1.0.
+Carried into release candidate: v27.2.0.
 Status: v26.6.3.
 
 This hotfix keeps the feature freeze. It only corrects visual regressions found during the v26.6 UX release polish.

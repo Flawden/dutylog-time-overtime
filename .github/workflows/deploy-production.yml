@@ -1,0 +1,132 @@
+name: Deploy production
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: read
+
+concurrency:
+  group: dutylog-production
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    outputs:
+      image_name: ${{ steps.meta.outputs.image_name }}
+      tree_sha: ${{ steps.meta.outputs.tree_sha }}
+      build_version: ${{ steps.meta.outputs.build_version }}
+    steps:
+      - name: Require main branch
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" != "refs/heads/main" && "$GITHUB_REF" != "refs/heads/master" ]]; then
+            echo "This workflow may deploy only refs/heads/main or refs/heads/master." >&2
+            exit 1
+          fi
+
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Tests and release checks
+        run: |
+          mvn -B --no-transfer-progress test
+          bash ./deploy/scripts/release-check.sh
+
+      - name: Compute source tree identity
+        id: meta
+        shell: bash
+        run: |
+          IMAGE_NAME="$(printf 'ghcr.io/%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')"
+          TREE_SHA="$(git rev-parse HEAD^{tree})"
+          SHORT_TREE="${TREE_SHA:0:12}"
+          echo "image_name=$IMAGE_NAME" >> "$GITHUB_OUTPUT"
+          echo "tree_sha=$TREE_SHA" >> "$GITHUB_OUTPUT"
+          echo "build_version=27.2.0+tree.$SHORT_TREE" >> "$GITHUB_OUTPUT"
+
+  deploy:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: production
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verify approved source identity
+        shell: bash
+        run: |
+          ACTUAL_TREE="$(git rev-parse HEAD^{tree})"
+          if [[ "$ACTUAL_TREE" != "${{ needs.validate.outputs.tree_sha }}" ]]; then
+            echo "Checked-out source tree changed between validation and deployment." >&2
+            exit 1
+          fi
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Resolve staging-tested image digest
+        id: image
+        shell: bash
+        run: |
+          TESTED_TAG="${{ needs.validate.outputs.image_name }}:staging-tested-tree-${{ needs.validate.outputs.tree_sha }}"
+          if ! docker buildx imagetools inspect "$TESTED_TAG" >/tmp/dutylog-image.txt; then
+            echo "This exact source tree was not successfully deployed to staging." >&2
+            echo "Merge the tested test branch into main without changing its tree." >&2
+            exit 1
+          fi
+          DIGEST="$(awk '/^Digest:/ {print $2; exit}' /tmp/dutylog-image.txt)"
+          if [[ ! "$DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]; then
+            echo "Could not resolve immutable digest for $TESTED_TAG" >&2
+            cat /tmp/dutylog-image.txt >&2
+            exit 1
+          fi
+          echo "digest=$DIGEST" >> "$GITHUB_OUTPUT"
+
+      - name: Compute deployment timestamp
+        id: runtime
+        shell: bash
+        run: echo "deploy_time=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy the same tested image to production
+        env:
+          DUTYLOG_DEPLOY_HOST: ${{ vars.DUTYLOG_DEPLOY_HOST }}
+          DUTYLOG_DEPLOY_PORT: ${{ vars.DUTYLOG_DEPLOY_PORT }}
+          DUTYLOG_DEPLOY_USER: ${{ vars.DUTYLOG_DEPLOY_USER }}
+          DUTYLOG_DEPLOY_PATH: ${{ vars.DUTYLOG_DEPLOY_PATH }}
+          DUTYLOG_BASE_URL: ${{ vars.DUTYLOG_BASE_URL }}
+          DUTYLOG_SSH_PRIVATE_KEY: ${{ secrets.DUTYLOG_SSH_PRIVATE_KEY }}
+          DUTYLOG_SSH_KNOWN_HOSTS: ${{ secrets.DUTYLOG_SSH_KNOWN_HOSTS }}
+          DUTYLOG_GHCR_USERNAME: ${{ secrets.GHCR_READ_USERNAME }}
+          DUTYLOG_GHCR_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+          DUTYLOG_DEPLOY_ENVIRONMENT: production
+          DUTYLOG_IMAGE_REF: ${{ needs.validate.outputs.image_name }}@${{ steps.image.outputs.digest }}
+          DUTYLOG_RELEASE_VERSION: 27.2.0
+          DUTYLOG_BUILD_VERSION: ${{ needs.validate.outputs.build_version }}
+          DUTYLOG_BUILD_TREE: ${{ needs.validate.outputs.tree_sha }}
+          DUTYLOG_BUILD_COMMIT: ${{ github.sha }}
+          DUTYLOG_BUILD_TIME: ${{ steps.runtime.outputs.deploy_time }}
+        run: bash deploy/scripts/remote-deploy.sh

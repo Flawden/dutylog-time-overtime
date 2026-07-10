@@ -1,6 +1,6 @@
 # Supply-chain maintenance
 
-Status: introduced in v27.0-rc4; current in v27.1.0.
+Status: introduced in v27.0-rc4; current in v27.2.0.
 
 Dependabot checks three ecosystems weekly:
 
