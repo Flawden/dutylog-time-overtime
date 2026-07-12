@@ -1,4 +1,10 @@
-## v27.2.1 — Staging and CI/CD foundation
+## v27.2.2 — Calendar persistence hotfix
+
+- Fixed bulk schedule persistence so generated day rows are flushed before the response is returned.
+- Calendar reloads the active month from the server after bulk fill, keeping UI, IndexedDB and database aligned.
+- Added a generation guard so late responses from another month cannot overwrite the current month state.
+- Added regression tests for reload persistence, overwrite=false and stale month-response protection.
+
 
 - Added automatic `test` -> staging and `main` -> production GitHub Actions workflows.
 - Production promotes the exact staging-tested GHCR image digest identified by Git tree hash; untested trees fail closed, and the host verifies the running image tree before accepting the deployment.

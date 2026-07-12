@@ -1,6 +1,6 @@
 # User guide
 
-Status: v27.2.1.
+Status: v27.2.2.
 
 This is a short guide for daily DutyLog use.
 

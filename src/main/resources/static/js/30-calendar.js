@@ -306,10 +306,13 @@ async function applyScheduleTemplate(){
 
     const prefix = monthPrefix();
     for (const e of changed) {
-      if (e.date.startsWith(prefix)) {
-        state.days[e.date] = normalizeDay(e);
-      }
+      if (e.date.startsWith(prefix)) state.days[e.date] = normalizeDay(e);
     }
+
+    // Re-read the active month from the server instead of trusting only the optimistic
+    // response. This keeps the screen, IndexedDB snapshot and database in one state and
+    // catches persistence errors immediately rather than after month navigation/F5.
+    await loadMonth();
     setSave("saved");
     renderChips();
     renderCalendar();

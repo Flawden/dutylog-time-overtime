@@ -1,6 +1,6 @@
 # v26.6.1 — UX boot hotfix
 
-Carried into release candidate: v27.2.1.
+Carried into release candidate: v27.2.2.
 Цель hotfix — убрать риск, что PWA визуально застрянет на стартовом экране после frontend-полировки v26.6.
 
 Что изменено:

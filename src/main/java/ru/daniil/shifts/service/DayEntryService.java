@@ -99,7 +99,7 @@ public class DayEntryService {
             pattern.add(shiftTypeService.requireOwnedShiftType(user, shiftTypeId));
         }
 
-        List<DayDto> changed = new ArrayList<>();
+        List<DayEntry> changedEntries = new ArrayList<>();
         for (int i = 0; i < dayCount; i++) {
             LocalDate d = start.plusDays(i);
             ShiftType plannedShift = pattern.get(i % pattern.size());
@@ -111,10 +111,15 @@ public class DayEntryService {
             }
 
             entry.setShiftType(plannedShift);
-            changed.add(DayDto.from(days.save(entry)));
+            changedEntries.add(entry);
         }
 
-        return changed;
+        // Persist the whole generated schedule before the response is created.  This is
+        // deliberately explicit: the web client immediately reloads the month and must
+        // never render a transient in-memory schedule that has not reached the database.
+        return days.saveAllAndFlush(changedEntries).stream()
+                .map(DayDto::from)
+                .toList();
     }
 
 

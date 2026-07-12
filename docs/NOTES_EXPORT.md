@@ -1,6 +1,6 @@
 # Notes export
 
-Status: introduced in v27.0-rc4; current in v27.2.1.
+Status: introduced in v27.0-rc4; current in v27.2.2.
 
 DutyLog can export all non-empty day notes for the authenticated user as a ZIP archive suitable for Obsidian, backup or AI-assisted analysis.
 

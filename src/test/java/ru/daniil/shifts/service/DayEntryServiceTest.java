@@ -1,11 +1,13 @@
 package ru.daniil.shifts.service;
 
+import jakarta.persistence.EntityManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.DayDto;
+import ru.daniil.shifts.dto.Dtos.DayFillRequest;
 import ru.daniil.shifts.dto.Dtos.DayUpsertRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.ShiftType;
@@ -30,6 +32,7 @@ class DayEntryServiceTest {
     @Autowired DefaultShiftSeedService seeder;
     @Autowired ShiftTypeRepository shiftTypes;
     @Autowired UserRepository users;
+    @Autowired EntityManager entityManager;
 
     AppUser user;
     ShiftType userShift;
@@ -93,4 +96,54 @@ class DayEntryServiceTest {
         assertThrows(ApiException.class,
                 () -> dayEntries.upsert(user, "10.07.2026", req(null, "заметка")));
     }
+    @Test
+    void массовыйГрафикСохраняетсяПослеОчисткиPersistenceContext() {
+        ShiftType day = shiftTypes.findByOwner(user).stream()
+                .filter(s -> "Дневная".equals(s.getName()))
+                .findFirst()
+                .orElse(userShift);
+        ShiftType off = shiftTypes.findByOwner(user).stream()
+                .filter(s -> "Выходной".equals(s.getName()))
+                .findFirst()
+                .orElseThrow();
+
+        DayFillRequest request = new DayFillRequest(
+                "2026-07-01",
+                31,
+                List.of(day.getId(), day.getId(), day.getId(), day.getId(), day.getId(), off.getId(), off.getId()),
+                true
+        );
+
+        List<DayDto> changed = dayEntries.fillSchedule(user, request);
+        assertEquals(31, changed.size(), "endpoint должен вернуть все сохранённые дни");
+
+        entityManager.clear(); // имитирует новый HTTP-запрос/F5/другой браузер
+        List<DayDto> reloaded = dayEntries.listMonth(user, 2026, 7);
+
+        assertEquals(31, reloaded.size(), "весь график обязан читаться из БД после reload");
+        assertEquals(day.getId(), reloaded.get(0).shiftTypeId());
+        assertEquals(off.getId(), reloaded.get(5).shiftTypeId());
+        assertEquals(day.getId(), reloaded.get(7).shiftTypeId());
+    }
+
+    @Test
+    void массовыйГрафикНеЗатираетСуществующуюСменуКогдаOverwriteВыключен() {
+        ShiftType original = userShift;
+        dayEntries.upsert(user, "2026-07-02", req(original.getId(), null));
+        ShiftType replacement = shiftTypes.findByOwner(user).stream()
+                .filter(s -> !s.getId().equals(original.getId()))
+                .findFirst()
+                .orElseThrow();
+
+        dayEntries.fillSchedule(user, new DayFillRequest(
+                "2026-07-01", 3, List.of(replacement.getId()), false));
+
+        entityManager.clear();
+        DayDto julySecond = dayEntries.listMonth(user, 2026, 7).stream()
+                .filter(d -> "2026-07-02".equals(d.date()))
+                .findFirst()
+                .orElseThrow();
+        assertEquals(original.getId(), julySecond.shiftTypeId());
+    }
+
 }

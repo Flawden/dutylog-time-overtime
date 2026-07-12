@@ -34,18 +34,27 @@ function applyCalendarBundle(bundle){
   if (moduleEnabled("overtime") && bundle.overtimeAccount) state.overtimeAccount = bundle.overtimeAccount;
 }
 
+let calendarLoadGeneration = 0;
 async function loadMonth(){
+  const generation = ++calendarLoadGeneration;
+  const requestedYear = state.y;
+  const requestedMonth = state.m;
   state.ui.loadingCalendar = true;
   renderCalendar();
   try {
-    const res = await dataLayer.loadCalendar(state.y, state.m, applyCalendarBundle);
+    const res = await dataLayer.loadCalendar(requestedYear, requestedMonth, bundle => {
+      // Ignore a late response from a month that is no longer active.
+      if (generation !== calendarLoadGeneration || state.y !== requestedYear || state.m !== requestedMonth) return;
+      applyCalendarBundle(bundle);
+    });
+    if (generation !== calendarLoadGeneration) return;
     setSave(res?.fromCache ? "" : "");
     renderNotifications();
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
   } finally {
-    state.ui.loadingCalendar = false;
+    if (generation === calendarLoadGeneration) state.ui.loadingCalendar = false;
   }
 }
 
