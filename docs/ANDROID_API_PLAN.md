@@ -1,6 +1,6 @@
 # Android development plan
 
-Current backend milestone: **v27.2.2 — Staging and CI/CD foundation**. Android API v1 remains frozen and unchanged from v27.1.0.
+Current backend milestone: **v27.2.3 — Staging and CI/CD foundation**. Android API v1 remains frozen and unchanged from v27.1.0.
 
 The server is ready to become the single source of truth for both the existing web/PWA client and a future native Android application. Android must target the versioned contract under `/api/v1/**`; legacy `/api/mobile/**` remains only for compatibility.
 

@@ -1,4 +1,10 @@
-## v27.2.2 — Calendar persistence hotfix
+# v27.2.3 — Calendar cache/render hotfix
+
+- Render the authoritative month bundle after an IndexedDB cache hit.
+- Ignore snapshots saved for a different year/month.
+- Add regression guards for fill → cache → network rendering.
+
+## v27.2.3 — Calendar persistence hotfix
 
 - Fixed bulk schedule persistence so generated day rows are flushed before the response is returned.
 - Calendar reloads the active month from the server after bulk fill, keeping UI, IndexedDB and database aligned.

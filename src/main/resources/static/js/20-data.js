@@ -938,7 +938,10 @@ const dataLayer = {
   async loadCalendar(y, m, applyBundle){
     let hadCache = false;
     const snap = await this.readSnapshot();
-    if (snap?.bundle) {
+    // A snapshot belongs to one exact calendar month. Never paint July data into
+    // August (or vice versa) while the network request is still in flight.
+    const snapshotMatchesMonth = snap?.bundle && snap.y === y && snap.m === m;
+    if (snapshotMatchesMonth) {
       hadCache = true;
       state.offline.lastSyncAt = snap.savedAt || null;
       if (Array.isArray(snap.modules) && !Array.isArray(snap.bundle.modules)) snap.bundle.modules = snap.modules;

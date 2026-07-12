@@ -1,6 +1,6 @@
 # v26.6.7 — onboarding and today highlight hotfix
 
-Carried into release candidate: v27.2.2.
+Carried into release candidate: v27.2.3.
 Status: v26.6.7.
 
 This hotfix keeps the stabilization scope: no new product features, only UI clarity.

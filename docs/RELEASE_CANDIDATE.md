@@ -1,4 +1,4 @@
-# v27.2.2 — Calendar persistence hotfix
+# v27.2.3 — Calendar cache/render hotfix
 
 Status: infrastructure release candidate.
 

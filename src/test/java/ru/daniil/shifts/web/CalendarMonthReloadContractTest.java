@@ -25,6 +25,14 @@ class CalendarMonthReloadContractTest {
                 "переключение месяцев должно иметь generation guard от поздних ответов");
         assertTrue(bootJs.contains("state.y !== requestedYear") && bootJs.contains("state.m !== requestedMonth"),
                 "ответ другого месяца не должен применяться к текущей сетке");
+        assertTrue(bootJs.contains("applyCalendarBundle(bundle);")
+                        && bootJs.contains("renderNotifications();")
+                        && bootJs.contains("renderCalendar();"),
+                "каждый принятый bundle, включая сетевой ответ после cache-hit, должен быть отрисован");
+
+        String dataJs = resource("/static/js/20-data.js");
+        assertTrue(dataJs.contains("snap.y === y") && dataJs.contains("snap.m === m"),
+                "IndexedDB snapshot можно применять только к тому месяцу, для которого он сохранён");
     }
 
     private static String resource(String path) throws IOException {

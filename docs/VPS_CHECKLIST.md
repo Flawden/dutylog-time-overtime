@@ -1,6 +1,6 @@
 # VPS checklist
 
-Status: v27.2.2.
+Status: v27.2.3.
 
 ## Host
 
