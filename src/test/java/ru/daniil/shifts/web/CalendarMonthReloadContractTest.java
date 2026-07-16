@@ -36,6 +36,11 @@ class CalendarMonthReloadContractTest {
         String dataJs = resource("/static/js/20-data.js");
         assertTrue(dataJs.contains("snap.y === y") && dataJs.contains("snap.m === m"),
                 "IndexedDB snapshot можно применять только к тому месяцу, для которого он сохранён");
+        assertTrue(dataJs.contains("date: day.date ?? null"),
+                "module-aware sanitizer обязан сохранять date, иначе все дни схлопываются в state.days[undefined]");
+        assertTrue(dataJs.contains("version: Number.isFinite(Number(day.version))")
+                        && dataJs.contains("updatedAt: day.updatedAt ?? null"),
+                "snapshot должен сохранять sync metadata дня");
         assertTrue(dataJs.contains('cache:fresh ? "no-store" : undefined')
                         && dataJs.contains('cache: opts.cache'),
                 "fresh calendar reload должен обходить HTTP-кэш браузера");

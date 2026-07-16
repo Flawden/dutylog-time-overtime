@@ -103,13 +103,35 @@ function applyModulesFromBundle(bundle){
   if (Array.isArray(bundle?.modules)) setModuleList(bundle.modules);
 }
 function sanitizeDayForModules(day = {}){
+  // Preserve identity and sync metadata. Earlier versions stripped `date`, so every
+  // server day was written to state.days[undefined] and the month appeared empty
+  // after an authoritative reload even though the database contained the schedule.
   return {
+    date: day.date ?? null,
     shiftTypeId: day.shiftTypeId ?? null,
     note: moduleEnabled("notes") ? (day.note ?? null) : null,
     dayEmoji: day.dayEmoji ?? null,
     overtimeHours: moduleEnabled("overtime") ? numOr0(day.overtimeHours) : 0,
     timeOffHours: moduleEnabled("overtime") ? numOr0(day.timeOffHours) : 0,
+    overtimeBalanceHours: moduleEnabled("overtime") ? numOr0(day.overtimeBalanceHours) : 0,
+    version: Number.isFinite(Number(day.version)) ? Number(day.version) : 0,
+    updatedAt: day.updatedAt ?? null,
   };
+}
+function dayUpsertPayload(day = {}){
+  const clean = sanitizeDayForModules(day);
+  const payload = {
+    shiftTypeId: clean.shiftTypeId ?? null,
+    dayEmoji: clean.dayEmoji ?? null,
+  };
+  // Optional module fields are omitted completely when their module is disabled.
+  // The server then preserves the hidden values instead of treating 0/null as a write.
+  if (moduleEnabled("notes")) payload.note = clean.note ?? null;
+  if (moduleEnabled("overtime")) {
+    payload.overtimeHours = numOr0(clean.overtimeHours);
+    payload.timeOffHours = numOr0(clean.timeOffHours);
+  }
+  return payload;
 }
 function sanitizeCalendarBundleForModules(bundle){
   if (!bundle || Array.isArray(bundle)) return bundle;
@@ -982,13 +1004,7 @@ const dataLayer = {
     await this.updateSnapshotDay(date, cleanDay);
     if (navigator.onLine) {
       try {
-        await api.upsertDay(date, {
-          shiftTypeId: cleanDay.shiftTypeId ?? null,
-          note: cleanDay.note ?? null,
-          dayEmoji: cleanDay.dayEmoji ?? null,
-          overtimeHours: numOr0(cleanDay.overtimeHours),
-          timeOffHours: numOr0(cleanDay.timeOffHours),
-        });
+        await api.upsertDay(date, dayUpsertPayload(cleanDay));
         state.offline.online = true;
         updateOfflineStatus();
         return { queued:false };
@@ -1041,7 +1057,7 @@ const dataLayer = {
             throw Object.assign(new Error(`${t("операция относится к выключенному модулю")}: ${disabledReason}`), { status:403 });
           }
           if (item.type === "putDay") {
-            await api.upsertDay(item.payload.date, item.payload.day);
+            await api.upsertDay(item.payload.date, dayUpsertPayload(item.payload.day));
           } else if (item.type === "toggleTask") {
             await api.updateTask(item.payload.taskId, { done: !!item.payload.done });
           } else {

@@ -1,6 +1,6 @@
 # Calendar authoritative persistence hotfix
 
-Status: v27.2.4.
+Status: v27.2.5.
 
 This release fixes bulk schedule fills that appeared successful but were not reproduced by a later month read.
 

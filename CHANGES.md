@@ -1,4 +1,20 @@
-# v27.2.4 — Calendar authoritative persistence hotfix
+## v27.2.6 — Module-isolated day saves and browser reminders
+
+- Fixed the `Minimum` preset regression: shift, marker and note writes no longer fail with `MODULE_DISABLED:overtime` merely because the web snapshot contains neutral overtime values.
+- Disabled Notes/Overtime modules are now read-only for day updates: hidden data stays in the database and is not exposed in the response until the module is enabled again.
+- The web client omits optional module fields from `PUT /api/days/{date}` when their modules are disabled.
+- Added a running-page/PWA browser notification scheduler with deduplication, a five-minute wake-up grace window and service-worker notification click handling.
+- Task reminder controls are disabled with an explanation while the Notifications module is off.
+- Prevented an early Telegram status request from generating a misleading `403` before module metadata finishes loading.
+- Added `DayModuleIsolationTest` for old-client neutral payloads, hidden-data preservation and real-write rejection.
+
+## v27.2.5 — Calendar day identity hotfix
+
+- Preserve `date` and sync metadata in module-aware day sanitization.
+- Prevent calendar rows from collapsing into `state.days[undefined]`.
+- Treat missing static resources as 404 instead of 500.
+
+# v27.2.5 — Calendar day identity hotfix
 
 - Bulk schedule rows are saved explicitly and verified by a fresh database read before the endpoint reports success.
 - Calendar reload after fill bypasses IndexedDB and browser HTTP cache.

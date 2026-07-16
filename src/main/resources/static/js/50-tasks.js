@@ -109,6 +109,7 @@ async function addImportantDay(){
     $("impTitle").value = "";
     if ($("impDate")) $("impDate").value = k;
     await refreshImportantSettings();
+    if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     await loadMonth();
     setSave("saved");
     renderImportantDays();
@@ -127,6 +128,7 @@ async function removeImportantDay(id){
   try {
     await api.deleteImportantDay(id);
     await refreshImportantSettings();
+    if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     await loadMonth();
     setSave("saved");
     renderImportantDays();
@@ -145,6 +147,20 @@ $("impDateSelected")?.addEventListener("click", () => { if (!state.selected) ret
 $("impDateToday")?.addEventListener("click", () => { $("impDate").value = todayKey(); });
 
 /* ─── Задачи дня ────────────────────────────────────────────── */
+function updateTaskReminderControls(){
+  const notificationsAvailable = state.modulesLoaded && moduleEnabled("notifications");
+  const enabled = $("taskReminderEnabled");
+  const before = $("taskReminderBefore");
+  const hint = $("taskReminderModuleHint");
+  if (!enabled || !before) return;
+  enabled.disabled = !notificationsAvailable;
+  if (!notificationsAvailable) enabled.checked = false;
+  before.disabled = !notificationsAvailable || !enabled.checked;
+  if (hint) hint.hidden = notificationsAvailable;
+  const title = notificationsAvailable ? "" : t("Включите модуль «Уведомления», чтобы напоминания задач отправлялись.");
+  $("taskReminderToggleLabel")?.setAttribute("title", title);
+  $("taskReminderBeforeLabel")?.setAttribute("title", title);
+}
 function renderTaskCategoryFilter(){
   const sel = $("taskCategoryFilter");
   if (!sel) return;
@@ -171,6 +187,7 @@ function filteredTasksForSelected(){
   });
 }
 function renderTasks(){
+  updateTaskReminderControls();
   if (!moduleEnabled("tasks")) { updateAccSummaries(); return; }
   const box = $("taskList");
   if (!box || !state.selected) return;
@@ -239,7 +256,8 @@ function editTask(task){
   const category = prompt("Категория", task.category || "") ?? task.category;
   const dueDate = prompt("Срок yyyy-MM-dd, пусто — без срока", task.dueDate || "") ?? task.dueDate;
   const dueTime = prompt("Время срока HH:mm, пусто — без времени", task.dueTime || "") ?? task.dueTime;
-  const reminder = confirm(t("Включить напоминание для этой задачи?"));
+  const remindersAvailable = state.modulesLoaded && moduleEnabled("notifications");
+  const reminder = remindersAvailable && confirm(t("Включить напоминание для этой задачи?"));
   updateTaskDetails(task.id, { text, category, dueDate, dueTime, reminderEnabled: reminder, reminderMinutesBefore: reminder ? (task.reminderMinutesBefore ?? 60) : null });
 }
 
@@ -263,6 +281,8 @@ async function addTask(){
   if (!text) return setSave("err", t("напиши текст задачи"));
   setSave("saving");
   try {
+    const remindersAvailable = state.modulesLoaded && moduleEnabled("notifications");
+    const reminderEnabled = remindersAvailable && $("taskReminderEnabled").checked;
     const created = await api.createTask({
       date: k,
       text,
@@ -270,12 +290,13 @@ async function addTask(){
       priority: $("taskPriority").value || "NORMAL",
       dueDate: $("taskDueDate").value || null,
       dueTime: $("taskDueTime").value || null,
-      reminderEnabled: $("taskReminderEnabled").checked,
-      reminderMinutesBefore: $("taskReminderEnabled").checked ? Number($("taskReminderBefore").value || 0) : null,
+      reminderEnabled,
+      reminderMinutesBefore: reminderEnabled ? Number($("taskReminderBefore").value || 0) : null,
     });
     upsertTaskInMaps(created);
     $("taskText").value = "";
     await loadTaskBoard(true);
+    if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     setSave("saved");
     renderTasks();
     renderCalendar();
@@ -291,6 +312,7 @@ async function updateTaskDetails(id, patch){
     const updated = await api.updateTask(id, patch);
     upsertTaskInMaps(updated);
     await loadTaskBoard(true);
+    if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     setSave("saved");
     renderTasks();
     renderCalendar();
@@ -315,6 +337,7 @@ async function toggleTask(id, done){
       state.taskBoard.items = (state.taskBoard.items || []).map(t => Number(t.id) === Number(id) ? { ...t, done: !!done } : t);
       renderTaskBoard();
     }
+    if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     setSave("saved");
     renderTasks();
     renderCalendar();
@@ -337,6 +360,7 @@ async function removeTask(id){
     removeTaskFromMaps(id);
     state.taskBoard.items = (state.taskBoard.items || []).filter(t => t.id !== id);
     await loadTaskBoard(true);
+    if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     setSave("saved");
     renderTasks();
     renderTaskBoard();
@@ -515,7 +539,11 @@ $("taskAdd").addEventListener("click", addTask);
 $("taskText").addEventListener("keydown", e => { if (e.key === "Enter") addTask(); });
 $("taskStatusFilter").addEventListener("change", () => { state.taskFilters.status = $("taskStatusFilter").value; renderTasks(); });
 $("taskCategoryFilter").addEventListener("change", () => { state.taskFilters.category = $("taskCategoryFilter").value; renderTasks(); });
-$("taskDueDate").addEventListener("change", () => { if ($("taskDueDate").value) $("taskReminderEnabled").checked = true; });
+$("taskDueDate").addEventListener("change", () => {
+  if ($("taskDueDate").value && state.modulesLoaded && moduleEnabled("notifications")) $("taskReminderEnabled").checked = true;
+  updateTaskReminderControls();
+});
+$("taskReminderEnabled")?.addEventListener("change", updateTaskReminderControls);
 
 $("taskBoardOpen").addEventListener("click", () => setTaskBoardQuickStatus("open"));
 $("taskBoardOverdue").addEventListener("click", () => setTaskBoardQuickStatus("overdue"));
@@ -635,14 +663,9 @@ async function pushDaySnapshot(k, payload){
   setSave("saving");
   try {
     const cleanPayload = sanitizeDayForModules(payload);
-    const res = await dataLayer.putDay(k, {
-      shiftTypeId: cleanPayload.shiftTypeId ?? null,
-      note: cleanPayload.note ?? null,
-      dayEmoji: cleanPayload.dayEmoji ?? null,
-      overtimeHours: numOr0(cleanPayload.overtimeHours),
-      timeOffHours: numOr0(cleanPayload.timeOffHours),
-    });
+    const res = await dataLayer.putDay(k, cleanPayload);
     setSave(res.queued ? "saved" : "saved");
+    if (!res.queued && typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     if (res.queued) updateOfflineStatus();
   } catch (err) {
     console.error(err);

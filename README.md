@@ -1,11 +1,15 @@
+> Current release: **v27.2.6 — Module-isolated day saves and browser reminders**.
+
 # DutyLog
 
-Current release: **v27.2.4 — Calendar authoritative persistence hotfix**
+Current release: **v27.2.6 — Module-isolated day saves and browser reminders**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.4 — Calendar authoritative persistence hotfix
+## Текущая версия: v27.2.6 — Module-isolated day saves and browser reminders
+
+В этой версии исправлена системная связь календаря с выключенным модулем переработок: базовые изменения дня больше не получают `403`, а данные выключенных модулей сохраняются нетронутыми. Браузерные напоминания теперь реально доставляются, пока DutyLog открыт во вкладке или запущен как PWA; для полностью закрытого приложения в будущем потребуется Web Push.
 
 DutyLog получил безопасный путь доставки изменений: ветка `test` разворачивает изолированный staging, а `main`/`master` продвигает в production тот же самый проверенный Docker-образ по immutable digest. Перед production-обновлением создаётся и проверяется PostgreSQL backup, после запуска выполняются health/smoke checks, а неуспешный образ откатывается без автоматического отката базы.
 
@@ -223,7 +227,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/PRODUCT_COPY.md`](docs/PRODUCT_COPY.md) — стиль пользовательских текстов.
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
-- [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.2.4 и как принимать RC.
+- [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.2.5 и как принимать RC.
 - [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) — короткая пользовательская инструкция.
 - [`docs/PRODUCTION_DEPLOY.md`](docs/PRODUCTION_DEPLOY.md) — пошаговый production deployment.
 - [`docs/BACKUP_RESTORE.md`](docs/BACKUP_RESTORE.md) — резервное копирование и восстановление.
@@ -240,7 +244,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v27.2.4 — Calendar authoritative persistence hotfix`
+`v27.2.5 — Calendar day identity hotfix`
 
 Функциональный и Android API v1 контракты не менялись. Этот этап добавляет инфраструктуру доставки:
 
@@ -282,7 +286,7 @@ DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 Since v25.3 the module registry has explicit developer contracts. See `docs/MODULE_CONTRACTS.md`.
 
 
-CI permission stabilization in v27.2.4:
+CI permission stabilization in v27.2.5:
 
 - GitHub Actions runs release checks through `bash ./deploy/scripts/release-check.sh`.
 - CI no longer fails when executable bits are lost on Windows/archive checkouts.

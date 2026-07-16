@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.validation.FieldError;
@@ -77,6 +78,12 @@ public class ApiExceptionHandler {
         String first = fields.values().stream().findFirst().orElse("Проверь параметры запроса");
         return ResponseEntity.badRequest().body(ApiErrorResponse.of(
                 "VALIDATION_FAILED", first, fields, ApiErrorWriter.requestId(request)));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ApiErrorResponse> noResource(NoResourceFoundException ex, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ApiErrorResponse.of(
+                "NOT_FOUND", "Ресурс не найден", Map.of(), ApiErrorWriter.requestId(request)));
     }
 
     @ExceptionHandler(Exception.class)

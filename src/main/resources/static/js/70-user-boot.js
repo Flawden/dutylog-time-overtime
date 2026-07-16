@@ -129,6 +129,7 @@ async function init(){
   renderCalendar();
   clearBootFailsafe();
   setAppBooting(false);
+  startBrowserNotificationScheduler();
   dataLayer.syncQueue();
 }
 init().catch(err => {
@@ -463,7 +464,10 @@ function renderTelegramPanel(){
   }
 }
 async function loadTelegramStatus(){
-  if (!$("telegramBox") || !moduleEnabled("telegram")) return;
+  // moduleEnabled() is intentionally optimistic before module metadata loads so the
+  // shell does not flicker. API calls must be stricter or a disabled integration can
+  // emit a noisy 403 during boot.
+  if (!$("telegramBox") || !state.modulesLoaded || !moduleEnabled("telegram")) return;
   try {
     state.telegramStatus = await api.telegramStatus();
     renderTelegramPanel();

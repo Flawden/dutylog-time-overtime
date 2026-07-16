@@ -58,6 +58,21 @@ public class DayEntryService {
 
     @Transactional
     public DayDto upsert(AppUser user, String date, DayUpsertRequest req) {
+        return upsert(user, date, req, true, true);
+    }
+
+    /**
+     * Web day snapshot with module isolation.
+     *
+     * Disabled optional modules are read-only: a shift or marker update may still be
+     * saved, while hidden note/overtime values remain untouched in the database.
+     */
+    @Transactional
+    public DayDto upsert(AppUser user,
+                         String date,
+                         DayUpsertRequest req,
+                         boolean notesMutable,
+                         boolean overtimeMutable) {
         if (req == null) {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
@@ -72,12 +87,16 @@ public class DayEntryService {
         DayEntry entry = days.findByOwnerAndDate(user, d)
                 .orElseGet(() -> new DayEntry(user, d));
         entry.setShiftType(st);
-        entry.setNote(normalizeNote(req.note()));
+        if (notesMutable) {
+            entry.setNote(normalizeNote(req.note()));
+        }
         if (req.dayEmoji() != null) {
             entry.setDayEmoji(normalizeDayEmoji(req.dayEmoji()));
         }
-        entry.setOvertimeHours(req.overtimeHours() != null ? req.overtimeHours() : 0.0);
-        entry.setTimeOffHours(req.timeOffHours() != null ? req.timeOffHours() : 0.0);
+        if (overtimeMutable) {
+            entry.setOvertimeHours(req.overtimeHours() != null ? req.overtimeHours() : 0.0);
+            entry.setTimeOffHours(req.timeOffHours() != null ? req.timeOffHours() : 0.0);
+        }
 
         if (entry.isEmpty()) {
             if (entry.getId() != null) {

@@ -1,6 +1,6 @@
 # DutyLog Modules
 
-Status: v27.2.4.
+Status: v27.2.5.
 
 DutyLog is now a modular monolith. The application still ships as one Spring Boot backend and one web/PWA frontend, but user-facing features are grouped into modules that can be enabled or disabled per user.
 

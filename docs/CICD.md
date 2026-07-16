@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.2.4.
+Status: v27.2.5.
 
 DutyLog uses two long-lived deployment branches:
 

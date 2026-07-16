@@ -327,7 +327,7 @@ async function applyScheduleTemplate(event){
     const expectedVisible = changed.filter(e => e.date >= monthStart && e.date <= monthEnd).length;
     const actualVisible = Object.keys(state.days).filter(date => date >= monthStart && date <= monthEnd && state.days[date]?.shiftTypeId).length;
     if (actualVisible < expectedVisible) {
-      throw new Error(t("Сервер вернул неполный график. Изменения не подтверждены."));
+      throw new Error(`${t("Сервер вернул неполный график. Изменения не подтверждены.")} (${actualVisible}/${expectedVisible})`);
     }
 
     setSave("saved");

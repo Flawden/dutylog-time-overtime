@@ -1,6 +1,6 @@
 # v26.6.12 — notifications alignment and admin navigation hotfix
 
-Carried into release candidate: v27.2.4.
+Carried into release candidate: v27.2.5.
 Status: v26.6.12.
 
 Scope: release-polish hotfix only. No new product modules or business features.
@@ -20,4 +20,4 @@ The admin screen also had all cards in one long stack without the same navigatio
 
 ## Guardrails
 
-`release-check.sh` verifies that the notification header uses the dedicated v27.2.4 layout and that the admin view contains the side navigation anchors.
+`release-check.sh` verifies that the notification header uses the dedicated v27.2.5 layout and that the admin view contains the side navigation anchors.

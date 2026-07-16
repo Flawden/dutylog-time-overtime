@@ -1,6 +1,6 @@
 # Calendar cache/render hotfix
 
-Status: v27.2.4.
+Status: v27.2.5.
 
 ## Symptom
 

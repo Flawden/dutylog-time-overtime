@@ -1,6 +1,6 @@
 # Staging environment
 
-Status: v27.2.4.
+Status: v27.2.5.
 
 Staging is disposable. Production is not.
 
