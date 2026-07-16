@@ -1,25 +1,10 @@
-# v27.2.3 — Calendar cache/render hotfix
+# v27.2.4 — Calendar authoritative persistence hotfix
 
-- Render the authoritative month bundle after an IndexedDB cache hit.
-- Ignore snapshots saved for a different year/month.
-- Add regression guards for fill → cache → network rendering.
-
-## v27.2.3 — Calendar persistence hotfix
-
-- Fixed bulk schedule persistence so generated day rows are flushed before the response is returned.
-- Calendar reloads the active month from the server after bulk fill, keeping UI, IndexedDB and database aligned.
-- Added a generation guard so late responses from another month cannot overwrite the current month state.
-- Added regression tests for reload persistence, overwrite=false and stale month-response protection.
-
-
-- Added automatic `test` -> staging and `main` -> production GitHub Actions workflows.
-- Production promotes the exact staging-tested GHCR image digest identified by Git tree hash; untested trees fail closed, and the host verifies the running image tree before accepting the deployment.
-- Added isolated staging/production Compose projects with separate PostgreSQL volumes and a shared Caddy edge network.
-- Added verified pre-deploy custom-format PostgreSQL backups, health/smoke gates and application-image rollback; production approval occurs only after validation succeeds.
-- Added clean PostgreSQL/Flyway migration smoke testing against the real deployment image in CI, and made public smoke checks fail if a protected admin endpoint ever returns `200`.
-- Added guarded staging reset, one-time host bootstrap and remote SSH deployment scripts with strict host-key checking.
-- Added build/commit/environment metadata, OCI labels, SBOM/provenance and per-build service-worker cache identity.
-- Added CI/CD, staging and migration-safety documentation; no product feature or Android API v1 contract was changed.
+- Bulk schedule rows are saved explicitly and verified by a fresh database read before the endpoint reports success.
+- Calendar reload after fill bypasses IndexedDB and browser HTTP cache.
+- Calendar responses are marked `Cache-Control: no-store`.
+- Added end-to-end MockMvc coverage for POST fill followed by GET calendar with all 31 dates.
+- Preserved stale-response and month-specific snapshot guards from the earlier calendar fixes.
 
 ## v27.1.0 — Android API contract freeze
 

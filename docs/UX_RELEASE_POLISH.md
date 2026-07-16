@@ -1,6 +1,6 @@
 # UX release polish
 
-Status: v27.2.3.
+Status: v27.2.4.
 
 DutyLog is in feature freeze. This release does not add new product modules; it improves the feeling of readiness around the existing web/PWA experience.
 

@@ -12,7 +12,12 @@ const api = {
   async createShiftType(b)  { return jfetch("/api/shift-types", { method:"POST", body:b }); },
   async updateShiftType(id, b) { return jfetch(`/api/shift-types/${id}`, { method:"PATCH", body:b }); },
   async deleteShiftType(id) { return jfetch(`/api/shift-types/${id}`, { method:"DELETE" }); },
-  async month(y, m)         { const r = monthFromTo(y, m); return jfetch(`/api/calendar?from=${r.from}&to=${r.to}`); },
+  async month(y, m, opts = {}) {
+    const r = monthFromTo(y, m);
+    const fresh = !!opts.fresh;
+    const suffix = fresh ? `&_=${Date.now()}` : "";
+    return jfetch(`/api/calendar?from=${r.from}&to=${r.to}${suffix}`, { cache:fresh ? "no-store" : undefined });
+  },
   async upsertDay(k, b)     { return jfetch(`/api/days/${k}`, { method:"PUT", body:b }); },
   async fillDays(b)        { return jfetch("/api/days/fill", { method:"POST", body:b }); },
   async modules()          { return jfetch("/api/modules"); },
@@ -547,6 +552,7 @@ async function jfetch(url, opts = {}) {
     method,
     headers,
     body: opts.body ? JSON.stringify(opts.body) : undefined,
+    cache: opts.cache,
   });
   if (res.status === 401) {
     // Сессия истекла или не залогинен — на страницу входа

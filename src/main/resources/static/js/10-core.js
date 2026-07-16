@@ -21,7 +21,7 @@ function esc(value){
     .replace(/'/g, "&#39;");
 }
 
-const DUTYLOG_VERSION = "27.2.3"
+const DUTYLOG_VERSION = "27.2.4"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -628,7 +628,7 @@ Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) 
 Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие", "Browser":"Браузер" });
 
 
-// v27.2.3: admin navigation labels and notification polish copy.
+// v27.2.4: admin navigation labels and notification polish copy.
 Object.assign(I18N_EN, {
   "Админка":"Admin",
   "Регистрация":"Registration",

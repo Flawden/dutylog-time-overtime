@@ -19,8 +19,11 @@ class CalendarMonthReloadContractTest {
         String calendarJs = resource("/static/js/30-calendar.js");
         String bootJs = resource("/static/js/70-user-boot.js");
 
-        assertTrue(calendarJs.contains("await loadMonth();"),
-                "после массового заполнения календарь должен перечитать сохранённые данные");
+        assertTrue(calendarJs.contains("api.month(requestedYear, requestedMonth, { fresh:true })"),
+                "после массового заполнения календарь должен читать сервер напрямую без IndexedDB-first");
+        assertTrue(calendarJs.contains("applyCalendarBundle(bundle);")
+                        && calendarJs.contains("dataLayer.writeSnapshot(bundle, requestedYear, requestedMonth)"),
+                "подтверждённый серверный месяц должен заменить UI и локальный snapshot");
         assertTrue(bootJs.contains("calendarLoadGeneration"),
                 "переключение месяцев должно иметь generation guard от поздних ответов");
         assertTrue(bootJs.contains("state.y !== requestedYear") && bootJs.contains("state.m !== requestedMonth"),
@@ -33,6 +36,9 @@ class CalendarMonthReloadContractTest {
         String dataJs = resource("/static/js/20-data.js");
         assertTrue(dataJs.contains("snap.y === y") && dataJs.contains("snap.m === m"),
                 "IndexedDB snapshot можно применять только к тому месяцу, для которого он сохранён");
+        assertTrue(dataJs.contains('cache:fresh ? "no-store" : undefined')
+                        && dataJs.contains('cache: opts.cache'),
+                "fresh calendar reload должен обходить HTTP-кэш браузера");
     }
 
     private static String resource(String path) throws IOException {

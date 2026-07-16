@@ -1,6 +1,6 @@
 # v26.6.2 — frontend runtime hotfix
 
-Carried into release candidate: v27.2.3.
+Carried into release candidate: v27.2.4.
 Цель hotfix — исправить runtime-регрессию после v26.6/v26.6.1, когда split JS падал на старте и интерфейс оставался без календаря и рабочих вкладок.
 
 ## Что произошло

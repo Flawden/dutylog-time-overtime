@@ -1,5 +1,7 @@
 package ru.daniil.shifts.web;
 
+import org.springframework.http.CacheControl;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,12 +38,14 @@ public class CalendarController {
      * GET /api/calendar?from=2026-06-01&to=2026-07-31
      */
     @GetMapping
-    public CalendarRangeDto range(@RequestParam("from") String from,
-                                  @RequestParam("to") String to,
-                                  Principal principal) {
+    public ResponseEntity<CalendarRangeDto> range(@RequestParam("from") String from,
+                                                  @RequestParam("to") String to,
+                                                  Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         LocalDate fromDate = dayEntryService.parseDate(from, "Дата from должна быть в формате yyyy-MM-dd");
         LocalDate toDate = dayEntryService.parseDate(to, "Дата to должна быть в формате yyyy-MM-dd");
-        return calendarService.range(current, fromDate, toDate);
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.noStore())
+                .body(calendarService.range(current, fromDate, toDate));
     }
 }

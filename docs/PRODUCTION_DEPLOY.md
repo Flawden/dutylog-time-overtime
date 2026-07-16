@@ -1,6 +1,6 @@
 # Production deployment
 
-Status: v27.2.3.
+Status: v27.2.4.
 
 The preferred production path is the branch-based CI/CD pipeline in `docs/CICD.md`. Manual source builds remain available only for emergency/local administration.
 

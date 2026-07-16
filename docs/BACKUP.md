@@ -1,6 +1,6 @@
 # PostgreSQL backup operations
 
-Status: v27.2.3.
+Status: v27.2.4.
 
 The canonical recovery guide is [`BACKUP_RESTORE.md`](BACKUP_RESTORE.md).
 

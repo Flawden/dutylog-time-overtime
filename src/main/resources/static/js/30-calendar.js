@@ -276,7 +276,9 @@ function renderScheduleControls(){
   }
 }
 
-async function applyScheduleTemplate(){
+async function applyScheduleTemplate(event){
+  event?.preventDefault();
+  event?.stopPropagation();
   const k = state.selected;
   if (!k) return;
   await flushPendingSave();
@@ -309,12 +311,28 @@ async function applyScheduleTemplate(){
       if (e.date.startsWith(prefix)) state.days[e.date] = normalizeDay(e);
     }
 
-    // Re-read the active month from the server instead of trusting only the optimistic
-    // response. This keeps the screen, IndexedDB snapshot and database in one state and
-    // catches persistence errors immediately rather than after month navigation/F5.
-    await loadMonth();
+    // A successful mutation must be followed by a direct, cache-bypassing read from the
+    // server. Do not route this through loadMonth(): that path is intentionally allowed
+    // to paint IndexedDB first, which is useful on boot but wrong immediately after a
+    // write where the user expects authoritative state.
+    const requestedYear = state.y;
+    const requestedMonth = state.m;
+    const bundle = await api.month(requestedYear, requestedMonth, { fresh:true });
+    if (state.y !== requestedYear || state.m !== requestedMonth) return;
+    await dataLayer.writeSnapshot(bundle, requestedYear, requestedMonth);
+    applyCalendarBundle(bundle);
+
+    const monthStart = monthFromTo(requestedYear, requestedMonth).from;
+    const monthEnd = monthFromTo(requestedYear, requestedMonth).to;
+    const expectedVisible = changed.filter(e => e.date >= monthStart && e.date <= monthEnd).length;
+    const actualVisible = Object.keys(state.days).filter(date => date >= monthStart && date <= monthEnd && state.days[date]?.shiftTypeId).length;
+    if (actualVisible < expectedVisible) {
+      throw new Error(t("Сервер вернул неполный график. Изменения не подтверждены."));
+    }
+
     setSave("saved");
     renderChips();
+    renderNotifications();
     renderCalendar();
   } catch (err) {
     console.error(err);

@@ -1,6 +1,6 @@
 # Git workflow for DutyLog
 
-Status: v27.2.3.
+Status: v27.2.4.
 
 ## Branches
 
@@ -30,8 +30,8 @@ Do not develop directly in `main`/`master`. Production requires a matching stagi
 Create a release tag after production has passed smoke checks:
 
 ```bash
-git tag -a v27.2.3 -m "v27.2.3 — Staging and CI/CD foundation"
-git push origin v27.2.3
+git tag -a v27.2.4 -m "v27.2.4 — Staging and CI/CD foundation"
+git push origin v27.2.4
 ```
 
 ## Data is not Git
