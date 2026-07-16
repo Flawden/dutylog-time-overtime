@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.6}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.7}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -518,7 +518,6 @@ contains docs/CALENDAR_DAY_IDENTITY_HOTFIX.md 'Status: v27.2.5.'
 
 # v27.2.6 module-isolated day saves and browser reminder guards
 contains CHANGES.md "v27.2.6 — Module-isolated day saves and browser reminders"
-contains README.md "v27.2.6 — Module-isolated day saves and browser reminders"
 contains docs/MODULE_DAY_SAVE_AND_BROWSER_NOTIFICATIONS_HOTFIX.md "Status: v27.2.6."
 contains src/main/resources/static/js/20-data.js 'function dayUpsertPayload(day = {})'
 contains src/main/resources/static/js/20-data.js 'if (moduleEnabled("overtime")) {'
@@ -533,6 +532,24 @@ contains src/main/resources/static/service-worker.js 'notificationclick'
 contains src/main/resources/static/js/70-user-boot.js 'startBrowserNotificationScheduler();'
 contains src/main/resources/static/js/70-user-boot.js '!state.modulesLoaded || !moduleEnabled("telegram")'
 contains src/main/resources/static/js/50-tasks.js 'function updateTaskReminderControls()'
+
+# v27.2.7 regression baseline and notification poll shutdown
+contains CHANGES.md "v27.2.7 — Regression test baseline and notification poll shutdown"
+contains README.md "v27.2.7 — Regression test baseline and notification poll shutdown"
+contains docs/REGRESSION_TEST_BASELINE.md "Status: v27.2.7."
+contains src/main/resources/static/js/20-data.js 'syncBrowserNotificationSchedulerForModules();'
+contains src/main/resources/static/js/20-data.js 'err.moduleKey = moduleKey'
+contains src/main/resources/static/js/60-settings.js 'function stopBrowserNotificationScheduler()'
+contains src/main/resources/static/js/60-settings.js 'clearInterval(browserNotificationTimer)'
+contains src/main/resources/static/js/60-settings.js 'err?.moduleKey === "notifications"'
+contains src/test/java/ru/daniil/shifts/service/NotificationServiceTest.java 'calculatesExactShiftTaskImportantDayAndDigestTimes'
+contains src/test/java/ru/daniil/shifts/web/NotificationControllerTest.java 'disabledModuleGuardsSettingsAndUpcomingEndpoints'
+contains src/test/java/ru/daniil/shifts/service/ModuleDependencyTest.java 'disablingNotificationsCascadesToTelegram'
+contains src/test/java/ru/daniil/shifts/service/TaskReminderServiceTest.java 'disablingReminderClearsStaleLeadMinutes'
+contains src/test/java/ru/daniil/shifts/web/BrowserNotificationFrontendContractTest.java 'moduleToggleStopsPollingAndGuarded403CannotBecomeARecurringLoop'
+contains pom.xml '<artifactId>jacoco-maven-plugin</artifactId>'
+contains .github/workflows/ci.yml 'mvn -B --no-transfer-progress verify'
+contains .github/workflows/ci.yml 'name: jacoco-report'
 
 
 echo

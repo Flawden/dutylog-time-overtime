@@ -780,6 +780,7 @@ let browserNotificationTimer = null;
 let browserNotificationTickRunning = false;
 let browserNotificationLastFetchAt = 0;
 let browserNotificationReminders = [];
+let browserNotificationRuntimeListenersBound = false;
 
 function browserNotificationStorageKey(){
   const username = state.profile?.username || $("whoami")?.textContent?.trim() || "anonymous";
@@ -840,7 +841,11 @@ async function browserNotificationTick(){
     const now = Date.now();
     if (browserNotificationLastFetchAt === 0 || now - browserNotificationLastFetchAt >= BROWSER_NOTIFICATION_FETCH_MS) {
       const range = notificationPollRange();
-      browserNotificationReminders = await api.notificationUpcoming(range.from, range.to, true);
+      const fetched = await api.notificationUpcoming(range.from, range.to, true);
+      // The user can disable the module while the request is in flight. Never
+      // deliver or cache a response that crossed that runtime boundary.
+      if (!state.modulesLoaded || !moduleEnabled("notifications")) return;
+      browserNotificationReminders = fetched;
       browserNotificationLastFetchAt = now;
     }
     const delivered = readDeliveredBrowserNotifications();
@@ -856,28 +861,56 @@ async function browserNotificationTick(){
       writeDeliveredBrowserNotifications(delivered);
     }
   } catch (err) {
+    if (err?.status === 403 && err?.moduleKey === "notifications") {
+      // Defensive self-healing for a stale client module map. One guarded 403
+      // may race with the toggle, but it must never become a 10-second loop.
+      stopBrowserNotificationScheduler();
+      try { await loadModules(); } catch (_) { /* keep the scheduler stopped */ }
+      return;
+    }
     if (err?.status !== 401 && err?.status !== 403) console.warn("browser notification poll failed", err);
   } finally {
     browserNotificationTickRunning = false;
   }
 }
+function stopBrowserNotificationScheduler(){
+  if (browserNotificationTimer != null) clearInterval(browserNotificationTimer);
+  browserNotificationTimer = null;
+  browserNotificationLastFetchAt = 0;
+  browserNotificationReminders = [];
+}
 function invalidateBrowserNotificationSchedule(){
   browserNotificationLastFetchAt = 0;
   browserNotificationReminders = [];
-  if (browserNotificationTimer != null) browserNotificationTick();
+  if (browserNotificationTimer != null && state.modulesLoaded && moduleEnabled("notifications")) {
+    browserNotificationTick();
+  }
 }
 function kickBrowserNotificationScheduler(){
+  if (!state.modulesLoaded || !moduleEnabled("notifications")) {
+    stopBrowserNotificationScheduler();
+    return;
+  }
   if (browserNotificationTimer == null) {
     browserNotificationTimer = setInterval(browserNotificationTick, BROWSER_NOTIFICATION_POLL_MS);
   }
   browserNotificationTick();
 }
-function startBrowserNotificationScheduler(){
+function syncBrowserNotificationSchedulerForModules(){
+  if (!state.modulesLoaded || !moduleEnabled("notifications")) {
+    stopBrowserNotificationScheduler();
+    return;
+  }
   kickBrowserNotificationScheduler();
+}
+function startBrowserNotificationScheduler(){
+  syncBrowserNotificationSchedulerForModules();
+  if (browserNotificationRuntimeListenersBound) return;
+  browserNotificationRuntimeListenersBound = true;
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") browserNotificationTick();
+    if (document.visibilityState === "visible") syncBrowserNotificationSchedulerForModules();
   });
-  window.addEventListener("online", browserNotificationTick);
+  window.addEventListener("online", syncBrowserNotificationSchedulerForModules);
 }
 
 function renderNotifyStatus(count){
@@ -952,7 +985,7 @@ async function saveNotificationSettings(extra = {}){
     renderNotifications();
     renderCalendar();
     invalidateBrowserNotificationSchedule();
-    kickBrowserNotificationScheduler();
+    syncBrowserNotificationSchedulerForModules();
   } catch (err) { console.error(err); setSave("err", err.message); }
 }
 async function requestNotificationPermission(){

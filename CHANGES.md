@@ -1,3 +1,14 @@
+## v27.2.7 — Regression test baseline and notification poll shutdown
+
+- Stopped the browser notification interval immediately when the Notifications module is disabled.
+- Added defensive recovery for a stale frontend module map: one raced `MODULE_DISABLED:notifications` response stops polling and resynchronizes module metadata instead of repeating every ten seconds.
+- Prevented an in-flight reminder response from being delivered after the module is switched off.
+- Preserved structured `code` and `moduleKey` metadata on frontend API errors.
+- Added behavioural backend coverage for shift, task, important-day and digest reminder calculations, completed-task filtering and user isolation.
+- Added notification API boundary, module dependency, task reminder persistence and frontend scheduler contract tests.
+- CI now runs `mvn verify` and publishes a JaCoCo HTML coverage report as a build artifact.
+- Added a regression test matrix that maps the successful manual pass to automated guards.
+
 ## v27.2.6 — Module-isolated day saves and browser reminders
 
 - Fixed the `Minimum` preset regression: shift, marker and note writes no longer fail with `MODULE_DISABLED:overtime` merely because the web snapshot contains neutral overtime values.

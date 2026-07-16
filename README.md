@@ -1,15 +1,15 @@
-> Current release: **v27.2.6 — Module-isolated day saves and browser reminders**.
+> Current release: **v27.2.7 — Regression test baseline and notification poll shutdown**.
 
 # DutyLog
 
-Current release: **v27.2.6 — Module-isolated day saves and browser reminders**
+Current release: **v27.2.7 — Regression test baseline and notification poll shutdown**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.6 — Module-isolated day saves and browser reminders
+## Текущая версия: v27.2.7 — Regression test baseline and notification poll shutdown
 
-В этой версии исправлена системная связь календаря с выключенным модулем переработок: базовые изменения дня больше не получают `403`, а данные выключенных модулей сохраняются нетронутыми. Браузерные напоминания теперь реально доставляются, пока DutyLog открыт во вкладке или запущен как PWA; для полностью закрытого приложения в будущем потребуется Web Push.
+Эта версия закрепляет успешно пройденный ручной прогон автоматическими regression-тестами. Отдельно устранён оставшийся цикл `GET /api/notifications/upcoming → 403`: при выключении модуля уведомлений frontend немедленно останавливает polling, а запоздалый защищённый ответ не превращается в запрос каждые десять секунд. CI запускает полный `mvn verify` и сохраняет JaCoCo-отчёт покрытия.
 
 DutyLog получил безопасный путь доставки изменений: ветка `test` разворачивает изолированный staging, а `main`/`master` продвигает в production тот же самый проверенный Docker-образ по immutable digest. Перед production-обновлением создаётся и проверяется PostgreSQL backup, после запуска выполняются health/smoke checks, а неуспешный образ откатывается без автоматического отката базы.
 
@@ -227,6 +227,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/PRODUCT_COPY.md`](docs/PRODUCT_COPY.md) — стиль пользовательских текстов.
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
+- [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
 - [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.2.5 и как принимать RC.
 - [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) — короткая пользовательская инструкция.
 - [`docs/PRODUCTION_DEPLOY.md`](docs/PRODUCTION_DEPLOY.md) — пошаговый production deployment.

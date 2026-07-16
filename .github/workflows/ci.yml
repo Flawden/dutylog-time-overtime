@@ -22,8 +22,16 @@ jobs:
           java-version: '17'
           cache: maven
 
-      - name: Build and test
-        run: mvn -B --no-transfer-progress test
+      - name: Build, test and coverage report
+        run: mvn -B --no-transfer-progress verify
+
+      - name: Upload JaCoCo report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-report
+          path: target/site/jacoco
+          if-no-files-found: warn
 
       - name: Release static checks
         run: bash ./deploy/scripts/release-check.sh
@@ -33,7 +41,7 @@ jobs:
           BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           docker build \
             --build-arg DUTYLOG_BUILD_ID="ci-${GITHUB_SHA::12}" \
-            --build-arg DUTYLOG_BUILD_VERSION="27.2.6-ci.${GITHUB_RUN_NUMBER}" \
+            --build-arg DUTYLOG_BUILD_VERSION="27.2.7-ci.${GITHUB_RUN_NUMBER}" \
             --build-arg DUTYLOG_BUILD_COMMIT="$GITHUB_SHA" \
             --build-arg DUTYLOG_BUILD_TREE="$(git rev-parse HEAD^{tree})" \
             --build-arg DUTYLOG_BUILD_TIME="${BUILD_TIME:-unknown}" \

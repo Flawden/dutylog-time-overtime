@@ -69,6 +69,12 @@ function setModuleList(list){
   state.modules = map;
   state.modulesLoaded = true;
   applyModuleVisibility();
+  // A module toggle is also a runtime boundary. In particular, an already
+  // running notification interval must stop immediately when the module is
+  // disabled instead of continuing to hit a guarded endpoint every 10 seconds.
+  if (typeof syncBrowserNotificationSchedulerForModules === "function") {
+    syncBrowserNotificationSchedulerForModules();
+  }
 }
 function moduleEnabled(key){
   if (!key || key === "core") return true;
@@ -583,19 +589,27 @@ async function jfetch(url, opts = {}) {
   }
   if (!res.ok) {
     let msg = `${opts.method || "GET"} ${url} → ${res.status}`;
+    let code = null;
+    let moduleKey = null;
     try {
       const body = await res.json();
+      code = body?.code || null;
       if (body?.error) msg = body.error;
-      if (String(msg).startsWith("MODULE_DISABLED:")) {
-        const key = String(msg).split(":")[1] || "";
-        const mod = (state.modulesList || []).find(m => m.key === key);
-        msg = `${t("модуль выключен")}: ${mod ? moduleTitle(mod) : key}`;
+      const moduleMarker = [body?.error, body?.message, body?.code]
+        .map(value => String(value || ""))
+        .find(value => value.startsWith("MODULE_DISABLED:"));
+      if (moduleMarker) {
+        moduleKey = moduleMarker.split(":")[1] || "";
+        const mod = (state.modulesList || []).find(m => m.key === moduleKey);
+        msg = `${t("модуль выключен")}: ${mod ? moduleTitle(mod) : moduleKey}`;
       }
     } catch (_) { /* ответ был не JSON */ }
     const err = new Error(msg);
     err.status = res.status;
     err.url = url;
     err.method = method;
+    err.code = code;
+    err.moduleKey = moduleKey;
     throw err;
   }
   if (res.status === 204) return null;

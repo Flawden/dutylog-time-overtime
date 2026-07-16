@@ -13,7 +13,7 @@
 
     <groupId>ru.daniil</groupId>
     <artifactId>dutylog</artifactId>
-    <version>27.2.6</version>
+    <version>27.2.7</version>
     <name>DutyLog: Time &amp; Overtime</name>
     <description>DutyLog: Time &amp; Overtime — календарь смен, переработок, отгулов и задач</description>
 
@@ -84,6 +84,26 @@
                 <configuration>
                     <parameters>true</parameters>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.12</version>
+                <executions>
+                    <execution>
+                        <id>prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
