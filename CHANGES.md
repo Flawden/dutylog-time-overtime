@@ -1,3 +1,10 @@
+## v27.2.9 — Task regression suite
+
+- Added service-level task coverage for creation defaults, trimming, updates, reminder cleanup, day/range lists, board statuses, category/priority/search/date filters, pagination, validation and deletion.
+- Added MockMvc coverage for legacy and `/api/v1/tasks` aliases, complete CRUD, board metadata, stable error envelopes, CSRF, authentication, module guards, data preservation while disabled and owner isolation.
+- Documented why IntelliJ JUnit runs do not generate JaCoCo and how to run `mvn clean verify` from IntelliJ's Maven tool window or a Windows terminal.
+- No production behaviour or database schema changed.
+
 ## v27.2.8 — Test compilation hotfix
 
 - Fixed invalid Java character literals in `CalendarMonthReloadContractTest`: Java strings now use escaped double quotes.

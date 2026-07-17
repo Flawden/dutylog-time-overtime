@@ -1,21 +1,18 @@
-> Current release: **v27.2.8 — Test compilation hotfix**.
+> Current release: **v27.2.9 — Task regression suite**.
 
 # DutyLog
 
-Current release: **v27.2.8 — Test compilation hotfix**
+Current release: **v27.2.9 — Task regression suite**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.8 — Test compilation hotfix
+## Текущая версия: v27.2.9 — Task regression suite
 
-Эта версия исправляет компиляцию `CalendarMonthReloadContractTest`: многосимвольные Java-строки больше не записаны в одинарных кавычках. Production-код, API и схема БД не менялись. Regression baseline v27.2.7 сохранён без изменения поведения.
 
-В предыдущей regression baseline версии был устранён цикл `GET /api/notifications/upcoming → 403`: при выключении модуля уведомлений frontend немедленно останавливает polling, а запоздалый защищённый ответ не превращается в запрос каждые десять секунд. CI запускает полный `mvn verify` и сохраняет JaCoCo-отчёт покрытия.
+Эта версия начинает пошаговое расширение regression suite с модуля задач. Добавлены service- и HTTP-тесты для CRUD, дневных и диапазонных списков, доски задач, статусов, поиска, категории, приоритета, диапазона дат, пагинации, validation envelope, CSRF, module guards и owner isolation. Production-логика и схема БД не менялись.
 
-DutyLog получил безопасный путь доставки изменений: ветка `test` разворачивает изолированный staging, а `main`/`master` продвигает в production тот же самый проверенный Docker-образ по immutable digest. Перед production-обновлением создаётся и проверяется PostgreSQL backup, после запуска выполняются health/smoke checks, а неуспешный образ откатывается без автоматического отката базы.
-
-Документация: [`docs/CICD.md`](docs/CICD.md) · [`docs/STAGING.md`](docs/STAGING.md) · [`docs/MIGRATION_SAFETY.md`](docs/MIGRATION_SAFETY.md)
+JaCoCo формируется Maven-фазой `verify`, а не обычной кнопкой запуска JUnit в IntelliJ. Подробная инструкция: [`docs/TESTING.md`](docs/TESTING.md).
 
 ## Возможности
 

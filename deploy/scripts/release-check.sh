@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.8}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.9}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -535,8 +535,6 @@ contains src/main/resources/static/js/50-tasks.js 'function updateTaskReminderCo
 
 # v27.2.8 test compilation hotfix + retained regression baseline
 contains CHANGES.md "v27.2.8 — Test compilation hotfix"
-contains README.md "v27.2.8 — Test compilation hotfix"
-contains docs/REGRESSION_TEST_BASELINE.md "Status: retained in v27.2.8 after the test compilation hotfix."
 contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java 'dataJs.contains("cache:fresh ? \"no-store\" : undefined")'
 contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java 'dataJs.contains("cache: opts.cache")'
 not_contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "dataJs.contains('cache:fresh"
@@ -554,6 +552,18 @@ contains src/test/java/ru/daniil/shifts/web/BrowserNotificationFrontendContractT
 contains pom.xml '<artifactId>jacoco-maven-plugin</artifactId>'
 contains .github/workflows/ci.yml 'mvn -B --no-transfer-progress verify'
 contains .github/workflows/ci.yml 'name: jacoco-report'
+
+# v27.2.9 task regression suite and local coverage instructions
+contains CHANGES.md "v27.2.9 — Task regression suite"
+contains README.md "v27.2.9 — Task regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "Status: extended in v27.2.9 with the task regression suite."
+contains docs/TESTING.md "mvn clean verify"
+contains docs/TESTING.md "target/site/jacoco/index.html"
+contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java "boardFiltersStatusCategoryPriorityQueryAndDateRange"
+contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java "boardPaginationUsesSafeBoundsAndStableMetadata"
+contains src/test/java/ru/daniil/shifts/web/TaskControllerTest.java "fullCrudWorksAcrossLegacyAndV1Aliases"
+contains src/test/java/ru/daniil/shifts/web/TaskControllerTest.java "disabledModuleGuardsAllTaskEndpointsWithoutDeletingExistingData"
+contains src/test/java/ru/daniil/shifts/web/TaskControllerTest.java "foreignTaskIdsRemainIndistinguishableFromMissingResources"
 
 
 echo

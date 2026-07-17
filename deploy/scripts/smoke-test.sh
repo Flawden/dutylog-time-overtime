@@ -4,7 +4,7 @@ set -euo pipefail
 BASE_URL="${1:-${DUTYLOG_BASE_URL:-http://localhost:8080}}"
 BASE_URL="${BASE_URL%/}"
 TIMEOUT="${DUTYLOG_SMOKE_TIMEOUT:-10}"
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.8}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.9}"
 STATIC_JS=(
   "js/10-core.js"
   "js/20-data.js"
