@@ -1,3 +1,10 @@
+## v27.2.10 — Task board status validation hotfix
+
+- Fixed task-board status validation so an unknown status is rejected even when the user has no tasks.
+- Moved validation before the repository stream instead of relying on a per-task filter side effect.
+- The existing service and MockMvc regression tests now guard the empty-board case that exposed the defect.
+- No database schema changed.
+
 ## v27.2.9 — Task regression suite
 
 - Added service-level task coverage for creation defaults, trimming, updates, reminder cleanup, day/range lists, board statuses, category/priority/search/date filters, pagination, validation and deletion.

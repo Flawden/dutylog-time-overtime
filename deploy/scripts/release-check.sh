@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.9}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.10}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -555,7 +555,6 @@ contains .github/workflows/ci.yml 'name: jacoco-report'
 
 # v27.2.9 task regression suite and local coverage instructions
 contains CHANGES.md "v27.2.9 — Task regression suite"
-contains README.md "v27.2.9 — Task regression suite"
 contains docs/REGRESSION_TEST_BASELINE.md "Status: extended in v27.2.9 with the task regression suite."
 contains docs/TESTING.md "mvn clean verify"
 contains docs/TESTING.md "target/site/jacoco/index.html"
@@ -564,6 +563,14 @@ contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java "boardPagin
 contains src/test/java/ru/daniil/shifts/web/TaskControllerTest.java "fullCrudWorksAcrossLegacyAndV1Aliases"
 contains src/test/java/ru/daniil/shifts/web/TaskControllerTest.java "disabledModuleGuardsAllTaskEndpointsWithoutDeletingExistingData"
 contains src/test/java/ru/daniil/shifts/web/TaskControllerTest.java "foreignTaskIdsRemainIndistinguishableFromMissingResources"
+
+# v27.2.10 task board status validation hotfix
+contains CHANGES.md "v27.2.10 — Task board status validation hotfix"
+contains README.md "v27.2.10 — Task board status validation hotfix"
+contains src/main/java/ru/daniil/shifts/service/TaskService.java 'String statusFilter = normalizeBoardStatus(status);'
+contains src/main/java/ru/daniil/shifts/service/TaskService.java 'case "all", "open", "done", "overdue", "upcoming" -> normalized;'
+contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java 'board("mystery", null, null, null, null, null, 0, 50)'
+contains src/test/java/ru/daniil/shifts/web/TaskControllerTest.java '.param("status", "mystery")'
 
 
 echo
