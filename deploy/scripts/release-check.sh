@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.15}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.16}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -629,6 +629,19 @@ contains src/main/resources/static/openapi/dutylog-v1.yaml 'moduleKey:'
 contains src/main/resources/static/js/20-data.js 'moduleKey = body?.moduleKey || null'
 contains src/test/java/ru/daniil/shifts/web/QuickScenarioControllerTest.java 'jsonPath("$.moduleKey").value("scenarios")'
 contains src/test/java/ru/daniil/shifts/web/OvertimeControllerTest.java 'jsonPath("$.moduleKey").value("overtime")'
+
+# v27.2.16 profile and administration regression suite
+contains CHANGES.md "v27.2.16 — Profile and administration regression suite"
+contains README.md "v27.2.16 — Profile and administration regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "ProfileControllerTest"
+contains src/test/java/ru/daniil/shifts/web/ProfileControllerTest.java "fullUpdateTrimsNormalizesClampsAndPersistsAllowedThemeFields"
+contains src/test/java/ru/daniil/shifts/web/ProfileSessionControllerTest.java "passwordChangeRevokesEveryMobileSessionButLeavesRowsForDeviceHistory"
+contains src/test/java/ru/daniil/shifts/service/AppSettingsServiceTest.java "legacyTrueSpellingsRemainAcceptedAndEverythingElseIsFalse"
+contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java "selfBootstrapAndLastAdministratorDemotionsAreRejectedIndependently"
+contains src/test/java/ru/daniil/shifts/web/AdminControllerContractTest.java "malformedBodiesAndMissingUsersNeverBecomeServerErrors"
+contains src/main/java/ru/daniil/shifts/web/SystemController.java 'throw ApiException.badRequest("Нужно передать role")'
+contains src/main/java/ru/daniil/shifts/web/SystemController.java 'throw ApiException.forbidden("Диагностика доступна только администратору")'
+not_contains src/main/java/ru/daniil/shifts/web/SystemController.java "ResponseStatusException"
 
 echo
 

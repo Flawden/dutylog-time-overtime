@@ -1,18 +1,18 @@
-> Current release: **v27.2.15 — Structured module-disabled error envelope hotfix**.
+> Current release: **v27.2.16 — Profile and administration regression suite**.
 
 # DutyLog
 
-Current release: **v27.2.15 — Structured module-disabled error envelope hotfix**
+Current release: **v27.2.16 — Profile and administration regression suite**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.15 — Structured module-disabled error envelope hotfix
+## Текущая версия: v27.2.16 — Profile and administration regression suite
 
 
-Эта версия исправляет стабильный error envelope выключенных модулей: ответы `403 MODULE_DISABLED` теперь содержат отдельное поле `moduleKey`, а PWA использует его без разбора локализованного текста. Legacy-поле `error: MODULE_DISABLED:<key>` сохранено для обратной совместимости. OpenAPI и регрессионные проверки обновлены. Схема БД не менялась.
+Эта версия добавляет регрессионное покрытие профиля, безопасного Theme Builder, пользовательских мобильных сессий, системного переключателя регистрации и административного управления пользователями. Параллельно исправлен реальный error-envelope дефект: `SystemController` больше не выбрасывает `ResponseStatusException`, которая могла превращаться общим обработчиком в `500 INTERNAL_ERROR`; ожидаемые ошибки теперь используют стабильный `ApiException`-контракт.
 
-Предыдущая контрольная точка: **v27.2.14 — Quick scenarios and overtime API regression suite**. До неё: **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
+Текущая база: **41 тестовый класс и 194 `@Test` метода**. Предыдущая контрольная точка: **v27.2.15 — Structured module-disabled error envelope hotfix**. До неё: **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite** и **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
 
 JaCoCo формируется Maven-фазой `verify`, а не обычной кнопкой запуска JUnit в IntelliJ. Подробная инструкция: [`docs/TESTING.md`](docs/TESTING.md).
 

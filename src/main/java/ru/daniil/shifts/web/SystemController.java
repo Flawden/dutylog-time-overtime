@@ -3,7 +3,6 @@ package ru.daniil.shifts.web;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,12 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.AppSettingsService;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.UserAdminService;
+import ru.daniil.shifts.service.exception.ApiException;
 import ru.daniil.shifts.telegram.TelegramLinkService;
 import ru.daniil.shifts.telegram.TelegramLinkService.TelegramStatusDto;
 
@@ -110,7 +109,7 @@ public class SystemController {
                                                         Principal principal) {
         AppUser admin = requireAdmin(principal);
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Нужно передать role");
+            throw ApiException.badRequest("Нужно передать role");
         }
         return userAdminService.changeRole(id, request.role(), admin);
     }
@@ -121,7 +120,7 @@ public class SystemController {
                                                            Principal principal) {
         AppUser admin = requireAdmin(principal);
         if (request == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Нужно передать newPassword");
+            throw ApiException.badRequest("Нужно передать newPassword");
         }
         return userAdminService.resetPassword(id, request.newPassword(), admin);
     }
@@ -139,7 +138,7 @@ public class SystemController {
     public Map<String, Object> updateRegistrationSettings(@RequestBody RegistrationSettingsRequest request, Principal principal) {
         AppUser user = requireAdmin(principal);
         if (request == null || request.enabled() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Нужно передать enabled: true/false");
+            throw ApiException.badRequest("Нужно передать enabled: true/false");
         }
         appSettingsService.setRegistrationEnabled(request.enabled(), user.getUsername());
         return appSettingsService.registrationStatus();
@@ -148,7 +147,7 @@ public class SystemController {
     private AppUser requireAdmin(Principal principal) {
         AppUser user = currentUserService.requireUser(principal);
         if (!user.isAdmin()) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Диагностика доступна только администратору");
+            throw ApiException.forbidden("Диагностика доступна только администратору");
         }
         return user;
     }

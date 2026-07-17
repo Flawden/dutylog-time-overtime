@@ -2,7 +2,7 @@
 
 Status: extended in v27.2.9 with the task regression suite.
 
-Current extension: v27.2.15 fixes and locks the structured `moduleKey` field for disabled-module errors.
+Current extension: v27.2.16 covers profile, safe theme settings, web mobile-session management, registration settings and administrator workflows.
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
@@ -72,3 +72,12 @@ GitHub Actions uploads the same directory as the `jacoco-report` artifact even w
 ## Interpretation
 
 A green test suite means the listed contracts still hold. It does not replace exploratory/manual testing for browser permissions, operating-system notification presentation, responsive layout, service-worker lifecycle or real PostgreSQL deployment. Those remain acceptance checks at release boundaries.
+
+
+## v27.2.16 profile and administration extension
+
+- `ProfileControllerTest`: safe profile reads, full/clearing updates, locale, onboarding, Theme Builder allow-list, normalization, clamping, corrupt stored JSON, validation, authentication and CSRF.
+- `ProfileSessionControllerTest`: owner-scoped device lists, token secrecy, one-session revocation, CSRF, IDOR-safe `404`, and revoke-all after password changes.
+- `AppSettingsServiceTest`: default/database registration sources, audit metadata and legacy boolean parsing.
+- `UserAdminServiceTest`: search, filters, pagination, current/bootstrap flags, promotion/demotion safety, last-admin protection, password reset and session revocation.
+- `AdminControllerContractTest`: operational status secrecy, full admin API contract, stable error envelopes, registration toggle and CSRF.

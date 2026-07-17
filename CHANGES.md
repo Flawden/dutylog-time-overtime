@@ -1,3 +1,14 @@
+## v27.2.16 — Profile and administration regression suite
+
+- Added complete profile HTTP coverage for safe defaults, display name and birthday persistence, locale, onboarding, theme preferences, accent normalization and the allow-listed Theme Builder configuration.
+- Added malformed/corrupt theme coverage, value clamping, authentication and CSRF boundaries, and guards proving that password hashes and arbitrary CSS-like keys are never returned.
+- Added browser-facing mobile-session coverage for owner-only listing, one-session revocation, CSRF, IDOR-safe `404` responses and revoke-all behavior after a password change.
+- Added registration-setting service coverage for default/database sources, audit metadata and legacy boolean spellings.
+- Added administrative service and MockMvc coverage for search, role filters, pagination, bootstrap/current-user flags, promotion, safe demotion, last-admin protection, password reset, mobile-session revocation and registration toggling.
+- Fixed `SystemController` expected client errors to use the stable `ApiException` envelope instead of `ResponseStatusException`, which could be swallowed by the generic advice and returned as `500 INTERNAL_ERROR`.
+- Expanded the regression baseline to 41 test classes and 194 `@Test` methods.
+- No database schema changed.
+
 ## v27.2.15 — Structured module-disabled error envelope hotfix
 
 - Fixed the stable API error contract for disabled modules: `MODULE_DISABLED` responses now include a structured `moduleKey` field instead of forcing clients to parse `message` or the legacy `error` alias.
