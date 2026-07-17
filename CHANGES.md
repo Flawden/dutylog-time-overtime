@@ -1,3 +1,12 @@
+## v27.2.24 — Coverage floor and startup/module regression suite
+
+- Added direct startup coverage for bootstrap-admin configuration, credential validation, account creation, promotion, optional forced password reset and one-time legacy-admin cleanup.
+- Added module registry/service coverage for normalization, immutable contracts, unique keys/orders, acyclic dependencies, locked modules, admin visibility, unknown persisted keys and dependency activation.
+- Added current-user resolution and extended note-export coverage for count/select races, blank-note filtering, audit events, ZIP structure and YAML escaping.
+- JaCoCo now fails `mvn verify` when bundle instruction coverage drops below 88% or branch coverage drops below 70%.
+- The suite now contains 61 test classes and 327 `@Test` methods.
+- Production API behavior, database schema and Flyway migrations are unchanged.
+
 ## v27.2.23 — Security test contract and secret-safe error logging hotfix
 
 - Исправлены два чрезмерно строгих теста Content-Type: `application/json;charset=UTF-8` теперь корректно принимается как JSON.

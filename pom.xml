@@ -13,7 +13,7 @@
 
     <groupId>ru.daniil</groupId>
     <artifactId>dutylog</artifactId>
-    <version>27.2.23</version>
+    <version>27.2.24</version>
     <name>DutyLog: Time &amp; Overtime</name>
     <description>DutyLog: Time &amp; Overtime — календарь смен, переработок, отгулов и задач</description>
 
@@ -97,11 +97,31 @@
                         </goals>
                     </execution>
                     <execution>
-                        <id>report</id>
+                        <id>report-and-check</id>
                         <phase>verify</phase>
                         <goals>
                             <goal>report</goal>
+                            <goal>check</goal>
                         </goals>
+                        <configuration>
+                            <rules>
+                                <rule>
+                                    <element>BUNDLE</element>
+                                    <limits>
+                                        <limit>
+                                            <counter>INSTRUCTION</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.88</minimum>
+                                        </limit>
+                                        <limit>
+                                            <counter>BRANCH</counter>
+                                            <value>COVEREDRATIO</value>
+                                            <minimum>0.70</minimum>
+                                        </limit>
+                                    </limits>
+                                </rule>
+                            </rules>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>

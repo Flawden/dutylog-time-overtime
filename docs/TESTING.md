@@ -72,3 +72,13 @@ bash deploy/scripts/release-check.sh
 A green build confirms the automated contracts covered by the suite. It does not replace
 manual checks for browser permission prompts, operating-system notification appearance,
 responsive layout, service-worker lifecycle, or a real PostgreSQL deployment.
+
+
+## Coverage gate
+
+`mvn clean verify` not only creates `target/site/jacoco/index.html`; it also fails the build if total JaCoCo coverage drops below:
+
+- 88% instructions;
+- 70% branches.
+
+The thresholds intentionally sit below the current verified baseline (90% / 73%) to allow small refactors while preventing silent regression. Raise them only after a green CI run proves the new baseline.

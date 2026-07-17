@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.23}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.24}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -732,17 +732,31 @@ contains src/main/java/ru/daniil/shifts/web/ApiExceptionHandler.java 'exceptionT
 contains src/test/java/ru/daniil/shifts/web/ApiErrorInfrastructureTest.java 'assertNull(event.getThrowableProxy())'
 not_contains src/main/java/ru/daniil/shifts/web/ApiExceptionHandler.java 'request.getRequestURI(), ex);'
 
+# v27.2.24 coverage floor and startup/module regression suite
+contains CHANGES.md "v27.2.24 — Coverage floor and startup/module regression suite"
+contains README.md "v27.2.24 — Coverage floor and startup/module regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.24 coverage floor and startup/module extension"
+contains pom.xml "<counter>INSTRUCTION</counter>"
+contains pom.xml "<minimum>0.88</minimum>"
+contains pom.xml "<counter>BRANCH</counter>"
+contains pom.xml "<minimum>0.70</minimum>"
+contains src/test/java/ru/daniil/shifts/service/AdminBootstrapServiceTest.java "missingBootstrapAccountIsCreatedSeededAndLegacyAdminsAreDemotedOnce"
+contains src/test/java/ru/daniil/shifts/module/ModuleRegistryContractTest.java "everyDependencyChainTerminatesWithoutCycles"
+contains src/test/java/ru/daniil/shifts/service/ModuleServiceContractTest.java "enablingScenarioActivatesItsWholeDependencyChain"
+contains src/test/java/ru/daniil/shifts/service/CurrentUserServiceTest.java "existingPrincipalResolvesToOwnerEntity"
+contains src/test/java/ru/daniil/shifts/service/NoteExportServiceTest.java "postReadLimitProtectsAgainstRowsChangingBetweenCountAndSelect"
+
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "300" ]]; then
-  ok "test method baseline: 300"
+if [[ "$TEST_METHODS" == "327" ]]; then
+  ok "test method baseline: 327"
 else
-  fail "expected 300 @Test methods, found $TEST_METHODS"
+  fail "expected 327 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "57" ]]; then
-  ok "test class baseline: 57"
+if [[ "$TEST_CLASSES" == "61" ]]; then
+  ok "test class baseline: 61"
 else
-  fail "expected 57 test classes, found $TEST_CLASSES"
+  fail "expected 61 test classes, found $TEST_CLASSES"
 fi
 
 echo

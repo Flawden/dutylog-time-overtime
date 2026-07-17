@@ -2,7 +2,7 @@
 
 Status: extended in v27.2.9 with the task regression suite.
 
-Current extension: v27.2.23 keeps the security suite browser/JSON contracts realistic and prevents unexpected exception text or stacks from leaking into production logs.
+Current extension: v27.2.24 protects startup/bootstrap behavior, module registry invariants, current-user resolution and note-export boundaries, and adds a mandatory JaCoCo coverage floor.
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
@@ -139,3 +139,14 @@ A green test suite means the listed contracts still hold. It does not replace ex
 - HTML navigation tests send `Accept: text/html`, while `/api/**` continues to use stable JSON 401 responses.
 - Unexpected exception logs retain request correlation and exception type but omit throwable messages and stack traces that may contain secrets.
 
+
+
+## v27.2.24 coverage floor and startup/module extension
+
+- `AdminBootstrapServiceTest`: absent/partial configuration, credential validation, first admin creation, default-shift seeding, promotion, forced reset and one-time legacy cleanup.
+- `ModuleRegistryContractTest`: normalized lookup, unique stable keys/orders, known acyclic dependencies and immutable contract lists.
+- `ModuleServiceContractTest`: regular/admin visibility, locked modules, null/unknown updates, persistence, dependency activation and structured disabled-module errors.
+- `CurrentUserServiceTest`: missing, unknown and valid principals.
+- `NoteExportServiceTest`: count/select race limits, blank filtering, audit event, ZIP layout and YAML scalar escaping.
+- `mvn verify` now enforces at least 88% instruction coverage and 70% branch coverage at bundle level.
+- Baseline: 61 test classes and 327 `@Test` methods.

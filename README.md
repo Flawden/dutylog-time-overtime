@@ -1,18 +1,18 @@
-> Current release: **v27.2.23 — Security test contract and secret-safe error logging hotfix**.
+> Current release: **v27.2.24 — Coverage floor and startup/module regression suite**.
 
 # DutyLog
 
-Current release: **v27.2.23 — Security test contract and secret-safe error logging hotfix**
+Current release: **v27.2.24 — Coverage floor and startup/module regression suite**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.23 — Security test contract and secret-safe error logging hotfix
+## Текущая версия: v27.2.24 — Coverage floor and startup/module regression suite
 
 
-Эта версия исправляет три ложных падения security-набора: JSON с явной UTF-8 кодировкой проверяется как совместимый `application/json`, а браузерный redirect-тест отправляет реальный `Accept: text/html`. Одновременно общий обработчик неожиданных ошибок больше не пишет throwable и его сообщение в production-лог, чтобы случайные секреты из исключений не утекали в журнал.
+Эта версия закрепляет достигнутое покрытие обязательным JaCoCo-gate и закрывает критичные ветви старта приложения, bootstrap-администратора, модульного registry, разрешения текущего пользователя и безопасного ZIP-экспорта заметок.
 
-Текущая база: **57 тестовых классов и 300 `@Test` методов**. Предыдущая контрольная точка: **v27.2.22 — Security infrastructure regression and auth hardening suite**. Перед ней: **v27.2.21 — Telegram date validation and test harness hotfix**, затем **v27.2.20 — Telegram bot regression and delivery hardening suite**. Перед ней: **v27.2.19 — PostgreSQL migration and CI version hotfix**, где чистая PostgreSQL-схема и CI version metadata впервые прошли полный GitHub Actions smoke test. До неё: **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix** и **v27.2.14 — Quick scenarios and overtime API regression suite**.
+Текущая база: **61 тестовый класс и 327 `@Test` методов**. Предыдущая контрольная точка: **v27.2.23 — Security test contract and secret-safe error logging hotfix**. Перед ней: **v27.2.22 — Security infrastructure regression and auth hardening suite**. Перед ней: **v27.2.21 — Telegram date validation and test harness hotfix**, затем **v27.2.20 — Telegram bot regression and delivery hardening suite**. Перед ней: **v27.2.19 — PostgreSQL migration and CI version hotfix**, где чистая PostgreSQL-схема и CI version metadata впервые прошли полный GitHub Actions smoke test. До неё: **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix** и **v27.2.14 — Quick scenarios and overtime API regression suite**.
 Ранние этапы регрессии: **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
 
 JaCoCo формируется Maven-фазой `verify`, а не обычной кнопкой запуска JUnit в IntelliJ. Подробная инструкция: [`docs/TESTING.md`](docs/TESTING.md).
