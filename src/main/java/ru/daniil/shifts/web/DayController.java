@@ -33,7 +33,11 @@ public class DayController {
     public List<DayDto> month(@RequestParam("year") int year, @RequestParam("month") int month,
                               Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
-        return dayEntryService.listMonth(current, year, month);
+        boolean notesEnabled = moduleService.isEnabled(current, ModuleService.NOTES);
+        boolean overtimeEnabled = moduleService.isEnabled(current, ModuleService.OVERTIME);
+        return dayEntryService.listMonth(current, year, month).stream()
+                .map(day -> visibleDay(day, notesEnabled, overtimeEnabled))
+                .toList();
     }
 
     /**
@@ -46,10 +50,43 @@ public class DayController {
                                          @Valid @RequestBody(required = false) DayUpsertRequest req,
                                          Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
-        if (req != null && req.note() != null) moduleService.requireEnabled(current, ModuleService.NOTES);
-        if (req != null && (req.overtimeHours() != null || req.timeOffHours() != null)) moduleService.requireEnabled(current, ModuleService.OVERTIME);
-        DayDto saved = dayEntryService.upsert(current, date, req);
-        return saved == null ? ResponseEntity.noContent().build() : ResponseEntity.ok(saved);
+        boolean notesEnabled = moduleService.isEnabled(current, ModuleService.NOTES);
+        boolean overtimeEnabled = moduleService.isEnabled(current, ModuleService.OVERTIME);
+
+        // Old web clients send a full day snapshot and therefore may include null/zero
+        // values for disabled optional modules. Those neutral values must not block a
+        // core shift/marker update and, more importantly, must not erase hidden data.
+        if (req != null && !notesEnabled && req.note() != null && !req.note().isBlank()) {
+            moduleService.requireEnabled(current, ModuleService.NOTES);
+        }
+        if (req != null && !overtimeEnabled && (isNonZero(req.overtimeHours()) || isNonZero(req.timeOffHours()))) {
+            moduleService.requireEnabled(current, ModuleService.OVERTIME);
+        }
+
+        DayDto saved = dayEntryService.upsert(current, date, req, notesEnabled, overtimeEnabled);
+        if (saved == null) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(visibleDay(saved, notesEnabled, overtimeEnabled));
+    }
+
+
+    private static DayDto visibleDay(DayDto saved, boolean notesEnabled, boolean overtimeEnabled) {
+        return new DayDto(
+                saved.date(),
+                saved.shiftTypeId(),
+                notesEnabled ? saved.note() : null,
+                saved.dayEmoji(),
+                overtimeEnabled ? saved.overtimeHours() : 0,
+                overtimeEnabled ? saved.timeOffHours() : 0,
+                overtimeEnabled ? saved.overtimeBalanceHours() : 0,
+                saved.version(),
+                saved.updatedAt()
+        );
+    }
+
+    private static boolean isNonZero(Double value) {
+        return value != null && Math.abs(value) > 0.0001;
     }
 
     /**
@@ -60,6 +97,10 @@ public class DayController {
     public List<DayDto> fillSchedule(@Valid @RequestBody(required = false) DayFillRequest req,
                                      Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
-        return dayEntryService.fillSchedule(current, req);
+        boolean notesEnabled = moduleService.isEnabled(current, ModuleService.NOTES);
+        boolean overtimeEnabled = moduleService.isEnabled(current, ModuleService.OVERTIME);
+        return dayEntryService.fillSchedule(current, req).stream()
+                .map(day -> visibleDay(day, notesEnabled, overtimeEnabled))
+                .toList();
     }
 }

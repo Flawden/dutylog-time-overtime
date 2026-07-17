@@ -1,5 +1,6 @@
 package ru.daniil.shifts.service;
 
+import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.DayDto;
@@ -16,16 +17,23 @@ import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class DayEntryService {
     private final DayEntryRepository days;
     private final ShiftTypeService shiftTypeService;
+    private final EntityManager entityManager;
 
-    public DayEntryService(DayEntryRepository days, ShiftTypeService shiftTypeService) {
+    public DayEntryService(DayEntryRepository days,
+                           ShiftTypeService shiftTypeService,
+                           EntityManager entityManager) {
         this.days = days;
         this.shiftTypeService = shiftTypeService;
+        this.entityManager = entityManager;
     }
 
     @Transactional(readOnly = true)
@@ -50,6 +58,21 @@ public class DayEntryService {
 
     @Transactional
     public DayDto upsert(AppUser user, String date, DayUpsertRequest req) {
+        return upsert(user, date, req, true, true);
+    }
+
+    /**
+     * Web day snapshot with module isolation.
+     *
+     * Disabled optional modules are read-only: a shift or marker update may still be
+     * saved, while hidden note/overtime values remain untouched in the database.
+     */
+    @Transactional
+    public DayDto upsert(AppUser user,
+                         String date,
+                         DayUpsertRequest req,
+                         boolean notesMutable,
+                         boolean overtimeMutable) {
         if (req == null) {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
@@ -64,12 +87,16 @@ public class DayEntryService {
         DayEntry entry = days.findByOwnerAndDate(user, d)
                 .orElseGet(() -> new DayEntry(user, d));
         entry.setShiftType(st);
-        entry.setNote(normalizeNote(req.note()));
+        if (notesMutable) {
+            entry.setNote(normalizeNote(req.note()));
+        }
         if (req.dayEmoji() != null) {
             entry.setDayEmoji(normalizeDayEmoji(req.dayEmoji()));
         }
-        entry.setOvertimeHours(req.overtimeHours() != null ? req.overtimeHours() : 0.0);
-        entry.setTimeOffHours(req.timeOffHours() != null ? req.timeOffHours() : 0.0);
+        if (overtimeMutable) {
+            entry.setOvertimeHours(req.overtimeHours() != null ? req.overtimeHours() : 0.0);
+            entry.setTimeOffHours(req.timeOffHours() != null ? req.timeOffHours() : 0.0);
+        }
 
         if (entry.isEmpty()) {
             if (entry.getId() != null) {
@@ -99,25 +126,53 @@ public class DayEntryService {
             pattern.add(shiftTypeService.requireOwnedShiftType(user, shiftTypeId));
         }
 
-        List<DayEntry> changedEntries = new ArrayList<>();
+        LocalDate end = start.plusDays(dayCount - 1L);
+        Map<LocalDate, DayEntry> existingByDate = new HashMap<>();
+        for (DayEntry entry : days.findByOwnerAndDateBetweenOrderByDateAsc(user, start, end)) {
+            existingByDate.put(entry.getDate(), entry);
+        }
+
+        Map<LocalDate, Long> expectedShiftByDate = new LinkedHashMap<>();
         for (int i = 0; i < dayCount; i++) {
             LocalDate d = start.plusDays(i);
             ShiftType plannedShift = pattern.get(i % pattern.size());
-            DayEntry entry = days.findByOwnerAndDate(user, d)
-                    .orElseGet(() -> new DayEntry(user, d));
+            DayEntry entry = existingByDate.getOrDefault(d, new DayEntry(user, d));
 
             if (!overwrite && entry.getShiftType() != null) {
+                expectedShiftByDate.put(d, entry.getShiftType().getId());
                 continue;
             }
 
             entry.setShiftType(plannedShift);
-            changedEntries.add(entry);
+            expectedShiftByDate.put(d, plannedShift.getId());
+
+            // Save every date explicitly. With IDENTITY ids this immediately inserts new
+            // rows and avoids depending on a deferred saveAll batch for a user-visible
+            // calendar operation that must survive F5 and another browser.
+            days.save(entry);
+        }
+        days.flush();
+
+        // Re-read from the database, not from the current persistence context. The
+        // endpoint must never report success for a schedule that was only visible in
+        // managed in-memory entities.
+        entityManager.clear();
+        List<DayEntry> persisted = days.findByOwnerAndDateBetweenOrderByDateAsc(user, start, end);
+        Map<LocalDate, DayEntry> persistedByDate = new HashMap<>();
+        for (DayEntry entry : persisted) persistedByDate.put(entry.getDate(), entry);
+
+        for (Map.Entry<LocalDate, Long> expected : expectedShiftByDate.entrySet()) {
+            DayEntry actual = persistedByDate.get(expected.getKey());
+            Long actualShiftId = actual != null && actual.getShiftType() != null
+                    ? actual.getShiftType().getId()
+                    : null;
+            if (!expected.getValue().equals(actualShiftId)) {
+                throw new IllegalStateException("График не сохранился для даты " + expected.getKey());
+            }
         }
 
-        // Persist the whole generated schedule before the response is created.  This is
-        // deliberately explicit: the web client immediately reloads the month and must
-        // never render a transient in-memory schedule that has not reached the database.
-        return days.saveAllAndFlush(changedEntries).stream()
+        return expectedShiftByDate.keySet().stream()
+                .map(persistedByDate::get)
                 .map(DayDto::from)
                 .toList();
     }

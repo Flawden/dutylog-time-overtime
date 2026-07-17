@@ -12,7 +12,12 @@ const api = {
   async createShiftType(b)  { return jfetch("/api/shift-types", { method:"POST", body:b }); },
   async updateShiftType(id, b) { return jfetch(`/api/shift-types/${id}`, { method:"PATCH", body:b }); },
   async deleteShiftType(id) { return jfetch(`/api/shift-types/${id}`, { method:"DELETE" }); },
-  async month(y, m)         { const r = monthFromTo(y, m); return jfetch(`/api/calendar?from=${r.from}&to=${r.to}`); },
+  async month(y, m, opts = {}) {
+    const r = monthFromTo(y, m);
+    const fresh = !!opts.fresh;
+    const suffix = fresh ? `&_=${Date.now()}` : "";
+    return jfetch(`/api/calendar?from=${r.from}&to=${r.to}${suffix}`, { cache:fresh ? "no-store" : undefined });
+  },
   async upsertDay(k, b)     { return jfetch(`/api/days/${k}`, { method:"PUT", body:b }); },
   async fillDays(b)        { return jfetch("/api/days/fill", { method:"POST", body:b }); },
   async modules()          { return jfetch("/api/modules"); },
@@ -64,6 +69,12 @@ function setModuleList(list){
   state.modules = map;
   state.modulesLoaded = true;
   applyModuleVisibility();
+  // A module toggle is also a runtime boundary. In particular, an already
+  // running notification interval must stop immediately when the module is
+  // disabled instead of continuing to hit a guarded endpoint every 10 seconds.
+  if (typeof syncBrowserNotificationSchedulerForModules === "function") {
+    syncBrowserNotificationSchedulerForModules();
+  }
 }
 function moduleEnabled(key){
   if (!key || key === "core") return true;
@@ -98,13 +109,35 @@ function applyModulesFromBundle(bundle){
   if (Array.isArray(bundle?.modules)) setModuleList(bundle.modules);
 }
 function sanitizeDayForModules(day = {}){
+  // Preserve identity and sync metadata. Earlier versions stripped `date`, so every
+  // server day was written to state.days[undefined] and the month appeared empty
+  // after an authoritative reload even though the database contained the schedule.
   return {
+    date: day.date ?? null,
     shiftTypeId: day.shiftTypeId ?? null,
     note: moduleEnabled("notes") ? (day.note ?? null) : null,
     dayEmoji: day.dayEmoji ?? null,
     overtimeHours: moduleEnabled("overtime") ? numOr0(day.overtimeHours) : 0,
     timeOffHours: moduleEnabled("overtime") ? numOr0(day.timeOffHours) : 0,
+    overtimeBalanceHours: moduleEnabled("overtime") ? numOr0(day.overtimeBalanceHours) : 0,
+    version: Number.isFinite(Number(day.version)) ? Number(day.version) : 0,
+    updatedAt: day.updatedAt ?? null,
   };
+}
+function dayUpsertPayload(day = {}){
+  const clean = sanitizeDayForModules(day);
+  const payload = {
+    shiftTypeId: clean.shiftTypeId ?? null,
+    dayEmoji: clean.dayEmoji ?? null,
+  };
+  // Optional module fields are omitted completely when their module is disabled.
+  // The server then preserves the hidden values instead of treating 0/null as a write.
+  if (moduleEnabled("notes")) payload.note = clean.note ?? null;
+  if (moduleEnabled("overtime")) {
+    payload.overtimeHours = numOr0(clean.overtimeHours);
+    payload.timeOffHours = numOr0(clean.timeOffHours);
+  }
+  return payload;
 }
 function sanitizeCalendarBundleForModules(bundle){
   if (!bundle || Array.isArray(bundle)) return bundle;
@@ -547,6 +580,7 @@ async function jfetch(url, opts = {}) {
     method,
     headers,
     body: opts.body ? JSON.stringify(opts.body) : undefined,
+    cache: opts.cache,
   });
   if (res.status === 401) {
     // Сессия истекла или не залогинен — на страницу входа
@@ -555,19 +589,28 @@ async function jfetch(url, opts = {}) {
   }
   if (!res.ok) {
     let msg = `${opts.method || "GET"} ${url} → ${res.status}`;
+    let code = null;
+    let moduleKey = null;
     try {
       const body = await res.json();
+      code = body?.code || null;
       if (body?.error) msg = body.error;
-      if (String(msg).startsWith("MODULE_DISABLED:")) {
-        const key = String(msg).split(":")[1] || "";
-        const mod = (state.modulesList || []).find(m => m.key === key);
-        msg = `${t("модуль выключен")}: ${mod ? moduleTitle(mod) : key}`;
+      moduleKey = body?.moduleKey || null;
+      const moduleMarker = [body?.error, body?.message, body?.code]
+        .map(value => String(value || ""))
+        .find(value => value.startsWith("MODULE_DISABLED:"));
+      if (!moduleKey && moduleMarker) moduleKey = moduleMarker.split(":")[1] || "";
+      if (moduleKey) {
+        const mod = (state.modulesList || []).find(m => m.key === moduleKey);
+        msg = `${t("модуль выключен")}: ${mod ? moduleTitle(mod) : moduleKey}`;
       }
     } catch (_) { /* ответ был не JSON */ }
     const err = new Error(msg);
     err.status = res.status;
     err.url = url;
     err.method = method;
+    err.code = code;
+    err.moduleKey = moduleKey;
     throw err;
   }
   if (res.status === 204) return null;
@@ -938,7 +981,10 @@ const dataLayer = {
   async loadCalendar(y, m, applyBundle){
     let hadCache = false;
     const snap = await this.readSnapshot();
-    if (snap?.bundle) {
+    // A snapshot belongs to one exact calendar month. Never paint July data into
+    // August (or vice versa) while the network request is still in flight.
+    const snapshotMatchesMonth = snap?.bundle && snap.y === y && snap.m === m;
+    if (snapshotMatchesMonth) {
       hadCache = true;
       state.offline.lastSyncAt = snap.savedAt || null;
       if (Array.isArray(snap.modules) && !Array.isArray(snap.bundle.modules)) snap.bundle.modules = snap.modules;
@@ -973,13 +1019,7 @@ const dataLayer = {
     await this.updateSnapshotDay(date, cleanDay);
     if (navigator.onLine) {
       try {
-        await api.upsertDay(date, {
-          shiftTypeId: cleanDay.shiftTypeId ?? null,
-          note: cleanDay.note ?? null,
-          dayEmoji: cleanDay.dayEmoji ?? null,
-          overtimeHours: numOr0(cleanDay.overtimeHours),
-          timeOffHours: numOr0(cleanDay.timeOffHours),
-        });
+        await api.upsertDay(date, dayUpsertPayload(cleanDay));
         state.offline.online = true;
         updateOfflineStatus();
         return { queued:false };
@@ -1032,7 +1072,7 @@ const dataLayer = {
             throw Object.assign(new Error(`${t("операция относится к выключенному модулю")}: ${disabledReason}`), { status:403 });
           }
           if (item.type === "putDay") {
-            await api.upsertDay(item.payload.date, item.payload.day);
+            await api.upsertDay(item.payload.date, dayUpsertPayload(item.payload.day));
           } else if (item.type === "toggleTask") {
             await api.updateTask(item.payload.taskId, { done: !!item.payload.done });
           } else {

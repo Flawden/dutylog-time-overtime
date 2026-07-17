@@ -1,13 +1,20 @@
-# DutyLog: Time & Overtime
+> Current release: **v27.2.17 — Admin test context bootstrap hotfix**.
+
+# DutyLog
+
+Current release: **v27.2.17 — Admin test context bootstrap hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.2 — Calendar persistence hotfix
+## Текущая версия: v27.2.17 — Admin test context bootstrap hotfix
 
-DutyLog получил безопасный путь доставки изменений: ветка `test` разворачивает изолированный staging, а `main`/`master` продвигает в production тот же самый проверенный Docker-образ по immutable digest. Перед production-обновлением создаётся и проверяется PostgreSQL backup, после запуска выполняются health/smoke checks, а неуспешный образ откатывается без автоматического отката базы.
 
-Документация: [`docs/CICD.md`](docs/CICD.md) · [`docs/STAGING.md`](docs/STAGING.md) · [`docs/MIGRATION_SAFETY.md`](docs/MIGRATION_SAFETY.md)
+Эта версия исправляет конфигурацию `UserAdminServiceTest`: тест больше не поднимает Spring-контекст с неполной парой bootstrap-реквизитов администратора. Защита production-конфигурации продолжает требовать username и password вместе, а service-тест задаёт имя bootstrap-admin локально без запуска bootstrap-listener. Функциональное покрытие профиля и админки из v27.2.16 сохранено.
+
+Текущая база: **41 тестовый класс и 194 `@Test` метода**. Предыдущая контрольная точка: **v27.2.16 — Profile and administration regression suite**. До неё: **v27.2.15 — Structured module-disabled error envelope hotfix**. До неё: **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite** и **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
+
+JaCoCo формируется Maven-фазой `verify`, а не обычной кнопкой запуска JUnit в IntelliJ. Подробная инструкция: [`docs/TESTING.md`](docs/TESTING.md).
 
 ## Возможности
 
@@ -221,7 +228,8 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/PRODUCT_COPY.md`](docs/PRODUCT_COPY.md) — стиль пользовательских текстов.
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
-- [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.2.2 и как принимать RC.
+- [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
+- [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.2.5 и как принимать RC.
 - [`docs/USER_GUIDE.md`](docs/USER_GUIDE.md) — короткая пользовательская инструкция.
 - [`docs/PRODUCTION_DEPLOY.md`](docs/PRODUCTION_DEPLOY.md) — пошаговый production deployment.
 - [`docs/BACKUP_RESTORE.md`](docs/BACKUP_RESTORE.md) — резервное копирование и восстановление.
@@ -238,7 +246,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 
 ## Текущая версия
 
-`v27.2.2 — Calendar persistence hotfix`
+`v27.2.5 — Calendar day identity hotfix`
 
 Функциональный и Android API v1 контракты не менялись. Этот этап добавляет инфраструктуру доставки:
 
@@ -280,7 +288,7 @@ DUTYLOG_ADMIN_PASSWORD=long_random_password_at_least_20_chars
 Since v25.3 the module registry has explicit developer contracts. See `docs/MODULE_CONTRACTS.md`.
 
 
-CI permission stabilization in v27.2.2:
+CI permission stabilization in v27.2.5:
 
 - GitHub Actions runs release checks through `bash ./deploy/scripts/release-check.sh`.
 - CI no longer fails when executable bits are lost on Windows/archive checkouts.

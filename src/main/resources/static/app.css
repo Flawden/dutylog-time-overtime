@@ -216,6 +216,7 @@
   .taskOptions label { color:var(--mut); font-size:11.5px; display:flex; flex-direction:column; gap:3px; }
   .taskOptions .inlineCheck { flex-direction:row; align-items:center; gap:6px; }
   .taskOptions .inlineCheck input { width:auto; }
+  .taskReminderModuleHint { grid-column:1 / -1; color:var(--warn); font-size:11.5px; line-height:1.35; }
   @media (max-width:520px){ .taskOptions { grid-template-columns:1fr; } }
   .tinyDel { background:none; border:none; color:var(--dim); cursor:pointer; font-size:12px; padding:3px 4px; }
 
@@ -1442,7 +1443,7 @@ body.appBooting .appBoot{display:flex;}
 @media (prefers-reduced-motion: reduce){.loadingState i,.calendarSkeleton span,.calendarSkeleton i,.calendarSkeleton em{animation:none;}}
 @media (max-width:560px){.emptyState{gap:10px;padding:12px}.emptyIcon{width:30px;height:30px;border-radius:10px}.emptyState.board{min-height:84px}.appBootCard{border-radius:18px;padding:16px}}
 
-/* v27.2.2: stable right-side controls in settings headers.
+/* v27.2.5: stable right-side controls in settings headers.
    Status chips and the profile avatar stay pinned to the right even when RU/EN text length changes. */
 .settingsHead > :first-child,
 .notifyHead > :first-child{
@@ -1482,7 +1483,7 @@ body.appBooting .appBoot{display:flex;}
   }
 }
 
-/* v27.2.2: notifications header alignment and admin side navigation. */
+/* v27.2.5: notifications header alignment and admin side navigation. */
 #notifyCard > .notifyHead{
   display:grid;
   grid-template-columns:minmax(0,1fr) max-content max-content;

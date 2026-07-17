@@ -1,4 +1,4 @@
-# DutyLog API v27.2.2
+# DutyLog API v27.2.5
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -1057,7 +1057,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "27.2.2",
+  "version": "27.2.5",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],
@@ -1196,7 +1196,7 @@ Request body:
 }
 ```
 
-Unknown keys and locked modules are ignored. Dependencies are enabled automatically. Disabled feature APIs return HTTP 403 with `MODULE_DISABLED:<key>`.
+Unknown keys and locked modules are ignored. Dependencies are enabled automatically. Disabled feature APIs return HTTP 403 with `code: MODULE_DISABLED`, structured `moduleKey: <key>`, and the legacy `MODULE_DISABLED:<key>` message.
 
 ## Notes export
 
@@ -1234,7 +1234,7 @@ Security/limits:
 
 ---
 
-## Android API v1 (v27.2.2)
+## Android API v1 (v27.2.5)
 
 New Android code must use `/api/v1/**`. The complete contract and compatibility rules are in [`ANDROID_API_V1.md`](ANDROID_API_V1.md); the canonical OpenAPI file is served from `/openapi/dutylog-v1.yaml`.
 

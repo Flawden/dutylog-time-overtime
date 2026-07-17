@@ -1,6 +1,6 @@
 # DutyLog Modules
 
-Status: v27.2.2.
+Status: v27.2.5.
 
 DutyLog is now a modular monolith. The application still ships as one Spring Boot backend and one web/PWA frontend, but user-facing features are grouped into modules that can be enabled or disabled per user.
 
@@ -49,13 +49,20 @@ PATCH /api/modules
 }
 ```
 
-The backend ignores unknown keys and locked module changes. If a module is disabled and its API is called, the backend returns HTTP 403 with an error such as:
+The backend ignores unknown keys and locked module changes. If a module is disabled and its API is called, the backend returns HTTP 403 with a stable error envelope:
 
-```text
-MODULE_DISABLED:tasks
+```json
+{
+  "code": "MODULE_DISABLED",
+  "message": "MODULE_DISABLED:tasks",
+  "error": "MODULE_DISABLED:tasks",
+  "moduleKey": "tasks",
+  "requestId": "...",
+  "timestamp": "..."
+}
 ```
 
-The frontend converts that into a user-facing message.
+Clients should use `code` and `moduleKey`; the legacy text marker remains for backward compatibility.
 
 ## Database
 

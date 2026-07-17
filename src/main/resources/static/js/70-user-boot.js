@@ -46,15 +46,26 @@ async function loadMonth(){
       // Ignore a late response from a month that is no longer active.
       if (generation !== calendarLoadGeneration || state.y !== requestedYear || state.m !== requestedMonth) return;
       applyCalendarBundle(bundle);
+      // The data layer may first deliver a matching IndexedDB snapshot and then the
+      // authoritative server response. Every accepted bundle must be rendered;
+      // otherwise the server state is applied only in memory and the screen keeps
+      // showing the stale pre-fill snapshot until another unrelated render occurs.
+      state.ui.loadingCalendar = false;
+      renderNotifications();
+      renderCalendar();
     });
     if (generation !== calendarLoadGeneration) return;
     setSave(res?.fromCache ? "" : "");
-    renderNotifications();
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
   } finally {
-    if (generation === calendarLoadGeneration) state.ui.loadingCalendar = false;
+    if (generation === calendarLoadGeneration) {
+      const wasStillLoading = state.ui.loadingCalendar;
+      state.ui.loadingCalendar = false;
+      // Network errors without a usable snapshot must also remove the skeleton.
+      if (wasStillLoading) renderCalendar();
+    }
   }
 }
 
@@ -118,6 +129,7 @@ async function init(){
   renderCalendar();
   clearBootFailsafe();
   setAppBooting(false);
+  startBrowserNotificationScheduler();
   dataLayer.syncQueue();
 }
 init().catch(err => {
@@ -452,7 +464,10 @@ function renderTelegramPanel(){
   }
 }
 async function loadTelegramStatus(){
-  if (!$("telegramBox") || !moduleEnabled("telegram")) return;
+  // moduleEnabled() is intentionally optimistic before module metadata loads so the
+  // shell does not flicker. API calls must be stricter or a disabled integration can
+  // emit a noisy 403 during boot.
+  if (!$("telegramBox") || !state.modulesLoaded || !moduleEnabled("telegram")) return;
   try {
     state.telegramStatus = await api.telegramStatus();
     renderTelegramPanel();

@@ -772,6 +772,147 @@ function browserPermissionStatus(){
   if (Notification.permission === "denied") return { label:t("браузер"), value:t("запрещено"), tone:"warn" };
   return { label:t("браузер"), value:t("не разрешено"), tone:"warn" };
 }
+
+const BROWSER_NOTIFICATION_POLL_MS = 10_000;
+const BROWSER_NOTIFICATION_FETCH_MS = 60_000;
+const BROWSER_NOTIFICATION_GRACE_MS = 5 * 60_000;
+let browserNotificationTimer = null;
+let browserNotificationTickRunning = false;
+let browserNotificationLastFetchAt = 0;
+let browserNotificationReminders = [];
+let browserNotificationRuntimeListenersBound = false;
+
+function browserNotificationStorageKey(){
+  const username = state.profile?.username || $("whoami")?.textContent?.trim() || "anonymous";
+  return `dutylog.browserNotifications.delivered.v1.${username}`;
+}
+function readDeliveredBrowserNotifications(){
+  try {
+    const raw = JSON.parse(localStorage.getItem(browserNotificationStorageKey()) || "{}");
+    const cutoff = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    return Object.fromEntries(Object.entries(raw).filter(([, ts]) => Number(ts) >= cutoff));
+  } catch (_) { return {}; }
+}
+function writeDeliveredBrowserNotifications(items){
+  try { localStorage.setItem(browserNotificationStorageKey(), JSON.stringify(items)); }
+  catch (_) { /* private mode or storage quota */ }
+}
+function notificationPollRange(){
+  const toKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const now = new Date();
+  const from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
+  // Important-day reminders may fire long before the source date, so keep a
+  // one-year source window but refresh it only once per minute.
+  const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 365);
+  return { from:toKey(from), to:toKey(to) };
+}
+function browserReminderFingerprint(reminder){
+  return `${reminder?.id || "reminder"}|${reminder?.remindAt || ""}`;
+}
+async function showBrowserReminder(reminder){
+  const title = reminder.title || "DutyLog: Time & Overtime";
+  const options = {
+    body: reminder.details || "",
+    icon: "/icons/icon-192.png",
+    badge: "/icons/icon-192.png",
+    tag: `dutylog:${browserReminderFingerprint(reminder)}`,
+    renotify: false,
+    data: { url:"/#calendar", sourceDate:reminder.sourceDate || null },
+  };
+  if ("serviceWorker" in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.ready;
+      await registration.showNotification(title, options);
+      return;
+    } catch (_) { /* fall back to the page Notification API */ }
+  }
+  new Notification(title, options);
+}
+async function browserNotificationTick(){
+  if (browserNotificationTickRunning) return;
+  if (!state.modulesLoaded || !moduleEnabled("notifications")) return;
+  const settings = state.notificationSettings;
+  if (!settings?.browserNotificationsEnabled) return;
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  if (!navigator.onLine) return;
+
+  browserNotificationTickRunning = true;
+  try {
+    const now = Date.now();
+    if (browserNotificationLastFetchAt === 0 || now - browserNotificationLastFetchAt >= BROWSER_NOTIFICATION_FETCH_MS) {
+      const range = notificationPollRange();
+      const fetched = await api.notificationUpcoming(range.from, range.to, true);
+      // The user can disable the module while the request is in flight. Never
+      // deliver or cache a response that crossed that runtime boundary.
+      if (!state.modulesLoaded || !moduleEnabled("notifications")) return;
+      browserNotificationReminders = fetched;
+      browserNotificationLastFetchAt = now;
+    }
+    const delivered = readDeliveredBrowserNotifications();
+    for (const reminder of browserNotificationReminders || []) {
+      const dueAt = new Date(reminder.remindAt || "").getTime();
+      if (!Number.isFinite(dueAt)) continue;
+      const lateBy = now - dueAt;
+      if (lateBy < 0 || lateBy > BROWSER_NOTIFICATION_GRACE_MS) continue;
+      const fingerprint = browserReminderFingerprint(reminder);
+      if (delivered[fingerprint]) continue;
+      await showBrowserReminder(reminder);
+      delivered[fingerprint] = Date.now();
+      writeDeliveredBrowserNotifications(delivered);
+    }
+  } catch (err) {
+    if (err?.status === 403 && err?.moduleKey === "notifications") {
+      // Defensive self-healing for a stale client module map. One guarded 403
+      // may race with the toggle, but it must never become a 10-second loop.
+      stopBrowserNotificationScheduler();
+      try { await loadModules(); } catch (_) { /* keep the scheduler stopped */ }
+      return;
+    }
+    if (err?.status !== 401 && err?.status !== 403) console.warn("browser notification poll failed", err);
+  } finally {
+    browserNotificationTickRunning = false;
+  }
+}
+function stopBrowserNotificationScheduler(){
+  if (browserNotificationTimer != null) clearInterval(browserNotificationTimer);
+  browserNotificationTimer = null;
+  browserNotificationLastFetchAt = 0;
+  browserNotificationReminders = [];
+}
+function invalidateBrowserNotificationSchedule(){
+  browserNotificationLastFetchAt = 0;
+  browserNotificationReminders = [];
+  if (browserNotificationTimer != null && state.modulesLoaded && moduleEnabled("notifications")) {
+    browserNotificationTick();
+  }
+}
+function kickBrowserNotificationScheduler(){
+  if (!state.modulesLoaded || !moduleEnabled("notifications")) {
+    stopBrowserNotificationScheduler();
+    return;
+  }
+  if (browserNotificationTimer == null) {
+    browserNotificationTimer = setInterval(browserNotificationTick, BROWSER_NOTIFICATION_POLL_MS);
+  }
+  browserNotificationTick();
+}
+function syncBrowserNotificationSchedulerForModules(){
+  if (!state.modulesLoaded || !moduleEnabled("notifications")) {
+    stopBrowserNotificationScheduler();
+    return;
+  }
+  kickBrowserNotificationScheduler();
+}
+function startBrowserNotificationScheduler(){
+  syncBrowserNotificationSchedulerForModules();
+  if (browserNotificationRuntimeListenersBound) return;
+  browserNotificationRuntimeListenersBound = true;
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") syncBrowserNotificationSchedulerForModules();
+  });
+  window.addEventListener("online", syncBrowserNotificationSchedulerForModules);
+}
+
 function renderNotifyStatus(count){
   const box = $("notifyStatus");
   if (!box) return;
@@ -843,6 +984,8 @@ async function saveNotificationSettings(extra = {}){
     setSave("saved");
     renderNotifications();
     renderCalendar();
+    invalidateBrowserNotificationSchedule();
+    syncBrowserNotificationSchedulerForModules();
   } catch (err) { console.error(err); setSave("err", err.message); }
 }
 async function requestNotificationPermission(){

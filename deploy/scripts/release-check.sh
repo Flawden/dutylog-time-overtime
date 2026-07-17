@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.2}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.17}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -322,10 +322,10 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "v27.2.2"
-contains docs/TEST_CONFIG_HOTFIX.md "v27.2.2"
+contains docs/SECURITY_REVIEW.md "v27.2.5"
+contains docs/TEST_CONFIG_HOTFIX.md "v27.2.5"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
-contains docs/CI_PERMISSION_HOTFIX.md "v27.2.2"
+contains docs/CI_PERMISSION_HOTFIX.md "v27.2.5"
 contains src/main/resources/static/index.html 'data-onboarding-preset="work"'
 contains src/main/resources/static/index.html ">Стандарт</button>"
 not_contains src/main/resources/static/index.html "Работа + переработки"
@@ -337,13 +337,13 @@ contains src/main/resources/static/app.css ".cell.todayCell::before"
 contains src/main/resources/static/js/20-data.js "DAY_MODULES_HINT_DISMISSED_KEY"
 contains src/main/resources/static/js/20-data.js "dayModulesHintCloseBtn"
 contains src/main/resources/static/app.css ".dayModulesHintClose"
-contains docs/ONBOARDING_TODAY_HOTFIX.md "v27.2.2"
-contains docs/DAY_HINT_DISMISS_HOTFIX.md "v27.2.2"
-contains docs/I18N_POLISH_HOTFIX.md "v27.2.2"
-contains docs/LOGIN_LANGUAGE_HOTFIX.md "v27.2.2"
-contains docs/UI_ALIGNMENT_TEST_HOTFIX.md "v27.2.2"
+contains docs/ONBOARDING_TODAY_HOTFIX.md "v27.2.5"
+contains docs/DAY_HINT_DISMISS_HOTFIX.md "v27.2.5"
+contains docs/I18N_POLISH_HOTFIX.md "v27.2.5"
+contains docs/LOGIN_LANGUAGE_HOTFIX.md "v27.2.5"
+contains docs/UI_ALIGNMENT_TEST_HOTFIX.md "v27.2.5"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "private static String body(String username, String password, String languagePreference)"
-contains src/main/resources/static/app.css "v27.2.2: stable right-side controls"
+contains src/main/resources/static/app.css "v27.2.5: stable right-side controls"
 contains src/main/resources/static/app.css "#timeSettingsCard .settingsHead > .status"
 contains src/main/resources/static/app.css "#profileCard .settingsHead > .avatarBig"
 contains src/main/resources/static/js/login.js "languagePreference: currentLang"
@@ -355,8 +355,8 @@ contains src/main/resources/static/js/10-core.js "if (typeof renderSettingsPanel
 contains src/main/resources/static/js/30-calendar.js 'esc(t("Итого:"))'
 contains src/main/resources/static/js/60-settings.js 'const workLabel = state.language === "en" ? "work time"'
 contains src/main/resources/static/js/60-settings.js 'esc(t("шт"))'
-contains docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md "v27.2.2"
-contains src/main/resources/static/app.css "v27.2.2: notifications header alignment"
+contains docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md "v27.2.5"
+contains src/main/resources/static/app.css "v27.2.5: notifications header alignment"
 contains src/main/resources/static/app.css "#notifyCard > .notifyHead"
 contains src/main/resources/static/app.css ".adminShell.settingsShell"
 contains src/main/resources/static/index.html 'data-admin-jump="users"'
@@ -365,7 +365,7 @@ contains src/main/resources/static/index.html 'data-admin-jump="diagnostics"'
 contains src/main/resources/static/js/60-settings.js "function initAdminNavigation"
 contains src/main/resources/static/js/60-settings.js "notificationsActive"
 
-# Android API v1 contract (introduced in v27.1.0, retained in v27.2.2)
+# Android API v1 contract (introduced in v27.1.0, retained in v27.2.5)
 contains src/main/resources/static/js/login.js "languagePreference: currentLang"
 not_contains src/main/resources/static/login.html "<script>"
 not_contains src/main/java/ru/daniil/shifts/config/SecurityHeadersFilter.java "script-src 'self' 'unsafe-inline'"
@@ -393,7 +393,7 @@ contains docs/SECURITY_CONSOLIDATION.md "Status: v27.0-rc4."
 contains docs/NOTES_EXPORT.md "GET /api/export/notes"
 contains docs/SUPPLY_CHAIN.md "Dependabot"
 
-# Android API v1 contract (introduced in v27.1.0, retained in v27.2.2)
+# Android API v1 contract (introduced in v27.1.0, retained in v27.2.5)
 contains src/main/java/ru/daniil/shifts/web/MobileV1Controller.java '@RequestMapping("/api/v1/mobile")'
 contains src/main/java/ru/daniil/shifts/web/MobileV1AuthController.java '@RequestMapping("/api/v1/mobile/auth")'
 contains src/main/java/ru/daniil/shifts/service/MobileSyncService.java 'ALREADY_APPLIED'
@@ -405,7 +405,7 @@ contains src/main/java/ru/daniil/shifts/web/ApiErrorResponse.java 'String reques
 contains src/main/java/ru/daniil/shifts/config/ApiVersionFilter.java 'X-DutyLog-Api-Version'
 contains src/main/resources/db/migration/postgresql/V22__android_api_contract.sql 'mobile_sync_operations'
 contains src/main/resources/static/openapi/dutylog-v1.yaml '/api/v1/mobile/sync:'
-contains docs/ANDROID_API_V1.md 'Version: **27.2.2**'
+contains docs/ANDROID_API_V1.md 'Version: **27.2.5**'
 contains src/test/java/ru/daniil/shifts/web/MobileV1ContractTest.java 'ALREADY_APPLIED'
 contains src/test/java/ru/daniil/shifts/web/MobileV1ContractTest.java 'VERSION_CONFLICT'
 contains src/test/java/ru/daniil/shifts/web/ApiV1OpenApiContractTest.java 'OpenAPI v1 file must be packaged'
@@ -415,12 +415,12 @@ contains src/main/java/ru/daniil/shifts/dto/Dtos.java 'e.getSyncVersion()'
 contains src/main/java/ru/daniil/shifts/service/MobileSyncService.java 'current == null ? 0L : current.getSyncVersion()'
 contains src/test/java/ru/daniil/shifts/web/MobileV1ContractTest.java 'op-android-stale-absent'
 contains src/main/java/ru/daniil/shifts/web/ApiExceptionHandler.java '"INTERNAL_ERROR"'
-contains docs/ANDROID_API_PLAN.md 'Current backend milestone: **v27.2.2 — Staging and CI/CD foundation**.'
+contains docs/ANDROID_API_PLAN.md 'Current backend milestone: **v27.2.5 — Staging and CI/CD foundation**.'
 contains src/main/resources/application.properties 'dutylog.mobile.sync.idempotency-retention-days=${DUTYLOG_MOBILE_SYNC_RETENTION_DAYS:90}'
 contains src/main/resources/application-prod.properties 'dutylog.mobile.sync.idempotency-retention-days=${DUTYLOG_MOBILE_SYNC_RETENTION_DAYS:90}'
 contains docker-compose.prod.yml 'DUTYLOG_MOBILE_SYNC_RETENTION_DAYS: ${DUTYLOG_MOBILE_SYNC_RETENTION_DAYS:-90}'
 
-# v27.2.2 staging and CI/CD foundation
+# v27.2.5 staging and CI/CD foundation
 contains .github/workflows/deploy-staging.yml "branches: [test]"
 contains .github/workflows/deploy-staging.yml 'refs/heads/test'
 contains .github/workflows/deploy-staging.yml "staging-tested-tree-"
@@ -471,7 +471,7 @@ contains Dockerfile 'org.opencontainers.image.source-tree'
 contains Dockerfile 'DUTYLOG_BUILD_TREE'
 contains Dockerfile 'USER 10001:10001'
 contains src/main/resources/static/service-worker.js '__DUTYLOG_BUILD_ID__'
-contains src/main/resources/static/service-worker.js 'dutylog-shell-v27.2.2-${BUILD_ID}'
+contains src/main/resources/static/service-worker.js "dutylog-shell-v$VERSION-\${BUILD_ID}"
 contains src/main/resources/static/js/70-user-boot.js 'updateViaCache: "none"'
 contains src/main/resources/static/js/login.js 'updateViaCache: "none"'
 contains docs/CICD.md 'Production does not rebuild source code.'
@@ -490,21 +490,164 @@ for path in ['src/main/resources/static/login.html', 'src/main/resources/static/
 print('OK:    no inline script tags in runtime HTML')
 PY_SECURITY
 
-contains CHANGES.md "v27.2.2 — Calendar persistence hotfix"
-contains README.md "v27.2.2 — Calendar persistence hotfix"
-contains docs/RELEASE_CANDIDATE.md "v27.2.2 — Calendar persistence hotfix"
-contains docs/USER_GUIDE.md "Status: v27.2.2."
+contains CHANGES.md "v27.2.5 — Calendar day identity hotfix"
+contains README.md "v27.2.5 — Calendar day identity hotfix"
+contains docs/RELEASE_CANDIDATE.md "v27.2.5 — Calendar day identity hotfix"
+contains docs/USER_GUIDE.md "Status: v27.2.5."
 contains docs/PRODUCTION_DEPLOY.md "same GHCR digest that already passed staging"
-contains docs/BACKUP_RESTORE.md "Status: v27.2.2."
-contains docs/RELEASE_CHECKLIST.md "git tag -a v27.2.2"
+contains docs/BACKUP_RESTORE.md "Status: v27.2.5."
+contains docs/RELEASE_CHECKLIST.md "git tag -a v27.2.5"
 
-# v27.2.2 calendar persistence regression guards
-contains src/main/java/ru/daniil/shifts/service/DayEntryService.java "saveAllAndFlush(changedEntries)"
-contains src/main/resources/static/js/30-calendar.js "await loadMonth();"
+# v27.2.5 calendar persistence regression guards
+contains src/main/resources/static/js/30-calendar.js "api.month(requestedYear, requestedMonth, { fresh:true })"
+contains src/main/resources/static/js/20-data.js 'cache:fresh ? "no-store" : undefined'
+contains src/main/java/ru/daniil/shifts/service/DayEntryService.java "entityManager.clear()"
+contains src/main/java/ru/daniil/shifts/service/DayEntryService.java "График не сохранился для даты"
+contains src/test/java/ru/daniil/shifts/web/CalendarFillPersistenceContractTest.java "fillThenFreshCalendarReadReturnsEveryPersistedDate"
 contains src/main/resources/static/js/70-user-boot.js "calendarLoadGeneration"
 contains src/test/java/ru/daniil/shifts/service/DayEntryServiceTest.java "массовыйГрафикСохраняетсяПослеОчисткиPersistenceContext"
 contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "stale month responses are ignored"
-contains docs/CALENDAR_PERSISTENCE_HOTFIX.md "Status: v27.2.2."
+contains docs/CALENDAR_AUTHORITATIVE_PERSISTENCE_HOTFIX.md "Status: v27.2.5."
+
+# v27.2.5 calendar day identity regression guards
+contains src/main/resources/static/js/20-data.js 'date: day.date ?? null'
+contains src/main/resources/static/js/20-data.js 'updatedAt: day.updatedAt ?? null'
+contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java 'state.days[undefined]'
+contains src/main/java/ru/daniil/shifts/web/ApiExceptionHandler.java '@ExceptionHandler(NoResourceFoundException.class)'
+contains docs/CALENDAR_DAY_IDENTITY_HOTFIX.md 'Status: v27.2.5.'
+
+# v27.2.6 module-isolated day saves and browser reminder guards
+contains CHANGES.md "v27.2.6 — Module-isolated day saves and browser reminders"
+contains docs/MODULE_DAY_SAVE_AND_BROWSER_NOTIFICATIONS_HOTFIX.md "Status: v27.2.6."
+contains src/main/resources/static/js/20-data.js 'function dayUpsertPayload(day = {})'
+contains src/main/resources/static/js/20-data.js 'if (moduleEnabled("overtime")) {'
+contains src/main/java/ru/daniil/shifts/service/DayEntryService.java 'boolean notesMutable'
+contains src/main/java/ru/daniil/shifts/service/DayEntryService.java 'boolean overtimeMutable'
+contains src/main/java/ru/daniil/shifts/web/DayController.java 'isNonZero(req.overtimeHours())'
+contains src/test/java/ru/daniil/shifts/web/DayModuleIsolationTest.java 'neutralLegacyFieldsDoNotBlockShiftAndMarkerOrEraseHiddenData'
+contains src/test/java/ru/daniil/shifts/web/DayModuleIsolationTest.java 'disabledModulesStillRejectRealWrites'
+contains src/main/resources/static/js/60-settings.js 'function browserNotificationTick()'
+contains src/main/resources/static/js/60-settings.js 'BROWSER_NOTIFICATION_GRACE_MS'
+contains src/main/resources/static/service-worker.js 'notificationclick'
+contains src/main/resources/static/js/70-user-boot.js 'startBrowserNotificationScheduler();'
+contains src/main/resources/static/js/70-user-boot.js '!state.modulesLoaded || !moduleEnabled("telegram")'
+contains src/main/resources/static/js/50-tasks.js 'function updateTaskReminderControls()'
+
+# v27.2.8 test compilation hotfix + retained regression baseline
+contains CHANGES.md "v27.2.8 — Test compilation hotfix"
+contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java 'dataJs.contains("cache:fresh ? \"no-store\" : undefined")'
+contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java 'dataJs.contains("cache: opts.cache")'
+not_contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "dataJs.contains('cache:fresh"
+not_contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "dataJs.contains('cache: opts.cache')"
+contains src/main/resources/static/js/20-data.js 'syncBrowserNotificationSchedulerForModules();'
+contains src/main/resources/static/js/20-data.js 'err.moduleKey = moduleKey'
+contains src/main/resources/static/js/60-settings.js 'function stopBrowserNotificationScheduler()'
+contains src/main/resources/static/js/60-settings.js 'clearInterval(browserNotificationTimer)'
+contains src/main/resources/static/js/60-settings.js 'err?.moduleKey === "notifications"'
+contains src/test/java/ru/daniil/shifts/service/NotificationServiceTest.java 'calculatesExactShiftTaskImportantDayAndDigestTimes'
+contains src/test/java/ru/daniil/shifts/web/NotificationControllerTest.java 'disabledModuleGuardsSettingsAndUpcomingEndpoints'
+contains src/test/java/ru/daniil/shifts/service/ModuleDependencyTest.java 'disablingNotificationsCascadesToTelegram'
+contains src/test/java/ru/daniil/shifts/service/TaskReminderServiceTest.java 'disablingReminderClearsStaleLeadMinutes'
+contains src/test/java/ru/daniil/shifts/web/BrowserNotificationFrontendContractTest.java 'moduleToggleStopsPollingAndGuarded403CannotBecomeARecurringLoop'
+contains pom.xml '<artifactId>jacoco-maven-plugin</artifactId>'
+contains .github/workflows/ci.yml 'mvn -B --no-transfer-progress verify'
+contains .github/workflows/ci.yml 'name: jacoco-report'
+
+# v27.2.9 task regression suite and local coverage instructions
+contains CHANGES.md "v27.2.9 — Task regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "Status: extended in v27.2.9 with the task regression suite."
+contains docs/TESTING.md "mvn clean verify"
+contains docs/TESTING.md "target/site/jacoco/index.html"
+contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java "boardFiltersStatusCategoryPriorityQueryAndDateRange"
+contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java "boardPaginationUsesSafeBoundsAndStableMetadata"
+contains src/test/java/ru/daniil/shifts/web/TaskControllerTest.java "fullCrudWorksAcrossLegacyAndV1Aliases"
+contains src/test/java/ru/daniil/shifts/web/TaskControllerTest.java "disabledModuleGuardsAllTaskEndpointsWithoutDeletingExistingData"
+contains src/test/java/ru/daniil/shifts/web/TaskControllerTest.java "foreignTaskIdsRemainIndistinguishableFromMissingResources"
+
+# v27.2.10 task board status validation hotfix
+contains CHANGES.md "v27.2.10 — Task board status validation hotfix"
+contains README.md "v27.2.10 — Task board status validation hotfix"
+contains src/main/java/ru/daniil/shifts/service/TaskService.java 'String statusFilter = normalizeBoardStatus(status);'
+contains src/main/java/ru/daniil/shifts/service/TaskService.java 'case "all", "open", "done", "overdue", "upcoming" -> normalized;'
+contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java 'board("mystery", null, null, null, null, null, 0, 50)'
+contains src/test/java/ru/daniil/shifts/web/TaskControllerTest.java '.param("status", "mystery")'
+
+# v27.2.11 task-priority regression test correction
+contains CHANGES.md "v27.2.11 — Task priority regression test correction"
+contains README.md "v27.2.11 — Task priority regression test correction"
+contains src/main/java/ru/daniil/shifts/model/TaskPriority.java 'URGENT'
+contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java 'board("all", null, "urgent", null, null, null, 0, 50)'
+contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java 'board("all", null, "critical", null, null, null, 0, 50)'
+
+
+# v27.2.12 important dates regression suite
+contains CHANGES.md "v27.2.12 — Important dates regression suite"
+contains README.md "v27.2.12 — Important dates regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "ImportantDayServiceTest"
+contains src/test/java/ru/daniil/shifts/service/ImportantDayServiceTest.java "monthlyRecurrenceClampsTheThirtyFirstToTheLastDayOfShortMonths"
+contains src/test/java/ru/daniil/shifts/service/ImportantDayServiceTest.java "yearlyLeapDayFallsBackToFebruaryTwentyEighthAndReturnsOnLeapYears"
+contains src/test/java/ru/daniil/shifts/web/ImportantDayControllerTest.java "fullCrudWorksAcrossLegacyAndV1Aliases"
+contains src/test/java/ru/daniil/shifts/web/ImportantDayControllerTest.java "disabledModuleGuardsEveryEndpointWithoutDeletingStoredDates"
+contains src/test/java/ru/daniil/shifts/web/ImportantDayControllerTest.java "foreignIdsAreIndistinguishableFromMissingResources"
+
+# v27.2.13 shift types and calendar patterns regression suite
+contains CHANGES.md "v27.2.13 — Shift types and calendar patterns regression suite"
+contains README.md "v27.2.13 — Shift types and calendar patterns regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "CalendarPatternServiceTest"
+contains src/test/java/ru/daniil/shifts/service/CalendarPatternServiceTest.java "twoOnTwoOffRepeatsAcrossTheYearBoundary"
+contains src/test/java/ru/daniil/shifts/service/CalendarPatternServiceTest.java "dayNightFortyEightCrossesLeapDayWithoutLosingThePattern"
+contains src/test/java/ru/daniil/shifts/service/CalendarPatternServiceTest.java "overwriteChangesOnlyTheShiftAndPreservesDayMetadata"
+contains src/test/java/ru/daniil/shifts/service/ShiftTypeServiceTest.java "deletingCustomShiftDetachesItAndPreservesOtherDayData"
+contains src/test/java/ru/daniil/shifts/service/ShiftTypeServiceTest.java "ensureBuiltinsRepairsLegacyDefaultsWithoutCreatingDuplicates"
+contains src/test/java/ru/daniil/shifts/web/CalendarPatternControllerTest.java "v1FillAndCalendarReadPreserveDayNightFortyEightAcrossLeapDay"
+contains src/test/java/ru/daniil/shifts/web/ShiftTypeControllerTest.java "fullCrudWorksAcrossLegacyAndV1Aliases"
+contains src/test/java/ru/daniil/shifts/web/ScheduleTemplateFrontendContractTest.java "weeklyTemplateIsRotatedBySelectedWeekdayAndTheEffectiveSequenceIsSentToTheServer"
+
+
+# v27.2.14 quick scenarios and overtime API regression suite
+contains CHANGES.md "v27.2.14 — Quick scenarios and overtime API regression suite"
+contains README.md "v27.2.14 — Quick scenarios and overtime API regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "QuickScenarioServiceTest"
+contains src/test/java/ru/daniil/shifts/service/ShiftTypeServiceTest.java "import java.util.Map;"
+contains src/test/java/ru/daniil/shifts/service/ShiftTypeServiceTest.java "import java.util.stream.Collectors;"
+contains src/test/java/ru/daniil/shifts/service/QuickScenarioServiceTest.java "firstListSeedsFiveOrderedDefaultsExactlyOnce"
+contains src/test/java/ru/daniil/shifts/service/QuickScenarioServiceTest.java "deletingASeededScenarioDoesNotRestoreItOnLaterLists"
+contains src/test/java/ru/daniil/shifts/web/QuickScenarioControllerTest.java "fullCrudWorksAcrossLegacyAndV1Aliases"
+contains src/test/java/ru/daniil/shifts/web/QuickScenarioControllerTest.java "disabledModuleGuardsEveryEndpointWithoutDeletingStoredScenarios"
+contains src/test/java/ru/daniil/shifts/service/OvertimeAccountQueryServiceTest.java "accountPageFiltersOpenPartialClosedDateAndSearch"
+contains src/test/java/ru/daniil/shifts/service/OvertimeAccountQueryServiceTest.java "csvExportKeepsBomFiltersRowsAndEscapesSpreadsheetCells"
+contains src/test/java/ru/daniil/shifts/web/OvertimeControllerTest.java "creditAndUsageCrudKeepsFifoAcrossLegacyAndV1Aliases"
+contains src/test/java/ru/daniil/shifts/web/OvertimeControllerTest.java "disabledModuleGuardsAllEndpointsWithoutDeletingAccountData"
+
+
+# v27.2.15 structured module-disabled error envelope hotfix
+contains CHANGES.md "v27.2.15 — Structured module-disabled error envelope hotfix"
+contains README.md "v27.2.15 — Structured module-disabled error envelope hotfix"
+contains src/main/java/ru/daniil/shifts/web/ApiErrorResponse.java 'String moduleKey,'
+contains src/main/java/ru/daniil/shifts/web/ApiErrorResponse.java 'moduleKey(safeCode, safeMessage)'
+contains src/main/resources/static/openapi/dutylog-v1.yaml 'moduleKey:'
+contains src/main/resources/static/js/20-data.js 'moduleKey = body?.moduleKey || null'
+contains src/test/java/ru/daniil/shifts/web/QuickScenarioControllerTest.java 'jsonPath("$.moduleKey").value("scenarios")'
+contains src/test/java/ru/daniil/shifts/web/OvertimeControllerTest.java 'jsonPath("$.moduleKey").value("overtime")'
+
+# v27.2.17 profile and administration regression suite
+contains CHANGES.md "v27.2.16 — Profile and administration regression suite"
+contains README.md "v27.2.16 — Profile and administration regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "ProfileControllerTest"
+contains src/test/java/ru/daniil/shifts/web/ProfileControllerTest.java "fullUpdateTrimsNormalizesClampsAndPersistsAllowedThemeFields"
+contains src/test/java/ru/daniil/shifts/web/ProfileSessionControllerTest.java "passwordChangeRevokesEveryMobileSessionButLeavesRowsForDeviceHistory"
+contains src/test/java/ru/daniil/shifts/service/AppSettingsServiceTest.java "legacyTrueSpellingsRemainAcceptedAndEverythingElseIsFalse"
+contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java "selfBootstrapAndLastAdministratorDemotionsAreRejectedIndependently"
+contains src/test/java/ru/daniil/shifts/web/AdminControllerContractTest.java "malformedBodiesAndMissingUsersNeverBecomeServerErrors"
+contains src/main/java/ru/daniil/shifts/web/SystemController.java 'throw ApiException.badRequest("Нужно передать role")'
+contains src/main/java/ru/daniil/shifts/web/SystemController.java 'throw ApiException.forbidden("Диагностика доступна только администратору")'
+not_contains src/main/java/ru/daniil/shifts/web/SystemController.java "ResponseStatusException"
+
+# v27.2.17 admin test context bootstrap hotfix
+contains CHANGES.md "v27.2.17 — Admin test context bootstrap hotfix"
+contains README.md "v27.2.17 — Admin test context bootstrap hotfix"
+contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java 'service = new UserAdminService(users, encoder, mobileAuthService, securityEvents, "bootstrap-root")'
+not_contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java '@TestPropertySource(properties = "dutylog.admin.username=bootstrap-root")'
 
 echo
 

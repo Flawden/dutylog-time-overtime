@@ -1,4 +1,4 @@
-# v27.2.2 — Calendar persistence hotfix
+# v27.2.5 — Calendar day identity hotfix
 
 Status: infrastructure release candidate.
 

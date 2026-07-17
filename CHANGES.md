@@ -1,19 +1,122 @@
-## v27.2.2 — Calendar persistence hotfix
+## v27.2.17 — Admin test context bootstrap hotfix
 
-- Fixed bulk schedule persistence so generated day rows are flushed before the response is returned.
-- Calendar reloads the active month from the server after bulk fill, keeping UI, IndexedDB and database aligned.
-- Added a generation guard so late responses from another month cannot overwrite the current month state.
-- Added regression tests for reload persistence, overwrite=false and stale month-response protection.
+- Fixed `UserAdminServiceTest` so it no longer supplies only `dutylog.admin.username` to the full Spring context.
+- The incomplete bootstrap pair correctly triggered the production safety guard requiring username and password together, which prevented the test `ApplicationContext` from loading and cascaded into dozens of red test results.
+- The test now constructs `UserAdminService` with an explicit bootstrap-admin name while leaving the application bootstrap listener unconfigured, avoiding startup side effects and still testing bootstrap-admin protections.
+- Added release guards preventing the incomplete test property from returning.
+- No production behavior or database schema changed; the suite remains 41 classes and 194 `@Test` methods.
 
+## v27.2.16 — Profile and administration regression suite
 
-- Added automatic `test` -> staging and `main` -> production GitHub Actions workflows.
-- Production promotes the exact staging-tested GHCR image digest identified by Git tree hash; untested trees fail closed, and the host verifies the running image tree before accepting the deployment.
-- Added isolated staging/production Compose projects with separate PostgreSQL volumes and a shared Caddy edge network.
-- Added verified pre-deploy custom-format PostgreSQL backups, health/smoke gates and application-image rollback; production approval occurs only after validation succeeds.
-- Added clean PostgreSQL/Flyway migration smoke testing against the real deployment image in CI, and made public smoke checks fail if a protected admin endpoint ever returns `200`.
-- Added guarded staging reset, one-time host bootstrap and remote SSH deployment scripts with strict host-key checking.
-- Added build/commit/environment metadata, OCI labels, SBOM/provenance and per-build service-worker cache identity.
-- Added CI/CD, staging and migration-safety documentation; no product feature or Android API v1 contract was changed.
+- Added complete profile HTTP coverage for safe defaults, display name and birthday persistence, locale, onboarding, theme preferences, accent normalization and the allow-listed Theme Builder configuration.
+- Added malformed/corrupt theme coverage, value clamping, authentication and CSRF boundaries, and guards proving that password hashes and arbitrary CSS-like keys are never returned.
+- Added browser-facing mobile-session coverage for owner-only listing, one-session revocation, CSRF, IDOR-safe `404` responses and revoke-all behavior after a password change.
+- Added registration-setting service coverage for default/database sources, audit metadata and legacy boolean spellings.
+- Added administrative service and MockMvc coverage for search, role filters, pagination, bootstrap/current-user flags, promotion, safe demotion, last-admin protection, password reset, mobile-session revocation and registration toggling.
+- Fixed `SystemController` expected client errors to use the stable `ApiException` envelope instead of `ResponseStatusException`, which could be swallowed by the generic advice and returned as `500 INTERNAL_ERROR`.
+- Expanded the regression baseline to 41 test classes and 194 `@Test` methods.
+- No database schema changed.
+
+## v27.2.15 — Structured module-disabled error envelope hotfix
+
+- Fixed the stable API error contract for disabled modules: `MODULE_DISABLED` responses now include a structured `moduleKey` field instead of forcing clients to parse `message` or the legacy `error` alias.
+- Kept the legacy `MODULE_DISABLED:<key>` message for backward compatibility.
+- Updated the PWA client to prefer `body.moduleKey` while retaining the legacy marker fallback for older servers.
+- Documented `moduleKey` in the OpenAPI `ApiError` schema and module/API documentation.
+- Strengthened task, important-date, notification, quick-scenario and overtime module-guard tests around the structured field.
+- No database schema changed.
+
+## v27.2.14 — Quick scenarios and overtime API regression suite
+
+- Restored the missing `java.util.Map` and `java.util.stream.Collectors` imports in `ShiftTypeServiceTest` from the verified local correction.
+- Added service-level coverage for quick-scenario default seeding, one-time deletion semantics, safe defaults, complete updates, optional-field clearing, FIXED_TIME consistency, owner isolation and stable errors.
+- Added MockMvc coverage for legacy and `/api/v1/quick-scenarios` CRUD, validation envelopes, malformed bodies, module guards, CSRF, authentication and IDOR boundaries.
+- Added overtime query/export coverage for open/partial/closed filters, date/search filters, safe pagination, CSV BOM and escaping, XLS HTML escaping, FIFO reallocation after usage updates, deletion rules and owner isolation.
+- Added MockMvc coverage for legacy and `/api/v1/overtime` credit/usage CRUD, FIFO allocations, account pages, CSV/XLS exports, validation, module guards, CSRF, authentication and foreign IDs.
+- Expanded the regression baseline to 36 test classes and 166 `@Test` methods.
+- No production behaviour or database schema changed.
+
+## v27.2.13 — Shift types and calendar patterns regression suite
+
+- Added service-level coverage for built-in shift seeding, legacy-default repair, custom shift CRUD, optional time/reminder clearing, protected built-in identity and owner isolation.
+- Added deletion coverage proving that removing a custom shift deletes shift-only rows but preserves notes, emoji, overtime and time-off on non-empty days.
+- Added schedule-pattern coverage for 2/2, day/night/48 and weekday-rotated five-day weeks across month, year and leap-day boundaries.
+- Added overwrite coverage proving that bulk fill changes only the shift while preserving day metadata, and that overwrite=false keeps existing shifts while filling empty dates.
+- Added MockMvc coverage for `/api/days/fill`, `/api/v1/days/fill`, `/api/shift-types` and `/api/v1/shift-types`, including validation envelopes, CSRF, authentication and ownership boundaries.
+- Added frontend contract guards for every schedule preset and the selected-weekday rotation used by the five-day template.
+- Expanded the regression baseline to 32 test classes and 141 `@Test` methods.
+- No production behaviour or database schema changed.
+
+## v27.2.12 — Important dates regression suite
+
+- Added service-level coverage for important-day defaults, owner-scoped ordering, full updates, deletion and stable error handling.
+- Added recurrence coverage for one-time dates, monthly end-of-month clamping, yearly leap-day fallback and leap-year restoration.
+- Added deterministic occurrence ordering by date and title, plus owner isolation and no-duplicate source-event checks.
+- Added MockMvc coverage for legacy and `/api/v1/important-days` aliases, full CRUD, occurrences, validation envelopes, malformed JSON, missing parameters, CSRF, authentication, module guards and ownership boundaries.
+- Extended the regression baseline and release gate with the Important dates contracts.
+- No production behaviour or database schema changed.
+
+## v27.2.11 — Task priority regression test correction
+
+- Corrected the task regression suite: `URGENT` is a supported `TaskPriority`, so it must not be used as an invalid-filter example.
+- The negative validation assertion now uses the genuinely unsupported value `critical`.
+- Added a positive regression assertion proving that the case-insensitive `urgent` board filter returns URGENT tasks.
+- No production behaviour or database schema changed.
+
+## v27.2.10 — Task board status validation hotfix
+
+- Fixed task-board status validation so an unknown status is rejected even when the user has no tasks.
+- Moved validation before the repository stream instead of relying on a per-task filter side effect.
+- The existing service and MockMvc regression tests now guard the empty-board case that exposed the defect.
+- No database schema changed.
+
+## v27.2.9 — Task regression suite
+
+- Added service-level task coverage for creation defaults, trimming, updates, reminder cleanup, day/range lists, board statuses, category/priority/search/date filters, pagination, validation and deletion.
+- Added MockMvc coverage for legacy and `/api/v1/tasks` aliases, complete CRUD, board metadata, stable error envelopes, CSRF, authentication, module guards, data preservation while disabled and owner isolation.
+- Documented why IntelliJ JUnit runs do not generate JaCoCo and how to run `mvn clean verify` from IntelliJ's Maven tool window or a Windows terminal.
+- No production behaviour or database schema changed.
+
+## v27.2.8 — Test compilation hotfix
+
+- Fixed invalid Java character literals in `CalendarMonthReloadContractTest`: Java strings now use escaped double quotes.
+- Added release-check guards for the exact browser-cache assertions so this contract test cannot silently become uncompilable again.
+- No production behaviour or database schema changed.
+
+## v27.2.7 — Regression test baseline and notification poll shutdown
+
+- Stopped the browser notification interval immediately when the Notifications module is disabled.
+- Added defensive recovery for a stale frontend module map: one raced `MODULE_DISABLED:notifications` response stops polling and resynchronizes module metadata instead of repeating every ten seconds.
+- Prevented an in-flight reminder response from being delivered after the module is switched off.
+- Preserved structured `code` and `moduleKey` metadata on frontend API errors.
+- Added behavioural backend coverage for shift, task, important-day and digest reminder calculations, completed-task filtering and user isolation.
+- Added notification API boundary, module dependency, task reminder persistence and frontend scheduler contract tests.
+- CI now runs `mvn verify` and publishes a JaCoCo HTML coverage report as a build artifact.
+- Added a regression test matrix that maps the successful manual pass to automated guards.
+
+## v27.2.6 — Module-isolated day saves and browser reminders
+
+- Fixed the `Minimum` preset regression: shift, marker and note writes no longer fail with `MODULE_DISABLED:overtime` merely because the web snapshot contains neutral overtime values.
+- Disabled Notes/Overtime modules are now read-only for day updates: hidden data stays in the database and is not exposed in the response until the module is enabled again.
+- The web client omits optional module fields from `PUT /api/days/{date}` when their modules are disabled.
+- Added a running-page/PWA browser notification scheduler with deduplication, a five-minute wake-up grace window and service-worker notification click handling.
+- Task reminder controls are disabled with an explanation while the Notifications module is off.
+- Prevented an early Telegram status request from generating a misleading `403` before module metadata finishes loading.
+- Added `DayModuleIsolationTest` for old-client neutral payloads, hidden-data preservation and real-write rejection.
+
+## v27.2.5 — Calendar day identity hotfix
+
+- Preserve `date` and sync metadata in module-aware day sanitization.
+- Prevent calendar rows from collapsing into `state.days[undefined]`.
+- Treat missing static resources as 404 instead of 500.
+
+# v27.2.5 — Calendar day identity hotfix
+
+- Bulk schedule rows are saved explicitly and verified by a fresh database read before the endpoint reports success.
+- Calendar reload after fill bypasses IndexedDB and browser HTTP cache.
+- Calendar responses are marked `Cache-Control: no-store`.
+- Added end-to-end MockMvc coverage for POST fill followed by GET calendar with all 31 dates.
+- Preserved stale-response and month-specific snapshot guards from the earlier calendar fixes.
 
 ## v27.1.0 — Android API contract freeze
 

@@ -1,6 +1,6 @@
 # Calendar persistence hotfix
 
-Status: v27.2.2.
+Status: v27.2.5.
 
 ## Symptom
 

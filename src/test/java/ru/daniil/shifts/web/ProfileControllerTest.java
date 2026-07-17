@@ -1,0 +1,186 @@
+package ru.daniil.shifts.web;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.model.AppUser;
+import ru.daniil.shifts.repo.UserRepository;
+
+import java.time.LocalDate;
+
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+/** HTTP and persistence contract for profile, locale and safe theme settings. */
+@SpringBootTest
+@AutoConfigureMockMvc
+@Transactional
+class ProfileControllerTest {
+
+    @Autowired MockMvc mvc;
+    @Autowired UserRepository users;
+
+    AppUser owner;
+
+    @BeforeEach
+    void setUp() {
+        owner = users.save(new AppUser("profile-controller-owner", "{noop}unused"));
+    }
+
+    @Test
+    void getReturnsSafeDefaultsAndNeverExposesPasswordHash() throws Exception {
+        mvc.perform(get("/api/profile").with(user(owner.getUsername()).roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value(owner.getUsername()))
+                .andExpect(jsonPath("$.displayName").value(nullValue()))
+                .andExpect(jsonPath("$.birthday").value(nullValue()))
+                .andExpect(jsonPath("$.admin").value(false))
+                .andExpect(jsonPath("$.role").value("USER"))
+                .andExpect(jsonPath("$.accountTier").value("FREE"))
+                .andExpect(jsonPath("$.themePreference").value("system"))
+                .andExpect(jsonPath("$.accentColor").value("#F5B841"))
+                .andExpect(jsonPath("$.themePreset").value("default"))
+                .andExpect(jsonPath("$.themeConfig").isMap())
+                .andExpect(jsonPath("$.languagePreference").value("ru"))
+                .andExpect(jsonPath("$.onboardingCompleted").value(false))
+                .andExpect(jsonPath("$.passwordHash").doesNotExist());
+    }
+
+    @Test
+    void fullUpdateTrimsNormalizesClampsAndPersistsAllowedThemeFields() throws Exception {
+        String body = """
+                {
+                  "displayName":"  Алексей QA  ",
+                  "birthday":"2000-02-29",
+                  "themePreference":" DARK ",
+                  "accentColor":"#abcdef",
+                  "themePreset":"custom_1",
+                  "themeConfig":{
+                    "appBg":"#101010",
+                    "panelBg":"#202020",
+                    "textColor":"#fefefe",
+                    "buttonStyle":"soft",
+                    "cardStyle":"contrast",
+                    "shadowLevel":"strong",
+                    "density":"compact",
+                    "cardRadius":999,
+                    "unknownCss":"body{display:none}"
+                  },
+                  "languagePreference":" EN ",
+                  "onboardingCompleted":true
+                }
+                """;
+
+        mvc.perform(put("/api/v1/profile")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json").content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.displayName").value("Алексей QA"))
+                .andExpect(jsonPath("$.birthday").value("2000-02-29"))
+                .andExpect(jsonPath("$.themePreference").value("dark"))
+                .andExpect(jsonPath("$.accentColor").value("#ABCDEF"))
+                .andExpect(jsonPath("$.themePreset").value("custom_1"))
+                .andExpect(jsonPath("$.languagePreference").value("en"))
+                .andExpect(jsonPath("$.onboardingCompleted").value(true))
+                .andExpect(jsonPath("$.themeConfig.appBg").value("#101010"))
+                .andExpect(jsonPath("$.themeConfig.textColor").value("#FEFEFE"))
+                .andExpect(jsonPath("$.themeConfig.buttonStyle").value("soft"))
+                .andExpect(jsonPath("$.themeConfig.cardRadius").value(28))
+                .andExpect(jsonPath("$.themeConfig.unknownCss").doesNotExist());
+
+        AppUser stored = users.findByUsername(owner.getUsername()).orElseThrow();
+        assertEquals("Алексей QA", stored.getDisplayName());
+        assertEquals(LocalDate.of(2000, 2, 29), stored.getBirthday());
+        assertEquals("dark", stored.getThemePreference());
+        assertEquals("#ABCDEF", stored.getAccentColor());
+        assertEquals("custom_1", stored.getThemePreset());
+        assertEquals("en", stored.getLanguagePreference());
+        assertTrue(stored.isOnboardingCompleted());
+        assertTrue(stored.getThemeConfig().contains("\"cardRadius\":28"));
+        assertTrue(!stored.getThemeConfig().contains("unknownCss"));
+    }
+
+    @Test
+    void blankNameAndBirthdayExplicitlyClearExistingValuesWithoutResettingOtherPreferences() throws Exception {
+        owner.setDisplayName("Старое имя");
+        owner.setBirthday(LocalDate.of(1999, 1, 2));
+        owner.setThemePreference("dark");
+        owner.setLanguagePreference("en");
+        users.save(owner);
+
+        mvc.perform(put("/api/profile")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("{\"displayName\":\"   \",\"birthday\":\"\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.displayName").value(nullValue()))
+                .andExpect(jsonPath("$.birthday").value(nullValue()))
+                .andExpect(jsonPath("$.themePreference").value("dark"))
+                .andExpect(jsonPath("$.languagePreference").value("en"));
+
+        AppUser stored = users.findByUsername(owner.getUsername()).orElseThrow();
+        assertNull(stored.getDisplayName());
+        assertNull(stored.getBirthday());
+    }
+
+    @Test
+    void corruptStoredThemeJsonIsReadAsAnEmptySafeObject() throws Exception {
+        owner.setThemeConfig("definitely-not-json");
+        users.save(owner);
+
+        mvc.perform(get("/api/profile").with(user(owner.getUsername()).roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.themeConfig").isEmpty());
+    }
+
+    @Test
+    void invalidProfileAndThemeValuesAlwaysUseBadRequestEnvelope() throws Exception {
+        String future = LocalDate.now().plusDays(1).toString();
+        String longName = "x".repeat(61);
+        String[] bodies = {
+                "{\"displayName\":\"" + longName + "\"}",
+                "{\"birthday\":\"10.08.2000\"}",
+                "{\"birthday\":\"" + future + "\"}",
+                "{\"themePreference\":\"sepia\"}",
+                "{\"accentColor\":\"#12\"}",
+                "{\"themePreset\":\"bad preset!\"}",
+                "{\"languagePreference\":\"ro\"}",
+                "{\"themeConfig\":{\"appBg\":\"red\"}}",
+                "{\"themeConfig\":{\"buttonStyle\":\"javascript\"}}"
+        };
+
+        for (String body : bodies) {
+            mvc.perform(put("/api/profile")
+                            .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                            .contentType("application/json").content(body))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                    .andExpect(jsonPath("$.message").isNotEmpty())
+                    .andExpect(jsonPath("$.requestId").isNotEmpty());
+        }
+    }
+
+    @Test
+    void profileRequiresAuthenticationAndCsrfForChanges() throws Exception {
+        mvc.perform(get("/api/profile"))
+                .andExpect(status().isUnauthorized());
+
+        mvc.perform(put("/api/profile")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .contentType("application/json")
+                        .content("{\"languagePreference\":\"en\"}"))
+                .andExpect(status().isForbidden());
+    }
+}

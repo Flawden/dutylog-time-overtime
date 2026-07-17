@@ -64,8 +64,7 @@ public class TaskService {
         LocalDate toDate = parseOptionalDate(to, "Дата to должна быть в формате yyyy-MM-dd");
         if (fromDate != null && toDate != null) dayEntryService.validateRange(fromDate, toDate);
 
-        String st = cleanOptional(status);
-        if (st == null) st = "open";
+        String statusFilter = normalizeBoardStatus(status);
         String cat = cleanOptional(category);
         String pr = cleanOptional(priority);
         String query = cleanOptional(q);
@@ -76,7 +75,6 @@ public class TaskService {
             catch (IllegalArgumentException e) { throw ApiException.badRequest("Неизвестный приоритет задачи"); }
         }
 
-        final String statusFilter = st.toLowerCase(Locale.ROOT);
         final String categoryFilter = cat;
         final TaskPriority priorityFinal = priorityFilter;
         int safePage = safePage(page);
@@ -99,6 +97,16 @@ public class TaskService {
         return PageDto.of(pageSlice(filtered, safePage, safeSize), safePage, safeSize, filtered.size());
     }
 
+
+    private String normalizeBoardStatus(String status) {
+        String normalized = cleanOptional(status);
+        if (normalized == null) normalized = "open";
+        normalized = normalized.toLowerCase(Locale.ROOT);
+        return switch (normalized) {
+            case "all", "open", "done", "overdue", "upcoming" -> normalized;
+            default -> throw ApiException.badRequest("Неизвестный статус задач");
+        };
+    }
 
     private int safePage(int page) {
         return Math.max(0, page);
