@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.19}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.20}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -676,17 +676,29 @@ not_contains .github/workflows/ci.yml '27.2.9'
 not_contains .github/workflows/deploy-staging.yml '27.2.9'
 not_contains .github/workflows/deploy-production.yml '27.2.9'
 
+# v27.2.20 Telegram bot regression and delivery hardening suite
+contains CHANGES.md "v27.2.20 — Telegram bot regression and delivery hardening suite"
+contains README.md "v27.2.20 — Telegram bot regression and delivery hardening suite"
+contains docs/REGRESSION_TEST_BASELINE.md "TelegramBotServiceTest"
+contains src/main/java/ru/daniil/shifts/telegram/TelegramBotService.java 'return root != null && root.path("ok").asBoolean(false);'
+contains src/main/java/ru/daniil/shifts/telegram/TelegramBotService.java 'message.replace(token, "***")'
+contains src/main/java/ru/daniil/shifts/telegram/TelegramBotService.java 'chatIdNode.isMissingNode() || chatIdNode.isNull()'
+contains src/test/java/ru/daniil/shifts/telegram/TelegramCommandServiceTest.java "intervalOvertimeSupportsDateOvernightBreakPlanAndReason"
+contains src/test/java/ru/daniil/shifts/telegram/TelegramBotServiceTest.java "sendMessageValidatesInputTruncatesTextAndFailsClosed"
+contains src/test/java/ru/daniil/shifts/telegram/TelegramNotificationServiceTest.java "failedTelegramSendIsRetriedLaterInsteadOfMarkedDelivered"
+contains src/test/java/ru/daniil/shifts/web/TelegramControllerTest.java "disabledModuleGuardsEveryTelegramEndpoint"
+
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "224" ]]; then
-  ok "test method baseline: 224"
+if [[ "$TEST_METHODS" == "254" ]]; then
+  ok "test method baseline: 254"
 else
-  fail "expected 224 @Test methods, found $TEST_METHODS"
+  fail "expected 254 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "46" ]]; then
-  ok "test class baseline: 46"
+if [[ "$TEST_CLASSES" == "50" ]]; then
+  ok "test class baseline: 50"
 else
-  fail "expected 46 test classes, found $TEST_CLASSES"
+  fail "expected 50 test classes, found $TEST_CLASSES"
 fi
 
 echo

@@ -107,3 +107,11 @@ A green test suite means the listed contracts still hold. It does not replace ex
 - `PostgreSqlMigrationContractTest` scans the ordered PostgreSQL Flyway chain and validates every `REFERENCES` target against tables created by the same or an earlier migration.
 - The clean PostgreSQL Docker smoke test remains the authoritative runtime check.
 - CI, staging and production derive release metadata from `pom.xml`; semantic versions are no longer duplicated as stale literals in workflow files.
+
+## v27.2.20 Telegram bot and delivery hardening
+
+- `TelegramCommandServiceTest` locks command aliases, parsing, task/overtime/time-off mutations, summaries and invalid input.
+- `TelegramBotServiceTest` locks polling offsets, link codes, unlinked chats, command delivery, malformed updates, fail-closed Telegram responses and token redaction.
+- `TelegramNotificationServiceTest` locks due windows, deduplication, retry semantics, per-link isolation and reminder formatting.
+- `TelegramControllerTest` locks module guards, link-code/status/settings/unlink endpoints, authentication and CSRF.
+

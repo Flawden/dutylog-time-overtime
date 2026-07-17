@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class TelegramBotService {
     private final TelegramLinkService linkService;
     private final TelegramCommandService commandService;
     private final ObjectMapper objectMapper;
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
 
     @Value("${dutylog.telegram.polling-enabled:false}")
     private boolean pollingEnabled;
@@ -31,12 +32,21 @@ public class TelegramBotService {
     private long updateOffset = 0L;
     private boolean pollingNow = false;
 
+    @Autowired
     public TelegramBotService(TelegramLinkService linkService,
                               TelegramCommandService commandService,
                               ObjectMapper objectMapper) {
+        this(linkService, commandService, objectMapper, new RestTemplate());
+    }
+
+    TelegramBotService(TelegramLinkService linkService,
+                       TelegramCommandService commandService,
+                       ObjectMapper objectMapper,
+                       RestTemplate restTemplate) {
         this.linkService = linkService;
         this.commandService = commandService;
         this.objectMapper = objectMapper;
+        this.restTemplate = restTemplate;
     }
 
     @Scheduled(fixedDelayString = "${dutylog.telegram.polling-delay-ms:3000}", initialDelay = 5000)
@@ -62,7 +72,7 @@ public class TelegramBotService {
                 }
             }
         } catch (Exception e) {
-            log.warn("Telegram polling failed: {}", e.getMessage());
+            log.warn("Telegram polling failed: {}", safeErrorMessage(e));
         } finally {
             pollingNow = false;
         }
@@ -70,9 +80,11 @@ public class TelegramBotService {
 
     private void handleUpdate(JsonNode update) {
         JsonNode message = update.path("message");
-        if (message.isMissingNode() || message.path("text").isMissingNode()) return;
+        JsonNode chatIdNode = message.path("chat").path("id");
+        if (message.isMissingNode() || message.path("text").isMissingNode()
+                || chatIdNode.isMissingNode() || chatIdNode.isNull()) return;
 
-        Long chatId = message.path("chat").path("id").asLong();
+        Long chatId = chatIdNode.asLong();
         JsonNode from = message.path("from");
         Long telegramUserId = from.path("id").isMissingNode() ? null : from.path("id").asLong();
         String username = textOrNull(from, "username");
@@ -113,11 +125,18 @@ public class TelegramBotService {
             body.put("text", text.length() > 3900 ? text.substring(0, 3900) + "…" : text);
             body.put("disable_web_page_preview", true);
             JsonNode root = restTemplate.postForObject(apiUrl(linkService.token(), "sendMessage"), body, JsonNode.class);
-            return root == null || root.path("ok").asBoolean(true);
+            return root != null && root.path("ok").asBoolean(false);
         } catch (Exception e) {
-            log.warn("Telegram send failed: {}", e.getMessage());
+            log.warn("Telegram send failed: {}", safeErrorMessage(e));
             return false;
         }
+    }
+
+    String safeErrorMessage(Exception error) {
+        String message = error == null ? null : error.getMessage();
+        if (message == null || message.isBlank()) return "request failed";
+        String token = linkService.token();
+        return token == null || token.isBlank() ? message : message.replace(token, "***");
     }
 
     private String apiUrl(String token, String method) {

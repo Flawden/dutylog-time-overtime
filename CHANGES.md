@@ -1,3 +1,14 @@
+## v27.2.20 — Telegram bot regression and delivery hardening suite
+
+- Added unit coverage for Telegram command parsing, aliases, task creation/completion, manual and interval overtime, time-off, summaries and invalid input.
+- Added HTTP-client coverage for bot polling, one-time link codes, unlinked chats, command replies, update offsets, malformed updates and overlapping-poll protection.
+- Added notification-delivery coverage for due windows, per-user failure isolation, deduplication, retry semantics and every reminder message type.
+- Added MockMvc coverage for the browser Telegram API, module guards, link-code status, notification settings, unlink cleanup, authentication and CSRF.
+- Telegram sends now fail closed: empty responses and `ok=false` are never recorded as successful deliveries.
+- Telegram HTTP errors now redact the bot token before they are written to application logs, and updates without a chat id are ignored safely.
+- The suite now contains 50 test classes and 254 `@Test` methods.
+- No database schema changed.
+
 ## v27.2.19 — PostgreSQL migration and CI version hotfix
 
 - Fixed the clean PostgreSQL Flyway chain: `V7__notification_settings.sql` referenced the nonexistent table `app_users`; the canonical table created by `V1__init.sql` is `users`.
