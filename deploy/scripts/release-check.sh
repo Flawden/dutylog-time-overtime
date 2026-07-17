@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.20}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.21}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -687,6 +687,26 @@ contains src/test/java/ru/daniil/shifts/telegram/TelegramCommandServiceTest.java
 contains src/test/java/ru/daniil/shifts/telegram/TelegramBotServiceTest.java "sendMessageValidatesInputTruncatesTextAndFailsClosed"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramNotificationServiceTest.java "failedTelegramSendIsRetriedLaterInsteadOfMarkedDelivered"
 contains src/test/java/ru/daniil/shifts/web/TelegramControllerTest.java "disabledModuleGuardsEveryTelegramEndpoint"
+
+# v27.2.21 Telegram date validation and test harness hotfix
+contains CHANGES.md "v27.2.21 — Telegram date validation and test harness hotfix"
+contains README.md "v27.2.21 — Telegram date validation and test harness hotfix"
+contains src/main/java/ru/daniil/shifts/telegram/TelegramCommandService.java 'catch (DateTimeException | NumberFormatException ignored)'
+contains src/test/java/ru/daniil/shifts/telegram/TelegramCommandServiceTest.java '31.02 Невозможная дата'
+python3 - <<'PY_TELEGRAM_HOTFIX'
+from pathlib import Path
+text = Path('src/test/java/ru/daniil/shifts/telegram/TelegramBotServiceTest.java').read_text()
+method = text.split('void sendMessageValidatesInputTruncatesTextAndFailsClosed()', 1)[1].split('@Test', 1)[0]
+second_expectation = method.find('server.expect', method.find('server.expect') + 1)
+first_request = method.find('assertFalse(bot.sendMessage(1L, longText)')
+if second_expectation < 0 or first_request < 0 or second_expectation > first_request:
+    raise SystemExit('TelegramBotServiceTest must register both HTTP expectations before the first request')
+PY_TELEGRAM_HOTFIX
+if [[ $? -eq 0 ]]; then
+  ok "TelegramBotServiceTest registers all expectations before execution"
+else
+  fail "TelegramBotServiceTest expectation ordering regression"
+fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')

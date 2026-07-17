@@ -115,3 +115,8 @@ A green test suite means the listed contracts still hold. It does not replace ex
 - `TelegramNotificationServiceTest` locks due windows, deduplication, retry semantics, per-link isolation and reminder formatting.
 - `TelegramControllerTest` locks module guards, link-code/status/settings/unlink endpoints, authentication and CSRF.
 
+
+## v27.2.21 Telegram date-validation hotfix
+
+- Impossible explicit Telegram dates are converted to the stable `BAD_REQUEST` API contract.
+- Telegram HTTP test expectations are fully registered before the first mock request.

@@ -194,10 +194,10 @@ class TelegramBotServiceTest {
                     assertTrue(body.path("disable_web_page_preview").asBoolean());
                 })
                 .andRespond(withSuccess("{\"ok\":false}", MediaType.APPLICATION_JSON));
-        assertFalse(bot.sendMessage(1L, longText), "Telegram ok=false must never count as delivery");
-
         server.expect(requestTo("https://api.telegram.org/botsecret-token/sendMessage"))
                 .andRespond(withSuccess());
+
+        assertFalse(bot.sendMessage(1L, longText), "Telegram ok=false must never count as delivery");
         assertFalse(bot.sendMessage(1L, "empty response"), "empty Telegram response must fail closed");
         server.verify();
     }

@@ -1,3 +1,11 @@
+## v27.2.21 — Telegram date validation and test harness hotfix
+
+- Fixed Telegram task date parsing so impossible calendar dates such as `31.02` are normalized to the stable `BAD_REQUEST` `ApiException` contract instead of leaking `DateTimeException`.
+- Corrected `TelegramBotServiceTest` to register all `MockRestServiceServer` expectations before the first HTTP request; the previous test attempted to add an expectation after execution had already started.
+- Added release guards for both regressions.
+- Production behavior changed only for malformed Telegram dates; database schema and Flyway migrations are unchanged.
+- The suite remains 50 test classes and 254 `@Test` methods.
+
 ## v27.2.20 — Telegram bot regression and delivery hardening suite
 
 - Added unit coverage for Telegram command parsing, aliases, task creation/completion, manual and interval overtime, time-off, summaries and invalid input.

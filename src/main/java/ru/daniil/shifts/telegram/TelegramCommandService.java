@@ -18,6 +18,7 @@ import ru.daniil.shifts.service.OvertimeService;
 import ru.daniil.shifts.service.TaskService;
 import ru.daniil.shifts.service.exception.ApiException;
 
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -353,7 +354,7 @@ public class TelegramCommandService {
                 String[] p = t.split("\\.");
                 return Optional.of(LocalDate.of(today.getYear(), Integer.parseInt(p[1]), Integer.parseInt(p[0])));
             }
-        } catch (DateTimeParseException | IllegalArgumentException ignored) {
+        } catch (DateTimeException | NumberFormatException ignored) {
             throw ApiException.badRequest("Дата должна быть yyyy-MM-dd или dd.MM");
         }
         return Optional.empty();
