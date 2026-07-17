@@ -1,5 +1,5 @@
 const { test, expect } = require('@playwright/test');
-const { registerAndOnboard, currentLocalDateKey, selectDate, waitForApi } = require('./helpers');
+const { registerAndOnboard, currentLocalDateKey, selectDate, waitForApi, openDayModule } = require('./helpers');
 
 test('installed web shell reopens from IndexedDB snapshot while offline', async ({ browser, baseURL }) => {
   const context = await browser.newContext({
@@ -13,6 +13,7 @@ test('installed web shell reopens from IndexedDB snapshot while offline', async 
     const date = await currentLocalDateKey(page);
     await selectDate(page, date);
 
+    await openDayModule(page, 'notes');
     const note = `Offline snapshot ${Date.now()}`;
     const noteSaved = waitForApi(page, 'PUT', `/api/days/${date}`);
     await page.locator('#noteEdit').fill(note);

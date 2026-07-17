@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.25}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.26}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -783,6 +783,25 @@ contains .github/workflows/ci.yml "Browser E2E regression suite"
 contains .github/workflows/ci.yml "npx playwright install --with-deps chromium"
 contains .github/workflows/ci.yml "name: playwright-report"
 contains .github/dependabot.yml 'package-ecosystem: "npm"'
+
+
+# v27.2.26 Playwright selector, accordion and line-ending hotfix
+contains CHANGES.md "v27.2.26 — Playwright selector, accordion and line-ending hotfix"
+contains README.md "v27.2.26 — Playwright selector, accordion and line-ending hotfix"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.26 Playwright selector and accordion hotfix"
+contains .gitattributes "* text=auto eol=lf"
+contains src/main/resources/static/js/50-tasks.js 'b.setAttribute("aria-pressed", on ? "true" : "false")'
+contains e2e/helpers.js "async function openDayModule"
+contains e2e/calendar-persistence.spec.js 'aria-pressed="true"'
+contains e2e/calendar-persistence.spec.js "await openDayModule(page, 'notes')"
+contains e2e/pwa-offline.spec.js "await openDayModule(page, 'notes')"
+not_contains e2e/calendar-persistence.spec.js '[data-shift-type-id].on'
+
+if grep -Il $'\r' deploy/scripts/*.sh >/dev/null 2>&1; then
+  fail "deployment shell scripts contain CRLF line endings"
+else
+  ok "deployment shell scripts use LF line endings"
+fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
 if [[ "$E2E_TESTS" == "5" ]]; then

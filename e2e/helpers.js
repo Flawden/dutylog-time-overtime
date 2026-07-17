@@ -70,6 +70,16 @@ function waitForApi(page, method, path, status = 200) {
   return page.waitForResponse(response => matchesApi(response, method, path) && response.status() === status);
 }
 
+async function openDayModule(page, moduleKey) {
+  const section = page.locator(`[data-day-module="${moduleKey}"]`);
+  await expect(section).toBeVisible();
+  if (!(await section.evaluate(element => element.open))) {
+    await section.locator('summary').first().click();
+  }
+  await expect(section).toHaveAttribute('open', '');
+  return section;
+}
+
 async function toggleModule(page, key, enabled) {
   await page.locator('#tabbar a[data-view="settings"]').click();
   await page.locator('[data-settings-jump="modules"]').click();
@@ -90,5 +100,6 @@ module.exports = {
   currentLocalDateKey,
   selectDate,
   waitForApi,
+  openDayModule,
   toggleModule
 };

@@ -566,7 +566,8 @@ function renderChips(){
     const b = document.createElement("button");
     const on = cur === s.id;
     b.dataset.shiftTypeId = String(s.id);
-    b.className = "chip";
+    b.className = "chip" + (on ? " on" : "");
+    b.setAttribute("aria-pressed", on ? "true" : "false");
     b.style.background = on ? s.color : s.color + "1F";
     b.style.color = on ? "#14171C" : s.color;
     b.style.border = `1px solid ${on ? s.color : s.color + "55"}`;

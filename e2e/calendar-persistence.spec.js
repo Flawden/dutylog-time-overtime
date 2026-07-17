@@ -3,7 +3,8 @@ const {
   registerAndOnboard,
   currentLocalDateKey,
   selectDate,
-  waitForApi
+  waitForApi,
+  openDayModule
 } = require('./helpers');
 
 test('shift, emoji and note survive month navigation and full reload', async ({ page }) => {
@@ -14,13 +15,14 @@ test('shift, emoji and note survive month navigation and full reload', async ({ 
   const shiftSaved = waitForApi(page, 'PUT', `/api/days/${date}`);
   await page.locator('#chips [data-shift-type-id]').first().click();
   await shiftSaved;
-  await expect(page.locator('#chips [data-shift-type-id].on')).toHaveCount(1);
+  await expect(page.locator('#chips [data-shift-type-id][aria-pressed="true"]')).toHaveCount(1);
 
   const emojiSaved = waitForApi(page, 'PUT', `/api/days/${date}`);
   await page.locator('#dayEmojiCustom').fill('🧪');
   await page.locator('#dayEmojiApply').click();
   await emojiSaved;
 
+  await openDayModule(page, 'notes');
   const note = `# E2E ${Date.now()}\nCalendar persistence check`;
   const noteSaved = waitForApi(page, 'PUT', `/api/days/${date}`);
   await page.locator('#noteEdit').fill(note);
@@ -46,5 +48,5 @@ test('shift, emoji and note survive month navigation and full reload', async ({ 
   await selectDate(page, date);
   await expect(page.locator('#noteEdit')).toHaveValue(note);
   await expect(page.locator('#dayEmojiPreview')).toContainText('🧪');
-  await expect(page.locator('#chips [data-shift-type-id].on')).toHaveCount(1);
+  await expect(page.locator('#chips [data-shift-type-id][aria-pressed="true"]')).toHaveCount(1);
 });

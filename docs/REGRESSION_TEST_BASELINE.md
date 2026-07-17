@@ -161,3 +161,12 @@ A green test suite means the listed contracts still hold. It does not replace ex
 - `pwa-offline.spec.js`: active service worker, controlled reload, IndexedDB snapshot and offline shell startup.
 - Happy-path fixtures reject browser console errors, uncaught exceptions, failed same-origin requests and unexpected same-origin HTTP errors.
 - Java baseline remains 61 classes / 327 `@Test`; browser baseline is 5 Playwright tests.
+
+
+## v27.2.26 Playwright selector and accordion hotfix
+
+- Shift chips expose `aria-pressed` as the stable selected-state contract; E2E no longer assumes a non-existent visual `.on` class.
+- `openDayModule` expands closed `<details>` blocks before tests interact with Notes controls.
+- Calendar persistence and PWA offline tests now wait for the real debounced `PUT /api/days/{date}` only after the editor is visible.
+- `.gitattributes` enforces LF in the repository and protects Linux deployment scripts from Windows line-ending conversion.
+- Baselines remain 61 Java classes / 327 `@Test` methods and 5 Playwright tests.

@@ -1,6 +1,6 @@
 # Playwright browser E2E
 
-DutyLog v27.2.25 adds a real Chromium regression layer on top of the Java/JUnit suite.
+DutyLog v27.2.26 keeps the Chromium regression layer introduced in v27.2.25 and hardens its first real-world selectors. Shift chips expose `aria-pressed`, and tests expand closed day-module accordions before interacting with their controls.
 
 ## What it protects
 
@@ -79,3 +79,14 @@ The CI gate runs in this order:
 5. clean PostgreSQL migration/container smoke test.
 
 A browser regression therefore blocks the immutable deployment image from being accepted.
+
+## Windows line endings
+
+The repository contains `.gitattributes` and keeps text files as LF so shell scripts remain executable in Linux CI. After pulling this release into an existing Windows checkout, normalize the index once:
+
+```powershell
+git add --renormalize .
+git status
+```
+
+The previous `LF will be replaced by CRLF` warnings are not test failures, but normalization prevents local Git settings from silently rewriting deployment scripts.

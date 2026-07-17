@@ -1,3 +1,12 @@
+## v27.2.26 — Playwright selector, accordion and line-ending hotfix
+
+- Fixed the calendar persistence E2E contract: selected shift chips now expose `aria-pressed="true"` instead of relying only on inline colors, and the test asserts that accessible state.
+- Added a reusable `openDayModule` Playwright helper so note scenarios expand the closed `<details>` accordion before filling `#noteEdit`.
+- Updated both calendar persistence and PWA offline scenarios to open the Notes module explicitly before waiting for the debounced day save.
+- Added `.gitattributes` with repository-wide LF normalization, CRLF only for Windows command files and binary exclusions.
+- The Java baseline remains 61 classes / 327 `@Test` methods; the browser baseline remains 5 Playwright tests.
+- Backend behavior, database schema and Flyway migrations are unchanged.
+
 ## v27.2.25 — Playwright browser E2E regression baseline
 
 - Added a real Chromium E2E layer for registration, login-language persistence, first-run onboarding, calendar data persistence, module disable/enable survival, task completion, mobile viewport usability and PWA offline startup.
