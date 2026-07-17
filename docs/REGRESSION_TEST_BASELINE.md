@@ -2,7 +2,7 @@
 
 Status: extended in v27.2.9 with the task regression suite.
 
-Current extension: v27.2.24 protects startup/bootstrap behavior, module registry invariants, current-user resolution and note-export boundaries, and adds a mandatory JaCoCo coverage floor.
+Current extension: v27.2.25 adds a Chromium Playwright E2E baseline for browser wiring, persistence, modules, mobile layout and offline/PWA startup while retaining the v27.2.24 JaCoCo coverage floor.
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
@@ -150,3 +150,14 @@ A green test suite means the listed contracts still hold. It does not replace ex
 - `NoteExportServiceTest`: count/select race limits, blank filtering, audit event, ZIP layout and YAML scalar escaping.
 - `mvn verify` now enforces at least 88% instruction coverage and 70% branch coverage at bundle level.
 - Baseline: 61 test classes and 327 `@Test` methods.
+
+
+## v27.2.25 Playwright browser E2E extension
+
+- `auth-onboarding.spec.js`: registration, automatic login, language persistence, Minimum preset and no repeated onboarding after reload.
+- `calendar-persistence.spec.js`: shift, emoji and Markdown note persistence across month navigation and an authoritative reload.
+- `task-modules.spec.js`: Tasks module activation, task creation/completion, disable/enable survival and restored UI state.
+- `mobile-layout.spec.js`: phone viewport width, calendar selection and selected-day panel usability.
+- `pwa-offline.spec.js`: active service worker, controlled reload, IndexedDB snapshot and offline shell startup.
+- Happy-path fixtures reject browser console errors, uncaught exceptions, failed same-origin requests and unexpected same-origin HTTP errors.
+- Java baseline remains 61 classes / 327 `@Test`; browser baseline is 5 Playwright tests.

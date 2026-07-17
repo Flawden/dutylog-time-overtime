@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.24}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.25}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -111,8 +111,16 @@ for f in src/main/resources/static/js/*.js; do
 done
 node --check src/main/resources/static/service-worker.js >/dev/null
 ok "node --check service-worker.js"
+node --check playwright.config.js >/dev/null
+ok "node --check playwright.config.js"
+for f in e2e/*.js; do
+  node --check "$f" >/dev/null
+  ok "node --check $f"
+done
 python3 -m json.tool src/main/resources/static/manifest.json >/dev/null
 ok "manifest.json is valid JSON"
+python3 -m json.tool package.json >/dev/null
+ok "package.json is valid JSON"
 
 python3 - "$VERSION" <<'PY'
 from pathlib import Path
@@ -745,6 +753,43 @@ contains src/test/java/ru/daniil/shifts/module/ModuleRegistryContractTest.java "
 contains src/test/java/ru/daniil/shifts/service/ModuleServiceContractTest.java "enablingScenarioActivatesItsWholeDependencyChain"
 contains src/test/java/ru/daniil/shifts/service/CurrentUserServiceTest.java "existingPrincipalResolvesToOwnerEntity"
 contains src/test/java/ru/daniil/shifts/service/NoteExportServiceTest.java "postReadLimitProtectsAgainstRowsChangingBetweenCountAndSelect"
+
+# v27.2.25 Playwright browser E2E regression baseline
+contains CHANGES.md "v27.2.25 — Playwright browser E2E regression baseline"
+contains README.md "v27.2.25 — Playwright browser E2E regression baseline"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.25 Playwright browser E2E extension"
+contains docs/PLAYWRIGHT_E2E.md "npm run test:e2e"
+contains package.json '"@playwright/test": "1.49.1"'
+contains playwright.config.js "serviceWorkers: 'block'"
+contains playwright.config.js "spring-boot.run.profiles=e2e"
+contains src/main/resources/application-e2e.properties 'jdbc:h2:mem:dutylog_e2e'
+not_contains src/main/resources/application-e2e.properties 'jdbc:h2:file:'
+contains src/main/resources/application-e2e.properties 'server.port=4173'
+contains src/main/resources/application-e2e.properties 'dutylog.telegram.enabled=false'
+contains src/main/resources/static/js/30-calendar.js 'cell.dataset.date = k'
+contains src/main/resources/static/js/50-tasks.js 'row.dataset.taskId = String(task.id)'
+contains src/main/resources/static/js/50-tasks.js 'b.dataset.shiftTypeId = String(s.id)'
+contains e2e/auth-onboarding.spec.js "registration keeps login language"
+contains e2e/calendar-persistence.spec.js "survive month navigation and full reload"
+contains e2e/task-modules.spec.js "survives disabling and re-enabling"
+contains e2e/mobile-layout.spec.js "phone viewport"
+contains e2e/pwa-offline.spec.js "IndexedDB snapshot while offline"
+contains e2e/fixtures.js "console.error"
+contains e2e/fixtures.js "response.status() >= 400"
+contains e2e/fixtures.js "ERR_ABORTED|NS_BINDING_ABORTED|cancelled"
+contains e2e/helpers.js 'data-settings-jump="modules"'
+contains e2e/helpers.js "expect(toggle).not.toBeChecked()"
+contains .github/workflows/ci.yml "Browser E2E regression suite"
+contains .github/workflows/ci.yml "npx playwright install --with-deps chromium"
+contains .github/workflows/ci.yml "name: playwright-report"
+contains .github/dependabot.yml 'package-ecosystem: "npm"'
+
+E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
+if [[ "$E2E_TESTS" == "5" ]]; then
+  ok "Playwright test baseline: 5"
+else
+  fail "expected 5 Playwright tests, found $E2E_TESTS"
+fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')

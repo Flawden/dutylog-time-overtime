@@ -15,3 +15,6 @@ backups/
 .deploy-state
 .deploy-state.tmp
 .deploy.lock
+node_modules/
+playwright-report/
+test-results/

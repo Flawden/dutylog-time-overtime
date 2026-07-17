@@ -82,3 +82,16 @@ responsive layout, service-worker lifecycle, or a real PostgreSQL deployment.
 - 70% branches.
 
 The thresholds intentionally sit below the current verified baseline (90% / 73%) to allow small refactors while preventing silent regression. Raise them only after a green CI run proves the new baseline.
+
+
+## Browser E2E with Playwright
+
+DutyLog v27.2.25 adds a separate Chromium suite. Install once and run:
+
+```bash
+npm install --no-audit --no-fund
+npx playwright install chromium
+npm run test:e2e
+```
+
+Playwright starts the isolated `e2e` Spring profile on port 4173. The profile uses only an in-memory H2 database. Reports and failure traces are stored under `playwright-report/` and `test-results/`. See [`PLAYWRIGHT_E2E.md`](PLAYWRIGHT_E2E.md).

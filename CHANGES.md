@@ -1,3 +1,14 @@
+## v27.2.25 — Playwright browser E2E regression baseline
+
+- Added a real Chromium E2E layer for registration, login-language persistence, first-run onboarding, calendar data persistence, module disable/enable survival, task completion, mobile viewport usability and PWA offline startup.
+- Added automatic detection of browser `console.error`, uncaught page errors, failed same-origin requests and unexpected happy-path HTTP `4xx/5xx` responses.
+- Added stable non-visual DOM contracts for calendar dates, shift chips and task rows.
+- Added an isolated `application-e2e.properties` profile using in-memory H2 on port 4173; it never touches the local file database and keeps external Telegram traffic disabled.
+- GitHub Actions now installs Chromium, runs Playwright before building the deployment image and uploads traces/screenshots/videos on failure.
+- Added npm Dependabot coverage and Playwright usage documentation.
+- Java/JUnit baseline remains 61 classes and 327 `@Test` methods; browser baseline adds 5 Playwright tests.
+- Database schema and Flyway migrations are unchanged.
+
 ## v27.2.24 — Coverage floor and startup/module regression suite
 
 - Added direct startup coverage for bootstrap-admin configuration, credential validation, account creation, promotion, optional forced password reset and one-time legacy-admin cleanup.
