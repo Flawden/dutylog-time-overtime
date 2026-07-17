@@ -170,3 +170,11 @@ A green test suite means the listed contracts still hold. It does not replace ex
 - Calendar persistence and PWA offline tests now wait for the real debounced `PUT /api/days/{date}` only after the editor is visible.
 - `.gitattributes` enforces LF in the repository and protects Linux deployment scripts from Windows line-ending conversion.
 - Baselines remain 61 Java classes / 327 `@Test` methods and 5 Playwright tests.
+
+## v27.2.27 Playwright marker accordion hotfix
+
+- `calendar-persistence.spec.js` explicitly opens `data-day-module="core"` before filling the custom marker input.
+- After an authoritative reload, the scenario reopens Notes and Marker before asserting persisted editor values.
+- PWA/offline, onboarding, mobile layout and task-module scenarios remain unchanged.
+- Baselines remain 61 Java classes / 327 `@Test` methods and 5 Playwright tests.
+

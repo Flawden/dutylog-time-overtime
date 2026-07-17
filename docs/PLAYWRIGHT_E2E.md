@@ -1,6 +1,6 @@
 # Playwright browser E2E
 
-DutyLog v27.2.26 keeps the Chromium regression layer introduced in v27.2.25 and hardens its first real-world selectors. Shift chips expose `aria-pressed`, and tests expand closed day-module accordions before interacting with their controls.
+DutyLog v27.2.27 keeps the Chromium regression layer introduced in v27.2.25 and completes the first accordion hardening pass. Shift chips expose `aria-pressed`, while Notes and Marker `<details>` sections are explicitly expanded before Playwright fills or verifies their controls.
 
 ## What it protects
 

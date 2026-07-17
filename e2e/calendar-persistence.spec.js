@@ -17,6 +17,7 @@ test('shift, emoji and note survive month navigation and full reload', async ({ 
   await shiftSaved;
   await expect(page.locator('#chips [data-shift-type-id][aria-pressed="true"]')).toHaveCount(1);
 
+  await openDayModule(page, 'core');
   const emojiSaved = waitForApi(page, 'PUT', `/api/days/${date}`);
   await page.locator('#dayEmojiCustom').fill('🧪');
   await page.locator('#dayEmojiApply').click();
@@ -46,6 +47,8 @@ test('shift, emoji and note survive month navigation and full reload', async ({ 
   await authoritativeReload;
   await expect(page.locator('#appBoot')).toBeHidden({ timeout: 30_000 });
   await selectDate(page, date);
+  await openDayModule(page, 'notes');
+  await openDayModule(page, 'core');
   await expect(page.locator('#noteEdit')).toHaveValue(note);
   await expect(page.locator('#dayEmojiPreview')).toContainText('🧪');
   await expect(page.locator('#chips [data-shift-type-id][aria-pressed="true"]')).toHaveCount(1);

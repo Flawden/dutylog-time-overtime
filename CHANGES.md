@@ -1,3 +1,10 @@
+## v27.2.27 — Playwright marker accordion hotfix
+
+- Fixed the remaining calendar-persistence E2E failure: the custom marker input lives inside the closed Marker `<details>` section, so the scenario now expands `data-day-module="core"` before filling `#dayEmojiCustom`.
+- The authoritative reload assertion now explicitly reopens both Notes and Marker sections before checking their persisted controls.
+- The PWA/offline scenario is already green; no production, database or Flyway behavior changed.
+- Java baseline remains 61 classes / 327 `@Test` methods; browser baseline remains 5 Playwright tests.
+
 ## v27.2.26 — Playwright selector, accordion and line-ending hotfix
 
 - Fixed the calendar persistence E2E contract: selected shift chips now expose `aria-pressed="true"` instead of relying only on inline colors, and the test asserts that accessible state.

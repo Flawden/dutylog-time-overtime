@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.26}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.27}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -796,6 +796,13 @@ contains e2e/calendar-persistence.spec.js 'aria-pressed="true"'
 contains e2e/calendar-persistence.spec.js "await openDayModule(page, 'notes')"
 contains e2e/pwa-offline.spec.js "await openDayModule(page, 'notes')"
 not_contains e2e/calendar-persistence.spec.js '[data-shift-type-id].on'
+
+# v27.2.27 Playwright marker accordion hotfix
+contains CHANGES.md "v27.2.27 — Playwright marker accordion hotfix"
+contains README.md "v27.2.27 — Playwright marker accordion hotfix"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.27 Playwright marker accordion hotfix"
+contains e2e/calendar-persistence.spec.js "await openDayModule(page, 'core')"
+contains e2e/calendar-persistence.spec.js "await openDayModule(page, 'notes')"
 
 if grep -Il $'\r' deploy/scripts/*.sh >/dev/null 2>&1; then
   fail "deployment shell scripts contain CRLF line endings"
