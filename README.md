@@ -1,18 +1,18 @@
-> Current release: **v27.2.27 — Playwright marker accordion hotfix**.
+> Current release: **v27.2.28 — Staging deployment gate and diagnostics hardening**.
 
 # DutyLog
 
-Current release: **v27.2.27 — Playwright marker accordion hotfix**
+Current release: **v27.2.28 — Staging deployment gate and diagnostics hardening**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.27 — Playwright marker accordion hotfix
+## Текущая версия: v27.2.28 — Staging deployment gate and diagnostics hardening
 
 
-Эта версия закрывает последний найденный дефект первой Playwright-базы: сценарий календаря теперь раскрывает свёрнутый блок «Маркер» перед вводом custom emoji и после reload явно открывает Notes и Marker перед проверкой сохранённых данных. PWA/offline уже проходит; production-код не менялся.
+Эта версия делает staging pipeline честным и управляемым: полный Maven/JaCoCo/Playwright gate выполняется до сборки образа, immutable image всегда проверяется на чистом PostgreSQL, а удалённый deploy запускается только после явного `DUTYLOG_DEPLOY_ENABLED=true` и успешной проверки GitHub Environment. Пока VPS не подготовлен, workflow завершается зелёным, но не создаёт promotion-тег для production.
 
-Текущая база: **61 Java-тестовый класс, 327 `@Test` методов и 5 Playwright browser tests**. Предыдущая контрольная точка: **v27.2.26 — Playwright selector, accordion and line-ending hotfix**. Перед ней: **v27.2.25 — Playwright browser E2E regression baseline**. Перед ней: **v27.2.24 — Coverage floor and startup/module regression suite**. Перед ней: **v27.2.23 — Security test contract and secret-safe error logging hotfix**. Перед ней: **v27.2.22 — Security infrastructure regression and auth hardening suite**. Перед ней: **v27.2.21 — Telegram date validation and test harness hotfix**, затем **v27.2.20 — Telegram bot regression and delivery hardening suite**. Перед ней: **v27.2.19 — PostgreSQL migration and CI version hotfix**, где чистая PostgreSQL-схема и CI version metadata впервые прошли полный GitHub Actions smoke test. До неё: **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix** и **v27.2.14 — Quick scenarios and overtime API regression suite**.
+Текущая база: **61 Java-тестовый класс, 327 `@Test` методов и 5 Playwright browser tests**. Предыдущая контрольная точка: **v27.2.27 — Playwright marker accordion hotfix**. Перед ней: **v27.2.26 — Playwright selector, accordion and line-ending hotfix**. Перед ней: **v27.2.25 — Playwright browser E2E regression baseline**. Перед ней: **v27.2.24 — Coverage floor and startup/module regression suite**. Перед ней: **v27.2.23 — Security test contract and secret-safe error logging hotfix**. Перед ней: **v27.2.22 — Security infrastructure regression and auth hardening suite**. Перед ней: **v27.2.21 — Telegram date validation and test harness hotfix**, затем **v27.2.20 — Telegram bot regression and delivery hardening suite**. Перед ней: **v27.2.19 — PostgreSQL migration and CI version hotfix**, где чистая PostgreSQL-схема и CI version metadata впервые прошли полный GitHub Actions smoke test. До неё: **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix** и **v27.2.14 — Quick scenarios and overtime API regression suite**.
 Ранние этапы регрессии: **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
 
 JaCoCo формируется Maven-фазой `verify`, а не обычной кнопкой запуска JUnit в IntelliJ. Подробная инструкция: [`docs/TESTING.md`](docs/TESTING.md).

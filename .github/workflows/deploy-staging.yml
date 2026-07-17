@@ -16,31 +16,65 @@ concurrency:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
     outputs:
       release_version: ${{ steps.version.outputs.release_version }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
           cache: maven
+
       - name: Resolve project version
         id: version
         shell: bash
         run: echo "release_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "$GITHUB_OUTPUT"
 
-      - name: Tests
-        run: mvn -B --no-transfer-progress test
+      - name: Build, test and enforce coverage
+        run: mvn -B --no-transfer-progress verify
+
       - name: Release checks
         run: bash ./deploy/scripts/release-check.sh
 
-  build-and-deploy:
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright test runner
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser E2E regression suite
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: staging-playwright-report
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: warn
+
+  build-image:
     needs: validate
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: staging
+    outputs:
+      image_name: ${{ steps.meta.outputs.image_name }}
+      tree_sha: ${{ steps.meta.outputs.tree_sha }}
+      build_version: ${{ steps.meta.outputs.build_version }}
+      build_time: ${{ steps.meta.outputs.build_time }}
+      digest: ${{ steps.build.outputs.digest }}
     steps:
       - name: Require test branch
         shell: bash
@@ -102,12 +136,51 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Verify the exact image on clean PostgreSQL
+        shell: bash
         run: |
           IMAGE_REF="${{ steps.meta.outputs.image_name }}@${{ steps.build.outputs.digest }}"
           docker pull "$IMAGE_REF"
           bash deploy/scripts/migration-smoke-test.sh "$IMAGE_REF"
 
+  deploy:
+    needs: [validate, build-image]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: staging
+    steps:
+      - name: Checkout deployment tooling
+        uses: actions/checkout@v4
+
+      - name: Validate or skip remote staging deployment
+        id: preflight
+        env:
+          DUTYLOG_DEPLOY_ENABLED: ${{ vars.DUTYLOG_DEPLOY_ENABLED }}
+          DUTYLOG_DEPLOY_HOST: ${{ vars.DUTYLOG_DEPLOY_HOST }}
+          DUTYLOG_DEPLOY_PORT: ${{ vars.DUTYLOG_DEPLOY_PORT }}
+          DUTYLOG_DEPLOY_USER: ${{ vars.DUTYLOG_DEPLOY_USER }}
+          DUTYLOG_DEPLOY_PATH: ${{ vars.DUTYLOG_DEPLOY_PATH }}
+          DUTYLOG_BASE_URL: ${{ vars.DUTYLOG_BASE_URL }}
+          DUTYLOG_SSH_PRIVATE_KEY: ${{ secrets.DUTYLOG_SSH_PRIVATE_KEY }}
+          DUTYLOG_SSH_KNOWN_HOSTS: ${{ secrets.DUTYLOG_SSH_KNOWN_HOSTS }}
+          DUTYLOG_GHCR_USERNAME: ${{ secrets.GHCR_READ_USERNAME }}
+          DUTYLOG_GHCR_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
+          DUTYLOG_DEPLOY_ENVIRONMENT: staging
+        run: bash deploy/scripts/check-ci-deploy-config.sh
+
+      - name: Log in to GHCR
+        if: steps.preflight.outputs.configured == 'true'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Buildx
+        if: steps.preflight.outputs.configured == 'true'
+        uses: docker/setup-buildx-action@v3
+
       - name: Deploy to staging and run smoke tests
+        if: steps.preflight.outputs.configured == 'true'
         env:
           DUTYLOG_DEPLOY_HOST: ${{ vars.DUTYLOG_DEPLOY_HOST }}
           DUTYLOG_DEPLOY_PORT: ${{ vars.DUTYLOG_DEPLOY_PORT }}
@@ -119,16 +192,18 @@ jobs:
           DUTYLOG_GHCR_USERNAME: ${{ secrets.GHCR_READ_USERNAME }}
           DUTYLOG_GHCR_TOKEN: ${{ secrets.GHCR_READ_TOKEN }}
           DUTYLOG_DEPLOY_ENVIRONMENT: staging
-          DUTYLOG_IMAGE_REF: ${{ steps.meta.outputs.image_name }}@${{ steps.build.outputs.digest }}
+          DUTYLOG_IMAGE_REF: ${{ needs.build-image.outputs.image_name }}@${{ needs.build-image.outputs.digest }}
           DUTYLOG_RELEASE_VERSION: ${{ needs.validate.outputs.release_version }}
-          DUTYLOG_BUILD_VERSION: ${{ steps.meta.outputs.build_version }}
-          DUTYLOG_BUILD_TREE: ${{ steps.meta.outputs.tree_sha }}
+          DUTYLOG_BUILD_VERSION: ${{ needs.build-image.outputs.build_version }}
+          DUTYLOG_BUILD_TREE: ${{ needs.build-image.outputs.tree_sha }}
           DUTYLOG_BUILD_COMMIT: ${{ github.sha }}
-          DUTYLOG_BUILD_TIME: ${{ steps.meta.outputs.build_time }}
+          DUTYLOG_BUILD_TIME: ${{ needs.build-image.outputs.build_time }}
         run: bash deploy/scripts/remote-deploy.sh
 
       - name: Mark the exact image as staging-tested
+        if: steps.preflight.outputs.configured == 'true'
+        shell: bash
         run: |
           docker buildx imagetools create \
-            --tag "${{ steps.meta.outputs.image_name }}:staging-tested-tree-${{ steps.meta.outputs.tree_sha }}" \
-            "${{ steps.meta.outputs.image_name }}@${{ steps.build.outputs.digest }}"
+            --tag "${{ needs.build-image.outputs.image_name }}:staging-tested-tree-${{ needs.build-image.outputs.tree_sha }}" \
+            "${{ needs.build-image.outputs.image_name }}@${{ needs.build-image.outputs.digest }}"

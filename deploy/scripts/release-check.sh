@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.27}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.28}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -803,6 +803,53 @@ contains README.md "v27.2.27 — Playwright marker accordion hotfix"
 contains docs/REGRESSION_TEST_BASELINE.md "v27.2.27 Playwright marker accordion hotfix"
 contains e2e/calendar-persistence.spec.js "await openDayModule(page, 'core')"
 contains e2e/calendar-persistence.spec.js "await openDayModule(page, 'notes')"
+
+
+# v27.2.28 staging deployment gate and diagnostics hardening
+contains CHANGES.md "v27.2.28 — Staging deployment gate and diagnostics hardening"
+contains README.md "v27.2.28 — Staging deployment gate and diagnostics hardening"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.28 staging deployment gate and diagnostics hardening"
+contains docs/CICD.md "DUTYLOG_DEPLOY_ENABLED"
+contains docs/STAGING.md "## Deployment gate"
+contains .github/workflows/deploy-staging.yml "Build, test and enforce coverage"
+contains .github/workflows/deploy-staging.yml "Browser E2E regression suite"
+contains .github/workflows/deploy-staging.yml "Verify the exact image on clean PostgreSQL"
+contains .github/workflows/deploy-staging.yml "Validate or skip remote staging deployment"
+contains .github/workflows/deploy-staging.yml "if: steps.preflight.outputs.configured == 'true'"
+contains .github/workflows/deploy-production.yml "Validate production deployment configuration"
+contains deploy/scripts/check-ci-deploy-config.sh "write_output configured false"
+contains deploy/scripts/check-ci-deploy-config.sh "write_output configured true"
+contains deploy/scripts/remote-deploy.sh 'missing=()'
+
+CI_GATE_TMP="$(mktemp -d)"
+trap 'rm -rf "$CI_GATE_TMP"' EXIT
+GITHUB_OUTPUT="$CI_GATE_TMP/disabled.out" \
+GITHUB_STEP_SUMMARY="$CI_GATE_TMP/disabled.md" \
+DUTYLOG_DEPLOY_ENABLED=false \
+  bash deploy/scripts/check-ci-deploy-config.sh >/dev/null
+grep -q '^configured=false$' "$CI_GATE_TMP/disabled.out" && ok "disabled staging deploy is an explicit successful skip" || fail "disabled deploy gate did not emit configured=false"
+
+GITHUB_OUTPUT="$CI_GATE_TMP/enabled.out" \
+GITHUB_STEP_SUMMARY="$CI_GATE_TMP/enabled.md" \
+DUTYLOG_DEPLOY_ENABLED=true \
+DUTYLOG_DEPLOY_ENVIRONMENT=staging \
+DUTYLOG_DEPLOY_HOST=staging.example.test \
+DUTYLOG_DEPLOY_PORT=22 \
+DUTYLOG_DEPLOY_USER=dutylog \
+DUTYLOG_DEPLOY_PATH=/opt/dutylog/staging \
+DUTYLOG_BASE_URL=https://staging.example.test \
+DUTYLOG_SSH_PRIVATE_KEY=$'-----BEGIN OPENSSH PRIVATE KEY-----\ntest\n-----END OPENSSH PRIVATE KEY-----' \
+DUTYLOG_SSH_KNOWN_HOSTS='staging.example.test ssh-ed25519 AAAATEST' \
+DUTYLOG_GHCR_USERNAME=dutylog-reader \
+DUTYLOG_GHCR_TOKEN=token-for-static-check \
+  bash deploy/scripts/check-ci-deploy-config.sh >/dev/null
+grep -q '^configured=true$' "$CI_GATE_TMP/enabled.out" && ok "complete deploy configuration emits configured=true" || fail "enabled deploy gate did not emit configured=true"
+
+if DUTYLOG_DEPLOY_ENABLED=true DUTYLOG_DEPLOY_ENVIRONMENT=staging bash deploy/scripts/check-ci-deploy-config.sh >/dev/null 2>&1; then
+  fail "enabled deployment with missing environment values unexpectedly passed"
+else
+  ok "enabled deployment fails closed when required values are missing"
+fi
 
 if grep -Il $'\r' deploy/scripts/*.sh >/dev/null 2>&1; then
   fail "deployment shell scripts contain CRLF line endings"

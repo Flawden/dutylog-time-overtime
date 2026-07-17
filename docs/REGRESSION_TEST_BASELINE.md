@@ -178,3 +178,13 @@ A green test suite means the listed contracts still hold. It does not replace ex
 - PWA/offline, onboarding, mobile layout and task-module scenarios remain unchanged.
 - Baselines remain 61 Java classes / 327 `@Test` methods and 5 Playwright tests.
 
+
+## v27.2.28 staging deployment gate and diagnostics hardening
+
+- `Deploy staging` independently enforces `mvn verify`, the JaCoCo floor, release checks and all five Playwright scenarios before building an immutable image.
+- The image build and clean PostgreSQL migration smoke test run even when no VPS is configured.
+- Remote staging deployment is gated by the GitHub Environment variable `DUTYLOG_DEPLOY_ENABLED=true`.
+- A disabled gate is a successful, explicit skip and cannot create `staging-tested-tree-*`; production promotion therefore remains impossible until a real staging smoke test succeeds.
+- Enabled but incomplete environments fail before SSH with a list of missing setting names and without secret values.
+- Production uses the same preflight but remains fail-closed.
+- Baselines remain 61 Java classes / 327 `@Test` methods and 5 Playwright scenarios.

@@ -1,3 +1,13 @@
+## v27.2.28 — Staging deployment gate and diagnostics hardening
+
+- Split staging delivery into validation, immutable image build/clean-PostgreSQL verification and a separate remote deployment job.
+- Staging now runs the same Maven `verify`, JaCoCo floor, release gate and Playwright browser suite before an image can be built for deployment.
+- Added the GitHub Environment switch `DUTYLOG_DEPLOY_ENABLED`. When it is absent or false, the workflow stays green after building and verifying the immutable image, clearly records that remote deployment was skipped and never creates a `staging-tested-tree-*` promotion tag.
+- Added fail-fast CI deployment configuration validation that reports missing variable/secret names without printing secret values and validates HTTPS, SSH port, path, user and key shape.
+- Production remains fail-closed and now uses the same explicit preflight before touching GHCR or the server.
+- Improved `remote-deploy.sh` diagnostics so all missing inputs are reported together.
+- Backend behavior, database schema, Flyway migrations, 327 Java tests and 5 Playwright scenarios are unchanged.
+
 ## v27.2.27 — Playwright marker accordion hotfix
 
 - Fixed the remaining calendar-persistence E2E failure: the custom marker input lives inside the closed Marker `<details>` section, so the scenario now expands `data-day-module="core"` before filling `#dayEmojiCustom`.
