@@ -2,6 +2,8 @@
 
 Status: extended in v27.2.9 with the task regression suite.
 
+Current extension: v27.2.12 adds the Important dates regression suite.
+
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
 ## Manual acceptance captured
@@ -33,6 +35,9 @@ The following behaviours were verified manually before this baseline was created
 | Task reminder fields persist and stale lead minutes are cleared | `TaskReminderServiceTest` |
 | Task CRUD, day/range lists, board filters and pagination remain correct | `TaskServiceTest`, `TaskControllerTest` |
 | Task API keeps validation, CSRF, authentication, module and ownership boundaries | `TaskControllerTest` |
+| Important-day CRUD, owner-scoped lists and validation remain correct | `ImportantDayServiceTest`, `ImportantDayControllerTest` |
+| Monthly 31st-day and yearly leap-day recurrence rules remain stable | `ImportantDayServiceTest` |
+| Important dates API keeps v1 aliases, CSRF, authentication, module and ownership boundaries | `ImportantDayControllerTest` |
 | Disabling Notifications tears down browser polling | `BrowserNotificationFrontendContractTest` |
 | A stale `MODULE_DISABLED:notifications` response cannot become a recurring 403 loop | `BrowserNotificationFrontendContractTest` |
 | Task reminder controls reflect the Notifications module | `BrowserNotificationFrontendContractTest` |

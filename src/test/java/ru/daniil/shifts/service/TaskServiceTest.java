@@ -138,6 +138,9 @@ class TaskServiceTest {
         TaskDto futureTask = taskService.create(owner, new TaskCreateRequest(
                 today.toString(), "Buy milk", "Home", TaskPriority.LOW,
                 future.toString(), "18:00", false, null));
+        TaskDto urgent = taskService.create(owner, new TaskCreateRequest(
+                today.toString(), "Production incident", "Ops", TaskPriority.URGENT,
+                future.toString(), "20:00", false, null));
         TaskDto done = taskService.create(owner, new TaskCreateRequest(
                 today.toString(), "Archived report", "Work", TaskPriority.HIGH,
                 past.toString(), null, false, null));
@@ -163,9 +166,13 @@ class TaskServiceTest {
         PageDto<TaskDto> searched = board("all", null, null, "milk", null, null, 0, 50);
         assertEquals(List.of(futureTask.id()), ids(searched));
 
+        PageDto<TaskDto> urgentPage = board("all", null, "urgent", null, null, null, 0, 50);
+        assertEquals(List.of(urgent.id()), ids(urgentPage),
+                "URGENT is a supported priority and must not be rejected as an unknown filter");
+
         PageDto<TaskDto> ranged = board(
                 "all", null, null, null, future.toString(), future.toString(), 0, 50);
-        assertEquals(List.of(futureTask.id()), ids(ranged));
+        assertEquals(List.of(futureTask.id(), urgent.id()), ids(ranged));
 
         PageDto<TaskDto> upcoming = board("upcoming", null, null, null, null, null, 0, 50);
         assertTrue(ids(upcoming).containsAll(List.of(futureTask.id(), someday.id())));
@@ -200,7 +207,7 @@ class TaskServiceTest {
         assertBadRequest(() -> taskService.listRange(
                 owner, LocalDate.parse("2026-08-12"), LocalDate.parse("2026-08-10")));
         assertBadRequest(() -> board("mystery", null, null, null, null, null, 0, 50));
-        assertBadRequest(() -> board("all", null, "urgent", null, null, null, 0, 50));
+        assertBadRequest(() -> board("all", null, "critical", null, null, null, 0, 50));
         assertBadRequest(() -> taskService.create(owner, request("2026-08-10", "   ")));
         assertBadRequest(() -> taskService.update(owner, null,
                 new TaskUpdateRequest(null, null, null, null, null, null, null, null, null)));

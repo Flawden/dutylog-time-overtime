@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.10}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.12}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -571,6 +571,24 @@ contains src/main/java/ru/daniil/shifts/service/TaskService.java 'String statusF
 contains src/main/java/ru/daniil/shifts/service/TaskService.java 'case "all", "open", "done", "overdue", "upcoming" -> normalized;'
 contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java 'board("mystery", null, null, null, null, null, 0, 50)'
 contains src/test/java/ru/daniil/shifts/web/TaskControllerTest.java '.param("status", "mystery")'
+
+# v27.2.11 task-priority regression test correction
+contains CHANGES.md "v27.2.11 — Task priority regression test correction"
+contains README.md "v27.2.11 — Task priority regression test correction"
+contains src/main/java/ru/daniil/shifts/model/TaskPriority.java 'URGENT'
+contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java 'board("all", null, "urgent", null, null, null, 0, 50)'
+contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java 'board("all", null, "critical", null, null, null, 0, 50)'
+
+
+# v27.2.12 important dates regression suite
+contains CHANGES.md "v27.2.12 — Important dates regression suite"
+contains README.md "v27.2.12 — Important dates regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "ImportantDayServiceTest"
+contains src/test/java/ru/daniil/shifts/service/ImportantDayServiceTest.java "monthlyRecurrenceClampsTheThirtyFirstToTheLastDayOfShortMonths"
+contains src/test/java/ru/daniil/shifts/service/ImportantDayServiceTest.java "yearlyLeapDayFallsBackToFebruaryTwentyEighthAndReturnsOnLeapYears"
+contains src/test/java/ru/daniil/shifts/web/ImportantDayControllerTest.java "fullCrudWorksAcrossLegacyAndV1Aliases"
+contains src/test/java/ru/daniil/shifts/web/ImportantDayControllerTest.java "disabledModuleGuardsEveryEndpointWithoutDeletingStoredDates"
+contains src/test/java/ru/daniil/shifts/web/ImportantDayControllerTest.java "foreignIdsAreIndistinguishableFromMissingResources"
 
 
 echo

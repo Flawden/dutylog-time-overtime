@@ -1,3 +1,19 @@
+## v27.2.12 — Important dates regression suite
+
+- Added service-level coverage for important-day defaults, owner-scoped ordering, full updates, deletion and stable error handling.
+- Added recurrence coverage for one-time dates, monthly end-of-month clamping, yearly leap-day fallback and leap-year restoration.
+- Added deterministic occurrence ordering by date and title, plus owner isolation and no-duplicate source-event checks.
+- Added MockMvc coverage for legacy and `/api/v1/important-days` aliases, full CRUD, occurrences, validation envelopes, malformed JSON, missing parameters, CSRF, authentication, module guards and ownership boundaries.
+- Extended the regression baseline and release gate with the Important dates contracts.
+- No production behaviour or database schema changed.
+
+## v27.2.11 — Task priority regression test correction
+
+- Corrected the task regression suite: `URGENT` is a supported `TaskPriority`, so it must not be used as an invalid-filter example.
+- The negative validation assertion now uses the genuinely unsupported value `critical`.
+- Added a positive regression assertion proving that the case-insensitive `urgent` board filter returns URGENT tasks.
+- No production behaviour or database schema changed.
+
 ## v27.2.10 — Task board status validation hotfix
 
 - Fixed task-board status validation so an unknown status is rejected even when the user has no tasks.

@@ -1,16 +1,18 @@
-> Current release: **v27.2.10 — Task board status validation hotfix**.
+> Current release: **v27.2.12 — Important dates regression suite**.
 
 # DutyLog
 
-Current release: **v27.2.10 — Task board status validation hotfix**
+Current release: **v27.2.12 — Important dates regression suite**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.10 — Task board status validation hotfix
+## Текущая версия: v27.2.12 — Important dates regression suite
 
 
-Эта версия исправляет найденный тестами дефект валидации доски задач: неизвестный статус теперь возвращает `400 BAD_REQUEST` независимо от того, есть ли у пользователя задачи. В v27.2.9 проверка выполнялась только внутри stream-фильтра и не запускалась для пустого списка. Схема БД не менялась.
+Эта версия добавляет полноценную регрессионную сетку для важных дат: CRUD, повторения `NONE`/`MONTHLY`/`YEARLY`, 31-е число в коротких месяцах, 29 февраля, сортировку, API v1, модульные границы, CSRF и ownership. Production-код и схема БД не менялись.
+
+Предыдущие контрольные точки: **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
 
 JaCoCo формируется Maven-фазой `verify`, а не обычной кнопкой запуска JUnit в IntelliJ. Подробная инструкция: [`docs/TESTING.md`](docs/TESTING.md).
 
