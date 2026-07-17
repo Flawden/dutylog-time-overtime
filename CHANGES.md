@@ -1,3 +1,14 @@
+## v27.2.13 — Shift types and calendar patterns regression suite
+
+- Added service-level coverage for built-in shift seeding, legacy-default repair, custom shift CRUD, optional time/reminder clearing, protected built-in identity and owner isolation.
+- Added deletion coverage proving that removing a custom shift deletes shift-only rows but preserves notes, emoji, overtime and time-off on non-empty days.
+- Added schedule-pattern coverage for 2/2, day/night/48 and weekday-rotated five-day weeks across month, year and leap-day boundaries.
+- Added overwrite coverage proving that bulk fill changes only the shift while preserving day metadata, and that overwrite=false keeps existing shifts while filling empty dates.
+- Added MockMvc coverage for `/api/days/fill`, `/api/v1/days/fill`, `/api/shift-types` and `/api/v1/shift-types`, including validation envelopes, CSRF, authentication and ownership boundaries.
+- Added frontend contract guards for every schedule preset and the selected-weekday rotation used by the five-day template.
+- Expanded the regression baseline to 32 test classes and 141 `@Test` methods.
+- No production behaviour or database schema changed.
+
 ## v27.2.12 — Important dates regression suite
 
 - Added service-level coverage for important-day defaults, owner-scoped ordering, full updates, deletion and stable error handling.

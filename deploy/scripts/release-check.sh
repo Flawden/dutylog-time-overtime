@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.12}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.13}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -589,6 +589,19 @@ contains src/test/java/ru/daniil/shifts/service/ImportantDayServiceTest.java "ye
 contains src/test/java/ru/daniil/shifts/web/ImportantDayControllerTest.java "fullCrudWorksAcrossLegacyAndV1Aliases"
 contains src/test/java/ru/daniil/shifts/web/ImportantDayControllerTest.java "disabledModuleGuardsEveryEndpointWithoutDeletingStoredDates"
 contains src/test/java/ru/daniil/shifts/web/ImportantDayControllerTest.java "foreignIdsAreIndistinguishableFromMissingResources"
+
+# v27.2.13 shift types and calendar patterns regression suite
+contains CHANGES.md "v27.2.13 — Shift types and calendar patterns regression suite"
+contains README.md "v27.2.13 — Shift types and calendar patterns regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "CalendarPatternServiceTest"
+contains src/test/java/ru/daniil/shifts/service/CalendarPatternServiceTest.java "twoOnTwoOffRepeatsAcrossTheYearBoundary"
+contains src/test/java/ru/daniil/shifts/service/CalendarPatternServiceTest.java "dayNightFortyEightCrossesLeapDayWithoutLosingThePattern"
+contains src/test/java/ru/daniil/shifts/service/CalendarPatternServiceTest.java "overwriteChangesOnlyTheShiftAndPreservesDayMetadata"
+contains src/test/java/ru/daniil/shifts/service/ShiftTypeServiceTest.java "deletingCustomShiftDetachesItAndPreservesOtherDayData"
+contains src/test/java/ru/daniil/shifts/service/ShiftTypeServiceTest.java "ensureBuiltinsRepairsLegacyDefaultsWithoutCreatingDuplicates"
+contains src/test/java/ru/daniil/shifts/web/CalendarPatternControllerTest.java "v1FillAndCalendarReadPreserveDayNightFortyEightAcrossLeapDay"
+contains src/test/java/ru/daniil/shifts/web/ShiftTypeControllerTest.java "fullCrudWorksAcrossLegacyAndV1Aliases"
+contains src/test/java/ru/daniil/shifts/web/ScheduleTemplateFrontendContractTest.java "weeklyTemplateIsRotatedBySelectedWeekdayAndTheEffectiveSequenceIsSentToTheServer"
 
 
 echo
