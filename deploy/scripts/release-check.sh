@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.18}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.19}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -662,17 +662,31 @@ contains src/test/java/ru/daniil/shifts/service/MobileSyncServiceTest.java 'malf
 contains src/test/java/ru/daniil/shifts/service/MobileSyncServiceTest.java 'clearCreatesAVersionedTombstoneSoStaleOfflineCreatesCannotOverwriteIt'
 contains src/test/java/ru/daniil/shifts/web/MobileSyncControllerTest.java 'legacyClearDeletesEmptyRowWhileV1ClearKeepsVersionedTombstone'
 
+# v27.2.19 PostgreSQL migration and CI version hotfix
+contains CHANGES.md "v27.2.19 — PostgreSQL migration and CI version hotfix"
+contains README.md "v27.2.19 — PostgreSQL migration and CI version hotfix"
+contains src/main/resources/db/migration/postgresql/V7__notification_settings.sql 'references users(id) on delete cascade'
+not_contains src/main/resources/db/migration/postgresql/V7__notification_settings.sql 'references app_users(id)'
+contains src/test/java/ru/daniil/shifts/db/PostgreSqlMigrationContractTest.java 'everyForeignKeyTargetsATableCreatedByTheSameOrAnEarlierMigration'
+contains .github/workflows/ci.yml 'release_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)'
+contains .github/workflows/ci.yml 'DUTYLOG_BUILD_VERSION="${{ steps.version.outputs.release_version }}-ci.${GITHUB_RUN_NUMBER}"'
+contains .github/workflows/deploy-staging.yml 'DUTYLOG_RELEASE_VERSION: ${{ needs.validate.outputs.release_version }}'
+contains .github/workflows/deploy-production.yml 'DUTYLOG_RELEASE_VERSION: ${{ needs.validate.outputs.release_version }}'
+not_contains .github/workflows/ci.yml '27.2.9'
+not_contains .github/workflows/deploy-staging.yml '27.2.9'
+not_contains .github/workflows/deploy-production.yml '27.2.9'
+
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "223" ]]; then
-  ok "test method baseline: 223"
+if [[ "$TEST_METHODS" == "224" ]]; then
+  ok "test method baseline: 224"
 else
-  fail "expected 223 @Test methods, found $TEST_METHODS"
+  fail "expected 224 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "45" ]]; then
-  ok "test class baseline: 45"
+if [[ "$TEST_CLASSES" == "46" ]]; then
+  ok "test class baseline: 46"
 else
-  fail "expected 45 test classes, found $TEST_CLASSES"
+  fail "expected 46 test classes, found $TEST_CLASSES"
 fi
 
 echo

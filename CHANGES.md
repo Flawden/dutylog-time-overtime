@@ -1,3 +1,12 @@
+## v27.2.19 — PostgreSQL migration and CI version hotfix
+
+- Fixed the clean PostgreSQL Flyway chain: `V7__notification_settings.sql` referenced the nonexistent table `app_users`; the canonical table created by `V1__init.sql` is `users`.
+- Added `PostgreSqlMigrationContractTest`, which scans migrations in order and rejects foreign keys targeting tables that have not been created by the same or an earlier migration.
+- Removed the stale hard-coded `27.2.9` build/release metadata from CI, staging and production workflows. GitHub Actions now resolves the semantic version directly from `pom.xml` and passes it through immutable image and deployment metadata.
+- Added release-gate checks for the corrected notification-settings foreign key and dynamic workflow version propagation.
+- The suite now contains 46 test classes and 224 `@Test` methods.
+- This corrects a pre-production migration that could never succeed on a clean PostgreSQL database; no new Flyway version was added.
+
 ## v27.2.18 — Mobile auth and sync lifecycle regression suite
 
 - Added service-level coverage for mobile login, hashed token storage, access/refresh expiry, refresh rotation, logout, device normalization, session activity, owner isolation and revoke-all behaviour.

@@ -1,18 +1,18 @@
-> Current release: **v27.2.18 — Mobile auth and sync lifecycle regression suite**.
+> Current release: **v27.2.19 — PostgreSQL migration and CI version hotfix**.
 
 # DutyLog
 
-Current release: **v27.2.18 — Mobile auth and sync lifecycle regression suite**
+Current release: **v27.2.19 — PostgreSQL migration and CI version hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.18 — Mobile auth and sync lifecycle regression suite
+## Текущая версия: v27.2.19 — PostgreSQL migration and CI version hotfix
 
 
-Эта версия закрывает жизненный цикл Android-авторизации и offline sync: логин, refresh rotation, logout, управление устройствами, истечение и отзыв токенов, idempotency, optimistic conflicts, versioned tombstones и изоляцию операций разных пользователей. Некорректная дата внутри одного sync-элемента теперь возвращается как локальный `REJECTED`, не отменяя соседние корректные операции.
+Эта версия исправляет чистый запуск production-схемы PostgreSQL: миграция V7 больше не ссылается на несуществующую таблицу `app_users`. GitHub Actions также перестал публиковать устаревшую версию `27.2.9` — CI/CD теперь получает release version непосредственно из `pom.xml`.
 
-Текущая база: **45 тестовых классов и 223 `@Test` метода**. Уточнено фактическое число тестов в v27.2.17: **193**, а не 194. Предыдущая контрольная точка: **v27.2.17 — Admin test context bootstrap hotfix**. До неё: **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix** и **v27.2.14 — Quick scenarios and overtime API regression suite**.
+Текущая база: **46 тестовых классов и 224 `@Test` метода**. Новый миграционный контракт проверяет порядок `CREATE TABLE`/`REFERENCES` ещё до Docker smoke test. Предыдущая контрольная точка: **v27.2.18 — Mobile auth and sync lifecycle regression suite**. До неё: **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix** и **v27.2.14 — Quick scenarios and overtime API regression suite**.
 Ранние этапы регрессии: **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
 
 JaCoCo формируется Maven-фазой `verify`, а не обычной кнопкой запуска JUnit в IntelliJ. Подробная инструкция: [`docs/TESTING.md`](docs/TESTING.md).

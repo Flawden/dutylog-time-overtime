@@ -22,6 +22,11 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: Resolve project version
+        id: version
+        shell: bash
+        run: echo "release_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "$GITHUB_OUTPUT"
+
       - name: Build, test and coverage report
         run: mvn -B --no-transfer-progress verify
 
@@ -41,7 +46,7 @@ jobs:
           BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           docker build \
             --build-arg DUTYLOG_BUILD_ID="ci-${GITHUB_SHA::12}" \
-            --build-arg DUTYLOG_BUILD_VERSION="27.2.9-ci.${GITHUB_RUN_NUMBER}" \
+            --build-arg DUTYLOG_BUILD_VERSION="${{ steps.version.outputs.release_version }}-ci.${GITHUB_RUN_NUMBER}" \
             --build-arg DUTYLOG_BUILD_COMMIT="$GITHUB_SHA" \
             --build-arg DUTYLOG_BUILD_TREE="$(git rev-parse HEAD^{tree})" \
             --build-arg DUTYLOG_BUILD_TIME="${BUILD_TIME:-unknown}" \
