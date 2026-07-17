@@ -1,18 +1,18 @@
-> Current release: **v27.2.21 — Telegram date validation and test harness hotfix**.
+> Current release: **v27.2.22 — Security infrastructure regression and auth hardening suite**.
 
 # DutyLog
 
-Current release: **v27.2.21 — Telegram date validation and test harness hotfix**
+Current release: **v27.2.22 — Security infrastructure regression and auth hardening suite**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.21 — Telegram date validation and test harness hotfix
+## Текущая версия: v27.2.22 — Security infrastructure regression and auth hardening suite
 
 
-Эта версия исправляет два дефекта, найденных новой Telegram-регрессией: невозможные даты вроде `31.02` теперь возвращают стабильный `BAD_REQUEST`, а HTTP-тест fail-closed доставки корректно регистрирует все ожидания до первого запроса. Поведение отправки Telegram из v27.2.20 не ослаблялось.
+Эта версия закрывает инфраструктуру безопасности и ошибок: добавляет регрессию для security headers, request-id, API version/deprecation headers, Bearer-аутентификации, rate limiting, security audit и стабильных error envelopes. Bearer-схема теперь распознаётся без учёта регистра, а web/legacy/v1 алиасы логина и регистрации используют общий лимит попыток на IP.
 
-Текущая база: **50 тестовых классов и 254 `@Test` метода**. Предыдущая контрольная точка: **v27.2.20 — Telegram bot regression and delivery hardening suite**. Перед ней: **v27.2.19 — PostgreSQL migration and CI version hotfix**, где чистая PostgreSQL-схема и CI version metadata впервые прошли полный GitHub Actions smoke test. До неё: **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix** и **v27.2.14 — Quick scenarios and overtime API regression suite**.
+Текущая база: **57 тестовых классов и 300 `@Test` методов**. Предыдущая контрольная точка: **v27.2.21 — Telegram date validation and test harness hotfix**. Перед ней: **v27.2.20 — Telegram bot regression and delivery hardening suite**. Перед ней: **v27.2.19 — PostgreSQL migration and CI version hotfix**, где чистая PostgreSQL-схема и CI version metadata впервые прошли полный GitHub Actions smoke test. До неё: **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix** и **v27.2.14 — Quick scenarios and overtime API regression suite**.
 Ранние этапы регрессии: **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
 
 JaCoCo формируется Maven-фазой `verify`, а не обычной кнопкой запуска JUnit в IntelliJ. Подробная инструкция: [`docs/TESTING.md`](docs/TESTING.md).

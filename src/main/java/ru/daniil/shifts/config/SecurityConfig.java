@@ -121,10 +121,8 @@ public class SecurityConfig {
                                                ApiErrorWriter apiErrors) throws Exception {
         CookieCsrfTokenRepository csrfRepo = CookieCsrfTokenRepository.withHttpOnlyFalse();
         CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
-        RequestMatcher bearerRequest = request -> {
-            String authorization = request.getHeader("Authorization");
-            return authorization != null && authorization.startsWith("Bearer ");
-        };
+        RequestMatcher bearerRequest = request ->
+                BearerTokenAuthenticationFilter.hasBearerScheme(request.getHeader("Authorization"));
         // Resolve immediately so the SPA receives XSRF-TOKEN before its first POST.
         csrfHandler.setCsrfRequestAttributeName(null);
 

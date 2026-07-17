@@ -2,7 +2,7 @@
 
 Status: extended in v27.2.9 with the task regression suite.
 
-Current extension: v27.2.18 covers the complete mobile token lifecycle and Android v1 idempotent sync contract.
+Current extension: v27.2.22 covers security filters, correlation IDs, Bearer parsing, shared auth throttling, audit logging and stable error envelopes.
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
@@ -120,3 +120,15 @@ A green test suite means the listed contracts still hold. It does not replace ex
 
 - Impossible explicit Telegram dates are converted to the stable `BAD_REQUEST` API contract.
 - Telegram HTTP test expectations are fully registered before the first mock request.
+
+
+## v27.2.22 security infrastructure and auth hardening
+
+- `ApiVersionFilterTest`: stable v1 metadata and legacy mobile deprecation headers.
+- `SecurityHeadersFilterTest`: CSP, HSTS, frame, referrer, permissions and MIME-sniffing protections.
+- `RequestDiagnosticsFilterTest`: trusted/generated request IDs, reflection rejection and failure-path correlation.
+- `BearerTokenAuthenticationFilterTest`: public-route exclusions, user/admin authorities, token touch, invalid-token envelopes and case-insensitive Bearer schemes.
+- `AuthenticationRateLimitFilterTest`: shared web/legacy/v1 alias buckets, independent IPs, forwarded/real IP handling and window reset.
+- `SecurityEventLoggerTest`: structured audit fields, request context, IP precedence, control-character flattening and bounded values.
+- `ApiErrorInfrastructureTest`: defaults, module metadata, writer contract, exception factories and hidden 500 details.
+- `SecurityInfrastructureContractTest`: integrated headers, mobile version lifecycle, JSON 401/403 responses and correlation IDs.

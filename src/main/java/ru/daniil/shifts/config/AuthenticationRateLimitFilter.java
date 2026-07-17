@@ -90,7 +90,8 @@ public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
         boolean registration = REGISTRATION.equals(path) || MOBILE_V1_REGISTRATION.equals(path);
         int limit = registration ? registrationLimit : loginLimit;
         int windowSeconds = registration ? registrationWindowSeconds : loginWindowSeconds;
-        Decision decision = register(path + "|" + clientIp(request), limit, windowSeconds);
+        String bucket = registration ? "registration" : "login";
+        Decision decision = register(bucket + "|" + clientIp(request), limit, windowSeconds);
 
         if (!decision.allowed()) {
             response.setHeader("Retry-After", Long.toString(decision.retryAfterSeconds()));

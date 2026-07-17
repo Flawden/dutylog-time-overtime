@@ -1,3 +1,12 @@
+## v27.2.22 — Security infrastructure regression and auth hardening suite
+
+- Added direct coverage for API version/deprecation headers, browser security headers, request correlation IDs, Bearer authentication, authentication rate limiting, structured security audit logs and stable API error envelopes.
+- Added MockMvc coverage for integrated security boundaries: public headers, mobile/web 401 responses, admin 403 responses, request-id propagation and mixed-case Bearer handling.
+- Bearer authentication schemes are now recognized case-insensitively, including repeated whitespace, and the web CSRF bearer matcher uses the same parser.
+- Web, legacy mobile and Android v1 login aliases now share one per-IP rate-limit bucket; web and Android registrations share a separate registration bucket.
+- Expanded the regression baseline to 57 test classes and 300 `@Test` methods.
+- No database schema changed.
+
 ## v27.2.21 — Telegram date validation and test harness hotfix
 
 - Fixed Telegram task date parsing so impossible calendar dates such as `31.02` are normalized to the stable `BAD_REQUEST` `ApiException` contract instead of leaking `DateTimeException`.
