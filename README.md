@@ -1,18 +1,19 @@
-> Current release: **v27.2.17 — Admin test context bootstrap hotfix**.
+> Current release: **v27.2.18 — Mobile auth and sync lifecycle regression suite**.
 
 # DutyLog
 
-Current release: **v27.2.17 — Admin test context bootstrap hotfix**
+Current release: **v27.2.18 — Mobile auth and sync lifecycle regression suite**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.17 — Admin test context bootstrap hotfix
+## Текущая версия: v27.2.18 — Mobile auth and sync lifecycle regression suite
 
 
-Эта версия исправляет конфигурацию `UserAdminServiceTest`: тест больше не поднимает Spring-контекст с неполной парой bootstrap-реквизитов администратора. Защита production-конфигурации продолжает требовать username и password вместе, а service-тест задаёт имя bootstrap-admin локально без запуска bootstrap-listener. Функциональное покрытие профиля и админки из v27.2.16 сохранено.
+Эта версия закрывает жизненный цикл Android-авторизации и offline sync: логин, refresh rotation, logout, управление устройствами, истечение и отзыв токенов, idempotency, optimistic conflicts, versioned tombstones и изоляцию операций разных пользователей. Некорректная дата внутри одного sync-элемента теперь возвращается как локальный `REJECTED`, не отменяя соседние корректные операции.
 
-Текущая база: **41 тестовый класс и 194 `@Test` метода**. Предыдущая контрольная точка: **v27.2.16 — Profile and administration regression suite**. До неё: **v27.2.15 — Structured module-disabled error envelope hotfix**. До неё: **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite** и **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
+Текущая база: **45 тестовых классов и 223 `@Test` метода**. Уточнено фактическое число тестов в v27.2.17: **193**, а не 194. Предыдущая контрольная точка: **v27.2.17 — Admin test context bootstrap hotfix**. До неё: **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix** и **v27.2.14 — Quick scenarios and overtime API regression suite**.
+Ранние этапы регрессии: **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
 
 JaCoCo формируется Maven-фазой `verify`, а не обычной кнопкой запуска JUnit в IntelliJ. Подробная инструкция: [`docs/TESTING.md`](docs/TESTING.md).
 

@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.17}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.18}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -648,6 +648,32 @@ contains CHANGES.md "v27.2.17 — Admin test context bootstrap hotfix"
 contains README.md "v27.2.17 — Admin test context bootstrap hotfix"
 contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java 'service = new UserAdminService(users, encoder, mobileAuthService, securityEvents, "bootstrap-root")'
 not_contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java '@TestPropertySource(properties = "dutylog.admin.username=bootstrap-root")'
+
+# v27.2.18 mobile auth and sync lifecycle regression suite
+contains CHANGES.md "v27.2.18 — Mobile auth and sync lifecycle regression suite"
+contains README.md "v27.2.18 — Mobile auth and sync lifecycle regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "MobileAuthServiceTest"
+contains docs/REGRESSION_TEST_BASELINE.md "MobileSyncServiceTest"
+contains src/main/java/ru/daniil/shifts/service/MobileSyncService.java 'catch (ApiException ex) {'
+contains src/main/java/ru/daniil/shifts/service/MobileSyncService.java 'safeEntityKey(change.date())'
+contains src/test/java/ru/daniil/shifts/service/MobileAuthServiceTest.java 'refreshRotatesBothTokensInPlaceAndInvalidatesTheOldPair'
+contains src/test/java/ru/daniil/shifts/web/MobileAuthLifecycleControllerTest.java 'logoutByBearerWorksWithAnEmptyBodyBecauseLogoutRouteIsPublic'
+contains src/test/java/ru/daniil/shifts/service/MobileSyncServiceTest.java 'malformedDateIsAPerItemRejectionAndNoLongerAbortsTheBatch'
+contains src/test/java/ru/daniil/shifts/service/MobileSyncServiceTest.java 'clearCreatesAVersionedTombstoneSoStaleOfflineCreatesCannotOverwriteIt'
+contains src/test/java/ru/daniil/shifts/web/MobileSyncControllerTest.java 'legacyClearDeletesEmptyRowWhileV1ClearKeepsVersionedTombstone'
+
+TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
+TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
+if [[ "$TEST_METHODS" == "223" ]]; then
+  ok "test method baseline: 223"
+else
+  fail "expected 223 @Test methods, found $TEST_METHODS"
+fi
+if [[ "$TEST_CLASSES" == "45" ]]; then
+  ok "test class baseline: 45"
+else
+  fail "expected 45 test classes, found $TEST_CLASSES"
+fi
 
 echo
 

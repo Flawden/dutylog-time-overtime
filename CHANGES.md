@@ -1,10 +1,20 @@
+## v27.2.18 — Mobile auth and sync lifecycle regression suite
+
+- Added service-level coverage for mobile login, hashed token storage, access/refresh expiry, refresh rotation, logout, device normalization, session activity, owner isolation and revoke-all behaviour.
+- Added MockMvc coverage for both legacy and `/api/v1/mobile/auth` login, refresh, logout, session listing and session revocation routes.
+- Added service and HTTP coverage for Android v1 idempotency, owner-scoped operation ids, optimistic version conflicts, no-op rejection, module-scoped failures, clear precedence and versioned tombstones.
+- Fixed batch isolation for malformed day dates: an invalid date is now returned as a per-operation `REJECTED` result and no longer aborts valid neighbouring operations.
+- Added validation guards for structurally malformed direct service operations and preserved legacy mobile clear/delete semantics alongside v1 tombstones.
+- Corrected the documented baseline count: v27.2.17 contains 193, not 194, `@Test` methods. The suite now contains 45 classes and 223 `@Test` methods.
+- No database schema changed.
+
 ## v27.2.17 — Admin test context bootstrap hotfix
 
 - Fixed `UserAdminServiceTest` so it no longer supplies only `dutylog.admin.username` to the full Spring context.
 - The incomplete bootstrap pair correctly triggered the production safety guard requiring username and password together, which prevented the test `ApplicationContext` from loading and cascaded into dozens of red test results.
 - The test now constructs `UserAdminService` with an explicit bootstrap-admin name while leaving the application bootstrap listener unconfigured, avoiding startup side effects and still testing bootstrap-admin protections.
 - Added release guards preventing the incomplete test property from returning.
-- No production behavior or database schema changed; the suite remains 41 classes and 194 `@Test` methods.
+- No production behavior or database schema changed; the suite remains 41 classes and 193 `@Test` methods.
 
 ## v27.2.16 — Profile and administration regression suite
 
@@ -14,7 +24,7 @@
 - Added registration-setting service coverage for default/database sources, audit metadata and legacy boolean spellings.
 - Added administrative service and MockMvc coverage for search, role filters, pagination, bootstrap/current-user flags, promotion, safe demotion, last-admin protection, password reset, mobile-session revocation and registration toggling.
 - Fixed `SystemController` expected client errors to use the stable `ApiException` envelope instead of `ResponseStatusException`, which could be swallowed by the generic advice and returned as `500 INTERNAL_ERROR`.
-- Expanded the regression baseline to 41 test classes and 194 `@Test` methods.
+- Expanded the regression baseline to 41 test classes and 193 `@Test` methods.
 - No database schema changed.
 
 ## v27.2.15 — Structured module-disabled error envelope hotfix
