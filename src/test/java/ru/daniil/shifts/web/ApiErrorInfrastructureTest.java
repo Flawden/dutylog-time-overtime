@@ -1,9 +1,14 @@
 package ru.daniil.shifts.web;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -61,7 +66,8 @@ class ApiErrorInfrastructureTest {
                 Map.of("name", "required"));
 
         assertEquals(422, response.getStatus());
-        assertEquals("application/json", response.getContentType());
+        assertTrue(MediaType.APPLICATION_JSON.isCompatibleWith(
+                MediaType.parseMediaType(response.getContentType())));
         assertEquals("UTF-8", response.getCharacterEncoding());
         JsonNode body = objectMapper.readTree(response.getContentAsString());
         assertEquals("INVALID_TEST", body.path("code").asText());
@@ -117,15 +123,30 @@ class ApiErrorInfrastructureTest {
 
     @Test
     void unexpectedExceptionsAreHiddenBehindGeneric500Envelope() {
-        MockHttpServletRequest request = request("POST", "/api/failure", "handler-3");
-        ResponseEntity<ApiErrorResponse> response = handler.unexpected(
-                new IllegalStateException("database password=secret-value"), request);
+        Logger logger = (Logger) LoggerFactory.getLogger(ApiExceptionHandler.class);
+        ListAppender<ILoggingEvent> appender = new ListAppender<>();
+        appender.start();
+        logger.addAppender(appender);
+        try {
+            MockHttpServletRequest request = request("POST", "/api/failure", "handler-3");
+            ResponseEntity<ApiErrorResponse> response = handler.unexpected(
+                    new IllegalStateException("database password=secret-value"), request);
 
-        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
-        assertEquals("INTERNAL_ERROR", response.getBody().code());
-        assertEquals("Внутренняя ошибка сервера", response.getBody().message());
-        assertFalse(response.getBody().message().contains("secret-value"));
-        assertEquals("handler-3", response.getBody().requestId());
+            assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, response.getStatusCode());
+            assertEquals("INTERNAL_ERROR", response.getBody().code());
+            assertEquals("Внутренняя ошибка сервера", response.getBody().message());
+            assertFalse(response.getBody().message().contains("secret-value"));
+            assertEquals("handler-3", response.getBody().requestId());
+
+            assertEquals(1, appender.list.size());
+            ILoggingEvent event = appender.list.get(0);
+            assertTrue(event.getFormattedMessage().contains("exceptionType=java.lang.IllegalStateException"));
+            assertFalse(event.getFormattedMessage().contains("secret-value"));
+            assertNull(event.getThrowableProxy());
+        } finally {
+            logger.detachAppender(appender);
+            appender.stop();
+        }
     }
 
     private MockHttpServletRequest request(String method, String path, String requestId) {

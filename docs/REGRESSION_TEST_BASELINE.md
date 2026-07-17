@@ -2,7 +2,7 @@
 
 Status: extended in v27.2.9 with the task regression suite.
 
-Current extension: v27.2.22 covers security filters, correlation IDs, Bearer parsing, shared auth throttling, audit logging and stable error envelopes.
+Current extension: v27.2.23 keeps the security suite browser/JSON contracts realistic and prevents unexpected exception text or stacks from leaking into production logs.
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
@@ -132,3 +132,10 @@ A green test suite means the listed contracts still hold. It does not replace ex
 - `SecurityEventLoggerTest`: structured audit fields, request context, IP precedence, control-character flattening and bounded values.
 - `ApiErrorInfrastructureTest`: defaults, module metadata, writer contract, exception factories and hidden 500 details.
 - `SecurityInfrastructureContractTest`: integrated headers, mobile version lifecycle, JSON 401/403 responses and correlation IDs.
+
+## v27.2.23 security test contract and secret-safe logging hotfix
+
+- JSON error responses are asserted by media-type compatibility, so an explicit UTF-8 charset remains valid.
+- HTML navigation tests send `Accept: text/html`, while `/api/**` continues to use stable JSON 401 responses.
+- Unexpected exception logs retain request correlation and exception type but omit throwable messages and stack traces that may contain secrets.
+

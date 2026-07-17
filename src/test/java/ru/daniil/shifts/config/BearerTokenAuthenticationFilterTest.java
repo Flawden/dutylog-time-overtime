@@ -7,6 +7,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import ru.daniil.shifts.model.AppUser;
@@ -146,7 +147,8 @@ class BearerTokenAuthenticationFilterTest {
         filter.doFilter(request, response, chain);
 
         assertEquals(401, response.getStatus());
-        assertEquals("application/json", response.getContentType());
+        assertTrue(MediaType.APPLICATION_JSON.isCompatibleWith(
+                MediaType.parseMediaType(response.getContentType())));
         JsonNode body = objectMapper.readTree(response.getContentAsString());
         assertEquals("TOKEN_INVALID", body.path("code").asText());
         assertEquals("req-token-1", body.path("requestId").asText());

@@ -78,7 +78,7 @@ class SecurityInfrastructureContractTest {
 
     @Test
     void browserPageRedirectAndMalformedRegistrationJsonStayOnTheirExpectedChannels() throws Exception {
-        mvc.perform(get("/"))
+        mvc.perform(get("/").accept(MediaType.TEXT_HTML))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrlPattern("**/login.html"));
 

@@ -1,3 +1,11 @@
+## v27.2.23 — Security test contract and secret-safe error logging hotfix
+
+- Исправлены два чрезмерно строгих теста Content-Type: `application/json;charset=UTF-8` теперь корректно принимается как JSON.
+- Browser redirect contract теперь отправляет `Accept: text/html`, как настоящий браузер, и не смешивает HTML-навигацию с JSON API channel.
+- `ApiExceptionHandler` больше не логирует throwable целиком для неожиданных ошибок: в журнал попадают request ID, method, path и безопасное имя класса исключения.
+- Добавлена регрессия, запрещающая утечку текста исключения и throwable stack в production error log.
+- Production API envelope, база данных и Flyway не менялись.
+
 ## v27.2.22 — Security infrastructure regression and auth hardening suite
 
 - Added direct coverage for API version/deprecation headers, browser security headers, request correlation IDs, Bearer authentication, authentication rate limiting, structured security audit logs and stable API error envelopes.
