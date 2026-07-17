@@ -1,6 +1,6 @@
 # v27.2.7 — Regression test baseline
 
-Status: v27.2.7.
+Status: retained in v27.2.8 after the test compilation hotfix.
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 

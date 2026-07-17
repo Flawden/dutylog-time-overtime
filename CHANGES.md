@@ -1,3 +1,9 @@
+## v27.2.8 — Test compilation hotfix
+
+- Fixed invalid Java character literals in `CalendarMonthReloadContractTest`: Java strings now use escaped double quotes.
+- Added release-check guards for the exact browser-cache assertions so this contract test cannot silently become uncompilable again.
+- No production behaviour or database schema changed.
+
 ## v27.2.7 — Regression test baseline and notification poll shutdown
 
 - Stopped the browser notification interval immediately when the Notifications module is disabled.

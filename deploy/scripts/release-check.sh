@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.7}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.8}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -533,10 +533,14 @@ contains src/main/resources/static/js/70-user-boot.js 'startBrowserNotificationS
 contains src/main/resources/static/js/70-user-boot.js '!state.modulesLoaded || !moduleEnabled("telegram")'
 contains src/main/resources/static/js/50-tasks.js 'function updateTaskReminderControls()'
 
-# v27.2.7 regression baseline and notification poll shutdown
-contains CHANGES.md "v27.2.7 — Regression test baseline and notification poll shutdown"
-contains README.md "v27.2.7 — Regression test baseline and notification poll shutdown"
-contains docs/REGRESSION_TEST_BASELINE.md "Status: v27.2.7."
+# v27.2.8 test compilation hotfix + retained regression baseline
+contains CHANGES.md "v27.2.8 — Test compilation hotfix"
+contains README.md "v27.2.8 — Test compilation hotfix"
+contains docs/REGRESSION_TEST_BASELINE.md "Status: retained in v27.2.8 after the test compilation hotfix."
+contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java 'dataJs.contains("cache:fresh ? \"no-store\" : undefined")'
+contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java 'dataJs.contains("cache: opts.cache")'
+not_contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "dataJs.contains('cache:fresh"
+not_contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "dataJs.contains('cache: opts.cache')"
 contains src/main/resources/static/js/20-data.js 'syncBrowserNotificationSchedulerForModules();'
 contains src/main/resources/static/js/20-data.js 'err.moduleKey = moduleKey'
 contains src/main/resources/static/js/60-settings.js 'function stopBrowserNotificationScheduler()'
