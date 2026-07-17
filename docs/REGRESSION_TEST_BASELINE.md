@@ -2,7 +2,7 @@
 
 Status: extended in v27.2.9 with the task regression suite.
 
-Current extension: v27.2.13 adds shift-type and calendar-pattern regression coverage.
+Current extension: v27.2.14 adds quick-scenario and overtime HTTP/export regression coverage.
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
@@ -45,7 +45,11 @@ The following behaviours were verified manually before this baseline was created
 | Disabling Notifications tears down browser polling | `BrowserNotificationFrontendContractTest` |
 | A stale `MODULE_DISABLED:notifications` response cannot become a recurring 403 loop | `BrowserNotificationFrontendContractTest` |
 | Task reminder controls reflect the Notifications module | `BrowserNotificationFrontendContractTest` |
+| Quick-scenario defaults, CRUD, FIXED_TIME consistency and deletion semantics remain stable | `QuickScenarioServiceTest`, `QuickScenarioControllerTest` |
+| Quick-scenario API keeps v1 aliases, validation, CSRF, authentication, module and ownership boundaries | `QuickScenarioControllerTest` |
 | Overtime interval splitting, overlap protection and FIFO remain correct | `OvertimeServiceTest` |
+| Overtime pages, filters, exports, usage reallocation and deletion rules remain stable | `OvertimeAccountQueryServiceTest`, `OvertimeControllerTest` |
+| Overtime API keeps legacy/v1 aliases, validation, CSRF, authentication, module and ownership boundaries | `OvertimeControllerTest` |
 | Mobile/web authentication boundary, ownership and module guards remain enforced | `MobileSecurityBoundaryTest`, `OwnershipIsolationTest`, `ModuleSecurityTest` |
 
 ## Running the gate

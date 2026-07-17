@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.13}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.14}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -602,6 +602,22 @@ contains src/test/java/ru/daniil/shifts/service/ShiftTypeServiceTest.java "ensur
 contains src/test/java/ru/daniil/shifts/web/CalendarPatternControllerTest.java "v1FillAndCalendarReadPreserveDayNightFortyEightAcrossLeapDay"
 contains src/test/java/ru/daniil/shifts/web/ShiftTypeControllerTest.java "fullCrudWorksAcrossLegacyAndV1Aliases"
 contains src/test/java/ru/daniil/shifts/web/ScheduleTemplateFrontendContractTest.java "weeklyTemplateIsRotatedBySelectedWeekdayAndTheEffectiveSequenceIsSentToTheServer"
+
+
+# v27.2.14 quick scenarios and overtime API regression suite
+contains CHANGES.md "v27.2.14 — Quick scenarios and overtime API regression suite"
+contains README.md "v27.2.14 — Quick scenarios and overtime API regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "QuickScenarioServiceTest"
+contains src/test/java/ru/daniil/shifts/service/ShiftTypeServiceTest.java "import java.util.Map;"
+contains src/test/java/ru/daniil/shifts/service/ShiftTypeServiceTest.java "import java.util.stream.Collectors;"
+contains src/test/java/ru/daniil/shifts/service/QuickScenarioServiceTest.java "firstListSeedsFiveOrderedDefaultsExactlyOnce"
+contains src/test/java/ru/daniil/shifts/service/QuickScenarioServiceTest.java "deletingASeededScenarioDoesNotRestoreItOnLaterLists"
+contains src/test/java/ru/daniil/shifts/web/QuickScenarioControllerTest.java "fullCrudWorksAcrossLegacyAndV1Aliases"
+contains src/test/java/ru/daniil/shifts/web/QuickScenarioControllerTest.java "disabledModuleGuardsEveryEndpointWithoutDeletingStoredScenarios"
+contains src/test/java/ru/daniil/shifts/service/OvertimeAccountQueryServiceTest.java "accountPageFiltersOpenPartialClosedDateAndSearch"
+contains src/test/java/ru/daniil/shifts/service/OvertimeAccountQueryServiceTest.java "csvExportKeepsBomFiltersRowsAndEscapesSpreadsheetCells"
+contains src/test/java/ru/daniil/shifts/web/OvertimeControllerTest.java "creditAndUsageCrudKeepsFifoAcrossLegacyAndV1Aliases"
+contains src/test/java/ru/daniil/shifts/web/OvertimeControllerTest.java "disabledModuleGuardsAllEndpointsWithoutDeletingAccountData"
 
 
 echo

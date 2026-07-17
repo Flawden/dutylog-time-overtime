@@ -1,3 +1,13 @@
+## v27.2.14 — Quick scenarios and overtime API regression suite
+
+- Restored the missing `java.util.Map` and `java.util.stream.Collectors` imports in `ShiftTypeServiceTest` from the verified local correction.
+- Added service-level coverage for quick-scenario default seeding, one-time deletion semantics, safe defaults, complete updates, optional-field clearing, FIXED_TIME consistency, owner isolation and stable errors.
+- Added MockMvc coverage for legacy and `/api/v1/quick-scenarios` CRUD, validation envelopes, malformed bodies, module guards, CSRF, authentication and IDOR boundaries.
+- Added overtime query/export coverage for open/partial/closed filters, date/search filters, safe pagination, CSV BOM and escaping, XLS HTML escaping, FIFO reallocation after usage updates, deletion rules and owner isolation.
+- Added MockMvc coverage for legacy and `/api/v1/overtime` credit/usage CRUD, FIFO allocations, account pages, CSV/XLS exports, validation, module guards, CSRF, authentication and foreign IDs.
+- Expanded the regression baseline to 36 test classes and 166 `@Test` methods.
+- No production behaviour or database schema changed.
+
 ## v27.2.13 — Shift types and calendar patterns regression suite
 
 - Added service-level coverage for built-in shift seeding, legacy-default repair, custom shift CRUD, optional time/reminder clearing, protected built-in identity and owner isolation.

@@ -1,18 +1,18 @@
-> Current release: **v27.2.13 — Shift types and calendar patterns regression suite**.
+> Current release: **v27.2.14 — Quick scenarios and overtime API regression suite**.
 
 # DutyLog
 
-Current release: **v27.2.13 — Shift types and calendar patterns regression suite**
+Current release: **v27.2.14 — Quick scenarios and overtime API regression suite**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.13 — Shift types and calendar patterns regression suite
+## Текущая версия: v27.2.14 — Quick scenarios and overtime API regression suite
 
 
-Эта версия закрепляет типы смен и автозаполнение календаря: встроенные и пользовательские смены, CRUD и ownership, защиту встроенных типов, удаление используемой смены без потери заметок и переработок, шаблоны 2/2, день/ночь/48 и 5/2, границы месяца и года, високосный февраль, overwrite и frontend-ротацию пятидневки. Production-код и схема БД не менялись.
+Эта версия закрепляет быстрые сценарии и HTTP-контракт переработок: дефолтные и пользовательские сценарии, CRUD, validation, module/CSRF/ownership boundaries, FIFO через реальные endpoints, страницы и фильтры журнала, CSV/XLS-экспорт, редактирование и удаление начислений/списаний. Также восстановлены недостающие импорты в `ShiftTypeServiceTest`. Production-код и схема БД не менялись.
 
-Предыдущие контрольные точки: **v27.2.12 — Important dates regression suite** и **v27.2.11 — Task priority regression test correction**. До них: **v27.2.10 — Task board status validation hotfix**.
+Предыдущие контрольные точки: **v27.2.13 — Shift types and calendar patterns regression suite** и **v27.2.12 — Important dates regression suite**. До них: **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
 
 JaCoCo формируется Maven-фазой `verify`, а не обычной кнопкой запуска JUnit в IntelliJ. Подробная инструкция: [`docs/TESTING.md`](docs/TESTING.md).
 
