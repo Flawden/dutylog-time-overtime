@@ -1,3 +1,11 @@
+## v27.2.17 — Admin test context bootstrap hotfix
+
+- Fixed `UserAdminServiceTest` so it no longer supplies only `dutylog.admin.username` to the full Spring context.
+- The incomplete bootstrap pair correctly triggered the production safety guard requiring username and password together, which prevented the test `ApplicationContext` from loading and cascaded into dozens of red test results.
+- The test now constructs `UserAdminService` with an explicit bootstrap-admin name while leaving the application bootstrap listener unconfigured, avoiding startup side effects and still testing bootstrap-admin protections.
+- Added release guards preventing the incomplete test property from returning.
+- No production behavior or database schema changed; the suite remains 41 classes and 194 `@Test` methods.
+
 ## v27.2.16 — Profile and administration regression suite
 
 - Added complete profile HTTP coverage for safe defaults, display name and birthday persistence, locale, onboarding, theme preferences, accent normalization and the allow-listed Theme Builder configuration.

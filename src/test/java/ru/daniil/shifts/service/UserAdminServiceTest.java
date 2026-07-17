@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.test.context.TestPropertySource;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.config.SecurityEventLogger;
 import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.MobileAuthToken;
@@ -24,14 +24,14 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Business rules for user search, role safety and administrative password resets. */
 @SpringBootTest
-@TestPropertySource(properties = "dutylog.admin.username=bootstrap-root")
 @Transactional
 class UserAdminServiceTest {
 
-    @Autowired UserAdminService service;
+    UserAdminService service;
     @Autowired UserRepository users;
     @Autowired PasswordEncoder encoder;
     @Autowired MobileAuthService mobileAuthService;
+    @Autowired SecurityEventLogger securityEvents;
     @Autowired MobileAuthTokenRepository tokens;
 
     AppUser bootstrap;
@@ -41,6 +41,7 @@ class UserAdminServiceTest {
 
     @BeforeEach
     void setUp() {
+        service = new UserAdminService(users, encoder, mobileAuthService, securityEvents, "bootstrap-root");
         bootstrap = admin("bootstrap-root");
         currentAdmin = admin("admin-current");
         secondAdmin = admin("admin-second");

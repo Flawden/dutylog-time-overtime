@@ -2,7 +2,7 @@
 
 Status: extended in v27.2.9 with the task regression suite.
 
-Current extension: v27.2.16 covers profile, safe theme settings, web mobile-session management, registration settings and administrator workflows.
+Current extension: v27.2.17 fixes the admin service test context while preserving the v27.2.16 profile and administration coverage.
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
@@ -81,3 +81,9 @@ A green test suite means the listed contracts still hold. It does not replace ex
 - `AppSettingsServiceTest`: default/database registration sources, audit metadata and legacy boolean parsing.
 - `UserAdminServiceTest`: search, filters, pagination, current/bootstrap flags, promotion/demotion safety, last-admin protection, password reset and session revocation.
 - `AdminControllerContractTest`: operational status secrecy, full admin API contract, stable error envelopes, registration toggle and CSRF.
+
+
+## v27.2.17 admin test context hotfix
+
+- `UserAdminServiceTest` no longer sets an incomplete bootstrap-admin property pair on the full Spring context.
+- The service is constructed inside the transactional test with an explicit bootstrap username, so bootstrap-admin protections remain covered without invoking production bootstrap side effects.

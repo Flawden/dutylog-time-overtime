@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.16}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.17}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -630,7 +630,7 @@ contains src/main/resources/static/js/20-data.js 'moduleKey = body?.moduleKey ||
 contains src/test/java/ru/daniil/shifts/web/QuickScenarioControllerTest.java 'jsonPath("$.moduleKey").value("scenarios")'
 contains src/test/java/ru/daniil/shifts/web/OvertimeControllerTest.java 'jsonPath("$.moduleKey").value("overtime")'
 
-# v27.2.16 profile and administration regression suite
+# v27.2.17 profile and administration regression suite
 contains CHANGES.md "v27.2.16 — Profile and administration regression suite"
 contains README.md "v27.2.16 — Profile and administration regression suite"
 contains docs/REGRESSION_TEST_BASELINE.md "ProfileControllerTest"
@@ -642,6 +642,12 @@ contains src/test/java/ru/daniil/shifts/web/AdminControllerContractTest.java "ma
 contains src/main/java/ru/daniil/shifts/web/SystemController.java 'throw ApiException.badRequest("Нужно передать role")'
 contains src/main/java/ru/daniil/shifts/web/SystemController.java 'throw ApiException.forbidden("Диагностика доступна только администратору")'
 not_contains src/main/java/ru/daniil/shifts/web/SystemController.java "ResponseStatusException"
+
+# v27.2.17 admin test context bootstrap hotfix
+contains CHANGES.md "v27.2.17 — Admin test context bootstrap hotfix"
+contains README.md "v27.2.17 — Admin test context bootstrap hotfix"
+contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java 'service = new UserAdminService(users, encoder, mobileAuthService, securityEvents, "bootstrap-root")'
+not_contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java '@TestPropertySource(properties = "dutylog.admin.username=bootstrap-root")'
 
 echo
 
