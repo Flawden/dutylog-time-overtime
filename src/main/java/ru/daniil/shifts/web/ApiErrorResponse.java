@@ -18,6 +18,7 @@ public record ApiErrorResponse(
         String message,
         String error,
         Map<String, String> fields,
+        String moduleKey,
         String requestId,
         String timestamp
 ) {
@@ -32,8 +33,17 @@ public record ApiErrorResponse(
                 safeMessage,
                 safeMessage,
                 fields == null ? Map.of() : fields,
+                moduleKey(safeCode, safeMessage),
                 requestId,
                 Instant.now().toString()
         );
+    }
+
+    private static String moduleKey(String code, String message) {
+        if (!"MODULE_DISABLED".equals(code) || message == null) return null;
+        String marker = "MODULE_DISABLED:";
+        if (!message.startsWith(marker)) return null;
+        String key = message.substring(marker.length()).trim();
+        return key.isEmpty() ? null : key;
     }
 }

@@ -34,7 +34,7 @@ echo "This changes the application image only. Flyway migrations are not reverse
 exec bash deploy/scripts/deploy-environment.sh \
   --environment "${DUTYLOG_ENVIRONMENT:?}" \
   --image "$PREVIOUS_IMAGE" \
-  --release-version "${PREVIOUS_RELEASE_VERSION:-27.2.14}" \
+  --release-version "${PREVIOUS_RELEASE_VERSION:-27.2.15}" \
   --build-version "${PREVIOUS_BUILD_VERSION:-rollback}" \
   --tree "${PREVIOUS_TREE:?Previous deployment tree is missing; automatic rollback is unsafe}" \
   --commit "${PREVIOUS_COMMIT:-unknown}" \

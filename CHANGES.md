@@ -1,3 +1,12 @@
+## v27.2.15 — Structured module-disabled error envelope hotfix
+
+- Fixed the stable API error contract for disabled modules: `MODULE_DISABLED` responses now include a structured `moduleKey` field instead of forcing clients to parse `message` or the legacy `error` alias.
+- Kept the legacy `MODULE_DISABLED:<key>` message for backward compatibility.
+- Updated the PWA client to prefer `body.moduleKey` while retaining the legacy marker fallback for older servers.
+- Documented `moduleKey` in the OpenAPI `ApiError` schema and module/API documentation.
+- Strengthened task, important-date, notification, quick-scenario and overtime module-guard tests around the structured field.
+- No database schema changed.
+
 ## v27.2.14 — Quick scenarios and overtime API regression suite
 
 - Restored the missing `java.util.Map` and `java.util.stream.Collectors` imports in `ShiftTypeServiceTest` from the verified local correction.

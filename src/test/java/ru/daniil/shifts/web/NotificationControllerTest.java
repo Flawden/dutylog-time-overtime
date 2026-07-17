@@ -40,6 +40,7 @@ class NotificationControllerTest {
         mvc.perform(get("/api/notifications/settings")
                         .with(user(user.getUsername()).roles("USER")))
                 .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.moduleKey").value("notifications"))
                 .andExpect(jsonPath("$.error").value("MODULE_DISABLED:notifications"));
 
         mvc.perform(get("/api/notifications/upcoming")
@@ -47,6 +48,7 @@ class NotificationControllerTest {
                         .param("from", "2026-07-01")
                         .param("to", "2026-07-31"))
                 .andExpect(status().isForbidden())
+                .andExpect(jsonPath("$.moduleKey").value("notifications"))
                 .andExpect(jsonPath("$.error").value("MODULE_DISABLED:notifications"));
     }
 

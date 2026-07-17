@@ -21,6 +21,8 @@ class BrowserNotificationFrontendContractTest {
 
         assertTrue(data.contains("syncBrowserNotificationSchedulerForModules();"),
                 "setModuleList must synchronize the running scheduler after every module response");
+        assertTrue(data.contains("moduleKey = body?.moduleKey || null"),
+                "jfetch must prefer the structured moduleKey field from the server");
         assertTrue(data.contains("err.moduleKey = moduleKey"),
                 "jfetch must preserve the disabled module key instead of only translating its message");
 

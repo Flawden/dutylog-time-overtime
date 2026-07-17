@@ -2,7 +2,7 @@
 
 Status: extended in v27.2.9 with the task regression suite.
 
-Current extension: v27.2.14 adds quick-scenario and overtime HTTP/export regression coverage.
+Current extension: v27.2.15 fixes and locks the structured `moduleKey` field for disabled-module errors.
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 

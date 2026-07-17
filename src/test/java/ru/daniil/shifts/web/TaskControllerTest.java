@@ -228,6 +228,7 @@ class TaskControllerTest {
                         .param("date", "2026-08-10"))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value("MODULE_DISABLED"))
+                .andExpect(jsonPath("$.moduleKey").value("tasks"))
                 .andExpect(jsonPath("$.error").value("MODULE_DISABLED:tasks"));
 
         mvc.perform(get("/api/tasks/board")

@@ -161,6 +161,7 @@ class ImportantDayControllerTest {
                         .with(user(owner.getUsername()).roles("USER")))
                 .andExpect(status().isForbidden())
                 .andExpect(jsonPath("$.code").value("MODULE_DISABLED"))
+                .andExpect(jsonPath("$.moduleKey").value("important_dates"))
                 .andExpect(jsonPath("$.error").value("MODULE_DISABLED:important_dates"));
 
         mvc.perform(get("/api/important-days/occurrences")

@@ -21,7 +21,7 @@ function esc(value){
     .replace(/'/g, "&#39;");
 }
 
-const DUTYLOG_VERSION = "27.2.14"
+const DUTYLOG_VERSION = "27.2.15"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){

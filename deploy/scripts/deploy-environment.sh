@@ -10,8 +10,8 @@ usage() {
 Usage: deploy-environment.sh \
   --environment staging|production \
   --image ghcr.io/owner/repo@sha256:... \
-  --release-version 27.2.14 \
-  --build-version 27.2.14+tree.abc123 \
+  --release-version 27.2.15 \
+  --build-version 27.2.15+tree.abc123 \
   --tree <git-tree-sha> \
   --commit <git-sha> \
   --build-time <ISO-8601> \
@@ -21,7 +21,7 @@ EOF
 
 ENVIRONMENT=""
 IMAGE_REF=""
-RELEASE_VERSION="27.2.14"
+RELEASE_VERSION="27.2.15"
 BUILD_VERSION=""
 BUILD_TREE=""
 BUILD_COMMIT="unknown"

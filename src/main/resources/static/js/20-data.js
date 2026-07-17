@@ -595,11 +595,12 @@ async function jfetch(url, opts = {}) {
       const body = await res.json();
       code = body?.code || null;
       if (body?.error) msg = body.error;
+      moduleKey = body?.moduleKey || null;
       const moduleMarker = [body?.error, body?.message, body?.code]
         .map(value => String(value || ""))
         .find(value => value.startsWith("MODULE_DISABLED:"));
-      if (moduleMarker) {
-        moduleKey = moduleMarker.split(":")[1] || "";
+      if (!moduleKey && moduleMarker) moduleKey = moduleMarker.split(":")[1] || "";
+      if (moduleKey) {
         const mod = (state.modulesList || []).find(m => m.key === moduleKey);
         msg = `${t("модуль выключен")}: ${mod ? moduleTitle(mod) : moduleKey}`;
       }

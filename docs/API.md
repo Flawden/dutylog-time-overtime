@@ -1196,7 +1196,7 @@ Request body:
 }
 ```
 
-Unknown keys and locked modules are ignored. Dependencies are enabled automatically. Disabled feature APIs return HTTP 403 with `MODULE_DISABLED:<key>`.
+Unknown keys and locked modules are ignored. Dependencies are enabled automatically. Disabled feature APIs return HTTP 403 with `code: MODULE_DISABLED`, structured `moduleKey: <key>`, and the legacy `MODULE_DISABLED:<key>` message.
 
 ## Notes export
 

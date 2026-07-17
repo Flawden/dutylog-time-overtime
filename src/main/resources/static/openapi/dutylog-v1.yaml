@@ -250,6 +250,11 @@ components:
         fields:
           type: object
           additionalProperties: { type: string }
+        moduleKey:
+          type: string
+          nullable: true
+          description: Disabled module key when code is MODULE_DISABLED
+          example: notifications
         requestId: { type: string, nullable: true }
         timestamp: { type: string, format: date-time }
     MobileRegisterRequest:

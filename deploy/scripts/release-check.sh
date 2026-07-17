@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.14}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.15}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -619,6 +619,16 @@ contains src/test/java/ru/daniil/shifts/service/OvertimeAccountQueryServiceTest.
 contains src/test/java/ru/daniil/shifts/web/OvertimeControllerTest.java "creditAndUsageCrudKeepsFifoAcrossLegacyAndV1Aliases"
 contains src/test/java/ru/daniil/shifts/web/OvertimeControllerTest.java "disabledModuleGuardsAllEndpointsWithoutDeletingAccountData"
 
+
+# v27.2.15 structured module-disabled error envelope hotfix
+contains CHANGES.md "v27.2.15 — Structured module-disabled error envelope hotfix"
+contains README.md "v27.2.15 — Structured module-disabled error envelope hotfix"
+contains src/main/java/ru/daniil/shifts/web/ApiErrorResponse.java 'String moduleKey,'
+contains src/main/java/ru/daniil/shifts/web/ApiErrorResponse.java 'moduleKey(safeCode, safeMessage)'
+contains src/main/resources/static/openapi/dutylog-v1.yaml 'moduleKey:'
+contains src/main/resources/static/js/20-data.js 'moduleKey = body?.moduleKey || null'
+contains src/test/java/ru/daniil/shifts/web/QuickScenarioControllerTest.java 'jsonPath("$.moduleKey").value("scenarios")'
+contains src/test/java/ru/daniil/shifts/web/OvertimeControllerTest.java 'jsonPath("$.moduleKey").value("overtime")'
 
 echo
 
