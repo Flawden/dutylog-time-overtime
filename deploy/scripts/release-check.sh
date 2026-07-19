@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.29}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.30}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -339,7 +339,7 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "Status: v27.2.29."
+contains docs/SECURITY_REVIEW.md "Status: v27.2.30."
 contains docs/FINAL_PRODUCT_AUDIT_V27.2.29.md "## Launch decision"
 contains docs/TEST_CONFIG_HOTFIX.md "v27.2.5"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
@@ -456,7 +456,15 @@ not_contains .github/workflows/deploy-production.yml "docker/build-push-action"
 contains deploy/compose/docker-compose.deploy.yml 'DUTYLOG_IMAGE:?DUTYLOG_IMAGE must be an immutable registry reference'
 contains deploy/env/.env.staging.example 'ghcr.io/invalid/dutylog-bootstrap@sha256:0000000000000000000000000000000000000000000000000000000000000000'
 contains deploy/env/.env.production.cicd.example 'ghcr.io/invalid/dutylog-bootstrap@sha256:0000000000000000000000000000000000000000000000000000000000000000'
-contains deploy/compose/docker-compose.deploy.yml 'name: ${DUTYLOG_EDGE_NETWORK:-dutylog_edge}'
+contains deploy/compose/docker-compose.deploy.yml '"${DUTYLOG_BIND_ADDRESS:-127.0.0.1}:${DUTYLOG_BIND_PORT:?Set DUTYLOG_BIND_PORT in the environment file}:8080"'
+not_contains deploy/compose/docker-compose.deploy.yml 'DUTYLOG_EDGE_NETWORK'
+not_contains deploy/compose/docker-compose.deploy.yml 'DUTYLOG_APP_ALIAS'
+contains deploy/compose/docker-compose.deploy.yml 'mem_limit: ${DUTYLOG_APP_MEMORY_LIMIT:-640m}'
+contains deploy/compose/docker-compose.deploy.yml 'mem_limit: ${DUTYLOG_DB_MEMORY_LIMIT:-256m}'
+contains deploy/compose/docker-compose.deploy.yml 'max-size: "10m"'
+contains deploy/compose/docker-compose.deploy.yml 'database:'
+contains deploy/compose/docker-compose.deploy.yml 'internal: true'
+contains deploy/compose/docker-compose.deploy.yml 'outbound:'
 not_contains deploy/compose/docker-compose.deploy.yml "container_name:"
 contains deploy/scripts/deploy-environment.sh 'must be an immutable image digest reference'
 contains deploy/scripts/deploy-environment.sh 'Creating verified pre-deploy backup'
@@ -465,6 +473,9 @@ contains deploy/scripts/check-deploy-env.sh 'production requires DUTYLOG_BACKUP_
 contains deploy/scripts/check-deploy-env.sh 'production project name must be dutylog-production'
 contains deploy/scripts/check-deploy-env.sh 'staging project name must be dutylog-staging'
 contains deploy/scripts/bootstrap-cicd-host.sh 'currently publishes linux/amd64 images'
+contains deploy/scripts/bootstrap-cicd-host.sh 'This bootstrap does not install or start Caddy and does not modify nginx.'
+not_contains deploy/scripts/bootstrap-cicd-host.sh 'docker network create'
+not_contains deploy/scripts/bootstrap-cicd-host.sh 'docker-compose.edge.yml'
 contains deploy/scripts/deploy-environment.sh 'Database migrations were not rolled back.'
 contains deploy/scripts/deploy-environment.sh 'Running container metadata does not match the requested immutable build.'
 contains deploy/scripts/deploy-environment.sh '--tree must be the exact 40-character Git tree SHA used to build the image'
@@ -478,6 +489,17 @@ contains deploy/scripts/reset-staging.sh 'Refusing to reset a non-staging enviro
 not_contains deploy/scripts/reset-staging.sh 'rm -rf'
 contains deploy/scripts/remote-deploy.sh 'StrictHostKeyChecking=yes'
 contains deploy/scripts/remote-deploy.sh 'deploy/scripts/check-deploy-env.sh'
+contains deploy/scripts/remote-deploy.sh 'deploy/scripts/local-smoke-test.sh'
+contains deploy/scripts/deploy-environment.sh 'bash deploy/scripts/local-smoke-test.sh'
+contains deploy/scripts/local-smoke-test.sh 'DUTYLOG_BIND_ADDRESS is not 127.0.0.1'
+contains deploy/scripts/check-deploy-env.sh 'DUTYLOG_BIND_ADDRESS must be exactly 127.0.0.1'
+contains deploy/scripts/check-deploy-env.sh 'DUTYLOG_SECURITY_TRUST_PROXY_HEADERS must be true'
+contains deploy/env/.env.staging.example 'DUTYLOG_BIND_PORT=18082'
+contains deploy/env/.env.production.cicd.example 'DUTYLOG_BIND_PORT=18083'
+contains deploy/nginx/dutylog-staging.conf.example 'proxy_pass http://127.0.0.1:18082;'
+contains deploy/nginx/dutylog-production.conf.example 'proxy_pass http://127.0.0.1:18083;'
+contains deploy/nginx/dutylog-staging.conf.example 'proxy_set_header X-Forwarded-For $remote_addr;'
+contains deploy/nginx/dutylog-production.conf.example 'proxy_set_header X-Forwarded-For $remote_addr;'
 contains deploy/scripts/restore-postgres.sh 'CONFIRM_RESTORE'
 contains deploy/scripts/restore-postgres.sh 'pre-restore'
 contains deploy/scripts/migration-smoke-test.sh 'Clean PostgreSQL migration and container startup passed.'
@@ -513,7 +535,7 @@ contains README.md "v27.2.5 — Calendar day identity hotfix"
 contains docs/RELEASE_CANDIDATE.md "v27.2.5 — Calendar day identity hotfix"
 contains docs/USER_GUIDE.md "Status: v27.2.5."
 contains docs/PRODUCTION_DEPLOY.md "same GHCR digest that already passed staging"
-contains docs/BACKUP_RESTORE.md "Status: v27.2.29."
+contains docs/BACKUP_RESTORE.md "Status: v27.2.30."
 contains docs/RELEASE_CHECKLIST.md "git tag -a v27.2.5"
 
 # v27.2.5 calendar persistence regression guards
@@ -573,7 +595,7 @@ contains .github/workflows/ci.yml 'name: jacoco-report'
 
 # v27.2.9 task regression suite and local coverage instructions
 contains CHANGES.md "v27.2.9 — Task regression suite"
-contains docs/REGRESSION_TEST_BASELINE.md "Status: v27.2.29."
+contains docs/REGRESSION_TEST_BASELINE.md "Status: v27.2.30."
 contains docs/TESTING.md "mvn clean verify"
 contains docs/TESTING.md "target/site/jacoco/index.html"
 contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java "boardFiltersStatusCategoryPriorityQueryAndDateRange"
@@ -834,8 +856,8 @@ contains deploy/scripts/remote-deploy.sh 'missing=()'
 # v27.2.29 final security and product audit hardening
 contains CHANGES.md "v27.2.29 — Final security and product audit hardening"
 contains README.md "v27.2.29 — Final security and product audit hardening"
-contains docs/REGRESSION_TEST_BASELINE.md "v27.2.29 final security and product audit hardening"
-contains docs/SECURITY_REVIEW.md "Status: v27.2.29."
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.29 security baseline"
+contains docs/SECURITY_REVIEW.md "Status: v27.2.30."
 contains src/main/resources/db/migration/postgresql/V23__web_auth_version.sql "auth_version BIGINT NOT NULL DEFAULT 0"
 contains src/main/java/ru/daniil/shifts/config/DutyLogUserPrincipal.java "private final long authVersion"
 contains src/main/java/ru/daniil/shifts/config/WebAccountStateFilter.java "current.getAuthVersion() != principal.getAuthVersion()"
@@ -852,6 +874,42 @@ contains deploy/scripts/backup-postgres.sh 'chmod 0700 "$BACKUP_DIR"'
 contains deploy/scripts/backup-postgres.sh 'chmod 0600 "$OUT"'
 contains src/main/java/ru/daniil/shifts/service/MobileAuthTokenCleanupService.java "deleteByRefreshExpiresAtBefore"
 contains src/test/java/ru/daniil/shifts/service/MobileAuthTokenCleanupServiceTest.java "cleanupDeletesOnlyRowsOlderThanConfiguredRetention"
+
+# v27.2.30 host nginx CI/CD deployment hardening
+contains CHANGES.md "v27.2.30 — Host nginx CI/CD deployment hardening"
+contains README.md "v27.2.30 — Host nginx CI/CD deployment hardening"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.30 adds host-nginx deployment"
+contains docs/HOST_NGINX_DEPLOYMENT_V27.2.30.md "system nginx :80/:443"
+contains docs/CICD.md "Production does not rebuild source code."
+contains docs/CICD.md "127.0.0.1:18082"
+contains docs/CICD.md "127.0.0.1:18083"
+contains docs/VPS_CHECKLIST.md "No Caddy container is started by the active deployment."
+
+DEPLOY_ENV_TMP="$(mktemp -d)"
+sed \
+  -e 's/change_me_staging_db_password/staging-db-password-1234567890/' \
+  -e 's/change_me_staging_admin_password/staging-admin-password-1234567890/' \
+  deploy/env/.env.staging.example > "$DEPLOY_ENV_TMP/staging.env"
+if DUTYLOG_ENV_FILE="$DEPLOY_ENV_TMP/staging.env" bash deploy/scripts/check-deploy-env.sh staging >/dev/null; then
+  ok "staging host-nginx environment example passes strict preflight after secrets are replaced"
+else
+  fail "staging host-nginx environment example failed strict preflight"
+fi
+sed 's/DUTYLOG_BIND_ADDRESS=127.0.0.1/DUTYLOG_BIND_ADDRESS=0.0.0.0/' \
+  "$DEPLOY_ENV_TMP/staging.env" > "$DEPLOY_ENV_TMP/public-bind.env"
+if DUTYLOG_ENV_FILE="$DEPLOY_ENV_TMP/public-bind.env" bash deploy/scripts/check-deploy-env.sh staging >/dev/null 2>&1; then
+  fail "public application bind unexpectedly passed deployment preflight"
+else
+  ok "public application bind is rejected"
+fi
+STAGING_PORT="$(awk -F= '/^DUTYLOG_BIND_PORT=/{print $2}' deploy/env/.env.staging.example)"
+PRODUCTION_PORT="$(awk -F= '/^DUTYLOG_BIND_PORT=/{print $2}' deploy/env/.env.production.cicd.example)"
+if [[ "$STAGING_PORT" == "18082" && "$PRODUCTION_PORT" == "18083" && "$STAGING_PORT" != "$PRODUCTION_PORT" ]]; then
+  ok "staging and production loopback ports are distinct"
+else
+  fail "unexpected staging/production loopback port mapping: $STAGING_PORT / $PRODUCTION_PORT"
+fi
+rm -rf "$DEPLOY_ENV_TMP"
 
 CI_GATE_TMP="$(mktemp -d)"
 trap 'rm -rf "$CI_GATE_TMP"' EXIT

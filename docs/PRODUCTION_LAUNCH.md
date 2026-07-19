@@ -1,48 +1,33 @@
 # Production launch
 
-Status: v27.2.5.
+Status: v27.2.30.
 
-This is the short path. Full details are in [`CICD.md`](CICD.md).
+DutyLog production launches only after staging, backup/restore rehearsal and the shared VPS resource check are complete.
 
-## One-time VPS setup
-
-```bash
-sudo DUTYLOG_DEPLOY_ROOT=/opt/dutylog \
-  DUTYLOG_DEPLOY_OWNER=<ssh-deploy-user> \
-  bash deploy/scripts/bootstrap-cicd-host.sh
-```
-
-Create and fill:
+## Directories and environment files
 
 ```text
-/opt/dutylog/edge/.env
 /opt/dutylog/staging/.env
 /opt/dutylog/production/.env
 ```
 
-Start the shared Caddy edge:
+There is no active `/opt/dutylog/edge` service. The existing system nginx owns ports 80/443.
 
-```bash
-cd /opt/dutylog/edge
-docker compose --env-file .env -f deploy/compose/docker-compose.edge.yml -p dutylog-edge up -d
+## Public routing
+
+```text
+stage.yaruga-trophy.ru   -> nginx -> 127.0.0.1:18082
+dutylog.yaruga-trophy.ru -> nginx -> 127.0.0.1:18083
 ```
 
-Configure GitHub Environments `staging` and `production`, including SSH host-key data and GHCR pull credentials.
+Install the site examples from `deploy/nginx/` and issue separate Certbot certificates. Nginx configuration is a one-time host operation; ordinary GitHub deployments update only DutyLog containers and database migrations.
 
-## First deployment
+## Release path
 
-1. Push the candidate to `test`.
-2. Confirm staging deploy and smoke tests are green.
-3. Open the staging domain and verify core flows.
-4. Merge the same tree to `main` or `master`.
-5. Confirm production backup, deploy and smoke are green.
+1. Push to `test` and wait for all Java/Playwright/image/migration checks.
+2. Verify real staging behavior and backup restore.
+3. Merge the unchanged tested tree to `main`/`master`.
+4. Approve the production GitHub Environment deployment.
+5. Confirm backup, loopback smoke, public HTTPS smoke and immutable image metadata.
 
-## Success criteria
-
-- staging and production domains use HTTPS;
-- databases and credentials are separate;
-- production image is referenced by digest;
-- production backup is verified before update;
-- `/actuator/health` is `UP`;
-- admin login, calendar, notes export and Android API v1 work;
-- a recent backup exists outside the VPS.
+See [`CICD.md`](CICD.md) and [`HOST_NGINX_DEPLOYMENT_V27.2.30.md`](HOST_NGINX_DEPLOYMENT_V27.2.30.md).

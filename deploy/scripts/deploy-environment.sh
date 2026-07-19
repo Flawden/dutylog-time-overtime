@@ -10,8 +10,8 @@ usage() {
 Usage: deploy-environment.sh \
   --environment staging|production \
   --image ghcr.io/owner/repo@sha256:... \
-  --release-version 27.2.29 \
-  --build-version 27.2.29+tree.abc123 \
+  --release-version 27.2.30 \
+  --build-version 27.2.30+tree.abc123 \
   --tree <git-tree-sha> \
   --commit <git-sha> \
   --build-time <ISO-8601> \
@@ -21,7 +21,7 @@ EOF
 
 ENVIRONMENT=""
 IMAGE_REF=""
-RELEASE_VERSION="27.2.29"
+RELEASE_VERSION="27.2.30"
 BUILD_VERSION=""
 BUILD_TREE=""
 BUILD_COMMIT="unknown"
@@ -186,6 +186,9 @@ rollback_application() {
     echo "Rollback image tree mismatch: expected $OLD_TREE, got ${rollback_tree:-missing}" >&2
     return 1
   fi
+  DUTYLOG_ENV_FILE="$ENV_FILE" \
+  DUTYLOG_RELEASE_VERSION="${OLD_RELEASE:-$RELEASE_VERSION}" \
+    bash deploy/scripts/local-smoke-test.sh
   if [[ -n "$BASE_URL" ]]; then
     DUTYLOG_RELEASE_VERSION="${OLD_RELEASE:-$RELEASE_VERSION}" bash deploy/scripts/smoke-test.sh "$BASE_URL"
   fi
@@ -209,11 +212,6 @@ echo "Image:       $IMAGE_REF"
 echo "Build:       $BUILD_VERSION"
 echo "Tree:        $BUILD_TREE"
 echo "Commit:      $BUILD_COMMIT"
-
-if ! docker network inspect "${DUTYLOG_EDGE_NETWORK:-dutylog_edge}" >/dev/null 2>&1; then
-  echo "External edge network does not exist. Run bootstrap-cicd-host.sh first." >&2
-  exit 1
-fi
 
 DUTYLOG_ENV_FILE="$ENV_FILE" bash deploy/scripts/check-deploy-env.sh "$ENVIRONMENT"
 compose config -q
@@ -245,6 +243,11 @@ if [[ "$IMAGE_VERSION" != "$BUILD_VERSION" || "$IMAGE_TREE" != "$BUILD_TREE" ]];
   echo "Running version/tree:  ${IMAGE_VERSION:-missing} / ${IMAGE_TREE:-missing}" >&2
   exit 1
 fi
+
+# Prove the host-loopback publication before involving DNS, TLS or nginx.
+DUTYLOG_ENV_FILE="$ENV_FILE" \
+DUTYLOG_RELEASE_VERSION="$RELEASE_VERSION" \
+  bash deploy/scripts/local-smoke-test.sh
 
 if [[ -n "$BASE_URL" ]]; then
   DUTYLOG_RELEASE_VERSION="$RELEASE_VERSION" bash deploy/scripts/smoke-test.sh "$BASE_URL"

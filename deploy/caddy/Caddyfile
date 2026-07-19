@@ -1,3 +1,4 @@
+# Legacy/alternative Caddy configuration. Active v27.2.30 CI/CD uses system nginx.
 # Authentication rate limiting is enforced inside DutyLog, so stock Caddy and nginx
 # receive the same baseline brute-force protection.
 {$DUTYLOG_DOMAIN} {

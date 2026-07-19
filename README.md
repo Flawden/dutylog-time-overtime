@@ -1,18 +1,18 @@
-> Current release: **v27.2.29 — Final security and product audit hardening**.
+> Current release: **v27.2.30 — Host nginx CI/CD deployment hardening**.
 
 # DutyLog
 
-Current release: **v27.2.29 — Final security and product audit hardening**
+Current release: **v27.2.30 — Host nginx CI/CD deployment hardening**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.2.29 — Final security and product audit hardening
+## Текущая версия: v27.2.30 — Host nginx CI/CD deployment hardening
 
 
-Эта версия закрывает найденные на финальном аудите риски перед первой реальной площадкой: старые browser-сессии перестают переживать смену пароля или роли, proxy-заголовки больше нельзя использовать для обхода auth rate limit, резервные копии получают строгие права доступа, а устаревшие mobile-токены очищаются по retention-политике. Flyway добавляет `users.auth_version` через V23.
+Эта версия адаптирует активный CI/CD к реальному общему VPS: один системный Nginx обслуживает YARUGA и два независимых DutyLog-окружения, а Docker публикует staging/production только на `127.0.0.1:18082` и `127.0.0.1:18083`. Caddy исключён из активного bootstrap, добавлены loopback smoke-check, ограничения памяти/PID и отдельные Nginx/Certbot шаблоны.
 
-Текущая база: **65 Java-тестовых классов, 340 `@Test` методов и 5 Playwright browser tests**. Предыдущая контрольная точка: **v27.2.28 — Staging deployment gate and diagnostics hardening**. Перед ней: **v27.2.27 — Playwright marker accordion hotfix**. Перед ней: **v27.2.26 — Playwright selector, accordion and line-ending hotfix**. Перед ней: **v27.2.25 — Playwright browser E2E regression baseline**. Перед ней: **v27.2.24 — Coverage floor and startup/module regression suite**. Перед ней: **v27.2.23 — Security test contract and secret-safe error logging hotfix**. Перед ней: **v27.2.22 — Security infrastructure regression and auth hardening suite**. Перед ней: **v27.2.21 — Telegram date validation and test harness hotfix**, затем **v27.2.20 — Telegram bot regression and delivery hardening suite**. Перед ней: **v27.2.19 — PostgreSQL migration and CI version hotfix**, где чистая PostgreSQL-схема и CI version metadata впервые прошли полный GitHub Actions smoke test. До неё: **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix** и **v27.2.14 — Quick scenarios and overtime API regression suite**.
+Текущая база: **65 Java-тестовых классов, 340 `@Test` методов и 5 Playwright browser tests**. Предыдущая контрольная точка: **v27.2.29 — Final security and product audit hardening**. Перед ней: **v27.2.28 — Staging deployment gate and diagnostics hardening**. Перед ней: **v27.2.27 — Playwright marker accordion hotfix**. Перед ней: **v27.2.26 — Playwright selector, accordion and line-ending hotfix**. Перед ней: **v27.2.25 — Playwright browser E2E regression baseline**. Перед ней: **v27.2.24 — Coverage floor and startup/module regression suite**. Перед ней: **v27.2.23 — Security test contract and secret-safe error logging hotfix**. Перед ней: **v27.2.22 — Security infrastructure regression and auth hardening suite**. Перед ней: **v27.2.21 — Telegram date validation and test harness hotfix**, затем **v27.2.20 — Telegram bot regression and delivery hardening suite**. Перед ней: **v27.2.19 — PostgreSQL migration and CI version hotfix**, где чистая PostgreSQL-схема и CI version metadata впервые прошли полный GitHub Actions smoke test. До неё: **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix** и **v27.2.14 — Quick scenarios and overtime API regression suite**.
 Ранние этапы регрессии: **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
 
 JaCoCo формируется Maven-фазой `verify`, а не обычной кнопкой запуска JUnit в IntelliJ. Подробная инструкция: [`docs/TESTING.md`](docs/TESTING.md).
@@ -93,13 +93,14 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Для VPS/production-запуска используйте отдельный compose-файл с Caddy и без публичного порта приложения:
+Для VPS используется CI/CD runtime за уже установленным системным Nginx. Приложение публикуется только на loopback:
 
-```bash
-cp .env.production.example .env
-cp deploy/caddy/Caddyfile.example deploy/caddy/Caddyfile
-docker compose -f docker-compose.prod.yml up -d --build
+```text
+stage.yaruga-trophy.ru   -> nginx -> 127.0.0.1:18082
+dutylog.yaruga-trophy.ru -> nginx -> 127.0.0.1:18083
 ```
+
+Первичная настройка описана в [`docs/HOST_NGINX_DEPLOYMENT_V27.2.30.md`](docs/HOST_NGINX_DEPLOYMENT_V27.2.30.md). Старый `docker-compose.prod.yml` с Caddy оставлен только как legacy/manual вариант и не используется активными workflow.
 
 Безопасная остановка:
 
@@ -141,12 +142,12 @@ docker compose down -v
 
 Для боевого запуска подготовлены:
 
-- `deploy/compose/docker-compose.deploy.yml` — изолированный staging/production runtime;
-- `deploy/compose/docker-compose.edge.yml` — общий Caddy edge;
-- `.github/workflows/deploy-staging.yml` и `deploy-production.yml` — автоматическая доставка;
-- `docker-compose.prod.yml` — прежний ручной emergency/local вариант;
-- `.env.production.example` — шаблон production-переменных;
-- `deploy/caddy/Caddyfile.example` — HTTPS reverse proxy;
+- `deploy/compose/docker-compose.deploy.yml` — отдельный staging/production runtime с loopback-портами;
+- `deploy/nginx/dutylog-staging.conf.example` и `dutylog-production.conf.example` — маршруты общего системного Nginx;
+- `.github/workflows/deploy-staging.yml` и `deploy-production.yml` — автоматическая доставка immutable images;
+- `deploy/env/.env.staging.example` и `.env.production.cicd.example` — серверные шаблоны окружений;
+- `deploy/scripts/local-smoke-test.sh` — проверка контейнера до DNS/TLS/Nginx;
+- `docker-compose.prod.yml` и `deploy/caddy/*` — прежний legacy/manual вариант, не активный CI/CD;
 - `docs/PRODUCTION_RUNBOOK.md` — первый запуск, обновление, откат и emergency backup;
 - `docs/SECURITY_CHECKLIST.md` — чеклист безопасности.
 

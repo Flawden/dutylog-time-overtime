@@ -1,3 +1,4 @@
+# Legacy/alternative Caddy configuration. Active v27.2.30 CI/CD uses system nginx.
 (security_headers) {
     header {
         Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"

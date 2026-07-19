@@ -1,3 +1,5 @@
+# Legacy/alternative Caddy edge. Active v27.2.30 CI/CD uses the host system nginx.
+# bootstrap-cicd-host.sh does not install or start this stack.
 services:
   caddy:
     image: caddy:2-alpine

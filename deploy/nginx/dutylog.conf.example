@@ -1,5 +1,5 @@
-# Alternative nginx reverse proxy example.
-# Caddy is recommended for first launch because it obtains HTTPS certificates automatically.
+# Generic nginx reverse proxy example for other hosts.
+# For the current shared YARUGA VPS use dutylog-staging.conf.example and dutylog-production.conf.example.
 # DutyLog also enforces auth rate limits in the application. The nginx zone below is optional defense in depth.
 
 # Зона для лимита попыток входа: ключ — IP, 5 запросов в минуту.

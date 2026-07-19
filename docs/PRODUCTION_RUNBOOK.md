@@ -1,6 +1,6 @@
 # Production runbook
 
-Status: v27.2.5.
+Status: v27.2.30.
 
 ## Normal release
 
@@ -19,7 +19,8 @@ Production is never rebuilt independently. It pulls the staging-tested image dig
 cd /opt/dutylog/production
 docker compose --env-file .env -f deploy/compose/docker-compose.deploy.yml -p dutylog-production ps
 docker compose --env-file .env -f deploy/compose/docker-compose.deploy.yml -p dutylog-production logs --tail=200 app
-bash deploy/scripts/smoke-test.sh https://app.dutylog.example.com
+DUTYLOG_ENV_FILE=.env bash deploy/scripts/local-smoke-test.sh
+bash deploy/scripts/smoke-test.sh https://dutylog.yaruga-trophy.ru
 ```
 
 ## Backup
@@ -59,4 +60,4 @@ docker compose --env-file .env -f deploy/compose/docker-compose.deploy.yml -p du
 docker compose --env-file .env -f deploy/compose/docker-compose.deploy.yml -p dutylog-production logs -f db
 ```
 
-The shared edge proxy lives in `/opt/dutylog/edge`.
+Public HTTPS is handled by the VPS-wide system nginx. Ordinary deployments do not modify nginx, certificates or YARUGA.

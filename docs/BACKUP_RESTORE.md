@@ -1,6 +1,6 @@
 # Backup and restore
 
-Status: v27.2.29.
+Status: v27.2.30.
 
 Production deployment creates a verified PostgreSQL custom-format dump before every application update. Staging backup is optional because staging is disposable.
 

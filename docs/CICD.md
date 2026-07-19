@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.2.29.
+Status: v27.2.30.
 
 DutyLog uses two long-lived deployment branches:
 
@@ -10,11 +10,23 @@ feature/* -> test -> staging
                   +-> main/master -> production
 ```
 
-`test` builds an immutable image, deploys it to staging and marks that exact image as tested only after health and smoke checks pass. `main`/`master` never rebuilds the application. It resolves the `staging-tested-tree-<git-tree>` tag and deploys the same registry digest to production.
+`test` builds an immutable image, deploys it to staging and marks that exact Git tree as tested only after container health, loopback smoke and public HTTPS smoke checks pass. `main`/`master` never rebuilds the application: it resolves the matching `staging-tested-tree-*` image and deploys the same registry digest to production.
 
-Until the staging VPS is prepared, leave the `staging` Environment variable `DUTYLOG_DEPLOY_ENABLED` unset or `false`. The workflow still runs the full test/coverage/browser gate, builds the image and proves its migrations on clean PostgreSQL, then records a successful explicit skip. It does **not** create `staging-tested-tree-*`, so production remains blocked. Set it to `true` only after all staging variables, secrets and the host-local `.env` are ready.
+Until the staging VPS is ready, leave the `staging` Environment variable `DUTYLOG_DEPLOY_ENABLED` unset or `false`. The workflow still runs Maven/JaCoCo, release checks, Playwright, image build and clean-PostgreSQL migration verification, then records an explicit successful skip. It does not create a promotion tag.
 
-A direct change in `main`/`master` that was not tested in staging fails closed because no matching tested tree tag exists.
+## Public edge architecture
+
+The active deployment uses the VPS-wide system nginx, not a Caddy container:
+
+```text
+nginx :80/:443
+  -> 127.0.0.1:18082 -> dutylog-staging app
+  -> 127.0.0.1:18083 -> dutylog-production app
+```
+
+The application port is published only on `127.0.0.1`. PostgreSQL is not published at all. CI/CD never edits nginx or certificates during an ordinary release; those are one-time host operations.
+
+Detailed host steps: [`HOST_NGINX_DEPLOYMENT_V27.2.30.md`](HOST_NGINX_DEPLOYMENT_V27.2.30.md).
 
 ## GitHub Environments
 
@@ -23,18 +35,18 @@ Create environments named exactly:
 - `staging`
 - `production`
 
-Add these environment variables to both:
+Add these variables:
 
 ```text
-DUTYLOG_DEPLOY_ENABLED    # staging: false until VPS is ready, then true; production is fail-closed
+DUTYLOG_DEPLOY_ENABLED    # staging: false until host is ready; production is fail-closed
 DUTYLOG_DEPLOY_HOST
-DUTYLOG_DEPLOY_PORT       # usually 22
+DUTYLOG_DEPLOY_PORT       # normally 22
 DUTYLOG_DEPLOY_USER
 DUTYLOG_DEPLOY_PATH       # /opt/dutylog/staging or /opt/dutylog/production
-DUTYLOG_BASE_URL          # https://test... or https://app...
+DUTYLOG_BASE_URL          # public HTTPS URL
 ```
 
-Add these environment secrets to both:
+Add these secrets:
 
 ```text
 DUTYLOG_SSH_PRIVATE_KEY
@@ -43,47 +55,54 @@ GHCR_READ_USERNAME
 GHCR_READ_TOKEN
 ```
 
-Build `DUTYLOG_SSH_KNOWN_HOSTS` from the server host key and verify its fingerprint out of band before saving it, for example:
+Build `DUTYLOG_SSH_KNOWN_HOSTS` from the server host key and verify its fingerprint through a separate trusted channel before saving it. Never paste private keys or tokens into issue comments, build logs or chat.
+
+The SSH key should belong to a dedicated deployment user that owns only its DutyLog environment directories. Membership in the host `docker` group is effectively root-equivalent and can affect unrelated containers; it is acceptable for the first single-owner VPS but is not strong isolation. A later hardened installation should use a dedicated host, rootless Docker or narrowly restricted privileged commands.
+
+For production, enable required reviewers in GitHub Environment settings during early releases.
+
+## One-time server preparation
+
+Use an x86_64/amd64 VPS with Docker Engine and the Compose plugin. Create the deployment account, then run from the release repository:
 
 ```bash
-ssh-keyscan -p 22 your-vps.example.com
+sudo DUTYLOG_DEPLOY_ROOT=/opt/dutylog \
+  DUTYLOG_DEPLOY_OWNER=<ssh-deploy-user> \
+  bash deploy/scripts/bootstrap-cicd-host.sh
 ```
 
-`GHCR_READ_TOKEN` needs permission to read the repository package. The SSH key should belong to a dedicated deployment user that owns its environment directory. The workflow's built-in `GITHUB_TOKEN` pushes images; the server credential only pulls them.
+The bootstrap creates only:
 
-Security note: ordinary membership in the host `docker` group is effectively root-equivalent and can affect every container on that VPS, including unrelated projects. It is acceptable for the first single-owner server, but it is not strong isolation. A later hardened deployment should use a dedicated host, rootless Docker or narrowly restricted privileged commands.
-
-For production, enable required reviewers in GitHub Environment settings during the first releases. The workflow validates tests and release checks first; only the separate deployment job then waits for approval. This avoids approving a build that has not passed validation yet.
-
-## First server preparation
-
-Use an x86_64/amd64 VPS for this release. Install Docker Engine and the Compose plugin. Clone or copy the release repository once, then run:
-
-```bash
-sudo DUTYLOG_DEPLOY_ROOT=/opt/dutylog DUTYLOG_DEPLOY_OWNER=<ssh-deploy-user> bash deploy/scripts/bootstrap-cicd-host.sh
+```text
+/opt/dutylog/staging
+/opt/dutylog/production
 ```
 
-Ensure the SSH deployment user can run Docker (for example, add it to the `docker` group and start a new login session). Then prepare host-local environment files:
+It does not install/start Caddy, does not touch ports 80/443 and does not modify nginx.
+
+Prepare host-local environment files:
 
 ```bash
 sudo cp /opt/dutylog/staging/.env.example /opt/dutylog/staging/.env
 sudo cp /opt/dutylog/production/.env.example /opt/dutylog/production/.env
-sudo cp /opt/dutylog/edge/.env.example /opt/dutylog/edge/.env
-sudo chmod 600 /opt/dutylog/{staging,production,edge}/.env
+sudo chmod 600 /opt/dutylog/{staging,production}/.env
 ```
 
-Replace every domain/password/username placeholder. Leave the all-zero `DUTYLOG_IMAGE` bootstrap sentinel unchanged: CI overrides it with an immutable digest during each deployment, while the valid sentinel lets DB-only maintenance commands parse Compose before the first release. Staging and production must use different database passwords, admin passwords, database names and Telegram credentials.
+Replace every placeholder. Staging and production must have different database names, database passwords, admin passwords and Telegram credentials.
 
-Keep `DUTYLOG_SECURITY_TRUST_PROXY_HEADERS=true` only while the application is reachable exclusively through the supplied Caddy/nginx edge. Those edge configs overwrite client-supplied forwarding headers before DutyLog uses the address for rate limiting or audit logs.
+Keep these boundaries:
 
-Start the shared Caddy edge proxy:
+```env
+# staging
+DUTYLOG_BIND_ADDRESS=127.0.0.1
+DUTYLOG_BIND_PORT=18082
 
-```bash
-cd /opt/dutylog/edge
-docker compose --env-file .env -f deploy/compose/docker-compose.edge.yml -p dutylog-edge up -d
+# production
+DUTYLOG_BIND_ADDRESS=127.0.0.1
+DUTYLOG_BIND_PORT=18083
 ```
 
-The current workflow publishes `linux/amd64`; add QEMU and an ARM64 platform before using an ARM VPS. The shared external network contains only the application containers and Caddy. Each PostgreSQL service remains on its own Compose-internal network.
+`check-deploy-env.sh` rejects non-loopback binding. `DUTYLOG_SECURITY_TRUST_PROXY_HEADERS=true` is allowed only with the supplied nginx configuration, which overwrites forwarding headers before DutyLog uses them for audit/rate limiting.
 
 ## Branch behavior
 
@@ -91,15 +110,17 @@ The current workflow publishes `linux/amd64`; add QEMU and an ARM64 platform bef
 
 `.github/workflows/deploy-staging.yml`:
 
-1. runs Maven `verify`, the JaCoCo floor, release checks and Playwright;
-2. calculates the Git tree hash;
-3. builds one non-root image with OCI metadata, SBOM and provenance;
-4. pushes immutable `tree-*` and `sha-*` tags to GHCR;
-5. verifies that exact digest on a clean PostgreSQL database;
+1. runs Maven `verify`, JaCoCo, release checks and five Playwright scenarios;
+2. calculates the exact Git tree hash;
+3. builds one non-root `linux/amd64` image with OCI metadata, SBOM and provenance;
+4. pushes immutable tree/commit tags to GHCR;
+5. verifies that digest on clean PostgreSQL;
 6. validates the `staging` GitHub Environment without printing secrets;
-7. when `DUTYLOG_DEPLOY_ENABLED=false`, records a successful explicit skip;
-8. when enabled, deploys by digest, applies Flyway and runs health/public smoke checks;
-9. only after a real successful remote smoke test creates `staging-tested-tree-*`.
+7. when disabled, records an explicit successful skip;
+8. when enabled, deploys by digest and applies Flyway;
+9. checks container health and full loopback smoke on port 18082;
+10. checks the public HTTPS URL through nginx;
+11. only then creates `staging-tested-tree-*`.
 
 ### Merge to `main`/`master`
 
@@ -107,25 +128,25 @@ The current workflow publishes `linux/amd64`; add QEMU and an ARM64 platform bef
 
 1. reruns tests and the release gate;
 2. calculates the Git tree hash;
-3. requires an existing `staging-tested-tree-*` image;
+3. requires an existing matching `staging-tested-tree-*` image;
 4. resolves its immutable digest;
 5. creates and verifies a PostgreSQL backup before update;
-6. verifies the running container OCI version and exact Git tree;
-7. deploys that exact digest;
-8. waits for health and runs smoke checks;
-9. rolls the application image back on failure when possible.
+6. deploys the same tested digest;
+7. verifies running OCI version/tree metadata;
+8. checks container health, loopback port 18083 and public HTTPS;
+9. rolls back the application image on failure when possible.
 
 Production does not rebuild source code.
 
 ## Merge mode
 
-Prefer a fast-forward merge from `test` to `main`/`master`, or a merge that does not modify the resulting tree. A merge commit is acceptable because promotion keys on the Git tree, not the commit SHA.
+Prefer a fast-forward merge from `test` to `main`/`master`, or any merge that leaves the resulting Git tree unchanged. A merge commit is acceptable because promotion keys on the tree, not the commit SHA.
 
-Do not edit files directly in `main`/`master`. A changed tree has no staging-tested tag and production deployment stops before touching the server.
+Do not edit application files directly in `main`/`master`: a changed tree has no staging-tested tag and production stops before touching the server.
 
 ## Deployment state and rollback
 
-Each environment stores `.deploy-state` with current and previous image digests and build metadata. It contains no application secrets.
+Each environment stores `.deploy-state` with current/previous image digests and build metadata. It contains no application secrets.
 
 Manual application rollback:
 
@@ -134,12 +155,14 @@ cd /opt/dutylog/production
 CONFIRM_ROLLBACK=ROLLBACK bash deploy/scripts/rollback-environment.sh
 ```
 
-Rollback changes the application image only. Flyway migrations are forward-only. A destructive or incompatible migration requires a controlled database restore; see `docs/MIGRATION_SAFETY.md` and `docs/BACKUP_RESTORE.md`.
+Rollback changes the application image only. Flyway migrations are forward-only. Database restore remains an explicit controlled operation.
 
-## What CI does not do automatically
+## CI/CD does not
 
-- it does not restore production databases automatically;
-- it does not delete staging data unless explicitly requested;
-- it does not overwrite host `.env` files;
-- it does not promote an untested source tree;
-- it does not run `docker compose down -v` in production.
+- restore production databases automatically;
+- overwrite host `.env` files;
+- edit nginx or Certbot configuration;
+- restart or stop YARUGA;
+- publish DutyLog on `0.0.0.0`;
+- promote an untested source tree;
+- run `docker compose down -v` in production.

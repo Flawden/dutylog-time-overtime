@@ -1,3 +1,14 @@
+## v27.2.30 — Host nginx CI/CD deployment hardening
+
+- Active staging/production delivery now uses the VPS-wide system nginx instead of a shared Caddy container.
+- DutyLog publishes only to `127.0.0.1`, with staging on `18082` and production on `18083`; deployment preflight rejects any non-loopback bind address.
+- Removed the external `dutylog_edge` network and Caddy dependency from the active Compose/bootstrap path while keeping legacy examples as optional references.
+- Added a full loopback smoke test before the public HTTPS smoke test, making container failures distinguishable from DNS/TLS/nginx failures.
+- Added configurable Docker memory/PID limits and JSON log rotation for the shared 2 GiB VPS.
+- Added concrete nginx/Certbot templates for `stage.yaruga-trophy.ru` and `dutylog.yaruga-trophy.ru`, with forwarding headers overwritten at the trusted edge.
+- Updated CI/CD, staging, production and VPS runbooks for the real YARUGA + DutyLog shared-host topology.
+- Application behavior, Java test baseline (340) and Playwright baseline (5) are unchanged from v27.2.29.
+
 ## v27.2.29 — Final security and product audit hardening
 
 - Browser sessions now carry an `auth_version`; password resets and role changes invalidate cached `JSESSIONID` authorities on the next request.

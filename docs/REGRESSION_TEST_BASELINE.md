@@ -1,8 +1,8 @@
 # DutyLog regression test baseline
 
-Status: v27.2.29.
+Status: v27.2.30.
 
-Current extension: v27.2.29 adds browser-session invalidation, proxy-spoofing, backup-permission and mobile-token-retention guards while retaining the five Chromium Playwright scenarios and the v27.2.24 JaCoCo floor.
+Current extension: v27.2.30 adds host-nginx deployment, loopback publication and two-stage smoke-test guards while retaining the v27.2.29 security baseline, five Chromium Playwright scenarios and the v27.2.24 JaCoCo floor.
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 

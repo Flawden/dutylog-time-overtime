@@ -54,6 +54,7 @@ tar -czf "$TMP_DIR/deploy-bundle.tgz" \
   deploy/scripts/backup-postgres.sh \
   deploy/scripts/check-deploy-env.sh \
   deploy/scripts/list-backups.sh \
+  deploy/scripts/local-smoke-test.sh \
   deploy/scripts/restore-postgres.sh \
   deploy/scripts/rollback-environment.sh \
   deploy/scripts/reset-staging.sh \

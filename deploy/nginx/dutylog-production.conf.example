@@ -1,0 +1,45 @@
+# DutyLog production behind the VPS-wide system nginx.
+# Install once as /etc/nginx/sites-available/dutylog-production, enable the symlink,
+# test nginx, then run: certbot --nginx -d dutylog.yaruga-trophy.ru
+#
+# This file intentionally starts with HTTP only so Certbot can obtain the first
+# certificate. Certbot adds the HTTPS server and redirect without touching Docker.
+
+limit_req_zone $binary_remote_addr zone=dutylog_production_auth:10m rate=5r/m;
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name dutylog.yaruga-trophy.ru;
+
+    client_max_body_size 10m;
+
+    location ~ ^/(perform_login|api/auth/register|api/mobile/auth/login|api/v1/mobile/auth/login|api/v1/mobile/auth/register)$ {
+        limit_req zone=dutylog_production_auth burst=5 nodelay;
+        limit_req_status 429;
+        proxy_pass http://127.0.0.1:18083;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+        proxy_read_timeout 60s;
+        proxy_redirect off;
+    }
+
+    location / {
+        proxy_pass http://127.0.0.1:18083;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        # Overwrite rather than append client-supplied forwarding headers.
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Port $server_port;
+        proxy_read_timeout 60s;
+        proxy_redirect off;
+    }
+}

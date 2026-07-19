@@ -207,34 +207,35 @@ Daily backup examples for systemd live in `deploy/systemd`.
 
 ## Production deployment
 
-Recommended VPS deployment uses one Docker Compose stack:
+The active VPS deployment uses the host-wide system nginx and separate Compose projects:
 
 ```text
 Internet
    |
    v
-Caddy :80/:443
-   |
-   v
-DutyLog app :8080, internal Docker network
-   |
-   v
-PostgreSQL :5432, internal Docker network
+system nginx :80/:443
+   |-- 127.0.0.1:18082 -> DutyLog staging app
+   `-- 127.0.0.1:18083 -> DutyLog production app
+                                  |
+                                  v
+                         private PostgreSQL :5432
 ```
 
 Files:
 
 ```text
-docker-compose.prod.yml
-.env.production.example
-deploy/caddy/Caddyfile.example
-deploy/nginx/dutylog.conf.example
+deploy/compose/docker-compose.deploy.yml
+deploy/env/.env.staging.example
+deploy/env/.env.production.cicd.example
+deploy/nginx/dutylog-staging.conf.example
+deploy/nginx/dutylog-production.conf.example
+deploy/scripts/local-smoke-test.sh
 deploy/scripts/smoke-test.sh
 ```
 
-The production compose file does not publish the application port directly. Only Caddy exposes public HTTP/HTTPS ports. PostgreSQL is available only inside the Docker network.
+The app is published only on `127.0.0.1`; deployment preflight rejects public bind addresses. PostgreSQL has no host port and sits on an internal Docker network. A separate outbound network gives only the app optional Internet access for Telegram. Caddy files remain legacy/alternative examples and are not started by active CI/CD.
 
-The app container and compose service include healthchecks against `/actuator/health`. Admin diagnostics remain behind `/api/admin/status` and require an administrator account.
+The deployment proves container health, a full loopback smoke test and then the public HTTPS path through nginx. Admin diagnostics remain behind `/api/admin/status` and require an administrator account.
 
 
 ## Modular monolith layer
