@@ -100,7 +100,7 @@ jobs:
         run: bash deploy/scripts/check-ci-deploy-config.sh
 
       - name: Log in to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
