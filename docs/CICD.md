@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.2.28.
+Status: v27.2.29.
 
 DutyLog uses two long-lived deployment branches:
 
@@ -49,7 +49,9 @@ Build `DUTYLOG_SSH_KNOWN_HOSTS` from the server host key and verify its fingerpr
 ssh-keyscan -p 22 your-vps.example.com
 ```
 
-`GHCR_READ_TOKEN` needs permission to read the repository package. The SSH key should belong to an unprivileged deployment user that can access Docker and owns its environment directory. The workflow's built-in `GITHUB_TOKEN` pushes images; the server credential only pulls them.
+`GHCR_READ_TOKEN` needs permission to read the repository package. The SSH key should belong to a dedicated deployment user that owns its environment directory. The workflow's built-in `GITHUB_TOKEN` pushes images; the server credential only pulls them.
+
+Security note: ordinary membership in the host `docker` group is effectively root-equivalent and can affect every container on that VPS, including unrelated projects. It is acceptable for the first single-owner server, but it is not strong isolation. A later hardened deployment should use a dedicated host, rootless Docker or narrowly restricted privileged commands.
 
 For production, enable required reviewers in GitHub Environment settings during the first releases. The workflow validates tests and release checks first; only the separate deployment job then waits for approval. This avoids approving a build that has not passed validation yet.
 
@@ -71,6 +73,8 @@ sudo chmod 600 /opt/dutylog/{staging,production,edge}/.env
 ```
 
 Replace every domain/password/username placeholder. Leave the all-zero `DUTYLOG_IMAGE` bootstrap sentinel unchanged: CI overrides it with an immutable digest during each deployment, while the valid sentinel lets DB-only maintenance commands parse Compose before the first release. Staging and production must use different database passwords, admin passwords, database names and Telegram credentials.
+
+Keep `DUTYLOG_SECURITY_TRUST_PROXY_HEADERS=true` only while the application is reachable exclusively through the supplied Caddy/nginx edge. Those edge configs overwrite client-supplied forwarding headers before DutyLog uses the address for rate limiting or audit logs.
 
 Start the shared Caddy edge proxy:
 

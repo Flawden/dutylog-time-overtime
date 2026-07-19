@@ -35,6 +35,7 @@ public class AdminBootstrapService {
     private final AppSettingRepository settings;
     private final PasswordEncoder encoder;
     private final DefaultShiftSeedService defaultShiftSeedService;
+    private final MobileAuthService mobileAuthService;
     private final String adminUsername;
     private final String adminPassword;
     private final boolean forcePasswordReset;
@@ -43,6 +44,7 @@ public class AdminBootstrapService {
                                  AppSettingRepository settings,
                                  PasswordEncoder encoder,
                                  DefaultShiftSeedService defaultShiftSeedService,
+                                 MobileAuthService mobileAuthService,
                                  @Value("${dutylog.admin.username:}") String adminUsername,
                                  @Value("${dutylog.admin.password:}") String adminPassword,
                                  @Value("${dutylog.admin.force-password-reset:false}") boolean forcePasswordReset) {
@@ -50,6 +52,7 @@ public class AdminBootstrapService {
         this.settings = settings;
         this.encoder = encoder;
         this.defaultShiftSeedService = defaultShiftSeedService;
+        this.mobileAuthService = mobileAuthService;
         this.adminUsername = adminUsername == null ? "" : adminUsername.trim();
         this.adminPassword = adminPassword == null ? "" : adminPassword;
         this.forcePasswordReset = forcePasswordReset;
@@ -89,7 +92,13 @@ public class AdminBootstrapService {
             user.setPasswordHash(encoder.encode(adminPassword));
             log.warn("DutyLog bootstrap administrator '{}' password was reset from environment because dutylog.admin.force-password-reset=true.", adminUsername);
         }
+        if (promoted || forcePasswordReset) {
+            user.bumpAuthVersion();
+        }
         users.save(user);
+        if (forcePasswordReset) {
+            mobileAuthService.revokeAllSessions(user);
+        }
 
         int legacyDemoted = cleanupLegacyAdminsOnce(adminUsername);
         if (promoted) {
@@ -112,6 +121,7 @@ public class AdminBootstrapService {
         for (AppUser user : users.findAll()) {
             if (user.isAdmin() && !user.getUsername().equalsIgnoreCase(expectedUsername)) {
                 user.setRole("USER");
+                user.bumpAuthVersion();
                 users.save(user);
                 demoted++;
             }

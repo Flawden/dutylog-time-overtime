@@ -1,6 +1,6 @@
 # Backup and restore
 
-Status: v27.2.5.
+Status: v27.2.29.
 
 Production deployment creates a verified PostgreSQL custom-format dump before every application update. Staging backup is optional because staging is disposable.
 
@@ -13,7 +13,7 @@ cd /opt/dutylog/production
 bash deploy/scripts/list-backups.sh
 ```
 
-Backups are stored in `./backups` unless `BACKUP_DIR` says otherwise. Every new dump is parsed with `pg_restore --list` before deployment continues. A SHA-256 sidecar is written when `sha256sum` is available.
+Backups are stored in `./backups` unless `BACKUP_DIR` says otherwise. Every new dump is parsed with `pg_restore --list` before deployment continues. A SHA-256 sidecar is written when `sha256sum` is available. The scripts use `umask 077`: backup directories are forced to `0700`, and dumps/checksums to `0600`.
 
 ## Manual backup
 
@@ -22,7 +22,7 @@ cd /opt/dutylog/production
 bash deploy/scripts/backup-postgres.sh
 ```
 
-Keep recent copies outside the VPS. A dump on the same disk is not disaster recovery.
+Keep recent encrypted copies outside the VPS. A dump on the same disk is not disaster recovery. Periodically restore an offsite copy into staging; merely seeing a backup file is not proof that recovery works.
 
 ## Restore
 

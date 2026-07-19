@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.28}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.29}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -306,8 +306,17 @@ contains deploy/nginx/dutylog.conf.example "script-src 'self'"
 not_contains deploy/nginx/dutylog.conf.example "script-src 'self' 'unsafe-inline'"
 contains src/main/resources/application-prod.properties 'dutylog.registration.default-enabled=${DUTYLOG_REGISTRATION_DEFAULT_ENABLED:false}'
 contains src/main/resources/application-prod.properties 'dutylog.security.rate-limit.enabled=${DUTYLOG_SECURITY_RATE_LIMIT_ENABLED:true}'
+contains src/main/resources/application-prod.properties 'dutylog.security.trust-proxy-headers=${DUTYLOG_SECURITY_TRUST_PROXY_HEADERS:true}'
 contains docker-compose.prod.yml 'DUTYLOG_REGISTRATION_DEFAULT_ENABLED: ${DUTYLOG_REGISTRATION_DEFAULT_ENABLED:-false}'
 contains docker-compose.prod.yml 'DUTYLOG_SECURITY_RATE_LIMIT_ENABLED: ${DUTYLOG_SECURITY_RATE_LIMIT_ENABLED:-true}'
+contains docker-compose.prod.yml 'DUTYLOG_SECURITY_TRUST_PROXY_HEADERS: ${DUTYLOG_SECURITY_TRUST_PROXY_HEADERS:-true}'
+contains .env.production.example 'DUTYLOG_SECURITY_TRUST_PROXY_HEADERS=true'
+contains deploy/compose/docker-compose.deploy.yml 'DUTYLOG_SECURITY_TRUST_PROXY_HEADERS: ${DUTYLOG_SECURITY_TRUST_PROXY_HEADERS:-true}'
+contains deploy/nginx/dutylog.conf.example 'proxy_set_header X-Forwarded-For $remote_addr;'
+contains deploy/caddy/Caddyfile.example 'header_up X-Real-IP {remote_host}'
+contains deploy/caddy/Caddyfile.example 'header_up X-Forwarded-For {remote_host}'
+contains deploy/caddy/Caddyfile.cicd 'header_up X-Real-IP {remote_host}'
+contains deploy/caddy/Caddyfile.cicd 'header_up X-Forwarded-For {remote_host}'
 contains docker-compose.prod.yml 'app_logs:/app/logs'
 contains Dockerfile 'USER 10001:10001'
 contains .github/dependabot.yml 'package-ecosystem: "maven"'
@@ -330,7 +339,8 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "v27.2.5"
+contains docs/SECURITY_REVIEW.md "Status: v27.2.29."
+contains docs/FINAL_PRODUCT_AUDIT_V27.2.29.md "## Launch decision"
 contains docs/TEST_CONFIG_HOTFIX.md "v27.2.5"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
 contains docs/CI_PERMISSION_HOTFIX.md "v27.2.5"
@@ -503,7 +513,7 @@ contains README.md "v27.2.5 — Calendar day identity hotfix"
 contains docs/RELEASE_CANDIDATE.md "v27.2.5 — Calendar day identity hotfix"
 contains docs/USER_GUIDE.md "Status: v27.2.5."
 contains docs/PRODUCTION_DEPLOY.md "same GHCR digest that already passed staging"
-contains docs/BACKUP_RESTORE.md "Status: v27.2.5."
+contains docs/BACKUP_RESTORE.md "Status: v27.2.29."
 contains docs/RELEASE_CHECKLIST.md "git tag -a v27.2.5"
 
 # v27.2.5 calendar persistence regression guards
@@ -563,7 +573,7 @@ contains .github/workflows/ci.yml 'name: jacoco-report'
 
 # v27.2.9 task regression suite and local coverage instructions
 contains CHANGES.md "v27.2.9 — Task regression suite"
-contains docs/REGRESSION_TEST_BASELINE.md "Status: extended in v27.2.9 with the task regression suite."
+contains docs/REGRESSION_TEST_BASELINE.md "Status: v27.2.29."
 contains docs/TESTING.md "mvn clean verify"
 contains docs/TESTING.md "target/site/jacoco/index.html"
 contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java "boardFiltersStatusCategoryPriorityQueryAndDateRange"
@@ -821,6 +831,28 @@ contains deploy/scripts/check-ci-deploy-config.sh "write_output configured false
 contains deploy/scripts/check-ci-deploy-config.sh "write_output configured true"
 contains deploy/scripts/remote-deploy.sh 'missing=()'
 
+# v27.2.29 final security and product audit hardening
+contains CHANGES.md "v27.2.29 — Final security and product audit hardening"
+contains README.md "v27.2.29 — Final security and product audit hardening"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.29 final security and product audit hardening"
+contains docs/SECURITY_REVIEW.md "Status: v27.2.29."
+contains src/main/resources/db/migration/postgresql/V23__web_auth_version.sql "auth_version BIGINT NOT NULL DEFAULT 0"
+contains src/main/java/ru/daniil/shifts/config/DutyLogUserPrincipal.java "private final long authVersion"
+contains src/main/java/ru/daniil/shifts/config/WebAccountStateFilter.java "current.getAuthVersion() != principal.getAuthVersion()"
+contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "FilterRegistrationBean<WebAccountStateFilter>"
+contains src/main/java/ru/daniil/shifts/web/ProfileController.java "int minLength = user.isAdmin() ? 12 : 8"
+contains src/main/java/ru/daniil/shifts/web/ProfileController.java "user.bumpAuthVersion()"
+contains src/main/java/ru/daniil/shifts/service/UserAdminService.java "target.bumpAuthVersion()"
+contains src/main/java/ru/daniil/shifts/service/AdminBootstrapService.java "mobileAuthService.revokeAllSessions(user)"
+contains src/test/java/ru/daniil/shifts/web/WebSessionInvalidationTest.java "roleDemotionInvalidatesCachedAdminAuthoritiesOnNextRequest"
+contains src/main/java/ru/daniil/shifts/config/ClientIpResolver.java "trustProxyHeaders"
+contains src/test/java/ru/daniil/shifts/config/AuthenticationRateLimitFilterTest.java "untrustedForwardingHeadersCannotBypassTheRemoteAddressBucket"
+contains deploy/scripts/backup-postgres.sh "umask 077"
+contains deploy/scripts/backup-postgres.sh 'chmod 0700 "$BACKUP_DIR"'
+contains deploy/scripts/backup-postgres.sh 'chmod 0600 "$OUT"'
+contains src/main/java/ru/daniil/shifts/service/MobileAuthTokenCleanupService.java "deleteByRefreshExpiresAtBefore"
+contains src/test/java/ru/daniil/shifts/service/MobileAuthTokenCleanupServiceTest.java "cleanupDeletesOnlyRowsOlderThanConfiguredRetention"
+
 CI_GATE_TMP="$(mktemp -d)"
 trap 'rm -rf "$CI_GATE_TMP"' EXIT
 GITHUB_OUTPUT="$CI_GATE_TMP/disabled.out" \
@@ -866,15 +898,15 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "327" ]]; then
-  ok "test method baseline: 327"
+if [[ "$TEST_METHODS" == "340" ]]; then
+  ok "test method baseline: 340"
 else
-  fail "expected 327 @Test methods, found $TEST_METHODS"
+  fail "expected 340 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "61" ]]; then
-  ok "test class baseline: 61"
+if [[ "$TEST_CLASSES" == "65" ]]; then
+  ok "test class baseline: 65"
 else
-  fail "expected 61 test classes, found $TEST_CLASSES"
+  fail "expected 65 test classes, found $TEST_CLASSES"
 fi
 
 echo

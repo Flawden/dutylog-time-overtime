@@ -103,6 +103,9 @@ public class UserAdminService {
 
         String previousRole = target.getRole();
         target.setRole(role);
+        if (!previousRole.equalsIgnoreCase(role)) {
+            target.bumpAuthVersion();
+        }
         AppUser saved = users.save(target);
         securityEvents.info("ADMIN_ROLE_CHANGED", currentUser.getUsername(), "accepted",
                 "target=" + target.getUsername() + " from=" + previousRole + " to=" + role);
@@ -117,6 +120,7 @@ public class UserAdminService {
             throw ApiException.badRequest("Новый пароль: минимум 12 символов для админского сброса");
         }
         target.setPasswordHash(encoder.encode(password));
+        target.bumpAuthVersion();
         AppUser saved = users.save(target);
         mobileAuthService.revokeAllSessions(saved);
         securityEvents.warn("ADMIN_PASSWORD_RESET", currentUser.getUsername(), "accepted",

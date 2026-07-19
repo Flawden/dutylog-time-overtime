@@ -33,6 +33,7 @@ public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
     private final AtomicLong requestsSeen = new AtomicLong();
     private final SecurityEventLogger securityEvents;
     private final ApiErrorWriter apiErrors;
+    private final ClientIpResolver clientIpResolver;
     private final Clock clock;
     private final boolean enabled;
     private final int loginLimit;
@@ -44,12 +45,13 @@ public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
     public AuthenticationRateLimitFilter(
             SecurityEventLogger securityEvents,
             ApiErrorWriter apiErrors,
+            ClientIpResolver clientIpResolver,
             @Value("${dutylog.security.rate-limit.enabled:false}") boolean enabled,
             @Value("${dutylog.security.rate-limit.login-attempts:5}") int loginLimit,
             @Value("${dutylog.security.rate-limit.login-window-seconds:60}") int loginWindowSeconds,
             @Value("${dutylog.security.rate-limit.registration-attempts:5}") int registrationLimit,
             @Value("${dutylog.security.rate-limit.registration-window-seconds:3600}") int registrationWindowSeconds) {
-        this(securityEvents, apiErrors, Clock.systemUTC(), enabled, loginLimit, loginWindowSeconds,
+        this(securityEvents, apiErrors, clientIpResolver, Clock.systemUTC(), enabled, loginLimit, loginWindowSeconds,
                 registrationLimit, registrationWindowSeconds);
     }
 
@@ -61,8 +63,22 @@ public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
                                   int loginWindowSeconds,
                                   int registrationLimit,
                                   int registrationWindowSeconds) {
+        this(securityEvents, apiErrors, new ClientIpResolver(false), clock, enabled, loginLimit,
+                loginWindowSeconds, registrationLimit, registrationWindowSeconds);
+    }
+
+    AuthenticationRateLimitFilter(SecurityEventLogger securityEvents,
+                                  ApiErrorWriter apiErrors,
+                                  ClientIpResolver clientIpResolver,
+                                  Clock clock,
+                                  boolean enabled,
+                                  int loginLimit,
+                                  int loginWindowSeconds,
+                                  int registrationLimit,
+                                  int registrationWindowSeconds) {
         this.securityEvents = securityEvents;
         this.apiErrors = apiErrors;
+        this.clientIpResolver = clientIpResolver;
         this.clock = clock;
         this.enabled = enabled;
         this.loginLimit = Math.max(1, loginLimit);
@@ -91,7 +107,7 @@ public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
         int limit = registration ? registrationLimit : loginLimit;
         int windowSeconds = registration ? registrationWindowSeconds : loginWindowSeconds;
         String bucket = registration ? "registration" : "login";
-        Decision decision = register(bucket + "|" + clientIp(request), limit, windowSeconds);
+        Decision decision = register(bucket + "|" + clientIpResolver.resolve(request), limit, windowSeconds);
 
         if (!decision.allowed()) {
             response.setHeader("Retry-After", Long.toString(decision.retryAfterSeconds()));
@@ -128,16 +144,6 @@ public class AuthenticationRateLimitFilter extends OncePerRequestFilter {
         long now = clock.millis();
         counters.entrySet().removeIf(entry ->
                 now - entry.getValue().windowStartedAtMillis() >= entry.getValue().windowMillis() * 2L);
-    }
-
-    private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            int comma = forwarded.indexOf(',');
-            return (comma >= 0 ? forwarded.substring(0, comma) : forwarded).trim();
-        }
-        String realIp = request.getHeader("X-Real-IP");
-        return realIp == null || realIp.isBlank() ? request.getRemoteAddr() : realIp.trim();
     }
 
     private record WindowCounter(long windowStartedAtMillis, int count, long windowMillis) {}

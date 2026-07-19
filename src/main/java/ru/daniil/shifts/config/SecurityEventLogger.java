@@ -3,6 +3,7 @@ package ru.daniil.shifts.config;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -17,6 +18,16 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 public class SecurityEventLogger {
     private static final Logger log = LoggerFactory.getLogger("SECURITY_AUDIT");
     private static final int MAX_VALUE_LENGTH = 160;
+    private final ClientIpResolver clientIpResolver;
+
+    @Autowired
+    public SecurityEventLogger(ClientIpResolver clientIpResolver) {
+        this.clientIpResolver = clientIpResolver;
+    }
+
+    SecurityEventLogger() {
+        this(new ClientIpResolver(false));
+    }
 
     public void warn(String eventType, String username, String result, String detail) {
         write(true, currentRequest(), eventType, username, result, detail);
@@ -49,7 +60,7 @@ public class SecurityEventLogger {
                        String result,
                        String detail) {
         String requestId = request == null ? "-" : safe(request.getAttribute(RequestDiagnosticsFilter.REQUEST_ID_ATTRIBUTE));
-        String ip = request == null ? "-" : clientIp(request);
+        String ip = request == null ? "-" : clientIpResolver.resolve(request);
         String method = request == null ? "-" : safe(request.getMethod());
         String path = request == null ? "-" : safe(request.getRequestURI());
 
@@ -69,16 +80,6 @@ public class SecurityEventLogger {
             return attrs.getRequest();
         }
         return null;
-    }
-
-    private String clientIp(HttpServletRequest request) {
-        String forwarded = request.getHeader("X-Forwarded-For");
-        if (forwarded != null && !forwarded.isBlank()) {
-            int comma = forwarded.indexOf(',');
-            return safe(comma >= 0 ? forwarded.substring(0, comma) : forwarded);
-        }
-        String realIp = request.getHeader("X-Real-IP");
-        return safe(realIp == null || realIp.isBlank() ? request.getRemoteAddr() : realIp);
     }
 
     private String safe(Object value) {

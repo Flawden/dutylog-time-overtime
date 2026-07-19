@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -20,7 +21,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Смена пароля — операция владения аккаунтом. Контракты:
  * без верного текущего пароля не меняется; новый реально применяется;
- * к админам требования строже (12 символов против 6).
+ * к админам требования строже (12 символов против 8).
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -68,6 +69,23 @@ class ProfilePasswordTest {
         AppUser reloaded = users.findByUsername("pw-regular").orElseThrow();
         assertTrue(encoder.matches("new-pass-456", reloaded.getPasswordHash()),
                 "в базе должен лежать хэш нового пароля");
+        assertEquals(1L, reloaded.getAuthVersion(),
+                "смена пароля должна инвалидировать старые web-сессии");
+    }
+
+    @Test
+    void обычномуПользователюНужноНеМеньшеВосьмиСимволов() throws Exception {
+        mvc.perform(post("/api/profile/password")
+                        .with(user("pw-regular").roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content(body(OLD, "1234567")))
+                .andExpect(status().isBadRequest());
+
+        mvc.perform(post("/api/profile/password")
+                        .with(user("pw-regular").roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content(body(OLD, "12345678")))
+                .andExpect(status().isNoContent());
     }
 
     @Test

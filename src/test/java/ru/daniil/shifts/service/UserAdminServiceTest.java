@@ -97,11 +97,15 @@ class UserAdminServiceTest {
     void promotionAndSafeDemotionPersistNormalizedRoles() {
         AdminUserDto promoted = service.changeRole(regular.getId(), " admin ", currentAdmin);
         assertEquals("ADMIN", promoted.role());
-        assertTrue(users.findById(regular.getId()).orElseThrow().isAdmin());
+        AppUser promotedStored = users.findById(regular.getId()).orElseThrow();
+        assertTrue(promotedStored.isAdmin());
+        assertEquals(1L, promotedStored.getAuthVersion());
 
         AdminUserDto demoted = service.changeRole(secondAdmin.getId(), "user", currentAdmin);
         assertEquals("USER", demoted.role());
-        assertFalse(users.findById(secondAdmin.getId()).orElseThrow().isAdmin());
+        AppUser demotedStored = users.findById(secondAdmin.getId()).orElseThrow();
+        assertFalse(demotedStored.isAdmin());
+        assertEquals(1L, demotedStored.getAuthVersion());
     }
 
     @Test
@@ -137,6 +141,7 @@ class UserAdminServiceTest {
 
         AppUser stored = users.findById(regular.getId()).orElseThrow();
         assertTrue(encoder.matches("new-admin-reset-password", stored.getPasswordHash()));
+        assertEquals(1L, stored.getAuthVersion());
         List<MobileAuthToken> storedTokens = tokens.findByOwnerOrderByCreatedAtDesc(stored);
         assertEquals(2, storedTokens.size());
         assertTrue(storedTokens.stream().allMatch(MobileAuthToken::isRevoked));

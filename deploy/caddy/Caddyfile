@@ -3,7 +3,11 @@
 {$DUTYLOG_DOMAIN} {
     encode zstd gzip
 
-    reverse_proxy app:8080
+    reverse_proxy app:8080 {
+        # Overwrite untrusted client-supplied forwarding headers at the edge.
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+    }
 
     header {
         # Basic hardening for a personal web app.

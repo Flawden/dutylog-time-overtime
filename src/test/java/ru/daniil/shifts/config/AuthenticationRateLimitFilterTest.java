@@ -109,10 +109,11 @@ class AuthenticationRateLimitFilterTest {
     }
 
     @Test
-    void differentClientIpsRemainIndependentAndForwardedForUsesTheFirstHop() throws Exception {
+    void differentClientIpsRemainIndependentAndTrustedForwardedForUsesTheFirstHop() throws Exception {
         AuthenticationRateLimitFilter filter = new AuthenticationRateLimitFilter(
                 mock(SecurityEventLogger.class),
                 new ApiErrorWriter(new ObjectMapper()),
+                new ClientIpResolver(true),
                 Clock.fixed(Instant.parse("2026-07-10T00:00:00Z"), ZoneOffset.UTC),
                 true,
                 1,
@@ -126,7 +127,24 @@ class AuthenticationRateLimitFilterTest {
     }
 
     @Test
-    void realIpHeaderIsUsedWhenForwardedForIsMissing() throws Exception {
+    void trustedRealIpHeaderIsUsedWhenForwardedForIsMissing() throws Exception {
+        AuthenticationRateLimitFilter filter = new AuthenticationRateLimitFilter(
+                mock(SecurityEventLogger.class),
+                new ApiErrorWriter(new ObjectMapper()),
+                new ClientIpResolver(true),
+                Clock.fixed(Instant.parse("2026-07-10T00:00:00Z"), ZoneOffset.UTC),
+                true,
+                1,
+                60,
+                1,
+                3600);
+
+        assertEquals(200, performForwarded(filter, "/perform_login", null, "198.51.100.20").getStatus());
+        assertEquals(429, performForwarded(filter, "/perform_login", null, " 198.51.100.20 ").getStatus());
+    }
+
+    @Test
+    void untrustedForwardingHeadersCannotBypassTheRemoteAddressBucket() throws Exception {
         AuthenticationRateLimitFilter filter = new AuthenticationRateLimitFilter(
                 mock(SecurityEventLogger.class),
                 new ApiErrorWriter(new ObjectMapper()),
@@ -137,8 +155,8 @@ class AuthenticationRateLimitFilterTest {
                 1,
                 3600);
 
-        assertEquals(200, performForwarded(filter, "/perform_login", null, "198.51.100.20").getStatus());
-        assertEquals(429, performForwarded(filter, "/perform_login", null, " 198.51.100.20 ").getStatus());
+        assertEquals(200, performForwarded(filter, "/perform_login", "198.51.100.100", "198.51.100.101").getStatus());
+        assertEquals(429, performForwarded(filter, "/perform_login", "198.51.100.200", "198.51.100.201").getStatus());
     }
 
     @Test

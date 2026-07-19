@@ -1,6 +1,6 @@
 # Security review
 
-Status: v27.2.5.
+Status: v27.2.29.
 
 DutyLog is in release stabilization. This document records the security boundaries that are enforced by code and tests in the current release candidate. It is a static review and regression baseline, not a substitute for a live penetration test.
 
@@ -14,6 +14,7 @@ DutyLog now has two explicit Spring Security chains.
 - State-changing browser requests require `XSRF-TOKEN` / `X-XSRF-TOKEN`.
 - Bearer-authenticated mobile clients may use shared endpoints without browser CSRF, but an invalid bearer token is rejected rather than falling back to a browser session.
 - Form-login failures, authentication challenges and access denials create structured security events.
+- Browser principals include a durable `auth_version`. Password changes, administrative resets, role changes and bootstrap role/password changes increment it; stale `JSESSIONID` sessions are invalidated before the next authorization decision.
 
 ### Native mobile API
 
@@ -71,7 +72,8 @@ The same baseline headers are present in Spring, Caddy and nginx. HSTS is emitte
 - Authentication entry points are rate-limited in the application, so stock Caddy and nginx deployments receive the same protection.
 - nginx keeps an optional second rate-limit layer as defense in depth.
 - The limiter is intentionally single-instance. A future multi-instance deployment must use a shared gateway/Redis limiter.
-- Normal public-registration passwords require at least 8 characters; bootstrap admin passwords require at least 20.
+- Normal public-registration and profile-change passwords require at least 8 characters; administrators require 12 on profile/admin reset paths; bootstrap admin passwords require at least 20.
+- Forwarding headers are ignored unless `dutylog.security.trust-proxy-headers=true`. The supplied nginx/Caddy edge configurations overwrite `X-Real-IP` and `X-Forwarded-For`, preventing a client from choosing its own rate-limit/audit bucket.
 
 ## Security logging
 
@@ -91,6 +93,13 @@ The same baseline headers are present in Spring, Caddy and nginx. HSTS is emitte
 
 Fields include event type, result, username, source IP, method, path and request ID. Passwords, bearer/refresh tokens, Telegram link codes and note contents are never logged. Production writes stdout plus a bounded rolling file in the `app_logs` Docker volume.
 
+## Backups and token retention
+
+- PostgreSQL custom-format backups are verified with `pg_restore --list` and optional SHA-256 sidecars.
+- Backup/restore scripts run with `umask 077`; backup directories are `0700`, dumps and checksum files are `0600`.
+- Mobile access/refresh tokens remain stored only as SHA-256 hashes.
+- Rows whose refresh expiry is older than the configured retention period are deleted by scheduled maintenance, preventing unbounded token-table growth.
+
 ## Supply-chain baseline
 
 - Maven, GitHub Actions and Docker Dependabot updates are enabled.
@@ -100,11 +109,19 @@ Fields include event type, result, username, source IP, method, path and request
 
 Action commit-SHA and Docker image digest pinning are deliberately not fabricated in this offline review. They should be added only after verifying current trusted SHAs/digests from upstream sources. Dependabot now provides the update path meanwhile.
 
-## Remaining non-blocking work
+## Residual risks and launch work
 
-- live DAST/pentest against the deployed server;
-- immutable SHA/digest pinning after online verification;
-- shared rate limiting if more than one app instance is deployed;
-- removal of inline styles and `style-src 'unsafe-inline'`;
-- MFA/account lockout if DutyLog grows beyond a small trusted deployment;
-- operational alert routing for repeated `SECURITY_AUDIT` warnings.
+This review was performed against the source tree and existing CI artifacts. Live dependency/CVE intelligence and an Internet-facing penetration test were not available in the audit environment, so “no known vulnerabilities” is **not** claimed.
+
+Before a public production launch:
+
+- run live dependency/container/SCA scans and review every finding against the exact release digest;
+- perform DAST/pentest against staging, including login throttling, session invalidation, CSRF, IDOR and reverse-proxy behavior;
+- copy encrypted backups off the VPS and test a restore from that offsite copy;
+- remember that membership in the host Docker group is effectively root-equivalent; use a dedicated deployment host/user or a narrowly restricted deployment mechanism when stronger isolation from other projects is required;
+- pin verified GitHub Action commits and Docker image digests after checking current upstream releases online;
+- keep the current limiter single-instance, or move rate limiting to a shared gateway/Redis before horizontal scaling;
+- investigate concurrent duplicate Android `operationId` submissions under real PostgreSQL load; the unique constraint protects data, but a race still needs a dedicated stress/integration proof;
+- replace in-memory admin listing with database pagination before the user count becomes large;
+- remove inline styles and `style-src 'unsafe-inline'` in a future UI refactor;
+- consider MFA/account lockout and alert routing if DutyLog becomes a broader public service.

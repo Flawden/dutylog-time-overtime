@@ -1,3 +1,13 @@
+## v27.2.29 — Final security and product audit hardening
+
+- Browser sessions now carry an `auth_version`; password resets and role changes invalidate cached `JSESSIONID` authorities on the next request.
+- Normal password changes enforce the same 8-character minimum as registration; administrators remain at 12 characters and bootstrap credentials at 20.
+- Authentication rate limiting and `SECURITY_AUDIT` no longer trust forwarding headers unless the managed proxy mode is enabled; supplied nginx/Caddy configs overwrite client-supplied IP headers.
+- PostgreSQL backups and checksums are created under `umask 077` with `0700` directories and `0600` files.
+- Expired mobile authentication-token rows are cleaned on a bounded retention schedule.
+- Added integration and unit regressions for stale web sessions, proxy-header spoofing, auth-version changes and token cleanup.
+- Flyway migration chain is now V1–V23. Baseline: 65 Java test classes / 340 `@Test` methods and 5 Playwright scenarios.
+
 ## v27.2.28 — Staging deployment gate and diagnostics hardening
 
 - Split staging delivery into validation, immutable image build/clean-PostgreSQL verification and a separate remote deployment job.

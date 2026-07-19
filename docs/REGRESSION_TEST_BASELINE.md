@@ -1,8 +1,8 @@
 # DutyLog regression test baseline
 
-Status: extended in v27.2.9 with the task regression suite.
+Status: v27.2.29.
 
-Current extension: v27.2.25 adds a Chromium Playwright E2E baseline for browser wiring, persistence, modules, mobile layout and offline/PWA startup while retaining the v27.2.24 JaCoCo coverage floor.
+Current extension: v27.2.29 adds browser-session invalidation, proxy-spoofing, backup-permission and mobile-token-retention guards while retaining the five Chromium Playwright scenarios and the v27.2.24 JaCoCo floor.
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
@@ -188,3 +188,14 @@ A green test suite means the listed contracts still hold. It does not replace ex
 - Enabled but incomplete environments fail before SSH with a list of missing setting names and without secret values.
 - Production uses the same preflight but remains fail-closed.
 - Baselines remain 61 Java classes / 327 `@Test` methods and 5 Playwright scenarios.
+
+## v27.2.29 final security and product audit hardening
+
+- `WebSessionInvalidationTest` proves that password changes and admin-role demotion invalidate existing browser sessions before another protected request is authorized.
+- `WebAccountStateFilterTest` locks matching/stale auth-version behavior and keeps Bearer principals outside the browser-session check.
+- `ClientIpResolverTest` and the expanded `AuthenticationRateLimitFilterTest` prove that untrusted forwarding headers cannot split brute-force buckets while managed edge headers remain usable.
+- `ProfilePasswordTest`, `UserAdminServiceTest` and `AdminBootstrapServiceTest` lock the unified password minimum and auth-version increments.
+- `MobileAuthTokenCleanupServiceTest` keeps expired mobile-session rows bounded.
+- Flyway adds V23 for `users.auth_version`.
+- Baseline: 65 Java test classes / 340 `@Test` methods and 5 Playwright scenarios.
+

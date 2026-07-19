@@ -27,7 +27,7 @@ class SecurityEventLoggerTest {
         appender = new ListAppender<>();
         appender.start();
         auditLogger.addAppender(appender);
-        events = new SecurityEventLogger();
+        events = new SecurityEventLogger(new ClientIpResolver(true));
     }
 
     @AfterEach

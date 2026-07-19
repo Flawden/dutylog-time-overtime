@@ -27,9 +27,11 @@ class AdminBootstrapServiceTest {
     private final AppSettingRepository settings = mock(AppSettingRepository.class);
     private final PasswordEncoder encoder = mock(PasswordEncoder.class);
     private final DefaultShiftSeedService seeds = mock(DefaultShiftSeedService.class);
+    private final MobileAuthService mobileAuthService = mock(MobileAuthService.class);
 
     private AdminBootstrapService service(String username, String password, boolean forceReset) {
-        return new AdminBootstrapService(users, settings, encoder, seeds, username, password, forceReset);
+        return new AdminBootstrapService(users, settings, encoder, seeds, mobileAuthService,
+                username, password, forceReset);
     }
 
     @Test
@@ -88,6 +90,7 @@ class AdminBootstrapServiceTest {
         verify(seeds).seedDefaults(any(AppUser.class));
         assertFalse(legacyAdmin.isAdmin());
         assertEquals("USER", legacyAdmin.getRole());
+        assertEquals(1L, legacyAdmin.getAuthVersion());
         verify(settings).save(any(AppSetting.class));
         verify(users).findByUsername("bootstrap-root");
     }
@@ -102,6 +105,7 @@ class AdminBootstrapServiceTest {
 
         assertTrue(existing.isAdmin());
         assertEquals("old-hash", existing.getPasswordHash());
+        assertEquals(1L, existing.getAuthVersion());
         verify(encoder, never()).encode(any());
         verify(seeds, never()).seedDefaults(any());
         verify(users).save(existing);
@@ -118,8 +122,10 @@ class AdminBootstrapServiceTest {
         service("bootstrap-root", "a-very-long-bootstrap-password", true).bootstrapAdmin();
 
         assertEquals("new-hash", existing.getPasswordHash());
+        assertEquals(1L, existing.getAuthVersion());
         verify(encoder).encode("a-very-long-bootstrap-password");
         verify(users).save(existing);
+        verify(mobileAuthService).revokeAllSessions(existing);
     }
 
     @Test
