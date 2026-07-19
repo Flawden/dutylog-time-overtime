@@ -4,7 +4,7 @@ set -Eeuo pipefail
 BASE_URL="${1:-${DUTYLOG_BASE_URL:-http://localhost:8080}}"
 BASE_URL="${BASE_URL%/}"
 TIMEOUT="${DUTYLOG_SMOKE_TIMEOUT:-10}"
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.31}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.32}"
 SMOKE_USERNAME="${DUTYLOG_SMOKE_USERNAME:-${DUTYLOG_ADMIN_USERNAME:-}}"
 SMOKE_PASSWORD="${DUTYLOG_SMOKE_PASSWORD:-${DUTYLOG_ADMIN_PASSWORD:-}}"
 REQUIRE_AUTH="${DUTYLOG_SMOKE_REQUIRE_AUTH:-false}"
@@ -32,6 +32,16 @@ fetch() {
 
 status_code() {
   curl -sS --max-time "$TIMEOUT" -o /dev/null -w '%{http_code}' "$@"
+}
+
+contains_literal() {
+  local haystack="$1" needle="$2"
+  grep -Fq -- "$needle" <<< "$haystack"
+}
+
+contains_literal_ci() {
+  local haystack="$1" needle="$2"
+  grep -Fqi -- "$needle" <<< "$haystack"
 }
 
 header_value() {
@@ -92,14 +102,16 @@ if [[ "$BASE_URL" == http://* && "$BASE_URL" != "http://localhost"* && "$BASE_UR
 fi
 
 echo "1) Actuator health"
-fetch "$BASE_URL/actuator/health" | grep -q '"status":"UP"'
+HEALTH_JSON="$(fetch "$BASE_URL/actuator/health")"
+contains_literal "$HEALTH_JSON" '"status":"UP"'
 echo "   ok"
 
 echo "2) Login page and external login runtime"
 LOGIN_HTML="$(curl -fsS --max-time "$TIMEOUT" -c "$COOKIE_JAR" "$BASE_URL/login.html")"
-echo "$LOGIN_HTML" | grep -qi 'DutyLog'
-echo "$LOGIN_HTML" | grep -q "/js/login.js?v=$VERSION"
-fetch "$BASE_URL/js/login.js" | grep -q 'languagePreference: currentLang'
+contains_literal_ci "$LOGIN_HTML" 'DutyLog'
+contains_literal "$LOGIN_HTML" "/js/login.js?v=$VERSION"
+LOGIN_JS="$(fetch "$BASE_URL/js/login.js")"
+contains_literal "$LOGIN_JS" 'languagePreference: currentLang'
 echo "   ok"
 
 echo "3) Browser entry point and authenticated app shell"
@@ -161,12 +173,12 @@ else
   fi
   AUTHENTICATED=true
   APP_HTML="$(curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/")"
-  echo "$APP_HTML" | grep -qi 'DutyLog'
-  echo "$APP_HTML" | grep -q "app.css?v=$VERSION"
+  contains_literal_ci "$APP_HTML" 'DutyLog'
+  contains_literal "$APP_HTML" "app.css?v=$VERSION"
   for asset in "${STATIC_JS[@]}"; do
-    echo "$APP_HTML" | grep -q "$asset?v=$VERSION"
+    contains_literal "$APP_HTML" "$asset?v=$VERSION"
   done
-  if echo "$APP_HTML" | grep -q 'app.js?v='; then
+  if contains_literal "$APP_HTML" 'app.js?v='; then
     echo "Unexpected legacy app.js reference in app shell" >&2
     exit 1
   fi
@@ -174,27 +186,32 @@ else
 fi
 
 echo "4) Manifest"
-fetch "$BASE_URL/manifest.json" | grep -qi 'DutyLog'
+MANIFEST_JSON="$(fetch "$BASE_URL/manifest.json")"
+contains_literal_ci "$MANIFEST_JSON" 'DutyLog'
 echo "   ok"
 
 echo "5) Service worker"
-fetch "$BASE_URL/service-worker.js" | grep -q "dutylog-shell-v$VERSION"
+SERVICE_WORKER_JS="$(fetch "$BASE_URL/service-worker.js")"
+contains_literal "$SERVICE_WORKER_JS" "dutylog-shell-v$VERSION"
 echo "   ok"
 
 echo "6) Protected static assets"
 if [[ "$AUTHENTICATED" == "true" ]]; then
-  curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/js/10-core.js" | grep -q "DUTYLOG_VERSION = \"$VERSION\""
+  CORE_JS="$(curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/js/10-core.js")"
+  contains_literal "$CORE_JS" "DUTYLOG_VERSION = \"$VERSION\""
   for asset in "${STATIC_JS[@]:1}"; do
     curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/$asset" >/dev/null
   done
-  curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/app.css" | grep -q ':root'
+  APP_CSS="$(curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/app.css")"
+  contains_literal "$APP_CSS" ':root'
   echo "   ok"
 else
   echo "   skipped (authenticated session not available)"
 fi
 
 echo "7) Public registration status endpoint"
-fetch "$BASE_URL/api/auth/registration-status" | grep -q '"enabled"'
+REGISTRATION_STATUS="$(fetch "$BASE_URL/api/auth/registration-status")"
+contains_literal "$REGISTRATION_STATUS" '"enabled"'
 echo "   ok"
 
 echo "8) Protected API returns unauthorized/redirected/forbidden instead of crashing"

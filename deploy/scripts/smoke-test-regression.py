@@ -12,7 +12,7 @@ import sys
 import threading
 import urllib.parse
 
-VERSION = "27.2.31"
+VERSION = "27.2.32"
 USERNAME = "smoke-admin"
 PASSWORD = "correct-password-regression"
 CSRF = "csrf-regression-token"
@@ -70,7 +70,13 @@ class Handler(http.server.BaseHTTPRequestHandler):
                     self._send(401, '{"code":"AUTH_REQUIRED"}', "application/json")
                 return
             assets = "".join(f'<script src="/{asset}?v={VERSION}"></script>' for asset in STATIC_JS)
-            body = f'<html><head><link href="app.css?v={VERSION}" rel="stylesheet"></head><body>DutyLog{assets}</body></html>'
+            # Large multiline output reproduces the former `echo "$APP_HTML" | grep -q`
+            # SIGPIPE/141 failure under `set -o pipefail` after an early match.
+            padding = "deployment-smoke-padding\n" * 20000
+            body = (
+                f'<html><head><link href="app.css?v={VERSION}" rel="stylesheet"></head>'
+                f'<body>DutyLog\n{assets}\n{padding}</body></html>'
+            )
             self._send(200, body, "text/html")
             return
         if path == "/manifest.json":

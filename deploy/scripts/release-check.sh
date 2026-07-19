@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.31}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.32}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -901,6 +901,16 @@ if python3 deploy/scripts/smoke-test-regression.py >/dev/null; then
 else
   fail "authenticated deployment smoke-test regression failed"
 fi
+
+# v27.2.32 pipefail-safe authenticated smoke-test hotfix
+contains CHANGES.md "v27.2.32 — Pipefail-safe authenticated smoke-test hotfix"
+contains README.md "v27.2.32 — Pipefail-safe authenticated smoke-test hotfix"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.32 makes the authenticated deployment smoke test pipefail-safe"
+contains docs/PIPEFAIL_SAFE_SMOKE_TEST_HOTFIX_V27.2.32.md "SIGPIPE"
+contains deploy/scripts/smoke-test.sh "contains_literal"
+not_contains deploy/scripts/smoke-test.sh '| grep -q'
+not_contains deploy/scripts/smoke-test.sh '| grep -qi'
+contains deploy/scripts/smoke-test-regression.py "deployment-smoke-padding"
 
 DEPLOY_ENV_TMP="$(mktemp -d)"
 sed \

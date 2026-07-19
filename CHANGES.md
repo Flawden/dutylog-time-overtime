@@ -1,3 +1,10 @@
+## v27.2.32 — Pipefail-safe authenticated smoke-test hotfix
+
+- Fixed staging deployment exit `141` during the authenticated app-shell probe.
+- Removed producer-to-`grep -q` pipelines from `smoke-test.sh`; under `set -o pipefail`, an early successful match could terminate the producer with SIGPIPE and falsely fail a healthy deployment.
+- Added a large multiline app-shell regression fixture that reproduces the former failure deterministically.
+- Kept the CSRF-aware login, secure-cookie loopback handling and protected asset checks from v27.2.31.
+
 ## v27.2.31 — Authenticated deployment smoke-test hotfix
 
 - Fixed the first real staging deployment failure: the smoke test no longer tries to download the protected application shell anonymously.

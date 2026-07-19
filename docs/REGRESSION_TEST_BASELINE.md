@@ -1,8 +1,12 @@
 # DutyLog regression test baseline
 
-Status: v27.2.31.
+Status: v27.2.32.
 
-Current extension: v27.2.31 adds an authenticated, CSRF-aware deployment smoke-test regression while retaining the v27.2.30 host-nginx topology, the v27.2.29 security baseline, five Chromium Playwright scenarios and the v27.2.24 JaCoCo floor.
+Historical checkpoint — Status: v27.2.31.
+
+Current extension: v27.2.32 makes the authenticated deployment smoke test pipefail-safe and adds a deterministic large-response SIGPIPE regression while retaining the v27.2.31 CSRF-aware login checks, the v27.2.30 host-nginx topology, the v27.2.29 security baseline, five Chromium Playwright scenarios and the v27.2.24 JaCoCo floor.
+
+Historical extension: v27.2.31 adds an authenticated, CSRF-aware deployment smoke-test regression.
 
 Historical extension: v27.2.30 adds host-nginx deployment, loopback publication and two-stage smoke-test guards.
 

@@ -171,3 +171,7 @@ Rollback changes the application image only. Flyway migrations are forward-only.
 - publish DutyLog on `0.0.0.0`;
 - promote an untested source tree;
 - run `docker compose down -v` in production.
+
+## Pipefail-safe smoke response checks (v27.2.32)
+
+Deployment smoke checks capture HTTP responses before searching them. Do not use `curl ... | grep -q` or `echo "$BODY" | grep -q` in scripts that enable `set -o pipefail`: an early match can close the pipe and turn a successful check into SIGPIPE exit 141.
