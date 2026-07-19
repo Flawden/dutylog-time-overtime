@@ -1,3 +1,12 @@
+## v27.2.31 — Authenticated deployment smoke-test hotfix
+
+- Fixed the first real staging deployment failure: the smoke test no longer tries to download the protected application shell anonymously.
+- Browser navigation to `/` is verified with `Accept: text/html` and must redirect to `/login.html`; API-style anonymous requests may continue to receive JSON `401`.
+- Deployment smoke tests now authenticate with the bootstrap administrator through the real CSRF-protected `/perform_login` flow, keep cookies in a permission-restricted temporary directory and verify the versioned app shell only after login.
+- Deployment and rollback paths fail closed when authenticated smoke credentials are missing or rejected.
+- Added a local HTTP regression harness that proves valid credentials pass, invalid credentials fail and passwords are not printed.
+- Application features, Flyway V1–V23, 340 Java tests and 5 Playwright scenarios are unchanged from v27.2.30.
+
 ## v27.2.30 — Host nginx CI/CD deployment hardening
 
 - Active staging/production delivery now uses the VPS-wide system nginx instead of a shared Caddy container.

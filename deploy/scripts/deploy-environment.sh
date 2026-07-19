@@ -10,8 +10,8 @@ usage() {
 Usage: deploy-environment.sh \
   --environment staging|production \
   --image ghcr.io/owner/repo@sha256:... \
-  --release-version 27.2.30 \
-  --build-version 27.2.30+tree.abc123 \
+  --release-version 27.2.31 \
+  --build-version 27.2.31+tree.abc123 \
   --tree <git-tree-sha> \
   --commit <git-sha> \
   --build-time <ISO-8601> \
@@ -21,7 +21,7 @@ EOF
 
 ENVIRONMENT=""
 IMAGE_REF=""
-RELEASE_VERSION="27.2.30"
+RELEASE_VERSION="27.2.31"
 BUILD_VERSION=""
 BUILD_TREE=""
 BUILD_COMMIT="unknown"
@@ -190,7 +190,7 @@ rollback_application() {
   DUTYLOG_RELEASE_VERSION="${OLD_RELEASE:-$RELEASE_VERSION}" \
     bash deploy/scripts/local-smoke-test.sh
   if [[ -n "$BASE_URL" ]]; then
-    DUTYLOG_RELEASE_VERSION="${OLD_RELEASE:-$RELEASE_VERSION}" bash deploy/scripts/smoke-test.sh "$BASE_URL"
+    DUTYLOG_RELEASE_VERSION="${OLD_RELEASE:-$RELEASE_VERSION}" DUTYLOG_SMOKE_REQUIRE_AUTH=true bash deploy/scripts/smoke-test.sh "$BASE_URL"
   fi
   echo "Previous application image restored. Database migrations were not rolled back."
 }
@@ -250,7 +250,7 @@ DUTYLOG_RELEASE_VERSION="$RELEASE_VERSION" \
   bash deploy/scripts/local-smoke-test.sh
 
 if [[ -n "$BASE_URL" ]]; then
-  DUTYLOG_RELEASE_VERSION="$RELEASE_VERSION" bash deploy/scripts/smoke-test.sh "$BASE_URL"
+  DUTYLOG_RELEASE_VERSION="$RELEASE_VERSION" DUTYLOG_SMOKE_REQUIRE_AUTH=true bash deploy/scripts/smoke-test.sh "$BASE_URL"
 else
   echo "DUTYLOG_BASE_URL is empty; external smoke test skipped." >&2
 fi

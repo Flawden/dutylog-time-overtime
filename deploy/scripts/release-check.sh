@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.30}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.31}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -595,7 +595,7 @@ contains .github/workflows/ci.yml 'name: jacoco-report'
 
 # v27.2.9 task regression suite and local coverage instructions
 contains CHANGES.md "v27.2.9 — Task regression suite"
-contains docs/REGRESSION_TEST_BASELINE.md "Status: v27.2.30."
+contains docs/REGRESSION_TEST_BASELINE.md "Status: v27.2.31."
 contains docs/TESTING.md "mvn clean verify"
 contains docs/TESTING.md "target/site/jacoco/index.html"
 contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java "boardFiltersStatusCategoryPriorityQueryAndDateRange"
@@ -884,6 +884,23 @@ contains docs/CICD.md "Production does not rebuild source code."
 contains docs/CICD.md "127.0.0.1:18082"
 contains docs/CICD.md "127.0.0.1:18083"
 contains docs/VPS_CHECKLIST.md "No Caddy container is started by the active deployment."
+
+# v27.2.31 authenticated deployment smoke-test hotfix
+contains CHANGES.md "v27.2.31 — Authenticated deployment smoke-test hotfix"
+contains README.md "v27.2.31 — Authenticated deployment smoke-test hotfix"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.31 adds an authenticated, CSRF-aware deployment smoke-test regression"
+contains docs/AUTHENTICATED_SMOKE_TEST_HOTFIX_V27.2.31.md 'CSRF-protected `/perform_login`'
+contains deploy/scripts/smoke-test.sh "DUTYLOG_SMOKE_REQUIRE_AUTH"
+contains deploy/scripts/smoke-test.sh '--data-urlencode "password@$PASSWORD_FILE"'
+contains deploy/scripts/smoke-test.sh "-H 'Accept: text/html'"
+contains deploy/scripts/local-smoke-test.sh "DUTYLOG_SMOKE_REQUIRE_AUTH=true"
+contains deploy/scripts/deploy-environment.sh "DUTYLOG_SMOKE_REQUIRE_AUTH=true bash deploy/scripts/smoke-test.sh"
+contains deploy/scripts/smoke-test-regression.py "Authenticated smoke-test regression passed."
+if python3 deploy/scripts/smoke-test-regression.py >/dev/null; then
+  ok "authenticated deployment smoke-test regression"
+else
+  fail "authenticated deployment smoke-test regression failed"
+fi
 
 DEPLOY_ENV_TMP="$(mktemp -d)"
 sed \

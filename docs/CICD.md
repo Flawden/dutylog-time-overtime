@@ -14,6 +14,11 @@ feature/* -> test -> staging
 
 Until the staging VPS is ready, leave the `staging` Environment variable `DUTYLOG_DEPLOY_ENABLED` unset or `false`. The workflow still runs Maven/JaCoCo, release checks, Playwright, image build and clean-PostgreSQL migration verification, then records an explicit successful skip. It does not create a promotion tag.
 
+## Authenticated smoke test (v27.2.31)
+
+The deployment gate treats the application shell as protected content. It checks the anonymous browser redirect with `Accept: text/html`, obtains `XSRF-TOKEN` from `/login.html`, signs in through `/perform_login` with the environment bootstrap administrator and verifies the versioned shell with the resulting session cookie. Missing or rejected credentials fail deployment and rollback checks closed. API-style anonymous requests may still receive JSON `401`.
+
+
 ## Public edge architecture
 
 The active deployment uses the VPS-wide system nginx, not a Caddy container:
