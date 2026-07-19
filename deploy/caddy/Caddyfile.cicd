@@ -13,11 +13,17 @@
 {$DUTYLOG_PRODUCTION_DOMAIN} {
     import security_headers
     encode zstd gzip
-    reverse_proxy dutylog-production-app:8080
+    reverse_proxy dutylog-production-app:8080 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+    }
 }
 
 {$DUTYLOG_STAGING_DOMAIN} {
     import security_headers
     encode zstd gzip
-    reverse_proxy dutylog-staging-app:8080
+    reverse_proxy dutylog-staging-app:8080 {
+        header_up X-Real-IP {remote_host}
+        header_up X-Forwarded-For {remote_host}
+    }
 }

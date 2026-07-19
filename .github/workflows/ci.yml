@@ -22,6 +22,11 @@ jobs:
           java-version: '17'
           cache: maven
 
+      - name: Resolve project version
+        id: version
+        shell: bash
+        run: echo "release_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> "$GITHUB_OUTPUT"
+
       - name: Build, test and coverage report
         run: mvn -B --no-transfer-progress verify
 
@@ -36,12 +41,36 @@ jobs:
       - name: Release static checks
         run: bash ./deploy/scripts/release-check.sh
 
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Playwright test runner
+        run: npm install --no-audit --no-fund
+
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+
+      - name: Browser E2E regression suite
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            playwright-report
+            test-results
+          if-no-files-found: warn
+
       - name: Build deployment image
         run: |
           BUILD_TIME="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           docker build \
             --build-arg DUTYLOG_BUILD_ID="ci-${GITHUB_SHA::12}" \
-            --build-arg DUTYLOG_BUILD_VERSION="27.2.9-ci.${GITHUB_RUN_NUMBER}" \
+            --build-arg DUTYLOG_BUILD_VERSION="${{ steps.version.outputs.release_version }}-ci.${GITHUB_RUN_NUMBER}" \
             --build-arg DUTYLOG_BUILD_COMMIT="$GITHUB_SHA" \
             --build-arg DUTYLOG_BUILD_TREE="$(git rev-parse HEAD^{tree})" \
             --build-arg DUTYLOG_BUILD_TIME="${BUILD_TIME:-unknown}" \

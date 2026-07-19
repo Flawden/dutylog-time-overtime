@@ -14,7 +14,7 @@ RUN find src/main/resources/static -type f -name '*.js' -exec \
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-ARG DUTYLOG_BUILD_VERSION=27.2.17-local
+ARG DUTYLOG_BUILD_VERSION=27.2.29-local
 ARG DUTYLOG_BUILD_COMMIT=local
 ARG DUTYLOG_BUILD_TREE=local
 ARG DUTYLOG_BUILD_TIME=unknown

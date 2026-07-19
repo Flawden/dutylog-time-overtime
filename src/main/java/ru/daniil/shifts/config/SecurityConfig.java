@@ -8,7 +8,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -49,10 +48,11 @@ public class SecurityConfig {
                     if (u.isAdmin()) {
                         authorities.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
                     }
-                    return User.withUsername(u.getUsername())
-                            .password(u.getPasswordHash())
-                            .authorities(authorities)
-                            .build();
+                    return new DutyLogUserPrincipal(
+                            u.getUsername(),
+                            u.getPasswordHash(),
+                            authorities,
+                            u.getAuthVersion());
                 })
                 .orElseThrow(() -> new UsernameNotFoundException(username));
     }
@@ -65,6 +65,15 @@ public class SecurityConfig {
     public FilterRegistrationBean<BearerTokenAuthenticationFilter> bearerFilterRegistration(
             BearerTokenAuthenticationFilter filter) {
         FilterRegistrationBean<BearerTokenAuthenticationFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.setEnabled(false);
+        return registration;
+    }
+
+    /** WebAccountStateFilter is part of the web Spring Security chain only. */
+    @Bean
+    public FilterRegistrationBean<WebAccountStateFilter> webAccountStateFilterRegistration(
+            WebAccountStateFilter filter) {
+        FilterRegistrationBean<WebAccountStateFilter> registration = new FilterRegistrationBean<>(filter);
         registration.setEnabled(false);
         return registration;
     }
@@ -117,14 +126,13 @@ public class SecurityConfig {
     @Order(2)
     public SecurityFilterChain webFilterChain(HttpSecurity http,
                                                BearerTokenAuthenticationFilter bearerTokenAuthenticationFilter,
+                                               WebAccountStateFilter webAccountStateFilter,
                                                SecurityEventLogger securityEvents,
                                                ApiErrorWriter apiErrors) throws Exception {
         CookieCsrfTokenRepository csrfRepo = CookieCsrfTokenRepository.withHttpOnlyFalse();
         CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
-        RequestMatcher bearerRequest = request -> {
-            String authorization = request.getHeader("Authorization");
-            return authorization != null && authorization.startsWith("Bearer ");
-        };
+        RequestMatcher bearerRequest = request ->
+                BearerTokenAuthenticationFilter.hasBearerScheme(request.getHeader("Authorization"));
         // Resolve immediately so the SPA receives XSRF-TOKEN before its first POST.
         csrfHandler.setCsrfRequestAttributeName(null);
 
@@ -178,7 +186,8 @@ public class SecurityConfig {
                                     "FORBIDDEN", "Недостаточно прав");
                         }))
                 .headers(headers -> headers.frameOptions(frame -> frame.sameOrigin()))
-                .addFilterBefore(bearerTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(bearerTokenAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterAfter(webAccountStateFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

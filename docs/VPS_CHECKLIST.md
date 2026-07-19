@@ -21,6 +21,7 @@ Status: v27.2.5.
 ## GitHub
 
 - [ ] Environments `staging` and `production` exist.
+- [ ] `staging` variable `DUTYLOG_DEPLOY_ENABLED` stays `false` until host preparation is complete, then is changed to `true`.
 - [ ] SSH private key and strict known-host entries are configured.
 - [ ] GHCR pull credentials are configured.
 - [ ] Production branch is protected.

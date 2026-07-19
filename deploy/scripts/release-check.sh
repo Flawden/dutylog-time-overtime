@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.17}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.29}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -111,8 +111,16 @@ for f in src/main/resources/static/js/*.js; do
 done
 node --check src/main/resources/static/service-worker.js >/dev/null
 ok "node --check service-worker.js"
+node --check playwright.config.js >/dev/null
+ok "node --check playwright.config.js"
+for f in e2e/*.js; do
+  node --check "$f" >/dev/null
+  ok "node --check $f"
+done
 python3 -m json.tool src/main/resources/static/manifest.json >/dev/null
 ok "manifest.json is valid JSON"
+python3 -m json.tool package.json >/dev/null
+ok "package.json is valid JSON"
 
 python3 - "$VERSION" <<'PY'
 from pathlib import Path
@@ -298,8 +306,17 @@ contains deploy/nginx/dutylog.conf.example "script-src 'self'"
 not_contains deploy/nginx/dutylog.conf.example "script-src 'self' 'unsafe-inline'"
 contains src/main/resources/application-prod.properties 'dutylog.registration.default-enabled=${DUTYLOG_REGISTRATION_DEFAULT_ENABLED:false}'
 contains src/main/resources/application-prod.properties 'dutylog.security.rate-limit.enabled=${DUTYLOG_SECURITY_RATE_LIMIT_ENABLED:true}'
+contains src/main/resources/application-prod.properties 'dutylog.security.trust-proxy-headers=${DUTYLOG_SECURITY_TRUST_PROXY_HEADERS:true}'
 contains docker-compose.prod.yml 'DUTYLOG_REGISTRATION_DEFAULT_ENABLED: ${DUTYLOG_REGISTRATION_DEFAULT_ENABLED:-false}'
 contains docker-compose.prod.yml 'DUTYLOG_SECURITY_RATE_LIMIT_ENABLED: ${DUTYLOG_SECURITY_RATE_LIMIT_ENABLED:-true}'
+contains docker-compose.prod.yml 'DUTYLOG_SECURITY_TRUST_PROXY_HEADERS: ${DUTYLOG_SECURITY_TRUST_PROXY_HEADERS:-true}'
+contains .env.production.example 'DUTYLOG_SECURITY_TRUST_PROXY_HEADERS=true'
+contains deploy/compose/docker-compose.deploy.yml 'DUTYLOG_SECURITY_TRUST_PROXY_HEADERS: ${DUTYLOG_SECURITY_TRUST_PROXY_HEADERS:-true}'
+contains deploy/nginx/dutylog.conf.example 'proxy_set_header X-Forwarded-For $remote_addr;'
+contains deploy/caddy/Caddyfile.example 'header_up X-Real-IP {remote_host}'
+contains deploy/caddy/Caddyfile.example 'header_up X-Forwarded-For {remote_host}'
+contains deploy/caddy/Caddyfile.cicd 'header_up X-Real-IP {remote_host}'
+contains deploy/caddy/Caddyfile.cicd 'header_up X-Forwarded-For {remote_host}'
 contains docker-compose.prod.yml 'app_logs:/app/logs'
 contains Dockerfile 'USER 10001:10001'
 contains .github/dependabot.yml 'package-ecosystem: "maven"'
@@ -322,7 +339,8 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "v27.2.5"
+contains docs/SECURITY_REVIEW.md "Status: v27.2.29."
+contains docs/FINAL_PRODUCT_AUDIT_V27.2.29.md "## Launch decision"
 contains docs/TEST_CONFIG_HOTFIX.md "v27.2.5"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
 contains docs/CI_PERMISSION_HOTFIX.md "v27.2.5"
@@ -495,7 +513,7 @@ contains README.md "v27.2.5 — Calendar day identity hotfix"
 contains docs/RELEASE_CANDIDATE.md "v27.2.5 — Calendar day identity hotfix"
 contains docs/USER_GUIDE.md "Status: v27.2.5."
 contains docs/PRODUCTION_DEPLOY.md "same GHCR digest that already passed staging"
-contains docs/BACKUP_RESTORE.md "Status: v27.2.5."
+contains docs/BACKUP_RESTORE.md "Status: v27.2.29."
 contains docs/RELEASE_CHECKLIST.md "git tag -a v27.2.5"
 
 # v27.2.5 calendar persistence regression guards
@@ -555,7 +573,7 @@ contains .github/workflows/ci.yml 'name: jacoco-report'
 
 # v27.2.9 task regression suite and local coverage instructions
 contains CHANGES.md "v27.2.9 — Task regression suite"
-contains docs/REGRESSION_TEST_BASELINE.md "Status: extended in v27.2.9 with the task regression suite."
+contains docs/REGRESSION_TEST_BASELINE.md "Status: v27.2.29."
 contains docs/TESTING.md "mvn clean verify"
 contains docs/TESTING.md "target/site/jacoco/index.html"
 contains src/test/java/ru/daniil/shifts/service/TaskServiceTest.java "boardFiltersStatusCategoryPriorityQueryAndDateRange"
@@ -648,6 +666,248 @@ contains CHANGES.md "v27.2.17 — Admin test context bootstrap hotfix"
 contains README.md "v27.2.17 — Admin test context bootstrap hotfix"
 contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java 'service = new UserAdminService(users, encoder, mobileAuthService, securityEvents, "bootstrap-root")'
 not_contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java '@TestPropertySource(properties = "dutylog.admin.username=bootstrap-root")'
+
+# v27.2.18 mobile auth and sync lifecycle regression suite
+contains CHANGES.md "v27.2.18 — Mobile auth and sync lifecycle regression suite"
+contains README.md "v27.2.18 — Mobile auth and sync lifecycle regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "MobileAuthServiceTest"
+contains docs/REGRESSION_TEST_BASELINE.md "MobileSyncServiceTest"
+contains src/main/java/ru/daniil/shifts/service/MobileSyncService.java 'catch (ApiException ex) {'
+contains src/main/java/ru/daniil/shifts/service/MobileSyncService.java 'safeEntityKey(change.date())'
+contains src/test/java/ru/daniil/shifts/service/MobileAuthServiceTest.java 'refreshRotatesBothTokensInPlaceAndInvalidatesTheOldPair'
+contains src/test/java/ru/daniil/shifts/web/MobileAuthLifecycleControllerTest.java 'logoutByBearerWorksWithAnEmptyBodyBecauseLogoutRouteIsPublic'
+contains src/test/java/ru/daniil/shifts/service/MobileSyncServiceTest.java 'malformedDateIsAPerItemRejectionAndNoLongerAbortsTheBatch'
+contains src/test/java/ru/daniil/shifts/service/MobileSyncServiceTest.java 'clearCreatesAVersionedTombstoneSoStaleOfflineCreatesCannotOverwriteIt'
+contains src/test/java/ru/daniil/shifts/web/MobileSyncControllerTest.java 'legacyClearDeletesEmptyRowWhileV1ClearKeepsVersionedTombstone'
+
+# v27.2.19 PostgreSQL migration and CI version hotfix
+contains CHANGES.md "v27.2.19 — PostgreSQL migration and CI version hotfix"
+contains README.md "v27.2.19 — PostgreSQL migration and CI version hotfix"
+contains src/main/resources/db/migration/postgresql/V7__notification_settings.sql 'references users(id) on delete cascade'
+not_contains src/main/resources/db/migration/postgresql/V7__notification_settings.sql 'references app_users(id)'
+contains src/test/java/ru/daniil/shifts/db/PostgreSqlMigrationContractTest.java 'everyForeignKeyTargetsATableCreatedByTheSameOrAnEarlierMigration'
+contains .github/workflows/ci.yml 'release_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)'
+contains .github/workflows/ci.yml 'DUTYLOG_BUILD_VERSION="${{ steps.version.outputs.release_version }}-ci.${GITHUB_RUN_NUMBER}"'
+contains .github/workflows/deploy-staging.yml 'DUTYLOG_RELEASE_VERSION: ${{ needs.validate.outputs.release_version }}'
+contains .github/workflows/deploy-production.yml 'DUTYLOG_RELEASE_VERSION: ${{ needs.validate.outputs.release_version }}'
+not_contains .github/workflows/ci.yml '27.2.9'
+not_contains .github/workflows/deploy-staging.yml '27.2.9'
+not_contains .github/workflows/deploy-production.yml '27.2.9'
+
+# v27.2.20 Telegram bot regression and delivery hardening suite
+contains CHANGES.md "v27.2.20 — Telegram bot regression and delivery hardening suite"
+contains README.md "v27.2.20 — Telegram bot regression and delivery hardening suite"
+contains docs/REGRESSION_TEST_BASELINE.md "TelegramBotServiceTest"
+contains src/main/java/ru/daniil/shifts/telegram/TelegramBotService.java 'return root != null && root.path("ok").asBoolean(false);'
+contains src/main/java/ru/daniil/shifts/telegram/TelegramBotService.java 'message.replace(token, "***")'
+contains src/main/java/ru/daniil/shifts/telegram/TelegramBotService.java 'chatIdNode.isMissingNode() || chatIdNode.isNull()'
+contains src/test/java/ru/daniil/shifts/telegram/TelegramCommandServiceTest.java "intervalOvertimeSupportsDateOvernightBreakPlanAndReason"
+contains src/test/java/ru/daniil/shifts/telegram/TelegramBotServiceTest.java "sendMessageValidatesInputTruncatesTextAndFailsClosed"
+contains src/test/java/ru/daniil/shifts/telegram/TelegramNotificationServiceTest.java "failedTelegramSendIsRetriedLaterInsteadOfMarkedDelivered"
+contains src/test/java/ru/daniil/shifts/web/TelegramControllerTest.java "disabledModuleGuardsEveryTelegramEndpoint"
+
+# v27.2.21 Telegram date validation and test harness hotfix
+contains CHANGES.md "v27.2.21 — Telegram date validation and test harness hotfix"
+contains README.md "v27.2.21 — Telegram date validation and test harness hotfix"
+contains src/main/java/ru/daniil/shifts/telegram/TelegramCommandService.java 'catch (DateTimeException | NumberFormatException ignored)'
+contains src/test/java/ru/daniil/shifts/telegram/TelegramCommandServiceTest.java '31.02 Невозможная дата'
+python3 - <<'PY_TELEGRAM_HOTFIX'
+from pathlib import Path
+text = Path('src/test/java/ru/daniil/shifts/telegram/TelegramBotServiceTest.java').read_text()
+method = text.split('void sendMessageValidatesInputTruncatesTextAndFailsClosed()', 1)[1].split('@Test', 1)[0]
+second_expectation = method.find('server.expect', method.find('server.expect') + 1)
+first_request = method.find('assertFalse(bot.sendMessage(1L, longText)')
+if second_expectation < 0 or first_request < 0 or second_expectation > first_request:
+    raise SystemExit('TelegramBotServiceTest must register both HTTP expectations before the first request')
+PY_TELEGRAM_HOTFIX
+if [[ $? -eq 0 ]]; then
+  ok "TelegramBotServiceTest registers all expectations before execution"
+else
+  fail "TelegramBotServiceTest expectation ordering regression"
+fi
+
+# v27.2.22 security infrastructure regression and auth hardening suite
+contains CHANGES.md "v27.2.22 — Security infrastructure regression and auth hardening suite"
+contains README.md "v27.2.22 — Security infrastructure regression and auth hardening suite"
+contains docs/REGRESSION_TEST_BASELINE.md "SecurityInfrastructureContractTest"
+contains src/main/java/ru/daniil/shifts/config/BearerTokenAuthenticationFilter.java 'regionMatches(true, start, "Bearer", 0, 6)'
+contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java 'BearerTokenAuthenticationFilter.hasBearerScheme'
+contains src/main/java/ru/daniil/shifts/config/AuthenticationRateLimitFilter.java 'String bucket = registration ? "registration" : "login";'
+contains src/test/java/ru/daniil/shifts/config/BearerTokenAuthenticationFilterTest.java 'bearerSchemeIsCaseInsensitiveAndAcceptsRepeatedWhitespace'
+contains src/test/java/ru/daniil/shifts/config/AuthenticationRateLimitFilterTest.java 'webLegacyAndV1LoginAliasesShareOneIpBucket'
+contains src/test/java/ru/daniil/shifts/config/SecurityEventLoggerTest.java 'controlCharactersAreFlattenedAndEveryValueIsBounded'
+contains src/test/java/ru/daniil/shifts/web/ApiErrorInfrastructureTest.java 'unexpectedExceptionsAreHiddenBehindGeneric500Envelope'
+contains src/test/java/ru/daniil/shifts/web/SecurityInfrastructureContractTest.java 'mixedCaseBearerSchemeIsRecognizedInsteadOfFallingThroughAsAnonymous'
+
+# v27.2.23 security test contract and secret-safe error logging hotfix
+contains CHANGES.md "v27.2.23 — Security test contract and secret-safe error logging hotfix"
+contains README.md "v27.2.23 — Security test contract and secret-safe error logging hotfix"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.23 security test contract and secret-safe logging hotfix"
+contains src/test/java/ru/daniil/shifts/config/BearerTokenAuthenticationFilterTest.java 'MediaType.APPLICATION_JSON.isCompatibleWith'
+contains src/test/java/ru/daniil/shifts/web/ApiErrorInfrastructureTest.java 'MediaType.APPLICATION_JSON.isCompatibleWith'
+contains src/test/java/ru/daniil/shifts/web/SecurityInfrastructureContractTest.java 'get("/").accept(MediaType.TEXT_HTML)'
+contains src/main/java/ru/daniil/shifts/web/ApiExceptionHandler.java 'exceptionType={}'
+contains src/test/java/ru/daniil/shifts/web/ApiErrorInfrastructureTest.java 'assertNull(event.getThrowableProxy())'
+not_contains src/main/java/ru/daniil/shifts/web/ApiExceptionHandler.java 'request.getRequestURI(), ex);'
+
+# v27.2.24 coverage floor and startup/module regression suite
+contains CHANGES.md "v27.2.24 — Coverage floor and startup/module regression suite"
+contains README.md "v27.2.24 — Coverage floor and startup/module regression suite"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.24 coverage floor and startup/module extension"
+contains pom.xml "<counter>INSTRUCTION</counter>"
+contains pom.xml "<minimum>0.88</minimum>"
+contains pom.xml "<counter>BRANCH</counter>"
+contains pom.xml "<minimum>0.70</minimum>"
+contains src/test/java/ru/daniil/shifts/service/AdminBootstrapServiceTest.java "missingBootstrapAccountIsCreatedSeededAndLegacyAdminsAreDemotedOnce"
+contains src/test/java/ru/daniil/shifts/module/ModuleRegistryContractTest.java "everyDependencyChainTerminatesWithoutCycles"
+contains src/test/java/ru/daniil/shifts/service/ModuleServiceContractTest.java "enablingScenarioActivatesItsWholeDependencyChain"
+contains src/test/java/ru/daniil/shifts/service/CurrentUserServiceTest.java "existingPrincipalResolvesToOwnerEntity"
+contains src/test/java/ru/daniil/shifts/service/NoteExportServiceTest.java "postReadLimitProtectsAgainstRowsChangingBetweenCountAndSelect"
+
+# v27.2.25 Playwright browser E2E regression baseline
+contains CHANGES.md "v27.2.25 — Playwright browser E2E regression baseline"
+contains README.md "v27.2.25 — Playwright browser E2E regression baseline"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.25 Playwright browser E2E extension"
+contains docs/PLAYWRIGHT_E2E.md "npm run test:e2e"
+contains package.json '"@playwright/test": "1.49.1"'
+contains playwright.config.js "serviceWorkers: 'block'"
+contains playwright.config.js "spring-boot.run.profiles=e2e"
+contains src/main/resources/application-e2e.properties 'jdbc:h2:mem:dutylog_e2e'
+not_contains src/main/resources/application-e2e.properties 'jdbc:h2:file:'
+contains src/main/resources/application-e2e.properties 'server.port=4173'
+contains src/main/resources/application-e2e.properties 'dutylog.telegram.enabled=false'
+contains src/main/resources/static/js/30-calendar.js 'cell.dataset.date = k'
+contains src/main/resources/static/js/50-tasks.js 'row.dataset.taskId = String(task.id)'
+contains src/main/resources/static/js/50-tasks.js 'b.dataset.shiftTypeId = String(s.id)'
+contains e2e/auth-onboarding.spec.js "registration keeps login language"
+contains e2e/calendar-persistence.spec.js "survive month navigation and full reload"
+contains e2e/task-modules.spec.js "survives disabling and re-enabling"
+contains e2e/mobile-layout.spec.js "phone viewport"
+contains e2e/pwa-offline.spec.js "IndexedDB snapshot while offline"
+contains e2e/fixtures.js "console.error"
+contains e2e/fixtures.js "response.status() >= 400"
+contains e2e/fixtures.js "ERR_ABORTED|NS_BINDING_ABORTED|cancelled"
+contains e2e/helpers.js 'data-settings-jump="modules"'
+contains e2e/helpers.js "expect(toggle).not.toBeChecked()"
+contains .github/workflows/ci.yml "Browser E2E regression suite"
+contains .github/workflows/ci.yml "npx playwright install --with-deps chromium"
+contains .github/workflows/ci.yml "name: playwright-report"
+contains .github/dependabot.yml 'package-ecosystem: "npm"'
+
+
+# v27.2.26 Playwright selector, accordion and line-ending hotfix
+contains CHANGES.md "v27.2.26 — Playwright selector, accordion and line-ending hotfix"
+contains README.md "v27.2.26 — Playwright selector, accordion and line-ending hotfix"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.26 Playwright selector and accordion hotfix"
+contains .gitattributes "* text=auto eol=lf"
+contains src/main/resources/static/js/50-tasks.js 'b.setAttribute("aria-pressed", on ? "true" : "false")'
+contains e2e/helpers.js "async function openDayModule"
+contains e2e/calendar-persistence.spec.js 'aria-pressed="true"'
+contains e2e/calendar-persistence.spec.js "await openDayModule(page, 'notes')"
+contains e2e/pwa-offline.spec.js "await openDayModule(page, 'notes')"
+not_contains e2e/calendar-persistence.spec.js '[data-shift-type-id].on'
+
+# v27.2.27 Playwright marker accordion hotfix
+contains CHANGES.md "v27.2.27 — Playwright marker accordion hotfix"
+contains README.md "v27.2.27 — Playwright marker accordion hotfix"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.27 Playwright marker accordion hotfix"
+contains e2e/calendar-persistence.spec.js "await openDayModule(page, 'core')"
+contains e2e/calendar-persistence.spec.js "await openDayModule(page, 'notes')"
+
+
+# v27.2.28 staging deployment gate and diagnostics hardening
+contains CHANGES.md "v27.2.28 — Staging deployment gate and diagnostics hardening"
+contains README.md "v27.2.28 — Staging deployment gate and diagnostics hardening"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.28 staging deployment gate and diagnostics hardening"
+contains docs/CICD.md "DUTYLOG_DEPLOY_ENABLED"
+contains docs/STAGING.md "## Deployment gate"
+contains .github/workflows/deploy-staging.yml "Build, test and enforce coverage"
+contains .github/workflows/deploy-staging.yml "Browser E2E regression suite"
+contains .github/workflows/deploy-staging.yml "Verify the exact image on clean PostgreSQL"
+contains .github/workflows/deploy-staging.yml "Validate or skip remote staging deployment"
+contains .github/workflows/deploy-staging.yml "if: steps.preflight.outputs.configured == 'true'"
+contains .github/workflows/deploy-production.yml "Validate production deployment configuration"
+contains deploy/scripts/check-ci-deploy-config.sh "write_output configured false"
+contains deploy/scripts/check-ci-deploy-config.sh "write_output configured true"
+contains deploy/scripts/remote-deploy.sh 'missing=()'
+
+# v27.2.29 final security and product audit hardening
+contains CHANGES.md "v27.2.29 — Final security and product audit hardening"
+contains README.md "v27.2.29 — Final security and product audit hardening"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.2.29 final security and product audit hardening"
+contains docs/SECURITY_REVIEW.md "Status: v27.2.29."
+contains src/main/resources/db/migration/postgresql/V23__web_auth_version.sql "auth_version BIGINT NOT NULL DEFAULT 0"
+contains src/main/java/ru/daniil/shifts/config/DutyLogUserPrincipal.java "private final long authVersion"
+contains src/main/java/ru/daniil/shifts/config/WebAccountStateFilter.java "current.getAuthVersion() != principal.getAuthVersion()"
+contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "FilterRegistrationBean<WebAccountStateFilter>"
+contains src/main/java/ru/daniil/shifts/web/ProfileController.java "int minLength = user.isAdmin() ? 12 : 8"
+contains src/main/java/ru/daniil/shifts/web/ProfileController.java "user.bumpAuthVersion()"
+contains src/main/java/ru/daniil/shifts/service/UserAdminService.java "target.bumpAuthVersion()"
+contains src/main/java/ru/daniil/shifts/service/AdminBootstrapService.java "mobileAuthService.revokeAllSessions(user)"
+contains src/test/java/ru/daniil/shifts/web/WebSessionInvalidationTest.java "roleDemotionInvalidatesCachedAdminAuthoritiesOnNextRequest"
+contains src/main/java/ru/daniil/shifts/config/ClientIpResolver.java "trustProxyHeaders"
+contains src/test/java/ru/daniil/shifts/config/AuthenticationRateLimitFilterTest.java "untrustedForwardingHeadersCannotBypassTheRemoteAddressBucket"
+contains deploy/scripts/backup-postgres.sh "umask 077"
+contains deploy/scripts/backup-postgres.sh 'chmod 0700 "$BACKUP_DIR"'
+contains deploy/scripts/backup-postgres.sh 'chmod 0600 "$OUT"'
+contains src/main/java/ru/daniil/shifts/service/MobileAuthTokenCleanupService.java "deleteByRefreshExpiresAtBefore"
+contains src/test/java/ru/daniil/shifts/service/MobileAuthTokenCleanupServiceTest.java "cleanupDeletesOnlyRowsOlderThanConfiguredRetention"
+
+CI_GATE_TMP="$(mktemp -d)"
+trap 'rm -rf "$CI_GATE_TMP"' EXIT
+GITHUB_OUTPUT="$CI_GATE_TMP/disabled.out" \
+GITHUB_STEP_SUMMARY="$CI_GATE_TMP/disabled.md" \
+DUTYLOG_DEPLOY_ENABLED=false \
+  bash deploy/scripts/check-ci-deploy-config.sh >/dev/null
+grep -q '^configured=false$' "$CI_GATE_TMP/disabled.out" && ok "disabled staging deploy is an explicit successful skip" || fail "disabled deploy gate did not emit configured=false"
+
+GITHUB_OUTPUT="$CI_GATE_TMP/enabled.out" \
+GITHUB_STEP_SUMMARY="$CI_GATE_TMP/enabled.md" \
+DUTYLOG_DEPLOY_ENABLED=true \
+DUTYLOG_DEPLOY_ENVIRONMENT=staging \
+DUTYLOG_DEPLOY_HOST=staging.example.test \
+DUTYLOG_DEPLOY_PORT=22 \
+DUTYLOG_DEPLOY_USER=dutylog \
+DUTYLOG_DEPLOY_PATH=/opt/dutylog/staging \
+DUTYLOG_BASE_URL=https://staging.example.test \
+DUTYLOG_SSH_PRIVATE_KEY=$'-----BEGIN OPENSSH PRIVATE KEY-----\ntest\n-----END OPENSSH PRIVATE KEY-----' \
+DUTYLOG_SSH_KNOWN_HOSTS='staging.example.test ssh-ed25519 AAAATEST' \
+DUTYLOG_GHCR_USERNAME=dutylog-reader \
+DUTYLOG_GHCR_TOKEN=token-for-static-check \
+  bash deploy/scripts/check-ci-deploy-config.sh >/dev/null
+grep -q '^configured=true$' "$CI_GATE_TMP/enabled.out" && ok "complete deploy configuration emits configured=true" || fail "enabled deploy gate did not emit configured=true"
+
+if DUTYLOG_DEPLOY_ENABLED=true DUTYLOG_DEPLOY_ENVIRONMENT=staging bash deploy/scripts/check-ci-deploy-config.sh >/dev/null 2>&1; then
+  fail "enabled deployment with missing environment values unexpectedly passed"
+else
+  ok "enabled deployment fails closed when required values are missing"
+fi
+
+if grep -Il $'\r' deploy/scripts/*.sh >/dev/null 2>&1; then
+  fail "deployment shell scripts contain CRLF line endings"
+else
+  ok "deployment shell scripts use LF line endings"
+fi
+
+E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
+if [[ "$E2E_TESTS" == "5" ]]; then
+  ok "Playwright test baseline: 5"
+else
+  fail "expected 5 Playwright tests, found $E2E_TESTS"
+fi
+
+TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
+TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
+if [[ "$TEST_METHODS" == "340" ]]; then
+  ok "test method baseline: 340"
+else
+  fail "expected 340 @Test methods, found $TEST_METHODS"
+fi
+if [[ "$TEST_CLASSES" == "65" ]]; then
+  ok "test class baseline: 65"
+else
+  fail "expected 65 test classes, found $TEST_CLASSES"
+fi
 
 echo
 

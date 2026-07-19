@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+# Database dumps and checksums may contain sensitive account data.
+umask 077
+
 # Creates and verifies a PostgreSQL custom-format backup.
 # Supported CI/CD variables:
 #   DUTYLOG_ENV_FILE, DUTYLOG_COMPOSE_FILE, DUTYLOG_PROJECT_NAME,
@@ -34,6 +37,7 @@ compose() {
 }
 
 mkdir -p "$BACKUP_DIR"
+chmod 0700 "$BACKUP_DIR"
 STAMP="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
 OUT="$BACKUP_DIR/${PREFIX}-${STAMP}.dump"
 TMP="$OUT.tmp"
@@ -64,12 +68,14 @@ fi
 # Verify that PostgreSQL can parse the archive before it is accepted.
 compose exec -T "$DB_SERVICE" pg_restore --list < "$TMP" >/dev/null
 mv "$TMP" "$OUT"
+chmod 0600 "$OUT"
 trap - EXIT
 
 if command -v sha256sum >/dev/null 2>&1; then
   (
     cd "$(dirname "$OUT")"
     sha256sum "$(basename "$OUT")" > "$(basename "$OUT").sha256"
+    chmod 0600 "$(basename "$OUT").sha256"
   )
 fi
 

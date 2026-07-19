@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
+# Database dumps and checksums may contain sensitive account data.
+umask 077
+
 # Manual PostgreSQL restore for one DutyLog environment.
 # This script is intentionally never called by CI/CD.
 

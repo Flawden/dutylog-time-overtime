@@ -52,12 +52,11 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         String header = request.getHeader("Authorization");
-        if (header == null || !header.startsWith("Bearer ")) {
+        String token = bearerToken(header);
+        if (token == null) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        String token = header.substring("Bearer ".length()).trim();
         Optional<AppUser> user = mobileAuthService.authenticateAccessToken(token);
         if (user.isEmpty()) {
             securityEvents.warn(request, "AUTH_TOKEN_REJECTED", null, "rejected",
@@ -76,4 +75,21 @@ public class BearerTokenAuthenticationFilter extends OncePerRequestFilter {
         mobileAuthService.touchAccessToken(token);
         filterChain.doFilter(request, response);
     }
+    /** HTTP authentication schemes are case-insensitive (RFC 9110). */
+    static boolean hasBearerScheme(String header) {
+        if (header == null) return false;
+        int start = 0;
+        while (start < header.length() && Character.isWhitespace(header.charAt(start))) start++;
+        return header.length() - start > 6
+                && header.regionMatches(true, start, "Bearer", 0, 6)
+                && Character.isWhitespace(header.charAt(start + 6));
+    }
+
+    static String bearerToken(String header) {
+        if (!hasBearerScheme(header)) return null;
+        int start = 0;
+        while (Character.isWhitespace(header.charAt(start))) start++;
+        return header.substring(start + 6).trim();
+    }
+
 }

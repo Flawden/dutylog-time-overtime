@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.2.5.
+Status: v27.2.29.
 
 DutyLog uses two long-lived deployment branches:
 
@@ -11,6 +11,8 @@ feature/* -> test -> staging
 ```
 
 `test` builds an immutable image, deploys it to staging and marks that exact image as tested only after health and smoke checks pass. `main`/`master` never rebuilds the application. It resolves the `staging-tested-tree-<git-tree>` tag and deploys the same registry digest to production.
+
+Until the staging VPS is prepared, leave the `staging` Environment variable `DUTYLOG_DEPLOY_ENABLED` unset or `false`. The workflow still runs the full test/coverage/browser gate, builds the image and proves its migrations on clean PostgreSQL, then records a successful explicit skip. It does **not** create `staging-tested-tree-*`, so production remains blocked. Set it to `true` only after all staging variables, secrets and the host-local `.env` are ready.
 
 A direct change in `main`/`master` that was not tested in staging fails closed because no matching tested tree tag exists.
 
@@ -24,6 +26,7 @@ Create environments named exactly:
 Add these environment variables to both:
 
 ```text
+DUTYLOG_DEPLOY_ENABLED    # staging: false until VPS is ready, then true; production is fail-closed
 DUTYLOG_DEPLOY_HOST
 DUTYLOG_DEPLOY_PORT       # usually 22
 DUTYLOG_DEPLOY_USER
@@ -46,7 +49,9 @@ Build `DUTYLOG_SSH_KNOWN_HOSTS` from the server host key and verify its fingerpr
 ssh-keyscan -p 22 your-vps.example.com
 ```
 
-`GHCR_READ_TOKEN` needs permission to read the repository package. The SSH key should belong to an unprivileged deployment user that can access Docker and owns its environment directory. The workflow's built-in `GITHUB_TOKEN` pushes images; the server credential only pulls them.
+`GHCR_READ_TOKEN` needs permission to read the repository package. The SSH key should belong to a dedicated deployment user that owns its environment directory. The workflow's built-in `GITHUB_TOKEN` pushes images; the server credential only pulls them.
+
+Security note: ordinary membership in the host `docker` group is effectively root-equivalent and can affect every container on that VPS, including unrelated projects. It is acceptable for the first single-owner server, but it is not strong isolation. A later hardened deployment should use a dedicated host, rootless Docker or narrowly restricted privileged commands.
 
 For production, enable required reviewers in GitHub Environment settings during the first releases. The workflow validates tests and release checks first; only the separate deployment job then waits for approval. This avoids approving a build that has not passed validation yet.
 
@@ -69,6 +74,8 @@ sudo chmod 600 /opt/dutylog/{staging,production,edge}/.env
 
 Replace every domain/password/username placeholder. Leave the all-zero `DUTYLOG_IMAGE` bootstrap sentinel unchanged: CI overrides it with an immutable digest during each deployment, while the valid sentinel lets DB-only maintenance commands parse Compose before the first release. Staging and production must use different database passwords, admin passwords, database names and Telegram credentials.
 
+Keep `DUTYLOG_SECURITY_TRUST_PROXY_HEADERS=true` only while the application is reachable exclusively through the supplied Caddy/nginx edge. Those edge configs overwrite client-supplied forwarding headers before DutyLog uses the address for rate limiting or audit logs.
+
 Start the shared Caddy edge proxy:
 
 ```bash
@@ -84,14 +91,15 @@ The current workflow publishes `linux/amd64`; add QEMU and an ARM64 platform bef
 
 `.github/workflows/deploy-staging.yml`:
 
-1. runs Maven tests and the release gate;
+1. runs Maven `verify`, the JaCoCo floor, release checks and Playwright;
 2. calculates the Git tree hash;
 3. builds one non-root image with OCI metadata, SBOM and provenance;
 4. pushes immutable `tree-*` and `sha-*` tags to GHCR;
-5. deploys the image by digest to staging;
-6. applies Flyway against the staging database;
-7. runs health and public smoke checks;
-8. only then creates `staging-tested-tree-*`.
+5. verifies that exact digest on a clean PostgreSQL database;
+6. validates the `staging` GitHub Environment without printing secrets;
+7. when `DUTYLOG_DEPLOY_ENABLED=false`, records a successful explicit skip;
+8. when enabled, deploys by digest, applies Flyway and runs health/public smoke checks;
+9. only after a real successful remote smoke test creates `staging-tested-tree-*`.
 
 ### Merge to `main`/`master`
 

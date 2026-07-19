@@ -1,6 +1,6 @@
 # Staging environment
 
-Status: v27.2.5.
+Status: v27.2.29.
 
 Staging is disposable. Production is not.
 
@@ -13,6 +13,12 @@ staging app logs     production app logs
 ```
 
 The staging application never receives production database credentials. Do not copy a live production database into staging unless the copy is temporary, access-restricted and anonymized.
+
+## Deployment gate
+
+The GitHub Environment variable `DUTYLOG_DEPLOY_ENABLED` is the explicit remote-deployment switch. Leave it unset or `false` while the VPS, DNS, SSH credentials or host-local `.env` are not ready. A push to `test` still runs Java tests, coverage, Playwright, builds the immutable image and verifies clean PostgreSQL migrations, but remote SSH deployment is skipped successfully and no production-promotion tag is created.
+
+Set it to `true` only after every variable and secret from `docs/CICD.md` is configured. Missing values then fail in a dedicated preflight step before any SSH connection.
 
 ## Reset staging
 

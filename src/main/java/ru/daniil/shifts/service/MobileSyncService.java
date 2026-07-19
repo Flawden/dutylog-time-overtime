@@ -67,6 +67,14 @@ public class MobileSyncService {
 
     private MobileSyncItemResultDto processDayOperation(AppUser user,
                                                          MobileV1DayOperationRequest request) {
+        if (request == null
+                || request.operationId() == null
+                || request.operationId().isBlank()
+                || request.baseVersion() == null
+                || request.day() == null) {
+            throw ApiException.badRequest("VALIDATION_FAILED", "Некорректная операция синхронизации");
+        }
+
         String operationId = request.operationId();
         var previous = operations.findByOwnerAndOperationId(user, operationId);
         if (previous.isPresent()) {
@@ -74,8 +82,17 @@ public class MobileSyncService {
         }
 
         MobileDayChangeRequest change = request.day();
-        LocalDate date = dayEntryService.parseDate(change.date(),
-                "Дата дня должна быть в формате yyyy-MM-dd");
+        LocalDate date;
+        try {
+            date = dayEntryService.parseDate(change.date(),
+                    "Дата дня должна быть в формате yyyy-MM-dd");
+        } catch (ApiException ex) {
+            MobileSyncOperation stored = operations.save(new MobileSyncOperation(
+                    user, operationId, "day", safeEntityKey(change.date()), "REJECTED",
+                    null, ex.getCode(), safeMessage(ex.getMessage())));
+            return fromStored(stored, null);
+        }
+
         DayEntry current = days.findByOwnerAndDate(user, date).orElse(null);
         long currentVersion = current == null ? 0L : current.getSyncVersion();
 
@@ -158,6 +175,12 @@ public class MobileSyncService {
                 stored.getErrorCode(),
                 stored.getMessage()
         );
+    }
+
+    private String safeEntityKey(String key) {
+        if (key == null || key.isBlank()) return "unknown";
+        String trimmed = key.trim();
+        return trimmed.length() <= 120 ? trimmed : trimmed.substring(0, 120);
     }
 
     private String safeMessage(String message) {

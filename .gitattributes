@@ -1,0 +1,19 @@
+# Keep repository text deterministic across Windows workstations and Linux CI.
+* text=auto eol=lf
+
+# Windows-native command files keep CRLF.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary assets must never be line-ending normalized.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.zip binary
+*.jar binary
+*.woff binary
+*.woff2 binary

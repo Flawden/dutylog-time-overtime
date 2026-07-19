@@ -92,6 +92,8 @@ function renderCalendar(){
     const st = stOf(k);
     const entry = state.days[k];
     const cell = document.createElement("button");
+    cell.dataset.date = k;
+    cell.setAttribute("aria-label", `${d} ${monthNameGen(state.m)} ${state.y}`);
     cell.className = "cell" + (state.selected === k ? " sel" : "") + (k === tk ? " todayCell" : "");
     if (st) {
       cell.style.background = st.color + "26";

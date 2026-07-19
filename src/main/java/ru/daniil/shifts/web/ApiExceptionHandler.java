@@ -89,8 +89,8 @@ public class ApiExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiErrorResponse> unexpected(Exception ex, HttpServletRequest request) {
         String requestId = ApiErrorWriter.requestId(request);
-        log.error("Unexpected API failure requestId={} method={} path={}", requestId,
-                request.getMethod(), request.getRequestURI(), ex);
+        log.error("Unexpected API failure requestId={} method={} path={} exceptionType={}", requestId,
+                request.getMethod(), request.getRequestURI(), ex.getClass().getName());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(ApiErrorResponse.of(
                 "INTERNAL_ERROR", "Внутренняя ошибка сервера", Map.of(), requestId));
     }

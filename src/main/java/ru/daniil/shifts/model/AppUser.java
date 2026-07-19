@@ -71,6 +71,13 @@ public class AppUser {
     @Column(name = "onboarding_completed", nullable = false)
     private boolean onboardingCompleted = false;
 
+    /**
+     * Версия web-аутентификации. Увеличивается при смене пароля или роли.
+     * Уже выданные JSESSIONID с предыдущей версией перестают действовать.
+     */
+    @Column(name = "auth_version", nullable = false)
+    private long authVersion = 0L;
+
     protected AppUser() {} // для JPA
 
     public AppUser(String username, String passwordHash) {
@@ -108,6 +115,9 @@ public class AppUser {
     }
     public boolean isOnboardingCompleted() { return onboardingCompleted; }
     public void setOnboardingCompleted(boolean onboardingCompleted) { this.onboardingCompleted = onboardingCompleted; }
+    public long getAuthVersion() { return authVersion; }
+    public void setAuthVersion(long authVersion) { this.authVersion = Math.max(0L, authVersion); }
+    public void bumpAuthVersion() { this.authVersion = Math.max(0L, this.authVersion) + 1L; }
 
     @PrePersist
     void onCreate() {

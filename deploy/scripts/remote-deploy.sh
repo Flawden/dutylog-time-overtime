@@ -15,12 +15,17 @@ required=(
   DUTYLOG_DEPLOY_ENVIRONMENT DUTYLOG_IMAGE_REF DUTYLOG_RELEASE_VERSION
   DUTYLOG_BUILD_VERSION DUTYLOG_BUILD_TREE DUTYLOG_BUILD_COMMIT DUTYLOG_BUILD_TIME
 )
+missing=()
 for name in "${required[@]}"; do
   if [[ -z "${!name:-}" ]]; then
-    echo "Required environment variable is empty: $name" >&2
-    exit 2
+    missing+=("$name")
   fi
 done
+if (( ${#missing[@]} > 0 )); then
+  echo "Required deployment environment variables are empty:" >&2
+  printf '  - %s\n' "${missing[@]}" >&2
+  exit 2
+fi
 
 case "$DUTYLOG_DEPLOY_ENVIRONMENT" in staging|production) ;; *) echo "Invalid deployment environment" >&2; exit 2 ;; esac
 [[ "$DUTYLOG_IMAGE_REF" =~ @sha256:[0-9a-fA-F]{64}$ ]] || { echo "Image must be pinned by digest" >&2; exit 2; }

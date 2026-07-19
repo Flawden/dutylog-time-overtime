@@ -1,10 +1,121 @@
+## v27.2.29 — Final security and product audit hardening
+
+- Browser sessions now carry an `auth_version`; password resets and role changes invalidate cached `JSESSIONID` authorities on the next request.
+- Normal password changes enforce the same 8-character minimum as registration; administrators remain at 12 characters and bootstrap credentials at 20.
+- Authentication rate limiting and `SECURITY_AUDIT` no longer trust forwarding headers unless the managed proxy mode is enabled; supplied nginx/Caddy configs overwrite client-supplied IP headers.
+- PostgreSQL backups and checksums are created under `umask 077` with `0700` directories and `0600` files.
+- Expired mobile authentication-token rows are cleaned on a bounded retention schedule.
+- Added integration and unit regressions for stale web sessions, proxy-header spoofing, auth-version changes and token cleanup.
+- Flyway migration chain is now V1–V23. Baseline: 65 Java test classes / 340 `@Test` methods and 5 Playwright scenarios.
+
+## v27.2.28 — Staging deployment gate and diagnostics hardening
+
+- Split staging delivery into validation, immutable image build/clean-PostgreSQL verification and a separate remote deployment job.
+- Staging now runs the same Maven `verify`, JaCoCo floor, release gate and Playwright browser suite before an image can be built for deployment.
+- Added the GitHub Environment switch `DUTYLOG_DEPLOY_ENABLED`. When it is absent or false, the workflow stays green after building and verifying the immutable image, clearly records that remote deployment was skipped and never creates a `staging-tested-tree-*` promotion tag.
+- Added fail-fast CI deployment configuration validation that reports missing variable/secret names without printing secret values and validates HTTPS, SSH port, path, user and key shape.
+- Production remains fail-closed and now uses the same explicit preflight before touching GHCR or the server.
+- Improved `remote-deploy.sh` diagnostics so all missing inputs are reported together.
+- Backend behavior, database schema, Flyway migrations, 327 Java tests and 5 Playwright scenarios are unchanged.
+
+## v27.2.27 — Playwright marker accordion hotfix
+
+- Fixed the remaining calendar-persistence E2E failure: the custom marker input lives inside the closed Marker `<details>` section, so the scenario now expands `data-day-module="core"` before filling `#dayEmojiCustom`.
+- The authoritative reload assertion now explicitly reopens both Notes and Marker sections before checking their persisted controls.
+- The PWA/offline scenario is already green; no production, database or Flyway behavior changed.
+- Java baseline remains 61 classes / 327 `@Test` methods; browser baseline remains 5 Playwright tests.
+
+## v27.2.26 — Playwright selector, accordion and line-ending hotfix
+
+- Fixed the calendar persistence E2E contract: selected shift chips now expose `aria-pressed="true"` instead of relying only on inline colors, and the test asserts that accessible state.
+- Added a reusable `openDayModule` Playwright helper so note scenarios expand the closed `<details>` accordion before filling `#noteEdit`.
+- Updated both calendar persistence and PWA offline scenarios to open the Notes module explicitly before waiting for the debounced day save.
+- Added `.gitattributes` with repository-wide LF normalization, CRLF only for Windows command files and binary exclusions.
+- The Java baseline remains 61 classes / 327 `@Test` methods; the browser baseline remains 5 Playwright tests.
+- Backend behavior, database schema and Flyway migrations are unchanged.
+
+## v27.2.25 — Playwright browser E2E regression baseline
+
+- Added a real Chromium E2E layer for registration, login-language persistence, first-run onboarding, calendar data persistence, module disable/enable survival, task completion, mobile viewport usability and PWA offline startup.
+- Added automatic detection of browser `console.error`, uncaught page errors, failed same-origin requests and unexpected happy-path HTTP `4xx/5xx` responses.
+- Added stable non-visual DOM contracts for calendar dates, shift chips and task rows.
+- Added an isolated `application-e2e.properties` profile using in-memory H2 on port 4173; it never touches the local file database and keeps external Telegram traffic disabled.
+- GitHub Actions now installs Chromium, runs Playwright before building the deployment image and uploads traces/screenshots/videos on failure.
+- Added npm Dependabot coverage and Playwright usage documentation.
+- Java/JUnit baseline remains 61 classes and 327 `@Test` methods; browser baseline adds 5 Playwright tests.
+- Database schema and Flyway migrations are unchanged.
+
+## v27.2.24 — Coverage floor and startup/module regression suite
+
+- Added direct startup coverage for bootstrap-admin configuration, credential validation, account creation, promotion, optional forced password reset and one-time legacy-admin cleanup.
+- Added module registry/service coverage for normalization, immutable contracts, unique keys/orders, acyclic dependencies, locked modules, admin visibility, unknown persisted keys and dependency activation.
+- Added current-user resolution and extended note-export coverage for count/select races, blank-note filtering, audit events, ZIP structure and YAML escaping.
+- JaCoCo now fails `mvn verify` when bundle instruction coverage drops below 88% or branch coverage drops below 70%.
+- The suite now contains 61 test classes and 327 `@Test` methods.
+- Production API behavior, database schema and Flyway migrations are unchanged.
+
+## v27.2.23 — Security test contract and secret-safe error logging hotfix
+
+- Исправлены два чрезмерно строгих теста Content-Type: `application/json;charset=UTF-8` теперь корректно принимается как JSON.
+- Browser redirect contract теперь отправляет `Accept: text/html`, как настоящий браузер, и не смешивает HTML-навигацию с JSON API channel.
+- `ApiExceptionHandler` больше не логирует throwable целиком для неожиданных ошибок: в журнал попадают request ID, method, path и безопасное имя класса исключения.
+- Добавлена регрессия, запрещающая утечку текста исключения и throwable stack в production error log.
+- Production API envelope, база данных и Flyway не менялись.
+
+## v27.2.22 — Security infrastructure regression and auth hardening suite
+
+- Added direct coverage for API version/deprecation headers, browser security headers, request correlation IDs, Bearer authentication, authentication rate limiting, structured security audit logs and stable API error envelopes.
+- Added MockMvc coverage for integrated security boundaries: public headers, mobile/web 401 responses, admin 403 responses, request-id propagation and mixed-case Bearer handling.
+- Bearer authentication schemes are now recognized case-insensitively, including repeated whitespace, and the web CSRF bearer matcher uses the same parser.
+- Web, legacy mobile and Android v1 login aliases now share one per-IP rate-limit bucket; web and Android registrations share a separate registration bucket.
+- Expanded the regression baseline to 57 test classes and 300 `@Test` methods.
+- No database schema changed.
+
+## v27.2.21 — Telegram date validation and test harness hotfix
+
+- Fixed Telegram task date parsing so impossible calendar dates such as `31.02` are normalized to the stable `BAD_REQUEST` `ApiException` contract instead of leaking `DateTimeException`.
+- Corrected `TelegramBotServiceTest` to register all `MockRestServiceServer` expectations before the first HTTP request; the previous test attempted to add an expectation after execution had already started.
+- Added release guards for both regressions.
+- Production behavior changed only for malformed Telegram dates; database schema and Flyway migrations are unchanged.
+- The suite remains 50 test classes and 254 `@Test` methods.
+
+## v27.2.20 — Telegram bot regression and delivery hardening suite
+
+- Added unit coverage for Telegram command parsing, aliases, task creation/completion, manual and interval overtime, time-off, summaries and invalid input.
+- Added HTTP-client coverage for bot polling, one-time link codes, unlinked chats, command replies, update offsets, malformed updates and overlapping-poll protection.
+- Added notification-delivery coverage for due windows, per-user failure isolation, deduplication, retry semantics and every reminder message type.
+- Added MockMvc coverage for the browser Telegram API, module guards, link-code status, notification settings, unlink cleanup, authentication and CSRF.
+- Telegram sends now fail closed: empty responses and `ok=false` are never recorded as successful deliveries.
+- Telegram HTTP errors now redact the bot token before they are written to application logs, and updates without a chat id are ignored safely.
+- The suite now contains 50 test classes and 254 `@Test` methods.
+- No database schema changed.
+
+## v27.2.19 — PostgreSQL migration and CI version hotfix
+
+- Fixed the clean PostgreSQL Flyway chain: `V7__notification_settings.sql` referenced the nonexistent table `app_users`; the canonical table created by `V1__init.sql` is `users`.
+- Added `PostgreSqlMigrationContractTest`, which scans migrations in order and rejects foreign keys targeting tables that have not been created by the same or an earlier migration.
+- Removed the stale hard-coded `27.2.9` build/release metadata from CI, staging and production workflows. GitHub Actions now resolves the semantic version directly from `pom.xml` and passes it through immutable image and deployment metadata.
+- Added release-gate checks for the corrected notification-settings foreign key and dynamic workflow version propagation.
+- The suite now contains 46 test classes and 224 `@Test` methods.
+- This corrects a pre-production migration that could never succeed on a clean PostgreSQL database; no new Flyway version was added.
+
+## v27.2.18 — Mobile auth and sync lifecycle regression suite
+
+- Added service-level coverage for mobile login, hashed token storage, access/refresh expiry, refresh rotation, logout, device normalization, session activity, owner isolation and revoke-all behaviour.
+- Added MockMvc coverage for both legacy and `/api/v1/mobile/auth` login, refresh, logout, session listing and session revocation routes.
+- Added service and HTTP coverage for Android v1 idempotency, owner-scoped operation ids, optimistic version conflicts, no-op rejection, module-scoped failures, clear precedence and versioned tombstones.
+- Fixed batch isolation for malformed day dates: an invalid date is now returned as a per-operation `REJECTED` result and no longer aborts valid neighbouring operations.
+- Added validation guards for structurally malformed direct service operations and preserved legacy mobile clear/delete semantics alongside v1 tombstones.
+- Corrected the documented baseline count: v27.2.17 contains 193, not 194, `@Test` methods. The suite now contains 45 classes and 223 `@Test` methods.
+- No database schema changed.
+
 ## v27.2.17 — Admin test context bootstrap hotfix
 
 - Fixed `UserAdminServiceTest` so it no longer supplies only `dutylog.admin.username` to the full Spring context.
 - The incomplete bootstrap pair correctly triggered the production safety guard requiring username and password together, which prevented the test `ApplicationContext` from loading and cascaded into dozens of red test results.
 - The test now constructs `UserAdminService` with an explicit bootstrap-admin name while leaving the application bootstrap listener unconfigured, avoiding startup side effects and still testing bootstrap-admin protections.
 - Added release guards preventing the incomplete test property from returning.
-- No production behavior or database schema changed; the suite remains 41 classes and 194 `@Test` methods.
+- No production behavior or database schema changed; the suite remains 41 classes and 193 `@Test` methods.
 
 ## v27.2.16 — Profile and administration regression suite
 
@@ -14,7 +125,7 @@
 - Added registration-setting service coverage for default/database sources, audit metadata and legacy boolean spellings.
 - Added administrative service and MockMvc coverage for search, role filters, pagination, bootstrap/current-user flags, promotion, safe demotion, last-admin protection, password reset, mobile-session revocation and registration toggling.
 - Fixed `SystemController` expected client errors to use the stable `ApiException` envelope instead of `ResponseStatusException`, which could be swallowed by the generic advice and returned as `500 INTERNAL_ERROR`.
-- Expanded the regression baseline to 41 test classes and 194 `@Test` methods.
+- Expanded the regression baseline to 41 test classes and 193 `@Test` methods.
 - No database schema changed.
 
 ## v27.2.15 — Structured module-disabled error envelope hotfix

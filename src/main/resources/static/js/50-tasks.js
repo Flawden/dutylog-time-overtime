@@ -212,6 +212,7 @@ function renderTasks(){
   }
   for (const task of items) {
     const row = document.createElement("div");
+    row.dataset.taskId = String(task.id);
     row.className = "taskItem" + (task.done ? " done" : "") + (task.overdue && !task.done ? " overdue" : "");
     const cb = document.createElement("input");
     cb.type = "checkbox";
@@ -564,7 +565,9 @@ function renderChips(){
   for (const s of state.shiftTypes) {
     const b = document.createElement("button");
     const on = cur === s.id;
-    b.className = "chip";
+    b.dataset.shiftTypeId = String(s.id);
+    b.className = "chip" + (on ? " on" : "");
+    b.setAttribute("aria-pressed", on ? "true" : "false");
     b.style.background = on ? s.color : s.color + "1F";
     b.style.color = on ? "#14171C" : s.color;
     b.style.border = `1px solid ${on ? s.color : s.color + "55"}`;

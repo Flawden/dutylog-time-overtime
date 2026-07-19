@@ -233,7 +233,7 @@ public class ProfileController {
         if (!encoder.matches(current, user.getPasswordHash())) {
             throw ApiException.badRequest("Текущий пароль неверный");
         }
-        int minLength = user.isAdmin() ? 12 : 6;
+        int minLength = user.isAdmin() ? 12 : 8;
         if (next.length() < minLength) {
             throw ApiException.badRequest("Новый пароль: минимум " + minLength + " символов");
         }
@@ -242,6 +242,7 @@ public class ProfileController {
         }
 
         user.setPasswordHash(encoder.encode(next));
+        user.bumpAuthVersion();
         users.save(user);
         mobileAuthService.revokeAllSessions(user);
         return ResponseEntity.noContent().build();
