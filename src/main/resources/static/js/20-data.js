@@ -528,6 +528,14 @@ function renderPager(id, pageInfo, onPage, onSize) {
   const box = $(id);
   if (!box) return;
   const p = pageInfo || { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false, items:[] };
+  // A pager for a single page wastes a large amount of mobile space and offers
+  // no action. Keep it completely out of the accessibility tree until needed.
+  if (Number(p.totalPages || 0) <= 1) {
+    box.hidden = true;
+    box.innerHTML = "";
+    return;
+  }
+  box.hidden = false;
   box.innerHTML = `
     <button type="button" data-pager-prev ${p.hasPrevious ? "" : "disabled"}>${t("Назад")}</button>
     <span class="pagerText">${pageRangeText(p)} · ${t("стр.")} ${Number(p.totalPages || 0) ? Number(p.page || 0) + 1 : 0}/${Number(p.totalPages || 0)}</span>
@@ -614,7 +622,9 @@ async function jfetch(url, opts = {}) {
     throw err;
   }
   if (res.status === 204) return null;
-  return res.json();
+  const responseText = await res.text();
+  if (!responseText.trim()) return null;
+  return JSON.parse(responseText);
 }
 
 function setSave(s, msg = "") {
@@ -1019,17 +1029,20 @@ const dataLayer = {
     await this.updateSnapshotDay(date, cleanDay);
     if (navigator.onLine) {
       try {
-        await api.upsertDay(date, dayUpsertPayload(cleanDay));
+        const savedDay = await api.upsertDay(date, dayUpsertPayload(cleanDay));
+        // The backend returns an empty 200 response when the row was deleted. Mirror
+        // that authoritative result into IndexedDB instead of keeping a ghost shift.
+        await this.updateSnapshotDay(date, savedDay || {});
         state.offline.online = true;
         updateOfflineStatus();
-        return { queued:false };
+        return { queued:false, day:savedDay || null };
       } catch (err) {
         if (!isNetworkError(err)) throw err;
       }
     }
     state.offline.online = false;
     await this.enqueue("putDay", { date, day: normalizeDay(cleanDay) });
-    return { queued:true };
+    return { queued:true, day:normalizeDay(cleanDay) };
   },
   async setTaskDone(taskId, done){
     requireModuleEnabled("tasks");

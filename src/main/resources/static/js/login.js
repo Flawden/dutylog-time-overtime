@@ -2,7 +2,7 @@
 const $ = id => document.getElementById(id);
 const LANGUAGE_KEY = "dutylog.language.v1";
 const L_EN = {
-  "Вход":"Login", "Регистрация":"Registration", "Имя пользователя":"Username", "Пароль":"Password", "Войти":"Sign in", "Создать аккаунт":"Create account", "Имя пользователя (от 3 символов)":"Username (min. 3 characters)", "Пароль (от 8 символов)":"Password (min. 8 characters)", "Неверное имя или пароль":"Invalid username or password", "Регистрация закрыта администратором":"Registration is closed by administrator", "Публичная регистрация закрыта администратором. Войдите в существующий аккаунт.":"Public registration is closed by administrator. Sign in to an existing account.", "Создаю аккаунт…":"Creating account…", "Готово, вхожу…":"Done, signing in…", "Сеть недоступна":"Network unavailable"
+  "Вход":"Login", "Регистрация":"Registration", "Имя пользователя":"Username", "Пароль":"Password", "Войти":"Sign in", "Создать аккаунт":"Create account", "Имя пользователя (от 3 символов)":"Username (min. 3 characters)", "Пароль (от 8 символов)":"Password (min. 8 characters)", "Неверное имя или пароль":"Invalid username or password", "Регистрация закрыта администратором":"Registration is closed by administrator", "Публичная регистрация закрыта администратором. Войдите в существующий аккаунт.":"Public registration is closed by administrator. Sign in to an existing account.", "Создаю аккаунт…":"Creating account…", "Готово, вхожу…":"Done, signing in…", "Сеть недоступна":"Network unavailable", "Запомнить меня на этом устройстве":"Remember me on this device", "Вход сохранится на 30 дней. Кнопка «Выйти» завершит его сразу.":"Keep me signed in for 30 days. The Sign out button ends it immediately."
 };
 const L_RU = Object.fromEntries(Object.entries(L_EN).map(([ru,en]) => [en, ru]));
 function loginLang(){ try { return (localStorage.getItem(LANGUAGE_KEY) || (navigator.language || "").slice(0,2)) === "en" ? "en" : "ru"; } catch (_) { return "ru"; } }
@@ -19,6 +19,11 @@ function applyLoginLanguage(lang){
   document.querySelector('label[for="lu"]').textContent = lt("Имя пользователя");
   document.querySelector('label[for="lp"]').textContent = lt("Пароль");
   document.querySelector('#loginForm .btn').textContent = lt("Войти");
+  const rememberText = $("rememberText");
+  if (rememberText) {
+    rememberText.childNodes[0].nodeValue = lt("Запомнить меня на этом устройстве");
+    $("rememberHint").textContent = lt("Вход сохранится на 30 дней. Кнопка «Выйти» завершит его сразу.");
+  }
   document.querySelector('label[for="ru"]').innerHTML = currentLang === 'en' ? 'Username <span style="color:var(--dim)">(min. 3 characters)</span>' : 'Имя пользователя <span style="color:var(--dim)">(от 3 символов)</span>';
   document.querySelector('label[for="rp"]').innerHTML = currentLang === 'en' ? 'Password <span style="color:var(--dim)">(min. 8 characters)</span>' : 'Пароль <span style="color:var(--dim)">(от 8 символов)</span>';
   $("regBtn").textContent = lt("Создать аккаунт");

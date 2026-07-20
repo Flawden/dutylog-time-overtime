@@ -28,9 +28,10 @@ class AdminBootstrapServiceTest {
     private final PasswordEncoder encoder = mock(PasswordEncoder.class);
     private final DefaultShiftSeedService seeds = mock(DefaultShiftSeedService.class);
     private final MobileAuthService mobileAuthService = mock(MobileAuthService.class);
+    private final RememberMeTokenService rememberMeTokenService = mock(RememberMeTokenService.class);
 
     private AdminBootstrapService service(String username, String password, boolean forceReset) {
-        return new AdminBootstrapService(users, settings, encoder, seeds, mobileAuthService,
+        return new AdminBootstrapService(users, settings, encoder, seeds, mobileAuthService, rememberMeTokenService,
                 username, password, forceReset);
     }
 
@@ -126,6 +127,7 @@ class AdminBootstrapServiceTest {
         verify(encoder).encode("a-very-long-bootstrap-password");
         verify(users).save(existing);
         verify(mobileAuthService).revokeAllSessions(existing);
+        verify(rememberMeTokenService).revokeAll(existing);
     }
 
     @Test

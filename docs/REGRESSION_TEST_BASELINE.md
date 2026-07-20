@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.2.32.
+Status: v27.2.33.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.2.32 makes the authenticated deployment smoke test pipefail-safe and adds a deterministic large-response SIGPIPE regression while retaining the v27.2.31 CSRF-aware login checks, the v27.2.30 host-nginx topology, the v27.2.29 security baseline, five Chromium Playwright scenarios and the v27.2.24 JaCoCo floor.
+Current extension: v27.2.33 adds persistent browser login, serialized per-day saves for safe shift deletion/reassignment, compact mobile filters and panel layering, while retaining the v27.2.32 pipefail-safe deployment smoke checks, the v27.2.29 security baseline and the v27.2.24 JaCoCo floor. Current baseline: 66 Java test classes / 342 `@Test` methods and 6 Chromium Playwright scenarios.
 
 Historical extension: v27.2.31 adds an authenticated, CSRF-aware deployment smoke-test regression.
 

@@ -11,6 +11,7 @@ import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.MobileAuthService;
+import ru.daniil.shifts.service.RememberMeTokenService;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.security.Principal;
@@ -33,6 +34,7 @@ public class ProfileController {
     private final UserRepository users;
     private final CurrentUserService currentUserService;
     private final MobileAuthService mobileAuthService;
+    private final RememberMeTokenService rememberMeTokenService;
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
 
@@ -41,10 +43,12 @@ public class ProfileController {
     public ProfileController(UserRepository users,
                              CurrentUserService currentUserService,
                              MobileAuthService mobileAuthService,
+                             RememberMeTokenService rememberMeTokenService,
                              PasswordEncoder encoder) {
         this.users = users;
         this.currentUserService = currentUserService;
         this.mobileAuthService = mobileAuthService;
+        this.rememberMeTokenService = rememberMeTokenService;
         this.encoder = encoder;
     }
 
@@ -245,6 +249,7 @@ public class ProfileController {
         user.bumpAuthVersion();
         users.save(user);
         mobileAuthService.revokeAllSessions(user);
+        rememberMeTokenService.revokeAll(user);
         return ResponseEntity.noContent().build();
     }
 }

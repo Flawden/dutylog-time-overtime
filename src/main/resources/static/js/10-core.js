@@ -21,7 +21,7 @@ function esc(value){
     .replace(/'/g, "&#39;");
 }
 
-const DUTYLOG_VERSION = "27.2.32"
+const DUTYLOG_VERSION = "27.2.33"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -172,7 +172,7 @@ const I18N_EN = {
   "Типы смен и их время":"Shift types and time", "Короткие часы для календаря":"Short calendar hours", "Календарь, ч":"Calendar label, h", "Норма, ч":"Norm, h", "Название смены":"Shift name", "Добавить":"Add", "Сохранить параметры смен":"Save shift settings", "Дневная":"Day shift", "Ночная":"Night shift", "Выходной":"Day off",
   "Быстрые сценарии":"Quick scenarios", "Мои сценарии":"My scenarios", "Добавить сценарий":"Add scenario", "Название":"Name", "Старт":"Start", "Конец":"End", "Обед":"Break", "План":"Plan", "Норма":"Norm", "Причина по умолчанию":"Default reason", "Описание сценария":"Scenario description",
   "Уведомления браузера":"Browser notifications", "Разрешить в браузере":"Allow in browser", "Напоминания текущего месяца":"Current month reminders", "Проверить":"Check", "Текущий месяц":"Current month", "Завтра":"Tomorrow", "Сервер рассчитывает напоминания для браузера, Telegram и мобильных клиентов.":"The server calculates reminders for browser, Telegram and mobile clients.",
-  "Календарь":"Calendar", "Переработки":"Overtime", "Задачи":"Tasks", "Сегодня":"Today", "Система":"System", "Выйти":"Logout",
+  "Календарь":"Calendar", "Переработки":"Overtime", "Задачи":"Tasks", "Сегодня":"Today", "Система":"System", "Выйти":"Logout", "Фильтры":"Filters",
   "Смена":"Shift", "Маркер":"Marker", "График":"Schedule", "Переработка":"Overtime", "Важные дни":"Important days", "Заметка":"Note", "Превью":"Preview", "Очистить":"Clear", "Поставить":"Apply", "Заполнить":"Fill", "выбранный день":"selected day", "сегодня":"today", "Начислить":"Add credit", "Списать отгул":"Use time off", "отмена":"cancel",
   "Таблица переработок":"Overtime ledger", "Начислено":"Earned", "Использовано":"Used", "Куда списано":"Used for", "Остаток":"Remaining", "Причина":"Reason", "День":"Day", "Время":"Time", "этот месяц":"this month", "всё время":"all time", "сброс":"reset", "все начисления":"all credits", "только с остатком":"only remaining", "частично списанные":"partially used", "полностью списанные":"fully used",
   "Все задачи":"All tasks", "Статус задач":"Task status", "Фильтр задач":"Task filter", "Категория":"Category", "Приоритет":"Priority", "Срок":"Due date", "Время срока":"Due time", "напомнить":"remind", "За минут":"Minutes before", "все задачи":"all tasks", "открытые":"open", "просроченные":"overdue", "выполненные":"done", "все категории":"all categories", "любой приоритет":"any priority", "срочные":"urgent", "важные":"high", "обычные":"normal", "низкие":"low",

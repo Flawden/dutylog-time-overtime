@@ -1,3 +1,14 @@
+## v27.2.33 — Persistent login, shift reassign and compact mobile UX
+
+- Fixed a full-day snapshot race where a debounced note save could restore a shift immediately after the user deleted it; writes are now serialized per date and stale responses cannot overwrite newer local revisions.
+- Day upsert handling now accepts an intentionally empty successful response when deleting the final value from a date, so the UI does not report a JSON parse failure after a successful delete.
+- Added explicit persistent browser login with a 30-day `DUTYLOG_REMEMBER_ME` HttpOnly cookie, JDBC-backed token storage and logout/password/role-change revocation.
+- Added PostgreSQL Flyway migration `V24__persistent_web_login.sql`; local H2 test/dev schema is represented by the matching JPA entity.
+- Added compact mobile headers, collapsible task/overtime filters, horizontally scrollable stat chips and hidden one-page pagers.
+- The selected-day mobile sheet now sits above the app shell and hides the fixed bottom navigation, preventing controls from being covered.
+- Added Java remember-me integration coverage and Playwright regressions for delete/reassign during a pending note save and compact mobile behavior.
+- Baseline: 66 Java test classes / 342 `@Test` methods and 6 Playwright scenarios.
+
 ## v27.2.32 — Pipefail-safe authenticated smoke-test hotfix
 
 - Fixed staging deployment exit `141` during the authenticated app-shell probe.

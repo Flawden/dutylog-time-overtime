@@ -70,6 +70,20 @@ async function loadMonth(){
 }
 
 /* ─── Пользователь ──────────────────────────────────────────── */
+function initMobileFilterToggles(){
+  document.querySelectorAll(".mobileFilterToggle[aria-controls]").forEach(button => {
+    const target = document.getElementById(button.getAttribute("aria-controls"));
+    if (!target || button.dataset.bound === "true") return;
+    button.dataset.bound = "true";
+    button.addEventListener("click", () => {
+      const expanded = button.getAttribute("aria-expanded") === "true";
+      button.setAttribute("aria-expanded", String(!expanded));
+    });
+  });
+}
+
+initMobileFilterToggles();
+
 $("logout").addEventListener("click", async () => {
   try { await flushPendingSave(); } catch (e) { /* не блокируем выход */ }
   try { await fetch("/logout", { method: "POST", headers: csrfToken() ? { "X-XSRF-TOKEN": csrfToken() } : {} }); } catch (e) { /* пофиг, всё равно уходим */ }

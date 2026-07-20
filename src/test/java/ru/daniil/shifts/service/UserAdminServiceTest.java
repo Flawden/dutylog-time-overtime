@@ -31,6 +31,7 @@ class UserAdminServiceTest {
     @Autowired UserRepository users;
     @Autowired PasswordEncoder encoder;
     @Autowired MobileAuthService mobileAuthService;
+    @Autowired RememberMeTokenService rememberMeTokenService;
     @Autowired SecurityEventLogger securityEvents;
     @Autowired MobileAuthTokenRepository tokens;
 
@@ -41,7 +42,7 @@ class UserAdminServiceTest {
 
     @BeforeEach
     void setUp() {
-        service = new UserAdminService(users, encoder, mobileAuthService, securityEvents, "bootstrap-root");
+        service = new UserAdminService(users, encoder, mobileAuthService, rememberMeTokenService, securityEvents, "bootstrap-root");
         bootstrap = admin("bootstrap-root");
         currentAdmin = admin("admin-current");
         secondAdmin = admin("admin-second");

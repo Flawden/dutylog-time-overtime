@@ -36,6 +36,10 @@
   .loginLang { display:flex; justify-content:flex-end; gap:6px; margin-bottom:10px; }
   .loginLang button { border:1px solid var(--line); background:transparent; color:var(--mut); border-radius:999px; padding:5px 9px; cursor:pointer; font-family:inherit; font-weight:700; }
   .loginLang button.on { color:#14171C; background:var(--accent); border-color:var(--accent); }
+  .rememberRow { display:flex; align-items:flex-start; gap:9px; margin:12px 0 0; color:var(--mut); font-size:12.5px; line-height:1.35; cursor:pointer; }
+  .rememberRow input { width:17px; height:17px; margin:1px 0 0; padding:0; flex:0 0 auto; accent-color:var(--accent); }
+  .rememberRow span { display:block; }
+  .rememberRow small { display:block; color:var(--dim); margin-top:2px; font-size:11px; }
 </style>
 </head>
 <body>
@@ -56,6 +60,10 @@
     <input id="lu" name="username" autocomplete="username" required>
     <label for="lp">Пароль</label>
     <input id="lp" name="password" type="password" autocomplete="current-password" required>
+    <label class="rememberRow" for="rememberMe">
+      <input id="rememberMe" name="remember-me" type="checkbox" value="true" checked>
+      <span id="rememberText">Запомнить меня на этом устройстве<small id="rememberHint">Вход сохранится на 30 дней. Кнопка «Выйти» завершит его сразу.</small></span>
+    </label>
     <button class="btn" type="submit">Войти</button>
   </form>
 
@@ -72,6 +80,6 @@
   <div class="hint" id="regStatusHint"></div>
 </div>
 
-<script src="/js/login.js?v=27.2.32" defer></script>
+<script src="/js/login.js?v=27.2.33" defer></script>
 </body>
 </html>

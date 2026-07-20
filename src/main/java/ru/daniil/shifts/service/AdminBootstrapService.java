@@ -36,6 +36,7 @@ public class AdminBootstrapService {
     private final PasswordEncoder encoder;
     private final DefaultShiftSeedService defaultShiftSeedService;
     private final MobileAuthService mobileAuthService;
+    private final RememberMeTokenService rememberMeTokenService;
     private final String adminUsername;
     private final String adminPassword;
     private final boolean forcePasswordReset;
@@ -45,6 +46,7 @@ public class AdminBootstrapService {
                                  PasswordEncoder encoder,
                                  DefaultShiftSeedService defaultShiftSeedService,
                                  MobileAuthService mobileAuthService,
+                                 RememberMeTokenService rememberMeTokenService,
                                  @Value("${dutylog.admin.username:}") String adminUsername,
                                  @Value("${dutylog.admin.password:}") String adminPassword,
                                  @Value("${dutylog.admin.force-password-reset:false}") boolean forcePasswordReset) {
@@ -53,6 +55,7 @@ public class AdminBootstrapService {
         this.encoder = encoder;
         this.defaultShiftSeedService = defaultShiftSeedService;
         this.mobileAuthService = mobileAuthService;
+        this.rememberMeTokenService = rememberMeTokenService;
         this.adminUsername = adminUsername == null ? "" : adminUsername.trim();
         this.adminPassword = adminPassword == null ? "" : adminPassword;
         this.forcePasswordReset = forcePasswordReset;
@@ -99,6 +102,9 @@ public class AdminBootstrapService {
         if (forcePasswordReset) {
             mobileAuthService.revokeAllSessions(user);
         }
+        if (promoted || forcePasswordReset) {
+            rememberMeTokenService.revokeAll(user);
+        }
 
         int legacyDemoted = cleanupLegacyAdminsOnce(adminUsername);
         if (promoted) {
@@ -123,6 +129,7 @@ public class AdminBootstrapService {
                 user.setRole("USER");
                 user.bumpAuthVersion();
                 users.save(user);
+                rememberMeTokenService.revokeAll(user);
                 demoted++;
             }
         }

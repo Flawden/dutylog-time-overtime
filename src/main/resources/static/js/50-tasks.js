@@ -619,6 +619,7 @@ function renderDayEmojiControls(){
 async function setDayEmoji(value){
   const k = state.selected;
   if (!k) return;
+  await flushPendingSave();
   const cur = state.days[k] || {};
   const next = {
     shiftTypeId: cur.shiftTypeId ?? null,
@@ -636,6 +637,10 @@ async function setDayEmoji(value){
 
 async function toggleShift(id){
   const k = state.selected;
+  if (!k) return;
+  // A debounced note save contains a full day snapshot. Flush it first, otherwise
+  // its older shiftTypeId can arrive after the deletion and resurrect the shift.
+  await flushPendingSave();
   const cur = state.days[k] || {};
   const next = {
     shiftTypeId: cur.shiftTypeId === id ? null : id,
@@ -650,11 +655,30 @@ async function toggleShift(id){
   await pushDaySnapshot(k, next);
 }
 
+const daySaveChains = new Map();
+const dayLocalRevisions = new Map();
+
+function nextDayLocalRevision(k){
+  const revision = Number(dayLocalRevisions.get(k) || 0) + 1;
+  dayLocalRevisions.set(k, revision);
+  return revision;
+}
+
 function applyLocal(k, next){
   const clean = sanitizeDayForModules(next);
   const hasOvertime = Math.abs(clean.overtimeHours) > 0.0001 || Math.abs(clean.timeOffHours) > 0.0001;
   if (!clean.shiftTypeId && !(clean.note || "").trim() && !(clean.dayEmoji || "").trim() && !hasOvertime) delete state.days[k];
   else state.days[k] = clean;
+  nextDayLocalRevision(k);
+}
+
+function queueDaySave(k, operation){
+  const previous = daySaveChains.get(k) || Promise.resolve();
+  const current = previous.catch(() => {}).then(operation);
+  daySaveChains.set(k, current);
+  return current.finally(() => {
+    if (daySaveChains.get(k) === current) daySaveChains.delete(k);
+  });
 }
 
 /*
@@ -663,17 +687,30 @@ function applyLocal(k, next){
  * пользователь напечатал текст и сразу переключил месяц.
  */
 async function pushDaySnapshot(k, payload){
+  const cleanPayload = sanitizeDayForModules(payload);
+  const revisionAtQueueTime = Number(dayLocalRevisions.get(k) || 0);
   setSave("saving");
-  try {
-    const cleanPayload = sanitizeDayForModules(payload);
-    const res = await dataLayer.putDay(k, cleanPayload);
-    setSave(res.queued ? "saved" : "saved");
-    if (!res.queued && typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
-    if (res.queued) updateOfflineStatus();
-  } catch (err) {
-    console.error(err);
-    setSave("err", err.message);
-  }
+  return queueDaySave(k, async () => {
+    try {
+      const res = await dataLayer.putDay(k, cleanPayload);
+      // Apply the server response only when the user has not edited the same day
+      // again while this request was in flight. Writes are serialized per date.
+      if (!res.queued && Number(dayLocalRevisions.get(k) || 0) === revisionAtQueueTime) {
+        const saved = res.day ? normalizeDay(res.day) : null;
+        if (saved) state.days[k] = saved; else delete state.days[k];
+        renderCalendar();
+        if (state.selected === k) { renderChips(); renderDayEmojiControls(); updateAccSummaries(); }
+      }
+      setSave("saved");
+      if (!res.queued && typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
+      if (res.queued) updateOfflineStatus();
+      return res;
+    } catch (err) {
+      console.error(err);
+      setSave("err", err.message);
+      return null;
+    }
+  });
 }
 
 /* Заметка: локально сразу, на сервер — с задержкой */

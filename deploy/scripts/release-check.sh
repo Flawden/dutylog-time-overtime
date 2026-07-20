@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.32}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.2.33}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -686,7 +686,7 @@ not_contains src/main/java/ru/daniil/shifts/web/SystemController.java "ResponseS
 # v27.2.17 admin test context bootstrap hotfix
 contains CHANGES.md "v27.2.17 — Admin test context bootstrap hotfix"
 contains README.md "v27.2.17 — Admin test context bootstrap hotfix"
-contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java 'service = new UserAdminService(users, encoder, mobileAuthService, securityEvents, "bootstrap-root")'
+contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java 'service = new UserAdminService(users, encoder, mobileAuthService, rememberMeTokenService, securityEvents, "bootstrap-root")'
 not_contains src/test/java/ru/daniil/shifts/service/UserAdminServiceTest.java '@TestPropertySource(properties = "dutylog.admin.username=bootstrap-root")'
 
 # v27.2.18 mobile auth and sync lifecycle regression suite
@@ -904,13 +904,25 @@ fi
 
 # v27.2.32 pipefail-safe authenticated smoke-test hotfix
 contains CHANGES.md "v27.2.32 — Pipefail-safe authenticated smoke-test hotfix"
-contains README.md "v27.2.32 — Pipefail-safe authenticated smoke-test hotfix"
-contains docs/REGRESSION_TEST_BASELINE.md "v27.2.32 makes the authenticated deployment smoke test pipefail-safe"
 contains docs/PIPEFAIL_SAFE_SMOKE_TEST_HOTFIX_V27.2.32.md "SIGPIPE"
 contains deploy/scripts/smoke-test.sh "contains_literal"
 not_contains deploy/scripts/smoke-test.sh '| grep -q'
 not_contains deploy/scripts/smoke-test.sh '| grep -qi'
 contains deploy/scripts/smoke-test-regression.py "deployment-smoke-padding"
+
+# v27.2.33 persistent login, per-day write ordering and compact mobile UX
+contains CHANGES.md "v27.2.33 — Persistent login, shift reassign and compact mobile UX"
+contains README.md "v27.2.33 — Persistent login, shift reassign and compact mobile UX"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.2.33"
+contains docs/PERSISTENT_LOGIN_AND_MOBILE_UX_V27.2.33.md "DUTYLOG_REMEMBER_ME"
+contains src/main/resources/db/migration/postgresql/V24__persistent_web_login.sql "CREATE TABLE persistent_logins"
+contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java '.rememberMe(remember -> remember'
+contains src/main/resources/static/login.html 'name="remember-me"'
+contains src/main/resources/static/js/50-tasks.js "const daySaveChains = new Map();"
+contains src/main/resources/static/index.html 'id="taskBoardFiltersToggle"'
+contains src/main/resources/static/app.css 'body.panel-open .tabbar'
+contains e2e/calendar-persistence.spec.js "a shift can be deleted and assigned again while a note save is pending"
+contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "rememberedLoginSurvivesWithoutTheOriginalHttpSession"
 
 DEPLOY_ENV_TMP="$(mktemp -d)"
 sed \
@@ -975,23 +987,23 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "5" ]]; then
-  ok "Playwright test baseline: 5"
+if [[ "$E2E_TESTS" == "6" ]]; then
+  ok "Playwright test baseline: 6"
 else
-  fail "expected 5 Playwright tests, found $E2E_TESTS"
+  fail "expected 6 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "340" ]]; then
-  ok "test method baseline: 340"
+if [[ "$TEST_METHODS" == "342" ]]; then
+  ok "test method baseline: 342"
 else
-  fail "expected 340 @Test methods, found $TEST_METHODS"
+  fail "expected 342 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "65" ]]; then
-  ok "test class baseline: 65"
+if [[ "$TEST_CLASSES" == "66" ]]; then
+  ok "test class baseline: 66"
 else
-  fail "expected 65 test classes, found $TEST_CLASSES"
+  fail "expected 66 test classes, found $TEST_CLASSES"
 fi
 
 echo

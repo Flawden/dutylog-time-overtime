@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.2.32" rel="stylesheet"/>
+<link href="app.css?v=27.2.33" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -41,7 +41,7 @@
 </div>
 <div class="wrap">
 <div class="head">
-<div>
+<div class="headerTitle">
 <div class="eyebrow">DutyLog: Time &amp; Overtime</div>
 <h1><span id="monthName"></span> <span class="yr" id="yearName"></span><span id="saveState"></span></h1>
 <div class="offlineBar"><button id="offlineStatus" class="offlineStatus" type="button" title="Состояние подключения">онлайн</button></div>
@@ -52,7 +52,7 @@
 <button id="next">›</button>
 <span class="mono" id="whoami" style="margin-left:14px;font-size:12.5px;color:var(--mut)"></span>
 <button id="adminOpen" hidden title="Администрирование">Система</button>
-<button id="logout" style="margin-left:8px;" title="Выйти">Выйти</button>
+<button id="logout" class="headerLogout" style="margin-left:8px;" title="Выйти" aria-label="Выйти"><span aria-hidden="true" class="headerLogoutIcon">↪</span><span class="headerLogoutText">Выйти</span></button>
 </div>
 </div>
 <nav class="tabbar" id="tabbar">
@@ -261,7 +261,8 @@
 </div>
 <div class="balance" id="ledgerBalance">0 ч</div>
 </div>
-<div class="ledgerFilters">
+<button class="mobileFilterToggle" id="ledgerFiltersToggle" type="button" aria-controls="ledgerFilters" aria-expanded="false"><span>Фильтры</span><b aria-hidden="true">⌄</b></button>
+<div class="ledgerFilters" id="ledgerFilters">
 <button id="ledgerThisMonth" type="button">этот месяц</button>
 <button id="ledgerAllTime" type="button">всё время</button>
 <label class="mono" style="color:var(--dim);font-size:11px;">с <input id="ledgerFrom" type="date"/></label>
@@ -298,7 +299,8 @@
 </div>
 <div class="status" id="taskBoardStatus">—</div>
 </div>
-<div class="taskBoardFilters">
+<button class="mobileFilterToggle" id="taskBoardFiltersToggle" type="button" aria-controls="taskBoardFilters" aria-expanded="false"><span>Фильтры</span><b aria-hidden="true">⌄</b></button>
+<div class="taskBoardFilters" id="taskBoardFilters">
 <button id="taskBoardOpen" type="button">открытые</button>
 <button id="taskBoardOverdue" type="button">просроченные</button>
 <button id="taskBoardAll" type="button">все</button>
@@ -818,7 +820,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.2.32</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.2.33</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -886,12 +888,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.2.32"></script>
-<script src="js/20-data.js?v=27.2.32"></script>
-<script src="js/30-calendar.js?v=27.2.32"></script>
-<script src="js/40-overtime.js?v=27.2.32"></script>
-<script src="js/50-tasks.js?v=27.2.32"></script>
-<script src="js/60-settings.js?v=27.2.32"></script>
-<script src="js/70-user-boot.js?v=27.2.32"></script>
+<script src="js/10-core.js?v=27.2.33"></script>
+<script src="js/20-data.js?v=27.2.33"></script>
+<script src="js/30-calendar.js?v=27.2.33"></script>
+<script src="js/40-overtime.js?v=27.2.33"></script>
+<script src="js/50-tasks.js?v=27.2.33"></script>
+<script src="js/60-settings.js?v=27.2.33"></script>
+<script src="js/70-user-boot.js?v=27.2.33"></script>
 </body>
 </html>

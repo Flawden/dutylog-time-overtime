@@ -1,7 +1,9 @@
 package ru.daniil.shifts.config;
 
 import jakarta.servlet.http.HttpServletResponse;
+import javax.sql.DataSource;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -14,6 +16,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
+import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -21,6 +25,7 @@ import org.springframework.security.web.util.matcher.RequestMatcher;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.web.ApiErrorWriter;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -36,6 +41,14 @@ public class SecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
+    }
+
+    /** Persistent browser-login tokens live in the same per-environment database. */
+    @Bean
+    public PersistentTokenRepository persistentTokenRepository(DataSource dataSource) {
+        JdbcTokenRepositoryImpl repository = new JdbcTokenRepositoryImpl();
+        repository.setDataSource(dataSource);
+        return repository;
     }
 
     /** Teaches Spring Security to resolve users from the application users table. */
@@ -128,7 +141,11 @@ public class SecurityConfig {
                                                BearerTokenAuthenticationFilter bearerTokenAuthenticationFilter,
                                                WebAccountStateFilter webAccountStateFilter,
                                                SecurityEventLogger securityEvents,
-                                               ApiErrorWriter apiErrors) throws Exception {
+                                               ApiErrorWriter apiErrors,
+                                               UserDetailsService userDetailsService,
+                                               PersistentTokenRepository persistentTokenRepository,
+                                               @Value("${dutylog.security.remember-me.validity-days:30}") int rememberMeValidityDays,
+                                               @Value("${dutylog.security.remember-me.secure-cookie:false}") boolean rememberMeSecureCookie) throws Exception {
         CookieCsrfTokenRepository csrfRepo = CookieCsrfTokenRepository.withHttpOnlyFalse();
         CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
         RequestMatcher bearerRequest = request ->
@@ -166,9 +183,17 @@ public class SecurityConfig {
                                     "rejected", "channel=web");
                             response.sendRedirect("/login.html?error");
                         }))
+                .rememberMe(remember -> remember
+                        .rememberMeParameter("remember-me")
+                        .rememberMeCookieName("DUTYLOG_REMEMBER_ME")
+                        .tokenValiditySeconds(rememberMeValiditySeconds(rememberMeValidityDays))
+                        .tokenRepository(persistentTokenRepository)
+                        .userDetailsService(userDetailsService)
+                        .useSecureCookie(rememberMeSecureCookie))
                 .logout(logout -> logout
                         .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login.html"))
+                        .logoutSuccessUrl("/login.html")
+                        .deleteCookies("JSESSIONID", "DUTYLOG_REMEMBER_ME"))
                 .exceptionHandling(ex -> ex
                         .defaultAuthenticationEntryPointFor(
                                 (request, response, exception) -> {
@@ -190,5 +215,10 @@ public class SecurityConfig {
                 .addFilterAfter(webAccountStateFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
+    }
+
+    static int rememberMeValiditySeconds(int requestedDays) {
+        int safeDays = Math.max(1, Math.min(365, requestedDays));
+        return Math.toIntExact(Duration.ofDays(safeDays).toSeconds());
     }
 }

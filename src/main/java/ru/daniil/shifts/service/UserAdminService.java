@@ -26,17 +26,20 @@ public class UserAdminService {
     private final UserRepository users;
     private final PasswordEncoder encoder;
     private final MobileAuthService mobileAuthService;
+    private final RememberMeTokenService rememberMeTokenService;
     private final SecurityEventLogger securityEvents;
     private final String bootstrapAdminUsername;
 
     public UserAdminService(UserRepository users,
                             PasswordEncoder encoder,
                             MobileAuthService mobileAuthService,
+                            RememberMeTokenService rememberMeTokenService,
                             SecurityEventLogger securityEvents,
                             @Value("${dutylog.admin.username:}") String bootstrapAdminUsername) {
         this.users = users;
         this.encoder = encoder;
         this.mobileAuthService = mobileAuthService;
+        this.rememberMeTokenService = rememberMeTokenService;
         this.securityEvents = securityEvents;
         this.bootstrapAdminUsername = bootstrapAdminUsername == null ? "" : bootstrapAdminUsername.trim();
     }
@@ -107,6 +110,9 @@ public class UserAdminService {
             target.bumpAuthVersion();
         }
         AppUser saved = users.save(target);
+        if (!previousRole.equalsIgnoreCase(role)) {
+            rememberMeTokenService.revokeAll(saved);
+        }
         securityEvents.info("ADMIN_ROLE_CHANGED", currentUser.getUsername(), "accepted",
                 "target=" + target.getUsername() + " from=" + previousRole + " to=" + role);
         return toDto(saved, currentUser);
@@ -123,6 +129,7 @@ public class UserAdminService {
         target.bumpAuthVersion();
         AppUser saved = users.save(target);
         mobileAuthService.revokeAllSessions(saved);
+        rememberMeTokenService.revokeAll(saved);
         securityEvents.warn("ADMIN_PASSWORD_RESET", currentUser.getUsername(), "accepted",
                 "target=" + target.getUsername());
         return toDto(saved, currentUser);
