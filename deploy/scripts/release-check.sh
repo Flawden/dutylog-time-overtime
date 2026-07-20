@@ -121,6 +121,15 @@ python3 -m json.tool src/main/resources/static/manifest.json >/dev/null
 ok "manifest.json is valid JSON"
 python3 -m json.tool package.json >/dev/null
 ok "package.json is valid JSON"
+python3 -m json.tool package-lock.json >/dev/null
+ok "package-lock.json is valid JSON"
+not_contains package-lock.json "applied-caas"
+not_contains package-lock.json "internal.api.openai.org"
+not_contains package-lock.json "10.192."
+contains package-lock.json "https://registry.npmjs.org/"
+contains .npmrc "registry=https://registry.npmjs.org/"
+contains .github/workflows/ci.yml "bash ./deploy/scripts/npm-ci-with-retry.sh"
+contains .github/workflows/deploy-staging.yml "bash ./deploy/scripts/npm-ci-with-retry.sh"
 
 python3 - "$VERSION" <<'PY'
 from pathlib import Path

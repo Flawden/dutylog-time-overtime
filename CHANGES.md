@@ -1,5 +1,12 @@
 ## v27.2.33 — Persistent login, shift reassign and compact mobile UX
 
+### CI registry hotfix
+
+- Replaced environment-local package tarball URLs in `package-lock.json` with public `registry.npmjs.org` URLs.
+- Switched CI and staging validation from `npm install` to reproducible `npm ci`.
+- Added npm registry pinning, dependency cache and bounded retries for transient registry failures.
+- Added release-gate checks that reject internal-only package registry URLs.
+
 - Fixed a full-day snapshot race where a debounced note save could restore a shift immediately after the user deleted it; writes are now serialized per date and stale responses cannot overwrite newer local revisions.
 - Day upsert handling now accepts an intentionally empty successful response when deleting the final value from a date, so the UI does not report a JSON parse failure after a successful delete.
 - Added explicit persistent browser login with a 30-day `DUTYLOG_REMEMBER_ME` HttpOnly cookie, JDBC-backed token storage and logout/password/role-change revocation.
