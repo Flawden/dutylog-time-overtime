@@ -87,12 +87,16 @@ async function toggleModule(page, key, enabled) {
   await expect(page.locator('#moduleSettingsGrid')).toBeVisible();
   const toggle = page.locator(`[data-module-toggle="${key}"]`);
   await expect(toggle).toBeVisible();
+  const savedMessage = expect(page.locator('#modulesMsg')).toContainText(
+    /модули сохранены|modules saved/i,
+    { timeout: 15_000 }
+  );
   const response = waitForApi(page, 'PATCH', '/api/modules');
   if (enabled) await toggle.check(); else await toggle.uncheck();
   await response;
+  await savedMessage;
   if (enabled) await expect(toggle).toBeChecked();
   else await expect(toggle).not.toBeChecked();
-  await expect(page.locator('#modulesMsg')).toContainText(/сохран|saved/i);
 }
 
 module.exports = {

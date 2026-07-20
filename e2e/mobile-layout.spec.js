@@ -4,7 +4,7 @@ const { registerAndOnboard, currentLocalDateKey, selectDate } = require('./helpe
 test.use({ viewport: { width: 390, height: 844 } });
 
 test('calendar, filters and selected-day panel remain usable on a phone viewport', async ({ page }) => {
-  await registerAndOnboard(page, { preset: 'work', prefix: 'mobile' });
+  await registerAndOnboard(page, { preset: 'full', prefix: 'mobile' });
   const dimensions = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
     content: document.documentElement.scrollWidth,

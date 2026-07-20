@@ -1,5 +1,11 @@
 ## v27.2.33 — Persistent login, shift reassign and compact mobile UX
 
+### E2E stability hotfix
+
+- The mobile layout scenario now onboards with the Full preset because it explicitly tests the Tasks navigation; the previous Standard preset intentionally kept Tasks disabled and made the selector correctly hidden.
+- Module toggle tests now start waiting for the final “modules saved” state before clicking and match the final message exactly, preventing the 1.8-second transient status from being missed on fast runners.
+- No production application, database or Flyway behavior changed.
+
 ### CI registry hotfix
 
 - Replaced environment-local package tarball URLs in `package-lock.json` with public `registry.npmjs.org` URLs.
