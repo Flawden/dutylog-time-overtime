@@ -13,7 +13,23 @@ Object.assign(I18N_EN, {
   "− Добавить списание":"− Add time off", "Не выбран":"Not selected", "Сценарий":"Scenario",
   "Доступно до списания":"Available before use", "Останется после списания":"Remaining after use",
   "списать по норме смены":"use shift norm", "Короткий интервал":"Short interval",
-  "Расчёт":"Calculation", "Итого, ч":"Total, h", "Количество часов":"Hours"
+  "Расчёт":"Calculation", "Итого, ч":"Total, h", "Количество часов":"Hours",
+  "Управление сценариями":"Manage scenarios", "Управление сценариями…":"Manage scenarios…",
+  "Сохранить текущие значения как сценарий":"Save current values as a scenario",
+  "Сценарии переработок":"Overtime scenarios", "К переработке":"Back to overtime",
+  "Новый сценарий":"New scenario", "Редактировать сценарий":"Edit scenario",
+  "Сохранить сценарий":"Save scenario", "Назад к списку":"Back to list",
+  "Сценарий сохранён":"Scenario saved", "Сценарий обновлён":"Scenario updated",
+  "Для сохранения сценария укажите начало и конец":"Set start and end before saving a scenario",
+  "Для сохранения из формы выберите день со сменой":"Choose a day with a shift before saving from the form",
+  "Начало формы должно совпадать с началом или концом смены":"The form start must match the shift start or end",
+  "Интервал сценария не может быть длиннее 72 часов":"A scenario interval cannot exceed 72 hours",
+  "Сценарии пока не созданы.":"No scenarios yet.", "Управление":"Management",
+  "Управление происходит в этом же окне. Введённая переработка не потеряется.":"Management stays in the same window. Your overtime draft will not be lost.",
+  "Поля заполнены из текущей переработки. Дайте сценарию понятное название и сохраните.":"The fields were filled from the current overtime entry. Give the scenario a clear name and save it.",
+  "Настройте, как сценарий будет заполнять форму переработки.":"Configure how the scenario fills the overtime form.",
+  "из формы":"from form", "Сохранено из формы":"Saved from form",
+  "укажи фиксированное время конца":"set a fixed end time"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -75,12 +91,14 @@ function resetOvertimeForms(k = state.selected){
 
 function openOvertimeCreditModal(date = null){
   resetOvertimeForms(overtimeDefaultDate(date));
+  showCreditEditorView({ focus:false });
   renderQuickScenarios();
   updateOvertimeCalcPreview();
   openAppModal("overtimeCreditModal", "creditScenarioSelect");
 }
 function closeOvertimeCreditModal(){
   const date = $("creditDate")?.value || state.selected || todayKey();
+  showCreditEditorView({ focus:false });
   closeAppModal("overtimeCreditModal");
   resetOvertimeForms(date);
   renderLedgerTable();
@@ -348,28 +366,73 @@ function scenarioAvailable(sc){
   return true;
 }
 
+function sortedQuickScenarios(){
+  return (state.quickScenarios || []).slice().sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || (a.id ?? 0) - (b.id ?? 0));
+}
+
 function renderQuickScenarios(){
   const select = $("creditScenarioSelect");
-  if (!select) return;
-  const current = String(state.activeScenarioId || select.value || "");
-  const scenarios = (state.quickScenarios || []).slice().sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || (a.id ?? 0) - (b.id ?? 0));
-  select.innerHTML = `<option value="">${esc(t("Не выбран"))}</option>`;
-  for (const sc of scenarios) {
-    const option = document.createElement("option");
-    option.value = String(sc.id);
-    option.textContent = `${sc.name || t("Сценарий")} — ${scenarioHumanDescription(sc)}`;
-    option.disabled = !scenarioAvailable(sc);
-    select.appendChild(option);
-  }
-  if (current && [...select.options].some(option => option.value === current && !option.disabled)) select.value = current;
-  else { select.value = ""; state.activeScenarioId = null; }
+  const scenarios = sortedQuickScenarios();
+  if (select) {
+    const current = String(state.activeScenarioId || select.value || "");
+    select.innerHTML = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = t("Не выбран");
+    select.appendChild(placeholder);
 
-  const settingsList = $("scenarioSettingsList");
-  if (settingsList) {
-    settingsList.innerHTML = scenarios.length
-      ? scenarios.map(sc => `<div class="scenarioSettingsRow"><div><b>${esc(sc.name || t("Сценарий"))}</b><small>${esc(sc.description || scenarioHumanDescription(sc))}</small></div><button type="button" data-scenario-settings-delete="${sc.id}" title="${esc(t("удалить сценарий"))}">×</button></div>`).join("")
-      : `<span class="emptyLine">${esc(t("Сценарии пока не созданы."))}</span>`;
+    const scenarioGroup = document.createElement("optgroup");
+    scenarioGroup.label = t("Сценарии переработок");
+    if (scenarios.length) {
+      for (const sc of scenarios) {
+        const option = document.createElement("option");
+        option.value = String(sc.id);
+        option.textContent = `${sc.name || t("Сценарий")} — ${scenarioHumanDescription(sc)}`;
+        option.disabled = !scenarioAvailable(sc);
+        scenarioGroup.appendChild(option);
+      }
+    } else {
+      const empty = document.createElement("option");
+      empty.disabled = true;
+      empty.textContent = t("Сценарии пока не созданы.");
+      scenarioGroup.appendChild(empty);
+    }
+    select.appendChild(scenarioGroup);
+
+    const manageGroup = document.createElement("optgroup");
+    manageGroup.label = t("Управление");
+    const manage = document.createElement("option");
+    manage.value = "__manage__";
+    manage.textContent = t("Управление сценариями…");
+    manageGroup.appendChild(manage);
+    select.appendChild(manageGroup);
+
+    if (current && [...select.options].some(option => option.value === current && !option.disabled)) select.value = current;
+    else { select.value = ""; state.activeScenarioId = null; }
   }
+  renderScenarioManagerList();
+}
+
+function renderScenarioManagerList(){
+  const list = $("scenarioManagerList");
+  if (!list) return;
+  const scenarios = sortedQuickScenarios();
+  if (!scenarios.length) {
+    list.innerHTML = `<span class="emptyLine">${esc(t("Сценарии пока не созданы."))}</span>`;
+    return;
+  }
+  list.innerHTML = scenarios.map(sc => `
+    <div class="scenarioManagerRow" data-scenario-row="${sc.id}">
+      <button class="scenarioManagerMain" type="button" data-scenario-edit="${sc.id}">
+        <b>${esc(sc.name || t("Сценарий"))}</b>
+        <span>${esc(sc.description || scenarioHumanDescription(sc))}</span>
+        <small>${esc(scenarioHumanDescription(sc))}</small>
+      </button>
+      <div class="scenarioManagerRowActions">
+        <button type="button" data-scenario-edit="${sc.id}">${esc(t("ред."))}</button>
+        <button class="dangerGhost" type="button" data-scenario-delete="${sc.id}">${esc(t("удалить"))}</button>
+      </div>
+    </div>`).join("");
 }
 
 function scenarioHumanDescription(sc){
@@ -424,9 +487,7 @@ function scenarioEndValue(base, st, sc, start){
     if (!st.endTime) return null;
     return setTimeOnDate(shiftEndDateKey(base, st), st.endTime);
   }
-  if (sc.endMode === "ADD_MINUTES") {
-    return addMinutesToLocalInput(start, Number(sc.endOffsetMinutes || 0));
-  }
+  if (sc.endMode === "ADD_MINUTES") return addMinutesToLocalInput(start, Number(sc.endOffsetMinutes || 0));
   if (sc.endMode === "FIXED_TIME") {
     if (!sc.endFixedTime) return null;
     return setTimeOnDate(dateKeyOffset(base, sc.endNextDay ? 1 : 0), sc.endFixedTime);
@@ -468,26 +529,98 @@ function applyQuickScenario(sc){
   });
 }
 
-function resetScenarioEditor(){
-  if (!$("scName")) return;
-  $("scName").value = "";
-  $("scGroup").value = "";
-  $("scDesc").value = "";
-  $("scStartMode").value = "SHIFT_END";
-  $("scEndMode").value = "ADD_MINUTES";
-  $("scEndOffset").value = "120";
-  $("scEndFixed").value = "08:00";
-  $("scEndNextDay").checked = false;
-  $("scBreakMode").value = "ZERO";
-  $("scBreakCustom").value = "0";
-  $("scPlannedMode").value = "ZERO";
-  $("scPlannedCustom").value = "0";
-  $("scReason").value = "";
+function setScenarioManagerHeader(title, hint){
+  if ($("overtimeCreditTitle")) $("overtimeCreditTitle").textContent = t(title);
+  if ($("overtimeCreditHint")) $("overtimeCreditHint").textContent = t(hint);
+}
+
+function showCreditEditorView({ focus = true } = {}){
+  if ($("scenarioManagerView")) $("scenarioManagerView").hidden = true;
+  if ($("overtimeCreditForm")) $("overtimeCreditForm").hidden = false;
+  const editing = !!state.editingCreditId;
+  setScenarioManagerHeader(
+    editing ? "Редактировать переработку" : "Добавить переработку",
+    "Дата берётся из выбранного дня календаря. Сценарий только заполняет поля — перед сохранением их можно изменить."
+  );
+  renderQuickScenarios();
+  if (focus) requestAnimationFrame(() => $("creditScenarioSelect")?.focus());
+}
+
+function showScenarioList(){
+  state.editingScenarioId = null;
+  state.scenarioEditorOrigin = null;
+  if ($("scenarioManagerForm")) $("scenarioManagerForm").hidden = true;
+  if ($("scenarioManagerListPane")) $("scenarioManagerListPane").hidden = false;
+  if ($("scenarioManagerMessage")) { $("scenarioManagerMessage").hidden = true; $("scenarioManagerMessage").textContent = ""; }
+  renderScenarioManagerList();
+  requestAnimationFrame(() => $("scenarioManagerAdd")?.focus());
+}
+
+function openScenarioManager({ scenario = null, draft = null, origin = "manager" } = {}){
+  if (!moduleEnabled("scenarios")) return setSave("err", t("модуль отключён"));
+  if ($("overtimeCreditForm")) $("overtimeCreditForm").hidden = true;
+  if ($("scenarioManagerView")) $("scenarioManagerView").hidden = false;
+  setScenarioManagerHeader("Сценарии переработок", "Управление происходит в этом же окне. Введённая переработка не потеряется.");
+  if (scenario || draft) openScenarioEditor(scenario, draft, origin);
+  else showScenarioList();
+}
+
+function updateScenarioEditorVisibility(){
+  const endMode = $("scEndMode")?.value || "ADD_MINUTES";
+  if ($("scEndOffsetField")) $("scEndOffsetField").hidden = endMode !== "ADD_MINUTES";
+  if ($("scEndFixedField")) $("scEndFixedField").hidden = endMode !== "FIXED_TIME";
+  if ($("scEndNextDayField")) $("scEndNextDayField").hidden = endMode !== "FIXED_TIME";
+  if ($("scBreakCustomField")) $("scBreakCustomField").hidden = $("scBreakMode")?.value !== "CUSTOM";
+  if ($("scPlannedCustomField")) $("scPlannedCustomField").hidden = $("scPlannedMode")?.value !== "CUSTOM";
+}
+
+function resetScenarioEditor(draft = null){
+  const values = draft || {};
+  $("scName").value = values.name || "";
+  $("scGroup").value = values.groupLabel || "";
+  $("scDesc").value = values.description || "";
+  $("scStartMode").value = values.startMode || "SHIFT_END";
+  $("scEndMode").value = values.endMode || "ADD_MINUTES";
+  $("scEndOffset").value = String(values.endOffsetMinutes ?? 120);
+  $("scEndFixed").value = values.endFixedTime || "08:00";
+  $("scEndNextDay").checked = !!values.endNextDay;
+  $("scBreakMode").value = values.breakMode || "ZERO";
+  $("scBreakCustom").value = String(values.customBreakMinutes ?? 0);
+  $("scPlannedMode").value = values.plannedMode || "ZERO";
+  $("scPlannedCustom").value = String(values.customPlannedHours ?? 0);
+  $("scReason").value = values.reasonTemplate || "";
+  updateScenarioEditorVisibility();
+}
+
+function openScenarioEditor(scenario = null, draft = null, origin = "manager"){
+  state.editingScenarioId = scenario ? Number(scenario.id) : null;
+  state.scenarioEditorOrigin = origin;
+  if ($("scenarioManagerListPane")) $("scenarioManagerListPane").hidden = true;
+  if ($("scenarioManagerForm")) $("scenarioManagerForm").hidden = false;
+  resetScenarioEditor(scenario || draft || null);
+  if ($("scenarioEditorTitle")) $("scenarioEditorTitle").textContent = t(scenario ? "Редактировать сценарий" : "Новый сценарий");
+  if ($("scenarioEditorHint")) $("scenarioEditorHint").textContent = origin === "credit-draft"
+    ? t("Поля заполнены из текущей переработки. Дайте сценарию понятное название и сохраните.")
+    : t("Настройте, как сценарий будет заполнять форму переработки.");
+  if ($("scDelete")) $("scDelete").hidden = !scenario;
+  if ($("scSave")) $("scSave").textContent = t(scenario ? "Сохранить" : "Сохранить сценарий");
+  if ($("scenarioManagerMessage")) { $("scenarioManagerMessage").hidden = true; $("scenarioManagerMessage").textContent = ""; }
+  requestAnimationFrame(() => $("scName")?.focus());
+}
+
+function cancelScenarioEditor(){
+  if (state.scenarioEditorOrigin === "credit-draft") showCreditEditorView();
+  else showScenarioList();
 }
 
 function buildScenarioPayload(){
   const name = $("scName").value.trim();
-  if (!name) { setSave("err", t("назови сценарий")); return null; }
+  if (!name) { setSave("err", t("назови сценарий")); $("scName").focus(); return null; }
+  if ($("scEndMode").value === "FIXED_TIME" && !$("scEndFixed").value) {
+    setSave("err", t("укажи фиксированное время конца"));
+    $("scEndFixed").focus();
+    return null;
+  }
   return {
     name,
     groupLabel: $("scGroup").value.trim() || null,
@@ -502,20 +635,32 @@ function buildScenarioPayload(){
     plannedMode: $("scPlannedMode").value,
     customPlannedHours: Number($("scPlannedCustom").value || 0),
     reasonTemplate: $("scReason").value.trim() || name,
-    sortOrder: 100 + (state.quickScenarios || []).length * 10
+    sortOrder: state.editingScenarioId
+      ? ((state.quickScenarios || []).find(item => Number(item.id) === Number(state.editingScenarioId))?.sortOrder ?? 100)
+      : 100 + (state.quickScenarios || []).length * 10
   };
 }
 
 async function saveQuickScenario(){
   const payload = buildScenarioPayload();
   if (!payload) return;
+  const editingId = state.editingScenarioId;
+  const origin = state.scenarioEditorOrigin;
   setSave("saving");
   try {
-    await api.createQuickScenario(payload);
+    const saved = editingId
+      ? await api.updateQuickScenario(editingId, payload)
+      : await api.createQuickScenario(payload);
     state.quickScenarios = await api.quickScenarios();
-    resetScenarioEditor();
-    renderQuickScenarioContext();
-    setSave("saved", t("сценарий добавлен"));
+    state.activeScenarioId = saved.id;
+    renderQuickScenarios();
+    if (origin === "credit-draft") {
+      showCreditEditorView();
+      highlightScenario(saved.id);
+    } else {
+      showScenarioList();
+    }
+    setSave("saved", t(editingId ? "Сценарий обновлён" : "Сценарий сохранён"));
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
@@ -529,7 +674,8 @@ async function deleteQuickScenario(id){
     await api.deleteQuickScenario(id);
     state.quickScenarios = await api.quickScenarios();
     if (String(state.activeScenarioId) === String(id)) state.activeScenarioId = null;
-    renderQuickScenarioContext();
+    renderQuickScenarios();
+    showScenarioList();
     setSave("saved");
   } catch (err) {
     console.error(err);
@@ -537,6 +683,65 @@ async function deleteQuickScenario(id){
   }
 }
 
+function sameLocalMinute(a, b){ return !!a && !!b && String(a).slice(0,16) === String(b).slice(0,16); }
+
+function scenarioDraftFromCreditForm(){
+  const base = selectedCreditBaseDate();
+  const st = base ? stOf(base) : null;
+  if (!st || !st.startTime || !st.endTime) {
+    setSave("err", t("Для сохранения из формы выберите день со сменой"));
+    return null;
+  }
+  const calc = overtimeCalcFromInputs();
+  if (!calc?.startValue || !calc?.endValue) {
+    setSave("err", t("Для сохранения сценария укажите начало и конец"));
+    return null;
+  }
+  const shiftStart = setTimeOnDate(base, st.startTime);
+  const shiftEnd = setTimeOnDate(shiftEndDateKey(base, st), st.endTime);
+  let startMode = null;
+  if (sameLocalMinute(calc.startValue, shiftStart)) startMode = "SHIFT_START";
+  else if (sameLocalMinute(calc.startValue, shiftEnd)) startMode = "SHIFT_END";
+  if (!startMode) {
+    setSave("err", t("Начало формы должно совпадать с началом или концом смены"));
+    return null;
+  }
+
+  const startDate = localDateTimeToDate(calc.startValue);
+  const endDate = localDateTimeToDate(calc.endValue);
+  const durationMinutes = Math.round((endDate - startDate) / 60000);
+  if (!Number.isFinite(durationMinutes) || durationMinutes <= 0 || durationMinutes > 4320) {
+    setSave("err", t("Интервал сценария не может быть длиннее 72 часов"));
+    return null;
+  }
+  const endMode = startMode === "SHIFT_START" && sameLocalMinute(calc.endValue, shiftEnd) ? "SHIFT_END" : "ADD_MINUTES";
+  const breakMinutes = readIntInput("creditBreak");
+  const plannedHours = readHoursInput("creditPlanned");
+  const shiftBreak = numOr0(st.breakMinutes);
+  const shiftPlan = shiftPlannedHours(st);
+  const breakMode = breakMinutes === 0 ? "ZERO" : (Math.abs(breakMinutes - shiftBreak) < 0.001 ? "SHIFT" : "CUSTOM");
+  const plannedMode = plannedHours === 0 ? "ZERO" : (Math.abs(plannedHours - shiftPlan) < 0.001 ? "SHIFT" : "CUSTOM");
+  return {
+    name: "",
+    groupLabel: t("из формы"),
+    description: `${t("Сохранено из формы")}: ${calc.timeRange}`,
+    startMode,
+    endMode,
+    endOffsetMinutes: endMode === "ADD_MINUTES" ? durationMinutes : 0,
+    endFixedTime: "08:00",
+    endNextDay: false,
+    breakMode,
+    customBreakMinutes: breakMode === "CUSTOM" ? breakMinutes : 0,
+    plannedMode,
+    customPlannedHours: plannedMode === "CUSTOM" ? plannedHours : 0,
+    reasonTemplate: $("creditReason").value.trim() || null
+  };
+}
+
+function openScenarioDraftFromCredit(){
+  const draft = scenarioDraftFromCreditForm();
+  if (draft) openScenarioManager({ draft, origin:"credit-draft" });
+}
 
 function buildCreditPayload(){
   const calc = overtimeCalcFromInputs();
@@ -624,6 +829,7 @@ function startEditOvertimeCredit(id){
   $("creditDelete").hidden = numOr0(c.usedHours) > 0.0001;
   $("creditEditNotice").hidden = false;
   $("creditEditNotice").textContent = t("Редактируется существующее начисление. Изменение периода может пересобрать строки начислений.");
+  showCreditEditorView({ focus:false });
   $("overtimeCreditTitle").textContent = t("Редактировать переработку");
   renderQuickScenarios();
   updateOvertimeCalcPreview();
@@ -993,17 +1199,34 @@ $("usageDelete")?.addEventListener("click", () => state.editingUsageId && remove
 $("creditNightShiftPreset")?.addEventListener("click", setNightShiftPreset);
 $("creditNightPreset")?.addEventListener("click", setNightOvertimePreset);
 $("creditScenarioSelect")?.addEventListener("change", event => {
+  if (event.target.value === "__manage__") {
+    event.target.value = state.activeScenarioId ? String(state.activeScenarioId) : "";
+    openScenarioManager();
+    return;
+  }
   const id = Number(event.target.value);
   if (!id) { clearScenarioHighlight(); return; }
   const sc = (state.quickScenarios || []).find(item => Number(item.id) === id);
   if (sc) applyQuickScenario(sc);
 });
-$("scSave")?.addEventListener("click", saveQuickScenario);
-$("scReset")?.addEventListener("click", resetScenarioEditor);
-$("scenarioSettingsList")?.addEventListener("click", event => {
-  const button = event.target.closest("[data-scenario-settings-delete]");
-  if (!button) return;
-  deleteQuickScenario(Number(button.dataset.scenarioSettingsDelete));
+$("creditScenarioManage")?.addEventListener("click", () => openScenarioManager());
+$("creditScenarioSaveCurrent")?.addEventListener("click", openScenarioDraftFromCredit);
+$("scenarioManagerBack")?.addEventListener("click", () => showCreditEditorView());
+$("scenarioManagerAdd")?.addEventListener("click", () => openScenarioEditor(null, null, "manager"));
+$("scenarioEditorBack")?.addEventListener("click", cancelScenarioEditor);
+$("scCancelEdit")?.addEventListener("click", cancelScenarioEditor);
+$("scenarioManagerForm")?.addEventListener("submit", event => { event.preventDefault(); saveQuickScenario(); });
+for (const id of ["scEndMode", "scBreakMode", "scPlannedMode"]) $(id)?.addEventListener("change", updateScenarioEditorVisibility);
+$("scDelete")?.addEventListener("click", () => state.editingScenarioId && deleteQuickScenario(state.editingScenarioId));
+$("scenarioManagerList")?.addEventListener("click", event => {
+  const edit = event.target.closest("[data-scenario-edit]");
+  if (edit) {
+    const scenario = (state.quickScenarios || []).find(item => Number(item.id) === Number(edit.dataset.scenarioEdit));
+    if (scenario) openScenarioEditor(scenario, null, "manager");
+    return;
+  }
+  const del = event.target.closest("[data-scenario-delete]");
+  if (del) deleteQuickScenario(Number(del.dataset.scenarioDelete));
 });
 $("creditPlanByShift")?.addEventListener("click", () => {
   const st = currentSelectedShiftOrError();

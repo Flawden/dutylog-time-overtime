@@ -52,7 +52,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.4.0"
+const DUTYLOG_VERSION = "27.4.1"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -628,7 +628,7 @@ Object.assign(I18N_EN, {
   "проверь обед/план":"check break/plan",
   "итого 0 или меньше":"total is 0 or less",
   "нужны начало и конец":"start and end required",
-  "Сценарии пока не созданы. Добавьте первый сценарий в настройках.":"No scenarios yet. Add the first scenario in settings.",
+  "Сценарии пока не созданы. Добавьте первый сценарий в редакторе переработки.":"No scenarios yet. Add the first scenario in the overtime editor.",
   "сценарий":"scenario",
   "Сценарий":"Scenario",
   "без уведомлений":"notifications off",

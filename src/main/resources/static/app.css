@@ -898,7 +898,6 @@ body.offline #profileSave,
 body.offline #pwChange{opacity:.55;filter:saturate(.65)}
 body.offline #accOt .accB::before,
 body.offline #accSched .accB::before,
-body.offline #settings-scenarios::before,
 body.offline #settings-notifications::before,
 body.offline #telegramBox::before{content:"Эта операция требует связи с сервером.";display:block;margin:0 0 10px;padding:8px 10px;border:1px solid rgba(245,184,65,.25);background:rgba(245,184,65,.08);border-radius:12px;color:#ffcd7a;font-size:13px}
 @media (max-width:700px){.offlineBar{width:100%}.offlineStatus{max-width:100%;white-space:normal;line-height:1.25}}
@@ -933,7 +932,6 @@ body.offline #telegramBox::before{content:"Эта операция требуе�
 
 body.offline #accOt .accB::before{content:"Переработки и отгулы требуют связи с сервером. Смена, заметки и галочки задач сохраняются оффлайн."}
 body.offline #accSched .accB::before{content:"Автозаполнение графика требует связи с сервером. Отдельную смену выбранного дня можно изменить оффлайн."}
-body.offline #settings-scenarios::before{content:"Шаблоны переработок меняются только при подключении к серверу."}
 body.offline #settings-notifications::before{content:"Настройки уведомлений требуют связи с сервером."}
 body.offline #telegramBox::before{content:"Telegram-интеграция настраивается только при подключении к серверу."}
 @media (max-width:700px){
@@ -1309,16 +1307,14 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
 /* v24.0.2: English offline pseudo-copy */
 html[lang="en"] body.offline #accOt .accB::before{content:"Overtime and time off require a server connection. Shifts, notes and task checkboxes are saved offline."}
 html[lang="en"] body.offline #accSched .accB::before{content:"Schedule auto-fill requires a server connection. A single shift for the selected day can be changed offline."}
-html[lang="en"] body.offline #settings-scenarios::before{content:"Overtime templates can be changed only while connected to the server."}
-html[lang="en"] body.offline #settings-notifications::before{content:"Notification settings require a server connection."}
+html[lang="en"] html[lang="en"] body.offline #settings-notifications::before{content:"Notification settings require a server connection."}
 html[lang="en"] body.offline #telegramBox::before{content:"Telegram integration can be configured only while connected to the server."}
 
 
 /* v24.0.3: English pseudo-content for offline-only warnings */
 html[lang="en"] body.offline #accOt .accB::before{content:"Overtime and time off require connection to the server. Shift, notes, and task checkboxes are saved offline."}
 html[lang="en"] body.offline #accSched .accB::before{content:"Schedule autofill requires connection to the server. The selected day's shift can be changed offline."}
-html[lang="en"] body.offline #settings-scenarios::before{content:"Overtime templates can be changed only when connected to the server."}
-html[lang="en"] body.offline #settings-notifications::before{content:"Notification settings require connection to the server."}
+html[lang="en"] html[lang="en"] body.offline #settings-notifications::before{content:"Notification settings require connection to the server."}
 html[lang="en"] body.offline #telegramBox::before{content:"Telegram integration can be configured only when connected to the server."}
 
 /* v25.0/v25.1: module settings and module-aware day panel */
@@ -2117,10 +2113,76 @@ body.app-modal-open .tabbar { visibility:hidden; pointer-events:none; }
   .overtimePresetRow button { width:100%; }
 }
 
-.scenarioSettingsList { display:grid; gap:7px; margin-top:10px; }
-.scenarioSettingsRow { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; padding:9px 10px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
-.scenarioSettingsRow > div { display:grid; gap:3px; min-width:0; }
-.scenarioSettingsRow b { color:var(--text); }
-.scenarioSettingsRow small { color:var(--dim); overflow-wrap:anywhere; }
-.scenarioSettingsRow button { width:32px; height:32px; padding:0; border:1px solid var(--line); border-radius:9px; background:transparent; color:var(--dim); cursor:pointer; }
-.scenarioSettingsRow button:hover { color:var(--danger); border-color:var(--danger); }
+
+
+/* v27.4.1: scenario management lives inside the shared overtime editor. */
+.scenarioSelectRow { display:grid; grid-template-columns:minmax(0,1fr) 42px; gap:7px; }
+.scenarioSelectRow button {
+  min-height:42px;
+  padding:0;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--panel);
+  color:var(--mut);
+  cursor:pointer;
+  font-size:18px;
+}
+.scenarioSelectRow button:hover { color:var(--accent); border-color:var(--accent); }
+.scenarioCreditActions { display:flex; justify-content:flex-start; }
+.scenarioCreditActions button {
+  min-height:36px;
+  padding:7px 11px;
+  border:1px dashed var(--accent);
+  border-radius:10px;
+  background:transparent;
+  color:var(--accent);
+  cursor:pointer;
+}
+.scenarioManager { display:grid; gap:12px; }
+.scenarioManager[hidden], .scenarioManagerForm[hidden], #scenarioManagerListPane[hidden] { display:none !important; }
+.scenarioManagerToolbar { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+.scenarioManagerToolbar button,
+.scenarioEditorHeading button {
+  min-height:38px;
+  padding:8px 11px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--panel);
+  color:var(--mut);
+  cursor:pointer;
+}
+.scenarioManagerToolbar button.primary { background:var(--accent); color:#14171c; border-color:var(--accent); font-weight:850; }
+.scenarioManagerIntro { display:grid; gap:4px; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--panel); }
+.scenarioManagerIntro b { color:var(--text); }
+.scenarioManagerIntro span { color:var(--dim); font-size:12px; line-height:1.45; }
+.scenarioManagerList { display:grid; gap:8px; margin-top:10px; }
+.scenarioManagerRow {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  align-items:center;
+  gap:9px;
+  padding:9px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:var(--panel);
+}
+.scenarioManagerMain { display:grid; gap:3px; min-width:0; padding:3px; border:0; background:transparent; color:inherit; text-align:left; cursor:pointer; }
+.scenarioManagerMain b { color:var(--text); font-size:14px; }
+.scenarioManagerMain span { color:var(--mut); font-size:12px; overflow-wrap:anywhere; }
+.scenarioManagerMain small { color:var(--dim); font-family:ui-monospace,monospace; }
+.scenarioManagerRowActions { display:flex; align-items:center; gap:6px; }
+.scenarioManagerRowActions button { min-height:34px; padding:6px 9px; border:1px solid var(--line); border-radius:9px; background:transparent; color:var(--dim); cursor:pointer; }
+.scenarioManagerRowActions button:hover { color:var(--accent); border-color:var(--accent); }
+.scenarioManagerRowActions .dangerGhost:hover { color:var(--danger); border-color:var(--danger); }
+.scenarioEditorHeading { display:flex; align-items:center; gap:11px; padding-bottom:10px; border-bottom:1px solid var(--line); }
+.scenarioEditorHeading > div { display:grid; gap:3px; }
+.scenarioEditorHeading b { color:var(--text); font-size:16px; }
+.scenarioEditorHeading span { color:var(--dim); font-size:12px; line-height:1.4; }
+
+@media (max-width:760px) {
+  .scenarioManagerToolbar { display:grid; grid-template-columns:1fr 1fr; }
+  .scenarioManagerToolbar button { width:100%; }
+  .scenarioManagerRow { grid-template-columns:1fr; }
+  .scenarioManagerRowActions { justify-content:flex-end; }
+  .scenarioCreditActions button { width:100%; }
+}

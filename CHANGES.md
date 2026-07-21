@@ -1,3 +1,17 @@
+## v27.4.1 — Overtime scenario manager
+
+### Changed
+- Moved quick-scenario creation, editing and deletion out of Settings and into the shared overtime credit modal.
+- Added a scenario dropdown with a dedicated management action and a final “Manage scenarios…” entry.
+- Added “Save current values as a scenario”: the editor converts a shift-anchored overtime interval into a reusable scenario draft without discarding the current credit form.
+- Scenario management switches views inside the same modal instead of stacking dialogs; returning to the credit editor preserves all entered values.
+- Existing scenario CRUD API and stored data remain unchanged; no database migration is required.
+
+### Tests
+- Added frontend contracts proving the Settings card is gone and the single-window manager owns scenario CRUD.
+- Added a Playwright flow covering shift assignment, draft creation from a filled overtime form, scenario creation, editing and return to the original credit editor.
+- Baseline: 71 Java test classes / 356 `@Test` methods and 10 Playwright scenarios.
+
 ## v27.4.0 — Unified overtime editors
 
 ### Changed

@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.4.0}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.4.1}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -947,7 +947,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.1"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -977,6 +977,24 @@ contains src/main/resources/static/js/40-overtime.js "updateUsageBalancePreview"
 contains src/main/resources/static/app.css "body.app-modal-open .tabbar"
 contains src/test/java/ru/daniil/shifts/web/UnifiedOvertimeEditorsFrontendContractTest.java "calendarAndLedgerOpenTheSameCreditAndUsageEditors"
 contains e2e/overtime-editor-modals.spec.js "overtime credit and usage editors work from calendar and ledger"
+
+
+# v27.4.1 scenario manager inside the shared overtime editor
+contains CHANGES.md "v27.4.1 — Overtime scenario manager"
+contains README.md "v27.4.1 — Overtime scenario manager"
+contains docs/OVERTIME_SCENARIO_MANAGER_V27.4.1.md "single-window scenario manager"
+not_contains src/main/resources/static/index.html 'data-settings-jump="scenarios"'
+not_contains src/main/resources/static/index.html 'id="quickScenarioSettingsCard"'
+not_contains src/main/resources/static/index.html 'id="settings-scenarios"'
+contains src/main/resources/static/index.html 'id="creditScenarioManage"'
+contains src/main/resources/static/index.html 'id="creditScenarioSaveCurrent"'
+contains src/main/resources/static/index.html 'id="scenarioManagerView"'
+contains src/main/resources/static/index.html 'id="scenarioManagerForm"'
+contains src/main/resources/static/js/40-overtime.js "function openScenarioManager"
+contains src/main/resources/static/js/40-overtime.js "function scenarioDraftFromCreditForm"
+contains src/main/resources/static/js/40-overtime.js "api.updateQuickScenario(editingId, payload)"
+contains src/test/java/ru/daniil/shifts/web/OvertimeScenarioManagerFrontendContractTest.java "scenariosNoLongerOccupyASettingsCard"
+contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created and edited inside the shared credit modal"
 
 DEPLOY_ENV_TMP="$(mktemp -d)"
 sed \
@@ -1041,23 +1059,23 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "9" ]]; then
-  ok "Playwright test baseline: 9"
+if [[ "$E2E_TESTS" == "10" ]]; then
+  ok "Playwright test baseline: 10"
 else
-  fail "expected 9 Playwright tests, found $E2E_TESTS"
+  fail "expected 10 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "353" ]]; then
-  ok "test method baseline: 353"
+if [[ "$TEST_METHODS" == "356" ]]; then
+  ok "test method baseline: 356"
 else
-  fail "expected 353 @Test methods, found $TEST_METHODS"
+  fail "expected 356 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "70" ]]; then
-  ok "test class baseline: 70"
+if [[ "$TEST_CLASSES" == "71" ]]; then
+  ok "test class baseline: 71"
 else
-  fail "expected 70 test classes, found $TEST_CLASSES"
+  fail "expected 71 test classes, found $TEST_CLASSES"
 fi
 
 echo

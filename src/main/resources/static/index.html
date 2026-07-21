@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.4.0" rel="stylesheet"/>
+<link href="app.css?v=27.4.1" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -334,7 +334,6 @@
     <a data-settings-jump="modules" href="#settings-modules"><b>Модули</b><span>включить нужные функции</span></a>
     <a data-settings-jump="appearance" href="#settings-appearance"><b>Внешний вид</b><span>тема, акцент, маркеры</span></a>
     <a data-settings-jump="time" href="#settings-time"><b>Время</b><span>регион, пояс, дефолты</span></a>
-    <a data-settings-jump="scenarios" href="#settings-scenarios"><b>Сценарии</b><span>шаблоны переработок</span></a>
     <a data-settings-jump="notifications" href="#settings-notifications"><b>Уведомления</b><span>браузер и расписания</span></a>
     <div class="settingsIndexActions">
       <button id="settingsExpandAll" type="button">развернуть всё</button>
@@ -603,68 +602,7 @@
 </div>
 <div class="wideHint">Регион и часовой пояс используются для отображения времени. Параметры дневной и ночной смены применяются к встроенным типам смен и используются в уведомлениях, сценариях и расчётах.</div>
 </section>
-<div class="settingsCard" id="quickScenarioSettingsCard" data-settings-section="scenarios">
-<a class="settingsAnchor" id="settings-scenarios"></a>
-<div class="settingsHead">
-<div>
-<div class="eyebrow">Быстрые сценарии</div>
-<div class="settingsTitle">Шаблоны для переработок</div>
-<div class="settingsHint">Сценарии применяются в выбранном дне и заполняют форму переработки. Начисление подтверждается отдельно.</div>
-</div>
-</div>
-<details class="scenarioEditor" id="scenarioEditor" open="">
-<summary>Мои сценарии</summary>
-<div class="row">
-<input id="scName" placeholder="Название, например: После дневной до 22" type="text"/>
-<input id="scGroup" placeholder="Метка: после смены" type="text"/>
-</div>
-<div class="row">
-<input id="scDesc" placeholder="Описание сценария" type="text"/>
-</div>
-<div class="row">
-<label>Старт
-                <select id="scStartMode">
-<option value="SHIFT_END">от конца смены</option>
-<option value="SHIFT_START">от начала смены</option>
-</select>
-</label>
-<label>Конец
-                <select id="scEndMode">
-<option value="ADD_MINUTES">через N минут</option>
-<option value="FIXED_TIME">в указанное время</option>
-<option value="SHIFT_END">конец смены</option>
-</select>
-</label>
-<label>+ минут <input id="scEndOffset" max="4320" min="0" step="15" type="number" value="120"/></label>
-<label>время <input id="scEndFixed" type="time" value="08:00"/></label>
-<label><input id="scEndNextDay" type="checkbox"/> следующий день</label>
-</div>
-<div class="row">
-<label>Обед
-                <select id="scBreakMode">
-<option value="ZERO">0</option>
-<option value="SHIFT">из смены</option>
-<option value="CUSTOM">свой</option>
-</select>
-</label>
-<label>мин <input id="scBreakCustom" max="1440" min="0" step="5" type="number" value="0"/></label>
-<label>План
-                <select id="scPlannedMode">
-<option value="ZERO">0</option>
-<option value="SHIFT">из смены</option>
-<option value="CUSTOM">свой</option>
-</select>
-</label>
-<label>ч <input id="scPlannedCustom" max="100" min="0" step="0.25" type="number" value="0"/></label>
-</div>
-<div class="row">
-<input id="scReason" placeholder="Причина по умолчанию" type="text"/>
-<button id="scSave" type="button">Добавить сценарий</button>
-<button class="ghostBtn" id="scReset" type="button">Очистить форму</button>
-</div>
-<div class="scenarioSettingsList" id="scenarioSettingsList"></div>
-<div class="quickScenarioTips">Сценарии сохраняются в профиле пользователя и доступны в форме переработки.</div>
-</details></div><div class="notifyCard settingsCard" id="notifyCard" data-settings-section="notifications">
+<div class="notifyCard settingsCard" id="notifyCard" data-settings-section="notifications">
 <a class="settingsAnchor" id="settings-notifications"></a>
 <div class="notifyHead">
 <div>
@@ -780,7 +718,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.4.0</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.4.1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -820,7 +758,7 @@
       <div>
         <div class="eyebrow">Переработка</div>
         <div class="appModalTitle" id="overtimeCreditTitle">Добавить переработку</div>
-        <div class="appModalHint">Дата берётся из выбранного дня календаря. Сценарий только заполняет поля — перед сохранением их можно изменить.</div>
+        <div class="appModalHint" id="overtimeCreditHint">Дата берётся из выбранного дня календаря. Сценарий только заполняет поля — перед сохранением их можно изменить.</div>
       </div>
       <button class="appModalClose" id="overtimeCreditClose" type="button" aria-label="Закрыть">×</button>
     </div>
@@ -829,11 +767,15 @@
       <label class="appField">Дата начисления
         <input id="creditDate" type="date" required/>
       </label>
-      <label class="appField">Сценарий
-        <select id="creditScenarioSelect">
-          <option value="">Не выбран</option>
-        </select>
-      </label>
+      <div class="appField scenarioFeature" id="creditScenarioField">
+        <span>Сценарий</span>
+        <div class="scenarioSelectRow">
+          <select id="creditScenarioSelect" aria-label="Сценарий переработки">
+            <option value="">Не выбран</option>
+          </select>
+          <button id="creditScenarioManage" type="button" title="Управление сценариями" aria-label="Управление сценариями">⚙</button>
+        </div>
+      </div>
       <label class="appField appFieldWide">Короткий интервал
         <input id="creditTimeRange" placeholder="Например: 17:00–20:00 или 17–08" type="text"/>
       </label>
@@ -865,6 +807,9 @@
         <button id="creditNightShiftPreset" type="button">20–08, обед 60</button>
         <button id="creditNightPreset" type="button">17–08</button>
       </div>
+      <div class="scenarioCreditActions appFieldWide scenarioFeature">
+        <button id="creditScenarioSaveCurrent" type="button">Сохранить текущие значения как сценарий</button>
+      </div>
       <div class="appModalHint appFieldWide">Можно указать полный интервал или короткое время. Если вводишь только переработку — план оставь 0; если всю фактическую смену — вычти план.</div>
       <div class="appModalActions appFieldWide">
         <button class="dangerGhost" id="creditDelete" type="button" hidden>Удалить</button>
@@ -872,6 +817,86 @@
         <button class="primary" id="creditAdd" type="submit">Начислить</button>
       </div>
     </form>
+    <section class="scenarioManager scenarioFeature" id="scenarioManagerView" hidden aria-label="Сценарии переработок">
+      <div class="scenarioManagerToolbar">
+        <button id="scenarioManagerBack" type="button">← К переработке</button>
+        <button class="primary" id="scenarioManagerAdd" type="button">+ Новый сценарий</button>
+      </div>
+      <div id="scenarioManagerListPane">
+        <div class="scenarioManagerIntro">
+          <b>Сценарии переработок</b>
+          <span>Сценарий заполняет форму, но не начисляет часы сам. Все значения можно проверить и изменить перед сохранением.</span>
+        </div>
+        <div class="scenarioManagerList" id="scenarioManagerList"></div>
+      </div>
+      <form class="appModalForm scenarioManagerForm" id="scenarioManagerForm" hidden>
+        <div class="scenarioEditorHeading appFieldWide">
+          <button id="scenarioEditorBack" type="button">← Назад к списку</button>
+          <div>
+            <b id="scenarioEditorTitle">Новый сценарий</b>
+            <span id="scenarioEditorHint">Настройте, как сценарий будет заполнять форму переработки.</span>
+          </div>
+        </div>
+        <div class="appModalMessage appFieldWide" id="scenarioManagerMessage" hidden></div>
+        <label class="appField">Название сценария
+          <input id="scName" maxlength="80" placeholder="Например: После дневной до 22" type="text" required/>
+        </label>
+        <label class="appField">Метка
+          <input id="scGroup" maxlength="40" placeholder="Например: после смены" type="text"/>
+        </label>
+        <label class="appField appFieldWide">Описание
+          <input id="scDesc" maxlength="300" placeholder="Коротко объясните, что делает сценарий" type="text"/>
+        </label>
+        <label class="appField">Старт
+          <select id="scStartMode">
+            <option value="SHIFT_END">от конца смены</option>
+            <option value="SHIFT_START">от начала смены</option>
+          </select>
+        </label>
+        <label class="appField">Конец
+          <select id="scEndMode">
+            <option value="ADD_MINUTES">через N минут</option>
+            <option value="FIXED_TIME">в указанное время</option>
+            <option value="SHIFT_END">конец смены</option>
+          </select>
+        </label>
+        <label class="appField" id="scEndOffsetField">Добавить минут
+          <input id="scEndOffset" max="4320" min="0" step="15" type="number" value="120"/>
+        </label>
+        <label class="appField" id="scEndFixedField">Фиксированное время
+          <input id="scEndFixed" type="time" value="08:00"/>
+        </label>
+        <label class="appCheck appFieldWide" id="scEndNextDayField"><input id="scEndNextDay" type="checkbox"/> Фиксированное время относится к следующему дню</label>
+        <label class="appField">Обед
+          <select id="scBreakMode">
+            <option value="ZERO">0 минут</option>
+            <option value="SHIFT">из смены</option>
+            <option value="CUSTOM">свой</option>
+          </select>
+        </label>
+        <label class="appField" id="scBreakCustomField">Свой обед, мин
+          <input id="scBreakCustom" max="1440" min="0" step="5" type="number" value="0"/>
+        </label>
+        <label class="appField">План
+          <select id="scPlannedMode">
+            <option value="ZERO">0 часов</option>
+            <option value="SHIFT">из смены</option>
+            <option value="CUSTOM">свой</option>
+          </select>
+        </label>
+        <label class="appField" id="scPlannedCustomField">Свой план, ч
+          <input id="scPlannedCustom" max="100" min="0" step="0.25" type="number" value="0"/>
+        </label>
+        <label class="appField appFieldWide">Причина по умолчанию
+          <input id="scReason" maxlength="300" placeholder="ППР, вызов, задержался после смены…" type="text"/>
+        </label>
+        <div class="appModalActions appFieldWide">
+          <button class="dangerGhost" id="scDelete" type="button" hidden>Удалить</button>
+          <button id="scCancelEdit" type="button">Назад к списку</button>
+          <button class="primary" id="scSave" type="submit">Сохранить сценарий</button>
+        </div>
+      </form>
+    </section>
   </div>
 </div>
 
@@ -1047,12 +1072,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.4.0"></script>
-<script src="js/20-data.js?v=27.4.0"></script>
-<script src="js/30-calendar.js?v=27.4.0"></script>
-<script src="js/40-overtime.js?v=27.4.0"></script>
-<script src="js/50-tasks.js?v=27.4.0"></script>
-<script src="js/60-settings.js?v=27.4.0"></script>
-<script src="js/70-user-boot.js?v=27.4.0"></script>
+<script src="js/10-core.js?v=27.4.1"></script>
+<script src="js/20-data.js?v=27.4.1"></script>
+<script src="js/30-calendar.js?v=27.4.1"></script>
+<script src="js/40-overtime.js?v=27.4.1"></script>
+<script src="js/50-tasks.js?v=27.4.1"></script>
+<script src="js/60-settings.js?v=27.4.1"></script>
+<script src="js/70-user-boot.js?v=27.4.1"></script>
 </body>
 </html>

@@ -257,16 +257,13 @@ function applyModuleVisibility(){
   toggle(document.querySelector('#tabbar a[data-view="important"]'), moduleEnabled("important_dates"));
   toggle($("view-important"), moduleEnabled("important_dates"));
   setDayPanelSectionVisibility();
-  document.querySelectorAll('.quickScenarioPanel').forEach(el => toggle(el, moduleEnabled("scenarios") && moduleEnabled("overtime")));
-  toggle($("quickScenarioSettingsCard"), moduleEnabled("scenarios") && moduleEnabled("overtime"));
-  toggle(document.querySelector('[data-settings-jump="scenarios"]'), moduleEnabled("scenarios") && moduleEnabled("overtime"));
+  document.querySelectorAll('.scenarioFeature').forEach(el => toggle(el, moduleEnabled("scenarios") && moduleEnabled("overtime")));
   toggle($("notifyCard"), moduleEnabled("notifications"));
   toggle(document.querySelector('[data-settings-jump="notifications"]'), moduleEnabled("notifications"));
   toggle($("telegramProfileTitle"), moduleEnabled("telegram"));
   toggle($("telegramBox"), moduleEnabled("telegram"));
   if (location.hash === "#tasks" && !moduleEnabled("tasks")) location.hash = "#calendar";
   if (location.hash === "#overtime" && !moduleEnabled("overtime")) location.hash = "#calendar";
-  if (location.hash === "#settings-scenarios" && !moduleEnabled("scenarios")) location.hash = "#settings-modules";
   if (location.hash === "#settings-notifications" && !moduleEnabled("notifications")) location.hash = "#settings-modules";
   if (location.hash === "#important" && !moduleEnabled("important_dates")) location.hash = "#calendar";
   renderModuleSettings();
