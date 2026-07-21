@@ -67,6 +67,10 @@ public class AppUser {
     @Column(name = "language_preference", length = 10)
     private String languagePreference = "ru";
 
+    /** Рабочий часовой пояс пользователя в формате IANA, например Europe/Moscow. */
+    @Column(name = "work_timezone", length = 80)
+    private String workTimezone = "Europe/Moscow";
+
     /** Первичный онбординг выбора модулей. Existing users миграцией считаются завершившими. */
     @Column(name = "onboarding_completed", nullable = false)
     private boolean onboardingCompleted = false;
@@ -113,6 +117,10 @@ public class AppUser {
         String lang = languagePreference == null || languagePreference.isBlank() ? "ru" : languagePreference.trim().toLowerCase();
         this.languagePreference = (lang.equals("en") || lang.equals("ru")) ? lang : "ru";
     }
+    public String getWorkTimezone() { return workTimezone == null || workTimezone.isBlank() ? "Europe/Moscow" : workTimezone; }
+    public void setWorkTimezone(String workTimezone) {
+        this.workTimezone = workTimezone == null || workTimezone.isBlank() ? "Europe/Moscow" : workTimezone.trim();
+    }
     public boolean isOnboardingCompleted() { return onboardingCompleted; }
     public void setOnboardingCompleted(boolean onboardingCompleted) { this.onboardingCompleted = onboardingCompleted; }
     public long getAuthVersion() { return authVersion; }
@@ -131,6 +139,7 @@ public class AppUser {
         setThemePreset(themePreset);
         setThemeConfig(themeConfig);
         setLanguagePreference(languagePreference);
+        setWorkTimezone(workTimezone);
     }
 
     @PreUpdate
@@ -143,5 +152,6 @@ public class AppUser {
         setThemePreset(themePreset);
         setThemeConfig(themeConfig);
         setLanguagePreference(languagePreference);
+        setWorkTimezone(workTimezone);
     }
 }

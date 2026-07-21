@@ -12,7 +12,7 @@ import sys
 import threading
 import urllib.parse
 
-VERSION = "27.2.33"
+VERSION = "27.3.0"
 USERNAME = "smoke-admin"
 PASSWORD = "correct-password-regression"
 CSRF = "csrf-regression-token"

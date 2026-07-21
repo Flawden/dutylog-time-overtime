@@ -37,6 +37,7 @@ public class NotificationService {
     private final DayTaskRepository taskRepository;
     private final ImportantDayService importantDayService;
     private final DayEntryService dayEntryService;
+    private final UserTimeService userTimeService = new UserTimeService();
 
     public NotificationService(NotificationSettingsRepository settingsRepo,
                                DayEntryRepository dayEntryRepository,
@@ -176,7 +177,7 @@ public class NotificationService {
         }
 
         if (!includePast) {
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = userTimeService.now(user);
             out.removeIf(r -> {
                 try {
                     return LocalDateTime.parse(r.remindAt()).isBefore(now);
@@ -192,7 +193,7 @@ public class NotificationService {
 
     @Transactional
     public List<NotificationReminderDto> tomorrow(AppUser user) {
-        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        LocalDate tomorrow = userTimeService.today(user).plusDays(1);
         return upcoming(user, tomorrow, tomorrow, true);
     }
 

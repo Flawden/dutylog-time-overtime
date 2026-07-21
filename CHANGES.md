@@ -1,3 +1,12 @@
+## v27.3.0 — Important dates, user timezone and precise overtime editing
+
+- moved important dates out of Settings into a dedicated top-level workspace with search, filters, create, edit, delete and jump-to-calendar actions;
+- persisted each user's validated IANA work timezone in PostgreSQL through Flyway V25 and the Profile API;
+- synchronized timezone selection between devices and applied user-local time to notification filtering and Telegram commands/delivery;
+- made Edit in the overtime ledger open the correct calendar month, day and overtime form automatically;
+- added a return-to-ledger action and exact row highlighting by credit/usage id instead of highlighting every row on the same date;
+- kept the existing selected-day important-date quick form for fast entry.
+
 ## v27.2.33 — Persistent login, shift reassign and compact mobile UX
 
 ### E2E stability hotfix

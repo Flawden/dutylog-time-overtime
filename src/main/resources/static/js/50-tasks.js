@@ -6,54 +6,174 @@
  * → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
  */
 
+Object.assign(I18N_EN, {
+  "Даты":"Dates", "Важные дни":"Important dates", "ближайшие":"upcoming", "прошедшие":"past",
+  "повторяющиеся":"recurring", "все даты":"all dates", "Название важного дня":"Important date title",
+  "Название":"Title", "Следующее событие":"Next occurrence", "Базовая дата":"Base date", "Повтор":"Repeat",
+  "Открыть день":"Open day", "Редактировать":"Edit", "Добавить":"Add", "Отмена":"Cancel",
+  "Сохранить":"Save", "Событие обновлено":"Event updated", "Событие добавлено":"Event added",
+  "поиск: название или дата…":"search: title or date…", "Важных дат пока нет.":"No important dates yet.",
+  "Добавь первую дату здесь или из выбранного дня календаря.":"Add the first date here or from a selected calendar day.",
+  "По фильтрам ничего не найдено.":"Nothing matches the filters.", "Сбрось поиск или выбери другой период.":"Clear search or choose another period."
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+
 /* ─── Важные дни ───────────────────────────────────────────── */
 async function refreshImportantSettings(){
-  if (!moduleEnabled("important_dates")) { state.importantDays = []; renderImportantSettings(); return; }
+  if (!moduleEnabled("important_dates")) {
+    state.importantDays = [];
+    renderImportantBoard();
+    return;
+  }
   try {
     state.importantDays = await api.importantDays();
-    renderImportantSettings();
+    renderImportantBoard();
   } catch (err) {
     console.error(err);
+    setSave("err", err.message);
   }
 }
 
-function renderImportantSettings(){
-  const box = document.getElementById("importantSettingsList");
+function importantDateParts(value){
+  const parts = String(value || "").split("-").map(Number);
+  return parts.length === 3 && parts.every(Number.isFinite) ? parts : null;
+}
+function clampedDate(year, monthIndex, day){
+  const last = new Date(year, monthIndex + 1, 0).getDate();
+  return keyOf(year, monthIndex, Math.min(day, last));
+}
+function importantNextOccurrence(item, today = todayKey()){
+  const parts = importantDateParts(item.date);
+  if (!parts) return item.date || "";
+  const [year, month, day] = parts;
+  if (item.repeatMode === "YEARLY") {
+    const currentYear = Number(today.slice(0,4));
+    let candidate = clampedDate(currentYear, month - 1, day);
+    if (candidate < today) candidate = clampedDate(currentYear + 1, month - 1, day);
+    return candidate;
+  }
+  if (item.repeatMode === "MONTHLY") {
+    const [ty, tm] = today.split("-").map(Number);
+    let candidate = clampedDate(ty, tm - 1, day);
+    if (candidate < today) {
+      const next = new Date(ty, tm, 1);
+      candidate = clampedDate(next.getFullYear(), next.getMonth(), day);
+    }
+    return candidate;
+  }
+  return keyOf(year, month - 1, day);
+}
+function importantBoardItems(){
+  const filters = state.importantFilters || { scope:"all", q:"" };
+  const today = todayKey();
+  const q = String(filters.q || "").trim().toLowerCase();
+  return (state.importantDays || []).map(item => ({ ...item, nextOccurrence:importantNextOccurrence(item, today) }))
+    .filter(item => {
+      if (filters.scope === "recurring" && item.repeatMode === "NONE") return false;
+      if (filters.scope === "past" && !(item.repeatMode === "NONE" && item.date < today)) return false;
+      if (filters.scope === "upcoming" && item.repeatMode === "NONE" && item.date < today) return false;
+      if (q && !`${item.title || ""} ${item.date || ""} ${item.nextOccurrence || ""}`.toLowerCase().includes(q)) return false;
+      return true;
+    })
+    .sort((a,b) => String(a.nextOccurrence).localeCompare(String(b.nextOccurrence)) || String(a.title).localeCompare(String(b.title), currentLocale()));
+}
+function resetImportantBoardForm(){
+  state.editingImportantDayId = null;
+  if ($("importantBoardTitle")) $("importantBoardTitle").value = "";
+  if ($("importantBoardDate")) $("importantBoardDate").value = todayKey();
+  if ($("importantBoardRepeat")) $("importantBoardRepeat").value = "YEARLY";
+  if ($("importantBoardColor")) $("importantBoardColor").value = "#F5B841";
+  if ($("importantBoardSave")) $("importantBoardSave").textContent = t("Добавить");
+  if ($("importantBoardCancel")) $("importantBoardCancel").hidden = true;
+}
+function startEditImportantDay(id){
+  const item = (state.importantDays || []).find(x => Number(x.id) === Number(id));
+  if (!item) return setSave("err", t("Важный день не найден"));
+  state.editingImportantDayId = Number(id);
+  location.hash = "#important";
+  $("importantBoardTitle").value = item.title || "";
+  $("importantBoardDate").value = item.date || todayKey();
+  $("importantBoardRepeat").value = item.repeatMode || "NONE";
+  $("importantBoardColor").value = item.color || "#F5B841";
+  $("importantBoardSave").textContent = t("Сохранить");
+  $("importantBoardCancel").hidden = false;
+  $("importantBoardTitle").focus();
+  renderImportantBoard();
+}
+async function openImportantCalendarDay(date){
+  if (!date) return;
+  const [y,m] = date.split("-").map(Number);
+  if (!y || !m) return;
+  await goto(y, m - 1);
+  location.hash = "#calendar";
+  selectDay(date);
+}
+function renderImportantBoard(){
+  const box = $("importantBoardList");
   if (!box) return;
-  const items = (state.importantDays || []).slice().sort((a,b) => String(a.date).localeCompare(String(b.date)) || String(a.title).localeCompare(String(b.title), "ru"));
+  const items = importantBoardItems();
+  const total = (state.importantDays || []).length;
+  if ($("importantBoardStatus")) {
+    $("importantBoardStatus").className = "status statusMetrics";
+    $("importantBoardStatus").innerHTML = `<span class="statusChip"><b>${items.length}</b> ${esc(t("показано"))}</span><span class="statusChip"><b>${total}</b> ${esc(t("всего"))}</span>`;
+  }
+  if ($("importantBoardScope")) $("importantBoardScope").value = state.importantFilters?.scope || "all";
+  if ($("importantBoardSearch")) $("importantBoardSearch").value = state.importantFilters?.q || "";
   box.innerHTML = "";
+  if (!total) {
+    renderEmptyState(box, { icon:"★", title:"Важных дат пока нет.", text:"Добавь первую дату здесь или из выбранного дня календаря.", variant:"board" });
+    return;
+  }
   if (!items.length) {
-    renderEmptyState(box, {
-      icon:"★",
-      title:"Важных дат пока нет.",
-      text:"Добавь запись из панели выбранного дня в календаре.",
-      variant:"compact"
-    });
+    renderEmptyState(box, { icon:"⌕", title:"По фильтрам ничего не найдено.", text:"Сбрось поиск или выбери другой период.", variant:"board" });
     return;
   }
   for (const item of items) {
     const row = document.createElement("div");
-    row.className = "importantItem settingsImportantItem";
-    const dot = document.createElement("span");
-    dot.className = "importantDot";
-    dot.style.background = item.color || "var(--accent)";
-    const title = document.createElement("span");
-    title.className = "importantTitle";
-    title.textContent = item.title;
-    const date = document.createElement("span");
-    date.className = "importantMode mono";
-    date.textContent = (item.date || "").split("-").reverse().join(".");
-    const mode = document.createElement("span");
-    mode.className = "importantMode";
-    mode.textContent = repeatLabel(item.repeatMode);
-    const del = document.createElement("button");
-    del.className = "tinyDel";
-    del.type = "button";
-    del.textContent = t("удалить");
-    del.title = t("Удалить важный день полностью, включая повторения");
-    del.addEventListener("click", () => removeImportantDay(item.id));
-    row.append(dot, title, date, mode, del);
+    row.className = "importantBoardRow" + (Number(item.id) === Number(state.editingImportantDayId) ? " editing" : "");
+    row.innerHTML = `
+      <span class="importantDot" style="background:${esc(item.color || "#F5B841")}"></span>
+      <span class="importantBoardMain"><b>${esc(item.title)}</b><small>${esc(t("Базовая дата"))}: ${esc(formatDateHuman(item.date))} · ${esc(repeatLabel(item.repeatMode))}</small></span>
+      <span class="importantBoardNext"><small>${esc(t("Следующее событие"))}</small><b class="mono">${esc(formatDateHuman(item.nextOccurrence))}</b></span>
+      <span class="importantBoardActions">
+        <button type="button" data-important-open="${item.id}">${esc(t("Открыть день"))}</button>
+        <button type="button" data-important-edit="${item.id}">${esc(t("ред."))}</button>
+        <button type="button" data-important-delete="${item.id}">${esc(t("удалить"))}</button>
+      </span>`;
     box.appendChild(row);
+  }
+  box.querySelectorAll("[data-important-open]").forEach(btn => btn.addEventListener("click", () => {
+    const item = (state.importantDays || []).find(x => Number(x.id) === Number(btn.dataset.importantOpen));
+    openImportantCalendarDay(importantNextOccurrence(item));
+  }));
+  box.querySelectorAll("[data-important-edit]").forEach(btn => btn.addEventListener("click", () => startEditImportantDay(Number(btn.dataset.importantEdit))));
+  box.querySelectorAll("[data-important-delete]").forEach(btn => btn.addEventListener("click", () => removeImportantDay(Number(btn.dataset.importantDelete))));
+}
+async function saveImportantBoardItem(){
+  if (!moduleEnabled("important_dates")) return setSave("err", t("модуль выключен"));
+  const title = $("importantBoardTitle")?.value.trim();
+  const date = $("importantBoardDate")?.value;
+  if (!title) return setSave("err", t("укажи название важного дня"));
+  if (!date) return setSave("err", t("укажи дату важного дня"));
+  const payload = {
+    title, date,
+    repeatMode:$("importantBoardRepeat")?.value || "NONE",
+    color:$("importantBoardColor")?.value || "#F5B841"
+  };
+  setSave("saving");
+  try {
+    if (state.editingImportantDayId) await api.updateImportantDay(state.editingImportantDayId, payload);
+    else await api.createImportantDay(payload);
+    const wasEditing = !!state.editingImportantDayId;
+    resetImportantBoardForm();
+    await refreshImportantSettings();
+    if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
+    await loadMonth();
+    renderCalendar();
+    setSave("saved", t(wasEditing ? "Событие обновлено" : "Событие добавлено"));
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
   }
 }
 
@@ -71,24 +191,11 @@ function renderImportantDays(){
   for (const item of items) {
     const row = document.createElement("div");
     row.className = "importantItem";
-    const dot = document.createElement("span");
-    dot.className = "importantDot";
-    dot.style.background = item.color || "var(--accent)";
-    const title = document.createElement("span");
-    title.className = "importantTitle";
-    title.textContent = item.title;
-    const mode = document.createElement("span");
-    mode.className = "importantMode";
-    mode.textContent = repeatLabel(item.repeatMode);
-    const del = document.createElement("button");
-    del.className = "tinyDel";
-    del.type = "button";
-    del.textContent = t("удалить");
-    del.title = t("Удалить важный день полностью, включая повторения");
-    del.addEventListener("click", () => removeImportantDay(item.id));
-    row.append(dot, title, mode, del);
+    row.innerHTML = `<span class="importantDot" style="background:${esc(item.color || "#F5B841")}"></span><span class="importantTitle">${esc(item.title)}</span><span class="importantMode">${esc(repeatLabel(item.repeatMode))}</span><button type="button" data-day-important-edit="${item.id}">${esc(t("ред."))}</button><button class="tinyDel" type="button" data-day-important-delete="${item.id}">${esc(t("удалить"))}</button>`;
     box.appendChild(row);
   }
+  box.querySelectorAll("[data-day-important-edit]").forEach(btn => btn.addEventListener("click", () => startEditImportantDay(Number(btn.dataset.dayImportantEdit))));
+  box.querySelectorAll("[data-day-important-delete]").forEach(btn => btn.addEventListener("click", () => removeImportantDay(Number(btn.dataset.dayImportantDelete))));
   updateAccSummaries();
 }
 
@@ -100,12 +207,7 @@ async function addImportantDay(){
   if (!title) return setSave("err", t("укажи название важного дня"));
   setSave("saving");
   try {
-    await api.createImportantDay({
-      title,
-      date: k,
-      repeatMode: $("impRepeat").value,
-      color: $("impColor").value || "#F5B841",
-    });
+    await api.createImportantDay({ title, date:k, repeatMode:$("impRepeat").value, color:$("impColor").value || "#F5B841" });
     $("impTitle").value = "";
     if ($("impDate")) $("impDate").value = k;
     await refreshImportantSettings();
@@ -113,7 +215,7 @@ async function addImportantDay(){
     await loadMonth();
     setSave("saved");
     renderImportantDays();
-    renderImportantSettings();
+    renderImportantBoard();
     renderCalendar();
     updateAccSummaries();
   } catch (err) {
@@ -127,12 +229,13 @@ async function removeImportantDay(id){
   setSave("saving");
   try {
     await api.deleteImportantDay(id);
+    if (Number(state.editingImportantDayId) === Number(id)) resetImportantBoardForm();
     await refreshImportantSettings();
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     await loadMonth();
     setSave("saved");
     renderImportantDays();
-    renderImportantSettings();
+    renderImportantBoard();
     renderCalendar();
     updateAccSummaries();
   } catch (err) {
@@ -141,10 +244,18 @@ async function removeImportantDay(id){
   }
 }
 
-$("impAdd").addEventListener("click", addImportantDay);
-$("impTitle").addEventListener("keydown", e => { if (e.key === "Enter") addImportantDay(); });
+$("impAdd")?.addEventListener("click", addImportantDay);
+$("impTitle")?.addEventListener("keydown", e => { if (e.key === "Enter") addImportantDay(); });
 $("impDateSelected")?.addEventListener("click", () => { if (!state.selected) return setSave("err", t("сначала выбери день в календаре")); $("impDate").value = state.selected; });
 $("impDateToday")?.addEventListener("click", () => { $("impDate").value = todayKey(); });
+$("importantBoardSave")?.addEventListener("click", saveImportantBoardItem);
+$("importantBoardCancel")?.addEventListener("click", resetImportantBoardForm);
+$("importantBoardTitle")?.addEventListener("keydown", e => { if (e.key === "Enter") saveImportantBoardItem(); });
+$("importantBoardScope")?.addEventListener("change", e => { state.importantFilters.scope = e.target.value; renderImportantBoard(); });
+$("importantBoardSearch")?.addEventListener("input", e => { state.importantFilters.q = e.target.value; renderImportantBoard(); });
+$("importantBoardToday")?.addEventListener("click", () => { $("importantBoardDate").value = todayKey(); });
+$("importantBoardClear")?.addEventListener("click", () => { state.importantFilters = { scope:"all", q:"" }; renderImportantBoard(); });
+resetImportantBoardForm();
 
 /* ─── Задачи дня ────────────────────────────────────────────── */
 function updateTaskReminderControls(){

@@ -16,6 +16,7 @@ import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.service.ImportantDayService;
 import ru.daniil.shifts.service.OvertimeService;
 import ru.daniil.shifts.service.TaskService;
+import ru.daniil.shifts.service.UserTimeService;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.DateTimeException;
@@ -42,6 +43,7 @@ public class TelegramCommandService {
     private final TaskService taskService;
     private final ImportantDayService importantDayService;
     private final OvertimeService overtimeService;
+    private final UserTimeService userTimeService = new UserTimeService();
 
     public TelegramCommandService(DayEntryRepository dayEntries,
                                   TaskService taskService,
@@ -58,8 +60,8 @@ public class TelegramCommandService {
         String cmd = commandOf(text);
         String args = argsOf(text);
         return switch (cmd) {
-            case "/today", "/сегодня" -> daySummary(user, LocalDate.now(), "Сегодня");
-            case "/tomorrow", "/завтра" -> daySummary(user, LocalDate.now().plusDays(1), "Завтра");
+            case "/today", "/сегодня" -> daySummary(user, userTimeService.today(user), "Сегодня");
+            case "/tomorrow", "/завтра" -> daySummary(user, userTimeService.today(user).plusDays(1), "Завтра");
             case "/tasks", "/задачи" -> tasksSummary(user);
             case "/balance", "/overtime", "/баланс", "/переработка" -> balanceSummary(user);
             case "/week", "/неделя" -> weekSummary(user);
@@ -100,7 +102,7 @@ public class TelegramCommandService {
         if (args == null || args.isBlank()) {
             throw ApiException.badRequest("Напиши текст задачи: /task купить молоко");
         }
-        DateAndRest parsed = takeDate(args, LocalDate.now());
+        DateAndRest parsed = takeDate(args, userTimeService.today(user));
         String taskText = parsed.rest().trim();
         if (taskText.isBlank()) {
             throw ApiException.badRequest("После даты нужен текст задачи: /task завтра купить молоко");
@@ -142,7 +144,7 @@ public class TelegramCommandService {
         if (args == null || args.isBlank()) {
             throw ApiException.badRequest("Формат: /ppr 17-08 причина или /ppr 2 причина");
         }
-        DateAndRest dated = takeDate(args, LocalDate.now());
+        DateAndRest dated = takeDate(args, userTimeService.today(user));
         String rest = dated.rest().trim();
         if (rest.isBlank()) throw ApiException.badRequest("Укажи часы или интервал: /ppr 17-08 причина");
 
@@ -202,7 +204,7 @@ public class TelegramCommandService {
         if (args == null || args.isBlank()) {
             throw ApiException.badRequest("Формат: /timeoff 8 причина или /отгул завтра 8 причина");
         }
-        DateAndRest dated = takeDate(args, LocalDate.now());
+        DateAndRest dated = takeDate(args, userTimeService.today(user));
         String rest = dated.rest().trim();
         String[] parts = rest.split("\\s+", 2);
         if (parts.length == 0 || parts[0].isBlank()) {
@@ -268,7 +270,7 @@ public class TelegramCommandService {
     }
 
     private String weekSummary(AppUser user) {
-        LocalDate today = LocalDate.now();
+        LocalDate today = userTimeService.today(user);
         StringBuilder sb = new StringBuilder("Ближайшие 7 дней\n");
         for (int i = 0; i < 7; i++) {
             LocalDate d = today.plusDays(i);
@@ -333,15 +335,14 @@ public class TelegramCommandService {
         String trimmed = args == null ? "" : args.trim();
         if (trimmed.isBlank()) return new DateAndRest(defaultDate, "");
         String[] parts = trimmed.split("\\s+", 2);
-        Optional<LocalDate> date = parseLooseDate(parts[0]);
+        Optional<LocalDate> date = parseLooseDate(parts[0], defaultDate);
         if (date.isPresent()) return new DateAndRest(date.get(), parts.length > 1 ? parts[1] : "");
         return new DateAndRest(defaultDate, trimmed);
     }
 
-    private Optional<LocalDate> parseLooseDate(String token) {
+    private Optional<LocalDate> parseLooseDate(String token, LocalDate today) {
         if (token == null || token.isBlank()) return Optional.empty();
         String t = token.trim().toLowerCase(Locale.ROOT);
-        LocalDate today = LocalDate.now();
         if (t.equals("today") || t.equals("сегодня")) return Optional.of(today);
         if (t.equals("tomorrow") || t.equals("завтра")) return Optional.of(today.plusDays(1));
         try {

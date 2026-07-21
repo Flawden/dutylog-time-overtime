@@ -271,10 +271,37 @@ function renderTimeSettings(){
   $("timeSettingsStatus").className = "status statusAutoSave";
   $("timeSettingsStatus").innerHTML = `<span class="statusChip statusChipAuto"><span class="statusDot"></span>${esc(autosaveLabel)}</span>`;
 }
-function saveTimeSettings(){
-  storeTimeSettings(readTimeSettingsForm());
+function isRecognizedTimeZone(value){
+  try {
+    new Intl.DateTimeFormat("en-US", { timeZone:value }).format(new Date());
+    return true;
+  } catch (_) { return false; }
+}
+async function saveTimeSettings(){
+  const next = readTimeSettingsForm();
+  if (!isRecognizedTimeZone(next.workTimezone)) {
+    setSave("err", t("часовой пояс не распознан"));
+    renderTimeSettings();
+    return false;
+  }
+  storeTimeSettings(next);
   renderTimeSettings();
-  setSave("saved", t("настройки времени сохранены"));
+  try {
+    const payload = typeof currentProfilePayload === "function"
+      ? currentProfilePayload({ workTimezone:next.workTimezone })
+      : { workTimezone:next.workTimezone };
+    const profile = await jfetch("/api/profile", { method:"PUT", body:payload });
+    state.profile = profile;
+    state.timeSettings = { ...state.timeSettings, workTimezone:profile.workTimezone || next.workTimezone };
+    storeTimeSettings(state.timeSettings);
+    renderTimeSettings();
+    setSave("saved", t("настройки времени сохранены"));
+    return true;
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message || t("не удалось сохранить часовой пояс"));
+    return false;
+  }
 }
 let timeAutoApplyTimer = null;
 function scheduleTimeSettingsApply(){
@@ -339,7 +366,7 @@ async function applyTimeSettingsToBuiltins(silent = false){
 }
 function initTimeSettingsEvents(){
   if (!$("timeSettingsCard")) return;
-  $("timeDetectBrowser")?.addEventListener("click", () => { $("workTimezone").value = browserTimeZone(); saveTimeSettings(); });
+  $("timeDetectBrowser")?.addEventListener("click", async () => { $("workTimezone").value = browserTimeZone(); await saveTimeSettings(); });
   $("timeApplyBuiltins")?.addEventListener("click", () => applyTimeSettingsToBuiltins(false));
   $("timeFillDayForm")?.addEventListener("click", () => fillShiftFormFromDefaults("day"));
   $("timeFillNightForm")?.addEventListener("click", () => fillShiftFormFromDefaults("night"));
@@ -347,9 +374,12 @@ function initTimeSettingsEvents(){
   for (const id of ["workRegionName","workTimezone","workOffsetMoscow","timeFormatPref", ...shiftDefaultIds]) {
     const el = $(id);
     if (!el) continue;
-    el.addEventListener("change", () => {
-      storeTimeSettings(readTimeSettingsForm());
-      renderTimeSettings();
+    el.addEventListener("change", async () => {
+      if (id === "workTimezone") await saveTimeSettings();
+      else {
+        storeTimeSettings(readTimeSettingsForm());
+        renderTimeSettings();
+      }
       if (shiftDefaultIds.includes(id)) scheduleTimeSettingsApply();
     });
   }
@@ -748,7 +778,6 @@ function renderSettingsPanels(){
   renderAppearanceControls();
   renderTimeSettings();
   renderCustomList();
-  renderImportantSettings();
   renderNotifications();
   renderModuleSettings();
   applyModuleVisibility();

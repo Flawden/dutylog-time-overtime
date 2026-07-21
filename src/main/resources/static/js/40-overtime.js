@@ -49,6 +49,7 @@ function resetOvertimeForms(k = state.selected){
   if ($("usageEditNotice")) { $("usageEditNotice").hidden = true; $("usageEditNotice").textContent = ""; }
   if ($("usageCancel")) $("usageCancel").hidden = true;
   if ($("usageAdd")) $("usageAdd").textContent = t("Списать отгул");
+  if ($("overtimeBackToLedger")) $("overtimeBackToLedger").hidden = true;
 }
 
 function cancelCreditEdit(){
@@ -67,6 +68,7 @@ function cancelUsageEdit(){
   if ($("usageCancel")) $("usageCancel").hidden = true;
   if ($("usageAdd")) $("usageAdd").textContent = t("Списать отгул");
   state.editingCreditId = creditId;
+  if ($("overtimeBackToLedger") && !state.editingCreditId) $("overtimeBackToLedger").hidden = true;
 }
 
 function readHoursInput(id){
@@ -574,11 +576,34 @@ function findUsageById(id){
   return null;
 }
 
-function startEditOvertimeCredit(id){
+async function openOvertimeEditorForDate(date){
+  const parts = String(date || "").split("-").map(Number);
+  if (parts.length !== 3 || parts.some(n => !Number.isFinite(n))) return;
+  location.hash = "#calendar";
+  if (state.y !== parts[0] || state.m !== parts[1] - 1) await goto(parts[0], parts[1] - 1);
+  if (state.selected !== date) selectDay(date);
+  $("accOt").open = true;
+  if ($("overtimeBackToLedger")) $("overtimeBackToLedger").hidden = false;
+  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+  $("accOt")?.scrollIntoView({ behavior:"smooth", block:"start" });
+}
+function returnToOvertimeLedger(){
+  location.hash = "#overtime";
+  requestAnimationFrame(() => {
+    const selector = state.editingCreditId
+      ? `[data-credit-id="${state.editingCreditId}"]`
+      : state.editingUsageId ? `[data-usage-row-id="${state.editingUsageId}"]` : null;
+    const row = selector ? document.querySelector(selector) : $("ledgerCard");
+    row?.scrollIntoView({ behavior:"smooth", block:"center" });
+  });
+}
+
+async function startEditOvertimeCredit(id){
   const c = (state.overtimeAccount?.credits || []).find(x => Number(x.id) === Number(id)) || (state.ledgerPage?.items || []).find(x => Number(x.id) === Number(id));
   if (!c) return setSave("err", t("начисление не найдено"));
-  if (state.selected !== c.workedDate) selectDay(c.workedDate);
   state.editingCreditId = Number(id);
+  state.editingUsageId = null;
+  await openOvertimeEditorForDate(c.workedDate);
   $("creditDate").value = c.workedDate;
   $("creditTimeRange").value = c.calculated ? "" : (c.timeRange || "");
   $("creditStart").value = toDateTimeLocal(c.startDateTime);
@@ -624,11 +649,12 @@ async function addOvertimeUsage(){
   }
 }
 
-function startEditOvertimeUsage(id){
+async function startEditOvertimeUsage(id){
   const u = findUsageById(id);
   if (!u) return setSave("err", t("списание не найдено"));
-  if (state.selected !== u.usageDate) selectDay(u.usageDate);
+  state.editingCreditId = null;
   state.editingUsageId = Number(id);
+  await openOvertimeEditorForDate(u.usageDate);
   $("usageDate").value = u.usageDate;
   $("usageHours").value = fmtHours(u.hours);
   $("usageReason").value = u.reason || "";
@@ -804,7 +830,12 @@ function renderLedgerTable(){
 
   for (const c of credits) {
     const tr = document.createElement("tr");
-    if (state.selected && c.workedDate === state.selected) tr.style.background = "rgba(245,184,65,.06)";
+    tr.dataset.creditId = String(c.id);
+    const usageIds = (c.usages || []).map(u => Number(u.usageId));
+    const editingCredit = Number(state.editingCreditId) === Number(c.id);
+    const editingUsage = state.editingUsageId != null && usageIds.includes(Number(state.editingUsageId));
+    if (editingUsage) tr.dataset.usageRowId = String(state.editingUsageId);
+    tr.classList.toggle("ledgerEditingRow", editingCredit || editingUsage);
     const status = creditStatus(c);
     const usedText = (c.usages || []).length
       ? (c.usages || []).map(u => `${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""} · <button type="button" data-edit-usage="${u.usageId}">${esc(t("ред."))}</button> · <button type="button" data-del-usage="${u.usageId}">${esc(t("удалить"))}</button>`).join("<br>")
@@ -940,6 +971,8 @@ $("scenarioGrid").addEventListener("click", e => {
   const sc = (state.quickScenarios || []).find(x => String(x.id) === String(btn.dataset.scenarioId));
   if (sc) applyQuickScenario(sc);
 });
+
+$("overtimeBackToLedger")?.addEventListener("click", returnToOvertimeLedger);
 $("quickClearScenario").addEventListener("click", () => resetOvertimeForms(state.selected || $("creditDate")?.value || todayKey()));
 $("scSave").addEventListener("click", saveQuickScenario);
 $("scReset").addEventListener("click", resetScenarioEditor);

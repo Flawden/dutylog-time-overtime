@@ -153,7 +153,7 @@ init().catch(err => {
 });
 
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */
-const VIEWS = { calendar:"view-calendar", overtime:"view-overtime", tasks:"view-tasks", settings:"view-settings", admin:"view-admin" };
+const VIEWS = { calendar:"view-calendar", overtime:"view-overtime", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
 function applyRoute(){
   const rawRoute = (location.hash || "#calendar").slice(1);
   const name = rawRoute.startsWith("settings-") ? "settings" : rawRoute;
@@ -161,6 +161,7 @@ function applyRoute(){
   if (active === "admin" && state.profile && !state.profile.admin) active = "calendar";
   if (active === "tasks" && !moduleEnabled("tasks")) active = "calendar";
   if (active === "overtime" && !moduleEnabled("overtime")) active = "calendar";
+  if (active === "important" && !moduleEnabled("important_dates")) active = "calendar";
   document.body.dataset.view = active;
   if (active !== "calendar") selectDay(null);
   for (const [key, id] of Object.entries(VIEWS)) {
@@ -181,6 +182,7 @@ function applyRoute(){
       $("view-settings")?.__openSettingsSection?.(section, true);
     }
   }
+  if (active === "important" && typeof renderImportantBoard === "function") renderImportantBoard();
   if (active === "admin") {
     if (typeof initAdminNavigation === "function") initAdminNavigation();
     renderDiagnosticsClient();
@@ -309,6 +311,9 @@ async function loadProfile(){
     state.preferences = storeLocalAppearance({ themePreference:p.themePreference, accentColor:p.accentColor, themePreset:p.themePreset, themeConfig:p.themeConfig });
     applyAppearance(state.preferences);
     applyLanguage(p.languagePreference || state.language);
+    state.timeSettings = { ...loadTimeSettings(), workTimezone:p.workTimezone || loadTimeSettings().workTimezone };
+    storeTimeSettings(state.timeSettings);
+    if (typeof renderTimeSettings === "function") renderTimeSettings();
     const av = $("profileAvatar");
     av.textContent = avatarInitials(p.displayName || p.username);
     av.style.background = avatarColor(p.username);
@@ -343,6 +348,7 @@ function currentProfilePayload(extra = {}){
     displayName: $('profileName')?.value || "",
     birthday: $('profileBirthday')?.value || null,
     languagePreference: state.language,
+    workTimezone: state.timeSettings?.workTimezone || state.profile?.workTimezone || browserTimeZone(),
     ...extra,
   };
 }

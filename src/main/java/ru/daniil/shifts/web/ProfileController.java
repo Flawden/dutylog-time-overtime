@@ -16,6 +16,8 @@ import ru.daniil.shifts.service.exception.ApiException;
 
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.DateTimeException;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -52,7 +54,7 @@ public class ProfileController {
         this.encoder = encoder;
     }
 
-    public record ProfileUpdateRequest(String displayName, String birthday, String themePreference, String accentColor, String themePreset, Map<String, Object> themeConfig, String languagePreference, Boolean onboardingCompleted) {}
+    public record ProfileUpdateRequest(String displayName, String birthday, String themePreference, String accentColor, String themePreset, Map<String, Object> themeConfig, String languagePreference, String workTimezone, Boolean onboardingCompleted) {}
     public record PasswordChangeRequest(String currentPassword, String newPassword) {}
 
     @GetMapping
@@ -70,6 +72,7 @@ public class ProfileController {
         out.put("themePreset", user.getThemePreset());
         out.put("themeConfig", readThemeConfig(user.getThemeConfig()));
         out.put("languagePreference", user.getLanguagePreference());
+        out.put("workTimezone", user.getWorkTimezone());
         out.put("onboardingCompleted", user.isOnboardingCompleted());
         return out;
     }
@@ -133,6 +136,19 @@ public class ProfileController {
                 throw ApiException.badRequest("Язык интерфейса должен быть ru или en");
             }
             user.setLanguagePreference(lang);
+        }
+
+        if (req.workTimezone() != null) {
+            String timezone = req.workTimezone().trim();
+            if (timezone.isBlank() || timezone.length() > 80) {
+                throw ApiException.badRequest("Часовой пояс должен быть IANA-идентификатором, например Europe/Moscow");
+            }
+            try {
+                ZoneId.of(timezone);
+            } catch (DateTimeException e) {
+                throw ApiException.badRequest("Неизвестный часовой пояс: " + timezone);
+            }
+            user.setWorkTimezone(timezone);
         }
 
         if (req.onboardingCompleted() != null) {

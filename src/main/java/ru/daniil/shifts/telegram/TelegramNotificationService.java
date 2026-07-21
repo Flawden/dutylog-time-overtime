@@ -12,6 +12,7 @@ import ru.daniil.shifts.model.TelegramNotificationDelivery;
 import ru.daniil.shifts.repo.TelegramLinkRepository;
 import ru.daniil.shifts.repo.TelegramNotificationDeliveryRepository;
 import ru.daniil.shifts.service.NotificationService;
+import ru.daniil.shifts.service.UserTimeService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -34,6 +35,7 @@ public class TelegramNotificationService {
     private final TelegramNotificationDeliveryRepository deliveryRepository;
     private final NotificationService notificationService;
     private final TelegramBotService botService;
+    private final UserTimeService userTimeService = new UserTimeService();
 
     @Value("${dutylog.telegram.notifications-enabled:true}")
     private boolean telegramNotificationsEnabled;
@@ -60,13 +62,12 @@ public class TelegramNotificationService {
     public void scanAndSendDueNotifications() {
         if (!telegramNotificationsEnabled || !linkService.isConfigured()) return;
 
-        LocalDateTime now = LocalDateTime.now();
-        LocalDateTime dueFrom = now.minusMinutes(Math.max(1, lookbackMinutes));
-        LocalDateTime dueTo = now.plusMinutes(Math.max(0, lookaheadMinutes));
-
         List<TelegramLink> links = linkRepository.findByEnabledTrueAndNotificationsEnabledTrue();
         for (TelegramLink link : links) {
             try {
+                LocalDateTime now = userTimeService.now(link.getOwner());
+                LocalDateTime dueFrom = now.minusMinutes(Math.max(1, lookbackMinutes));
+                LocalDateTime dueTo = now.plusMinutes(Math.max(0, lookaheadMinutes));
                 sendDueForLink(link, dueFrom, dueTo);
             } catch (Exception e) {
                 log.warn("Telegram notification scan failed for link {}: {}", link.getId(), e.getMessage());

@@ -33,6 +33,7 @@ const api = {
   },
   async importantDays() { return jfetch("/api/important-days"); },
   async createImportantDay(b) { return jfetch("/api/important-days", { method:"POST", body:b }); },
+  async updateImportantDay(id, b) { return jfetch(`/api/important-days/${id}`, { method:"PATCH", body:b }); },
   async deleteImportantDay(id) { return jfetch(`/api/important-days/${id}`, { method:"DELETE" }); },
   async overtimeAccount() { return jfetch("/api/overtime/account"); },
   async overtimeAccountPage(filters = {}) { const qs = new URLSearchParams(); for (const [k, v] of Object.entries(filters)) if (v !== undefined && v !== null && String(v).trim() !== "") qs.set(k, v); return jfetch(`/api/overtime/account-page?${qs.toString()}`); },
@@ -253,21 +254,21 @@ function applyModuleVisibility(){
   toggle($("view-overtime"), moduleEnabled("overtime"));
   toggle(document.querySelector('#tabbar a[data-view="tasks"]'), moduleEnabled("tasks"));
   toggle($("view-tasks"), moduleEnabled("tasks"));
+  toggle(document.querySelector('#tabbar a[data-view="important"]'), moduleEnabled("important_dates"));
+  toggle($("view-important"), moduleEnabled("important_dates"));
   setDayPanelSectionVisibility();
   document.querySelectorAll('.quickScenarioPanel').forEach(el => toggle(el, moduleEnabled("scenarios") && moduleEnabled("overtime")));
   toggle($("quickScenarioSettingsCard"), moduleEnabled("scenarios") && moduleEnabled("overtime"));
   toggle(document.querySelector('[data-settings-jump="scenarios"]'), moduleEnabled("scenarios") && moduleEnabled("overtime"));
   toggle($("notifyCard"), moduleEnabled("notifications"));
   toggle(document.querySelector('[data-settings-jump="notifications"]'), moduleEnabled("notifications"));
-  toggle($("importantSettingsCard"), moduleEnabled("important_dates"));
-  toggle(document.querySelector('[data-settings-jump="important"]'), moduleEnabled("important_dates"));
   toggle($("telegramProfileTitle"), moduleEnabled("telegram"));
   toggle($("telegramBox"), moduleEnabled("telegram"));
   if (location.hash === "#tasks" && !moduleEnabled("tasks")) location.hash = "#calendar";
   if (location.hash === "#overtime" && !moduleEnabled("overtime")) location.hash = "#calendar";
   if (location.hash === "#settings-scenarios" && !moduleEnabled("scenarios")) location.hash = "#settings-modules";
   if (location.hash === "#settings-notifications" && !moduleEnabled("notifications")) location.hash = "#settings-modules";
-  if (location.hash === "#settings-important" && !moduleEnabled("important_dates")) location.hash = "#settings-modules";
+  if (location.hash === "#important" && !moduleEnabled("important_dates")) location.hash = "#calendar";
   renderModuleSettings();
 }
 async function loadModules(){

@@ -21,7 +21,7 @@ function esc(value){
     .replace(/'/g, "&#39;");
 }
 
-const DUTYLOG_VERSION = "27.2.33"
+const DUTYLOG_VERSION = "27.3.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -43,7 +43,9 @@ const state = {
   taskFilters: { status:"all", category:"all" },
   taskBoard: { items: [], filters: { status:"open", category:"all", priority:"all", q:"", from:"", to:"" }, page: { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false } },
   importantByDate: {},            // { 'YYYY-MM-DD': [{id,date,title,repeatMode,color}] }
-  importantDays: [],               // настройки важных дней: [{id,date,title,repeatMode,color}]
+  importantDays: [],               // самостоятельный список важных дней: [{id,date,title,repeatMode,color}]
+  importantFilters: { scope:"all", q:"" },
+  editingImportantDayId: null,
   overtimeAccount: { totalEarnedHours:0, totalUsedHours:0, balanceHours:0, credits:[], usages:[] },
   notificationSettings: null,
   reminders: [],
@@ -1161,7 +1163,19 @@ const SCHEDULE_TEMPLATES = {
 
 const pad = n => String(n).padStart(2, "0");
 const keyOf = (y, m, d) => `${y}-${pad(m + 1)}-${pad(d)}`;
-const todayKey = () => { const t = new Date(); return keyOf(t.getFullYear(), t.getMonth(), t.getDate()); };
+function dateKeyInTimeZone(timeZone){
+  try {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone: timeZone || browserTimeZone(), year:"numeric", month:"2-digit", day:"2-digit"
+    }).formatToParts(new Date());
+    const values = Object.fromEntries(parts.filter(p => p.type !== "literal").map(p => [p.type, p.value]));
+    return `${values.year}-${values.month}-${values.day}`;
+  } catch (_) {
+    const d = new Date();
+    return keyOf(d.getFullYear(), d.getMonth(), d.getDate());
+  }
+}
+const todayKey = () => dateKeyInTimeZone(state.timeSettings?.workTimezone || browserTimeZone());
 const numOr0 = v => { const n = Number(v ?? 0); return Number.isFinite(n) ? n : 0; };
 const fmtHours = v => {
   const n = Math.round(numOr0(v) * 100) / 100;

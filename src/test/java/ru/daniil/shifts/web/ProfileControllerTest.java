@@ -54,6 +54,7 @@ class ProfileControllerTest {
                 .andExpect(jsonPath("$.themePreset").value("default"))
                 .andExpect(jsonPath("$.themeConfig").isMap())
                 .andExpect(jsonPath("$.languagePreference").value("ru"))
+                .andExpect(jsonPath("$.workTimezone").value("Europe/Moscow"))
                 .andExpect(jsonPath("$.onboardingCompleted").value(false))
                 .andExpect(jsonPath("$.passwordHash").doesNotExist());
     }
@@ -79,6 +80,7 @@ class ProfileControllerTest {
                     "unknownCss":"body{display:none}"
                   },
                   "languagePreference":" EN ",
+                  "workTimezone":"Europe/Chisinau",
                   "onboardingCompleted":true
                 }
                 """;
@@ -93,6 +95,7 @@ class ProfileControllerTest {
                 .andExpect(jsonPath("$.accentColor").value("#ABCDEF"))
                 .andExpect(jsonPath("$.themePreset").value("custom_1"))
                 .andExpect(jsonPath("$.languagePreference").value("en"))
+                .andExpect(jsonPath("$.workTimezone").value("Europe/Chisinau"))
                 .andExpect(jsonPath("$.onboardingCompleted").value(true))
                 .andExpect(jsonPath("$.themeConfig.appBg").value("#101010"))
                 .andExpect(jsonPath("$.themeConfig.textColor").value("#FEFEFE"))
@@ -107,6 +110,7 @@ class ProfileControllerTest {
         assertEquals("#ABCDEF", stored.getAccentColor());
         assertEquals("custom_1", stored.getThemePreset());
         assertEquals("en", stored.getLanguagePreference());
+        assertEquals("Europe/Chisinau", stored.getWorkTimezone());
         assertTrue(stored.isOnboardingCompleted());
         assertTrue(stored.getThemeConfig().contains("\"cardRadius\":28"));
         assertTrue(!stored.getThemeConfig().contains("unknownCss"));
@@ -158,7 +162,9 @@ class ProfileControllerTest {
                 "{\"themePreset\":\"bad preset!\"}",
                 "{\"languagePreference\":\"ro\"}",
                 "{\"themeConfig\":{\"appBg\":\"red\"}}",
-                "{\"themeConfig\":{\"buttonStyle\":\"javascript\"}}"
+                "{\"themeConfig\":{\"buttonStyle\":\"javascript\"}}",
+                "{\"workTimezone\":\"Mars/Olympus_Mons\"}",
+                "{\"workTimezone\":\"\"}"
         };
 
         for (String body : bodies) {
