@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.3.0}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.3.1}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -933,8 +933,6 @@ contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "r
 
 # v27.3.0 important dates, user timezone and precise overtime editing
 contains CHANGES.md "v27.3.0 — Important dates, user timezone and precise overtime editing"
-contains README.md "v27.3.0 — Important dates, user timezone and precise overtime editing"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.3.0"
 contains docs/IMPORTANT_DATES_TIMEZONE_OVERTIME_V27.3.0.md "work_timezone"
 contains src/main/resources/db/migration/postgresql/V25__user_work_timezone.sql "ADD COLUMN IF NOT EXISTS work_timezone"
 contains src/main/java/ru/daniil/shifts/model/AppUser.java "private String workTimezone"
@@ -945,6 +943,21 @@ contains src/main/resources/static/js/50-tasks.js "renderImportantBoard"
 contains src/main/resources/static/js/40-overtime.js "openOvertimeEditorForDate"
 contains src/main/resources/static/js/40-overtime.js "ledgerEditingRow"
 contains src/main/resources/static/app.css ".ledgerEditingRow"
+
+# v27.3.1 stable browser session and editor modals
+contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
+contains README.md "v27.3.1 — Stable browser session and editor modals"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.3.1"
+contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
+contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
+contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
+contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
+contains src/main/resources/static/index.html 'id="taskEditModal"'
+contains src/main/resources/static/index.html 'id="shiftTypeModal"'
+not_contains src/main/resources/static/index.html 'id="shiftSettingsCard"'
+not_contains src/main/resources/static/js/50-tasks.js 'prompt("Текст задачи"'
+not_contains src/main/resources/static/js/60-settings.js 'prompt(t("Название смены")'
+contains e2e/editor-modals.spec.js "task and shift type editors use complete modal forms"
 
 DEPLOY_ENV_TMP="$(mktemp -d)"
 sed \
@@ -1009,23 +1022,23 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "7" ]]; then
-  ok "Playwright test baseline: 7"
+if [[ "$E2E_TESTS" == "8" ]]; then
+  ok "Playwright test baseline: 8"
 else
-  fail "expected 7 Playwright tests, found $E2E_TESTS"
+  fail "expected 8 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "347" ]]; then
-  ok "test method baseline: 347"
+if [[ "$TEST_METHODS" == "350" ]]; then
+  ok "test method baseline: 350"
 else
-  fail "expected 347 @Test methods, found $TEST_METHODS"
+  fail "expected 350 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "68" ]]; then
-  ok "test class baseline: 68"
+if [[ "$TEST_CLASSES" == "69" ]]; then
+  ok "test class baseline: 69"
 else
-  fail "expected 68 test classes, found $TEST_CLASSES"
+  fail "expected 69 test classes, found $TEST_CLASSES"
 fi
 
 echo

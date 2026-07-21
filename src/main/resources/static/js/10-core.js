@@ -21,7 +21,36 @@ function esc(value){
     .replace(/'/g, "&#39;");
 }
 
-const DUTYLOG_VERSION = "27.3.0"
+let activeAppModalId = null;
+function openAppModal(id, focusId = null){
+  const modal = $(id);
+  if (!modal) return;
+  if (activeAppModalId && activeAppModalId !== id) closeAppModal(activeAppModalId);
+  activeAppModalId = id;
+  modal.hidden = false;
+  document.body.classList.add("app-modal-open");
+  requestAnimationFrame(() => {
+    modal.classList.add("open");
+    const target = focusId ? $(focusId) : modal.querySelector("input, textarea, select, button");
+    target?.focus({ preventScroll:true });
+  });
+}
+function closeAppModal(id = activeAppModalId){
+  const modal = id ? $(id) : null;
+  if (!modal) return;
+  modal.classList.remove("open");
+  modal.hidden = true;
+  if (activeAppModalId === id) activeAppModalId = null;
+  if (!activeAppModalId) document.body.classList.remove("app-modal-open");
+}
+document.addEventListener("keydown", event => {
+  if (event.key !== "Escape" || !activeAppModalId) return;
+  if (activeAppModalId === "taskEditModal" && typeof closeTaskEditor === "function") closeTaskEditor();
+  else if (activeAppModalId === "shiftTypeModal" && typeof closeShiftTypeManager === "function") closeShiftTypeManager();
+  else closeAppModal(activeAppModalId);
+});
+
+const DUTYLOG_VERSION = "27.3.1"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -46,6 +75,8 @@ const state = {
   importantDays: [],               // самостоятельный список важных дней: [{id,date,title,repeatMode,color}]
   importantFilters: { scope:"all", q:"" },
   editingImportantDayId: null,
+  editingTaskId: null,
+  editingShiftTypeId: null,
   overtimeAccount: { totalEarnedHours:0, totalUsedHours:0, balanceHours:0, credits:[], usages:[] },
   notificationSettings: null,
   reminders: [],

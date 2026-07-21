@@ -62,6 +62,29 @@ class RememberMeAuthenticationTest {
     }
 
     @Test
+    void theSameRememberCookieCanBootstrapParallelPwaRequests() throws Exception {
+        MvcResult login = mvc.perform(post("/perform_login")
+                        .with(csrf())
+                        .param("username", USERNAME)
+                        .param("password", PASSWORD)
+                        .param("remember-me", "on"))
+                .andExpect(status().is3xxRedirection())
+                .andReturn();
+
+        Cookie rememberMe = login.getResponse().getCookie("DUTYLOG_REMEMBER_ME");
+        assertNotNull(rememberMe);
+
+        // A restored PWA fires several requests before any rotated cookie could
+        // be observed. Both requests therefore intentionally carry the same
+        // original remember-me cookie.
+        mvc.perform(get("/api/profile").cookie(rememberMe))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.username").value(USERNAME));
+        mvc.perform(get("/api/modules").cookie(rememberMe))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void ordinaryLoginDoesNotCreateAPersistentCookie() throws Exception {
         MvcResult login = mvc.perform(post("/perform_login")
                         .with(csrf())

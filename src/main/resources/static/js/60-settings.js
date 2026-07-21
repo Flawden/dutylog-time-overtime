@@ -8,192 +8,238 @@
 
 /* ─── Управление типами смен ────────────────────────────────── */
 
-// Enter в полях новой смены = «Добавить» (вешается один раз)
-for (const id of ["nsName", "nsHours", "nsStart", "nsEnd", "nsBreak", "nsPlan"]) {
-  $(id).addEventListener("keydown", e => { if (e.key === "Enter") addShiftType(); });
-}
-for (const id of ["nsHours", "nsStart", "nsEnd", "nsBreak", "nsPlan"]) {
-  $(id)?.addEventListener("input", updateShiftPlanHint);
-}
-updateShiftPlanHint();
+Object.assign(I18N_EN, {
+  "Типы смен":"Shift types", "Новая смена":"New shift", "Редактирование смены":"Edit shift",
+  "Добавить смену":"Add shift", "Сохранить смену":"Save shift", "Смена обновлена":"Shift updated",
+  "Смена добавлена":"Shift added", "Создать или настроить смену":"Create or configure a shift",
+  "Уведомлять перед этой сменой":"Notify before this shift", "Своё время напоминания, мин":"Custom reminder minutes"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
+function shiftTypeEditorMessage(text = "", tone = ""){
+  const box = $("shiftTypeMessage");
+  if (!box) return;
+  box.textContent = text;
+  box.className = "appModalMessage" + (tone ? ` ${tone}` : "");
+}
+function resetShiftTypeForm(){
+  state.editingShiftTypeId = null;
+  $("shiftTypeForm")?.reset();
+  if ($("nsName")) { $("nsName").disabled = false; $("nsName").value = ""; }
+  if ($("nsHours")) $("nsHours").value = "";
+  if ($("nsStart")) $("nsStart").value = "";
+  if ($("nsEnd")) $("nsEnd").value = "";
+  if ($("nsBreak")) $("nsBreak").value = "0";
+  if ($("nsPlan")) $("nsPlan").value = "";
+  if ($("nsNotificationsEnabled")) $("nsNotificationsEnabled").checked = true;
+  if ($("nsNotificationMinutes")) $("nsNotificationMinutes").value = "";
+  if ($("shiftTypeFormTitle")) $("shiftTypeFormTitle").textContent = t("Новая смена");
+  if ($("shiftTypeSave")) $("shiftTypeSave").textContent = t("Добавить смену");
+  if ($("shiftTypeCancelEdit")) $("shiftTypeCancelEdit").hidden = true;
+  state.swColor = "#F5B841";
+  shiftTypeEditorMessage();
+  renderSwatches();
+  updateShiftPlanHint();
+  renderCustomList();
+}
+function openShiftTypeManager(editId = null){
+  renderCustomList();
+  if (editId != null) editShiftType(editId);
+  else resetShiftTypeForm();
+  openAppModal("shiftTypeModal", editId != null ? "nsHours" : "nsName");
+}
+function closeShiftTypeManager(){
+  resetShiftTypeForm();
+  closeAppModal("shiftTypeModal");
+}
 function renderSwatches(){
   const row = $("swRow");
+  if (!row) return;
   row.innerHTML = "";
+  const colorLocked = !!state.shiftTypes.find(x => Number(x.id) === Number(state.editingShiftTypeId))?.builtin;
   for (const c of SWATCHES) {
     const b = document.createElement("button");
-    b.className = "sw" + (state.swColor === c ? " on" : "");
+    b.type = "button";
+    b.className = "sw" + (state.swColor.toLowerCase() === c.toLowerCase() ? " on" : "");
     b.style.background = c;
+    b.title = c;
+    b.disabled = colorLocked;
     b.addEventListener("click", () => { state.swColor = c; renderSwatches(); });
     row.appendChild(b);
   }
   const picker = document.createElement("input");
-  picker.type = "color"; picker.value = state.swColor; picker.title = t("Свой цвет");
-  picker.addEventListener("input", () => { state.swColor = picker.value; });
+  picker.type = "color";
+  picker.value = /^#[0-9a-f]{6}$/i.test(state.swColor) ? state.swColor : "#F5B841";
+  picker.title = t("Свой цвет");
+  picker.disabled = colorLocked;
+  picker.addEventListener("input", () => { state.swColor = picker.value; renderSwatches(); });
   row.appendChild(picker);
-  const add = document.createElement("button");
-  add.className = "add"; add.textContent = t("Добавить");
-  add.addEventListener("click", addShiftType);
-  row.appendChild(add);
 }
-
-async function addShiftType(){
+function readShiftTypeFormPayload(){
   const name = $("nsName").value.trim();
-  if (!name) return setSave("err", t("укажи название смены"));
-  const startTime = $("nsStart").value || null;
-  const endTime = $("nsEnd").value || null;
-  const breakMinutes = readIntInput("nsBreak");
-  if (!Number.isFinite(breakMinutes) || breakMinutes < 0 || breakMinutes > 1440) {
-    return setSave("err", t("обед: от 0 до 1440 минут"));
-  }
+  if (!name) throw new Error(t("укажи название смены"));
+  const startTime = $("nsStart").value || "";
+  const endTime = $("nsEnd").value || "";
+  const breakMinutes = Number($("nsBreak").value || 0);
+  if (!Number.isFinite(breakMinutes) || breakMinutes < 0 || breakMinutes > 1440) throw new Error(t("обед: от 0 до 1440 минут"));
   const calculatedNorm = shiftDurationHours(startTime, endTime, breakMinutes);
   const rawPlan = $("nsPlan").value.trim().replace(",", ".");
   const rawHours = $("nsHours").value.trim().replace(",", ".");
   const plannedHours = rawPlan ? Number(rawPlan) : (calculatedNorm || (rawHours ? Number(rawHours) : 0));
   const hours = rawHours ? Number(rawHours) : plannedHours;
-  if (!Number.isFinite(hours) || hours < 0 || hours > 24) {
-    return setSave("err", t("часы: от 0 до 24"));
+  if (!Number.isFinite(hours) || hours < 0 || hours > 24) throw new Error(t("часы: от 0 до 24"));
+  if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) throw new Error(t("норма: от 0 до 24 часов"));
+  const reminderRaw = $("nsNotificationMinutes").value.trim();
+  const notificationMinutesBefore = reminderRaw === "" ? -1 : Number(reminderRaw);
+  if (!Number.isFinite(notificationMinutesBefore) || notificationMinutesBefore < -1 || notificationMinutesBefore > 1440) {
+    throw new Error(t("напоминание смены: от 0 до 1440 минут"));
   }
-  if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) {
-    return setSave("err", t("норма: от 0 до 24 часов"));
+  return {
+    name,
+    hours,
+    color:state.swColor,
+    startTime,
+    endTime,
+    breakMinutes:Math.round(breakMinutes),
+    plannedHours,
+    notificationsEnabled:!!$("nsNotificationsEnabled").checked,
+    notificationMinutesBefore:Math.round(notificationMinutesBefore),
+  };
+}
+async function addShiftType(){
+  state.editingShiftTypeId = null;
+  return saveShiftTypeForm();
+}
+async function saveShiftTypeForm(){
+  let payload;
+  try { payload = readShiftTypeFormPayload(); }
+  catch (err) { return shiftTypeEditorMessage(err.message, "err"); }
+  const editing = state.shiftTypes.find(x => Number(x.id) === Number(state.editingShiftTypeId)) || null;
+  if (editing?.builtin) {
+    delete payload.name;
+    delete payload.color;
   }
-
+  $("shiftTypeSave").disabled = true;
+  shiftTypeEditorMessage(t("сохранение…"));
   setSave("saving");
   try {
-    const created = await api.createShiftType({
-      name,
-      hours,
-      color: state.swColor,
-      startTime,
-      endTime,
-      breakMinutes,
-      plannedHours,
-    });
-    state.shiftTypes.push(created);
-    $("nsName").value = ""; $("nsHours").value = ""; $("nsStart").value = ""; $("nsEnd").value = ""; $("nsBreak").value = "0"; $("nsPlan").value = "";
-    updateShiftPlanHint();
-    setSave("saved");
-    renderChips(); renderSummary(); renderCustomList();
-  } catch (err) { console.error(err); setSave("err", err.message); }
+    if (editing) {
+      const updated = await api.updateShiftType(editing.id, payload);
+      const idx = state.shiftTypes.findIndex(x => Number(x.id) === Number(editing.id));
+      if (idx >= 0) state.shiftTypes[idx] = updated;
+      setSave("saved", t("Смена обновлена"));
+    } else {
+      const created = await api.createShiftType(payload);
+      state.shiftTypes.push(created);
+      setSave("saved", t("Смена добавлена"));
+    }
+    resetShiftTypeForm();
+    renderChips();
+    renderSummary();
+    renderCalendar();
+    renderOvertimeControls();
+    renderCustomList();
+  } catch (err) {
+    console.error(err);
+    shiftTypeEditorMessage(err.message, "err");
+    setSave("err", err.message);
+  } finally {
+    $("shiftTypeSave").disabled = false;
+  }
 }
-
 function renderCustomList(){
   const box = $("customList");
+  if (!box) return;
   box.hidden = state.shiftTypes.length === 0;
   box.innerHTML = "";
   for (const s of state.shiftTypes) {
     const row = document.createElement("div");
-    row.style.display = "flex"; row.style.alignItems = "center"; row.style.gap = "8px"; row.style.flexWrap = "wrap";
+    row.className = Number(s.id) === Number(state.editingShiftTypeId) ? "editing" : "";
+    row.style.display = "flex";
+    row.style.alignItems = "center";
+    row.style.gap = "8px";
+    row.style.flexWrap = "wrap";
     const meta = shiftMetaText(s);
     const notifyMeta = s.notificationsEnabled === false ? ` · ${t("без уведомлений")}` : (s.notificationMinutesBefore != null ? ` · ${t("напомнить за")} ${s.notificationMinutesBefore}${state.language === "en" ? "min" : "м"}` : "");
     row.innerHTML = `<span class="dot" style="width:10px;height:10px;border-radius:3px;background:${s.color};display:inline-block"></span>
-      <span>${esc(shiftDisplayName(s))}${shiftPlannedHours(s) ? `${state.language === "en" ? " · norm " : " · норма "}${fmtHours(shiftPlannedHours(s))}${state.language === "en" ? "h" : "ч"}` : ""}${meta ? ` <span style="color:var(--dim)">· ${esc(meta)}</span>` : ""}<span style="color:var(--dim)">${esc(notifyMeta)}</span></span>`;
-
+      <span style="flex:1;min-width:150px"><b>${esc(shiftDisplayName(s))}</b>${shiftPlannedHours(s) ? `${state.language === "en" ? " · norm " : " · норма "}${fmtHours(shiftPlannedHours(s))}${state.language === "en" ? "h" : "ч"}` : ""}${meta ? ` <span style="color:var(--dim)">· ${esc(meta)}</span>` : ""}<span style="color:var(--dim)">${esc(notifyMeta)}</span></span>`;
     const edit = document.createElement("button");
-    edit.className = "del"; edit.textContent = t("настроить");
-    edit.title = t("Изменить время, обед и плановые часы смены");
+    edit.type = "button";
+    edit.className = "del";
+    edit.textContent = t("настроить");
     edit.addEventListener("click", () => editShiftType(s.id));
     row.appendChild(edit);
-
     if (s.builtin) {
       const tag = document.createElement("span");
-      tag.className = "tag"; tag.textContent = t("встроенная");
+      tag.className = "tag";
+      tag.textContent = t("встроенная");
       row.appendChild(tag);
     } else {
       const del = document.createElement("button");
-      del.className = "del"; del.textContent = t("удалить");
-      del.title = t("Смена снимется с дней, где стояла. Заметки останутся.");
+      del.type = "button";
+      del.className = "del";
+      del.textContent = t("удалить");
       del.addEventListener("click", () => removeShiftType(s.id));
       row.appendChild(del);
     }
     box.appendChild(row);
   }
 }
-
-async function editShiftType(id){
+function editShiftType(id){
   const s = state.shiftTypes.find(x => Number(x.id) === Number(id));
   if (!s) return setSave("err", t("смена не найдена"));
-
-  const patch = {};
-  if (!s.builtin) {
-    const name = prompt(t("Название смены"), s.name || "");
-    if (name === null) return;
-    if (!name.trim()) return setSave("err", t("название не может быть пустым"));
-    patch.name = name.trim();
-
-    const color = prompt(t("Цвет #RRGGBB"), s.color || state.swColor);
-    if (color === null) return;
-    patch.color = color.trim();
-  }
-
-  const hoursRaw = prompt(t("Короткие часы для календаря"), fmtHours(s.hours));
-  if (hoursRaw === null) return;
-  const hours = Number(hoursRaw.replace(",", "."));
-  if (!Number.isFinite(hours) || hours < 0 || hours > 24) return setSave("err", t("часы: от 0 до 24"));
-  patch.hours = hours;
-
-  const startTime = prompt(t("Начало смены HH:mm, можно пусто"), s.startTime || "");
-  if (startTime === null) return;
-  patch.startTime = startTime.trim();
-
-  const endTime = prompt(t("Конец смены HH:mm, можно пусто"), s.endTime || "");
-  if (endTime === null) return;
-  patch.endTime = endTime.trim();
-
-  const brRaw = prompt(t("Обед/перерыв, минут"), String(s.breakMinutes || 0));
-  if (brRaw === null) return;
-  const breakMinutes = Number(brRaw);
-  if (!Number.isFinite(breakMinutes) || breakMinutes < 0 || breakMinutes > 1440) return setSave("err", t("обед: от 0 до 1440 минут"));
-  patch.breakMinutes = Math.round(breakMinutes);
-
-  const planRaw = prompt(t("Норма для расчёта переработки, ч"), fmtHours(shiftPlannedHours(s)));
-  if (planRaw === null) return;
-  const plannedHours = Number(planRaw.replace(",", "."));
-  if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) return setSave("err", t("норма: от 0 до 24 часов"));
-  patch.plannedHours = plannedHours;
-
-  const notifRaw = prompt(t("Уведомлять перед этой сменой? да/нет"), s.notificationsEnabled === false ? t("нет") : t("да"));
-  if (notifRaw === null) return;
-  const notifClean = notifRaw.trim().toLowerCase();
-  patch.notificationsEnabled = !(notifClean === "нет" || notifClean === "no" || notifClean === "0" || notifClean === "false");
-
-  const minutesRaw = prompt(t("За сколько минут напоминать именно эту смену? Пусто = глобальная настройка"), s.notificationMinutesBefore ?? "");
-  if (minutesRaw === null) return;
-  if (minutesRaw.trim()) {
-    const minutes = Number(minutesRaw);
-    if (!Number.isFinite(minutes) || minutes < 0 || minutes > 1440) return setSave("err", t("напоминание смены: от 0 до 1440 минут"));
-    patch.notificationMinutesBefore = Math.round(minutes);
-  } else {
-    patch.notificationMinutesBefore = -1;
-  }
-
-  setSave("saving");
-  try {
-    const updated = await api.updateShiftType(id, patch);
-    const idx = state.shiftTypes.findIndex(x => Number(x.id) === Number(id));
-    if (idx >= 0) state.shiftTypes[idx] = updated;
-    setSave("saved");
-    renderChips(); renderSummary(); renderCalendar(); renderOvertimeControls();
-  } catch (err) { console.error(err); setSave("err", err.message); }
+  state.editingShiftTypeId = Number(id);
+  $("nsName").value = s.name || "";
+  $("nsName").disabled = !!s.builtin;
+  $("nsHours").value = fmtHours(s.hours);
+  $("nsStart").value = s.startTime || "";
+  $("nsEnd").value = s.endTime || "";
+  $("nsBreak").value = String(s.breakMinutes || 0);
+  $("nsPlan").value = fmtHours(shiftPlannedHours(s));
+  $("nsNotificationsEnabled").checked = s.notificationsEnabled !== false;
+  $("nsNotificationMinutes").value = s.notificationMinutesBefore ?? "";
+  state.swColor = s.color || "#F5B841";
+  $("shiftTypeFormTitle").textContent = t("Редактирование смены");
+  $("shiftTypeSave").textContent = t("Сохранить смену");
+  $("shiftTypeCancelEdit").hidden = false;
+  shiftTypeEditorMessage();
+  renderSwatches();
+  renderCustomList();
+  updateShiftPlanHint();
+  openAppModal("shiftTypeModal", s.builtin ? "nsHours" : "nsName");
 }
-
 async function removeShiftType(id){
+  const item = state.shiftTypes.find(s => Number(s.id) === Number(id));
+  if (!item || item.builtin) return;
+  if (!confirm(`${t("Удалить смену")} «${shiftDisplayName(item)}»?`)) return;
   setSave("saving");
   try {
     await api.deleteShiftType(id);
-    state.shiftTypes = state.shiftTypes.filter(s => s.id !== id);
-    // локально снимаем смену с дней, где она стояла
+    state.shiftTypes = state.shiftTypes.filter(s => Number(s.id) !== Number(id));
     for (const [k, v] of Object.entries(state.days)) {
-      if (v.shiftTypeId === id) {
+      if (Number(v.shiftTypeId) === Number(id)) {
         v.shiftTypeId = null;
         const hasOvertime = Math.abs(numOr0(v.overtimeHours)) > 0.0001 || Math.abs(numOr0(v.timeOffHours)) > 0.0001;
         if (!(v.note || "").trim() && !hasOvertime) delete state.days[k];
       }
     }
+    if (Number(state.editingShiftTypeId) === Number(id)) resetShiftTypeForm();
     setSave("saved");
-    renderChips(); renderCalendar();
+    renderChips();
+    renderCalendar();
+    renderCustomList();
   } catch (err) { console.error(err); setSave("err", err.message); }
 }
+
+for (const id of ["nsHours", "nsStart", "nsEnd", "nsBreak", "nsPlan"]) {
+  $(id)?.addEventListener("input", updateShiftPlanHint);
+}
+$("shiftTypeForm")?.addEventListener("submit", event => { event.preventDefault(); saveShiftTypeForm(); });
+$("shiftTypeClose")?.addEventListener("click", closeShiftTypeManager);
+$("shiftTypeBackdrop")?.addEventListener("click", closeShiftTypeManager);
+$("shiftTypeCancelEdit")?.addEventListener("click", resetShiftTypeForm);
+renderSwatches();
+updateShiftPlanHint();
 
 /* ─── Навигация по месяцам ──────────────────────────────────── */
 async function goto(y, m){
@@ -310,22 +356,25 @@ function scheduleTimeSettingsApply(){
 }
 function fillShiftFormFromDefaults(kind){
   const timeSettings = state.timeSettings || loadTimeSettings();
+  resetShiftTypeForm();
   if (kind === "night") {
-    $("nsName").value = $("nsName").value || "Ночная кастомная";
+    $("nsName").value = "Ночная кастомная";
     $("nsHours").value = fmtHours(timeSettings.nightPlannedHours);
     $("nsStart").value = timeSettings.nightStart;
     $("nsEnd").value = timeSettings.nightEnd;
     $("nsBreak").value = timeSettings.nightBreakMinutes;
     $("nsPlan").value = fmtHours(timeSettings.nightPlannedHours);
   } else {
-    $("nsName").value = $("nsName").value || "Дневная кастомная";
+    $("nsName").value = "Дневная кастомная";
     $("nsHours").value = fmtHours(timeSettings.dayPlannedHours);
     $("nsStart").value = timeSettings.dayStart;
     $("nsEnd").value = timeSettings.dayEnd;
     $("nsBreak").value = timeSettings.dayBreakMinutes;
     $("nsPlan").value = fmtHours(timeSettings.dayPlannedHours);
   }
-  location.hash = "#settings";
+  updateShiftPlanHint();
+  renderCustomList();
+  openAppModal("shiftTypeModal", "nsName");
   setSave("", "");
 }
 function patchForBuiltInShift(name, timeSettings){

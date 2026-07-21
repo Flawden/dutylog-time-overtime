@@ -1,3 +1,13 @@
+## v27.3.1 — Stable browser session and editor modals
+
+- Replaced rotating persistent remember-me tokens with a stable, fixed-expiry token service so parallel PWA bootstrap requests can no longer invalidate each other after a browser close or application restart.
+- Added a regression that reuses the same remember-me cookie for multiple restored requests, matching the browser's real parallel startup behavior.
+- Replaced the task edit prompt chain with one structured modal containing text, date, category, priority, due date/time and reminder controls.
+- Moved shift-type creation and editing out of Settings into a dedicated manager opened by the `+` chip in the selected-day calendar panel.
+- The shift manager now handles built-in and custom types in one place, including time, break, norm, color and per-shift notification settings.
+- Removed the obsolete Shift types card and navigation item from Settings, reducing settings density without deleting any shift data.
+- Added Java frontend contracts and a Playwright flow covering both modal editors.
+
 ## v27.3.0 — Important dates, user timezone and precise overtime editing
 
 ### CI test stabilization hotfix

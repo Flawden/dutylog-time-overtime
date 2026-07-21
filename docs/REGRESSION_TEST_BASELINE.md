@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.3.0.
+Status: v27.3.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.3.0 adds a dedicated important-dates workspace, a persisted validated IANA work timezone used by server notifications and Telegram, and exact overtime editor navigation/highlighting, while retaining the v27.2.33 persistent-login and mobile-UX baseline, the v27.2.32 pipefail-safe deployment smoke checks, the v27.2.29 security baseline and the v27.2.24 JaCoCo floor. Current baseline: 68 Java test classes / 347 `@Test` methods and 7 Chromium Playwright scenarios.
+Current extension: v27.3.1 adds concurrency-safe persistent browser login, a complete task edit modal and a shift-type manager outside Settings, while retaining the v27.3.0 important-dates/timezone/overtime baseline plus the v27.2.29 security baseline and all earlier deployment gates. Current baseline: 69 Java test classes / 350 `@Test` methods and 8 Chromium Playwright scenarios.
 
 Historical extension: v27.2.31 adds an authenticated, CSRF-aware deployment smoke-test regression.
 

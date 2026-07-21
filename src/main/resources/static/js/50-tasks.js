@@ -14,7 +14,10 @@ Object.assign(I18N_EN, {
   "Сохранить":"Save", "Событие обновлено":"Event updated", "Событие добавлено":"Event added",
   "поиск: название или дата…":"search: title or date…", "Важных дат пока нет.":"No important dates yet.",
   "Добавь первую дату здесь или из выбранного дня календаря.":"Add the first date here or from a selected calendar day.",
-  "По фильтрам ничего не найдено.":"Nothing matches the filters.", "Сбрось поиск или выбери другой период.":"Clear search or choose another period."
+  "По фильтрам ничего не найдено.":"Nothing matches the filters.", "Сбрось поиск или выбери другой период.":"Clear search or choose another period.",
+  "Редактировать задачу":"Edit task", "Текст задачи":"Task text", "Дата":"Date", "Категория":"Category",
+  "Приоритет":"Priority", "Срок":"Due date", "Время срока":"Due time", "Напомнить о задаче":"Remind me",
+  "За сколько минут":"Minutes before", "Задача обновлена":"Task updated", "Не удалось сохранить задачу":"Failed to save task"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -362,15 +365,78 @@ function renderTasks(){
   }
   updateAccSummaries();
 }
+function taskEditorMessage(text = "", tone = ""){
+  const box = $("taskEditMessage");
+  if (!box) return;
+  box.textContent = text;
+  box.className = "appModalMessage" + (tone ? ` ${tone}` : "");
+}
+function syncTaskEditorReminder(){
+  const enabled = !!$("taskEditReminderEnabled")?.checked;
+  const available = state.modulesLoaded && moduleEnabled("notifications");
+  if ($("taskEditReminderEnabled")) {
+    $("taskEditReminderEnabled").disabled = !available;
+    if (!available) $("taskEditReminderEnabled").checked = false;
+  }
+  if ($("taskEditReminderBefore")) $("taskEditReminderBefore").disabled = !available || !enabled;
+  if ($("taskEditReminderBeforeLabel")) $("taskEditReminderBeforeLabel").hidden = !available || !enabled;
+}
+function closeTaskEditor(){
+  state.editingTaskId = null;
+  taskEditorMessage();
+  closeAppModal("taskEditModal");
+}
+function taskById(id){
+  const all = [...Object.values(state.tasksByDate || {}).flat(), ...(state.taskBoard?.items || [])];
+  return all.find(item => Number(item.id) === Number(id)) || null;
+}
 function editTask(task){
-  const text = prompt("Текст задачи", task.text || "");
-  if (text === null) return;
-  const category = prompt("Категория", task.category || "") ?? task.category;
-  const dueDate = prompt("Срок yyyy-MM-dd, пусто — без срока", task.dueDate || "") ?? task.dueDate;
-  const dueTime = prompt("Время срока HH:mm, пусто — без времени", task.dueTime || "") ?? task.dueTime;
+  if (!task) return;
+  state.editingTaskId = Number(task.id);
+  $("taskEditText").value = task.text || "";
+  $("taskEditDate").value = task.date || state.selected || todayKey();
+  $("taskEditCategory").value = task.category || "";
+  $("taskEditPriority").value = task.priority || "NORMAL";
+  $("taskEditDueDate").value = task.dueDate || "";
+  $("taskEditDueTime").value = task.dueTime || "";
+  $("taskEditReminderEnabled").checked = !!task.reminderEnabled;
+  $("taskEditReminderBefore").value = String(task.reminderMinutesBefore ?? 60);
+  taskEditorMessage();
+  syncTaskEditorReminder();
+  openAppModal("taskEditModal", "taskEditText");
+}
+async function saveTaskEditor(){
+  const id = Number(state.editingTaskId);
+  if (!id) return;
+  const text = $("taskEditText").value.trim();
+  const date = $("taskEditDate").value;
+  if (!text) return taskEditorMessage(t("напиши текст задачи"), "err");
+  if (!date) return taskEditorMessage(t("укажи дату"), "err");
+  const original = taskById(id);
   const remindersAvailable = state.modulesLoaded && moduleEnabled("notifications");
-  const reminder = remindersAvailable && confirm(t("Включить напоминание для этой задачи?"));
-  updateTaskDetails(task.id, { text, category, dueDate, dueTime, reminderEnabled: reminder, reminderMinutesBefore: reminder ? (task.reminderMinutesBefore ?? 60) : null });
+  const reminderEnabled = remindersAvailable ? !!$("taskEditReminderEnabled").checked : !!original?.reminderEnabled;
+  const reminderMinutesBefore = remindersAvailable
+    ? (reminderEnabled ? Number($("taskEditReminderBefore").value || 0) : null)
+    : (original?.reminderMinutesBefore ?? null);
+  if (reminderEnabled && (!Number.isFinite(reminderMinutesBefore) || reminderMinutesBefore < 0 || reminderMinutesBefore > 10080)) {
+    return taskEditorMessage(t("напоминание: от 0 до 10080 минут"), "err");
+  }
+  $("taskEditSave").disabled = true;
+  taskEditorMessage(t("сохранение…"));
+  const updated = await updateTaskDetails(id, {
+    text,
+    date,
+    category:$("taskEditCategory").value.trim(),
+    priority:$("taskEditPriority").value || "NORMAL",
+    dueDate:$("taskEditDueDate").value || "",
+    dueTime:$("taskEditDueTime").value || "",
+    reminderEnabled,
+    reminderMinutesBefore,
+  });
+  $("taskEditSave").disabled = false;
+  if (!updated) return taskEditorMessage(t("Не удалось сохранить задачу"), "err");
+  closeTaskEditor();
+  setSave("saved", t("Задача обновлена"));
 }
 
 function removeTaskFromMaps(id){
@@ -428,9 +494,11 @@ async function updateTaskDetails(id, patch){
     setSave("saved");
     renderTasks();
     renderCalendar();
+    return updated;
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
+    return null;
   }
 }
 
@@ -656,6 +724,11 @@ $("taskDueDate").addEventListener("change", () => {
   updateTaskReminderControls();
 });
 $("taskReminderEnabled")?.addEventListener("change", updateTaskReminderControls);
+$("taskEditReminderEnabled")?.addEventListener("change", syncTaskEditorReminder);
+$("taskEditForm")?.addEventListener("submit", event => { event.preventDefault(); saveTaskEditor(); });
+$("taskEditClose")?.addEventListener("click", closeTaskEditor);
+$("taskEditCancel")?.addEventListener("click", closeTaskEditor);
+$("taskEditBackdrop")?.addEventListener("click", closeTaskEditor);
 
 $("taskBoardOpen").addEventListener("click", () => setTaskBoardQuickStatus("open"));
 $("taskBoardOverdue").addEventListener("click", () => setTaskBoardQuickStatus("overdue"));
@@ -688,14 +761,12 @@ function renderChips(){
     b.addEventListener("click", () => toggleShift(s.id));
     box.appendChild(b);
   }
-  // Плюсик — переход к настройкам смен
+  // Плюсик — отдельный менеджер типов смен, без перегрузки настроек.
   const plus = document.createElement("button");
   plus.className = "chip plus";
   plus.textContent = "+";
-  plus.title = t("Создать или настроить смену в настройках");
-  plus.addEventListener("click", () => {
-    openSettingsSection("shifts", true, "nsName");
-  });
+  plus.title = t("Создать или настроить смену");
+  plus.addEventListener("click", () => openShiftTypeManager());
   box.appendChild(plus);
   renderCustomList();
   if (!$("tplBox")?.hidden) renderScheduleControls();

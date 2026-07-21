@@ -18,6 +18,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
@@ -49,6 +50,24 @@ public class SecurityConfig {
         JdbcTokenRepositoryImpl repository = new JdbcTokenRepositoryImpl();
         repository.setDataSource(dataSource);
         return repository;
+    }
+
+    @Bean
+    public RememberMeServices rememberMeServices(UserDetailsService userDetailsService,
+                                                 PersistentTokenRepository persistentTokenRepository,
+                                                 @Value("${dutylog.security.remember-me.validity-days:30}") int rememberMeValidityDays,
+                                                 @Value("${dutylog.security.remember-me.secure-cookie:false}") boolean rememberMeSecureCookie) {
+        int validitySeconds = rememberMeValiditySeconds(rememberMeValidityDays);
+        StablePersistentRememberMeServices service = new StablePersistentRememberMeServices(
+                "dutylog-stable-remember-me-v1",
+                userDetailsService,
+                persistentTokenRepository,
+                validitySeconds);
+        service.setParameter("remember-me");
+        service.setCookieName("DUTYLOG_REMEMBER_ME");
+        service.setTokenValiditySeconds(validitySeconds);
+        service.setUseSecureCookie(rememberMeSecureCookie);
+        return service;
     }
 
     /** Teaches Spring Security to resolve users from the application users table. */
@@ -142,10 +161,7 @@ public class SecurityConfig {
                                                WebAccountStateFilter webAccountStateFilter,
                                                SecurityEventLogger securityEvents,
                                                ApiErrorWriter apiErrors,
-                                               UserDetailsService userDetailsService,
-                                               PersistentTokenRepository persistentTokenRepository,
-                                               @Value("${dutylog.security.remember-me.validity-days:30}") int rememberMeValidityDays,
-                                               @Value("${dutylog.security.remember-me.secure-cookie:false}") boolean rememberMeSecureCookie) throws Exception {
+                                               RememberMeServices rememberMeServices) throws Exception {
         CookieCsrfTokenRepository csrfRepo = CookieCsrfTokenRepository.withHttpOnlyFalse();
         CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
         RequestMatcher bearerRequest = request ->
@@ -184,12 +200,8 @@ public class SecurityConfig {
                             response.sendRedirect("/login.html?error");
                         }))
                 .rememberMe(remember -> remember
-                        .rememberMeParameter("remember-me")
-                        .rememberMeCookieName("DUTYLOG_REMEMBER_ME")
-                        .tokenValiditySeconds(rememberMeValiditySeconds(rememberMeValidityDays))
-                        .tokenRepository(persistentTokenRepository)
-                        .userDetailsService(userDetailsService)
-                        .useSecureCookie(rememberMeSecureCookie))
+                        .key("dutylog-stable-remember-me-v1")
+                        .rememberMeServices(rememberMeServices))
                 .logout(logout -> logout
                         .logoutUrl("/logout")
                         .logoutSuccessUrl("/login.html")
