@@ -1,5 +1,10 @@
 ## v27.4.2 — Timezone simplification and critical regression pack
 
+### Remember-me E2E hotfix
+- Fixed the fresh-session bootstrap regression to call `GET /api/calendar` with its required `from` and `to` query parameters.
+- The previous test correctly restored authentication but then expected `200` from an intentionally invalid calendar request that returned `400`.
+- Production remember-me, calendar API and database behavior are unchanged.
+
 ### Changed
 - Replaced the manual region name, free-form timezone and Moscow-offset controls with one generated IANA timezone selector and an explicit Save action.
 - The selector shows a readable city label and current UTC offset while persisting the canonical IANA identifier such as `Europe/Chisinau`.

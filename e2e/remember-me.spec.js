@@ -23,7 +23,12 @@ test('remember-me restores a fresh browser session and logout revokes the old co
   await expect(restoredPage.locator('#whoami')).toHaveText(account.username);
 
   const bootstrapStatuses = await restoredPage.evaluate(async () => {
-    const paths = ['/api/profile', '/api/modules', '/api/shift-types', '/api/calendar'];
+    const paths = [
+      '/api/profile',
+      '/api/modules',
+      '/api/shift-types',
+      '/api/calendar?from=2026-01-01&to=2026-01-31'
+    ];
     return Promise.all(paths.map(async path => (await fetch(path, { credentials: 'same-origin' })).status));
   });
   expect(bootstrapStatuses).toEqual([200, 200, 200, 200]);
