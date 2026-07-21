@@ -42,7 +42,7 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   await page.locator('#nsStart').fill('09:00');
   await page.locator('#nsEnd').fill('18:00');
   await page.locator('#nsBreak').fill('60');
-  const shiftCreated = waitForApi(page, 'POST', '/api/shift-types');
+  const shiftCreated = waitForApi(page, 'POST', '/api/shift-types', 201);
   await page.locator('#shiftTypeSave').click();
   await shiftCreated;
   await expect(page.locator('#customList')).toContainText(shiftName);
