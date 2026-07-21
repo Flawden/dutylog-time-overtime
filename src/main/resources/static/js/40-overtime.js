@@ -6,19 +6,31 @@
  * → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
  */
 
+Object.assign(I18N_EN, {
+  "Добавить переработку":"Add overtime", "Редактировать переработку":"Edit overtime",
+  "Добавить списание":"Add time off", "Редактировать списание":"Edit time off",
+  "+ Начислить":"+ Earn", "− Списать":"− Use", "+ Добавить переработку":"+ Add overtime",
+  "− Добавить списание":"− Add time off", "Не выбран":"Not selected", "Сценарий":"Scenario",
+  "Доступно до списания":"Available before use", "Останется после списания":"Remaining after use",
+  "списать по норме смены":"use shift norm", "Короткий интервал":"Short interval",
+  "Расчёт":"Calculation", "Итого, ч":"Total, h", "Количество часов":"Hours"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+
 /* ─── Журнал переработки и отгулов ─────────────────────────── */
 function updateOvertimeBalanceLabel(){
   const acc = state.overtimeAccount || { balanceHours:0 };
   const bal = numOr0(acc.balanceHours);
-  $("otBalance").textContent = `доступно ${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
-  $("ledgerBalance").textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
+  if ($("otBalance")) $("otBalance").textContent = `${t("доступно")} ${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
+  if ($("ledgerBalance")) $("ledgerBalance").textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
+  updateUsageBalancePreview();
 }
 
 function renderOvertimeControls(){
   if (!moduleEnabled("overtime")) { updateAccSummaries(); return; }
   updateOvertimeBalanceLabel();
   renderOvertimeDayDetails();
-  renderQuickScenarioContext();
+  renderQuickScenarios();
   updateAccSummaries();
 }
 
@@ -26,10 +38,16 @@ function toDateTimeLocal(value){
   return value ? String(value).slice(0, 16) : "";
 }
 
+function overtimeDefaultDate(date = null){
+  return date || state.selected || todayKey();
+}
+
 function resetOvertimeForms(k = state.selected){
   state.editingCreditId = null;
   state.editingUsageId = null;
-  if ($("creditDate")) $("creditDate").value = k || todayKey();
+  state.activeScenarioId = null;
+  const date = overtimeDefaultDate(k);
+  if ($("creditDate")) $("creditDate").value = date;
   if ($("creditTimeRange")) $("creditTimeRange").value = "";
   if ($("creditStart")) $("creditStart").value = "";
   if ($("creditEnd")) $("creditEnd").value = "";
@@ -38,48 +56,72 @@ function resetOvertimeForms(k = state.selected){
   if ($("creditHours")) $("creditHours").value = "0";
   if ($("creditReason")) $("creditReason").value = "";
   if ($("creditCalcHint")) $("creditCalcHint").textContent = t("можно вручную");
-  clearScenarioHighlight();
+  if ($("creditScenarioSelect")) $("creditScenarioSelect").value = "";
   if ($("creditEditNotice")) { $("creditEditNotice").hidden = true; $("creditEditNotice").textContent = ""; }
-  if ($("creditCancel")) $("creditCancel").hidden = true;
+  if ($("creditDelete")) $("creditDelete").hidden = true;
   if ($("creditAdd")) $("creditAdd").textContent = t("Начислить");
+  if ($("overtimeCreditTitle")) $("overtimeCreditTitle").textContent = t("Добавить переработку");
 
-  if ($("usageDate")) $("usageDate").value = k || todayKey();
+  if ($("usageDate")) $("usageDate").value = date;
   if ($("usageHours")) $("usageHours").value = "0";
   if ($("usageReason")) $("usageReason").value = "";
   if ($("usageEditNotice")) { $("usageEditNotice").hidden = true; $("usageEditNotice").textContent = ""; }
-  if ($("usageCancel")) $("usageCancel").hidden = true;
-  if ($("usageAdd")) $("usageAdd").textContent = t("Списать отгул");
-  if ($("overtimeBackToLedger")) $("overtimeBackToLedger").hidden = true;
+  if ($("usageDelete")) $("usageDelete").hidden = true;
+  if ($("usageAdd")) $("usageAdd").textContent = t("Списать");
+  if ($("overtimeUsageTitle")) $("overtimeUsageTitle").textContent = t("Добавить списание");
+  renderQuickScenarios();
+  updateUsageBalancePreview();
 }
 
-function cancelCreditEdit(){
-  const k = state.selected || ($("creditDate")?.value || todayKey());
-  resetOvertimeForms(k);
+function openOvertimeCreditModal(date = null){
+  resetOvertimeForms(overtimeDefaultDate(date));
+  renderQuickScenarios();
+  updateOvertimeCalcPreview();
+  openAppModal("overtimeCreditModal", "creditScenarioSelect");
 }
+function closeOvertimeCreditModal(){
+  const date = $("creditDate")?.value || state.selected || todayKey();
+  closeAppModal("overtimeCreditModal");
+  resetOvertimeForms(date);
+  renderLedgerTable();
+}
+function openOvertimeUsageModal(date = null){
+  resetOvertimeForms(overtimeDefaultDate(date));
+  updateUsageBalancePreview();
+  openAppModal("overtimeUsageModal", "usageHours");
+}
+function closeOvertimeUsageModal(){
+  const date = $("usageDate")?.value || state.selected || todayKey();
+  closeAppModal("overtimeUsageModal");
+  resetOvertimeForms(date);
+  renderLedgerTable();
+}
+function cancelCreditEdit(){ closeOvertimeCreditModal(); }
+function cancelUsageEdit(){ closeOvertimeUsageModal(); }
 
-function cancelUsageEdit(){
-  const creditId = state.editingCreditId;
-  const k = state.selected || ($("usageDate")?.value || todayKey());
-  state.editingUsageId = null;
-  if ($("usageDate")) $("usageDate").value = k;
-  if ($("usageHours")) $("usageHours").value = "0";
-  if ($("usageReason")) $("usageReason").value = "";
-  if ($("usageEditNotice")) { $("usageEditNotice").hidden = true; $("usageEditNotice").textContent = ""; }
-  if ($("usageCancel")) $("usageCancel").hidden = true;
-  if ($("usageAdd")) $("usageAdd").textContent = t("Списать отгул");
-  state.editingCreditId = creditId;
-  if ($("overtimeBackToLedger") && !state.editingCreditId) $("overtimeBackToLedger").hidden = true;
+function updateUsageBalancePreview(){
+  if (!$("usageBalanceBefore") || !$("usageBalanceAfter")) return;
+  const balance = numOr0(state.overtimeAccount?.balanceHours);
+  const original = state.editingUsageId ? numOr0(findUsageById(state.editingUsageId)?.hours) : 0;
+  const available = balance + original;
+  const requested = readHoursInput("usageHours");
+  const after = Number.isFinite(requested) ? available - requested : available;
+  $("usageBalanceBefore").textContent = `${fmtHours(available)} ч`;
+  $("usageBalanceAfter").textContent = `${fmtHours(after)} ч`;
+  $("usageBalanceAfter").classList.toggle("negative", after < -0.0001);
 }
 
 function readHoursInput(id){
-  const raw = String($(id).value || "").trim().replace(",", ".");
+  const el = $(id);
+  const raw = String(el?.value || "").trim().replace(",", ".");
   if (!raw) return 0;
   const n = Number(raw);
   return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : NaN;
 }
 
 function readIntInput(id){
-  const raw = String($(id).value || "").trim().replace(",", ".");
+  const el = $(id);
+  const raw = String(el?.value || "").trim().replace(",", ".");
   if (!raw) return 0;
   const n = Number(raw);
   return Number.isFinite(n) && n >= 0 ? Math.round(n) : NaN;
@@ -89,23 +131,38 @@ function renderOvertimeDayDetails(){
   if (!moduleEnabled("overtime")) return;
   const k = state.selected;
   const el = $("otDayDetails");
-  if (!k || !el) return;
+  if (!el) return;
+  el.innerHTML = "";
+  if (!k) {
+    el.innerHTML = `<span class="emptyLine">${esc(t("Сначала выберите день в календаре."))}</span>`;
+    return;
+  }
   const credits = creditsOf(k);
   const usages = usagesOf(k);
   if (!credits.length && !usages.length) {
-    el.textContent = t("На этот день в журнале переработок записей нет. Начисления не сгорают при переходе между месяцами.");
+    el.innerHTML = `<span class="emptyLine">${esc(t("На этот день в журнале переработок записей нет. Начисления не сгорают при переходе между месяцами."))}</span>`;
     return;
   }
-  const parts = [];
   for (const c of credits) {
-    const calc = c.calculated ? `; обед ${c.breakMinutes || 0} мин${numOr0(c.plannedHours) ? "; вычтено плана " + fmtHours(c.plannedHours) + " ч" : ""}` : "";
-    parts.push(`+${fmtHours(c.hours)} ч${c.timeRange ? " (" + c.timeRange + ")" : ""}${calc}${c.reason ? " — " + c.reason : ""}; остаток: ${fmtHours(c.remainingHours)} ч`);
+    const row = document.createElement("div");
+    row.className = "overtimeDayEntry credit";
+    const text = document.createElement("div");
+    text.innerHTML = `<b>+${fmtHours(c.hours)} ч</b><span>${esc(c.timeRange || "")}${c.reason ? `${c.timeRange ? " · " : ""}${esc(c.reason)}` : ""}</span><small>${esc(t("остаток"))}: ${fmtHours(c.remainingHours)} ч</small>`;
+    const edit = document.createElement("button");
+    edit.type = "button"; edit.textContent = t("ред.");
+    edit.addEventListener("click", () => startEditOvertimeCredit(c.id));
+    row.append(text, edit); el.appendChild(row);
   }
   for (const u of usages) {
-    const from = (u.allocations || []).map(a => `${fmtHours(a.hours)} ч с ${a.workedDate}`).join(", ");
-    parts.push(`-${fmtHours(u.hours)} ч${u.reason ? " — " + u.reason : ""}${from ? "; взято: " + from : ""}`);
+    const row = document.createElement("div");
+    row.className = "overtimeDayEntry usage";
+    const text = document.createElement("div");
+    text.innerHTML = `<b>−${fmtHours(u.hours)} ч</b><span>${esc(u.reason || t("списание"))}</span>`;
+    const edit = document.createElement("button");
+    edit.type = "button"; edit.textContent = t("ред.");
+    edit.addEventListener("click", () => startEditOvertimeUsage(u.id));
+    row.append(text, edit); el.appendChild(row);
   }
-  el.textContent = parts.join(" | ");
 }
 
 function parseShortTimePart(raw){
@@ -210,7 +267,7 @@ function setNightOvertimePreset(){
   updateOvertimeCalcPreview();
 }
 function selectedCreditBaseDate(){
-  return state.selected || $("creditDate")?.value || todayKey();
+  return $("creditDate")?.value || state.selected || todayKey();
 }
 
 function localDateTimeToDate(value){
@@ -245,14 +302,13 @@ function defaultOvertimeEndAfterShift(base, st){
 }
 
 function clearScenarioHighlight(){
-  document.querySelectorAll(".scenarioCard.active").forEach(x => x.classList.remove("active"));
+  state.activeScenarioId = null;
+  if ($("creditScenarioSelect")) $("creditScenarioSelect").value = "";
 }
 
 function highlightScenario(id){
-  clearScenarioHighlight();
-  if (!id) return;
-  const el = document.querySelector(`[data-scenario="${id}"]`);
-  if (el) el.classList.add("active");
+  state.activeScenarioId = id || null;
+  if ($("creditScenarioSelect")) $("creditScenarioSelect").value = id ? String(id) : "";
 }
 
 function formatDateHuman(k){
@@ -263,9 +319,11 @@ function formatDateHuman(k){
 }
 
 function quickScenarioRequirements(){
-  const st = stOf(state.selected);
+  const date = $("creditDate")?.value || state.selected;
+  const st = date ? stOf(date) : null;
   return {
-    hasSelected: !!state.selected,
+    date,
+    hasSelected: !!date,
     hasShift: !!st,
     hasEnd: !!(st && st.endTime),
     hasStart: !!(st && st.startTime),
@@ -291,25 +349,27 @@ function scenarioAvailable(sc){
 }
 
 function renderQuickScenarios(){
-  const grid = $("scenarioGrid");
-  if (!grid) return;
+  const select = $("creditScenarioSelect");
+  if (!select) return;
+  const current = String(state.activeScenarioId || select.value || "");
   const scenarios = (state.quickScenarios || []).slice().sort((a,b) => (a.sortOrder ?? 0) - (b.sortOrder ?? 0) || (a.id ?? 0) - (b.id ?? 0));
-  if (!scenarios.length) {
-    grid.innerHTML = `<div class="emptyLine">${esc(t("Сценарии пока не созданы. Добавьте первый сценарий в настройках."))}</div>`;
-    return;
+  select.innerHTML = `<option value="">${esc(t("Не выбран"))}</option>`;
+  for (const sc of scenarios) {
+    const option = document.createElement("option");
+    option.value = String(sc.id);
+    option.textContent = `${sc.name || t("Сценарий")} — ${scenarioHumanDescription(sc)}`;
+    option.disabled = !scenarioAvailable(sc);
+    select.appendChild(option);
   }
-  grid.innerHTML = scenarios.map(sc => {
-    const disabled = !scenarioAvailable(sc);
-    const active = String(state.activeScenarioId || "") === String(sc.id || "");
-    return `<div class="scenarioWrap">
-      <button type="button" class="scenarioCard ${active ? "active" : ""}" data-scenario-id="${sc.id}" ${disabled ? "disabled" : ""}>
-        <span>${esc(sc.groupLabel || t("сценарий"))}</span>
-        <b>${esc(sc.name || t("Сценарий"))}</b>
-        <small>${esc(sc.description || scenarioHumanDescription(sc))}</small>
-      </button>
-      <button type="button" class="scenarioDel" data-scenario-del="${sc.id}" title="${esc(t("удалить сценарий"))}">×</button>
-    </div>`;
-  }).join("");
+  if (current && [...select.options].some(option => option.value === current && !option.disabled)) select.value = current;
+  else { select.value = ""; state.activeScenarioId = null; }
+
+  const settingsList = $("scenarioSettingsList");
+  if (settingsList) {
+    settingsList.innerHTML = scenarios.length
+      ? scenarios.map(sc => `<div class="scenarioSettingsRow"><div><b>${esc(sc.name || t("Сценарий"))}</b><small>${esc(sc.description || scenarioHumanDescription(sc))}</small></div><button type="button" data-scenario-settings-delete="${sc.id}" title="${esc(t("удалить сценарий"))}">×</button></div>`).join("")
+      : `<span class="emptyLine">${esc(t("Сценарии пока не созданы."))}</span>`;
+  }
 }
 
 function scenarioHumanDescription(sc){
@@ -321,39 +381,7 @@ function scenarioHumanDescription(sc){
   return `${start} → ${end}`;
 }
 
-function renderQuickScenarioContext(){
-  const ctx = $("quickScenarioContext");
-  const tips = $("quickScenarioTips");
-  if (!ctx || !tips) return;
-  const r = quickScenarioRequirements();
-
-  if (!r.hasSelected) {
-    ctx.textContent = t("День не выбран. Сначала ткни дату в календаре.");
-    tips.textContent = t("Карточки разблокируются, когда у выбранного дня будет смена со временем.");
-    renderQuickScenarios();
-    return;
-  }
-  if (!r.hasShift) {
-    ctx.textContent = t(`${formatDateHuman(state.selected)} · смена не выбрана`);
-    tips.textContent = t("Поставь дневную, ночную или кастомную смену — тогда сценарии смогут взять время начала/конца.");
-    renderQuickScenarios();
-    return;
-  }
-
-  const st = r.shift;
-  const time = st.startTime && st.endTime ? `${st.startTime}–${st.endTime}` : t("время не настроено");
-  const plan = shiftPlannedHours(st) ? `${t("план")} ${fmtHours(shiftPlannedHours(st))} ${state.language === "en" ? "h" : "ч"}` : `${t("план")} 0 ${state.language === "en" ? "h" : "ч"}`;
-  const br = st.breakMinutes ? `${t("обед")} ${st.breakMinutes} ${state.language === "en" ? "min" : "мин"}` : `${t("обед")} 0 ${state.language === "en" ? "min" : "мин"}`;
-  ctx.textContent = `${formatDateHuman(state.selected)} · ${shiftDisplayName(st)}: ${time}, ${plan}, ${br}`;
-  if (!r.hasEnd) {
-    tips.textContent = t("У смены не указано время окончания. Откройте настройки смены и задайте время.");
-  } else if (!r.hasFullTime) {
-    tips.textContent = t("Доступны сценарии от конца смены. Для сценариев от начала смены укажите время начала.");
-  } else {
-    tips.textContent = t("Карточки только заполняют поля. Перед начислением можно поправить время, обед, план и причину.");
-  }
-  renderQuickScenarios();
-}
+function renderQuickScenarioContext(){ renderQuickScenarios(); }
 
 function fillCreditScenario({start, end, breakMinutes = 0, plannedHours = 0, reason = "", hint = "сценарий"}){
   if (!start || !end) return setSave("err", "не получилось собрать интервал сценария");
@@ -369,8 +397,9 @@ function fillCreditScenario({start, end, breakMinutes = 0, plannedHours = 0, rea
 }
 
 function currentSelectedShiftOrError(){
-  const st = stOf(state.selected);
-  if (!state.selected) { setSave("err", t("сначала выбери день в календаре")); return null; }
+  const date = selectedCreditBaseDate();
+  const st = stOf(date);
+  if (!date) { setSave("err", t("укажи дату переработки")); return null; }
   if (!st) { setSave("err", t("на выбранном дне нет смены")); return null; }
   return st;
 }
@@ -419,7 +448,7 @@ function scenarioPlannedHours(st, sc){
 
 function applyQuickScenario(sc){
   state.activeScenarioId = sc.id;
-  renderQuickScenarios();
+  highlightScenario(sc.id);
   const st = currentSelectedShiftOrError();
   if (!st) return;
   const base = selectedCreditBaseDate();
@@ -555,7 +584,8 @@ async function addOvertimeCredit(){
     } else {
       state.overtimeAccount = await api.createOvertimeCredit(payload);
     }
-    resetOvertimeForms(state.selected || payload.date);
+    closeAppModal("overtimeCreditModal");
+    resetOvertimeForms(payload.date);
     setSave("saved");
     renderOvertimeControls();
     renderCalendar();
@@ -576,34 +606,12 @@ function findUsageById(id){
   return null;
 }
 
-async function openOvertimeEditorForDate(date){
-  const parts = String(date || "").split("-").map(Number);
-  if (parts.length !== 3 || parts.some(n => !Number.isFinite(n))) return;
-  location.hash = "#calendar";
-  if (state.y !== parts[0] || state.m !== parts[1] - 1) await goto(parts[0], parts[1] - 1);
-  if (state.selected !== date) selectDay(date);
-  $("accOt").open = true;
-  if ($("overtimeBackToLedger")) $("overtimeBackToLedger").hidden = false;
-  await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-  $("accOt")?.scrollIntoView({ behavior:"smooth", block:"start" });
-}
-function returnToOvertimeLedger(){
-  location.hash = "#overtime";
-  requestAnimationFrame(() => {
-    const selector = state.editingCreditId
-      ? `[data-credit-id="${state.editingCreditId}"]`
-      : state.editingUsageId ? `[data-usage-row-id="${state.editingUsageId}"]` : null;
-    const row = selector ? document.querySelector(selector) : $("ledgerCard");
-    row?.scrollIntoView({ behavior:"smooth", block:"center" });
-  });
-}
-
-async function startEditOvertimeCredit(id){
+function startEditOvertimeCredit(id){
   const c = (state.overtimeAccount?.credits || []).find(x => Number(x.id) === Number(id)) || (state.ledgerPage?.items || []).find(x => Number(x.id) === Number(id));
   if (!c) return setSave("err", t("начисление не найдено"));
+  resetOvertimeForms(c.workedDate);
   state.editingCreditId = Number(id);
   state.editingUsageId = null;
-  await openOvertimeEditorForDate(c.workedDate);
   $("creditDate").value = c.workedDate;
   $("creditTimeRange").value = c.calculated ? "" : (c.timeRange || "");
   $("creditStart").value = toDateTimeLocal(c.startDateTime);
@@ -613,12 +621,14 @@ async function startEditOvertimeCredit(id){
   $("creditHours").value = fmtHours(c.hours);
   $("creditReason").value = c.reason || "";
   $("creditAdd").textContent = t("Сохранить");
-  $("creditCancel").hidden = false;
+  $("creditDelete").hidden = numOr0(c.usedHours) > 0.0001;
   $("creditEditNotice").hidden = false;
-  $("creditEditNotice").textContent = `Редактируется начисление #${id}. Если сделать период через несколько дат, сервер заменит строку на несколько начислений.`;
-  $("accOt").open = true;
+  $("creditEditNotice").textContent = t("Редактируется существующее начисление. Изменение периода может пересобрать строки начислений.");
+  $("overtimeCreditTitle").textContent = t("Редактировать переработку");
+  renderQuickScenarios();
   updateOvertimeCalcPreview();
-  $("creditReason").focus();
+  renderLedgerTable();
+  openAppModal("overtimeCreditModal", "creditReason");
 }
 
 async function addOvertimeUsage(){
@@ -638,7 +648,8 @@ async function addOvertimeUsage(){
     } else {
       state.overtimeAccount = await api.createOvertimeUsage(payload);
     }
-    resetOvertimeForms(state.selected || date);
+    closeAppModal("overtimeUsageModal");
+    resetOvertimeForms(date);
     setSave("saved");
     renderOvertimeControls();
     renderCalendar();
@@ -649,21 +660,23 @@ async function addOvertimeUsage(){
   }
 }
 
-async function startEditOvertimeUsage(id){
+function startEditOvertimeUsage(id){
   const u = findUsageById(id);
   if (!u) return setSave("err", t("списание не найдено"));
+  resetOvertimeForms(u.usageDate);
   state.editingCreditId = null;
   state.editingUsageId = Number(id);
-  await openOvertimeEditorForDate(u.usageDate);
   $("usageDate").value = u.usageDate;
   $("usageHours").value = fmtHours(u.hours);
   $("usageReason").value = u.reason || "";
   $("usageAdd").textContent = t("Сохранить");
-  $("usageCancel").hidden = false;
+  $("usageDelete").hidden = false;
   $("usageEditNotice").hidden = false;
-  $("usageEditNotice").textContent = `Редактируется списание #${id}. Если изменить часы, FIFO-распределение пересоберётся заново.`;
-  $("accOt").open = true;
-  $("usageReason").focus();
+  $("usageEditNotice").textContent = t("Редактируется существующее списание. FIFO-распределение будет рассчитано заново.");
+  $("overtimeUsageTitle").textContent = t("Редактировать списание");
+  updateUsageBalancePreview();
+  renderLedgerTable();
+  openAppModal("overtimeUsageModal", "usageHours");
 }
 
 async function removeOvertimeCredit(id){
@@ -673,7 +686,10 @@ async function removeOvertimeCredit(id){
   setSave("saving");
   try {
     state.overtimeAccount = await api.deleteOvertimeCredit(id);
-    if (state.editingCreditId === Number(id)) resetOvertimeForms(state.selected);
+    if (state.editingCreditId === Number(id)) {
+      closeAppModal("overtimeCreditModal");
+      resetOvertimeForms(state.selected);
+    }
     setSave("saved");
     renderOvertimeControls();
     renderCalendar();
@@ -691,7 +707,10 @@ async function removeOvertimeUsage(id){
   setSave("saving");
   try {
     state.overtimeAccount = await api.deleteOvertimeUsage(id);
-    if (state.editingUsageId === Number(id)) cancelUsageEdit();
+    if (state.editingUsageId === Number(id)) {
+      closeAppModal("overtimeUsageModal");
+      resetOvertimeForms(state.selected);
+    }
     setSave("saved");
     renderOvertimeControls();
     renderCalendar();
@@ -955,38 +974,47 @@ $("ledgerSearch").addEventListener("input", e => { clearTimeout(window.__ledgerT
 $("ledgerExportCsv").addEventListener("click", () => exportLedger("csv"));
 $("ledgerExportXls").addEventListener("click", () => exportLedger("xls"));
 
-$("creditAdd").addEventListener("click", addOvertimeCredit);
-$("creditCancel").addEventListener("click", cancelCreditEdit);
-$("creditNightShiftPreset").addEventListener("click", setNightShiftPreset);
-$("creditNightPreset").addEventListener("click", setNightOvertimePreset);
-$("scenarioGrid").addEventListener("click", e => {
-  const del = e.target.closest("[data-scenario-del]");
-  if (del) {
-    e.stopPropagation();
-    deleteQuickScenario(del.dataset.scenarioDel);
-    return;
-  }
-  const btn = e.target.closest("[data-scenario-id]");
-  if (!btn || btn.disabled) return;
-  const sc = (state.quickScenarios || []).find(x => String(x.id) === String(btn.dataset.scenarioId));
+$("dayAddCredit")?.addEventListener("click", () => openOvertimeCreditModal(state.selected));
+$("dayAddUsage")?.addEventListener("click", () => openOvertimeUsageModal(state.selected));
+$("ledgerAddCredit")?.addEventListener("click", () => openOvertimeCreditModal(state.selected || todayKey()));
+$("ledgerAddUsage")?.addEventListener("click", () => openOvertimeUsageModal(state.selected || todayKey()));
+
+$("overtimeCreditForm")?.addEventListener("submit", event => { event.preventDefault(); addOvertimeCredit(); });
+$("overtimeUsageForm")?.addEventListener("submit", event => { event.preventDefault(); addOvertimeUsage(); });
+$("creditCancel")?.addEventListener("click", cancelCreditEdit);
+$("usageCancel")?.addEventListener("click", cancelUsageEdit);
+$("overtimeCreditClose")?.addEventListener("click", closeOvertimeCreditModal);
+$("overtimeCreditBackdrop")?.addEventListener("click", closeOvertimeCreditModal);
+$("overtimeUsageClose")?.addEventListener("click", closeOvertimeUsageModal);
+$("overtimeUsageBackdrop")?.addEventListener("click", closeOvertimeUsageModal);
+$("creditDelete")?.addEventListener("click", () => state.editingCreditId && removeOvertimeCredit(state.editingCreditId));
+$("usageDelete")?.addEventListener("click", () => state.editingUsageId && removeOvertimeUsage(state.editingUsageId));
+
+$("creditNightShiftPreset")?.addEventListener("click", setNightShiftPreset);
+$("creditNightPreset")?.addEventListener("click", setNightOvertimePreset);
+$("creditScenarioSelect")?.addEventListener("change", event => {
+  const id = Number(event.target.value);
+  if (!id) { clearScenarioHighlight(); return; }
+  const sc = (state.quickScenarios || []).find(item => Number(item.id) === id);
   if (sc) applyQuickScenario(sc);
 });
-
-$("overtimeBackToLedger")?.addEventListener("click", returnToOvertimeLedger);
-$("quickClearScenario").addEventListener("click", () => resetOvertimeForms(state.selected || $("creditDate")?.value || todayKey()));
-$("scSave").addEventListener("click", saveQuickScenario);
-$("scReset").addEventListener("click", resetScenarioEditor);
-$("creditPlanByShift").addEventListener("click", () => {
-  const st = stOf(state.selected);
-  const plan = shiftPlannedHours(st);
-  if (!st || !plan) return setSave("err", t("на этом дне нет смены с плановыми часами"));
-  $("creditPlanned").value = fmtHours(plan);
+$("scSave")?.addEventListener("click", saveQuickScenario);
+$("scReset")?.addEventListener("click", resetScenarioEditor);
+$("scenarioSettingsList")?.addEventListener("click", event => {
+  const button = event.target.closest("[data-scenario-settings-delete]");
+  if (!button) return;
+  deleteQuickScenario(Number(button.dataset.scenarioSettingsDelete));
+});
+$("creditPlanByShift")?.addEventListener("click", () => {
+  const st = currentSelectedShiftOrError();
+  if (!st) return;
+  $("creditPlanned").value = fmtHours(shiftPlannedHours(st));
   updateOvertimeCalcPreview();
 });
-$("creditTimeByShift").addEventListener("click", () => {
-  const st = stOf(state.selected);
-  const base = state.selected || $("creditDate")?.value;
-  if (!st || !base || !st.startTime || !st.endTime) return setSave("err", t("у выбранной смены не указано время начала/конца"));
+$("creditTimeByShift")?.addEventListener("click", () => {
+  const st = currentSelectedShiftOrError();
+  if (!st) return;
+  const base = selectedCreditBaseDate();
   $("creditDate").value = base;
   $("creditStart").value = setTimeOnDate(base, st.startTime);
   const endDate = st.endTime <= st.startTime ? dateKeyOffset(base, 1) : base;
@@ -995,29 +1023,21 @@ $("creditTimeByShift").addEventListener("click", () => {
   $("creditPlanned").value = fmtHours(shiftPlannedHours(st));
   updateOvertimeCalcPreview();
 });
-$("creditDateSelected").addEventListener("click", () => {
-  if (!state.selected) return setSave("err", t("сначала выбери день в календаре"));
-  $("creditDate").value = state.selected;
-  updateOvertimeCalcPreview();
-});
-$("creditDateToday").addEventListener("click", () => {
-  $("creditDate").value = todayKey();
-  updateOvertimeCalcPreview();
-});
 for (const id of ["creditDate", "creditTimeRange", "creditStart", "creditEnd", "creditBreak", "creditPlanned"]) {
-  $(id).addEventListener("input", updateOvertimeCalcPreview);
+  $(id)?.addEventListener("input", () => { updateOvertimeCalcPreview(); if (id === "creditDate") renderQuickScenarios(); });
 }
-$("usageAdd").addEventListener("click", addOvertimeUsage);
-$("usageCancel").addEventListener("click", cancelUsageEdit);
-$("usageByShift").addEventListener("click", () => {
-  const st = stOf(state.selected);
-  const plan = shiftPlannedHours(st);
-  if (!st || !plan) return setSave("err", t("на этом дне нет смены с плановыми часами для списания"));
-  $("usageHours").value = fmtHours(plan);
+$("usageHours")?.addEventListener("input", updateUsageBalancePreview);
+$("usageByShift")?.addEventListener("click", () => {
+  const date = $("usageDate")?.value || state.selected;
+  const st = date ? stOf(date) : null;
+  if (!st) return setSave("err", t("на выбранном дне нет смены"));
+  $("usageHours").value = fmtHours(shiftPlannedHours(st));
+  updateUsageBalancePreview();
 });
 for (const id of ["creditDate", "creditTimeRange", "creditStart", "creditEnd", "creditBreak", "creditPlanned", "creditHours", "creditReason", "usageDate", "usageHours", "usageReason"]) {
-  $(id).addEventListener("keydown", e => {
-    if (e.key !== "Enter") return;
+  $(id)?.addEventListener("keydown", event => {
+    if (event.key !== "Enter" || event.shiftKey || event.target.tagName === "TEXTAREA") return;
+    event.preventDefault();
     if (id.startsWith("credit")) addOvertimeCredit();
     else addOvertimeUsage();
   });

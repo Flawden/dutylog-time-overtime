@@ -1,3 +1,18 @@
+## v27.4.0 — Unified overtime editors
+
+### Changed
+- Replaced the oversized overtime form inside the selected-day panel with two compact actions: earn overtime and use time off.
+- Added the same actions to the overtime ledger so entries can be created from either the calendar context or the account table.
+- Added one shared modal editor for overtime credits and one shared modal editor for time-off usages; create and edit now use the same forms.
+- Overtime editing from the ledger opens directly in the editor instead of navigating to another month in the calendar.
+- Existing quick scenarios are available through a compact dropdown in the overtime editor.
+- The selected calendar date is prefilled when an editor is opened from a day; ledger actions use the last selected date or today.
+- Added live before/after balance preview for time-off usage and responsive full-height mobile editors.
+
+### Tests
+- Added frontend contract coverage for the compact calendar controls, shared modals and direct ledger editing.
+- Added a Playwright scenario covering create, use and edit flows from both calendar and ledger entry points.
+
 ## v27.3.1 — Stable browser session and editor modals
 
 - Replaced rotating persistent remember-me tokens with a stable, fixed-expiry token service so parallel PWA bootstrap requests can no longer invalidate each other after a browser close or application restart.

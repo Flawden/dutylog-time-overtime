@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.3.1" rel="stylesheet"/>
+<link href="app.css?v=27.4.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -126,60 +126,13 @@
 <details class="acc dayPanelModule" data-day-module="overtime" id="accOt">
 <summary><span class="accT">Переработка</span><span class="accS" id="sumOt"></span></summary>
 <div class="accB">
-<button class="overtimeBackToLedger" id="overtimeBackToLedger" type="button" hidden>← Вернуться к таблице переработок</button>
-<div class="ot">
-<div class="row">
-<span class="editNotice" hidden="" id="creditEditNotice"></span>
-<label>Дата начисления <input id="creditDate" type="date"/></label>
-<button id="creditDateSelected" type="button">выбранный день</button>
-<button id="creditDateToday" type="button">сегодня</button>
-<input id="creditTimeRange" placeholder="Коротко: 17:00–20:00 или 17–08" type="text"/>
+<div class="overtimeDayCompact">
+<div class="overtimeDayActions">
+<button class="primary" id="dayAddCredit" type="button">+ Начислить</button>
+<button id="dayAddUsage" type="button">− Списать</button>
+<span class="bal" id="otBalance">доступно 0 ч</span>
 </div>
-<div class="row">
-<label>Начало <input id="creditStart" type="datetime-local"/></label>
-<label>Конец <input id="creditEnd" type="datetime-local"/></label>
-</div>
-<div class="row">
-<label>Обед, мин <input id="creditBreak" max="1440" min="0" step="5" type="number" value="0"/></label>
-<label>Вычесть план, ч <input id="creditPlanned" max="100" min="0" step="0.25" type="number" value="0"/></label>
-<button id="creditPlanByShift" type="button">план по смене</button>
-<button id="creditTimeByShift" type="button">время по смене</button>
-<label>Итого <input id="creditHours" max="100" min="0" step="0.25" type="number" value="0"/></label>
-<span class="calc" id="creditCalcHint">можно вручную</span>
-</div>
-<div class="row">
-<input id="creditReason" placeholder="Причина переработки: ППР, авария, замена смены…" type="text"/>
-<button id="creditNightShiftPreset" type="button">20–08 обед 60</button>
-<button id="creditNightPreset" type="button">17–08</button>
-<button class="primary" id="creditAdd" type="button">Начислить</button>
-<button class="cancelEdit" hidden="" id="creditCancel" type="button">отмена</button>
-<div class="wideHint">Можно ввести полный интервал датами или коротко: дата начисления + 17:00–20:00. Если вводишь только переработку — план оставь 0; если всю фактическую смену — вычти план.</div>
-</div>
-<div class="quickScenarioPanel">
-<div class="quickScenarioHead">
-<div>
-<div class="quickScenarioTitle">Быстрые сценарии</div>
-<div class="quickScenarioContext" id="quickScenarioContext">Выберите день и смену, чтобы увидеть подходящие сценарии.</div>
-</div>
-<button class="quickGhost" id="quickClearScenario" type="button">очистить поля</button>
-</div>
-<div class="scenarioGrid" id="scenarioGrid"></div>
-<div class="quickScenarioTips" id="quickScenarioTips">
-            Сценарий заполняет поля. Перед сохранением можно изменить время, обед, план и причину.
-          </div>
-
-</div>
-<div class="row">
-<span class="editNotice" hidden="" id="usageEditNotice"></span>
-<label>Дата <input id="usageDate" type="date"/></label>
-<label>Списать <input id="usageHours" max="100" min="0" step="0.25" type="number" value="0"/></label>
-<input id="usageReason" placeholder="Зачем списал: отгул, не вышел после ППР…" type="text"/>
-<button id="usageByShift" type="button">по смене</button>
-<button class="primary" id="usageAdd" type="button">Списать отгул</button>
-<button class="cancelEdit" hidden="" id="usageCancel" type="button">отмена</button>
-<span class="bal" id="otBalance">0 ч</span>
-</div>
-<div class="otHint" id="otDayDetails">При списании отгула система сначала использует самые старые остатки переработки. Интервальные начисления автоматически распределяются по датам.</div>
+<div class="overtimeDayEntries" id="otDayDetails">На этот день в журнале переработок записей нет.</div>
 </div>
 </div>
 </details>
@@ -262,6 +215,10 @@
 <div class="small" style="color:var(--dim);font-size:12px;">Начисления живут до полного списания. Отгулы списываются со старых остатков.</div>
 </div>
 <div class="balance" id="ledgerBalance">0 ч</div>
+</div>
+<div class="ledgerPrimaryActions">
+<button class="primary" id="ledgerAddCredit" type="button">+ Добавить переработку</button>
+<button id="ledgerAddUsage" type="button">− Добавить списание</button>
 </div>
 <button class="mobileFilterToggle" id="ledgerFiltersToggle" type="button" aria-controls="ledgerFilters" aria-expanded="false"><span>Фильтры</span><b aria-hidden="true">⌄</b></button>
 <div class="ledgerFilters" id="ledgerFilters">
@@ -705,7 +662,8 @@
 <button id="scSave" type="button">Добавить сценарий</button>
 <button class="ghostBtn" id="scReset" type="button">Очистить форму</button>
 </div>
-<div class="quickScenarioTips">Сценарии сохраняются в профиле пользователя и доступны в панели выбранного дня.</div>
+<div class="scenarioSettingsList" id="scenarioSettingsList"></div>
+<div class="quickScenarioTips">Сценарии сохраняются в профиле пользователя и доступны в форме переработки.</div>
 </details></div><div class="notifyCard settingsCard" id="notifyCard" data-settings-section="notifications">
 <a class="settingsAnchor" id="settings-notifications"></a>
 <div class="notifyHead">
@@ -822,7 +780,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.3.1</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.4.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -852,6 +810,106 @@
   <div class="noteFsBody">
     <textarea id="noteFsEdit" spellcheck="false" placeholder="# Заголовок&#10;**жирный**, *курсив*, `код`&#10;- [ ] задача&#10;> цитата&#10;```&#10;код блоком&#10;```"></textarea>
     <div class="noteFsPrev" id="noteFsPrev"></div>
+  </div>
+</div>
+
+<div class="appModal" id="overtimeCreditModal" hidden>
+  <button class="appModalBackdrop" id="overtimeCreditBackdrop" type="button" aria-label="Закрыть"></button>
+  <div class="appModalPanel appModalPanelWide" role="dialog" aria-modal="true" aria-labelledby="overtimeCreditTitle">
+    <div class="appModalHead">
+      <div>
+        <div class="eyebrow">Переработка</div>
+        <div class="appModalTitle" id="overtimeCreditTitle">Добавить переработку</div>
+        <div class="appModalHint">Дата берётся из выбранного дня календаря. Сценарий только заполняет поля — перед сохранением их можно изменить.</div>
+      </div>
+      <button class="appModalClose" id="overtimeCreditClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <form class="appModalForm overtimeModalForm" id="overtimeCreditForm">
+      <div class="appModalMessage appFieldWide" id="creditEditNotice" hidden></div>
+      <label class="appField">Дата начисления
+        <input id="creditDate" type="date" required/>
+      </label>
+      <label class="appField">Сценарий
+        <select id="creditScenarioSelect">
+          <option value="">Не выбран</option>
+        </select>
+      </label>
+      <label class="appField appFieldWide">Короткий интервал
+        <input id="creditTimeRange" placeholder="Например: 17:00–20:00 или 17–08" type="text"/>
+      </label>
+      <label class="appField">Начало
+        <input id="creditStart" type="datetime-local"/>
+      </label>
+      <label class="appField">Конец
+        <input id="creditEnd" type="datetime-local"/>
+      </label>
+      <label class="appField">Обед, мин
+        <input id="creditBreak" max="1440" min="0" step="5" type="number" value="0"/>
+      </label>
+      <label class="appField">Вычесть план, ч
+        <input id="creditPlanned" max="100" min="0" step="0.25" type="number" value="0"/>
+      </label>
+      <label class="appField">Итого, ч
+        <input id="creditHours" max="100" min="0" step="0.25" type="number" value="0"/>
+      </label>
+      <div class="appField overtimeCalcBox">
+        <span>Расчёт</span>
+        <b class="calc" id="creditCalcHint">можно вручную</b>
+      </div>
+      <label class="appField appFieldWide">Причина
+        <input id="creditReason" maxlength="300" placeholder="ППР, авария, замена смены…" type="text"/>
+      </label>
+      <div class="overtimePresetRow appFieldWide">
+        <button id="creditPlanByShift" type="button">план по смене</button>
+        <button id="creditTimeByShift" type="button">время по смене</button>
+        <button id="creditNightShiftPreset" type="button">20–08, обед 60</button>
+        <button id="creditNightPreset" type="button">17–08</button>
+      </div>
+      <div class="appModalHint appFieldWide">Можно указать полный интервал или короткое время. Если вводишь только переработку — план оставь 0; если всю фактическую смену — вычти план.</div>
+      <div class="appModalActions appFieldWide">
+        <button class="dangerGhost" id="creditDelete" type="button" hidden>Удалить</button>
+        <button id="creditCancel" type="button">Отмена</button>
+        <button class="primary" id="creditAdd" type="submit">Начислить</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="appModal" id="overtimeUsageModal" hidden>
+  <button class="appModalBackdrop" id="overtimeUsageBackdrop" type="button" aria-label="Закрыть"></button>
+  <div class="appModalPanel" role="dialog" aria-modal="true" aria-labelledby="overtimeUsageTitle">
+    <div class="appModalHead">
+      <div>
+        <div class="eyebrow">Списание</div>
+        <div class="appModalTitle" id="overtimeUsageTitle">Добавить списание</div>
+        <div class="appModalHint">Списание распределяется по FIFO: сначала используются самые старые остатки.</div>
+      </div>
+      <button class="appModalClose" id="overtimeUsageClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <form class="appModalForm overtimeModalForm" id="overtimeUsageForm">
+      <div class="appModalMessage appFieldWide" id="usageEditNotice" hidden></div>
+      <label class="appField">Дата отгула
+        <input id="usageDate" type="date" required/>
+      </label>
+      <label class="appField">Количество часов
+        <input id="usageHours" max="100" min="0" step="0.25" type="number" value="0" required/>
+      </label>
+      <label class="appField appFieldWide">Причина
+        <input id="usageReason" maxlength="300" placeholder="Отгул, визит к врачу…" type="text"/>
+      </label>
+      <div class="usageBalancePreview appFieldWide">
+        <span>Доступно до списания <b id="usageBalanceBefore">0 ч</b></span>
+        <span>Останется после списания <b id="usageBalanceAfter">0 ч</b></span>
+      </div>
+      <div class="overtimePresetRow appFieldWide">
+        <button id="usageByShift" type="button">списать по норме смены</button>
+      </div>
+      <div class="appModalActions appFieldWide">
+        <button class="dangerGhost" id="usageDelete" type="button" hidden>Удалить</button>
+        <button id="usageCancel" type="button">Отмена</button>
+        <button class="primary" id="usageAdd" type="submit">Списать</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -989,12 +1047,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.3.1"></script>
-<script src="js/20-data.js?v=27.3.1"></script>
-<script src="js/30-calendar.js?v=27.3.1"></script>
-<script src="js/40-overtime.js?v=27.3.1"></script>
-<script src="js/50-tasks.js?v=27.3.1"></script>
-<script src="js/60-settings.js?v=27.3.1"></script>
-<script src="js/70-user-boot.js?v=27.3.1"></script>
+<script src="js/10-core.js?v=27.4.0"></script>
+<script src="js/20-data.js?v=27.4.0"></script>
+<script src="js/30-calendar.js?v=27.4.0"></script>
+<script src="js/40-overtime.js?v=27.4.0"></script>
+<script src="js/50-tasks.js?v=27.4.0"></script>
+<script src="js/60-settings.js?v=27.4.0"></script>
+<script src="js/70-user-boot.js?v=27.4.0"></script>
 </body>
 </html>

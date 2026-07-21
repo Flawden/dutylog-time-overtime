@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.3.1.
+Status: v27.4.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.3.1 adds concurrency-safe persistent browser login, a complete task edit modal and a shift-type manager outside Settings, while retaining the v27.3.0 important-dates/timezone/overtime baseline plus the v27.2.29 security baseline and all earlier deployment gates. Current baseline: 69 Java test classes / 350 `@Test` methods and 8 Chromium Playwright scenarios.
+Current extension: v27.4.0 replaces the oversized selected-day overtime form with shared credit and usage editors opened from either the calendar or ledger, while retaining the v27.3.1 persistent-session/task/shift-editor baseline, the v27.3.0 important-dates/timezone baseline, the v27.2.29 security baseline and all earlier deployment gates. Current baseline: 70 Java test classes / 353 `@Test` methods and 9 Chromium Playwright scenarios.
 
 Historical extension: v27.2.31 adds an authenticated, CSRF-aware deployment smoke-test regression.
 

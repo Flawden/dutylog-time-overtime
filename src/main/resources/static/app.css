@@ -2027,3 +2027,100 @@ body.app-modal-open { overflow:hidden; }
   .appModalActions { position:sticky; bottom:0; margin:4px -12px -16px; padding:10px 12px calc(10px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:var(--panel2); }
   .appModalActions button { flex:1 1 0; }
 }
+
+/* v27.4.0: compact overtime actions and shared credit/usage editors. */
+.overtimeDayCompact { display:grid; gap:10px; }
+.overtimeDayActions,
+.ledgerPrimaryActions,
+.overtimePresetRow {
+  display:flex;
+  align-items:center;
+  flex-wrap:wrap;
+  gap:8px;
+}
+.overtimeDayActions button,
+.ledgerPrimaryActions button,
+.overtimePresetRow button {
+  min-height:38px;
+  padding:8px 12px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--panel);
+  color:var(--mut);
+  cursor:pointer;
+}
+.overtimeDayActions button.primary,
+.ledgerPrimaryActions button.primary {
+  border-color:var(--accent);
+  background:var(--accent);
+  color:#14171c;
+  font-weight:850;
+}
+.overtimeDayActions .bal { margin-left:auto; color:var(--accent); font-family:ui-monospace,monospace; font-weight:800; }
+.overtimeDayEntries { display:grid; gap:7px; }
+.overtimeDayEntry {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:9px;
+  align-items:center;
+  padding:9px 10px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--panel2);
+}
+.overtimeDayEntry > div { display:flex; align-items:baseline; flex-wrap:wrap; gap:7px; min-width:0; }
+.overtimeDayEntry b { font-family:ui-monospace,monospace; color:var(--accent); }
+.overtimeDayEntry.usage b { color:#7b8ce0; }
+.overtimeDayEntry span { color:var(--text); overflow-wrap:anywhere; }
+.overtimeDayEntry small { color:var(--dim); }
+.overtimeDayEntry button { background:none; border:none; color:var(--dim); cursor:pointer; }
+.overtimeDayEntry button:hover { color:var(--accent); }
+.ledgerPrimaryActions { margin:0 0 10px; }
+.overtimeModalForm .appModalMessage[hidden] { display:none; }
+.overtimeCalcBox {
+  min-height:67px;
+  padding:9px 11px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--panel);
+}
+.overtimeCalcBox b { color:var(--accent); font-family:ui-monospace,monospace; font-size:12px; line-height:1.35; }
+.overtimePresetRow button { min-height:34px; padding:7px 10px; border-style:dashed; background:transparent; font-size:12px; }
+.usageBalancePreview {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:8px;
+}
+.usageBalancePreview span {
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  padding:11px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--panel);
+  color:var(--mut);
+}
+.usageBalancePreview b { color:var(--accent); font-family:ui-monospace,monospace; }
+.usageBalancePreview b.negative { color:var(--danger); }
+.appModalActions .dangerGhost { margin-right:auto; color:var(--danger); border-color:color-mix(in srgb, var(--danger) 55%, var(--line)); }
+body.app-modal-open .tabbar { visibility:hidden; pointer-events:none; }
+
+@media (max-width:760px) {
+  .overtimeDayActions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .overtimeDayActions button { width:100%; }
+  .overtimeDayActions .bal { grid-column:1 / -1; margin-left:0; text-align:right; }
+  .ledgerPrimaryActions { display:grid; grid-template-columns:1fr; }
+  .ledgerPrimaryActions button { width:100%; }
+  .usageBalancePreview { grid-template-columns:1fr; }
+  .overtimePresetRow { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .overtimePresetRow button { width:100%; }
+}
+
+.scenarioSettingsList { display:grid; gap:7px; margin-top:10px; }
+.scenarioSettingsRow { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:8px; padding:9px 10px; border:1px solid var(--line); border-radius:10px; background:var(--panel); }
+.scenarioSettingsRow > div { display:grid; gap:3px; min-width:0; }
+.scenarioSettingsRow b { color:var(--text); }
+.scenarioSettingsRow small { color:var(--dim); overflow-wrap:anywhere; }
+.scenarioSettingsRow button { width:32px; height:32px; padding:0; border:1px solid var(--line); border-radius:9px; background:transparent; color:var(--dim); cursor:pointer; }
+.scenarioSettingsRow button:hover { color:var(--danger); border-color:var(--danger); }

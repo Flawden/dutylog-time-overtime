@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.3.1}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.4.0}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -940,15 +940,14 @@ contains src/main/java/ru/daniil/shifts/web/ProfileController.java 'out.put("wor
 contains src/main/java/ru/daniil/shifts/service/UserTimeService.java "LocalDate today"
 contains src/main/resources/static/index.html 'data-view="important"'
 contains src/main/resources/static/js/50-tasks.js "renderImportantBoard"
-contains src/main/resources/static/js/40-overtime.js "openOvertimeEditorForDate"
+contains src/main/resources/static/js/40-overtime.js "startEditOvertimeCredit"
 contains src/main/resources/static/js/40-overtime.js "ledgerEditingRow"
 contains src/main/resources/static/app.css ".ledgerEditingRow"
 
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
-contains README.md "v27.3.1 — Stable browser session and editor modals"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.3.1"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.0"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -958,6 +957,26 @@ not_contains src/main/resources/static/index.html 'id="shiftSettingsCard"'
 not_contains src/main/resources/static/js/50-tasks.js 'prompt("Текст задачи"'
 not_contains src/main/resources/static/js/60-settings.js 'prompt(t("Название смены")'
 contains e2e/editor-modals.spec.js "task and shift type editors use complete modal forms"
+
+# v27.4.0 unified overtime editors
+contains CHANGES.md "v27.4.0 — Unified overtime editors"
+contains README.md "v27.4.0 — Unified overtime editors"
+contains docs/UNIFIED_OVERTIME_EDITORS_V27.4.0.md "shared credit editor"
+contains src/main/resources/static/index.html 'id="dayAddCredit"'
+contains src/main/resources/static/index.html 'id="dayAddUsage"'
+contains src/main/resources/static/index.html 'id="ledgerAddCredit"'
+contains src/main/resources/static/index.html 'id="ledgerAddUsage"'
+contains src/main/resources/static/index.html 'id="overtimeCreditModal"'
+contains src/main/resources/static/index.html 'id="overtimeUsageModal"'
+contains src/main/resources/static/index.html 'id="creditScenarioSelect"'
+not_contains src/main/resources/static/index.html 'class="quickScenarioPanel"'
+not_contains src/main/resources/static/js/40-overtime.js "openOvertimeEditorForDate"
+contains src/main/resources/static/js/40-overtime.js "openOvertimeCreditModal"
+contains src/main/resources/static/js/40-overtime.js "openOvertimeUsageModal"
+contains src/main/resources/static/js/40-overtime.js "updateUsageBalancePreview"
+contains src/main/resources/static/app.css "body.app-modal-open .tabbar"
+contains src/test/java/ru/daniil/shifts/web/UnifiedOvertimeEditorsFrontendContractTest.java "calendarAndLedgerOpenTheSameCreditAndUsageEditors"
+contains e2e/overtime-editor-modals.spec.js "overtime credit and usage editors work from calendar and ledger"
 
 DEPLOY_ENV_TMP="$(mktemp -d)"
 sed \
@@ -1022,23 +1041,23 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "8" ]]; then
-  ok "Playwright test baseline: 8"
+if [[ "$E2E_TESTS" == "9" ]]; then
+  ok "Playwright test baseline: 9"
 else
-  fail "expected 8 Playwright tests, found $E2E_TESTS"
+  fail "expected 9 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "350" ]]; then
-  ok "test method baseline: 350"
+if [[ "$TEST_METHODS" == "353" ]]; then
+  ok "test method baseline: 353"
 else
-  fail "expected 350 @Test methods, found $TEST_METHODS"
+  fail "expected 353 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "69" ]]; then
-  ok "test class baseline: 69"
+if [[ "$TEST_CLASSES" == "70" ]]; then
+  ok "test class baseline: 70"
 else
-  fail "expected 69 test classes, found $TEST_CLASSES"
+  fail "expected 70 test classes, found $TEST_CLASSES"
 fi
 
 echo

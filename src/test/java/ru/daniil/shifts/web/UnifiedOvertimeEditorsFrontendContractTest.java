@@ -1,0 +1,57 @@
+package ru.daniil.shifts.web;
+
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+class UnifiedOvertimeEditorsFrontendContractTest {
+
+    private static String resource(String relativePath) throws IOException {
+        return Files.readString(Path.of("src/main/resources/static").resolve(relativePath), StandardCharsets.UTF_8);
+    }
+
+    @Test
+    void selectedDayUsesCompactActionsInsteadOfTheLegacyInlineForm() throws Exception {
+        String html = resource("index.html");
+
+        assertTrue(html.contains("id=\"dayAddCredit\""));
+        assertTrue(html.contains("id=\"dayAddUsage\""));
+        assertTrue(html.contains("id=\"otDayDetails\""));
+        assertFalse(html.contains("class=\"quickScenarioPanel\""));
+    }
+
+    @Test
+    void calendarAndLedgerOpenTheSameCreditAndUsageEditors() throws Exception {
+        String html = resource("index.html");
+        String js = resource("js/40-overtime.js");
+
+        assertTrue(html.contains("id=\"ledgerAddCredit\""));
+        assertTrue(html.contains("id=\"ledgerAddUsage\""));
+        assertTrue(html.contains("id=\"overtimeCreditForm\""));
+        assertTrue(html.contains("id=\"overtimeUsageForm\""));
+        assertTrue(js.contains("openOvertimeCreditModal(state.selected)"));
+        assertTrue(js.contains("openOvertimeUsageModal(state.selected)"));
+        assertTrue(js.contains("openOvertimeCreditModal(state.selected || todayKey())"));
+        assertTrue(js.contains("openOvertimeUsageModal(state.selected || todayKey())"));
+    }
+
+    @Test
+    void creditUsesScenarioDropdownAndUsageShowsLiveBalancePreview() throws Exception {
+        String html = resource("index.html");
+        String js = resource("js/40-overtime.js");
+        String css = resource("app.css");
+
+        assertTrue(html.contains("id=\"creditScenarioSelect\""));
+        assertTrue(html.contains("id=\"usageBalanceBefore\""));
+        assertTrue(html.contains("id=\"usageBalanceAfter\""));
+        assertTrue(js.contains("function updateUsageBalancePreview()"));
+        assertTrue(js.contains("function renderQuickScenarios()"));
+        assertTrue(css.contains("body.app-modal-open .tabbar"));
+    }
+}

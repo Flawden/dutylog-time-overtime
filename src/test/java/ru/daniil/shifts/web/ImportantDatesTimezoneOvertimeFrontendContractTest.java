@@ -30,13 +30,17 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
     }
 
     @Test
-    void overtimeEditTargetsExactRowsAndNavigatesToTheCorrectDay() throws Exception {
+    void overtimeEditTargetsExactRowsAndOpensSharedEditorsDirectly() throws Exception {
         String html = resource("index.html");
         String js = resource("js/40-overtime.js");
         String css = resource("app.css");
 
-        assertTrue(html.contains("id=\"overtimeBackToLedger\""));
-        assertTrue(js.contains("async function openOvertimeEditorForDate(date)"));
+        assertTrue(html.contains("id=\"overtimeCreditModal\""));
+        assertTrue(html.contains("id=\"overtimeUsageModal\""));
+        assertFalse(html.contains("id=\"overtimeBackToLedger\""));
+        assertFalse(js.contains("openOvertimeEditorForDate"));
+        assertTrue(js.contains("openAppModal(\"overtimeCreditModal\""));
+        assertTrue(js.contains("openAppModal(\"overtimeUsageModal\""));
         assertTrue(js.contains("Number(state.editingCreditId) === Number(c.id)"));
         assertTrue(js.contains("usageIds.includes(Number(state.editingUsageId))"));
         assertTrue(js.contains("tr.classList.toggle(\"ledgerEditingRow\", editingCredit || editingUsage)"));
