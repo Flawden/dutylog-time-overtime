@@ -14,6 +14,7 @@ import ru.daniil.shifts.model.TelegramNotificationDelivery;
 import ru.daniil.shifts.repo.TelegramLinkRepository;
 import ru.daniil.shifts.repo.TelegramNotificationDeliveryRepository;
 import ru.daniil.shifts.service.NotificationService;
+import ru.daniil.shifts.service.UserTimeService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -31,6 +32,7 @@ class TelegramNotificationServiceTest {
     @Mock TelegramNotificationDeliveryRepository deliveryRepository;
     @Mock NotificationService notificationService;
     @Mock TelegramBotService botService;
+    @Mock UserTimeService userTimeService;
 
     TelegramNotificationService service;
     AppUser user;
@@ -39,7 +41,7 @@ class TelegramNotificationServiceTest {
     @BeforeEach
     void setUp() {
         service = new TelegramNotificationService(
-                linkService, linkRepository, deliveryRepository, notificationService, botService);
+                linkService, linkRepository, deliveryRepository, notificationService, botService, userTimeService);
         ReflectionTestUtils.setField(service, "telegramNotificationsEnabled", true);
         ReflectionTestUtils.setField(service, "lookbackMinutes", 10);
         ReflectionTestUtils.setField(service, "lookaheadMinutes", 1);
@@ -61,7 +63,8 @@ class TelegramNotificationServiceTest {
 
     @Test
     void dueReminderIsSentAndPersistedExactlyOnce() {
-        LocalDateTime remindAt = LocalDateTime.now().withNano(0);
+        LocalDateTime remindAt = LocalDateTime.of(2026, 7, 17, 12, 0);
+        when(userTimeService.now(user)).thenReturn(remindAt);
         NotificationReminderDto reminder = reminder("task-1", "TASK", remindAt, "Проверить отчёт", "до 18:00", "2026-07-17");
         when(linkService.isConfigured()).thenReturn(true);
         when(linkRepository.findByEnabledTrueAndNotificationsEnabledTrue()).thenReturn(List.of(link));
@@ -82,7 +85,8 @@ class TelegramNotificationServiceTest {
 
     @Test
     void duplicateMalformedAndOutOfWindowRemindersAreSkipped() {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
+        LocalDateTime now = LocalDateTime.of(2026, 7, 17, 12, 0);
+        when(userTimeService.now(user)).thenReturn(now);
         NotificationReminderDto duplicate = reminder("dup", "SHIFT", now, "Смена", "08:00", "2026-07-17");
         NotificationReminderDto tooOld = reminder("old", "TASK", now.minusHours(2), "Старая", "", "2026-07-17");
         NotificationReminderDto tooFuture = reminder("future", "TASK", now.plusHours(2), "Будущая", "", "2026-07-17");
@@ -101,7 +105,8 @@ class TelegramNotificationServiceTest {
 
     @Test
     void failedTelegramSendIsRetriedLaterInsteadOfMarkedDelivered() {
-        LocalDateTime now = LocalDateTime.now().withNano(0);
+        LocalDateTime now = LocalDateTime.of(2026, 7, 17, 12, 0);
+        when(userTimeService.now(user)).thenReturn(now);
         NotificationReminderDto reminder = reminder("retry", "IMPORTANT_DAY", now, "День рождения", "", "2026-07-17");
         when(linkService.isConfigured()).thenReturn(true);
         when(linkRepository.findByEnabledTrueAndNotificationsEnabledTrue()).thenReturn(List.of(link));
@@ -118,7 +123,9 @@ class TelegramNotificationServiceTest {
     void oneBrokenLinkDoesNotBlockOtherUsers() {
         AppUser brokenUser = new AppUser("telegram-broken", "{noop}x");
         TelegramLink brokenLink = new TelegramLink(brokenUser, 1L);
-        LocalDateTime now = LocalDateTime.now().withNano(0);
+        LocalDateTime now = LocalDateTime.of(2026, 7, 17, 12, 0);
+        when(userTimeService.now(brokenUser)).thenReturn(now);
+        when(userTimeService.now(user)).thenReturn(now);
         NotificationReminderDto reminder = reminder("ok", "TOMORROW_DIGEST", now, "Завтра", "План", "2026-07-18");
         when(linkService.isConfigured()).thenReturn(true);
         when(linkRepository.findByEnabledTrueAndNotificationsEnabledTrue()).thenReturn(List.of(brokenLink, link));
@@ -157,6 +164,7 @@ class TelegramNotificationServiceTest {
     void negativeWindowSettingsAreClampedSafely() {
         ReflectionTestUtils.setField(service, "lookbackMinutes", -50);
         ReflectionTestUtils.setField(service, "lookaheadMinutes", -50);
+        when(userTimeService.now(user)).thenReturn(LocalDateTime.of(2026, 7, 17, 12, 0));
         when(linkService.isConfigured()).thenReturn(true);
         when(linkRepository.findByEnabledTrueAndNotificationsEnabledTrue()).thenReturn(List.of(link));
         when(notificationService.upcoming(eq(user), any(), any(), eq(true))).thenReturn(List.of());

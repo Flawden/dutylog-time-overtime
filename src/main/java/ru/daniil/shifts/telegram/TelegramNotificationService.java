@@ -35,7 +35,7 @@ public class TelegramNotificationService {
     private final TelegramNotificationDeliveryRepository deliveryRepository;
     private final NotificationService notificationService;
     private final TelegramBotService botService;
-    private final UserTimeService userTimeService = new UserTimeService();
+    private final UserTimeService userTimeService;
 
     @Value("${dutylog.telegram.notifications-enabled:true}")
     private boolean telegramNotificationsEnabled;
@@ -50,12 +50,14 @@ public class TelegramNotificationService {
                                        TelegramLinkRepository linkRepository,
                                        TelegramNotificationDeliveryRepository deliveryRepository,
                                        NotificationService notificationService,
-                                       TelegramBotService botService) {
+                                       TelegramBotService botService,
+                                       UserTimeService userTimeService) {
         this.linkService = linkService;
         this.linkRepository = linkRepository;
         this.deliveryRepository = deliveryRepository;
         this.notificationService = notificationService;
         this.botService = botService;
+        this.userTimeService = userTimeService;
     }
 
     @Scheduled(fixedDelayString = "${dutylog.telegram.notification-scan-delay-ms:60000}", initialDelay = 15000)

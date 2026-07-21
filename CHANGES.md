@@ -1,5 +1,12 @@
 ## v27.3.0 — Important dates, user timezone and precise overtime editing
 
+### CI test stabilization hotfix
+
+- Injected `UserTimeService` into Telegram notification delivery instead of constructing a private clock source inside the service.
+- Made Telegram scheduler tests deterministic with a fixed user-local timestamp, so UTC GitHub runners do not compare reminders against the default Moscow timezone.
+- Updated the frontend timezone contract to assert the actual profile `PUT /api/profile` request rather than a nonexistent `api.updateProfile` helper.
+- Production reminder timing, database schema and public API behavior are unchanged.
+
 - moved important dates out of Settings into a dedicated top-level workspace with search, filters, create, edit, delete and jump-to-calendar actions;
 - persisted each user's validated IANA work timezone in PostgreSQL through Flyway V25 and the Profile API;
 - synchronized timezone selection between devices and applied user-local time to notification filtering and Telegram commands/delivery;

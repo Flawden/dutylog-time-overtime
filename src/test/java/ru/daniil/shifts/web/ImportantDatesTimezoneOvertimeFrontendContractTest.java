@@ -51,7 +51,8 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
 
         assertTrue(core.contains("dateKeyInTimeZone(state.timeSettings?.workTimezone"));
         assertTrue(settings.contains("workTimezone"));
-        assertTrue(settings.contains("api.updateProfile"));
+        assertTrue(settings.contains("jfetch(\"/api/profile\""));
+        assertTrue(settings.contains("workTimezone:next.workTimezone"));
         assertTrue(boot.contains("workTimezone:p.workTimezone"));
     }
 }
