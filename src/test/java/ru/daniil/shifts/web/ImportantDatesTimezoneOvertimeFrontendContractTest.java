@@ -21,10 +21,10 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
         String html = resource("index.html");
         String js = resource("js/50-tasks.js");
 
-        assertTrue(html.contains("data-view="important""));
-        assertTrue(html.contains("id="view-important""));
-        assertTrue(html.contains("id="importantBoardList""));
-        assertFalse(html.contains("id="importantSettingsCard""));
+        assertTrue(html.contains("data-view=\"important\""));
+        assertTrue(html.contains("id=\"view-important\""));
+        assertTrue(html.contains("id=\"importantBoardList\""));
+        assertFalse(html.contains("id=\"importantSettingsCard\""));
         assertTrue(js.contains("function renderImportantBoard()"));
         assertTrue(js.contains("async function saveImportantBoardItem()"));
     }
@@ -35,11 +35,11 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
         String js = resource("js/40-overtime.js");
         String css = resource("app.css");
 
-        assertTrue(html.contains("id="overtimeBackToLedger""));
+        assertTrue(html.contains("id=\"overtimeBackToLedger\""));
         assertTrue(js.contains("async function openOvertimeEditorForDate(date)"));
         assertTrue(js.contains("Number(state.editingCreditId) === Number(c.id)"));
         assertTrue(js.contains("usageIds.includes(Number(state.editingUsageId))"));
-        assertTrue(js.contains("tr.classList.toggle("ledgerEditingRow", editingCredit || editingUsage)"));
+        assertTrue(js.contains("tr.classList.toggle(\"ledgerEditingRow\", editingCredit || editingUsage)"));
         assertTrue(css.contains(".ledgerEditingRow"));
     }
 
