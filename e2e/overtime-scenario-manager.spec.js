@@ -24,6 +24,32 @@ test('overtime scenarios are created and edited inside the shared credit modal',
   await page.locator('#creditTimeByShift').click();
   await expect(page.locator('#creditStart')).not.toHaveValue('');
   await expect(page.locator('#creditEnd')).not.toHaveValue('');
+
+  // A full shift minus its own planned norm is intentionally 0 overtime.
+  // Turn the draft into a real reusable “two hours after shift” scenario.
+  await page.evaluate(() => {
+    const startInput = document.querySelector('#creditStart');
+    const endInput = document.querySelector('#creditEnd');
+    const breakInput = document.querySelector('#creditBreak');
+    const plannedInput = document.querySelector('#creditPlanned');
+    const shiftEnd = endInput.value;
+    const [datePart, timePart] = shiftEnd.split('T');
+    const [year, month, day] = datePart.split('-').map(Number);
+    const [hour, minute] = timePart.split(':').map(Number);
+    const end = new Date(year, month - 1, day, hour, minute || 0);
+    end.setMinutes(end.getMinutes() + 120);
+    const pad = value => String(value).padStart(2, '0');
+    const endValue = `${end.getFullYear()}-${pad(end.getMonth() + 1)}-${pad(end.getDate())}T${pad(end.getHours())}:${pad(end.getMinutes())}`;
+
+    startInput.value = shiftEnd;
+    endInput.value = endValue;
+    breakInput.value = '0';
+    plannedInput.value = '0';
+    for (const input of [startInput, endInput, breakInput, plannedInput]) {
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  });
+  await expect(page.locator('#creditHours')).toHaveValue('2');
   await page.locator('#creditReason').fill('Scenario manager E2E');
 
   await page.locator('#creditScenarioSaveCurrent').click();

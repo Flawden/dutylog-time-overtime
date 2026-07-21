@@ -21,6 +21,7 @@ Object.assign(I18N_EN, {
   "Сохранить сценарий":"Save scenario", "Назад к списку":"Back to list",
   "Сценарий сохранён":"Scenario saved", "Сценарий обновлён":"Scenario updated",
   "Для сохранения сценария укажите начало и конец":"Set start and end before saving a scenario",
+  "Для сохранения сценария итог переработки должен быть больше 0":"The overtime total must be greater than 0 before saving a scenario",
   "Для сохранения из формы выберите день со сменой":"Choose a day with a shift before saving from the form",
   "Начало формы должно совпадать с началом или концом смены":"The form start must match the shift start or end",
   "Интервал сценария не может быть длиннее 72 часов":"A scenario interval cannot exceed 72 hours",
@@ -694,7 +695,11 @@ function scenarioDraftFromCreditForm(){
   }
   const calc = overtimeCalcFromInputs();
   if (!calc?.startValue || !calc?.endValue) {
-    setSave("err", t("Для сохранения сценария укажите начало и конец"));
+    const hasCompleteInterval = !!($('creditStart')?.value && $('creditEnd')?.value)
+      || !!parseManualTimeRange($('creditTimeRange')?.value);
+    setSave("err", t(hasCompleteInterval
+      ? "Для сохранения сценария итог переработки должен быть больше 0"
+      : "Для сохранения сценария укажите начало и конец"));
     return null;
   }
   const shiftStart = setTimeOnDate(base, st.startTime);

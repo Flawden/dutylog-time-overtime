@@ -7,6 +7,11 @@
 - Scenario management switches views inside the same modal instead of stacking dialogs; returning to the credit editor preserves all entered values.
 - Existing scenario CRUD API and stored data remain unchanged; no database migration is required.
 
+### Validation hotfix
+- Fixed the new Playwright scenario so it creates a real two-hour post-shift overtime interval instead of trying to save a zero-hour full-shift draft.
+- Added an accurate validation message when start/end are present but break and planned norm reduce the overtime total to zero.
+- Production API, database schema and scenario persistence are unchanged.
+
 ### Tests
 - Added frontend contracts proving the Settings card is gone and the single-window manager owns scenario CRUD.
 - Added a Playwright flow covering shift assignment, draft creation from a filled overtime form, scenario creation, editing and return to the original credit editor.
