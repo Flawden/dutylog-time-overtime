@@ -36,12 +36,18 @@ test('important dates have a standalone workspace and timezone survives reload',
   await page.locator('#tabbar a[data-view="settings"]').click();
   await page.locator('[data-settings-jump="time"]').click();
   await expect(page.locator('#timeSettingsCard')).toHaveClass(/is-open/);
+  await expect(page.locator('#workRegionName')).toHaveCount(0);
+  await expect(page.locator('#workOffsetMoscow')).toHaveCount(0);
   const timezone = page.locator('#workTimezone');
-  await timezone.fill('Europe/Chisinau');
+  await expect(timezone).toHaveAttribute('aria-describedby', 'timeZoneHelp');
+  await timezone.selectOption('Europe/Chisinau');
+  await expect(page.locator('#timeSettingsStatus')).toContainText(/не сохранено|not saved/i);
+  await expect(page.locator('#timeNowBox')).toContainText('Europe/Chisinau');
   const profileSaved = waitForApi(page, 'PUT', '/api/profile');
-  await timezone.press('Tab');
+  await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await expect(timezone).toHaveValue('Europe/Chisinau');
+  await expect(page.locator('#timeSettingsStatus')).toContainText(/сохранено|saved/i);
 
   await page.reload();
   await expect(page.locator('#whoami')).not.toBeEmpty();

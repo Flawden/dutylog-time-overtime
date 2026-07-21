@@ -59,4 +59,34 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
         assertTrue(settings.contains("workTimezone:next.workTimezone"));
         assertTrue(boot.contains("workTimezone:p.workTimezone"));
     }
+
+    @Test
+    void timezoneSettingsAreCompactExplicitAndFreeOfManualOffsets() throws Exception {
+        String html = resource("index.html");
+        String settings = resource("js/60-settings.js");
+
+        assertTrue(html.contains("id=\"workTimezone\""));
+        assertTrue(html.contains("id=\"timeSaveTimezone\""));
+        assertTrue(html.contains("id=\"timeDetectBrowser\""));
+        assertFalse(html.contains("id=\"workRegionName\""));
+        assertFalse(html.contains("id=\"workOffsetMoscow\""));
+        assertTrue(settings.contains("function populateTimeZoneSelect"));
+        assertTrue(settings.contains("function timezoneOffsetLabel"));
+        assertTrue(settings.contains("timeSaveTimezone"));
+        assertFalse(settings.contains("workOffsetMoscow: Math.round"));
+    }
+
+    @Test
+    void deploymentSmokeIncludesAuthenticatedReadOnlyApiChecks() throws Exception {
+        String smoke = Files.readString(Path.of("deploy/scripts/smoke-test.sh"), StandardCharsets.UTF_8);
+        String production = Files.readString(Path.of("deploy/scripts/production-smoke-test.sh"), StandardCharsets.UTF_8);
+
+        assertTrue(smoke.contains("Authenticated read-only API contract"));
+        assertTrue(smoke.contains("/api/profile"));
+        assertTrue(smoke.contains("/api/modules"));
+        assertTrue(smoke.contains("/api/profile/sessions"));
+        assertTrue(production.contains("DUTYLOG_SMOKE_REQUIRE_AUTH=true"));
+        assertTrue(production.contains("https://"));
+    }
+
 }

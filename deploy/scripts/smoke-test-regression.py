@@ -12,7 +12,7 @@ import sys
 import threading
 import urllib.parse
 
-VERSION = "27.4.1"
+VERSION = "27.4.2"
 USERNAME = "smoke-admin"
 PASSWORD = "correct-password-regression"
 CSRF = "csrf-regression-token"
@@ -96,6 +96,30 @@ class Handler(http.server.BaseHTTPRequestHandler):
             return
         if path == "/api/admin/status":
             self._send(401, '{"code":"AUTH_REQUIRED"}', "application/json")
+            return
+        if path == "/api/profile":
+            if not self._authenticated():
+                self._send(401, '{"code":"AUTH_REQUIRED"}', "application/json")
+            else:
+                self._send(200, '{"username":"smoke-admin","workTimezone":"Europe/Moscow"}', "application/json")
+            return
+        if path == "/api/modules":
+            if not self._authenticated():
+                self._send(401, '{"code":"AUTH_REQUIRED"}', "application/json")
+            else:
+                self._send(200, '{"enabled":{"calendar":true}}', "application/json")
+            return
+        if path == "/api/profile/sessions":
+            if not self._authenticated():
+                self._send(401, '{"code":"AUTH_REQUIRED"}', "application/json")
+            else:
+                self._send(200, '[]', "application/json")
+            return
+        if path == "/api/auth/me":
+            if not self._authenticated():
+                self._send(401, '{"code":"AUTH_REQUIRED"}', "application/json")
+            else:
+                self._send(200, '{"username":"smoke-admin"}', "application/json")
             return
         if path == "/js/10-core.js":
             if not self._authenticated():

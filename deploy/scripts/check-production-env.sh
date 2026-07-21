@@ -23,7 +23,8 @@ for file in \
   deploy/scripts/backup-postgres.sh \
   deploy/scripts/restore-postgres.sh \
   deploy/scripts/local-smoke-test.sh \
-  deploy/scripts/smoke-test.sh; do
+  deploy/scripts/smoke-test.sh \
+  deploy/scripts/production-smoke-test.sh; do
   [[ -f "$file" ]] && ok "found $file" || fail "missing $file"
 done
 

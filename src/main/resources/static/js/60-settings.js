@@ -265,7 +265,75 @@ $("todayBtn").addEventListener("click", async () => {
 
 
 
-/* ─── Время и регион ───────────────────────────────────────── */
+/* ─── Часовой пояс и шаблоны смен ─────────────────────────── */
+const TIMEZONE_FALLBACKS = [
+  "UTC", "Europe/Chisinau", "Europe/Moscow", "Europe/Berlin", "Europe/Kyiv",
+  "Asia/Yekaterinburg", "Asia/Omsk", "Asia/Novosibirsk", "Asia/Irkutsk",
+  "Asia/Vladivostok", "Asia/Krasnoyarsk", "Asia/Kamchatka",
+  "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
+  "Asia/Tbilisi", "Asia/Yerevan", "Asia/Almaty", "Asia/Dubai", "Asia/Tokyo"
+];
+const TIMEZONE_RU_LABELS = {
+  "UTC":"UTC", "Europe/Chisinau":"Кишинёв", "Europe/Moscow":"Москва",
+  "Europe/Berlin":"Берлин", "Europe/Kyiv":"Киев", "Asia/Yekaterinburg":"Екатеринбург",
+  "Asia/Omsk":"Омск", "Asia/Novosibirsk":"Новосибирск", "Asia/Irkutsk":"Иркутск",
+  "Asia/Vladivostok":"Владивосток", "Asia/Krasnoyarsk":"Красноярск",
+  "Asia/Kamchatka":"Камчатка", "America/New_York":"Нью-Йорк",
+  "America/Chicago":"Чикаго", "America/Denver":"Денвер",
+  "America/Los_Angeles":"Лос-Анджелес", "Asia/Tbilisi":"Тбилиси",
+  "Asia/Yerevan":"Ереван", "Asia/Almaty":"Алматы", "Asia/Dubai":"Дубай", "Asia/Tokyo":"Токио"
+};
+let cachedTimeZones = null;
+function availableTimeZones(){
+  if (cachedTimeZones) return cachedTimeZones;
+  let zones = [];
+  try {
+    if (typeof Intl.supportedValuesOf === "function") zones = Intl.supportedValuesOf("timeZone");
+  } catch (_) { zones = []; }
+  cachedTimeZones = [...new Set(["UTC", ...TIMEZONE_FALLBACKS, ...zones])];
+  return cachedTimeZones;
+}
+function timezoneCityLabel(timeZone){
+  if (state.language !== "en" && TIMEZONE_RU_LABELS[timeZone]) return TIMEZONE_RU_LABELS[timeZone];
+  if (timeZone === "UTC") return "UTC";
+  return String(timeZone || "").split("/").pop().replaceAll("_", " ");
+}
+function timezoneOffsetLabel(timeZone, at = new Date()){
+  try {
+    const part = new Intl.DateTimeFormat("en-US", {
+      timeZone, timeZoneName:"longOffset", hour:"2-digit"
+    }).formatToParts(at).find(item => item.type === "timeZoneName")?.value || "GMT";
+    if (part === "GMT") return "UTC";
+    const match = part.match(/^GMT([+-])(\d{2}):(\d{2})$/);
+    if (!match) return part.replace("GMT", "UTC");
+    const hours = Number(match[2]);
+    const minutes = Number(match[3]);
+    return `UTC${match[1]}${hours}${minutes ? `:${String(minutes).padStart(2, "0")}` : ""}`;
+  } catch (_) { return "UTC"; }
+}
+function timezoneOptionLabel(timeZone){
+  const city = timezoneCityLabel(timeZone);
+  const offset = timezoneOffsetLabel(timeZone);
+  return city === offset ? city : `${city} — ${offset}`;
+}
+function populateTimeZoneSelect(selected){
+  const select = $("workTimezone");
+  if (!select) return;
+  const wanted = selected || browserTimeZone();
+  const zones = [...new Set([...availableTimeZones(), wanted])]
+    .filter(isRecognizedTimeZone)
+    .sort((a, b) => timezoneOptionLabel(a).localeCompare(timezoneOptionLabel(b), currentLocale()));
+  const current = select.value;
+  const fragment = document.createDocumentFragment();
+  for (const zone of zones) {
+    const option = document.createElement("option");
+    option.value = zone;
+    option.textContent = timezoneOptionLabel(zone);
+    fragment.appendChild(option);
+  }
+  select.replaceChildren(fragment);
+  select.value = zones.includes(wanted) ? wanted : (zones.includes(current) ? current : browserTimeZone());
+}
 function readTimeSettingsForm(){
   const val = id => ($(id)?.value ?? "").trim();
   const num = (id, fallback = 0) => {
@@ -274,9 +342,10 @@ function readTimeSettingsForm(){
     return Number.isFinite(n) ? n : fallback;
   };
   return {
-    workRegionName: val("workRegionName"),
+    ...(state.timeSettings || loadTimeSettings()),
+    workRegionName:"",
     workTimezone: val("workTimezone") || browserTimeZone(),
-    workOffsetMoscow: Math.round(num("workOffsetMoscow", 0)),
+    workOffsetMoscow:0,
     timeFormat: val("timeFormatPref") || "24h",
     dayStart: val("defDayStart") || "08:30",
     dayEnd: val("defDayEnd") || "17:00",
@@ -288,14 +357,30 @@ function readTimeSettingsForm(){
     nightPlannedHours: Math.max(0, Math.min(24, num("defNightPlan", 11))),
   };
 }
+function setTimeSettingsStatus(tone = "saved", text = ""){
+  const box = $("timeSettingsStatus");
+  if (!box) return;
+  const label = text || (tone === "dirty"
+    ? (state.language === "en" ? "not saved" : "не сохранено")
+    : (state.language === "en" ? "saved" : "сохранено"));
+  box.className = `status ${tone === "dirty" ? "warn" : ""}`.trim();
+  box.textContent = label;
+}
+function renderTimePreview(timeSettings){
+  const box = $("timeNowBox");
+  if (!box) return;
+  const localLabel = state.language === "en" ? "Local time" : "Местное время";
+  const systemLabel = state.language === "en" ? "System name" : "Системное название";
+  box.innerHTML = `<div><span>${esc(localLabel)}:</span> <b>${esc(safeTzLabel(timeSettings.workTimezone))}</b></div>` +
+    `<div><span>${esc(systemLabel)}:</span> <code>${esc(timeSettings.workTimezone)}</code> · ${esc(timezoneOffsetLabel(timeSettings.workTimezone))}</div>`;
+}
 function renderTimeSettings(){
   if (!$("timeSettingsCard")) return;
   if (!state.timeSettings) state.timeSettings = loadTimeSettings();
   const timeSettings = state.timeSettings;
-  const set = (id, v) => { if ($(id)) $(id).value = v ?? ""; };
-  set("workRegionName", timeSettings.workRegionName);
+  const set = (id, value) => { if ($(id)) $(id).value = value ?? ""; };
+  populateTimeZoneSelect(timeSettings.workTimezone);
   set("workTimezone", timeSettings.workTimezone);
-  set("workOffsetMoscow", timeSettings.workOffsetMoscow);
   set("timeFormatPref", timeSettings.timeFormat || "24h");
   set("defDayStart", timeSettings.dayStart);
   set("defDayEnd", timeSettings.dayEnd);
@@ -305,17 +390,8 @@ function renderTimeSettings(){
   set("defNightEnd", timeSettings.nightEnd);
   set("defNightBreak", timeSettings.nightBreakMinutes);
   set("defNightPlan", timeSettings.nightPlannedHours);
-
-  const browserTz = browserTimeZone();
-  const region = timeSettings.workRegionName ? `${esc(timeSettings.workRegionName)} · ` : "";
-  const workLabel = state.language === "en" ? "work time" : "рабочее время";
-  const browserLabel = state.language === "en" ? "browser" : "браузер";
-  const autosaveLabel = state.language === "en" ? "autosave" : "автосохранение";
-  $("timeNowBox").innerHTML = `${region}${esc(workLabel)}: <b>${esc(safeTzLabel(timeSettings.workTimezone))}</b> <span>(${esc(timeSettings.workTimezone)})</span><br>` +
-    `${esc(browserLabel)}: <b>${esc(safeTzLabel(browserTz))}</b> <span>(${esc(browserTz)})</span>` +
-    (Number(timeSettings.workOffsetMoscow || 0) ? `<br>${esc(t("пометка"))}: ${esc(t("Москва"))} ${Number(timeSettings.workOffsetMoscow) > 0 ? "+" : ""}${Number(timeSettings.workOffsetMoscow)} ${state.language === "en" ? "h" : "ч"}` : "");
-  $("timeSettingsStatus").className = "status statusAutoSave";
-  $("timeSettingsStatus").innerHTML = `<span class="statusChip statusChipAuto"><span class="statusDot"></span>${esc(autosaveLabel)}</span>`;
+  renderTimePreview(timeSettings);
+  setTimeSettingsStatus("saved");
 }
 function isRecognizedTimeZone(value){
   try {
@@ -327,24 +403,29 @@ async function saveTimeSettings(){
   const next = readTimeSettingsForm();
   if (!isRecognizedTimeZone(next.workTimezone)) {
     setSave("err", t("часовой пояс не распознан"));
-    renderTimeSettings();
+    setTimeSettingsStatus("dirty", t("часовой пояс не распознан"));
     return false;
   }
-  storeTimeSettings(next);
-  renderTimeSettings();
+  setTimeSettingsStatus("dirty", state.language === "en" ? "saving…" : "сохранение…");
   try {
     const payload = typeof currentProfilePayload === "function"
       ? currentProfilePayload({ workTimezone:next.workTimezone })
       : { workTimezone:next.workTimezone };
     const profile = await jfetch("/api/profile", { method:"PUT", body:payload });
     state.profile = profile;
-    state.timeSettings = { ...state.timeSettings, workTimezone:profile.workTimezone || next.workTimezone };
+    state.timeSettings = {
+      ...next,
+      workRegionName:"",
+      workOffsetMoscow:0,
+      workTimezone:profile.workTimezone || next.workTimezone
+    };
     storeTimeSettings(state.timeSettings);
     renderTimeSettings();
     setSave("saved", t("настройки времени сохранены"));
     return true;
   } catch (err) {
     console.error(err);
+    setTimeSettingsStatus("dirty", state.language === "en" ? "save failed" : "ошибка сохранения");
     setSave("err", err.message || t("не удалось сохранить часовой пояс"));
     return false;
   }
@@ -394,16 +475,21 @@ function patchForBuiltInShift(name, timeSettings){
   };
 }
 async function applyTimeSettingsToBuiltins(silent = false){
-  const timeSettings = readTimeSettingsForm();
+  const form = readTimeSettingsForm();
+  const timeSettings = {
+    ...form,
+    workTimezone:state.timeSettings?.workTimezone || loadTimeSettings().workTimezone,
+    timeFormat:state.timeSettings?.timeFormat || loadTimeSettings().timeFormat
+  };
   storeTimeSettings(timeSettings);
   const targets = state.shiftTypes.filter(s => s.name === "Дневная" || s.name === "Ночная");
   if (!targets.length) return setSave("err", t("не нашёл Дневную/Ночную смену"));
   if (!silent) setSave("saving");
   try {
-    for (const s of targets) {
-      const updated = await api.updateShiftType(s.id, patchForBuiltInShift(s.name, timeSettings));
-      const idx = state.shiftTypes.findIndex(x => Number(x.id) === Number(s.id));
-      if (idx >= 0) state.shiftTypes[idx] = updated;
+    for (const shift of targets) {
+      const updated = await api.updateShiftType(shift.id, patchForBuiltInShift(shift.name, timeSettings));
+      const index = state.shiftTypes.findIndex(item => Number(item.id) === Number(shift.id));
+      if (index >= 0) state.shiftTypes[index] = updated;
     }
     setSave("saved", silent ? t("время смен применено") : t("встроенные смены обновлены"));
     renderTimeSettings();
@@ -415,21 +501,32 @@ async function applyTimeSettingsToBuiltins(silent = false){
 }
 function initTimeSettingsEvents(){
   if (!$("timeSettingsCard")) return;
-  $("timeDetectBrowser")?.addEventListener("click", async () => { $("workTimezone").value = browserTimeZone(); await saveTimeSettings(); });
+  $("timeSaveTimezone")?.addEventListener("click", saveTimeSettings);
+  $("timeDetectBrowser")?.addEventListener("click", () => {
+    populateTimeZoneSelect(browserTimeZone());
+    $("workTimezone").value = browserTimeZone();
+    renderTimePreview(readTimeSettingsForm());
+    setTimeSettingsStatus("dirty");
+  });
   $("timeApplyBuiltins")?.addEventListener("click", () => applyTimeSettingsToBuiltins(false));
   $("timeFillDayForm")?.addEventListener("click", () => fillShiftFormFromDefaults("day"));
   $("timeFillNightForm")?.addEventListener("click", () => fillShiftFormFromDefaults("night"));
+  for (const id of ["workTimezone", "timeFormatPref"]) {
+    $(id)?.addEventListener("change", () => {
+      renderTimePreview(readTimeSettingsForm());
+      setTimeSettingsStatus("dirty");
+    });
+  }
   const shiftDefaultIds = ["defDayStart","defDayEnd","defDayBreak","defDayPlan","defNightStart","defNightEnd","defNightBreak","defNightPlan"];
-  for (const id of ["workRegionName","workTimezone","workOffsetMoscow","timeFormatPref", ...shiftDefaultIds]) {
-    const el = $(id);
-    if (!el) continue;
-    el.addEventListener("change", async () => {
-      if (id === "workTimezone") await saveTimeSettings();
-      else {
-        storeTimeSettings(readTimeSettingsForm());
-        renderTimeSettings();
-      }
-      if (shiftDefaultIds.includes(id)) scheduleTimeSettingsApply();
+  for (const id of shiftDefaultIds) {
+    $(id)?.addEventListener("change", () => {
+      const form = readTimeSettingsForm();
+      storeTimeSettings({
+        ...form,
+        workTimezone:state.profile?.workTimezone || state.timeSettings?.workTimezone || browserTimeZone(),
+        timeFormat:state.timeSettings?.timeFormat || "24h"
+      });
+      scheduleTimeSettingsApply();
     });
   }
 }
@@ -717,7 +814,7 @@ function initSettingsAccordion(){
     profile: "Имя, пароль, устройства и Telegram",
     language: "Русский / English",
     appearance: "Тема, акцентный цвет и emoji-маркеры дней",
-    time: "Регион, часовой пояс и дефолты дневной/ночной",
+    time: "Часовой пояс и шаблоны дневной/ночной смены",
     shifts: "Кастомные и встроенные типы смен",
     scenarios: "Шаблоны, которые заполняют единый редактор переработки",
     notifications: "Браузерные, сменные, задачные и важные напоминания",

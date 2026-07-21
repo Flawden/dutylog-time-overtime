@@ -1,16 +1,27 @@
 # DutyLog regression test baseline
 
-Status: v27.4.1.
+Status: v27.4.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.4.1 moves quick-scenario CRUD from Settings into the shared overtime credit modal, adds draft creation from the filled credit form and preserves the v27.4.0 unified credit/usage editor baseline, the v27.3.1 persistent-session/task/shift-editor baseline, the v27.3.0 important-dates/timezone baseline, the v27.2.29 security baseline and all earlier deployment gates. Current baseline: 71 Java test classes / 356 `@Test` methods and 10 Chromium Playwright scenarios.
+Current extension: v27.4.2 simplifies timezone selection, adds explicit save, removes manual region/Moscow-offset UI and expands the critical regression path for persistent login, task/shift editors and authenticated deployment smoke checks. It preserves the v27.4.1 scenario-manager baseline and all earlier security/deployment gates. Current baseline: 71 Java test classes / 358 `@Test` methods and 11 Chromium Playwright scenarios.
+
+Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 Historical extension: v27.2.31 adds an authenticated, CSRF-aware deployment smoke-test regression.
 
 Historical extension: v27.2.30 adds host-nginx deployment, loopback publication and two-stage smoke-test guards.
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
+
+
+## v27.4.2 timezone and critical regression extension
+
+- `remember-me.spec.js`: persistent-cookie restoration in a fresh browser context, parallel bootstrap reads and logout revocation.
+- `important-timezone.spec.js`: compact generated timezone selector, explicit profile save, removal of manual region/offset controls and persistence after reload.
+- `editor-modals.spec.js`: task field persistence plus custom shift create/edit/assign/reload.
+- `smoke-test.sh`: authenticated read-only profile, module, session and identity checks after the existing CSRF login.
+- `production-smoke-test.sh`: HTTPS-only authenticated wrapper suitable for post-deploy production verification.
 
 ## Manual acceptance captured
 

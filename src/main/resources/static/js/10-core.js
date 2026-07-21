@@ -52,7 +52,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.4.1"
+const DUTYLOG_VERSION = "27.4.2"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -196,14 +196,14 @@ const I18N_EN = {
   "Markdown-файлы по датам — открываются в Obsidian.": "Markdown files by date — opens in Obsidian.",
   "Настройки":"Settings", "Профиль":"Profile", "Язык":"Language", "Модули":"Modules", "русский / English":"Russian / English", "включить нужные функции":"enable needed features",
   "Внешний вид":"Appearance", "Время":"Time", "Смены":"Shifts", "Сценарии":"Scenarios", "Уведомления":"Notifications", "Важные даты":"Important dates",
-  "имя, пароль, Telegram":"name, password, Telegram", "тема, акцент, маркеры":"theme, accent, markers", "регион, пояс, дефолты":"region, timezone, defaults", "типы, часы, уведомления":"types, hours, notifications", "шаблоны переработок":"overtime templates", "браузер и расписания":"browser and schedules", "общий список событий":"shared event list",
+  "имя, пароль, Telegram":"name, password, Telegram", "тема, акцент, маркеры":"theme, accent, markers", "часовой пояс и шаблоны смен":"timezone and shift presets", "типы, часы, уведомления":"types, hours, notifications", "шаблоны переработок":"overtime templates", "браузер и расписания":"browser and schedules", "общий список событий":"shared event list",
   "развернуть всё":"expand all", "свернуть всё":"collapse all", "открыть":"open", "свернуть":"collapse",
   "Профиль пользователя":"User profile", "Отображаемое имя":"Display name", "День рождения":"Birthday", "Сохранить":"Save",
   "Смена пароля":"Change password", "Текущий пароль":"Current password", "Новый пароль":"New password", "Ещё раз":"Repeat", "Сменить пароль":"Change password", "Активные устройства":"Active devices", "Telegram-бот":"Telegram bot",
   "Интерфейс":"Interface", "Модульность":"Modularity", "Модули приложения":"App modules", "Отключайте функции, которые сейчас не нужны. Данные не удаляются: модуль можно включить обратно в любой момент.":"Turn off features you do not need right now. Data is not deleted: you can enable a module again at any time.", "Ядро, календарь и смены всегда включены. Зависимости включаются автоматически, чтобы приложение не ломалось.":"Core, calendar and shifts are always enabled. Dependencies are enabled automatically so the app stays consistent.", "Скрытые блоки":"Hidden blocks", "Настроить модули":"Configure modules", "Скрыть подсказку":"Hide hint", "Отключённый модуль не удаляет данные — его можно включить обратно в настройках.":"A disabled module does not delete data — you can enable it again in settings.", "Сейчас включены только базовые блоки дня.":"Only basic day blocks are enabled now.", "включено":"enabled", "выключено":"disabled", "всегда включён":"always on", "зависит от":"depends on", "модули сохранены":"modules saved", "модули загружаются…":"modules are loading…", "модуль выключен":"module disabled", "включено модулей":"modules enabled", "snapshot модулей":"modules snapshot", "модули не загружены":"modules not loaded", "операция относится к выключенному модулю":"operation belongs to a disabled module", "контракт":"contract", "слоты":"slots", "API":"API", "offline":"offline", "категория":"category", "ядро":"core", "календарь":"calendar", "продуктивность":"productivity", "учёт времени":"time accounting", "интеграции":"integrations", "администрирование":"administration", "Язык приложения":"App language", "Русский":"Russian", "Основной язык":"Main language", "Дополнительный язык":"Additional language", "Язык сохранён":"Language saved",
   "Персонализация":"Personalization", "Пресет":"Preset", "Готовая тема":"Theme preset", "Базовый режим":"Base mode", "Акцент":"Accent", "Точная настройка":"Fine tuning", "Фон приложения":"App background", "Карточки":"Cards", "Внутренние блоки":"Inner blocks", "Основной текст":"Primary text", "Вторичный текст":"Secondary text", "Границы":"Borders", "Стиль кнопок":"Button style", "Стиль карточек":"Card style", "Тени":"Shadows", "Плотность":"Density", "Скругление карточек":"Card radius", "Сохранить внешний вид":"Save appearance", "Сбросить локально":"Reset locally",
   "как в системе":"system", "тёмная":"dark", "светлая":"light", "заливка":"solid", "мягкие":"soft", "контурные":"outline", "призрачные":"ghost", "стандартные":"standard", "плоские":"flat", "контрастные":"contrast", "тёплые":"warm", "без теней":"no shadows", "лёгкие":"light", "средние":"medium", "сильные":"strong", "компактно":"compact", "обычно":"comfortable", "просторно":"spacious",
-  "Время и регион":"Time and region", "Рабочее время и часовой пояс":"Working hours and timezone", "Регион / объект":"Region / site", "Рабочий часовой пояс":"Work timezone", "Определить часовой пояс":"Detect timezone", "Формат времени":"Time format", "Сохранить настройки":"Save settings",
+  "Время и регион":"Time and region", "Часовой пояс и формат времени":"Timezone and time format", "Рабочий часовой пояс":"Work timezone", "Определить автоматически":"Detect automatically", "Сохранить часовой пояс":"Save timezone", "Формат времени":"Time format", "Сохранить настройки":"Save settings",
   "Типы смен и их время":"Shift types and time", "Короткие часы для календаря":"Short calendar hours", "Календарь, ч":"Calendar label, h", "Норма, ч":"Norm, h", "Название смены":"Shift name", "Добавить":"Add", "Сохранить параметры смен":"Save shift settings", "Дневная":"Day shift", "Ночная":"Night shift", "Выходной":"Day off",
   "Быстрые сценарии":"Quick scenarios", "Мои сценарии":"My scenarios", "Добавить сценарий":"Add scenario", "Название":"Name", "Старт":"Start", "Конец":"End", "Обед":"Break", "План":"Plan", "Норма":"Norm", "Причина по умолчанию":"Default reason", "Описание сценария":"Scenario description",
   "Уведомления браузера":"Browser notifications", "Разрешить в браузере":"Allow in browser", "Напоминания текущего месяца":"Current month reminders", "Проверить":"Check", "Текущий месяц":"Current month", "Завтра":"Tomorrow", "Сервер рассчитывает напоминания для браузера, Telegram и мобильных клиентов.":"The server calculates reminders for browser, Telegram and mobile clients.",
@@ -417,10 +417,7 @@ Object.assign(I18N_EN, {
   "Так будут выглядеть фон, границы, текст, скругление и тени.":"This is how background, borders, text, radius, and shadows will look.",
   "Роли `USER/ADMIN`, будущий тариф `FREE/PAID/VIP` и внешний вид остаются разными слоями. Theme Builder хранит только разрешённые параметры, не CSS.":"Roles `USER/ADMIN`, future `FREE/PAID/VIP` tier, and appearance remain separate layers. Theme Builder stores only allowed parameters, not CSS.",
   "Время и регион":"Time and region",
-  "Регион / объект":"Region / site",
-  "Например: участок, город, объект":"Example: site, city, facility",
   "Рабочий часовой пояс":"Work timezone",
-  "Сдвиг от Москвы, ч":"Offset from Moscow, h",
   "Формат времени":"Time format",
   "24 часа":"24 hours",
   "Шаблоны смен":"Shift presets",
@@ -428,8 +425,8 @@ Object.assign(I18N_EN, {
   "План, ч":"Plan, h",
   "Заполнить форму смены":"Fill shift form",
   "Сохранить параметры смен":"Save shift parameters",
-  "Определить часовой пояс":"Detect timezone",
-  "Регион и часовой пояс используются для отображения времени. Параметры дневной и ночной смены применяются к встроенным типам смен и используются в уведомлениях, сценариях и расчётах.":"Region and timezone are used to display time. Day/night shift parameters are applied to built-in shift types and used in notifications, scenarios, and calculations.",
+  "Определить автоматически":"Detect automatically",
+  "Сохранить часовой пояс":"Save timezone",
   "Типы смен и их время":"Shift types and times",
   "Название":"Name",
   "Календарь, ч":"Calendar, h",

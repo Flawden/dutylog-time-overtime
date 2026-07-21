@@ -1,3 +1,24 @@
+## v27.4.2 — Timezone simplification and critical regression pack
+
+### Changed
+- Replaced the manual region name, free-form timezone and Moscow-offset controls with one generated IANA timezone selector and an explicit Save action.
+- The selector shows a readable city label and current UTC offset while persisting the canonical IANA identifier such as `Europe/Chisinau`.
+- Removed the region/object and manual Moscow-offset fields from the UI; existing stored legacy values are ignored and cleared on the next save.
+- Separated timezone controls visually from built-in day/night shift templates without changing shift data or calculation rules.
+
+### Regression coverage
+- Added a browser regression that restores authentication in a completely fresh browser context using only the persistent remember-me cookie, verifies parallel PWA bootstrap API calls and proves logout revokes the old cookie.
+- Extended task editor coverage to persist category, priority, due date and due time in the single modal.
+- Extended shift-type coverage to create, edit, assign and reload a custom shift through the modal manager.
+- Updated timezone E2E coverage for the compact selector, explicit save and persistence after reload.
+- Extended deployment smoke tests with authenticated read-only profile, module, session and identity API checks.
+- Added an HTTPS-only production smoke wrapper; it refuses to run without authenticated smoke credentials.
+
+### Baseline
+- 71 Java test classes / 358 `@Test` methods.
+- 11 Chromium Playwright scenarios.
+- PostgreSQL Flyway remains V1–V25; no migration is required.
+
 ## v27.4.1 — Overtime scenario manager
 
 ### Changed

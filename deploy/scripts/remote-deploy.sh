@@ -58,7 +58,8 @@ tar -czf "$TMP_DIR/deploy-bundle.tgz" \
   deploy/scripts/restore-postgres.sh \
   deploy/scripts/rollback-environment.sh \
   deploy/scripts/reset-staging.sh \
-  deploy/scripts/smoke-test.sh
+  deploy/scripts/smoke-test.sh \
+  deploy/scripts/production-smoke-test.sh
 cat "$TMP_DIR/deploy-bundle.tgz" | "${SSH[@]}" "$REMOTE" "tar -xzf - -C $Q_PATH"
 
 # Registry credential is sent only through stdin to Docker on the target host.

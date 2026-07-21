@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.4.1}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.4.2}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -380,7 +380,7 @@ contains src/main/resources/static/app.css 'html[lang="en"] .cell .num.today::af
 contains src/main/resources/static/js/10-core.js 'function shiftDisplayName'
 contains src/main/resources/static/js/10-core.js "if (typeof renderSettingsPanels === 'function') renderSettingsPanels();"
 contains src/main/resources/static/js/30-calendar.js 'esc(t("Итого:"))'
-contains src/main/resources/static/js/60-settings.js 'const workLabel = state.language === "en" ? "work time"'
+contains src/main/resources/static/js/60-settings.js 'const localLabel = state.language === "en" ? "Local time"'
 contains src/main/resources/static/js/60-settings.js 'esc(t("шт"))'
 contains docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md "v27.2.5"
 contains src/main/resources/static/app.css "v27.2.5: notifications header alignment"
@@ -947,7 +947,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.2"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -995,6 +995,28 @@ contains src/main/resources/static/js/40-overtime.js "function scenarioDraftFrom
 contains src/main/resources/static/js/40-overtime.js "api.updateQuickScenario(editingId, payload)"
 contains src/test/java/ru/daniil/shifts/web/OvertimeScenarioManagerFrontendContractTest.java "scenariosNoLongerOccupyASettingsCard"
 contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created and edited inside the shared credit modal"
+
+# v27.4.2 timezone simplification and critical regression pack
+contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
+contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
+contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.2"
+contains src/main/resources/static/index.html 'id="workTimezone"'
+contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
+contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
+not_contains src/main/resources/static/index.html 'id="workRegionName"'
+not_contains src/main/resources/static/index.html 'id="workOffsetMoscow"'
+contains src/main/resources/static/js/60-settings.js "function populateTimeZoneSelect"
+contains src/main/resources/static/js/60-settings.js "function timezoneOffsetLabel"
+contains e2e/remember-me.spec.js "remember-me restores a fresh browser session"
+contains e2e/remember-me.spec.js "DUTYLOG_REMEMBER_ME"
+contains e2e/editor-modals.spec.js "taskEditDueTime"
+contains e2e/editor-modals.spec.js "shiftUpdated"
+contains deploy/scripts/smoke-test.sh "Authenticated read-only API contract"
+contains deploy/scripts/production-smoke-test.sh "DUTYLOG_SMOKE_REQUIRE_AUTH=true"
+contains deploy/scripts/production-smoke-test.sh "https://"
+contains deploy/scripts/check-production-env.sh "deploy/scripts/production-smoke-test.sh"
+contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.sh"
 
 DEPLOY_ENV_TMP="$(mktemp -d)"
 sed \
@@ -1059,18 +1081,18 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "10" ]]; then
-  ok "Playwright test baseline: 10"
+if [[ "$E2E_TESTS" == "11" ]]; then
+  ok "Playwright test baseline: 11"
 else
-  fail "expected 10 Playwright tests, found $E2E_TESTS"
+  fail "expected 11 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "356" ]]; then
-  ok "test method baseline: 356"
+if [[ "$TEST_METHODS" == "358" ]]; then
+  ok "test method baseline: 358"
 else
-  fail "expected 356 @Test methods, found $TEST_METHODS"
+  fail "expected 358 @Test methods, found $TEST_METHODS"
 fi
 if [[ "$TEST_CLASSES" == "71" ]]; then
   ok "test class baseline: 71"

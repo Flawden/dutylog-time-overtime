@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.4.1" rel="stylesheet"/>
+<link href="app.css?v=27.4.2" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -333,7 +333,7 @@
     <a data-settings-jump="language" href="#settings-language"><b>Язык</b><span>русский / English</span></a>
     <a data-settings-jump="modules" href="#settings-modules"><b>Модули</b><span>включить нужные функции</span></a>
     <a data-settings-jump="appearance" href="#settings-appearance"><b>Внешний вид</b><span>тема, акцент, маркеры</span></a>
-    <a data-settings-jump="time" href="#settings-time"><b>Время</b><span>регион, пояс, дефолты</span></a>
+    <a data-settings-jump="time" href="#settings-time"><b>Время</b><span>часовой пояс и шаблоны смен</span></a>
     <a data-settings-jump="notifications" href="#settings-notifications"><b>Уведомления</b><span>браузер и расписания</span></a>
     <div class="settingsIndexActions">
       <button id="settingsExpandAll" type="button">развернуть всё</button>
@@ -545,30 +545,15 @@
 <a class="settingsAnchor" id="settings-time"></a>
 <div class="settingsHead">
 <div>
-<div class="eyebrow">Время и регион</div>
-<div class="settingsTitle">Рабочее время и часовой пояс</div>
-<div class="settingsHint">Настройки дневной и ночной смены сохраняются автоматически и применяются к встроенным типам смен.</div>
+<div class="eyebrow">Время</div>
+<div class="settingsTitle">Часовой пояс и формат времени</div>
+<div class="settingsHint">Выберите рабочий часовой пояс. DutyLog сам учитывает UTC-смещение и сезонные правила.</div>
 </div>
-<div class="status statusAutoSave" id="timeSettingsStatus">—</div>
+<div class="status" id="timeSettingsStatus">—</div>
 </div>
-<div class="timeSettingsGrid">
-<label>Регион / объект
-<input id="workRegionName" placeholder="Например: участок, город, объект" type="text"/>
-</label>
+<div class="timeSettingsGrid timeZoneSettingsGrid">
 <label>Рабочий часовой пояс
-<input id="workTimezone" list="tzSuggestions" placeholder="Europe/Moscow" type="text"/>
-<datalist id="tzSuggestions">
-<option value="Europe/Moscow"></option>
-<option value="Europe/Chisinau"></option>
-<option value="Europe/Berlin"></option>
-<option value="Asia/Yekaterinburg"></option>
-<option value="Asia/Omsk"></option>
-<option value="Asia/Novosibirsk"></option>
-<option value="UTC"></option>
-</datalist>
-</label>
-<label>Сдвиг от Москвы, ч
-<input id="workOffsetMoscow" max="12" min="-12" step="1" type="number" value="0"/>
+<select id="workTimezone" aria-describedby="timeZoneHelp"></select>
 </label>
 <label>Формат времени
 <select id="timeFormatPref">
@@ -577,8 +562,16 @@
 </label>
 </div>
 <div class="timeNowBox" id="timeNowBox">—</div>
-<div class="timeDefaults">
-<div class="timeDefaultsHead">Шаблоны смен</div>
+<div class="timeSettingsActions timezoneActions">
+<button class="primary" id="timeSaveTimezone" type="button">Сохранить часовой пояс</button>
+<button id="timeDetectBrowser" type="button">Определить автоматически</button>
+</div>
+<div class="wideHint" id="timeZoneHelp">В профиле хранится IANA-идентификатор, например Europe/Chisinau. Ручной сдвиг времени не требуется.</div>
+
+<div class="timeDefaults timeSettingsSubcard">
+<div class="timeDefaultsHead">
+  <div><b>Шаблоны смен</b><span>Параметры встроенных дневной и ночной смен.</span></div>
+</div>
 <div class="timeDefaultRow">
 <b>Дневная</b>
 <label>Начало <input id="defDayStart" type="time"/></label>
@@ -595,12 +588,10 @@
 <label>План, ч <input id="defNightPlan" max="24" min="0" step="0.25" type="number"/></label>
 <button id="timeFillNightForm" type="button">Заполнить форму смены</button>
 </div>
-</div>
-<div class="timeSettingsActions">
+<div class="timeSettingsActions shiftDefaultsActions">
 <button class="primary" id="timeApplyBuiltins" type="button">Сохранить параметры смен</button>
-<button id="timeDetectBrowser" type="button">Определить часовой пояс</button>
 </div>
-<div class="wideHint">Регион и часовой пояс используются для отображения времени. Параметры дневной и ночной смены применяются к встроенным типам смен и используются в уведомлениях, сценариях и расчётах.</div>
+</div>
 </section>
 <div class="notifyCard settingsCard" id="notifyCard" data-settings-section="notifications">
 <a class="settingsAnchor" id="settings-notifications"></a>
@@ -718,7 +709,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.4.1</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.4.2</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -1072,12 +1063,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.4.1"></script>
-<script src="js/20-data.js?v=27.4.1"></script>
-<script src="js/30-calendar.js?v=27.4.1"></script>
-<script src="js/40-overtime.js?v=27.4.1"></script>
-<script src="js/50-tasks.js?v=27.4.1"></script>
-<script src="js/60-settings.js?v=27.4.1"></script>
-<script src="js/70-user-boot.js?v=27.4.1"></script>
+<script src="js/10-core.js?v=27.4.2"></script>
+<script src="js/20-data.js?v=27.4.2"></script>
+<script src="js/30-calendar.js?v=27.4.2"></script>
+<script src="js/40-overtime.js?v=27.4.2"></script>
+<script src="js/50-tasks.js?v=27.4.2"></script>
+<script src="js/60-settings.js?v=27.4.2"></script>
+<script src="js/70-user-boot.js?v=27.4.2"></script>
 </body>
 </html>

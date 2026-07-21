@@ -1,23 +1,21 @@
-> Current release: **v27.4.1 — Overtime scenario manager**.
+> Current release: **v27.4.2 — Timezone simplification and critical regression pack**.
 
 # DutyLog
 
-Current release: **v27.4.1 — Overtime scenario manager**
+Current release: **v27.4.2 — Timezone simplification and critical regression pack**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.4.1 — Overtime scenario manager
+## Текущая версия: v27.4.2 — Timezone simplification and critical regression pack
 
+Эта версия упрощает настройку времени до одного понятного выбора IANA-часового пояса и отдельной кнопки сохранения. Поля региона/объекта и ручного сдвига от Москвы удалены из интерфейса; UTC-смещение и сезонные правила DutyLog рассчитывает автоматически. Шаблоны дневной и ночной смены визуально отделены от настройки часового пояса.
 
-Эта версия переносит быстрые сценарии из перегруженных настроек прямо в общий редактор переработки. Сценарий можно выбрать из выпадающего списка, сохранить из уже заполненной формы, создать, изменить или удалить в одном и том же окне без вложенных модальных меню. Введённая переработка сохраняется при переходе в менеджер сценариев и обратно.
+Перед production расширен критический регрессионный набор: отдельный браузерный контекст проверяет восстановление remember-me только по persistent cookie и отзыв после выхода; редакторы задач и смен проверяются глубже; deployment smoke читает профиль, модули, сессии и текущую идентичность после реального CSRF-login.
 
-Текущая база: **71 Java-тестовый класс, 356 `@Test` методов и 10 Playwright browser tests**. Предыдущая контрольная точка: **v27.4.0 — Unified overtime editors**. Ранее: **v27.2.31 — Authenticated deployment smoke-test hotfix**. Перед ней: **v27.2.30 — Host nginx CI/CD deployment hardening**. Перед ней: **v27.2.29 — Final security and product audit hardening**. Перед ней: **v27.2.28 — Staging deployment gate and diagnostics hardening**. Перед ней: **v27.2.27 — Playwright marker accordion hotfix**. Перед ней: **v27.2.26 — Playwright selector, accordion and line-ending hotfix**. Перед ней: **v27.2.25 — Playwright browser E2E regression baseline**. Перед ней: **v27.2.24 — Coverage floor and startup/module regression suite**. Перед ней: **v27.2.23 — Security test contract and secret-safe error logging hotfix**. Перед ней: **v27.2.22 — Security infrastructure regression and auth hardening suite**. Перед ней: **v27.2.21 — Telegram date validation and test harness hotfix**, затем **v27.2.20 — Telegram bot regression and delivery hardening suite**. Перед ней: **v27.2.19 — PostgreSQL migration and CI version hotfix**, где чистая PostgreSQL-схема и CI version metadata впервые прошли полный GitHub Actions smoke test. До неё: **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix** и **v27.2.14 — Quick scenarios and overtime API regression suite**.
-Ранние этапы регрессии: **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
+Текущая база: **71 Java-тестовый класс, 358 `@Test` методов и 11 Playwright browser tests**. Предыдущая контрольная точка: **v27.4.1 — Overtime scenario manager**. PostgreSQL Flyway остаётся V1–V25; миграция базы не требуется.
 
-JaCoCo формируется Maven-фазой `verify`, а не обычной кнопкой запуска JUnit в IntelliJ. Подробная инструкция: [`docs/TESTING.md`](docs/TESTING.md).
-
-Browser E2E запускается через `npm run test:e2e`. Подробности: [`docs/PLAYWRIGHT_E2E.md`](docs/PLAYWRIGHT_E2E.md).
+Ранее: **v27.4.0 — Unified overtime editors**, **v27.2.31 — Authenticated deployment smoke-test hotfix**, **v27.2.30 — Host nginx CI/CD deployment hardening**, **v27.2.29 — Final security and product audit hardening**, **v27.2.28 — Staging deployment gate and diagnostics hardening**, **v27.2.27 — Playwright marker accordion hotfix**, **v27.2.26 — Playwright selector, accordion and line-ending hotfix**, **v27.2.25 — Playwright browser E2E regression baseline**, **v27.2.24 — Coverage floor and startup/module regression suite**, **v27.2.23 — Security test contract and secret-safe error logging hotfix**, **v27.2.22 — Security infrastructure regression and auth hardening suite**, **v27.2.21 — Telegram date validation and test harness hotfix**, **v27.2.20 — Telegram bot regression and delivery hardening suite**, **v27.2.19 — PostgreSQL migration and CI version hotfix**, **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix**, **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
 
 ## Возможности
 

@@ -4,7 +4,7 @@ set -Eeuo pipefail
 BASE_URL="${1:-${DUTYLOG_BASE_URL:-http://localhost:8080}}"
 BASE_URL="${BASE_URL%/}"
 TIMEOUT="${DUTYLOG_SMOKE_TIMEOUT:-10}"
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.4.1}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.4.2}"
 SMOKE_USERNAME="${DUTYLOG_SMOKE_USERNAME:-${DUTYLOG_ADMIN_USERNAME:-}}"
 SMOKE_PASSWORD="${DUTYLOG_SMOKE_PASSWORD:-${DUTYLOG_ADMIN_PASSWORD:-}}"
 REQUIRE_AUTH="${DUTYLOG_SMOKE_REQUIRE_AUTH:-false}"
@@ -220,5 +220,24 @@ case "$HTTP_CODE" in
   401|302|403) echo "   ok ($HTTP_CODE)" ;;
   *) echo "Unexpected /api/admin/status status: $HTTP_CODE" >&2; exit 1 ;;
 esac
+
+echo "9) Authenticated read-only API contract"
+if [[ "$AUTHENTICATED" == "true" ]]; then
+  PROFILE_JSON="$(curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/api/profile")"
+  contains_literal "$PROFILE_JSON" '"username"'
+  contains_literal "$PROFILE_JSON" '"workTimezone"'
+
+  MODULES_JSON="$(curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/api/modules")"
+  contains_literal "$MODULES_JSON" '"enabled"'
+
+  SESSIONS_JSON="$(curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/api/profile/sessions")"
+  contains_literal "$SESSIONS_JSON" '['
+
+  AUTH_ME_JSON="$(curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/api/auth/me")"
+  contains_literal "$AUTH_ME_JSON" '"username"'
+  echo "   ok"
+else
+  echo "   skipped (authenticated session not available)"
+fi
 
 echo "Smoke test passed."
