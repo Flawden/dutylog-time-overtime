@@ -1,5 +1,11 @@
 ## v27.5.0 — Backup and recovery hardening
 
+### Deployment bundle hotfix
+- Fixed the remote deployment bundle so the host receives `check-backup-freshness.sh`, `restore-drill.sh` and `install-backup-timer.sh` together with the updated backup script.
+- Added release checks that fail when any production runtime backup tool is omitted from `remote-deploy.sh`.
+- Isolated the intentional missing-configuration CI gate test from the real GitHub job summary, preventing a successful validation job from displaying a false “Deployment configuration is incomplete” warning.
+- Application code, database schema and the already-created verified backup are unchanged.
+
 ### Backup safety
 - `backup-postgres.sh` now defaults to the active `deploy/compose/docker-compose.deploy.yml`, fails closed when `.env` or Compose is missing, validates numeric retention and prevents concurrent writers with `flock`.
 - Dumps and SHA-256 files are published atomically with restrictive permissions only after PostgreSQL accepts the custom archive.

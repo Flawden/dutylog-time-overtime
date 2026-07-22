@@ -500,6 +500,9 @@ contains deploy/scripts/reset-staging.sh 'Refusing to reset a non-staging enviro
 not_contains deploy/scripts/reset-staging.sh 'rm -rf'
 contains deploy/scripts/remote-deploy.sh 'StrictHostKeyChecking=yes'
 contains deploy/scripts/remote-deploy.sh 'deploy/scripts/check-deploy-env.sh'
+contains deploy/scripts/remote-deploy.sh 'deploy/scripts/check-backup-freshness.sh'
+contains deploy/scripts/remote-deploy.sh 'deploy/scripts/install-backup-timer.sh'
+contains deploy/scripts/remote-deploy.sh 'deploy/scripts/restore-drill.sh'
 contains deploy/scripts/remote-deploy.sh 'deploy/scripts/local-smoke-test.sh'
 contains deploy/scripts/deploy-environment.sh 'bash deploy/scripts/local-smoke-test.sh'
 contains deploy/scripts/local-smoke-test.sh 'DUTYLOG_BIND_ADDRESS is not 127.0.0.1'
@@ -1118,10 +1121,18 @@ DUTYLOG_GHCR_TOKEN=token-for-static-check \
   bash deploy/scripts/check-ci-deploy-config.sh >/dev/null
 grep -q '^configured=true$' "$CI_GATE_TMP/enabled.out" && ok "complete deploy configuration emits configured=true" || fail "enabled deploy gate did not emit configured=true"
 
-if DUTYLOG_DEPLOY_ENABLED=true DUTYLOG_DEPLOY_ENVIRONMENT=staging bash deploy/scripts/check-ci-deploy-config.sh >/dev/null 2>&1; then
+if GITHUB_OUTPUT="$CI_GATE_TMP/missing.out" \
+GITHUB_STEP_SUMMARY="$CI_GATE_TMP/missing.md" \
+DUTYLOG_DEPLOY_ENABLED=true \
+DUTYLOG_DEPLOY_ENVIRONMENT=staging \
+  bash deploy/scripts/check-ci-deploy-config.sh >/dev/null 2>&1; then
   fail "enabled deployment with missing environment values unexpectedly passed"
 else
-  ok "enabled deployment fails closed when required values are missing"
+  if grep -q 'Deployment configuration is incomplete' "$CI_GATE_TMP/missing.md"; then
+    ok "enabled deployment fails closed without polluting the real GitHub job summary"
+  else
+    fail "missing deploy configuration did not write its isolated diagnostic summary"
+  fi
 fi
 
 if grep -Il $'\r' deploy/scripts/*.sh >/dev/null 2>&1; then
