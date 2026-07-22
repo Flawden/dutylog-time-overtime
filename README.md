@@ -1,23 +1,23 @@
-> Current release: **v27.4.3 — Reminder timezone and sync UX bugfix**.
+> Current release: **v27.5.0 — Backup and recovery hardening**.
 
 # DutyLog
 
-Current release: **v27.4.3 — Reminder timezone and sync UX bugfix**
+Current release: **v27.5.0 — Backup and recovery hardening**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.4.3 — Reminder timezone and sync UX bugfix
+## Текущая версия: v27.5.0 — Backup and recovery hardening
 
-Эта версия устраняет четыре дефекта, найденные при ручной проверке перед production. Редактор задачи принимает любое целое число минут напоминания, включая 3. Браузер получает от backend абсолютный UTC-момент напоминания, рассчитанный из сохранённой IANA-зоны пользователя, поэтому больше не интерпретирует локальное время задачи в часовом поясе устройства.
+Эта версия переводит резервное копирование из набора ручных команд в проверяемый эксплуатационный контур. Backup использует активный `deploy/compose/docker-compose.deploy.yml`, блокирует параллельные запуски, атомарно публикует PostgreSQL custom dump, проверяет архив через `pg_restore --list`, создаёт SHA-256 и выполняет ротацию.
 
-В редакторе переработки удалён дублирующий «Короткий интервал»: расчёт выполняется по явным полям начала и конца, при этом старые ручные записи сохраняют свой исторический текстовый диапазон при редактировании. Ручная синхронизация теперь показывает состояние процесса, блокирует повторный запуск и сообщает итог: завершено, нет изменений, нет сети или не все операции отправлены.
+Добавлен штатный изолированный `restore-drill.sh`: он восстанавливает копию во временный PostgreSQL 16 без сети и опубликованных портов, проверяет таблицы и Flyway, а затем удаляет только созданные им контейнер и volume. Реальный restore теперь требует checksum по умолчанию и гарантированно пытается вернуть ранее работавшее приложение даже после ошибки `pg_restore`.
 
-Текущая база: **72 Java-тестовых класса, 362 `@Test` метода и 12 Playwright browser tests**. PostgreSQL Flyway остаётся V1–V25; миграция базы не требуется.
+Для эксплуатации добавлены проверка свежести последней копии, systemd installer для ежедневного timer и автономный shell self-test backup-инструментов. Миграций базы и изменений пользовательских данных нет. Текущая база приложения остаётся: **72 Java-тестовых класса, 362 `@Test` метода и 12 Playwright browser tests**; дополнительно CI запускает backup tooling self-test.
 
-Предыдущая контрольная точка: **v27.4.2 — Timezone simplification and critical regression pack**. После зелёного staging и короткого smoke эта версия закрывает функциональный bugfix-этап перед production readiness.
+Предыдущая контрольная точка: **v27.4.3 — Reminder timezone and sync UX bugfix**. Проверенный staging drill подтвердил восстановление 19 публичных таблиц и успешный Flyway V25 без воздействия на рабочую базу.
 
-Ранее: **v27.4.1 — Overtime scenario manager**, **v27.4.0 — Unified overtime editors**, **v27.2.31 — Authenticated deployment smoke-test hotfix**, **v27.2.30 — Host nginx CI/CD deployment hardening**, **v27.2.29 — Final security and product audit hardening**, **v27.2.28 — Staging deployment gate and diagnostics hardening**, **v27.2.27 — Playwright marker accordion hotfix**, **v27.2.26 — Playwright selector, accordion and line-ending hotfix**, **v27.2.25 — Playwright browser E2E regression baseline**, **v27.2.24 — Coverage floor and startup/module regression suite**, **v27.2.23 — Security test contract and secret-safe error logging hotfix**, **v27.2.22 — Security infrastructure regression and auth hardening suite**, **v27.2.21 — Telegram date validation and test harness hotfix**, **v27.2.20 — Telegram bot regression and delivery hardening suite**, **v27.2.19 — PostgreSQL migration and CI version hotfix**, **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix**, **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
+Ранее: **v27.4.2 — Timezone simplification and critical regression pack**, **v27.4.1 — Overtime scenario manager**, **v27.4.0 — Unified overtime editors**, **v27.2.31 — Authenticated deployment smoke-test hotfix**, **v27.2.30 — Host nginx CI/CD deployment hardening**, **v27.2.29 — Final security and product audit hardening**, **v27.2.28 — Staging deployment gate and diagnostics hardening**, **v27.2.27 — Playwright marker accordion hotfix**, **v27.2.26 — Playwright selector, accordion and line-ending hotfix**, **v27.2.25 — Playwright browser E2E regression baseline**, **v27.2.24 — Coverage floor and startup/module regression suite**, **v27.2.23 — Security test contract and secret-safe error logging hotfix**, **v27.2.22 — Security infrastructure regression and auth hardening suite**, **v27.2.21 — Telegram date validation and test harness hotfix**, **v27.2.20 — Telegram bot regression and delivery hardening suite**, **v27.2.19 — PostgreSQL migration and CI version hotfix**, **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix**, **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
 
 ## Возможности
 
@@ -116,25 +116,32 @@ docker compose down -v
 
 ## Резервные копии
 
-Создать backup PostgreSQL:
+Создать и проверить backup PostgreSQL:
 
 ```bash
-./deploy/scripts/backup-postgres.sh
+DUTYLOG_ENV_FILE=.env bash deploy/scripts/backup-postgres.sh
 ```
 
-Посмотреть список backup-файлов:
+Проверить свежесть, checksum и читаемость последней копии:
 
 ```bash
-./deploy/scripts/list-backups.sh
+DUTYLOG_ENV_FILE=.env bash deploy/scripts/check-backup-freshness.sh
 ```
 
-Восстановить базу из backup:
+Безопасно отрепетировать восстановление в отдельном временном PostgreSQL:
 
 ```bash
-./deploy/scripts/restore-postgres.sh backups/dutylog-YYYY-MM-DD_HH-MM-SS.dump
+DUTYLOG_ENV_FILE=.env bash deploy/scripts/restore-drill.sh
 ```
 
-Подробно: [`docs/BACKUP.md`](docs/BACKUP.md).
+Настоящее восстановление выбранного окружения выполняется только вручную с явным подтверждением:
+
+```bash
+CONFIRM_RESTORE=RESTORE DUTYLOG_ENV_FILE=.env \
+  bash deploy/scripts/restore-postgres.sh backups/<file>.dump
+```
+
+Ежедневный systemd timer устанавливается отдельным скриптом. Подробный runbook: [`docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md`](docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md).
 
 ## Production-профиль
 

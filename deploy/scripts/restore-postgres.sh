@@ -28,6 +28,9 @@ DB_SERVICE="${DUTYLOG_DB_SERVICE:-db}"
 APP_SERVICE="${DUTYLOG_APP_SERVICE:-app}"
 POSTGRES_DB="${POSTGRES_DB:?POSTGRES_DB is required}"
 POSTGRES_USER="${POSTGRES_USER:?POSTGRES_USER is required}"
+REQUIRE_CHECKSUM="${DUTYLOG_RESTORE_REQUIRE_CHECKSUM:-true}"
+
+[[ -f "$COMPOSE_FILE" ]] || { echo "Compose file not found: $COMPOSE_FILE" >&2; exit 2; }
 
 # Compose interpolation requires an image even while only db is used.
 export DUTYLOG_IMAGE="${DUTYLOG_IMAGE:-ghcr.io/invalid/invalid@sha256:0000000000000000000000000000000000000000000000000000000000000000}"
@@ -46,6 +49,11 @@ if [[ "${CONFIRM_RESTORE:-}" != "RESTORE" ]]; then
   fi
 fi
 
+case "$BACKUP_FILE" in
+  *.dump|*.dump.gz|*.sql|*.sql.gz) ;;
+  *) echo "Unsupported backup format: $BACKUP_FILE" >&2; exit 2 ;;
+esac
+
 compose up -d "$DB_SERVICE"
 for _ in $(seq 1 40); do
   compose exec -T "$DB_SERVICE" pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null 2>&1 && break
@@ -53,15 +61,21 @@ for _ in $(seq 1 40); do
 done
 compose exec -T "$DB_SERVICE" pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB" >/dev/null
 
-if [[ -f "$BACKUP_FILE.sha256" ]]; then
-  command -v sha256sum >/dev/null 2>&1 || { echo "sha256sum is required to verify $BACKUP_FILE.sha256" >&2; exit 2; }
-  EXPECTED_SHA="$(awk 'NR == 1 {print $1}' "$BACKUP_FILE.sha256")"
+CHECKSUM="$BACKUP_FILE.sha256"
+if [[ -f "$CHECKSUM" ]]; then
+  command -v sha256sum >/dev/null 2>&1 || { echo "sha256sum is required to verify $CHECKSUM" >&2; exit 2; }
+  EXPECTED_SHA="$(awk 'NR == 1 {print $1}' "$CHECKSUM")"
   ACTUAL_SHA="$(sha256sum "$BACKUP_FILE" | awk '{print $1}')"
   if [[ ! "$EXPECTED_SHA" =~ ^[0-9a-fA-F]{64}$ || "$ACTUAL_SHA" != "$EXPECTED_SHA" ]]; then
     echo "Backup SHA-256 verification failed: $BACKUP_FILE" >&2
     exit 1
   fi
   echo "Backup SHA-256 verified: $BACKUP_FILE"
+elif [[ "$REQUIRE_CHECKSUM" == "true" ]]; then
+  echo "Checksum file is required but missing: $CHECKSUM" >&2
+  exit 1
+else
+  echo "WARNING: restoring without a checksum because DUTYLOG_RESTORE_REQUIRE_CHECKSUM=false." >&2
 fi
 
 case "$BACKUP_FILE" in
@@ -83,9 +97,27 @@ if [[ "${SKIP_PRE_RESTORE_BACKUP:-false}" != "true" ]]; then
 fi
 
 APP_WAS_RUNNING=false
-if [[ -n "$(compose ps -q "$APP_SERVICE" || true)" ]]; then
+APP_STOPPED=false
+restart_app_on_exit() {
+  local status=$?
+  trap - EXIT
+  if [[ "$APP_WAS_RUNNING" == true && "$APP_STOPPED" == true ]]; then
+    echo "Starting DutyLog application after restore attempt..."
+    if compose up -d "$APP_SERVICE"; then
+      APP_STOPPED=false
+    else
+      echo "ERROR: failed to restart application service: $APP_SERVICE" >&2
+      (( status == 0 )) && status=1
+    fi
+  fi
+  exit "$status"
+}
+trap restart_app_on_exit EXIT
+
+if [[ -n "$(compose ps --status running -q "$APP_SERVICE" || true)" ]]; then
   APP_WAS_RUNNING=true
   compose stop "$APP_SERVICE"
+  APP_STOPPED=true
 fi
 
 restore_custom() {
@@ -102,11 +134,12 @@ case "$BACKUP_FILE" in
   *.dump.gz) gzip -dc "$BACKUP_FILE" | restore_custom ;;
   *.sql) cat "$BACKUP_FILE" | restore_sql ;;
   *.sql.gz) gzip -dc "$BACKUP_FILE" | restore_sql ;;
-  *) echo "Unsupported backup format." >&2; exit 2 ;;
 esac
 
 if [[ "$APP_WAS_RUNNING" == true ]]; then
   compose up -d "$APP_SERVICE"
+  APP_STOPPED=false
 fi
 
+trap - EXIT
 echo "Restore completed. Run smoke-test.sh before reopening traffic."

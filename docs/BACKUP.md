@@ -1,27 +1,33 @@
 # PostgreSQL backup operations
 
-Status: v27.2.5.
+Status: v27.5.0.
 
-The canonical recovery guide is [`BACKUP_RESTORE.md`](BACKUP_RESTORE.md).
+The canonical recovery guide is [`BACKUP_RESTORE_OPERATIONS_V27.5.0.md`](BACKUP_RESTORE_OPERATIONS_V27.5.0.md).
 
-Production deploy creates a verified custom-format dump before every update. Manual backup:
+Create and verify a custom-format dump:
 
 ```bash
 cd /opt/dutylog/production
-bash deploy/scripts/backup-postgres.sh
+DUTYLOG_ENV_FILE=.env bash deploy/scripts/backup-postgres.sh
 ```
 
-List dumps:
+Check backup age, SHA-256 and archive readability:
 
 ```bash
-bash deploy/scripts/list-backups.sh
+DUTYLOG_ENV_FILE=.env bash deploy/scripts/check-backup-freshness.sh
 ```
 
-Restore only with explicit confirmation:
+Rehearse recovery without modifying the live database:
 
 ```bash
-CONFIRM_RESTORE=RESTORE \
+DUTYLOG_ENV_FILE=.env bash deploy/scripts/restore-drill.sh
+```
+
+Real restore only with explicit confirmation:
+
+```bash
+CONFIRM_RESTORE=RESTORE DUTYLOG_ENV_FILE=.env \
   bash deploy/scripts/restore-postgres.sh backups/<file>.dump
 ```
 
-The restore script creates a pre-restore backup by default. Keep at least one recent copy outside the VPS. Never commit database dumps and never use `down -v` in production.
+The real restore creates a pre-restore backup by default and restarts an application that was running even when restore fails. Keep at least one recent encrypted copy outside the VPS. Never commit database dumps and never use `down -v` in production.

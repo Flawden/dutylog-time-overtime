@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.4.3.
+Status: v27.5.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.4.3 fixes arbitrary task reminder minutes, browser delivery in the saved IANA timezone, explicit overtime start/end UX and visible manual synchronization progress/results. It preserves the v27.4.2 critical regression pack and all earlier security/deployment gates. Current baseline: 72 Java test classes / 362 `@Test` methods and 12 Chromium Playwright scenarios.
+Current extension: v27.5.0 hardens verified PostgreSQL backup, isolated restore drills, restore failure recovery, freshness monitoring and systemd scheduling. It preserves the v27.4.3 reminder/timezone fixes, the v27.4.2 critical regression pack and all earlier security/deployment gates. Current application baseline: 72 Java test classes / 362 `@Test` methods and 12 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,16 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.5.0 backup and recovery extension
+
+- Backup creation fails closed without the environment or active Compose file, prevents concurrent writers and atomically publishes a verified dump plus SHA-256.
+- Retention is regression-tested with a fake Docker boundary, so the newest backup and checksum survive while old pairs are removed.
+- Backup freshness checks enforce age, checksum and archive readability contracts.
+- A failed real restore restarts an application that was running before the attempt.
+- The isolated restore drill uses generated temporary container/volume names, no network and no published ports, and always performs exact cleanup from its own process.
+- Systemd service/timer rendering is regression-tested without modifying the CI host service manager.
 
 
 ## v27.4.3 reminder timezone and sync UX extension

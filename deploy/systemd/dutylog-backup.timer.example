@@ -1,10 +1,12 @@
 [Unit]
-Description=Daily DutyLog PostgreSQL backup
+Description=Scheduled DutyLog ENVIRONMENT PostgreSQL backup
 
 [Timer]
 OnCalendar=*-*-* 03:30:00
 Persistent=true
-Unit=dutylog-backup.service
+RandomizedDelaySec=15m
+AccuracySec=1m
+Unit=dutylog-ENVIRONMENT-backup.service
 
 [Install]
 WantedBy=timers.target

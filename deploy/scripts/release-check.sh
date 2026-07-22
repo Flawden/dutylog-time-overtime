@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.4.3}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.5.0}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -66,6 +66,8 @@ echo
 need node
 need python3
 need bash
+need sha256sum
+need flock
 
 if (( ERRORS > 0 )); then
   echo "Missing required commands; aborting." >&2
@@ -947,7 +949,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.0"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1000,7 +1002,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.0"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1022,7 +1024,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.0"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "toInstant().toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1039,6 +1041,32 @@ contains e2e/overtime-editor-modals.spec.js "creditStart"
 contains e2e/offline-sync-feedback.spec.js "manual synchronization shows progress and a final result"
 contains src/test/java/ru/daniil/shifts/service/NotificationServiceTest.java "browserInstantUsesTheUsersSavedIanaTimezone"
 contains src/test/java/ru/daniil/shifts/web/NotificationOvertimeSyncUxFrontendContractTest.java "manualSyncHasAnAccessibleProgressAndResultSurface"
+
+# v27.5.0 backup and recovery hardening
+contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
+contains README.md "v27.5.0 — Backup and recovery hardening"
+contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.0"
+contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
+not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
+contains deploy/scripts/backup-postgres.sh 'flock -n 9'
+contains deploy/scripts/check-backup-freshness.sh 'BACKUP_HEALTHY'
+contains deploy/scripts/check-backup-freshness.sh 'BACKUP_MAX_AGE_HOURS'
+contains deploy/scripts/restore-postgres.sh 'DUTYLOG_RESTORE_REQUIRE_CHECKSUM'
+contains deploy/scripts/restore-postgres.sh 'restart_app_on_exit'
+contains deploy/scripts/restore-postgres.sh 'compose ps --status running -q'
+contains deploy/scripts/restore-drill.sh '--network none'
+contains deploy/scripts/restore-drill.sh 'RESTORE DRILL PASSED'
+contains deploy/scripts/restore-drill.sh 'docker volume rm "$DRILL_VOLUME"'
+contains deploy/scripts/install-backup-timer.sh 'ExecStartPost=/usr/bin/bash $CHECK_SCRIPT'
+contains deploy/systemd/dutylog-backup.timer.example 'Persistent=true'
+contains deploy/env/.env.staging.example 'BACKUP_MAX_AGE_HOURS=30'
+contains deploy/env/.env.production.cicd.example 'DUTYLOG_RESTORE_REQUIRE_CHECKSUM=true'
+if bash deploy/scripts/backup-tooling-self-test.sh >/dev/null; then
+  ok "backup tooling self-test"
+else
+  fail "backup tooling self-test failed"
+fi
 
 DEPLOY_ENV_TMP="$(mktemp -d)"
 sed \

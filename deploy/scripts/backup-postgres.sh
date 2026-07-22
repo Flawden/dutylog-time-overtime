@@ -4,8 +4,8 @@ set -Eeuo pipefail
 # Database dumps and checksums may contain sensitive account data.
 umask 077
 
-# Creates and verifies a PostgreSQL custom-format backup.
-# Supported CI/CD variables:
+# Creates, verifies and rotates PostgreSQL custom-format backups.
+# Supported variables:
 #   DUTYLOG_ENV_FILE, DUTYLOG_COMPOSE_FILE, DUTYLOG_PROJECT_NAME,
 #   DUTYLOG_DB_SERVICE, BACKUP_DIR, BACKUP_KEEP_LAST, BACKUP_PREFIX.
 
@@ -14,23 +14,28 @@ PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
 ENV_FILE="${DUTYLOG_ENV_FILE:-.env}"
-if [[ -f "$ENV_FILE" ]]; then
-  set -a
-  # Environment files used by DutyLog are shell-compatible KEY=value files.
-  # shellcheck disable=SC1090
-  . "$ENV_FILE"
-  set +a
-fi
+[[ -f "$ENV_FILE" ]] || { echo "Environment file not found: $ENV_FILE" >&2; exit 2; }
 
-COMPOSE_FILE="${DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml}"
-PROJECT_NAME="${DUTYLOG_PROJECT_NAME:-dutylog}"
+set -a
+# Environment files used by DutyLog are shell-compatible KEY=value files.
+# shellcheck disable=SC1090
+. "$ENV_FILE"
+set +a
+
+COMPOSE_FILE="${DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml}"
+PROJECT_NAME="${DUTYLOG_PROJECT_NAME:-dutylog-${DUTYLOG_ENVIRONMENT:-manual}}"
 DB_SERVICE="${DUTYLOG_DB_SERVICE:-db}"
-POSTGRES_DB="${POSTGRES_DB:-shift_calendar}"
-POSTGRES_USER="${POSTGRES_USER:-shift_calendar}"
+POSTGRES_DB="${POSTGRES_DB:?POSTGRES_DB is required}"
+POSTGRES_USER="${POSTGRES_USER:?POSTGRES_USER is required}"
 BACKUP_DIR="${BACKUP_DIR:-$PROJECT_ROOT/backups}"
 KEEP_LAST="${BACKUP_KEEP_LAST:-20}"
 PREFIX="${BACKUP_PREFIX:-dutylog}"
 PREFIX="$(printf '%s' "$PREFIX" | tr -cs 'A-Za-z0-9._-' '-')"
+
+[[ -f "$COMPOSE_FILE" ]] || { echo "Compose file not found: $COMPOSE_FILE" >&2; exit 2; }
+[[ "$KEEP_LAST" =~ ^[0-9]+$ ]] || { echo "BACKUP_KEEP_LAST must be a non-negative integer." >&2; exit 2; }
+command -v sha256sum >/dev/null 2>&1 || { echo "sha256sum is required." >&2; exit 2; }
+command -v flock >/dev/null 2>&1 || { echo "flock is required." >&2; exit 2; }
 
 compose() {
   docker compose --env-file "$ENV_FILE" -f "$COMPOSE_FILE" -p "$PROJECT_NAME" "$@"
@@ -38,10 +43,25 @@ compose() {
 
 mkdir -p "$BACKUP_DIR"
 chmod 0700 "$BACKUP_DIR"
+
+# Prevent a timer, deployment and a manual operator from writing backups concurrently.
+LOCK_FILE="$BACKUP_DIR/.backup.lock"
+exec 9>"$LOCK_FILE"
+chmod 0600 "$LOCK_FILE"
+if ! flock -n 9; then
+  echo "Another DutyLog backup is already running: $LOCK_FILE" >&2
+  exit 1
+fi
+
 STAMP="$(date -u +%Y-%m-%dT%H-%M-%SZ)"
 OUT="$BACKUP_DIR/${PREFIX}-${STAMP}.dump"
 TMP="$OUT.tmp"
-trap 'rm -f "$TMP"' EXIT
+CHECKSUM="$OUT.sha256"
+CHECKSUM_TMP="$CHECKSUM.tmp"
+cleanup_partial() {
+  rm -f "$TMP" "$CHECKSUM_TMP"
+}
+trap cleanup_partial EXIT
 
 echo "DutyLog PostgreSQL backup"
 echo "Project:     $PROJECT_NAME"
@@ -69,26 +89,25 @@ fi
 compose exec -T "$DB_SERVICE" pg_restore --list < "$TMP" >/dev/null
 mv "$TMP" "$OUT"
 chmod 0600 "$OUT"
-trap - EXIT
 
-if command -v sha256sum >/dev/null 2>&1; then
-  (
-    cd "$(dirname "$OUT")"
-    sha256sum "$(basename "$OUT")" > "$(basename "$OUT").sha256"
-    chmod 0600 "$(basename "$OUT").sha256"
-  )
-fi
+(
+  cd "$(dirname "$OUT")"
+  sha256sum "$(basename "$OUT")" > "$(basename "$CHECKSUM_TMP")"
+)
+mv "$CHECKSUM_TMP" "$CHECKSUM"
+chmod 0600 "$CHECKSUM"
 
-if [[ "$KEEP_LAST" =~ ^[0-9]+$ ]] && (( KEEP_LAST > 0 )); then
+if (( KEEP_LAST > 0 )); then
   mapfile -t OLD_BACKUPS < <(
-    find "$BACKUP_DIR" -maxdepth 1 -type f -name "*.dump" -printf '%T@ %p\n' \
+    find "$BACKUP_DIR" -maxdepth 1 -type f -name '*.dump' -printf '%T@ %p\n' \
       | sort -nr | awk '{print $2}' | tail -n +$((KEEP_LAST + 1))
   )
   for file in "${OLD_BACKUPS[@]:-}"; do
-    [[ -n "$file" ]] && rm -f "$file" "$file.sha256"
+    [[ -n "$file" ]] && rm -f -- "$file" "$file.sha256"
   done
 fi
 
+trap - EXIT
 SIZE="$(du -h "$OUT" | awk '{print $1}')"
 echo "Backup verified and saved: $OUT ($SIZE)"
 printf '%s\n' "$OUT"

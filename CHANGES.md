@@ -1,3 +1,23 @@
+## v27.5.0 — Backup and recovery hardening
+
+### Backup safety
+- `backup-postgres.sh` now defaults to the active `deploy/compose/docker-compose.deploy.yml`, fails closed when `.env` or Compose is missing, validates numeric retention and prevents concurrent writers with `flock`.
+- Dumps and SHA-256 files are published atomically with restrictive permissions only after PostgreSQL accepts the custom archive.
+- Added `check-backup-freshness.sh` to enforce a maximum backup age, checksum verification and optional live `pg_restore --list` validation.
+
+### Recovery safety
+- Real restores require a matching checksum by default and reject unsupported formats before stopping the application.
+- Added an EXIT recovery trap: when a restore fails after stopping a running application, DutyLog is started again and the original restore failure remains visible.
+- Added `restore-drill.sh` for isolated PostgreSQL 16 recovery exercises with no network, no published ports, table/Flyway verification and exact temporary-resource cleanup.
+
+### Operations
+- Added `install-backup-timer.sh` to render and enable environment-specific systemd service/timer units.
+- Added `backup-tooling-self-test.sh`; CI verifies backup rotation/checksum, freshness checks, restore failure recovery and systemd unit rendering without touching a real database.
+- Documented the successful staging drill, timer installation, retention and the remaining requirement for an off-VPS copy.
+
+### Database
+- Flyway remains V1–V25. No schema migration is required.
+
 ## v27.4.3 — Reminder timezone and sync UX bugfix
 
 ### Fixed

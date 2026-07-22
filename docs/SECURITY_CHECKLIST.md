@@ -48,7 +48,7 @@ This checklist is for a personal production deployment of DutyLog.
 
 ## Docker
 
-- [ ] Use `docker-compose.prod.yml` on the VPS.
+- [ ] Use `deploy/compose/docker-compose.deploy.yml` with an explicit `.env` on the active VPS environments.
 - [ ] `docker compose down` is used for safe stop.
 - [ ] `docker compose down -v` is avoided unless database deletion is intentional.
 - [ ] App container healthcheck is healthy.
@@ -59,8 +59,9 @@ This checklist is for a personal production deployment of DutyLog.
 ## Backup
 
 - [ ] `./deploy/scripts/backup-postgres.sh` creates a backup.
-- [ ] Restore was tested at least once.
-- [ ] Daily backup timer is configured if needed.
+- [ ] `check-backup-freshness.sh` reports `BACKUP_HEALTHY`.
+- [ ] `restore-drill.sh` passed against a recent checksum-verified dump.
+- [ ] Daily environment-specific systemd backup timer is enabled and visible in `systemctl list-timers`.
 - [ ] At least one recent backup is stored outside the VPS.
 
 ## Updates

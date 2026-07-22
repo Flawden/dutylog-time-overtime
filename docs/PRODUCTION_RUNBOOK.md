@@ -1,6 +1,6 @@
 # Production runbook
 
-Status: v27.2.30.
+Status: v27.5.0.
 
 ## Normal release
 
@@ -23,15 +23,24 @@ DUTYLOG_ENV_FILE=.env bash deploy/scripts/local-smoke-test.sh
 bash deploy/scripts/smoke-test.sh https://dutylog.yaruga-trophy.ru
 ```
 
-## Backup
+## Backup and restore drill
 
 ```bash
 cd /opt/dutylog/production
-bash deploy/scripts/backup-postgres.sh
+DUTYLOG_ENV_FILE=.env bash deploy/scripts/backup-postgres.sh
+DUTYLOG_ENV_FILE=.env bash deploy/scripts/check-backup-freshness.sh
+DUTYLOG_ENV_FILE=.env bash deploy/scripts/restore-drill.sh
 bash deploy/scripts/list-backups.sh
 ```
 
-Copy recent backups off the VPS.
+Install the daily timer only after one successful manual run:
+
+```bash
+sudo bash deploy/scripts/install-backup-timer.sh \
+  /opt/dutylog/production dutylog-deploy '*-*-* 03:30:00'
+```
+
+Copy recent backups off the VPS. Local retention alone does not protect against VPS loss.
 
 ## Application rollback
 
@@ -48,7 +57,7 @@ Restore is manual and should first be rehearsed on staging:
 
 ```bash
 cd /opt/dutylog/production
-CONFIRM_RESTORE=RESTORE bash deploy/scripts/restore-postgres.sh backups/<file>.dump
+CONFIRM_RESTORE=RESTORE DUTYLOG_ENV_FILE=.env bash deploy/scripts/restore-postgres.sh backups/<file>.dump
 ```
 
 Do not automate a database restore after deployment failure. It can destroy writes made after the backup.
