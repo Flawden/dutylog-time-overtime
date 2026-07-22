@@ -52,7 +52,7 @@ class BrowserNotificationFrontendContractTest {
                         && settings.contains("dateKeyOffset(today, -1)")
                         && settings.contains("dateKeyOffset(today, 365)"),
                 "the browser reminder source window must use the saved DutyLog timezone");
-        assertTrue(!settings.contains("new Date(reminder.remindAt || "").getTime()"),
+        assertTrue(!settings.contains("new Date(reminder.remindAt || \"\").getTime()"),
                 "a timezone-less wall clock must not be interpreted in the device timezone");
     }
 
