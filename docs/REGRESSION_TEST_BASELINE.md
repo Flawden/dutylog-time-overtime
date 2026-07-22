@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.4.2.
+Status: v27.4.3.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.4.2 simplifies timezone selection, adds explicit save, removes manual region/Moscow-offset UI and expands the critical regression path for persistent login, task/shift editors and authenticated deployment smoke checks. It preserves the v27.4.1 scenario-manager baseline and all earlier security/deployment gates. Current baseline: 71 Java test classes / 358 `@Test` methods and 11 Chromium Playwright scenarios.
+Current extension: v27.4.3 fixes arbitrary task reminder minutes, browser delivery in the saved IANA timezone, explicit overtime start/end UX and visible manual synchronization progress/results. It preserves the v27.4.2 critical regression pack and all earlier security/deployment gates. Current baseline: 72 Java test classes / 362 `@Test` methods and 12 Chromium Playwright scenarios.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,16 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.4.3 reminder timezone and sync UX extension
+
+- Browser reminder API responses include an absolute UTC instant derived from the user's saved IANA timezone.
+- Frontend delivery compares the absolute instant with `Date.now()` and uses the DutyLog timezone for source-date polling.
+- Task create/edit paths accept and persist a 3-minute reminder.
+- Overtime credits use explicit start/end fields only; the short text interval is absent from runtime HTML and JavaScript.
+- Manual synchronization visibly enters a busy state and reports a final result.
+- The browser regression baseline includes 12 Playwright scenarios.
 
 ## v27.4.2 timezone and critical regression extension
 

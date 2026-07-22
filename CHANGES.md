@@ -1,3 +1,24 @@
+## v27.4.3 — Reminder timezone and sync UX bugfix
+
+### Fixed
+- Task creation and editing now accept any whole-minute reminder offset from 0 to 10080, including 3 minutes; both inputs use `step=1` and the frontend validates an integer value.
+- Browser reminders now prefer the backend-provided `remindAtInstant` UTC instant calculated from the user's saved IANA timezone. The existing user-local `remindAt` value remains available for display and Telegram delivery.
+- Browser reminder polling now builds its source-date range from DutyLog's selected timezone rather than the operating-system timezone of the current device.
+- Changing the saved timezone invalidates the cached browser reminder schedule immediately.
+- Removed the duplicate “Короткий интервал” text field from overtime credit creation. New calculations use explicit start/end inputs; historical manual `timeRange` values are preserved while editing old records.
+- Manual offline synchronization now shows an accessible live status, disables the button while running and reports completion, no changes, offline state, cross-tab locking or partial failure.
+
+### Regression coverage
+- Added backend coverage proving `Asia/Yekaterinburg` local reminder times are serialized to the correct UTC instants.
+- Added frontend contracts for arbitrary reminder minutes, absolute browser reminder scheduling, explicit overtime start/end and synchronization feedback.
+- Extended task-editor E2E with a 3-minute reminder and updated overtime E2E to use start/end fields.
+- Added a browser E2E scenario that observes synchronization progress and its final “No changes” result.
+
+### Baseline
+- 72 Java test classes / 362 `@Test` methods.
+- 12 Chromium Playwright scenarios.
+- PostgreSQL Flyway remains V1–V25; no migration is required.
+
 ## v27.4.2 — Timezone simplification and critical regression pack
 
 ### Remember-me E2E hotfix

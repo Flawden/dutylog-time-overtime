@@ -31,6 +31,8 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   await page.locator('#taskEditPriority').selectOption('HIGH');
   await page.locator('#taskEditDueDate').fill(date);
   await page.locator('#taskEditDueTime').fill('18:45');
+  await page.locator('#taskEditReminderEnabled').check();
+  await page.locator('#taskEditReminderBefore').fill('3');
   const updated = waitForApi(page, 'PATCH', `/api/tasks/${taskId}`);
   await page.locator('#taskEditSave').click();
   await updated;
@@ -41,6 +43,8 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   await expect(page.locator('#taskEditPriority')).toHaveValue('HIGH');
   await expect(page.locator('#taskEditDueDate')).toHaveValue(date);
   await expect(page.locator('#taskEditDueTime')).toHaveValue('18:45');
+  await expect(page.locator('#taskEditReminderEnabled')).toBeChecked();
+  await expect(page.locator('#taskEditReminderBefore')).toHaveValue('3');
   await page.locator('#taskEditCancel').click();
 
   await page.locator('#chips .plus').click();

@@ -99,6 +99,49 @@ class NotificationServiceTest {
     }
 
     @Test
+    void browserInstantUsesTheUsersSavedIanaTimezone() {
+        LocalDate date = LocalDate.of(2026, 7, 22);
+        user.setWorkTimezone("Asia/Yekaterinburg");
+        user = users.save(user);
+
+        DayTask past = new DayTask(user, date, "Уже прошедшая локальная задача");
+        past.setDueDate(date);
+        past.setDueTime(LocalTime.of(12, 5));
+        past.setReminderEnabled(true);
+        past.setReminderMinutesBefore(0);
+        past = tasks.save(past);
+        Long pastId = past.getId();
+
+        DayTask due = new DayTask(user, date, "Текущая локальная задача");
+        due.setDueDate(date);
+        due.setDueTime(LocalTime.of(14, 5));
+        due.setReminderEnabled(true);
+        due.setReminderMinutesBefore(0);
+        due = tasks.save(due);
+        Long dueId = due.getId();
+
+        NotificationSettings settings = notifications.settingsEntity(user);
+        settings.setShiftRemindersEnabled(false);
+        settings.setTaskRemindersEnabled(true);
+        settings.setImportantDayRemindersEnabled(false);
+        settings.setTomorrowDigestEnabled(false);
+        settingsRepo.save(settings);
+
+        List<NotificationReminderDto> result = notifications.upcoming(user, date, date, true);
+        NotificationReminderDto pastReminder = result.stream()
+                .filter(r -> r.id().equals("task:" + pastId))
+                .findFirst().orElseThrow();
+        NotificationReminderDto dueReminder = result.stream()
+                .filter(r -> r.id().equals("task:" + dueId))
+                .findFirst().orElseThrow();
+
+        assertEquals("2026-07-22T12:05", pastReminder.remindAt());
+        assertEquals("2026-07-22T07:05:00Z", pastReminder.remindAtInstant());
+        assertEquals("2026-07-22T14:05", dueReminder.remindAt());
+        assertEquals("2026-07-22T09:05:00Z", dueReminder.remindAtInstant());
+    }
+
+    @Test
     void doneTasksAndShiftTypesWithNotificationsDisabledAreExcluded() {
         LocalDate date = LocalDate.of(2026, 8, 1);
 

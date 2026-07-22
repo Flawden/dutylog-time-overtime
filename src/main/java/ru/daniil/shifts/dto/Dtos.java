@@ -563,8 +563,25 @@ public final class Dtos {
             String remindAt,
             String title,
             String details,
-            int priority
-    ) {}
+            int priority,
+            String remindAtInstant
+    ) {
+        /**
+         * Compatibility constructor for tests and delivery adapters that only need
+         * the user-local wall clock value. Production reminder calculation also
+         * supplies remindAtInstant so browser clients never reinterpret it in the
+         * device timezone.
+         */
+        public NotificationReminderDto(String id,
+                                       String type,
+                                       String sourceDate,
+                                       String remindAt,
+                                       String title,
+                                       String details,
+                                       int priority) {
+            this(id, type, sourceDate, remindAt, title, details, priority, null);
+        }
+    }
 
 
 

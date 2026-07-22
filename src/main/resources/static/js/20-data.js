@@ -6,6 +6,17 @@
  * → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
  */
 
+Object.assign(I18N_EN, {
+  "Синхронизация…":"Syncing…",
+  "Синхронизация завершена":"Sync completed",
+  "Нет изменений":"No changes",
+  "Нет подключения к сети":"No network connection",
+  "Не все изменения отправлены":"Some changes were not uploaded",
+  "Синхронизация уже выполняется":"Sync is already running",
+  "Синхронизация выполняется в другой вкладке":"Sync is running in another tab"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+
 /* ─── API ───────────────────────────────────────────────────── */
 const api = {
   async shiftTypes()        { return jfetch("/api/shift-types"); },
@@ -1158,6 +1169,21 @@ function updateOfflineStatus(){
     : (state.offline.pending ? "Есть изменения, ожидающие отправки. Нажмите, чтобы открыть синхронизацию. " + age : "Состояние подключения. " + age);
 }
 
+function setOfflineSyncFeedback(message = "", tone = ""){
+  const box = $("offlineSyncFeedback");
+  if (!box) return;
+  box.textContent = message;
+  box.className = "offlineSyncFeedback" + (tone ? ` ${tone}` : "");
+  box.hidden = !message;
+}
+function setOfflineSyncButtonBusy(busy){
+  const button = $("offlineSyncNow");
+  if (!button) return;
+  button.disabled = !!busy;
+  button.setAttribute("aria-busy", busy ? "true" : "false");
+  button.textContent = t(busy ? "Синхронизация…" : "Синхронизировать");
+}
+
 async function renderOfflineSyncDialog(){
   const pendingList = $("offlinePendingList");
   const failedList = $("offlineFailedList");
@@ -1166,6 +1192,7 @@ async function renderOfflineSyncDialog(){
   const queue = await dataLayer.getQueueItems();
   const failed = await dataLayer.getFailedItems();
   const online = navigator.onLine && state.offline.online !== false;
+  setOfflineSyncButtonBusy(state.offline.syncing);
   const syncAge = state.offline.lastSyncAt ? `${fmtSyncTime(state.offline.lastSyncAt)} · ${fmtSyncAge(state.offline.lastSyncAt)}` : "локальной копии пока нет";
   meta.innerHTML = `
     <div><b>${online ? "Онлайн" : "Оффлайн"}</b></div>
@@ -1193,6 +1220,7 @@ async function openOfflineSyncDialog(){
   const dlg = $("offlineSyncDialog");
   if (!dlg) return;
   await dataLayer.refreshQueueState();
+  setOfflineSyncFeedback();
   await renderOfflineSyncDialog();
   dlg.hidden = false;
   document.body.classList.add("syncDialogOpen");
@@ -1214,7 +1242,35 @@ document.addEventListener("keydown", e => {
 document.addEventListener("click", async e => {
   if (e.target?.id === "offlineStatus") { await openOfflineSyncDialog(); return; }
   if (e.target?.id === "offlineSyncClose" || e.target?.id === "offlineSyncBackdrop") { closeOfflineSyncDialog(); return; }
-  if (e.target?.id === "offlineSyncNow") { await dataLayer.syncQueue(); await renderOfflineSyncDialog(); return; }
+  if (e.target?.id === "offlineSyncNow") {
+    const beforePending = Number(state.offline.pending || 0);
+    const beforeFailed = Number(state.offline.failed?.length || 0);
+    if (state.offline.syncing) {
+      setOfflineSyncFeedback(t("Синхронизация уже выполняется"), "warn");
+      return;
+    }
+    if (!navigator.onLine) {
+      state.offline.online = false;
+      updateOfflineStatus();
+      setOfflineSyncFeedback(t("Нет подключения к сети"), "err");
+      return;
+    }
+    setOfflineSyncButtonBusy(true);
+    setOfflineSyncFeedback(t("Синхронизация…"), "busy");
+    await dataLayer.syncQueue();
+    await renderOfflineSyncDialog();
+    setOfflineSyncButtonBusy(false);
+    if (state.offline.syncLockedByOther) {
+      setOfflineSyncFeedback(t("Синхронизация выполняется в другой вкладке"), "warn");
+    } else if (Number(state.offline.pending || 0) > 0 || Number(state.offline.failed?.length || 0) > beforeFailed) {
+      setOfflineSyncFeedback(t("Не все изменения отправлены"), "err");
+    } else if (beforePending > 0) {
+      setOfflineSyncFeedback(t("Синхронизация завершена"), "ok");
+    } else {
+      setOfflineSyncFeedback(t("Нет изменений"), "ok");
+    }
+    return;
+  }
   if (e.target?.id === "offlineFailedRetryAll") { await dataLayer.retryAllFailed(); await renderOfflineSyncDialog(); return; }
   if (e.target?.id === "offlineExport") { await dataLayer.exportOfflineData(); return; }
   if (e.target?.id === "offlineDiagnosticsCopy") {

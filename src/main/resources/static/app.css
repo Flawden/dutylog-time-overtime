@@ -925,6 +925,12 @@ body.offline #telegramBox::before{content:"Эта операция требуе�
 .syncItem small{display:block;color:#ffb0a2;font-size:12px;margin-top:5px;line-height:1.35}
 .syncItemActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
 .syncItemActions button{font-size:12px;padding:7px 9px;border-radius:10px}
+.offlineSyncFeedback{min-height:22px;margin-top:14px;padding:9px 11px;border:1px solid var(--line);border-radius:10px;color:var(--mut);background:rgba(255,255,255,.025);font-size:12px;font-weight:700}
+.offlineSyncFeedback[hidden]{display:none}
+.offlineSyncFeedback.busy{color:var(--accent);border-color:color-mix(in srgb,var(--accent) 45%,var(--line))}
+.offlineSyncFeedback.ok{color:#6FBF73;border-color:color-mix(in srgb,#6FBF73 45%,var(--line))}
+.offlineSyncFeedback.warn{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}
+.offlineSyncFeedback.err{color:var(--danger);border-color:color-mix(in srgb,var(--danger) 45%,var(--line))}
 .offlineSyncActions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)}
 .offlineSyncActions button{min-height:40px}
 .offlineDiagnosticsList .diagRow{background:rgba(255,255,255,.03);border-radius:12px;padding:8px 10px;border-bottom:0}

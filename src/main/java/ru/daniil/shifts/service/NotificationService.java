@@ -37,18 +37,20 @@ public class NotificationService {
     private final DayTaskRepository taskRepository;
     private final ImportantDayService importantDayService;
     private final DayEntryService dayEntryService;
-    private final UserTimeService userTimeService = new UserTimeService();
+    private final UserTimeService userTimeService;
 
     public NotificationService(NotificationSettingsRepository settingsRepo,
                                DayEntryRepository dayEntryRepository,
                                DayTaskRepository taskRepository,
                                ImportantDayService importantDayService,
-                               DayEntryService dayEntryService) {
+                               DayEntryService dayEntryService,
+                               UserTimeService userTimeService) {
         this.settingsRepo = settingsRepo;
         this.dayEntryRepository = dayEntryRepository;
         this.taskRepository = taskRepository;
         this.importantDayService = importantDayService;
         this.dayEntryService = dayEntryService;
+        this.userTimeService = userTimeService;
     }
 
     @Transactional
@@ -102,11 +104,12 @@ public class NotificationService {
                 int minutesBefore = st.getNotificationMinutesBefore() != null ? st.getNotificationMinutesBefore() : s.getShiftReminderMinutesBefore();
                 LocalDateTime shiftStart = LocalDateTime.of(d.getDate(), st.getStartTime());
                 LocalDateTime remindAt = shiftStart.minusMinutes(minutesBefore);
-                out.add(new NotificationReminderDto(
+                out.add(reminder(
+                        user,
                         "shift:" + d.getDate(),
                         "SHIFT",
                         d.getDate().toString(),
-                        remindAt.toString(),
+                        remindAt,
                         "Смена: " + st.getName(),
                         "Начало " + st.getStartTime() + ", напоминание за " + minutesBefore + " мин." + (st.getNotificationMinutesBefore() != null ? " (настройка смены)" : ""),
                         10
@@ -130,11 +133,12 @@ public class NotificationService {
                     remindAt = LocalDateTime.of(task.getDate(), s.getTaskReminderTime());
                     details = task.getDueDate() != null ? "Невыполненная задача, срок " + task.getDueDate() : "Невыполненная задача дня";
                 }
-                out.add(new NotificationReminderDto(
+                out.add(reminder(
+                        user,
                         "task:" + task.getId(),
                         "TASK",
                         sourceDate.toString(),
-                        remindAt.toString(),
+                        remindAt,
                         "Задача: " + task.getText(),
                         details,
                         30
@@ -147,11 +151,12 @@ public class NotificationService {
             for (ImportantDayOccurrenceDto item : importantDayService.occurrences(user, from, to)) {
                 LocalDate eventDate = LocalDate.parse(item.date());
                 LocalDateTime remindAt = LocalDateTime.of(eventDate.minusDays(s.getImportantDayDaysBefore()), s.getImportantDayReminderTime());
-                out.add(new NotificationReminderDto(
+                out.add(reminder(
+                        user,
                         "important:" + item.id() + ":" + item.date(),
                         "IMPORTANT_DAY",
                         item.date(),
-                        remindAt.toString(),
+                        remindAt,
                         "Важный день: " + item.title(),
                         s.getImportantDayDaysBefore() == 0 ? "Напоминание в день события" : "За " + s.getImportantDayDaysBefore() + " дн. до события",
                         20
@@ -164,11 +169,12 @@ public class NotificationService {
             for (Map.Entry<LocalDate, List<String>> e : digestParts.entrySet()) {
                 LocalDate sourceDate = e.getKey();
                 LocalDateTime remindAt = LocalDateTime.of(sourceDate.minusDays(1), s.getTomorrowDigestTime());
-                out.add(new NotificationReminderDto(
+                out.add(reminder(
+                        user,
                         "digest:" + sourceDate,
                         "TOMORROW_DIGEST",
                         sourceDate.toString(),
-                        remindAt.toString(),
+                        remindAt,
                         "Завтра: " + sourceDate,
                         String.join("; ", e.getValue()),
                         40
@@ -189,6 +195,27 @@ public class NotificationService {
 
         out.sort(Comparator.comparing(NotificationReminderDto::remindAt).thenComparing(NotificationReminderDto::priority));
         return out;
+    }
+
+    private NotificationReminderDto reminder(AppUser user,
+                                               String id,
+                                               String type,
+                                               String sourceDate,
+                                               LocalDateTime remindAt,
+                                               String title,
+                                               String details,
+                                               int priority) {
+        String instant = remindAt.atZone(userTimeService.zone(user)).toInstant().toString();
+        return new NotificationReminderDto(
+                id,
+                type,
+                sourceDate,
+                remindAt.toString(),
+                title,
+                details,
+                priority,
+                instant
+        );
     }
 
     @Transactional

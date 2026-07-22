@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.4.2}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.4.3}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -947,7 +947,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.3"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1000,7 +1000,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.3"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1017,6 +1017,28 @@ contains deploy/scripts/production-smoke-test.sh "DUTYLOG_SMOKE_REQUIRE_AUTH=tru
 contains deploy/scripts/production-smoke-test.sh "https://"
 contains deploy/scripts/check-production-env.sh "deploy/scripts/production-smoke-test.sh"
 contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.sh"
+
+# v27.4.3 reminder timezone and sync UX bugfix
+contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
+contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
+contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.4.3"
+contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
+contains src/main/java/ru/daniil/shifts/service/NotificationService.java "toInstant().toString()"
+contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
+contains src/main/resources/static/js/60-settings.js "reminder?.remindAtInstant || reminder?.remindAt"
+not_contains src/main/resources/static/js/60-settings.js 'new Date(reminder.remindAt || "").getTime()'
+contains src/main/resources/static/index.html 'id="taskEditReminderBefore" max="10080" min="0" step="1"'
+not_contains src/main/resources/static/index.html 'id="creditTimeRange"'
+not_contains src/main/resources/static/index.html "Короткий интервал"
+not_contains src/main/resources/static/js/40-overtime.js "parseManualTimeRange"
+contains src/main/resources/static/index.html 'id="offlineSyncFeedback" role="status" aria-live="polite"'
+contains src/main/resources/static/js/20-data.js "setOfflineSyncButtonBusy(true)"
+contains e2e/editor-modals.spec.js "taskEditReminderBefore"
+contains e2e/overtime-editor-modals.spec.js "creditStart"
+contains e2e/offline-sync-feedback.spec.js "manual synchronization shows progress and a final result"
+contains src/test/java/ru/daniil/shifts/service/NotificationServiceTest.java "browserInstantUsesTheUsersSavedIanaTimezone"
+contains src/test/java/ru/daniil/shifts/web/NotificationOvertimeSyncUxFrontendContractTest.java "manualSyncHasAnAccessibleProgressAndResultSurface"
 
 DEPLOY_ENV_TMP="$(mktemp -d)"
 sed \
@@ -1081,23 +1103,23 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "11" ]]; then
-  ok "Playwright test baseline: 11"
+if [[ "$E2E_TESTS" == "12" ]]; then
+  ok "Playwright test baseline: 12"
 else
-  fail "expected 11 Playwright tests, found $E2E_TESTS"
+  fail "expected 12 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "358" ]]; then
-  ok "test method baseline: 358"
+if [[ "$TEST_METHODS" == "362" ]]; then
+  ok "test method baseline: 362"
 else
-  fail "expected 358 @Test methods, found $TEST_METHODS"
+  fail "expected 362 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "71" ]]; then
-  ok "test class baseline: 71"
+if [[ "$TEST_CLASSES" == "72" ]]; then
+  ok "test class baseline: 72"
 else
-  fail "expected 71 test classes, found $TEST_CLASSES"
+  fail "expected 72 test classes, found $TEST_CLASSES"
 fi
 
 echo

@@ -421,6 +421,7 @@ async function saveTimeSettings(){
     };
     storeTimeSettings(state.timeSettings);
     renderTimeSettings();
+    if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     setSave("saved", t("настройки времени сохранены"));
     return true;
   } catch (err) {
@@ -973,16 +974,19 @@ function writeDeliveredBrowserNotifications(items){
   catch (_) { /* private mode or storage quota */ }
 }
 function notificationPollRange(){
-  const toKey = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
-  const now = new Date();
-  const from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-  // Important-day reminders may fire long before the source date, so keep a
-  // one-year source window but refresh it only once per minute.
-  const to = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 365);
-  return { from:toKey(from), to:toKey(to) };
+  const today = todayKey();
+  // The source-date window must follow the saved DutyLog timezone, not the
+  // operating-system timezone of the current browser.
+  return { from:dateKeyOffset(today, -1), to:dateKeyOffset(today, 365) };
+}
+function browserReminderInstantValue(reminder){
+  // v27.4.3 backend supplies an absolute UTC instant calculated from the
+  // user's IANA timezone. The local remindAt value remains for display and
+  // Telegram compatibility only.
+  return reminder?.remindAtInstant || reminder?.remindAt || "";
 }
 function browserReminderFingerprint(reminder){
-  return `${reminder?.id || "reminder"}|${reminder?.remindAt || ""}`;
+  return `${reminder?.id || "reminder"}|${browserReminderInstantValue(reminder)}`;
 }
 async function showBrowserReminder(reminder){
   const title = reminder.title || "DutyLog: Time & Overtime";
@@ -1025,7 +1029,7 @@ async function browserNotificationTick(){
     }
     const delivered = readDeliveredBrowserNotifications();
     for (const reminder of browserNotificationReminders || []) {
-      const dueAt = new Date(reminder.remindAt || "").getTime();
+      const dueAt = new Date(browserReminderInstantValue(reminder)).getTime();
       if (!Number.isFinite(dueAt)) continue;
       const lateBy = now - dueAt;
       if (lateBy < 0 || lateBy > BROWSER_NOTIFICATION_GRACE_MS) continue;

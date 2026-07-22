@@ -42,6 +42,21 @@ class BrowserNotificationFrontendContractTest {
     }
 
     @Test
+    void browserDeliveryUsesBackendInstantAndTheSavedTimezoneForItsPollWindow() throws IOException {
+        String settings = resource("/static/js/60-settings.js");
+        assertTrue(settings.contains("reminder?.remindAtInstant || reminder?.remindAt"),
+                "browser delivery must prefer the absolute instant calculated by the backend");
+        assertTrue(settings.contains("new Date(browserReminderInstantValue(reminder)).getTime()"),
+                "browser delivery must compare an absolute instant with Date.now");
+        assertTrue(settings.contains("const today = todayKey()")
+                        && settings.contains("dateKeyOffset(today, -1)")
+                        && settings.contains("dateKeyOffset(today, 365)"),
+                "the browser reminder source window must use the saved DutyLog timezone");
+        assertTrue(!settings.contains("new Date(reminder.remindAt || "").getTime()"),
+                "a timezone-less wall clock must not be interpreted in the device timezone");
+    }
+
+    @Test
     void taskReminderControlsStayDisabledWhenNotificationsModuleIsOff() throws IOException {
         String tasks = resource("/static/js/50-tasks.js");
         assertTrue(tasks.contains("function updateTaskReminderControls()"));

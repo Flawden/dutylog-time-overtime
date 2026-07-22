@@ -418,7 +418,7 @@ async function saveTaskEditor(){
   const reminderMinutesBefore = remindersAvailable
     ? (reminderEnabled ? Number($("taskEditReminderBefore").value || 0) : null)
     : (original?.reminderMinutesBefore ?? null);
-  if (reminderEnabled && (!Number.isFinite(reminderMinutesBefore) || reminderMinutesBefore < 0 || reminderMinutesBefore > 10080)) {
+  if (reminderEnabled && (!Number.isInteger(reminderMinutesBefore) || reminderMinutesBefore < 0 || reminderMinutesBefore > 10080)) {
     return taskEditorMessage(t("напоминание: от 0 до 10080 минут"), "err");
   }
   $("taskEditSave").disabled = true;
@@ -461,6 +461,10 @@ async function addTask(){
   try {
     const remindersAvailable = state.modulesLoaded && moduleEnabled("notifications");
     const reminderEnabled = remindersAvailable && $("taskReminderEnabled").checked;
+    const reminderMinutesBefore = reminderEnabled ? Number($("taskReminderBefore").value || 0) : null;
+    if (reminderEnabled && (!Number.isInteger(reminderMinutesBefore) || reminderMinutesBefore < 0 || reminderMinutesBefore > 10080)) {
+      return setSave("err", t("напоминание: от 0 до 10080 минут"));
+    }
     const created = await api.createTask({
       date: k,
       text,
@@ -469,7 +473,7 @@ async function addTask(){
       dueDate: $("taskDueDate").value || null,
       dueTime: $("taskDueTime").value || null,
       reminderEnabled,
-      reminderMinutesBefore: reminderEnabled ? Number($("taskReminderBefore").value || 0) : null,
+      reminderMinutesBefore,
     });
     upsertTaskInMaps(created);
     $("taskText").value = "";
