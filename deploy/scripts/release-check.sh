@@ -1072,6 +1072,7 @@ contains README.md "v27.6.0 — Mobile Tasks & Inbox UX"
 contains docs/MOBILE_TASKS_INBOX_V27.6.0.md "thought → one tap → text → saved"
 contains src/main/resources/db/migration/postgresql/V26__task_tags_and_inbox.sql "CREATE TABLE inbox_items"
 contains src/main/resources/db/migration/postgresql/V26__task_tags_and_inbox.sql "CREATE TABLE day_task_tags"
+contains src/main/resources/db/migration/postgresql/V26__task_tags_and_inbox.sql "tag_order INTEGER NOT NULL"
 contains src/main/java/ru/daniil/shifts/model/InboxItem.java 'class InboxItem'
 contains src/main/java/ru/daniil/shifts/service/InboxService.java 'convertToTask'
 contains src/main/java/ru/daniil/shifts/web/InboxController.java '@RequestMapping({"/api/inbox", "/api/v1/inbox"})'

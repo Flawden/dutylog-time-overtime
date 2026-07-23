@@ -408,7 +408,7 @@ public final class Dtos {
                     task.getText(),
                     task.isDone(),
                     task.getCategory(),
-                    task.getTags().stream().sorted().toList(),
+                    List.copyOf(task.getTags()),
                     task.getPriority(),
                     task.getDueDate() != null ? task.getDueDate().toString() : null,
                     task.getDueTime() != null ? task.getDueTime().toString() : null,

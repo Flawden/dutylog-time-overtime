@@ -1,5 +1,6 @@
 CREATE TABLE day_task_tags (
     task_id BIGINT NOT NULL,
+    tag_order INTEGER NOT NULL,
     tag VARCHAR(40) NOT NULL,
     CONSTRAINT pk_day_task_tags PRIMARY KEY (task_id, tag),
     CONSTRAINT fk_day_task_tags_task
