@@ -1,6 +1,6 @@
 # Production runbook
 
-Status: v27.5.1.
+Status: v27.5.2.
 
 ## Normal release
 

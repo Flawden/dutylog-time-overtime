@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.5.1.
+Status: v27.5.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.5.1 restores reliable Telegram `/today` and `/tomorrow` responses, adds safe partial-summary recovery and fixes compact mobile synchronization status overflow. It preserves the v27.5.0 verified backup/recovery tooling, the v27.4.3 reminder/timezone fixes and all earlier security/deployment gates. Current application baseline: 72 Java test classes / 364 `@Test` methods and 12 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.5.2 registers a visible Telegram command menu and persistent one-tap quick actions while preserving the reliable timezone-aware command handling from v27.5.1, the verified backup/recovery tooling from v27.5.0 and all earlier security/deployment gates. Current application baseline: 72 Java test classes / 367 `@Test` methods and 12 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -16,12 +16,12 @@ This release converts the successful v27.2.6 manual acceptance pass into an auto
 
 
 
-## v27.5.1 Telegram command and mobile status extension
+## v27.5.2 Telegram command menu and quick actions extension
 
-- `/today` and `/tomorrow@BotName` use the persisted user timezone through injected `UserTimeService`.
-- A failure in one day-summary projection returns a marked partial summary instead of suppressing the command response.
-- Unexpected linked-command failures produce a safe Telegram message and a diagnostic server log without user-entered command arguments.
-- The compact mobile synchronization status uses a shorter active label and CSS wrapping instead of overflowing the header.
+- `TelegramBotServiceTest` verifies the `setMyCommands` HTTP payload, descriptions and fail-closed registration guards.
+- Every bot response carries a persistent compact reply keyboard with six safe read-only actions.
+- `TelegramCommandServiceTest` proves button labels dispatch to the same timezone-aware handlers as slash commands.
+- v27.5.1 coverage for partial `/today` and `/tomorrow` summaries and compact mobile synchronization remains preserved.
 
 
 ## v27.5.0 backup and recovery extension

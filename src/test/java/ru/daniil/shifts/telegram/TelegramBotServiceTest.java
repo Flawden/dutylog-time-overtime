@@ -42,7 +42,47 @@ class TelegramBotServiceTest {
         server = MockRestServiceServer.bindTo(restTemplate).build();
         bot = new TelegramBotService(linkService, commandService, mapper, restTemplate);
         ReflectionTestUtils.setField(bot, "pollingEnabled", true);
+        ReflectionTestUtils.setField(bot, "commandMenuEnabled", true);
         lenient().when(linkService.token()).thenReturn("secret-token");
+    }
+
+    @Test
+    void commandMenuRegistrationIsDiscoverableAndRetrySafe() throws Exception {
+        when(linkService.isConfigured()).thenReturn(true);
+
+        server.expect(once(), requestTo("https://api.telegram.org/botsecret-token/setMyCommands"))
+                .andExpect(method(org.springframework.http.HttpMethod.POST))
+                .andExpect(request -> {
+                    JsonNode body = mapper.readTree(((org.springframework.mock.http.client.MockClientHttpRequest) request).getBodyAsString());
+                    JsonNode commands = body.path("commands");
+                    assertEquals(10, commands.size());
+                    assertEquals("today", commands.get(0).path("command").asText());
+                    assertEquals("Сводка на сегодня", commands.get(0).path("description").asText());
+                    assertTrue(commands.toString().contains("tomorrow"));
+                    assertTrue(commands.toString().contains("help"));
+                })
+                .andRespond(withSuccess("{\"ok\":true}", MediaType.APPLICATION_JSON));
+
+        bot.refreshCommandMenu();
+
+        assertEquals(false, ReflectionTestUtils.getField(bot, "commandMenuRefreshing"));
+        server.verify();
+    }
+
+    @Test
+    void disabledOrUnconfiguredCommandMenuNeverCallsTelegram() {
+        ReflectionTestUtils.setField(bot, "commandMenuEnabled", false);
+        bot.refreshCommandMenu();
+
+        ReflectionTestUtils.setField(bot, "commandMenuEnabled", true);
+        ReflectionTestUtils.setField(bot, "pollingEnabled", false);
+        bot.refreshCommandMenu();
+
+        ReflectionTestUtils.setField(bot, "pollingEnabled", true);
+        when(linkService.isConfigured()).thenReturn(false);
+        bot.refreshCommandMenu();
+
+        server.verify();
     }
 
     @Test
@@ -214,6 +254,11 @@ class TelegramBotServiceTest {
                     assertEquals(3901, body.path("text").asText().length());
                     assertTrue(body.path("text").asText().endsWith("…"));
                     assertTrue(body.path("disable_web_page_preview").asBoolean());
+                    JsonNode replyMarkup = body.path("reply_markup");
+                    assertTrue(replyMarkup.path("resize_keyboard").asBoolean());
+                    assertTrue(replyMarkup.path("is_persistent").asBoolean());
+                    assertEquals("Сегодня", replyMarkup.path("keyboard").get(0).get(0).path("text").asText());
+                    assertEquals("Помощь", replyMarkup.path("keyboard").get(2).get(1).path("text").asText());
                 })
                 .andRespond(withSuccess("{\"ok\":false}", MediaType.APPLICATION_JSON));
         server.expect(requestTo("https://api.telegram.org/botsecret-token/sendMessage"))

@@ -1,3 +1,21 @@
+## v27.5.2 — Telegram command menu and quick actions
+
+### Telegram discoverability
+- DutyLog now registers its supported commands through Telegram `setMyCommands`, so `/today`, `/tomorrow`, `/week`, `/tasks`, `/balance`, `/task`, `/done`, `/ppr`, `/timeoff` and `/help` are visible in the chat command menu with short descriptions.
+- Command-menu registration starts after application boot and refreshes periodically, so a temporary Telegram outage does not require a redeploy; failures are logged without exposing the bot token.
+- Registration can be disabled or rescheduled through environment variables without changing application code.
+
+### Quick actions
+- Every bot reply carries a compact persistent Telegram keyboard with `Сегодня`, `Завтра`, `Задачи`, `Баланс`, `Неделя` and `Помощь`.
+- Button labels are accepted as first-class command aliases, so the user no longer has to type slash commands manually.
+- `/help` explicitly explains that the primary actions are available under the Telegram input field.
+
+### Regression coverage
+- Added HTTP-contract tests for `setMyCommands`, command descriptions, retry-safe guards and the persistent reply keyboard payload.
+- Added command-service coverage proving every quick-action label dispatches to the same timezone-aware logic as its slash-command equivalent.
+- Baseline: 72 Java test classes / 367 `@Test` methods and 12 Chromium Playwright scenarios.
+- Flyway remains V1–V25. No schema migration is required.
+
 ## v27.5.1 — Telegram commands and mobile sync status bugfix
 
 ### Telegram bot

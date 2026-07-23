@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.5.1}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.5.2}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -952,7 +952,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.2"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1005,7 +1005,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.2"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1027,7 +1027,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.2"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "toInstant().toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1053,11 +1053,24 @@ contains src/main/java/ru/daniil/shifts/telegram/TelegramBotService.java 'Не �
 contains src/main/resources/static/js/20-data.js 'compactStatus ? "синхр…" : "синхронизация…"'
 contains src/main/resources/static/app.css 'overflow-wrap:anywhere'
 
+# v27.5.2 Telegram command menu and quick actions
+contains CHANGES.md "v27.5.2 — Telegram command menu and quick actions"
+contains README.md "v27.5.2 — Telegram command menu and quick actions"
+contains docs/TELEGRAM_COMMAND_MENU_V27.5.2.md 'setMyCommands'
+contains src/main/java/ru/daniil/shifts/telegram/TelegramBotService.java 'setMyCommands'
+contains src/main/java/ru/daniil/shifts/telegram/TelegramBotService.java 'reply_markup'
+contains src/main/java/ru/daniil/shifts/telegram/TelegramBotService.java 'is_persistent'
+contains src/main/java/ru/daniil/shifts/telegram/TelegramCommandService.java 'case "сегодня" -> "/today"'
+contains src/test/java/ru/daniil/shifts/telegram/TelegramBotServiceTest.java 'commandMenuRegistrationIsDiscoverableAndRetrySafe'
+contains src/test/java/ru/daniil/shifts/telegram/TelegramCommandServiceTest.java 'quickActionKeyboardLabelsDispatchWithoutSlashCommands'
+contains deploy/compose/docker-compose.deploy.yml 'DUTYLOG_TELEGRAM_COMMAND_MENU_ENABLED'
+contains src/main/resources/application-prod.properties 'dutylog.telegram.command-menu-enabled'
+
 # v27.5.0 backup and recovery hardening
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.2"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1158,10 +1171,10 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "364" ]]; then
-  ok "test method baseline: 364"
+if [[ "$TEST_METHODS" == "367" ]]; then
+  ok "test method baseline: 367"
 else
-  fail "expected 364 @Test methods, found $TEST_METHODS"
+  fail "expected 367 @Test methods, found $TEST_METHODS"
 fi
 if [[ "$TEST_CLASSES" == "72" ]]; then
   ok "test class baseline: 72"

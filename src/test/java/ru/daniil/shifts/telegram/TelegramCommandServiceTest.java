@@ -67,6 +67,25 @@ class TelegramCommandServiceTest {
     }
 
     @Test
+    void quickActionKeyboardLabelsDispatchWithoutSlashCommands() {
+        LocalDate today = LocalDate.of(2026, 7, 23);
+        when(userTimeService.today(user)).thenReturn(today);
+        when(dayEntries.findByOwnerAndDate(eq(user), any(LocalDate.class))).thenReturn(Optional.empty());
+        when(taskService.listDay(eq(user), anyString())).thenReturn(List.of());
+        when(importantDayService.occurrences(eq(user), any(LocalDate.class), any(LocalDate.class))).thenReturn(List.of());
+        when(overtimeService.account(user)).thenReturn(account(12, 4, 8));
+        when(taskService.listBoard(eq(user), eq("open"), eq("all"), eq("all"), eq(""), isNull(), isNull(), eq(0), eq(50)))
+                .thenReturn(PageDto.of(List.of(), 0, 50, 0));
+
+        assertTrue(service.handle(user, "Сегодня").startsWith("Сегодня, 23.07.2026"));
+        assertTrue(service.handle(user, "Завтра").startsWith("Завтра, 24.07.2026"));
+        assertTrue(service.handle(user, "Неделя").startsWith("Ближайшие 7 дней"));
+        assertEquals("Открытых задач нет. Красота.", service.handle(user, "Задачи"));
+        assertTrue(service.handle(user, "Баланс").contains("Остаток: 8 ч"));
+        assertTrue(service.handle(user, "Помощь").contains("Основные команды доступны кнопками"));
+    }
+
+    @Test
     void createTaskParsesTomorrowAndDelegatesWithoutInventingReminder() {
         LocalDate tomorrow = LocalDate.now().plusDays(1);
         TaskDto created = task(12L, tomorrow, "Купить молоко", false, false);

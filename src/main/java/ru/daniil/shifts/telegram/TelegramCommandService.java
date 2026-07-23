@@ -98,6 +98,7 @@ public class TelegramCommandService {
                 "/ppr 2 причина — начислить 2 часа вручную",
                 "/timeoff 8 причина — списать 8 часов отгула",
                 "",
+                "Основные команды доступны кнопками под полем ввода Telegram.",
                 "Можно указывать дату первым аргументом: /task 2026-07-10 текст, /ppr 10.07 17-20 причина.",
                 "Для интервала можно добавить обед и план: /ppr 17-08 обед60 план0 причина."
         );
@@ -446,7 +447,19 @@ public class TelegramCommandService {
 
     private String commandOf(String text) {
         if (text == null || text.isBlank()) return "";
-        String first = text.trim().split("\\s+")[0].toLowerCase(Locale.ROOT);
+        String normalized = text.trim().toLowerCase(Locale.ROOT);
+        String quickAction = switch (normalized) {
+            case "сегодня" -> "/today";
+            case "завтра" -> "/tomorrow";
+            case "неделя" -> "/week";
+            case "задачи" -> "/tasks";
+            case "баланс" -> "/balance";
+            case "помощь" -> "/help";
+            default -> null;
+        };
+        if (quickAction != null) return quickAction;
+
+        String first = normalized.split("\\s+")[0];
         int at = first.indexOf('@');
         if (at >= 0) first = first.substring(0, at);
         return first;
