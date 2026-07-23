@@ -61,7 +61,7 @@ class BrowserNotificationFrontendContractTest {
         String tasks = resource("/static/js/50-tasks.js");
         assertTrue(tasks.contains("function updateTaskReminderControls()"));
         assertTrue(tasks.contains("moduleEnabled(\"notifications\")"));
-        assertTrue(tasks.contains("taskReminderModuleHint"));
+        assertTrue(tasks.contains("taskEditReminderHint"));
     }
 
     private static String resource(String path) throws IOException {
