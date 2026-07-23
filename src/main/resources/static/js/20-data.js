@@ -42,6 +42,12 @@ const api = {
     for (const [k, v] of Object.entries(filters)) if (v !== undefined && v !== null && String(v).trim() !== "") qs.set(k, v);
     return jfetch(`/api/tasks/board?${qs.toString()}`);
   },
+  async taskMetadata() { return jfetch("/api/tasks/metadata"); },
+  async inbox(status = "open") { return jfetch(`/api/inbox?status=${encodeURIComponent(status)}`); },
+  async createInbox(b) { return jfetch("/api/inbox", { method:"POST", body:b }); },
+  async updateInbox(id, b) { return jfetch(`/api/inbox/${id}`, { method:"PATCH", body:b }); },
+  async deleteInbox(id) { return jfetch(`/api/inbox/${id}`, { method:"DELETE" }); },
+  async convertInboxToTask(id, b) { return jfetch(`/api/inbox/${id}/task`, { method:"POST", body:b }); },
   async importantDays() { return jfetch("/api/important-days"); },
   async createImportantDay(b) { return jfetch("/api/important-days", { method:"POST", body:b }); },
   async updateImportantDay(id, b) { return jfetch(`/api/important-days/${id}`, { method:"PATCH", body:b }); },
@@ -172,7 +178,7 @@ function sanitizeCalendarBundleForModules(bundle){
 }
 function offlineOperationRequiredModules(item){
   if (!item) return [];
-  if (item.type === "toggleTask") return ["tasks"];
+  if (item.type === "toggleTask" || item.type === "captureInbox") return ["tasks"];
   if (item.type === "putDay") {
     const day = item.payload?.day || {};
     const modules = [];
@@ -265,6 +271,11 @@ function applyModuleVisibility(){
   toggle($("view-overtime"), moduleEnabled("overtime"));
   toggle(document.querySelector('#tabbar a[data-view="tasks"]'), moduleEnabled("tasks"));
   toggle($("view-tasks"), moduleEnabled("tasks"));
+  toggle($("globalQuickAdd"), moduleEnabled("tasks") || moduleEnabled("overtime"));
+  toggle($("quickActionCapture"), moduleEnabled("tasks"));
+  toggle($("quickActionTask"), moduleEnabled("tasks"));
+  toggle($("quickActionCredit"), moduleEnabled("overtime"));
+  toggle($("quickActionUsage"), moduleEnabled("overtime"));
   toggle(document.querySelector('#tabbar a[data-view="important"]'), moduleEnabled("important_dates"));
   toggle($("view-important"), moduleEnabled("important_dates"));
   setDayPanelSectionVisibility();
@@ -305,7 +316,11 @@ async function saveModuleEnabled(key, enabled){
 }
 async function refreshModuleAwareData(){
   if (moduleEnabled("important_dates")) await refreshImportantSettings(); else { state.importantDays = []; state.importantByDate = {}; }
-  if (moduleEnabled("tasks")) await loadTaskBoard(true); else { state.tasksByDate = {}; state.taskBoard.items = []; }
+  if (moduleEnabled("tasks")) {
+    await Promise.all([loadTaskBoard(true), loadTaskMetadata(true), loadInbox(true)]);
+  } else {
+    state.tasksByDate = {}; state.taskBoard.items = []; state.taskMetadata = { categories:[], tags:[] }; state.inbox.items = [];
+  }
   if (moduleEnabled("overtime")) await loadLedgerPage(true); else { state.ledgerPage.items = []; state.overtimeAccount = { totalEarnedHours:0,totalUsedHours:0,balanceHours:0,credits:[],usages:[] }; }
   if (moduleEnabled("notifications")) await showMonthNotifications(); else { state.reminders=[]; state.remindersByDate={}; state.notificationSettings=null; }
   if (moduleEnabled("scenarios")) { try { state.quickScenarios = await api.quickScenarios(); } catch (_) {} } else state.quickScenarios = [];
@@ -576,6 +591,7 @@ function offlineRequiredMessage(url){
   if (url.startsWith("/api/telegram")) return t("Telegram-интеграция настраивается только при подключении к серверу.");
   if (url.startsWith("/api/profile")) return t("Профиль и сессии меняются только при подключении к серверу.");
   if (url.startsWith("/api/modules")) return t("Настройки модулей меняются только при подключении к серверу.");
+  if (url.startsWith("/api/inbox")) return t("Новые мысли можно сохранить оффлайн. Разбор, редактирование и удаление входящих требуют связи с сервером.");
   if (url.startsWith("/api/important-days")) return t("Важные даты меняются только при подключении к серверу.");
   if (url.startsWith("/api/admin")) return t("Админские настройки меняются только при подключении к серверу.");
   return t("Эта операция требует связи с сервером. Смена дня, заметки и галочки задач сохраняются оффлайн.");
@@ -707,6 +723,7 @@ function describeOfflineOperation(item){
     return `${item.payload?.date || t("дата")}: ${parts.join(" + ")}`;
   }
   if (item.type === "toggleTask") return `${t("Задача")} #${item.payload?.taskId}: ${item.payload?.done ? t("выполнена") : t("открыта")}`;
+  if (item.type === "captureInbox") return `${t("Входящие")}: ${String(item.payload?.text || "").slice(0, 80)}`;
   return item.type || "Операция";
 }
 function acquireOfflineSyncLock(){
@@ -1070,6 +1087,37 @@ const dataLayer = {
     await this.enqueue("toggleTask", { taskId, done: !!done });
     return { queued:true };
   },
+  async captureInbox(text){
+    requireModuleEnabled("tasks");
+    const clean = String(text || "").trim();
+    if (!clean) throw new Error(t("Текст записи не должен быть пустым"));
+    if (clean.length > 2000) throw new Error(t("Текст записи: максимум 2000 символов"));
+    const clientOperationId = uuid();
+    if (navigator.onLine) {
+      try {
+        const item = await api.createInbox({ text:clean, clientOperationId });
+        state.offline.online = true;
+        updateOfflineStatus();
+        return { queued:false, item };
+      } catch (err) {
+        if (!isNetworkError(err)) throw err;
+      }
+    }
+    state.offline.online = false;
+    const payload = { text:clean, clientOperationId };
+    await this.enqueue("captureInbox", payload);
+    return { queued:true, item:{ id:`local-${clientOperationId}`, text:clean, status:"OPEN", createdAt:new Date().toISOString(), localOnly:true, clientOperationId } };
+  },
+  async discardQueuedInbox(clientOperationId){
+    if (!state.offline.cacheReady || !clientOperationId) return false;
+    const items = await this.getQueueItems();
+    const target = items.find(item => item.type === "captureInbox" && item.payload?.clientOperationId === clientOperationId);
+    if (!target) return false;
+    await offlineDb.delete("queue", target.id);
+    await this.refreshQueueState();
+    updateOfflineStatus();
+    return true;
+  },
   async syncQueue(){
     if (!state.offline.cacheReady || state.offline.syncing) return;
     if (!navigator.onLine) { state.offline.online = false; updateOfflineStatus(); return; }
@@ -1097,6 +1145,11 @@ const dataLayer = {
             await api.upsertDay(item.payload.date, dayUpsertPayload(item.payload.day));
           } else if (item.type === "toggleTask") {
             await api.updateTask(item.payload.taskId, { done: !!item.payload.done });
+          } else if (item.type === "captureInbox") {
+            await api.createInbox({
+              text:item.payload.text,
+              clientOperationId:item.payload.clientOperationId || item.id
+            });
           } else {
             throw Object.assign(new Error("Неизвестный тип операции: " + item.type), { status:400 });
           }
@@ -1126,7 +1179,10 @@ const dataLayer = {
         renderNotifications();
         renderCalendar();
         if (state.selected) { renderChips(); renderTasks(); renderImportantDays(); }
-        if (moduleEnabled("tasks")) await loadTaskBoard(true);
+        if (moduleEnabled("tasks")) {
+          await loadTaskBoard(true);
+          if (typeof loadInbox === "function") await loadInbox(true);
+        }
       }
       state.offline.online = true;
     } catch (err) {

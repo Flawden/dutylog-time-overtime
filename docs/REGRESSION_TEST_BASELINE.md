@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.5.2.
+Status: v27.6.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.5.2 registers a visible Telegram command menu and persistent one-tap quick actions while preserving the reliable timezone-aware command handling from v27.5.1, the verified backup/recovery tooling from v27.5.0 and all earlier security/deployment gates. Current application baseline: 73 Java test classes / 368 `@Test` methods and 12 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.6.0 introduces a mobile-first task editor, saved lower-case categories and tags, a quick-capture Inbox with idempotent offline retries, and a global one-tap action button while preserving the Telegram UX from v27.5.2 and the verified backup/recovery tooling from v27.5.0. Current application baseline: 76 Java test classes / 381 `@Test` methods and 13 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,16 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.6.0 mobile tasks and Inbox extension
+
+- `InboxServiceTest` covers quick capture, idempotent client operation ids, owner isolation, archive/restore, delete and atomic conversion into a structured task.
+- `InboxControllerTest` covers `/api/inbox` and `/api/v1/inbox`, module guards, CSRF, authentication, validation and foreign-id indistinguishability.
+- `MobileTasksInboxFrontendContractTest` protects the dedicated task modal, mobile full-screen editor, floating quick action, explicit overtime wording and IndexedDB `captureInbox` queue.
+- `TaskServiceTest` now covers lower-case category/tag normalisation, metadata suggestions, tag-aware search and service-level text length enforcement.
+- `task-modules.spec.js` uses the new task editor and adds the complete quick-capture → Inbox → task browser flow.
+- Flyway V26 creates `day_task_tags` and `inbox_items` while preserving all v27.5.2 Telegram and v27.5.0 backup/recovery checks.
 
 
 ## v27.5.2 Telegram detached-owner hotfix

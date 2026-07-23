@@ -14,6 +14,8 @@ import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.DayTask;
 import ru.daniil.shifts.model.TaskPriority;
 import ru.daniil.shifts.model.ImportantDay;
+import ru.daniil.shifts.model.InboxItem;
+import ru.daniil.shifts.model.InboxItemStatus;
 import ru.daniil.shifts.model.RepeatMode;
 import ru.daniil.shifts.model.NotificationSettings;
 import ru.daniil.shifts.model.QuickScenario;
@@ -383,6 +385,7 @@ public final class Dtos {
             String text,
             boolean done,
             String category,
+            List<String> tags,
             TaskPriority priority,
             String dueDate,
             String dueTime,
@@ -390,6 +393,14 @@ public final class Dtos {
             Integer reminderMinutesBefore,
             boolean overdue
     ) {
+        /** Source-compatible constructor for callers created before task tags were added. */
+        public TaskDto(Long id, String date, String text, boolean done, String category,
+                       TaskPriority priority, String dueDate, String dueTime,
+                       boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue) {
+            this(id, date, text, done, category, List.of(), priority, dueDate, dueTime,
+                    reminderEnabled, reminderMinutesBefore, overdue);
+        }
+
         public static TaskDto from(DayTask task) {
             return new TaskDto(
                     task.getId(),
@@ -397,6 +408,7 @@ public final class Dtos {
                     task.getText(),
                     task.isDone(),
                     task.getCategory(),
+                    List.copyOf(task.getTags()),
                     task.getPriority(),
                     task.getDueDate() != null ? task.getDueDate().toString() : null,
                     task.getDueTime() != null ? task.getDueTime().toString() : null,
@@ -426,6 +438,9 @@ public final class Dtos {
             @Size(max = 80, message = "Категория: максимум 80 символов")
             String category,
 
+            @Size(max = 10, message = "Тегов задачи: максимум 10")
+            List<@Size(max = 40, message = "Тег: максимум 40 символов") String> tags,
+
             TaskPriority priority,
 
             String dueDate,
@@ -436,7 +451,14 @@ public final class Dtos {
             @Min(value = 0, message = "Напоминание не может быть отрицательным")
             @Max(value = 10080, message = "Напоминание: максимум 7 дней")
             Integer reminderMinutesBefore
-    ) {}
+    ) {
+        /** Source-compatible constructor for older internal callers. */
+        public TaskCreateRequest(String date, String text, String category, TaskPriority priority,
+                                 String dueDate, String dueTime, Boolean reminderEnabled,
+                                 Integer reminderMinutesBefore) {
+            this(date, text, category, null, priority, dueDate, dueTime, reminderEnabled, reminderMinutesBefore);
+        }
+    }
 
     /** Обновление задачи. Поля опциональны. */
     public record TaskUpdateRequest(
@@ -446,6 +468,71 @@ public final class Dtos {
             String date,
             @Size(max = 80, message = "Категория: максимум 80 символов")
             String category,
+            @Size(max = 10, message = "Тегов задачи: максимум 10")
+            List<@Size(max = 40, message = "Тег: максимум 40 символов") String> tags,
+            TaskPriority priority,
+            String dueDate,
+            String dueTime,
+            Boolean reminderEnabled,
+            @Min(value = 0, message = "Напоминание не может быть отрицательным")
+            @Max(value = 10080, message = "Напоминание: максимум 7 дней")
+            Integer reminderMinutesBefore
+    ) {
+        /** Source-compatible constructor for older internal callers. */
+        public TaskUpdateRequest(String text, Boolean done, String date, String category,
+                                 TaskPriority priority, String dueDate, String dueTime,
+                                 Boolean reminderEnabled, Integer reminderMinutesBefore) {
+            this(text, done, date, category, null, priority, dueDate, dueTime, reminderEnabled, reminderMinutesBefore);
+        }
+    }
+
+    /** Saved task metadata used by category/tag suggestions. */
+    public record TaskMetadataDto(List<String> categories, List<String> tags) {}
+
+    /** A raw thought captured before the user decides how to organise it. */
+    public record InboxItemDto(
+            Long id,
+            String text,
+            InboxItemStatus status,
+            String clientOperationId,
+            String createdAt,
+            String updatedAt,
+            String resolvedAt
+    ) {
+        public static InboxItemDto from(InboxItem item) {
+            return new InboxItemDto(
+                    item.getId(),
+                    item.getText(),
+                    item.getStatus(),
+                    item.getClientOperationId(),
+                    item.getCreatedAt() != null ? item.getCreatedAt().toString() : null,
+                    item.getUpdatedAt() != null ? item.getUpdatedAt().toString() : null,
+                    item.getResolvedAt() != null ? item.getResolvedAt().toString() : null
+            );
+        }
+    }
+
+    public record InboxCreateRequest(
+            @NotBlank(message = "Текст записи не должен быть пустым")
+            @Size(max = 2000, message = "Текст записи: максимум 2000 символов")
+            String text,
+            @Size(max = 80, message = "Идентификатор операции: максимум 80 символов")
+            String clientOperationId
+    ) {}
+
+    public record InboxUpdateRequest(
+            @Size(max = 2000, message = "Текст записи: максимум 2000 символов")
+            String text,
+            Boolean archived
+    ) {}
+
+    public record InboxToTaskRequest(
+            @NotBlank(message = "Дата задачи должна быть в формате yyyy-MM-dd")
+            String date,
+            @Size(max = 80, message = "Категория: максимум 80 символов")
+            String category,
+            @Size(max = 10, message = "Тегов задачи: максимум 10")
+            List<@Size(max = 40, message = "Тег: максимум 40 символов") String> tags,
             TaskPriority priority,
             String dueDate,
             String dueTime,
@@ -454,6 +541,8 @@ public final class Dtos {
             @Max(value = 10080, message = "Напоминание: максимум 7 дней")
             Integer reminderMinutesBefore
     ) {}
+
+    public record InboxConversionDto(InboxItemDto inboxItem, TaskDto task) {}
 
     /** Важный день как настройка: дата-основа + режим повтора. */
     public record ImportantDayDto(

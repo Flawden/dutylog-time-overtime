@@ -60,7 +60,7 @@ class TaskServiceTest {
         assertNotNull(created.id());
         assertEquals("2026-08-10", created.date());
         assertEquals("Подготовить отчёт", created.text());
-        assertEquals("Работа", created.category());
+        assertEquals("работа", created.category());
         assertEquals(TaskPriority.NORMAL, created.priority());
         assertNull(created.dueDate());
         assertNull(created.dueTime());
@@ -85,6 +85,7 @@ class TaskServiceTest {
                 true,
                 "2026-08-12",
                 "  Дом  ",
+                List.of(" Дом ", "Покупки"),
                 TaskPriority.HIGH,
                 "2026-08-15",
                 "19:30",
@@ -95,7 +96,8 @@ class TaskServiceTest {
         assertEquals("Обновлённая задача", updated.text());
         assertTrue(updated.done());
         assertEquals("2026-08-12", updated.date());
-        assertEquals("Дом", updated.category());
+        assertEquals("дом", updated.category());
+        assertEquals(List.of("дом", "покупки"), updated.tags());
         assertEquals(TaskPriority.HIGH, updated.priority());
         assertEquals("2026-08-15", updated.dueDate());
         assertEquals("19:30", updated.dueTime());
@@ -103,14 +105,45 @@ class TaskServiceTest {
         assertEquals(45, updated.reminderMinutesBefore());
 
         TaskDto disabled = taskService.update(owner, created.id(), new TaskUpdateRequest(
-                null, null, null, "   ", null,
-                null, null, false, 120
+                null, null, null, "   ", List.of(), null,
+                "", "", false, 120
         ));
 
         assertNull(disabled.category(), "blank optional category must clear the field");
+        assertTrue(disabled.tags().isEmpty(), "an explicit empty tag list must clear saved tags");
+        assertNull(disabled.dueDate(), "an explicit blank due date must clear the field");
+        assertNull(disabled.dueTime(), "an explicit blank due time must clear the field");
         assertFalse(disabled.reminderEnabled());
         assertNull(disabled.reminderMinutesBefore(),
                 "lead minutes must be cleared even when a stale client sends them with reminderEnabled=false");
+    }
+
+    @Test
+    void tagsAndMetadataAreNormalisedDeduplicatedAndOwnerScoped() {
+        TaskDto created = taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", "Разобрать документы", "  Работа  ",
+                List.of("  Документы  ", "#Звонки", "документы", ""),
+                TaskPriority.NORMAL, null, null, false, null));
+        taskService.create(other, new TaskCreateRequest(
+                "2026-08-10", "Чужая", "секрет", List.of("чужой"),
+                TaskPriority.NORMAL, null, null, false, null));
+
+        assertEquals("работа", created.category());
+        assertEquals(List.of("документы", "звонки"), created.tags());
+        var metadata = taskService.metadata(owner);
+        assertEquals(List.of("работа"), metadata.categories());
+        assertEquals(List.of("документы", "звонки"), metadata.tags());
+
+        PageDto<TaskDto> byTag = board("all", null, null, "звонки", null, null, 0, 50);
+        assertEquals(List.of(created.id()), ids(byTag));
+    }
+
+    @Test
+    void taskTextLengthIsEnforcedInsideServiceIncludingInboxConversions() {
+        String tooLong = "x".repeat(501);
+        assertBadRequest(() -> taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", tooLong, null, TaskPriority.NORMAL,
+                null, null, false, null)));
     }
 
     @Test

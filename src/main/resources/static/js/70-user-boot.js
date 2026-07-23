@@ -138,7 +138,7 @@ async function init(){
   }
   await loadMonth();
   if (moduleEnabled("overtime")) await loadLedgerPage(true);
-  if (moduleEnabled("tasks")) await loadTaskBoard(true);
+  if (moduleEnabled("tasks")) await Promise.all([loadTaskBoard(true), loadTaskMetadata(true), loadInbox(true)]);
   applyModuleVisibility();
   renderCalendar();
   clearBootFailsafe();

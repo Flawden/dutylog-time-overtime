@@ -1,3 +1,31 @@
+## v27.6.0 — Mobile Tasks & Inbox UX
+
+### Fast capture and Inbox
+- Added a user-scoped Inbox for unstructured thoughts with open/archived states, timestamps and one-step conversion into a normal task.
+- Inbox creation accepts a client operation id, making offline retries idempotent instead of creating duplicate thoughts after reconnect.
+- Added a global mobile `+` action with explicit choices: capture a thought, create a task, add overtime and **Списать переработку**.
+- Quick capture requires only text and remains usable offline through the existing IndexedDB operation queue.
+
+### Task UX and metadata
+- Removed the large inline task-creation form from the selected-day panel; calendar and task board now open one reusable editor.
+- The mobile task editor is full-screen, focuses the task text first and hides optional category, tags, priority, due time and reminders behind a progressive disclosure section.
+- Added saved lower-case categories and up to ten normalised tags per task, metadata suggestions and tag-aware board search.
+- Task due time remains a native `input type=time`, allowing the operating system picker on mobile devices.
+
+### Backend and persistence
+- Added `inbox_items`, `InboxService`, REST endpoints under `/api/inbox` and `/api/v1/inbox`, ownership isolation and task-module guards.
+- Added `day_task_tags` as an element collection and a metadata endpoint at `/api/tasks/metadata`.
+- Flyway migration **V26** creates Inbox and task-tag storage and normalises existing task categories to lower case.
+- Internal task creation now enforces the same 500-character text limit as HTTP validation, including Inbox-to-task conversion.
+
+### Current deployment strategy
+- The shared VPS remains a private-beta staging host only. A separate production stack is intentionally deferred until DutyLog has its own stronger server and domain, preserving resource headroom for YARUGA.
+
+### Regression coverage
+- Added service, controller and frontend contract coverage for Inbox CRUD, idempotency, ownership, offline capture, conversion, tags and mobile UI.
+- Updated Playwright task flows and added an end-to-end quick-capture-to-task scenario.
+- Baseline: 76 Java test classes / 381 `@Test` methods and 13 Chromium Playwright scenarios.
+
 ## v27.5.2 hotfix — restore drill Flyway boolean check
 
 ### Fixed

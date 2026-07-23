@@ -20,6 +20,50 @@ Object.assign(I18N_EN, {
   "За сколько минут":"Minutes before", "Задача обновлена":"Task updated", "Не удалось сохранить задачу":"Failed to save task"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+Object.assign(I18N_EN, {
+  "Новая задача":"New task", "Добавить задачу":"Add task", "Создать задачу":"Create task",
+  "Разобрать запись в задачу":"Turn Inbox item into a task",
+  "Текст уже взят из «Входящих». Проверь дату и при необходимости добавь детали.":"The text comes from Inbox. Check the date and add details when needed.",
+  "Достаточно текста и даты. Остальное можно заполнить позже.":"Text and date are enough. Everything else can be added later.",
+  "Изменения применятся к существующей задаче.":"Changes will update the existing task.",
+  "Тег: максимум 40 символов":"Tag: maximum 40 characters", "Тегов задачи: максимум 10":"A task can have at most 10 tags",
+  "напиши текст задачи":"enter the task text", "укажи дату":"choose a date",
+  "Задача не найдена":"Task not found", "Задача добавлена":"Task added",
+  "Удалить задачу":"Delete task", "Удалить запись":"Delete item", "Удалить запись из входящих?":"Delete this Inbox item?",
+  "В задачу":"To task", "Архив":"Archive", "Вернуть":"Restore",
+  "входящие":"inbox", "разобрано":"organised", "не разобрано":"unorganised",
+  "сохранено на устройстве · ждёт синхронизации":"saved on this device · waiting for sync",
+  "Текст записи не должен быть пустым":"Inbox text must not be empty", "Текст записи: максимум 2000 символов":"Inbox text: maximum 2000 characters",
+  "Напиши мысль — остальное можно разобрать позже.":"Write the thought now — organise it later.",
+  "Сохранено на устройстве":"Saved on this device", "Сохранено во Входящие":"Saved to Inbox",
+  "Не удалось сохранить запись":"Failed to save the item", "сохранение…":"saving…", "загрузка…":"loading…",
+  "Загружаю входящие…":"Loading Inbox…", "Входящие пусты.":"Inbox is empty.",
+  "Сохраняй мысли сразу — структуру можно добавить позже.":"Capture thoughts immediately and organise them later.",
+  "Задач на этот день пока нет.":"No tasks for this day yet.",
+  "Нажми «Добавить задачу» — дата уже будет подставлена.":"Select Add task — the date will already be filled in.",
+  "По фильтрам задач нет.":"No tasks match the filters.", "Сбрось фильтр или выбери другую категорию.":"Clear the filter or choose another category.",
+  "Ничего не найдено":"Nothing found", "Задач пока нет":"No tasks yet",
+  "Сбрось фильтры или измени период.":"Clear the filters or change the date range.",
+  "Нажми «Новая задача» или закинь мысль во «Входящие».":"Select New task or capture a thought in Inbox.",
+  "просрочено":"overdue", "выполнено":"done", "открытых":"open", "просроченных":"overdue", "выполненных":"done",
+  "Разобрать":"Organise", "Входящие":"Inbox",
+  "Новые мысли можно сохранить оффлайн. Разбор, редактирование и удаление входящих требуют связи с сервером.":"New thoughts can be saved offline. Organising, editing and deleting Inbox items requires a server connection.",
+  "Дата выбранного дня подставится автоматически.":"The selected day is filled in automatically.",
+  "＋ Добавить задачу":"＋ Add task", "＋ Новая задача":"＋ New task",
+  "Сначала поймай мысль. Разобрать её в задачу можно позже.":"Capture the thought first. You can turn it into a task later.",
+  "открыто":"open", "Быстро записать мысль…":"Capture a thought quickly…",
+  "показать разобранные":"show organised", "Обновить":"Refresh",
+  "Теги":"Tags", "Дополнительно":"More options", "категория, теги, срок и напоминание":"category, tags, due date and reminder",
+  "Что нужно сделать?":"What needs to be done?", "документы, звонки":"documents, calls",
+  "Включите модуль «Уведомления», чтобы получать напоминания.":"Enable Notifications to receive reminders.",
+  "Записать мысль":"Capture a thought", "Никаких категорий и форм. Просто запиши — разберёшь позже.":"No categories or forms. Write it now and organise it later.",
+  "Что пришло в голову?":"What came to mind?", "Сохранить во входящие":"Save to Inbox",
+  "Быстрое действие":"Quick action", "Что добавить?":"What would you like to add?",
+  "мгновенно во «Входящие»":"instantly to Inbox", "дата и детали":"date and details",
+  "начислить часы":"earn hours", "Списать переработку":"Use overtime", "оформить отгул":"record time off",
+  "Быстро добавить":"Quick add"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
 /* ─── Важные дни ───────────────────────────────────────────── */
 async function refreshImportantSettings(){
@@ -260,110 +304,23 @@ $("importantBoardToday")?.addEventListener("click", () => { $("importantBoardDat
 $("importantBoardClear")?.addEventListener("click", () => { state.importantFilters = { scope:"all", q:"" }; renderImportantBoard(); });
 resetImportantBoardForm();
 
-/* ─── Задачи дня ────────────────────────────────────────────── */
-function updateTaskReminderControls(){
-  const notificationsAvailable = state.modulesLoaded && moduleEnabled("notifications");
-  const enabled = $("taskReminderEnabled");
-  const before = $("taskReminderBefore");
-  const hint = $("taskReminderModuleHint");
-  if (!enabled || !before) return;
-  enabled.disabled = !notificationsAvailable;
-  if (!notificationsAvailable) enabled.checked = false;
-  before.disabled = !notificationsAvailable || !enabled.checked;
-  if (hint) hint.hidden = notificationsAvailable;
-  const title = notificationsAvailable ? "" : t("Включите модуль «Уведомления», чтобы напоминания задач отправлялись.");
-  $("taskReminderToggleLabel")?.setAttribute("title", title);
-  $("taskReminderBeforeLabel")?.setAttribute("title", title);
+/* ─── Задачи, входящие и быстрый захват ─────────────────────── */
+function normalizeTaskCategory(value){
+  return String(value || "").trim().toLowerCase();
 }
-function renderTaskCategoryFilter(){
-  const sel = $("taskCategoryFilter");
-  if (!sel) return;
-  const current = sel.value || state.taskFilters.category || "all";
-  sel.innerHTML = `<option value="all">${esc(t("все категории"))}</option>`;
-  for (const cat of allTaskCategories()) {
-    const opt = document.createElement("option");
-    opt.value = cat; opt.textContent = cat;
-    sel.appendChild(opt);
+function parseTaskTags(value){
+  const source = Array.isArray(value) ? value : String(value || "").split(/[,;\n]+/);
+  const unique = [];
+  const seen = new Set();
+  for (const raw of source) {
+    const tag = String(raw || "").trim().replace(/^#+/, "").toLowerCase();
+    if (!tag || seen.has(tag)) continue;
+    if (tag.length > 40) throw new Error(t("Тег: максимум 40 символов"));
+    seen.add(tag);
+    unique.push(tag);
+    if (unique.length > 10) throw new Error(t("Тегов задачи: максимум 10"));
   }
-  sel.value = [...sel.options].some(o => o.value === current) ? current : "all";
-  state.taskFilters.category = sel.value;
-}
-function filteredTasksForSelected(){
-  const items = tasksOf(state.selected);
-  const status = state.taskFilters.status || "all";
-  const category = state.taskFilters.category || "all";
-  return items.filter(t => {
-    if (category !== "all" && (t.category || "") !== category) return false;
-    if (status === "open" && t.done) return false;
-    if (status === "done" && !t.done) return false;
-    if (status === "overdue" && (!t.overdue || t.done)) return false;
-    return true;
-  });
-}
-function renderTasks(){
-  updateTaskReminderControls();
-  if (!moduleEnabled("tasks")) { updateAccSummaries(); return; }
-  const box = $("taskList");
-  if (!box || !state.selected) return;
-  renderTaskCategoryFilter();
-  const all = tasksOf(state.selected);
-  const items = filteredTasksForSelected();
-  box.innerHTML = "";
-  if (!all.length) {
-    renderEmptyState(box, {
-      icon:"✓",
-      title:"Задач пока нет. После добавления открытые задачи будут отмечены в календаре.",
-      text:"Выбери день в календаре и добавь первую задачу.",
-      variant:"compact"
-    });
-    updateAccSummaries();
-    return;
-  }
-  if (!items.length) {
-    renderEmptyState(box, { icon:"⌕", title:"По фильтрам задач нет.", text:"Попробуй сбросить фильтры или выбрать другой период.", variant:"compact" });
-    updateAccSummaries();
-    return;
-  }
-  for (const task of items) {
-    const row = document.createElement("div");
-    row.dataset.taskId = String(task.id);
-    row.className = "taskItem" + (task.done ? " done" : "") + (task.overdue && !task.done ? " overdue" : "");
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = !!task.done;
-    cb.addEventListener("change", () => toggleTask(task.id, cb.checked));
-    const body = document.createElement("div");
-    body.style.flex = "1";
-    body.style.minWidth = "0";
-    const text = document.createElement("span");
-    text.className = "taskText";
-    text.textContent = task.text;
-    const meta = document.createElement("div");
-    meta.className = "taskMeta";
-    if (task.category) {
-      const b = document.createElement("span"); b.className = "taskBadge cat"; b.textContent = task.category; meta.appendChild(b);
-    }
-    if (task.priority && task.priority !== "NORMAL") {
-      const b = document.createElement("span"); b.className = "taskBadge " + task.priority.toLowerCase(); b.textContent = taskPriorityLabel(task.priority); meta.appendChild(b);
-    }
-    const due = taskDueLabel(task);
-    if (due) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = due; meta.appendChild(b); }
-    if (task.reminderEnabled) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = `🔔 ${task.reminderMinutesBefore ?? 0}м`; meta.appendChild(b); }
-    if (task.overdue && !task.done) { const b = document.createElement("span"); b.className = "taskBadge overdue"; b.textContent = t("просрочено"); meta.appendChild(b); }
-    body.append(text, meta);
-    const edit = document.createElement("button");
-    edit.className = "tinyDel"; edit.type = "button"; edit.textContent = t("ред."); edit.title = t("Редактировать задачу");
-    edit.addEventListener("click", () => editTask(task));
-    const del = document.createElement("button");
-    del.className = "tinyDel";
-    del.type = "button";
-    del.textContent = "×";
-    del.title = t("Удалить задачу");
-    del.addEventListener("click", () => removeTask(task.id));
-    row.append(cb, body, edit, del);
-    box.appendChild(row);
-  }
-  updateAccSummaries();
+  return unique;
 }
 function taskEditorMessage(text = "", tone = ""){
   const box = $("taskEditMessage");
@@ -371,7 +328,58 @@ function taskEditorMessage(text = "", tone = ""){
   box.textContent = text;
   box.className = "appModalMessage" + (tone ? ` ${tone}` : "");
 }
-function syncTaskEditorReminder(){
+function quickCaptureMessage(text = "", tone = ""){
+  const box = $("quickCaptureMessage");
+  if (!box) return;
+  box.textContent = text;
+  box.className = "appModalMessage" + (tone ? ` ${tone}` : "");
+}
+function renderTaskMetadataSuggestions(){
+  const categories = allTaskCategories();
+  const categoryList = $("taskCategorySuggestions");
+  if (categoryList) categoryList.innerHTML = categories.map(value => `<option value="${esc(value)}"></option>`).join("");
+  const tagList = $("taskTagSuggestions");
+  if (tagList) tagList.innerHTML = allTaskTags().map(value => `<option value="${esc(value)}"></option>`).join("");
+  const chips = $("taskSuggestedTags");
+  if (chips) {
+    chips.innerHTML = "";
+    for (const tag of allTaskTags().slice(0, 12)) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "taskSuggestionChip";
+      button.textContent = `#${tag}`;
+      button.addEventListener("click", () => {
+        let tags = [];
+        try { tags = parseTaskTags($("taskEditTags")?.value || ""); } catch (_) {}
+        if (!tags.includes(tag)) tags.push(tag);
+        if ($("taskEditTags")) $("taskEditTags").value = tags.slice(0, 10).join(", ");
+      });
+      chips.appendChild(button);
+    }
+    chips.hidden = chips.childElementCount === 0;
+  }
+}
+async function loadTaskMetadata(silent = true){
+  if (!moduleEnabled("tasks")) {
+    state.taskMetadata = { categories:[], tags:[] };
+    renderTaskMetadataSuggestions();
+    return;
+  }
+  try {
+    const metadata = await api.taskMetadata();
+    state.taskMetadata = {
+      categories:Array.isArray(metadata?.categories) ? metadata.categories : [],
+      tags:Array.isArray(metadata?.tags) ? metadata.tags : [],
+    };
+    renderTaskMetadataSuggestions();
+    renderTaskCategoryFilter();
+    renderTaskBoardCategoryFilter();
+  } catch (err) {
+    console.error(err);
+    if (!silent) setSave("err", err.message);
+  }
+}
+function updateTaskReminderControls(){
   const enabled = !!$("taskEditReminderEnabled")?.checked;
   const available = state.modulesLoaded && moduleEnabled("notifications");
   if ($("taskEditReminderEnabled")) {
@@ -380,9 +388,40 @@ function syncTaskEditorReminder(){
   }
   if ($("taskEditReminderBefore")) $("taskEditReminderBefore").disabled = !available || !enabled;
   if ($("taskEditReminderBeforeLabel")) $("taskEditReminderBeforeLabel").hidden = !available || !enabled;
+  if ($("taskEditReminderHint")) $("taskEditReminderHint").hidden = available;
+}
+function resetTaskEditorFields({ date = null, text = "", inboxId = null } = {}){
+  state.editingTaskId = null;
+  state.editingTaskMode = "create";
+  state.editingTaskInboxId = inboxId == null ? null : Number(inboxId);
+  $("taskEditText").value = text || "";
+  $("taskEditDate").value = date || state.selected || todayKey();
+  $("taskEditCategory").value = "";
+  $("taskEditTags").value = "";
+  $("taskEditPriority").value = "NORMAL";
+  $("taskEditDueDate").value = "";
+  $("taskEditDueTime").value = "";
+  $("taskEditReminderEnabled").checked = false;
+  $("taskEditReminderBefore").value = "60";
+  $("taskEditAdvanced").open = false;
+  $("taskEditTitle").textContent = inboxId ? t("Разобрать запись в задачу") : t("Новая задача");
+  $("taskEditHint").textContent = inboxId
+    ? t("Текст уже взят из «Входящих». Проверь дату и при необходимости добавь детали.")
+    : t("Достаточно текста и даты. Остальное можно заполнить позже.");
+  $("taskEditSave").textContent = inboxId ? t("Создать задачу") : t("Добавить задачу");
+  taskEditorMessage();
+  updateTaskReminderControls();
+  renderTaskMetadataSuggestions();
+}
+function openTaskCreate(options = {}){
+  if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
+  resetTaskEditorFields(options);
+  openAppModal("taskEditModal", "taskEditText");
 }
 function closeTaskEditor(){
   state.editingTaskId = null;
+  state.editingTaskMode = "create";
+  state.editingTaskInboxId = null;
   taskEditorMessage();
   closeAppModal("taskEditModal");
 }
@@ -393,55 +432,95 @@ function taskById(id){
 function editTask(task){
   if (!task) return;
   state.editingTaskId = Number(task.id);
+  state.editingTaskMode = "edit";
+  state.editingTaskInboxId = null;
   $("taskEditText").value = task.text || "";
   $("taskEditDate").value = task.date || state.selected || todayKey();
   $("taskEditCategory").value = task.category || "";
+  $("taskEditTags").value = (task.tags || []).join(", ");
   $("taskEditPriority").value = task.priority || "NORMAL";
   $("taskEditDueDate").value = task.dueDate || "";
   $("taskEditDueTime").value = task.dueTime || "";
   $("taskEditReminderEnabled").checked = !!task.reminderEnabled;
   $("taskEditReminderBefore").value = String(task.reminderMinutesBefore ?? 60);
+  $("taskEditAdvanced").open = !!(task.category || (task.tags || []).length || task.priority !== "NORMAL" || task.dueDate || task.dueTime || task.reminderEnabled);
+  $("taskEditTitle").textContent = t("Редактировать задачу");
+  $("taskEditHint").textContent = t("Изменения применятся к существующей задаче.");
+  $("taskEditSave").textContent = t("Сохранить");
   taskEditorMessage();
-  syncTaskEditorReminder();
+  updateTaskReminderControls();
+  renderTaskMetadataSuggestions();
   openAppModal("taskEditModal", "taskEditText");
 }
-async function saveTaskEditor(){
-  const id = Number(state.editingTaskId);
-  if (!id) return;
+function taskEditorPayload(original = null){
   const text = $("taskEditText").value.trim();
   const date = $("taskEditDate").value;
-  if (!text) return taskEditorMessage(t("напиши текст задачи"), "err");
-  if (!date) return taskEditorMessage(t("укажи дату"), "err");
-  const original = taskById(id);
+  if (!text) throw new Error(t("напиши текст задачи"));
+  if (!date) throw new Error(t("укажи дату"));
+  const tags = parseTaskTags($("taskEditTags").value);
   const remindersAvailable = state.modulesLoaded && moduleEnabled("notifications");
   const reminderEnabled = remindersAvailable ? !!$("taskEditReminderEnabled").checked : !!original?.reminderEnabled;
   const reminderMinutesBefore = remindersAvailable
     ? (reminderEnabled ? Number($("taskEditReminderBefore").value || 0) : null)
     : (original?.reminderMinutesBefore ?? null);
   if (reminderEnabled && (!Number.isInteger(reminderMinutesBefore) || reminderMinutesBefore < 0 || reminderMinutesBefore > 10080)) {
-    return taskEditorMessage(t("напоминание: от 0 до 10080 минут"), "err");
+    throw new Error(t("напоминание: от 0 до 10080 минут"));
   }
-  $("taskEditSave").disabled = true;
-  taskEditorMessage(t("сохранение…"));
-  const updated = await updateTaskDetails(id, {
-    text,
+  return {
     date,
-    category:$("taskEditCategory").value.trim(),
+    text,
+    category:normalizeTaskCategory($("taskEditCategory").value),
+    tags,
     priority:$("taskEditPriority").value || "NORMAL",
     dueDate:$("taskEditDueDate").value || "",
     dueTime:$("taskEditDueTime").value || "",
     reminderEnabled,
     reminderMinutesBefore,
-  });
-  $("taskEditSave").disabled = false;
-  if (!updated) return taskEditorMessage(t("Не удалось сохранить задачу"), "err");
-  closeTaskEditor();
-  setSave("saved", t("Задача обновлена"));
+  };
+}
+async function saveTaskEditor(){
+  const mode = state.editingTaskMode || "create";
+  const id = Number(state.editingTaskId);
+  const original = mode === "edit" ? taskById(id) : null;
+  let payload;
+  try { payload = taskEditorPayload(original); }
+  catch (err) { return taskEditorMessage(err.message, "err"); }
+
+  $("taskEditSave").disabled = true;
+  taskEditorMessage(t("сохранение…"));
+  setSave("saving");
+  try {
+    let saved;
+    if (mode === "edit") {
+      if (!id) throw new Error(t("Задача не найдена"));
+      saved = await api.updateTask(id, payload);
+    } else if (state.editingTaskInboxId) {
+      const { text, ...conversion } = payload;
+      const result = await api.convertInboxToTask(state.editingTaskInboxId, conversion);
+      saved = result.task;
+    } else {
+      saved = await api.createTask(payload);
+    }
+    upsertTaskInMaps(saved);
+    await Promise.all([loadTaskBoard(true), loadTaskMetadata(true), loadInbox(true)]);
+    if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
+    renderTasks();
+    renderTaskBoard();
+    renderCalendar();
+    closeTaskEditor();
+    setSave("saved", mode === "edit" ? t("Задача обновлена") : t("Задача добавлена"));
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+    taskEditorMessage(err.message || t("Не удалось сохранить задачу"), "err");
+  } finally {
+    $("taskEditSave").disabled = false;
+  }
 }
 
 function removeTaskFromMaps(id){
   for (const k of Object.keys(state.tasksByDate)) {
-    state.tasksByDate[k] = state.tasksByDate[k].filter(t => t.id !== id);
+    state.tasksByDate[k] = state.tasksByDate[k].filter(task => Number(task.id) !== Number(id));
     if (!state.tasksByDate[k].length) delete state.tasksByDate[k];
   }
 }
@@ -450,50 +529,12 @@ function upsertTaskInMaps(task){
   removeTaskFromMaps(task.id);
   addToDateMap(state.tasksByDate, task);
 }
-
-async function addTask(){
-  if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
-  const k = state.selected;
-  if (!k) return;
-  const text = $("taskText").value.trim();
-  if (!text) return setSave("err", t("напиши текст задачи"));
-  setSave("saving");
-  try {
-    const remindersAvailable = state.modulesLoaded && moduleEnabled("notifications");
-    const reminderEnabled = remindersAvailable && $("taskReminderEnabled").checked;
-    const reminderMinutesBefore = reminderEnabled ? Number($("taskReminderBefore").value || 0) : null;
-    if (reminderEnabled && (!Number.isInteger(reminderMinutesBefore) || reminderMinutesBefore < 0 || reminderMinutesBefore > 10080)) {
-      return setSave("err", t("напоминание: от 0 до 10080 минут"));
-    }
-    const created = await api.createTask({
-      date: k,
-      text,
-      category: $("taskCategory").value.trim() || null,
-      priority: $("taskPriority").value || "NORMAL",
-      dueDate: $("taskDueDate").value || null,
-      dueTime: $("taskDueTime").value || null,
-      reminderEnabled,
-      reminderMinutesBefore,
-    });
-    upsertTaskInMaps(created);
-    $("taskText").value = "";
-    await loadTaskBoard(true);
-    if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
-    setSave("saved");
-    renderTasks();
-    renderCalendar();
-  } catch (err) {
-    console.error(err);
-    setSave("err", err.message);
-  }
-}
-
 async function updateTaskDetails(id, patch){
   setSave("saving");
   try {
     const updated = await api.updateTask(id, patch);
     upsertTaskInMaps(updated);
-    await loadTaskBoard(true);
+    await Promise.all([loadTaskBoard(true), loadTaskMetadata(true)]);
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     setSave("saved");
     renderTasks();
@@ -505,25 +546,23 @@ async function updateTaskDetails(id, patch){
     return null;
   }
 }
-
 async function toggleTask(id, done){
   if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
   setSave("saving");
-  const oldTask = Object.values(state.tasksByDate).flat().find(t => Number(t.id) === Number(id)) || null;
-  if (oldTask) upsertTaskInMaps({ ...oldTask, done: !!done });
+  const oldTask = taskById(id);
+  if (oldTask) upsertTaskInMaps({ ...oldTask, done:!!done });
+  state.taskBoard.items = (state.taskBoard.items || []).map(task => Number(task.id) === Number(id) ? { ...task, done:!!done } : task);
   renderTasks();
+  renderTaskBoard();
   renderCalendar();
   try {
-    const res = await dataLayer.setTaskDone(id, done);
-    if (res.task) upsertTaskInMaps(res.task);
-    if (!res.queued) await loadTaskBoard(true);
-    else {
-      state.taskBoard.items = (state.taskBoard.items || []).map(t => Number(t.id) === Number(id) ? { ...t, done: !!done } : t);
-      renderTaskBoard();
-    }
+    const result = await dataLayer.setTaskDone(id, done);
+    if (result.task) upsertTaskInMaps(result.task);
+    if (!result.queued) await loadTaskBoard(true);
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     setSave("saved");
     renderTasks();
+    renderTaskBoard();
     renderCalendar();
   } catch (err) {
     console.error(err);
@@ -531,10 +570,10 @@ async function toggleTask(id, done){
     if (oldTask) upsertTaskInMaps(oldTask);
     await loadMonth();
     renderTasks();
+    renderTaskBoard();
     renderCalendar();
   }
 }
-
 async function removeTask(id){
   if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
   if (!confirm(t("Удалить задачу?"))) return;
@@ -542,8 +581,8 @@ async function removeTask(id){
   try {
     await api.deleteTask(id);
     removeTaskFromMaps(id);
-    state.taskBoard.items = (state.taskBoard.items || []).filter(t => t.id !== id);
-    await loadTaskBoard(true);
+    state.taskBoard.items = (state.taskBoard.items || []).filter(task => Number(task.id) !== Number(id));
+    await Promise.all([loadTaskBoard(true), loadTaskMetadata(true)]);
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     setSave("saved");
     renderTasks();
@@ -555,28 +594,322 @@ async function removeTask(id){
   }
 }
 
+function renderTaskCategoryFilter(){
+  const sel = $("taskCategoryFilter");
+  if (!sel) return;
+  const current = sel.value || state.taskFilters.category || "all";
+  sel.innerHTML = `<option value="all">${esc(t("все категории"))}</option>`;
+  for (const category of allTaskCategories()) {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    sel.appendChild(option);
+  }
+  sel.value = [...sel.options].some(option => option.value === current) ? current : "all";
+  state.taskFilters.category = sel.value;
+}
+function filteredTasksForSelected(){
+  const items = tasksOf(state.selected);
+  const status = state.taskFilters.status || "all";
+  const category = state.taskFilters.category || "all";
+  return items.filter(task => {
+    if (category !== "all" && (task.category || "") !== category) return false;
+    if (status === "open" && task.done) return false;
+    if (status === "done" && !task.done) return false;
+    if (status === "overdue" && (!task.overdue || task.done)) return false;
+    return true;
+  });
+}
+function buildTaskMeta(task){
+  const meta = document.createElement("div");
+  meta.className = "taskMeta";
+  if (task.category) {
+    const badge = document.createElement("span");
+    badge.className = "taskBadge cat";
+    badge.textContent = task.category;
+    meta.appendChild(badge);
+  }
+  for (const tag of task.tags || []) {
+    const badge = document.createElement("span");
+    badge.className = "taskBadge tag";
+    badge.textContent = `#${tag}`;
+    meta.appendChild(badge);
+  }
+  if (task.priority && task.priority !== "NORMAL") {
+    const badge = document.createElement("span");
+    badge.className = "taskBadge " + task.priority.toLowerCase();
+    badge.textContent = taskPriorityLabel(task.priority);
+    meta.appendChild(badge);
+  }
+  const due = taskDueLabel(task);
+  if (due) {
+    const badge = document.createElement("span");
+    badge.className = "taskBadge";
+    badge.textContent = due;
+    meta.appendChild(badge);
+  }
+  if (task.reminderEnabled) {
+    const badge = document.createElement("span");
+    badge.className = "taskBadge";
+    badge.textContent = `🔔 ${task.reminderMinutesBefore ?? 0}м`;
+    meta.appendChild(badge);
+  }
+  if (task.overdue && !task.done) {
+    const badge = document.createElement("span");
+    badge.className = "taskBadge overdue";
+    badge.textContent = t("просрочено");
+    meta.appendChild(badge);
+  }
+  if (task.done) {
+    const badge = document.createElement("span");
+    badge.className = "taskBadge";
+    badge.textContent = t("выполнено");
+    meta.appendChild(badge);
+  }
+  return meta;
+}
+function renderTasks(){
+  if (!moduleEnabled("tasks")) { updateAccSummaries(); return; }
+  const box = $("taskList");
+  if (!box || !state.selected) return;
+  renderTaskCategoryFilter();
+  const all = tasksOf(state.selected);
+  const items = filteredTasksForSelected();
+  box.innerHTML = "";
+  if (!all.length) {
+    renderEmptyState(box, {
+      icon:"✓",
+      title:"Задач на этот день пока нет.",
+      text:"Нажми «Добавить задачу» — дата уже будет подставлена.",
+      variant:"compact"
+    });
+    updateAccSummaries();
+    return;
+  }
+  if (!items.length) {
+    renderEmptyState(box, { icon:"⌕", title:"По фильтрам задач нет.", text:"Сбрось фильтр или выбери другую категорию.", variant:"compact" });
+    updateAccSummaries();
+    return;
+  }
+  for (const task of items) {
+    const row = document.createElement("div");
+    row.dataset.taskId = String(task.id);
+    row.className = "taskItem" + (task.done ? " done" : "") + (task.overdue && !task.done ? " overdue" : "");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = !!task.done;
+    checkbox.addEventListener("change", () => toggleTask(task.id, checkbox.checked));
+    const body = document.createElement("button");
+    body.type = "button";
+    body.className = "taskItemBody";
+    const text = document.createElement("span");
+    text.className = "taskText";
+    text.textContent = task.text;
+    body.append(text, buildTaskMeta(task));
+    body.addEventListener("click", () => editTask(task));
+    const remove = document.createElement("button");
+    remove.className = "tinyDel";
+    remove.type = "button";
+    remove.textContent = "×";
+    remove.title = t("Удалить задачу");
+    remove.addEventListener("click", () => removeTask(task.id));
+    row.append(checkbox, body, remove);
+    box.appendChild(row);
+  }
+  updateAccSummaries();
+}
+
+/* ─── Входящие ─────────────────────────────────────────────── */
+function queuedInboxView(queue){
+  return (queue || [])
+    .filter(item => item.type === "captureInbox")
+    .map(item => ({
+      id:`local-${item.payload?.clientOperationId || item.id}`,
+      text:item.payload?.text || "",
+      status:"OPEN",
+      createdAt:item.createdAt,
+      localOnly:true,
+      clientOperationId:item.payload?.clientOperationId || null,
+    }));
+}
+async function loadInbox(silent = true){
+  if (!moduleEnabled("tasks")) {
+    state.inbox.items = [];
+    renderInbox();
+    return;
+  }
+  state.inbox.loading = true;
+  if (!silent) renderInbox();
+  try {
+    const queued = queuedInboxView(await dataLayer.getQueueItems());
+    let remote = (state.inbox.items || []).filter(item => !item.localOnly);
+    if (navigator.onLine) {
+      remote = await api.inbox(state.inbox.includeArchived ? "all" : "open");
+    }
+    const queuedIds = new Set(queued.map(item => item.clientOperationId).filter(Boolean));
+    remote = remote.filter(item => !queuedIds.has(item.clientOperationId));
+    state.inbox.items = [...queued, ...remote];
+  } catch (err) {
+    console.error(err);
+    if (!silent) setSave("err", err.message);
+  } finally {
+    state.inbox.loading = false;
+    renderInbox();
+  }
+}
+function inboxTimeLabel(value){
+  if (!value) return "";
+  try { return new Intl.DateTimeFormat(currentLocale(), { dateStyle:"short", timeStyle:"short" }).format(new Date(value)); }
+  catch (_) { return String(value).slice(0, 16).replace("T", " "); }
+}
+function renderInbox(){
+  const list = $("inboxList");
+  if (!list) return;
+  const items = state.inbox.items || [];
+  const openCount = items.filter(item => item.status === "OPEN").length;
+  if ($("inboxCount")) $("inboxCount").textContent = String(openCount);
+  if ($("inboxStatus")) $("inboxStatus").textContent = state.inbox.loading ? t("загрузка…") : `${openCount} ${t("не разобрано")}`;
+  if (state.inbox.loading && !items.length) {
+    renderLoadingState(list, "Загружаю входящие…", 2);
+    return;
+  }
+  list.innerHTML = "";
+  if (!items.length) {
+    renderEmptyState(list, {
+      icon:"↘",
+      title:"Входящие пусты.",
+      text:"Сохраняй мысли сразу — структуру можно добавить позже.",
+      variant:"compact"
+    });
+    return;
+  }
+  for (const item of items) {
+    const row = document.createElement("article");
+    row.className = "inboxItem" + (item.status === "ARCHIVED" ? " archived" : "") + (item.localOnly ? " local" : "");
+    const body = document.createElement("div");
+    body.className = "inboxItemBody";
+    const text = document.createElement("div");
+    text.className = "inboxItemText";
+    text.textContent = item.text;
+    const meta = document.createElement("div");
+    meta.className = "inboxItemMeta";
+    meta.textContent = item.localOnly
+      ? t("сохранено на устройстве · ждёт синхронизации")
+      : `${item.status === "ARCHIVED" ? t("разобрано") : t("входящие")} · ${inboxTimeLabel(item.createdAt)}`;
+    body.append(text, meta);
+    const actions = document.createElement("div");
+    actions.className = "inboxItemActions";
+    if (!item.localOnly && item.status === "OPEN") {
+      const convert = document.createElement("button");
+      convert.type = "button";
+      convert.className = "primary";
+      convert.textContent = t("В задачу");
+      convert.addEventListener("click", () => openTaskCreate({ text:item.text, inboxId:item.id, date:state.selected || todayKey() }));
+      const archive = document.createElement("button");
+      archive.type = "button";
+      archive.textContent = t("Архив");
+      archive.addEventListener("click", () => setInboxArchived(item.id, true));
+      actions.append(convert, archive);
+    } else if (!item.localOnly && item.status === "ARCHIVED") {
+      const restore = document.createElement("button");
+      restore.type = "button";
+      restore.textContent = t("Вернуть");
+      restore.addEventListener("click", () => setInboxArchived(item.id, false));
+      actions.appendChild(restore);
+    }
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "dangerGhost";
+    remove.textContent = "×";
+    remove.title = t("Удалить запись");
+    remove.addEventListener("click", () => removeInboxItem(item));
+    actions.appendChild(remove);
+    row.append(body, actions);
+    list.appendChild(row);
+  }
+}
+async function captureInbox(text){
+  const clean = String(text || "").trim();
+  if (!clean) throw new Error(t("Текст записи не должен быть пустым"));
+  const result = await dataLayer.captureInbox(clean);
+  if (result.item) state.inbox.items = [result.item, ...(state.inbox.items || []).filter(item => item.id !== result.item.id)];
+  await loadInbox(true);
+  setSave("saved", result.queued ? t("Сохранено на устройстве") : t("Сохранено во Входящие"));
+  return result;
+}
+function openQuickCapture(){
+  if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
+  closeAppModal("quickActionsModal");
+  $("quickCaptureText").value = "";
+  quickCaptureMessage();
+  openAppModal("quickCaptureModal", "quickCaptureText");
+}
+function closeQuickCapture(){
+  quickCaptureMessage();
+  closeAppModal("quickCaptureModal");
+}
+async function saveQuickCapture(){
+  const text = $("quickCaptureText").value.trim();
+  if (!text) return quickCaptureMessage(t("Напиши мысль — остальное можно разобрать позже."), "err");
+  $("quickCaptureSave").disabled = true;
+  quickCaptureMessage(t("сохранение…"));
+  try {
+    await captureInbox(text);
+    closeQuickCapture();
+  } catch (err) {
+    console.error(err);
+    quickCaptureMessage(err.message || t("Не удалось сохранить запись"), "err");
+  } finally {
+    $("quickCaptureSave").disabled = false;
+  }
+}
+async function setInboxArchived(id, archived){
+  setSave("saving");
+  try {
+    await api.updateInbox(id, { archived:!!archived });
+    await loadInbox(true);
+    setSave("saved");
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+async function removeInboxItem(item){
+  if (!confirm(t("Удалить запись из входящих?"))) return;
+  try {
+    if (item.localOnly) await dataLayer.discardQueuedInbox(item.clientOperationId);
+    else await api.deleteInbox(item.id);
+    state.inbox.items = (state.inbox.items || []).filter(existing => existing.id !== item.id);
+    await loadInbox(true);
+    setSave("saved");
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
 
 /* ─── Общий экран задач ─────────────────────────────────────── */
 function renderTaskBoardCategoryFilter(){
-  const sel = $("taskBoardCategory");
-  if (!sel) return;
-  const current = sel.value || state.taskBoard.filters.category || "all";
-  sel.innerHTML = `<option value="all">${esc(t("все категории"))}</option>`;
-  for (const cat of allTaskCategories()) {
-    const opt = document.createElement("option");
-    opt.value = cat; opt.textContent = cat;
-    sel.appendChild(opt);
+  const select = $("taskBoardCategory");
+  if (!select) return;
+  const current = select.value || state.taskBoard.filters.category || "all";
+  select.innerHTML = `<option value="all">${esc(t("все категории"))}</option>`;
+  for (const category of allTaskCategories()) {
+    const option = document.createElement("option");
+    option.value = category;
+    option.textContent = category;
+    select.appendChild(option);
   }
-  sel.value = [...sel.options].some(o => o.value === current) ? current : "all";
-  state.taskBoard.filters.category = sel.value;
+  select.value = [...select.options].some(option => option.value === current) ? current : "all";
+  state.taskBoard.filters.category = select.value;
 }
 function syncTaskBoardFiltersToInputs(){
-  const f = state.taskBoard.filters;
-  if ($("taskBoardStatusFilter")) $("taskBoardStatusFilter").value = f.status || "open";
-  if ($("taskBoardPriority")) $("taskBoardPriority").value = f.priority || "all";
-  if ($("taskBoardSearch")) $("taskBoardSearch").value = f.q || "";
-  if ($("taskBoardFrom")) $("taskBoardFrom").value = f.from || "";
-  if ($("taskBoardTo")) $("taskBoardTo").value = f.to || "";
+  const filters = state.taskBoard.filters;
+  if ($("taskBoardStatusFilter")) $("taskBoardStatusFilter").value = filters.status || "open";
+  if ($("taskBoardPriority")) $("taskBoardPriority").value = filters.priority || "all";
+  if ($("taskBoardSearch")) $("taskBoardSearch").value = filters.q || "";
+  if ($("taskBoardFrom")) $("taskBoardFrom").value = filters.from || "";
+  if ($("taskBoardTo")) $("taskBoardTo").value = filters.to || "";
 }
 async function loadTaskBoard(silent = true){
   if (!moduleEnabled("tasks")) {
@@ -588,22 +921,21 @@ async function loadTaskBoard(silent = true){
   try {
     state.ui.loadingTasks = true;
     if (!silent) renderTaskBoard();
-    const f = state.taskBoard.filters;
+    const filters = state.taskBoard.filters;
     const page = state.taskBoard.page || { page:0, size:50 };
     const query = {
-      status: f.status || "open",
-      category: f.category !== "all" ? f.category : "",
-      priority: f.priority !== "all" ? f.priority : "",
-      q: f.q || "",
-      from: f.from || "",
-      to: f.to || "",
-      page: page.page || 0,
-      size: page.size || 50,
+      status:filters.status || "open",
+      category:filters.category !== "all" ? filters.category : "",
+      priority:filters.priority !== "all" ? filters.priority : "",
+      q:filters.q || "",
+      from:filters.from || "",
+      to:filters.to || "",
+      page:page.page || 0,
+      size:page.size || 50,
     };
-    const res = normalizePageResponse(await api.taskBoard(query), page.size || 50);
-    state.taskBoard.items = res.items;
-    state.taskBoard.page = res;
-    renderTaskBoard();
+    const response = normalizePageResponse(await api.taskBoard(query), page.size || 50);
+    state.taskBoard.items = response.items;
+    state.taskBoard.page = response;
   } catch (err) {
     console.error(err);
     if (!silent) setSave("err", err.message);
@@ -620,22 +952,6 @@ function taskBoardDateLabel(task){
   if (!task.dueDate) return main;
   return `${main}${task.dueTime ? " " + task.dueTime : ""}`;
 }
-function buildTaskMeta(task){
-  const meta = document.createElement("div");
-  meta.className = "taskMeta";
-  if (task.category) {
-    const b = document.createElement("span"); b.className = "taskBadge cat"; b.textContent = task.category; meta.appendChild(b);
-  }
-  if (task.priority && task.priority !== "NORMAL") {
-    const b = document.createElement("span"); b.className = "taskBadge " + task.priority.toLowerCase(); b.textContent = taskPriorityLabel(task.priority); meta.appendChild(b);
-  }
-  const due = taskDueLabel(task);
-  if (due) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = due; meta.appendChild(b); }
-  if (task.reminderEnabled) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = `🔔 ${task.reminderMinutesBefore ?? 0}м`; meta.appendChild(b); }
-  if (task.overdue && !task.done) { const b = document.createElement("span"); b.className = "taskBadge overdue"; b.textContent = t("просрочено"); meta.appendChild(b); }
-  if (task.done) { const b = document.createElement("span"); b.className = "taskBadge"; b.textContent = t("выполнено"); meta.appendChild(b); }
-  return meta;
-}
 function renderTaskBoard(){
   const list = $("taskBoardList");
   if (!list) return;
@@ -650,23 +966,24 @@ function renderTaskBoard(){
   }
   const items = state.taskBoard.items || [];
   const page = { ...(state.taskBoard.page || {}), items };
-  const open = items.filter(t => !t.done).length;
-  const overdue = items.filter(t => t.overdue && !t.done).length;
-  const done = items.filter(t => t.done).length;
-  $("taskBoardStatus").textContent = `${pageRangeText(page)}`;
+  const open = items.filter(task => !task.done).length;
+  const overdue = items.filter(task => task.overdue && !task.done).length;
+  const done = items.filter(task => task.done).length;
+  $("taskBoardStatus").textContent = pageRangeText(page);
   $("taskBoardStats").innerHTML = `
-    <span class="pill">на странице <b>${items.length}</b></span>
-    <span class="pill">всего по фильтрам <b>${page.total || items.length}</b></span>
-    <span class="pill">открытых на странице <b>${open}</b></span>
-    <span class="pill">просроченных на странице <b>${overdue}</b></span>
-    <span class="pill">выполненных на странице <b>${done}</b></span>`;
-  renderPager("taskBoardPager", page, nextPage => { state.taskBoard.page.page = nextPage; loadTaskBoard(false); }, nextSize => { state.taskBoard.page.size = nextSize; resetTaskBoardPage(); loadTaskBoard(false); });
+    <span class="pill">${t("всего")} <b>${page.total || items.length}</b></span>
+    <span class="pill">${t("открытых")} <b>${open}</b></span>
+    <span class="pill">${t("просроченных")} <b>${overdue}</b></span>
+    <span class="pill">${t("выполненных")} <b>${done}</b></span>`;
+  renderPager("taskBoardPager", page,
+    nextPage => { state.taskBoard.page.page = nextPage; loadTaskBoard(false); },
+    nextSize => { state.taskBoard.page.size = nextSize; resetTaskBoardPage(); loadTaskBoard(false); });
   list.innerHTML = "";
   if (!items.length) {
     renderEmptyState(list, {
       icon:"✓",
-      title: page.total ? "Ничего не найдено" : "Пустой список",
-      text: page.total ? "Попробуй сбросить фильтры или выбрать другой период." : "Выбери день в календаре и добавь первую задачу.",
+      title:page.total ? "Ничего не найдено" : "Задач пока нет",
+      text:page.total ? "Сбрось фильтры или измени период." : "Нажми «Новая задача» или закинь мысль во «Входящие».",
       variant:"board"
     });
     return;
@@ -674,44 +991,45 @@ function renderTaskBoard(){
   for (const task of items) {
     const row = document.createElement("div");
     row.className = "taskBoardItem" + (task.done ? " done" : "") + (task.overdue && !task.done ? " overdue" : "");
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = !!task.done;
-    cb.addEventListener("change", () => toggleTask(task.id, cb.checked));
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = !!task.done;
+    checkbox.addEventListener("change", () => toggleTask(task.id, checkbox.checked));
     const date = document.createElement("button");
     date.type = "button";
     date.className = "taskBoardDate";
     date.textContent = taskBoardDateLabel(task);
-    date.title = `Открыть день ${task.date}`;
+    date.title = `${t("Открыть день")} ${task.date}`;
     date.addEventListener("click", () => goToTaskDate(task.date));
-    const body = document.createElement("div");
+    const body = document.createElement("button");
+    body.type = "button";
     body.className = "taskBoardBody";
     const text = document.createElement("div");
     text.className = "taskText";
     text.textContent = task.text;
     body.append(text, buildTaskMeta(task));
+    body.addEventListener("click", () => editTask(task));
     const actions = document.createElement("div");
     actions.className = "taskBoardActions";
-    const edit = document.createElement("button");
-    edit.type = "button"; edit.textContent = t("ред."); edit.title = t("Редактировать задачу");
-    edit.addEventListener("click", () => editTask(task));
-    const del = document.createElement("button");
-    del.type = "button"; del.textContent = "×"; del.title = t("Удалить задачу");
-    del.addEventListener("click", () => removeTask(task.id));
-    actions.append(edit, del);
-    row.append(cb, date, body, actions);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "×";
+    remove.title = t("Удалить задачу");
+    remove.addEventListener("click", () => removeTask(task.id));
+    actions.appendChild(remove);
+    row.append(checkbox, date, body, actions);
     list.appendChild(row);
   }
 }
-async function goToTaskDate(k){
-  if (!k) return;
-  const [y, m] = k.split("-").map(Number);
-  const targetYear = y, targetMonth = m - 1;
-  if (state.y !== targetYear || state.m !== targetMonth) {
-    state.y = targetYear; state.m = targetMonth;
+async function goToTaskDate(date){
+  if (!date) return;
+  const [year, month] = date.split("-").map(Number);
+  if (state.y !== year || state.m !== month - 1) {
+    state.y = year;
+    state.m = month - 1;
     await loadMonth();
   }
-  selectDay(k);
+  selectDay(date);
 }
 function setTaskBoardQuickStatus(status){
   state.taskBoard.filters.status = status;
@@ -719,32 +1037,89 @@ function setTaskBoardQuickStatus(status){
   loadTaskBoard(false);
 }
 
-$("taskAdd").addEventListener("click", addTask);
-$("taskText").addEventListener("keydown", e => { if (e.key === "Enter") addTask(); });
-$("taskStatusFilter").addEventListener("change", () => { state.taskFilters.status = $("taskStatusFilter").value; renderTasks(); });
-$("taskCategoryFilter").addEventListener("change", () => { state.taskFilters.category = $("taskCategoryFilter").value; renderTasks(); });
-$("taskDueDate").addEventListener("change", () => {
-  if ($("taskDueDate").value && state.modulesLoaded && moduleEnabled("notifications")) $("taskReminderEnabled").checked = true;
+/* ─── Глобальные быстрые действия ───────────────────────────── */
+function openQuickActions(){
+  const focusId = moduleEnabled("tasks") ? "quickActionCapture" : "quickActionCredit";
+  openAppModal("quickActionsModal", focusId);
+}
+function closeQuickActions(){
+  closeAppModal("quickActionsModal");
+}
+function quickActionTask(){
+  closeQuickActions();
+  openTaskCreate({ date:state.selected || todayKey() });
+}
+function quickActionOvertime(kind){
+  closeQuickActions();
+  if (!moduleEnabled("overtime")) return setSave("err", t("модуль выключен"));
+  if (kind === "usage") openOvertimeUsageModal(state.selected || todayKey());
+  else openOvertimeCreditModal(state.selected || todayKey());
+}
+
+$("taskCreateForDay")?.addEventListener("click", () => openTaskCreate({ date:state.selected || todayKey() }));
+$("taskBoardCreate")?.addEventListener("click", () => openTaskCreate({ date:state.selected || todayKey() }));
+$("taskStatusFilter")?.addEventListener("change", () => { state.taskFilters.status = $("taskStatusFilter").value; renderTasks(); });
+$("taskCategoryFilter")?.addEventListener("change", () => { state.taskFilters.category = $("taskCategoryFilter").value; renderTasks(); });
+$("taskEditCategory")?.addEventListener("blur", () => { $("taskEditCategory").value = normalizeTaskCategory($("taskEditCategory").value); });
+$("taskEditDueDate")?.addEventListener("change", () => {
+  if ($("taskEditDueDate").value && state.modulesLoaded && moduleEnabled("notifications")) $("taskEditReminderEnabled").checked = true;
   updateTaskReminderControls();
 });
-$("taskReminderEnabled")?.addEventListener("change", updateTaskReminderControls);
-$("taskEditReminderEnabled")?.addEventListener("change", syncTaskEditorReminder);
+$("taskEditReminderEnabled")?.addEventListener("change", updateTaskReminderControls);
 $("taskEditForm")?.addEventListener("submit", event => { event.preventDefault(); saveTaskEditor(); });
 $("taskEditClose")?.addEventListener("click", closeTaskEditor);
 $("taskEditCancel")?.addEventListener("click", closeTaskEditor);
 $("taskEditBackdrop")?.addEventListener("click", closeTaskEditor);
 
-$("taskBoardOpen").addEventListener("click", () => setTaskBoardQuickStatus("open"));
-$("taskBoardOverdue").addEventListener("click", () => setTaskBoardQuickStatus("overdue"));
-$("taskBoardAll").addEventListener("click", () => setTaskBoardQuickStatus("all"));
-$("taskBoardThisMonth").addEventListener("click", () => { const r = monthFromTo(); state.taskBoard.filters.from = r.from; state.taskBoard.filters.to = r.to; resetTaskBoardPage(); loadTaskBoard(false); });
-$("taskBoardClear").addEventListener("click", () => { state.taskBoard.filters = { status:"open", category:"all", priority:"all", q:"", from:"", to:"" }; resetTaskBoardPage(); loadTaskBoard(false); });
-$("taskBoardStatusFilter").addEventListener("change", () => { state.taskBoard.filters.status = $("taskBoardStatusFilter").value; resetTaskBoardPage(); loadTaskBoard(false); });
-$("taskBoardCategory").addEventListener("change", () => { state.taskBoard.filters.category = $("taskBoardCategory").value; resetTaskBoardPage(); loadTaskBoard(false); });
-$("taskBoardPriority").addEventListener("change", () => { state.taskBoard.filters.priority = $("taskBoardPriority").value; resetTaskBoardPage(); loadTaskBoard(false); });
-$("taskBoardFrom").addEventListener("change", () => { state.taskBoard.filters.from = $("taskBoardFrom").value; resetTaskBoardPage(); loadTaskBoard(false); });
-$("taskBoardTo").addEventListener("change", () => { state.taskBoard.filters.to = $("taskBoardTo").value; resetTaskBoardPage(); loadTaskBoard(false); });
-$("taskBoardSearch").addEventListener("input", () => { clearTimeout(window.__taskBoardTimer); window.__taskBoardTimer = setTimeout(() => { state.taskBoard.filters.q = $("taskBoardSearch").value.trim(); resetTaskBoardPage(); loadTaskBoard(true); }, 350); });
+$("quickCaptureSave")?.addEventListener("click", saveQuickCapture);
+$("quickCaptureCancel")?.addEventListener("click", closeQuickCapture);
+$("quickCaptureClose")?.addEventListener("click", closeQuickCapture);
+$("quickCaptureBackdrop")?.addEventListener("click", closeQuickCapture);
+$("quickCaptureText")?.addEventListener("keydown", event => {
+  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); saveQuickCapture(); }
+});
+$("inboxQuickSave")?.addEventListener("click", async () => {
+  const input = $("inboxQuickText");
+  const text = input?.value || "";
+  try { await captureInbox(text); if (input) input.value = ""; }
+  catch (err) { setSave("err", err.message); input?.focus(); }
+});
+$("inboxQuickText")?.addEventListener("keydown", event => {
+  if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); $("inboxQuickSave")?.click(); }
+});
+$("inboxShowArchived")?.addEventListener("change", () => {
+  state.inbox.includeArchived = !!$("inboxShowArchived").checked;
+  loadInbox(false);
+});
+$("inboxRefresh")?.addEventListener("click", () => loadInbox(false));
+
+$("taskBoardOpen")?.addEventListener("click", () => setTaskBoardQuickStatus("open"));
+$("taskBoardOverdue")?.addEventListener("click", () => setTaskBoardQuickStatus("overdue"));
+$("taskBoardAll")?.addEventListener("click", () => setTaskBoardQuickStatus("all"));
+$("taskBoardThisMonth")?.addEventListener("click", () => { const range = monthFromTo(); state.taskBoard.filters.from = range.from; state.taskBoard.filters.to = range.to; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardClear")?.addEventListener("click", () => { state.taskBoard.filters = { status:"open", category:"all", priority:"all", q:"", from:"", to:"" }; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardStatusFilter")?.addEventListener("change", () => { state.taskBoard.filters.status = $("taskBoardStatusFilter").value; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardCategory")?.addEventListener("change", () => { state.taskBoard.filters.category = $("taskBoardCategory").value; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardPriority")?.addEventListener("change", () => { state.taskBoard.filters.priority = $("taskBoardPriority").value; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardFrom")?.addEventListener("change", () => { state.taskBoard.filters.from = $("taskBoardFrom").value; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardTo")?.addEventListener("change", () => { state.taskBoard.filters.to = $("taskBoardTo").value; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardSearch")?.addEventListener("input", () => {
+  clearTimeout(window.__taskBoardTimer);
+  window.__taskBoardTimer = setTimeout(() => {
+    state.taskBoard.filters.q = $("taskBoardSearch").value.trim();
+    resetTaskBoardPage();
+    loadTaskBoard(true);
+  }, 350);
+});
+
+$("globalQuickAdd")?.addEventListener("click", openQuickActions);
+$("quickActionsClose")?.addEventListener("click", closeQuickActions);
+$("quickActionsBackdrop")?.addEventListener("click", closeQuickActions);
+$("quickActionCapture")?.addEventListener("click", openQuickCapture);
+$("quickActionTask")?.addEventListener("click", quickActionTask);
+$("quickActionCredit")?.addEventListener("click", () => quickActionOvertime("credit"));
+$("quickActionUsage")?.addEventListener("click", () => quickActionOvertime("usage"));
+
 
 function renderChips(){
   const box = $("chips");

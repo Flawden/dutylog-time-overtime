@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
+import ru.daniil.shifts.dto.Dtos.TaskMetadataDto;
 import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CurrentUserService;
@@ -51,6 +52,13 @@ public class TaskController {
         return taskService.listRange(current, fromDate, toDate);
     }
 
+
+    @GetMapping("/metadata")
+    public TaskMetadataDto metadata(Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.TASKS);
+        return taskService.metadata(current);
+    }
 
     /** Общий экран задач: открытые, просроченные, выполненные, категории и поиск. */
     @GetMapping("/board")

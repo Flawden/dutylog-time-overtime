@@ -88,9 +88,9 @@ public final class DutyLogModules {
                     false,
                     true,
                     List.of(CALENDAR),
-                    List.of("nav:tasks", "day:tasks", "calendar-marker:tasks"),
-                    List.of("/api/tasks", "/api/v1/tasks"),
-                    List.of("task.done"),
+                    List.of("nav:tasks", "day:tasks", "calendar-marker:tasks", "tasks:inbox", "global:quick-capture"),
+                    List.of("/api/tasks", "/api/v1/tasks", "/api/inbox", "/api/v1/inbox"),
+                    List.of("task.done", "inbox.capture"),
                     50
             ),
             new ModuleContract(

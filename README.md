@@ -1,23 +1,25 @@
-> Current release: **v27.5.2 — Telegram command menu and quick actions**.
+> Current release: **v27.6.0 — Mobile Tasks & Inbox UX**.
 
 # DutyLog
 
-Current release: **v27.5.2 — Telegram command menu and quick actions**
+Current release: **v27.6.0 — Mobile Tasks & Inbox UX**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.5.2 — Telegram command menu and quick actions
+## Текущая версия: v27.6.0 — Mobile Tasks & Inbox UX
 
-Telegram-бот больше не требует помнить команды. При запуске DutyLog регистрирует через Telegram список доступных команд с короткими описаниями, поэтому `/today`, `/tomorrow`, `/tasks`, `/balance` и остальные действия видны в стандартном меню чата. Регистрация повторяется периодически и безопасно переживает временную недоступность Telegram.
+Главный сценарий задач больше не начинается с перегруженной формы внутри календарного дня. В календаре и на общей доске остаётся понятная кнопка создания, а полный редактор открывается отдельно. На телефоне он занимает весь экран, сразу фокусирует текст и показывает только обязательные поля; категория, теги, срок, приоритет и напоминание раскрываются по запросу.
 
-Под полем ввода появляется компактная постоянная клавиатура: `Сегодня`, `Завтра`, `Задачи`, `Баланс`, `Неделя`, `Помощь`. Нажатие кнопки запускает ту же проверенную и timezone-aware логику, что и соответствующая slash-команда; пользователь больше не обязан угадывать синтаксис.
+Появились **«Входящие»** для мгновенного захвата мыслей. Запись требует только текст, сохраняется через глобальную мобильную кнопку `+`, а при отсутствии сети попадает в локальную idempotent-очередь и отправляется после восстановления соединения. Позже запись можно одним действием превратить в обычную задачу, добавить дату и детали или отправить в архив.
 
-Исправления **v27.5.1** для `/today`, `/tomorrow` и мобильного статуса синхронизации сохранены. Production-readiness контур **v27.5.0** также остаётся без изменений: backup/restore drill, checksum, freshness check, systemd timer tooling и deployment bundle. Flyway остаётся V1–V25. Hotfix устраняет подтверждённый `LazyInitializationException` при `/today`, `/tomorrow` и быстрых кнопках: владелец Telegram-привязки теперь загружается вместе со связью и остаётся доступен после завершения транзакции. Текущая автоматическая база: **73 Java-тестовых класса, 368 `@Test` методов и 12 Playwright browser tests**.
+Категории и теги сохраняются как метаданные пользователя, нормализуются в нижний регистр и предлагаются при следующем вводе. Для времени используется нативный `input type=time`, поэтому мобильный браузер открывает системный выбор времени вместо ручного текстового ввода.
 
-Предыдущая контрольная точка: **v27.5.1 — Telegram commands and mobile sync status bugfix**. До неё: **v27.5.0 — Backup and recovery hardening**, **v27.4.3 — Reminder timezone and sync UX bugfix** и **v27.4.2 — Timezone simplification and critical regression pack**.
+Текущая автоматическая база: **76 Java-тестовых классов, 381 `@Test` метод и 13 Playwright browser scenarios**. Flyway расширен до **V26**: добавлены таблица тегов задач и сущность `inbox_items`. Telegram UX v27.5.2 и проверенный backup/recovery-контур v27.5.0 сохранены.
 
-Ранее: **v27.4.2 — Timezone simplification and critical regression pack**, **v27.4.1 — Overtime scenario manager**, **v27.4.0 — Unified overtime editors**, **v27.2.31 — Authenticated deployment smoke-test hotfix**, **v27.2.30 — Host nginx CI/CD deployment hardening**, **v27.2.29 — Final security and product audit hardening**, **v27.2.28 — Staging deployment gate and diagnostics hardening**, **v27.2.27 — Playwright marker accordion hotfix**, **v27.2.26 — Playwright selector, accordion and line-ending hotfix**, **v27.2.25 — Playwright browser E2E regression baseline**, **v27.2.24 — Coverage floor and startup/module regression suite**, **v27.2.23 — Security test contract and secret-safe error logging hotfix**, **v27.2.22 — Security infrastructure regression and auth hardening suite**, **v27.2.21 — Telegram date validation and test harness hotfix**, **v27.2.20 — Telegram bot regression and delivery hardening suite**, **v27.2.19 — PostgreSQL migration and CI version hotfix**, **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix**, **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
+Предыдущая контрольная точка: **v27.5.2 — Telegram command menu and quick actions**. До неё: **v27.5.1 — Telegram commands and mobile sync status bugfix**, **v27.5.0 — Backup and recovery hardening** и **v27.4.3 — Reminder timezone and sync UX bugfix**.
+
+Ранее: **v27.4.2 — Timezone simplification and critical regression pack**, **v27.4.1 — Overtime scenario manager**, **v27.4.0 — Unified overtime editors**, **v27.2.31 — Authenticated deployment smoke-test hotfix**, **v27.2.30 — Host nginx CI/CD deployment hardening**, **v27.2.29 — Final security and product audit hardening**, **v27.2.28 — Staging deployment gate and diagnostics hardening**, **v27.2.27 — Playwright marker accordion hotfix**, **v27.2.26 — Playwright selector, accordion and line-ending hotfix**, **v27.2.25 — Playwright browser E2E regression baseline**, **v27.2.24 — Coverage floor and startup/module regression suite**, **v27.2.23 — Security test contract and secret-safe error logging hotfix**, **v27.2.22 — Security infrastructure regression and auth hardening suite**, **v27.2.21 — Telegram date validation and test harness hotfix**, **v27.2.20 — Telegram bot regression and delivery hardening suite**, **v27.2.19 — PostgreSQL migration and CI version hotfix**, **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix**, **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction**, **v27.2.10 — Task board status validation hotfix** и **v27.2.5 — Calendar day identity hotfix**.
 
 ## Возможности
 
@@ -27,7 +29,8 @@ Telegram-бот больше не требует помнить команды. 
 - Автозаполнение графиков: 2/2, день/ночь/48, 5/2, день/72, ночь/72.
 - Markdown-заметки для каждого дня с полноэкранным редактором, живым превью и ZIP-экспортом всей базы для Obsidian/резервной копии.
 - Персонализация: светлая/тёмная/системная тема, акцентный цвет и emoji-маркеры дней без хранения картинок.
-- Задачи дня с категориями, приоритетами, сроками и напоминаниями.
+- Задачи дня с отдельным мобильным редактором, категориями, тегами, приоритетами, сроками и напоминаниями.
+- «Входящие» для мгновенного захвата мыслей с последующим преобразованием в задачу и offline-очередью.
 - Важные даты: разовые, ежемесячные и ежегодные события.
 - Журнал переработок и отгулов с FIFO-списанием старых остатков.
 - Расчёт переработки по интервалу: начало, конец, обед и вычитаемый план.
@@ -255,23 +258,19 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/UI_ALIGNMENT_TEST_HOTFIX.md`](docs/UI_ALIGNMENT_TEST_HOTFIX.md) — стабильное выравнивание правых controls в настройках и правка компиляции тестов.
 - [`docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md`](docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md) — выравнивание уведомлений и навигация в админке.
 
-## Текущая версия
+## Текущая стратегия развёртывания
 
-`v27.2.5 — Calendar day identity hotfix`
+DutyLog пока работает как закрытая beta на `https://stage.yaruga-trophy.ru`. Отдельный production на общем VPS сознательно не поднимается: сервер уже обслуживает YARUGA, а постоянный третий Spring Boot/PostgreSQL-контур оставил бы слишком мало запаса по памяти.
 
-Функциональный и Android API v1 контракты не менялись. Этот этап добавляет инфраструктуру доставки:
+Текущий рабочий процесс:
 
-- `test` автоматически собирает immutable image, разворачивает staging и помечает digest как проверенный;
-- `main`/`master` не пересобирает приложение, а продвигает тот же staging-tested digest;
-- production deploy отказывается работать для дерева исходников, которое не прошло staging;
-- staging и production используют разные Compose projects, PostgreSQL volumes и credentials;
-- production делает `pg_dump` и проверяет архив через `pg_restore --list` до обновления;
-- CI запускает реальный контейнер против чистого PostgreSQL и проверяет Flyway V1..latest;
-- health/smoke failure запускает application-only rollback, но никогда не откатывает БД автоматически;
-- service worker получает уникальный build identity, а `/actuator/info` показывает commit/environment/build metadata;
-- staging можно снести только явной guarded-командой, production reset отсутствует.
+- ветка `test` собирает immutable image, запускает все проверки и автоматически обновляет staging;
+- staging защищён HTTPS, health/smoke gates и ежедневным PostgreSQL backup через systemd timer;
+- isolated restore drill уже доказал восстановление схемы, Flyway и пользовательских таблиц без вмешательства в живую базу;
+- production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
+- YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — один раз подготовить VPS и GitHub Environments по [`docs/CICD.md`](docs/CICD.md), затем проверить полный путь `test → staging → main/master → production`.
+Следующий практический шаг — развернуть и вручную проверить v27.6.0 на staging, затем продолжить продуктовую дорожную карту: подзадачи, несколько заметок, offline-first и режимы планировщика.
 
 ## Служебный профиль администратора
 

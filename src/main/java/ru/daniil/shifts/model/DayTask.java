@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Collection;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 /**
  * Отдельная задача на конкретный день.
@@ -52,6 +55,11 @@ public class DayTask {
     @Column(name = "reminder_minutes_before")
     private Integer reminderMinutesBefore;
 
+    @ElementCollection(fetch = FetchType.LAZY)
+    @CollectionTable(name = "day_task_tags", joinColumns = @JoinColumn(name = "task_id"))
+    @Column(name = "tag", nullable = false, length = 40)
+    private Set<String> tags = new LinkedHashSet<>();
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -83,5 +91,10 @@ public class DayTask {
     public void setReminderEnabled(boolean reminderEnabled) { this.reminderEnabled = reminderEnabled; }
     public Integer getReminderMinutesBefore() { return reminderMinutesBefore; }
     public void setReminderMinutesBefore(Integer reminderMinutesBefore) { this.reminderMinutesBefore = reminderMinutesBefore; }
+    public Set<String> getTags() { return tags; }
+    public void setTags(Collection<String> tags) {
+        this.tags.clear();
+        if (tags != null) this.tags.addAll(tags);
+    }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }

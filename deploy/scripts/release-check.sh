@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.5.2}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.6.0}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -952,7 +952,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.6.0"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1005,7 +1005,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.6.0"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1027,7 +1027,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.6.0"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "toInstant().toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1066,11 +1066,43 @@ contains src/test/java/ru/daniil/shifts/telegram/TelegramCommandServiceTest.java
 contains deploy/compose/docker-compose.deploy.yml 'DUTYLOG_TELEGRAM_COMMAND_MENU_ENABLED'
 contains src/main/resources/application-prod.properties 'dutylog.telegram.command-menu-enabled'
 
+# v27.6.0 mobile tasks and Inbox UX
+contains CHANGES.md "v27.6.0 — Mobile Tasks & Inbox UX"
+contains README.md "v27.6.0 — Mobile Tasks & Inbox UX"
+contains docs/MOBILE_TASKS_INBOX_V27.6.0.md "thought → one tap → text → saved"
+contains src/main/resources/db/migration/postgresql/V26__task_tags_and_inbox.sql "CREATE TABLE inbox_items"
+contains src/main/resources/db/migration/postgresql/V26__task_tags_and_inbox.sql "CREATE TABLE day_task_tags"
+contains src/main/java/ru/daniil/shifts/model/InboxItem.java 'class InboxItem'
+contains src/main/java/ru/daniil/shifts/service/InboxService.java 'convertToTask'
+contains src/main/java/ru/daniil/shifts/web/InboxController.java '@RequestMapping({"/api/inbox", "/api/v1/inbox"})'
+contains src/main/java/ru/daniil/shifts/module/DutyLogModules.java '"inbox.capture"'
+contains src/main/resources/static/index.html 'id="taskInboxCard"'
+contains src/main/resources/static/index.html 'id="globalQuickAdd"'
+contains src/main/resources/static/index.html 'id="taskEditAdvanced"'
+contains src/main/resources/static/index.html 'id="taskEditTags"'
+contains src/main/resources/static/index.html 'Списать переработку'
+not_contains src/main/resources/static/index.html 'id="taskText"'
+not_contains src/main/resources/static/index.html 'id="taskAdd"'
+contains src/main/resources/static/js/20-data.js 'async captureInbox(text)'
+contains src/main/resources/static/js/20-data.js 'item.type === "captureInbox"'
+contains src/main/resources/static/js/50-tasks.js 'openTaskCreate({ text:item.text, inboxId:item.id'
+contains src/main/resources/static/js/50-tasks.js '"Быстрое действие":"Quick action"'
+contains e2e/editor-modals.spec.js "#taskCreateForDay"
+contains e2e/editor-modals.spec.js ".taskItemBody"
+not_contains e2e/editor-modals.spec.js "#taskText"
+not_contains e2e/editor-modals.spec.js "#taskAdd"
+contains src/main/resources/static/app.css '#taskEditModal .appModalPanel'
+contains src/main/resources/static/app.css 'height:100dvh'
+contains src/test/java/ru/daniil/shifts/service/InboxServiceTest.java 'clientOperationIdMakesRetriesIdempotent'
+contains src/test/java/ru/daniil/shifts/web/InboxControllerTest.java 'createListArchiveConvertAndDeleteWorkThroughVersionedApi'
+contains src/test/java/ru/daniil/shifts/web/MobileTasksInboxFrontendContractTest.java 'fastCaptureInboxAndOfflineQueueAreConnectedEndToEnd'
+contains e2e/task-modules.spec.js 'quick capture survives the fast Inbox flow and converts into a task'
+
 # v27.5.0 backup and recovery hardening
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.5.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.6.0"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1166,23 +1198,23 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "12" ]]; then
-  ok "Playwright test baseline: 12"
+if [[ "$E2E_TESTS" == "13" ]]; then
+  ok "Playwright test baseline: 13"
 else
-  fail "expected 12 Playwright tests, found $E2E_TESTS"
+  fail "expected 13 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "368" ]]; then
-  ok "test method baseline: 368"
+if [[ "$TEST_METHODS" == "381" ]]; then
+  ok "test method baseline: 381"
 else
-  fail "expected 368 @Test methods, found $TEST_METHODS"
+  fail "expected 381 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "73" ]]; then
-  ok "test class baseline: 73"
+if [[ "$TEST_CLASSES" == "76" ]]; then
+  ok "test class baseline: 76"
 else
-  fail "expected 73 test classes, found $TEST_CLASSES"
+  fail "expected 76 test classes, found $TEST_CLASSES"
 fi
 
 echo

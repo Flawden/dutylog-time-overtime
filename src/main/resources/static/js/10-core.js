@@ -46,13 +46,14 @@ function closeAppModal(id = activeAppModalId){
 document.addEventListener("keydown", event => {
   if (event.key !== "Escape" || !activeAppModalId) return;
   if (activeAppModalId === "taskEditModal" && typeof closeTaskEditor === "function") closeTaskEditor();
+  else if (activeAppModalId === "quickCaptureModal" && typeof closeQuickCapture === "function") closeQuickCapture();
   else if (activeAppModalId === "shiftTypeModal" && typeof closeShiftTypeManager === "function") closeShiftTypeManager();
   else if (activeAppModalId === "overtimeCreditModal" && typeof closeOvertimeCreditModal === "function") closeOvertimeCreditModal();
   else if (activeAppModalId === "overtimeUsageModal" && typeof closeOvertimeUsageModal === "function") closeOvertimeUsageModal();
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.5.2"
+const DUTYLOG_VERSION = "27.6.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -73,11 +74,15 @@ const state = {
   tasksByDate: {},                // { 'YYYY-MM-DD': [{id,date,text,done,category,priority,dueDate,dueTime,overdue}] }
   taskFilters: { status:"all", category:"all" },
   taskBoard: { items: [], filters: { status:"open", category:"all", priority:"all", q:"", from:"", to:"" }, page: { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false } },
+  taskMetadata: { categories: [], tags: [] },
+  inbox: { items: [], loading:false, includeArchived:false },
   importantByDate: {},            // { 'YYYY-MM-DD': [{id,date,title,repeatMode,color}] }
   importantDays: [],               // самостоятельный список важных дней: [{id,date,title,repeatMode,color}]
   importantFilters: { scope:"all", q:"" },
   editingImportantDayId: null,
   editingTaskId: null,
+  editingTaskMode: "create",
+  editingTaskInboxId: null,
   editingShiftTypeId: null,
   overtimeAccount: { totalEarnedHours:0, totalUsedHours:0, balanceHours:0, credits:[], usages:[] },
   notificationSettings: null,
@@ -1265,10 +1270,16 @@ function taskDueLabel(t){
   return `${state.language === "en" ? "due" : "срок"} ${d}${t.dueTime ? " " + t.dueTime : ""}`;
 }
 function allTaskCategories(){
-  const set = new Set();
-  for (const arr of Object.values(state.tasksByDate)) for (const t of arr) if ((t.category || "").trim()) set.add(t.category.trim());
-  for (const t of state.taskBoard?.items || []) if ((t.category || "").trim()) set.add(t.category.trim());
-  return Array.from(set).sort((a,b) => a.localeCompare(b, "ru"));
+  const set = new Set(state.taskMetadata?.categories || []);
+  for (const arr of Object.values(state.tasksByDate)) for (const t of arr) if ((t.category || "").trim()) set.add(t.category.trim().toLowerCase());
+  for (const t of state.taskBoard?.items || []) if ((t.category || "").trim()) set.add(t.category.trim().toLowerCase());
+  return Array.from(set).filter(Boolean).sort((a,b) => a.localeCompare(b, currentLocale()));
+}
+function allTaskTags(){
+  const set = new Set(state.taskMetadata?.tags || []);
+  for (const arr of Object.values(state.tasksByDate)) for (const task of arr) for (const tag of task.tags || []) if (String(tag).trim()) set.add(String(tag).trim().toLowerCase());
+  for (const task of state.taskBoard?.items || []) for (const tag of task.tags || []) if (String(tag).trim()) set.add(String(tag).trim().toLowerCase());
+  return Array.from(set).filter(Boolean).sort((a,b) => a.localeCompare(b, currentLocale()));
 }
 const repeatLabel = mode => t(mode === "YEARLY" ? "каждый год" : mode === "MONTHLY" ? "каждый месяц" : "один раз");
 function creditsOf(k){ return (state.overtimeAccount?.credits || []).filter(x => x.workedDate === k); }

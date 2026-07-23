@@ -1,6 +1,8 @@
 # Production runbook
 
-Status: v27.5.2.
+Status: v27.6.0.
+
+> This runbook is retained for the future dedicated DutyLog server. The current shared VPS runs only the private-beta staging environment; a separate production stack is intentionally deferred so YARUGA keeps its resource headroom.
 
 ## Normal release
 

@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.config.SecurityEventLogger;
 import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
+import ru.daniil.shifts.dto.Dtos.TaskMetadataDto;
 import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.model.AppUser;
@@ -16,7 +17,9 @@ import ru.daniil.shifts.service.exception.ApiException;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -47,6 +50,26 @@ public class TaskService {
         dayEntryService.validateRange(from, to);
         return tasks.findByOwnerAndDateBetweenOrderByDateAscCreatedAtAscIdAsc(user, from, to).stream()
                 .map(TaskDto::from).toList();
+    }
+
+
+    @Transactional(readOnly = true)
+    public TaskMetadataDto metadata(AppUser user) {
+        List<String> categories = tasks.findDistinctCategories(user).stream()
+                .map(this::cleanCategory)
+                .filter(Objects::nonNull)
+                .distinct()
+                .sorted()
+                .limit(100)
+                .toList();
+        List<String> tags = tasks.findDistinctTags(user).stream()
+                .map(this::cleanTag)
+                .filter(Objects::nonNull)
+                .distinct()
+                .sorted()
+                .limit(200)
+                .toList();
+        return new TaskMetadataDto(categories, tags);
     }
 
 
@@ -150,7 +173,8 @@ public class TaskService {
                 || contains(task.getCategory(), q)
                 || contains(task.getDate() != null ? task.getDate().toString() : null, q)
                 || contains(task.getDueDate() != null ? task.getDueDate().toString() : null, q)
-                || contains(task.getPriority() != null ? task.getPriority().name() : null, q);
+                || contains(task.getPriority() != null ? task.getPriority().name() : null, q)
+                || task.getTags().stream().anyMatch(tag -> contains(tag, q));
     }
 
     private boolean contains(String value, String q) {
@@ -169,7 +193,7 @@ public class TaskService {
     public TaskDto create(AppUser user, TaskCreateRequest req) {
         if (req == null) throw ApiException.badRequest("Некорректный JSON в запросе");
         LocalDate d = dayEntryService.parseDate(req.date(), "Дата задачи должна быть в формате yyyy-MM-dd");
-        String text = cleanRequired(req.text(), "Текст задачи не должен быть пустым");
+        String text = cleanTaskText(req.text());
         DayTask task = new DayTask(user, d, text);
         applyCreateFields(task, req);
         return TaskDto.from(tasks.save(task));
@@ -179,10 +203,11 @@ public class TaskService {
     public TaskDto update(AppUser user, Long id, TaskUpdateRequest req) {
         if (req == null) throw ApiException.badRequest("Некорректный JSON в запросе");
         DayTask task = requireOwnedTask(user, id);
-        if (req.text() != null) task.setText(cleanRequired(req.text(), "Текст задачи не должен быть пустым"));
+        if (req.text() != null) task.setText(cleanTaskText(req.text()));
         if (req.done() != null) task.setDone(req.done());
         if (req.date() != null && !req.date().isBlank()) task.setDate(dayEntryService.parseDate(req.date(), "Дата задачи должна быть в формате yyyy-MM-dd"));
-        if (req.category() != null) task.setCategory(cleanOptional(req.category()));
+        if (req.category() != null) task.setCategory(cleanCategory(req.category()));
+        if (req.tags() != null) task.setTags(cleanTags(req.tags()));
         if (req.priority() != null) task.setPriority(req.priority());
         if (req.dueDate() != null) task.setDueDate(parseOptionalDate(req.dueDate(), "Срок задачи должен быть в формате yyyy-MM-dd"));
         if (req.dueTime() != null) task.setDueTime(parseOptionalTime(req.dueTime(), "Время срока должно быть в формате HH:mm"));
@@ -199,7 +224,8 @@ public class TaskService {
     }
 
     private void applyCreateFields(DayTask task, TaskCreateRequest req) {
-        task.setCategory(cleanOptional(req.category()));
+        task.setCategory(cleanCategory(req.category()));
+        task.setTags(cleanTags(req.tags()));
         task.setPriority(req.priority() != null ? req.priority() : TaskPriority.NORMAL);
         task.setDueDate(parseOptionalDate(req.dueDate(), "Срок задачи должен быть в формате yyyy-MM-dd"));
         task.setDueTime(parseOptionalTime(req.dueTime(), "Время срока должно быть в формате HH:mm"));
@@ -225,10 +251,44 @@ public class TaskService {
         return value;
     }
 
+    private String cleanTaskText(String value) {
+        String cleaned = cleanRequired(value, "Текст задачи не должен быть пустым");
+        if (cleaned.length() > 500) throw ApiException.badRequest("Текст задачи: максимум 500 символов");
+        return cleaned;
+    }
+
     private String cleanOptional(String s) {
         if (s == null) return null;
         String value = s.trim();
         return value.isBlank() ? null : value;
+    }
+
+    private String cleanCategory(String value) {
+        String cleaned = cleanOptional(value);
+        if (cleaned == null) return null;
+        if (cleaned.length() > 80) throw ApiException.badRequest("Категория: максимум 80 символов");
+        return cleaned.toLowerCase(Locale.ROOT);
+    }
+
+    private List<String> cleanTags(Collection<String> values) {
+        if (values == null || values.isEmpty()) return List.of();
+        LinkedHashSet<String> unique = new LinkedHashSet<>();
+        for (String value : values) {
+            String tag = cleanTag(value);
+            if (tag == null) continue;
+            if (tag.length() > 40) throw ApiException.badRequest("Тег: максимум 40 символов");
+            unique.add(tag);
+            if (unique.size() > 10) throw ApiException.badRequest("Тегов задачи: максимум 10");
+        }
+        return List.copyOf(unique);
+    }
+
+    private String cleanTag(String value) {
+        String cleaned = cleanOptional(value);
+        if (cleaned == null) return null;
+        cleaned = cleaned.replaceFirst("^#+", "").trim();
+        if (cleaned.isBlank()) return null;
+        return cleaned.toLowerCase(Locale.ROOT);
     }
 
     private LocalDate parseOptionalDate(String value, String message) {

@@ -14,16 +14,20 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   await openDayModule(page, 'tasks');
 
   const original = `Modal task ${Date.now()}`;
-  await page.locator('#taskText').fill(original);
+  await page.locator('#taskCreateForDay').click();
+  await expect(page.locator('#taskEditModal')).toBeVisible();
+  await page.locator('#taskEditText').fill(original);
   const created = waitForApi(page, 'POST', '/api/tasks');
-  await page.locator('#taskAdd').click();
+  await page.locator('#taskEditSave').click();
   await created;
+  await expect(page.locator('#taskEditModal')).toBeHidden();
 
   const row = page.locator('#taskList .taskItem', { hasText: original });
   await expect(row).toBeVisible();
   const taskId = await row.getAttribute('data-task-id');
-  await row.getByTitle(/Редактировать задачу|Edit task/i).click();
+  await row.locator('.taskItemBody').click();
   await expect(page.locator('#taskEditModal')).toBeVisible();
+  await page.locator('#taskEditAdvanced').evaluate(element => { element.open = true; });
 
   const edited = `${original} edited`;
   await page.locator('#taskEditText').fill(edited);
@@ -38,7 +42,7 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   await updated;
   await expect(page.locator('#taskEditModal')).toBeHidden();
   await expect(page.locator(`#taskList [data-task-id="${taskId}"]`)).toContainText(edited);
-  await page.locator(`#taskList [data-task-id="${taskId}"]`).getByTitle(/Редактировать задачу|Edit task/i).click();
+  await page.locator(`#taskList [data-task-id="${taskId}"] .taskItemBody`).click();
   await expect(page.locator('#taskEditCategory')).toHaveValue('modal-e2e');
   await expect(page.locator('#taskEditPriority')).toHaveValue('HIGH');
   await expect(page.locator('#taskEditDueDate')).toHaveValue(date);
