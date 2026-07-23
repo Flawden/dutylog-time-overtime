@@ -178,8 +178,8 @@ RESTORED_TABLE_COUNT="$(docker exec -e PGPASSWORD="$DRILL_PASSWORD" "$DRILL_CONT
 
 FLYWAY_STATE="$(docker exec -e PGPASSWORD="$DRILL_PASSWORD" "$DRILL_CONTAINER" \
   psql -X -qAt -v ON_ERROR_STOP=1 -U "$DRILL_USER" -d "$DRILL_DB" \
-  -c "SELECT version || '|' || description || '|' || success FROM flyway_schema_history ORDER BY installed_rank DESC LIMIT 1;")"
-[[ "$FLYWAY_STATE" == *"|t" ]] || { echo "Restored Flyway state is not successful: $FLYWAY_STATE" >&2; exit 1; }
+  -c "SELECT version || '|' || description || '|' || CASE WHEN success THEN 'success' ELSE 'failed' END FROM flyway_schema_history ORDER BY installed_rank DESC LIMIT 1;")"
+[[ "$FLYWAY_STATE" == *"|success" ]] || { echo "Restored Flyway state is not successful: $FLYWAY_STATE" >&2; exit 1; }
 echo "Public tables: $RESTORED_TABLE_COUNT"
 echo "Latest Flyway: $FLYWAY_STATE"
 

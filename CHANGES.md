@@ -1,3 +1,15 @@
+## v27.5.2 hotfix — restore drill Flyway boolean check
+
+### Fixed
+- Fixed a false-negative restore drill failure after a successful PostgreSQL restore. Concatenating the Flyway `success` boolean into text yields `true`, while the script incorrectly required the standalone psql representation `t`.
+- The integrity query now emits the explicit terminal state `success` or `failed`, and the shell check validates that stable value.
+- Backup creation, checksum verification, archive restore, temporary-resource cleanup and the live DutyLog database are unchanged.
+- When running operational commands interactively, strict shell mode should remain inside the scripts rather than being enabled for the whole SSH login shell; otherwise any expected non-zero script result closes the SSH session.
+
+### Regression coverage
+- The release gate now verifies the explicit Flyway state expression and refuses the old fragile `|t` check.
+- Flyway remains V1–V25. No schema migration is required.
+
 ## v27.5.2 hotfix — Telegram linked-owner fetch
 
 ### Fixed
