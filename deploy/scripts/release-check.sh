@@ -1171,15 +1171,15 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "367" ]]; then
-  ok "test method baseline: 367"
+if [[ "$TEST_METHODS" == "368" ]]; then
+  ok "test method baseline: 368"
 else
-  fail "expected 367 @Test methods, found $TEST_METHODS"
+  fail "expected 368 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "72" ]]; then
-  ok "test class baseline: 72"
+if [[ "$TEST_CLASSES" == "73" ]]; then
+  ok "test class baseline: 73"
 else
-  fail "expected 72 test classes, found $TEST_CLASSES"
+  fail "expected 73 test classes, found $TEST_CLASSES"
 fi
 
 echo

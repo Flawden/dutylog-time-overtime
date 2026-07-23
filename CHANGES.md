@@ -1,3 +1,15 @@
+## v27.5.2 hotfix — Telegram linked-owner fetch
+
+### Fixed
+- Confirmed and fixed the production `LazyInitializationException` raised by `/today`, `/tomorrow` and their quick-action aliases after Telegram polling resolved a linked account outside the repository transaction.
+- `TelegramLinkRepository.findByTelegramChatId(...)` now fetches the linked `owner` through an entity graph, so the command layer can safely read the persisted IANA timezone after the service transaction closes.
+- `/help`, command-menu registration, notifications and write-command validation are unchanged.
+
+### Regression coverage
+- Added a real Spring integration test that persists a Telegram link, lets the lookup transaction end, and then reads `AppUser.getWorkTimezone()` from the returned detached account.
+- Baseline: 73 Java test classes / 368 `@Test` methods and 12 Chromium Playwright scenarios.
+- Flyway remains V1–V25. No schema migration is required.
+
 ## v27.5.2 — Telegram command menu and quick actions
 
 ### Telegram discoverability

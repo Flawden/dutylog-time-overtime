@@ -10,6 +10,8 @@ import java.util.Optional;
 
 public interface TelegramLinkRepository extends JpaRepository<TelegramLink, Long> {
     Optional<TelegramLink> findByOwner(AppUser owner);
+
+    @EntityGraph(attributePaths = "owner")
     Optional<TelegramLink> findByTelegramChatId(Long telegramChatId);
 
     @EntityGraph(attributePaths = "owner")

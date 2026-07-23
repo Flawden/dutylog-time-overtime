@@ -13,7 +13,7 @@ Telegram-бот больше не требует помнить команды. 
 
 Под полем ввода появляется компактная постоянная клавиатура: `Сегодня`, `Завтра`, `Задачи`, `Баланс`, `Неделя`, `Помощь`. Нажатие кнопки запускает ту же проверенную и timezone-aware логику, что и соответствующая slash-команда; пользователь больше не обязан угадывать синтаксис.
 
-Исправления **v27.5.1** для `/today`, `/tomorrow` и мобильного статуса синхронизации сохранены. Production-readiness контур **v27.5.0** также остаётся без изменений: backup/restore drill, checksum, freshness check, systemd timer tooling и deployment bundle. Flyway остаётся V1–V25. Текущая автоматическая база: **72 Java-тестовых класса, 367 `@Test` методов и 12 Playwright browser tests**.
+Исправления **v27.5.1** для `/today`, `/tomorrow` и мобильного статуса синхронизации сохранены. Production-readiness контур **v27.5.0** также остаётся без изменений: backup/restore drill, checksum, freshness check, systemd timer tooling и deployment bundle. Flyway остаётся V1–V25. Hotfix устраняет подтверждённый `LazyInitializationException` при `/today`, `/tomorrow` и быстрых кнопках: владелец Telegram-привязки теперь загружается вместе со связью и остаётся доступен после завершения транзакции. Текущая автоматическая база: **73 Java-тестовых класса, 368 `@Test` методов и 12 Playwright browser tests**.
 
 Предыдущая контрольная точка: **v27.5.1 — Telegram commands and mobile sync status bugfix**. До неё: **v27.5.0 — Backup and recovery hardening**, **v27.4.3 — Reminder timezone and sync UX bugfix** и **v27.4.2 — Timezone simplification and critical regression pack**.
 

@@ -4,7 +4,7 @@ Status: v27.5.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.5.2 registers a visible Telegram command menu and persistent one-tap quick actions while preserving the reliable timezone-aware command handling from v27.5.1, the verified backup/recovery tooling from v27.5.0 and all earlier security/deployment gates. Current application baseline: 72 Java test classes / 367 `@Test` methods and 12 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.5.2 registers a visible Telegram command menu and persistent one-tap quick actions while preserving the reliable timezone-aware command handling from v27.5.1, the verified backup/recovery tooling from v27.5.0 and all earlier security/deployment gates. Current application baseline: 73 Java test classes / 368 `@Test` methods and 12 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,13 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.5.2 Telegram detached-owner hotfix
+
+- `TelegramLinkDetachedOwnerIntegrationTest` reproduces the polling boundary where the repository/service transaction has ended before the command handler reads the linked account.
+- The test proves the persisted IANA timezone remains readable from the returned detached `AppUser`, preventing the production `LazyInitializationException` seen in `/today`, `/tomorrow` and quick-action aliases.
+- The repository entity graph is the regression boundary; no Open Session in View workaround or global eager mapping is introduced.
 
 
 ## v27.5.2 Telegram command menu and quick actions extension
