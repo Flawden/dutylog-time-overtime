@@ -1152,8 +1152,9 @@ function updateOfflineStatus(){
   const el = $("offlineStatus");
   if (!el) return;
   const parts = [];
-  if (state.offline.syncing) parts.push("синхронизация…");
-  else if (state.offline.syncLockedByOther) parts.push("синхронизация в другой вкладке");
+  const compactStatus = window.matchMedia?.("(max-width:700px)")?.matches === true;
+  if (state.offline.syncing) parts.push(compactStatus ? "синхр…" : "синхронизация…");
+  else if (state.offline.syncLockedByOther) parts.push(compactStatus ? "синхр. в другой вкладке" : "синхронизация в другой вкладке");
   else parts.push(online ? "онлайн" : "оффлайн");
   if (state.offline.pending) parts.push(`${state.offline.pending} не отправлено`);
   if (state.offline.failed?.length) parts.push(`${state.offline.failed.length} не применилось`);

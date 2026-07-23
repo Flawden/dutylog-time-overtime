@@ -23,6 +23,7 @@ import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.service.ImportantDayService;
 import ru.daniil.shifts.service.OvertimeService;
 import ru.daniil.shifts.service.TaskService;
+import ru.daniil.shifts.service.UserTimeService;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.LocalDate;
@@ -43,14 +44,16 @@ class TelegramCommandServiceTest {
     @Mock TaskService taskService;
     @Mock ImportantDayService importantDayService;
     @Mock OvertimeService overtimeService;
+    @Mock UserTimeService userTimeService;
 
     TelegramCommandService service;
     AppUser user;
 
     @BeforeEach
     void setUp() {
-        service = new TelegramCommandService(dayEntries, taskService, importantDayService, overtimeService);
         user = new AppUser("telegram-command-owner", "{noop}x");
+        lenient().when(userTimeService.today(user)).thenReturn(LocalDate.now());
+        service = new TelegramCommandService(dayEntries, taskService, importantDayService, overtimeService, userTimeService);
     }
 
     @Test
@@ -213,12 +216,38 @@ class TelegramCommandServiceTest {
         assertTrue(summary.contains("Важные дни: День проекта"));
         assertTrue(summary.contains("Баланс переработок: 8 ч"));
 
+        LocalDate tomorrow = today.plusDays(1);
+        when(dayEntries.findByOwnerAndDate(user, tomorrow)).thenReturn(Optional.empty());
+        when(taskService.listDay(user, tomorrow.toString())).thenReturn(List.of());
+        when(importantDayService.occurrences(user, tomorrow, tomorrow)).thenReturn(List.of());
+        String tomorrowSummary = service.handle(user, "/tomorrow@DutyLogBot");
+        assertTrue(tomorrowSummary.startsWith("Завтра, " + tomorrow.format(java.time.format.DateTimeFormatter.ofPattern("dd.MM.yyyy"))));
+
         when(dayEntries.findByOwnerAndDate(eq(user), any(LocalDate.class))).thenReturn(Optional.empty());
         when(taskService.listDay(eq(user), anyString())).thenReturn(List.of());
         String week = service.handle(user, "/week@DutyLogBot");
         assertTrue(week.startsWith("Ближайшие 7 дней"));
         assertEquals(7, week.lines().filter(line -> line.contains(" — ")).count());
         assertTrue(week.contains("не назначена"));
+    }
+
+
+    @Test
+    void todaySummaryStillAnswersWhenOneDataSectionFails() {
+        LocalDate today = LocalDate.of(2026, 7, 23);
+        when(userTimeService.today(user)).thenReturn(today);
+        when(dayEntries.findByOwnerAndDate(user, today)).thenReturn(Optional.empty());
+        when(taskService.listDay(user, today.toString())).thenReturn(List.of());
+        when(importantDayService.occurrences(user, today, today)).thenReturn(List.of());
+        when(overtimeService.account(user)).thenThrow(new IllegalStateException("broken overtime projection"));
+
+        String summary = service.handle(user, "/today");
+
+        assertTrue(summary.startsWith("Сегодня, 23.07.2026"));
+        assertTrue(summary.contains("Смена: не назначена"));
+        assertTrue(summary.contains("Задачи: 0 открыто"));
+        assertTrue(summary.contains("Баланс переработок: временно недоступен"));
+        assertTrue(summary.contains("Часть данных не загрузилась: баланс переработок"));
     }
 
     private TaskDto task(Long id, LocalDate date, String text, boolean done, boolean overdue) {

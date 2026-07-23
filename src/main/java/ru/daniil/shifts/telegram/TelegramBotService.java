@@ -111,9 +111,18 @@ public class TelegramBotService {
 
         try {
             String answer = commandService.handle(user, text);
-            sendMessage(chatId, answer);
+            if (answer == null || answer.isBlank()) {
+                log.warn("Telegram command returned an empty answer: chatId={} command={}", chatId, commandName(text));
+                sendMessage(chatId, "Команда выполнилась без ответа. Повтори ещё раз или напиши /help.");
+            } else {
+                sendMessage(chatId, answer);
+            }
         } catch (ApiException e) {
             sendMessage(chatId, e.getMessage());
+        } catch (RuntimeException e) {
+            log.warn("Telegram command failed: chatId={} command={} exceptionType={}",
+                    chatId, commandName(text), e.getClass().getSimpleName());
+            sendMessage(chatId, "Не удалось выполнить команду. Попробуй ещё раз через минуту. Если повторится — сообщи администратору.");
         }
     }
 
@@ -137,6 +146,14 @@ public class TelegramBotService {
         if (message == null || message.isBlank()) return "request failed";
         String token = linkService.token();
         return token == null || token.isBlank() ? message : message.replace(token, "***");
+    }
+
+    private String commandName(String text) {
+        if (text == null || text.isBlank()) return "<empty>";
+        String first = text.trim().split("\\s+", 2)[0];
+        int at = first.indexOf('@');
+        if (at >= 0) first = first.substring(0, at);
+        return first.length() > 40 ? first.substring(0, 40) : first;
     }
 
     private String apiUrl(String token, String method) {

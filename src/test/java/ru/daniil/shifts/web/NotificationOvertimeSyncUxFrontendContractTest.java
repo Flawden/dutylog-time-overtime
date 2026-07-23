@@ -34,6 +34,11 @@ class NotificationOvertimeSyncUxFrontendContractTest {
         assertTrue(data.contains("setOfflineSyncFeedback(t(\"Синхронизация…\")"));
         assertTrue(data.contains("setOfflineSyncFeedback(t(\"Нет изменений\")"));
         assertTrue(data.contains("setOfflineSyncFeedback(t(\"Синхронизация завершена\")"));
+
+        String css = resource("/static/app.css");
+        assertTrue(data.contains("compactStatus ? \"синхр…\" : \"синхронизация…\""));
+        assertTrue(css.contains("overflow-wrap:anywhere"));
+        assertTrue(css.contains("grid-template-columns:minmax(0,1fr)"));
     }
 
     private static String resource(String path) throws IOException {

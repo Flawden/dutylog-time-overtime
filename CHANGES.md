@@ -1,3 +1,22 @@
+## v27.5.1 — Telegram commands and mobile sync status bugfix
+
+### Telegram bot
+- `/today` and `/tomorrow` now build a best-effort day summary: a failure in shifts, tasks, important dates or overtime no longer makes the whole command disappear.
+- A partially available summary explicitly marks the failed section while still returning all data that loaded successfully.
+- Unexpected command failures and empty command results now produce a safe Telegram reply instead of silent polling logs; server logs include only the command name, user/chat identifiers and exception type.
+- `UserTimeService` is injected into the command service, keeping `/today` and `/tomorrow` aligned with the account's persisted IANA timezone and making the date boundary deterministic in tests.
+
+### Mobile synchronization status
+- Fixed the compact header status pill: the later mobile CSS rule no longer forces the long synchronization label onto one unbreakable line.
+- Mobile status uses `синхр…` while active, can wrap long cross-tab/pending states, and stays inside the header column.
+- Offline synchronization action buttons now allow wrapping inside a `minmax(0, 1fr)` mobile grid.
+
+### Regression coverage
+- Added tests for `/tomorrow@BotName`, partial day-summary recovery and safe replies for unexpected linked-command failures.
+- Extended the frontend contract for the compact mobile synchronization label and wrapping rules.
+- Baseline: 72 Java test classes / 364 `@Test` methods and 12 Chromium Playwright scenarios.
+- Flyway remains V1–V25. No schema migration is required.
+
 ## v27.5.0 — Backup and recovery hardening
 
 ### Deployment bundle hotfix

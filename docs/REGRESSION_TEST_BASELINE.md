@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.5.0.
+Status: v27.5.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.5.0 hardens verified PostgreSQL backup, isolated restore drills, restore failure recovery, freshness monitoring and systemd scheduling. It preserves the v27.4.3 reminder/timezone fixes, the v27.4.2 critical regression pack and all earlier security/deployment gates. Current application baseline: 72 Java test classes / 362 `@Test` methods and 12 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.5.1 restores reliable Telegram `/today` and `/tomorrow` responses, adds safe partial-summary recovery and fixes compact mobile synchronization status overflow. It preserves the v27.5.0 verified backup/recovery tooling, the v27.4.3 reminder/timezone fixes and all earlier security/deployment gates. Current application baseline: 72 Java test classes / 364 `@Test` methods and 12 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,14 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.5.1 Telegram command and mobile status extension
+
+- `/today` and `/tomorrow@BotName` use the persisted user timezone through injected `UserTimeService`.
+- A failure in one day-summary projection returns a marked partial summary instead of suppressing the command response.
+- Unexpected linked-command failures produce a safe Telegram message and a diagnostic server log without user-entered command arguments.
+- The compact mobile synchronization status uses a shorter active label and CSS wrapping instead of overflowing the header.
 
 
 ## v27.5.0 backup and recovery extension

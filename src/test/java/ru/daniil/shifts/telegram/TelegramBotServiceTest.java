@@ -158,6 +158,28 @@ class TelegramBotServiceTest {
         server.verify();
     }
 
+
+    @Test
+    void unexpectedLinkedCommandFailureIsReturnedInsteadOfBeingSilent() {
+        AppUser user = new AppUser("telegram-owner", "{noop}x");
+        when(linkService.isConfigured()).thenReturn(true);
+        when(linkService.findActiveUserByChatId(91L)).thenReturn(Optional.of(user));
+        when(commandService.handle(user, "/today")).thenThrow(new IllegalStateException("projection failed"));
+
+        server.expect(requestTo(org.hamcrest.Matchers.containsString("/getUpdates")))
+                .andRespond(withSuccess("""
+                        {"ok":true,"result":[{"update_id":15,"message":{"chat":{"id":91},"text":"/today"}}]}
+                        """, MediaType.APPLICATION_JSON));
+        server.expect(requestTo("https://api.telegram.org/botsecret-token/sendMessage"))
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Не удалось выполнить команду")))
+                .andRespond(withSuccess("{\"ok\":true}", MediaType.APPLICATION_JSON));
+
+        bot.poll();
+
+        assertEquals(16L, ReflectionTestUtils.getField(bot, "updateOffset"));
+        server.verify();
+    }
+
     @Test
     void updatesWithoutTextOrChatAreIgnoredButAcknowledgedByOffset() {
         when(linkService.isConfigured()).thenReturn(true);

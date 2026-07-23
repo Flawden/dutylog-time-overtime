@@ -1,21 +1,21 @@
-> Current release: **v27.5.0 — Backup and recovery hardening**.
+> Current release: **v27.5.1 — Telegram commands and mobile sync status bugfix**.
 
 # DutyLog
 
-Current release: **v27.5.0 — Backup and recovery hardening**
+Current release: **v27.5.1 — Telegram commands and mobile sync status bugfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.5.0 — Backup and recovery hardening
+## Текущая версия: v27.5.1 — Telegram commands and mobile sync status bugfix
 
-Эта версия переводит резервное копирование из набора ручных команд в проверяемый эксплуатационный контур. Backup использует активный `deploy/compose/docker-compose.deploy.yml`, блокирует параллельные запуски, атомарно публикует PostgreSQL custom dump, проверяет архив через `pg_restore --list`, создаёт SHA-256 и выполняет ротацию.
+Эта версия исправляет два обнаруженных после v27.5.0 дефекта. Команды Telegram `/today` и `/tomorrow` больше не могут молча пропасть из-за сбоя одного источника данных: сводка возвращает доступные смены, задачи, важные даты и баланс, а проблемный раздел помечается как временно недоступный. Неожиданная ошибка команды также получает безопасный ответ пользователю и диагностическую запись без содержимого задач или секретов.
 
-Добавлен штатный изолированный `restore-drill.sh`: он восстанавливает копию во временный PostgreSQL 16 без сети и опубликованных портов, проверяет таблицы и Flyway, а затем удаляет только созданные им контейнер и volume. Реальный restore теперь требует checksum по умолчанию и гарантированно пытается вернуть ранее работавшее приложение даже после ошибки `pg_restore`.
+На телефонах компактный индикатор синхронизации больше не выходит за границы кнопки: активное состояние сокращается до `синхр…`, длинные статусы могут переноситься, а кнопки окна синхронизации корректно сжимаются внутри мобильной сетки.
 
-Для эксплуатации добавлены проверка свежести последней копии, systemd installer для ежедневного timer и автономный shell self-test backup-инструментов. Миграций базы и изменений пользовательских данных нет. Текущая база приложения остаётся: **72 Java-тестовых класса, 362 `@Test` метода и 12 Playwright browser tests**; дополнительно CI запускает backup tooling self-test.
+Production-readiness контур из **v27.5.0 — Backup and recovery hardening** сохранён: проверенные backup/restore drill, checksum, freshness check, systemd timer tooling и deployment bundle остаются без изменений. Flyway остаётся V1–V25. Текущая автоматическая база: **72 Java-тестовых класса, 364 `@Test` метода и 12 Playwright browser tests**.
 
-Предыдущая контрольная точка: **v27.4.3 — Reminder timezone and sync UX bugfix**. Проверенный staging drill подтвердил восстановление 19 публичных таблиц и успешный Flyway V25 без воздействия на рабочую базу.
+Предыдущая контрольная точка: **v27.5.0 — Backup and recovery hardening**. До неё: **v27.4.3 — Reminder timezone and sync UX bugfix** и **v27.4.2 — Timezone simplification and critical regression pack**.
 
 Ранее: **v27.4.2 — Timezone simplification and critical regression pack**, **v27.4.1 — Overtime scenario manager**, **v27.4.0 — Unified overtime editors**, **v27.2.31 — Authenticated deployment smoke-test hotfix**, **v27.2.30 — Host nginx CI/CD deployment hardening**, **v27.2.29 — Final security and product audit hardening**, **v27.2.28 — Staging deployment gate and diagnostics hardening**, **v27.2.27 — Playwright marker accordion hotfix**, **v27.2.26 — Playwright selector, accordion and line-ending hotfix**, **v27.2.25 — Playwright browser E2E regression baseline**, **v27.2.24 — Coverage floor and startup/module regression suite**, **v27.2.23 — Security test contract and secret-safe error logging hotfix**, **v27.2.22 — Security infrastructure regression and auth hardening suite**, **v27.2.21 — Telegram date validation and test harness hotfix**, **v27.2.20 — Telegram bot regression and delivery hardening suite**, **v27.2.19 — PostgreSQL migration and CI version hotfix**, **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix**, **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction** и **v27.2.10 — Task board status validation hotfix**.
 

@@ -1,7 +1,8 @@
 package ru.daniil.shifts.telegram;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.ImportantDayOccurrenceDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
@@ -25,14 +26,17 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
 public class TelegramCommandService {
+    private static final Logger log = LoggerFactory.getLogger(TelegramCommandService.class);
     private static final DateTimeFormatter RU_DATE = DateTimeFormatter.ofPattern("dd.MM.yyyy");
     private static final Pattern INTERVAL = Pattern.compile("^([0-2]?\\d(?::[0-5]\\d)?)[\\-–—]([0-2]?\\d(?::[0-5]\\d)?)$");
     private static final Pattern HOURS = Pattern.compile("^\\d+(?:[,.]\\d{1,2})?$");
@@ -43,19 +47,20 @@ public class TelegramCommandService {
     private final TaskService taskService;
     private final ImportantDayService importantDayService;
     private final OvertimeService overtimeService;
-    private final UserTimeService userTimeService = new UserTimeService();
+    private final UserTimeService userTimeService;
 
     public TelegramCommandService(DayEntryRepository dayEntries,
                                   TaskService taskService,
                                   ImportantDayService importantDayService,
-                                  OvertimeService overtimeService) {
+                                  OvertimeService overtimeService,
+                                  UserTimeService userTimeService) {
         this.dayEntries = dayEntries;
         this.taskService = taskService;
         this.importantDayService = importantDayService;
         this.overtimeService = overtimeService;
+        this.userTimeService = userTimeService;
     }
 
-    @Transactional
     public String handle(AppUser user, String text) {
         String cmd = commandOf(text);
         String args = argsOf(text);
@@ -241,32 +246,83 @@ public class TelegramCommandService {
     }
 
     private String daySummary(AppUser user, LocalDate date, String label) {
-        DayEntry entry = dayEntries.findByOwnerAndDate(user, date).orElse(null);
-        List<TaskDto> tasks = taskService.listDay(user, date.toString());
+        Set<String> unavailable = new LinkedHashSet<>();
+
+        DayEntry entry = null;
+        try {
+            entry = dayEntries.findByOwnerAndDate(user, date).orElse(null);
+        } catch (RuntimeException error) {
+            recordDaySummaryFailure(user, date, "shift", error);
+            unavailable.add("смена");
+        }
+
+        List<TaskDto> tasks = List.of();
+        try {
+            List<TaskDto> loaded = taskService.listDay(user, date.toString());
+            tasks = loaded == null ? List.of() : loaded;
+        } catch (RuntimeException error) {
+            recordDaySummaryFailure(user, date, "tasks", error);
+            unavailable.add("задачи");
+        }
         List<TaskDto> openTasks = tasks.stream().filter(t -> !t.done()).toList();
         List<TaskDto> overdueTasks = tasks.stream().filter(t -> t.overdue() && !t.done()).toList();
-        List<ImportantDayOccurrenceDto> important = importantDayService.occurrences(user, date, date);
-        OvertimeAccountDto account = overtimeService.account(user);
+
+        List<ImportantDayOccurrenceDto> important = List.of();
+        try {
+            List<ImportantDayOccurrenceDto> loaded = importantDayService.occurrences(user, date, date);
+            important = loaded == null ? List.of() : loaded;
+        } catch (RuntimeException error) {
+            recordDaySummaryFailure(user, date, "important-days", error);
+            unavailable.add("важные даты");
+        }
+
+        OvertimeAccountDto account = null;
+        try {
+            account = overtimeService.account(user);
+        } catch (RuntimeException error) {
+            recordDaySummaryFailure(user, date, "overtime", error);
+            unavailable.add("баланс переработок");
+        }
 
         StringBuilder sb = new StringBuilder();
         sb.append(label).append(", ").append(date.format(RU_DATE)).append("\n\n");
-        sb.append("Смена: ").append(shiftText(entry)).append("\n");
-        sb.append("Задачи: ").append(openTasks.size()).append(" открыто");
-        if (!overdueTasks.isEmpty()) sb.append(", просрочено ").append(overdueTasks.size());
-        sb.append("\n");
+        sb.append("Смена: ").append(unavailable.contains("смена") ? "временно недоступна" : shiftText(entry)).append("\n");
+        if (unavailable.contains("задачи")) {
+            sb.append("Задачи: временно недоступны\n");
+        } else {
+            sb.append("Задачи: ").append(openTasks.size()).append(" открыто");
+            if (!overdueTasks.isEmpty()) sb.append(", просрочено ").append(overdueTasks.size());
+            sb.append("\n");
+        }
         if (!important.isEmpty()) {
             sb.append("Важные дни: ");
             sb.append(important.stream().map(ImportantDayOccurrenceDto::title).limit(4).reduce((a,b) -> a + ", " + b).orElse("—"));
             if (important.size() > 4) sb.append(" и ещё ").append(important.size() - 4);
             sb.append("\n");
+        } else if (unavailable.contains("важные даты")) {
+            sb.append("Важные дни: временно недоступны\n");
         }
-        sb.append("Баланс переработок: ").append(fmt(account.balanceHours())).append(" ч");
+        if (account == null) {
+            sb.append("Баланс переработок: временно недоступен");
+        } else {
+            sb.append("Баланс переработок: ").append(fmt(account.balanceHours())).append(" ч");
+        }
 
         if (!openTasks.isEmpty()) {
             sb.append("\n\nБлижайшие задачи:");
             openTasks.stream().limit(5).forEach(t -> sb.append("\n• ").append(taskLine(t)));
         }
+        if (!unavailable.isEmpty()) {
+            sb.append("\n\n⚠ Часть данных не загрузилась: ").append(String.join(", ", unavailable))
+                    .append(". Остальная сводка показана; повтори команду позже.");
+        }
         return sb.toString();
+    }
+
+    private void recordDaySummaryFailure(AppUser user, LocalDate date, String section, RuntimeException error) {
+        Long userId = user == null ? null : user.getId();
+        log.warn("Telegram day summary section failed: section={} userId={} date={} exceptionType={}",
+                section, userId, date, error.getClass().getSimpleName());
     }
 
     private String weekSummary(AppUser user) {
