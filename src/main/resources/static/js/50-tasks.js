@@ -61,7 +61,21 @@ Object.assign(I18N_EN, {
   "Быстрое действие":"Quick action", "Что добавить?":"What would you like to add?",
   "мгновенно во «Входящие»":"instantly to Inbox", "дата и детали":"date and details",
   "начислить часы":"earn hours", "Списать переработку":"Use overtime", "оформить отгул":"record time off",
-  "Быстро добавить":"Quick add"
+  "Быстро добавить":"Quick add", "Что нужно запомнить?":"What do you need to remember?",
+  "Сохрани как входящее или используй текст как заготовку для действия.":"Save it to Inbox or use the text as a starting point for an action.",
+  "Запиши одной строкой…":"Write it in one line…", "Во Входящие":"To Inbox",
+  "Enter — во Входящие · Shift+Enter — новая строка":"Enter — save to Inbox · Shift+Enter — new line",
+  "Выбери действие — текст будет подставлен автоматически.":"Choose an action — the text will be prefilled automatically.",
+  "Выбери нужное действие.":"Choose an action.",
+  "или сразу оформить":"or create it now", "текст уже будет подставлен":"the text will be prefilled",
+  "Заметка на сегодня":"Today’s note", "открыть или дописать":"open or append",
+  "Важный день":"Important date", "дата и повтор":"date and recurrence",
+  "Временные записи, которые можно разобрать позже":"Temporary entries you can organise later",
+  "Неразобранные записи":"Unorganised entries", "Быстро записать…":"Write something quickly…",
+  "Напиши, что нужно запомнить.":"Write what you need to remember.",
+  "Запись добавлена в заметку":"Added to today’s note", "Запись сохранена":"Entry saved",
+  "Сохраняй записи сразу — структуру можно добавить позже.":"Capture entries immediately and add structure later.",
+  "пусто":"empty"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -328,8 +342,8 @@ function taskEditorMessage(text = "", tone = ""){
   box.textContent = text;
   box.className = "appModalMessage" + (tone ? ` ${tone}` : "");
 }
-function quickCaptureMessage(text = "", tone = ""){
-  const box = $("quickCaptureMessage");
+function quickActionMessage(text = "", tone = ""){
+  const box = $("quickActionMessage");
   if (!box) return;
   box.textContent = text;
   box.className = "appModalMessage" + (tone ? ` ${tone}` : "");
@@ -767,8 +781,12 @@ function renderInbox(){
   if (!list) return;
   const items = state.inbox.items || [];
   const openCount = items.filter(item => item.status === "OPEN").length;
+  const tray = $("taskInboxCard");
+  tray?.classList.toggle("empty", openCount === 0);
   if ($("inboxCount")) $("inboxCount").textContent = String(openCount);
-  if ($("inboxStatus")) $("inboxStatus").textContent = state.inbox.loading ? t("загрузка…") : `${openCount} ${t("не разобрано")}`;
+  if ($("inboxStatus")) $("inboxStatus").textContent = state.inbox.loading
+    ? t("загрузка…")
+    : (openCount ? `${openCount} ${t("не разобрано")}` : t("пусто"));
   if (state.inbox.loading && !items.length) {
     renderLoadingState(list, "Загружаю входящие…", 2);
     return;
@@ -778,7 +796,7 @@ function renderInbox(){
     renderEmptyState(list, {
       icon:"↘",
       title:"Входящие пусты.",
-      text:"Сохраняй мысли сразу — структуру можно добавить позже.",
+      text:"Сохраняй записи сразу — структуру можно добавить позже.",
       variant:"compact"
     });
     return;
@@ -834,33 +852,28 @@ async function captureInbox(text){
   const result = await dataLayer.captureInbox(clean);
   if (result.item) state.inbox.items = [result.item, ...(state.inbox.items || []).filter(item => item.id !== result.item.id)];
   await loadInbox(true);
-  setSave("saved", result.queued ? t("Сохранено на устройстве") : t("Сохранено во Входящие"));
+  setSave("saved", result.queued ? t("Сохранено на устройстве") : t("Запись сохранена"));
   return result;
 }
-function openQuickCapture(){
+function quickActionDraftText(){
+  return String($("quickActionText")?.value || "").trim();
+}
+async function saveQuickActionInbox(){
   if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
-  closeAppModal("quickActionsModal");
-  $("quickCaptureText").value = "";
-  quickCaptureMessage();
-  openAppModal("quickCaptureModal", "quickCaptureText");
-}
-function closeQuickCapture(){
-  quickCaptureMessage();
-  closeAppModal("quickCaptureModal");
-}
-async function saveQuickCapture(){
-  const text = $("quickCaptureText").value.trim();
-  if (!text) return quickCaptureMessage(t("Напиши мысль — остальное можно разобрать позже."), "err");
-  $("quickCaptureSave").disabled = true;
-  quickCaptureMessage(t("сохранение…"));
+  const text = quickActionDraftText();
+  if (!text) return quickActionMessage(t("Напиши, что нужно запомнить."), "err");
+  const button = $("quickActionInbox");
+  if (button) button.disabled = true;
+  quickActionMessage(t("сохранение…"));
   try {
     await captureInbox(text);
-    closeQuickCapture();
+    if ($("quickActionText")) $("quickActionText").value = "";
+    closeQuickActions();
   } catch (err) {
     console.error(err);
-    quickCaptureMessage(err.message || t("Не удалось сохранить запись"), "err");
+    quickActionMessage(err.message || t("Не удалось сохранить запись"), "err");
   } finally {
-    $("quickCaptureSave").disabled = false;
+    if (button) button.disabled = false;
   }
 }
 async function setInboxArchived(id, archived){
@@ -1038,16 +1051,76 @@ function setTaskBoardQuickStatus(status){
 }
 
 /* ─── Глобальные быстрые действия ───────────────────────────── */
+function hasQuickDraftAction(){
+  return moduleEnabled("tasks") || moduleEnabled("notes") || moduleEnabled("important_dates");
+}
+function firstQuickActionFocus(){
+  if (hasQuickDraftAction()) return "quickActionText";
+  return "quickActionCredit";
+}
 function openQuickActions(){
-  const focusId = moduleEnabled("tasks") ? "quickActionCapture" : "quickActionCredit";
-  openAppModal("quickActionsModal", focusId);
+  const hasDraft = hasQuickDraftAction();
+  const canInbox = moduleEnabled("tasks");
+  quickActionMessage();
+  if ($("quickActionText")) $("quickActionText").value = "";
+  if ($("quickActionsTitle")) $("quickActionsTitle").textContent = t(hasDraft ? "Что нужно запомнить?" : "Что добавить?");
+  if ($("quickActionsHint")) $("quickActionsHint").textContent = t(
+    canInbox
+      ? "Сохрани как входящее или используй текст как заготовку для действия."
+      : (hasDraft ? "Выбери действие — текст будет подставлен автоматически." : "Выбери нужное действие.")
+  );
+  if ($("quickActionKeyHint")) $("quickActionKeyHint").textContent = t(
+    canInbox ? "Enter — во Входящие · Shift+Enter — новая строка" : "Выбери действие — текст будет подставлен автоматически."
+  );
+  openAppModal("quickActionsModal", firstQuickActionFocus());
 }
 function closeQuickActions(){
+  quickActionMessage();
   closeAppModal("quickActionsModal");
 }
 function quickActionTask(){
+  const text = quickActionDraftText();
   closeQuickActions();
-  openTaskCreate({ date:state.selected || todayKey() });
+  openTaskCreate({ text, date:state.selected || todayKey() });
+}
+async function quickActionNote(){
+  if (!moduleEnabled("notes")) return setSave("err", t("модуль выключен"));
+  const text = quickActionDraftText();
+  const date = state.selected || todayKey();
+  const [year, month] = date.split("-").map(Number);
+  closeQuickActions();
+  await goto(year, month - 1);
+  location.hash = "#calendar";
+  setTimeout(() => {
+    selectDay(date);
+    const section = $("accNote");
+    if (section) section.open = true;
+    setTab("edit");
+    const editor = $("noteEdit");
+    if (!editor) return;
+    if (text) {
+      const existing = editor.value.trimEnd();
+      editor.value = existing ? `${existing}
+${text}` : text;
+      editor.dispatchEvent(new Event("input", { bubbles:true }));
+      setSave("saved", t("Запись добавлена в заметку"));
+    }
+    editor.focus({ preventScroll:true });
+    editor.setSelectionRange(editor.value.length, editor.value.length);
+  }, 0);
+}
+function quickActionImportant(){
+  if (!moduleEnabled("important_dates")) return setSave("err", t("модуль выключен"));
+  const text = quickActionDraftText();
+  const date = state.selected || todayKey();
+  closeQuickActions();
+  resetImportantBoardForm();
+  location.hash = "#important";
+  setTimeout(() => {
+    if ($("importantBoardTitle")) $("importantBoardTitle").value = text;
+    if ($("importantBoardDate")) $("importantBoardDate").value = date;
+    $("importantBoardTitle")?.focus({ preventScroll:true });
+  }, 0);
 }
 function quickActionOvertime(kind){
   closeQuickActions();
@@ -1071,18 +1144,22 @@ $("taskEditClose")?.addEventListener("click", closeTaskEditor);
 $("taskEditCancel")?.addEventListener("click", closeTaskEditor);
 $("taskEditBackdrop")?.addEventListener("click", closeTaskEditor);
 
-$("quickCaptureSave")?.addEventListener("click", saveQuickCapture);
-$("quickCaptureCancel")?.addEventListener("click", closeQuickCapture);
-$("quickCaptureClose")?.addEventListener("click", closeQuickCapture);
-$("quickCaptureBackdrop")?.addEventListener("click", closeQuickCapture);
-$("quickCaptureText")?.addEventListener("keydown", event => {
-  if ((event.ctrlKey || event.metaKey) && event.key === "Enter") { event.preventDefault(); saveQuickCapture(); }
+$("quickActionInbox")?.addEventListener("click", saveQuickActionInbox);
+$("quickActionText")?.addEventListener("keydown", event => {
+  if (moduleEnabled("tasks") && event.key === "Enter" && !event.shiftKey) {
+    event.preventDefault();
+    saveQuickActionInbox();
+  }
 });
 $("inboxQuickSave")?.addEventListener("click", async () => {
   const input = $("inboxQuickText");
   const text = input?.value || "";
-  try { await captureInbox(text); if (input) input.value = ""; }
-  catch (err) { setSave("err", err.message); input?.focus(); }
+  try {
+    await captureInbox(text);
+    if (input) input.value = "";
+    const tray = $("taskInboxCard");
+    if (tray) tray.open = true;
+  } catch (err) { setSave("err", err.message); input?.focus(); }
 });
 $("inboxQuickText")?.addEventListener("keydown", event => {
   if (event.key === "Enter" && !event.shiftKey) { event.preventDefault(); $("inboxQuickSave")?.click(); }
@@ -1115,8 +1192,9 @@ $("taskBoardSearch")?.addEventListener("input", () => {
 $("globalQuickAdd")?.addEventListener("click", openQuickActions);
 $("quickActionsClose")?.addEventListener("click", closeQuickActions);
 $("quickActionsBackdrop")?.addEventListener("click", closeQuickActions);
-$("quickActionCapture")?.addEventListener("click", openQuickCapture);
 $("quickActionTask")?.addEventListener("click", quickActionTask);
+$("quickActionNote")?.addEventListener("click", quickActionNote);
+$("quickActionImportant")?.addEventListener("click", quickActionImportant);
 $("quickActionCredit")?.addEventListener("click", () => quickActionOvertime("credit"));
 $("quickActionUsage")?.addEventListener("click", () => quickActionOvertime("usage"));
 

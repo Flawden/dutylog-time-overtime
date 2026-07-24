@@ -42,14 +42,23 @@ class MobileTasksInboxFrontendContractTest {
         String tasks = read("src/main/resources/static/js/50-tasks.js");
         String modules = read("src/main/java/ru/daniil/shifts/module/DutyLogModules.java");
 
-        assertTrue(html.contains("id=\"taskInboxCard\""));
-        assertTrue(html.contains("id=\"quickCaptureModal\""));
+        assertTrue(html.contains("class=\"taskInboxTray\" id=\"taskInboxCard\""));
+        assertTrue(html.contains("id=\"quickActionText\""));
+        assertTrue(html.contains("id=\"quickActionInbox\""));
+        assertTrue(html.contains("id=\"quickActionNote\""));
+        assertTrue(html.contains("id=\"quickActionImportant\""));
         assertTrue(html.contains("id=\"globalQuickAdd\""));
         assertTrue(html.contains("Списать переработку"));
-        assertTrue(core.contains("quickCaptureModal"));
+        assertFalse(html.contains("id=\"quickCaptureModal\""));
+        assertFalse(core.contains("quickCaptureModal"));
         assertTrue(data.contains("captureInbox"));
         assertTrue(data.contains("/api/inbox"));
+        assertTrue(data.contains("moduleEnabled(\"notes\")"));
+        assertTrue(data.contains("moduleEnabled(\"important_dates\")"));
         assertTrue(tasks.contains("async function captureInbox(text)"));
+        assertTrue(tasks.contains("async function saveQuickActionInbox()"));
+        assertTrue(tasks.contains("async function quickActionNote()"));
+        assertTrue(tasks.contains("function quickActionImportant()"));
         assertTrue(tasks.contains("inboxId:item.id"));
         assertTrue(modules.contains("inbox.capture"));
         assertTrue(modules.contains("/api/inbox"));
@@ -63,6 +72,8 @@ class MobileTasksInboxFrontendContractTest {
         assertTrue(css.contains("#taskEditModal .appModalPanel"));
         assertTrue(css.contains("height:100dvh"));
         assertTrue(css.contains(".quickActionGrid"));
+        assertTrue(css.contains(".quickActionCapture"));
+        assertTrue(css.contains(".taskInboxTray"));
         assertTrue(css.contains(".inboxCaptureRow"));
     }
 }

@@ -1,3 +1,22 @@
+## v27.6.1 — Quick Capture Polish
+
+### Product UX
+- Reframed Inbox as a temporary capture layer instead of a second task list or a separate navigation destination.
+- Replaced the large Inbox card above tasks with a compact collapsed tray inside the task board. The tray keeps the open-item counter visible without pushing tasks down the page.
+- Removed thought-specific wording from the primary flow; the interface now speaks about entries and things to remember.
+
+### Universal quick add
+- The global `+` now opens one draft field directly. Pressing Enter saves the text to Inbox, while Shift+Enter inserts a new line.
+- The same draft can prefill a new task, append to today's Markdown note or become the title of a new important date.
+- Quick actions are module-aware and appear only for enabled Tasks, Notes, Important dates and Overtime modules.
+- Removed the extra quick-capture modal and one unnecessary tap from the mobile path.
+
+### Compatibility and regression coverage
+- Existing `/api/inbox`, idempotent offline queue, archive/restore and Inbox-to-task conversion remain unchanged.
+- No new database migration is required; Flyway remains V1–V26.
+- Updated frontend contract and Playwright coverage for the compact tray and `+ → text → Inbox → task` flow.
+- Baseline: 76 Java test classes / 381 `@Test` methods and 13 Chromium Playwright scenarios.
+
 ## v27.6.0 — Mobile Tasks & Inbox UX
 
 ### Fast capture and Inbox

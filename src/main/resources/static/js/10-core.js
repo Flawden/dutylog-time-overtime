@@ -46,14 +46,13 @@ function closeAppModal(id = activeAppModalId){
 document.addEventListener("keydown", event => {
   if (event.key !== "Escape" || !activeAppModalId) return;
   if (activeAppModalId === "taskEditModal" && typeof closeTaskEditor === "function") closeTaskEditor();
-  else if (activeAppModalId === "quickCaptureModal" && typeof closeQuickCapture === "function") closeQuickCapture();
   else if (activeAppModalId === "shiftTypeModal" && typeof closeShiftTypeManager === "function") closeShiftTypeManager();
   else if (activeAppModalId === "overtimeCreditModal" && typeof closeOvertimeCreditModal === "function") closeOvertimeCreditModal();
   else if (activeAppModalId === "overtimeUsageModal" && typeof closeOvertimeUsageModal === "function") closeOvertimeUsageModal();
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.6.0"
+const DUTYLOG_VERSION = "27.6.1"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){

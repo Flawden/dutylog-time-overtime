@@ -271,9 +271,14 @@ function applyModuleVisibility(){
   toggle($("view-overtime"), moduleEnabled("overtime"));
   toggle(document.querySelector('#tabbar a[data-view="tasks"]'), moduleEnabled("tasks"));
   toggle($("view-tasks"), moduleEnabled("tasks"));
-  toggle($("globalQuickAdd"), moduleEnabled("tasks") || moduleEnabled("overtime"));
-  toggle($("quickActionCapture"), moduleEnabled("tasks"));
+  toggle($("globalQuickAdd"), moduleEnabled("tasks") || moduleEnabled("notes") || moduleEnabled("important_dates") || moduleEnabled("overtime"));
+  const hasDraftAction = moduleEnabled("tasks") || moduleEnabled("notes") || moduleEnabled("important_dates");
+  toggle($("quickActionCapture"), hasDraftAction);
+  toggle($("quickActionInbox"), moduleEnabled("tasks"));
+  toggle($("quickActionDivider"), hasDraftAction);
   toggle($("quickActionTask"), moduleEnabled("tasks"));
+  toggle($("quickActionNote"), moduleEnabled("notes"));
+  toggle($("quickActionImportant"), moduleEnabled("important_dates"));
   toggle($("quickActionCredit"), moduleEnabled("overtime"));
   toggle($("quickActionUsage"), moduleEnabled("overtime"));
   toggle(document.querySelector('#tabbar a[data-view="important"]'), moduleEnabled("important_dates"));

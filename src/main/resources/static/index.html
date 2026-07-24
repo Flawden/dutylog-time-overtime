@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.6.0" rel="stylesheet"/>
+<link href="app.css?v=27.6.1" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -241,25 +241,6 @@
 </div>
 </section>
 <section class="view" hidden="" id="view-tasks">
-<div class="taskInboxCard" id="taskInboxCard">
-  <div class="taskInboxHead">
-    <div>
-      <div class="eyebrow">Входящие</div>
-      <div class="small">Сначала поймай мысль. Разобрать её в задачу можно позже.</div>
-    </div>
-    <div class="status statusMetrics"><span class="statusChip"><b id="inboxCount">0</b> открыто</span></div>
-  </div>
-  <div class="inboxCaptureRow">
-    <textarea id="inboxQuickText" maxlength="2000" rows="2" placeholder="Быстро записать мысль…"></textarea>
-    <button class="primary" id="inboxQuickSave" type="button">Сохранить</button>
-  </div>
-  <div class="inboxToolbar">
-    <span class="inboxStatus" id="inboxStatus" role="status" aria-live="polite"></span>
-    <label class="inlineCheck"><input id="inboxShowArchived" type="checkbox"/> показать разобранные</label>
-    <button id="inboxRefresh" type="button">Обновить</button>
-  </div>
-  <div class="inboxList" id="inboxList"></div>
-</div>
 <div class="taskBoardCard" id="taskBoardCard">
 <div class="taskBoardHead">
 <div>
@@ -271,6 +252,27 @@
   <button class="primary" id="taskBoardCreate" type="button">＋ Новая задача</button>
 </div>
 </div>
+<details class="taskInboxTray" id="taskInboxCard">
+  <summary>
+    <span class="taskInboxIdentity">
+      <span class="taskInboxIcon" aria-hidden="true">↘</span>
+      <span><b>Входящие</b><small>Временные записи, которые можно разобрать позже</small></span>
+    </span>
+    <span class="statusChip inboxCountChip" title="Неразобранные записи"><b id="inboxCount">0</b></span>
+  </summary>
+  <div class="taskInboxTrayBody">
+    <div class="inboxCaptureRow">
+      <textarea id="inboxQuickText" maxlength="2000" rows="2" placeholder="Быстро записать…"></textarea>
+      <button class="primary" id="inboxQuickSave" type="button">Во Входящие</button>
+    </div>
+    <div class="inboxToolbar">
+      <span class="inboxStatus" id="inboxStatus" role="status" aria-live="polite"></span>
+      <label class="inlineCheck"><input id="inboxShowArchived" type="checkbox"/> показать разобранные</label>
+      <button id="inboxRefresh" type="button">Обновить</button>
+    </div>
+    <div class="inboxList" id="inboxList"></div>
+  </div>
+</details>
 <button class="mobileFilterToggle" id="taskBoardFiltersToggle" type="button" aria-controls="taskBoardFilters" aria-expanded="false"><span>Фильтры</span><b aria-hidden="true">⌄</b></button>
 <div class="taskBoardFilters" id="taskBoardFilters">
 <button id="taskBoardOpen" type="button">открытые</button>
@@ -722,7 +724,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.6.0</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.6.1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -999,41 +1001,30 @@
   </div>
 </div>
 
-<div class="appModal" id="quickCaptureModal" hidden>
-  <button class="appModalBackdrop" id="quickCaptureBackdrop" type="button" aria-label="Закрыть"></button>
-  <div class="appModalPanel quickCapturePanel" role="dialog" aria-modal="true" aria-labelledby="quickCaptureTitle">
-    <div class="appModalHead">
-      <div>
-        <div class="eyebrow">Входящие</div>
-        <div class="appModalTitle" id="quickCaptureTitle">Записать мысль</div>
-        <div class="appModalHint">Никаких категорий и форм. Просто запиши — разберёшь позже.</div>
-      </div>
-      <button class="appModalClose" id="quickCaptureClose" type="button" aria-label="Закрыть">×</button>
-    </div>
-    <div class="quickCaptureBody">
-      <textarea id="quickCaptureText" maxlength="2000" rows="7" placeholder="Что пришло в голову?"></textarea>
-      <div class="appModalMessage" id="quickCaptureMessage" role="status" aria-live="polite"></div>
-      <div class="appModalActions">
-        <button type="button" id="quickCaptureCancel">Отмена</button>
-        <button class="primary" type="button" id="quickCaptureSave">Сохранить во входящие</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div class="appModal quickActionsModal" id="quickActionsModal" hidden>
   <button class="appModalBackdrop" id="quickActionsBackdrop" type="button" aria-label="Закрыть"></button>
   <div class="appModalPanel quickActionsPanel" role="dialog" aria-modal="true" aria-labelledby="quickActionsTitle">
     <div class="appModalHead">
       <div>
-        <div class="eyebrow">Быстрое действие</div>
-        <div class="appModalTitle" id="quickActionsTitle">Что добавить?</div>
+        <div class="eyebrow">Быстро добавить</div>
+        <div class="appModalTitle" id="quickActionsTitle">Что нужно запомнить?</div>
+        <div class="appModalHint" id="quickActionsHint">Сохрани как входящее или используй текст как заготовку для действия.</div>
       </div>
       <button class="appModalClose" id="quickActionsClose" type="button" aria-label="Закрыть">×</button>
     </div>
+    <div class="quickActionCapture" id="quickActionCapture">
+      <textarea id="quickActionText" maxlength="2000" rows="3" placeholder="Запиши одной строкой…"></textarea>
+      <div class="quickActionCaptureFooter">
+        <span class="quickActionKeyHint" id="quickActionKeyHint">Enter — во Входящие · Shift+Enter — новая строка</span>
+        <button class="primary" id="quickActionInbox" type="button">Во Входящие</button>
+      </div>
+      <div class="appModalMessage" id="quickActionMessage" role="status" aria-live="polite"></div>
+    </div>
+    <div class="quickActionDivider" id="quickActionDivider"><span>или сразу оформить</span></div>
     <div class="quickActionGrid">
-      <button class="quickActionPrimary" id="quickActionCapture" type="button"><b>✎</b><span>Записать мысль<small>мгновенно во «Входящие»</small></span></button>
-      <button id="quickActionTask" type="button"><b>✓</b><span>Создать задачу<small>дата и детали</small></span></button>
+      <button id="quickActionTask" type="button"><b>✓</b><span>Создать задачу<small>текст уже будет подставлен</small></span></button>
+      <button id="quickActionNote" type="button"><b>▤</b><span>Заметка на сегодня<small>открыть или дописать</small></span></button>
+      <button id="quickActionImportant" type="button"><b>★</b><span>Важный день<small>дата и повтор</small></span></button>
       <button id="quickActionCredit" type="button"><b>＋</b><span>Добавить переработку<small>начислить часы</small></span></button>
       <button id="quickActionUsage" type="button"><b>−</b><span>Списать переработку<small>оформить отгул</small></span></button>
     </div>
@@ -1129,12 +1120,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.6.0"></script>
-<script src="js/20-data.js?v=27.6.0"></script>
-<script src="js/30-calendar.js?v=27.6.0"></script>
-<script src="js/40-overtime.js?v=27.6.0"></script>
-<script src="js/50-tasks.js?v=27.6.0"></script>
-<script src="js/60-settings.js?v=27.6.0"></script>
-<script src="js/70-user-boot.js?v=27.6.0"></script>
+<script src="js/10-core.js?v=27.6.1"></script>
+<script src="js/20-data.js?v=27.6.1"></script>
+<script src="js/30-calendar.js?v=27.6.1"></script>
+<script src="js/40-overtime.js?v=27.6.1"></script>
+<script src="js/50-tasks.js?v=27.6.1"></script>
+<script src="js/60-settings.js?v=27.6.1"></script>
+<script src="js/70-user-boot.js?v=27.6.1"></script>
 </body>
 </html>

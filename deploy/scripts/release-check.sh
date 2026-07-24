@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.6.0}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.6.1}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -952,7 +952,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.6.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.6.1"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1005,7 +1005,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.6.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.6.1"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1027,7 +1027,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.6.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.6.1"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "toInstant().toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1099,11 +1099,30 @@ contains src/test/java/ru/daniil/shifts/web/InboxControllerTest.java 'createList
 contains src/test/java/ru/daniil/shifts/web/MobileTasksInboxFrontendContractTest.java 'fastCaptureInboxAndOfflineQueueAreConnectedEndToEnd'
 contains e2e/task-modules.spec.js 'quick capture survives the fast Inbox flow and converts into a task'
 
+# v27.6.1 quick capture polish
+contains CHANGES.md "v27.6.1 — Quick Capture Polish"
+contains README.md "v27.6.1 — Quick Capture Polish"
+contains docs/QUICK_CAPTURE_POLISH_V27.6.1.md "Inbox is a temporary capture layer"
+contains src/main/resources/static/index.html 'class="taskInboxTray" id="taskInboxCard"'
+contains src/main/resources/static/index.html 'id="quickActionText"'
+contains src/main/resources/static/index.html 'id="quickActionInbox"'
+contains src/main/resources/static/index.html 'id="quickActionNote"'
+contains src/main/resources/static/index.html 'id="quickActionImportant"'
+not_contains src/main/resources/static/index.html 'id="quickCaptureModal"'
+contains src/main/resources/static/js/20-data.js 'moduleEnabled("notes") || moduleEnabled("important_dates")'
+contains src/main/resources/static/js/50-tasks.js 'async function saveQuickActionInbox()'
+contains src/main/resources/static/js/50-tasks.js 'async function quickActionNote()'
+contains src/main/resources/static/js/50-tasks.js 'function quickActionImportant()'
+contains src/main/resources/static/app.css '.taskInboxTray'
+contains src/main/resources/static/app.css '.quickActionCapture'
+contains src/test/java/ru/daniil/shifts/web/MobileTasksInboxFrontendContractTest.java 'assertFalse(html.contains("id=\"quickCaptureModal\""))'
+contains e2e/task-modules.spec.js "#taskInboxCard > summary"
+
 # v27.5.0 backup and recovery hardening
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.6.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.6.1"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'

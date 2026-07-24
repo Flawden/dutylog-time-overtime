@@ -68,14 +68,13 @@ test('quick capture survives the fast Inbox flow and converts into a task', asyn
   const thought = `Capture thought ${Date.now()}`;
   await page.locator('#globalQuickAdd').click();
   await expect(page.locator('#quickActionsModal')).toBeVisible();
-  await page.locator('#quickActionCapture').click();
-  await expect(page.locator('#quickCaptureModal')).toBeVisible();
-  await page.locator('#quickCaptureText').fill(thought);
+  await page.locator('#quickActionText').fill(thought);
   const captured = waitForApi(page, 'POST', '/api/inbox', 201);
-  await page.locator('#quickCaptureSave').click();
+  await page.locator('#quickActionInbox').click();
   await captured;
 
   await page.locator('#tabbar a[data-view="tasks"]').click();
+  await page.locator('#taskInboxCard > summary').click();
   const inboxRow = page.locator('#inboxList .inboxItem', { hasText: thought });
   await expect(inboxRow).toBeVisible();
   await inboxRow.getByRole('button', { name: 'В задачу' }).click();

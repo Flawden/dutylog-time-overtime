@@ -1,23 +1,23 @@
-> Current release: **v27.6.0 — Mobile Tasks & Inbox UX**.
+> Current release: **v27.6.1 — Quick Capture Polish**.
 
 # DutyLog
 
-Current release: **v27.6.0 — Mobile Tasks & Inbox UX**
+Current release: **v27.6.1 — Quick Capture Polish**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.6.0 — Mobile Tasks & Inbox UX
+## Текущая версия: v27.6.1 — Quick Capture Polish
 
-Главный сценарий задач больше не начинается с перегруженной формы внутри календарного дня. В календаре и на общей доске остаётся понятная кнопка создания, а полный редактор открывается отдельно. На телефоне он занимает весь экран, сразу фокусирует текст и показывает только обязательные поля; категория, теги, срок, приоритет и напоминание раскрываются по запросу.
+Главное изменение — быстрый ввод теперь действительно универсальный. Глобальная кнопка `+` сразу открывает одно поле **«Что нужно запомнить?»**. Enter отправляет запись во «Входящие», а тот же текст можно использовать как заготовку новой задачи, дописать в заметку на сегодня или подставить в форму важного дня. Кнопки показываются только для включённых модулей.
 
-Появились **«Входящие»** для мгновенного захвата мыслей. Запись требует только текст, сохраняется через глобальную мобильную кнопку `+`, а при отсутствии сети попадает в локальную idempotent-очередь и отправляется после восстановления соединения. Позже запись можно одним действием превратить в обычную задачу, добавить дату и детали или отправить в архив.
+«Входящие» больше не выглядят как второй список задач и не требуют отдельной вкладки. На экране задач это компактный сворачиваемый лоток со счётчиком неразобранных записей. Только после раскрытия видны быстрый ввод, архив и действия преобразования. Пустой лоток остаётся доступным, но почти не занимает место.
 
-Категории и теги сохраняются как метаданные пользователя, нормализуются в нижний регистр и предлагаются при следующем вводе. Для времени используется нативный `input type=time`, поэтому мобильный браузер открывает системный выбор времени вместо ручного текстового ввода.
+Offline-механика не изменилась: записи по-прежнему сохраняются через idempotent IndexedDB-очередь и отправляются после восстановления соединения. API и Flyway остаются совместимыми с v27.6.0; схема по-прежнему заканчивается на **V26**.
 
-Текущая автоматическая база: **76 Java-тестовых классов, 381 `@Test` метод и 13 Playwright browser scenarios**. Flyway расширен до **V26**: добавлены таблица тегов задач и сущность `inbox_items`. Telegram UX v27.5.2 и проверенный backup/recovery-контур v27.5.0 сохранены.
+Текущая автоматическая база: **76 Java-тестовых классов, 381 `@Test` метод и 13 Playwright browser scenarios**. Telegram UX v27.5.2 и проверенный backup/recovery-контур v27.5.0 сохранены.
 
-Предыдущая контрольная точка: **v27.5.2 — Telegram command menu and quick actions**. До неё: **v27.5.1 — Telegram commands and mobile sync status bugfix**, **v27.5.0 — Backup and recovery hardening** и **v27.4.3 — Reminder timezone and sync UX bugfix**.
+Предыдущая контрольная точка: **v27.6.0 — Mobile Tasks & Inbox UX**. До неё: **v27.5.2 — Telegram command menu and quick actions**, **v27.5.1 — Telegram commands and mobile sync status bugfix**, **v27.5.0 — Backup and recovery hardening** и **v27.4.3 — Reminder timezone and sync UX bugfix**.
 
 Ранее: **v27.4.2 — Timezone simplification and critical regression pack**, **v27.4.1 — Overtime scenario manager**, **v27.4.0 — Unified overtime editors**, **v27.2.31 — Authenticated deployment smoke-test hotfix**, **v27.2.30 — Host nginx CI/CD deployment hardening**, **v27.2.29 — Final security and product audit hardening**, **v27.2.28 — Staging deployment gate and diagnostics hardening**, **v27.2.27 — Playwright marker accordion hotfix**, **v27.2.26 — Playwright selector, accordion and line-ending hotfix**, **v27.2.25 — Playwright browser E2E regression baseline**, **v27.2.24 — Coverage floor and startup/module regression suite**, **v27.2.23 — Security test contract and secret-safe error logging hotfix**, **v27.2.22 — Security infrastructure regression and auth hardening suite**, **v27.2.21 — Telegram date validation and test harness hotfix**, **v27.2.20 — Telegram bot regression and delivery hardening suite**, **v27.2.19 — PostgreSQL migration and CI version hotfix**, **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix**, **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction**, **v27.2.10 — Task board status validation hotfix** и **v27.2.5 — Calendar day identity hotfix**.
 
@@ -30,7 +30,8 @@ DutyLog — приложение для учёта смен, переработ�
 - Markdown-заметки для каждого дня с полноэкранным редактором, живым превью и ZIP-экспортом всей базы для Obsidian/резервной копии.
 - Персонализация: светлая/тёмная/системная тема, акцентный цвет и emoji-маркеры дней без хранения картинок.
 - Задачи дня с отдельным мобильным редактором, категориями, тегами, приоритетами, сроками и напоминаниями.
-- «Входящие» для мгновенного захвата мыслей с последующим преобразованием в задачу и offline-очередью.
+- Универсальный быстрый ввод: запись во «Входящие», заготовка задачи, дополнение заметки на сегодня или форма важного дня.
+- Компактный сворачиваемый лоток «Входящие» с offline-очередью и преобразованием записи в задачу.
 - Важные даты: разовые, ежемесячные и ежегодные события.
 - Журнал переработок и отгулов с FIFO-списанием старых остатков.
 - Расчёт переработки по интервалу: начало, конец, обед и вычитаемый план.
@@ -270,7 +271,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — развернуть и вручную проверить v27.6.0 на staging, затем продолжить продуктовую дорожную карту: подзадачи, несколько заметок, offline-first и режимы планировщика.
+Следующий практический шаг — развернуть и вручную проверить v27.6.1 на staging. После приёмки дорожная карта продолжается подзадачами, несколькими заметками и полноценным offline-first.
 
 ## Служебный профиль администратора
 

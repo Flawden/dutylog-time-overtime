@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.6.0.
+Status: v27.6.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.6.0 introduces a mobile-first task editor, saved lower-case categories and tags, a quick-capture Inbox with idempotent offline retries, and a global one-tap action button while preserving the Telegram UX from v27.5.2 and the verified backup/recovery tooling from v27.5.0. Current application baseline: 76 Java test classes / 381 `@Test` methods and 13 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.6.1 turns the global `+` into a universal draft surface and moves Inbox into a compact collapsed tray, while preserving the v27.6.0 mobile task editor, idempotent offline capture, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 76 Java test classes / 381 `@Test` methods and 13 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,14 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.6.1 quick capture polish extension
+
+- `MobileTasksInboxFrontendContractTest` now protects the collapsed Inbox tray, direct universal draft field and module-aware note/important-date actions.
+- `task-modules.spec.js` preserves the complete `+ → text → Inbox → task` path without the removed intermediate capture modal.
+- Quick add remains visible when any of Tasks, Notes, Important dates or Overtime is enabled.
+- Existing Inbox API, IndexedDB idempotency, task conversion and Flyway V26 remain unchanged.
 
 
 ## v27.6.0 mobile tasks and Inbox extension
