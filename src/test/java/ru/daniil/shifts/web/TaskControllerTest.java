@@ -134,18 +134,18 @@ class TaskControllerTest {
         LocalDate future = today.plusDays(3);
 
         var overdue = taskService.create(owner, new TaskCreateRequest(
-                today.toString(), "Critical report", "Work", TaskPriority.HIGH,
+                past.minusDays(1).toString(), "Critical report", "Work", TaskPriority.HIGH,
                 past.toString(), null, false, null));
         var futureTask = taskService.create(owner, new TaskCreateRequest(
                 today.toString(), "Buy milk", "Home", TaskPriority.LOW,
                 future.toString(), "18:00", false, null));
         var done = taskService.create(owner, new TaskCreateRequest(
-                today.toString(), "Done report", "Work", TaskPriority.HIGH,
+                past.minusDays(1).toString(), "Done report", "Work", TaskPriority.HIGH,
                 past.toString(), null, false, null));
         taskService.update(owner, done.id(), new TaskUpdateRequest(
                 null, true, null, null, null, null, null, null, null));
         taskService.create(other, new TaskCreateRequest(
-                today.toString(), "Foreign report", "Work", TaskPriority.HIGH,
+                past.minusDays(1).toString(), "Foreign report", "Work", TaskPriority.HIGH,
                 past.toString(), null, false, null));
 
         mvc.perform(get("/api/tasks/board")
@@ -178,6 +178,60 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.items[0].id").value(futureTask.id()))
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(10));
+    }
+
+
+    @Test
+    void deadlineRulesAreEnforcedAcrossLegacyAndV1Endpoints() throws Exception {
+        setTasksEnabled(owner, true);
+
+        mvc.perform(post("/api/tasks")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"date\":\"2026-08-10\",\"text\":\"Неверный срок\",\"dueDate\":\"2026-08-09\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"))
+                .andExpect(jsonPath("$.error").value("Срок не может быть раньше времени задачи."));
+
+        String createdBody = mvc.perform(post("/api/v1/tasks")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "date":"2026-08-10",
+                                  "text":"Подготовить пакет",
+                                  "dueDate":"2026-08-11",
+                                  "subtasks":[{"text":"Получить справку","dueDate":"2026-08-11"}]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.subtasks[0].dueDate").value("2026-08-11"))
+                .andReturn().getResponse().getContentAsString();
+
+        long id = objectMapper.readTree(createdBody).path("id").asLong();
+        mvc.perform(patch("/api/v1/tasks/{id}", id)
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"date\":\"2026-08-12\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Срок не может быть раньше времени задачи."));
+
+        mvc.perform(post("/api/v1/tasks")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "date":"2026-08-10",
+                                  "text":"Неверная подзадача",
+                                  "subtasks":[{"text":"Слишком рано","dueDate":"2026-08-09"}]
+                                }
+                                """))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Срок подзадачи не может быть раньше даты задачи."));
     }
 
     @Test

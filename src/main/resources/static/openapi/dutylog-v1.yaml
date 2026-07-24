@@ -412,6 +412,7 @@ components:
         text: { type: string, minLength: 1, maxLength: 300 }
         done: { type: boolean }
         sortOrder: { type: integer, minimum: 0 }
+        dueDate: { type: string, format: date, nullable: true }
     TaskSubtaskInput:
       type: object
       required: [text]
@@ -420,6 +421,7 @@ components:
         text: { type: string, minLength: 1, maxLength: 300 }
         done: { type: boolean, default: false }
         sortOrder: { type: integer, minimum: 0 }
+        dueDate: { type: string, format: date, nullable: true }
     TaskCreateRequest:
       type: object
       required: [date, text]

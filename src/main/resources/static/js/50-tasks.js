@@ -88,7 +88,11 @@ Object.assign(I18N_EN, {
   "Подзадачи можно отмечать только при подключении к серверу.":"Subtasks can only be checked while connected to the server.",
   "Не удалось обновить подзадачу":"Failed to update subtask",
   "Один уровень вложенности. Enter добавляет следующую строку, стрелки меняют порядок.":"One level only. Enter adds the next row; arrows change the order.",
-  "выполнено подзадач":"subtasks completed"
+  "выполнено подзадач":"subtasks completed",
+  "Срок подзадачи":"Subtask due date", "Без срока":"No due date",
+  "Срок не может быть раньше времени задачи.":"The due date cannot be earlier than the task date.",
+  "Срок подзадачи не может быть раньше даты задачи.":"A subtask due date cannot be earlier than the task date.",
+  "Выполненные":"Completed"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -427,6 +431,30 @@ function taskSubtaskProgress(task){
   const subtasks = normalizedTaskSubtasks(task);
   return { total:subtasks.length, done:subtasks.filter(item => item.done).length, subtasks };
 }
+function taskSortDateValue(task){
+  return String(task?.dueDate || task?.date || "9999-12-31");
+}
+function compareTasksOpenFirst(a, b){
+  const doneOrder = Number(!!a?.done) - Number(!!b?.done);
+  if (doneOrder) return doneOrder;
+  const dateOrder = taskSortDateValue(a).localeCompare(taskSortDateValue(b));
+  if (dateOrder) return dateOrder;
+  const timeOrder = String(a?.dueTime || "99:99").localeCompare(String(b?.dueTime || "99:99"));
+  if (timeOrder) return timeOrder;
+  const taskDateOrder = String(a?.date || "9999-12-31").localeCompare(String(b?.date || "9999-12-31"));
+  if (taskDateOrder) return taskDateOrder;
+  return Number(a?.id || 0) - Number(b?.id || 0);
+}
+function sortedTasksOpenFirst(items){
+  return [...(items || [])].sort(compareTasksOpenFirst);
+}
+function taskCompletionDivider(){
+  const divider = document.createElement("div");
+  divider.className = "taskCompletionDivider";
+  divider.setAttribute("role", "separator");
+  divider.textContent = t("Выполненные");
+  return divider;
+}
 function updateTaskEditorSubtaskSummary(){
   const rows = [...($("taskEditSubtaskList")?.querySelectorAll(".taskSubtaskEditorRow") || [])];
   const done = rows.filter(row => row.querySelector('input[type="checkbox"]')?.checked).length;
@@ -457,6 +485,18 @@ function addTaskSubtaskEditorRow(item = {}, { focus = false, after = null } = {}
   text.maxLength = 300;
   text.placeholder = t("Что нужно сделать сначала?");
   text.value = item.text || "";
+
+  const dueWrap = document.createElement("label");
+  dueWrap.className = "taskSubtaskDueField";
+  dueWrap.title = t("Срок подзадачи");
+  const dueIcon = document.createElement("span");
+  dueIcon.setAttribute("aria-hidden", "true");
+  dueIcon.textContent = "📅";
+  const dueDate = document.createElement("input");
+  dueDate.type = "date";
+  dueDate.value = item.dueDate || "";
+  dueDate.setAttribute("aria-label", t("Срок подзадачи"));
+  dueWrap.append(dueIcon, dueDate);
 
   const up = document.createElement("button");
   up.type = "button";
@@ -497,7 +537,7 @@ function addTaskSubtaskEditorRow(item = {}, { focus = false, after = null } = {}
     addTaskSubtaskEditorRow({}, { focus:true, after:row });
   });
 
-  row.append(done, text, up, down, remove);
+  row.append(done, text, dueWrap, up, down, remove);
   if (after?.parentElement === list) after.after(row);
   else list.appendChild(row);
   updateTaskEditorSubtaskSummary();
@@ -525,6 +565,7 @@ function collectTaskEditorSubtasks(){
       text,
       done:!!row.querySelector('input[type="checkbox"]')?.checked,
       sortOrder:subtasks.length,
+      dueDate:row.querySelector('input[type="date"]')?.value || "",
     });
   }
   if (subtasks.length > 50) throw new Error(t("Подзадач: максимум 50"));
@@ -543,7 +584,7 @@ function buildTaskSubtasksInline(task){
   });
 
   const summary = document.createElement("summary");
-  summary.textContent = `${progress.done}/${progress.total} ${t("подзадач")}`;
+  summary.textContent = `${t("Подзадачи")} (${progress.done}/${progress.total})`;
   const list = document.createElement("div");
   list.className = "taskSubtaskInlineList";
 
@@ -559,6 +600,12 @@ function buildTaskSubtasksInline(task){
     text.className = "taskSubtaskInlineText";
     text.textContent = subtask.text;
     row.append(checkbox, text);
+    if (subtask.dueDate) {
+      const due = document.createElement("span");
+      due.className = "taskSubtaskInlineDue";
+      due.textContent = `📅 ${String(subtask.dueDate).split("-").reverse().join(".")}`;
+      row.appendChild(due);
+    }
     list.appendChild(row);
   }
 
@@ -630,6 +677,12 @@ function editTask(task){
   renderTaskMetadataSuggestions();
   openAppModal("taskEditModal", "taskEditText");
 }
+function validateTaskEditorDeadlines(date, dueDate, subtasks){
+  if (dueDate && dueDate < date) throw new Error(t("Срок не может быть раньше времени задачи."));
+  if ((subtasks || []).some(item => item.dueDate && item.dueDate < date)) {
+    throw new Error(t("Срок подзадачи не может быть раньше даты задачи."));
+  }
+}
 function taskEditorPayload(original = null){
   const text = $("taskEditText").value.trim();
   const date = $("taskEditDate").value;
@@ -644,17 +697,20 @@ function taskEditorPayload(original = null){
   if (reminderEnabled && (!Number.isInteger(reminderMinutesBefore) || reminderMinutesBefore < 0 || reminderMinutesBefore > 10080)) {
     throw new Error(t("напоминание: от 0 до 10080 минут"));
   }
+  const dueDate = $("taskEditDueDate").value || "";
+  const subtasks = collectTaskEditorSubtasks();
+  validateTaskEditorDeadlines(date, dueDate, subtasks);
   return {
     date,
     text,
     category:normalizeTaskCategory($("taskEditCategory").value),
     tags,
     priority:$("taskEditPriority").value || "NORMAL",
-    dueDate:$("taskEditDueDate").value || "",
+    dueDate,
     dueTime:$("taskEditDueTime").value || "",
     reminderEnabled,
     reminderMinutesBefore,
-    subtasks:collectTaskEditorSubtasks(),
+    subtasks,
   };
 }
 async function saveTaskEditor(){
@@ -872,13 +928,13 @@ function filteredTasksForSelected(){
   const items = tasksOf(state.selected);
   const status = state.taskFilters.status || "all";
   const category = state.taskFilters.category || "all";
-  return items.filter(task => {
+  return sortedTasksOpenFirst(items.filter(task => {
     if (category !== "all" && (task.category || "") !== category) return false;
     if (status === "open" && task.done) return false;
     if (status === "done" && !task.done) return false;
     if (status === "overdue" && (!task.overdue || task.done)) return false;
     return true;
-  });
+  }));
 }
 function buildTaskMeta(task){
   const meta = document.createElement("div");
@@ -886,7 +942,7 @@ function buildTaskMeta(task){
   if (task.category) {
     const badge = document.createElement("span");
     badge.className = "taskBadge cat";
-    badge.textContent = task.category;
+    badge.textContent = `🏷 ${task.category}`;
     meta.appendChild(badge);
   }
   for (const tag of task.tags || []) {
@@ -898,7 +954,7 @@ function buildTaskMeta(task){
   if (task.priority && task.priority !== "NORMAL") {
     const badge = document.createElement("span");
     badge.className = "taskBadge " + task.priority.toLowerCase();
-    badge.textContent = taskPriorityLabel(task.priority);
+    badge.textContent = `${task.priority === "URGENT" ? "🔴" : task.priority === "HIGH" ? "🟠" : "🔵"} ${taskPriorityLabel(task.priority)}`;
     meta.appendChild(badge);
   }
   const due = taskDueLabel(task);
@@ -916,11 +972,24 @@ function buildTaskMeta(task){
   }
   const progress = taskSubtaskProgress(task);
   if (progress.total) {
-    const badge = document.createElement("span");
-    badge.className = "taskBadge taskSubtaskProgress";
-    badge.textContent = `☑ ${progress.done}/${progress.total}`;
-    badge.title = `${progress.done}/${progress.total} ${t("выполнено подзадач")}`;
-    meta.appendChild(badge);
+    const progressEl = document.createElement("span");
+    progressEl.className = "taskSubtaskProgress";
+    progressEl.setAttribute("role", "progressbar");
+    progressEl.setAttribute("aria-valuemin", "0");
+    progressEl.setAttribute("aria-valuemax", String(progress.total));
+    progressEl.setAttribute("aria-valuenow", String(progress.done));
+    progressEl.setAttribute("aria-label", `${progress.done}/${progress.total} ${t("выполнено подзадач")}`);
+    const track = document.createElement("span");
+    track.className = "taskSubtaskProgressTrack";
+    const fill = document.createElement("span");
+    fill.className = "taskSubtaskProgressFill";
+    fill.style.width = `${Math.round(progress.done * 100 / progress.total)}%`;
+    track.appendChild(fill);
+    const value = document.createElement("span");
+    value.className = "taskSubtaskProgressValue";
+    value.textContent = `${progress.done}/${progress.total}`;
+    progressEl.append(track, value);
+    meta.appendChild(progressEl);
   }
   if (task.overdue && !task.done) {
     const badge = document.createElement("span");
@@ -959,7 +1028,13 @@ function renderTasks(){
     updateAccSummaries();
     return;
   }
+  const showCompletionDivider = items.some(task => !task.done) && items.some(task => task.done);
+  let completionDividerShown = false;
   for (const task of items) {
+    if (showCompletionDivider && task.done && !completionDividerShown) {
+      box.appendChild(taskCompletionDivider());
+      completionDividerShown = true;
+    }
     const row = document.createElement("div");
     row.dataset.taskId = String(task.id);
     row.className = "taskItem" + (task.done ? " done" : "") + (task.overdue && !task.done ? " overdue" : "");
@@ -1233,7 +1308,7 @@ function renderTaskBoard(){
     renderLoadingState(list, "Загружаю задачи…", 4);
     return;
   }
-  const items = state.taskBoard.items || [];
+  const items = sortedTasksOpenFirst(state.taskBoard.items || []);
   const page = { ...(state.taskBoard.page || {}), items };
   const open = items.filter(task => !task.done).length;
   const overdue = items.filter(task => task.overdue && !task.done).length;
@@ -1257,7 +1332,13 @@ function renderTaskBoard(){
     });
     return;
   }
+  const showCompletionDivider = items.some(task => !task.done) && items.some(task => task.done);
+  let completionDividerShown = false;
   for (const task of items) {
+    if (showCompletionDivider && task.done && !completionDividerShown) {
+      list.appendChild(taskCompletionDivider());
+      completionDividerShown = true;
+    }
     const row = document.createElement("div");
     row.className = "taskBoardItem" + (task.done ? " done" : "") + (task.overdue && !task.done ? " overdue" : "");
     const checkbox = document.createElement("input");

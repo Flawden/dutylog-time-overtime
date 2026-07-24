@@ -384,10 +384,22 @@ public final class Dtos {
             Long id,
             String text,
             boolean done,
-            int sortOrder
+            int sortOrder,
+            String dueDate
     ) {
+        /** Source-compatible constructor for callers created before subtask deadlines were added. */
+        public SubtaskDto(Long id, String text, boolean done, int sortOrder) {
+            this(id, text, done, sortOrder, null);
+        }
+
         public static SubtaskDto from(TaskSubtask subtask) {
-            return new SubtaskDto(subtask.getId(), subtask.getText(), subtask.isDone(), subtask.getSortOrder());
+            return new SubtaskDto(
+                    subtask.getId(),
+                    subtask.getText(),
+                    subtask.isDone(),
+                    subtask.getSortOrder(),
+                    subtask.getDueDate() != null ? subtask.getDueDate().toString() : null
+            );
         }
     }
 
@@ -400,8 +412,14 @@ public final class Dtos {
             Boolean done,
             @Min(value = 0, message = "Порядок подзадачи не может быть отрицательным")
             @Max(value = 10000, message = "Порядок подзадачи слишком большой")
-            Integer sortOrder
-    ) {}
+            Integer sortOrder,
+            String dueDate
+    ) {
+        /** Source-compatible constructor for callers created before subtask deadlines were added. */
+        public SubtaskInput(Long id, String text, Boolean done, Integer sortOrder) {
+            this(id, text, done, sortOrder, null);
+        }
+    }
 
     public record SubtaskUpdateRequest(
             @NotNull(message = "Не указан статус подзадачи")

@@ -1,3 +1,30 @@
+## v27.6.3 — Polish & Consistency
+
+### Business rules and ordering
+- Added central `validateBusinessRules()` validation after all create/update fields are applied.
+- A task due date can no longer precede the task date; the same-day deadline remains valid.
+- A subtask due date can no longer precede its parent task date.
+- Day, range and board responses share one stable open-first comparator; optimistic browser updates use the same rule.
+
+### Lightweight subtask deadlines
+- Added nullable date-only `dueDate` to one-level checklist items without turning them into full tasks.
+- Flyway migration **V28** adds `task_subtasks.due_date` and an owner-friendly lookup index.
+- Updated entity, DTO, create/update reconciliation, OpenAPI and Inbox-to-task compatibility.
+- Existing clients remain compatible through legacy DTO constructors; omitted dates are preserved while explicit blank values clear them.
+
+### Task UX polish
+- Replaced the text-only checklist badge with an accessible graphical progress bar and numeric value.
+- Standardised inline disclosure as `Подзадачи (2/3)` and preserved expansion state during local re-renders.
+- Added compact inline subtask dates, denser metadata chips and a consistent icon vocabulary.
+- Added a completed-task divider only when open and completed tasks are visible together.
+- Improved 320–430 px layouts for long text, date inputs and checklist controls.
+
+### Regression coverage
+- Added service and HTTP tests for create/update deadline rules, final-entity validation, open-first sorting, subtask deadline persistence and clearing.
+- Extended frontend contracts for V28, client validation, progress semantics and completed grouping.
+- Added a Chromium scenario covering invalid deadlines, persisted subtask dates, progress accessibility and immediate completed-task reordering.
+- Baseline: 76 Java test classes / 389 `@Test` methods and 15 Chromium Playwright scenarios.
+
 ## v27.6.2 — Tasks & Subtasks
 
 ### One-level subtasks

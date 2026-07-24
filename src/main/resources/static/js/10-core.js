@@ -52,7 +52,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.6.2"
+const DUTYLOG_VERSION = "27.6.3"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -1266,7 +1266,7 @@ function taskPriorityLabel(p){ return p === "URGENT" ? t("срочные") : p =
 function taskDueLabel(t){
   if (!t.dueDate) return "";
   const d = t.dueDate.split("-").reverse().join(".");
-  return `${state.language === "en" ? "due" : "срок"} ${d}${t.dueTime ? " " + t.dueTime : ""}`;
+  return `📅 ${d}${t.dueTime ? " " + t.dueTime : ""}`;
 }
 function allTaskCategories(){
   const set = new Set(state.taskMetadata?.categories || []);

@@ -2,11 +2,12 @@ package ru.daniil.shifts.model;
 
 import jakarta.persistence.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 /**
  * One-level checklist item owned by a parent task.
- * Subtasks are intentionally not recursive in v27.6.2.
+ * Subtasks are intentionally one-level checklist items and are not recursive.
  */
 @Entity
 @Table(name = "task_subtasks", indexes = {
@@ -31,6 +32,9 @@ public class TaskSubtask {
     @Column(name = "sort_order", nullable = false)
     private int sortOrder = 0;
 
+    @Column(name = "due_date")
+    private LocalDate dueDate;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -51,5 +55,7 @@ public class TaskSubtask {
     public void setDone(boolean done) { this.done = done; }
     public int getSortOrder() { return sortOrder; }
     public void setSortOrder(int sortOrder) { this.sortOrder = sortOrder; }
+    public LocalDate getDueDate() { return dueDate; }
+    public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }

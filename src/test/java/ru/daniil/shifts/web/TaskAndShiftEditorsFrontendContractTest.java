@@ -37,6 +37,7 @@ class TaskAndShiftEditorsFrontendContractTest {
         String data = read("src/main/resources/static/js/20-data.js");
         String css = read("src/main/resources/static/app.css");
         String migration = read("src/main/resources/db/migration/postgresql/V27__task_subtasks.sql");
+        String deadlineMigration = read("src/main/resources/db/migration/postgresql/V28__task_subtask_due_date.sql");
 
         assertTrue(html.contains("id=\"taskEditSubtasks\""));
         assertTrue(html.contains("id=\"taskEditSubtaskList\""));
@@ -46,9 +47,15 @@ class TaskAndShiftEditorsFrontendContractTest {
         assertTrue(tasks.contains("async function toggleSubtask("));
         assertTrue(data.contains("updateSubtask(taskId, subtaskId"));
         assertTrue(css.contains(".taskSubtasksInline"));
+        assertTrue(css.contains(".taskSubtaskProgressTrack"));
+        assertTrue(css.contains(".taskCompletionDivider"));
+        assertTrue(tasks.contains("validateTaskEditorDeadlines("));
+        assertTrue(tasks.contains("sortedTasksOpenFirst("));
+        assertTrue(tasks.contains("dueDate:row.querySelector('input[type=\"date\"]')"));
         assertTrue(migration.contains("CREATE TABLE task_subtasks"));
+        assertTrue(deadlineMigration.contains("ADD COLUMN due_date DATE"));
         assertFalse(migration.contains("parent_subtask_id"),
-                "v27.6.2 deliberately supports one checklist level only");
+                "DutyLog deliberately supports one checklist level only");
     }
 
     @Test

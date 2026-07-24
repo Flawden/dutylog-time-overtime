@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.6.2.
+Status: v27.6.3.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.6.2 adds ordered one-level subtasks, compact progress, owner-scoped child updates and explicit parent completion, while preserving the v27.6.1 universal quick capture, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 76 Java test classes / 385 `@Test` methods and 14 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.6.3 adds final-state deadline validation, open-first ordering, date-only subtask deadlines, accessible graphical progress and compact responsive task cards, while preserving v27.6.2 one-level subtasks, v27.6.1 universal quick capture, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 76 Java test classes / 389 `@Test` methods and 15 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -15,6 +15,14 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
 
+
+## v27.6.3 task polish and consistency extension
+
+- `TaskServiceTest` protects final-state parent/subtask deadline rules, same-day acceptance, clearing and open-first day/range order.
+- `TaskControllerTest` proves stable errors and compatible behaviour through legacy and `/api/v1` routes.
+- `TaskAndShiftEditorsFrontendContractTest` protects V28, client validation, graphical progress and completed grouping.
+- `task-modules.spec.js` covers invalid deadline feedback, persisted subtask dates, progressbar semantics and immediate optimistic reordering.
+- Flyway V28 adds a nullable date-only deadline without expanding subtasks into recursive tasks.
 
 ## v27.6.2 tasks and subtasks extension
 

@@ -32,6 +32,14 @@ import java.util.Objects;
 
 @Service
 public class TaskService {
+    private static final Comparator<DayTask> TASK_DISPLAY_ORDER = Comparator
+            .comparing(DayTask::isDone)
+            .thenComparing(TaskService::taskSortDate, Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(DayTask::getDueTime, Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(DayTask::getDate, Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(DayTask::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(DayTask::getId, Comparator.nullsLast(Comparator.naturalOrder()));
+
     private final DayTaskRepository tasks;
     private final DayEntryService dayEntryService;
     private final SecurityEventLogger securityEvents;
@@ -48,6 +56,7 @@ public class TaskService {
     public List<TaskDto> listDay(AppUser user, String date) {
         LocalDate d = dayEntryService.parseDate(date, "Дата должна быть в формате yyyy-MM-dd");
         return tasks.findByOwnerAndDateOrderByCreatedAtAscIdAsc(user, d).stream()
+                .sorted(TASK_DISPLAY_ORDER)
                 .map(TaskDto::from).toList();
     }
 
@@ -55,6 +64,7 @@ public class TaskService {
     public List<TaskDto> listRange(AppUser user, LocalDate from, LocalDate to) {
         dayEntryService.validateRange(from, to);
         return tasks.findByOwnerAndDateBetweenOrderByDateAscCreatedAtAscIdAsc(user, from, to).stream()
+                .sorted(TASK_DISPLAY_ORDER)
                 .map(TaskDto::from).toList();
     }
 
@@ -114,13 +124,7 @@ public class TaskService {
                 .filter(t -> priorityFinal == null || t.getPriority() == priorityFinal)
                 .filter(t -> withinTaskBoardRange(t, fromDate, toDate))
                 .filter(t -> queryLower == null || taskMatchesQuery(t, queryLower))
-                .sorted(Comparator
-                        .comparing(DayTask::isDone)
-                        .thenComparing((DayTask t) -> taskSortDate(t), Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparing(t -> t.getDueTime(), Comparator.nullsLast(Comparator.naturalOrder()))
-                        .thenComparing(DayTask::getDate)
-                        .thenComparing(DayTask::getCreatedAt)
-                        .thenComparing(DayTask::getId))
+                .sorted(TASK_DISPLAY_ORDER)
                 .map(TaskDto::from)
                 .toList();
         return PageDto.of(pageSlice(filtered, safePage, safeSize), safePage, safeSize, filtered.size());
@@ -170,7 +174,7 @@ public class TaskService {
         return to == null || !d.isAfter(to);
     }
 
-    private LocalDate taskSortDate(DayTask task) {
+    private static LocalDate taskSortDate(DayTask task) {
         return task.getDueDate() != null ? task.getDueDate() : task.getDate();
     }
 
@@ -203,6 +207,7 @@ public class TaskService {
         String text = cleanTaskText(req.text());
         DayTask task = new DayTask(user, d, text);
         applyCreateFields(task, req);
+        validateBusinessRules(task);
         return TaskDto.from(tasks.save(task));
     }
 
@@ -225,6 +230,7 @@ public class TaskService {
             task.getSubtasks().forEach(subtask -> subtask.setDone(true));
         }
         if (!task.isReminderEnabled()) task.setReminderMinutesBefore(null);
+        validateBusinessRules(task);
         return TaskDto.from(tasks.save(task));
     }
 
@@ -286,10 +292,37 @@ public class TaskService {
             }
             subtask.setDone(Boolean.TRUE.equals(input.done()));
             subtask.setSortOrder(index);
+            if (input.id() == null || input.dueDate() != null) {
+                subtask.setDueDate(parseOptionalDate(
+                        input.dueDate(), "Срок подзадачи должен быть в формате yyyy-MM-dd"));
+            }
         }
 
         task.getSubtasks().removeIf(subtask ->
                 subtask.getId() != null && !retainedIds.contains(subtask.getId()));
+    }
+
+
+    private void validateBusinessRules(DayTask task) {
+        validateDeadline(task);
+        validateSubtaskDeadlines(task);
+    }
+
+    private void validateDeadline(DayTask task) {
+        if (task.getDate() != null && task.getDueDate() != null && task.getDueDate().isBefore(task.getDate())) {
+            throw ApiException.badRequest("Срок не может быть раньше времени задачи.");
+        }
+    }
+
+    private void validateSubtaskDeadlines(DayTask task) {
+        if (task.getDate() == null) return;
+        boolean invalid = task.getSubtasks().stream()
+                .map(TaskSubtask::getDueDate)
+                .filter(Objects::nonNull)
+                .anyMatch(dueDate -> dueDate.isBefore(task.getDate()));
+        if (invalid) {
+            throw ApiException.badRequest("Срок подзадачи не может быть раньше даты задачи.");
+        }
     }
 
     private String cleanSubtaskText(String value) {

@@ -168,7 +168,7 @@ class TaskServiceTest {
         LocalDate future = today.plusDays(2);
 
         TaskDto overdue = taskService.create(owner, new TaskCreateRequest(
-                today.toString(), "Quarterly report", "Work", TaskPriority.HIGH,
+                past.minusDays(1).toString(), "Quarterly report", "Work", TaskPriority.HIGH,
                 past.toString(), null, false, null));
         TaskDto futureTask = taskService.create(owner, new TaskCreateRequest(
                 today.toString(), "Buy milk", "Home", TaskPriority.LOW,
@@ -177,7 +177,7 @@ class TaskServiceTest {
                 today.toString(), "Production incident", "Ops", TaskPriority.URGENT,
                 future.toString(), "20:00", false, null));
         TaskDto done = taskService.create(owner, new TaskCreateRequest(
-                today.toString(), "Archived report", "Work", TaskPriority.HIGH,
+                past.minusDays(1).toString(), "Archived report", "Work", TaskPriority.HIGH,
                 past.toString(), null, false, null));
         taskService.update(owner, done.id(), new TaskUpdateRequest(
                 null, true, null, null, null, null, null, null, null));
@@ -185,7 +185,7 @@ class TaskServiceTest {
                 today.toString(), "Someday task", "Misc", TaskPriority.NORMAL,
                 null, null, false, null));
         taskService.create(other, new TaskCreateRequest(
-                today.toString(), "Foreign report", "Work", TaskPriority.HIGH,
+                past.minusDays(1).toString(), "Foreign report", "Work", TaskPriority.HIGH,
                 past.toString(), null, false, null));
 
         PageDto<TaskDto> overduePage = board("overdue", null, null, null, null, null, 0, 50);
@@ -234,6 +234,70 @@ class TaskServiceTest {
         assertEquals(2, second.items().size());
         assertTrue(second.hasPrevious());
         assertFalse(second.hasNext());
+    }
+
+
+    @Test
+    void deadlinesValidateTheFinalTaskStateAndAllowTheSameDay() {
+        TaskDto sameDay = taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", "Задача", null, TaskPriority.NORMAL,
+                "2026-08-10", "18:00", false, null));
+        assertEquals("2026-08-10", sameDay.dueDate());
+
+        ApiException createError = assertThrows(ApiException.class, () -> taskService.create(owner,
+                new TaskCreateRequest("2026-08-10", "Неверный срок", null, TaskPriority.NORMAL,
+                        "2026-08-09", null, false, null)));
+        assertEquals(HttpStatus.BAD_REQUEST, createError.getStatus());
+        assertEquals("Срок не может быть раньше времени задачи.", createError.getMessage());
+
+        TaskDto valid = taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", "Перенос", null, TaskPriority.NORMAL,
+                "2026-08-11", null, false, null));
+        ApiException updateError = assertThrows(ApiException.class, () -> taskService.update(owner, valid.id(),
+                new TaskUpdateRequest(null, null, "2026-08-12", null,
+                        null, null, null, null, null)));
+        assertEquals(HttpStatus.BAD_REQUEST, updateError.getStatus());
+        assertEquals("Срок не может быть раньше времени задачи.", updateError.getMessage());
+    }
+
+    @Test
+    void dayAndRangeListsKeepOpenTasksBeforeCompletedTasks() {
+        TaskDto completed = taskService.create(owner, request("2026-08-10", "Сначала создана"));
+        TaskDto open = taskService.create(owner, request("2026-08-10", "Открытая"));
+        taskService.update(owner, completed.id(), new TaskUpdateRequest(
+                null, true, null, null, null, null, null, null, null));
+
+        assertEquals(List.of(open.id(), completed.id()),
+                taskService.listDay(owner, "2026-08-10").stream().map(TaskDto::id).toList());
+        assertEquals(List.of(open.id(), completed.id()),
+                taskService.listRange(owner, LocalDate.parse("2026-08-10"), LocalDate.parse("2026-08-10"))
+                        .stream().map(TaskDto::id).toList());
+    }
+
+    @Test
+    void subtaskDeadlinePersistsCanBeClearedAndCannotPrecedeParentDate() {
+        TaskDto created = taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", "Документы", null, null, TaskPriority.NORMAL,
+                null, null, false, null,
+                List.of(new SubtaskInput(null, "Получить справку", false, 0, "2026-08-11"))
+        ));
+        assertEquals("2026-08-11", created.subtasks().get(0).dueDate());
+
+        TaskDto cleared = taskService.update(owner, created.id(), new TaskUpdateRequest(
+                null, null, null, null, null, null, null, null, null, null,
+                List.of(new SubtaskInput(created.subtasks().get(0).id(), "Получить справку", false, 0, "")),
+                null
+        ));
+        assertNull(cleared.subtasks().get(0).dueDate());
+
+        ApiException invalid = assertThrows(ApiException.class, () -> taskService.create(owner,
+                new TaskCreateRequest(
+                        "2026-08-10", "Неверная подзадача", null, null, TaskPriority.NORMAL,
+                        null, null, false, null,
+                        List.of(new SubtaskInput(null, "Слишком рано", false, 0, "2026-08-09"))
+                )));
+        assertEquals(HttpStatus.BAD_REQUEST, invalid.getStatus());
+        assertEquals("Срок подзадачи не может быть раньше даты задачи.", invalid.getMessage());
     }
 
     @Test
