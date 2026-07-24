@@ -87,7 +87,8 @@ public class InboxService {
                 req.dueDate(),
                 req.dueTime(),
                 req.reminderEnabled(),
-                req.reminderMinutesBefore()
+                req.reminderMinutesBefore(),
+                req.subtasks()
         ));
         item.setStatus(InboxItemStatus.ARCHIVED);
         item.setResolvedAt(LocalDateTime.now());

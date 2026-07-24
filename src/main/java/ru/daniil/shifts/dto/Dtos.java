@@ -13,6 +13,7 @@ import jakarta.validation.constraints.Size;
 import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.DayTask;
 import ru.daniil.shifts.model.TaskPriority;
+import ru.daniil.shifts.model.TaskSubtask;
 import ru.daniil.shifts.model.ImportantDay;
 import ru.daniil.shifts.model.InboxItem;
 import ru.daniil.shifts.model.InboxItemStatus;
@@ -378,6 +379,35 @@ public final class Dtos {
             Integer sortOrder
     ) {}
 
+    /** One checklist item inside a task. Subtasks cannot contain children. */
+    public record SubtaskDto(
+            Long id,
+            String text,
+            boolean done,
+            int sortOrder
+    ) {
+        public static SubtaskDto from(TaskSubtask subtask) {
+            return new SubtaskDto(subtask.getId(), subtask.getText(), subtask.isDone(), subtask.getSortOrder());
+        }
+    }
+
+    /** Input model for creating or reconciling a task's one-level checklist. */
+    public record SubtaskInput(
+            Long id,
+            @NotBlank(message = "Текст подзадачи не должен быть пустым")
+            @Size(max = 300, message = "Текст подзадачи: максимум 300 символов")
+            String text,
+            Boolean done,
+            @Min(value = 0, message = "Порядок подзадачи не может быть отрицательным")
+            @Max(value = 10000, message = "Порядок подзадачи слишком большой")
+            Integer sortOrder
+    ) {}
+
+    public record SubtaskUpdateRequest(
+            @NotNull(message = "Не указан статус подзадачи")
+            Boolean done
+    ) {}
+
     /** Задача дня. */
     public record TaskDto(
             Long id,
@@ -391,14 +421,23 @@ public final class Dtos {
             String dueTime,
             boolean reminderEnabled,
             Integer reminderMinutesBefore,
-            boolean overdue
+            boolean overdue,
+            List<SubtaskDto> subtasks
     ) {
+        /** Source-compatible constructor for callers created before subtasks were added. */
+        public TaskDto(Long id, String date, String text, boolean done, String category,
+                       List<String> tags, TaskPriority priority, String dueDate, String dueTime,
+                       boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue) {
+            this(id, date, text, done, category, tags, priority, dueDate, dueTime,
+                    reminderEnabled, reminderMinutesBefore, overdue, List.of());
+        }
+
         /** Source-compatible constructor for callers created before task tags were added. */
         public TaskDto(Long id, String date, String text, boolean done, String category,
                        TaskPriority priority, String dueDate, String dueTime,
                        boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue) {
             this(id, date, text, done, category, List.of(), priority, dueDate, dueTime,
-                    reminderEnabled, reminderMinutesBefore, overdue);
+                    reminderEnabled, reminderMinutesBefore, overdue, List.of());
         }
 
         public static TaskDto from(DayTask task) {
@@ -414,7 +453,13 @@ public final class Dtos {
                     task.getDueTime() != null ? task.getDueTime().toString() : null,
                     task.isReminderEnabled(),
                     task.getReminderMinutesBefore(),
-                    isOverdue(task)
+                    isOverdue(task),
+                    task.getSubtasks().stream()
+                            .sorted(java.util.Comparator
+                                    .comparingInt(TaskSubtask::getSortOrder)
+                                    .thenComparing(subtask -> subtask.getId() == null ? Long.MAX_VALUE : subtask.getId()))
+                            .map(SubtaskDto::from)
+                            .toList()
             );
         }
         private static boolean isOverdue(DayTask task) {
@@ -450,13 +495,25 @@ public final class Dtos {
 
             @Min(value = 0, message = "Напоминание не может быть отрицательным")
             @Max(value = 10080, message = "Напоминание: максимум 7 дней")
-            Integer reminderMinutesBefore
+            Integer reminderMinutesBefore,
+
+            @Valid
+            @Size(max = 50, message = "Подзадач: максимум 50")
+            List<SubtaskInput> subtasks
     ) {
+        /** Source-compatible constructor for callers created before subtasks were added. */
+        public TaskCreateRequest(String date, String text, String category, List<String> tags,
+                                 TaskPriority priority, String dueDate, String dueTime,
+                                 Boolean reminderEnabled, Integer reminderMinutesBefore) {
+            this(date, text, category, tags, priority, dueDate, dueTime, reminderEnabled,
+                    reminderMinutesBefore, null);
+        }
+
         /** Source-compatible constructor for older internal callers. */
         public TaskCreateRequest(String date, String text, String category, TaskPriority priority,
                                  String dueDate, String dueTime, Boolean reminderEnabled,
                                  Integer reminderMinutesBefore) {
-            this(date, text, category, null, priority, dueDate, dueTime, reminderEnabled, reminderMinutesBefore);
+            this(date, text, category, null, priority, dueDate, dueTime, reminderEnabled, reminderMinutesBefore, null);
         }
     }
 
@@ -476,13 +533,28 @@ public final class Dtos {
             Boolean reminderEnabled,
             @Min(value = 0, message = "Напоминание не может быть отрицательным")
             @Max(value = 10080, message = "Напоминание: максимум 7 дней")
-            Integer reminderMinutesBefore
+            Integer reminderMinutesBefore,
+
+            @Valid
+            @Size(max = 50, message = "Подзадач: максимум 50")
+            List<SubtaskInput> subtasks,
+
+            Boolean completeSubtasks
     ) {
+        /** Source-compatible constructor for callers created before subtasks were added. */
+        public TaskUpdateRequest(String text, Boolean done, String date, String category,
+                                 List<String> tags, TaskPriority priority, String dueDate, String dueTime,
+                                 Boolean reminderEnabled, Integer reminderMinutesBefore) {
+            this(text, done, date, category, tags, priority, dueDate, dueTime, reminderEnabled,
+                    reminderMinutesBefore, null, null);
+        }
+
         /** Source-compatible constructor for older internal callers. */
         public TaskUpdateRequest(String text, Boolean done, String date, String category,
                                  TaskPriority priority, String dueDate, String dueTime,
                                  Boolean reminderEnabled, Integer reminderMinutesBefore) {
-            this(text, done, date, category, null, priority, dueDate, dueTime, reminderEnabled, reminderMinutesBefore);
+            this(text, done, date, category, null, priority, dueDate, dueTime, reminderEnabled,
+                    reminderMinutesBefore, null, null);
         }
     }
 
@@ -539,8 +611,18 @@ public final class Dtos {
             Boolean reminderEnabled,
             @Min(value = 0, message = "Напоминание не может быть отрицательным")
             @Max(value = 10080, message = "Напоминание: максимум 7 дней")
-            Integer reminderMinutesBefore
-    ) {}
+            Integer reminderMinutesBefore,
+            @Valid
+            @Size(max = 50, message = "Подзадач: максимум 50")
+            List<SubtaskInput> subtasks
+    ) {
+        public InboxToTaskRequest(String date, String category, List<String> tags, TaskPriority priority,
+                                  String dueDate, String dueTime, Boolean reminderEnabled,
+                                  Integer reminderMinutesBefore) {
+            this(date, category, tags, priority, dueDate, dueTime, reminderEnabled,
+                    reminderMinutesBefore, null);
+        }
+    }
 
     public record InboxConversionDto(InboxItemDto inboxItem, TaskDto task) {}
 

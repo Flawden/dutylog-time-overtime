@@ -2514,3 +2514,104 @@ body.panel-open .globalQuickAdd { display:none !important; }
     font-size:28px;
   }
 }
+
+/* v27.6.2: one-level task checklists and compact progress. */
+.taskItem { flex-wrap:wrap; }
+.taskSubtaskEditor {
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(255,255,255,.02);
+  overflow:hidden;
+}
+.taskSubtaskEditor > summary {
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding:11px 12px;
+  color:var(--text);
+  font-size:13px;
+  font-weight:800;
+  cursor:pointer;
+  list-style:none;
+}
+.taskSubtaskEditor > summary::-webkit-details-marker { display:none; }
+.taskSubtaskEditor > summary::after { content:"⌄"; color:var(--accent); font-size:18px; transition:transform .15s ease; }
+.taskSubtaskEditor[open] > summary::after { transform:rotate(180deg); }
+.taskSubtaskEditor > summary span { margin-left:auto; color:var(--dim); font-size:11px; font-weight:500; }
+.taskSubtaskEditorBody { display:grid; gap:9px; padding:12px; border-top:1px solid var(--line); }
+.taskSubtaskEditorList { display:grid; gap:7px; }
+.taskSubtaskEditorRow {
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto auto auto;
+  gap:6px;
+  align-items:center;
+  padding:6px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:color-mix(in srgb, var(--bg) 72%, transparent);
+}
+.taskSubtaskEditorRow input[type=checkbox] { width:17px; height:17px; accent-color:var(--accent); }
+.taskSubtaskEditorRow input[type=text] {
+  width:100%;
+  min-width:0;
+  padding:7px 8px;
+  border:1px solid transparent;
+  border-radius:8px;
+  background:transparent;
+  color:var(--text);
+  font:inherit;
+}
+.taskSubtaskEditorRow input[type=text]:focus { border-color:var(--accent); outline:none; background:var(--panel2); }
+.taskSubtaskEditorRow button {
+  width:32px;
+  height:32px;
+  padding:0;
+  border:1px solid var(--line);
+  border-radius:8px;
+  background:transparent;
+  color:var(--mut);
+  cursor:pointer;
+}
+.taskSubtaskEditorRow button:hover { color:var(--accent); border-color:var(--accent); }
+.taskSubtaskEditorRow .dangerGhost:hover { color:var(--danger); border-color:var(--danger); }
+.taskSubtaskAdd { justify-self:start; min-height:36px; padding:7px 10px; border:1px dashed var(--dim); border-radius:9px; background:transparent; color:var(--mut); cursor:pointer; }
+.taskSubtaskAdd:hover { color:var(--accent); border-color:var(--accent); }
+.taskSubtaskProgress { color:var(--accent); }
+.taskSubtasksInline {
+  flex:1 0 calc(100% - 24px);
+  width:calc(100% - 24px);
+  margin:1px 0 0 24px;
+  padding-top:2px;
+}
+.taskSubtasksInline > summary {
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  min-height:28px;
+  padding:3px 7px;
+  border-radius:8px;
+  color:var(--mut);
+  font-size:11px;
+  font-family:ui-monospace,monospace;
+  cursor:pointer;
+  list-style:none;
+}
+.taskSubtasksInline > summary::-webkit-details-marker { display:none; }
+.taskSubtasksInline > summary:hover { color:var(--accent); background:rgba(255,255,255,.035); }
+.taskSubtasksInline > summary::before { content:"▸"; transition:transform .15s ease; }
+.taskSubtasksInline[open] > summary::before { transform:rotate(90deg); }
+.taskSubtaskInlineList { display:grid; gap:5px; margin-top:5px; }
+.taskSubtaskInlineRow { display:flex; align-items:flex-start; gap:7px; min-width:0; padding:4px 6px; border-radius:7px; }
+.taskSubtaskInlineRow:hover { background:rgba(255,255,255,.025); }
+.taskSubtaskInlineRow input { width:15px; height:15px; margin-top:2px; accent-color:var(--accent); }
+.taskSubtaskInlineText { min-width:0; overflow-wrap:anywhere; color:var(--mut); font-size:12px; line-height:1.35; }
+.taskSubtaskInlineRow.done .taskSubtaskInlineText { color:var(--dim); text-decoration:line-through; }
+.taskBoardItem .taskSubtasksInline { grid-column:3 / -1; width:100%; margin-left:0; }
+
+@media (max-width:640px) {
+  .taskBoardItem .taskSubtasksInline { grid-column:2 / -1; }
+  .taskSubtaskEditorRow { grid-template-columns:auto minmax(0,1fr) auto auto; }
+  .taskSubtaskEditorRow .subtaskMoveDown { grid-column:3; }
+  .taskSubtaskEditorRow .subtaskDelete { grid-column:4; }
+  .taskSubtaskEditorRow .subtaskMoveUp { display:none; }
+}

@@ -10,6 +10,8 @@ import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
+import ru.daniil.shifts.dto.Dtos.SubtaskInput;
+import ru.daniil.shifts.dto.Dtos.SubtaskUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.TaskPriority;
 import ru.daniil.shifts.repo.DayTaskRepository;
@@ -255,6 +257,73 @@ class TaskServiceTest {
 
         assertTrue(taskRepository.findById(owned.id()).isEmpty());
         assertTrue(taskRepository.findById(untouched.id()).isPresent());
+    }
+
+    @Test
+    void subtasksPersistInUserOrderCanBeReconciledAndParticipateInSearch() {
+        TaskDto created = taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", "Подготовить поездку", "личное", List.of("поездка"),
+                TaskPriority.NORMAL, null, null, false, null,
+                List.of(
+                        new SubtaskInput(null, "  Купить билеты  ", false, 7),
+                        new SubtaskInput(null, "Собрать документы", true, 3)
+                )
+        ));
+
+        assertEquals(List.of("Купить билеты", "Собрать документы"),
+                created.subtasks().stream().map(item -> item.text()).toList());
+        assertEquals(List.of(0, 1),
+                created.subtasks().stream().map(item -> item.sortOrder()).toList());
+        assertFalse(created.subtasks().get(0).done());
+        assertTrue(created.subtasks().get(1).done());
+
+        var first = created.subtasks().get(0);
+        var second = created.subtasks().get(1);
+        TaskDto updated = taskService.update(owner, created.id(), new TaskUpdateRequest(
+                null, null, null, null, null, null, null, null, null, null,
+                List.of(
+                        new SubtaskInput(second.id(), "Документы проверены", true, 99),
+                        new SubtaskInput(null, "Заказать трансфер", false, 1)
+                ),
+                null
+        ));
+
+        assertEquals(List.of("Документы проверены", "Заказать трансфер"),
+                updated.subtasks().stream().map(item -> item.text()).toList());
+        assertEquals(second.id(), updated.subtasks().get(0).id());
+        assertFalse(updated.subtasks().stream().anyMatch(item -> first.id().equals(item.id())),
+                "omitted child must be deleted by orphan removal");
+
+        PageDto<TaskDto> bySubtask = board("all", null, null, "трансфер", null, null, 0, 50);
+        assertEquals(List.of(created.id()), ids(bySubtask));
+    }
+
+    @Test
+    void subtaskToggleIsOwnerScopedAndParentCompletionCanExplicitlyFinishChildren() {
+        TaskDto created = taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", "Релиз", null, null, TaskPriority.NORMAL,
+                null, null, false, null,
+                List.of(
+                        new SubtaskInput(null, "Проверить CI", false, 0),
+                        new SubtaskInput(null, "Проверить staging", false, 1)
+                )
+        ));
+
+        Long firstId = created.subtasks().get(0).id();
+        TaskDto toggled = taskService.updateSubtask(owner, created.id(), firstId, new SubtaskUpdateRequest(true));
+        assertTrue(toggled.subtasks().get(0).done());
+        assertFalse(toggled.subtasks().get(1).done());
+
+        ApiException hidden = assertThrows(ApiException.class,
+                () -> taskService.updateSubtask(other, created.id(), firstId, new SubtaskUpdateRequest(true)));
+        assertEquals(HttpStatus.NOT_FOUND, hidden.getStatus());
+
+        TaskDto completed = taskService.update(owner, created.id(), new TaskUpdateRequest(
+                null, true, null, null, null, null, null, null, null, null,
+                null, true
+        ));
+        assertTrue(completed.done());
+        assertTrue(completed.subtasks().stream().allMatch(item -> item.done()));
     }
 
     private TaskCreateRequest request(String date, String text) {

@@ -61,6 +61,10 @@ public class DayTask {
     @Column(name = "tag", nullable = false, length = 40)
     private List<String> tags = new ArrayList<>();
 
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OrderBy("sortOrder ASC, createdAt ASC, id ASC")
+    private List<TaskSubtask> subtasks = new ArrayList<>();
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -96,6 +100,16 @@ public class DayTask {
     public void setTags(Collection<String> tags) {
         this.tags.clear();
         if (tags != null) this.tags.addAll(tags);
+    }
+    public List<TaskSubtask> getSubtasks() { return subtasks; }
+    public void addSubtask(TaskSubtask subtask) {
+        if (subtask == null) return;
+        subtask.setTask(this);
+        subtasks.add(subtask);
+    }
+    public void removeSubtask(TaskSubtask subtask) {
+        if (subtask == null) return;
+        subtasks.remove(subtask);
     }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }

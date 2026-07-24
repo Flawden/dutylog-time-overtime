@@ -36,6 +36,7 @@ const api = {
   async updateModules(enabled) { return jfetch("/api/modules", { method:"PATCH", body:{ enabled } }); },
   async createTask(b)      { return jfetch("/api/tasks", { method:"POST", body:b }); },
   async updateTask(id, b)  { return jfetch(`/api/tasks/${id}`, { method:"PATCH", body:b }); },
+  async updateSubtask(taskId, subtaskId, b) { return jfetch(`/api/tasks/${taskId}/subtasks/${subtaskId}`, { method:"PATCH", body:b }); },
   async deleteTask(id)     { return jfetch(`/api/tasks/${id}`, { method:"DELETE" }); },
   async taskBoard(filters = {}) {
     const qs = new URLSearchParams();
@@ -930,6 +931,15 @@ const dataLayer = {
     const snap = await this.readSnapshot();
     if (!snap?.bundle || !Array.isArray(snap.bundle.tasks)) return;
     snap.bundle.tasks = snap.bundle.tasks.map(t => Number(t.id) === Number(taskId) ? { ...t, done: !!done } : t);
+    await offlineDb.put("snapshot", snap);
+  },
+  async updateSnapshotTask(task){
+    if (!task?.id) return;
+    const snap = await this.readSnapshot();
+    if (!snap?.bundle || !Array.isArray(snap.bundle.tasks)) return;
+    snap.bundle.tasks = snap.bundle.tasks.filter(item => Number(item.id) !== Number(task.id));
+    const [year, month] = String(task.date || "").split("-").map(Number);
+    if (year === Number(snap.y) && month - 1 === Number(snap.m)) snap.bundle.tasks.push(task);
     await offlineDb.put("snapshot", snap);
   },
   async enqueue(type, payload){

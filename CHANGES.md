@@ -1,3 +1,27 @@
+## v27.6.2 — Tasks & Subtasks
+
+### One-level subtasks
+- Added ordered one-level subtasks to normal tasks. Recursive nesting is intentionally prohibited so the task editor remains compact and the data model stays predictable.
+- Each task can contain up to 50 checklist items with independent text, completion state and explicit order.
+- The task editor supports adding, removing and reordering checklist items before save.
+
+### Compact task UX
+- Calendar tasks and the task board show only a compact progress badge such as `2/4` by default.
+- The checklist expands inline on demand, keeping dense task lists readable on mobile and desktop.
+- Individual checklist items can be toggled without opening the full task editor.
+- Completing a parent with unfinished checklist items requires explicit confirmation and can atomically complete the remaining items.
+
+### Backend and persistence
+- Added the owner-scoped subtask endpoint `PATCH /api/tasks/{taskId}/subtasks/{subtaskId}` and its versioned `/api/v1` alias.
+- Task create/update and Inbox-to-task conversion now accept ordered subtasks.
+- Flyway migration **V27** creates `task_subtasks` with cascade deletion, stable ordering and a non-negative order constraint.
+- Inline child toggles are online-only in this release; full subtask offline synchronization remains part of the planned offline-first architecture.
+
+### Regression coverage
+- Added service and controller coverage for creation, ordering, reconciliation, search, ownership isolation and explicit parent completion.
+- Added frontend contract checks and a Chromium scenario covering `0/2 → 1/2 → 2/2` completion.
+- Baseline: 76 Java test classes / 385 `@Test` methods and 14 Chromium Playwright scenarios.
+
 ## v27.6.1 — Quick Capture Polish
 
 ### Product UX

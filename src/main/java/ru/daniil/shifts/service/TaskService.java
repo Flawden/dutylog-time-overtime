@@ -7,10 +7,13 @@ import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.dto.Dtos.TaskMetadataDto;
 import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
+import ru.daniil.shifts.dto.Dtos.SubtaskInput;
+import ru.daniil.shifts.dto.Dtos.SubtaskUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayTask;
 import ru.daniil.shifts.model.TaskPriority;
+import ru.daniil.shifts.model.TaskSubtask;
 import ru.daniil.shifts.repo.DayTaskRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
@@ -19,7 +22,10 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -174,7 +180,8 @@ public class TaskService {
                 || contains(task.getDate() != null ? task.getDate().toString() : null, q)
                 || contains(task.getDueDate() != null ? task.getDueDate().toString() : null, q)
                 || contains(task.getPriority() != null ? task.getPriority().name() : null, q)
-                || task.getTags().stream().anyMatch(tag -> contains(tag, q));
+                || task.getTags().stream().anyMatch(tag -> contains(tag, q))
+                || task.getSubtasks().stream().anyMatch(subtask -> contains(subtask.getText(), q));
     }
 
     private boolean contains(String value, String q) {
@@ -213,7 +220,24 @@ public class TaskService {
         if (req.dueTime() != null) task.setDueTime(parseOptionalTime(req.dueTime(), "Время срока должно быть в формате HH:mm"));
         if (req.reminderEnabled() != null) task.setReminderEnabled(req.reminderEnabled());
         if (req.reminderMinutesBefore() != null) task.setReminderMinutesBefore(req.reminderMinutesBefore());
+        if (req.subtasks() != null) reconcileSubtasks(task, req.subtasks());
+        if (Boolean.TRUE.equals(req.completeSubtasks()) && Boolean.TRUE.equals(req.done())) {
+            task.getSubtasks().forEach(subtask -> subtask.setDone(true));
+        }
         if (!task.isReminderEnabled()) task.setReminderMinutesBefore(null);
+        return TaskDto.from(tasks.save(task));
+    }
+
+    @Transactional
+    public TaskDto updateSubtask(AppUser user, Long taskId, Long subtaskId, SubtaskUpdateRequest req) {
+        if (req == null) throw ApiException.badRequest("Некорректный JSON в запросе");
+        DayTask task = requireOwnedTask(user, taskId);
+        if (subtaskId == null) throw ApiException.badRequest("Не указан id подзадачи");
+        TaskSubtask subtask = task.getSubtasks().stream()
+                .filter(item -> Objects.equals(item.getId(), subtaskId))
+                .findFirst()
+                .orElseThrow(() -> ApiException.notFound("Подзадача не найдена"));
+        subtask.setDone(Boolean.TRUE.equals(req.done()));
         return TaskDto.from(tasks.save(task));
     }
 
@@ -231,7 +255,47 @@ public class TaskService {
         task.setDueTime(parseOptionalTime(req.dueTime(), "Время срока должно быть в формате HH:mm"));
         task.setReminderEnabled(Boolean.TRUE.equals(req.reminderEnabled()));
         task.setReminderMinutesBefore(req.reminderMinutesBefore());
+        reconcileSubtasks(task, req.subtasks());
         if (!task.isReminderEnabled()) task.setReminderMinutesBefore(null);
+    }
+
+    private void reconcileSubtasks(DayTask task, List<SubtaskInput> inputs) {
+        if (inputs == null) return;
+        if (inputs.size() > 50) throw ApiException.badRequest("Подзадач: максимум 50");
+
+        Map<Long, TaskSubtask> existing = new LinkedHashMap<>();
+        for (TaskSubtask subtask : task.getSubtasks()) {
+            if (subtask.getId() != null) existing.put(subtask.getId(), subtask);
+        }
+
+        Set<Long> retainedIds = new LinkedHashSet<>();
+        for (int index = 0; index < inputs.size(); index++) {
+            SubtaskInput input = inputs.get(index);
+            if (input == null) throw ApiException.badRequest("Некорректная подзадача");
+
+            TaskSubtask subtask;
+            if (input.id() == null) {
+                subtask = new TaskSubtask(task, cleanSubtaskText(input.text()), index);
+                task.addSubtask(subtask);
+            } else {
+                subtask = existing.get(input.id());
+                if (subtask == null || !retainedIds.add(input.id())) {
+                    throw ApiException.badRequest("Подзадача не принадлежит выбранной задаче");
+                }
+                subtask.setText(cleanSubtaskText(input.text()));
+            }
+            subtask.setDone(Boolean.TRUE.equals(input.done()));
+            subtask.setSortOrder(index);
+        }
+
+        task.getSubtasks().removeIf(subtask ->
+                subtask.getId() != null && !retainedIds.contains(subtask.getId()));
+    }
+
+    private String cleanSubtaskText(String value) {
+        String cleaned = cleanRequired(value, "Текст подзадачи не должен быть пустым");
+        if (cleaned.length() > 300) throw ApiException.badRequest("Текст подзадачи: максимум 300 символов");
+        return cleaned;
     }
 
     private DayTask requireOwnedTask(AppUser user, Long id) {

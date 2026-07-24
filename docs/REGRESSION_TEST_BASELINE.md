@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.6.1.
+Status: v27.6.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.6.1 turns the global `+` into a universal draft surface and moves Inbox into a compact collapsed tray, while preserving the v27.6.0 mobile task editor, idempotent offline capture, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 76 Java test classes / 381 `@Test` methods and 13 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.6.2 adds ordered one-level subtasks, compact progress, owner-scoped child updates and explicit parent completion, while preserving the v27.6.1 universal quick capture, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 76 Java test classes / 385 `@Test` methods and 14 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,15 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.6.2 tasks and subtasks extension
+
+- `TaskServiceTest` covers ordered creation, reconciliation, checklist-text search, owner-scoped child updates and explicit parent completion.
+- `TaskControllerTest` protects create/update payloads, the versioned child PATCH route, module guards and foreign-owner `404` behaviour.
+- `TaskAndShiftEditorsFrontendContractTest` protects the one-level editor, compact progress and non-recursive persistence contract.
+- `task-modules.spec.js` covers the browser flow `0/2 → 1/2 → 2/2`.
+- Flyway V27 creates ordered cascade-owned `task_subtasks`; recursive nesting is intentionally absent.
 
 
 ## v27.6.1 quick capture polish extension

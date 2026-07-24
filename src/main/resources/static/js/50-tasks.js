@@ -78,6 +78,19 @@ Object.assign(I18N_EN, {
   "пусто":"empty"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+Object.assign(I18N_EN, {
+  "Подзадачи":"Subtasks", "Подзадача":"Subtask", "подзадач":"subtasks", "необязательно":"optional",
+  "＋ Добавить подзадачу":"＋ Add subtask", "Что нужно сделать сначала?":"What needs to happen first?",
+  "Переместить выше":"Move up", "Переместить ниже":"Move down", "Удалить подзадачу":"Delete subtask",
+  "Текст подзадачи: максимум 300 символов":"Subtask text: maximum 300 characters",
+  "Подзадач: максимум 50":"A task can have at most 50 subtasks",
+  "У задачи есть незавершённые подзадачи. Отметить выполненными и задачу, и все подзадачи?":"This task has unfinished subtasks. Complete the task and every subtask?",
+  "Подзадачи можно отмечать только при подключении к серверу.":"Subtasks can only be checked while connected to the server.",
+  "Не удалось обновить подзадачу":"Failed to update subtask",
+  "Один уровень вложенности. Enter добавляет следующую строку, стрелки меняют порядок.":"One level only. Enter adds the next row; arrows change the order.",
+  "выполнено подзадач":"subtasks completed"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
 /* ─── Важные дни ───────────────────────────────────────────── */
 async function refreshImportantSettings(){
@@ -404,6 +417,155 @@ function updateTaskReminderControls(){
   if ($("taskEditReminderBeforeLabel")) $("taskEditReminderBeforeLabel").hidden = !available || !enabled;
   if ($("taskEditReminderHint")) $("taskEditReminderHint").hidden = available;
 }
+const expandedTaskSubtasks = new Set();
+
+function normalizedTaskSubtasks(task){
+  return [...(Array.isArray(task?.subtasks) ? task.subtasks : [])]
+    .sort((a,b) => Number(a.sortOrder || 0) - Number(b.sortOrder || 0) || Number(a.id || 0) - Number(b.id || 0));
+}
+function taskSubtaskProgress(task){
+  const subtasks = normalizedTaskSubtasks(task);
+  return { total:subtasks.length, done:subtasks.filter(item => item.done).length, subtasks };
+}
+function updateTaskEditorSubtaskSummary(){
+  const rows = [...($("taskEditSubtaskList")?.querySelectorAll(".taskSubtaskEditorRow") || [])];
+  const done = rows.filter(row => row.querySelector('input[type="checkbox"]')?.checked).length;
+  if ($("taskEditSubtaskSummary")) {
+    $("taskEditSubtaskSummary").textContent = rows.length ? `${done}/${rows.length}` : t("необязательно");
+  }
+  if ($("taskEditSubtaskAdd")) $("taskEditSubtaskAdd").disabled = rows.length >= 50;
+}
+function addTaskSubtaskEditorRow(item = {}, { focus = false, after = null } = {}){
+  const list = $("taskEditSubtaskList");
+  if (!list) return null;
+  if (list.children.length >= 50) {
+    taskEditorMessage(t("Подзадач: максимум 50"), "err");
+    return null;
+  }
+
+  const row = document.createElement("div");
+  row.className = "taskSubtaskEditorRow";
+  if (item.id != null) row.dataset.subtaskId = String(item.id);
+
+  const done = document.createElement("input");
+  done.type = "checkbox";
+  done.checked = !!item.done;
+  done.setAttribute("aria-label", t("Подзадача"));
+
+  const text = document.createElement("input");
+  text.type = "text";
+  text.maxLength = 300;
+  text.placeholder = t("Что нужно сделать сначала?");
+  text.value = item.text || "";
+
+  const up = document.createElement("button");
+  up.type = "button";
+  up.className = "subtaskMoveUp";
+  up.textContent = "↑";
+  up.title = t("Переместить выше");
+
+  const down = document.createElement("button");
+  down.type = "button";
+  down.className = "subtaskMoveDown";
+  down.textContent = "↓";
+  down.title = t("Переместить ниже");
+
+  const remove = document.createElement("button");
+  remove.type = "button";
+  remove.className = "subtaskDelete dangerGhost";
+  remove.textContent = "×";
+  remove.title = t("Удалить подзадачу");
+
+  const move = direction => {
+    const sibling = direction < 0 ? row.previousElementSibling : row.nextElementSibling;
+    if (!sibling) return;
+    if (direction < 0) list.insertBefore(row, sibling);
+    else list.insertBefore(sibling, row);
+    updateTaskEditorSubtaskSummary();
+    text.focus({ preventScroll:true });
+  };
+  up.addEventListener("click", () => move(-1));
+  down.addEventListener("click", () => move(1));
+  remove.addEventListener("click", () => {
+    row.remove();
+    updateTaskEditorSubtaskSummary();
+  });
+  done.addEventListener("change", updateTaskEditorSubtaskSummary);
+  text.addEventListener("keydown", event => {
+    if (event.key !== "Enter" || event.shiftKey || event.isComposing) return;
+    event.preventDefault();
+    addTaskSubtaskEditorRow({}, { focus:true, after:row });
+  });
+
+  row.append(done, text, up, down, remove);
+  if (after?.parentElement === list) after.after(row);
+  else list.appendChild(row);
+  updateTaskEditorSubtaskSummary();
+  if (focus) text.focus({ preventScroll:true });
+  return row;
+}
+function renderTaskEditorSubtasks(items = []){
+  const list = $("taskEditSubtaskList");
+  if (!list) return;
+  list.innerHTML = "";
+  for (const item of items) addTaskSubtaskEditorRow(item);
+  if ($("taskEditSubtasks")) $("taskEditSubtasks").open = items.length > 0;
+  updateTaskEditorSubtaskSummary();
+}
+function collectTaskEditorSubtasks(){
+  const rows = [...($("taskEditSubtaskList")?.querySelectorAll(".taskSubtaskEditorRow") || [])];
+  const subtasks = [];
+  for (const row of rows) {
+    const text = String(row.querySelector('input[type="text"]')?.value || "").trim();
+    if (!text) continue;
+    if (text.length > 300) throw new Error(t("Текст подзадачи: максимум 300 символов"));
+    const rawId = row.dataset.subtaskId;
+    subtasks.push({
+      id:rawId ? Number(rawId) : null,
+      text,
+      done:!!row.querySelector('input[type="checkbox"]')?.checked,
+      sortOrder:subtasks.length,
+    });
+  }
+  if (subtasks.length > 50) throw new Error(t("Подзадач: максимум 50"));
+  return subtasks;
+}
+function buildTaskSubtasksInline(task){
+  const progress = taskSubtaskProgress(task);
+  if (!progress.total) return null;
+
+  const details = document.createElement("details");
+  details.className = "taskSubtasksInline";
+  details.open = expandedTaskSubtasks.has(Number(task.id));
+  details.addEventListener("toggle", () => {
+    if (details.open) expandedTaskSubtasks.add(Number(task.id));
+    else expandedTaskSubtasks.delete(Number(task.id));
+  });
+
+  const summary = document.createElement("summary");
+  summary.textContent = `${progress.done}/${progress.total} ${t("подзадач")}`;
+  const list = document.createElement("div");
+  list.className = "taskSubtaskInlineList";
+
+  for (const subtask of progress.subtasks) {
+    const row = document.createElement("label");
+    row.className = "taskSubtaskInlineRow" + (subtask.done ? " done" : "");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = !!subtask.done;
+    checkbox.addEventListener("click", event => event.stopPropagation());
+    checkbox.addEventListener("change", () => toggleSubtask(task.id, subtask.id, checkbox.checked));
+    const text = document.createElement("span");
+    text.className = "taskSubtaskInlineText";
+    text.textContent = subtask.text;
+    row.append(checkbox, text);
+    list.appendChild(row);
+  }
+
+  details.append(summary, list);
+  return details;
+}
+
 function resetTaskEditorFields({ date = null, text = "", inboxId = null } = {}){
   state.editingTaskId = null;
   state.editingTaskMode = "create";
@@ -418,6 +580,7 @@ function resetTaskEditorFields({ date = null, text = "", inboxId = null } = {}){
   $("taskEditReminderEnabled").checked = false;
   $("taskEditReminderBefore").value = "60";
   $("taskEditAdvanced").open = false;
+  renderTaskEditorSubtasks([]);
   $("taskEditTitle").textContent = inboxId ? t("Разобрать запись в задачу") : t("Новая задача");
   $("taskEditHint").textContent = inboxId
     ? t("Текст уже взят из «Входящих». Проверь дату и при необходимости добавь детали.")
@@ -457,6 +620,7 @@ function editTask(task){
   $("taskEditDueTime").value = task.dueTime || "";
   $("taskEditReminderEnabled").checked = !!task.reminderEnabled;
   $("taskEditReminderBefore").value = String(task.reminderMinutesBefore ?? 60);
+  renderTaskEditorSubtasks(normalizedTaskSubtasks(task));
   $("taskEditAdvanced").open = !!(task.category || (task.tags || []).length || task.priority !== "NORMAL" || task.dueDate || task.dueTime || task.reminderEnabled);
   $("taskEditTitle").textContent = t("Редактировать задачу");
   $("taskEditHint").textContent = t("Изменения применятся к существующей задаче.");
@@ -490,6 +654,7 @@ function taskEditorPayload(original = null){
     dueTime:$("taskEditDueTime").value || "",
     reminderEnabled,
     reminderMinutesBefore,
+    subtasks:collectTaskEditorSubtasks(),
   };
 }
 async function saveTaskEditor(){
@@ -515,7 +680,8 @@ async function saveTaskEditor(){
     } else {
       saved = await api.createTask(payload);
     }
-    upsertTaskInMaps(saved);
+    upsertTaskEverywhere(saved);
+    if (typeof dataLayer.updateSnapshotTask === "function") await dataLayer.updateSnapshotTask(saved);
     await Promise.all([loadTaskBoard(true), loadTaskMetadata(true), loadInbox(true)]);
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     renderTasks();
@@ -543,11 +709,18 @@ function upsertTaskInMaps(task){
   removeTaskFromMaps(task.id);
   addToDateMap(state.tasksByDate, task);
 }
+function upsertTaskEverywhere(task){
+  if (!task) return;
+  upsertTaskInMaps(task);
+  state.taskBoard.items = (state.taskBoard.items || []).map(item =>
+    Number(item.id) === Number(task.id) ? task : item);
+}
 async function updateTaskDetails(id, patch){
   setSave("saving");
   try {
     const updated = await api.updateTask(id, patch);
-    upsertTaskInMaps(updated);
+    upsertTaskEverywhere(updated);
+    if (typeof dataLayer.updateSnapshotTask === "function") await dataLayer.updateSnapshotTask(updated);
     await Promise.all([loadTaskBoard(true), loadTaskMetadata(true)]);
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     setSave("saved");
@@ -562,16 +735,52 @@ async function updateTaskDetails(id, patch){
 }
 async function toggleTask(id, done){
   if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
-  setSave("saving");
   const oldTask = taskById(id);
-  if (oldTask) upsertTaskInMaps({ ...oldTask, done:!!done });
-  state.taskBoard.items = (state.taskBoard.items || []).map(task => Number(task.id) === Number(id) ? { ...task, done:!!done } : task);
+  const pendingSubtasks = normalizedTaskSubtasks(oldTask).filter(item => !item.done);
+
+  if (done && pendingSubtasks.length) {
+    if (!confirm(t("У задачи есть незавершённые подзадачи. Отметить выполненными и задачу, и все подзадачи?"))) {
+      renderTasks();
+      renderTaskBoard();
+      return;
+    }
+    if (!navigator.onLine) {
+      setSave("err", t("Подзадачи можно отмечать только при подключении к серверу."));
+      renderTasks();
+      renderTaskBoard();
+      return;
+    }
+    setSave("saving");
+    try {
+      const updated = await api.updateTask(id, { done:true, completeSubtasks:true });
+      upsertTaskEverywhere(updated);
+      if (typeof dataLayer.updateSnapshotTask === "function") await dataLayer.updateSnapshotTask(updated);
+      await loadTaskBoard(true);
+      if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
+      setSave("saved");
+      renderTasks();
+      renderTaskBoard();
+      renderCalendar();
+      return;
+    } catch (err) {
+      console.error(err);
+      setSave("err", err.message);
+      if (oldTask) upsertTaskEverywhere(oldTask);
+      renderTasks();
+      renderTaskBoard();
+      renderCalendar();
+      return;
+    }
+  }
+
+  setSave("saving");
+  if (oldTask) upsertTaskEverywhere({ ...oldTask, done:!!done });
   renderTasks();
   renderTaskBoard();
   renderCalendar();
   try {
     const result = await dataLayer.setTaskDone(id, done);
-    if (result.task) upsertTaskInMaps(result.task);
+    if (result.task) upsertTaskEverywhere(result.task);
     if (!result.queued) await loadTaskBoard(true);
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     setSave("saved");
@@ -581,8 +790,45 @@ async function toggleTask(id, done){
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
-    if (oldTask) upsertTaskInMaps(oldTask);
+    if (oldTask) upsertTaskEverywhere(oldTask);
     await loadMonth();
+    renderTasks();
+    renderTaskBoard();
+    renderCalendar();
+  }
+}
+async function toggleSubtask(taskId, subtaskId, done){
+  if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
+  const oldTask = taskById(taskId);
+  if (!oldTask || subtaskId == null) return setSave("err", t("Задача не найдена"));
+  if (!navigator.onLine) {
+    setSave("err", t("Подзадачи можно отмечать только при подключении к серверу."));
+    renderTasks();
+    renderTaskBoard();
+    return;
+  }
+
+  const optimistic = {
+    ...oldTask,
+    subtasks:normalizedTaskSubtasks(oldTask).map(item =>
+      Number(item.id) === Number(subtaskId) ? { ...item, done:!!done } : item)
+  };
+  upsertTaskEverywhere(optimistic);
+  renderTasks();
+  renderTaskBoard();
+  setSave("saving");
+  try {
+    const updated = await api.updateSubtask(taskId, subtaskId, { done:!!done });
+    upsertTaskEverywhere(updated);
+    if (typeof dataLayer.updateSnapshotTask === "function") await dataLayer.updateSnapshotTask(updated);
+    setSave("saved");
+    renderTasks();
+    renderTaskBoard();
+    renderCalendar();
+  } catch (err) {
+    console.error(err);
+    upsertTaskEverywhere(oldTask);
+    setSave("err", err.message || t("Не удалось обновить подзадачу"));
     renderTasks();
     renderTaskBoard();
     renderCalendar();
@@ -668,6 +914,14 @@ function buildTaskMeta(task){
     badge.textContent = `🔔 ${task.reminderMinutesBefore ?? 0}м`;
     meta.appendChild(badge);
   }
+  const progress = taskSubtaskProgress(task);
+  if (progress.total) {
+    const badge = document.createElement("span");
+    badge.className = "taskBadge taskSubtaskProgress";
+    badge.textContent = `☑ ${progress.done}/${progress.total}`;
+    badge.title = `${progress.done}/${progress.total} ${t("выполнено подзадач")}`;
+    meta.appendChild(badge);
+  }
   if (task.overdue && !task.done) {
     const badge = document.createElement("span");
     badge.className = "taskBadge overdue";
@@ -728,6 +982,8 @@ function renderTasks(){
     remove.title = t("Удалить задачу");
     remove.addEventListener("click", () => removeTask(task.id));
     row.append(checkbox, body, remove);
+    const subtasks = buildTaskSubtasksInline(task);
+    if (subtasks) row.appendChild(subtasks);
     box.appendChild(row);
   }
   updateAccSummaries();
@@ -1031,6 +1287,8 @@ function renderTaskBoard(){
     remove.addEventListener("click", () => removeTask(task.id));
     actions.appendChild(remove);
     row.append(checkbox, date, body, actions);
+    const subtasks = buildTaskSubtasksInline(task);
+    if (subtasks) row.appendChild(subtasks);
     list.appendChild(row);
   }
 }
@@ -1139,6 +1397,10 @@ $("taskEditDueDate")?.addEventListener("change", () => {
   updateTaskReminderControls();
 });
 $("taskEditReminderEnabled")?.addEventListener("change", updateTaskReminderControls);
+$("taskEditSubtaskAdd")?.addEventListener("click", () => {
+  if ($("taskEditSubtasks")) $("taskEditSubtasks").open = true;
+  addTaskSubtaskEditorRow({}, { focus:true });
+});
 $("taskEditForm")?.addEventListener("submit", event => { event.preventDefault(); saveTaskEditor(); });
 $("taskEditClose")?.addEventListener("click", closeTaskEditor);
 $("taskEditCancel")?.addEventListener("click", closeTaskEditor);

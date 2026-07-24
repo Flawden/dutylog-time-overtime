@@ -221,6 +221,33 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Task' }
+  /api/v1/tasks/{taskId}/subtasks/{subtaskId}:
+    patch:
+      operationId: updateSubtask
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema: { type: integer, format: int64 }
+        - in: path
+          name: subtaskId
+          required: true
+          schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [done]
+              properties:
+                done: { type: boolean }
+      responses:
+        '200':
+          description: Updated parent task with ordered subtasks
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
   /api/v1/tasks/metadata:
     get:
       operationId: taskMetadata
@@ -356,7 +383,7 @@ components:
         timestamp: { type: string, format: date-time }
     Task:
       type: object
-      required: [id, date, text, done, tags, priority, reminderEnabled, overdue]
+      required: [id, date, text, done, tags, priority, reminderEnabled, overdue, subtasks]
       properties:
         id: { type: integer, format: int64 }
         date: { type: string, format: date }
@@ -373,6 +400,26 @@ components:
         reminderEnabled: { type: boolean }
         reminderMinutesBefore: { type: integer, minimum: 0, maximum: 10080, nullable: true }
         overdue: { type: boolean }
+        subtasks:
+          type: array
+          maxItems: 50
+          items: { $ref: '#/components/schemas/TaskSubtask' }
+    TaskSubtask:
+      type: object
+      required: [id, text, done, sortOrder]
+      properties:
+        id: { type: integer, format: int64 }
+        text: { type: string, minLength: 1, maxLength: 300 }
+        done: { type: boolean }
+        sortOrder: { type: integer, minimum: 0 }
+    TaskSubtaskInput:
+      type: object
+      required: [text]
+      properties:
+        id: { type: integer, format: int64, nullable: true }
+        text: { type: string, minLength: 1, maxLength: 300 }
+        done: { type: boolean, default: false }
+        sortOrder: { type: integer, minimum: 0 }
     TaskCreateRequest:
       type: object
       required: [date, text]
@@ -389,6 +436,10 @@ components:
         dueTime: { type: string, nullable: true }
         reminderEnabled: { type: boolean, default: false }
         reminderMinutesBefore: { type: integer, minimum: 0, maximum: 10080, nullable: true }
+        subtasks:
+          type: array
+          maxItems: 50
+          items: { $ref: '#/components/schemas/TaskSubtaskInput' }
     TaskMetadata:
       type: object
       required: [categories, tags]
@@ -433,6 +484,10 @@ components:
         dueTime: { type: string, nullable: true }
         reminderEnabled: { type: boolean, default: false }
         reminderMinutesBefore: { type: integer, minimum: 0, maximum: 10080, nullable: true }
+        subtasks:
+          type: array
+          maxItems: 50
+          items: { $ref: '#/components/schemas/TaskSubtaskInput' }
     InboxConversion:
       type: object
       required: [inboxItem, task]

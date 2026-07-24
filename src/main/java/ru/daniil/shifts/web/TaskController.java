@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
+import ru.daniil.shifts.dto.Dtos.SubtaskUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskMetadataDto;
 import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.model.AppUser;
@@ -91,6 +92,16 @@ public class TaskController {
         AppUser current = currentUserService.requireUser(principal);
         moduleService.requireEnabled(current, ModuleService.TASKS);
         return taskService.update(current, id, req);
+    }
+
+    @PatchMapping("/{taskId}/subtasks/{subtaskId}")
+    public TaskDto updateSubtask(@PathVariable("taskId") Long taskId,
+                                 @PathVariable("subtaskId") Long subtaskId,
+                                 @Valid @RequestBody(required = false) SubtaskUpdateRequest req,
+                                 Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.TASKS);
+        return taskService.updateSubtask(current, taskId, subtaskId, req);
     }
 
     @DeleteMapping("/{id}")

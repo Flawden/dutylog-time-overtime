@@ -217,6 +217,64 @@ class TaskControllerTest {
     }
 
     @Test
+    void subtasksAreReturnedInOrderAndHaveAnOwnerScopedToggleEndpoint() throws Exception {
+        setTasksEnabled(owner, true);
+
+        String body = mvc.perform(post("/api/tasks")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "date":"2026-08-10",
+                                  "text":"Подготовить релиз",
+                                  "subtasks":[
+                                    {"text":"Проверить CI","done":false,"sortOrder":8},
+                                    {"text":"Проверить staging","done":false,"sortOrder":2}
+                                  ]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.subtasks.length()").value(2))
+                .andExpect(jsonPath("$.subtasks[0].text").value("Проверить CI"))
+                .andExpect(jsonPath("$.subtasks[0].sortOrder").value(0))
+                .andExpect(jsonPath("$.subtasks[1].sortOrder").value(1))
+                .andReturn().getResponse().getContentAsString();
+
+        JsonNode json = objectMapper.readTree(body);
+        long taskId = json.path("id").asLong();
+        long subtaskId = json.path("subtasks").get(0).path("id").asLong();
+
+        mvc.perform(patch("/api/tasks/{taskId}/subtasks/{subtaskId}", taskId, subtaskId)
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"done\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.subtasks[0].done").value(true))
+                .andExpect(jsonPath("$.subtasks[1].done").value(false));
+
+        setTasksEnabled(other, true);
+        mvc.perform(patch("/api/tasks/{taskId}/subtasks/{subtaskId}", taskId, subtaskId)
+                        .with(user(other.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"done\":true}"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+
+        mvc.perform(patch("/api/tasks/{id}", taskId)
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"done\":true,\"completeSubtasks\":true}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.done").value(true))
+                .andExpect(jsonPath("$.subtasks[0].done").value(true))
+                .andExpect(jsonPath("$.subtasks[1].done").value(true));
+    }
+
+    @Test
     void disabledModuleGuardsAllTaskEndpointsWithoutDeletingExistingData() throws Exception {
         var existing = taskService.create(owner, new TaskCreateRequest(
                 "2026-08-10", "Сохранённая задача", null, TaskPriority.NORMAL,
@@ -245,6 +303,13 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.error").value("MODULE_DISABLED:tasks"));
 
         mvc.perform(patch("/api/tasks/{id}", existing.id())
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"done\":true}"))
+                .andExpect(status().isForbidden());
+
+        mvc.perform(patch("/api/tasks/{taskId}/subtasks/{subtaskId}", existing.id(), 999L)
                         .with(user(owner.getUsername()).roles("USER"))
                         .with(csrf())
                         .contentType("application/json")

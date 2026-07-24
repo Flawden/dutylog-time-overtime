@@ -31,6 +31,27 @@ class TaskAndShiftEditorsFrontendContractTest {
     }
 
     @Test
+    void subtasksStayInsideTaskEditorAndUseCompactInlineProgress() throws Exception {
+        String html = read("src/main/resources/static/index.html");
+        String tasks = read("src/main/resources/static/js/50-tasks.js");
+        String data = read("src/main/resources/static/js/20-data.js");
+        String css = read("src/main/resources/static/app.css");
+        String migration = read("src/main/resources/db/migration/postgresql/V27__task_subtasks.sql");
+
+        assertTrue(html.contains("id=\"taskEditSubtasks\""));
+        assertTrue(html.contains("id=\"taskEditSubtaskList\""));
+        assertTrue(html.contains("id=\"taskEditSubtaskAdd\""));
+        assertTrue(tasks.contains("collectTaskEditorSubtasks()"));
+        assertTrue(tasks.contains("buildTaskSubtasksInline(task)"));
+        assertTrue(tasks.contains("async function toggleSubtask("));
+        assertTrue(data.contains("updateSubtask(taskId, subtaskId"));
+        assertTrue(css.contains(".taskSubtasksInline"));
+        assertTrue(migration.contains("CREATE TABLE task_subtasks"));
+        assertFalse(migration.contains("parent_subtask_id"),
+                "v27.6.2 deliberately supports one checklist level only");
+    }
+
+    @Test
     void shiftTypeManagerLivesBehindCalendarPlusInsteadOfSettingsCard() throws Exception {
         String html = read("src/main/resources/static/index.html");
         String tasks = read("src/main/resources/static/js/50-tasks.js");

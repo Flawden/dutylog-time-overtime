@@ -85,3 +85,52 @@ test('quick capture survives the fast Inbox flow and converts into a task', asyn
   await converted;
   await expect(page.locator('#taskBoardList .taskBoardItem', { hasText: thought })).toBeVisible();
 });
+
+test('task subtasks keep order, update progress and require explicit parent completion', async ({ page }) => {
+  await registerAndOnboard(page, { preset: 'basic', prefix: 'subtasks' });
+  await toggleModule(page, 'tasks', true);
+
+  await page.locator('#tabbar a[data-view="calendar"]').click();
+  const date = await currentLocalDateKey(page);
+  await selectDate(page, date);
+  const tasksSection = page.locator('#accTasks');
+  if (!(await tasksSection.evaluate(element => element.open))) {
+    await tasksSection.locator('summary').click();
+  }
+
+  const taskText = `Subtask release ${Date.now()}`;
+  await page.locator('#taskCreateForDay').click();
+  await page.locator('#taskEditText').fill(taskText);
+  await page.locator('#taskEditSubtasks').evaluate(element => { element.open = true; });
+  await page.locator('#taskEditSubtaskAdd').click();
+  await page.locator('#taskEditSubtaskList .taskSubtaskEditorRow').nth(0).locator('input[type="text"]').fill('Проверить CI');
+  await page.locator('#taskEditSubtaskAdd').click();
+  await page.locator('#taskEditSubtaskList .taskSubtaskEditorRow').nth(1).locator('input[type="text"]').fill('Проверить staging');
+
+  const created = waitForApi(page, 'POST', '/api/tasks');
+  await page.locator('#taskEditSave').click();
+  await created;
+
+  const task = page.locator('#taskList .taskItem', { hasText: taskText });
+  await expect(task).toBeVisible();
+  await expect(task.locator('.taskSubtaskProgress')).toContainText('0/2');
+  await task.locator('.taskSubtasksInline > summary').click();
+  await expect(task.locator('.taskSubtaskInlineText').nth(0)).toHaveText('Проверить CI');
+  await expect(task.locator('.taskSubtaskInlineText').nth(1)).toHaveText('Проверить staging');
+
+  const taskId = await task.getAttribute('data-task-id');
+  const firstCheckbox = task.locator('.taskSubtaskInlineRow').nth(0).locator('input[type="checkbox"]');
+  const childUpdated = page.waitForResponse(response => response.request().method() === 'PATCH'
+    && new RegExp(`/api/tasks/${taskId}/subtasks/\\d+$`).test(new URL(response.url()).pathname)
+    && response.status() === 200);
+  await firstCheckbox.check();
+  await childUpdated;
+  await expect(task.locator('.taskSubtaskProgress')).toContainText('1/2');
+
+  page.once('dialog', dialog => dialog.accept());
+  const parentUpdated = waitForApi(page, 'PATCH', `/api/tasks/${taskId}`);
+  await task.locator(':scope > input[type="checkbox"]').check();
+  await parentUpdated;
+  await expect(task).toHaveClass(/done/);
+  await expect(task.locator('.taskSubtaskProgress')).toContainText('2/2');
+});
