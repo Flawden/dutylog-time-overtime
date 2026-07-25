@@ -42,8 +42,14 @@ class TaskServiceTest {
 
     @BeforeEach
     void setUp() {
-        owner = users.save(new AppUser("task-service-owner", "{noop}unused"));
-        other = users.save(new AppUser("task-service-other", "{noop}unused"));
+        owner = new AppUser("task-service-owner", "{noop}unused");
+        owner.setWorkTimezone("UTC");
+        owner.setDisplayTimezone("UTC");
+        owner = users.save(owner);
+        other = new AppUser("task-service-other", "{noop}unused");
+        other.setWorkTimezone("UTC");
+        other.setDisplayTimezone("UTC");
+        other = users.save(other);
     }
 
     @Test

@@ -1,5 +1,20 @@
 # Roadmap до полноценного продукта
 
+## Текущая архитектурная точка — Time Foundation
+
+Статус: завершено в v27.7.0.
+
+Сделано:
+
+- отдельные IANA `workTimezone` и `displayTimezone`;
+- плавающие даты отделены от абсолютных моментов;
+- единый `UserTimeService` и детерминированная DST-политика;
+- абсолютные reminder instants и Telegram deduplication по `TIMESTAMPTZ`;
+- `WorkIntervalService` для интервалов через полночь и DST;
+- `/api/time/context` и `/api/v1/time/context`.
+
+Следующий этап: **Overtime Interval Engine / Overtime 2.0** — хранение реальных источников переработки, поминутный FIFO, provenance списаний, автоматическая расшифровка и восстановление интервалов при отмене.
+
 ## Этап 1 — production foundation
 
 Статус: начато в v9.

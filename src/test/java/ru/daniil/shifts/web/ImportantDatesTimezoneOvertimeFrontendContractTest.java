@@ -48,16 +48,22 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
     }
 
     @Test
-    void timezoneIsSentThroughProfileAndUsedForBrowserToday() throws Exception {
+    void workAndDisplayTimezonesAreSentThroughProfileWhileCalendarTodayUsesWorkZone() throws Exception {
         String core = resource("js/10-core.js");
         String settings = resource("js/60-settings.js");
         String boot = resource("js/70-user-boot.js");
 
         assertTrue(core.contains("dateKeyInTimeZone(state.timeSettings?.workTimezone"));
-        assertTrue(settings.contains("workTimezone"));
+        assertTrue(core.contains("function displayTimeZone()"));
+        assertTrue(core.contains("function formatAbsoluteInstant("));
+        assertTrue(core.contains("function timestampHasExplicitZone("));
+        assertTrue(core.contains("if (!timestampHasExplicitZone(value))"));
+        assertTrue(core.contains("timeZone:displayTimeZone()"));
         assertTrue(settings.contains("jfetch(\"/api/profile\""));
         assertTrue(settings.contains("workTimezone:next.workTimezone"));
+        assertTrue(settings.contains("displayTimezone:next.displayTimezone"));
         assertTrue(boot.contains("workTimezone:p.workTimezone"));
+        assertTrue(boot.contains("displayTimezone:p.displayTimezone"));
     }
 
     @Test
@@ -66,6 +72,8 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
         String settings = resource("js/60-settings.js");
 
         assertTrue(html.contains("id=\"workTimezone\""));
+        assertTrue(html.contains("id=\"displayTimezone\""));
+        assertTrue(html.contains("id=\"timeDisplayAsWork\""));
         assertTrue(html.contains("id=\"timeSaveTimezone\""));
         assertTrue(html.contains("id=\"timeDetectBrowser\""));
         assertFalse(html.contains("id=\"workRegionName\""));
@@ -74,6 +82,19 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
         assertTrue(settings.contains("function timezoneOffsetLabel"));
         assertTrue(settings.contains("timeSaveTimezone"));
         assertFalse(settings.contains("workOffsetMoscow: Math.round"));
+    }
+
+
+    @Test
+    void absoluteUiTimestampsUseTheDisplayTimezoneFormatter() throws Exception {
+        String data = resource("js/20-data.js");
+        String tasks = resource("js/50-tasks.js");
+        String boot = resource("js/70-user-boot.js");
+
+        assertTrue(data.contains("return formatAbsoluteInstant(iso);"));
+        assertTrue(tasks.contains("return formatAbsoluteInstant(value);"));
+        assertTrue(boot.contains("formatAbsoluteInstant(sess.lastUsedAt)"));
+        assertFalse(data.contains("format(new Date(iso))"));
     }
 
     @Test

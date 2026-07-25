@@ -336,6 +336,17 @@ paths:
   /api/v1/profile:
     get: { operationId: getProfile, responses: { '200': { description: Profile } } }
     put: { operationId: updateProfile, responses: { '200': { description: Updated profile } } }
+  /api/v1/time/context:
+    get:
+      operationId: getTimeContext
+      description: Returns one absolute server instant projected into the user's work and display timezones.
+      responses:
+        '200':
+          description: Current time context
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TimeContext' }
+        '401': { $ref: '#/components/responses/ApiError' }
   /api/v1/notifications/settings:
     get: { operationId: notificationSettings, responses: { '200': { description: Notification settings } } }
     patch: { operationId: updateNotificationSettings, responses: { '200': { description: Updated notification settings } } }
@@ -381,6 +392,20 @@ components:
           example: notifications
         requestId: { type: string, nullable: true }
         timestamp: { type: string, format: date-time }
+    TimeContext:
+      type: object
+      required: [nowInstant, workTimezone, displayTimezone, workLocalDateTime, displayLocalDateTime, workDate, displayDate, workOffset, displayOffset, sameTimezone]
+      properties:
+        nowInstant: { type: string, format: date-time, description: Absolute UTC instant }
+        workTimezone: { type: string, example: Europe/Chisinau }
+        displayTimezone: { type: string, example: Europe/Berlin }
+        workLocalDateTime: { type: string, example: '2026-07-25T15:30:00' }
+        displayLocalDateTime: { type: string, example: '2026-07-25T14:30:00' }
+        workDate: { type: string, format: date }
+        displayDate: { type: string, format: date }
+        workOffset: { type: string, example: '+03:00' }
+        displayOffset: { type: string, example: '+02:00' }
+        sameTimezone: { type: boolean }
     Task:
       type: object
       required: [id, date, text, done, tags, priority, reminderEnabled, overdue, subtasks]
@@ -516,6 +541,8 @@ components:
       required: [username]
       properties:
         username: { type: string }
+        workTimezone: { type: string, nullable: true, example: Europe/Chisinau }
+        displayTimezone: { type: string, nullable: true, example: Europe/Berlin }
     MobileTokenResponse:
       type: object
       required: [tokenType, accessToken, accessExpiresAt, refreshToken, refreshExpiresAt, user]

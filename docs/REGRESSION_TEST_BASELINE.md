@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.6.3.
+Status: v27.7.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.6.3 adds final-state deadline validation, open-first ordering, date-only subtask deadlines, accessible graphical progress and compact responsive task cards, while preserving v27.6.2 one-level subtasks, v27.6.1 universal quick capture, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 76 Java test classes / 389 `@Test` methods and 15 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.7.0 adds separate work/display IANA timezones, one-instant/two-projection API contracts, deterministic DST resolution, absolute reminder ordering and Telegram delivery identity, work-timezone task status and the first absolute work-interval resolver. It preserves v27.6.3 task polish, v27.6.2 one-level subtasks, v27.6.1 universal quick capture, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 78 Java test classes / 398 `@Test` methods and 15 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -15,6 +15,22 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
 
+
+## v27.7.0 Time Foundation extension
+
+Automated coverage now additionally verifies:
+
+- persisted work and display IANA timezone settings, validation and reload behaviour;
+- one absolute server instant projected through `/api/time/context` and `/api/v1/time/context`;
+- deterministic DST gap and overlap resolution;
+- overnight, 24-hour and DST-crossing work intervals measured in real elapsed minutes;
+- notification ordering/filtering by `Instant` and explicit display projections;
+- Telegram delivery deduplication by `remind_at_instant` with a legacy-local fallback for records that predate absolute identity;
+- task overdue calculation in the user's work timezone;
+- browser calendar dates remaining work-zone based while absolute UI timestamps use display timezone;
+- Flyway V29 continuity and the new `TIMESTAMPTZ` migration contract.
+
+Manual staging acceptance additionally checks that changing display timezone never moves birthdays, important dates, notes, task dates, shifts or overtime rows.
 
 ## v27.6.3 task polish and consistency extension
 

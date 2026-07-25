@@ -459,6 +459,10 @@ public final class Dtos {
         }
 
         public static TaskDto from(DayTask task) {
+            return from(task, java.time.LocalDateTime.now());
+        }
+
+        public static TaskDto from(DayTask task, java.time.LocalDateTime now) {
             return new TaskDto(
                     task.getId(),
                     task.getDate().toString(),
@@ -471,7 +475,7 @@ public final class Dtos {
                     task.getDueTime() != null ? task.getDueTime().toString() : null,
                     task.isReminderEnabled(),
                     task.getReminderMinutesBefore(),
-                    isOverdue(task),
+                    isOverdue(task, now),
                     task.getSubtasks().stream()
                             .sorted(java.util.Comparator
                                     .comparingInt(TaskSubtask::getSortOrder)
@@ -480,12 +484,12 @@ public final class Dtos {
                             .toList()
             );
         }
-        private static boolean isOverdue(DayTask task) {
+        private static boolean isOverdue(DayTask task, java.time.LocalDateTime now) {
             if (task.isDone() || task.getDueDate() == null) return false;
-            java.time.LocalDate today = java.time.LocalDate.now();
+            java.time.LocalDate today = now.toLocalDate();
             if (task.getDueDate().isBefore(today)) return true;
             if (task.getDueDate().isAfter(today) || task.getDueTime() == null) return false;
-            return task.getDueTime().isBefore(java.time.LocalTime.now());
+            return task.getDueTime().isBefore(now.toLocalTime());
         }
     }
 
@@ -744,6 +748,20 @@ public final class Dtos {
             String importantDayReminderTime
     ) {}
 
+    /** Current absolute clock and its projections into the two user timezones. */
+    public record TimeContextDto(
+            String nowInstant,
+            String workTimezone,
+            String displayTimezone,
+            String workLocalDateTime,
+            String displayLocalDateTime,
+            String workDate,
+            String displayDate,
+            String workOffset,
+            String displayOffset,
+            boolean sameTimezone
+    ) {}
+
     /** Рассчитанное напоминание для веба, Android или будущего Telegram-бота. */
     public record NotificationReminderDto(
             String id,
@@ -753,7 +771,10 @@ public final class Dtos {
             String title,
             String details,
             int priority,
-            String remindAtInstant
+            String remindAtInstant,
+            String workTimezone,
+            String displayAt,
+            String displayTimezone
     ) {
         /**
          * Compatibility constructor for tests and delivery adapters that only need
@@ -768,7 +789,21 @@ public final class Dtos {
                                        String title,
                                        String details,
                                        int priority) {
-            this(id, type, sourceDate, remindAt, title, details, priority, null);
+            this(id, type, sourceDate, remindAt, title, details, priority,
+                    null, null, null, null);
+        }
+
+        /** Compatibility constructor used by v27.6.x reminder producers. */
+        public NotificationReminderDto(String id,
+                                       String type,
+                                       String sourceDate,
+                                       String remindAt,
+                                       String title,
+                                       String details,
+                                       int priority,
+                                       String remindAtInstant) {
+            this(id, type, sourceDate, remindAt, title, details, priority,
+                    remindAtInstant, null, null, null);
         }
     }
 
@@ -795,8 +830,16 @@ public final class Dtos {
     /** Запрос выхода мобильного клиента. */
     public record MobileLogoutRequest(String refreshToken) {}
 
-    /** Краткая информация о пользователе для мобильного клиента. */
-    public record MobileUserDto(String username) {}
+    /** Краткая информация о пользователе и его временном контексте для мобильного клиента. */
+    public record MobileUserDto(String username, String workTimezone, String displayTimezone) {
+        public MobileUserDto(String username) {
+            this(username, null, null);
+        }
+
+        public static MobileUserDto from(AppUser user) {
+            return new MobileUserDto(user.getUsername(), user.getWorkTimezone(), user.getDisplayTimezone());
+        }
+    }
 
     /** Ответ мобильной авторизации. */
     public record MobileTokenResponse(

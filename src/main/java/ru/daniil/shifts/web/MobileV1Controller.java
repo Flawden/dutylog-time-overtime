@@ -47,7 +47,7 @@ public class MobileV1Controller {
         return new MobileV1BootstrapDto(
                 MobileSyncService.API_VERSION,
                 Instant.now().toString(),
-                new MobileUserDto(current.getUsername()),
+                MobileUserDto.from(current),
                 calendar
         );
     }

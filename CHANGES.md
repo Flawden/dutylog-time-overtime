@@ -1,3 +1,30 @@
+## v27.7.0 — Time Foundation
+
+### Explicit time semantics
+- Split the user time context into persisted IANA `workTimezone` and `displayTimezone` values. Existing accounts inherit their current work timezone as the display timezone, preserving previous behaviour.
+- Centralised current time, timezone projection and work-local conversion in `UserTimeService`; legacy helpers remain compatible and explicitly mean work time.
+- Documented and tested deterministic DST handling: nonexistent wall-clock times move forward through the gap and ambiguous times use the earlier offset.
+
+### Absolute reminders and delivery identity
+- Added one-instant/two-projection reminder fields: `remindAtInstant`, work timezone, display-local value and display timezone.
+- Reminder sorting and past filtering now compare `Instant` values instead of server-local date-times.
+- Telegram scan windows and new delivery identities now use absolute instants. Flyway V29 adds nullable `remind_at_instant TIMESTAMPTZ`; legacy rows remain local because their original timezone was never stored, and runtime deduplication safely supports both generations.
+
+### Work interval foundation
+- Added `WorkIntervalService`, which resolves work-local start/end values into absolute intervals and calculates elapsed/net minutes across midnight and daylight-saving transitions.
+- Task overdue rules now use the account's work timezone rather than the operating-system timezone.
+- Added authenticated `/api/time/context` and `/api/v1/time/context` endpoints plus work/display timezone fields in mobile user responses.
+
+### Interface and compatibility
+- Added separate work/display timezone selectors, a same-as-work shortcut and a two-clock preview. Legacy work-only profile updates keep display coupled until the user explicitly separates the zones.
+- Calendar dates continue to use work timezone; absolute synchronization and mobile-session timestamps use the display timezone; legacy Inbox audit timestamps remain local until they gain an explicit instant.
+- Floating dates and existing task, shift and overtime records are intentionally not mass-converted in this release.
+
+### Regression coverage
+- Added DST gap/overlap, absolute projection, work-interval, profile, notification, Telegram deduplication, API and frontend contract coverage.
+- Flyway now ends at V29.
+- Baseline: 78 Java test classes / 398 `@Test` methods and 15 Chromium Playwright scenarios.
+
 ## v27.6.3 — Polish & Consistency
 
 ### Business rules and ordering

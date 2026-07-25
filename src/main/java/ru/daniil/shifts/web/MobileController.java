@@ -57,7 +57,7 @@ public class MobileController {
         CalendarRangeDto calendar = calendarService.range(current, fromDate, toDate);
         return new MobileBootstrapDto(
                 Instant.now().toString(),
-                new MobileUserDto(current.getUsername()),
+                MobileUserDto.from(current),
                 calendar
         );
     }

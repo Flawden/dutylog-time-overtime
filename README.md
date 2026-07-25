@@ -1,25 +1,27 @@
-> Current release: **v27.6.3 — Polish & Consistency**.
+> Current release: **v27.7.0 — Time Foundation**.
 
 # DutyLog
 
-Current release: **v27.6.3 — Polish & Consistency**
+Current release: **v27.7.0 — Time Foundation**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.6.3 — Polish & Consistency
+## Текущая версия: v27.7.0 — Time Foundation
 
-Это релиз качества для модуля задач. DutyLog теперь проверяет сроки по итоговому состоянию задачи: срок родителя не может быть раньше даты задачи, а необязательный date-only срок подзадачи — раньше даты родителя. Правила одинаково действуют при создании, редактировании, преобразовании Inbox и через legacy/API v1.
+Это архитектурный релиз, который разделяет календарный смысл и абсолютное время. У каждого пользователя теперь есть два независимых IANA-идентификатора: **рабочий часовой пояс** определяет календарный день, смены, сроки и будущие расчёты переработок, а **часовой пояс отображения** только проецирует уже существующие абсолютные моменты для интерфейса.
 
-Выполненные задачи автоматически уходят вниз во всех выдачах и сразу переставляются после optimistic toggle. Внутри открытой и выполненной групп сохраняется стабильный порядок по сроку, времени, дате и идентификатору. При наличии обеих групп интерфейс показывает аккуратный разделитель.
+`UserTimeService` стал единой границей времени: он выдаёт текущий `Instant`, строит work/display-проекции и детерминированно обрабатывает DST. Несуществующее локальное время сдвигается вперёд через разрыв, а неоднозначное использует более раннее смещение. Новый `WorkIntervalService` переводит рабочие интервалы в абсолютные моменты и корректно считает минуты через полночь и переходы летнего времени — это прямой фундамент для Overtime 2.0.
 
-Карточки задач стали компактнее: метаданные собраны плотнее, прогресс чек-листа отображается доступной графической полосой, а раскрытие использует единый заголовок `Подзадачи (2/3)`. Подзадача остаётся лёгким одноуровневым пунктом чек-листа и получает только необязательный срок — без категорий, тегов, приоритета, напоминаний или дочерних уровней.
+Напоминания теперь сортируются и фильтруются по абсолютным моментам. Новые Telegram-доставки хранят `remind_at_instant TIMESTAMPTZ` и дедуплицируются по нему; старые беззоновые записи остаются на безопасном legacy-local fallback, поэтому миграция не выдумывает им исходный часовой пояс. Просроченность задач рассчитывается в рабочем часовом поясе пользователя, а timestamps синхронизации и мобильных сессий показываются в display timezone.
 
-Flyway теперь заканчивается на **V28**. Текущая автоматическая база: **76 Java-тестовых классов, 389 `@Test` методов и 15 Playwright browser scenarios**. Quick Capture v27.6.1, одноуровневые подзадачи v27.6.2, Telegram UX v27.5.2 и проверенный backup/recovery-контур v27.5.0 сохранены.
+Добавлены `GET /api/time/context` и `/api/v1/time/context`, расширены mobile/reminder DTO, а Flyway теперь заканчивается на **V29**. Плавающие даты — дни рождения, важные даты, заметки и задачи без абсолютного момента — не конвертируются и не «переезжают» между днями.
 
-Предыдущая контрольная точка: **v27.6.2 — Tasks & Subtasks**. До неё: **v27.6.1 — Quick Capture Polish**, **v27.6.0 — Mobile Tasks & Inbox UX**, **v27.5.2 — Telegram command menu and quick actions**, **v27.5.1 — Telegram commands and mobile sync status bugfix**, **v27.5.0 — Backup and recovery hardening** и **v27.4.3 — Reminder timezone and sync UX bugfix**.
+Текущая автоматическая база: **78 Java-тестовых классов, 398 `@Test` методов и 15 Playwright browser scenarios**. Предыдущая контрольная точка: **v27.6.3 — Polish & Consistency**. Следующий архитектурный этап — **Overtime Interval Engine / Overtime 2.0**.
 
-Ранее: **v27.4.2 — Timezone simplification and critical regression pack**, **v27.4.1 — Overtime scenario manager**, **v27.4.0 — Unified overtime editors**, **v27.2.31 — Authenticated deployment smoke-test hotfix**, **v27.2.30 — Host nginx CI/CD deployment hardening**, **v27.2.29 — Final security and product audit hardening**, **v27.2.28 — Staging deployment gate and diagnostics hardening**, **v27.2.27 — Playwright marker accordion hotfix**, **v27.2.26 — Playwright selector, accordion and line-ending hotfix**, **v27.2.25 — Playwright browser E2E regression baseline**, **v27.2.24 — Coverage floor and startup/module regression suite**, **v27.2.23 — Security test contract and secret-safe error logging hotfix**, **v27.2.22 — Security infrastructure regression and auth hardening suite**, **v27.2.21 — Telegram date validation and test harness hotfix**, **v27.2.20 — Telegram bot regression and delivery hardening suite**, **v27.2.19 — PostgreSQL migration and CI version hotfix**, **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix**, **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction**, **v27.2.10 — Task board status validation hotfix** и **v27.2.5 — Calendar day identity hotfix**.
+Предыдущие продуктовые контрольные точки: **v27.6.2 — Tasks & Subtasks**, **v27.6.1 — Quick Capture Polish**, **v27.6.0 — Mobile Tasks & Inbox UX**, **v27.5.2 — Telegram command menu and quick actions**, **v27.5.1 — Telegram commands and mobile sync status bugfix**, **v27.5.0 — Backup and recovery hardening**, **v27.4.3 — Reminder timezone and sync UX bugfix**, **v27.4.2 — Timezone simplification and critical regression pack**, **v27.4.1 — Overtime scenario manager** и **v27.4.0 — Unified overtime editors**.
+
+Ранее закрыты: **v27.2.31 — Authenticated deployment smoke-test hotfix**, **v27.2.30 — Host nginx CI/CD deployment hardening**, **v27.2.29 — Final security and product audit hardening**, **v27.2.28 — Staging deployment gate and diagnostics hardening**, **v27.2.27 — Playwright marker accordion hotfix**, **v27.2.26 — Playwright selector, accordion and line-ending hotfix**, **v27.2.25 — Playwright browser E2E regression baseline**, **v27.2.24 — Coverage floor and startup/module regression suite**, **v27.2.23 — Security test contract and secret-safe error logging hotfix**, **v27.2.22 — Security infrastructure regression and auth hardening suite**, **v27.2.21 — Telegram date validation and test harness hotfix**, **v27.2.20 — Telegram bot regression and delivery hardening suite**, **v27.2.19 — PostgreSQL migration and CI version hotfix**, **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix**, **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction**, **v27.2.10 — Task board status validation hotfix** и **v27.2.5 — Calendar day identity hotfix**.
 
 ## Возможности
 
@@ -244,6 +246,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
+- [`docs/TIME_FOUNDATION_V27.7.0.md`](docs/TIME_FOUNDATION_V27.7.0.md) — контракт рабочего/display времени, абсолютных моментов, DST и будущих рабочих интервалов.
 - [`docs/TASK_POLISH_CONSISTENCY_V27.6.3.md`](docs/TASK_POLISH_CONSISTENCY_V27.6.3.md) — контракт релиза качества задач: сроки, open-first, прогресс, подзадачи и mobile polish.
 - [`docs/TASK_SUBTASKS_V27.6.2.md`](docs/TASK_SUBTASKS_V27.6.2.md) — продуктовый и технический контракт одноуровневых подзадач.
 - [`docs/RELEASE_CANDIDATE.md`](docs/RELEASE_CANDIDATE.md) — что проверено в v27.2.5 и как принимать RC.
@@ -273,7 +276,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — развернуть и вручную проверить v27.6.3 на staging. После приёмки начинается отдельный архитектурный этап Time Foundation, а затем Overtime Interval Engine.
+Следующий практический шаг — развернуть и вручную проверить v27.7.0 на staging. После приёмки начинается Overtime Interval Engine / Overtime 2.0 на новом временном фундаменте.
 
 ## Служебный профиль администратора
 

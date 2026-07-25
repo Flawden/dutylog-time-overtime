@@ -52,7 +52,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.6.3"
+const DUTYLOG_VERSION = "27.7.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -227,6 +227,13 @@ const I18N_EN = {
 const I18N_RU = Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru]));
 Object.assign(I18N_RU, { "open":"открыть", "Time":"Время", "normal":"обычные", "light":"светлая", "soft":"мягкие" });
 Object.assign(I18N_EN, {
+  "Часовой пояс отображения":"Display timezone",
+  "Сохранить часовые пояса":"Save timezones",
+  "Как рабочий":"Same as work",
+  "Рабочее время":"Work time",
+  "Время отображения":"Display time",
+  "Рабочий часовой пояс определяет календарные расчёты, смены и переработки. Часовой пояс отображения меняет только представление абсолютных моментов.":"Work timezone owns calendar calculations, shifts and overtime. Display timezone only changes how absolute moments are shown.",
+  "DutyLog хранит IANA-идентификаторы, например Europe/Chisinau. Плавающие календарные даты не сдвигаются, а абсолютные моменты отображаются в выбранной зоне.":"DutyLog stores IANA identifiers such as Europe/Chisinau. Floating calendar dates never move; absolute moments are shown in the selected zone.",
   "Вставь emoji с клавиатуры":"Paste an emoji from keyboard",
   "Маркер не выбран.":"No marker selected.",
   "2 через 2: день / день / выходной / выходной":"2 on / 2 off: day / day / off / off",
@@ -966,6 +973,7 @@ const TIME_SETTINGS_KEY = "shiftCalendar.timeRegionSettings.v1";
 const DEFAULT_TIME_SETTINGS = {
   workRegionName: "",
   workTimezone: "Europe/Moscow",
+  displayTimezone: "Europe/Moscow",
   workOffsetMoscow: 0,
   timeFormat: "24h",
   dayStart: "08:30",
@@ -986,7 +994,8 @@ function loadTimeSettings(){
   let saved = {};
   try { saved = JSON.parse(localStorage.getItem(TIME_SETTINGS_KEY) || "{}"); }
   catch (e) { saved = {}; }
-  return { ...DEFAULT_TIME_SETTINGS, workTimezone: browserTimeZone(), ...saved };
+  const browserZone = browserTimeZone();
+  return { ...DEFAULT_TIME_SETTINGS, workTimezone:browserZone, displayTimezone:browserZone, ...saved };
 }
 function storeTimeSettings(settings){
   state.timeSettings = { ...DEFAULT_TIME_SETTINGS, ...settings };
@@ -998,6 +1007,32 @@ function safeTzLabel(tz){
     return new Intl.DateTimeFormat(currentLocale(), { dateStyle:"short", timeStyle:"short", timeZone:tz }).format(new Date());
   } catch (e) {
     return t("часовой пояс не распознан");
+  }
+}
+function displayTimeZone(){
+  return state.timeSettings?.displayTimezone
+    || state.profile?.displayTimezone
+    || state.timeSettings?.workTimezone
+    || state.profile?.workTimezone
+    || browserTimeZone();
+}
+function timestampHasExplicitZone(value){
+  return /(?:Z|[+-]\d{2}:?\d{2})$/i.test(String(value || "").trim());
+}
+function legacyLocalTimestampLabel(value){
+  return String(value || "").slice(0, 16).replace("T", " ");
+}
+function formatAbsoluteInstant(value, options = { dateStyle:"short", timeStyle:"short" }){
+  if (!value) return "";
+  // A LocalDateTime without Z/offset has no globally correct projection.
+  // Keep legacy values stable instead of guessing the browser or server zone.
+  if (!timestampHasExplicitZone(value)) return legacyLocalTimestampLabel(value);
+  try {
+    const instant = new Date(value);
+    if (!Number.isFinite(instant.getTime())) return legacyLocalTimestampLabel(value);
+    return new Intl.DateTimeFormat(currentLocale(), { ...options, timeZone:displayTimeZone() }).format(instant);
+  } catch (_) {
+    return legacyLocalTimestampLabel(value);
   }
 }
 

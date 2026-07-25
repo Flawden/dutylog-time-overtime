@@ -12,6 +12,7 @@ import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.MobileAuthService;
 import ru.daniil.shifts.service.RememberMeTokenService;
+import ru.daniil.shifts.service.UserTimeService;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.security.Principal;
@@ -37,6 +38,7 @@ public class ProfileController {
     private final CurrentUserService currentUserService;
     private final MobileAuthService mobileAuthService;
     private final RememberMeTokenService rememberMeTokenService;
+    private final UserTimeService userTimeService;
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
 
@@ -46,15 +48,20 @@ public class ProfileController {
                              CurrentUserService currentUserService,
                              MobileAuthService mobileAuthService,
                              RememberMeTokenService rememberMeTokenService,
+                             UserTimeService userTimeService,
                              PasswordEncoder encoder) {
         this.users = users;
         this.currentUserService = currentUserService;
         this.mobileAuthService = mobileAuthService;
         this.rememberMeTokenService = rememberMeTokenService;
+        this.userTimeService = userTimeService;
         this.encoder = encoder;
     }
 
-    public record ProfileUpdateRequest(String displayName, String birthday, String themePreference, String accentColor, String themePreset, Map<String, Object> themeConfig, String languagePreference, String workTimezone, Boolean onboardingCompleted) {}
+    public record ProfileUpdateRequest(String displayName, String birthday, String themePreference,
+                                       String accentColor, String themePreset, Map<String, Object> themeConfig,
+                                       String languagePreference, String workTimezone, String displayTimezone,
+                                       Boolean onboardingCompleted) {}
     public record PasswordChangeRequest(String currentPassword, String newPassword) {}
 
     @GetMapping
@@ -73,6 +80,7 @@ public class ProfileController {
         out.put("themeConfig", readThemeConfig(user.getThemeConfig()));
         out.put("languagePreference", user.getLanguagePreference());
         out.put("workTimezone", user.getWorkTimezone());
+        out.put("displayTimezone", user.getDisplayTimezone());
         out.put("onboardingCompleted", user.isOnboardingCompleted());
         return out;
     }
@@ -81,6 +89,23 @@ public class ProfileController {
     @Transactional
     public Map<String, Object> update(@RequestBody ProfileUpdateRequest req, Principal principal) {
         AppUser user = currentUserService.requireUser(principal);
+
+        // Apply the requested time context first so all date rules in this transaction
+        // evaluate the final profile state rather than the previously saved timezone.
+        String previousWorkTimezone = user.getWorkTimezone();
+        boolean displayFollowedWork = user.getDisplayTimezone().equals(previousWorkTimezone);
+        if (req.workTimezone() != null) {
+            String requestedWorkTimezone = validatedTimezone(req.workTimezone(), "Рабочий часовой пояс");
+            user.setWorkTimezone(requestedWorkTimezone);
+            // Legacy clients only know workTimezone. Keep the old coupled behaviour
+            // until the user explicitly chooses an independent display timezone.
+            if (req.displayTimezone() == null && displayFollowedWork) {
+                user.setDisplayTimezone(requestedWorkTimezone);
+            }
+        }
+        if (req.displayTimezone() != null) {
+            user.setDisplayTimezone(validatedTimezone(req.displayTimezone(), "Часовой пояс отображения"));
+        }
 
         String name = req.displayName() == null ? null : req.displayName().trim();
         if (name != null && name.length() > 60) {
@@ -93,7 +118,7 @@ public class ProfileController {
         } else {
             try {
                 LocalDate bd = LocalDate.parse(req.birthday());
-                if (bd.isAfter(LocalDate.now())) {
+                if (bd.isAfter(userTimeService.workToday(user))) {
                     throw ApiException.badRequest("День рождения в будущем? Завидую, но нет");
                 }
                 user.setBirthday(bd);
@@ -138,25 +163,26 @@ public class ProfileController {
             user.setLanguagePreference(lang);
         }
 
-        if (req.workTimezone() != null) {
-            String timezone = req.workTimezone().trim();
-            if (timezone.isBlank() || timezone.length() > 80) {
-                throw ApiException.badRequest("Часовой пояс должен быть IANA-идентификатором, например Europe/Moscow");
-            }
-            try {
-                ZoneId.of(timezone);
-            } catch (DateTimeException e) {
-                throw ApiException.badRequest("Неизвестный часовой пояс: " + timezone);
-            }
-            user.setWorkTimezone(timezone);
-        }
-
         if (req.onboardingCompleted() != null) {
             user.setOnboardingCompleted(req.onboardingCompleted());
         }
 
         users.save(user);
         return get(principal);
+    }
+
+
+    private String validatedTimezone(String raw, String fieldName) {
+        String timezone = raw == null ? "" : raw.trim();
+        if (timezone.isBlank() || timezone.length() > 80) {
+            throw ApiException.badRequest(fieldName + " должен быть IANA-идентификатором, например Europe/Moscow");
+        }
+        try {
+            ZoneId.of(timezone);
+        } catch (DateTimeException e) {
+            throw ApiException.badRequest("Неизвестный часовой пояс: " + timezone);
+        }
+        return timezone;
     }
 
     private Map<String, Object> readThemeConfig(String raw) {

@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.6.3" rel="stylesheet"/>
+<link href="app.css?v=27.7.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -562,13 +562,16 @@
 <div>
 <div class="eyebrow">Время</div>
 <div class="settingsTitle">Часовой пояс и формат времени</div>
-<div class="settingsHint">Выберите рабочий часовой пояс. DutyLog сам учитывает UTC-смещение и сезонные правила.</div>
+<div class="settingsHint">Рабочий часовой пояс определяет календарные расчёты, смены и переработки. Часовой пояс отображения меняет только представление абсолютных моментов.</div>
 </div>
 <div class="status" id="timeSettingsStatus">—</div>
 </div>
 <div class="timeSettingsGrid timeZoneSettingsGrid">
 <label>Рабочий часовой пояс
 <select id="workTimezone" aria-describedby="timeZoneHelp"></select>
+</label>
+<label>Часовой пояс отображения
+<select id="displayTimezone" aria-describedby="timeZoneHelp"></select>
 </label>
 <label>Формат времени
 <select id="timeFormatPref">
@@ -578,10 +581,11 @@
 </div>
 <div class="timeNowBox" id="timeNowBox">—</div>
 <div class="timeSettingsActions timezoneActions">
-<button class="primary" id="timeSaveTimezone" type="button">Сохранить часовой пояс</button>
+<button class="primary" id="timeSaveTimezone" type="button">Сохранить часовые пояса</button>
 <button id="timeDetectBrowser" type="button">Определить автоматически</button>
+<button id="timeDisplayAsWork" type="button">Как рабочий</button>
 </div>
-<div class="wideHint" id="timeZoneHelp">В профиле хранится IANA-идентификатор, например Europe/Chisinau. Ручной сдвиг времени не требуется.</div>
+<div class="wideHint" id="timeZoneHelp">DutyLog хранит IANA-идентификаторы, например Europe/Chisinau. Плавающие календарные даты не сдвигаются, а абсолютные моменты отображаются в выбранной зоне.</div>
 
 <div class="timeDefaults timeSettingsSubcard">
 <div class="timeDefaultsHead">
@@ -724,7 +728,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.6.3</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.7.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -1128,12 +1132,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.6.3"></script>
-<script src="js/20-data.js?v=27.6.3"></script>
-<script src="js/30-calendar.js?v=27.6.3"></script>
-<script src="js/40-overtime.js?v=27.6.3"></script>
-<script src="js/50-tasks.js?v=27.6.3"></script>
-<script src="js/60-settings.js?v=27.6.3"></script>
-<script src="js/70-user-boot.js?v=27.6.3"></script>
+<script src="js/10-core.js?v=27.7.0"></script>
+<script src="js/20-data.js?v=27.7.0"></script>
+<script src="js/30-calendar.js?v=27.7.0"></script>
+<script src="js/40-overtime.js?v=27.7.0"></script>
+<script src="js/50-tasks.js?v=27.7.0"></script>
+<script src="js/60-settings.js?v=27.7.0"></script>
+<script src="js/70-user-boot.js?v=27.7.0"></script>
 </body>
 </html>

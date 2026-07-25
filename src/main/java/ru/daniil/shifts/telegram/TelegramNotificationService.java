@@ -14,6 +14,7 @@ import ru.daniil.shifts.repo.TelegramNotificationDeliveryRepository;
 import ru.daniil.shifts.service.NotificationService;
 import ru.daniil.shifts.service.UserTimeService;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -67,9 +68,9 @@ public class TelegramNotificationService {
         List<TelegramLink> links = linkRepository.findByEnabledTrueAndNotificationsEnabledTrue();
         for (TelegramLink link : links) {
             try {
-                LocalDateTime now = userTimeService.now(link.getOwner());
-                LocalDateTime dueFrom = now.minusMinutes(Math.max(1, lookbackMinutes));
-                LocalDateTime dueTo = now.plusMinutes(Math.max(0, lookaheadMinutes));
+                Instant now = userTimeService.nowInstant();
+                Instant dueFrom = now.minusSeconds(Math.max(1, lookbackMinutes) * 60L);
+                Instant dueTo = now.plusSeconds(Math.max(0, lookaheadMinutes) * 60L);
                 sendDueForLink(link, dueFrom, dueTo);
             } catch (Exception e) {
                 log.warn("Telegram notification scan failed for link {}: {}", link.getId(), e.getMessage());
@@ -77,20 +78,29 @@ public class TelegramNotificationService {
         }
     }
 
-    private void sendDueForLink(TelegramLink link, LocalDateTime dueFrom, LocalDateTime dueTo) {
+    private void sendDueForLink(TelegramLink link, Instant dueFrom, Instant dueTo) {
         AppUser user = link.getOwner();
-        LocalDate fromDate = dueFrom.toLocalDate().minusDays(1);
-        LocalDate toDate = dueTo.toLocalDate().plusDays(14);
+        LocalDate fromDate = userTimeService.inWorkZone(dueFrom, user).toLocalDate().minusDays(1);
+        LocalDate toDate = userTimeService.inWorkZone(dueTo, user).toLocalDate().plusDays(14);
 
         List<NotificationReminderDto> reminders = notificationService.upcoming(user, fromDate, toDate, true);
         for (NotificationReminderDto reminder : reminders) {
             LocalDateTime remindAt = parseDateTime(reminder.remindAt());
-            if (remindAt == null || remindAt.isBefore(dueFrom) || remindAt.isAfter(dueTo)) continue;
-            if (deliveryRepository.existsByOwnerAndReminderIdAndRemindAt(user, reminder.id(), remindAt)) continue;
+            Instant remindAtInstant = parseInstant(reminder.remindAtInstant());
+            if (remindAt == null) continue;
+            if (remindAtInstant == null) remindAtInstant = userTimeService.toWorkInstant(user, remindAt);
+            if (remindAtInstant.isBefore(dueFrom) || remindAtInstant.isAfter(dueTo)) continue;
+            boolean deliveredByInstant = deliveryRepository.existsByOwnerAndReminderIdAndRemindAtInstant(
+                    user, reminder.id(), remindAtInstant);
+            boolean deliveredByLegacyLocalKey = !deliveredByInstant
+                    && deliveryRepository.existsByOwnerAndReminderIdAndRemindAtAndRemindAtInstantIsNull(
+                            user, reminder.id(), remindAt);
+            if (deliveredByInstant || deliveredByLegacyLocalKey) continue;
 
             boolean sent = botService.sendMessage(link.getTelegramChatId(), formatMessage(reminder));
             if (sent) {
-                deliveryRepository.save(new TelegramNotificationDelivery(user, link, reminder.id(), reminder.type(), remindAt));
+                deliveryRepository.save(new TelegramNotificationDelivery(
+                        user, link, reminder.id(), reminder.type(), remindAt, remindAtInstant));
             }
         }
     }
@@ -135,6 +145,15 @@ public class TelegramNotificationService {
         try {
             return LocalDateTime.parse(value);
         } catch (DateTimeParseException | NullPointerException e) {
+            return null;
+        }
+    }
+
+
+    private Instant parseInstant(String value) {
+        try {
+            return Instant.parse(value);
+        } catch (RuntimeException e) {
             return null;
         }
     }

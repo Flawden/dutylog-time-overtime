@@ -1,7 +1,7 @@
 const { test, expect } = require('./fixtures');
 const { registerAndOnboard, currentLocalDateKey, waitForApi } = require('./helpers');
 
-test('important dates have a standalone workspace and timezone survives reload', async ({ page }) => {
+test('important dates stay in work timezone while display timezone survives reload', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'important' });
 
   await page.locator('#tabbar a[data-view="important"]').click();
@@ -39,14 +39,19 @@ test('important dates have a standalone workspace and timezone survives reload',
   await expect(page.locator('#workRegionName')).toHaveCount(0);
   await expect(page.locator('#workOffsetMoscow')).toHaveCount(0);
   const timezone = page.locator('#workTimezone');
+  const displayTimezone = page.locator('#displayTimezone');
   await expect(timezone).toHaveAttribute('aria-describedby', 'timeZoneHelp');
+  await expect(displayTimezone).toHaveAttribute('aria-describedby', 'timeZoneHelp');
   await timezone.selectOption('Europe/Chisinau');
+  await displayTimezone.selectOption('Europe/Berlin');
   await expect(page.locator('#timeSettingsStatus')).toContainText(/не сохранено|not saved/i);
   await expect(page.locator('#timeNowBox')).toContainText('Europe/Chisinau');
+  await expect(page.locator('#timeNowBox')).toContainText('Europe/Berlin');
   const profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await expect(timezone).toHaveValue('Europe/Chisinau');
+  await expect(displayTimezone).toHaveValue('Europe/Berlin');
   await expect(page.locator('#timeSettingsStatus')).toContainText(/сохранено|saved/i);
 
   await page.reload();
@@ -54,4 +59,5 @@ test('important dates have a standalone workspace and timezone survives reload',
   await page.locator('#tabbar a[data-view="settings"]').click();
   await page.locator('[data-settings-jump="time"]').click();
   await expect(page.locator('#workTimezone')).toHaveValue('Europe/Chisinau');
+  await expect(page.locator('#displayTimezone')).toHaveValue('Europe/Berlin');
 });

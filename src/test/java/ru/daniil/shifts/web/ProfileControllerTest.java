@@ -55,6 +55,7 @@ class ProfileControllerTest {
                 .andExpect(jsonPath("$.themeConfig").isMap())
                 .andExpect(jsonPath("$.languagePreference").value("ru"))
                 .andExpect(jsonPath("$.workTimezone").value("Europe/Moscow"))
+                .andExpect(jsonPath("$.displayTimezone").value("Europe/Moscow"))
                 .andExpect(jsonPath("$.onboardingCompleted").value(false))
                 .andExpect(jsonPath("$.passwordHash").doesNotExist());
     }
@@ -81,6 +82,7 @@ class ProfileControllerTest {
                   },
                   "languagePreference":" EN ",
                   "workTimezone":"Europe/Chisinau",
+                  "displayTimezone":"Europe/Berlin",
                   "onboardingCompleted":true
                 }
                 """;
@@ -96,6 +98,7 @@ class ProfileControllerTest {
                 .andExpect(jsonPath("$.themePreset").value("custom_1"))
                 .andExpect(jsonPath("$.languagePreference").value("en"))
                 .andExpect(jsonPath("$.workTimezone").value("Europe/Chisinau"))
+                .andExpect(jsonPath("$.displayTimezone").value("Europe/Berlin"))
                 .andExpect(jsonPath("$.onboardingCompleted").value(true))
                 .andExpect(jsonPath("$.themeConfig.appBg").value("#101010"))
                 .andExpect(jsonPath("$.themeConfig.textColor").value("#FEFEFE"))
@@ -111,9 +114,36 @@ class ProfileControllerTest {
         assertEquals("custom_1", stored.getThemePreset());
         assertEquals("en", stored.getLanguagePreference());
         assertEquals("Europe/Chisinau", stored.getWorkTimezone());
+        assertEquals("Europe/Berlin", stored.getDisplayTimezone());
         assertTrue(stored.isOnboardingCompleted());
         assertTrue(stored.getThemeConfig().contains("\"cardRadius\":28"));
         assertTrue(!stored.getThemeConfig().contains("unknownCss"));
+    }
+
+    @Test
+    void legacyWorkTimezoneUpdatesStayCoupledUntilDisplayTimezoneIsChosenExplicitly() throws Exception {
+        mvc.perform(put("/api/profile")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("{\"workTimezone\":\"Europe/Chisinau\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.workTimezone").value("Europe/Chisinau"))
+                .andExpect(jsonPath("$.displayTimezone").value("Europe/Chisinau"));
+
+        mvc.perform(put("/api/profile")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("{\"displayTimezone\":\"Europe/Berlin\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.displayTimezone").value("Europe/Berlin"));
+
+        mvc.perform(put("/api/profile")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("{\"workTimezone\":\"Asia/Yekaterinburg\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.workTimezone").value("Asia/Yekaterinburg"))
+                .andExpect(jsonPath("$.displayTimezone").value("Europe/Berlin"));
     }
 
     @Test
@@ -151,7 +181,7 @@ class ProfileControllerTest {
 
     @Test
     void invalidProfileAndThemeValuesAlwaysUseBadRequestEnvelope() throws Exception {
-        String future = LocalDate.now().plusDays(1).toString();
+        String future = LocalDate.now().plusDays(3).toString();
         String longName = "x".repeat(61);
         String[] bodies = {
                 "{\"displayName\":\"" + longName + "\"}",
@@ -164,7 +194,9 @@ class ProfileControllerTest {
                 "{\"themeConfig\":{\"appBg\":\"red\"}}",
                 "{\"themeConfig\":{\"buttonStyle\":\"javascript\"}}",
                 "{\"workTimezone\":\"Mars/Olympus_Mons\"}",
-                "{\"workTimezone\":\"\"}"
+                "{\"workTimezone\":\"\"}",
+                "{\"displayTimezone\":\"Mars/Olympus_Mons\"}",
+                "{\"displayTimezone\":\"\"}"
         };
 
         for (String body : bodies) {

@@ -695,8 +695,7 @@ function uuid(){
 }
 function fmtSyncTime(iso){
   if (!iso) return t("нет синхронизации");
-  try { return new Intl.DateTimeFormat(currentLocale(), { dateStyle:"short", timeStyle:"short" }).format(new Date(iso)); }
-  catch (_) { return String(iso).slice(0, 16).replace("T", " "); }
+  return formatAbsoluteInstant(iso);
 }
 function syncAgeMs(iso){
   if (!iso) return null;

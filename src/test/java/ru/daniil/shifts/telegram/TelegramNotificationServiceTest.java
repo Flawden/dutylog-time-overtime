@@ -16,7 +16,9 @@ import ru.daniil.shifts.repo.TelegramNotificationDeliveryRepository;
 import ru.daniil.shifts.service.NotificationService;
 import ru.daniil.shifts.service.UserTimeService;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -46,7 +48,13 @@ class TelegramNotificationServiceTest {
         ReflectionTestUtils.setField(service, "lookbackMinutes", 10);
         ReflectionTestUtils.setField(service, "lookaheadMinutes", 1);
         user = new AppUser("telegram-notification-owner", "{noop}x");
+        user.setWorkTimezone("UTC");
+        user.setDisplayTimezone("UTC");
         link = new TelegramLink(user, 700L);
+        lenient().when(userTimeService.inWorkZone(any(Instant.class), any(AppUser.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0, Instant.class).atZone(ZoneOffset.UTC));
+        lenient().when(userTimeService.toWorkInstant(any(AppUser.class), any(LocalDateTime.class)))
+                .thenAnswer(invocation -> invocation.getArgument(1, LocalDateTime.class).toInstant(ZoneOffset.UTC));
     }
 
     @Test
@@ -64,12 +72,12 @@ class TelegramNotificationServiceTest {
     @Test
     void dueReminderIsSentAndPersistedExactlyOnce() {
         LocalDateTime remindAt = LocalDateTime.of(2026, 7, 17, 12, 0);
-        when(userTimeService.now(user)).thenReturn(remindAt);
+        when(userTimeService.nowInstant()).thenReturn(remindAt.toInstant(ZoneOffset.UTC));
         NotificationReminderDto reminder = reminder("task-1", "TASK", remindAt, "Проверить отчёт", "до 18:00", "2026-07-17");
         when(linkService.isConfigured()).thenReturn(true);
         when(linkRepository.findByEnabledTrueAndNotificationsEnabledTrue()).thenReturn(List.of(link));
         when(notificationService.upcoming(eq(user), any(), any(), eq(true))).thenReturn(List.of(reminder));
-        when(deliveryRepository.existsByOwnerAndReminderIdAndRemindAt(user, "task-1", remindAt)).thenReturn(false);
+        when(deliveryRepository.existsByOwnerAndReminderIdAndRemindAtInstant(user, "task-1", remindAt.toInstant(ZoneOffset.UTC))).thenReturn(false);
         when(botService.sendMessage(eq(700L), contains("Проверить отчёт"))).thenReturn(true);
 
         service.scanAndSendDueNotifications();
@@ -81,12 +89,13 @@ class TelegramNotificationServiceTest {
         assertEquals("task-1", saved.getValue().getReminderId());
         assertEquals("TASK", saved.getValue().getReminderType());
         assertEquals(remindAt, saved.getValue().getRemindAt());
+        assertEquals(remindAt.toInstant(ZoneOffset.UTC), saved.getValue().getRemindAtInstant());
     }
 
     @Test
     void duplicateMalformedAndOutOfWindowRemindersAreSkipped() {
         LocalDateTime now = LocalDateTime.of(2026, 7, 17, 12, 0);
-        when(userTimeService.now(user)).thenReturn(now);
+        when(userTimeService.nowInstant()).thenReturn(now.toInstant(ZoneOffset.UTC));
         NotificationReminderDto duplicate = reminder("dup", "SHIFT", now, "Смена", "08:00", "2026-07-17");
         NotificationReminderDto tooOld = reminder("old", "TASK", now.minusHours(2), "Старая", "", "2026-07-17");
         NotificationReminderDto tooFuture = reminder("future", "TASK", now.plusHours(2), "Будущая", "", "2026-07-17");
@@ -95,7 +104,26 @@ class TelegramNotificationServiceTest {
         when(linkRepository.findByEnabledTrueAndNotificationsEnabledTrue()).thenReturn(List.of(link));
         when(notificationService.upcoming(eq(user), any(), any(), eq(true)))
                 .thenReturn(List.of(duplicate, tooOld, tooFuture, malformed));
-        when(deliveryRepository.existsByOwnerAndReminderIdAndRemindAt(user, "dup", now)).thenReturn(true);
+        when(deliveryRepository.existsByOwnerAndReminderIdAndRemindAtInstant(user, "dup", now.toInstant(ZoneOffset.UTC))).thenReturn(true);
+
+        service.scanAndSendDueNotifications();
+
+        verifyNoInteractions(botService);
+        verify(deliveryRepository, never()).save(any());
+    }
+
+    @Test
+    void legacyLocalDeliveryWithoutInstantStillPreventsDuplicateSend() {
+        LocalDateTime now = LocalDateTime.of(2026, 7, 17, 12, 0);
+        when(userTimeService.nowInstant()).thenReturn(now.toInstant(ZoneOffset.UTC));
+        NotificationReminderDto legacy = reminder("legacy", "TASK", now, "Старая доставка", "", "2026-07-17");
+        when(linkService.isConfigured()).thenReturn(true);
+        when(linkRepository.findByEnabledTrueAndNotificationsEnabledTrue()).thenReturn(List.of(link));
+        when(notificationService.upcoming(eq(user), any(), any(), eq(true))).thenReturn(List.of(legacy));
+        when(deliveryRepository.existsByOwnerAndReminderIdAndRemindAtInstant(
+                user, "legacy", now.toInstant(ZoneOffset.UTC))).thenReturn(false);
+        when(deliveryRepository.existsByOwnerAndReminderIdAndRemindAtAndRemindAtInstantIsNull(
+                user, "legacy", now)).thenReturn(true);
 
         service.scanAndSendDueNotifications();
 
@@ -106,7 +134,7 @@ class TelegramNotificationServiceTest {
     @Test
     void failedTelegramSendIsRetriedLaterInsteadOfMarkedDelivered() {
         LocalDateTime now = LocalDateTime.of(2026, 7, 17, 12, 0);
-        when(userTimeService.now(user)).thenReturn(now);
+        when(userTimeService.nowInstant()).thenReturn(now.toInstant(ZoneOffset.UTC));
         NotificationReminderDto reminder = reminder("retry", "IMPORTANT_DAY", now, "День рождения", "", "2026-07-17");
         when(linkService.isConfigured()).thenReturn(true);
         when(linkRepository.findByEnabledTrueAndNotificationsEnabledTrue()).thenReturn(List.of(link));
@@ -124,8 +152,7 @@ class TelegramNotificationServiceTest {
         AppUser brokenUser = new AppUser("telegram-broken", "{noop}x");
         TelegramLink brokenLink = new TelegramLink(brokenUser, 1L);
         LocalDateTime now = LocalDateTime.of(2026, 7, 17, 12, 0);
-        when(userTimeService.now(brokenUser)).thenReturn(now);
-        when(userTimeService.now(user)).thenReturn(now);
+        when(userTimeService.nowInstant()).thenReturn(now.toInstant(ZoneOffset.UTC));
         NotificationReminderDto reminder = reminder("ok", "TOMORROW_DIGEST", now, "Завтра", "План", "2026-07-18");
         when(linkService.isConfigured()).thenReturn(true);
         when(linkRepository.findByEnabledTrueAndNotificationsEnabledTrue()).thenReturn(List.of(brokenLink, link));
@@ -164,7 +191,7 @@ class TelegramNotificationServiceTest {
     void negativeWindowSettingsAreClampedSafely() {
         ReflectionTestUtils.setField(service, "lookbackMinutes", -50);
         ReflectionTestUtils.setField(service, "lookaheadMinutes", -50);
-        when(userTimeService.now(user)).thenReturn(LocalDateTime.of(2026, 7, 17, 12, 0));
+        when(userTimeService.nowInstant()).thenReturn(Instant.parse("2026-07-17T12:00:00Z"));
         when(linkService.isConfigured()).thenReturn(true);
         when(linkRepository.findByEnabledTrueAndNotificationsEnabledTrue()).thenReturn(List.of(link));
         when(notificationService.upcoming(eq(user), any(), any(), eq(true))).thenReturn(List.of());
@@ -181,7 +208,9 @@ class TelegramNotificationServiceTest {
                                              String title,
                                              String details,
                                              String sourceDate) {
-        return new NotificationReminderDto(id, type, sourceDate, remindAt.toString(), title, details, 1);
+        return new NotificationReminderDto(
+                id, type, sourceDate, remindAt.toString(), title, details, 1,
+                remindAt.toInstant(ZoneOffset.UTC).toString());
     }
 
     private void assertMessage(String type, String expectedHeader, String expectedTail, LocalDateTime now) {

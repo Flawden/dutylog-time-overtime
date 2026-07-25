@@ -18,6 +18,7 @@ import ru.daniil.shifts.repo.DayTaskRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
@@ -42,30 +43,35 @@ public class TaskService {
 
     private final DayTaskRepository tasks;
     private final DayEntryService dayEntryService;
+    private final UserTimeService userTimeService;
     private final SecurityEventLogger securityEvents;
 
     public TaskService(DayTaskRepository tasks,
                        DayEntryService dayEntryService,
+                       UserTimeService userTimeService,
                        SecurityEventLogger securityEvents) {
         this.tasks = tasks;
         this.dayEntryService = dayEntryService;
+        this.userTimeService = userTimeService;
         this.securityEvents = securityEvents;
     }
 
     @Transactional(readOnly = true)
     public List<TaskDto> listDay(AppUser user, String date) {
         LocalDate d = dayEntryService.parseDate(date, "Дата должна быть в формате yyyy-MM-dd");
+        LocalDateTime now = userTimeService.workNow(user);
         return tasks.findByOwnerAndDateOrderByCreatedAtAscIdAsc(user, d).stream()
                 .sorted(TASK_DISPLAY_ORDER)
-                .map(TaskDto::from).toList();
+                .map(task -> TaskDto.from(task, now)).toList();
     }
 
     @Transactional(readOnly = true)
     public List<TaskDto> listRange(AppUser user, LocalDate from, LocalDate to) {
         dayEntryService.validateRange(from, to);
+        LocalDateTime now = userTimeService.workNow(user);
         return tasks.findByOwnerAndDateBetweenOrderByDateAscCreatedAtAscIdAsc(user, from, to).stream()
                 .sorted(TASK_DISPLAY_ORDER)
-                .map(TaskDto::from).toList();
+                .map(task -> TaskDto.from(task, now)).toList();
     }
 
 
@@ -114,18 +120,19 @@ public class TaskService {
             catch (IllegalArgumentException e) { throw ApiException.badRequest("Неизвестный приоритет задачи"); }
         }
 
+        LocalDateTime now = userTimeService.workNow(user);
         final String categoryFilter = cat;
         final TaskPriority priorityFinal = priorityFilter;
         int safePage = safePage(page);
         int safeSize = safeSize(size);
         List<TaskDto> filtered = tasks.findByOwnerOrderByDoneAscDueDateAscDueTimeAscDateAscCreatedAtAscIdAsc(user).stream()
-                .filter(t -> matchStatus(t, statusFilter))
+                .filter(t -> matchStatus(t, statusFilter, now))
                 .filter(t -> categoryFilter == null || "all".equalsIgnoreCase(categoryFilter) || categoryFilter.equalsIgnoreCase(t.getCategory() == null ? "" : t.getCategory()))
                 .filter(t -> priorityFinal == null || t.getPriority() == priorityFinal)
                 .filter(t -> withinTaskBoardRange(t, fromDate, toDate))
                 .filter(t -> queryLower == null || taskMatchesQuery(t, queryLower))
                 .sorted(TASK_DISPLAY_ORDER)
-                .map(TaskDto::from)
+                .map(task -> TaskDto.from(task, now))
                 .toList();
         return PageDto.of(pageSlice(filtered, safePage, safeSize), safePage, safeSize, filtered.size());
     }
@@ -156,13 +163,13 @@ public class TaskService {
         return list.subList(from, to);
     }
 
-    private boolean matchStatus(DayTask task, String status) {
+    private boolean matchStatus(DayTask task, String status, LocalDateTime now) {
         return switch (status) {
             case "all" -> true;
             case "open" -> !task.isDone();
             case "done" -> task.isDone();
-            case "overdue" -> isOverdue(task);
-            case "upcoming" -> !task.isDone() && !isOverdue(task);
+            case "overdue" -> isOverdue(task, now);
+            case "upcoming" -> !task.isDone() && !isOverdue(task, now);
             default -> throw ApiException.badRequest("Неизвестный статус задач");
         };
     }
@@ -192,12 +199,12 @@ public class TaskService {
         return value != null && value.toLowerCase(Locale.ROOT).contains(q);
     }
 
-    private boolean isOverdue(DayTask task) {
+    private boolean isOverdue(DayTask task, LocalDateTime now) {
         if (task.isDone() || task.getDueDate() == null) return false;
-        LocalDate today = LocalDate.now();
+        LocalDate today = now.toLocalDate();
         if (task.getDueDate().isBefore(today)) return true;
         if (task.getDueDate().isAfter(today) || task.getDueTime() == null) return false;
-        return task.getDueTime().isBefore(LocalTime.now());
+        return task.getDueTime().isBefore(now.toLocalTime());
     }
 
     @Transactional
@@ -208,7 +215,7 @@ public class TaskService {
         DayTask task = new DayTask(user, d, text);
         applyCreateFields(task, req);
         validateBusinessRules(task);
-        return TaskDto.from(tasks.save(task));
+        return TaskDto.from(tasks.save(task), userTimeService.workNow(user));
     }
 
     @Transactional
@@ -231,7 +238,7 @@ public class TaskService {
         }
         if (!task.isReminderEnabled()) task.setReminderMinutesBefore(null);
         validateBusinessRules(task);
-        return TaskDto.from(tasks.save(task));
+        return TaskDto.from(tasks.save(task), userTimeService.workNow(user));
     }
 
     @Transactional
@@ -244,7 +251,7 @@ public class TaskService {
                 .findFirst()
                 .orElseThrow(() -> ApiException.notFound("Подзадача не найдена"));
         subtask.setDone(Boolean.TRUE.equals(req.done()));
-        return TaskDto.from(tasks.save(task));
+        return TaskDto.from(tasks.save(task), userTimeService.workNow(user));
     }
 
     @Transactional

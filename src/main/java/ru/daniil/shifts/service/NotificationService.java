@@ -16,6 +16,7 @@ import ru.daniil.shifts.repo.DayTaskRepository;
 import ru.daniil.shifts.repo.NotificationSettingsRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -183,17 +184,12 @@ public class NotificationService {
         }
 
         if (!includePast) {
-            LocalDateTime now = userTimeService.now(user);
-            out.removeIf(r -> {
-                try {
-                    return LocalDateTime.parse(r.remindAt()).isBefore(now);
-                } catch (RuntimeException ex) {
-                    return false;
-                }
-            });
+            Instant now = userTimeService.nowInstant();
+            out.removeIf(reminder -> reminderInstant(reminder, user).isBefore(now));
         }
 
-        out.sort(Comparator.comparing(NotificationReminderDto::remindAt).thenComparing(NotificationReminderDto::priority));
+        out.sort(Comparator.comparing((NotificationReminderDto reminder) -> reminderInstant(reminder, user))
+                .thenComparing(NotificationReminderDto::priority));
         return out;
     }
 
@@ -205,7 +201,7 @@ public class NotificationService {
                                                String title,
                                                String details,
                                                int priority) {
-        String instant = remindAt.atZone(userTimeService.zone(user)).toInstant().toString();
+        Instant instant = userTimeService.toWorkInstant(user, remindAt);
         return new NotificationReminderDto(
                 id,
                 type,
@@ -214,8 +210,22 @@ public class NotificationService {
                 title,
                 details,
                 priority,
-                instant
+                instant.toString(),
+                userTimeService.workZone(user).getId(),
+                userTimeService.inDisplayZone(instant, user).toLocalDateTime().toString(),
+                userTimeService.displayZone(user).getId()
         );
+    }
+
+    private Instant reminderInstant(NotificationReminderDto reminder, AppUser user) {
+        if (reminder.remindAtInstant() != null && !reminder.remindAtInstant().isBlank()) {
+            try {
+                return Instant.parse(reminder.remindAtInstant());
+            } catch (RuntimeException ignored) {
+                // Compatibility fallback for old or partially migrated clients.
+            }
+        }
+        return userTimeService.toWorkInstant(user, LocalDateTime.parse(reminder.remindAt()));
     }
 
     @Transactional

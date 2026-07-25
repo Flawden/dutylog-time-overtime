@@ -83,7 +83,7 @@ public class MobileV1AuthController {
     @GetMapping("/me")
     public MobileUserDto me(Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
-        return new MobileUserDto(current.getUsername());
+        return MobileUserDto.from(current);
     }
 
     @GetMapping("/sessions")

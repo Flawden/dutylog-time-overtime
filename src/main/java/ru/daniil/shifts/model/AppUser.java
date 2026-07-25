@@ -67,9 +67,13 @@ public class AppUser {
     @Column(name = "language_preference", length = 10)
     private String languagePreference = "ru";
 
-    /** Рабочий часовой пояс пользователя в формате IANA, например Europe/Moscow. */
+    /** Рабочий часовой пояс: календарные расчёты, смены, нормы и переработки. */
     @Column(name = "work_timezone", length = 80)
     private String workTimezone = "Europe/Moscow";
+
+    /** Часовой пояс отображения: меняет только представление абсолютных моментов. */
+    @Column(name = "display_timezone", length = 80)
+    private String displayTimezone;
 
     /** Первичный онбординг выбора модулей. Existing users миграцией считаются завершившими. */
     @Column(name = "onboarding_completed", nullable = false)
@@ -121,6 +125,14 @@ public class AppUser {
     public void setWorkTimezone(String workTimezone) {
         this.workTimezone = workTimezone == null || workTimezone.isBlank() ? "Europe/Moscow" : workTimezone.trim();
     }
+    public String getDisplayTimezone() {
+        return displayTimezone == null || displayTimezone.isBlank() ? getWorkTimezone() : displayTimezone;
+    }
+    public void setDisplayTimezone(String displayTimezone) {
+        this.displayTimezone = displayTimezone == null || displayTimezone.isBlank()
+                ? getWorkTimezone()
+                : displayTimezone.trim();
+    }
     public boolean isOnboardingCompleted() { return onboardingCompleted; }
     public void setOnboardingCompleted(boolean onboardingCompleted) { this.onboardingCompleted = onboardingCompleted; }
     public long getAuthVersion() { return authVersion; }
@@ -140,6 +152,7 @@ public class AppUser {
         setThemeConfig(themeConfig);
         setLanguagePreference(languagePreference);
         setWorkTimezone(workTimezone);
+        setDisplayTimezone(displayTimezone);
     }
 
     @PreUpdate
@@ -153,5 +166,6 @@ public class AppUser {
         setThemeConfig(themeConfig);
         setLanguagePreference(languagePreference);
         setWorkTimezone(workTimezone);
+        setDisplayTimezone(displayTimezone);
     }
 }

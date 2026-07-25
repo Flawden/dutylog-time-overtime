@@ -232,7 +232,7 @@ public class MobileAuthService {
                 token.getAccessExpiresAt().toString(),
                 refresh,
                 token.getRefreshExpiresAt().toString(),
-                new MobileUserDto(token.getOwner().getUsername())
+                MobileUserDto.from(token.getOwner())
         );
     }
 

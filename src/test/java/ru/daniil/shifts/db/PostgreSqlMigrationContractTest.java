@@ -60,6 +60,21 @@ class PostgreSqlMigrationContractTest {
         }
     }
 
+    @Test
+    void timeFoundationMigrationPreservesUnzonedLegacyDeliveriesWithoutGuessing() throws IOException {
+        String sql = Files.readString(MIGRATION_ROOT.resolve("V29__time_foundation.sql"));
+
+        assertTrue(sql.contains("ADD COLUMN IF NOT EXISTS display_timezone"));
+        assertTrue(sql.contains("remind_at_instant TIMESTAMPTZ"));
+        assertTrue(sql.contains("DROP CONSTRAINT IF EXISTS uq_tg_notification_once"));
+        assertTrue(sql.contains("UNIQUE (user_id, reminder_id, remind_at_instant)"));
+        assertTrue(sql.contains("WHERE remind_at_instant IS NULL"));
+        assertFalse(sql.contains("UPDATE telegram_notification_deliveries"),
+                "legacy local timestamps must not be reinterpreted through the owner's current timezone");
+        assertFalse(sql.contains("ALTER COLUMN remind_at_instant SET NOT NULL"),
+                "legacy rows intentionally have no trustworthy absolute identity");
+    }
+
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);

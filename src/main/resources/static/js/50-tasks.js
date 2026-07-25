@@ -1103,9 +1103,7 @@ async function loadInbox(silent = true){
   }
 }
 function inboxTimeLabel(value){
-  if (!value) return "";
-  try { return new Intl.DateTimeFormat(currentLocale(), { dateStyle:"short", timeStyle:"short" }).format(new Date(value)); }
-  catch (_) { return String(value).slice(0, 16).replace("T", " "); }
+  return formatAbsoluteInstant(value);
 }
 function renderInbox(){
   const list = $("inboxList");

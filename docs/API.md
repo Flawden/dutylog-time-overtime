@@ -1,4 +1,4 @@
-# DutyLog API v27.2.5
+# DutyLog API v27.7.0
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -86,6 +86,37 @@
 
 Telegram-напоминания v20.1 работают отдельно от команд. Для них должны быть включены Telegram, polling и `DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true`.
 
+## Time Foundation
+
+Time Foundation exposes one server `Instant` and two explicit IANA projections for every authenticated client.
+
+### GET `/api/time/context`
+
+Legacy web alias. Requires the normal authenticated web session.
+
+### GET `/api/v1/time/context`
+
+Versioned alias for web/mobile clients.
+
+Example response:
+
+```json
+{
+  "nowInstant": "2026-07-25T12:00:00Z",
+  "workTimezone": "Europe/Chisinau",
+  "displayTimezone": "Europe/Berlin",
+  "workLocalDateTime": "2026-07-25T15:00:00",
+  "displayLocalDateTime": "2026-07-25T14:00:00",
+  "workDate": "2026-07-25",
+  "displayDate": "2026-07-25",
+  "workOffset": "+03:00",
+  "displayOffset": "+02:00",
+  "sameTimezone": false
+}
+```
+
+`workTimezone` owns calendar calculations, shifts, deadlines and future overtime intervals. `displayTimezone` only changes how absolute moments are shown. Floating dates are never converted between the two zones.
+
 ## Web profile sessions
 
 Эти endpoint’ы используются браузерным UI профиля и защищены обычной web-сессией + CSRF. Они дублируют управление мобильными устройствами, но живут вне `/api/mobile/**`, чтобы mobile API оставался stateless/Bearer.
@@ -127,6 +158,8 @@ Telegram-напоминания v20.1 работают отдельно от к�
     "cardRadius": 16
   },
   "languagePreference": "ru",
+  "workTimezone": "Europe/Chisinau",
+  "displayTimezone": "Europe/Berlin",
   "onboardingCompleted": true
 }
 ```
@@ -156,6 +189,8 @@ Telegram-напоминания v20.1 работают отдельно от к�
     "cardRadius": 16
   },
   "languagePreference": "en",
+  "workTimezone": "Europe/Chisinau",
+  "displayTimezone": "Europe/Berlin",
   "onboardingCompleted": true
 }
 ```

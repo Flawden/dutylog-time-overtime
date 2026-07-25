@@ -311,7 +311,11 @@ async function loadProfile(){
     state.preferences = storeLocalAppearance({ themePreference:p.themePreference, accentColor:p.accentColor, themePreset:p.themePreset, themeConfig:p.themeConfig });
     applyAppearance(state.preferences);
     applyLanguage(p.languagePreference || state.language);
-    state.timeSettings = { ...loadTimeSettings(), workTimezone:p.workTimezone || loadTimeSettings().workTimezone };
+    state.timeSettings = {
+      ...loadTimeSettings(),
+      workTimezone:p.workTimezone || loadTimeSettings().workTimezone,
+      displayTimezone:p.displayTimezone || p.workTimezone || loadTimeSettings().displayTimezone
+    };
     storeTimeSettings(state.timeSettings);
     if (typeof renderTimeSettings === "function") renderTimeSettings();
     const av = $("profileAvatar");
@@ -349,6 +353,7 @@ function currentProfilePayload(extra = {}){
     birthday: $('profileBirthday')?.value || null,
     languagePreference: state.language,
     workTimezone: state.timeSettings?.workTimezone || state.profile?.workTimezone || browserTimeZone(),
+    displayTimezone: state.timeSettings?.displayTimezone || state.profile?.displayTimezone || browserTimeZone(),
     ...extra,
   };
 }
@@ -421,7 +426,7 @@ async function loadSessions(){
       dev.textContent = sess.deviceName || t("устройство");
       const meta = document.createElement("span");
       meta.className = "meta";
-      const last = sess.lastUsedAt ? sess.lastUsedAt.slice(0, 16).replace("T", " ") : t("не использовалась");
+      const last = sess.lastUsedAt ? formatAbsoluteInstant(sess.lastUsedAt) : t("не использовалась");
       meta.textContent = (sess.active ? t("активна") + " · " : t("отозвана") + " · ") + last;
       row.append(dev, meta);
       if (sess.active) {

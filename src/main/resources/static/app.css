@@ -2206,7 +2206,7 @@ body.app-modal-open .tabbar { visibility:hidden; pointer-events:none; }
 
 
 /* v27.4.2: simplified timezone selector and separated shift defaults. */
-.timeZoneSettingsGrid{grid-template-columns:minmax(280px,2fr) minmax(150px,1fr)}
+.timeZoneSettingsGrid{grid-template-columns:minmax(220px,1fr) minmax(220px,1fr) minmax(120px,.5fr)}
 .timeZoneSettingsGrid select{width:100%}
 .timeNowBox{display:grid;gap:6px}
 .timeNowBox code{font-family:var(--mono);font-size:12px;color:var(--mut)}
@@ -2763,3 +2763,5 @@ body.panel-open .globalQuickAdd { display:none !important; }
   .taskSubtaskInlineRow { grid-template-columns:auto minmax(0,1fr); }
   .taskSubtaskInlineDue { grid-column:2; white-space:normal; }
 }
+
+/* v27.7.0: explicit work/display timezone controls and Time Foundation presentation. */
