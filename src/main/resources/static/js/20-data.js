@@ -1029,9 +1029,10 @@ const dataLayer = {
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   },
-  async loadCalendar(y, m, applyBundle){
+  async loadCalendar(y, m, applyBundle, opts = {}){
+    const fresh = !!opts.fresh;
     let hadCache = false;
-    const snap = await this.readSnapshot();
+    const snap = fresh ? null : await this.readSnapshot();
     // A snapshot belongs to one exact calendar month. Never paint July data into
     // August (or vice versa) while the network request is still in flight.
     const snapshotMatchesMonth = snap?.bundle && snap.y === y && snap.m === m;
@@ -1052,7 +1053,7 @@ const dataLayer = {
       throw new Error(t("Нет связи и ещё нет локальной копии данных"));
     }
     try {
-      const bundle = await api.month(y, m);
+      const bundle = await api.month(y, m, { fresh });
       state.offline.online = true;
       await this.writeSnapshot(bundle, y, m);
       applyBundle(bundle, false);

@@ -115,7 +115,7 @@ AppUser.displayTimezone
 
 Правило DST детерминировано: разрыв сдвигается вперёд на длительность перехода, пересечение использует более ранний offset.
 
-С v27.8.0 `DayDto.shiftInterval` проецирует датированную смену одновременно в work/display zones, сохраняя одни и те же абсолютные границы. Новые рассчитанные `OvertimeCredit` хранят `startAtInstant`, `endAtInstant` и `sourceTimezone`; старые local-only строки не backfill'ятся без достоверной исходной зоны.
+С v27.8.0 `DayDto.shiftInterval` проецирует датированную смену одновременно в work/display zones, сохраняя одни и те же абсолютные границы. В v27.8.1 профиль загружается до первого календарного bundle, а изменение зон принудительно инвалидирует локальный snapshot и перечитывает проекции с сервера. Новые рассчитанные `OvertimeCredit` хранят `startAtInstant`, `endAtInstant` и `sourceTimezone`; старые local-only строки не backfill'ятся без достоверной исходной зоны.
 
 ### Notifications
 

@@ -1,25 +1,23 @@
-> Current release: **v27.8.0 — Zoned Work Intervals**.
+> Current release: **v27.8.1 — Timezone Projection Refresh Hotfix**.
 
 # DutyLog
 
-Current release: **v27.8.0 — Zoned Work Intervals**
+Current release: **v27.8.1 — Timezone Projection Refresh Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.8.0 — Zoned Work Intervals
+## Текущая версия: v27.8.1 — Timezone Projection Refresh Hotfix
 
-Этот релиз превращает датированную смену из пары локальных часов в безопасно вычисляемый абсолютный интервал. Рабочая зона остаётся владельцем смысла графика, а зона отображения меняет только представление одного и того же момента. Например, смена `08:30–17:00 Asia/Yekaterinburg` отображается как `06:30–15:00 Europe/Moscow`, не меняя рабочую дату, исходный график и расчётную идентичность.
+Этот hotfix закрывает реальный staging-регресс: настройки уже показывали новый `workTimezone`/`displayTimezone`, а карточка существующей смены могла продолжать отображать старую проекцию из IndexedDB, например `Europe/Kyiv`. Профиль теперь загружается до первого календарного запроса, а сохранение часовых поясов выполняет authoritative calendar reload без snapshot-first.
 
-API дня теперь возвращает `shiftInterval` с UTC-началом/концом, рабочей и отображаемой проекциями, фактической продолжительностью, обедом и чистыми минутами. Календарь и панель выбранного дня показывают display-проекцию, сохраняя рядом исходное рабочее время и IANA-зону. После смены display timezone активный месяц перечитывается без переписывания данных.
+Для ожидаемой проекции нужно оставить разные зоны: `Work = Asia/Yekaterinburg`, `Display = Europe/Moscow`. Тогда рабочая смена `08:30–17:00` отображается как `06:30–15:00`; если обе зоны одинаковые, локальные часы закономерно совпадают. Журнал переработок обновляется вместе с календарём.
 
-Новые автоматически рассчитанные начисления переработки сохраняют `start_at_instant`, `end_at_instant` и исходную IANA-зону. Их длительность и защита от пересечений работают по абсолютным моментам, включая переходы DST. Старые строки не получают выдуманный часовой пояс: они остаются legacy-local до явного редактирования периода. FIFO в этом релизе по-прежнему списывает часы, а не точные куски интервала — полная interval traceability остаётся следующим крупным этапом.
+Текущая автоматическая база: **80 Java-тестовых классов, 413 `@Test` методов и 16 Playwright browser scenarios**. Flyway остаётся на **V30**.
 
-Текущая автоматическая база: **79 Java-тестовых классов, 409 `@Test` методов и 16 Playwright browser scenarios**. Flyway идёт непрерывно до **V30**.
+Предыдущий функциональный релиз: **v27.8.0 — Zoned Work Intervals**. Предыдущая контрольная точка качества: **v27.7.1 — Task & Ledger Layout Hotfix**. Архитектурный фундамент: **v27.7.0 — Time Foundation**.
 
-Предыдущая контрольная точка качества: **v27.7.1 — Task & Ledger Layout Hotfix**. Архитектурный фундамент: **v27.7.0 — Time Foundation**. Предыдущий polish-релиз: **v27.6.3 — Polish & Consistency**.
-
-Предыдущие продуктовые контрольные точки: **v27.6.2 — Tasks & Subtasks**, **v27.6.1 — Quick Capture Polish**, **v27.6.0 — Mobile Tasks & Inbox UX**, **v27.5.2 — Telegram command menu and quick actions**, **v27.5.1 — Telegram commands and mobile sync status bugfix**, **v27.5.0 — Backup and recovery hardening**, **v27.4.3 — Reminder timezone and sync UX bugfix**, **v27.4.2 — Timezone simplification and critical regression pack**, **v27.4.1 — Overtime scenario manager** и **v27.4.0 — Unified overtime editors**.
+Предыдущий polish-релиз: **v27.6.3 — Polish & Consistency**. Предыдущие продуктовые контрольные точки: **v27.6.2 — Tasks & Subtasks**, **v27.6.1 — Quick Capture Polish**, **v27.6.0 — Mobile Tasks & Inbox UX**, **v27.5.2 — Telegram command menu and quick actions**, **v27.5.1 — Telegram commands and mobile sync status bugfix**, **v27.5.0 — Backup and recovery hardening**, **v27.4.3 — Reminder timezone and sync UX bugfix**, **v27.4.2 — Timezone simplification and critical regression pack**, **v27.4.1 — Overtime scenario manager** и **v27.4.0 — Unified overtime editors**.
 
 Ранее закрыты: **v27.2.31 — Authenticated deployment smoke-test hotfix**, **v27.2.30 — Host nginx CI/CD deployment hardening**, **v27.2.29 — Final security and product audit hardening**, **v27.2.28 — Staging deployment gate and diagnostics hardening**, **v27.2.27 — Playwright marker accordion hotfix**, **v27.2.26 — Playwright selector, accordion and line-ending hotfix**, **v27.2.25 — Playwright browser E2E regression baseline**, **v27.2.24 — Coverage floor and startup/module regression suite**, **v27.2.23 — Security test contract and secret-safe error logging hotfix**, **v27.2.22 — Security infrastructure regression and auth hardening suite**, **v27.2.21 — Telegram date validation and test harness hotfix**, **v27.2.20 — Telegram bot regression and delivery hardening suite**, **v27.2.19 — PostgreSQL migration and CI version hotfix**, **v27.2.18 — Mobile auth and sync lifecycle regression suite**, **v27.2.17 — Admin test context bootstrap hotfix**, **v27.2.16 — Profile and administration regression suite**, **v27.2.15 — Structured module-disabled error envelope hotfix**, **v27.2.14 — Quick scenarios and overtime API regression suite**, **v27.2.13 — Shift types and calendar patterns regression suite**, **v27.2.12 — Important dates regression suite**, **v27.2.11 — Task priority regression test correction**, **v27.2.10 — Task board status validation hotfix** и **v27.2.5 — Calendar day identity hotfix**.
 
@@ -246,6 +244,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
+- [`docs/TIMEZONE_PROJECTION_REFRESH_V27.8.1.md`](docs/TIMEZONE_PROJECTION_REFRESH_V27.8.1.md) — hotfix authoritative refresh после смены work/display timezone.
 - [`docs/ZONED_WORK_INTERVALS_V27.8.0.md`](docs/ZONED_WORK_INTERVALS_V27.8.0.md) — контракт абсолютных смен, work/display-проекций и новых timezone-aware начислений переработки.
 - [`docs/TASK_LEDGER_LAYOUT_HOTFIX_V27.7.1.md`](docs/TASK_LEDGER_LAYOUT_HOTFIX_V27.7.1.md) — контракт исправления карточек задач и действий журнала переработок.
 - [`docs/TIME_FOUNDATION_V27.7.0.md`](docs/TIME_FOUNDATION_V27.7.0.md) — контракт рабочего/display времени, абсолютных моментов, DST и будущих рабочих интервалов.
@@ -278,7 +277,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — развернуть и вручную проверить v27.8.0 на staging: проекцию `08:30 Asia/Yekaterinburg → 06:30 Europe/Moscow`, DST-продолжительность и новые абсолютные начисления. После приёмки начинается полный Overtime Interval Engine / Overtime 2.0 с точными FIFO-срезами и provenance.
+Следующий практический шаг — развернуть v27.8.1 и проверить authoritative refresh существующей смены после изменения зон. После зелёной приёмки начинается полный Overtime Interval Engine / Overtime 2.0 с точными FIFO-срезами и provenance.
 
 ## Служебный профиль администратора
 

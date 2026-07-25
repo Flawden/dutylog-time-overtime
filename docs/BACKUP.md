@@ -1,6 +1,6 @@
 # PostgreSQL backup operations
 
-Status: v27.8.0.
+Status: v27.8.1.
 
 > The active private-beta environment is currently `/opt/dutylog/staging`; production examples remain for the future dedicated server. Staging already uses the same backup, checksum, freshness and isolated restore-drill tooling.
 

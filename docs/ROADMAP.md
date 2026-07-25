@@ -2,7 +2,7 @@
 
 ## Текущая архитектурная точка — Zoned Work Intervals
 
-Статус: завершено в v27.8.0 поверх Time Foundation v27.7.0.
+Статус: v27.8.1 исправляет authoritative refresh поверх Zoned Work Intervals v27.8.0 и Time Foundation v27.7.0.
 
 Сделано:
 

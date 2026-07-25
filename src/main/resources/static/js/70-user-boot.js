@@ -35,7 +35,7 @@ function applyCalendarBundle(bundle){
 }
 
 let calendarLoadGeneration = 0;
-async function loadMonth(){
+async function loadMonth(opts = {}){
   const generation = ++calendarLoadGeneration;
   const requestedYear = state.y;
   const requestedMonth = state.m;
@@ -53,7 +53,7 @@ async function loadMonth(){
       state.ui.loadingCalendar = false;
       renderNotifications();
       renderCalendar();
-    });
+    }, { fresh:!!opts.fresh });
     if (generation !== calendarLoadGeneration) return;
     setSave(res?.fromCache ? "" : "");
   } catch (err) {
@@ -130,6 +130,9 @@ async function init(){
     state.shiftTypes = await api.shiftTypes();
     state.quickScenarios = moduleEnabled("scenarios") ? await api.quickScenarios() : [];
     if (moduleEnabled("important_dates")) await refreshImportantSettings();
+    // The calendar projection depends on the persisted work/display zones. Load the
+    // authoritative profile before the first month request instead of racing both.
+    await loadProfile();
   } catch (err) {
     console.error(err);
     if (err.status === 401) return; // при 401 нас уже уносит на login.html
@@ -572,7 +575,6 @@ Object.assign(I18N_EN, {
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 ensureTranslationObserver();
 applyLanguage(state.language);
-loadProfile();
 loadSessions();
 
 /* ─── Экспорт заметок ───────────────────────────────────────── */

@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.8.0.
+Status: v27.8.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.8.0 projects dated work shifts through one absolute interval and gives new calculated overtime credits durable instant/source-timezone identity. It preserves the v27.7.1 layout hotfix, v27.7.0 Time Foundation, v27.6.3 task polish, v27.6.2 one-level subtasks, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 79 Java test classes / 409 `@Test` methods and 16 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.8.1 forces authoritative timezone projection refresh after profile changes and loads the persisted profile before the first calendar request. It preserves v27.8.0 zoned work intervals, the v27.7.1 layout hotfix, v27.7.0 Time Foundation, v27.6.3 task polish, v27.6.2 one-level subtasks, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 80 Java test classes / 413 `@Test` methods and 16 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -15,6 +15,12 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
 
+
+## v27.8.1 Timezone Projection Refresh extension
+
+- `TimezoneProjectionRefreshFrontendContractTest` protects profile-before-calendar boot ordering, fresh calendar propagation, IndexedDB snapshot bypass and the joint calendar/ledger refresh.
+- `important-timezone.spec.js` now reproduces the staging bug with an existing dated shift before changing zones, then proves the card refreshes to `08:30 Asia/Yekaterinburg → 06:30 Europe/Moscow` without stale `Europe/Kyiv`.
+- Flyway remains at V30 because the fix changes projection refresh order, not persisted data.
 
 ## v27.8.0 Zoned Work Intervals extension
 

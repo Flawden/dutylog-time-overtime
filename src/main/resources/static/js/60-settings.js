@@ -426,10 +426,12 @@ async function saveTimeSettings(){
     storeTimeSettings(state.timeSettings);
     renderTimeSettings();
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
-    // Shift occurrences are projected by the server from one absolute interval.
-    // Reload the active month so a display-zone change is visible immediately.
-    if (typeof loadMonth === "function") await loadMonth();
-    if (state.selected && typeof renderChips === "function") renderChips();
+    // A timezone change invalidates every server projection in the cached month.
+    // Skip the IndexedDB-first path here: it would repaint the old source timezone
+    // and could leave the selected-day card stale even though the profile is saved.
+    if (typeof loadMonth === "function") await loadMonth({ fresh:true });
+    if (moduleEnabled("overtime") && typeof loadLedgerPage === "function") await loadLedgerPage(true);
+    if (state.selected && typeof renderSelectedDayModules === "function") renderSelectedDayModules();
     setSave("saved", t("настройки времени сохранены"));
     return true;
   } catch (err) {

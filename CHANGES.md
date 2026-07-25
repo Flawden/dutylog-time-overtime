@@ -1,3 +1,15 @@
+## v27.8.1 — Timezone Projection Refresh Hotfix
+
+### Authoritative timezone refresh
+- The authenticated profile now loads before the first calendar request, so dated shifts are projected with the persisted work/display zones from the beginning of the session.
+- Saving timezone settings forces a cache-bypassing calendar read and replaces the IndexedDB month snapshot instead of repainting a stale source zone first.
+- The overtime ledger refreshes together with the calendar because absolute overtime rows use the same display timezone.
+
+### Regression coverage
+- Replaced the browser scenario with the real regression path: create a dated shift, change work/display zones, then verify the existing card changes from `08:30 Asia/Yekaterinburg` to `06:30 Europe/Moscow` without retaining `Europe/Kyiv`.
+- Added frontend contracts for boot ordering, fresh calendar propagation, snapshot bypass and ledger refresh.
+- Baseline: 80 Java test classes / 413 `@Test` methods and 16 Chromium Playwright scenarios. Flyway remains at V30.
+
 ## v27.8.0 — Zoned Work Intervals
 
 ### Dated shift projections

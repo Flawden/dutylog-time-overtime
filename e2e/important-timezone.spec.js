@@ -63,17 +63,11 @@ test('important dates stay in work timezone while display timezone survives relo
 });
 
 
-test('dated shift keeps work time and projects into display timezone', async ({ page }) => {
+test('existing dated shift refreshes after work and display timezone change', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'shift-zone' });
 
-  await page.locator('#tabbar a[data-view="settings"]').click();
-  await page.locator('[data-settings-jump="time"]').click();
-  await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
-  await page.locator('#displayTimezone').selectOption('Europe/Moscow');
-  const profileSaved = waitForApi(page, 'PUT', '/api/profile');
-  await page.locator('#timeSaveTimezone').click();
-  await profileSaved;
-
+  // Create the dated shift first. The bug reproduced only for an existing cached
+  // month: settings changed, but the day panel kept the previous projection.
   await page.locator('#tabbar a[data-view="calendar"]').click();
   const day = page.locator('#grid .cell:not(.empty)').first();
   await day.click();
@@ -89,10 +83,29 @@ test('dated shift keeps work time and projects into display timezone', async ({ 
   await dayShift.click();
   await saved;
 
+  await page.locator('#tabbar a[data-view="settings"]').click();
+  await page.locator('[data-settings-jump="time"]').click();
+  await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
+  await page.locator('#displayTimezone').selectOption('Europe/Moscow');
+  const profileSaved = waitForApi(page, 'PUT', '/api/profile');
+  const calendarRefreshed = page.waitForResponse(response => {
+    const url = new URL(response.url());
+    return response.request().method() === 'GET'
+      && url.pathname === '/api/calendar'
+      && url.searchParams.has('_')
+      && response.status() === 200;
+  });
+  await page.locator('#timeSaveTimezone').click();
+  await profileSaved;
+  await calendarRefreshed;
+
+  await page.locator('#tabbar a[data-view="calendar"]').click();
+  await day.click();
   const projection = page.locator('#shiftProjection');
   await expect(projection).toBeVisible();
   await expect(projection).toContainText('Asia/Yekaterinburg');
   await expect(projection).toContainText('Europe/Moscow');
   await expect(projection).toContainText('08:30');
   await expect(projection).toContainText('06:30');
+  await expect(projection).not.toContainText('Europe/Kyiv');
 });
