@@ -59,6 +59,23 @@ class TaskAndShiftEditorsFrontendContractTest {
     }
 
     @Test
+    void taskCardsAndOvertimeLedgerKeepActionsInDedicatedLayoutColumns() throws Exception {
+        String html = read("src/main/resources/static/index.html");
+        String tasks = read("src/main/resources/static/js/50-tasks.js");
+        String overtime = read("src/main/resources/static/js/40-overtime.js");
+        String css = read("src/main/resources/static/app.css");
+
+        assertTrue(css.contains("grid-template-columns:auto minmax(0,1fr) auto"));
+        assertTrue(css.contains(".taskItem > .tinyDel"));
+        assertTrue(css.contains(".taskItem > .taskSubtasksInline"));
+        assertTrue(tasks.contains("row.append(checkbox, body, remove)"));
+        assertTrue(html.contains("class=\"ledgerActionsHead\">Действия</th>"));
+        assertTrue(overtime.contains("class=\"ledgerRowActions\""));
+        assertTrue(overtime.contains("class=\"ledgerUsageActions\""));
+        assertTrue(overtime.contains("удалить списание"));
+    }
+
+    @Test
     void shiftTypeManagerLivesBehindCalendarPlusInsteadOfSettingsCard() throws Exception {
         String html = read("src/main/resources/static/index.html");
         String tasks = read("src/main/resources/static/js/50-tasks.js");

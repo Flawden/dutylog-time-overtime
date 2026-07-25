@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.7.0.
+Status: v27.7.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.7.0 adds separate work/display IANA timezones, one-instant/two-projection API contracts, deterministic DST resolution, absolute reminder ordering and Telegram delivery identity, work-timezone task status and the first absolute work-interval resolver. It preserves v27.6.3 task polish, v27.6.2 one-level subtasks, v27.6.1 universal quick capture, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 78 Java test classes / 398 `@Test` methods and 15 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.7.1 stabilises task-card action placement and separates overtime-credit actions from FIFO-usage actions. It preserves the v27.7.0 Time Foundation, v27.6.3 task polish, v27.6.2 one-level subtasks, v27.6.1 universal quick capture, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 78 Java test classes / 399 `@Test` methods and 15 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,16 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.7.1 Task and ledger layout hotfix extension
+
+Automated coverage now additionally verifies:
+
+- day-task cards use a stable checkbox/body/delete grid;
+- inline subtasks occupy the content row without the old mobile offset;
+- the overtime table exposes a dedicated Actions header and credit-level action cell;
+- FIFO usage controls are explicitly labelled as usage edit/delete actions.
 
 
 ## v27.7.0 Time Foundation extension

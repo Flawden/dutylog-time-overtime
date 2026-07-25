@@ -1,3 +1,17 @@
+## v27.7.1 — Task & Ledger Layout Hotfix
+
+### Task cards
+- Replaced the wrapping day-task flex row with a stable three-column grid: checkbox, flexible body and pinned delete action.
+- Kept inline subtasks aligned under the task body and removed the mobile-only offset that could push the checklist outside the card.
+
+### Overtime ledger
+- Added an explicit `Действия / Actions` column for credit-level edit and delete controls.
+- Rendered each FIFO usage as a structured block and renamed its controls to `ред. списание` / `удалить списание`, making credit actions and usage actions unambiguous.
+
+### Regression coverage
+- Added a frontend contract test for the task-card grid, dedicated ledger action column and explicit usage-action labels.
+- Baseline: 78 Java test classes / 399 `@Test` methods and 15 Chromium Playwright scenarios.
+
 ## v27.7.0 — Time Foundation
 
 ### Explicit time semantics

@@ -1034,11 +1034,18 @@ function renderLedgerTable(){
     tr.classList.toggle("ledgerEditingRow", editingCredit || editingUsage);
     const status = creditStatus(c);
     const usedText = (c.usages || []).length
-      ? (c.usages || []).map(u => `${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""} · <button type="button" data-edit-usage="${u.usageId}">${esc(t("ред."))}</button> · <button type="button" data-del-usage="${u.usageId}">${esc(t("удалить"))}</button>`).join("<br>")
+      ? (c.usages || []).map(u => `
+          <div class="ledgerUsageItem">
+            <span class="ledgerUsageText">${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""}</span>
+            <span class="ledgerUsageActions" aria-label="${esc(t("Действия списания"))}">
+              <button type="button" data-edit-usage="${u.usageId}" title="${esc(t("Редактировать списание"))}">${esc(t("ред. списание"))}</button>
+              <button type="button" data-del-usage="${u.usageId}" title="${esc(t("Удалить списание"))}">${esc(t("удалить списание"))}</button>
+            </span>
+          </div>`).join("")
       : `<span class="small">${esc(t("не списывалось"))}</span>`;
     const calcInfo = c.calculated ? `<div class="small">${esc(t("обед"))}: ${c.breakMinutes || 0} ${state.language === "en" ? "min" : "мин"}${numOr0(c.plannedHours) ? ` · ${esc(t("план"))}: ${fmtHours(c.plannedHours)} ${state.language === "en" ? "h" : "ч"}` : ""}</div>` : "";
     const deleteBtn = numOr0(c.usedHours) <= 0.0001
-      ? `<button type="button" data-del-credit="${c.id}">${esc(t("удалить"))}</button>`
+      ? `<button type="button" data-del-credit="${c.id}" title="${esc(t("Удалить переработку"))}">${esc(t("удалить"))}</button>`
       : `<span class="small" title="${esc(t("Сначала удали списания, которые используют это начисление"))}">${esc(t("сначала списания"))}</span>`;
     tr.innerHTML = `
       <td class="mono">${esc(c.workedDate)}<div class="ledgerStatus ${status}">${statusLabel(status)}</div></td>
@@ -1048,7 +1055,7 @@ function renderLedgerTable(){
       <td class="numc used">${fmtHours(c.usedHours)} ч</td>
       <td class="small">${usedText}</td>
       <td class="numc remain">${fmtHours(c.remainingHours)} ч</td>
-      <td><button type="button" data-edit-credit="${c.id}">ред.</button><br>${deleteBtn}</td>
+      <td class="ledgerRowActions"><button type="button" data-edit-credit="${c.id}" title="${esc(t("Редактировать переработку"))}">${esc(t("ред."))}</button>${deleteBtn}</td>
     `;
     tbody.appendChild(tr);
   }

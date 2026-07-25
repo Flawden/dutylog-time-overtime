@@ -1,23 +1,21 @@
-> Current release: **v27.7.0 — Time Foundation**.
+> Current release: **v27.7.1 — Task & Ledger Layout Hotfix**.
 
 # DutyLog
 
-Current release: **v27.7.0 — Time Foundation**
+Current release: **v27.7.1 — Task & Ledger Layout Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.7.0 — Time Foundation
+## Текущая версия: v27.7.1 — Task & Ledger Layout Hotfix
 
-Это архитектурный релиз, который разделяет календарный смысл и абсолютное время. У каждого пользователя теперь есть два независимых IANA-идентификатора: **рабочий часовой пояс** определяет календарный день, смены, сроки и будущие расчёты переработок, а **часовой пояс отображения** только проецирует уже существующие абсолютные моменты для интерфейса.
+Это небольшой релиз качества поверх Time Foundation. Карточка задачи переведена на устойчивую трёхколоночную grid-разметку: чекбокс остаётся слева, содержание занимает свободное пространство, а удаление закреплено справа и больше не переносится под карточку. Раскрытый checklist выравнивается под содержанием задачи без лишнего отступа на узких экранах.
 
-`UserTimeService` стал единой границей времени: он выдаёт текущий `Instant`, строит work/display-проекции и детерминированно обрабатывает DST. Несуществующее локальное время сдвигается вперёд через разрыв, а неоднозначное использует более раннее смещение. Новый `WorkIntervalService` переводит рабочие интервалы в абсолютные моменты и корректно считает минуты через полночь и переходы летнего времени — это прямой фундамент для Overtime 2.0.
+В журнале переработок появилась явная колонка «Действия». Редактирование и удаление самого начисления остаются в ней, а действия внутри «Куда списано» теперь подписаны как действия конкретного списания — «ред. списание» и «удалить списание». Это устраняет двусмысленность между удалением начисленной переработки и удалением её FIFO-списания.
 
-Напоминания теперь сортируются и фильтруются по абсолютным моментам. Новые Telegram-доставки хранят `remind_at_instant TIMESTAMPTZ` и дедуплицируются по нему; старые беззоновые записи остаются на безопасном legacy-local fallback, поэтому миграция не выдумывает им исходный часовой пояс. Просроченность задач рассчитывается в рабочем часовом поясе пользователя, а timestamps синхронизации и мобильных сессий показываются в display timezone.
+Time Foundation из v27.7.0 остаётся без изменений: work/display IANA-зоны, абсолютные напоминания, безопасная Telegram-миграция и `WorkIntervalService` сохранены. Текущая автоматическая база: **78 Java-тестовых классов, 399 `@Test` методов и 15 Playwright browser scenarios**. Следующий крупный этап — отображение абсолютных рабочих интервалов и **Overtime Interval Engine / Overtime 2.0**.
 
-Добавлены `GET /api/time/context` и `/api/v1/time/context`, расширены mobile/reminder DTO, а Flyway теперь заканчивается на **V29**. Плавающие даты — дни рождения, важные даты, заметки и задачи без абсолютного момента — не конвертируются и не «переезжают» между днями.
-
-Текущая автоматическая база: **78 Java-тестовых классов, 398 `@Test` методов и 15 Playwright browser scenarios**. Предыдущая контрольная точка: **v27.6.3 — Polish & Consistency**. Следующий архитектурный этап — **Overtime Interval Engine / Overtime 2.0**.
+Предыдущая архитектурная контрольная точка: **v27.7.0 — Time Foundation**. Предыдущий polish-релиз: **v27.6.3 — Polish & Consistency**.
 
 Предыдущие продуктовые контрольные точки: **v27.6.2 — Tasks & Subtasks**, **v27.6.1 — Quick Capture Polish**, **v27.6.0 — Mobile Tasks & Inbox UX**, **v27.5.2 — Telegram command menu and quick actions**, **v27.5.1 — Telegram commands and mobile sync status bugfix**, **v27.5.0 — Backup and recovery hardening**, **v27.4.3 — Reminder timezone and sync UX bugfix**, **v27.4.2 — Timezone simplification and critical regression pack**, **v27.4.1 — Overtime scenario manager** и **v27.4.0 — Unified overtime editors**.
 
@@ -246,6 +244,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
+- [`docs/TASK_LEDGER_LAYOUT_HOTFIX_V27.7.1.md`](docs/TASK_LEDGER_LAYOUT_HOTFIX_V27.7.1.md) — контракт исправления карточек задач и действий журнала переработок.
 - [`docs/TIME_FOUNDATION_V27.7.0.md`](docs/TIME_FOUNDATION_V27.7.0.md) — контракт рабочего/display времени, абсолютных моментов, DST и будущих рабочих интервалов.
 - [`docs/TASK_POLISH_CONSISTENCY_V27.6.3.md`](docs/TASK_POLISH_CONSISTENCY_V27.6.3.md) — контракт релиза качества задач: сроки, open-first, прогресс, подзадачи и mobile polish.
 - [`docs/TASK_SUBTASKS_V27.6.2.md`](docs/TASK_SUBTASKS_V27.6.2.md) — продуктовый и технический контракт одноуровневых подзадач.
@@ -276,7 +275,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — развернуть и вручную проверить v27.7.0 на staging. После приёмки начинается Overtime Interval Engine / Overtime 2.0 на новом временном фундаменте.
+Следующий практический шаг — развернуть и вручную проверить v27.7.1 на staging. После приёмки начинается отображение абсолютных рабочих интервалов и Overtime Interval Engine / Overtime 2.0 на новом временном фундаменте.
 
 ## Служебный профиль администратора
 

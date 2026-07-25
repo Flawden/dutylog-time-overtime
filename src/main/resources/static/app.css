@@ -2765,3 +2765,90 @@ body.panel-open .globalQuickAdd { display:none !important; }
 }
 
 /* v27.7.0: explicit work/display timezone controls and Time Foundation presentation. */
+
+
+/* v27.7.1: stable task-card grid and explicit overtime action columns. */
+.taskItem {
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  align-items:start;
+  column-gap:8px;
+  row-gap:6px;
+  flex-wrap:initial;
+}
+.taskItem > input[type=checkbox] {
+  grid-column:1;
+  grid-row:1;
+}
+.taskItem > .taskItemBody {
+  grid-column:2;
+  grid-row:1;
+  width:auto;
+}
+.taskItem > .tinyDel {
+  grid-column:3;
+  grid-row:1;
+  align-self:start;
+  justify-self:end;
+  margin:0;
+}
+.taskItem > .taskSubtasksInline {
+  grid-column:2 / -1;
+  width:100%;
+  min-width:0;
+  margin:0;
+}
+
+.ledgerTable .ledgerActionsHead,
+.ledgerTable .ledgerRowActions {
+  width:92px;
+  min-width:92px;
+  text-align:right;
+  white-space:nowrap;
+}
+.ledgerRowActions {
+  text-align:right;
+}
+.ledgerRowActions > button,
+.ledgerRowActions > span {
+  display:block;
+  width:max-content;
+  margin-left:auto;
+}
+.ledgerRowActions > * + * {
+  margin-top:5px;
+}
+.ledgerUsageItem {
+  display:grid;
+  gap:3px;
+  padding:3px 0;
+}
+.ledgerUsageItem + .ledgerUsageItem {
+  margin-top:4px;
+  padding-top:7px;
+  border-top:1px dashed color-mix(in srgb, var(--line) 72%, transparent);
+}
+.ledgerUsageText {
+  overflow-wrap:anywhere;
+}
+.ledgerUsageActions {
+  display:flex;
+  flex-wrap:wrap;
+  gap:7px;
+}
+.ledgerUsageActions button {
+  color:var(--mut);
+  text-decoration:underline;
+  text-decoration-style:dotted;
+  text-underline-offset:2px;
+}
+.ledgerUsageActions button[data-del-usage] {
+  color:color-mix(in srgb, var(--danger) 76%, var(--mut));
+}
+
+@media (max-width:430px) {
+  .taskItem > .taskSubtasksInline {
+    width:100%;
+    margin-left:0;
+  }
+}

@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.7.0}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.7.1}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -953,7 +953,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.7.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.7.1"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1006,7 +1006,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.7.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.7.1"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1028,7 +1028,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.7.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.7.1"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1123,7 +1123,15 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.7.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.7.1"
+
+# v27.7.1 Task and ledger layout hotfix
+contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
+contains README.md "v27.7.1 — Task & Ledger Layout Hotfix"
+contains docs/TASK_LEDGER_LAYOUT_HOTFIX_V27.7.1.md "three columns"
+contains src/main/resources/static/app.css "v27.7.1: stable task-card grid"
+contains src/main/resources/static/index.html "ledgerActionsHead"
+contains src/main/resources/static/js/40-overtime.js "ledgerUsageActions"
 contains src/main/resources/db/migration/postgresql/V29__time_foundation.sql "ADD COLUMN IF NOT EXISTS display_timezone"
 contains src/main/resources/db/migration/postgresql/V29__time_foundation.sql "remind_at_instant TIMESTAMPTZ"
 contains src/main/resources/db/migration/postgresql/V29__time_foundation.sql "uq_tg_notification_once_instant"
@@ -1187,7 +1195,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.7.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.7.1"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1291,10 +1299,10 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "398" ]]; then
-  ok "test method baseline: 398"
+if [[ "$TEST_METHODS" == "399" ]]; then
+  ok "test method baseline: 399"
 else
-  fail "expected 398 @Test methods, found $TEST_METHODS"
+  fail "expected 399 @Test methods, found $TEST_METHODS"
 fi
 if [[ "$TEST_CLASSES" == "78" ]]; then
   ok "test class baseline: 78"
