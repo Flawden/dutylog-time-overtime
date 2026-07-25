@@ -1,15 +1,17 @@
-> Current release: **v27.9.0 — Overtime Interval Engine**.
+> Current release: **v27.9.1 — Overtime Allocation Rendering Hotfix**.
 
 # DutyLog
 
-Current release: **v27.9.0 — Overtime Interval Engine**
+Current release: **v27.9.1 — Overtime Allocation Rendering Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.9.0 — Overtime Interval Engine
+## Текущая версия: v27.9.1 — Overtime Allocation Rendering Hotfix
 
-DutyLog теперь хранит FIFO переработок в целых минутах и показывает, **какие именно участки исходных интервалов были использованы для каждого отгула**. При переходе через полночь UI раскладывает один непрерывный интервал на понятные строки по календарным дням.
+v27.9.1 исправляет runtime-регрессию точной расшифровки: межсуточное списание больше не вызывает `ReferenceError: formatDate is not defined`, не обрывает перерисовку выбранного дня и не оставляет в правой панели предыдущую смену. Форматирование использует существующий `formatDateHuman`, а браузерный сценарий проверяет полноценное списание `17:00–01:00` с разбивкой по полуночи.
+
+Функциональная основа остаётся **v27.9.0 — Overtime Interval Engine**. DutyLog теперь хранит FIFO переработок в целых минутах и показывает, **какие именно участки исходных интервалов были использованы для каждого отгула**. При переходе через полночь UI раскладывает один непрерывный интервал на понятные строки по календарным дням.
 
 Пользовательская модель времени упрощена до одного канонического IANA-часового пояса. Старые `workTimezone`/`displayTimezone` сохранены в wire/database-контракте, но всегда совпадают. Абсолютные переработки отображаются в текущей зоне пользователя, сохраняя исходный `sourceTimezone` и неизменный UTC-интервал.
 
@@ -17,7 +19,7 @@ DutyLog теперь хранит FIFO переработок в целых ми
 
 Карточка смены теперь отдельно показывает чистое рабочее время и обед, вместо неоднозначной общей «фактической длительности».
 
-Текущая автоматическая база: **81 Java-тестовый класс, 424 `@Test` метода и 16 Playwright browser scenarios**. Flyway расширен до **V31**.
+Текущая автоматическая база: **81 Java-тестовый класс, 425 `@Test` методов и 16 Playwright browser scenarios**. Flyway расширен до **V31**.
 
 Предыдущий hotfix: **v27.8.1 — Timezone Projection Refresh Hotfix**. Функциональный фундамент: **v27.8.0 — Zoned Work Intervals**, **v27.7.1 — Task & Ledger Layout Hotfix** и **v27.7.0 — Time Foundation**.
 
@@ -244,6 +246,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
+- [`docs/OVERTIME_ALLOCATION_RENDERING_HOTFIX_V27.9.1.md`](docs/OVERTIME_ALLOCATION_RENDERING_HOTFIX_V27.9.1.md) — исправление runtime-рендера точных межсуточных списаний.
 - [`docs/OVERTIME_INTERVAL_ENGINE_V27.9.0.md`](docs/OVERTIME_INTERVAL_ENGINE_V27.9.0.md) — поминутный FIFO, точные интервалы и мастер миграции legacy overtime.
 - [`docs/TIMEZONE_PROJECTION_REFRESH_V27.8.1.md`](docs/TIMEZONE_PROJECTION_REFRESH_V27.8.1.md) — hotfix authoritative refresh после смены work/display timezone.
 - [`docs/ZONED_WORK_INTERVALS_V27.8.0.md`](docs/ZONED_WORK_INTERVALS_V27.8.0.md) — контракт абсолютных смен, work/display-проекций и новых timezone-aware начислений переработки.
@@ -318,7 +321,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — развернуть v27.9.0, мигрировать доступные legacy overtime-записи и вручную проверить точную расшифровку FIFO. После зелёной приёмки можно переходить к Task Details и дальнейшему развитию календаря.
+Следующий практический шаг — развернуть v27.9.1, повторить восьмичасовое межсуточное списание и убедиться, что выбранный день, смена и точные интервалы обновляются без ошибок консоли. После зелёной приёмки можно переходить к Task Details и дальнейшему развитию календаря.
 
 ## Служебный профиль администратора
 

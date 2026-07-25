@@ -1,3 +1,12 @@
+## v27.9.1 — Overtime Allocation Rendering Hotfix
+
+- Fixed `ReferenceError: formatDate is not defined` while rendering exact cross-midnight FIFO allocations.
+- Selected-day rendering no longer aborts after an overtime usage is created, so the calendar highlight and shift details follow the clicked date.
+- Exact allocations continue to split cleanly at midnight using the existing `formatDateHuman` helper.
+- Expanded the browser regression to create an eight-hour overnight credit, consume it fully and verify both `17:00–24:00` and `00:00–01:00` segments without console errors.
+- Added a frontend contract and release-gate runtime smoke for the allocation formatter.
+- No database migration or FIFO model changes; Flyway remains at V31.
+
 ## v27.9.0 — Overtime Interval Engine
 
 - Replaced floating-point FIFO authority with deterministic integer minutes.

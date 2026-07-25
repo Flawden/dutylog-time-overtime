@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.9.0.
+Status: v27.9.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.9.0 adds integer-minute FIFO, exact overtime allocation provenance, a legacy timezone migration wizard and one canonical user timezone. It preserves v27.8.1 authoritative refresh, v27.8.0 zoned work intervals, the v27.7.1 layout hotfix, v27.7.0 Time Foundation, v27.6.3 task polish, v27.6.2 one-level subtasks, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 81 Java test classes / 424 `@Test` methods and 16 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.9.1 fixes exact cross-midnight allocation rendering so selected-day refresh cannot be aborted by an undefined date formatter. It preserves v27.9.0 integer-minute FIFO, exact overtime allocation provenance, the legacy timezone migration wizard and one canonical user timezone, plus all earlier foundations. Current application baseline: 81 Java test classes / 425 `@Test` methods and 16 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -15,6 +15,13 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
 
+
+## v27.9.1 Overtime Allocation Rendering Hotfix extension
+
+- `OvertimeIntervalEngineFrontendContractTest` proves exact ranges use the defined `formatDateHuman` helper and forbids the missing `formatDate` symbol.
+- `overtime-editor-modals.spec.js` now creates `17:00–01:00`, consumes all eight hours and verifies both midnight-split labels while the shared fixture rejects browser page errors.
+- `release-check.sh` executes `allocationRangeLabels()` in a Node VM with a cross-midnight allocation, so this runtime regression is caught before packaging.
+- Flyway remains at V31 because the hotfix changes only browser rendering and regression coverage.
 
 ## v27.9.0 Overtime Interval Engine extension
 

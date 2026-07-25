@@ -187,14 +187,14 @@ function allocationRangeLabels(allocation){
   const startTime = start.slice(11, 16), endTime = end.slice(11, 16);
   if (!startDate || !endDate || startDate === endDate) return [displayDateTimeRange(start, end)];
 
-  const labels = [`${formatDate(startDate)} ${startTime}–24:00`];
+  const labels = [`${formatDateHuman(startDate)} ${startTime}–24:00`];
   const cursor = new Date(`${startDate}T00:00:00Z`);
   cursor.setUTCDate(cursor.getUTCDate() + 1);
   while (cursor.toISOString().slice(0, 10) < endDate) {
-    labels.push(`${formatDate(cursor.toISOString().slice(0, 10))} 00:00–24:00`);
+    labels.push(`${formatDateHuman(cursor.toISOString().slice(0, 10))} 00:00–24:00`);
     cursor.setUTCDate(cursor.getUTCDate() + 1);
   }
-  if (endTime !== "00:00") labels.push(`${formatDate(endDate)} 00:00–${endTime}`);
+  if (endTime !== "00:00") labels.push(`${formatDateHuman(endDate)} 00:00–${endTime}`);
   return labels;
 }
 

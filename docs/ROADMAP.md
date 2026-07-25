@@ -2,7 +2,7 @@
 
 ## Текущая архитектурная точка — Overtime Interval Engine
 
-Статус: v27.9.0 переводит бухгалтерию переработок на поминутный FIFO с точным provenance поверх Time Foundation и Zoned Work Intervals.
+Статус: v27.9.1 стабилизирует browser-рендер точных межсуточных списаний поверх v27.9.0 Overtime Interval Engine.
 
 Сделано:
 

@@ -43,6 +43,16 @@ class OvertimeIntervalEngineFrontendContractTest {
     }
 
     @Test
+    void exactAllocationRangesUseTheExistingHumanDateFormatter() throws Exception {
+        String overtime = resource("js/40-overtime.js");
+
+        assertTrue(overtime.contains("formatDateHuman(startDate)"));
+        assertTrue(overtime.contains("formatDateHuman(endDate)"));
+        assertFalse(overtime.contains("formatDate(startDate)"));
+        assertFalse(overtime.contains("formatDate(endDate)"));
+    }
+
+    @Test
     void legacyMigrationWizardHasPreviewSelectionAndApplyFlow() throws Exception {
         String html = resource("index.html");
         String data = resource("js/20-data.js");
