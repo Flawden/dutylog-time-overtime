@@ -123,7 +123,8 @@ public class UserTimeService {
         return ZonedDateTime.ofLocal(shifted, safeZone, transition.getOffsetAfter());
     }
 
-    private ZoneId resolveZone(String value, ZoneId fallback) {
+    /** Resolves a persisted IANA identifier without throwing on legacy/corrupt data. */
+    public ZoneId resolveZone(String value, ZoneId fallback) {
         try {
             return ZoneId.of(value == null || value.isBlank() ? fallback.getId() : value.trim());
         } catch (DateTimeException e) {

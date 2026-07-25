@@ -28,14 +28,17 @@ import ru.daniil.shifts.repo.OvertimeUsageRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,19 +53,22 @@ public class OvertimeService {
     private final OvertimeUsageRepository usages;
     private final OvertimeAllocationRepository allocations;
     private final SecurityEventLogger securityEvents;
+    private final UserTimeService userTimeService;
 
     public OvertimeService(DayEntryRepository days,
                            DayEntryService dayEntryService,
                            OvertimeCreditRepository credits,
                            OvertimeUsageRepository usages,
                            OvertimeAllocationRepository allocations,
-                           SecurityEventLogger securityEvents) {
+                           SecurityEventLogger securityEvents,
+                           UserTimeService userTimeService) {
         this.days = days;
         this.dayEntryService = dayEntryService;
         this.credits = credits;
         this.usages = usages;
         this.allocations = allocations;
         this.securityEvents = securityEvents;
+        this.userTimeService = userTimeService;
     }
 
     /**
@@ -102,7 +108,7 @@ public class OvertimeService {
                 .collect(Collectors.groupingBy(a -> a.getUsage().getId()));
 
         List<OvertimeCreditRowDto> creditRows = creditList.stream()
-                .map(c -> creditRow(c, byCredit.getOrDefault(c.getId(), List.of())))
+                .map(c -> creditRow(user, c, byCredit.getOrDefault(c.getId(), List.of())))
                 .toList();
 
         List<OvertimeUsageDto> usageRows = usageList.stream()
@@ -221,7 +227,7 @@ public class OvertimeService {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
 
-        CalculatedCredit calculated = calculateCredit(req);
+        CalculatedCredit calculated = calculateCredit(user, req);
         if (!calculated.calculated()) {
             LocalDate date = dayEntryService.parseDate(req.date(), "Дата переработки должна быть в формате yyyy-MM-dd");
             credits.save(new OvertimeCredit(
@@ -234,18 +240,18 @@ public class OvertimeService {
             return account(user);
         }
 
-        List<CreditSegment> segments = splitCalculatedCredit(calculated);
+        List<CreditSegment> segments = splitCalculatedCredit(user, calculated);
         if (segments.isEmpty()) {
             throw ApiException.badRequest("После разбиения по датам переработка получилась 0 или меньше");
         }
 
         for (CreditSegment segment : segments) {
-            ensureNoOvertimeOverlap(user, segment.startAt(), segment.endAt(), null);
+            ensureNoOvertimeOverlap(user, segment.startAt(), segment.endAt(), segment.startInstant(), segment.endInstant(), null);
         }
 
         String reason = normalize(req.reason());
         for (CreditSegment segment : segments) {
-            credits.save(new OvertimeCredit(
+            OvertimeCredit credit = new OvertimeCredit(
                     user,
                     segment.workDate(),
                     formatTimeRange(segment.startAt(), segment.endAt()),
@@ -256,7 +262,9 @@ public class OvertimeService {
                     segment.breakMinutes(),
                     segment.plannedHours(),
                     true
-            ));
+            );
+            applyAbsoluteIdentity(credit, segment);
+            credits.save(credit);
         }
         return account(user);
     }
@@ -281,10 +289,28 @@ public class OvertimeService {
         }
         OvertimeCredit credit = requireOwnedCredit(user, id);
         double used = allocations.sumHoursByCredit(credit);
+        boolean keepLegacyLocalIdentity = credit.getStartAtInstant() == null
+                && req.date() == null
+                && req.startDateTime() == null
+                && req.endDateTime() == null
+                && req.breakMinutes() == null
+                && req.plannedHours() == null;
 
         OvertimeCreditCreateRequest normalized = normalizeCreditUpdateRequest(credit, req);
-        CalculatedCredit calculated = calculateCredit(normalized);
         String reason = req.reason() != null ? normalize(req.reason()) : credit.getReason();
+
+        // A calculated interval owns the timezone in which its wall-clock values
+        // were entered. Merely opening and saving the editor after changing the
+        // account work timezone must never move the already stored instant.
+        if (sameCalculatedDefinition(credit, normalized)) {
+            credit.setReason(reason);
+            if (req.timeRange() != null) credit.setTimeRange(normalize(req.timeRange()));
+            credits.save(credit);
+            return account(user);
+        }
+
+        String preferredSourceTimezone = credit.isCalculated() ? credit.getSourceTimezone() : null;
+        CalculatedCredit calculated = calculateCredit(user, normalized, preferredSourceTimezone);
 
         if (!calculated.calculated()) {
             if (calculated.hours() + 0.00001 < used) {
@@ -296,6 +322,9 @@ public class OvertimeService {
             credit.setTimeRange(normalize(calculated.timeRange()));
             credit.setStartAt(null);
             credit.setEndAt(null);
+            credit.setStartAtInstant(null);
+            credit.setEndAtInstant(null);
+            credit.setSourceTimezone(null);
             credit.setBreakMinutes(0);
             credit.setPlannedHours(0.0);
             credit.setCalculated(false);
@@ -305,13 +334,13 @@ public class OvertimeService {
             return account(user);
         }
 
-        List<CreditSegment> segments = splitCalculatedCredit(calculated);
+        List<CreditSegment> segments = splitCalculatedCredit(user, calculated);
         if (segments.isEmpty()) {
             throw ApiException.badRequest("После разбиения по датам переработка получилась 0 или меньше");
         }
 
         for (CreditSegment segment : segments) {
-            ensureNoOvertimeOverlap(user, segment.startAt(), segment.endAt(), credit.getId());
+            ensureNoOvertimeOverlap(user, segment.startAt(), segment.endAt(), segment.startInstant(), segment.endInstant(), credit.getId());
         }
 
         if (segments.size() > 1) {
@@ -320,7 +349,7 @@ public class OvertimeService {
             }
             credits.delete(credit);
             for (CreditSegment segment : segments) {
-                credits.save(new OvertimeCredit(
+                OvertimeCredit replacement = new OvertimeCredit(
                         user,
                         segment.workDate(),
                         formatTimeRange(segment.startAt(), segment.endAt()),
@@ -331,7 +360,9 @@ public class OvertimeService {
                         segment.breakMinutes(),
                         segment.plannedHours(),
                         true
-                ));
+                );
+                applyAbsoluteIdentity(replacement, segment);
+                credits.save(replacement);
             }
             return account(user);
         }
@@ -345,6 +376,13 @@ public class OvertimeService {
         credit.setTimeRange(formatTimeRange(segment.startAt(), segment.endAt()));
         credit.setStartAt(segment.startAt());
         credit.setEndAt(segment.endAt());
+        if (keepLegacyLocalIdentity) {
+            credit.setStartAtInstant(null);
+            credit.setEndAtInstant(null);
+            credit.setSourceTimezone(null);
+        } else {
+            applyAbsoluteIdentity(credit, segment);
+        }
         credit.setBreakMinutes(segment.breakMinutes());
         credit.setPlannedHours(segment.plannedHours());
         credit.setCalculated(true);
@@ -475,7 +513,7 @@ public class OvertimeService {
         );
     }
 
-    private OvertimeCreditRowDto creditRow(OvertimeCredit credit, List<OvertimeAllocation> allocationList) {
+    private OvertimeCreditRowDto creditRow(AppUser user, OvertimeCredit credit, List<OvertimeAllocation> allocationList) {
         List<OvertimeAllocation> sorted = allocationList.stream()
                 .sorted(Comparator.comparing((OvertimeAllocation a) -> a.getUsage().getUsageDate()).thenComparing(OvertimeAllocation::getId))
                 .toList();
@@ -488,6 +526,15 @@ public class OvertimeService {
                         a.getUsage().getReason()
                 ))
                 .toList();
+        String displayStart = credit.getStartAtInstant() == null
+                ? null
+                : userTimeService.inDisplayZone(credit.getStartAtInstant(), user).toLocalDateTime().toString();
+        String displayEnd = credit.getEndAtInstant() == null
+                ? null
+                : userTimeService.inDisplayZone(credit.getEndAtInstant(), user).toLocalDateTime().toString();
+        String displayTimezone = credit.getStartAtInstant() == null
+                ? null
+                : userTimeService.displayZone(user).getId();
         return new OvertimeCreditRowDto(
                 credit.getId(),
                 credit.getWorkDate().toString(),
@@ -501,7 +548,13 @@ public class OvertimeService {
                 credit.getReason(),
                 round2(used),
                 round2(credit.getHours() - used),
-                usageRefs
+                usageRefs,
+                credit.getStartAtInstant() == null ? null : credit.getStartAtInstant().toString(),
+                credit.getEndAtInstant() == null ? null : credit.getEndAtInstant().toString(),
+                credit.getSourceTimezone(),
+                displayStart,
+                displayEnd,
+                displayTimezone
         );
     }
 
@@ -563,8 +616,10 @@ public class OvertimeService {
     }
 
     private String exportSearchHaystack(OvertimeCreditRowDto row) {
-        return (row.workedDate() + " " + value(row.timeRange()) + " " + fmt(row.hours()) + " "
-                + value(row.reason()) + " " + usagesText(row)).toLowerCase();
+        return (row.workedDate() + " " + value(row.timeRange()) + " "
+                + value(row.displayStart()) + " " + value(row.displayEnd()) + " "
+                + value(row.sourceTimezone()) + " " + value(row.displayTimezone()) + " "
+                + fmt(row.hours()) + " " + value(row.reason()) + " " + usagesText(row)).toLowerCase();
     }
 
     private String usagesText(OvertimeCreditRowDto row) {
@@ -603,7 +658,33 @@ public class OvertimeService {
                 .replace("\"", "&quot;");
     }
 
-    private CalculatedCredit calculateCredit(OvertimeCreditCreateRequest req) {
+    private boolean sameCalculatedDefinition(OvertimeCredit credit, OvertimeCreditCreateRequest request) {
+        if (credit == null || request == null || !credit.isCalculated()
+                || credit.getStartAt() == null || credit.getEndAt() == null) {
+            return false;
+        }
+        if (!hasText(request.startDateTime()) || !hasText(request.endDateTime())) {
+            return false;
+        }
+        LocalDateTime requestedStart = parseDateTime(
+                request.startDateTime(), "Начало должно быть в формате yyyy-MM-ddTHH:mm");
+        LocalDateTime requestedEnd = parseDateTime(
+                request.endDateTime(), "Конец должен быть в формате yyyy-MM-ddTHH:mm");
+        int requestedBreak = sanitizeMinutes(request.breakMinutes());
+        double requestedPlan = sanitizePlannedHours(request.plannedHours());
+        return Objects.equals(credit.getStartAt(), requestedStart)
+                && Objects.equals(credit.getEndAt(), requestedEnd)
+                && credit.getBreakMinutes() == requestedBreak
+                && Math.abs(credit.getPlannedHours() - requestedPlan) < 0.00001;
+    }
+
+    private CalculatedCredit calculateCredit(AppUser user, OvertimeCreditCreateRequest req) {
+        return calculateCredit(user, req, null);
+    }
+
+    private CalculatedCredit calculateCredit(AppUser user,
+                                             OvertimeCreditCreateRequest req,
+                                             String preferredSourceTimezone) {
         boolean hasStart = hasText(req.startDateTime());
         boolean hasEnd = hasText(req.endDateTime());
         if (hasStart || hasEnd) {
@@ -612,10 +693,16 @@ public class OvertimeService {
             }
             LocalDateTime start = parseDateTime(req.startDateTime(), "Начало должно быть в формате yyyy-MM-ddTHH:mm");
             LocalDateTime end = parseDateTime(req.endDateTime(), "Конец должен быть в формате yyyy-MM-ddTHH:mm");
-            if (!end.isAfter(start)) {
+            ZoneId sourceZone = userTimeService.resolveZone(
+                    preferredSourceTimezone,
+                    userTimeService.workZone(user)
+            );
+            Instant startInstant = userTimeService.resolveLocalDateTime(start, sourceZone).toInstant();
+            Instant endInstant = userTimeService.resolveLocalDateTime(end, sourceZone).toInstant();
+            if (!endInstant.isAfter(startInstant)) {
                 throw ApiException.badRequest("Конец должен быть позже начала. Для ночной работы укажи следующий день в поле конца.");
             }
-            long totalMinutes = Duration.between(start, end).toMinutes();
+            long totalMinutes = Duration.between(startInstant, endInstant).toMinutes();
             int breakMinutes = sanitizeMinutes(req.breakMinutes());
             double plannedHours = sanitizePlannedHours(req.plannedHours());
             long plannedMinutes = Math.round(plannedHours * 60.0);
@@ -625,11 +712,23 @@ public class OvertimeService {
             }
             double hours = requirePositiveHours(creditedMinutes / 60.0, "Переработка должна быть больше 0");
             String timeRange = hasText(req.timeRange()) ? req.timeRange().trim() : formatTimeRange(start, end);
-            return new CalculatedCredit(timeRange, hours, start, end, breakMinutes, plannedHours, true);
+            return new CalculatedCredit(
+                    timeRange,
+                    hours,
+                    start,
+                    end,
+                    startInstant,
+                    endInstant,
+                    sourceZone.getId(),
+                    breakMinutes,
+                    plannedHours,
+                    true
+            );
         }
 
         double hours = requirePositiveHours(req.hours(), "Укажи часы переработки больше 0");
-        return new CalculatedCredit(normalize(req.timeRange()), hours, null, null, 0, 0.0, false);
+        return new CalculatedCredit(normalize(req.timeRange()), hours, null, null,
+                null, null, null, 0, 0.0, false);
     }
 
     /**
@@ -642,10 +741,11 @@ public class OvertimeService {
      *   чтобы в календаре было две понятные половины: дата начала и дата конца;
      * - обед и вычтенный план снимаются с самых ранних минут интервала.
      */
-    private List<CreditSegment> splitCalculatedCredit(CalculatedCredit credit) {
+    private List<CreditSegment> splitCalculatedCredit(AppUser user, CalculatedCredit credit) {
         LocalDateTime start = credit.startAt();
         LocalDateTime end = credit.endAt();
-        long totalMinutes = Duration.between(start, end).toMinutes();
+        long totalMinutes = Duration.between(credit.startInstant(), credit.endInstant()).toMinutes();
+        ZoneId sourceZone = userTimeService.resolveZone(credit.sourceTimezone(), userTimeService.workZone(user));
         if (totalMinutes <= 0) {
             return List.of();
         }
@@ -655,16 +755,22 @@ public class OvertimeService {
         boolean oneExactDaySameTime = daysBetween == 1 && start.toLocalTime().equals(end.toLocalTime());
 
         if (oneExactDaySameTime) {
-            LocalDateTime mid = start.plusMinutes(totalMinutes / 2);
-            rawSegments.add(new RawSegment(start.toLocalDate(), start, mid));
-            rawSegments.add(new RawSegment(end.toLocalDate(), mid, end));
+            Instant midInstant = credit.startInstant().plusSeconds((totalMinutes / 2) * 60);
+            LocalDateTime mid = midInstant.atZone(sourceZone).toLocalDateTime();
+            rawSegments.add(new RawSegment(start.toLocalDate(), start, mid, credit.startInstant(), midInstant));
+            rawSegments.add(new RawSegment(end.toLocalDate(), mid, end, midInstant, credit.endInstant()));
         } else {
             LocalDateTime cursor = start;
+            Instant cursorInstant = credit.startInstant();
             while (cursor.isBefore(end)) {
                 LocalDateTime nextMidnight = cursor.toLocalDate().plusDays(1).atStartOfDay();
                 LocalDateTime segmentEnd = nextMidnight.isBefore(end) ? nextMidnight : end;
-                rawSegments.add(new RawSegment(cursor.toLocalDate(), cursor, segmentEnd));
+                Instant segmentEndInstant = segmentEnd.equals(end)
+                        ? credit.endInstant()
+                        : userTimeService.resolveLocalDateTime(segmentEnd, sourceZone).toInstant();
+                rawSegments.add(new RawSegment(cursor.toLocalDate(), cursor, segmentEnd, cursorInstant, segmentEndInstant));
                 cursor = segmentEnd;
+                cursorInstant = segmentEndInstant;
             }
         }
 
@@ -673,7 +779,7 @@ public class OvertimeService {
         List<CreditSegment> result = new ArrayList<>();
 
         for (RawSegment raw : rawSegments) {
-            int rawMinutes = (int) Duration.between(raw.startAt(), raw.endAt()).toMinutes();
+            int rawMinutes = (int) Duration.between(raw.startInstant(), raw.endInstant()).toMinutes();
             if (rawMinutes <= 0) continue;
 
             int segmentBreak = Math.min(breakLeft, rawMinutes);
@@ -690,6 +796,9 @@ public class OvertimeService {
                     raw.workDate(),
                     raw.startAt(),
                     raw.endAt(),
+                    raw.startInstant(),
+                    raw.endInstant(),
+                    credit.sourceTimezone(),
                     segmentBreak,
                     round2(segmentPlan / 60.0),
                     requirePositiveHours(creditedMinutes / 60.0, "Переработка должна быть больше 0")
@@ -703,18 +812,43 @@ public class OvertimeService {
      * Запрещаем пересечения по времени. Это защищает от двойного начисления
      * одного и того же периода, например два раза 03.07 20:00 → 04.07 08:00.
      */
-    private void ensureNoOvertimeOverlap(AppUser user, LocalDateTime start, LocalDateTime end, Long ignoreCreditId) {
-        List<OvertimeCredit> overlaps = credits.findByOwnerAndStartAtLessThanAndEndAtGreaterThan(user, end, start).stream()
+    private void ensureNoOvertimeOverlap(AppUser user,
+                                         LocalDateTime start,
+                                         LocalDateTime end,
+                                         Instant startInstant,
+                                         Instant endInstant,
+                                         Long ignoreCreditId) {
+        List<OvertimeCredit> absoluteOverlaps = credits
+                .findByOwnerAndStartAtInstantLessThanAndEndAtInstantGreaterThan(user, endInstant, startInstant)
+                .stream()
                 .filter(c -> ignoreCreditId == null || !ignoreCreditId.equals(c.getId()))
                 .toList();
-        if (overlaps.isEmpty()) return;
 
-        OvertimeCredit first = overlaps.get(0);
+        // Historical rows have no trustworthy source timezone. Keep the legacy
+        // wall-clock comparison only for those rows instead of inventing instants.
+        List<OvertimeCredit> legacyOverlaps = credits
+                .findByOwnerAndStartAtLessThanAndEndAtGreaterThan(user, end, start)
+                .stream()
+                .filter(c -> c.getStartAtInstant() == null)
+                .filter(c -> ignoreCreditId == null || !ignoreCreditId.equals(c.getId()))
+                .toList();
+
+        OvertimeCredit first = !absoluteOverlaps.isEmpty()
+                ? absoluteOverlaps.get(0)
+                : (legacyOverlaps.isEmpty() ? null : legacyOverlaps.get(0));
+        if (first == null) return;
+
         throw ApiException.badRequest(
                 "Этот период пересекается с уже записанной переработкой: "
                         + formatTimeRange(first.getStartAt(), first.getEndAt())
                         + " (" + fmt(first.getHours()) + " ч). Удали старую запись или измени время."
         );
+    }
+
+    private void applyAbsoluteIdentity(OvertimeCredit credit, CreditSegment segment) {
+        credit.setStartAtInstant(segment.startInstant());
+        credit.setEndAtInstant(segment.endInstant());
+        credit.setSourceTimezone(segment.sourceTimezone());
     }
 
     private LocalDateTime parseDateTime(String value, String message) {
@@ -785,6 +919,9 @@ public class OvertimeService {
             double hours,
             LocalDateTime startAt,
             LocalDateTime endAt,
+            Instant startInstant,
+            Instant endInstant,
+            String sourceTimezone,
             int breakMinutes,
             double plannedHours,
             boolean calculated
@@ -793,13 +930,18 @@ public class OvertimeService {
     private record RawSegment(
             LocalDate workDate,
             LocalDateTime startAt,
-            LocalDateTime endAt
+            LocalDateTime endAt,
+            Instant startInstant,
+            Instant endInstant
     ) {}
 
     private record CreditSegment(
             LocalDate workDate,
             LocalDateTime startAt,
             LocalDateTime endAt,
+            Instant startInstant,
+            Instant endInstant,
+            String sourceTimezone,
             int breakMinutes,
             double plannedHours,
             double hours

@@ -1,3 +1,26 @@
+## v27.8.0 — Zoned Work Intervals
+
+### Dated shift projections
+- Every dated shift with start/end times is resolved through its work IANA timezone into one immutable `startInstant` / `endInstant` pair.
+- Day API responses expose work-local and display-local projections, source/display zone identifiers, elapsed/net minutes and midnight-crossing flags.
+- Calendar cells and the selected-day panel show the configured display-zone time while preserving the original work-zone range. A display-zone save reloads the active month without rewriting schedule data.
+
+### Absolute overtime identity
+- New calculated overtime credits persist `start_at_instant`, `end_at_instant` and `source_timezone` through Flyway V30.
+- Duration and overlap protection use real elapsed instants, so DST gaps/overlaps no longer create silent one-hour errors.
+- Existing calculated credits retain their source timezone when edited. Saving unchanged fields after changing the account work timezone cannot move the stored interval.
+- Historical credits remain legacy-local because their original timezone was never stored; V30 deliberately performs no guessed backfill.
+
+### Interface and compatibility
+- Overtime rows prefer display-zone projections and keep the original work range/source zone as secondary context.
+- `DayDto` keeps a source-compatible constructor and appends nullable `shiftInterval`; existing floating dates, tasks, notes and important dates remain unchanged.
+- Exact interval-slice FIFO provenance is intentionally deferred to Overtime 2.0; current allocations continue consuming hour quantities.
+
+### Regression coverage
+- Added work/display shift projection, DST elapsed-duration, absolute overtime persistence, source-zone edit stability, migration and frontend contract tests.
+- Added a browser scenario proving `08:30 Asia/Yekaterinburg` renders as `06:30 Europe/Moscow` without changing the work interval.
+- Baseline: 79 Java test classes / 409 `@Test` methods and 16 Chromium Playwright scenarios. Flyway ends at V30.
+
 ## v27.7.1 — Task & Ledger Layout Hotfix
 
 ### Task cards

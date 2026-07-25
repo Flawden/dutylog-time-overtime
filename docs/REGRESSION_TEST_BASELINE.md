@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.7.1.
+Status: v27.8.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.7.1 stabilises task-card action placement and separates overtime-credit actions from FIFO-usage actions. It preserves the v27.7.0 Time Foundation, v27.6.3 task polish, v27.6.2 one-level subtasks, v27.6.1 universal quick capture, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 78 Java test classes / 399 `@Test` methods and 15 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.8.0 projects dated work shifts through one absolute interval and gives new calculated overtime credits durable instant/source-timezone identity. It preserves the v27.7.1 layout hotfix, v27.7.0 Time Foundation, v27.6.3 task polish, v27.6.2 one-level subtasks, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 79 Java test classes / 409 `@Test` methods and 16 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,24 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.8.0 Zoned Work Intervals extension
+
+Automated coverage now additionally verifies:
+
+- one dated work shift resolves to stable UTC start/end instants;
+- `08:30–17:00 Asia/Yekaterinburg` projects to `06:30–15:00 Europe/Moscow` without changing work semantics;
+- day/month API responses carry work/display projections and elapsed/net minutes;
+- display-timezone saves refresh the active month without rewriting schedule records;
+- new calculated overtime credits persist absolute interval identity and source IANA timezone;
+- duration and overlap checks use actual instants across DST transitions;
+- unchanged edits cannot move an existing overtime interval after the account work timezone changes;
+- interval edits retain the credit's original source timezone;
+- V30 leaves historical local-only overtime unmodified;
+- the ledger prefers display projection while retaining source work context.
+
+Manual staging acceptance checks shift projections, timezone reload behaviour, new overtime rows, legacy-row stability and unchanged FIFO balances.
 
 
 ## v27.7.1 Task and ledger layout hotfix extension
@@ -40,7 +58,7 @@ Automated coverage now additionally verifies:
 - browser calendar dates remaining work-zone based while absolute UI timestamps use display timezone;
 - Flyway V29 continuity and the new `TIMESTAMPTZ` migration contract.
 
-Manual staging acceptance additionally checks that changing display timezone never moves birthdays, important dates, notes, task dates, shifts or overtime rows.
+Manual staging acceptance additionally checks that changing display timezone never rewrites birthdays, important dates, notes, task dates, shift source data or legacy overtime rows. Absolute shift and new overtime display projections are allowed to change.
 
 ## v27.6.3 task polish and consistency extension
 

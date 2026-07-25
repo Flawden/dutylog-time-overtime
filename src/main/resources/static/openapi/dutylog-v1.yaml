@@ -563,6 +563,25 @@ components:
         refreshExpiresAt: { type: string, format: date-time }
         revoked: { type: boolean }
         active: { type: boolean }
+    ShiftInterval:
+      type: object
+      description: One dated work shift resolved to absolute instants and projected into work/display timezones.
+      required: [startInstant, endInstant, workStart, workEnd, displayStart, displayEnd, workTimezone, displayTimezone, breakMinutes, elapsedMinutes, netMinutes, crossesWorkMidnight, crossesDisplayMidnight, sameTimezone]
+      properties:
+        startInstant: { type: string, format: date-time }
+        endInstant: { type: string, format: date-time }
+        workStart: { type: string, example: '2026-07-25T08:30' }
+        workEnd: { type: string, example: '2026-07-25T17:00' }
+        displayStart: { type: string, example: '2026-07-25T06:30' }
+        displayEnd: { type: string, example: '2026-07-25T15:00' }
+        workTimezone: { type: string, example: Asia/Yekaterinburg }
+        displayTimezone: { type: string, example: Europe/Moscow }
+        breakMinutes: { type: integer, minimum: 0 }
+        elapsedMinutes: { type: integer, format: int64, minimum: 1 }
+        netMinutes: { type: integer, format: int64, minimum: 0 }
+        crossesWorkMidnight: { type: boolean }
+        crossesDisplayMidnight: { type: boolean }
+        sameTimezone: { type: boolean }
     Day:
       type: object
       required: [date, overtimeHours, timeOffHours, overtimeBalanceHours, version]
@@ -576,6 +595,9 @@ components:
         overtimeBalanceHours: { type: number, format: double }
         version: { type: integer, format: int64, minimum: 1, description: Persisted rows start at 1; version 0 means the row does not exist }
         updatedAt: { type: string, format: date-time }
+        shiftInterval:
+          allOf: [{ $ref: '#/components/schemas/ShiftInterval' }]
+          nullable: true
     MobileBootstrap:
       type: object
       required: [apiVersion, serverTime, user, calendar]

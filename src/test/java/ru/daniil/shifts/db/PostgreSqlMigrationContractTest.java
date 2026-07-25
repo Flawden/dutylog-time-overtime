@@ -75,6 +75,20 @@ class PostgreSqlMigrationContractTest {
                 "legacy rows intentionally have no trustworthy absolute identity");
     }
 
+    @Test
+    void zonedWorkIntervalsPreserveLegacyOvertimeWithoutGuessing() throws IOException {
+        String sql = Files.readString(MIGRATION_ROOT.resolve("V30__zoned_work_intervals.sql"));
+
+        assertTrue(sql.contains("start_at_instant TIMESTAMPTZ"));
+        assertTrue(sql.contains("end_at_instant TIMESTAMPTZ"));
+        assertTrue(sql.contains("source_timezone VARCHAR(80)"));
+        assertTrue(sql.contains("idx_overtime_credits_absolute_interval"));
+        assertFalse(sql.contains("UPDATE overtime_credits"),
+                "historical local overtime must not be assigned a guessed source timezone");
+        assertFalse(sql.contains("ALTER COLUMN start_at_instant SET NOT NULL"),
+                "legacy calculated rows intentionally remain local-only");
+    }
+
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);

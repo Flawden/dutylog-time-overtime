@@ -84,6 +84,90 @@ class OvertimeServiceTest {
         assertEquals(24.0, acc.balanceHours(), 0.001);
     }
 
+    @Test
+    void calculatedCreditPersistsAbsoluteIdentityAndDisplayProjection() {
+        user.setWorkTimezone("Asia/Yekaterinburg");
+        user.setDisplayTimezone("Europe/Moscow");
+        users.save(user);
+
+        OvertimeAccountDto acc = overtime.createCredit(user,
+                interval("2026-07-25", "2026-07-25T17:00", "2026-07-25T20:00", 0, 0.0));
+
+        OvertimeCreditRowDto row = acc.credits().get(0);
+        assertEquals("2026-07-25T12:00:00Z", row.startInstant());
+        assertEquals("2026-07-25T15:00", row.displayStart());
+        assertEquals("2026-07-25T18:00", row.displayEnd());
+        assertEquals("Asia/Yekaterinburg", row.sourceTimezone());
+        assertEquals("Europe/Moscow", row.displayTimezone());
+    }
+
+    @Test
+    void savingUnchangedCalculatedCreditDoesNotMoveItsInstantAfterWorkTimezoneChange() {
+        user.setWorkTimezone("Asia/Yekaterinburg");
+        user.setDisplayTimezone("Europe/Moscow");
+        users.save(user);
+
+        OvertimeAccountDto created = overtime.createCredit(user,
+                interval("2026-07-25", "2026-07-25T17:00", "2026-07-25T20:00", 0, 0.0));
+        OvertimeCreditRowDto original = created.credits().get(0);
+
+        user.setWorkTimezone("Europe/Moscow");
+        user.setDisplayTimezone("Europe/Moscow");
+        users.save(user);
+
+        OvertimeAccountDto updated = overtime.updateCredit(user, original.id(),
+                new OvertimeCreditUpdateRequest(
+                        "2026-07-25", "17:00–20:00",
+                        "2026-07-25T17:00", "2026-07-25T20:00",
+                        0, 0.0, 3.0, "updated reason"));
+
+        OvertimeCreditRowDto row = updated.credits().get(0);
+        assertEquals(original.startInstant(), row.startInstant());
+        assertEquals(original.endInstant(), row.endInstant());
+        assertEquals("Asia/Yekaterinburg", row.sourceTimezone());
+        assertEquals("updated reason", row.reason());
+    }
+
+    @Test
+    void editingCalculatedIntervalKeepsItsOriginalSourceTimezone() {
+        user.setWorkTimezone("Asia/Yekaterinburg");
+        user.setDisplayTimezone("Europe/Moscow");
+        users.save(user);
+
+        OvertimeAccountDto created = overtime.createCredit(user,
+                interval("2026-07-25", "2026-07-25T17:00", "2026-07-25T20:00", 0, 0.0));
+        long id = created.credits().get(0).id();
+
+        user.setWorkTimezone("Europe/Moscow");
+        users.save(user);
+
+        OvertimeAccountDto updated = overtime.updateCredit(user, id,
+                new OvertimeCreditUpdateRequest(
+                        "2026-07-25", "17:00–21:00",
+                        "2026-07-25T17:00", "2026-07-25T21:00",
+                        0, 0.0, 4.0, "extended"));
+
+        OvertimeCreditRowDto row = updated.credits().get(0);
+        assertEquals("2026-07-25T12:00:00Z", row.startInstant());
+        assertEquals("2026-07-25T16:00:00Z", row.endInstant());
+        assertEquals("Asia/Yekaterinburg", row.sourceTimezone());
+        assertEquals("2026-07-25T15:00", row.displayStart());
+        assertEquals("2026-07-25T19:00", row.displayEnd());
+    }
+
+    @Test
+    void calculatedCreditUsesActualDstElapsedMinutes() {
+        user.setWorkTimezone("Europe/Berlin");
+        user.setDisplayTimezone("Europe/Berlin");
+        users.save(user);
+
+        OvertimeAccountDto acc = overtime.createCredit(user,
+                interval("2026-03-29", "2026-03-29T00:00", "2026-03-29T08:00", 0, 0.0));
+
+        assertEquals(7.0, acc.balanceHours(), 0.001,
+                "spring-forward wall clock 00:00–08:00 contains seven actual hours");
+    }
+
     /* ── Защита от дублей ── */
 
     @Test

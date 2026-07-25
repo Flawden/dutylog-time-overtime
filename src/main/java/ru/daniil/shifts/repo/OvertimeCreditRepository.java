@@ -6,6 +6,7 @@ import ru.daniil.shifts.model.OvertimeCredit;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,4 +20,7 @@ public interface OvertimeCreditRepository extends JpaRepository<OvertimeCredit, 
      * иначе один и тот же ночной/суточный период можно засчитать дважды.
      */
     List<OvertimeCredit> findByOwnerAndStartAtLessThanAndEndAtGreaterThan(AppUser owner, LocalDateTime endAt, LocalDateTime startAt);
+
+    List<OvertimeCredit> findByOwnerAndStartAtInstantLessThanAndEndAtInstantGreaterThan(
+            AppUser owner, Instant endAtInstant, Instant startAtInstant);
 }

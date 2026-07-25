@@ -81,7 +81,8 @@ public class DayController {
                 overtimeEnabled ? saved.timeOffHours() : 0,
                 overtimeEnabled ? saved.overtimeBalanceHours() : 0,
                 saved.version(),
-                saved.updatedAt()
+                saved.updatedAt(),
+                saved.shiftInterval()
         );
     }
 

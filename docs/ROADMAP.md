@@ -1,8 +1,8 @@
 # Roadmap до полноценного продукта
 
-## Текущая архитектурная точка — Time Foundation
+## Текущая архитектурная точка — Zoned Work Intervals
 
-Статус: завершено в v27.7.0.
+Статус: завершено в v27.8.0 поверх Time Foundation v27.7.0.
 
 Сделано:
 
@@ -11,9 +11,12 @@
 - единый `UserTimeService` и детерминированная DST-политика;
 - абсолютные reminder instants и Telegram deduplication по `TIMESTAMPTZ`;
 - `WorkIntervalService` для интервалов через полночь и DST;
+- датированные смены с `startInstant/endInstant`, work/display-проекциями и реальной длительностью;
+- новые рассчитанные переработки с абсолютной идентичностью и сохранённой source timezone;
+- безопасная coexistence-модель: legacy overtime остаётся local-only без выдуманного backfill;
 - `/api/time/context` и `/api/v1/time/context`.
 
-Следующий этап: **Overtime Interval Engine / Overtime 2.0** — хранение реальных источников переработки, поминутный FIFO, provenance списаний, автоматическая расшифровка и восстановление интервалов при отмене.
+Следующий этап: **Overtime Interval Engine / Overtime 2.0** — точные источники переработки, поминутный FIFO, provenance каждого списанного сегмента, автоматическая расшифровка и восстановление интервалов при отмене.
 
 ## Этап 1 — production foundation
 

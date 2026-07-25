@@ -141,6 +141,7 @@ function sanitizeDayForModules(day = {}){
     overtimeBalanceHours: moduleEnabled("overtime") ? numOr0(day.overtimeBalanceHours) : 0,
     version: Number.isFinite(Number(day.version)) ? Number(day.version) : 0,
     updatedAt: day.updatedAt ?? null,
+    shiftInterval: day.shiftInterval ?? null,
   };
 }
 function dayUpsertPayload(day = {}){

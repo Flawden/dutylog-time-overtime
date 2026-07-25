@@ -55,6 +55,21 @@ function renderMd(src){
 /* ─── Рендер календаря ──────────────────────────────────────── */
 function stOf(k){ const e = state.days[k]; return e ? state.shiftTypes.find(s => s.id === e.shiftTypeId) : null; }
 
+function shiftIntervalRange(interval, projection = "display"){
+  if (!interval) return "";
+  const start = projection === "work" ? interval.workStart : interval.displayStart;
+  const end = projection === "work" ? interval.workEnd : interval.displayEnd;
+  return displayDateTimeRange(start, end);
+}
+
+function shiftIntervalTitle(interval){
+  if (!interval) return "";
+  const work = shiftIntervalRange(interval, "work");
+  const display = shiftIntervalRange(interval, "display");
+  if (interval.sameTimezone) return `${work} · ${interval.workTimezone || ""}`.trim();
+  return `${t("Рабочая смена")}: ${work} · ${interval.workTimezone}\n${t("В часовом поясе отображения")}: ${display} · ${interval.displayTimezone}`;
+}
+
 function renderCalendar(){
   $("monthName").textContent = monthName(state.m);
   $("yearName").textContent = state.y;
@@ -124,6 +139,19 @@ function renderCalendar(){
       const nm = document.createElement("span");
       nm.className = "shift"; nm.style.color = st.color; nm.textContent = shiftDisplayName(st);
       cell.appendChild(nm);
+      const interval = entry?.shiftInterval;
+      if (interval) {
+        const range = shiftIntervalRange(interval, "display");
+        if (range) {
+          cell.title = shiftIntervalTitle(interval);
+          if (!interval.sameTimezone) {
+            const clock = document.createElement("span");
+            clock.className = "shiftClock";
+            clock.textContent = range;
+            cell.appendChild(clock);
+          }
+        }
+      }
     }
     const ledgerBal = showOvertime ? ledgerNetOf(k) : 0;
     const legacyBal = showOvertime ? numOr0(entry?.overtimeHours) - numOr0(entry?.timeOffHours) : 0;

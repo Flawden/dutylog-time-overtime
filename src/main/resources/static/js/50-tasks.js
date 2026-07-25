@@ -1540,6 +1540,49 @@ $("quickActionCredit")?.addEventListener("click", () => quickActionOvertime("cre
 $("quickActionUsage")?.addEventListener("click", () => quickActionOvertime("usage"));
 
 
+function renderShiftProjection(){
+  const box = $("shiftProjection");
+  if (!box) return;
+  const interval = state.selected ? state.days[state.selected]?.shiftInterval : null;
+  if (!interval) {
+    box.hidden = true;
+    box.innerHTML = "";
+    return;
+  }
+  const work = shiftIntervalRange(interval, "work");
+  const display = shiftIntervalRange(interval, "display");
+  const duration = Math.max(0, Number(interval.elapsedMinutes || 0));
+  const durationText = duration
+    ? `${Math.floor(duration / 60)}${state.language === "en" ? "h" : "ч"}${duration % 60 ? ` ${duration % 60}${state.language === "en" ? "m" : "м"}` : ""}`
+    : "";
+
+  if (interval.sameTimezone) {
+    box.innerHTML = `
+      <div class="shiftProjectionRow primary">
+        <span>${esc(t("Рабочая смена"))}</span>
+        <strong>${esc(work)}</strong>
+        <code>${esc(interval.workTimezone || "")}</code>
+      </div>
+      ${durationText ? `<div class="shiftProjectionHint">${esc(t("Фактическая длительность"))}: ${esc(durationText)}</div>` : ""}
+    `;
+  } else {
+    box.innerHTML = `
+      <div class="shiftProjectionRow primary">
+        <span>${esc(t("В часовом поясе отображения"))}</span>
+        <strong>${esc(display)}</strong>
+        <code>${esc(interval.displayTimezone || "")}</code>
+      </div>
+      <div class="shiftProjectionRow">
+        <span>${esc(t("Рабочая смена"))}</span>
+        <strong>${esc(work)}</strong>
+        <code>${esc(interval.workTimezone || "")}</code>
+      </div>
+      <div class="shiftProjectionHint">${esc(t("Смена отображается в выбранном часовом поясе, но расчёты остаются в рабочем."))}</div>
+    `;
+  }
+  box.hidden = false;
+}
+
 function renderChips(){
   const box = $("chips");
   box.innerHTML = "";
@@ -1566,6 +1609,7 @@ function renderChips(){
   plus.title = t("Создать или настроить смену");
   plus.addEventListener("click", () => openShiftTypeManager());
   box.appendChild(plus);
+  renderShiftProjection();
   renderCustomList();
   if (!$("tplBox")?.hidden) renderScheduleControls();
   renderQuickScenarioContext();
@@ -1624,6 +1668,7 @@ async function toggleShift(id){
   const cur = state.days[k] || {};
   const next = {
     shiftTypeId: cur.shiftTypeId === id ? null : id,
+    shiftInterval: null,
     note: cur.note || null,
     dayEmoji: cur.dayEmoji || null,
     overtimeHours: numOr0(cur.overtimeHours),

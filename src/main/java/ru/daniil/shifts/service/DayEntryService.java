@@ -7,6 +7,7 @@ import ru.daniil.shifts.dto.Dtos.DayDto;
 import ru.daniil.shifts.dto.Dtos.DayFillRequest;
 import ru.daniil.shifts.dto.Dtos.DayUpsertRequest;
 import ru.daniil.shifts.dto.Dtos.MobileDayChangeRequest;
+import ru.daniil.shifts.dto.Dtos.ShiftIntervalDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.ShiftType;
@@ -26,13 +27,16 @@ import java.util.Map;
 public class DayEntryService {
     private final DayEntryRepository days;
     private final ShiftTypeService shiftTypeService;
+    private final WorkIntervalService workIntervalService;
     private final EntityManager entityManager;
 
     public DayEntryService(DayEntryRepository days,
                            ShiftTypeService shiftTypeService,
+                           WorkIntervalService workIntervalService,
                            EntityManager entityManager) {
         this.days = days;
         this.shiftTypeService = shiftTypeService;
+        this.workIntervalService = workIntervalService;
         this.entityManager = entityManager;
     }
 
@@ -53,7 +57,7 @@ public class DayEntryService {
     public List<DayDto> listRange(AppUser user, LocalDate from, LocalDate to) {
         validateRange(from, to);
         return days.findByOwnerAndDateBetweenOrderByDateAsc(user, from, to)
-                .stream().map(DayDto::from).toList();
+                .stream().map(entry -> toDto(user, entry)).toList();
     }
 
     @Transactional
@@ -105,7 +109,7 @@ public class DayEntryService {
             }
             return null;
         }
-        return DayDto.from(days.saveAndFlush(entry));
+        return toDto(user, days.saveAndFlush(entry));
     }
 
     @Transactional
@@ -173,7 +177,7 @@ public class DayEntryService {
 
         return expectedShiftByDate.keySet().stream()
                 .map(persistedByDate::get)
-                .map(DayDto::from)
+                .map(entry -> toDto(user, entry))
                 .toList();
     }
 
@@ -234,7 +238,32 @@ public class DayEntryService {
             }
             return null;
         }
-        return DayDto.from(days.saveAndFlush(entry));
+        return toDto(user, days.saveAndFlush(entry));
+    }
+
+    public DayDto toDto(AppUser user, DayEntry entry) {
+        ShiftIntervalDto shiftInterval = null;
+        ShiftType shift = entry == null ? null : entry.getShiftType();
+        if (entry != null && shift != null && shift.getStartTime() != null && shift.getEndTime() != null) {
+            WorkIntervalService.ShiftProjection projection = workIntervalService.projectShift(user, entry);
+            shiftInterval = new ShiftIntervalDto(
+                    projection.startInstant().toString(),
+                    projection.endInstant().toString(),
+                    projection.workStart().toLocalDateTime().toString(),
+                    projection.workEnd().toLocalDateTime().toString(),
+                    projection.displayStart().toLocalDateTime().toString(),
+                    projection.displayEnd().toLocalDateTime().toString(),
+                    projection.workTimezone(),
+                    projection.displayTimezone(),
+                    projection.breakMinutes(),
+                    projection.elapsedMinutes(),
+                    projection.netMinutes(),
+                    projection.crossesWorkMidnight(),
+                    projection.crossesDisplayMidnight(),
+                    projection.sameTimezone()
+            );
+        }
+        return DayDto.from(entry, shiftInterval);
     }
 
     public LocalDate parseDate(String date, String message) {

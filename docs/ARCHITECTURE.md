@@ -115,6 +115,8 @@ AppUser.displayTimezone
 
 Правило DST детерминировано: разрыв сдвигается вперёд на длительность перехода, пересечение использует более ранний offset.
 
+С v27.8.0 `DayDto.shiftInterval` проецирует датированную смену одновременно в work/display zones, сохраняя одни и те же абсолютные границы. Новые рассчитанные `OvertimeCredit` хранят `startAtInstant`, `endAtInstant` и `sourceTimezone`; старые local-only строки не backfill'ятся без достоверной исходной зоны.
+
 ### Notifications
 
 Файлы:
@@ -174,7 +176,7 @@ RequestDiagnosticsFilter
 
 ## База данных
 
-В production схема управляется Flyway; текущая последовательность заканчивается на V29 Time Foundation. Новые изменения БД добавляются только новыми миграциями:
+В production схема управляется Flyway; текущая последовательность заканчивается на V30 Zoned Work Intervals. Новые изменения БД добавляются только новыми миграциями:
 
 ```text
 src/main/resources/db/migration/V14__example.sql

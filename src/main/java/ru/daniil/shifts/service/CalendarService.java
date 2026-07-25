@@ -69,7 +69,8 @@ public class CalendarService {
                         overtimeEnabled ? day.timeOffHours() : 0,
                         overtimeEnabled ? day.overtimeBalanceHours() : 0,
                         day.version(),
-                        day.updatedAt()
+                        day.updatedAt(),
+                        day.shiftInterval()
                 ))
                 .toList();
         List<TaskDto> tasks = tasksEnabled ? taskService.listRange(user, from, to) : List.of();

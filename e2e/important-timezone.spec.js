@@ -61,3 +61,38 @@ test('important dates stay in work timezone while display timezone survives relo
   await expect(page.locator('#workTimezone')).toHaveValue('Europe/Chisinau');
   await expect(page.locator('#displayTimezone')).toHaveValue('Europe/Berlin');
 });
+
+
+test('dated shift keeps work time and projects into display timezone', async ({ page }) => {
+  await registerAndOnboard(page, { preset: 'full', prefix: 'shift-zone' });
+
+  await page.locator('#tabbar a[data-view="settings"]').click();
+  await page.locator('[data-settings-jump="time"]').click();
+  await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
+  await page.locator('#displayTimezone').selectOption('Europe/Moscow');
+  const profileSaved = waitForApi(page, 'PUT', '/api/profile');
+  await page.locator('#timeSaveTimezone').click();
+  await profileSaved;
+
+  await page.locator('#tabbar a[data-view="calendar"]').click();
+  const day = page.locator('#grid .cell:not(.empty)').first();
+  await day.click();
+  await expect(page.locator('#panel')).toBeVisible();
+
+  const dayShift = page.locator('#chips .chip').filter({ hasText: /Дневная|Day shift/ }).first();
+  const saved = page.waitForResponse(response => {
+    const url = new URL(response.url());
+    return response.request().method() === 'PUT'
+      && /^\/api\/days\/\d{4}-\d{2}-\d{2}$/.test(url.pathname)
+      && response.status() === 200;
+  });
+  await dayShift.click();
+  await saved;
+
+  const projection = page.locator('#shiftProjection');
+  await expect(projection).toBeVisible();
+  await expect(projection).toContainText('Asia/Yekaterinburg');
+  await expect(projection).toContainText('Europe/Moscow');
+  await expect(projection).toContainText('08:30');
+  await expect(projection).toContainText('06:30');
+});

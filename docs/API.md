@@ -1,4 +1,4 @@
-# DutyLog API v27.7.1
+# DutyLog API v27.8.0
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -116,6 +116,35 @@ Example response:
 ```
 
 `workTimezone` owns calendar calculations, shifts, deadlines and future overtime intervals. `displayTimezone` only changes how absolute moments are shown. Floating dates are never converted between the two zones.
+
+### Dated shift projection (`DayDto.shiftInterval`)
+
+A day with a shift type that has both start/end clock values includes one calculated absolute interval:
+
+```json
+{
+  "date": "2026-07-25",
+  "shiftTypeId": 1,
+  "shiftInterval": {
+    "startInstant": "2026-07-25T03:30:00Z",
+    "endInstant": "2026-07-25T12:00:00Z",
+    "workStart": "2026-07-25T08:30",
+    "workEnd": "2026-07-25T17:00",
+    "displayStart": "2026-07-25T06:30",
+    "displayEnd": "2026-07-25T15:00",
+    "workTimezone": "Asia/Yekaterinburg",
+    "displayTimezone": "Europe/Moscow",
+    "breakMinutes": 30,
+    "elapsedMinutes": 510,
+    "netMinutes": 480,
+    "crossesWorkMidnight": false,
+    "crossesDisplayMidnight": false,
+    "sameTimezone": false
+  }
+}
+```
+
+`shiftInterval` is read-only projection data. Clients still write the existing `shiftTypeId`; changing display timezone does not rewrite the day or shift type.
 
 ## Web profile sessions
 
@@ -400,6 +429,12 @@ timeOffHours      — заменить списанные часы отгула
       "reason": "ППР после смены",
       "usedHours": 2,
       "remainingHours": 0,
+      "startInstant": null,
+      "endInstant": null,
+      "sourceTimezone": null,
+      "displayStart": null,
+      "displayEnd": null,
+      "displayTimezone": null,
       "usages": [
         {
           "usageId": 30,
@@ -489,6 +524,10 @@ timeOffHours      — заменить списанные часы отгула
 Если интервал проходит через несколько дат, backend создаёт несколько строк начисления. Обычные ночные интервалы режутся по датам, а ровные сутки вида `08:00 → 08:00` следующего дня режутся пополам. Обед и плановые часы вычитаются с начала интервала.
 
 Backend также запрещает пересекающиеся рассчитанные интервалы. Если уже есть `2026-07-03T20:00 → 2026-07-04T08:00`, повторная или частично пересекающаяся запись вернёт `400`.
+
+Для новых рассчитанных записей backend сохраняет абсолютные `startInstant` / `endInstant` и `sourceTimezone`. Длительность считается между Instant, поэтому DST-gap/overlap учитывается автоматически. Ответ также содержит `displayStart`, `displayEnd` и `displayTimezone`; исходные `startDateTime`, `endDateTime` и `timeRange` остаются рабочей проекцией.
+
+Исторические строки без сохранённой исходной зоны остаются local-only и возвращают абсолютные поля как `null`. Они не конвертируются через текущую зону пользователя.
 
 Примеры:
 
@@ -600,7 +639,8 @@ Backend также запрещает пересекающиеся рассчи�
   "dayEmoji": "🔥",
   "overtimeHours": 7,
   "timeOffHours": 0,
-  "overtimeBalanceHours": 7
+  "overtimeBalanceHours": 7,
+  "shiftInterval": null
 }
 ```
 

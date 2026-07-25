@@ -52,7 +52,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.7.1"
+const DUTYLOG_VERSION = "27.8.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -233,6 +233,7 @@ Object.assign(I18N_EN, {
   "Рабочее время":"Work time",
   "Время отображения":"Display time",
   "Рабочий часовой пояс определяет календарные расчёты, смены и переработки. Часовой пояс отображения меняет только представление абсолютных моментов.":"Work timezone owns calendar calculations, shifts and overtime. Display timezone only changes how absolute moments are shown.",
+  "Рабочая смена":"Work shift", "В часовом поясе отображения":"In display timezone", "Фактическая длительность":"Actual duration", "Исходный часовой пояс":"Source timezone", "Смена отображается в выбранном часовом поясе, но расчёты остаются в рабочем.":"The shift is shown in the selected display timezone while calculations remain in the work timezone.",
   "DutyLog хранит IANA-идентификаторы, например Europe/Chisinau. Плавающие календарные даты не сдвигаются, а абсолютные моменты отображаются в выбранной зоне.":"DutyLog stores IANA identifiers such as Europe/Chisinau. Floating calendar dates never move; absolute moments are shown in the selected zone.",
   "Вставь emoji с клавиатуры":"Paste an emoji from keyboard",
   "Маркер не выбран.":"No marker selected.",
@@ -1285,6 +1286,7 @@ const normalizeDay = e => ({
   dayEmoji: e?.dayEmoji ?? null,
   overtimeHours: numOr0(e?.overtimeHours),
   timeOffHours: numOr0(e?.timeOffHours),
+  shiftInterval: e?.shiftInterval ?? null,
 });
 
 function addToDateMap(map, item){

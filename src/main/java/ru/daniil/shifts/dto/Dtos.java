@@ -180,6 +180,27 @@ public final class Dtos {
             Integer notificationMinutesBefore
     ) {}
 
+    /**
+     * Absolute occurrence of a dated shift. The work-local projection owns the
+     * schedule semantics; display-local values are read-only presentation.
+     */
+    public record ShiftIntervalDto(
+            String startInstant,
+            String endInstant,
+            String workStart,
+            String workEnd,
+            String displayStart,
+            String displayEnd,
+            String workTimezone,
+            String displayTimezone,
+            int breakMinutes,
+            long elapsedMinutes,
+            long netMinutes,
+            boolean crossesWorkMidnight,
+            boolean crossesDisplayMidnight,
+            boolean sameTimezone
+    ) {}
+
     /** Запись дня наружу: дата в ISO (yyyy-MM-dd). */
     public record DayDto(
             String date,
@@ -190,9 +211,28 @@ public final class Dtos {
             double timeOffHours,
             double overtimeBalanceHours,
             long version,
-            String updatedAt
+            String updatedAt,
+            ShiftIntervalDto shiftInterval
     ) {
+        /** Source-compatible constructor for clients/tests created before v27.8.0. */
+        public DayDto(String date,
+                      Long shiftTypeId,
+                      String note,
+                      String dayEmoji,
+                      double overtimeHours,
+                      double timeOffHours,
+                      double overtimeBalanceHours,
+                      long version,
+                      String updatedAt) {
+            this(date, shiftTypeId, note, dayEmoji, overtimeHours, timeOffHours,
+                    overtimeBalanceHours, version, updatedAt, null);
+        }
+
         public static DayDto from(DayEntry e) {
+            return from(e, null);
+        }
+
+        public static DayDto from(DayEntry e, ShiftIntervalDto shiftInterval) {
             double overtime = e.getOvertimeHours();
             double timeOff = e.getTimeOffHours();
             return new DayDto(
@@ -204,7 +244,8 @@ public final class Dtos {
                     timeOff,
                     overtime - timeOff,
                     e.getSyncVersion(),
-                    e.getUpdatedAt() != null ? e.getUpdatedAt().toString() : null
+                    e.getUpdatedAt() != null ? e.getUpdatedAt().toString() : null,
+                    shiftInterval
             );
         }
     }
@@ -1084,7 +1125,13 @@ public final class Dtos {
             String reason,
             double usedHours,
             double remainingHours,
-            List<OvertimeUsageRefDto> usages
+            List<OvertimeUsageRefDto> usages,
+            String startInstant,
+            String endInstant,
+            String sourceTimezone,
+            String displayStart,
+            String displayEnd,
+            String displayTimezone
     ) {}
 
     /** Списание отгула с расшифровкой, из каких начислений оно взяло часы. */

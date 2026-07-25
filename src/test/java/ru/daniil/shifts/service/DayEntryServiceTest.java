@@ -97,6 +97,29 @@ class DayEntryServiceTest {
                 () -> dayEntries.upsert(user, "10.07.2026", req(null, "заметка")));
     }
     @Test
+    void datedShiftContainsWorkAndDisplayTimezoneProjection() {
+        user.setWorkTimezone("Asia/Yekaterinburg");
+        user.setDisplayTimezone("Europe/Moscow");
+        users.save(user);
+
+        ShiftType day = shiftTypes.findByOwner(user).stream()
+                .filter(shift -> "Дневная".equals(shift.getName()))
+                .findFirst()
+                .orElseThrow();
+
+        DayDto dto = dayEntries.upsert(user, "2026-07-25", req(day.getId(), null));
+
+        assertNotNull(dto.shiftInterval());
+        assertEquals("Asia/Yekaterinburg", dto.shiftInterval().workTimezone());
+        assertEquals("Europe/Moscow", dto.shiftInterval().displayTimezone());
+        assertEquals("2026-07-25T03:30:00Z", dto.shiftInterval().startInstant());
+        assertEquals("2026-07-25T08:30", dto.shiftInterval().workStart());
+        assertEquals("2026-07-25T06:30", dto.shiftInterval().displayStart());
+        assertEquals("2026-07-25T15:00", dto.shiftInterval().displayEnd());
+        assertNotEquals(dto.shiftInterval().workStart(), dto.shiftInterval().displayStart());
+    }
+
+    @Test
     void массовыйГрафикСохраняетсяПослеОчисткиPersistenceContext() {
         ShiftType day = shiftTypes.findByOwner(user).stream()
                 .filter(s -> "Дневная".equals(s.getName()))

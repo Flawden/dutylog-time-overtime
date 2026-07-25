@@ -426,6 +426,10 @@ async function saveTimeSettings(){
     storeTimeSettings(state.timeSettings);
     renderTimeSettings();
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
+    // Shift occurrences are projected by the server from one absolute interval.
+    // Reload the active month so a display-zone change is visible immediately.
+    if (typeof loadMonth === "function") await loadMonth();
+    if (state.selected && typeof renderChips === "function") renderChips();
     setSave("saved", t("настройки времени сохранены"));
     return true;
   } catch (err) {

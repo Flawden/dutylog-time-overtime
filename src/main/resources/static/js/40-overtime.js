@@ -146,6 +146,29 @@ function readIntInput(id){
   return Number.isFinite(n) && n >= 0 ? Math.round(n) : NaN;
 }
 
+function overtimeCreditDisplayRange(credit){
+  if (!credit) return "";
+  if (credit.displayStart && credit.displayEnd) return displayDateTimeRange(credit.displayStart, credit.displayEnd);
+  return credit.timeRange || "";
+}
+
+function overtimeCreditTimeHtml(credit){
+  const display = overtimeCreditDisplayRange(credit) || "—";
+  const absolute = !!(credit?.startInstant && credit?.endInstant);
+  const differentZone = absolute
+    && credit.sourceTimezone
+    && credit.displayTimezone
+    && credit.sourceTimezone !== credit.displayTimezone;
+  if (!differentZone) {
+    return `<div class="ledgerTimePrimary">${esc(display)}</div>${absolute && credit.displayTimezone ? `<div class="ledgerTimeZone">${esc(credit.displayTimezone)}</div>` : ""}`;
+  }
+  return `
+    <div class="ledgerTimePrimary">${esc(display)}</div>
+    <div class="ledgerTimeZone">${esc(credit.displayTimezone)}</div>
+    <div class="ledgerTimeSecondary">${esc(credit.timeRange || displayDateTimeRange(credit.startDateTime, credit.endDateTime) || "—")} · ${esc(credit.sourceTimezone)}</div>
+  `;
+}
+
 function renderOvertimeDayDetails(){
   if (!moduleEnabled("overtime")) return;
   const k = state.selected;
@@ -166,7 +189,8 @@ function renderOvertimeDayDetails(){
     const row = document.createElement("div");
     row.className = "overtimeDayEntry credit";
     const text = document.createElement("div");
-    text.innerHTML = `<b>+${fmtHours(c.hours)} ч</b><span>${esc(c.timeRange || "")}${c.reason ? `${c.timeRange ? " · " : ""}${esc(c.reason)}` : ""}</span><small>${esc(t("остаток"))}: ${fmtHours(c.remainingHours)} ч</small>`;
+    const shownRange = overtimeCreditDisplayRange(c);
+    text.innerHTML = `<b>+${fmtHours(c.hours)} ч</b><span>${esc(shownRange)}${c.reason ? `${shownRange ? " · " : ""}${esc(c.reason)}` : ""}</span>${c.sourceTimezone && c.displayTimezone && c.sourceTimezone !== c.displayTimezone ? `<small>${esc(c.timeRange || "")} · ${esc(c.sourceTimezone)}</small>` : ""}<small>${esc(t("остаток"))}: ${fmtHours(c.remainingHours)} ч</small>`;
     const edit = document.createElement("button");
     edit.type = "button"; edit.textContent = t("ред.");
     edit.addEventListener("click", () => startEditOvertimeCredit(c.id));
@@ -799,7 +823,8 @@ function startEditOvertimeCredit(id){
   $("creditAdd").textContent = t("Сохранить");
   $("creditDelete").hidden = numOr0(c.usedHours) > 0.0001;
   $("creditEditNotice").hidden = false;
-  $("creditEditNotice").textContent = t("Редактируется существующее начисление. Изменение периода может пересобрать строки начислений.");
+  const sourceZoneHint = c.sourceTimezone ? ` ${t("Исходный часовой пояс")}: ${c.sourceTimezone}.` : "";
+  $("creditEditNotice").textContent = `${t("Редактируется существующее начисление. Изменение периода может пересобрать строки начислений.")}${sourceZoneHint}`;
   showCreditEditorView({ focus:false });
   $("overtimeCreditTitle").textContent = t("Редактировать переработку");
   renderQuickScenarios();
@@ -920,7 +945,7 @@ function statusLabel(status){
 
 function creditSearchHaystack(c){
   const usages = (c.usages || []).map(u => `${u.usageDate} ${u.hours} ${u.reason || ""}`).join(" " );
-  return `${c.workedDate} ${c.timeRange || ""} ${c.hours} ${c.reason || ""} ${usages}`.toLowerCase();
+  return `${c.workedDate} ${c.timeRange || ""} ${c.displayStart || ""} ${c.displayEnd || ""} ${c.sourceTimezone || ""} ${c.displayTimezone || ""} ${c.hours} ${c.reason || ""} ${usages}`.toLowerCase();
 }
 
 function getFilteredLedgerCredits(){
@@ -1049,7 +1074,7 @@ function renderLedgerTable(){
       : `<span class="small" title="${esc(t("Сначала удали списания, которые используют это начисление"))}">${esc(t("сначала списания"))}</span>`;
     tr.innerHTML = `
       <td class="mono">${esc(c.workedDate)}<div class="ledgerStatus ${status}">${statusLabel(status)}</div></td>
-      <td>${esc(c.timeRange || "—")}${calcInfo}</td>
+      <td>${overtimeCreditTimeHtml(c)}${calcInfo}</td>
       <td class="numc">+${fmtHours(c.hours)} ч</td>
       <td class="reason">${esc(c.reason || "—")}</td>
       <td class="numc used">${fmtHours(c.usedHours)} ч</td>

@@ -3,6 +3,7 @@ package ru.daniil.shifts.model;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.Instant;
 
 /**
  * Начисление переработки: конкретный день, диапазон времени, часы и причина.
@@ -36,6 +37,20 @@ public class OvertimeCredit {
 
     @Column(name = "end_at")
     private LocalDateTime endAt;
+
+    /**
+     * Absolute identity for credits created after Time Foundation. Historical
+     * rows intentionally keep these fields null because their original zone was
+     * never persisted.
+     */
+    @Column(name = "start_at_instant")
+    private Instant startAtInstant;
+
+    @Column(name = "end_at_instant")
+    private Instant endAtInstant;
+
+    @Column(name = "source_timezone", length = 80)
+    private String sourceTimezone;
 
     @Column(name = "break_minutes", nullable = false)
     private Integer breakMinutes = 0;
@@ -85,6 +100,12 @@ public class OvertimeCredit {
     public void setStartAt(LocalDateTime startAt) { this.startAt = startAt; }
     public LocalDateTime getEndAt() { return endAt; }
     public void setEndAt(LocalDateTime endAt) { this.endAt = endAt; }
+    public Instant getStartAtInstant() { return startAtInstant; }
+    public void setStartAtInstant(Instant startAtInstant) { this.startAtInstant = startAtInstant; }
+    public Instant getEndAtInstant() { return endAtInstant; }
+    public void setEndAtInstant(Instant endAtInstant) { this.endAtInstant = endAtInstant; }
+    public String getSourceTimezone() { return sourceTimezone; }
+    public void setSourceTimezone(String sourceTimezone) { this.sourceTimezone = sourceTimezone; }
     public int getBreakMinutes() { return breakMinutes == null ? 0 : breakMinutes; }
     public void setBreakMinutes(int breakMinutes) { this.breakMinutes = Math.max(0, breakMinutes); }
     public double getPlannedHours() { return plannedHours == null ? 0.0 : plannedHours; }
