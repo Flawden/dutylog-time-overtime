@@ -73,7 +73,7 @@ class InboxServiceTest {
 
         var converted = inboxService.convertToTask(owner, captured.id(), new InboxToTaskRequest(
                 "2026-08-12", "  Личное  ", List.of("Поездка", "документы"),
-                TaskPriority.HIGH, "2026-08-11", "19:30", true, 45));
+                TaskPriority.HIGH, "2026-08-13", "19:30", true, 45));
 
         assertEquals(InboxItemStatus.ARCHIVED, converted.inboxItem().status());
         assertNotNull(converted.inboxItem().resolvedAt());
@@ -81,6 +81,8 @@ class InboxServiceTest {
         assertEquals("2026-08-12", converted.task().date());
         assertEquals("личное", converted.task().category());
         assertEquals(List.of("поездка", "документы"), converted.task().tags());
+        assertEquals("2026-08-13", converted.task().dueDate());
+        assertEquals("19:30", converted.task().dueTime());
         assertTrue(converted.task().reminderEnabled());
 
         ApiException repeated = assertThrows(ApiException.class, () ->
