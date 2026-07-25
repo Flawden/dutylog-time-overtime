@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.8.1.
+Status: v27.9.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.8.1 forces authoritative timezone projection refresh after profile changes and loads the persisted profile before the first calendar request. It preserves v27.8.0 zoned work intervals, the v27.7.1 layout hotfix, v27.7.0 Time Foundation, v27.6.3 task polish, v27.6.2 one-level subtasks, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 80 Java test classes / 413 `@Test` methods and 16 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.9.0 adds integer-minute FIFO, exact overtime allocation provenance, a legacy timezone migration wizard and one canonical user timezone. It preserves v27.8.1 authoritative refresh, v27.8.0 zoned work intervals, the v27.7.1 layout hotfix, v27.7.0 Time Foundation, v27.6.3 task polish, v27.6.2 one-level subtasks, Telegram UX from v27.5.2 and verified backup/recovery tooling from v27.5.0. Current application baseline: 81 Java test classes / 424 `@Test` methods and 16 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -15,6 +15,14 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
 
+
+## v27.9.0 Overtime Interval Engine extension
+
+- `OvertimeServiceTest` proves exact source-minute ranges, timezone reprojection, deterministic restoration after deletion and legacy reconstruction.
+- `OvertimeControllerTest` covers preview/migrate aliases, module/CSRF boundaries and exact reconstructed API output.
+- `OvertimeIntervalEngineFrontendContractTest` guards one timezone UI, exact range rendering, cross-midnight segmentation, migration wizard and shift work/break wording.
+- `PostgreSqlMigrationContractTest` and release-check keep Flyway continuous through V31.
+- Existing browser scenarios continue to verify authoritative calendar refresh using the single canonical timezone.
 
 ## v27.8.1 Timezone Projection Refresh extension
 

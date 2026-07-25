@@ -52,6 +52,20 @@ public class OvertimeCredit {
     @Column(name = "source_timezone", length = 80)
     private String sourceTimezone;
 
+    /** Exact credited interval after subtracting break and planned work. */
+    @Column(name = "credited_start_at_instant")
+    private Instant creditedStartAtInstant;
+
+    @Column(name = "credited_end_at_instant")
+    private Instant creditedEndAtInstant;
+
+    /** Integer-minute authority for interval FIFO; hours remains for API compatibility. */
+    @Column(name = "credited_minutes")
+    private Integer creditedMinutes;
+
+    @Column(name = "migrated_from_legacy", nullable = false)
+    private Boolean migratedFromLegacy = false;
+
     @Column(name = "break_minutes", nullable = false)
     private Integer breakMinutes = 0;
 
@@ -76,7 +90,7 @@ public class OvertimeCredit {
         this.owner = owner;
         this.workDate = workDate;
         this.timeRange = timeRange;
-        this.hours = hours;
+        setHours(hours);
         this.reason = reason;
     }
 
@@ -104,6 +118,20 @@ public class OvertimeCredit {
     public void setStartAtInstant(Instant startAtInstant) { this.startAtInstant = startAtInstant; }
     public Instant getEndAtInstant() { return endAtInstant; }
     public void setEndAtInstant(Instant endAtInstant) { this.endAtInstant = endAtInstant; }
+    public Instant getCreditedStartAtInstant() { return creditedStartAtInstant; }
+    public void setCreditedStartAtInstant(Instant creditedStartAtInstant) { this.creditedStartAtInstant = creditedStartAtInstant; }
+    public Instant getCreditedEndAtInstant() { return creditedEndAtInstant; }
+    public void setCreditedEndAtInstant(Instant creditedEndAtInstant) { this.creditedEndAtInstant = creditedEndAtInstant; }
+    public int getCreditedMinutes() {
+        if (creditedMinutes != null && creditedMinutes > 0) return creditedMinutes;
+        return (int) Math.max(0L, Math.round(getHours() * 60.0));
+    }
+    public void setCreditedMinutes(int creditedMinutes) {
+        this.creditedMinutes = Math.max(0, creditedMinutes);
+        this.hours = this.creditedMinutes / 60.0;
+    }
+    public boolean isMigratedFromLegacy() { return migratedFromLegacy != null && migratedFromLegacy; }
+    public void setMigratedFromLegacy(boolean migratedFromLegacy) { this.migratedFromLegacy = migratedFromLegacy; }
     public String getSourceTimezone() { return sourceTimezone; }
     public void setSourceTimezone(String sourceTimezone) { this.sourceTimezone = sourceTimezone; }
     public int getBreakMinutes() { return breakMinutes == null ? 0 : breakMinutes; }
@@ -112,8 +140,14 @@ public class OvertimeCredit {
     public void setPlannedHours(double plannedHours) { this.plannedHours = Math.max(0.0, plannedHours); }
     public boolean isCalculated() { return calculated != null && calculated; }
     public void setCalculated(boolean calculated) { this.calculated = calculated; }
-    public double getHours() { return hours == null ? 0.0 : hours; }
-    public void setHours(double hours) { this.hours = Math.max(0.0, hours); }
+    public double getHours() {
+        return creditedMinutes != null ? creditedMinutes / 60.0 : (hours == null ? 0.0 : hours);
+    }
+    public void setHours(double hours) {
+        double safe = Math.max(0.0, hours);
+        this.creditedMinutes = (int) Math.round(safe * 60.0);
+        this.hours = this.creditedMinutes / 60.0;
+    }
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }
     public LocalDateTime getCreatedAt() { return createdAt; }

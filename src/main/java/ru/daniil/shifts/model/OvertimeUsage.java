@@ -27,6 +27,10 @@ public class OvertimeUsage {
     @Column(nullable = false)
     private Double hours;
 
+    /** Integer-minute authority for deterministic FIFO. */
+    @Column(name = "requested_minutes")
+    private Integer requestedMinutes;
+
     @Column(columnDefinition = "text")
     private String reason;
 
@@ -38,7 +42,7 @@ public class OvertimeUsage {
     public OvertimeUsage(AppUser owner, LocalDate usageDate, double hours, String reason) {
         this.owner = owner;
         this.usageDate = usageDate;
-        this.hours = hours;
+        setHours(hours);
         this.reason = reason;
     }
 
@@ -46,8 +50,16 @@ public class OvertimeUsage {
     public AppUser getOwner() { return owner; }
     public LocalDate getUsageDate() { return usageDate; }
     public void setUsageDate(LocalDate usageDate) { this.usageDate = usageDate; }
-    public double getHours() { return hours == null ? 0.0 : hours; }
-    public void setHours(double hours) { this.hours = Math.max(0.0, hours); }
+    public int getRequestedMinutes() {
+        if (requestedMinutes != null && requestedMinutes > 0) return requestedMinutes;
+        return (int) Math.max(0L, Math.round((hours == null ? 0.0 : hours) * 60.0));
+    }
+    public void setRequestedMinutes(int requestedMinutes) {
+        this.requestedMinutes = Math.max(0, requestedMinutes);
+        this.hours = this.requestedMinutes / 60.0;
+    }
+    public double getHours() { return getRequestedMinutes() / 60.0; }
+    public void setHours(double hours) { setRequestedMinutes((int) Math.round(Math.max(0.0, hours) * 60.0)); }
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }
     public LocalDateTime getCreatedAt() { return createdAt; }

@@ -1,6 +1,7 @@
 package ru.daniil.shifts.model;
 
 import jakarta.persistence.*;
+import java.time.Instant;
 
 /**
  * Связка списания с конкретным начислением переработки.
@@ -27,17 +28,53 @@ public class OvertimeAllocation {
     @Column(nullable = false)
     private Double hours;
 
+    @Column(name = "allocated_minutes")
+    private Integer allocatedMinutes;
+
+    @Column(name = "start_at_instant")
+    private Instant startAtInstant;
+
+    @Column(name = "end_at_instant")
+    private Instant endAtInstant;
+
+    @Column(name = "source_timezone", length = 80)
+    private String sourceTimezone;
+
+    @Column(name = "reconstructed", nullable = false)
+    private Boolean reconstructed = false;
+
     protected OvertimeAllocation() {}
 
-    public OvertimeAllocation(OvertimeCredit credit, OvertimeUsage usage, double hours) {
+    public OvertimeAllocation(OvertimeCredit credit, OvertimeUsage usage, int minutes) {
         this.credit = credit;
         this.usage = usage;
-        this.hours = hours;
+        setAllocatedMinutes(minutes);
+    }
+
+    /** Source-compatible constructor for pre-v27.9 callers. */
+    public OvertimeAllocation(OvertimeCredit credit, OvertimeUsage usage, double hours) {
+        this(credit, usage, (int) Math.round(Math.max(0.0, hours) * 60.0));
     }
 
     public Long getId() { return id; }
     public OvertimeCredit getCredit() { return credit; }
     public OvertimeUsage getUsage() { return usage; }
-    public double getHours() { return hours == null ? 0.0 : hours; }
-    public void setHours(double hours) { this.hours = Math.max(0.0, hours); }
+    public int getAllocatedMinutes() {
+        if (allocatedMinutes != null && allocatedMinutes > 0) return allocatedMinutes;
+        return (int) Math.max(0L, Math.round((hours == null ? 0.0 : hours) * 60.0));
+    }
+    public void setAllocatedMinutes(int allocatedMinutes) {
+        this.allocatedMinutes = Math.max(0, allocatedMinutes);
+        this.hours = this.allocatedMinutes / 60.0;
+    }
+    public double getHours() { return getAllocatedMinutes() / 60.0; }
+    public void setHours(double hours) { setAllocatedMinutes((int) Math.round(Math.max(0.0, hours) * 60.0)); }
+    public Instant getStartAtInstant() { return startAtInstant; }
+    public void setStartAtInstant(Instant startAtInstant) { this.startAtInstant = startAtInstant; }
+    public Instant getEndAtInstant() { return endAtInstant; }
+    public void setEndAtInstant(Instant endAtInstant) { this.endAtInstant = endAtInstant; }
+    public String getSourceTimezone() { return sourceTimezone; }
+    public void setSourceTimezone(String sourceTimezone) { this.sourceTimezone = sourceTimezone; }
+    public boolean isReconstructed() { return reconstructed != null && reconstructed; }
+    public void setReconstructed(boolean reconstructed) { this.reconstructed = reconstructed; }
 }

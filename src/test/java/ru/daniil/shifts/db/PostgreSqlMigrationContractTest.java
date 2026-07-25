@@ -89,6 +89,22 @@ class PostgreSqlMigrationContractTest {
                 "legacy calculated rows intentionally remain local-only");
     }
 
+    @Test
+    void overtimeIntervalEngineBackfillsOnlyTrustworthyAbsoluteSources() throws IOException {
+        String sql = Files.readString(MIGRATION_ROOT.resolve("V31__overtime_interval_engine.sql"));
+
+        assertTrue(sql.contains("credited_minutes INTEGER"));
+        assertTrue(sql.contains("allocated_minutes INTEGER"));
+        assertTrue(sql.contains("credited_start_at_instant TIMESTAMPTZ"));
+        assertTrue(sql.contains("start_at_instant TIMESTAMPTZ"));
+        assertTrue(sql.contains("WHERE start_at_instant IS NOT NULL"));
+        assertTrue(sql.contains("reconstructed = TRUE"));
+        assertFalse(sql.contains("AT TIME ZONE"),
+                "V31 must not guess a timezone for legacy local-only overtime rows");
+        assertFalse(sql.contains("ALTER COLUMN credited_start_at_instant SET NOT NULL"),
+                "quantity-only legacy credits intentionally remain non-exact");
+    }
+
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);

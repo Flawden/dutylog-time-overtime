@@ -61,6 +61,8 @@ const api = {
   async createOvertimeUsage(b) { return jfetch("/api/overtime/usages", { method:"POST", body:b }); },
   async updateOvertimeUsage(id, b) { return jfetch(`/api/overtime/usages/${id}`, { method:"PATCH", body:b }); },
   async deleteOvertimeUsage(id) { return jfetch(`/api/overtime/usages/${id}`, { method:"DELETE" }); },
+  async previewLegacyOvertime(b) { return jfetch("/api/overtime/legacy-credits/preview", { method:"POST", body:b }); },
+  async migrateLegacyOvertime(b) { return jfetch("/api/overtime/legacy-credits/migrate", { method:"POST", body:b }); },
   async updateNotificationSettings(b) { return jfetch("/api/notifications/settings", { method:"PATCH", body:b }); },
   async notificationUpcoming(from, to, includePast = true) { return jfetch(`/api/notifications/upcoming?from=${from}&to=${to}&includePast=${includePast ? "true" : "false"}`); },
   async notificationTomorrow() { return jfetch("/api/notifications/tomorrow"); },

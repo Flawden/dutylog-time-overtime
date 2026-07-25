@@ -67,11 +67,11 @@ public class AppUser {
     @Column(name = "language_preference", length = 10)
     private String languagePreference = "ru";
 
-    /** Рабочий часовой пояс: календарные расчёты, смены, нормы и переработки. */
+    /** Канонический часовой пояс пользователя: календарь, смены, переработки и отображение. */
     @Column(name = "work_timezone", length = 80)
     private String workTimezone = "Europe/Moscow";
 
-    /** Часовой пояс отображения: меняет только представление абсолютных моментов. */
+    /** Legacy database alias kept for older clients; normalized to workTimezone. */
     @Column(name = "display_timezone", length = 80)
     private String displayTimezone;
 
@@ -123,15 +123,17 @@ public class AppUser {
     }
     public String getWorkTimezone() { return workTimezone == null || workTimezone.isBlank() ? "Europe/Moscow" : workTimezone; }
     public void setWorkTimezone(String workTimezone) {
-        this.workTimezone = workTimezone == null || workTimezone.isBlank() ? "Europe/Moscow" : workTimezone.trim();
+        String canonical = workTimezone == null || workTimezone.isBlank() ? "Europe/Moscow" : workTimezone.trim();
+        this.workTimezone = canonical;
+        this.displayTimezone = canonical;
     }
     public String getDisplayTimezone() {
-        return displayTimezone == null || displayTimezone.isBlank() ? getWorkTimezone() : displayTimezone;
+        // Kept for backward-compatible DTO/database shape; v27.9 has one timezone.
+        return getWorkTimezone();
     }
     public void setDisplayTimezone(String displayTimezone) {
-        this.displayTimezone = displayTimezone == null || displayTimezone.isBlank()
-                ? getWorkTimezone()
-                : displayTimezone.trim();
+        // Legacy clients may still send only displayTimezone; it updates the canonical zone.
+        setWorkTimezone(displayTimezone);
     }
     public boolean isOnboardingCompleted() { return onboardingCompleted; }
     public void setOnboardingCompleted(boolean onboardingCompleted) { this.onboardingCompleted = onboardingCompleted; }

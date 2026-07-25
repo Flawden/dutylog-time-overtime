@@ -330,7 +330,48 @@ paths:
     get: { operationId: listImportantDays, responses: { '200': { description: Important dates } } }
     post: { operationId: createImportantDay, responses: { '200': { description: Created important date } } }
   /api/v1/overtime/account:
-    get: { operationId: overtimeAccount, responses: { '200': { description: Overtime account } } }
+    get:
+      operationId: overtimeAccount
+      description: Full overtime account with integer-minute FIFO provenance.
+      responses:
+        '200':
+          description: Overtime account
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OvertimeAccount' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/overtime/legacy-credits/preview:
+    post:
+      operationId: previewLegacyOvertimeMigration
+      description: Preview attaching legacy local overtime rows to an explicit IANA timezone without changing hours or balance.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LegacyOvertimeMigrationRequest' }
+      responses:
+        '200':
+          description: Migration preview
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegacyOvertimeMigrationPreview' }
+        '400': { $ref: '#/components/responses/ApiError' }
+  /api/v1/overtime/legacy-credits/migrate:
+    post:
+      operationId: migrateLegacyOvertimeCredits
+      description: Persist exact instants for selected legacy rows and deterministically rebuild FIFO allocations.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LegacyOvertimeMigrationRequest' }
+      responses:
+        '200':
+          description: Migration result and rebuilt account
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegacyOvertimeMigrationResult' }
+        '400': { $ref: '#/components/responses/ApiError' }
   /api/v1/shift-types:
     get: { operationId: listShiftTypes, responses: { '200': { description: Shift types } } }
   /api/v1/profile:
@@ -339,7 +380,7 @@ paths:
   /api/v1/time/context:
     get:
       operationId: getTimeContext
-      description: Returns one absolute server instant projected into the user's work and display timezones.
+      description: Returns one absolute server instant in the user's canonical IANA timezone. Legacy work/display fields are identical.
       responses:
         '200':
           description: Current time context
@@ -398,14 +439,14 @@ components:
       properties:
         nowInstant: { type: string, format: date-time, description: Absolute UTC instant }
         workTimezone: { type: string, example: Europe/Chisinau }
-        displayTimezone: { type: string, example: Europe/Berlin }
+        displayTimezone: { type: string, example: Europe/Chisinau, description: Compatibility alias of workTimezone }
         workLocalDateTime: { type: string, example: '2026-07-25T15:30:00' }
         displayLocalDateTime: { type: string, example: '2026-07-25T14:30:00' }
         workDate: { type: string, format: date }
         displayDate: { type: string, format: date }
         workOffset: { type: string, example: '+03:00' }
         displayOffset: { type: string, example: '+02:00' }
-        sameTimezone: { type: boolean }
+        sameTimezone: { type: boolean, enum: [true] }
     Task:
       type: object
       required: [id, date, text, done, tags, priority, reminderEnabled, overdue, subtasks]
@@ -521,6 +562,142 @@ components:
       properties:
         inboxItem: { $ref: '#/components/schemas/InboxItem' }
         task: { $ref: '#/components/schemas/Task' }
+    OvertimeAllocation:
+      type: object
+      required: [creditId, workedDate, hours, minutes, exact, reconstructed]
+      properties:
+        creditId: { type: integer, format: int64 }
+        workedDate: { type: string, format: date }
+        timeRange: { type: string, nullable: true }
+        hours: { type: number, format: double }
+        minutes: { type: integer, minimum: 0 }
+        reason: { type: string, nullable: true }
+        startInstant: { type: string, format: date-time, nullable: true }
+        endInstant: { type: string, format: date-time, nullable: true }
+        displayStart: { type: string, nullable: true, example: '2026-07-25T17:00' }
+        displayEnd: { type: string, nullable: true, example: '2026-07-25T19:00' }
+        sourceTimezone: { type: string, nullable: true, example: Asia/Yekaterinburg }
+        exact: { type: boolean, description: True when the exact source interval is known }
+        reconstructed: { type: boolean, description: True when provenance was reconstructed by the legacy migration wizard }
+    OvertimeUsage:
+      type: object
+      required: [id, usageDate, hours, minutes, allocations]
+      properties:
+        id: { type: integer, format: int64 }
+        usageDate: { type: string, format: date }
+        hours: { type: number, format: double }
+        minutes: { type: integer, minimum: 0 }
+        reason: { type: string, nullable: true }
+        allocations:
+          type: array
+          items: { $ref: '#/components/schemas/OvertimeAllocation' }
+    OvertimeUsageRef:
+      type: object
+      required: [usageId, usageDate, hours, minutes, exact, reconstructed]
+      description: Allocation projected from the credit side; identifies the time-off request and the exact source interval it consumed.
+      properties:
+        usageId: { type: integer, format: int64 }
+        usageDate: { type: string, format: date }
+        hours: { type: number, format: double }
+        minutes: { type: integer, minimum: 0 }
+        reason: { type: string, nullable: true }
+        startInstant: { type: string, format: date-time, nullable: true }
+        endInstant: { type: string, format: date-time, nullable: true }
+        displayStart: { type: string, nullable: true }
+        displayEnd: { type: string, nullable: true }
+        sourceTimezone: { type: string, nullable: true }
+        exact: { type: boolean }
+        reconstructed: { type: boolean }
+    OvertimeCredit:
+      type: object
+      required: [id, workedDate, calculated, hours, creditedMinutes, usedHours, remainingHours, usages, migratedFromLegacy, legacyTimezoneRequired]
+      properties:
+        id: { type: integer, format: int64 }
+        workedDate: { type: string, format: date }
+        timeRange: { type: string, nullable: true }
+        startDateTime: { type: string, nullable: true }
+        endDateTime: { type: string, nullable: true }
+        breakMinutes: { type: integer, minimum: 0 }
+        plannedHours: { type: number, format: double, minimum: 0 }
+        calculated: { type: boolean }
+        hours: { type: number, format: double }
+        creditedMinutes: { type: integer, minimum: 0 }
+        reason: { type: string, nullable: true }
+        usedHours: { type: number, format: double }
+        remainingHours: { type: number, format: double }
+        usages:
+          type: array
+          items: { $ref: '#/components/schemas/OvertimeUsageRef' }
+        startInstant: { type: string, format: date-time, nullable: true }
+        endInstant: { type: string, format: date-time, nullable: true }
+        creditedStartInstant: { type: string, format: date-time, nullable: true }
+        creditedEndInstant: { type: string, format: date-time, nullable: true }
+        sourceTimezone: { type: string, nullable: true }
+        displayStart: { type: string, nullable: true }
+        displayEnd: { type: string, nullable: true }
+        displayTimezone: { type: string, nullable: true, description: Canonical current user timezone }
+        creditedDisplayStart: { type: string, nullable: true }
+        creditedDisplayEnd: { type: string, nullable: true }
+        migratedFromLegacy: { type: boolean }
+        legacyTimezoneRequired: { type: boolean }
+    OvertimeAccount:
+      type: object
+      required: [totalEarnedHours, totalUsedHours, balanceHours, credits, usages]
+      properties:
+        totalEarnedHours: { type: number, format: double }
+        totalUsedHours: { type: number, format: double }
+        balanceHours: { type: number, format: double }
+        credits:
+          type: array
+          items: { $ref: '#/components/schemas/OvertimeCredit' }
+        usages:
+          type: array
+          items: { $ref: '#/components/schemas/OvertimeUsage' }
+    LegacyOvertimeMigrationRequest:
+      type: object
+      properties:
+        creditIds:
+          type: array
+          items: { type: integer, format: int64 }
+          description: Preview may use an empty list to discover all owned legacy rows; migrate requires an explicit non-empty selection.
+        sourceTimezone: { type: string, example: Asia/Yekaterinburg }
+    LegacyOvertimeCredit:
+      type: object
+      required: [id, workedDate, hours, minutes, migratable, sourceTimezone]
+      properties:
+        id: { type: integer, format: int64 }
+        workedDate: { type: string, format: date }
+        startDateTime: { type: string, nullable: true }
+        endDateTime: { type: string, nullable: true }
+        timeRange: { type: string, nullable: true }
+        hours: { type: number, format: double }
+        minutes: { type: integer, minimum: 0 }
+        reason: { type: string, nullable: true }
+        migratable: { type: boolean }
+        blockedReason: { type: string, nullable: true }
+        sourceTimezone: { type: string }
+        projectedStart: { type: string, nullable: true }
+        projectedEnd: { type: string, nullable: true }
+        creditedStart: { type: string, nullable: true }
+        creditedEnd: { type: string, nullable: true }
+    LegacyOvertimeMigrationPreview:
+      type: object
+      required: [sourceTimezone, requestedCount, migratableCount, blockedCount, credits]
+      properties:
+        sourceTimezone: { type: string }
+        requestedCount: { type: integer }
+        migratableCount: { type: integer }
+        blockedCount: { type: integer }
+        credits:
+          type: array
+          items: { $ref: '#/components/schemas/LegacyOvertimeCredit' }
+    LegacyOvertimeMigrationResult:
+      type: object
+      required: [migratedCount, skippedCount, account]
+      properties:
+        migratedCount: { type: integer }
+        skippedCount: { type: integer }
+        account: { $ref: '#/components/schemas/OvertimeAccount' }
     MobileRegisterRequest:
       type: object
       required: [username, password]
@@ -542,7 +719,7 @@ components:
       properties:
         username: { type: string }
         workTimezone: { type: string, nullable: true, example: Europe/Chisinau }
-        displayTimezone: { type: string, nullable: true, example: Europe/Berlin }
+        displayTimezone: { type: string, nullable: true, example: Europe/Chisinau, description: Compatibility alias of workTimezone }
     MobileTokenResponse:
       type: object
       required: [tokenType, accessToken, accessExpiresAt, refreshToken, refreshExpiresAt, user]
@@ -565,17 +742,17 @@ components:
         active: { type: boolean }
     ShiftInterval:
       type: object
-      description: One dated work shift resolved to absolute instants and projected into work/display timezones.
+      description: One dated work shift resolved to absolute instants in the canonical user timezone. Legacy work/display projections are identical.
       required: [startInstant, endInstant, workStart, workEnd, displayStart, displayEnd, workTimezone, displayTimezone, breakMinutes, elapsedMinutes, netMinutes, crossesWorkMidnight, crossesDisplayMidnight, sameTimezone]
       properties:
         startInstant: { type: string, format: date-time }
         endInstant: { type: string, format: date-time }
         workStart: { type: string, example: '2026-07-25T08:30' }
         workEnd: { type: string, example: '2026-07-25T17:00' }
-        displayStart: { type: string, example: '2026-07-25T06:30' }
-        displayEnd: { type: string, example: '2026-07-25T15:00' }
+        displayStart: { type: string, example: '2026-07-25T08:30', description: Compatibility alias of workStart }
+        displayEnd: { type: string, example: '2026-07-25T17:00', description: Compatibility alias of workEnd }
         workTimezone: { type: string, example: Asia/Yekaterinburg }
-        displayTimezone: { type: string, example: Europe/Moscow }
+        displayTimezone: { type: string, example: Asia/Yekaterinburg, description: Compatibility alias of workTimezone }
         breakMinutes: { type: integer, minimum: 0 }
         elapsedMinutes: { type: integer, format: int64, minimum: 1 }
         netMinutes: { type: integer, format: int64, minimum: 0 }

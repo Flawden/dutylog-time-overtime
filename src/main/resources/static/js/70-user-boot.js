@@ -317,7 +317,7 @@ async function loadProfile(){
     state.timeSettings = {
       ...loadTimeSettings(),
       workTimezone:p.workTimezone || loadTimeSettings().workTimezone,
-      displayTimezone:p.displayTimezone || p.workTimezone || loadTimeSettings().displayTimezone
+      displayTimezone:p.workTimezone || loadTimeSettings().workTimezone
     };
     storeTimeSettings(state.timeSettings);
     if (typeof renderTimeSettings === "function") renderTimeSettings();
@@ -356,7 +356,7 @@ function currentProfilePayload(extra = {}){
     birthday: $('profileBirthday')?.value || null,
     languagePreference: state.language,
     workTimezone: state.timeSettings?.workTimezone || state.profile?.workTimezone || browserTimeZone(),
-    displayTimezone: state.timeSettings?.displayTimezone || state.profile?.displayTimezone || browserTimeZone(),
+    displayTimezone: state.timeSettings?.workTimezone || state.profile?.workTimezone || browserTimeZone(),
     ...extra,
   };
 }

@@ -8,7 +8,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class WorkIntervalServiceTest {
@@ -53,21 +52,19 @@ class WorkIntervalServiceTest {
     }
 
     @Test
-    void displayProjectionMovesTheSameShiftWithoutChangingItsInstant() {
+    void canonicalTimezoneUsesTheSameProjectionForWorkAndDisplay() {
         AppUser user = user("Asia/Yekaterinburg");
-        user.setDisplayTimezone("Europe/Moscow");
-
         var resolved = intervals.resolve(
                 user, LocalDate.of(2026, 7, 25), LocalTime.of(8, 30), LocalTime.of(17, 0), 30);
         var projection = intervals.project(user, resolved);
 
         assertEquals("2026-07-25T03:30:00Z", projection.startInstant().toString());
         assertEquals("2026-07-25T08:30", projection.workStart().toLocalDateTime().toString());
-        assertEquals("2026-07-25T06:30", projection.displayStart().toLocalDateTime().toString());
-        assertEquals("2026-07-25T15:00", projection.displayEnd().toLocalDateTime().toString());
+        assertEquals("2026-07-25T08:30", projection.displayStart().toLocalDateTime().toString());
+        assertEquals("2026-07-25T17:00", projection.displayEnd().toLocalDateTime().toString());
         assertEquals("Asia/Yekaterinburg", projection.workTimezone());
-        assertEquals("Europe/Moscow", projection.displayTimezone());
-        assertFalse(projection.sameTimezone());
+        assertEquals("Asia/Yekaterinburg", projection.displayTimezone());
+        assertTrue(projection.sameTimezone());
     }
 
     private AppUser user(String timezone) {

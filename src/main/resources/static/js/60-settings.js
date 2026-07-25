@@ -345,7 +345,7 @@ function readTimeSettingsForm(){
     ...(state.timeSettings || loadTimeSettings()),
     workRegionName:"",
     workTimezone: val("workTimezone") || browserTimeZone(),
-    displayTimezone: val("displayTimezone") || val("workTimezone") || browserTimeZone(),
+    displayTimezone: val("workTimezone") || browserTimeZone(),
     workOffsetMoscow:0,
     timeFormat: val("timeFormatPref") || "24h",
     dayStart: val("defDayStart") || "08:30",
@@ -370,10 +370,8 @@ function setTimeSettingsStatus(tone = "saved", text = ""){
 function renderTimePreview(timeSettings){
   const box = $("timeNowBox");
   if (!box) return;
-  const workLabel = state.language === "en" ? "Work time" : "Рабочее время";
-  const displayLabel = state.language === "en" ? "Display time" : "Время отображения";
-  box.innerHTML = `<div><span>${esc(workLabel)}:</span> <b>${esc(safeTzLabel(timeSettings.workTimezone))}</b> <code>${esc(timeSettings.workTimezone)}</code> · ${esc(timezoneOffsetLabel(timeSettings.workTimezone))}</div>` +
-    `<div><span>${esc(displayLabel)}:</span> <b>${esc(safeTzLabel(timeSettings.displayTimezone))}</b> <code>${esc(timeSettings.displayTimezone)}</code> · ${esc(timezoneOffsetLabel(timeSettings.displayTimezone))}</div>`;
+  const label = state.language === "en" ? "Current time" : "Текущее время";
+  box.innerHTML = `<div><span>${esc(label)}:</span> <b>${esc(safeTzLabel(timeSettings.workTimezone))}</b> <code>${esc(timeSettings.workTimezone)}</code> · ${esc(timezoneOffsetLabel(timeSettings.workTimezone))}</div>`;
 }
 function renderTimeSettings(){
   if (!$("timeSettingsCard")) return;
@@ -381,9 +379,8 @@ function renderTimeSettings(){
   const timeSettings = state.timeSettings;
   const set = (id, value) => { if ($(id)) $(id).value = value ?? ""; };
   populateTimeZoneSelect("workTimezone", timeSettings.workTimezone);
-  populateTimeZoneSelect("displayTimezone", timeSettings.displayTimezone || timeSettings.workTimezone);
   set("workTimezone", timeSettings.workTimezone);
-  set("displayTimezone", timeSettings.displayTimezone || timeSettings.workTimezone);
+  set("displayTimezone", timeSettings.workTimezone);
   set("timeFormatPref", timeSettings.timeFormat || "24h");
   set("defDayStart", timeSettings.dayStart);
   set("defDayEnd", timeSettings.dayEnd);
@@ -404,7 +401,7 @@ function isRecognizedTimeZone(value){
 }
 async function saveTimeSettings(){
   const next = readTimeSettingsForm();
-  if (!isRecognizedTimeZone(next.workTimezone) || !isRecognizedTimeZone(next.displayTimezone)) {
+  if (!isRecognizedTimeZone(next.workTimezone)) {
     setSave("err", t("часовой пояс не распознан"));
     setTimeSettingsStatus("dirty", t("часовой пояс не распознан"));
     return false;
@@ -412,8 +409,8 @@ async function saveTimeSettings(){
   setTimeSettingsStatus("dirty", state.language === "en" ? "saving…" : "сохранение…");
   try {
     const payload = typeof currentProfilePayload === "function"
-      ? currentProfilePayload({ workTimezone:next.workTimezone, displayTimezone:next.displayTimezone })
-      : { workTimezone:next.workTimezone, displayTimezone:next.displayTimezone };
+      ? currentProfilePayload({ workTimezone:next.workTimezone, displayTimezone:next.workTimezone })
+      : { workTimezone:next.workTimezone, displayTimezone:next.workTimezone };
     const profile = await jfetch("/api/profile", { method:"PUT", body:payload });
     state.profile = profile;
     state.timeSettings = {
@@ -421,7 +418,7 @@ async function saveTimeSettings(){
       workRegionName:"",
       workOffsetMoscow:0,
       workTimezone:profile.workTimezone || next.workTimezone,
-      displayTimezone:profile.displayTimezone || next.displayTimezone
+      displayTimezone:profile.workTimezone || next.workTimezone
     };
     storeTimeSettings(state.timeSettings);
     renderTimeSettings();
@@ -515,23 +512,15 @@ function initTimeSettingsEvents(){
   $("timeSaveTimezone")?.addEventListener("click", saveTimeSettings);
   $("timeDetectBrowser")?.addEventListener("click", () => {
     populateTimeZoneSelect("workTimezone", browserTimeZone());
-    populateTimeZoneSelect("displayTimezone", browserTimeZone());
     $("workTimezone").value = browserTimeZone();
-    $("displayTimezone").value = browserTimeZone();
-    renderTimePreview(readTimeSettingsForm());
-    setTimeSettingsStatus("dirty");
-  });
-  $("timeDisplayAsWork")?.addEventListener("click", () => {
-    const work = $("workTimezone")?.value || browserTimeZone();
-    populateTimeZoneSelect("displayTimezone", work);
-    $("displayTimezone").value = work;
+    if ($("displayTimezone")) $("displayTimezone").value = browserTimeZone();
     renderTimePreview(readTimeSettingsForm());
     setTimeSettingsStatus("dirty");
   });
   $("timeApplyBuiltins")?.addEventListener("click", () => applyTimeSettingsToBuiltins(false));
   $("timeFillDayForm")?.addEventListener("click", () => fillShiftFormFromDefaults("day"));
   $("timeFillNightForm")?.addEventListener("click", () => fillShiftFormFromDefaults("night"));
-  for (const id of ["workTimezone", "displayTimezone", "timeFormatPref"]) {
+  for (const id of ["workTimezone", "timeFormatPref"]) {
     $(id)?.addEventListener("change", () => {
       renderTimePreview(readTimeSettingsForm());
       setTimeSettingsStatus("dirty");
@@ -544,7 +533,7 @@ function initTimeSettingsEvents(){
       storeTimeSettings({
         ...form,
         workTimezone:state.profile?.workTimezone || state.timeSettings?.workTimezone || browserTimeZone(),
-        displayTimezone:state.profile?.displayTimezone || state.timeSettings?.displayTimezone || browserTimeZone(),
+        displayTimezone:state.profile?.workTimezone || state.timeSettings?.workTimezone || browserTimeZone(),
         timeFormat:state.timeSettings?.timeFormat || "24h"
       });
       scheduleTimeSettingsApply();

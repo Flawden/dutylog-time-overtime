@@ -90,21 +90,13 @@ public class ProfileController {
     public Map<String, Object> update(@RequestBody ProfileUpdateRequest req, Principal principal) {
         AppUser user = currentUserService.requireUser(principal);
 
-        // Apply the requested time context first so all date rules in this transaction
-        // evaluate the final profile state rather than the previously saved timezone.
-        String previousWorkTimezone = user.getWorkTimezone();
-        boolean displayFollowedWork = user.getDisplayTimezone().equals(previousWorkTimezone);
-        if (req.workTimezone() != null) {
-            String requestedWorkTimezone = validatedTimezone(req.workTimezone(), "Рабочий часовой пояс");
-            user.setWorkTimezone(requestedWorkTimezone);
-            // Legacy clients only know workTimezone. Keep the old coupled behaviour
-            // until the user explicitly chooses an independent display timezone.
-            if (req.displayTimezone() == null && displayFollowedWork) {
-                user.setDisplayTimezone(requestedWorkTimezone);
-            }
-        }
-        if (req.displayTimezone() != null) {
-            user.setDisplayTimezone(validatedTimezone(req.displayTimezone(), "Часовой пояс отображения"));
+        // DutyLog v27.9 uses one canonical user timezone. Both legacy profile
+        // fields remain in the wire contract, but they are always persisted together.
+        String requestedTimezone = req.workTimezone() != null ? req.workTimezone() : req.displayTimezone();
+        if (requestedTimezone != null) {
+            String timezone = validatedTimezone(requestedTimezone, "Часовой пояс");
+            user.setWorkTimezone(timezone);
+            user.setDisplayTimezone(timezone);
         }
 
         String name = req.displayName() == null ? null : req.displayName().trim();

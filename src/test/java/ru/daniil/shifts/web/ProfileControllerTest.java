@@ -98,7 +98,7 @@ class ProfileControllerTest {
                 .andExpect(jsonPath("$.themePreset").value("custom_1"))
                 .andExpect(jsonPath("$.languagePreference").value("en"))
                 .andExpect(jsonPath("$.workTimezone").value("Europe/Chisinau"))
-                .andExpect(jsonPath("$.displayTimezone").value("Europe/Berlin"))
+                .andExpect(jsonPath("$.displayTimezone").value("Europe/Chisinau"))
                 .andExpect(jsonPath("$.onboardingCompleted").value(true))
                 .andExpect(jsonPath("$.themeConfig.appBg").value("#101010"))
                 .andExpect(jsonPath("$.themeConfig.textColor").value("#FEFEFE"))
@@ -114,14 +114,14 @@ class ProfileControllerTest {
         assertEquals("custom_1", stored.getThemePreset());
         assertEquals("en", stored.getLanguagePreference());
         assertEquals("Europe/Chisinau", stored.getWorkTimezone());
-        assertEquals("Europe/Berlin", stored.getDisplayTimezone());
+        assertEquals("Europe/Chisinau", stored.getDisplayTimezone());
         assertTrue(stored.isOnboardingCompleted());
         assertTrue(stored.getThemeConfig().contains("\"cardRadius\":28"));
         assertTrue(!stored.getThemeConfig().contains("unknownCss"));
     }
 
     @Test
-    void legacyWorkTimezoneUpdatesStayCoupledUntilDisplayTimezoneIsChosenExplicitly() throws Exception {
+    void eitherLegacyTimezoneFieldUpdatesTheSingleCanonicalTimezone() throws Exception {
         mvc.perform(put("/api/profile")
                         .with(user(owner.getUsername()).roles("USER")).with(csrf())
                         .contentType("application/json")
@@ -135,14 +135,7 @@ class ProfileControllerTest {
                         .contentType("application/json")
                         .content("{\"displayTimezone\":\"Europe/Berlin\"}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.displayTimezone").value("Europe/Berlin"));
-
-        mvc.perform(put("/api/profile")
-                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
-                        .contentType("application/json")
-                        .content("{\"workTimezone\":\"Asia/Yekaterinburg\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.workTimezone").value("Asia/Yekaterinburg"))
+                .andExpect(jsonPath("$.workTimezone").value("Europe/Berlin"))
                 .andExpect(jsonPath("$.displayTimezone").value("Europe/Berlin"));
     }
 

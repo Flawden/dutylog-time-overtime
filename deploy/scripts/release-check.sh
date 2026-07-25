@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.8.1}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.9.0}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -382,8 +382,8 @@ contains src/main/resources/static/app.css 'html[lang="en"] .cell .num.today::af
 contains src/main/resources/static/js/10-core.js 'function shiftDisplayName'
 contains src/main/resources/static/js/10-core.js "if (typeof renderSettingsPanels === 'function') renderSettingsPanels();"
 contains src/main/resources/static/js/30-calendar.js 'esc(t("Итого:"))'
-contains src/main/resources/static/js/60-settings.js 'const workLabel = state.language === "en" ? "Work time"'
-contains src/main/resources/static/js/60-settings.js 'const displayLabel = state.language === "en" ? "Display time"'
+contains src/main/resources/static/js/60-settings.js 'const label = state.language === "en" ? "Current time" : "Текущее время";'
+contains src/main/resources/static/js/60-settings.js 'displayTimezone: val("workTimezone") || browserTimeZone()'
 contains src/main/resources/static/js/60-settings.js 'esc(t("шт"))'
 contains docs/NOTIFICATION_ADMIN_NAV_HOTFIX.md "v27.2.5"
 contains src/main/resources/static/app.css "v27.2.5: notifications header alignment"
@@ -953,7 +953,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.8.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.0"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1006,7 +1006,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.8.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.0"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1028,7 +1028,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.8.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.0"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1123,7 +1123,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.8.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.0"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -1149,7 +1149,7 @@ contains src/main/resources/static/js/50-tasks.js "renderShiftProjection"
 contains src/main/resources/static/js/40-overtime.js "overtimeCreditDisplayRange"
 contains src/test/java/ru/daniil/shifts/service/OvertimeServiceTest.java "savingUnchangedCalculatedCreditDoesNotMoveItsInstantAfterWorkTimezoneChange"
 contains src/test/java/ru/daniil/shifts/web/ZonedWorkIntervalsFrontendContractTest.java "selectedDayShowsWorkAndDisplayShiftProjection"
-contains e2e/important-timezone.spec.js "existing dated shift refreshes after work and display timezone change"
+contains e2e/important-timezone.spec.js "existing dated shift refreshes after canonical timezone change"
 contains src/main/resources/db/migration/postgresql/V29__time_foundation.sql "ADD COLUMN IF NOT EXISTS display_timezone"
 contains src/main/resources/db/migration/postgresql/V29__time_foundation.sql "remind_at_instant TIMESTAMPTZ"
 contains src/main/resources/db/migration/postgresql/V29__time_foundation.sql "uq_tg_notification_once_instant"
@@ -1164,12 +1164,29 @@ contains src/main/java/ru/daniil/shifts/telegram/TelegramNotificationService.jav
 contains src/main/resources/static/index.html 'id="displayTimezone"'
 contains src/main/resources/static/js/10-core.js "function formatAbsoluteInstant"
 contains src/main/resources/static/js/10-core.js "timeZone:displayTimeZone()"
-contains src/main/resources/static/js/60-settings.js "displayTimezone:next.displayTimezone"
+contains src/main/resources/static/js/60-settings.js "displayTimezone:next.workTimezone"
 contains src/test/java/ru/daniil/shifts/service/UserTimeServiceTest.java "dstGapMovesForwardAndOverlapUsesEarlierOffset"
 contains src/test/java/ru/daniil/shifts/service/WorkIntervalServiceTest.java "daylightSavingChangesActualElapsedDuration"
-contains src/test/java/ru/daniil/shifts/web/TimeContextControllerTest.java "legacyAndV1ExposeOneInstantWithTwoExplicitProjections"
+contains src/test/java/ru/daniil/shifts/web/TimeContextControllerTest.java "legacyAndV1ExposeOneInstantWithCanonicalProjection"
 contains src/test/java/ru/daniil/shifts/db/PostgreSqlMigrationContractTest.java "timeFoundationMigrationPreservesUnzonedLegacyDeliveriesWithoutGuessing"
-contains e2e/important-timezone.spec.js "display timezone survives reload"
+contains e2e/important-timezone.spec.js "canonical timezone survives reload"
+
+# v27.9.0 Overtime Interval Engine
+contains CHANGES.md "v27.9.0 — Overtime Interval Engine"
+contains README.md "v27.9.0 — Overtime Interval Engine"
+contains docs/OVERTIME_INTERVAL_ENGINE_V27.9.0.md "Exact FIFO provenance"
+contains src/main/resources/db/migration/postgresql/V31__overtime_interval_engine.sql "credited_start_at_instant"
+contains src/main/resources/db/migration/postgresql/V31__overtime_interval_engine.sql "allocated_minutes"
+contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "rebuildAllAllocations"
+contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "previewLegacyCredits"
+contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "migrateLegacyCredits"
+contains src/main/resources/static/index.html 'id="legacyOvertimeModal"'
+contains src/main/resources/static/js/40-overtime.js "allocationRangeLabels"
+contains src/main/resources/static/js/40-overtime.js "24:00"
+contains src/main/resources/static/js/50-tasks.js "Рабочее время смены"
+contains src/test/java/ru/daniil/shifts/service/OvertimeServiceTest.java "exactFifoShowsWhichSourceMinutesWereUsedAndReprojectsAfterTimezoneMove"
+contains src/test/java/ru/daniil/shifts/web/OvertimeControllerTest.java "legacyMigrationPreviewAndV1MigrateExposeExactReconstructedIntervals"
+contains src/test/java/ru/daniil/shifts/web/OvertimeIntervalEngineFrontendContractTest.java "legacyMigrationWizardHasPreviewSelectionAndApplyFlow"
 
 # v27.8.1 Timezone Projection Refresh Hotfix
 contains CHANGES.md "v27.8.1 — Timezone Projection Refresh Hotfix"
@@ -1179,7 +1196,7 @@ contains src/main/resources/static/js/20-data.js "const snap = fresh ? null : aw
 contains src/main/resources/static/js/60-settings.js "await loadMonth({ fresh:true })"
 contains src/main/resources/static/js/70-user-boot.js "await loadProfile();"
 contains src/test/java/ru/daniil/shifts/web/TimezoneProjectionRefreshFrontendContractTest.java "profileLoadsBeforeInitialCalendarProjection"
-contains e2e/important-timezone.spec.js "existing dated shift refreshes after work and display timezone change"
+contains e2e/important-timezone.spec.js "existing dated shift refreshes after canonical timezone change"
 
 # v27.6.3 task polish and consistency
 contains CHANGES.md "v27.6.3 — Polish & Consistency"
@@ -1223,7 +1240,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.8.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.0"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1327,15 +1344,15 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "413" ]]; then
-  ok "test method baseline: 413"
+if [[ "$TEST_METHODS" == "424" ]]; then
+  ok "test method baseline: 424"
 else
-  fail "expected 413 @Test methods, found $TEST_METHODS"
+  fail "expected 424 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "80" ]]; then
-  ok "test class baseline: 80"
+if [[ "$TEST_CLASSES" == "81" ]]; then
+  ok "test class baseline: 81"
 else
-  fail "expected 80 test classes, found $TEST_CLASSES"
+  fail "expected 81 test classes, found $TEST_CLASSES"
 fi
 
 echo

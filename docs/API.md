@@ -1,4 +1,4 @@
-# DutyLog API v27.8.1
+# DutyLog API v27.9.0
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -1329,3 +1329,19 @@ POST   /api/v1/mobile/sync
 ```
 
 Shared user APIs also have `/api/v1` aliases for calendar, days, tasks, important dates, overtime, shift types, profile, modules, notifications, quick scenarios and note export.
+
+
+## Overtime interval provenance (v27.9.0)
+
+`GET /api/overtime/account` and `/api/v1/overtime/account` expose integer minutes and exact allocation intervals in addition to backward-compatible decimal hours.
+
+Legacy migration:
+
+```text
+POST /api/overtime/legacy-credits/preview
+POST /api/overtime/legacy-credits/migrate
+```
+
+The same routes exist below `/api/v1`. Requests contain selected `creditIds` and an explicit IANA `sourceTimezone`. Preview is read-only; migrate persists exact instants and rebuilds FIFO. Ownership and overtime-module guards are unchanged.
+
+Profile responses still include `workTimezone` and `displayTimezone`, but v27.9.0 treats them as compatibility aliases of one canonical timezone.

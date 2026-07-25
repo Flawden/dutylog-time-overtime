@@ -14,20 +14,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class UserTimeServiceTest {
 
     @Test
-    void workAndDisplayZonesProjectTheSameInstantWithoutMutatingEachOther() {
+    void oneCanonicalTimezoneProjectsWorkAndDisplayIdentically() {
         Clock fixed = Clock.fixed(Instant.parse("2026-07-20T21:30:00Z"), ZoneOffset.UTC);
         UserTimeService time = new UserTimeService(fixed);
         AppUser user = new AppUser("timezone-owner", "hash");
         user.setWorkTimezone("Europe/Chisinau");
-        user.setDisplayTimezone("America/New_York");
 
         assertEquals(Instant.parse("2026-07-20T21:30:00Z"), time.nowInstant());
         assertEquals(LocalDate.of(2026, 7, 21), time.workToday(user));
         assertEquals(LocalDateTime.of(2026, 7, 21, 0, 30), time.workNow(user));
-        assertEquals(LocalDate.of(2026, 7, 20), time.displayToday(user));
-        assertEquals(LocalDateTime.of(2026, 7, 20, 17, 30), time.displayNow(user));
+        assertEquals(LocalDate.of(2026, 7, 21), time.displayToday(user));
+        assertEquals(LocalDateTime.of(2026, 7, 21, 0, 30), time.displayNow(user));
         assertEquals("Europe/Chisinau", time.workZone(user).getId());
-        assertEquals("America/New_York", time.displayZone(user).getId());
+        assertEquals("Europe/Chisinau", time.displayZone(user).getId());
     }
 
     @Test

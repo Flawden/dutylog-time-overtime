@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.8.1" rel="stylesheet"/>
+<link href="app.css?v=27.9.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -211,6 +211,7 @@
 <div class="ledgerPrimaryActions">
 <button class="primary" id="ledgerAddCredit" type="button">+ Добавить переработку</button>
 <button id="ledgerAddUsage" type="button">− Добавить списание</button>
+<button id="ledgerMigrateLegacy" type="button">⚠ Привязать старые записи</button>
 </div>
 <button class="mobileFilterToggle" id="ledgerFiltersToggle" type="button" aria-controls="ledgerFilters" aria-expanded="false"><span>Фильтры</span><b aria-hidden="true">⌄</b></button>
 <div class="ledgerFilters" id="ledgerFilters">
@@ -563,17 +564,15 @@
 <div>
 <div class="eyebrow">Время</div>
 <div class="settingsTitle">Часовой пояс и формат времени</div>
-<div class="settingsHint">Рабочий часовой пояс определяет календарные расчёты, смены и переработки. Часовой пояс отображения меняет только представление абсолютных моментов.</div>
+<div class="settingsHint">Один часовой пояс используется для календаря, смен, напоминаний и отображения абсолютных интервалов.</div>
 </div>
 <div class="status" id="timeSettingsStatus">—</div>
 </div>
-<div class="timeSettingsGrid timeZoneSettingsGrid">
-<label>Рабочий часовой пояс
+<div class="timeSettingsGrid timeZoneSettingsGrid singleTimezoneGrid">
+<label>Часовой пояс
 <select id="workTimezone" aria-describedby="timeZoneHelp"></select>
 </label>
-<label>Часовой пояс отображения
-<select id="displayTimezone" aria-describedby="timeZoneHelp"></select>
-</label>
+<input id="displayTimezone" type="hidden"/>
 <label>Формат времени
 <select id="timeFormatPref">
 <option value="24h">24 часа</option>
@@ -582,11 +581,10 @@
 </div>
 <div class="timeNowBox" id="timeNowBox">—</div>
 <div class="timeSettingsActions timezoneActions">
-<button class="primary" id="timeSaveTimezone" type="button">Сохранить часовые пояса</button>
+<button class="primary" id="timeSaveTimezone" type="button">Сохранить часовой пояс</button>
 <button id="timeDetectBrowser" type="button">Определить автоматически</button>
-<button id="timeDisplayAsWork" type="button">Как рабочий</button>
 </div>
-<div class="wideHint" id="timeZoneHelp">DutyLog хранит IANA-идентификаторы, например Europe/Chisinau. Плавающие календарные даты не сдвигаются, а абсолютные моменты отображаются в выбранной зоне.</div>
+<div class="wideHint" id="timeZoneHelp">DutyLog хранит IANA-идентификатор, например Europe/Chisinau. Календарные даты остаются на своём дне, а абсолютные интервалы переработок отображаются в выбранной зоне.</div>
 
 <div class="timeDefaults timeSettingsSubcard">
 <div class="timeDefaultsHead">
@@ -729,7 +727,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.8.1</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.9.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -1097,6 +1095,33 @@
 
 <button class="globalQuickAdd" id="globalQuickAdd" type="button" aria-label="Быстро добавить" title="Быстро добавить">＋</button>
 
+<div class="appModal" id="legacyOvertimeModal" hidden>
+  <button class="appModalBackdrop" id="legacyOvertimeBackdrop" type="button" aria-label="Закрыть"></button>
+  <div class="appModalPanel legacyOvertimePanel" role="dialog" aria-modal="true" aria-labelledby="legacyOvertimeTitle">
+    <div class="appModalHead">
+      <div>
+        <div class="eyebrow">Миграция времени</div>
+        <div class="appModalTitle" id="legacyOvertimeTitle">Привязать старые переработки</div>
+        <div class="appModalHint">Выбери исходный часовой пояс. Баланс и часы не изменятся — DutyLog добавит только абсолютные интервалы и пересоберёт точный FIFO.</div>
+      </div>
+      <button class="appModalClose" id="legacyOvertimeClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div class="legacyMigrationToolbar">
+      <label>Исходный часовой пояс
+        <select id="legacyOvertimeTimezone"></select>
+      </label>
+      <button id="legacyOvertimePreview" type="button">Обновить предпросмотр</button>
+      <button id="legacyOvertimeSelectAll" type="button">Выбрать доступные</button>
+    </div>
+    <div class="legacyMigrationStatus" id="legacyOvertimeStatus" role="status" aria-live="polite"></div>
+    <div class="legacyMigrationList" id="legacyOvertimeList"></div>
+    <div class="appModalActions">
+      <button id="legacyOvertimeCancel" type="button">Отмена</button>
+      <button class="primary" id="legacyOvertimeApply" type="button">Привязать выбранные записи</button>
+    </div>
+  </div>
+</div>
+
 <div class="offlineSyncDialog" id="offlineSyncDialog" hidden>
   <button class="offlineSyncBackdrop" id="offlineSyncBackdrop" type="button" aria-label="Закрыть"></button>
   <div class="offlineSyncPanel" role="dialog" aria-modal="true" aria-labelledby="offlineSyncTitle">
@@ -1133,12 +1158,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.8.1"></script>
-<script src="js/20-data.js?v=27.8.1"></script>
-<script src="js/30-calendar.js?v=27.8.1"></script>
-<script src="js/40-overtime.js?v=27.8.1"></script>
-<script src="js/50-tasks.js?v=27.8.1"></script>
-<script src="js/60-settings.js?v=27.8.1"></script>
-<script src="js/70-user-boot.js?v=27.8.1"></script>
+<script src="js/10-core.js?v=27.9.0"></script>
+<script src="js/20-data.js?v=27.9.0"></script>
+<script src="js/30-calendar.js?v=27.9.0"></script>
+<script src="js/40-overtime.js?v=27.9.0"></script>
+<script src="js/50-tasks.js?v=27.9.0"></script>
+<script src="js/60-settings.js?v=27.9.0"></script>
+<script src="js/70-user-boot.js?v=27.9.0"></script>
 </body>
 </html>

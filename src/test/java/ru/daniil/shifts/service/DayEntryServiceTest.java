@@ -97,9 +97,8 @@ class DayEntryServiceTest {
                 () -> dayEntries.upsert(user, "10.07.2026", req(null, "заметка")));
     }
     @Test
-    void datedShiftContainsWorkAndDisplayTimezoneProjection() {
+    void datedShiftUsesCanonicalTimezoneForBothProjections() {
         user.setWorkTimezone("Asia/Yekaterinburg");
-        user.setDisplayTimezone("Europe/Moscow");
         users.save(user);
 
         ShiftType day = shiftTypes.findByOwner(user).stream()
@@ -111,12 +110,12 @@ class DayEntryServiceTest {
 
         assertNotNull(dto.shiftInterval());
         assertEquals("Asia/Yekaterinburg", dto.shiftInterval().workTimezone());
-        assertEquals("Europe/Moscow", dto.shiftInterval().displayTimezone());
+        assertEquals("Asia/Yekaterinburg", dto.shiftInterval().displayTimezone());
         assertEquals("2026-07-25T03:30:00Z", dto.shiftInterval().startInstant());
         assertEquals("2026-07-25T08:30", dto.shiftInterval().workStart());
-        assertEquals("2026-07-25T06:30", dto.shiftInterval().displayStart());
-        assertEquals("2026-07-25T15:00", dto.shiftInterval().displayEnd());
-        assertNotEquals(dto.shiftInterval().workStart(), dto.shiftInterval().displayStart());
+        assertEquals("2026-07-25T08:30", dto.shiftInterval().displayStart());
+        assertEquals("2026-07-25T17:00", dto.shiftInterval().displayEnd());
+        assertEquals(dto.shiftInterval().workStart(), dto.shiftInterval().displayStart());
     }
 
     @Test

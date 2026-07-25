@@ -48,7 +48,7 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
     }
 
     @Test
-    void workAndDisplayTimezonesAreSentThroughProfileWhileCalendarTodayUsesWorkZone() throws Exception {
+    void oneCanonicalTimezoneIsMirroredThroughLegacyProfileFields() throws Exception {
         String core = resource("js/10-core.js");
         String settings = resource("js/60-settings.js");
         String boot = resource("js/70-user-boot.js");
@@ -61,19 +61,19 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
         assertTrue(core.contains("timeZone:displayTimeZone()"));
         assertTrue(settings.contains("jfetch(\"/api/profile\""));
         assertTrue(settings.contains("workTimezone:next.workTimezone"));
-        assertTrue(settings.contains("displayTimezone:next.displayTimezone"));
+        assertTrue(settings.contains("displayTimezone:next.workTimezone"));
         assertTrue(boot.contains("workTimezone:p.workTimezone"));
-        assertTrue(boot.contains("displayTimezone:p.displayTimezone"));
+        assertTrue(boot.contains("displayTimezone:p.workTimezone"));
     }
 
     @Test
-    void timezoneSettingsAreCompactExplicitAndFreeOfManualOffsets() throws Exception {
+    void timezoneSettingsExposeOneCanonicalSelectorAndKeepCompatibilityFieldHidden() throws Exception {
         String html = resource("index.html");
         String settings = resource("js/60-settings.js");
 
         assertTrue(html.contains("id=\"workTimezone\""));
-        assertTrue(html.contains("id=\"displayTimezone\""));
-        assertTrue(html.contains("id=\"timeDisplayAsWork\""));
+        assertTrue(html.contains("id=\"displayTimezone\" type=\"hidden\""));
+        assertFalse(html.contains("id=\"timeDisplayAsWork\""));
         assertTrue(html.contains("id=\"timeSaveTimezone\""));
         assertTrue(html.contains("id=\"timeDetectBrowser\""));
         assertFalse(html.contains("id=\"workRegionName\""));

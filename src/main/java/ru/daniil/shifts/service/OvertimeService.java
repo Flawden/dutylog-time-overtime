@@ -3,6 +3,10 @@ package ru.daniil.shifts.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.config.SecurityEventLogger;
+import ru.daniil.shifts.dto.Dtos.LegacyOvertimeCreditDto;
+import ru.daniil.shifts.dto.Dtos.LegacyOvertimeMigrationPreviewDto;
+import ru.daniil.shifts.dto.Dtos.LegacyOvertimeMigrationRequest;
+import ru.daniil.shifts.dto.Dtos.LegacyOvertimeMigrationResultDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountPageDto;
 import ru.daniil.shifts.dto.Dtos.PageDto;
@@ -37,6 +41,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -112,12 +117,13 @@ public class OvertimeService {
                 .toList();
 
         List<OvertimeUsageDto> usageRows = usageList.stream()
-                .map(u -> usageRow(u, byUsage.getOrDefault(u.getId(), List.of())))
+                .map(u -> usageRow(user, u, byUsage.getOrDefault(u.getId(), List.of())))
                 .toList();
 
-        double earned = creditList.stream().mapToDouble(OvertimeCredit::getHours).sum();
-        double used = usageList.stream().mapToDouble(OvertimeUsage::getHours).sum();
-        return new OvertimeAccountDto(round2(earned), round2(used), round2(earned - used), creditRows, usageRows);
+        int earnedMinutes = creditList.stream().mapToInt(OvertimeCredit::getCreditedMinutes).sum();
+        int usedMinutes = usageList.stream().mapToInt(OvertimeUsage::getRequestedMinutes).sum();
+        return new OvertimeAccountDto(hoursFromMinutes(earnedMinutes), hoursFromMinutes(usedMinutes),
+                hoursFromMinutes(earnedMinutes - usedMinutes), creditRows, usageRows);
     }
 
     /**
@@ -237,6 +243,7 @@ public class OvertimeService {
                     calculated.hours(),
                     normalize(req.reason())
             ));
+            rebuildAllAllocations(user);
             return account(user);
         }
 
@@ -266,6 +273,7 @@ public class OvertimeService {
             applyAbsoluteIdentity(credit, segment);
             credits.save(credit);
         }
+        rebuildAllAllocations(user);
         return account(user);
     }
 
@@ -275,10 +283,12 @@ public class OvertimeService {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
         LocalDate date = dayEntryService.parseDate(req.date(), "Дата списания должна быть в формате yyyy-MM-dd");
-        double requested = requirePositiveHours(req.hours(), "Укажи часы списания больше 0");
+        int requestedMinutes = requirePositiveMinutes(req.hours(), "Укажи часы списания больше 0");
 
-        OvertimeUsage usage = usages.save(new OvertimeUsage(user, date, requested, normalize(req.reason())));
-        allocateUsageFifo(user, usage, requested);
+        OvertimeUsage usage = new OvertimeUsage(user, date, hoursFromMinutes(requestedMinutes), normalize(req.reason()));
+        usage.setRequestedMinutes(requestedMinutes);
+        usages.save(usage);
+        rebuildAllAllocations(user);
         return account(user);
     }
 
@@ -288,7 +298,7 @@ public class OvertimeService {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
         OvertimeCredit credit = requireOwnedCredit(user, id);
-        double used = allocations.sumHoursByCredit(credit);
+        double used = hoursFromMinutes(allocations.findByCredit(credit).stream().mapToInt(OvertimeAllocation::getAllocatedMinutes).sum());
         boolean keepLegacyLocalIdentity = credit.getStartAtInstant() == null
                 && req.date() == null
                 && req.startDateTime() == null
@@ -324,13 +334,17 @@ public class OvertimeService {
             credit.setEndAt(null);
             credit.setStartAtInstant(null);
             credit.setEndAtInstant(null);
+            credit.setCreditedStartAtInstant(null);
+            credit.setCreditedEndAtInstant(null);
             credit.setSourceTimezone(null);
+            credit.setMigratedFromLegacy(false);
             credit.setBreakMinutes(0);
             credit.setPlannedHours(0.0);
             credit.setCalculated(false);
             credit.setHours(calculated.hours());
             credit.setReason(reason);
             credits.save(credit);
+            rebuildAllAllocations(user);
             return account(user);
         }
 
@@ -364,6 +378,7 @@ public class OvertimeService {
                 applyAbsoluteIdentity(replacement, segment);
                 credits.save(replacement);
             }
+            rebuildAllAllocations(user);
             return account(user);
         }
 
@@ -389,6 +404,7 @@ public class OvertimeService {
         credit.setHours(segment.hours());
         credit.setReason(reason);
         credits.save(credit);
+        rebuildAllAllocations(user);
         return account(user);
     }
 
@@ -402,25 +418,23 @@ public class OvertimeService {
         LocalDate date = hasText(req.date())
                 ? dayEntryService.parseDate(req.date(), "Дата списания должна быть в формате yyyy-MM-dd")
                 : usage.getUsageDate();
-        double hours = req.hours() != null
-                ? requirePositiveHours(req.hours(), "Укажи часы списания больше 0")
-                : usage.getHours();
+        int requestedMinutes = req.hours() != null
+                ? requirePositiveMinutes(req.hours(), "Укажи часы списания больше 0")
+                : usage.getRequestedMinutes();
         String reason = req.reason() != null ? normalize(req.reason()) : usage.getReason();
 
-        allocations.deleteByUsage(usage);
-        allocations.flush();
         usage.setUsageDate(date);
-        usage.setHours(hours);
+        usage.setRequestedMinutes(requestedMinutes);
         usage.setReason(reason);
         usages.save(usage);
-        allocateUsageFifo(user, usage, hours);
+        rebuildAllAllocations(user);
         return account(user);
     }
 
     @Transactional
     public OvertimeAccountDto deleteCredit(AppUser user, long id) {
         OvertimeCredit credit = requireOwnedCredit(user, id);
-        double used = allocations.sumHoursByCredit(credit);
+        double used = hoursFromMinutes(allocations.findByCredit(credit).stream().mapToInt(OvertimeAllocation::getAllocatedMinutes).sum());
         if (used > 0.00001) {
             throw ApiException.badRequest("Нельзя удалить начисление, из которого уже списано " + fmt(used) + " ч. Сначала удали соответствующее списание.");
         }
@@ -433,36 +447,175 @@ public class OvertimeService {
         OvertimeUsage usage = requireOwnedUsage(user, id);
         allocations.deleteByUsage(usage);
         usages.delete(usage);
+        usages.flush();
+        rebuildAllAllocations(user);
         return account(user);
     }
 
-    private void allocateUsageFifo(AppUser user, OvertimeUsage usage, double requested) {
+    /**
+     * Rebuilds the complete FIFO ledger in deterministic date/id order.
+     * This makes create, edit and delete symmetric: cancelling a time-off restores
+     * the exact source minutes and all later usages return to their original FIFO order.
+     */
+    private void rebuildAllAllocations(AppUser user) {
+        allocations.deleteAllByOwner(user);
+        allocations.flush();
+
+        // Preserve the historical FIFO contract: work date first, insertion id second.
+        // Exact instants explain which minutes were consumed inside a credit, but a
+        // partial legacy migration must never reorder same-day source credits.
         List<OvertimeCredit> creditList = credits.findByOwnerOrderByWorkDateAscIdAsc(user);
-        Map<Long, Double> usedByCredit = allocations.findAllByOwner(user).stream()
-                .collect(Collectors.groupingBy(a -> a.getCredit().getId(), Collectors.summingDouble(OvertimeAllocation::getHours)));
+        List<OvertimeUsage> usageList = usages.findByOwnerOrderByUsageDateAscIdAsc(user);
 
-        double available = creditList.stream()
-                .mapToDouble(c -> c.getHours() - usedByCredit.getOrDefault(c.getId(), 0.0))
-                .filter(v -> v > 0.00001)
-                .sum();
-
-        if (requested - available > 0.00001) {
-            throw ApiException.badRequest("Недостаточно переработки: доступно " + fmt(available) + " ч, списать хочешь " + fmt(requested) + " ч");
+        int availableMinutes = creditList.stream().mapToInt(OvertimeCredit::getCreditedMinutes).sum();
+        int requestedMinutes = usageList.stream().mapToInt(OvertimeUsage::getRequestedMinutes).sum();
+        if (requestedMinutes > availableMinutes) {
+            throw ApiException.badRequest("Недостаточно переработки: доступно "
+                    + fmt(hoursFromMinutes(availableMinutes)) + " ч, списать хочешь "
+                    + fmt(hoursFromMinutes(requestedMinutes)) + " ч");
         }
 
-        double left = requested;
-        for (OvertimeCredit credit : creditList) {
-            if (left <= 0.00001) break;
-            double alreadyUsed = usedByCredit.getOrDefault(credit.getId(), 0.0);
-            double remain = credit.getHours() - alreadyUsed;
-            if (remain <= 0.00001) continue;
-            double take = round2(Math.min(remain, left));
-            if (take <= 0.00001) continue;
-            allocations.save(new OvertimeAllocation(credit, usage, take));
-            left = round2(left - take);
+        Map<Long, Integer> consumedByCredit = new LinkedHashMap<>();
+        int creditIndex = 0;
+        for (OvertimeUsage usage : usageList) {
+            int left = usage.getRequestedMinutes();
+            while (left > 0 && creditIndex < creditList.size()) {
+                OvertimeCredit credit = creditList.get(creditIndex);
+                int consumed = consumedByCredit.getOrDefault(credit.getId(), 0);
+                int available = Math.max(0, credit.getCreditedMinutes() - consumed);
+                if (available == 0) {
+                    creditIndex++;
+                    continue;
+                }
+                int take = Math.min(available, left);
+                OvertimeAllocation allocation = new OvertimeAllocation(credit, usage, take);
+                applyAllocationInterval(allocation, credit, consumed, take);
+                allocations.save(allocation);
+                consumedByCredit.put(credit.getId(), consumed + take);
+                left -= take;
+                if (consumed + take >= credit.getCreditedMinutes()) creditIndex++;
+            }
+            if (left > 0) {
+                throw ApiException.badRequest("Не удалось распределить " + left + " мин переработки по FIFO");
+            }
         }
+        allocations.flush();
     }
 
+    private void applyAllocationInterval(OvertimeAllocation allocation,
+                                         OvertimeCredit credit,
+                                         int alreadyConsumedMinutes,
+                                         int allocatedMinutes) {
+        Instant creditedStart = credit.getCreditedStartAtInstant();
+        Instant creditedEnd = credit.getCreditedEndAtInstant();
+        if (creditedStart == null || creditedEnd == null) return;
+        Instant start = creditedStart.plusSeconds(alreadyConsumedMinutes * 60L);
+        Instant end = start.plusSeconds(allocatedMinutes * 60L);
+        if (end.isAfter(creditedEnd)) end = creditedEnd;
+        allocation.setStartAtInstant(start);
+        allocation.setEndAtInstant(end);
+        allocation.setSourceTimezone(credit.getSourceTimezone());
+        allocation.setReconstructed(credit.isMigratedFromLegacy());
+    }
+
+
+    @Transactional(readOnly = true)
+    public LegacyOvertimeMigrationPreviewDto previewLegacyCredits(AppUser user, LegacyOvertimeMigrationRequest request) {
+        String zone = migrationZone(user, request == null ? null : request.sourceTimezone());
+        List<OvertimeCredit> selected = selectedLegacyCredits(user, request == null ? null : request.creditIds());
+        List<LegacyOvertimeCreditDto> rows = selected.stream()
+                .map(c -> legacyCreditDto(user, c, zone))
+                .toList();
+        int migratable = (int) rows.stream().filter(LegacyOvertimeCreditDto::migratable).count();
+        return new LegacyOvertimeMigrationPreviewDto(zone, rows.size(), migratable, rows.size() - migratable, rows);
+    }
+
+    @Transactional
+    public LegacyOvertimeMigrationResultDto migrateLegacyCredits(AppUser user, LegacyOvertimeMigrationRequest request) {
+        if (request == null) throw ApiException.badRequest("Некорректный JSON в запросе");
+        if (request.creditIds() == null || request.creditIds().isEmpty()) {
+            throw ApiException.badRequest("Выбери хотя бы одну старую запись переработки");
+        }
+        LegacyOvertimeMigrationPreviewDto preview = previewLegacyCredits(user, request);
+        if (preview.requestedCount() == 0) {
+            throw ApiException.badRequest("Выбери хотя бы одну старую запись переработки");
+        }
+        Map<Long, LegacyOvertimeCreditDto> previewById = preview.credits().stream()
+                .collect(Collectors.toMap(LegacyOvertimeCreditDto::id, row -> row));
+        int migrated = 0;
+        int skipped = 0;
+        for (OvertimeCredit credit : selectedLegacyCredits(user, request.creditIds())) {
+            LegacyOvertimeCreditDto row = previewById.get(credit.getId());
+            if (row == null || !row.migratable()) {
+                skipped++;
+                continue;
+            }
+            ZoneId zone = userTimeService.resolveZone(preview.sourceTimezone(), userTimeService.workZone(user));
+            Instant rawStart = userTimeService.resolveLocalDateTime(credit.getStartAt(), zone).toInstant();
+            Instant rawEnd = userTimeService.resolveLocalDateTime(credit.getEndAt(), zone).toInstant();
+            int minutes = credit.getCreditedMinutes();
+            credit.setStartAtInstant(rawStart);
+            credit.setEndAtInstant(rawEnd);
+            credit.setSourceTimezone(zone.getId());
+            credit.setCreditedMinutes(minutes);
+            credit.setCreditedEndAtInstant(rawEnd);
+            credit.setCreditedStartAtInstant(rawEnd.minusSeconds(minutes * 60L));
+            credit.setMigratedFromLegacy(true);
+            credits.save(credit);
+            migrated++;
+        }
+        rebuildAllAllocations(user);
+        return new LegacyOvertimeMigrationResultDto(migrated, skipped, account(user));
+    }
+
+    private List<OvertimeCredit> selectedLegacyCredits(AppUser user, List<Long> requestedIds) {
+        List<OvertimeCredit> legacy = credits.findByOwnerOrderByWorkDateAscIdAsc(user).stream()
+                .filter(c -> c.getCreditedStartAtInstant() == null || c.getCreditedEndAtInstant() == null)
+                .toList();
+        if (requestedIds == null || requestedIds.isEmpty()) return legacy;
+        var wanted = requestedIds.stream().filter(Objects::nonNull).collect(Collectors.toSet());
+        return legacy.stream().filter(c -> wanted.contains(c.getId())).toList();
+    }
+
+    private LegacyOvertimeCreditDto legacyCreditDto(AppUser user, OvertimeCredit credit, String zoneId) {
+        String blocked = null;
+        Instant rawStart = null;
+        Instant rawEnd = null;
+        Instant creditedStart = null;
+        if (credit.getStartAt() == null || credit.getEndAt() == null) {
+            blocked = "Нет точных локальных полей начала и конца";
+        } else {
+            ZoneId zone = userTimeService.resolveZone(zoneId, userTimeService.workZone(user));
+            rawStart = userTimeService.resolveLocalDateTime(credit.getStartAt(), zone).toInstant();
+            rawEnd = userTimeService.resolveLocalDateTime(credit.getEndAt(), zone).toInstant();
+            int minutes = credit.getCreditedMinutes();
+            if (!rawEnd.isAfter(rawStart)) {
+                blocked = "Конец должен быть позже начала";
+            } else if (Duration.between(rawStart, rawEnd).toMinutes() < minutes) {
+                blocked = "Начисленные минуты больше длительности локального интервала";
+            } else {
+                creditedStart = rawEnd.minusSeconds(minutes * 60L);
+            }
+        }
+        return new LegacyOvertimeCreditDto(
+                credit.getId(), credit.getWorkDate().toString(),
+                credit.getStartAt() == null ? null : credit.getStartAt().toString(),
+                credit.getEndAt() == null ? null : credit.getEndAt().toString(),
+                credit.getTimeRange(), hoursFromMinutes(credit.getCreditedMinutes()), credit.getCreditedMinutes(),
+                credit.getReason(), blocked == null, blocked, zoneId,
+                displayLocal(user, rawStart), displayLocal(user, rawEnd),
+                displayLocal(user, creditedStart), displayLocal(user, rawEnd)
+        );
+    }
+
+    private String migrationZone(AppUser user, String requested) {
+        ZoneId fallback = userTimeService.workZone(user);
+        ZoneId resolved = userTimeService.resolveZone(requested, fallback);
+        if (requested != null && !requested.isBlank() && !resolved.getId().equals(requested.trim())) {
+            throw ApiException.badRequest("Часовой пояс должен быть IANA-идентификатором, например Asia/Yekaterinburg");
+        }
+        return resolved.getId();
+    }
 
     private OvertimeCredit requireOwnedCredit(AppUser user, long id) {
         return credits.findByOwnerAndId(user, id).orElseThrow(() -> {
@@ -515,26 +668,29 @@ public class OvertimeService {
 
     private OvertimeCreditRowDto creditRow(AppUser user, OvertimeCredit credit, List<OvertimeAllocation> allocationList) {
         List<OvertimeAllocation> sorted = allocationList.stream()
-                .sorted(Comparator.comparing((OvertimeAllocation a) -> a.getUsage().getUsageDate()).thenComparing(OvertimeAllocation::getId))
+                .sorted(Comparator.comparing((OvertimeAllocation a) -> a.getUsage().getUsageDate())
+                        .thenComparing(OvertimeAllocation::getId))
                 .toList();
-        double used = sorted.stream().mapToDouble(OvertimeAllocation::getHours).sum();
+        int usedMinutes = sorted.stream().mapToInt(OvertimeAllocation::getAllocatedMinutes).sum();
         List<OvertimeUsageRefDto> usageRefs = sorted.stream()
                 .map(a -> new OvertimeUsageRefDto(
                         a.getUsage().getId(),
                         a.getUsage().getUsageDate().toString(),
-                        round2(a.getHours()),
-                        a.getUsage().getReason()
+                        hoursFromMinutes(a.getAllocatedMinutes()),
+                        a.getUsage().getReason(),
+                        a.getAllocatedMinutes(),
+                        instantText(a.getStartAtInstant()),
+                        instantText(a.getEndAtInstant()),
+                        displayLocal(user, a.getStartAtInstant()),
+                        displayLocal(user, a.getEndAtInstant()),
+                        a.getSourceTimezone(),
+                        a.getStartAtInstant() != null && a.getEndAtInstant() != null,
+                        a.isReconstructed()
                 ))
                 .toList();
-        String displayStart = credit.getStartAtInstant() == null
-                ? null
-                : userTimeService.inDisplayZone(credit.getStartAtInstant(), user).toLocalDateTime().toString();
-        String displayEnd = credit.getEndAtInstant() == null
-                ? null
-                : userTimeService.inDisplayZone(credit.getEndAtInstant(), user).toLocalDateTime().toString();
-        String displayTimezone = credit.getStartAtInstant() == null
-                ? null
-                : userTimeService.displayZone(user).getId();
+        String displayStart = displayLocal(user, credit.getStartAtInstant());
+        String displayEnd = displayLocal(user, credit.getEndAtInstant());
+        String displayTimezone = credit.getStartAtInstant() == null ? null : userTimeService.displayZone(user).getId();
         return new OvertimeCreditRowDto(
                 credit.getId(),
                 credit.getWorkDate().toString(),
@@ -544,33 +700,53 @@ public class OvertimeService {
                 credit.getBreakMinutes(),
                 round2(credit.getPlannedHours()),
                 credit.isCalculated(),
-                round2(credit.getHours()),
+                hoursFromMinutes(credit.getCreditedMinutes()),
                 credit.getReason(),
-                round2(used),
-                round2(credit.getHours() - used),
+                hoursFromMinutes(usedMinutes),
+                hoursFromMinutes(credit.getCreditedMinutes() - usedMinutes),
                 usageRefs,
-                credit.getStartAtInstant() == null ? null : credit.getStartAtInstant().toString(),
-                credit.getEndAtInstant() == null ? null : credit.getEndAtInstant().toString(),
+                instantText(credit.getStartAtInstant()),
+                instantText(credit.getEndAtInstant()),
                 credit.getSourceTimezone(),
                 displayStart,
                 displayEnd,
-                displayTimezone
+                displayTimezone,
+                credit.getCreditedMinutes(),
+                instantText(credit.getCreditedStartAtInstant()),
+                instantText(credit.getCreditedEndAtInstant()),
+                displayLocal(user, credit.getCreditedStartAtInstant()),
+                displayLocal(user, credit.getCreditedEndAtInstant()),
+                credit.isMigratedFromLegacy(),
+                credit.getCreditedStartAtInstant() == null || credit.getCreditedEndAtInstant() == null
         );
     }
 
-    private OvertimeUsageDto usageRow(OvertimeUsage usage, List<OvertimeAllocation> allocationList) {
+
+    private OvertimeUsageDto usageRow(AppUser user, OvertimeUsage usage, List<OvertimeAllocation> allocationList) {
         List<OvertimeAllocationDto> refs = allocationList.stream()
-                .sorted(Comparator.comparing((OvertimeAllocation a) -> a.getCredit().getWorkDate()).thenComparing(a -> a.getCredit().getId()))
+                .sorted(Comparator.comparing((OvertimeAllocation a) -> a.getCredit().getWorkDate())
+                        .thenComparing(a -> a.getCredit().getId()))
                 .map(a -> new OvertimeAllocationDto(
                         a.getCredit().getId(),
                         a.getCredit().getWorkDate().toString(),
                         a.getCredit().getTimeRange(),
-                        round2(a.getHours()),
-                        a.getCredit().getReason()
+                        hoursFromMinutes(a.getAllocatedMinutes()),
+                        a.getCredit().getReason(),
+                        a.getAllocatedMinutes(),
+                        instantText(a.getStartAtInstant()),
+                        instantText(a.getEndAtInstant()),
+                        displayLocal(user, a.getStartAtInstant()),
+                        displayLocal(user, a.getEndAtInstant()),
+                        a.getSourceTimezone(),
+                        a.getStartAtInstant() != null && a.getEndAtInstant() != null,
+                        a.isReconstructed()
                 ))
                 .toList();
-        return new OvertimeUsageDto(usage.getId(), usage.getUsageDate().toString(), round2(usage.getHours()), usage.getReason(), refs);
+        return new OvertimeUsageDto(usage.getId(), usage.getUsageDate().toString(),
+                hoursFromMinutes(usage.getRequestedMinutes()), usage.getReason(), refs,
+                usage.getRequestedMinutes());
     }
+
 
     private List<DayEntry> entries(AppUser user, LocalDate from, LocalDate to) {
         dayEntryService.validateRange(from, to);
@@ -627,7 +803,11 @@ public class OvertimeService {
             return "не списывалось";
         }
         return row.usages().stream()
-                .map(u -> u.usageDate() + ": " + fmt(u.hours()) + " ч" + (hasText(u.reason()) ? " — " + u.reason() : ""))
+                .map(u -> u.usageDate() + ": " + fmt(u.hours()) + " ч"
+                        + (hasText(u.displayStart()) && hasText(u.displayEnd())
+                            ? " [" + u.displayStart() + "–" + u.displayEnd() + "]"
+                            : " [без точного интервала]")
+                        + (hasText(u.reason()) ? " — " + u.reason() : ""))
                 .collect(Collectors.joining("\n"));
     }
 
@@ -846,9 +1026,14 @@ public class OvertimeService {
     }
 
     private void applyAbsoluteIdentity(OvertimeCredit credit, CreditSegment segment) {
+        int creditedMinutes = minutesFromHours(segment.hours());
         credit.setStartAtInstant(segment.startInstant());
         credit.setEndAtInstant(segment.endInstant());
         credit.setSourceTimezone(segment.sourceTimezone());
+        credit.setCreditedMinutes(creditedMinutes);
+        credit.setCreditedEndAtInstant(segment.endInstant());
+        credit.setCreditedStartAtInstant(segment.endInstant().minusSeconds(creditedMinutes * 60L));
+        credit.setMigratedFromLegacy(false);
     }
 
     private LocalDateTime parseDateTime(String value, String message) {
@@ -884,6 +1069,29 @@ public class OvertimeService {
             return start.format(SHORT_TIME) + "–" + end.format(SHORT_TIME);
         }
         return start.format(SHORT_DATE_TIME) + "–" + end.format(SHORT_DATE_TIME);
+    }
+
+    private String instantText(Instant instant) {
+        return instant == null ? null : instant.toString();
+    }
+
+    private String displayLocal(AppUser user, Instant instant) {
+        return instant == null ? null : userTimeService.inDisplayZone(instant, user).toLocalDateTime().toString();
+    }
+
+    private int minutesFromHours(double hours) {
+        return (int) Math.max(0L, Math.round(hours * 60.0));
+    }
+
+    private int requirePositiveMinutes(Double hours, String message) {
+        double validated = requirePositiveHours(hours, message);
+        int minutes = minutesFromHours(validated);
+        if (minutes <= 0) throw ApiException.badRequest(message);
+        return minutes;
+    }
+
+    private double hoursFromMinutes(int minutes) {
+        return round2(Math.max(0, minutes) / 60.0);
     }
 
     private boolean hasText(String value) {

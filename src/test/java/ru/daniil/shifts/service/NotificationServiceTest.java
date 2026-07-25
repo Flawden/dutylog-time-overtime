@@ -102,7 +102,6 @@ class NotificationServiceTest {
     void browserInstantUsesTheUsersSavedIanaTimezone() {
         LocalDate date = LocalDate.of(2026, 7, 22);
         user.setWorkTimezone("Asia/Yekaterinburg");
-        user.setDisplayTimezone("Europe/Berlin");
         user = users.save(user);
 
         DayTask past = new DayTask(user, date, "Уже прошедшая локальная задача");
@@ -139,11 +138,11 @@ class NotificationServiceTest {
         assertEquals("2026-07-22T12:05", pastReminder.remindAt());
         assertEquals("2026-07-22T07:05:00Z", pastReminder.remindAtInstant());
         assertEquals("Asia/Yekaterinburg", pastReminder.workTimezone());
-        assertEquals("2026-07-22T09:05", pastReminder.displayAt());
-        assertEquals("Europe/Berlin", pastReminder.displayTimezone());
+        assertEquals("2026-07-22T12:05", pastReminder.displayAt());
+        assertEquals("Asia/Yekaterinburg", pastReminder.displayTimezone());
         assertEquals("2026-07-22T14:05", dueReminder.remindAt());
         assertEquals("2026-07-22T09:05:00Z", dueReminder.remindAtInstant());
-        assertEquals("2026-07-22T11:05", dueReminder.displayAt());
+        assertEquals("2026-07-22T14:05", dueReminder.displayAt());
     }
 
     @Test

@@ -13,6 +13,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.daniil.shifts.dto.Dtos.LegacyOvertimeMigrationPreviewDto;
+import ru.daniil.shifts.dto.Dtos.LegacyOvertimeMigrationRequest;
+import ru.daniil.shifts.dto.Dtos.LegacyOvertimeMigrationResultDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountPageDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
@@ -156,6 +159,24 @@ public class OvertimeController {
         AppUser current = currentUserService.requireUser(principal);
         moduleService.requireEnabled(current, ModuleService.OVERTIME);
         return overtimeService.deleteUsage(current, id);
+    }
+
+    /** POST /api/overtime/legacy-credits/preview — безопасный предварительный просмотр миграции старых интервалов. */
+    @PostMapping("/legacy-credits/preview")
+    public LegacyOvertimeMigrationPreviewDto previewLegacyCredits(@RequestBody LegacyOvertimeMigrationRequest req,
+                                                                   Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
+        return overtimeService.previewLegacyCredits(current, req);
+    }
+
+    /** POST /api/overtime/legacy-credits/migrate — привязать выбранные legacy-записи к исходной IANA-зоне. */
+    @PostMapping("/legacy-credits/migrate")
+    public LegacyOvertimeMigrationResultDto migrateLegacyCredits(@RequestBody LegacyOvertimeMigrationRequest req,
+                                                                  Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
+        return overtimeService.migrateLegacyCredits(current, req);
     }
 
     /** GET /api/overtime/balance?from=2026-06-01&to=2026-06-30 — старый периодный отчёт по day_entries. */

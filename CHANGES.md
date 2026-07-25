@@ -1,3 +1,15 @@
+## v27.9.0 — Overtime Interval Engine
+
+- Replaced floating-point FIFO authority with deterministic integer minutes.
+- Added exact source intervals and provenance to overtime allocations.
+- Rebuilds the complete FIFO ledger after usage create/update/delete so cancellation restores the same source minutes.
+- Added legacy overtime timezone preview/migration wizard without automatic guessing.
+- Simplified the user-facing model to one canonical IANA timezone while preserving legacy API fields.
+- Existing absolute overtime reprojects when the canonical timezone changes; original source timezone remains recorded.
+- Cross-midnight used intervals render as separate calendar-day segments.
+- Shift cards now explain net work and break separately.
+- Added Flyway V31, API/OpenAPI contracts, backend/frontend regression coverage and release documentation.
+
 ## v27.8.1 — Timezone Projection Refresh Hotfix
 
 ### Authoritative timezone refresh

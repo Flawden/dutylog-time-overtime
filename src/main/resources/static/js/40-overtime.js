@@ -30,7 +30,11 @@ Object.assign(I18N_EN, {
   "Поля заполнены из текущей переработки. Дайте сценарию понятное название и сохраните.":"The fields were filled from the current overtime entry. Give the scenario a clear name and save it.",
   "Настройте, как сценарий будет заполнять форму переработки.":"Configure how the scenario fills the overtime form.",
   "из формы":"from form", "Сохранено из формы":"Saved from form",
-  "укажи фиксированное время конца":"set a fixed end time"
+  "укажи фиксированное время конца":"set a fixed end time",
+  "точный интервал":"exact interval", "реконструировано":"reconstructed",
+  "без точного времени":"no exact time", "старые записи":"legacy entries",
+  "нет старых записей для миграции":"no legacy entries to migrate",
+  "Привязать старые записи":"Attach legacy entries"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -46,6 +50,12 @@ function updateOvertimeBalanceLabel(){
 function renderOvertimeControls(){
   if (!moduleEnabled("overtime")) { updateAccSummaries(); return; }
   updateOvertimeBalanceLabel();
+  const legacyButton = $("ledgerMigrateLegacy");
+  if (legacyButton) {
+    const count = (state.overtimeAccount?.credits || []).filter(c => c.legacyTimezoneRequired).length;
+    legacyButton.hidden = count === 0;
+    legacyButton.textContent = `⚠ ${t("Привязать старые записи")}${count ? ` (${count})` : ""}`;
+  }
   renderOvertimeDayDetails();
   renderQuickScenarios();
   updateAccSummaries();
@@ -169,6 +179,36 @@ function overtimeCreditTimeHtml(credit){
   `;
 }
 
+function allocationRangeLabels(allocation){
+  if (!allocation?.exact || !allocation.displayStart || !allocation.displayEnd) return [];
+  const start = String(allocation.displayStart).slice(0, 16);
+  const end = String(allocation.displayEnd).slice(0, 16);
+  const startDate = start.slice(0, 10), endDate = end.slice(0, 10);
+  const startTime = start.slice(11, 16), endTime = end.slice(11, 16);
+  if (!startDate || !endDate || startDate === endDate) return [displayDateTimeRange(start, end)];
+
+  const labels = [`${formatDate(startDate)} ${startTime}–24:00`];
+  const cursor = new Date(`${startDate}T00:00:00Z`);
+  cursor.setUTCDate(cursor.getUTCDate() + 1);
+  while (cursor.toISOString().slice(0, 10) < endDate) {
+    labels.push(`${formatDate(cursor.toISOString().slice(0, 10))} 00:00–24:00`);
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  if (endTime !== "00:00") labels.push(`${formatDate(endDate)} 00:00–${endTime}`);
+  return labels;
+}
+
+function allocationRangeLabel(allocation){
+  return allocationRangeLabels(allocation).join(" · ");
+}
+
+function allocationDetailHtml(allocation){
+  const ranges = allocationRangeLabels(allocation);
+  if (!ranges.length) return `<span class="allocationLegacy">${esc(t("без точного времени"))}</span>`;
+  const reconstruction = allocation.reconstructed ? ` <span class="allocationReconstructed">${esc(t("реконструировано"))}</span>` : "";
+  return `<span class="allocationRange">${ranges.map(esc).join("<br>")}</span>${reconstruction}`;
+}
+
 function renderOvertimeDayDetails(){
   if (!moduleEnabled("overtime")) return;
   const k = state.selected;
@@ -200,7 +240,8 @@ function renderOvertimeDayDetails(){
     const row = document.createElement("div");
     row.className = "overtimeDayEntry usage";
     const text = document.createElement("div");
-    text.innerHTML = `<b>−${fmtHours(u.hours)} ч</b><span>${esc(u.reason || t("списание"))}</span>`;
+    const exactRows = (u.allocations || []).flatMap(a => allocationRangeLabels(a));
+    text.innerHTML = `<b>−${fmtHours(u.hours)} ч</b><span>${esc(u.reason || t("списание"))}</span>${exactRows.length ? `<small>${exactRows.map(esc).join("<br>")}</small>` : ""}`;
     const edit = document.createElement("button");
     edit.type = "button"; edit.textContent = t("ред.");
     edit.addEventListener("click", () => startEditOvertimeUsage(u.id));
@@ -1061,14 +1102,18 @@ function renderLedgerTable(){
     const usedText = (c.usages || []).length
       ? (c.usages || []).map(u => `
           <div class="ledgerUsageItem">
-            <span class="ledgerUsageText">${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""}</span>
+            <span class="ledgerUsageText">
+              <span>${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""}</span>
+              ${allocationDetailHtml(u)}
+            </span>
             <span class="ledgerUsageActions" aria-label="${esc(t("Действия списания"))}">
               <button type="button" data-edit-usage="${u.usageId}" title="${esc(t("Редактировать списание"))}">${esc(t("ред. списание"))}</button>
               <button type="button" data-del-usage="${u.usageId}" title="${esc(t("Удалить списание"))}">${esc(t("удалить списание"))}</button>
             </span>
           </div>`).join("")
       : `<span class="small">${esc(t("не списывалось"))}</span>`;
-    const calcInfo = c.calculated ? `<div class="small">${esc(t("обед"))}: ${c.breakMinutes || 0} ${state.language === "en" ? "min" : "мин"}${numOr0(c.plannedHours) ? ` · ${esc(t("план"))}: ${fmtHours(c.plannedHours)} ${state.language === "en" ? "h" : "ч"}` : ""}</div>` : "";
+    const legacyBadge = c.legacyTimezoneRequired ? ` · <span class="legacyTimezoneBadge">⚠ ${esc(t("без точного времени"))}</span>` : "";
+    const calcInfo = c.calculated ? `<div class="small">${esc(t("обед"))}: ${c.breakMinutes || 0} ${state.language === "en" ? "min" : "мин"}${numOr0(c.plannedHours) ? ` · ${esc(t("план"))}: ${fmtHours(c.plannedHours)} ${state.language === "en" ? "h" : "ч"}` : ""}${legacyBadge}</div>` : legacyBadge;
     const deleteBtn = numOr0(c.usedHours) <= 0.0001
       ? `<button type="button" data-del-credit="${c.id}" title="${esc(t("Удалить переработку"))}">${esc(t("удалить"))}</button>`
       : `<span class="small" title="${esc(t("Сначала удали списания, которые используют это начисление"))}">${esc(t("сначала списания"))}</span>`;
@@ -1173,6 +1218,80 @@ function exportLedger(ext){
   window.location.href = ledgerExportUrl(ext);
 }
 
+function legacyMigrationSelectedIds(){
+  return [...document.querySelectorAll('[data-legacy-credit-id]:checked')]
+    .map(input => Number(input.dataset.legacyCreditId))
+    .filter(Number.isFinite);
+}
+
+function renderLegacyMigrationPreview(preview){
+  state.legacyOvertimePreview = preview || { credits:[], migratableCount:0, blockedCount:0 };
+  const list = $("legacyOvertimeList");
+  const status = $("legacyOvertimeStatus");
+  if (!list || !status) return;
+  const rows = preview?.credits || [];
+  status.textContent = rows.length
+    ? `${preview.migratableCount} ${state.language === "en" ? "ready" : "можно привязать"}${preview.blockedCount ? ` · ${preview.blockedCount} ${state.language === "en" ? "blocked" : "без точного интервала"}` : ""}`
+    : t("нет старых записей для миграции");
+  list.innerHTML = rows.map(row => `
+    <label class="legacyMigrationItem ${row.migratable ? "" : "blocked"}">
+      <input type="checkbox" data-legacy-credit-id="${row.id}" ${row.migratable ? "checked" : "disabled"}/>
+      <span>
+        <b>${esc(row.workedDate)} · +${fmtHours(row.hours)} ${state.language === "en" ? "h" : "ч"}</b>
+        <span>${esc(row.timeRange || `${row.startDateTime || "?"} — ${row.endDateTime || "?"}`)}${row.reason ? ` · ${esc(row.reason)}` : ""}</span>
+        ${row.migratable ? `<small>${esc(row.creditedStart || "")} — ${esc(row.creditedEnd || "")} · ${esc(row.sourceTimezone || "")}</small>` : `<small class="errorText">${esc(row.blockedReason || t("без точного времени"))}</small>`}
+      </span>
+    </label>`).join("");
+  $("legacyOvertimeApply").disabled = preview?.migratableCount < 1;
+}
+
+async function refreshLegacyMigrationPreview(){
+  const zone = $("legacyOvertimeTimezone")?.value || state.timeSettings?.workTimezone || browserTimeZone();
+  const status = $("legacyOvertimeStatus");
+  if (status) status.textContent = state.language === "en" ? "Loading…" : "Загрузка…";
+  try {
+    const preview = await api.previewLegacyOvertime({ creditIds:[], sourceTimezone:zone });
+    renderLegacyMigrationPreview(preview);
+  } catch (err) {
+    console.error(err);
+    if (status) status.textContent = err.message;
+  }
+}
+
+async function openLegacyOvertimeMigration(){
+  const zone = state.timeSettings?.workTimezone || state.profile?.workTimezone || browserTimeZone();
+  if (typeof populateTimeZoneSelect === "function") populateTimeZoneSelect("legacyOvertimeTimezone", zone);
+  if ($("legacyOvertimeTimezone")) $("legacyOvertimeTimezone").value = zone;
+  openAppModal("legacyOvertimeModal", "legacyOvertimeTimezone");
+  await refreshLegacyMigrationPreview();
+}
+
+function closeLegacyOvertimeMigration(){
+  closeAppModal("legacyOvertimeModal");
+}
+
+async function applyLegacyOvertimeMigration(){
+  const creditIds = legacyMigrationSelectedIds();
+  if (!creditIds.length) return setSave("err", state.language === "en" ? "Select at least one entry" : "Выбери хотя бы одну запись");
+  const sourceTimezone = $("legacyOvertimeTimezone")?.value || state.timeSettings?.workTimezone || browserTimeZone();
+  if (!confirm(state.language === "en"
+      ? `Attach ${creditIds.length} entries to ${sourceTimezone}? Hours and balance will not change.`
+      : `Привязать ${creditIds.length} записей к ${sourceTimezone}? Часы и баланс не изменятся.`)) return;
+  setSave("saving");
+  try {
+    const result = await api.migrateLegacyOvertime({ creditIds, sourceTimezone });
+    state.overtimeAccount = result.account;
+    closeLegacyOvertimeMigration();
+    renderOvertimeControls();
+    renderCalendar();
+    await loadLedgerPage(true);
+    setSave("saved", `${state.language === "en" ? "Migrated" : "Привязано"}: ${result.migratedCount}`);
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+
 $("ledgerThisMonth").addEventListener("click", setLedgerThisMonth);
 $("ledgerAllTime").addEventListener("click", setLedgerAllTime);
 $("ledgerClear").addEventListener("click", clearLedgerFilters);
@@ -1187,6 +1306,14 @@ $("dayAddCredit")?.addEventListener("click", () => openOvertimeCreditModal(state
 $("dayAddUsage")?.addEventListener("click", () => openOvertimeUsageModal(state.selected));
 $("ledgerAddCredit")?.addEventListener("click", () => openOvertimeCreditModal(state.selected || todayKey()));
 $("ledgerAddUsage")?.addEventListener("click", () => openOvertimeUsageModal(state.selected || todayKey()));
+$("ledgerMigrateLegacy")?.addEventListener("click", openLegacyOvertimeMigration);
+$("legacyOvertimeClose")?.addEventListener("click", closeLegacyOvertimeMigration);
+$("legacyOvertimeCancel")?.addEventListener("click", closeLegacyOvertimeMigration);
+$("legacyOvertimeBackdrop")?.addEventListener("click", closeLegacyOvertimeMigration);
+$("legacyOvertimePreview")?.addEventListener("click", refreshLegacyMigrationPreview);
+$("legacyOvertimeTimezone")?.addEventListener("change", refreshLegacyMigrationPreview);
+$("legacyOvertimeSelectAll")?.addEventListener("click", () => document.querySelectorAll('[data-legacy-credit-id]:not(:disabled)').forEach(input => { input.checked = true; }));
+$("legacyOvertimeApply")?.addEventListener("click", applyLegacyOvertimeMigration);
 
 $("overtimeCreditForm")?.addEventListener("submit", event => { event.preventDefault(); addOvertimeCredit(); });
 $("overtimeUsageForm")?.addEventListener("submit", event => { event.preventDefault(); addOvertimeUsage(); });

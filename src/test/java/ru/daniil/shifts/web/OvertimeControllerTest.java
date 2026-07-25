@@ -11,7 +11,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
 import ru.daniil.shifts.model.AppUser;
+import ru.daniil.shifts.model.OvertimeCredit;
 import ru.daniil.shifts.repo.UserRepository;
+import ru.daniil.shifts.repo.OvertimeCreditRepository;
 import ru.daniil.shifts.service.OvertimeService;
 
 import java.nio.charset.StandardCharsets;
@@ -39,6 +41,7 @@ class OvertimeControllerTest {
     @Autowired ObjectMapper objectMapper;
     @Autowired UserRepository users;
     @Autowired OvertimeService overtimeService;
+    @Autowired OvertimeCreditRepository credits;
 
     AppUser owner;
     AppUser other;
@@ -298,6 +301,52 @@ class OvertimeControllerTest {
                         .with(csrf()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+    }
+
+
+    @Test
+    void legacyMigrationPreviewAndV1MigrateExposeExactReconstructedIntervals() throws Exception {
+        setOvertimeEnabled(owner, true);
+        owner.setWorkTimezone("Europe/Moscow");
+        users.save(owner);
+        var created = overtimeService.createCredit(owner, new OvertimeCreditCreateRequest(
+                "2026-07-20", null, "2026-07-20T17:00", "2026-07-20T20:00",
+                0, 0.0, null, "legacy"));
+        long creditId = created.credits().get(0).id();
+        OvertimeCredit legacy = credits.findByOwnerAndId(owner, creditId).orElseThrow();
+        legacy.setStartAtInstant(null);
+        legacy.setEndAtInstant(null);
+        legacy.setCreditedStartAtInstant(null);
+        legacy.setCreditedEndAtInstant(null);
+        legacy.setSourceTimezone(null);
+        credits.saveAndFlush(legacy);
+        overtimeService.createUsage(owner, new ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest(
+                "2026-07-21", 1.0, "отгул"));
+
+        String body = "{\"creditIds\":[" + creditId + "],\"sourceTimezone\":\"Asia/Yekaterinburg\"}";
+        mvc.perform(post("/api/overtime/legacy-credits/preview")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json").content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.requestedCount").value(1))
+                .andExpect(jsonPath("$.migratableCount").value(1))
+                .andExpect(jsonPath("$.credits[0].sourceTimezone").value("Asia/Yekaterinburg"));
+
+        mvc.perform(post("/api/v1/overtime/legacy-credits/migrate")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("{\"creditIds\":[],\"sourceTimezone\":\"Asia/Yekaterinburg\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value(org.hamcrest.Matchers.containsString("Выбери хотя бы одну")));
+
+        mvc.perform(post("/api/v1/overtime/legacy-credits/migrate")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json").content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.migratedCount").value(1))
+                .andExpect(jsonPath("$.account.credits[0].migratedFromLegacy").value(true))
+                .andExpect(jsonPath("$.account.usages[0].allocations[0].exact").value(true))
+                .andExpect(jsonPath("$.account.usages[0].allocations[0].reconstructed").value(true));
     }
 
     private long createCreditViaApi(String path, String date, double hours, String reason) throws Exception {

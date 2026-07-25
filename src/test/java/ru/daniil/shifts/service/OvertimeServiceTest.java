@@ -10,6 +10,9 @@ import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditRowDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest;
+import ru.daniil.shifts.dto.Dtos.LegacyOvertimeMigrationRequest;
+import ru.daniil.shifts.model.OvertimeCredit;
+import ru.daniil.shifts.repo.OvertimeCreditRepository;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.exception.ApiException;
@@ -31,6 +34,7 @@ class OvertimeServiceTest {
 
     @Autowired OvertimeService overtime;
     @Autowired UserRepository users;
+    @Autowired OvertimeCreditRepository credits;
 
     AppUser user;
 
@@ -87,7 +91,6 @@ class OvertimeServiceTest {
     @Test
     void calculatedCreditPersistsAbsoluteIdentityAndDisplayProjection() {
         user.setWorkTimezone("Asia/Yekaterinburg");
-        user.setDisplayTimezone("Europe/Moscow");
         users.save(user);
 
         OvertimeAccountDto acc = overtime.createCredit(user,
@@ -95,16 +98,15 @@ class OvertimeServiceTest {
 
         OvertimeCreditRowDto row = acc.credits().get(0);
         assertEquals("2026-07-25T12:00:00Z", row.startInstant());
-        assertEquals("2026-07-25T15:00", row.displayStart());
-        assertEquals("2026-07-25T18:00", row.displayEnd());
+        assertEquals("2026-07-25T17:00", row.displayStart());
+        assertEquals("2026-07-25T20:00", row.displayEnd());
         assertEquals("Asia/Yekaterinburg", row.sourceTimezone());
-        assertEquals("Europe/Moscow", row.displayTimezone());
+        assertEquals("Asia/Yekaterinburg", row.displayTimezone());
     }
 
     @Test
     void savingUnchangedCalculatedCreditDoesNotMoveItsInstantAfterWorkTimezoneChange() {
         user.setWorkTimezone("Asia/Yekaterinburg");
-        user.setDisplayTimezone("Europe/Moscow");
         users.save(user);
 
         OvertimeAccountDto created = overtime.createCredit(user,
@@ -112,7 +114,6 @@ class OvertimeServiceTest {
         OvertimeCreditRowDto original = created.credits().get(0);
 
         user.setWorkTimezone("Europe/Moscow");
-        user.setDisplayTimezone("Europe/Moscow");
         users.save(user);
 
         OvertimeAccountDto updated = overtime.updateCredit(user, original.id(),
@@ -131,7 +132,6 @@ class OvertimeServiceTest {
     @Test
     void editingCalculatedIntervalKeepsItsOriginalSourceTimezone() {
         user.setWorkTimezone("Asia/Yekaterinburg");
-        user.setDisplayTimezone("Europe/Moscow");
         users.save(user);
 
         OvertimeAccountDto created = overtime.createCredit(user,
@@ -158,7 +158,6 @@ class OvertimeServiceTest {
     @Test
     void calculatedCreditUsesActualDstElapsedMinutes() {
         user.setWorkTimezone("Europe/Berlin");
-        user.setDisplayTimezone("Europe/Berlin");
         users.save(user);
 
         OvertimeAccountDto acc = overtime.createCredit(user,
@@ -242,4 +241,110 @@ class OvertimeServiceTest {
         assertEquals(5.0, afterDelete.balanceHours(), 0.001, "часы должны вернуться после удаления списания");
         assertEquals(0.0, rowByDate(afterDelete, "2026-07-20").usedHours(), 0.001);
     }
+
+    @Test
+    void exactFifoShowsWhichSourceMinutesWereUsedAndReprojectsAfterTimezoneMove() {
+        user.setWorkTimezone("Asia/Yekaterinburg");
+        users.save(user);
+
+        overtime.createCredit(user,
+                interval("2026-07-25", "2026-07-25T17:00", "2026-07-25T20:00", 0, 0.0));
+        OvertimeAccountDto afterUsage = overtime.createUsage(user,
+                new OvertimeUsageCreateRequest("2026-07-26", 2.0, "отгул"));
+
+        var allocation = afterUsage.usages().get(0).allocations().get(0);
+        assertTrue(allocation.exact());
+        assertEquals(120, allocation.minutes());
+        assertEquals("2026-07-25T12:00:00Z", allocation.startInstant());
+        assertEquals("2026-07-25T14:00:00Z", allocation.endInstant());
+        assertEquals("2026-07-25T17:00", allocation.displayStart());
+        assertEquals("2026-07-25T19:00", allocation.displayEnd());
+
+        user.setWorkTimezone("Europe/Moscow");
+        users.save(user);
+        OvertimeAccountDto reprojected = overtime.account(user);
+        var moved = reprojected.usages().get(0).allocations().get(0);
+        assertEquals(allocation.startInstant(), moved.startInstant(), "absolute provenance must not move");
+        assertEquals("2026-07-25T15:00", moved.displayStart());
+        assertEquals("2026-07-25T17:00", moved.displayEnd());
+    }
+
+    @Test
+    void deletingEarlierUsageRestoresTheSameMinutesAndRebuildsLaterFifo() {
+        user.setWorkTimezone("UTC");
+        users.save(user);
+        overtime.createCredit(user,
+                interval("2026-07-20", "2026-07-20T17:00", "2026-07-20T22:00", 0, 0.0));
+
+        OvertimeAccountDto first = overtime.createUsage(user,
+                new OvertimeUsageCreateRequest("2026-07-21", 2.0, "первый"));
+        long firstId = first.usages().get(0).id();
+        OvertimeAccountDto second = overtime.createUsage(user,
+                new OvertimeUsageCreateRequest("2026-07-22", 2.0, "второй"));
+        assertEquals("2026-07-20T19:00", second.usages().get(1).allocations().get(0).displayStart());
+
+        OvertimeAccountDto rebuilt = overtime.deleteUsage(user, firstId);
+        assertEquals(1, rebuilt.usages().size());
+        var allocation = rebuilt.usages().get(0).allocations().get(0);
+        assertEquals("2026-07-20T17:00", allocation.displayStart());
+        assertEquals("2026-07-20T19:00", allocation.displayEnd());
+    }
+
+    @Test
+    void legacyMigrationRequiresAnExplicitSelectionEvenThoughPreviewMayListAllRows() {
+        overtime.createCredit(user,
+                interval("2026-07-19", "2026-07-19T17:00", "2026-07-19T20:00", 0, 0.0));
+        OvertimeCredit legacy = credits.findByOwnerOrderByWorkDateAscIdAsc(user).get(0);
+        legacy.setStartAtInstant(null);
+        legacy.setEndAtInstant(null);
+        legacy.setCreditedStartAtInstant(null);
+        legacy.setCreditedEndAtInstant(null);
+        legacy.setSourceTimezone(null);
+        credits.saveAndFlush(legacy);
+
+        var preview = overtime.previewLegacyCredits(user,
+                new LegacyOvertimeMigrationRequest(List.of(), "Europe/Moscow"));
+        assertEquals(1, preview.requestedCount(), "empty preview selection intentionally lists all legacy rows");
+
+        ApiException error = assertThrows(ApiException.class, () -> overtime.migrateLegacyCredits(user,
+                new LegacyOvertimeMigrationRequest(List.of(), "Europe/Moscow")));
+        assertTrue(error.getMessage().contains("Выбери хотя бы одну"));
+        assertNull(credits.findByOwnerAndId(user, legacy.getId()).orElseThrow().getCreditedStartAtInstant());
+    }
+
+    @Test
+    void legacyMigrationAttachesChosenZoneAndReconstructsExistingAllocation() {
+        user.setWorkTimezone("Europe/Moscow");
+        users.save(user);
+        OvertimeAccountDto created = overtime.createCredit(user,
+                interval("2026-07-20", "2026-07-20T17:00", "2026-07-20T20:00", 0, 0.0));
+        long creditId = created.credits().get(0).id();
+
+        OvertimeCredit legacy = credits.findByOwnerAndId(user, creditId).orElseThrow();
+        legacy.setStartAtInstant(null);
+        legacy.setEndAtInstant(null);
+        legacy.setCreditedStartAtInstant(null);
+        legacy.setCreditedEndAtInstant(null);
+        legacy.setSourceTimezone(null);
+        legacy.setMigratedFromLegacy(false);
+        credits.saveAndFlush(legacy);
+
+        overtime.createUsage(user, new OvertimeUsageCreateRequest("2026-07-21", 1.0, "отгул"));
+        var preview = overtime.previewLegacyCredits(user,
+                new LegacyOvertimeMigrationRequest(List.of(creditId), "Asia/Yekaterinburg"));
+        assertEquals(1, preview.migratableCount());
+        assertEquals("2026-07-20T15:00", preview.credits().get(0).projectedStart());
+
+        var migrated = overtime.migrateLegacyCredits(user,
+                new LegacyOvertimeMigrationRequest(List.of(creditId), "Asia/Yekaterinburg"));
+        assertEquals(1, migrated.migratedCount());
+        var row = migrated.account().credits().get(0);
+        assertTrue(row.migratedFromLegacy());
+        assertFalse(row.legacyTimezoneRequired());
+        var allocation = migrated.account().usages().get(0).allocations().get(0);
+        assertTrue(allocation.exact());
+        assertTrue(allocation.reconstructed());
+        assertEquals("Asia/Yekaterinburg", allocation.sourceTimezone());
+    }
+
 }

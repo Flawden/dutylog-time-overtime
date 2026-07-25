@@ -29,12 +29,11 @@ class TimeContextControllerTest {
     void setUp() {
         owner = new AppUser("time-context-owner", "{noop}unused");
         owner.setWorkTimezone("Europe/Chisinau");
-        owner.setDisplayTimezone("Europe/Berlin");
         owner = users.save(owner);
     }
 
     @Test
-    void legacyAndV1ExposeOneInstantWithTwoExplicitProjections() throws Exception {
+    void legacyAndV1ExposeOneInstantWithCanonicalProjection() throws Exception {
         assertContext("/api/time/context");
         assertContext("/api/v1/time/context");
     }
@@ -44,13 +43,13 @@ class TimeContextControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.nowInstant").isString())
                 .andExpect(jsonPath("$.workTimezone").value("Europe/Chisinau"))
-                .andExpect(jsonPath("$.displayTimezone").value("Europe/Berlin"))
+                .andExpect(jsonPath("$.displayTimezone").value("Europe/Chisinau"))
                 .andExpect(jsonPath("$.workLocalDateTime").isString())
                 .andExpect(jsonPath("$.displayLocalDateTime").isString())
                 .andExpect(jsonPath("$.workDate").isString())
                 .andExpect(jsonPath("$.displayDate").isString())
                 .andExpect(jsonPath("$.workOffset").isString())
                 .andExpect(jsonPath("$.displayOffset").isString())
-                .andExpect(jsonPath("$.sameTimezone").value(false));
+                .andExpect(jsonPath("$.sameTimezone").value(true));
     }
 }

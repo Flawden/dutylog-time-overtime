@@ -261,3 +261,12 @@ The deployment proves container health, a full loopback smoke test and then the 
 ## Modular monolith layer
 
 Since v25.0 DutyLog has a user-module layer. Modules are registered in backend code and stored per user in `user_module_settings`. This is not a microservice split: the app remains one Spring Boot monolith, but large features such as notes, tasks, overtime, important dates, notifications, Telegram and scenarios have explicit enable/disable boundaries. Disabled modules are hidden in the UI and guarded by backend APIs with `MODULE_DISABLED:<key>`. Data is never deleted by disabling a module. See `docs/MODULES.md`.
+
+
+## Overtime Interval Engine (v27.9.0)
+
+`OvertimeService` treats integer minutes as the ledger authority and rebuilds all owner allocations deterministically after usage mutations. `OvertimeCredit` stores the absolute credited interval separately from the raw entered interval; `OvertimeAllocation` stores the exact consumed slice. Decimal hours remain compatibility/reporting projections.
+
+The user-facing time model is one canonical IANA timezone. Historical work/display fields remain aliases so older clients keep working. Absolute overtime is reprojected without changing UTC identity; floating dates are not shifted.
+
+Legacy local-only credits cross an explicit migration boundary. The user chooses the source timezone, previews the conversion and confirms selected rows. Rows without precise local start/end stay quantity-only. Reconstructed allocations carry a marker instead of claiming original certainty.

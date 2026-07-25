@@ -1,22 +1,22 @@
 # Roadmap до полноценного продукта
 
-## Текущая архитектурная точка — Zoned Work Intervals
+## Текущая архитектурная точка — Overtime Interval Engine
 
-Статус: v27.8.1 исправляет authoritative refresh поверх Zoned Work Intervals v27.8.0 и Time Foundation v27.7.0.
+Статус: v27.9.0 переводит бухгалтерию переработок на поминутный FIFO с точным provenance поверх Time Foundation и Zoned Work Intervals.
 
 Сделано:
 
-- отдельные IANA `workTimezone` и `displayTimezone`;
-- плавающие даты отделены от абсолютных моментов;
-- единый `UserTimeService` и детерминированная DST-политика;
-- абсолютные reminder instants и Telegram deduplication по `TIMESTAMPTZ`;
-- `WorkIntervalService` для интервалов через полночь и DST;
-- датированные смены с `startInstant/endInstant`, work/display-проекциями и реальной длительностью;
-- новые рассчитанные переработки с абсолютной идентичностью и сохранённой source timezone;
-- безопасная coexistence-модель: legacy overtime остаётся local-only без выдуманного backfill;
-- `/api/time/context` и `/api/v1/time/context`.
+- один канонический IANA-часовой пояс пользователя; legacy work/display поля совпадают;
+- абсолютные overtime intervals сохраняют неизменный UTC и исходный `sourceTimezone`;
+- начисления, списания и allocations имеют integer-minute authority;
+- каждое точное списание знает `startInstant/endInstant` исходного участка;
+- отмена/редактирование отгула детерминированно пересобирает FIFO и восстанавливает ранние минуты;
+- переходы через полночь отображаются отдельными дневными сегментами;
+- мастер миграции old local-only overtime с preview и явным выбором зоны;
+- реконструированная история маркируется, а неизвестные интервалы не выдумываются;
+- карточка смены отдельно показывает чистую работу и обед.
 
-Следующий этап: **Overtime Interval Engine / Overtime 2.0** — точные источники переработки, поминутный FIFO, provenance каждого списанного сегмента, автоматическая расшифровка и восстановление интервалов при отмене.
+Следующий продуктовый этап: **Task Details**, затем **Multiple Daily Notes** и **Calendar Zoom**. Перед ними staging должен подтвердить migration wizard, точные FIFO-срезы, отмену отгула и перепроекцию абсолютных записей после смены зоны.
 
 ## Этап 1 — production foundation
 

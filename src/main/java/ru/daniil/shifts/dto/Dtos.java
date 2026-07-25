@@ -1094,22 +1094,50 @@ public final class Dtos {
             String reason
     ) {}
 
-    /** Деталь списания: сколько часов было забрано из конкретного начисления. */
+    /** Деталь списания: сколько минут и какой именно участок были забраны из начисления. */
     public record OvertimeUsageRefDto(
             Long usageId,
             String usageDate,
             double hours,
-            String reason
-    ) {}
+            String reason,
+            int minutes,
+            String startInstant,
+            String endInstant,
+            String displayStart,
+            String displayEnd,
+            String sourceTimezone,
+            boolean exact,
+            boolean reconstructed
+    ) {
+        /** Source-compatible constructor for pre-v27.9 callers. */
+        public OvertimeUsageRefDto(Long usageId, String usageDate, double hours, String reason) {
+            this(usageId, usageDate, hours, reason, (int) Math.round(hours * 60.0),
+                    null, null, null, null, null, false, false);
+        }
+    }
 
-    /** Деталь начисления, из которого списали часы. */
+    /** Деталь начисления, из которого списали часы, с точным FIFO-интервалом. */
     public record OvertimeAllocationDto(
             Long creditId,
             String workedDate,
             String timeRange,
             double hours,
-            String reason
-    ) {}
+            String reason,
+            int minutes,
+            String startInstant,
+            String endInstant,
+            String displayStart,
+            String displayEnd,
+            String sourceTimezone,
+            boolean exact,
+            boolean reconstructed
+    ) {
+        /** Source-compatible constructor for pre-v27.9 callers. */
+        public OvertimeAllocationDto(Long creditId, String workedDate, String timeRange, double hours, String reason) {
+            this(creditId, workedDate, timeRange, hours, reason, (int) Math.round(hours * 60.0),
+                    null, null, null, null, null, false, false);
+        }
+    }
 
     /** Строка таблицы начислений переработки. */
     public record OvertimeCreditRowDto(
@@ -1131,8 +1159,29 @@ public final class Dtos {
             String sourceTimezone,
             String displayStart,
             String displayEnd,
-            String displayTimezone
-    ) {}
+            String displayTimezone,
+            int creditedMinutes,
+            String creditedStartInstant,
+            String creditedEndInstant,
+            String creditedDisplayStart,
+            String creditedDisplayEnd,
+            boolean migratedFromLegacy,
+            boolean legacyTimezoneRequired
+    ) {
+        /** Source-compatible constructor for v27.8 service/tests. */
+        public OvertimeCreditRowDto(Long id, String workedDate, String timeRange,
+                                    String startDateTime, String endDateTime, int breakMinutes,
+                                    double plannedHours, boolean calculated, double hours, String reason,
+                                    double usedHours, double remainingHours, List<OvertimeUsageRefDto> usages,
+                                    String startInstant, String endInstant, String sourceTimezone,
+                                    String displayStart, String displayEnd, String displayTimezone) {
+            this(id, workedDate, timeRange, startDateTime, endDateTime, breakMinutes, plannedHours,
+                    calculated, hours, reason, usedHours, remainingHours, usages,
+                    startInstant, endInstant, sourceTimezone, displayStart, displayEnd, displayTimezone,
+                    (int) Math.round(hours * 60.0), null, null, null, null, false,
+                    calculated && startInstant == null);
+        }
+    }
 
     /** Списание отгула с расшифровкой, из каких начислений оно взяло часы. */
     public record OvertimeUsageDto(
@@ -1140,7 +1189,52 @@ public final class Dtos {
             String usageDate,
             double hours,
             String reason,
-            List<OvertimeAllocationDto> allocations
+            List<OvertimeAllocationDto> allocations,
+            int minutes
+    ) {
+        public OvertimeUsageDto(Long id, String usageDate, double hours, String reason,
+                                List<OvertimeAllocationDto> allocations) {
+            this(id, usageDate, hours, reason, allocations, (int) Math.round(hours * 60.0));
+        }
+    }
+
+
+    /** Legacy overtime row that still needs an explicit source timezone. */
+    public record LegacyOvertimeCreditDto(
+            Long id,
+            String workedDate,
+            String startDateTime,
+            String endDateTime,
+            String timeRange,
+            double hours,
+            int minutes,
+            String reason,
+            boolean migratable,
+            String blockedReason,
+            String sourceTimezone,
+            String projectedStart,
+            String projectedEnd,
+            String creditedStart,
+            String creditedEnd
+    ) {}
+
+    public record LegacyOvertimeMigrationRequest(
+            List<Long> creditIds,
+            String sourceTimezone
+    ) {}
+
+    public record LegacyOvertimeMigrationPreviewDto(
+            String sourceTimezone,
+            int requestedCount,
+            int migratableCount,
+            int blockedCount,
+            List<LegacyOvertimeCreditDto> credits
+    ) {}
+
+    public record LegacyOvertimeMigrationResultDto(
+            int migratedCount,
+            int skippedCount,
+            OvertimeAccountDto account
     ) {}
 
     /** Полная бухгалтерия переработок: начисления, списания, остаток. */

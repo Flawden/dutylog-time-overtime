@@ -1,6 +1,7 @@
 package ru.daniil.shifts.repo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import ru.daniil.shifts.model.AppUser;
@@ -21,4 +22,8 @@ public interface OvertimeAllocationRepository extends JpaRepository<OvertimeAllo
     List<OvertimeAllocation> findByCredit(OvertimeCredit credit);
 
     void deleteByUsage(OvertimeUsage usage);
+
+    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    @Query("delete from OvertimeAllocation a where a.credit.id in (select c.id from OvertimeCredit c where c.owner = :owner)")
+    void deleteAllByOwner(@Param("owner") AppUser owner);
 }

@@ -1551,10 +1551,16 @@ function renderShiftProjection(){
   }
   const work = shiftIntervalRange(interval, "work");
   const display = shiftIntervalRange(interval, "display");
-  const duration = Math.max(0, Number(interval.elapsedMinutes || 0));
-  const durationText = duration
-    ? `${Math.floor(duration / 60)}${state.language === "en" ? "h" : "ч"}${duration % 60 ? ` ${duration % 60}${state.language === "en" ? "m" : "м"}` : ""}`
-    : "";
+  const durationLabel = minutes => {
+    const safe = Math.max(0, Number(minutes || 0));
+    if (!safe) return state.language === "en" ? "0m" : "0м";
+    const hours = Math.floor(safe / 60);
+    const minutesLeft = safe % 60;
+    return `${hours ? `${hours}${state.language === "en" ? "h" : "ч"}` : ""}${hours && minutesLeft ? " " : ""}${minutesLeft ? `${minutesLeft}${state.language === "en" ? "m" : "м"}` : ""}`;
+  };
+  const workDurationText = durationLabel(interval.netMinutes);
+  const breakText = durationLabel(interval.breakMinutes);
+  const durationHint = `${t("Рабочее время смены")}: ${workDurationText}${Number(interval.breakMinutes || 0) > 0 ? ` · ${t("Обед в смене")}: ${breakText}` : ""}`;
 
   if (interval.sameTimezone) {
     box.innerHTML = `
@@ -1563,7 +1569,7 @@ function renderShiftProjection(){
         <strong>${esc(work)}</strong>
         <code>${esc(interval.workTimezone || "")}</code>
       </div>
-      ${durationText ? `<div class="shiftProjectionHint">${esc(t("Фактическая длительность"))}: ${esc(durationText)}</div>` : ""}
+      <div class="shiftProjectionHint">${esc(durationHint)}</div>
     `;
   } else {
     box.innerHTML = `
@@ -1577,7 +1583,7 @@ function renderShiftProjection(){
         <strong>${esc(work)}</strong>
         <code>${esc(interval.workTimezone || "")}</code>
       </div>
-      <div class="shiftProjectionHint">${esc(t("Смена отображается в выбранном часовом поясе, но расчёты остаются в рабочем."))}</div>
+      <div class="shiftProjectionHint">${esc(durationHint)}</div>
     `;
   }
   box.hidden = false;

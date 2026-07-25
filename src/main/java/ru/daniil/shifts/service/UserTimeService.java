@@ -19,10 +19,11 @@ import java.util.List;
 /**
  * Central time boundary for DutyLog.
  *
- * <p>Work timezone owns calendar calculations, shifts, reminders and future
- * overtime intervals. Display timezone only projects already absolute moments
- * for the UI. Floating dates such as birthdays remain {@link LocalDate} and are
- * never converted between zones.</p>
+ * <p>v27.9 exposes one canonical IANA timezone per user. The historical
+ * work/display methods remain as compatibility aliases, but both resolve to
+ * the same zone. Floating dates such as birthdays remain {@link LocalDate};
+ * absolute instants such as migrated overtime are reprojected when the user
+ * changes the canonical timezone.</p>
  *
  * <p>DST policy is deterministic: nonexistent wall-clock values are shifted
  * forward by the transition gap; ambiguous values use the earlier offset.</p>
@@ -51,8 +52,8 @@ public class UserTimeService {
     }
 
     public ZoneId displayZone(AppUser user) {
-        ZoneId work = workZone(user);
-        return resolveZone(user == null ? null : user.getDisplayTimezone(), work);
+        // v27.9: one canonical timezone for calendar semantics and display.
+        return workZone(user);
     }
 
     public Instant nowInstant() {

@@ -1,7 +1,7 @@
 const { test, expect } = require('./fixtures');
 const { registerAndOnboard, currentLocalDateKey, waitForApi } = require('./helpers');
 
-test('important dates stay in work timezone while display timezone survives reload', async ({ page }) => {
+test('important dates stay floating while canonical timezone survives reload', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'important' });
 
   await page.locator('#tabbar a[data-view="important"]').click();
@@ -41,17 +41,15 @@ test('important dates stay in work timezone while display timezone survives relo
   const timezone = page.locator('#workTimezone');
   const displayTimezone = page.locator('#displayTimezone');
   await expect(timezone).toHaveAttribute('aria-describedby', 'timeZoneHelp');
-  await expect(displayTimezone).toHaveAttribute('aria-describedby', 'timeZoneHelp');
+  await expect(displayTimezone).toHaveAttribute('type', 'hidden');
   await timezone.selectOption('Europe/Chisinau');
-  await displayTimezone.selectOption('Europe/Berlin');
   await expect(page.locator('#timeSettingsStatus')).toContainText(/не сохранено|not saved/i);
   await expect(page.locator('#timeNowBox')).toContainText('Europe/Chisinau');
-  await expect(page.locator('#timeNowBox')).toContainText('Europe/Berlin');
   const profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await expect(timezone).toHaveValue('Europe/Chisinau');
-  await expect(displayTimezone).toHaveValue('Europe/Berlin');
+  await expect(displayTimezone).toHaveValue('Europe/Chisinau');
   await expect(page.locator('#timeSettingsStatus')).toContainText(/сохранено|saved/i);
 
   await page.reload();
@@ -59,11 +57,11 @@ test('important dates stay in work timezone while display timezone survives relo
   await page.locator('#tabbar a[data-view="settings"]').click();
   await page.locator('[data-settings-jump="time"]').click();
   await expect(page.locator('#workTimezone')).toHaveValue('Europe/Chisinau');
-  await expect(page.locator('#displayTimezone')).toHaveValue('Europe/Berlin');
+  await expect(page.locator('#displayTimezone')).toHaveValue('Europe/Chisinau');
 });
 
 
-test('existing dated shift refreshes after work and display timezone change', async ({ page }) => {
+test('existing dated shift refreshes after canonical timezone change', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'shift-zone' });
 
   // Create the dated shift first. The bug reproduced only for an existing cached
@@ -86,7 +84,6 @@ test('existing dated shift refreshes after work and display timezone change', as
   await page.locator('#tabbar a[data-view="settings"]').click();
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
-  await page.locator('#displayTimezone').selectOption('Europe/Moscow');
   const profileSaved = waitForApi(page, 'PUT', '/api/profile');
   const calendarRefreshed = page.waitForResponse(response => {
     const url = new URL(response.url());
@@ -104,8 +101,8 @@ test('existing dated shift refreshes after work and display timezone change', as
   const projection = page.locator('#shiftProjection');
   await expect(projection).toBeVisible();
   await expect(projection).toContainText('Asia/Yekaterinburg');
-  await expect(projection).toContainText('Europe/Moscow');
   await expect(projection).toContainText('08:30');
-  await expect(projection).toContainText('06:30');
+  await expect(projection).toContainText(/Рабочее время смены|Shift work time/);
+  await expect(projection).toContainText(/Обед в смене|Shift break/);
   await expect(projection).not.toContainText('Europe/Kyiv');
 });
