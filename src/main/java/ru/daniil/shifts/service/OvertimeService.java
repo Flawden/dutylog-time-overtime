@@ -285,6 +285,8 @@ public class OvertimeService {
         LocalDate date = dayEntryService.parseDate(req.date(), "Дата списания должна быть в формате yyyy-MM-dd");
         int requestedMinutes = requirePositiveMinutes(req.hours(), "Укажи часы списания больше 0");
 
+        validateUsageCapacity(user, null, requestedMinutes);
+
         OvertimeUsage usage = new OvertimeUsage(user, date, hoursFromMinutes(requestedMinutes), normalize(req.reason()));
         usage.setRequestedMinutes(requestedMinutes);
         usages.save(usage);
@@ -423,6 +425,8 @@ public class OvertimeService {
                 : usage.getRequestedMinutes();
         String reason = req.reason() != null ? normalize(req.reason()) : usage.getReason();
 
+        validateUsageCapacity(user, usage.getId(), requestedMinutes);
+
         usage.setUsageDate(date);
         usage.setRequestedMinutes(requestedMinutes);
         usage.setReason(reason);
@@ -481,6 +485,26 @@ public class OvertimeService {
         allocations.flush();
         persistAllocationPlan(user, plan);
         verifyLedgerIntegrity(user, creditList, usageList);
+    }
+
+    /**
+     * Rejects an impossible usage before a new/edited managed entity is written.
+     * This keeps failed commands side-effect free even when the service participates
+     * in a wider transaction whose caller catches the domain exception.
+     */
+    private void validateUsageCapacity(AppUser user, Long excludedUsageId, int proposedMinutes) {
+        int availableMinutes = credits.findByOwnerOrderByWorkDateAscIdAsc(user).stream()
+                .mapToInt(OvertimeCredit::getCreditedMinutes)
+                .sum();
+        int requestedMinutes = usages.findByOwnerOrderByUsageDateAscIdAsc(user).stream()
+                .filter(usage -> excludedUsageId == null || !Objects.equals(usage.getId(), excludedUsageId))
+                .mapToInt(OvertimeUsage::getRequestedMinutes)
+                .sum() + proposedMinutes;
+        if (requestedMinutes > availableMinutes) {
+            throw ApiException.badRequest("Недостаточно переработки: доступно "
+                    + fmt(hoursFromMinutes(availableMinutes)) + " ч, списать хочешь "
+                    + fmt(hoursFromMinutes(requestedMinutes)) + " ч");
+        }
     }
 
     private AllocationPlan buildAllocationPlan(List<OvertimeCredit> creditList,

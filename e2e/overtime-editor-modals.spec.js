@@ -22,6 +22,10 @@ test('overtime credit and usage editors work from calendar and ledger', async ({
   nextDate.setUTCDate(nextDate.getUTCDate() + 1);
   const nextDateKey = nextDate.toISOString().slice(0, 10);
   await page.locator('#creditEnd').fill(`${nextDateKey}T01:00`);
+  await page.locator('#creditBreak').fill('0');
+  await page.locator('#creditPlanned').fill('0');
+  await expect(page.locator('#creditBreak')).toHaveValue('0');
+  await expect(page.locator('#creditPlanned')).toHaveValue('0');
   await page.locator('#creditReason').fill('E2E modal overtime');
   const creditCreated = waitForApi(page, 'POST', '/api/overtime/credits');
   await page.locator('#creditAdd').click();

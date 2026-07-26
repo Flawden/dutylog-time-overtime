@@ -1,3 +1,12 @@
+## v27.9.3 — Overtime Preflight Integrity Hotfix
+
+- Usage create/update now validates total requested minutes before mutating a managed entity or inserting a new time-off row.
+- Failed over-capacity commands remain side-effect free even inside a wider transaction that catches the domain exception.
+- Added regression coverage proving a rejected usage edit keeps its original date, hours, reason and FIFO provenance.
+- Updated the task/ledger frontend contract to the intentional `delete entire time-off` wording introduced in v27.9.2.
+- Made the overtime modal Playwright scenario deterministic by explicitly setting break and planned deductions to zero.
+- No database migration; Flyway remains at V31.
+
 ## v27.9.2 — Overtime Ledger Integrity Hotfix
 
 - FIFO replacement is now planned and validated fully in memory before stored allocations are removed.

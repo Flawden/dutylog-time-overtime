@@ -72,7 +72,7 @@ class TaskAndShiftEditorsFrontendContractTest {
         assertTrue(html.contains("class=\"ledgerActionsHead\">Действия</th>"));
         assertTrue(overtime.contains("class=\"ledgerRowActions\""));
         assertTrue(overtime.contains("class=\"ledgerUsageActions\""));
-        assertTrue(overtime.contains("удалить списание"));
+        assertTrue(overtime.contains("удалить весь отгул"));
     }
 
     @Test

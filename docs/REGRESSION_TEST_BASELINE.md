@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.9.2.
+Status: v27.9.3.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.9.2 protects overtime-ledger integrity. FIFO replacement is planned before destructive writes, post-rebuild invariants verify all credits/usages/minutes, split usages are labelled as parts of one time-off, and ledger rows are committed atomically. Current application baseline: 82 Java test classes / 429 `@Test` methods and 17 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.9.3 validates usage capacity before persistence mutation, keeps rejected create/update commands side-effect free, aligns the ledger wording contract with whole-time-off deletion, and fixes deterministic E2E input deductions. Current application baseline: 82 Java test classes / 430 `@Test` methods and 17 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,14 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.9.3 Overtime Preflight Integrity Hotfix extension
+
+- `OvertimeServiceTest` proves a rejected usage create does not add a ghost row and a rejected usage edit preserves the original hours, reason and allocation.
+- `TaskAndShiftEditorsFrontendContractTest` protects the intentional `delete entire time-off` wording.
+- `overtime-editor-modals.spec.js` explicitly sets zero break and zero planned deduction before asserting an eight-hour overnight credit.
+- Flyway remains at V31 because this hotfix changes command ordering and tests, not schema.
 
 
 ## v27.9.2 Overtime Ledger Integrity Hotfix extension

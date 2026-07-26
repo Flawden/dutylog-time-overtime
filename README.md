@@ -1,23 +1,23 @@
-> Current release: **v27.9.2 — Overtime Ledger Integrity Hotfix**.
+> Current release: **v27.9.3 — Overtime Preflight Integrity Hotfix**.
 
 # DutyLog
 
-Current release: **v27.9.2 — Overtime Ledger Integrity Hotfix**
+Current release: **v27.9.3 — Overtime Preflight Integrity Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.9.2 — Overtime Ledger Integrity Hotfix
+## Текущая версия: v27.9.3 — Overtime Preflight Integrity Hotfix
 
-v27.9.2 делает пересборку FIFO недеструктивной: сначала полный план распределения рассчитывается и проверяется в памяти, и только затем старые allocation-записи атомарно заменяются. После пересборки сервис проверяет, что набор начислений и оставшихся отгулов не изменился, каждый отгул получил ровно запрошенные минуты, а начисления не перерасходованы.
+v27.9.3 закрывает два CI-регресса v27.9.2. Создание и редактирование отгула теперь проверяют общую доступную ёмкость до записи новой строки или изменения управляемой JPA-сущности. Поэтому отклонённая команда не оставляет временный «призрачный» отгул даже внутри более широкой транзакции, где вызывающий код поймал `ApiException`.
 
-Журнал переработок теперь собирает строки во временный `DocumentFragment` и заменяет таблицу только после успешного полного рендера. Ошибка одной расшифровки деградирует только конкретный интервал, а не оставляет пользователю обрезанный журнал. Для отгула, распределённого по нескольким начислениям, UI показывает `часть 1/2`, а действие подписано честно: `удалить весь отгул`.
+Frontend-контракт приведён к утверждённому UX `удалить весь отгул`, а браузерный сценарий начисления явно фиксирует `0` минут обеда и `0` плановых часов, чтобы ожидаемые восемь часов не зависели от состояния формы.
 
-v27.9.1 остаётся историческим formatter-hotfix, а функциональная основа — **v27.9.0 Overtime Interval Engine** с поминутным FIFO и точным provenance.
+v27.9.2 остаётся основным Ledger Integrity Hotfix, а функциональная основа — **v27.9.0 Overtime Interval Engine** с поминутным FIFO и точным provenance.
 
-Текущая автоматическая база: **82 Java-тестовых класса, 429 `@Test` методов и 17 Playwright browser scenarios**. Flyway остаётся на **V31**.
+Текущая автоматическая база: **82 Java-тестовых класса, 430 `@Test` методов и 17 Playwright browser scenarios**. Flyway остаётся на **V31**.
 
-История фундамента: **v27.9.0 — Overtime Interval Engine**, **v27.8.1 — Timezone Projection Refresh Hotfix**, **v27.8.0 — Zoned Work Intervals**, **v27.7.1 — Task & Ledger Layout Hotfix**, **v27.7.0 — Time Foundation**.
+История фундамента: **v27.9.2 — Overtime Ledger Integrity Hotfix**, **v27.9.0 — Overtime Interval Engine**, **v27.8.1 — Timezone Projection Refresh Hotfix**, **v27.8.0 — Zoned Work Intervals**, **v27.7.1 — Task & Ledger Layout Hotfix**, **v27.7.0 — Time Foundation**.
 
 ## Возможности
 
@@ -242,6 +242,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
+- [`docs/OVERTIME_PREFLIGHT_INTEGRITY_HOTFIX_V27.9.3.md`](docs/OVERTIME_PREFLIGHT_INTEGRITY_HOTFIX_V27.9.3.md) — preflight-проверка отгулов до мутации и синхронизация CI-контрактов.
 - [`docs/OVERTIME_LEDGER_INTEGRITY_HOTFIX_V27.9.2.md`](docs/OVERTIME_LEDGER_INTEGRITY_HOTFIX_V27.9.2.md) — атомарная пересборка FIFO, инварианты журнала и ясное удаление целого отгула.
 - [`docs/OVERTIME_ALLOCATION_RENDERING_HOTFIX_V27.9.1.md`](docs/OVERTIME_ALLOCATION_RENDERING_HOTFIX_V27.9.1.md) — исправление runtime-рендера точных межсуточных списаний.
 - [`docs/OVERTIME_INTERVAL_ENGINE_V27.9.0.md`](docs/OVERTIME_INTERVAL_ENGINE_V27.9.0.md) — поминутный FIFO, точные интервалы и мастер миграции legacy overtime.
@@ -318,7 +319,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — развернуть v27.9.2 и повторить сценарий: два начисления, два отгула, первый отгул распределён по двум источникам, затем удалить только его. Оба начисления и второй отгул должны остаться, а FIFO — пересобраться.
+Следующий практический шаг — пропустить v27.9.3 через полный Maven и Playwright gate, затем повторить staging-сценарии переполненного отгула и удаления одного split-отгула. Отклонённая команда не должна создавать вторую запись, а существующая история должна оставаться неизменной.
 
 ## Служебный профиль администратора
 

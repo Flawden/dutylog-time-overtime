@@ -10,6 +10,7 @@ import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditRowDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest;
+import ru.daniil.shifts.dto.Dtos.OvertimeUsageUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.LegacyOvertimeMigrationRequest;
 import ru.daniil.shifts.model.OvertimeCredit;
 import ru.daniil.shifts.repo.OvertimeCreditRepository;
@@ -219,6 +220,25 @@ class OvertimeServiceTest {
                 "неуспешная пересборка не должна удалять начисления");
         assertEquals(1, after.usages().size(), "старый отгул должен остаться");
         assertEquals(1, after.usages().get(0).allocations().size(), "старый FIFO provenance должен остаться");
+    }
+
+    @Test
+    void неуспешноеРедактированиеОтгулаНеМеняетСтаруюЗапись() {
+        overtime.createCredit(user, manual("2026-07-20", 5.0));
+        OvertimeAccountDto before = overtime.createUsage(user,
+                new OvertimeUsageCreateRequest("2026-07-22", 1.0, "старый отгул"));
+        long usageId = before.usages().get(0).id();
+
+        ApiException ex = assertThrows(ApiException.class, () -> overtime.updateUsage(user, usageId,
+                new OvertimeUsageUpdateRequest(null, 6.0, "недопустимое изменение")));
+        assertTrue(ex.getMessage().contains("Недостаточно"), ex.getMessage());
+
+        OvertimeAccountDto after = overtime.account(user);
+        assertEquals(1, after.usages().size());
+        assertEquals(usageId, after.usages().get(0).id());
+        assertEquals(1.0, after.usages().get(0).hours(), 0.001);
+        assertEquals("старый отгул", after.usages().get(0).reason());
+        assertEquals(1, after.usages().get(0).allocations().size());
     }
 
     /* ── Редактирование под защитой ── */
