@@ -2878,6 +2878,8 @@ body.panel-open .globalQuickAdd { display:none !important; }
 .allocationRange { color:var(--text); font-family:ui-monospace,monospace; font-size:11px; }
 .allocationLegacy { color:var(--warn); font-size:10px; }
 .allocationReconstructed { display:inline-flex; width:max-content; padding:1px 5px; border:1px solid color-mix(in srgb,var(--warn) 45%,transparent); border-radius:999px; color:var(--warn); font-size:9px; text-transform:uppercase; letter-spacing:.05em; }
+.allocationPartBadge { display:inline-flex; margin-left:5px; padding:1px 5px; border:1px solid var(--line); border-radius:999px; color:var(--mut); font-size:9px; white-space:nowrap; }
+.allocationRenderWarning { display:inline-flex; width:max-content; color:var(--danger); font-size:10px; }
 .legacyTimezoneBadge { color:var(--warn); }
 .legacyOvertimePanel { width:min(900px,calc(100vw - 24px)); max-height:min(860px,calc(100vh - 24px)); overflow:auto; }
 .legacyMigrationToolbar { display:grid; grid-template-columns:minmax(260px,1fr) auto auto; gap:10px; align-items:end; margin:14px 0 10px; }

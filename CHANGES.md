@@ -1,3 +1,13 @@
+## v27.9.2 — Overtime Ledger Integrity Hotfix
+
+- FIFO replacement is now planned and validated fully in memory before stored allocations are removed.
+- Deleting one time-off rebuilds only surviving usages while preserving every overtime credit.
+- Post-rebuild invariants verify credit IDs, usage IDs, exact requested minutes and per-credit capacity.
+- Ledger rows are rendered atomically through a detached document fragment; a broken allocation cannot leave a partial table.
+- Split usages show `part 1/2`, and destructive actions are labelled `delete entire time-off`.
+- Added backend, frontend-contract and Playwright regression coverage for two credits, two usages and deleting only one split usage.
+- No database migration; Flyway remains at V31.
+
 ## v27.9.1 — Overtime Allocation Rendering Hotfix
 
 - Fixed `ReferenceError: formatDate is not defined` while rendering exact cross-midnight FIFO allocations.

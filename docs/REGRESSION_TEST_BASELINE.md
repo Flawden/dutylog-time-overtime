@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.9.1.
+Status: v27.9.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.9.1 fixes exact cross-midnight allocation rendering so selected-day refresh cannot be aborted by an undefined date formatter. It preserves v27.9.0 integer-minute FIFO, exact overtime allocation provenance, the legacy timezone migration wizard and one canonical user timezone, plus all earlier foundations. Current application baseline: 81 Java test classes / 425 `@Test` methods and 16 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.9.2 protects overtime-ledger integrity. FIFO replacement is planned before destructive writes, post-rebuild invariants verify all credits/usages/minutes, split usages are labelled as parts of one time-off, and ledger rows are committed atomically. Current application baseline: 82 Java test classes / 429 `@Test` methods and 17 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -16,12 +16,19 @@ This release converts the successful v27.2.6 manual acceptance pass into an auto
 
 
 
+## v27.9.2 Overtime Ledger Integrity Hotfix extension
+
+- `OvertimeServiceTest` protects two credits and two usages when one split time-off is deleted.
+- `OvertimeLedgerIntegrityFrontendContractTest` protects per-allocation fallback, detached-fragment rendering and whole-time-off labels.
+- `overtime-editor-modals.spec.js` verifies the complete staging scenario and checks the surviving account through the API.
+- Flyway remains at V31 because the hotfix changes transactional and browser behaviour, not schema.
+
 ## v27.9.1 Overtime Allocation Rendering Hotfix extension
 
 - `OvertimeIntervalEngineFrontendContractTest` proves exact ranges use the defined `formatDateHuman` helper and forbids the missing `formatDate` symbol.
-- `overtime-editor-modals.spec.js` now creates `17:00–01:00`, consumes all eight hours and verifies both midnight-split labels while the shared fixture rejects browser page errors.
-- `release-check.sh` executes `allocationRangeLabels()` in a Node VM with a cross-midnight allocation, so this runtime regression is caught before packaging.
-- Flyway remains at V31 because the hotfix changes only browser rendering and regression coverage.
+- `overtime-editor-modals.spec.js` creates `17:00–01:00`, consumes all eight hours and verifies both midnight-split labels while the shared fixture rejects browser page errors.
+- `release-check.sh` executes `allocationRangeLabels()` in a Node VM with a cross-midnight allocation.
+- Flyway remains at V31.
 
 ## v27.9.0 Overtime Interval Engine extension
 

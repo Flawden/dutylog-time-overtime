@@ -198,13 +198,25 @@ function allocationRangeLabels(allocation){
   return labels;
 }
 
+function safeAllocationRangeLabels(allocation){
+  try {
+    return allocationRangeLabels(allocation);
+  } catch (err) {
+    console.error("Failed to render overtime allocation", allocation, err);
+    return [];
+  }
+}
+
 function allocationRangeLabel(allocation){
-  return allocationRangeLabels(allocation).join(" · ");
+  return safeAllocationRangeLabels(allocation).join(" · ");
 }
 
 function allocationDetailHtml(allocation){
-  const ranges = allocationRangeLabels(allocation);
-  if (!ranges.length) return `<span class="allocationLegacy">${esc(t("без точного времени"))}</span>`;
+  const ranges = safeAllocationRangeLabels(allocation);
+  if (!ranges.length) {
+    const failed = allocation?.exact ? ` <span class="allocationRenderWarning">⚠ ${esc(t("интервал не отображён"))}</span>` : "";
+    return `<span class="allocationLegacy">${esc(t("без точного времени"))}</span>${failed}`;
+  }
   const reconstruction = allocation.reconstructed ? ` <span class="allocationReconstructed">${esc(t("реконструировано"))}</span>` : "";
   return `<span class="allocationRange">${ranges.map(esc).join("<br>")}</span>${reconstruction}`;
 }
@@ -240,7 +252,7 @@ function renderOvertimeDayDetails(){
     const row = document.createElement("div");
     row.className = "overtimeDayEntry usage";
     const text = document.createElement("div");
-    const exactRows = (u.allocations || []).flatMap(a => allocationRangeLabels(a));
+    const exactRows = (u.allocations || []).flatMap(a => safeAllocationRangeLabels(a));
     text.innerHTML = `<b>−${fmtHours(u.hours)} ч</b><span>${esc(u.reason || t("списание"))}</span>${exactRows.length ? `<small>${exactRows.map(esc).join("<br>")}</small>` : ""}`;
     const edit = document.createElement("button");
     edit.type = "button"; edit.textContent = t("ред.");
@@ -944,9 +956,20 @@ async function removeOvertimeCredit(id){
 }
 
 async function removeOvertimeUsage(id){
-  let usage = findUsageById(id);
+  const usage = findUsageById(id);
   const label = usage ? `${usage.usageDate} -${fmtHours(usage.hours)} ч${usage.reason ? " — " + usage.reason : ""}` : `#${id}`;
-  if (!confirm(`Удалить списание отгула ${label}?\n\nЧасы вернутся в остаток переработки.`)) return;
+  const partCount = Math.max(1, Number(usage?.allocations?.length || 0));
+  const partsText = state.language === "en"
+    ? `${partCount} FIFO interval part${partCount === 1 ? "" : "s"}`
+    : `${partCount} ${partCount === 1 ? "часть" : (partCount >= 2 && partCount <= 4 ? "части" : "частей")} FIFO-интервала`;
+  const message = state.language === "en"
+    ? `Delete the entire time-off ${label}?
+
+${partsText} will be removed. Overtime credits will remain and the minutes will return to their balance.`
+    : `Удалить весь отгул ${label}?
+
+Будут удалены ${partsText}. Начисления переработки останутся, а минуты вернутся в их остаток.`;
+  if (!confirm(message)) return;
   setSave("saving");
   try {
     state.overtimeAccount = await api.deleteOvertimeUsage(id);
@@ -1022,7 +1045,6 @@ function renderLedgerTable(){
   const acc = state.overtimeAccount || { credits:[], balanceHours:0 };
   const bal = numOr0(acc.balanceHours);
   balanceEl.textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
-  tbody.innerHTML = "";
   syncLedgerFilterInputs();
 
   if (state.ui?.loadingLedger) {
@@ -1034,7 +1056,7 @@ function renderLedgerTable(){
     td.className = "emptyTableCell";
     td.innerHTML = `<div class="loadingState" role="status" aria-live="polite"><span>${htmlSafe(t("Загружаю переработки…"))}</span><i></i><i></i><i></i></div>`;
     tr.appendChild(td);
-    tbody.appendChild(tr);
+    tbody.replaceChildren(tr);
     return;
   }
 
@@ -1070,7 +1092,7 @@ function renderLedgerTable(){
       variant:"board"
     });
     tr.appendChild(td);
-    tbody.appendChild(tr);
+    tbody.replaceChildren(tr);
     return;
   }
 
@@ -1086,10 +1108,12 @@ function renderLedgerTable(){
       variant:"board"
     });
     tr.appendChild(td);
-    tbody.appendChild(tr);
+    tbody.replaceChildren(tr);
     return;
   }
 
+  const fragment = document.createDocumentFragment();
+  try {
   for (const c of credits) {
     const tr = document.createElement("tr");
     tr.dataset.creditId = String(c.id);
@@ -1100,17 +1124,25 @@ function renderLedgerTable(){
     tr.classList.toggle("ledgerEditingRow", editingCredit || editingUsage);
     const status = creditStatus(c);
     const usedText = (c.usages || []).length
-      ? (c.usages || []).map(u => `
+      ? (c.usages || []).map(u => {
+          const fullUsage = findUsageById(u.usageId);
+          const parts = fullUsage?.allocations || [];
+          const partIndex = parts.findIndex(part => Number(part.creditId) === Number(c.id));
+          const partLabel = parts.length > 1
+            ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.max(1, partIndex + 1)}/${parts.length}</span>`
+            : "";
+          return `
           <div class="ledgerUsageItem">
             <span class="ledgerUsageText">
-              <span>${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""}</span>
+              <span>${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""} ${partLabel}</span>
               ${allocationDetailHtml(u)}
             </span>
             <span class="ledgerUsageActions" aria-label="${esc(t("Действия списания"))}">
-              <button type="button" data-edit-usage="${u.usageId}" title="${esc(t("Редактировать списание"))}">${esc(t("ред. списание"))}</button>
-              <button type="button" data-del-usage="${u.usageId}" title="${esc(t("Удалить списание"))}">${esc(t("удалить списание"))}</button>
+              <button type="button" data-edit-usage="${u.usageId}" title="${esc(t("Редактировать весь отгул"))}">${esc(t("ред. отгул"))}</button>
+              <button type="button" data-del-usage="${u.usageId}" title="${esc(t("Удалить весь отгул"))}">${esc(t("удалить весь отгул"))}</button>
             </span>
-          </div>`).join("")
+          </div>`;
+        }).join("")
       : `<span class="small">${esc(t("не списывалось"))}</span>`;
     const legacyBadge = c.legacyTimezoneRequired ? ` · <span class="legacyTimezoneBadge">⚠ ${esc(t("без точного времени"))}</span>` : "";
     const calcInfo = c.calculated ? `<div class="small">${esc(t("обед"))}: ${c.breakMinutes || 0} ${state.language === "en" ? "min" : "мин"}${numOr0(c.plannedHours) ? ` · ${esc(t("план"))}: ${fmtHours(c.plannedHours)} ${state.language === "en" ? "h" : "ч"}` : ""}${legacyBadge}</div>` : legacyBadge;
@@ -1127,20 +1159,26 @@ function renderLedgerTable(){
       <td class="numc remain">${fmtHours(c.remainingHours)} ч</td>
       <td class="ledgerRowActions"><button type="button" data-edit-credit="${c.id}" title="${esc(t("Редактировать переработку"))}">${esc(t("ред."))}</button>${deleteBtn}</td>
     `;
-    tbody.appendChild(tr);
+    fragment.appendChild(tr);
   }
-  tbody.querySelectorAll("[data-edit-credit]").forEach(btn => {
+  } catch (err) {
+    console.error("Failed to render overtime ledger atomically", err);
+    setSave("err", `${t("Не удалось отрисовать журнал переработок")}: ${err.message}`);
+    return;
+  }
+  fragment.querySelectorAll("[data-edit-credit]").forEach(btn => {
     btn.addEventListener("click", () => startEditOvertimeCredit(Number(btn.dataset.editCredit)));
   });
-  tbody.querySelectorAll("[data-del-credit]").forEach(btn => {
+  fragment.querySelectorAll("[data-del-credit]").forEach(btn => {
     btn.addEventListener("click", () => removeOvertimeCredit(Number(btn.dataset.delCredit)));
   });
-  tbody.querySelectorAll("[data-edit-usage]").forEach(btn => {
+  fragment.querySelectorAll("[data-edit-usage]").forEach(btn => {
     btn.addEventListener("click", () => startEditOvertimeUsage(Number(btn.dataset.editUsage)));
   });
-  tbody.querySelectorAll("[data-del-usage]").forEach(btn => {
+  fragment.querySelectorAll("[data-del-usage]").forEach(btn => {
     btn.addEventListener("click", () => removeOvertimeUsage(Number(btn.dataset.delUsage)));
   });
+  tbody.replaceChildren(fragment);
 }
 
 async function loadLedgerPage(silent = true){

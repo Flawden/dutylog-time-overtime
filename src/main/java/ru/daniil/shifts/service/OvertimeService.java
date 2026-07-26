@@ -445,28 +445,46 @@ public class OvertimeService {
     @Transactional
     public OvertimeAccountDto deleteUsage(AppUser user, long id) {
         OvertimeUsage usage = requireOwnedUsage(user, id);
-        allocations.deleteByUsage(usage);
-        usages.delete(usage);
+        List<OvertimeCredit> creditList = credits.findByOwnerOrderByWorkDateAscIdAsc(user);
+        List<OvertimeUsage> remainingUsages = usages.findByOwnerOrderByUsageDateAscIdAsc(user).stream()
+                .filter(candidate -> !Objects.equals(candidate.getId(), usage.getId()))
+                .toList();
+
+        AllocationPlan plan = buildAllocationPlan(creditList, remainingUsages);
+
+        // Remove the complete old ledger only after the replacement plan is valid.
+        // The usage itself is then deleted and the surviving ledger is persisted atomically.
+        allocations.deleteAllByOwner(user);
+        allocations.flush();
+        OvertimeUsage managedUsage = requireOwnedUsage(user, id);
+        usages.delete(managedUsage);
         usages.flush();
-        rebuildAllAllocations(user);
+        persistAllocationPlan(user, plan);
+        verifyLedgerIntegrity(user, creditList, remainingUsages);
         return account(user);
     }
 
     /**
      * Rebuilds the complete FIFO ledger in deterministic date/id order.
-     * This makes create, edit and delete symmetric: cancelling a time-off restores
-     * the exact source minutes and all later usages return to their original FIFO order.
+     * The replacement plan is calculated fully in memory before any stored allocation
+     * is removed, so a validation or planning error can never leave a half-written ledger.
      */
     private void rebuildAllAllocations(AppUser user) {
-        allocations.deleteAllByOwner(user);
-        allocations.flush();
-
         // Preserve the historical FIFO contract: work date first, insertion id second.
         // Exact instants explain which minutes were consumed inside a credit, but a
         // partial legacy migration must never reorder same-day source credits.
         List<OvertimeCredit> creditList = credits.findByOwnerOrderByWorkDateAscIdAsc(user);
         List<OvertimeUsage> usageList = usages.findByOwnerOrderByUsageDateAscIdAsc(user);
+        AllocationPlan plan = buildAllocationPlan(creditList, usageList);
 
+        allocations.deleteAllByOwner(user);
+        allocations.flush();
+        persistAllocationPlan(user, plan);
+        verifyLedgerIntegrity(user, creditList, usageList);
+    }
+
+    private AllocationPlan buildAllocationPlan(List<OvertimeCredit> creditList,
+                                               List<OvertimeUsage> usageList) {
         int availableMinutes = creditList.stream().mapToInt(OvertimeCredit::getCreditedMinutes).sum();
         int requestedMinutes = usageList.stream().mapToInt(OvertimeUsage::getRequestedMinutes).sum();
         if (requestedMinutes > availableMinutes) {
@@ -475,6 +493,7 @@ public class OvertimeService {
                     + fmt(hoursFromMinutes(requestedMinutes)) + " ч");
         }
 
+        List<AllocationPlanItem> items = new ArrayList<>();
         Map<Long, Integer> consumedByCredit = new LinkedHashMap<>();
         int creditIndex = 0;
         for (OvertimeUsage usage : usageList) {
@@ -488,9 +507,7 @@ public class OvertimeService {
                     continue;
                 }
                 int take = Math.min(available, left);
-                OvertimeAllocation allocation = new OvertimeAllocation(credit, usage, take);
-                applyAllocationInterval(allocation, credit, consumed, take);
-                allocations.save(allocation);
+                items.add(new AllocationPlanItem(credit.getId(), usage.getId(), consumed, take));
                 consumedByCredit.put(credit.getId(), consumed + take);
                 left -= take;
                 if (consumed + take >= credit.getCreditedMinutes()) creditIndex++;
@@ -499,8 +516,76 @@ public class OvertimeService {
                 throw ApiException.badRequest("Не удалось распределить " + left + " мин переработки по FIFO");
             }
         }
+        return new AllocationPlan(List.copyOf(items), requestedMinutes);
+    }
+
+    private void persistAllocationPlan(AppUser user, AllocationPlan plan) {
+        Map<Long, OvertimeCredit> creditsById = credits.findByOwnerOrderByWorkDateAscIdAsc(user).stream()
+                .collect(Collectors.toMap(OvertimeCredit::getId, credit -> credit));
+        Map<Long, OvertimeUsage> usagesById = usages.findByOwnerOrderByUsageDateAscIdAsc(user).stream()
+                .collect(Collectors.toMap(OvertimeUsage::getId, usage -> usage));
+
+        int persistedMinutes = 0;
+        for (AllocationPlanItem item : plan.items()) {
+            OvertimeCredit credit = creditsById.get(item.creditId());
+            OvertimeUsage usage = usagesById.get(item.usageId());
+            if (credit == null || usage == null) {
+                throw new IllegalStateException("FIFO plan references a missing overtime entity");
+            }
+            OvertimeAllocation allocation = new OvertimeAllocation(credit, usage, item.allocatedMinutes());
+            applyAllocationInterval(allocation, credit, item.alreadyConsumedMinutes(), item.allocatedMinutes());
+            allocations.save(allocation);
+            persistedMinutes += item.allocatedMinutes();
+        }
+        if (persistedMinutes != plan.requestedMinutes()) {
+            throw new IllegalStateException("FIFO plan minute total changed before persistence");
+        }
         allocations.flush();
     }
+
+    private void verifyLedgerIntegrity(AppUser user,
+                                       List<OvertimeCredit> expectedCredits,
+                                       List<OvertimeUsage> expectedUsages) {
+        List<Long> expectedCreditIds = expectedCredits.stream().map(OvertimeCredit::getId).sorted().toList();
+        List<Long> actualCreditIds = credits.findByOwnerOrderByWorkDateAscIdAsc(user).stream()
+                .map(OvertimeCredit::getId).sorted().toList();
+        if (!expectedCreditIds.equals(actualCreditIds)) {
+            throw new IllegalStateException("Overtime credit set changed during FIFO rebuild");
+        }
+
+        List<Long> expectedUsageIds = expectedUsages.stream().map(OvertimeUsage::getId).sorted().toList();
+        List<OvertimeUsage> actualUsages = usages.findByOwnerOrderByUsageDateAscIdAsc(user);
+        List<Long> actualUsageIds = actualUsages.stream().map(OvertimeUsage::getId).sorted().toList();
+        if (!expectedUsageIds.equals(actualUsageIds)) {
+            throw new IllegalStateException("Overtime usage set changed during FIFO rebuild");
+        }
+
+        List<OvertimeAllocation> actualAllocations = allocations.findAllByOwner(user);
+        Map<Long, Integer> allocatedByUsage = actualAllocations.stream().collect(Collectors.groupingBy(
+                allocation -> allocation.getUsage().getId(),
+                Collectors.summingInt(OvertimeAllocation::getAllocatedMinutes)));
+        for (OvertimeUsage usage : actualUsages) {
+            int allocated = allocatedByUsage.getOrDefault(usage.getId(), 0);
+            if (allocated != usage.getRequestedMinutes()) {
+                throw new IllegalStateException("Usage " + usage.getId() + " has " + allocated
+                        + " allocated minutes instead of " + usage.getRequestedMinutes());
+            }
+        }
+
+        Map<Long, Integer> allocatedByCredit = actualAllocations.stream().collect(Collectors.groupingBy(
+                allocation -> allocation.getCredit().getId(),
+                Collectors.summingInt(OvertimeAllocation::getAllocatedMinutes)));
+        for (OvertimeCredit credit : expectedCredits) {
+            int allocated = allocatedByCredit.getOrDefault(credit.getId(), 0);
+            if (allocated > credit.getCreditedMinutes()) {
+                throw new IllegalStateException("Credit " + credit.getId() + " is over-allocated");
+            }
+        }
+    }
+
+    private record AllocationPlan(List<AllocationPlanItem> items, int requestedMinutes) {}
+    private record AllocationPlanItem(long creditId, long usageId,
+                                      int alreadyConsumedMinutes, int allocatedMinutes) {}
 
     private void applyAllocationInterval(OvertimeAllocation allocation,
                                          OvertimeCredit credit,

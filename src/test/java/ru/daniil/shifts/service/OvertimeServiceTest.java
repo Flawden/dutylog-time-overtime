@@ -206,10 +206,19 @@ class OvertimeServiceTest {
     void нельзяСписатьБольшеДоступногоОстатка() {
         overtime.createCredit(user, manual("2026-07-20", 2.0));
         overtime.createCredit(user, manual("2026-07-21", 3.0));
+        OvertimeAccountDto before = overtime.createUsage(user,
+                new OvertimeUsageCreateRequest("2026-07-22", 1.0, "существующий отгул"));
 
         ApiException ex = assertThrows(ApiException.class, () -> overtime.createUsage(user,
                 new OvertimeUsageCreateRequest("2026-07-23", 6.0, "жадный отгул")));
         assertTrue(ex.getMessage().contains("Недостаточно"), ex.getMessage());
+
+        OvertimeAccountDto after = overtime.account(user);
+        assertEquals(before.credits().stream().map(OvertimeCreditRowDto::id).toList(),
+                after.credits().stream().map(OvertimeCreditRowDto::id).toList(),
+                "неуспешная пересборка не должна удалять начисления");
+        assertEquals(1, after.usages().size(), "старый отгул должен остаться");
+        assertEquals(1, after.usages().get(0).allocations().size(), "старый FIFO provenance должен остаться");
     }
 
     /* ── Редактирование под защитой ── */
@@ -240,6 +249,50 @@ class OvertimeServiceTest {
 
         assertEquals(5.0, afterDelete.balanceHours(), 0.001, "часы должны вернуться после удаления списания");
         assertEquals(0.0, rowByDate(afterDelete, "2026-07-20").usedHours(), 0.001);
+    }
+
+
+    @Test
+    void deletingOneSplitUsageKeepsBothCreditsAndTheOtherUsage() {
+        user.setWorkTimezone("UTC");
+        users.save(user);
+
+        OvertimeAccountDto firstCredit = overtime.createCredit(user,
+                interval("2026-07-20", "2026-07-20T17:00", "2026-07-20T20:00", 0, 0.0));
+        long firstCreditId = firstCredit.credits().get(0).id();
+        OvertimeAccountDto secondCredit = overtime.createCredit(user,
+                interval("2026-07-21", "2026-07-21T17:00", "2026-07-21T22:00", 0, 0.0));
+        long secondCreditId = secondCredit.credits().stream()
+                .filter(row -> !row.id().equals(firstCreditId))
+                .findFirst().orElseThrow().id();
+
+        OvertimeAccountDto firstUsage = overtime.createUsage(user,
+                new OvertimeUsageCreateRequest("2026-07-22", 4.0, "первый отгул"));
+        long firstUsageId = firstUsage.usages().get(0).id();
+        OvertimeAccountDto secondUsage = overtime.createUsage(user,
+                new OvertimeUsageCreateRequest("2026-07-23", 3.0, "второй отгул"));
+        long secondUsageId = secondUsage.usages().stream()
+                .filter(row -> !row.id().equals(firstUsageId))
+                .findFirst().orElseThrow().id();
+
+        assertEquals(2, secondUsage.usages().stream()
+                .filter(row -> row.id().equals(firstUsageId))
+                .findFirst().orElseThrow().allocations().size(),
+                "первый отгул должен состоять из двух FIFO-частей");
+
+        OvertimeAccountDto rebuilt = overtime.deleteUsage(user, firstUsageId);
+
+        assertEquals(List.of(firstCreditId, secondCreditId),
+                rebuilt.credits().stream().map(OvertimeCreditRowDto::id).toList(),
+                "удаление отгула не должно удалять начисления");
+        assertEquals(1, rebuilt.usages().size());
+        assertEquals(secondUsageId, rebuilt.usages().get(0).id());
+        assertEquals(1, rebuilt.usages().get(0).allocations().size());
+        assertEquals(firstCreditId, rebuilt.usages().get(0).allocations().get(0).creditId(),
+                "оставшийся отгул должен заново занять самые старые минуты");
+        assertEquals(3.0, rebuilt.credits().get(0).usedHours(), 0.001);
+        assertEquals(0.0, rebuilt.credits().get(1).usedHours(), 0.001);
+        assertEquals(5.0, rebuilt.balanceHours(), 0.001);
     }
 
     @Test

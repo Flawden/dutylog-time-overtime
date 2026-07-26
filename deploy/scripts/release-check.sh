@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.9.1}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.9.2}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -972,7 +972,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.2"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1025,7 +1025,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.2"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1047,7 +1047,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.2"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1142,7 +1142,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.2"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -1190,9 +1190,21 @@ contains src/test/java/ru/daniil/shifts/web/TimeContextControllerTest.java "lega
 contains src/test/java/ru/daniil/shifts/db/PostgreSqlMigrationContractTest.java "timeFoundationMigrationPreservesUnzonedLegacyDeliveriesWithoutGuessing"
 contains e2e/important-timezone.spec.js "canonical timezone survives reload"
 
+# v27.9.2 Overtime Ledger Integrity Hotfix
+contains CHANGES.md "v27.9.2 — Overtime Ledger Integrity Hotfix"
+contains README.md "v27.9.2 — Overtime Ledger Integrity Hotfix"
+contains docs/OVERTIME_LEDGER_INTEGRITY_HOTFIX_V27.9.2.md "Build the complete FIFO replacement plan in memory"
+contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "buildAllocationPlan"
+contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "verifyLedgerIntegrity"
+contains src/main/resources/static/js/40-overtime.js "safeAllocationRangeLabels"
+contains src/main/resources/static/js/40-overtime.js "tbody.replaceChildren(fragment)"
+contains src/main/resources/static/js/40-overtime.js "Удалить весь отгул"
+contains src/test/java/ru/daniil/shifts/service/OvertimeServiceTest.java "deletingOneSplitUsageKeepsBothCreditsAndTheOtherUsage"
+contains src/test/java/ru/daniil/shifts/web/OvertimeLedgerIntegrityFrontendContractTest.java "ledgerRowsAreCommittedAtomicallyAfterTheWholeFragmentIsBuilt"
+contains e2e/overtime-editor-modals.spec.js "deleting one split time-off keeps every credit and the other usage"
+
 # v27.9.1 Overtime Allocation Rendering Hotfix
 contains CHANGES.md "v27.9.1 — Overtime Allocation Rendering Hotfix"
-contains README.md "v27.9.1 — Overtime Allocation Rendering Hotfix"
 contains docs/OVERTIME_ALLOCATION_RENDERING_HOTFIX_V27.9.1.md "ReferenceError: formatDate is not defined"
 contains src/main/resources/static/js/40-overtime.js "formatDateHuman(startDate)"
 contains src/main/resources/static/js/40-overtime.js "formatDateHuman(endDate)"
@@ -1270,7 +1282,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.9.2"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1366,23 +1378,23 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "16" ]]; then
-  ok "Playwright test baseline: 16"
+if [[ "$E2E_TESTS" == "17" ]]; then
+  ok "Playwright test baseline: 17"
 else
-  fail "expected 16 Playwright tests, found $E2E_TESTS"
+  fail "expected 17 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "425" ]]; then
-  ok "test method baseline: 425"
+if [[ "$TEST_METHODS" == "429" ]]; then
+  ok "test method baseline: 429"
 else
-  fail "expected 425 @Test methods, found $TEST_METHODS"
+  fail "expected 429 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "81" ]]; then
-  ok "test class baseline: 81"
+if [[ "$TEST_CLASSES" == "82" ]]; then
+  ok "test class baseline: 82"
 else
-  fail "expected 81 test classes, found $TEST_CLASSES"
+  fail "expected 82 test classes, found $TEST_CLASSES"
 fi
 
 echo
