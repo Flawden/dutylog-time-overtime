@@ -1,3 +1,10 @@
+# v27.11.2 — E2E Stability Hotfix
+
+- The shift editor Playwright flow now waits for the authoritative `/api/calendar` refresh triggered by assignment before reloading the page, preventing an intentional navigation abort from being reported as `console.error: Failed to fetch`.
+- The next-day timezone projection scenario now validates the compact source interval shown by the UI (`03.07 23:00–04.07 07:00`) and the canonical source date (`2026-07-03`) separately.
+- No production calculation or database migration changed; Flyway remains at V33.
+- Regression baseline remains 85 Java test classes, 442 `@Test` methods and 19 Playwright scenarios.
+
 # v27.11.1 — CI & Contract Hotfix
 
 - обновлены два устаревших frontend-контракта под occurrence-based проекцию смен;

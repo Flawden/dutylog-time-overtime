@@ -80,8 +80,10 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   const shiftChip = page.locator(`#chips [data-shift-type-id="${shift.id}"]`);
   await expect(shiftChip).toBeVisible();
   const assigned = waitForApi(page, 'PUT', `/api/days/${date}`);
+  const calendarReloaded = waitForApi(page, 'GET', '/api/calendar');
   await shiftChip.click();
   await assigned;
+  await calendarReloaded;
   await page.reload();
   await expect(page.locator('#appBoot')).toBeHidden({ timeout: 30_000 });
   await expect(page.locator(`#grid [data-date="${date}"]`)).toContainText(shiftName);

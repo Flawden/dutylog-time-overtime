@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.11.1.
+Status: v27.11.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.11.1 adds immutable dated shift occurrences, source-zone snapshots, display-date projection, legacy migration and stronger PWA activation while preserving v27.10 Task Details. Current application baseline: 85 Java test classes / 442 `@Test` methods and 19 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.11.2 stabilizes the Playwright acceptance boundary for authoritative shift refresh and compact source-range rendering while preserving the immutable occurrence model and v27.10 Task Details. Current application baseline: 85 Java test classes / 442 `@Test` methods and 19 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,13 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.11.2 E2E Stability Hotfix extension
+
+- `editor-modals.spec.js` waits for the post-assignment `/api/calendar` response before navigating, so an aborted in-flight refresh cannot become a false browser-console failure.
+- `important-timezone.spec.js` protects both the compact source range and canonical source date without coupling the test to an unused long-date presentation.
+- Production shift occurrence logic and Flyway V33 are unchanged.
 
 
 ## v27.11.1 Shift Occurrences & Calendar Projection extension

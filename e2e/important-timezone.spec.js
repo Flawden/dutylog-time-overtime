@@ -153,5 +153,6 @@ test('a timezone projection can move a late shift to the next calendar date', as
 
   await julyFourth.click();
   await expect(page.locator('#shiftProjection')).toContainText('01:00–09:00');
-  await expect(page.locator('#shiftProjection')).toContainText('03.07.2026 23:00–04.07.2026 07:00');
+  await expect(page.locator('#shiftProjection')).toContainText('03.07 23:00–04.07 07:00');
+  await expect(page.locator('#shiftProjection')).toContainText('2026-07-03');
 });
