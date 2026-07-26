@@ -72,6 +72,29 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
 
+  // The user defines the real local shift while living in UTC+5. Future
+  // timezone changes must project this template instead of reinterpreting it.
+  await page.locator('#defDayStart').fill('08:30');
+  await page.locator('#defDayEnd').fill('17:00');
+  const builtinsSaved = new Promise(resolve => {
+    let count = 0;
+    const handler = response => {
+      const url = new URL(response.url());
+      if (response.request().method() === 'PATCH'
+          && /^\/api\/shift-types\/\d+$/.test(url.pathname)
+          && response.status() === 200
+          && ++count === 2) {
+        page.off('response', handler);
+        resolve();
+      }
+    };
+    page.on('response', handler);
+  });
+  await page.locator('#timeApplyBuiltins').click();
+  await builtinsSaved;
+  await expect(page.locator('#defDayStart')).toHaveValue('08:30');
+  await expect(page.locator('#defDayEnd')).toHaveValue('17:00');
+
   await page.locator('#tabbar a[data-view="calendar"]').click();
   const day = page.locator('#grid .cell:not(.empty)').first();
   await day.click();
@@ -101,6 +124,18 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await calendarRefreshed;
+  await expect(page.locator('#defDayStart')).toHaveValue('06:30');
+  await expect(page.locator('#defDayEnd')).toHaveValue('15:00');
+  await expect(page.locator('#shiftTemplateZoneHint')).toContainText('Europe/Kyiv');
+
+  await page.locator('[data-settings-jump="notifications"]').click();
+  await page.locator('#notifShift').check();
+  await page.locator('#notifShiftBefore').fill('30');
+  const notificationsSaved = waitForApi(page, 'PATCH', '/api/notifications/settings');
+  await page.locator('#notifSave').click();
+  await notificationsSaved;
+  await expect(page.locator('#notifyList')).toContainText('Начало 06:30 Europe/Kyiv');
+  await expect(page.locator('#notifyList')).toContainText('06:00');
 
   await page.locator('#tabbar a[data-view="calendar"]').click();
   await day.click();
@@ -143,6 +178,11 @@ test('a timezone projection can move a late shift to the next calendar date', as
   profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
+
+  const projectedTemplate = await page.evaluate(({ id }) => jfetch('/api/shift-types')
+    .then(items => items.find(item => Number(item.id) === Number(id))), lateShift);
+  expect(projectedTemplate.startTime).toBe('01:00');
+  expect(projectedTemplate.endTime).toBe('09:00');
 
   await page.locator('#tabbar a[data-view="calendar"]').click();
   const julyFourth = page.locator('#grid [data-date="2026-07-04"]');

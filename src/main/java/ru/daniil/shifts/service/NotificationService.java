@@ -20,10 +20,13 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -94,7 +97,7 @@ public class NotificationService {
         NotificationSettings s = settingsEntity(user);
         List<NotificationReminderDto> out = new ArrayList<>();
 
-        List<DayEntry> days = dayEntryRepository.findByOwnerAndDateBetweenOrderByDateAsc(user, from, to);
+        List<DayEntry> days = shiftDaysForDisplayRange(user, from, to);
         List<DayTask> tasks = taskRepository.findByOwnerAndDateBetweenOrderByDateAscCreatedAtAscIdAsc(user, from, to);
         Map<LocalDate, List<String>> digestParts = new HashMap<>();
 
@@ -103,6 +106,32 @@ public class NotificationService {
                 ShiftType st = d.getShiftType();
                 if (st == null || st.getStartTime() == null || st.effectivePlannedHours() <= 0 || !st.isNotificationsEnabled()) continue;
                 int minutesBefore = st.getNotificationMinutesBefore() != null ? st.getNotificationMinutesBefore() : s.getShiftReminderMinutesBefore();
+
+                if (d.hasShiftOccurrenceSnapshot()) {
+                    Instant shiftStartInstant = d.getShiftStartInstant();
+                    ZonedDateTime displayedStart = userTimeService.inWorkZone(shiftStartInstant, user);
+                    LocalDate displayDate = displayedStart.toLocalDate();
+                    if (displayDate.isBefore(from) || displayDate.isAfter(to)) continue;
+                    Instant remindAtInstant = shiftStartInstant.minusSeconds(minutesBefore * 60L);
+                    out.add(reminderAtInstant(
+                            user,
+                            "shift:" + d.getDate(),
+                            "SHIFT",
+                            displayDate.toString(),
+                            remindAtInstant,
+                            "Смена: " + st.getName(),
+                            "Начало " + displayedStart.toLocalTime() + " " + displayedStart.getZone().getId()
+                                    + ", напоминание за " + minutesBefore + " мин."
+                                    + (st.getNotificationMinutesBefore() != null ? " (настройка смены)" : ""),
+                            10
+                    ));
+                    digestParts.computeIfAbsent(displayDate, k -> new ArrayList<>())
+                            .add("смена " + st.getName() + " " + displayedStart.toLocalTime());
+                    continue;
+                }
+
+                // Compatibility fallback for a legacy row that has not yet been
+                // frozen by the migration wizard or a timezone change.
                 LocalDateTime shiftStart = LocalDateTime.of(d.getDate(), st.getStartTime());
                 LocalDateTime remindAt = shiftStart.minusMinutes(minutesBefore);
                 out.add(reminder(
@@ -112,7 +141,8 @@ public class NotificationService {
                         d.getDate().toString(),
                         remindAt,
                         "Смена: " + st.getName(),
-                        "Начало " + st.getStartTime() + ", напоминание за " + minutesBefore + " мин." + (st.getNotificationMinutesBefore() != null ? " (настройка смены)" : ""),
+                        "Начало " + st.getStartTime() + ", напоминание за " + minutesBefore + " мин."
+                                + (st.getNotificationMinutesBefore() != null ? " (настройка смены)" : ""),
                         10
                 ));
                 digestParts.computeIfAbsent(d.getDate(), k -> new ArrayList<>()).add("смена " + st.getName() + " " + st.getStartTime());
@@ -191,6 +221,45 @@ public class NotificationService {
         out.sort(Comparator.comparing((NotificationReminderDto reminder) -> reminderInstant(reminder, user))
                 .thenComparing(NotificationReminderDto::priority));
         return out;
+    }
+
+    private List<DayEntry> shiftDaysForDisplayRange(AppUser user, LocalDate from, LocalDate to) {
+        ZoneId zone = userTimeService.workZone(user);
+        Instant start = from.atStartOfDay(zone).toInstant();
+        Instant end = to.plusDays(1).atStartOfDay(zone).toInstant();
+        Map<Long, DayEntry> unique = new LinkedHashMap<>();
+
+        for (DayEntry entry : dayEntryRepository
+                .findByOwnerAndShiftStartInstantLessThanAndShiftEndInstantGreaterThanOrderByShiftStartInstantAsc(
+                        user, end, start)) {
+            unique.put(entry.getId(), entry);
+        }
+        // Legacy local rows have no absolute index. A two-day buffer is enough
+        // for all civil IANA offsets and keeps the compatibility query bounded.
+        for (DayEntry entry : dayEntryRepository.findByOwnerAndDateBetweenOrderByDateAsc(
+                user, from.minusDays(2), to.plusDays(2))) {
+            if (entry.getShiftType() != null && !entry.hasShiftOccurrenceSnapshot()) {
+                unique.putIfAbsent(entry.getId(), entry);
+            }
+        }
+        return new ArrayList<>(unique.values());
+    }
+
+    private NotificationReminderDto reminderAtInstant(AppUser user,
+                                                        String id,
+                                                        String type,
+                                                        String sourceDate,
+                                                        Instant remindAtInstant,
+                                                        String title,
+                                                        String details,
+                                                        int priority) {
+        ZonedDateTime local = userTimeService.inWorkZone(remindAtInstant, user);
+        String localValue = local.toLocalDateTime().toString();
+        String timezone = local.getZone().getId();
+        return new NotificationReminderDto(
+                id, type, sourceDate, localValue, title, details, priority,
+                remindAtInstant.toString(), timezone, localValue, timezone
+        );
     }
 
     private NotificationReminderDto reminder(AppUser user,

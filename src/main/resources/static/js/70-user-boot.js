@@ -27,7 +27,10 @@ function applyCalendarBundle(bundle){
   state.tasksByDate = {};
   state.importantByDate = {};
   state.remindersByDate = {};
-  if (bundle.shiftTypes) state.shiftTypes = bundle.shiftTypes;
+  if (bundle.shiftTypes) {
+    state.shiftTypes = bundle.shiftTypes;
+    if (typeof syncTimeSettingsFromBuiltins === "function") syncTimeSettingsFromBuiltins();
+  }
   for (const e of bundle.days || []) state.days[e.date] = normalizeDay(e);
   state.shiftOccurrences = Array.isArray(bundle.shiftOccurrences) ? bundle.shiftOccurrences.map(normalizeShiftOccurrence) : [];
   if (!state.shiftOccurrences.length) {

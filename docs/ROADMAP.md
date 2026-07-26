@@ -173,3 +173,9 @@ API уже достаточно стабилен для первого Android-�
 - отчёт по переработке;
 - журнал списаний;
 - статистика за год.
+
+## Completed in v27.11.3
+
+- Canonical timezone rebases future shift templates.
+- Existing dated shifts remain immutable.
+- Shift reminders and Telegram delivery use occurrence instants, including next-day projection.

@@ -21,6 +21,7 @@ import ru.daniil.shifts.repo.UserRepository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,6 +44,7 @@ class NotificationServiceTest {
     @Autowired DayEntryRepository days;
     @Autowired DayTaskRepository tasks;
     @Autowired NotificationSettingsRepository settingsRepo;
+    @Autowired ShiftOccurrenceService shiftOccurrences;
 
     AppUser user;
 
@@ -143,6 +145,42 @@ class NotificationServiceTest {
         assertEquals("2026-07-22T14:05", dueReminder.remindAt());
         assertEquals("2026-07-22T09:05:00Z", dueReminder.remindAtInstant());
         assertEquals("2026-07-22T14:05", dueReminder.displayAt());
+    }
+
+    @Test
+    void shiftReminderFollowsTheOccurrenceInstantAndProjectedCalendarDate() {
+        user.setWorkTimezone("Asia/Yekaterinburg");
+        user.setDisplayTimezone("Asia/Yekaterinburg");
+        user = users.save(user);
+
+        LocalDate sourceDate = LocalDate.of(2026, 7, 3);
+        ShiftType shift = new ShiftType(user, "Поздняя", 8, "#334455", false,
+                LocalTime.of(23, 0), LocalTime.of(7, 0), 0, 8.0);
+        shift.setNotificationsEnabled(true);
+        shift = shiftTypes.save(shift);
+
+        DayEntry day = new DayEntry(user, sourceDate);
+        day.setShiftType(shift);
+        shiftOccurrences.capture(day, ZoneId.of("Europe/Kyiv"));
+        days.saveAndFlush(day);
+
+        NotificationSettings settings = notifications.settingsEntity(user);
+        settings.setShiftRemindersEnabled(true);
+        settings.setShiftReminderMinutesBefore(30);
+        settings.setTaskRemindersEnabled(false);
+        settings.setImportantDayRemindersEnabled(false);
+        settings.setTomorrowDigestEnabled(false);
+        settingsRepo.save(settings);
+
+        NotificationReminderDto reminder = notifications
+                .upcoming(user, LocalDate.of(2026, 7, 4), LocalDate.of(2026, 7, 4), true)
+                .stream().filter(r -> r.type().equals("SHIFT")).findFirst().orElseThrow();
+
+        assertEquals("2026-07-04", reminder.sourceDate());
+        assertEquals("2026-07-04T00:30", reminder.remindAt());
+        assertEquals("2026-07-03T19:30:00Z", reminder.remindAtInstant());
+        assertEquals("Asia/Yekaterinburg", reminder.workTimezone());
+        assertTrue(reminder.details().contains("Начало 01:00 Asia/Yekaterinburg"));
     }
 
     @Test

@@ -9,6 +9,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
+import ru.daniil.shifts.repo.ShiftTypeRepository;
+import ru.daniil.shifts.service.ShiftTypeService;
 
 import java.time.LocalDate;
 
@@ -31,6 +33,8 @@ class ProfileControllerTest {
 
     @Autowired MockMvc mvc;
     @Autowired UserRepository users;
+    @Autowired ShiftTypeRepository shiftTypes;
+    @Autowired ShiftTypeService shiftTypeService;
 
     AppUser owner;
 
@@ -137,6 +141,25 @@ class ProfileControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.workTimezone").value("Europe/Berlin"))
                 .andExpect(jsonPath("$.displayTimezone").value("Europe/Berlin"));
+    }
+
+    @Test
+    void canonicalTimezoneUpdateAlsoRebasesFutureShiftTemplates() throws Exception {
+        owner.setWorkTimezone("Asia/Yekaterinburg");
+        owner.setDisplayTimezone("Asia/Yekaterinburg");
+        users.save(owner);
+        shiftTypeService.list(owner);
+
+        mvc.perform(put("/api/profile")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("{\"workTimezone\":\"Europe/Moscow\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.workTimezone").value("Europe/Moscow"));
+
+        var day = shiftTypes.findByOwnerAndName(owner, "Дневная").get(0);
+        assertEquals("06:30", day.getStartTime().toString());
+        assertEquals("15:00", day.getEndTime().toString());
     }
 
     @Test

@@ -373,10 +373,31 @@ function renderTimePreview(timeSettings){
   const label = state.language === "en" ? "Current time" : "Текущее время";
   box.innerHTML = `<div><span>${esc(label)}:</span> <b>${esc(safeTzLabel(timeSettings.workTimezone))}</b> <code>${esc(timeSettings.workTimezone)}</code> · ${esc(timezoneOffsetLabel(timeSettings.workTimezone))}</div>`;
 }
+function syncTimeSettingsFromBuiltins(){
+  const current = state.timeSettings || loadTimeSettings();
+  const next = { ...current };
+  const day = state.shiftTypes.find(s => s.name === "Дневная");
+  const night = state.shiftTypes.find(s => s.name === "Ночная");
+  if (day) {
+    if (day.startTime) next.dayStart = day.startTime;
+    if (day.endTime) next.dayEnd = day.endTime;
+    next.dayBreakMinutes = Number(day.breakMinutes ?? next.dayBreakMinutes);
+    next.dayPlannedHours = Number(day.plannedHours ?? day.hours ?? next.dayPlannedHours);
+  }
+  if (night) {
+    if (night.startTime) next.nightStart = night.startTime;
+    if (night.endTime) next.nightEnd = night.endTime;
+    next.nightBreakMinutes = Number(night.breakMinutes ?? next.nightBreakMinutes);
+    next.nightPlannedHours = Number(night.plannedHours ?? night.hours ?? next.nightPlannedHours);
+  }
+  storeTimeSettings(next);
+  return state.timeSettings;
+}
+
 function renderTimeSettings(){
   if (!$("timeSettingsCard")) return;
   if (!state.timeSettings) state.timeSettings = loadTimeSettings();
-  const timeSettings = state.timeSettings;
+  const timeSettings = syncTimeSettingsFromBuiltins();
   const set = (id, value) => { if ($(id)) $(id).value = value ?? ""; };
   populateTimeZoneSelect("workTimezone", timeSettings.workTimezone);
   set("workTimezone", timeSettings.workTimezone);
@@ -391,6 +412,10 @@ function renderTimeSettings(){
   set("defNightBreak", timeSettings.nightBreakMinutes);
   set("defNightPlan", timeSettings.nightPlannedHours);
   renderTimePreview(timeSettings);
+  const templateZone = $("shiftTemplateZoneHint");
+  if (templateZone) templateZone.textContent = state.language === "en"
+    ? `Template times are shown in ${timeSettings.workTimezone}. Existing dated shifts keep their immutable instants.`
+    : `Время шаблонов показано в ${timeSettings.workTimezone}. Уже назначенные смены сохраняют свои абсолютные интервалы.`;
   setTimeSettingsStatus("saved");
 }
 function isRecognizedTimeZone(value){
@@ -427,6 +452,10 @@ async function saveTimeSettings(){
     // Skip the IndexedDB-first path here: it would repaint the old source timezone
     // and could leave the selected-day card stale even though the profile is saved.
     if (typeof loadMonth === "function") await loadMonth({ fresh:true });
+    syncTimeSettingsFromBuiltins();
+    renderTimeSettings();
+    renderCustomList();
+    renderChips();
     if (moduleEnabled("overtime") && typeof loadLedgerPage === "function") await loadLedgerPage(true);
     if (state.selected && typeof renderSelectedDayModules === "function") renderSelectedDayModules();
     await refreshLegacyShiftIndicator();

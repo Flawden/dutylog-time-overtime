@@ -1,3 +1,13 @@
+# v27.11.3 — Shift Template & Reminder Timezone Hotfix
+
+- Timed shift templates are rebased when the canonical IANA timezone changes, preserving the same real start/end instants for future assignments.
+- Built-in and custom timed templates refresh back into the settings form after the authoritative calendar reload.
+- Existing dated shifts remain immutable because legacy rows are frozen before template rebasing.
+- Shift reminders now use the occurrence `shiftStartInstant`, including projected local date changes across midnight and month boundaries.
+- Browser and Telegram delivery consume the same `remindAtInstant`; the legacy wall-clock fallback remains only for unmigrated rows.
+- Added service, controller, frontend-contract and Playwright coverage. Flyway remains at V33.
+- Regression baseline: 85 Java test classes, 446 `@Test` methods and 19 Playwright scenarios.
+
 # v27.11.2 — E2E Stability Hotfix
 
 - The shift editor Playwright flow now waits for the authoritative `/api/calendar` refresh triggered by assignment before reloading the page, preventing an intentional navigation abort from being reported as `console.error: Failed to fetch`.

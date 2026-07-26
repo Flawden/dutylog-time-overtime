@@ -42,6 +42,23 @@ class ShiftOccurrenceFrontendContractTest {
     }
 
     @Test
+    void timezoneSettingsAndReminderEngineShareTheOccurrenceProjection() throws Exception {
+        String settings = Files.readString(STATIC.resolve("js/60-settings.js"));
+        String boot = Files.readString(STATIC.resolve("js/70-user-boot.js"));
+        String profile = Files.readString(Path.of("src/main/java/ru/daniil/shifts/web/ProfileController.java"));
+        String reminders = Files.readString(Path.of("src/main/java/ru/daniil/shifts/service/NotificationService.java"));
+
+        assertTrue(settings.contains("function syncTimeSettingsFromBuiltins"));
+        assertTrue(settings.contains("syncTimeSettingsFromBuiltins();"));
+        assertTrue(settings.contains("shiftTemplateZoneHint"));
+        assertTrue(boot.contains("syncTimeSettingsFromBuiltins"));
+        assertTrue(profile.contains("shiftTypeService.rebaseForTimezoneChange"));
+        assertTrue(reminders.contains("d.hasShiftOccurrenceSnapshot()"));
+        assertTrue(reminders.contains("reminderAtInstant"));
+        assertTrue(reminders.contains("displayedStart.toLocalDate()"));
+    }
+
+    @Test
     void taskDetailsRemainReadFirstAfterThePwaRefreshHardening() throws Exception {
         String tasks = Files.readString(STATIC.resolve("js/50-tasks.js"));
         assertTrue(tasks.contains("body.addEventListener(\"click\", () => openTaskDetails(task))"));
