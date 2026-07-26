@@ -1,3 +1,11 @@
+## v27.9.4 — Overtime Split Projection Contract Hotfix
+
+- Corrected the Playwright expectation for a cross-midnight eight-hour credit: the selected calendar day owns the seven-hour pre-midnight segment while the account balance owns all eight hours.
+- Ledger usage references now expose stable `allocationPartIndex` and `allocationPartCount` metadata from the backend.
+- Split-part badges render from the paged ledger response even when the full overtime account was not previously loaded into frontend state.
+- Added backend and frontend regression assertions for stable `part 1/2` / `part 2/2` rendering.
+- No database migration; Flyway remains at V31.
+
 ## v27.9.3 — Overtime Preflight Integrity Hotfix
 
 - Usage create/update now validates total requested minutes before mutating a managed entity or inserting a new time-off row.

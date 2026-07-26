@@ -113,7 +113,7 @@ public class OvertimeService {
                 .collect(Collectors.groupingBy(a -> a.getUsage().getId()));
 
         List<OvertimeCreditRowDto> creditRows = creditList.stream()
-                .map(c -> creditRow(user, c, byCredit.getOrDefault(c.getId(), List.of())))
+                .map(c -> creditRow(user, c, byCredit.getOrDefault(c.getId(), List.of()), byUsage))
                 .toList();
 
         List<OvertimeUsageDto> usageRows = usageList.stream()
@@ -775,27 +775,49 @@ public class OvertimeService {
         );
     }
 
-    private OvertimeCreditRowDto creditRow(AppUser user, OvertimeCredit credit, List<OvertimeAllocation> allocationList) {
+    private OvertimeCreditRowDto creditRow(AppUser user,
+                                               OvertimeCredit credit,
+                                               List<OvertimeAllocation> allocationList,
+                                               Map<Long, List<OvertimeAllocation>> allocationsByUsage) {
         List<OvertimeAllocation> sorted = allocationList.stream()
                 .sorted(Comparator.comparing((OvertimeAllocation a) -> a.getUsage().getUsageDate())
                         .thenComparing(OvertimeAllocation::getId))
                 .toList();
         int usedMinutes = sorted.stream().mapToInt(OvertimeAllocation::getAllocatedMinutes).sum();
         List<OvertimeUsageRefDto> usageRefs = sorted.stream()
-                .map(a -> new OvertimeUsageRefDto(
-                        a.getUsage().getId(),
-                        a.getUsage().getUsageDate().toString(),
-                        hoursFromMinutes(a.getAllocatedMinutes()),
-                        a.getUsage().getReason(),
-                        a.getAllocatedMinutes(),
-                        instantText(a.getStartAtInstant()),
-                        instantText(a.getEndAtInstant()),
-                        displayLocal(user, a.getStartAtInstant()),
-                        displayLocal(user, a.getEndAtInstant()),
-                        a.getSourceTimezone(),
-                        a.getStartAtInstant() != null && a.getEndAtInstant() != null,
-                        a.isReconstructed()
-                ))
+                .map(a -> {
+                    List<OvertimeAllocation> usageParts = allocationsByUsage
+                            .getOrDefault(a.getUsage().getId(), List.of())
+                            .stream()
+                            .sorted(Comparator.comparing((OvertimeAllocation part) -> part.getCredit().getWorkDate())
+                                    .thenComparing(part -> part.getCredit().getId())
+                                    .thenComparing(OvertimeAllocation::getId))
+                            .toList();
+                    int partIndex = 1;
+                    for (int i = 0; i < usageParts.size(); i++) {
+                        if (Objects.equals(usageParts.get(i).getId(), a.getId())) {
+                            partIndex = i + 1;
+                            break;
+                        }
+                    }
+                    int partCount = Math.max(1, usageParts.size());
+                    return new OvertimeUsageRefDto(
+                            a.getUsage().getId(),
+                            a.getUsage().getUsageDate().toString(),
+                            hoursFromMinutes(a.getAllocatedMinutes()),
+                            a.getUsage().getReason(),
+                            a.getAllocatedMinutes(),
+                            instantText(a.getStartAtInstant()),
+                            instantText(a.getEndAtInstant()),
+                            displayLocal(user, a.getStartAtInstant()),
+                            displayLocal(user, a.getEndAtInstant()),
+                            a.getSourceTimezone(),
+                            partIndex,
+                            partCount,
+                            a.getStartAtInstant() != null && a.getEndAtInstant() != null,
+                            a.isReconstructed()
+                    );
+                })
                 .toList();
         String displayStart = displayLocal(user, credit.getStartAtInstant());
         String displayEnd = displayLocal(user, credit.getEndAtInstant());

@@ -1,23 +1,23 @@
-> Current release: **v27.9.3 — Overtime Preflight Integrity Hotfix**.
+> Current release: **v27.9.4 — Overtime Split Projection Contract Hotfix**.
 
 # DutyLog
 
-Current release: **v27.9.3 — Overtime Preflight Integrity Hotfix**
+Current release: **v27.9.4 — Overtime Split Projection Contract Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.9.3 — Overtime Preflight Integrity Hotfix
+## Текущая версия: v27.9.4 — Overtime Split Projection Contract Hotfix
 
-v27.9.3 закрывает два CI-регресса v27.9.2. Создание и редактирование отгула теперь проверяют общую доступную ёмкость до записи новой строки или изменения управляемой JPA-сущности. Поэтому отклонённая команда не оставляет временный «призрачный» отгул даже внутри более широкой транзакции, где вызывающий код поймал `ApiException`.
+v27.9.4 закрывает два оставшихся Playwright-регресса v27.9.3. Восьмичасовой интервал `17:00–01:00` по-прежнему корректно делится по календарным суткам на `+7 ч` и `+1 ч`; тест теперь проверяет сегмент выбранного дня отдельно от полного баланса аккаунта.
 
-Frontend-контракт приведён к утверждённому UX `удалить весь отгул`, а браузерный сценарий начисления явно фиксирует `0` минут обеда и `0` плановых часов, чтобы ожидаемые восемь часов не зависели от состояния формы.
+Для split-отгулов backend теперь отдаёт в каждой ledger-ссылке устойчивые `allocationPartIndex` и `allocationPartCount`. Поэтому таблица показывает `часть 1/2` и `часть 2/2` даже после прямого API-обновления или загрузки только страничного `/api/overtime/account-page`, без зависимости от ранее загруженного полного аккаунта.
 
-v27.9.2 остаётся основным Ledger Integrity Hotfix, а функциональная основа — **v27.9.0 Overtime Interval Engine** с поминутным FIFO и точным provenance.
+v27.9.3 остаётся preflight-защитой от побочных изменений при отклонённых командах, v27.9.2 — основным Ledger Integrity Hotfix, а функциональная основа — **v27.9.0 Overtime Interval Engine** с поминутным FIFO и точным provenance.
 
 Текущая автоматическая база: **82 Java-тестовых класса, 430 `@Test` методов и 17 Playwright browser scenarios**. Flyway остаётся на **V31**.
 
-История фундамента: **v27.9.2 — Overtime Ledger Integrity Hotfix**, **v27.9.0 — Overtime Interval Engine**, **v27.8.1 — Timezone Projection Refresh Hotfix**, **v27.8.0 — Zoned Work Intervals**, **v27.7.1 — Task & Ledger Layout Hotfix**, **v27.7.0 — Time Foundation**.
+История фундамента: **v27.9.3 — Overtime Preflight Integrity Hotfix**, **v27.9.2 — Overtime Ledger Integrity Hotfix**, **v27.9.0 — Overtime Interval Engine**, **v27.8.1 — Timezone Projection Refresh Hotfix**, **v27.8.0 — Zoned Work Intervals**, **v27.7.1 — Task & Ledger Layout Hotfix**, **v27.7.0 — Time Foundation**.
 
 ## Возможности
 
@@ -242,6 +242,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
+- [`docs/OVERTIME_SPLIT_PROJECTION_CONTRACT_HOTFIX_V27.9.4.md`](docs/OVERTIME_SPLIT_PROJECTION_CONTRACT_HOTFIX_V27.9.4.md) — устойчивые номера частей split-отгула в ledger DTO и корректный midnight E2E-контракт.
 - [`docs/OVERTIME_PREFLIGHT_INTEGRITY_HOTFIX_V27.9.3.md`](docs/OVERTIME_PREFLIGHT_INTEGRITY_HOTFIX_V27.9.3.md) — preflight-проверка отгулов до мутации и синхронизация CI-контрактов.
 - [`docs/OVERTIME_LEDGER_INTEGRITY_HOTFIX_V27.9.2.md`](docs/OVERTIME_LEDGER_INTEGRITY_HOTFIX_V27.9.2.md) — атомарная пересборка FIFO, инварианты журнала и ясное удаление целого отгула.
 - [`docs/OVERTIME_ALLOCATION_RENDERING_HOTFIX_V27.9.1.md`](docs/OVERTIME_ALLOCATION_RENDERING_HOTFIX_V27.9.1.md) — исправление runtime-рендера точных межсуточных списаний.
@@ -319,7 +320,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.9.3 через полный Maven и Playwright gate, затем повторить staging-сценарии переполненного отгула и удаления одного split-отгула. Отклонённая команда не должна создавать вторую запись, а существующая история должна оставаться неизменной.
+Следующий практический шаг — пропустить v27.9.4 через полный Maven и Playwright gate, затем на staging повторить сценарий `17:00–01:00`, создание двух начислений, двух отгулов и удаление только одного split-отгула. В журнале должны остаться оба начисления, второй отгул и корректные номера частей.
 
 ## Служебный профиль администратора
 

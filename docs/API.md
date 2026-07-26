@@ -1,4 +1,4 @@
-# DutyLog API v27.9.3
+# DutyLog API v27.9.4
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -1233,6 +1233,7 @@ Large UI lists are paged server-side before being returned to the browser. Suppo
 - `GET /api/admin/users?page=0&size=50&q=&role=all` — admin users page.
 - `GET /api/tasks/board?page=0&size=50&status=open&category=&priority=&q=&from=&to=` — global task board page.
 - `GET /api/overtime/account-page?page=0&size=50&from=&to=&status=all&q=` — overtime ledger page with account summary.
+  Since v27.9.4 each usage reference inside a credit row also includes `allocationPartIndex` and `allocationPartCount`, so paged clients can render stable split labels without loading the full overtime account first.
 
 Backend caps `size` to max `100`. CSV/XLS export endpoints are intentionally not paged: they export all rows matching selected filters.
 

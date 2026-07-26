@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.9.3.
+Status: v27.9.4.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.9.3 validates usage capacity before persistence mutation, keeps rejected create/update commands side-effect free, aligns the ledger wording contract with whole-time-off deletion, and fixes deterministic E2E input deductions. Current application baseline: 82 Java test classes / 430 `@Test` methods and 17 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.9.4 aligns the midnight-split browser contract with per-day projection and carries stable allocation part indices/counts in paged ledger references. Current application baseline: 82 Java test classes / 430 `@Test` methods and 17 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -15,6 +15,13 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
 
+
+## v27.9.4 Overtime Split Projection Contract Hotfix extension
+
+- Cross-midnight credit E2E asserts the seven-hour selected-day segment and the full eight-hour account balance independently.
+- Credit usage references expose `allocationPartIndex` and `allocationPartCount`.
+- Paged ledger rendering no longer depends on a previously loaded full overtime account to show split-part badges.
+- Backend and frontend contracts verify stable split metadata and rendering.
 
 ## v27.9.3 Overtime Preflight Integrity Hotfix extension
 

@@ -1106,13 +1106,15 @@ public final class Dtos {
             String displayStart,
             String displayEnd,
             String sourceTimezone,
+            int allocationPartIndex,
+            int allocationPartCount,
             boolean exact,
             boolean reconstructed
     ) {
         /** Source-compatible constructor for pre-v27.9 callers. */
         public OvertimeUsageRefDto(Long usageId, String usageDate, double hours, String reason) {
             this(usageId, usageDate, hours, reason, (int) Math.round(hours * 60.0),
-                    null, null, null, null, null, false, false);
+                    null, null, null, null, null, 1, 1, false, false);
         }
     }
 

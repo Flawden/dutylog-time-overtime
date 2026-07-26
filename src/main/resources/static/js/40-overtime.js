@@ -1126,10 +1126,14 @@ function renderLedgerTable(){
     const usedText = (c.usages || []).length
       ? (c.usages || []).map(u => {
           const fullUsage = findUsageById(u.usageId);
-          const parts = fullUsage?.allocations || [];
-          const partIndex = parts.findIndex(part => Number(part.creditId) === Number(c.id));
-          const partLabel = parts.length > 1
-            ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.max(1, partIndex + 1)}/${parts.length}</span>`
+          const accountParts = fullUsage?.allocations || [];
+          const responsePartCount = Math.max(0, Number(u.allocationPartCount) || 0);
+          const partCount = Math.max(responsePartCount, accountParts.length);
+          const responsePartIndex = Math.max(0, Number(u.allocationPartIndex) || 0);
+          const accountPartIndex = accountParts.findIndex(part => Number(part.creditId) === Number(c.id)) + 1;
+          const partIndex = responsePartIndex || accountPartIndex || 1;
+          const partLabel = partCount > 1
+            ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.min(partIndex, partCount)}/${partCount}</span>`
             : "";
           return `
           <div class="ledgerUsageItem">

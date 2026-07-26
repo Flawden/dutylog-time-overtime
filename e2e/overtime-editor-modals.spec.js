@@ -31,7 +31,10 @@ test('overtime credit and usage editors work from calendar and ledger', async ({
   await page.locator('#creditAdd').click();
   await creditCreated;
   await expect(page.locator('#overtimeCreditModal')).toBeHidden();
-  await expect(page.locator('#otDayDetails')).toContainText('+8');
+  // The interval is split at midnight: the selected calendar day owns seven
+  // hours, while the account balance still contains the full eight hours.
+  await expect(page.locator('#otDayDetails')).toContainText('+7');
+  await expect(page.locator('#otBalance')).toContainText('+8');
 
   await page.locator('#dayAddUsage').click();
   await expect(page.locator('#overtimeUsageModal')).toBeVisible();

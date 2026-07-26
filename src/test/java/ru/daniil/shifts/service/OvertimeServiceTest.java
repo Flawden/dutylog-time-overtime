@@ -299,6 +299,20 @@ class OvertimeServiceTest {
                 .filter(row -> row.id().equals(firstUsageId))
                 .findFirst().orElseThrow().allocations().size(),
                 "первый отгул должен состоять из двух FIFO-частей");
+        var firstPartRef = secondUsage.credits().stream()
+                .filter(row -> row.id().equals(firstCreditId))
+                .flatMap(row -> row.usages().stream())
+                .filter(row -> row.usageId().equals(firstUsageId))
+                .findFirst().orElseThrow();
+        var secondPartRef = secondUsage.credits().stream()
+                .filter(row -> row.id().equals(secondCreditId))
+                .flatMap(row -> row.usages().stream())
+                .filter(row -> row.usageId().equals(firstUsageId))
+                .findFirst().orElseThrow();
+        assertEquals(1, firstPartRef.allocationPartIndex());
+        assertEquals(2, firstPartRef.allocationPartCount());
+        assertEquals(2, secondPartRef.allocationPartIndex());
+        assertEquals(2, secondPartRef.allocationPartCount());
 
         OvertimeAccountDto rebuilt = overtime.deleteUsage(user, firstUsageId);
 

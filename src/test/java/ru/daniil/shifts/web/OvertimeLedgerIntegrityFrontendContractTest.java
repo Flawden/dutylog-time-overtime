@@ -37,6 +37,8 @@ class OvertimeLedgerIntegrityFrontendContractTest {
         String css = resource("app.css");
 
         assertTrue(overtime.contains("allocationPartBadge"));
+        assertTrue(overtime.contains("allocationPartCount"));
+        assertTrue(overtime.contains("allocationPartIndex"));
         assertTrue(overtime.contains("Удалить весь отгул"));
         assertTrue(overtime.contains("Начисления переработки останутся"));
         assertTrue(css.contains(".allocationPartBadge"));
