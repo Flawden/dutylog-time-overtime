@@ -13,11 +13,14 @@ import ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.LegacyOvertimeMigrationRequest;
 import ru.daniil.shifts.model.OvertimeCredit;
+import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.repo.OvertimeCreditRepository;
+import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -36,6 +39,7 @@ class OvertimeServiceTest {
     @Autowired OvertimeService overtime;
     @Autowired UserRepository users;
     @Autowired OvertimeCreditRepository credits;
+    @Autowired DayEntryRepository days;
 
     AppUser user;
 
@@ -196,6 +200,60 @@ class OvertimeServiceTest {
         assertTrue(julyFourth.credits().total() >= 1);
         assertEquals(4.0, julyFourth.credits().items().stream()
                 .mapToDouble(OvertimeCreditRowDto::hours).sum(), 0.001);
+    }
+
+    @Test
+    void compatibilitySummaryAndLedgerUseProjectionAndNeverReviveLegacyDayHours() {
+        user.setWorkTimezone("Europe/Moscow");
+        users.save(user);
+
+        overtime.createCredit(user,
+                interval("2026-07-03", "2026-07-03T22:00", "2026-07-04T02:00", 0, 0.0));
+        overtime.createUsage(user, new OvertimeUsageCreateRequest("2026-07-05", 4.0, "fully used"));
+
+        DayEntry stale = new DayEntry(user, LocalDate.of(2026, 7, 3));
+        stale.setOvertimeHours(99.0);
+        stale.setTimeOffHours(0.0);
+        days.save(stale);
+
+        var moscow = overtime.summary(user, LocalDate.of(2026, 7, 3), LocalDate.of(2026, 7, 4));
+        assertEquals(4.0, moscow.overtimeHours(), 0.001);
+        assertEquals(4.0, moscow.timeOffHours(), 0.001);
+        assertEquals(0.0, moscow.balanceHours(), 0.001,
+                "zero projection must not fall back to stale day_entries values");
+        var moscowLedger = overtime.ledger(user, LocalDate.of(2026, 7, 3), LocalDate.of(2026, 7, 4));
+        assertEquals(2, moscowLedger.size());
+        assertTrue(moscowLedger.stream().allMatch(row -> Math.abs(row.balanceHours()) < 0.001));
+
+        user.setWorkTimezone("Asia/Yekaterinburg");
+        users.save(user);
+        var julyThird = overtime.summary(user, LocalDate.of(2026, 7, 3), LocalDate.of(2026, 7, 3));
+        var julyFourth = overtime.summary(user, LocalDate.of(2026, 7, 4), LocalDate.of(2026, 7, 4));
+        assertEquals(0.0, julyThird.overtimeHours(), 0.001);
+        assertEquals(4.0, julyFourth.overtimeHours(), 0.001);
+        assertEquals(4.0, julyFourth.timeOffHours(), 0.001);
+        assertEquals(0.0, julyFourth.balanceHours(), 0.001);
+        var projectedLedger = overtime.ledger(user, LocalDate.of(2026, 7, 3), LocalDate.of(2026, 7, 4));
+        assertEquals(1, projectedLedger.size());
+        assertEquals("2026-07-04", projectedLedger.get(0).date());
+    }
+
+    @Test
+    void canonicalPreviewUsesProfileTimezoneForDstGapAndOverlap() {
+        user.setWorkTimezone("Europe/Berlin");
+        users.save(user);
+
+        var spring = overtime.previewCredit(user,
+                interval("2026-03-29", "2026-03-29T00:00", "2026-03-29T08:00", 0, 0.0));
+        assertEquals(420, spring.elapsedMinutes());
+        assertEquals(7.0, spring.creditedHours(), 0.001);
+        assertEquals("Europe/Berlin", spring.sourceTimezone());
+
+        var autumn = overtime.previewCredit(user,
+                interval("2026-10-25", "2026-10-25T02:30", "2026-10-25T03:30", 0, 0.0));
+        assertEquals(120, autumn.elapsedMinutes(),
+                "ambiguous 02:30 uses the earlier offset, so the repeated hour is counted");
+        assertEquals(2.0, autumn.creditedHours(), 0.001);
     }
 
     @Test

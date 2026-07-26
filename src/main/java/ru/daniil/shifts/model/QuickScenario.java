@@ -47,6 +47,10 @@ public class QuickScenario {
     @Column(name = "end_next_day", nullable = false)
     private boolean endNextDay = false;
 
+    /** Relative calendar-day offset for FIXED_TIME. Supports previous/same/next/following day. */
+    @Column(name = "end_day_offset", nullable = false)
+    private int endDayOffset = 0;
+
     /** ZERO, SHIFT или CUSTOM. */
     @Column(nullable = false, length = 30)
     private String breakMode = "ZERO";
@@ -90,8 +94,16 @@ public class QuickScenario {
     public void setEndOffsetMinutes(int endOffsetMinutes) { this.endOffsetMinutes = endOffsetMinutes; }
     public LocalTime getEndFixedTime() { return endFixedTime; }
     public void setEndFixedTime(LocalTime endFixedTime) { this.endFixedTime = endFixedTime; }
-    public boolean isEndNextDay() { return endNextDay; }
-    public void setEndNextDay(boolean endNextDay) { this.endNextDay = endNextDay; }
+    public boolean isEndNextDay() { return endDayOffset > 0 || endNextDay; }
+    public void setEndNextDay(boolean endNextDay) {
+        this.endNextDay = endNextDay;
+        this.endDayOffset = endNextDay ? 1 : 0;
+    }
+    public int getEndDayOffset() { return endDayOffset; }
+    public void setEndDayOffset(int endDayOffset) {
+        this.endDayOffset = Math.max(-2, Math.min(2, endDayOffset));
+        this.endNextDay = this.endDayOffset > 0;
+    }
     public String getBreakMode() { return breakMode; }
     public void setBreakMode(String breakMode) { this.breakMode = breakMode; }
     public int getCustomBreakMinutes() { return customBreakMinutes; }

@@ -12,7 +12,9 @@ import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.repo.ShiftTypeRepository;
 import ru.daniil.shifts.service.ShiftTypeService;
 import ru.daniil.shifts.service.TaskService;
+import ru.daniil.shifts.service.QuickScenarioService;
 import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
+import ru.daniil.shifts.dto.Dtos.QuickScenarioCreateRequest;
 import ru.daniil.shifts.model.TaskPriority;
 
 import java.time.LocalDate;
@@ -39,6 +41,7 @@ class ProfileControllerTest {
     @Autowired ShiftTypeRepository shiftTypes;
     @Autowired ShiftTypeService shiftTypeService;
     @Autowired TaskService taskService;
+    @Autowired QuickScenarioService quickScenarioService;
 
     AppUser owner;
 
@@ -153,6 +156,10 @@ class ProfileControllerTest {
         owner.setDisplayTimezone("Asia/Yekaterinburg");
         users.save(owner);
         shiftTypeService.list(owner);
+        quickScenarioService.create(owner, new QuickScenarioCreateRequest(
+                "До утра", null, null,
+                "SHIFT_END", "FIXED_TIME", 0, "08:00", true, 1,
+                "ZERO", 0, "ZERO", 0.0, null, 10));
 
         mvc.perform(put("/api/profile")
                         .with(user(owner.getUsername()).roles("USER")).with(csrf())
@@ -164,6 +171,9 @@ class ProfileControllerTest {
         var day = shiftTypes.findByOwnerAndName(owner, "Дневная").get(0);
         assertEquals("06:30", day.getStartTime().toString());
         assertEquals("15:00", day.getEndTime().toString());
+        var projectedScenario = quickScenarioService.list(owner).get(0);
+        assertEquals("06:00", projectedScenario.endFixedTime());
+        assertEquals(1, projectedScenario.endDayOffset());
     }
 
     @Test

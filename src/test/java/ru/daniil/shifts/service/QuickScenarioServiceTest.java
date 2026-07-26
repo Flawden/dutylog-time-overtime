@@ -80,6 +80,7 @@ class QuickScenarioServiceTest {
         assertEquals(120, created.endOffsetMinutes());
         assertNull(created.endFixedTime());
         assertFalse(created.endNextDay());
+        assertEquals(0, created.endDayOffset());
         assertEquals("ZERO", created.breakMode());
         assertEquals(0, created.customBreakMinutes());
         assertEquals("ZERO", created.plannedMode());
@@ -134,6 +135,29 @@ class QuickScenarioServiceTest {
         assertBadRequest(() -> quickScenarioService.update(owner, created.id(), new QuickScenarioUpdateRequest(
                 null, null, null, null, "FIXED_TIME", null, "", null,
                 null, null, null, null, null, null)));
+    }
+
+    @Test
+    void fixedTimeScenarioRebasesAcrossExtremeZonesAndRoundTrips() {
+        owner.setWorkTimezone("Pacific/Kiritimati");
+        users.save(owner);
+        QuickScenarioDto created = quickScenarioService.create(owner, new QuickScenarioCreateRequest(
+                "Крайние зоны", null, null,
+                "SHIFT_END", "FIXED_TIME", 0, "00:30", false, 0,
+                "ZERO", 0, "ZERO", 0.0, null, 10));
+        assertEquals(0, created.endDayOffset());
+
+        assertEquals(1, quickScenarioService.rebaseForTimezoneChange(
+                owner, "Pacific/Kiritimati", "Pacific/Pago_Pago"));
+        QuickScenarioDto west = quickScenarioService.list(owner).get(0);
+        assertEquals("23:30", west.endFixedTime());
+        assertEquals(-2, west.endDayOffset());
+
+        assertEquals(1, quickScenarioService.rebaseForTimezoneChange(
+                owner, "Pacific/Pago_Pago", "Pacific/Kiritimati"));
+        QuickScenarioDto back = quickScenarioService.list(owner).get(0);
+        assertEquals("00:30", back.endFixedTime());
+        assertEquals(0, back.endDayOffset());
     }
 
     @Test

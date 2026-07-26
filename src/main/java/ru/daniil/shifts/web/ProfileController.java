@@ -16,6 +16,7 @@ import ru.daniil.shifts.service.UserTimeService;
 import ru.daniil.shifts.service.ShiftOccurrenceService;
 import ru.daniil.shifts.service.ShiftTypeService;
 import ru.daniil.shifts.service.TaskService;
+import ru.daniil.shifts.service.QuickScenarioService;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.security.Principal;
@@ -45,6 +46,7 @@ public class ProfileController {
     private final ShiftOccurrenceService shiftOccurrenceService;
     private final ShiftTypeService shiftTypeService;
     private final TaskService taskService;
+    private final QuickScenarioService quickScenarioService;
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
 
@@ -58,6 +60,7 @@ public class ProfileController {
                              ShiftOccurrenceService shiftOccurrenceService,
                              ShiftTypeService shiftTypeService,
                              TaskService taskService,
+                             QuickScenarioService quickScenarioService,
                              PasswordEncoder encoder) {
         this.users = users;
         this.currentUserService = currentUserService;
@@ -67,6 +70,7 @@ public class ProfileController {
         this.shiftOccurrenceService = shiftOccurrenceService;
         this.shiftTypeService = shiftTypeService;
         this.taskService = taskService;
+        this.quickScenarioService = quickScenarioService;
         this.encoder = encoder;
     }
 
@@ -119,6 +123,9 @@ public class ProfileController {
                 // define future assignments and must follow the same real-world
                 // moments in the new canonical timezone.
                 shiftTypeService.rebaseForTimezoneChange(user, previousTimezone, timezone);
+                // FIXED_TIME quick scenarios are real moments as well. Preserve
+                // their instant and update both wall-clock time and day offset.
+                quickScenarioService.rebaseForTimezoneChange(user, previousTimezone, timezone);
             }
             user.setWorkTimezone(timezone);
             user.setDisplayTimezone(timezone);

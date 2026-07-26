@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.12.1.
+Status: v27.13.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.12.1 aligns the exact-24-hour regression contract with the v27.12 daily projection model while preserving immutable overtime and FIFO minutes. Current application baseline: 87 Java test classes / 460 `@Test` methods and 21 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.13.0 unifies calendar totals and compatibility endpoints with the current-timezone overtime projection, moves editor preview to the canonical server DST policy, and adds signed day offsets for FIXED_TIME scenarios. Current application baseline: 88 Java test classes / 467 `@Test` methods and 21 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,16 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.13.0 Temporal Consistency & Legacy Cleanup extension
+
+- `OvertimeServiceTest.compatibilitySummaryAndLedgerUseProjectionAndNeverReviveLegacyDayHours` protects projected zero values and removes legacy `day_entries` fallback behaviour.
+- `OvertimeServiceTest.canonicalPreviewUsesProfileTimezoneForDstGapAndOverlap` protects deterministic DST gap/overlap calculation in the canonical user zone.
+- `OvertimeControllerTest.previewUsesCanonicalProfileTimezoneThroughLegacyAndV1Aliases` protects both preview routes.
+- `QuickScenarioServiceTest.fixedTimeScenarioRebasesAcrossExtremeZonesAndRoundTrips` protects signed day offsets and UTC+14 ↔ UTC−11 round trips.
+- `TemporalConsistencyFrontendContractTest` protects projected month totals, canonical preview wiring and the signed-offset scenario editor.
+- Flyway V35 adds `quick_scenarios.end_day_offset`; overtime/FIFO rows are unchanged.
 
 
 ## v27.12.1 Midnight Projection Contract Hotfix extension

@@ -438,6 +438,42 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/OvertimeAccount' }
         '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/overtime/preview:
+    post:
+      operationId: previewOvertimeCredit
+      description: Canonical server-side interval preview in the user's IANA timezone. Uses the same deterministic DST gap/overlap policy as persisted credit creation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OvertimeCreditCreateRequest' }
+      responses:
+        '200':
+          description: Canonical interval preview
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OvertimeCreditPreview' }
+        '400': { $ref: '#/components/responses/ApiError' }
+  /api/v1/overtime/summary:
+    get:
+      operationId: overtimeSummary
+      description: Compatibility summary calculated from current-timezone projected credit/allocation slices; legacy day-entry hour columns are ignored.
+      parameters:
+        - { in: query, name: from, required: true, schema: { type: string, format: date } }
+        - { in: query, name: to, required: true, schema: { type: string, format: date } }
+      responses:
+        '200': { description: Projected range summary }
+        '400': { $ref: '#/components/responses/ApiError' }
+  /api/v1/overtime/ledger:
+    get:
+      operationId: overtimeLedger
+      description: Compatibility daily ledger grouped by current local projection date. FIFO and persisted source rows are not rewritten.
+      parameters:
+        - { in: query, name: from, required: true, schema: { type: string, format: date } }
+        - { in: query, name: to, required: true, schema: { type: string, format: date } }
+      responses:
+        '200': { description: Current-timezone daily ledger }
+        '400': { $ref: '#/components/responses/ApiError' }
   /api/v1/overtime/legacy-credits/preview:
     post:
       operationId: previewLegacyOvertimeMigration
@@ -490,7 +526,16 @@ paths:
     get: { operationId: notificationSettings, responses: { '200': { description: Notification settings } } }
     patch: { operationId: updateNotificationSettings, responses: { '200': { description: Updated notification settings } } }
   /api/v1/quick-scenarios:
-    get: { operationId: quickScenarios, responses: { '200': { description: Quick scenarios } } }
+    get:
+      operationId: quickScenarios
+      responses:
+        '200':
+          description: Quick scenarios with signed FIXED_TIME day offsets
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/QuickScenario' }
   /api/v1/export/notes:
     get:
       operationId: exportNotes
@@ -700,6 +745,52 @@ components:
       properties:
         inboxItem: { $ref: '#/components/schemas/InboxItem' }
         task: { $ref: '#/components/schemas/Task' }
+    OvertimeCreditCreateRequest:
+      type: object
+      properties:
+        date: { type: string, format: date, nullable: true }
+        timeRange: { type: string, nullable: true }
+        hours: { type: number, format: double, nullable: true }
+        reason: { type: string, nullable: true }
+        startDateTime: { type: string, nullable: true, example: '2026-03-29T02:30' }
+        endDateTime: { type: string, nullable: true, example: '2026-03-29T04:30' }
+        breakMinutes: { type: integer, minimum: 0, maximum: 1440, nullable: true }
+        plannedHours: { type: number, format: double, minimum: 0, nullable: true }
+    OvertimeCreditPreview:
+      type: object
+      required: [calculated, elapsedMinutes, elapsedHours, breakMinutes, plannedMinutes, plannedHours, creditedMinutes, creditedHours]
+      properties:
+        calculated: { type: boolean }
+        elapsedMinutes: { type: integer }
+        elapsedHours: { type: number, format: double }
+        breakMinutes: { type: integer, minimum: 0 }
+        plannedMinutes: { type: integer, minimum: 0 }
+        plannedHours: { type: number, format: double, minimum: 0 }
+        creditedMinutes: { type: integer }
+        creditedHours: { type: number, format: double }
+        sourceTimezone: { type: string, nullable: true, example: Europe/Berlin }
+        startInstant: { type: string, format: date-time, nullable: true }
+        endInstant: { type: string, format: date-time, nullable: true }
+    QuickScenario:
+      type: object
+      required: [id, name, startMode, endMode, endOffsetMinutes, endNextDay, endDayOffset, breakMode, customBreakMinutes, plannedMode, customPlannedHours, sortOrder]
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string, maxLength: 80 }
+        groupLabel: { type: string, maxLength: 40, nullable: true }
+        description: { type: string, maxLength: 300, nullable: true }
+        startMode: { type: string, enum: [SHIFT_START, SHIFT_END] }
+        endMode: { type: string, enum: [SHIFT_END, ADD_MINUTES, FIXED_TIME] }
+        endOffsetMinutes: { type: integer, minimum: 0, maximum: 4320 }
+        endFixedTime: { type: string, nullable: true, example: '08:00' }
+        endNextDay: { type: boolean, description: Legacy compatibility alias; true for positive endDayOffset }
+        endDayOffset: { type: integer, minimum: -2, maximum: 2, description: Relative calendar day for FIXED_TIME after current-zone projection }
+        breakMode: { type: string, enum: [ZERO, SHIFT, CUSTOM] }
+        customBreakMinutes: { type: integer, minimum: 0, maximum: 1440 }
+        plannedMode: { type: string, enum: [ZERO, SHIFT, CUSTOM] }
+        customPlannedHours: { type: number, format: double, minimum: 0 }
+        reasonTemplate: { type: string, maxLength: 300, nullable: true }
+        sortOrder: { type: integer, minimum: 0 }
     OvertimeAllocation:
       type: object
       required: [creditId, workedDate, hours, minutes, exact, reconstructed]

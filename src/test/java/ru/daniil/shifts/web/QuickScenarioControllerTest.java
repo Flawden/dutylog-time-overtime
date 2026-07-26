@@ -81,6 +81,7 @@ class QuickScenarioControllerTest {
                 .andExpect(jsonPath("$.name").value("Ночной ППР"))
                 .andExpect(jsonPath("$.endFixedTime").value("08:00"))
                 .andExpect(jsonPath("$.endNextDay").value(true))
+                .andExpect(jsonPath("$.endDayOffset").value(1))
                 .andReturn().getResponse().getContentAsString();
 
         JsonNode created = objectMapper.readTree(createdBody);
@@ -106,6 +107,7 @@ class QuickScenarioControllerTest {
                 .andExpect(jsonPath("$.endMode").value("ADD_MINUTES"))
                 .andExpect(jsonPath("$.endOffsetMinutes").value(90))
                 .andExpect(jsonPath("$.endFixedTime").value(nullValue()))
+                .andExpect(jsonPath("$.endDayOffset").value(0))
                 .andExpect(jsonPath("$.groupLabel").value(nullValue()));
 
         mvc.perform(delete("/api/v1/quick-scenarios/{id}", id)

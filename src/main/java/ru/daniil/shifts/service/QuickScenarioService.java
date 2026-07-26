@@ -11,18 +11,26 @@ import ru.daniil.shifts.model.QuickScenario;
 import ru.daniil.shifts.repo.QuickScenarioRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 @Service
 public class QuickScenarioService {
     private final QuickScenarioRepository scenarios;
     private final SecurityEventLogger securityEvents;
+    private final UserTimeService userTimeService;
 
     public QuickScenarioService(QuickScenarioRepository scenarios,
-                                SecurityEventLogger securityEvents) {
+                                SecurityEventLogger securityEvents,
+                                UserTimeService userTimeService) {
         this.scenarios = scenarios;
         this.securityEvents = securityEvents;
+        this.userTimeService = userTimeService;
     }
 
     @Transactional
@@ -50,7 +58,8 @@ public class QuickScenarioService {
         if (req.endMode() != null) s.setEndMode(req.endMode());
         if (req.endOffsetMinutes() != null) s.setEndOffsetMinutes(req.endOffsetMinutes());
         if (req.endFixedTime() != null) s.setEndFixedTime(parseOptionalTime(req.endFixedTime()));
-        if (req.endNextDay() != null) s.setEndNextDay(req.endNextDay());
+        if (req.endDayOffset() != null) s.setEndDayOffset(req.endDayOffset());
+        else if (req.endNextDay() != null) s.setEndNextDay(req.endNextDay());
         if (req.breakMode() != null) s.setBreakMode(req.breakMode());
         if (req.customBreakMinutes() != null) s.setCustomBreakMinutes(req.customBreakMinutes());
         if (req.plannedMode() != null) s.setPlannedMode(req.plannedMode());
@@ -59,6 +68,45 @@ public class QuickScenarioService {
         if (req.sortOrder() != null) s.setSortOrder(req.sortOrder());
         validateConsistency(s);
         return QuickScenarioDto.from(scenarios.save(s));
+    }
+
+    /**
+     * Reprojects FIXED_TIME scenarios when the canonical timezone changes.
+     * The selected calendar date remains the scenario anchor, while the exact
+     * end moment is preserved. Integer day offsets support extreme IANA jumps
+     * where a same-day time becomes the previous or following-next day.
+     */
+    @Transactional
+    public int rebaseForTimezoneChange(AppUser user, String oldTimezone, String newTimezone) {
+        ZoneId oldZone = userTimeService.resolveZone(oldTimezone, UserTimeService.FALLBACK_ZONE);
+        ZoneId newZone = userTimeService.resolveZone(newTimezone, UserTimeService.FALLBACK_ZONE);
+        if (oldZone.equals(newZone)) return 0;
+
+        // Use the same UTC calendar anchor in both directions. An old-zone
+        // anchor can change by one day for UTC+14/UTC-11 and break A→B→A.
+        LocalDate anchorDate = userTimeService.nowInstant().atZone(java.time.ZoneOffset.UTC).toLocalDate();
+        int changed = 0;
+        for (QuickScenario scenario : scenarios.findByOwnerOrderBySortOrderAscIdAsc(user)) {
+            if (!"FIXED_TIME".equals(scenario.getEndMode()) || scenario.getEndFixedTime() == null) continue;
+
+            LocalDate sourceDate = anchorDate.plusDays(scenario.getEndDayOffset());
+            ZonedDateTime source = userTimeService.resolveLocalDateTime(
+                    LocalDateTime.of(sourceDate, scenario.getEndFixedTime()), oldZone);
+            ZonedDateTime projected = source.toInstant().atZone(newZone);
+            int projectedOffset = Math.toIntExact(ChronoUnit.DAYS.between(anchorDate, projected.toLocalDate()));
+            if (projectedOffset < -2 || projectedOffset > 2) {
+                throw ApiException.badRequest("Сценарий выходит за поддерживаемое смещение дня (-2..2)");
+            }
+            LocalTime projectedTime = projected.toLocalTime().withSecond(0).withNano(0);
+            if (!projectedTime.equals(scenario.getEndFixedTime())
+                    || projectedOffset != scenario.getEndDayOffset()) {
+                scenario.setEndFixedTime(projectedTime);
+                scenario.setEndDayOffset(projectedOffset);
+                changed++;
+            }
+        }
+        if (changed > 0) scenarios.flush();
+        return changed;
     }
 
     @Transactional
@@ -85,7 +133,9 @@ public class QuickScenarioService {
         s.setEndMode(req.endMode() != null ? req.endMode() : "ADD_MINUTES");
         s.setEndOffsetMinutes(req.endOffsetMinutes() != null ? req.endOffsetMinutes() : 120);
         s.setEndFixedTime(parseOptionalTime(req.endFixedTime()));
-        s.setEndNextDay(Boolean.TRUE.equals(req.endNextDay()));
+        s.setEndDayOffset(req.endDayOffset() != null
+                ? req.endDayOffset()
+                : (Boolean.TRUE.equals(req.endNextDay()) ? 1 : 0));
         s.setBreakMode(req.breakMode() != null ? req.breakMode() : "ZERO");
         s.setCustomBreakMinutes(req.customBreakMinutes() != null ? req.customBreakMinutes() : 0);
         s.setPlannedMode(req.plannedMode() != null ? req.plannedMode() : "ZERO");

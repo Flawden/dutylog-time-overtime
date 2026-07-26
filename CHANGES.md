@@ -1,3 +1,13 @@
+# v27.13.0 — Temporal Consistency & Legacy Cleanup
+
+- Calendar month totals now use the current-timezone overtime projection and never resurrect stale `day_entries` hours when the projected balance is exactly zero.
+- Compatibility `/api/overtime/summary` and `/api/overtime/ledger` now share the authoritative account projection.
+- Added canonical server-side overtime preview so DST gaps/overlaps and an independently configured browser timezone cannot change the editor result.
+- `FIXED_TIME` quick scenarios now carry signed day offsets and reproject across canonical timezone changes, including UTC+14 ↔ UTC−11 round trips.
+- Added Flyway V35 for `quick_scenarios.end_day_offset`; legacy `end_next_day` remains a compatibility alias.
+- Explicitly preserved floating civil-date semantics for birthdays, important dates, notes, markers, date-only task/subtask deadlines, time-off dates and daily digest time.
+- Regression baseline: 88 Java test classes, 467 `@Test` methods and 21 Playwright scenarios.
+
 # v27.12.1 — Midnight Projection Contract Hotfix
 
 - Reconciled the legacy exact-24-hour `12/12` source-credit rule with the v27.12 current-timezone civil-day projection.

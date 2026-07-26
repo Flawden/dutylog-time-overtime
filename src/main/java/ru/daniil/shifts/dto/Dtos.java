@@ -381,6 +381,7 @@ public final class Dtos {
             int endOffsetMinutes,
             String endFixedTime,
             boolean endNextDay,
+            int endDayOffset,
             String breakMode,
             int customBreakMinutes,
             String plannedMode,
@@ -399,6 +400,7 @@ public final class Dtos {
                     s.getEndOffsetMinutes(),
                     s.getEndFixedTime() != null ? s.getEndFixedTime().toString() : null,
                     s.isEndNextDay(),
+                    s.getEndDayOffset(),
                     s.getBreakMode(),
                     s.getCustomBreakMinutes(),
                     s.getPlannedMode(),
@@ -436,6 +438,10 @@ public final class Dtos {
 
             Boolean endNextDay,
 
+            @Min(value = -2, message = "Смещение дня конца: минимум -2")
+            @Max(value = 2, message = "Смещение дня конца: максимум 2")
+            Integer endDayOffset,
+
             @Pattern(regexp = "ZERO|SHIFT|CUSTOM", message = "breakMode: ZERO, SHIFT или CUSTOM")
             String breakMode,
 
@@ -456,7 +462,19 @@ public final class Dtos {
             @Min(value = 0, message = "Порядок не может быть отрицательным")
             @Max(value = 10000, message = "Порядок слишком большой")
             Integer sortOrder
-    ) {}
+    ) {
+        /** Source-compatible constructor for clients before day offsets were introduced. */
+        public QuickScenarioCreateRequest(String name, String groupLabel, String description,
+                                          String startMode, String endMode, Integer endOffsetMinutes,
+                                          String endFixedTime, Boolean endNextDay,
+                                          String breakMode, Integer customBreakMinutes,
+                                          String plannedMode, Double customPlannedHours,
+                                          String reasonTemplate, Integer sortOrder) {
+            this(name, groupLabel, description, startMode, endMode, endOffsetMinutes,
+                    endFixedTime, endNextDay, null, breakMode, customBreakMinutes,
+                    plannedMode, customPlannedHours, reasonTemplate, sortOrder);
+        }
+    }
 
     /** Обновление быстрого сценария. Все поля опциональны. */
     public record QuickScenarioUpdateRequest(
@@ -484,6 +502,10 @@ public final class Dtos {
 
             Boolean endNextDay,
 
+            @Min(value = -2, message = "Смещение дня конца: минимум -2")
+            @Max(value = 2, message = "Смещение дня конца: максимум 2")
+            Integer endDayOffset,
+
             @Pattern(regexp = "ZERO|SHIFT|CUSTOM", message = "breakMode: ZERO, SHIFT или CUSTOM")
             String breakMode,
 
@@ -504,7 +526,19 @@ public final class Dtos {
             @Min(value = 0, message = "Порядок не может быть отрицательным")
             @Max(value = 10000, message = "Порядок слишком большой")
             Integer sortOrder
-    ) {}
+    ) {
+        /** Source-compatible constructor for clients before day offsets were introduced. */
+        public QuickScenarioUpdateRequest(String name, String groupLabel, String description,
+                                          String startMode, String endMode, Integer endOffsetMinutes,
+                                          String endFixedTime, Boolean endNextDay,
+                                          String breakMode, Integer customBreakMinutes,
+                                          String plannedMode, Double customPlannedHours,
+                                          String reasonTemplate, Integer sortOrder) {
+            this(name, groupLabel, description, startMode, endMode, endOffsetMinutes,
+                    endFixedTime, endNextDay, null, breakMode, customBreakMinutes,
+                    plannedMode, customPlannedHours, reasonTemplate, sortOrder);
+        }
+    }
 
     /** One checklist item inside a task. Subtasks cannot contain children. */
     public record SubtaskDto(
@@ -1296,6 +1330,21 @@ public final class Dtos {
                     null, null, null, null, null, false, false);
         }
     }
+
+    /** Canonical server-side preview of the overtime editor interval. */
+    public record OvertimeCreditPreviewDto(
+            boolean calculated,
+            int elapsedMinutes,
+            double elapsedHours,
+            int breakMinutes,
+            int plannedMinutes,
+            double plannedHours,
+            int creditedMinutes,
+            double creditedHours,
+            String sourceTimezone,
+            String startInstant,
+            String endInstant
+    ) {}
 
     /**
      * Current-timezone daily projection metadata for one overtime credit row.

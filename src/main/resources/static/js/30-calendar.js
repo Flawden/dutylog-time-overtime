@@ -237,9 +237,7 @@ function renderCalendar(){
         }
       }
     }
-    const ledgerBal = showOvertime ? ledgerNetOf(k) : 0;
-    const legacyBal = showOvertime ? numOr0(entry?.overtimeHours) - numOr0(entry?.timeOffHours) : 0;
-    const bal = Math.abs(ledgerBal) > 0.0001 ? ledgerBal : legacyBal;
+    const bal = showOvertime ? ledgerNetOf(k) : 0;
     if (showOvertime && Math.abs(bal) > 0.0001) {
       const ot = document.createElement("span");
       ot.className = "otMark";
@@ -298,17 +296,18 @@ function renderCalendar(){
 }
 
 function renderSummary(){
-  const counts = {}; let hours = 0, overtime = 0, timeOff = 0;
+  const counts = {}; let hours = 0;
+  const monthStart = monthFromTo().from;
+  const monthEnd = monthFromTo().to;
+  const monthOvertime = moduleEnabled("overtime")
+    ? overtimeRangeTotals(monthStart, monthEnd)
+    : { earned:0, used:0, remaining:0 };
+  const overtime = monthOvertime.earned;
+  const timeOff = monthOvertime.used;
   for (const v of Object.values(state.days)) {
-    if (moduleEnabled("overtime")) {
-      overtime += numOr0(v.overtimeHours);
-      timeOff += numOr0(v.timeOffHours);
-    }
     const sourceType = state.shiftTypes.find(s => Number(s.id) === Number(v.shiftTypeId));
     if (sourceType && (!sourceType.startTime || !sourceType.endTime)) counts[sourceType.id] = (counts[sourceType.id] || 0) + 1;
   }
-  const monthStart = monthFromTo().from;
-  const monthEnd = monthFromTo().to;
   for (const occurrence of state.shiftOccurrences || []) {
     if (!occurrenceSegments(occurrence).some(segment => segment.displayDate >= monthStart && segment.displayDate <= monthEnd)) continue;
     counts[occurrence.shiftTypeId] = (counts[occurrence.shiftTypeId] || 0) + 1;

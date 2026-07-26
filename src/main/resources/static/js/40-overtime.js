@@ -35,7 +35,10 @@ Object.assign(I18N_EN, {
   "без точного времени":"no exact time", "старые записи":"legacy entries",
   "нет старых записей для миграции":"no legacy entries to migrate",
   "Привязать старые записи":"Attach legacy entries",
-  "проекция":"projection", "итого за день":"day total"
+  "проекция":"projection", "итого за день":"day total",
+  "за два дня до":"two days before", "предыдущий день":"previous day", "тот же день":"same day",
+  "следующий день":"next day", "через день":"day after next",
+  "канонический расчёт":"canonical calculation"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -303,11 +306,18 @@ function renderOvertimeDayDetails(){
   }
 }
 
-function calcOvertimeInterval(startValue, endValue, sourceLabel){
-  const start = new Date(startValue);
-  const end = new Date(endValue);
-  if (!Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime()) || end <= start) {
-    $("creditCalcHint").textContent = t("конец должен быть позже");
+let overtimePreviewTimer = null;
+let overtimePreviewGeneration = 0;
+
+function overtimePreviewPayload(){
+  const startDateTime = $("creditStart")?.value || "";
+  const endDateTime = $("creditEnd")?.value || "";
+  if (!startDateTime && !endDateTime) {
+    $("creditCalcHint").textContent = t("можно вручную");
+    return null;
+  }
+  if (!startDateTime || !endDateTime) {
+    $("creditCalcHint").textContent = t("нужны начало и конец");
     return null;
   }
   const breakMinutes = readIntInput("creditBreak");
@@ -316,41 +326,48 @@ function calcOvertimeInterval(startValue, endValue, sourceLabel){
     $("creditCalcHint").textContent = t("проверь обед/план");
     return null;
   }
-  const totalMinutes = Math.round((end.getTime() - start.getTime()) / 60000);
-  const creditedMinutes = totalMinutes - breakMinutes - Math.round(plannedHours * 60);
-  const hours = Math.round((creditedMinutes / 60) * 100) / 100;
-  if (hours <= 0) {
-    $("creditCalcHint").textContent = t("итого 0 или меньше");
+  return {
+    date: $("creditDate")?.value || startDateTime.slice(0, 10),
+    timeRange: null,
+    startDateTime,
+    endDateTime,
+    breakMinutes,
+    plannedHours,
+    hours: null,
+    reason: $("creditReason")?.value?.trim() || null,
+  };
+}
+
+async function runCanonicalOvertimePreview(generation){
+  const payload = overtimePreviewPayload();
+  if (!payload) return null;
+  try {
+    const preview = await api.previewOvertimeCredit(payload);
+    if (generation !== overtimePreviewGeneration) return null;
+    $("creditHours").value = fmtHours(preview.creditedHours);
+    const splitHint = payload.startDateTime.slice(0, 10) !== payload.endDateTime.slice(0, 10)
+      ? `; ${t("сервер разобьёт по датам")}`
+      : "";
+    $("creditCalcHint").textContent = `${t("канонический расчёт")}: ${fmtHours(preview.elapsedHours)}ч - ${preview.breakMinutes}м${preview.plannedHours ? " - " + fmtHours(preview.plannedHours) + "ч плана" : ""} = ${fmtHours(preview.creditedHours)}ч · ${preview.sourceTimezone}${splitHint}`;
+    return preview;
+  } catch (err) {
+    if (generation !== overtimePreviewGeneration) return null;
+    $("creditCalcHint").textContent = err?.message || t("не удалось рассчитать");
     return null;
   }
-  $("creditHours").value = fmtHours(hours);
-  let splitHint = "";
-  if (startValue.slice(0, 10) !== endValue.slice(0, 10)) {
-    const sameClock = startValue.slice(11, 16) === endValue.slice(11, 16);
-    splitHint = sameClock ? "; 24 часа сохранятся полностью, журнал распределит их по локальным дням" : "; сервер разобьёт по датам";
-  }
-  const prefix = sourceLabel ? `${sourceLabel}: ` : "";
-  $("creditCalcHint").textContent = `${prefix}${fmtHours(totalMinutes / 60)}ч - ${breakMinutes}м${plannedHours ? " - " + fmtHours(plannedHours) + "ч плана" : ""} = ${fmtHours(hours)}ч${splitHint}`;
-  return { startValue, endValue, breakMinutes, plannedHours, hours, timeRange: displayDateTimeRange(startValue, endValue) };
 }
 
-function overtimeCalcFromInputs(){
-  const startValue = $("creditStart").value;
-  const endValue = $("creditEnd").value;
-  if (startValue || endValue) {
-    if (!startValue || !endValue) {
-      $("creditCalcHint").textContent = t("нужны начало и конец");
-      return null;
-    }
-    return calcOvertimeInterval(startValue, endValue, "полный интервал");
+function updateOvertimeCalcPreview({ immediate = false } = {}){
+  overtimePreviewGeneration += 1;
+  const generation = overtimePreviewGeneration;
+  if (overtimePreviewTimer) clearTimeout(overtimePreviewTimer);
+  const payload = overtimePreviewPayload();
+  if (!payload) return;
+  if (immediate) {
+    runCanonicalOvertimePreview(generation);
+    return;
   }
-
-  $("creditCalcHint").textContent = t("можно вручную");
-  return null;
-}
-
-function updateOvertimeCalcPreview(){
-  overtimeCalcFromInputs();
+  overtimePreviewTimer = setTimeout(() => runCanonicalOvertimePreview(generation), 180);
 }
 
 function setNightShiftPreset(){
@@ -523,11 +540,18 @@ function renderScenarioManagerList(){
     </div>`).join("");
 }
 
+function scenarioDayOffset(sc){
+  const raw = Number(sc?.endDayOffset ?? (sc?.endNextDay ? 1 : 0));
+  return Number.isFinite(raw) ? Math.max(-2, Math.min(2, Math.trunc(raw))) : 0;
+}
+function scenarioDayOffsetLabel(offset){
+  return t(offset === -2 ? "за два дня до" : offset === -1 ? "предыдущий день" : offset === 1 ? "следующий день" : offset === 2 ? "через день" : "тот же день");
+}
 function scenarioHumanDescription(sc){
   const start = sc.startMode === "SHIFT_START" ? t("от начала смены") : t("от конца смены");
   let end = "";
   if (sc.endMode === "ADD_MINUTES") end = `+${sc.endOffsetMinutes || 0} ${state.language === "en" ? "min" : "мин"}`;
-  else if (sc.endMode === "FIXED_TIME") end = `${sc.endFixedTime || "--:--"}${sc.endNextDay ? " " + t("на следующий день") : ""}`;
+  else if (sc.endMode === "FIXED_TIME") end = `${sc.endFixedTime || "--:--"} · ${scenarioDayOffsetLabel(scenarioDayOffset(sc))}`;
   else end = t("до конца смены");
   return `${start} → ${end}`;
 }
@@ -577,7 +601,7 @@ function scenarioEndValue(base, st, sc, start){
   if (sc.endMode === "ADD_MINUTES") return addMinutesToLocalInput(start, Number(sc.endOffsetMinutes || 0));
   if (sc.endMode === "FIXED_TIME") {
     if (!sc.endFixedTime) return null;
-    return setTimeOnDate(dateKeyOffset(base, sc.endNextDay ? 1 : 0), sc.endFixedTime);
+    return setTimeOnDate(dateKeyOffset(base, scenarioDayOffset(sc)), sc.endFixedTime);
   }
   return null;
 }
@@ -656,7 +680,7 @@ function updateScenarioEditorVisibility(){
   const endMode = $("scEndMode")?.value || "ADD_MINUTES";
   if ($("scEndOffsetField")) $("scEndOffsetField").hidden = endMode !== "ADD_MINUTES";
   if ($("scEndFixedField")) $("scEndFixedField").hidden = endMode !== "FIXED_TIME";
-  if ($("scEndNextDayField")) $("scEndNextDayField").hidden = endMode !== "FIXED_TIME";
+  if ($("scEndDayOffsetField")) $("scEndDayOffsetField").hidden = endMode !== "FIXED_TIME";
   if ($("scBreakCustomField")) $("scBreakCustomField").hidden = $("scBreakMode")?.value !== "CUSTOM";
   if ($("scPlannedCustomField")) $("scPlannedCustomField").hidden = $("scPlannedMode")?.value !== "CUSTOM";
 }
@@ -670,7 +694,7 @@ function resetScenarioEditor(draft = null){
   $("scEndMode").value = values.endMode || "ADD_MINUTES";
   $("scEndOffset").value = String(values.endOffsetMinutes ?? 120);
   $("scEndFixed").value = values.endFixedTime || "08:00";
-  $("scEndNextDay").checked = !!values.endNextDay;
+  $("scEndDayOffset").value = String(values.endDayOffset ?? (values.endNextDay ? 1 : 0));
   $("scBreakMode").value = values.breakMode || "ZERO";
   $("scBreakCustom").value = String(values.customBreakMinutes ?? 0);
   $("scPlannedMode").value = values.plannedMode || "ZERO";
@@ -716,7 +740,8 @@ function buildScenarioPayload(){
     endMode: $("scEndMode").value,
     endOffsetMinutes: Number($("scEndOffset").value || 0),
     endFixedTime: $("scEndFixed").value || null,
-    endNextDay: $("scEndNextDay").checked,
+    endNextDay: Number($("scEndDayOffset").value || 0) > 0,
+    endDayOffset: Number($("scEndDayOffset").value || 0),
     breakMode: $("scBreakMode").value,
     customBreakMinutes: Number($("scBreakCustom").value || 0),
     plannedMode: $("scPlannedMode").value,
@@ -772,6 +797,27 @@ async function deleteQuickScenario(id){
 
 function sameLocalMinute(a, b){ return !!a && !!b && String(a).slice(0,16) === String(b).slice(0,16); }
 
+function overtimeIntervalFromInputs(){
+  const startValue = $("creditStart")?.value || "";
+  const endValue = $("creditEnd")?.value || "";
+  if (!startValue && !endValue) return null;
+  if (!startValue || !endValue) return { incomplete:true, startValue, endValue };
+  return {
+    incomplete:false,
+    startValue,
+    endValue,
+    breakMinutes: readIntInput("creditBreak"),
+    plannedHours: readHoursInput("creditPlanned"),
+    hours: readHoursInput("creditHours"),
+    timeRange: displayDateTimeRange(startValue, endValue),
+  };
+}
+function localInputWallMinute(value){
+  const match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (!match) return NaN;
+  return Date.UTC(Number(match[1]), Number(match[2]) - 1, Number(match[3]), Number(match[4]), Number(match[5])) / 60000;
+}
+
 function scenarioDraftFromCreditForm(){
   const base = selectedCreditBaseDate();
   const st = base ? stOf(base) : null;
@@ -779,8 +825,8 @@ function scenarioDraftFromCreditForm(){
     setSave("err", t("Для сохранения из формы выберите день со сменой"));
     return null;
   }
-  const calc = overtimeCalcFromInputs();
-  if (!calc?.startValue || !calc?.endValue) {
+  const calc = overtimeIntervalFromInputs();
+  if (!calc?.startValue || !calc?.endValue || calc.incomplete) {
     const hasCompleteInterval = !!($('creditStart')?.value && $('creditEnd')?.value);
     setSave("err", t(hasCompleteInterval
       ? "Для сохранения сценария итог переработки должен быть больше 0"
@@ -797,9 +843,7 @@ function scenarioDraftFromCreditForm(){
     return null;
   }
 
-  const startDate = localDateTimeToDate(calc.startValue);
-  const endDate = localDateTimeToDate(calc.endValue);
-  const durationMinutes = Math.round((endDate - startDate) / 60000);
+  const durationMinutes = Math.round(localInputWallMinute(calc.endValue) - localInputWallMinute(calc.startValue));
   if (!Number.isFinite(durationMinutes) || durationMinutes <= 0 || durationMinutes > 4320) {
     setSave("err", t("Интервал сценария не может быть длиннее 72 часов"));
     return null;
@@ -820,6 +864,7 @@ function scenarioDraftFromCreditForm(){
     endOffsetMinutes: endMode === "ADD_MINUTES" ? durationMinutes : 0,
     endFixedTime: "08:00",
     endNextDay: false,
+    endDayOffset: 0,
     breakMode,
     customBreakMinutes: breakMode === "CUSTOM" ? breakMinutes : 0,
     plannedMode,
@@ -834,14 +879,9 @@ function openScenarioDraftFromCredit(){
 }
 
 function buildCreditPayload(){
-  const calc = overtimeCalcFromInputs();
-  if (!calc && ($("creditStart").value || $("creditEnd").value)) {
+  const calc = overtimeIntervalFromInputs();
+  if (calc?.incomplete) {
     setSave("err", t("для автоподсчёта нужны и начало, и конец"));
-    return null;
-  }
-  const hours = calc ? calc.hours : readHoursInput("creditHours");
-  if (!Number.isFinite(hours) || hours <= 0) {
-    setSave("err", t("укажи часы переработки больше 0"));
     return null;
   }
   const manualDate = $("creditDate")?.value || state.selected;
@@ -849,10 +889,19 @@ function buildCreditPayload(){
     setSave("err", t("укажи дату переработки"));
     return null;
   }
+  const manualHours = readHoursInput("creditHours");
+  if (!calc && (!Number.isFinite(manualHours) || manualHours <= 0)) {
+    setSave("err", t("укажи часы переработки больше 0"));
+    return null;
+  }
+  if (calc && (!Number.isFinite(calc.breakMinutes) || !Number.isFinite(calc.plannedHours))) {
+    setSave("err", t("проверь обед/план"));
+    return null;
+  }
   const payload = {
     date: calc ? calc.startValue.slice(0, 10) : manualDate,
     timeRange: calc ? calc.timeRange : (state.editingCreditLegacyTimeRange || null),
-    hours,
+    hours: calc ? null : manualHours,
     reason: $("creditReason").value.trim() || null,
   };
   if (calc) {

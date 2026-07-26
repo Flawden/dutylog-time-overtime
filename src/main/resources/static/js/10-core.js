@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.12.1"
+const DUTYLOG_VERSION = "27.13.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -1325,11 +1325,20 @@ function allTaskTags(){
 const repeatLabel = mode => t(mode === "YEARLY" ? "каждый год" : mode === "MONTHLY" ? "каждый месяц" : "один раз");
 function creditsOf(k){ return (state.overtimeAccount?.credits || []).filter(x => x.workedDate === k); }
 function usagesOf(k){ return (state.overtimeAccount?.usages || []).filter(x => x.usageDate === k); }
-function ledgerNetOf(k){
-  const earned = creditsOf(k).reduce((sum, x) => sum + numOr0(x.hours), 0);
-  const used = usagesOf(k).reduce((sum, x) => sum + numOr0(x.hours), 0);
-  return earned - used;
+function projectedOvertimeTotals(rows){
+  const list = Array.isArray(rows) ? rows : [];
+  const earned = list.reduce((sum, x) => sum + numOr0(x.hours), 0);
+  const used = list.reduce((sum, x) => sum + numOr0(x.usedHours), 0);
+  return { earned, used, remaining: earned - used };
 }
+function overtimeDailyOf(k){ return projectedOvertimeTotals(creditsOf(k)); }
+function overtimeRangeTotals(from, to){
+  return projectedOvertimeTotals((state.overtimeAccount?.credits || []).filter(row => {
+    const date = String(row?.workedDate || "");
+    return date && (!from || date >= from) && (!to || date <= to);
+  }));
+}
+function ledgerNetOf(k){ return overtimeDailyOf(k).remaining; }
 
 const monthPrefix = () => `${state.y}-${pad(state.m + 1)}-`;
 function monthFromTo(y = state.y, m = state.m){

@@ -12,6 +12,7 @@ import ru.daniil.shifts.dto.Dtos.OvertimeAccountPageDto;
 import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAllocationDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
+import ru.daniil.shifts.dto.Dtos.OvertimeCreditPreviewDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditRowDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeDailyProjectionDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditUpdateRequest;
@@ -79,24 +80,58 @@ public class OvertimeService {
     }
 
     /**
-     * Старый быстрый отчёт по day_entries оставлен для обратной совместимости.
-     * Полноценная бухгалтерия часов живёт в account().
+     * Compatibility summary backed by the same timezone-aware projection as
+     * the main overtime account. Legacy day_entries values are deliberately
+     * ignored so a zero projected balance can never resurrect stale hours.
      */
     @Transactional(readOnly = true)
     public OvertimeSummaryDto summary(AppUser user, LocalDate from, LocalDate to) {
-        List<DayEntry> entries = entries(user, from, to);
-        double overtime = entries.stream().mapToDouble(DayEntry::getOvertimeHours).sum();
-        double timeOff = entries.stream().mapToDouble(DayEntry::getTimeOffHours).sum();
-        return new OvertimeSummaryDto(from.toString(), to.toString(), round2(overtime), round2(timeOff), round2(overtime - timeOff));
+        List<OvertimeCreditRowDto> rows = projectedRowsInRange(user, from, to);
+        double overtime = rows.stream().mapToDouble(OvertimeCreditRowDto::hours).sum();
+        double timeOff = rows.stream().mapToDouble(OvertimeCreditRowDto::usedHours).sum();
+        return new OvertimeSummaryDto(
+                from.toString(),
+                to.toString(),
+                round2(overtime),
+                round2(timeOff),
+                round2(overtime - timeOff)
+        );
     }
 
-    /** Старый журнал по day_entries оставлен для совместимости с v10 API. */
+    /**
+     * Compatibility daily ledger backed by projected credit/allocation slices.
+     * Each date is the user's current local calendar date, not the historical
+     * source date stored in day_entries.
+     */
     @Transactional(readOnly = true)
     public List<OvertimeLedgerItemDto> ledger(AppUser user, LocalDate from, LocalDate to) {
-        return entries(user, from, to).stream()
-                .filter(e -> Math.abs(e.getOvertimeHours()) > 0.00001 || Math.abs(e.getTimeOffHours()) > 0.00001)
-                .map(OvertimeLedgerItemDto::from)
-                .toList();
+        List<OvertimeCreditRowDto> rows = projectedRowsInRange(user, from, to);
+        Map<LocalDate, DayEntry> dayEntries = entries(user, from, to).stream()
+                .collect(Collectors.toMap(DayEntry::getDate, entry -> entry, (left, right) -> left, LinkedHashMap::new));
+        Map<String, List<OvertimeCreditRowDto>> byDate = rows.stream()
+                .collect(Collectors.groupingBy(
+                        OvertimeCreditRowDto::workedDate,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+        List<OvertimeLedgerItemDto> result = new ArrayList<>();
+        for (Map.Entry<String, List<OvertimeCreditRowDto>> item : byDate.entrySet()) {
+            LocalDate date = LocalDate.parse(item.getKey());
+            DayEntry day = dayEntries.get(date);
+            double earned = round2(item.getValue().stream().mapToDouble(OvertimeCreditRowDto::hours).sum());
+            double used = round2(item.getValue().stream().mapToDouble(OvertimeCreditRowDto::usedHours).sum());
+            result.add(new OvertimeLedgerItemDto(
+                    item.getKey(),
+                    day != null && day.getShiftType() != null ? day.getShiftType().getId() : null,
+                    day != null && day.getShiftType() != null ? day.getShiftType().getName() : null,
+                    earned,
+                    used,
+                    round2(earned - used),
+                    day != null && day.getNote() != null && !day.getNote().isBlank()
+            ));
+        }
+        return List.copyOf(result);
     }
 
     /**
@@ -218,6 +253,52 @@ public class OvertimeService {
         }
         html.append("</tbody></table></body></html>");
         return html.toString().getBytes(StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Canonical server-side preview for the overtime editor. Browser/device
+     * timezone is never consulted; DST gaps and overlaps use UserTimeService's
+     * deterministic policy in the user's canonical IANA zone.
+     */
+    @Transactional(readOnly = true)
+    public OvertimeCreditPreviewDto previewCredit(AppUser user, OvertimeCreditCreateRequest req) {
+        if (req == null) {
+            throw ApiException.badRequest("Некорректный JSON в запросе");
+        }
+        CalculatedCredit calculated = calculateCredit(user, req);
+        if (!calculated.calculated()) {
+            int creditedMinutes = minutesFromHours(calculated.hours());
+            return new OvertimeCreditPreviewDto(
+                    false,
+                    creditedMinutes,
+                    hoursFromMinutes(creditedMinutes),
+                    0,
+                    0,
+                    0.0,
+                    creditedMinutes,
+                    hoursFromMinutes(creditedMinutes),
+                    null,
+                    null,
+                    null
+            );
+        }
+        int elapsedMinutes = Math.toIntExact(Duration.between(
+                calculated.startInstant(), calculated.endInstant()).toMinutes());
+        int plannedMinutes = (int) Math.round(calculated.plannedHours() * 60.0);
+        int creditedMinutes = elapsedMinutes - calculated.breakMinutes() - plannedMinutes;
+        return new OvertimeCreditPreviewDto(
+                true,
+                elapsedMinutes,
+                hoursFromMinutes(elapsedMinutes),
+                calculated.breakMinutes(),
+                plannedMinutes,
+                calculated.plannedHours(),
+                creditedMinutes,
+                hoursFromMinutes(creditedMinutes),
+                calculated.sourceTimezone(),
+                calculated.startInstant().toString(),
+                calculated.endInstant().toString()
+        );
     }
 
     @Transactional
@@ -1136,6 +1217,14 @@ public class OvertimeService {
         );
     }
 
+
+    private List<OvertimeCreditRowDto> projectedRowsInRange(AppUser user, LocalDate from, LocalDate to) {
+        dayEntryService.validateRange(from, to);
+        return account(user).credits().stream()
+                .filter(row -> row.workedDate().compareTo(from.toString()) >= 0)
+                .filter(row -> row.workedDate().compareTo(to.toString()) <= 0)
+                .toList();
+    }
 
     private List<DayEntry> entries(AppUser user, LocalDate from, LocalDate to) {
         dayEntryService.validateRange(from, to);

@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.12.1" rel="stylesheet"/>
+<link href="app.css?v=27.13.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -730,7 +730,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.12.1</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.13.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -875,7 +875,15 @@
         <label class="appField" id="scEndFixedField">Фиксированное время
           <input id="scEndFixed" type="time" value="08:00"/>
         </label>
-        <label class="appCheck appFieldWide" id="scEndNextDayField"><input id="scEndNextDay" type="checkbox"/> Фиксированное время относится к следующему дню</label>
+        <label class="appField appFieldWide" id="scEndDayOffsetField">День фиксированного конца
+          <select id="scEndDayOffset">
+            <option value="-2">за два дня до</option>
+            <option value="-1">предыдущий день</option>
+            <option value="0">тот же день</option>
+            <option value="1">следующий день</option>
+            <option value="2">через день</option>
+          </select>
+        </label>
         <label class="appField">Обед
           <select id="scBreakMode">
             <option value="ZERO">0 минут</option>
@@ -1249,12 +1257,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.12.1"></script>
-<script src="js/20-data.js?v=27.12.1"></script>
-<script src="js/30-calendar.js?v=27.12.1"></script>
-<script src="js/40-overtime.js?v=27.12.1"></script>
-<script src="js/50-tasks.js?v=27.12.1"></script>
-<script src="js/60-settings.js?v=27.12.1"></script>
-<script src="js/70-user-boot.js?v=27.12.1"></script>
+<script src="js/10-core.js?v=27.13.0"></script>
+<script src="js/20-data.js?v=27.13.0"></script>
+<script src="js/30-calendar.js?v=27.13.0"></script>
+<script src="js/40-overtime.js?v=27.13.0"></script>
+<script src="js/50-tasks.js?v=27.13.0"></script>
+<script src="js/60-settings.js?v=27.13.0"></script>
+<script src="js/70-user-boot.js?v=27.13.0"></script>
 </body>
 </html>

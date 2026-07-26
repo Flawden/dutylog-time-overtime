@@ -19,6 +19,7 @@ import ru.daniil.shifts.dto.Dtos.LegacyOvertimeMigrationResultDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountPageDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
+import ru.daniil.shifts.dto.Dtos.OvertimeCreditPreviewDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeLedgerItemDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeSummaryDto;
@@ -51,6 +52,15 @@ public class OvertimeController {
         this.moduleService = moduleService;
         this.dayEntryService = dayEntryService;
         this.overtimeService = overtimeService;
+    }
+
+    /** POST /api/overtime/preview — canonical preview in the user's IANA timezone. */
+    @PostMapping("/preview")
+    public OvertimeCreditPreviewDto preview(@Valid @RequestBody(required = false) OvertimeCreditCreateRequest req,
+                                            Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
+        return overtimeService.previewCredit(current, req);
     }
 
     /** GET /api/overtime/account — полная таблица начислений, списаний и остатка. */
