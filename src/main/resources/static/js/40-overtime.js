@@ -327,7 +327,7 @@ function calcOvertimeInterval(startValue, endValue, sourceLabel){
   let splitHint = "";
   if (startValue.slice(0, 10) !== endValue.slice(0, 10)) {
     const sameClock = startValue.slice(11, 16) === endValue.slice(11, 16);
-    splitHint = sameClock ? "; сервер разобьёт ровные сутки пополам" : "; сервер разобьёт по датам";
+    splitHint = sameClock ? "; 24 часа сохранятся полностью, журнал распределит их по локальным дням" : "; сервер разобьёт по датам";
   }
   const prefix = sourceLabel ? `${sourceLabel}: ` : "";
   $("creditCalcHint").textContent = `${prefix}${fmtHours(totalMinutes / 60)}ч - ${breakMinutes}м${plannedHours ? " - " + fmtHours(plannedHours) + "ч плана" : ""} = ${fmtHours(hours)}ч${splitHint}`;

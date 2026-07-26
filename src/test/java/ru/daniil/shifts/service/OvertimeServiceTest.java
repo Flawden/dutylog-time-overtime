@@ -77,15 +77,29 @@ class OvertimeServiceTest {
     }
 
     @Test
-    void ровныеСуткиДелятсяПополамМеждуДвумяДатами() {
-        // 03.07 08:00 → 04.07 08:00 — особый случай: режем пополам,
-        // чтобы в календаре были две понятные половины по 12 ч.
+    void ровныеСуткиХранятсяПополамНоПроецируютсяПоКалендарнымДням() {
+        // Историческая storage-модель сохраняет точные сутки двумя source-credit по 12 часов.
+        // v27.12 поверх них строит пользовательскую проекцию по реальной локальной полуночи:
+        // 03.07 08:00 → 24:00 = 16 ч, 04.07 00:00 → 08:00 = 8 ч.
         OvertimeAccountDto acc = overtime.createCredit(user,
                 interval("2026-07-03", "2026-07-03T08:00", "2026-07-04T08:00", 0, 0.0));
 
-        assertEquals(2, acc.credits().size());
-        assertEquals(12.0, rowByDate(acc, "2026-07-03").hours(), 0.001);
-        assertEquals(12.0, rowByDate(acc, "2026-07-04").hours(), 0.001);
+        List<OvertimeCredit> sourceCredits = credits.findByOwnerOrderByWorkDateAscIdAsc(user);
+        assertEquals(2, sourceCredits.size(), "source-credit по-прежнему должны храниться двумя половинами");
+        assertTrue(sourceCredits.stream().allMatch(credit -> credit.getCreditedMinutes() == 12 * 60));
+
+        double firstDay = acc.credits().stream()
+                .filter(row -> "2026-07-03".equals(row.workedDate()))
+                .mapToDouble(OvertimeCreditRowDto::hours)
+                .sum();
+        double secondDay = acc.credits().stream()
+                .filter(row -> "2026-07-04".equals(row.workedDate()))
+                .mapToDouble(OvertimeCreditRowDto::hours)
+                .sum();
+
+        assertEquals(16.0, firstDay, 0.001);
+        assertEquals(8.0, secondDay, 0.001);
+        assertEquals(24.0, acc.credits().stream().mapToDouble(OvertimeCreditRowDto::hours).sum(), 0.001);
         assertEquals(24.0, acc.balanceHours(), 0.001);
     }
 

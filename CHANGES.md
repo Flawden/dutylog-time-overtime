@@ -1,3 +1,12 @@
+# v27.12.1 — Midnight Projection Contract Hotfix
+
+- Reconciled the legacy exact-24-hour `12/12` source-credit rule with the v27.12 current-timezone civil-day projection.
+- An `08:00 → 08:00` interval still persists as two immutable 12-hour source credits, but user-facing projected totals are asserted as `16 h` before local midnight and `8 h` after it.
+- Removed the stale assertion that treated projected account rows as persisted source rows.
+- Preserved all 1440 earned minutes, FIFO provenance and account balance.
+- Clarified the overtime form hint and API documentation. No database migration; Flyway remains at V34.
+- Regression baseline remains 87 Java test classes, 460 `@Test` methods and 21 Playwright scenarios.
+
 # v27.12.0 — Zoned Daily Projection Engine
 
 - Exact overtime credits are projected into current-timezone calendar-day slices without rewriting persisted source rows.

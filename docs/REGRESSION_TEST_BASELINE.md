@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.12.0.
+Status: v27.12.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.12.0 projects immutable overtime and FIFO intervals onto the user's current local calendar days without moving source minutes. Current application baseline: 87 Java test classes / 460 `@Test` methods and 21 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.12.1 aligns the exact-24-hour regression contract with the v27.12 daily projection model while preserving immutable overtime and FIFO minutes. Current application baseline: 87 Java test classes / 460 `@Test` methods and 21 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,14 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.12.1 Midnight Projection Contract Hotfix extension
+
+- `OvertimeServiceTest.ровныеСуткиХранятсяПополамНоПроецируютсяПоКалендарнымДням` distinguishes persisted 12/12 source credits from the current-zone civil-day projection.
+- An exact `08:00 → 08:00` 24-hour source remains two immutable 12-hour credits, while the ledger projection correctly totals 16 hours before midnight and 8 hours after midnight in the same timezone.
+- The test verifies the invariant that all 1440 earned minutes and the account balance remain unchanged.
+- Flyway remains at V34; no production schema or FIFO rewrite is involved.
 
 
 ## v27.12.0 Zoned Daily Projection Engine extension
