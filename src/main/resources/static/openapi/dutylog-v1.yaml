@@ -221,6 +221,38 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Task' }
+  /api/v1/tasks/{taskId}:
+    get:
+      operationId: getTaskDetails
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          description: Authoritative task details
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
+    patch:
+      operationId: updateTask
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '200': { description: Updated task }
+    delete:
+      operationId: deleteTask
+      parameters:
+        - in: path
+          name: taskId
+          required: true
+          schema: { type: integer, format: int64 }
+      responses:
+        '204': { description: Deleted }
   /api/v1/tasks/{taskId}/subtasks/{subtaskId}:
     patch:
       operationId: updateSubtask
@@ -454,6 +486,7 @@ components:
         id: { type: integer, format: int64 }
         date: { type: string, format: date }
         text: { type: string, maxLength: 500 }
+        description: { type: string, maxLength: 4000, nullable: true }
         done: { type: boolean }
         category: { type: string, maxLength: 80, nullable: true, description: Normalised to lower case }
         tags:
@@ -494,6 +527,7 @@ components:
       properties:
         date: { type: string, format: date }
         text: { type: string, maxLength: 500 }
+        description: { type: string, maxLength: 4000, nullable: true }
         category: { type: string, maxLength: 80, nullable: true }
         tags:
           type: array
@@ -542,6 +576,7 @@ components:
       description: Task fields except text; text comes from the Inbox item.
       properties:
         date: { type: string, format: date }
+        description: { type: string, maxLength: 4000, nullable: true }
         category: { type: string, maxLength: 80, nullable: true }
         tags:
           type: array

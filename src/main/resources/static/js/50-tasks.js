@@ -53,7 +53,7 @@ Object.assign(I18N_EN, {
   "Сначала поймай мысль. Разобрать её в задачу можно позже.":"Capture the thought first. You can turn it into a task later.",
   "открыто":"open", "Быстро записать мысль…":"Capture a thought quickly…",
   "показать разобранные":"show organised", "Обновить":"Refresh",
-  "Теги":"Tags", "Дополнительно":"More options", "категория, теги, срок и напоминание":"category, tags, due date and reminder",
+  "Теги":"Tags", "Дополнительно":"More options", "описание, категория, теги, срок и напоминание":"description, category, tags, due date and reminder",
   "Что нужно сделать?":"What needs to be done?", "документы, звонки":"documents, calls",
   "Включите модуль «Уведомления», чтобы получать напоминания.":"Enable Notifications to receive reminders.",
   "Записать мысль":"Capture a thought", "Никаких категорий и форм. Просто запиши — разберёшь позже.":"No categories or forms. Write it now and organise it later.",
@@ -92,7 +92,13 @@ Object.assign(I18N_EN, {
   "Срок подзадачи":"Subtask due date", "Без срока":"No due date",
   "Срок не может быть раньше времени задачи.":"The due date cannot be earlier than the task date.",
   "Срок подзадачи не может быть раньше даты задачи.":"A subtask due date cannot be earlier than the task date.",
-  "Выполненные":"Completed"
+  "Выполненные":"Completed",
+  "Детали задачи":"Task details", "Описание":"Description", "Описание пока не добавлено.":"No description yet.",
+  "Открытая задача":"Open task", "Задача выполнена":"Task completed", "Задача просрочена":"Task overdue",
+  "Дата задачи":"Task date", "Напоминание":"Reminder", "минут до срока":"minutes before due time",
+  "Вернуть в открытые":"Reopen", "Выполнить":"Complete",
+  "Контекст, ссылки, договорённости…":"Context, links, agreements…",
+  "Описание задачи: максимум 4000 символов":"Task description: maximum 4000 characters"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -619,6 +625,7 @@ function resetTaskEditorFields({ date = null, text = "", inboxId = null } = {}){
   state.editingTaskInboxId = inboxId == null ? null : Number(inboxId);
   $("taskEditText").value = text || "";
   $("taskEditDate").value = date || state.selected || todayKey();
+  $("taskEditDescription").value = "";
   $("taskEditCategory").value = "";
   $("taskEditTags").value = "";
   $("taskEditPriority").value = "NORMAL";
@@ -659,6 +666,7 @@ function editTask(task){
   state.editingTaskMode = "edit";
   state.editingTaskInboxId = null;
   $("taskEditText").value = task.text || "";
+  $("taskEditDescription").value = task.description || "";
   $("taskEditDate").value = task.date || state.selected || todayKey();
   $("taskEditCategory").value = task.category || "";
   $("taskEditTags").value = (task.tags || []).join(", ");
@@ -668,7 +676,7 @@ function editTask(task){
   $("taskEditReminderEnabled").checked = !!task.reminderEnabled;
   $("taskEditReminderBefore").value = String(task.reminderMinutesBefore ?? 60);
   renderTaskEditorSubtasks(normalizedTaskSubtasks(task));
-  $("taskEditAdvanced").open = !!(task.category || (task.tags || []).length || task.priority !== "NORMAL" || task.dueDate || task.dueTime || task.reminderEnabled);
+  $("taskEditAdvanced").open = !!(task.description || task.category || (task.tags || []).length || task.priority !== "NORMAL" || task.dueDate || task.dueTime || task.reminderEnabled);
   $("taskEditTitle").textContent = t("Редактировать задачу");
   $("taskEditHint").textContent = t("Изменения применятся к существующей задаче.");
   $("taskEditSave").textContent = t("Сохранить");
@@ -677,6 +685,102 @@ function editTask(task){
   renderTaskMetadataSuggestions();
   openAppModal("taskEditModal", "taskEditText");
 }
+function closeTaskDetails(){
+  state.taskDetailsId = null;
+  closeAppModal("taskDetailsModal");
+}
+function taskDetailsFact(label, value){
+  if (!value) return null;
+  const row = document.createElement("div");
+  row.className = "taskDetailsFact";
+  const name = document.createElement("span");
+  name.textContent = t(label);
+  const content = document.createElement("b");
+  content.textContent = value;
+  row.append(name, content);
+  return row;
+}
+function taskDetailsDate(value){
+  return value ? String(value).split("-").reverse().join(".") : "";
+}
+function renderTaskDetails(task){
+  if (!task) return;
+  state.taskDetailsId = Number(task.id);
+  $("taskDetailsTitle").textContent = task.text || t("Задача");
+  $("taskDetailsHint").textContent = task.done ? t("Задача выполнена") : (task.overdue ? t("Задача просрочена") : t("Открытая задача"));
+  const meta = $("taskDetailsMeta");
+  meta.innerHTML = "";
+  meta.append(...buildTaskMeta(task).childNodes);
+
+  const description = $("taskDetailsDescription");
+  const descriptionText = $("taskDetailsDescriptionText");
+  const hasDescription = !!String(task.description || "").trim();
+  description.classList.toggle("empty", !hasDescription);
+  descriptionText.textContent = hasDescription ? task.description : t("Описание пока не добавлено.");
+
+  const facts = $("taskDetailsFacts");
+  facts.innerHTML = "";
+  const due = task.dueDate ? `${taskDetailsDate(task.dueDate)}${task.dueTime ? " · " + task.dueTime : ""}` : "";
+  const rows = [
+    taskDetailsFact("Дата задачи", taskDetailsDate(task.date)),
+    taskDetailsFact("Срок", due),
+    taskDetailsFact("Напоминание", task.reminderEnabled ? `${task.reminderMinutesBefore ?? 0} ${t("минут до срока")}` : ""),
+  ].filter(Boolean);
+  facts.append(...rows);
+
+  const checklist = $("taskDetailsChecklist");
+  checklist.innerHTML = "";
+  const progress = taskSubtaskProgress(task);
+  $("taskDetailsChecklistSection").hidden = !progress.total;
+  if (progress.total) {
+    $("taskDetailsChecklistTitle").textContent = `${t("Подзадачи")} (${progress.done}/${progress.total})`;
+    for (const subtask of progress.subtasks) {
+      const row = document.createElement("label");
+      row.className = "taskDetailsSubtask" + (subtask.done ? " done" : "");
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      checkbox.checked = !!subtask.done;
+      checkbox.addEventListener("change", async () => {
+        await toggleSubtask(task.id, subtask.id, checkbox.checked);
+        const refreshed = taskById(task.id);
+        if (refreshed) renderTaskDetails(refreshed);
+      });
+      const text = document.createElement("span");
+      text.textContent = subtask.text;
+      row.append(checkbox, text);
+      if (subtask.dueDate) {
+        const dueEl = document.createElement("small");
+        dueEl.textContent = `📅 ${taskDetailsDate(subtask.dueDate)}`;
+        row.appendChild(dueEl);
+      }
+      checklist.appendChild(row);
+    }
+  }
+  $("taskDetailsToggle").textContent = task.done ? t("Вернуть в открытые") : t("Выполнить");
+}
+async function openTaskDetails(taskOrId){
+  if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
+  const id = Number(typeof taskOrId === "object" ? taskOrId?.id : taskOrId);
+  let task = typeof taskOrId === "object" ? taskOrId : taskById(id);
+  if (!id || !task) return setSave("err", t("Задача не найдена"));
+  renderTaskDetails(task);
+  openAppModal("taskDetailsModal", "taskDetailsEdit");
+  if (!navigator.onLine) return;
+  try {
+    const fresh = await api.task(id);
+    upsertTaskEverywhere(fresh);
+    if (state.taskDetailsId === id) renderTaskDetails(fresh);
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+function refreshOpenTaskDetails(task){
+  if (!task || Number(state.taskDetailsId) !== Number(task.id)) return;
+  if ($("taskDetailsModal")?.hidden) return;
+  renderTaskDetails(task);
+}
+
 function validateTaskEditorDeadlines(date, dueDate, subtasks){
   if (dueDate && dueDate < date) throw new Error(t("Срок не может быть раньше времени задачи."));
   if ((subtasks || []).some(item => item.dueDate && item.dueDate < date)) {
@@ -703,6 +807,7 @@ function taskEditorPayload(original = null){
   return {
     date,
     text,
+    description:$("taskEditDescription").value.trim(),
     category:normalizeTaskCategory($("taskEditCategory").value),
     tags,
     priority:$("taskEditPriority").value || "NORMAL",
@@ -770,6 +875,7 @@ function upsertTaskEverywhere(task){
   upsertTaskInMaps(task);
   state.taskBoard.items = (state.taskBoard.items || []).map(item =>
     Number(item.id) === Number(task.id) ? task : item);
+  refreshOpenTaskDetails(task);
 }
 async function updateTaskDetails(id, patch){
   setSave("saving");
@@ -896,6 +1002,7 @@ async function removeTask(id){
   setSave("saving");
   try {
     await api.deleteTask(id);
+    if (Number(state.taskDetailsId) === Number(id)) closeTaskDetails();
     removeTaskFromMaps(id);
     state.taskBoard.items = (state.taskBoard.items || []).filter(task => Number(task.id) !== Number(id));
     await Promise.all([loadTaskBoard(true), loadTaskMetadata(true)]);
@@ -1049,7 +1156,7 @@ function renderTasks(){
     text.className = "taskText";
     text.textContent = task.text;
     body.append(text, buildTaskMeta(task));
-    body.addEventListener("click", () => editTask(task));
+    body.addEventListener("click", () => openTaskDetails(task));
     const remove = document.createElement("button");
     remove.className = "tinyDel";
     remove.type = "button";
@@ -1356,7 +1463,7 @@ function renderTaskBoard(){
     text.className = "taskText";
     text.textContent = task.text;
     body.append(text, buildTaskMeta(task));
-    body.addEventListener("click", () => editTask(task));
+    body.addEventListener("click", () => openTaskDetails(task));
     const actions = document.createElement("div");
     actions.className = "taskBoardActions";
     const remove = document.createElement("button");
@@ -1465,6 +1572,25 @@ function quickActionOvertime(kind){
   if (kind === "usage") openOvertimeUsageModal(state.selected || todayKey());
   else openOvertimeCreditModal(state.selected || todayKey());
 }
+
+$("taskDetailsClose")?.addEventListener("click", closeTaskDetails);
+$("taskDetailsBackdrop")?.addEventListener("click", closeTaskDetails);
+$("taskDetailsEdit")?.addEventListener("click", () => {
+  const task = taskById(state.taskDetailsId);
+  closeTaskDetails();
+  if (task) editTask(task);
+});
+$("taskDetailsToggle")?.addEventListener("click", async () => {
+  const task = taskById(state.taskDetailsId);
+  if (!task) return;
+  await toggleTask(task.id, !task.done);
+  const refreshed = taskById(task.id);
+  if (refreshed) renderTaskDetails(refreshed);
+});
+$("taskDetailsDelete")?.addEventListener("click", async () => {
+  const id = state.taskDetailsId;
+  if (id != null) await removeTask(id);
+});
 
 $("taskCreateForDay")?.addEventListener("click", () => openTaskCreate({ date:state.selected || todayKey() }));
 $("taskBoardCreate")?.addEventListener("click", () => openTaskCreate({ date:state.selected || todayKey() }));

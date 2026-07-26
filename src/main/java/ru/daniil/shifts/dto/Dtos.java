@@ -482,14 +482,24 @@ public final class Dtos {
             boolean reminderEnabled,
             Integer reminderMinutesBefore,
             boolean overdue,
-            List<SubtaskDto> subtasks
+            List<SubtaskDto> subtasks,
+            String description
     ) {
+        /** Source-compatible canonical constructor from v27.9.x. */
+        public TaskDto(Long id, String date, String text, boolean done, String category,
+                       List<String> tags, TaskPriority priority, String dueDate, String dueTime,
+                       boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue,
+                       List<SubtaskDto> subtasks) {
+            this(id, date, text, done, category, tags, priority, dueDate, dueTime,
+                    reminderEnabled, reminderMinutesBefore, overdue, subtasks, null);
+        }
+
         /** Source-compatible constructor for callers created before subtasks were added. */
         public TaskDto(Long id, String date, String text, boolean done, String category,
                        List<String> tags, TaskPriority priority, String dueDate, String dueTime,
                        boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue) {
             this(id, date, text, done, category, tags, priority, dueDate, dueTime,
-                    reminderEnabled, reminderMinutesBefore, overdue, List.of());
+                    reminderEnabled, reminderMinutesBefore, overdue, List.of(), null);
         }
 
         /** Source-compatible constructor for callers created before task tags were added. */
@@ -497,7 +507,7 @@ public final class Dtos {
                        TaskPriority priority, String dueDate, String dueTime,
                        boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue) {
             this(id, date, text, done, category, List.of(), priority, dueDate, dueTime,
-                    reminderEnabled, reminderMinutesBefore, overdue, List.of());
+                    reminderEnabled, reminderMinutesBefore, overdue, List.of(), null);
         }
 
         public static TaskDto from(DayTask task) {
@@ -523,7 +533,8 @@ public final class Dtos {
                                     .comparingInt(TaskSubtask::getSortOrder)
                                     .thenComparing(subtask -> subtask.getId() == null ? Long.MAX_VALUE : subtask.getId()))
                             .map(SubtaskDto::from)
-                            .toList()
+                            .toList(),
+                    task.getDescription()
             );
         }
         private static boolean isOverdue(DayTask task, java.time.LocalDateTime now) {
@@ -563,21 +574,32 @@ public final class Dtos {
 
             @Valid
             @Size(max = 50, message = "Подзадач: максимум 50")
-            List<SubtaskInput> subtasks
+            List<SubtaskInput> subtasks,
+
+            @Size(max = 4000, message = "Описание задачи: максимум 4000 символов")
+            String description
     ) {
+        /** Source-compatible canonical constructor from v27.9.x. */
+        public TaskCreateRequest(String date, String text, String category, List<String> tags,
+                                 TaskPriority priority, String dueDate, String dueTime,
+                                 Boolean reminderEnabled, Integer reminderMinutesBefore,
+                                 List<SubtaskInput> subtasks) {
+            this(date, text, category, tags, priority, dueDate, dueTime, reminderEnabled,
+                    reminderMinutesBefore, subtasks, null);
+        }
         /** Source-compatible constructor for callers created before subtasks were added. */
         public TaskCreateRequest(String date, String text, String category, List<String> tags,
                                  TaskPriority priority, String dueDate, String dueTime,
                                  Boolean reminderEnabled, Integer reminderMinutesBefore) {
             this(date, text, category, tags, priority, dueDate, dueTime, reminderEnabled,
-                    reminderMinutesBefore, null);
+                    reminderMinutesBefore, null, null);
         }
 
         /** Source-compatible constructor for older internal callers. */
         public TaskCreateRequest(String date, String text, String category, TaskPriority priority,
                                  String dueDate, String dueTime, Boolean reminderEnabled,
                                  Integer reminderMinutesBefore) {
-            this(date, text, category, null, priority, dueDate, dueTime, reminderEnabled, reminderMinutesBefore, null);
+            this(date, text, category, null, priority, dueDate, dueTime, reminderEnabled, reminderMinutesBefore, null, null);
         }
     }
 
@@ -603,14 +625,25 @@ public final class Dtos {
             @Size(max = 50, message = "Подзадач: максимум 50")
             List<SubtaskInput> subtasks,
 
-            Boolean completeSubtasks
+            Boolean completeSubtasks,
+
+            @Size(max = 4000, message = "Описание задачи: максимум 4000 символов")
+            String description
     ) {
+        /** Source-compatible canonical constructor from v27.9.x. */
+        public TaskUpdateRequest(String text, Boolean done, String date, String category,
+                                 List<String> tags, TaskPriority priority, String dueDate, String dueTime,
+                                 Boolean reminderEnabled, Integer reminderMinutesBefore,
+                                 List<SubtaskInput> subtasks, Boolean completeSubtasks) {
+            this(text, done, date, category, tags, priority, dueDate, dueTime, reminderEnabled,
+                    reminderMinutesBefore, subtasks, completeSubtasks, null);
+        }
         /** Source-compatible constructor for callers created before subtasks were added. */
         public TaskUpdateRequest(String text, Boolean done, String date, String category,
                                  List<String> tags, TaskPriority priority, String dueDate, String dueTime,
                                  Boolean reminderEnabled, Integer reminderMinutesBefore) {
             this(text, done, date, category, tags, priority, dueDate, dueTime, reminderEnabled,
-                    reminderMinutesBefore, null, null);
+                    reminderMinutesBefore, null, null, null);
         }
 
         /** Source-compatible constructor for older internal callers. */
@@ -618,7 +651,7 @@ public final class Dtos {
                                  TaskPriority priority, String dueDate, String dueTime,
                                  Boolean reminderEnabled, Integer reminderMinutesBefore) {
             this(text, done, date, category, null, priority, dueDate, dueTime, reminderEnabled,
-                    reminderMinutesBefore, null, null);
+                    reminderMinutesBefore, null, null, null);
         }
     }
 
@@ -678,13 +711,23 @@ public final class Dtos {
             Integer reminderMinutesBefore,
             @Valid
             @Size(max = 50, message = "Подзадач: максимум 50")
-            List<SubtaskInput> subtasks
+            List<SubtaskInput> subtasks,
+            @Size(max = 4000, message = "Описание задачи: максимум 4000 символов")
+            String description
     ) {
+        /** Source-compatible canonical constructor from v27.9.x. */
+        public InboxToTaskRequest(String date, String category, List<String> tags, TaskPriority priority,
+                                  String dueDate, String dueTime, Boolean reminderEnabled,
+                                  Integer reminderMinutesBefore, List<SubtaskInput> subtasks) {
+            this(date, category, tags, priority, dueDate, dueTime, reminderEnabled,
+                    reminderMinutesBefore, subtasks, null);
+        }
+
         public InboxToTaskRequest(String date, String category, List<String> tags, TaskPriority priority,
                                   String dueDate, String dueTime, Boolean reminderEnabled,
                                   Integer reminderMinutesBefore) {
             this(date, category, tags, priority, dueDate, dueTime, reminderEnabled,
-                    reminderMinutesBefore, null);
+                    reminderMinutesBefore, null, null);
         }
     }
 

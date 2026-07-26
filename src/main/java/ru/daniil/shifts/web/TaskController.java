@@ -54,6 +54,13 @@ public class TaskController {
     }
 
 
+    @GetMapping("/{id}")
+    public TaskDto get(@PathVariable("id") Long id, Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.TASKS);
+        return taskService.get(current, id);
+    }
+
     @GetMapping("/metadata")
     public TaskMetadataDto metadata(Principal principal) {
         AppUser current = currentUserService.requireUser(principal);

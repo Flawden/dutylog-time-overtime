@@ -1,3 +1,14 @@
+## v27.10.0 — Task Details
+
+- Added a dedicated read-first task details modal; card clicks no longer throw users directly into editing.
+- Added optional multi-line task descriptions with a 4000-character limit and Flyway V32.
+- Added owner-scoped `GET /api/tasks/{id}` and `/api/v1/tasks/{id}` endpoints.
+- Details expose metadata, description, checklist, dates, reminder and explicit edit/complete/delete actions.
+- Checklist items remain interactive from the details view.
+- Task board search now includes description text.
+- Online details refresh authoritatively while offline details fall back to the loaded calendar/board snapshot.
+- Added backend, HTTP, frontend-contract and Playwright coverage.
+
 ## v27.9.4 — Overtime Split Projection Contract Hotfix
 
 - Corrected the Playwright expectation for a cross-midnight eight-hour credit: the selected calendar day owns the seven-hour pre-midnight segment while the account balance owns all eight hours.

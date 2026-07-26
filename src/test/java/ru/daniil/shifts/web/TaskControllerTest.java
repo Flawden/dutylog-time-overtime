@@ -431,4 +431,49 @@ class TaskControllerTest {
                         .content("{\"enabled\":{\"tasks\":" + enabled + "}}"))
                 .andExpect(status().isOk());
     }
+    @Test
+    void detailsEndpointPersistsDescriptionAcrossLegacyAndV1Aliases() throws Exception {
+        setTasksEnabled(owner, true);
+        setTasksEnabled(other, true);
+
+        String createdBody = mvc.perform(post("/api/tasks")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "date":"2026-08-10",
+                                  "text":"Подготовить релиз",
+                                  "description":"Контекст\nСсылка на staging"
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description").value("Контекст\nСсылка на staging"))
+                .andReturn().getResponse().getContentAsString();
+        long id = objectMapper.readTree(createdBody).path("id").asLong();
+
+        mvc.perform(get("/api/tasks/{id}", id)
+                        .with(user(owner.getUsername()).roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(id))
+                .andExpect(jsonPath("$.description").value("Контекст\nСсылка на staging"));
+
+        mvc.perform(get("/api/v1/tasks/{id}", id)
+                        .with(user(owner.getUsername()).roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description").value("Контекст\nСсылка на staging"));
+
+        mvc.perform(get("/api/v1/tasks/{id}", id)
+                        .with(user(other.getUsername()).roles("USER")))
+                .andExpect(status().isNotFound());
+
+        mvc.perform(patch("/api/tasks/{id}", id)
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"description\":\"   \"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description").value(nullValue()));
+    }
+
 }

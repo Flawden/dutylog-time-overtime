@@ -2898,3 +2898,46 @@ body.panel-open .globalQuickAdd { display:none !important; }
   .legacyMigrationToolbar { grid-template-columns:1fr; }
   .legacyOvertimePanel { width:calc(100vw - 12px); max-height:calc(100vh - 12px); }
 }
+
+
+/* v27.10.0 — Task Details: read-first task view with optional long description. */
+.taskDetailsPanel { width:min(720px, calc(100vw - 24px)); }
+.taskDetailsBody { display:grid; gap:14px; padding:16px; overflow:auto; }
+.taskDetailsMeta { margin:0; }
+.taskDetailsSection,
+.taskDetailsFacts {
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:color-mix(in srgb, var(--panel2) 84%, transparent);
+  padding:13px;
+}
+.taskDetailsSection h3 { margin:0 0 9px; font-size:12px; letter-spacing:.11em; text-transform:uppercase; color:var(--mut); }
+.taskDetailsDescriptionText { white-space:pre-wrap; overflow-wrap:anywhere; line-height:1.55; }
+.taskDetailsDescription.empty .taskDetailsDescriptionText { color:var(--dim); font-style:italic; }
+.taskDetailsChecklist { display:grid; gap:7px; }
+.taskDetailsSubtask {
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:9px;
+  align-items:start;
+  padding:8px 9px;
+  border:1px solid color-mix(in srgb, var(--line) 75%, transparent);
+  border-radius:9px;
+}
+.taskDetailsSubtask input { margin-top:2px; accent-color:var(--accent); }
+.taskDetailsSubtask small { color:var(--mut); white-space:nowrap; }
+.taskDetailsSubtask.done > span { color:var(--dim); text-decoration:line-through; }
+.taskDetailsFacts { display:grid; gap:8px; }
+.taskDetailsFact { display:flex; justify-content:space-between; gap:16px; align-items:baseline; }
+.taskDetailsFact span { color:var(--mut); }
+.taskDetailsFact b { text-align:right; overflow-wrap:anywhere; }
+.taskDetailsActions { margin-top:0; }
+@media (max-width:560px) {
+  .taskDetailsBody { padding:12px; }
+  .taskDetailsSubtask { grid-template-columns:auto minmax(0,1fr); }
+  .taskDetailsSubtask small { grid-column:2; white-space:normal; }
+  .taskDetailsFact { align-items:flex-start; flex-direction:column; gap:3px; }
+  .taskDetailsFact b { text-align:left; }
+  .taskDetailsActions { display:grid; grid-template-columns:1fr; }
+  .taskDetailsActions button { width:100%; }
+}

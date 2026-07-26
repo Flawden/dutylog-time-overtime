@@ -45,14 +45,15 @@ function closeAppModal(id = activeAppModalId){
 }
 document.addEventListener("keydown", event => {
   if (event.key !== "Escape" || !activeAppModalId) return;
-  if (activeAppModalId === "taskEditModal" && typeof closeTaskEditor === "function") closeTaskEditor();
+  if (activeAppModalId === "taskDetailsModal" && typeof closeTaskDetails === "function") closeTaskDetails();
+  else if (activeAppModalId === "taskEditModal" && typeof closeTaskEditor === "function") closeTaskEditor();
   else if (activeAppModalId === "shiftTypeModal" && typeof closeShiftTypeManager === "function") closeShiftTypeManager();
   else if (activeAppModalId === "overtimeCreditModal" && typeof closeOvertimeCreditModal === "function") closeOvertimeCreditModal();
   else if (activeAppModalId === "overtimeUsageModal" && typeof closeOvertimeUsageModal === "function") closeOvertimeUsageModal();
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.9.4"
+const DUTYLOG_VERSION = "27.10.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -82,6 +83,7 @@ const state = {
   editingTaskId: null,
   editingTaskMode: "create",
   editingTaskInboxId: null,
+  taskDetailsId: null,
   editingShiftTypeId: null,
   overtimeAccount: { totalEarnedHours:0, totalUsedHours:0, balanceHours:0, credits:[], usages:[] },
   notificationSettings: null,

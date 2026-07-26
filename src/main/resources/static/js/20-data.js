@@ -34,6 +34,7 @@ const api = {
   async modules()          { return jfetch("/api/modules"); },
   async moduleContracts()  { return jfetch("/api/modules/contracts"); },
   async updateModules(enabled) { return jfetch("/api/modules", { method:"PATCH", body:{ enabled } }); },
+  async task(id)            { return jfetch(`/api/tasks/${id}`); },
   async createTask(b)      { return jfetch("/api/tasks", { method:"POST", body:b }); },
   async updateTask(id, b)  { return jfetch(`/api/tasks/${id}`, { method:"PATCH", body:b }); },
   async updateSubtask(taskId, subtaskId, b) { return jfetch(`/api/tasks/${taskId}/subtasks/${subtaskId}`, { method:"PATCH", body:b }); },

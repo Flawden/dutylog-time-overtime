@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.9.4" rel="stylesheet"/>
+<link href="app.css?v=27.10.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -727,7 +727,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.9.4</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.10.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -944,6 +944,37 @@
   </div>
 </div>
 
+<div class="appModal" id="taskDetailsModal" hidden>
+  <button class="appModalBackdrop" id="taskDetailsBackdrop" type="button" aria-label="Закрыть"></button>
+  <div class="appModalPanel taskDetailsPanel" role="dialog" aria-modal="true" aria-labelledby="taskDetailsTitle">
+    <div class="appModalHead">
+      <div>
+        <div class="eyebrow">Детали задачи</div>
+        <div class="appModalTitle" id="taskDetailsTitle">Задача</div>
+        <div class="appModalHint" id="taskDetailsHint">Открытая задача</div>
+      </div>
+      <button class="appModalClose" id="taskDetailsClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div class="taskDetailsBody">
+      <div class="taskMeta taskDetailsMeta" id="taskDetailsMeta"></div>
+      <section class="taskDetailsSection taskDetailsDescription" id="taskDetailsDescription">
+        <h3>Описание</h3>
+        <div class="taskDetailsDescriptionText" id="taskDetailsDescriptionText"></div>
+      </section>
+      <section class="taskDetailsSection" id="taskDetailsChecklistSection">
+        <h3 id="taskDetailsChecklistTitle">Подзадачи</h3>
+        <div class="taskDetailsChecklist" id="taskDetailsChecklist"></div>
+      </section>
+      <section class="taskDetailsFacts" id="taskDetailsFacts"></section>
+      <div class="appModalActions taskDetailsActions">
+        <button class="dangerGhost" id="taskDetailsDelete" type="button">Удалить</button>
+        <button id="taskDetailsEdit" type="button">Редактировать</button>
+        <button class="primary" id="taskDetailsToggle" type="button">Выполнить</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="appModal" id="taskEditModal" hidden>
   <button class="appModalBackdrop" id="taskEditBackdrop" type="button" aria-label="Закрыть"></button>
   <div class="appModalPanel taskEditorPanel" role="dialog" aria-modal="true" aria-labelledby="taskEditTitle">
@@ -971,8 +1002,11 @@
         </div>
       </details>
       <details class="taskAdvanced appFieldWide" id="taskEditAdvanced">
-        <summary>Дополнительно <span>категория, теги, срок и напоминание</span></summary>
+        <summary>Дополнительно <span>описание, категория, теги, срок и напоминание</span></summary>
         <div class="taskAdvancedGrid">
+          <label class="appField appFieldWide">Описание
+            <textarea id="taskEditDescription" maxlength="4000" rows="5" placeholder="Контекст, ссылки, договорённости…"></textarea>
+          </label>
           <label class="appField">Категория
             <input id="taskEditCategory" list="taskCategorySuggestions" maxlength="80" placeholder="работа, дом, здоровье" type="text" autocomplete="off"/>
             <datalist id="taskCategorySuggestions"></datalist>
@@ -1158,12 +1192,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.9.4"></script>
-<script src="js/20-data.js?v=27.9.4"></script>
-<script src="js/30-calendar.js?v=27.9.4"></script>
-<script src="js/40-overtime.js?v=27.9.4"></script>
-<script src="js/50-tasks.js?v=27.9.4"></script>
-<script src="js/60-settings.js?v=27.9.4"></script>
-<script src="js/70-user-boot.js?v=27.9.4"></script>
+<script src="js/10-core.js?v=27.10.0"></script>
+<script src="js/20-data.js?v=27.10.0"></script>
+<script src="js/30-calendar.js?v=27.10.0"></script>
+<script src="js/40-overtime.js?v=27.10.0"></script>
+<script src="js/50-tasks.js?v=27.10.0"></script>
+<script src="js/60-settings.js?v=27.10.0"></script>
+<script src="js/70-user-boot.js?v=27.10.0"></script>
 </body>
 </html>

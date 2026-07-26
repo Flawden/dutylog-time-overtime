@@ -1,23 +1,23 @@
-> Current release: **v27.9.4 — Overtime Split Projection Contract Hotfix**.
+> Current release: **v27.10.0 — Task Details**.
 
 # DutyLog
 
-Current release: **v27.9.4 — Overtime Split Projection Contract Hotfix**
+Current release: **v27.10.0 — Task Details**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.9.4 — Overtime Split Projection Contract Hotfix
+## Текущая версия: v27.10.0 — Task Details
 
-v27.9.4 закрывает два оставшихся Playwright-регресса v27.9.3. Восьмичасовой интервал `17:00–01:00` по-прежнему корректно делится по календарным суткам на `+7 ч` и `+1 ч`; тест теперь проверяет сегмент выбранного дня отдельно от полного баланса аккаунта.
+Нажатие на карточку задачи теперь открывает отдельный режим просмотра, а не сразу форму редактирования. В нём видны статус, метаданные, описание, сроки, напоминание и чек-лист; редактирование, выполнение/возврат и удаление стали явными действиями.
 
-Для split-отгулов backend теперь отдаёт в каждой ledger-ссылке устойчивые `allocationPartIndex` и `allocationPartCount`. Поэтому таблица показывает `часть 1/2` и `часть 2/2` даже после прямого API-обновления или загрузки только страничного `/api/overtime/account-page`, без зависимости от ранее загруженного полного аккаунта.
+У задачи появилось необязательное многострочное описание до 4000 символов. Оно хранится отдельно от короткого названия, сохраняет переносы строк, участвует в поиске по доске и безопасно выводится как обычный текст.
 
-v27.9.3 остаётся preflight-защитой от побочных изменений при отклонённых командах, v27.9.2 — основным Ledger Integrity Hotfix, а функциональная основа — **v27.9.0 Overtime Interval Engine** с поминутным FIFO и точным provenance.
+Backend добавляет owner-scoped `GET /api/tasks/{id}` и `/api/v1/tasks/{id}`, а Flyway V32 — nullable-колонку `day_tasks.description`. Быстрый ввод не усложнился: для новой задачи по-прежнему достаточно текста и даты.
 
-Текущая автоматическая база: **82 Java-тестовых класса, 430 `@Test` методов и 17 Playwright browser scenarios**. Flyway остаётся на **V31**.
+Текущая автоматическая база: **83 Java-тестовых класса, 434 `@Test` метода и 18 Playwright browser scenarios**. Flyway продолжается до **V32**.
 
-История фундамента: **v27.9.3 — Overtime Preflight Integrity Hotfix**, **v27.9.2 — Overtime Ledger Integrity Hotfix**, **v27.9.0 — Overtime Interval Engine**, **v27.8.1 — Timezone Projection Refresh Hotfix**, **v27.8.0 — Zoned Work Intervals**, **v27.7.1 — Task & Ledger Layout Hotfix**, **v27.7.0 — Time Foundation**.
+История фундамента: **v27.9.4 — Overtime Split Projection Contract Hotfix**, **v27.9.3 — Overtime Preflight Integrity Hotfix**, **v27.9.2 — Overtime Ledger Integrity Hotfix**, **v27.9.0 — Overtime Interval Engine**, **v27.8.1 — Timezone Projection Refresh Hotfix**, **v27.8.0 — Zoned Work Intervals**, **v27.7.1 — Task & Ledger Layout Hotfix**, **v27.7.0 — Time Foundation**.
 
 ## Возможности
 
@@ -27,7 +27,7 @@ v27.9.3 остаётся preflight-защитой от побочных изме
 - Автозаполнение графиков: 2/2, день/ночь/48, 5/2, день/72, ночь/72.
 - Markdown-заметки для каждого дня с полноэкранным редактором, живым превью и ZIP-экспортом всей базы для Obsidian/резервной копии.
 - Персонализация: светлая/тёмная/системная тема, акцентный цвет и emoji-маркеры дней без хранения картинок.
-- Задачи дня с отдельным мобильным редактором, категориями, тегами, приоритетами, сроками, напоминаниями и одноуровневыми подзадачами.
+- Задачи дня с быстрым вводом, отдельным режимом деталей, многострочным описанием, категориями, тегами, приоритетами, сроками, напоминаниями и одноуровневыми подзадачами.
 - Универсальный быстрый ввод: запись во «Входящие», заготовка задачи, дополнение заметки на сегодня или форма важного дня.
 - Компактный сворачиваемый лоток «Входящие» с offline-очередью и преобразованием записи в задачу.
 - Важные даты: разовые, ежемесячные и ежегодные события.
@@ -242,6 +242,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
+- [`docs/TASK_DETAILS_V27.10.0.md`](docs/TASK_DETAILS_V27.10.0.md) — read-first детали задачи, описание, owner-scoped GET и границы редактора.
 - [`docs/OVERTIME_SPLIT_PROJECTION_CONTRACT_HOTFIX_V27.9.4.md`](docs/OVERTIME_SPLIT_PROJECTION_CONTRACT_HOTFIX_V27.9.4.md) — устойчивые номера частей split-отгула в ledger DTO и корректный midnight E2E-контракт.
 - [`docs/OVERTIME_PREFLIGHT_INTEGRITY_HOTFIX_V27.9.3.md`](docs/OVERTIME_PREFLIGHT_INTEGRITY_HOTFIX_V27.9.3.md) — preflight-проверка отгулов до мутации и синхронизация CI-контрактов.
 - [`docs/OVERTIME_LEDGER_INTEGRITY_HOTFIX_V27.9.2.md`](docs/OVERTIME_LEDGER_INTEGRITY_HOTFIX_V27.9.2.md) — атомарная пересборка FIFO, инварианты журнала и ясное удаление целого отгула.
@@ -320,7 +321,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.9.4 через полный Maven и Playwright gate, затем на staging повторить сценарий `17:00–01:00`, создание двух начислений, двух отгулов и удаление только одного split-отгула. В журнале должны остаться оба начисления, второй отгул и корректные номера частей.
+Следующий практический шаг — пропустить v27.10.0 через полный Maven и Playwright gate, затем на staging проверить read-first детали, сохранение многострочного описания, поиск по описанию и действия с чек-листом на desktop и mobile.
 
 ## Служебный профиль администратора
 

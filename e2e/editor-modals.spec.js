@@ -26,6 +26,8 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   await expect(row).toBeVisible();
   const taskId = await row.getAttribute('data-task-id');
   await row.locator('.taskItemBody').click();
+  await expect(page.locator('#taskDetailsModal')).toBeVisible();
+  await page.locator('#taskDetailsEdit').click();
   await expect(page.locator('#taskEditModal')).toBeVisible();
   await page.locator('#taskEditAdvanced').evaluate(element => { element.open = true; });
 
@@ -43,6 +45,8 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   await expect(page.locator('#taskEditModal')).toBeHidden();
   await expect(page.locator(`#taskList [data-task-id="${taskId}"]`)).toContainText(edited);
   await page.locator(`#taskList [data-task-id="${taskId}"] .taskItemBody`).click();
+  await expect(page.locator('#taskDetailsModal')).toBeVisible();
+  await page.locator('#taskDetailsEdit').click();
   await expect(page.locator('#taskEditCategory')).toHaveValue('modal-e2e');
   await expect(page.locator('#taskEditPriority')).toHaveValue('HIGH');
   await expect(page.locator('#taskEditDueDate')).toHaveValue(date);

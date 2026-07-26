@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.9.4.
+Status: v27.10.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.9.4 aligns the midnight-split browser contract with per-day projection and carries stable allocation part indices/counts in paged ledger references. Current application baseline: 82 Java test classes / 430 `@Test` methods and 17 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.10.0 adds a read-first Task Details surface, owner-scoped single-task API reads and an optional 4000-character plain-text description while preserving the fast task capture path. Current application baseline: 83 Java test classes / 434 `@Test` methods and 18 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,15 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.10.0 Task Details extension
+
+- `TaskServiceTest` protects description persistence, clearing, search participation, length validation and owner isolation.
+- `TaskControllerTest` covers authoritative single-task reads through legacy and `/api/v1` routes, including foreign-owner `404` behaviour.
+- `TaskDetailsFrontendContractTest` protects the separate read-first modal, explicit edit boundary, description rendering and offline snapshot fallback.
+- `task-details.spec.js` verifies details open from a card, description persistence, checklist interaction and reload behaviour.
+- Flyway V32 adds nullable `day_tasks.description` without turning quick capture into a mandatory structured form.
 
 
 ## v27.9.4 Overtime Split Projection Contract Hotfix extension

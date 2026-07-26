@@ -76,6 +76,12 @@ public class TaskService {
 
 
     @Transactional(readOnly = true)
+    public TaskDto get(AppUser user, Long id) {
+        DayTask task = requireOwnedTask(user, id);
+        return TaskDto.from(task, userTimeService.workNow(user));
+    }
+
+    @Transactional(readOnly = true)
     public TaskMetadataDto metadata(AppUser user) {
         List<String> categories = tasks.findDistinctCategories(user).stream()
                 .map(this::cleanCategory)
@@ -187,6 +193,7 @@ public class TaskService {
 
     private boolean taskMatchesQuery(DayTask task, String q) {
         return contains(task.getText(), q)
+                || contains(task.getDescription(), q)
                 || contains(task.getCategory(), q)
                 || contains(task.getDate() != null ? task.getDate().toString() : null, q)
                 || contains(task.getDueDate() != null ? task.getDueDate().toString() : null, q)
@@ -223,6 +230,7 @@ public class TaskService {
         if (req == null) throw ApiException.badRequest("Некорректный JSON в запросе");
         DayTask task = requireOwnedTask(user, id);
         if (req.text() != null) task.setText(cleanTaskText(req.text()));
+        if (req.description() != null) task.setDescription(cleanDescription(req.description()));
         if (req.done() != null) task.setDone(req.done());
         if (req.date() != null && !req.date().isBlank()) task.setDate(dayEntryService.parseDate(req.date(), "Дата задачи должна быть в формате yyyy-MM-dd"));
         if (req.category() != null) task.setCategory(cleanCategory(req.category()));
@@ -261,6 +269,7 @@ public class TaskService {
     }
 
     private void applyCreateFields(DayTask task, TaskCreateRequest req) {
+        task.setDescription(cleanDescription(req.description()));
         task.setCategory(cleanCategory(req.category()));
         task.setTags(cleanTags(req.tags()));
         task.setPriority(req.priority() != null ? req.priority() : TaskPriority.NORMAL);
@@ -358,6 +367,13 @@ public class TaskService {
     private String cleanTaskText(String value) {
         String cleaned = cleanRequired(value, "Текст задачи не должен быть пустым");
         if (cleaned.length() > 500) throw ApiException.badRequest("Текст задачи: максимум 500 символов");
+        return cleaned;
+    }
+
+    private String cleanDescription(String value) {
+        String cleaned = cleanOptional(value);
+        if (cleaned == null) return null;
+        if (cleaned.length() > 4000) throw ApiException.badRequest("Описание задачи: максимум 4000 символов");
         return cleaned;
     }
 

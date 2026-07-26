@@ -33,6 +33,9 @@ public class DayTask {
     @Column(nullable = false, length = 500)
     private String text;
 
+    @Column(length = 4000)
+    private String description;
+
     @Column(nullable = false)
     private boolean done = false;
 
@@ -82,6 +85,8 @@ public class DayTask {
     public void setDate(LocalDate date) { this.date = date; }
     public String getText() { return text; }
     public void setText(String text) { this.text = text; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
     public boolean isDone() { return done; }
     public void setDone(boolean done) { this.done = done; }
     public String getCategory() { return category; }

@@ -419,4 +419,32 @@ class TaskServiceTest {
         ApiException error = assertThrows(ApiException.class, action);
         assertEquals(HttpStatus.BAD_REQUEST, error.getStatus());
     }
+    @Test
+    void taskDetailsPersistSearchAndClearAnOptionalDescription() {
+        TaskDto created = taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", "Подготовить релиз", "Работа", List.of("релиз"),
+                TaskPriority.HIGH, "2026-08-12", "18:00", false, null,
+                List.of(new SubtaskInput(null, "Проверить CI", false, 0)),
+                "Контекст релиза\nСсылка на staging"
+        ));
+
+        assertEquals("Контекст релиза\nСсылка на staging", created.description());
+        assertEquals(created.id(), taskService.get(owner, created.id()).id());
+        assertEquals(created.description(), taskService.get(owner, created.id()).description());
+        assertEquals(List.of(created.id()), ids(board(
+                "all", null, null, "staging", null, null, 0, 50)));
+
+        TaskDto cleared = taskService.update(owner, created.id(), new TaskUpdateRequest(
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, "   "
+        ));
+        assertNull(cleared.description());
+
+        assertBadRequest(() -> taskService.update(owner, created.id(), new TaskUpdateRequest(
+                null, null, null, null, null, null, null, null, null, null,
+                null, null, "x".repeat(4001)
+        )));
+        assertThrows(ApiException.class, () -> taskService.get(other, created.id()));
+    }
+
 }
