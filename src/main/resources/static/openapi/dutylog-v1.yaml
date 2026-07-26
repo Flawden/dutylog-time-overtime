@@ -744,8 +744,28 @@ components:
         displayStart: { type: string, nullable: true }
         displayEnd: { type: string, nullable: true }
         sourceTimezone: { type: string, nullable: true }
+        allocationPartIndex: { type: integer, minimum: 1 }
+        allocationPartCount: { type: integer, minimum: 1 }
         exact: { type: boolean }
         reconstructed: { type: boolean }
+    OvertimeDailyProjection:
+      type: object
+      required: [sourceWorkedDate, partIndex, partCount, dayRowIndex, dayRowCount, dayEarnedHours, dayUsedHours, dayRemainingHours, sourceCreditHours, sourceUsedHours, sourceRemainingHours, exact]
+      description: Current-timezone calendar-day slice of an immutable overtime credit and its FIFO allocations.
+      properties:
+        sourceWorkedDate: { type: string, format: date, description: Persisted source-zone work date }
+        sourceTimeRange: { type: string, nullable: true, description: Persisted source-zone interval label }
+        partIndex: { type: integer, minimum: 1, description: Slice number inside the persisted credit }
+        partCount: { type: integer, minimum: 1 }
+        dayRowIndex: { type: integer, minimum: 1, description: Row number among all projected rows on this local day }
+        dayRowCount: { type: integer, minimum: 1 }
+        dayEarnedHours: { type: number, format: double, minimum: 0 }
+        dayUsedHours: { type: number, format: double, minimum: 0 }
+        dayRemainingHours: { type: number, format: double, minimum: 0 }
+        sourceCreditHours: { type: number, format: double, minimum: 0 }
+        sourceUsedHours: { type: number, format: double, minimum: 0 }
+        sourceRemainingHours: { type: number, format: double, minimum: 0 }
+        exact: { type: boolean, description: False only for legacy quantity-only rows without absolute provenance }
     OvertimeCredit:
       type: object
       required: [id, workedDate, calculated, hours, creditedMinutes, usedHours, remainingHours, usages, migratedFromLegacy, legacyTimezoneRequired]
@@ -778,6 +798,7 @@ components:
         creditedDisplayEnd: { type: string, nullable: true }
         migratedFromLegacy: { type: boolean }
         legacyTimezoneRequired: { type: boolean }
+        projection: { $ref: '#/components/schemas/OvertimeDailyProjection' }
     OvertimeAccount:
       type: object
       required: [totalEarnedHours, totalUsedHours, balanceHours, credits, usages]

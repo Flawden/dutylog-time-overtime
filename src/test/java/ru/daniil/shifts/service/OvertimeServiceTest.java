@@ -89,6 +89,101 @@ class OvertimeServiceTest {
         assertEquals(24.0, acc.balanceHours(), 0.001);
     }
 
+
+    @Test
+    void dailyProjectionRedistributesExactMinutesWithoutMovingFifo() {
+        user.setWorkTimezone("Europe/Moscow");
+        users.save(user);
+
+        OvertimeAccountDto created = overtime.createCredit(user,
+                interval("2026-07-03", "2026-07-03T22:00", "2026-07-04T02:00", 0, 0.0));
+        assertEquals(2.0, created.credits().stream()
+                .filter(row -> "2026-07-03".equals(row.workedDate()))
+                .mapToDouble(OvertimeCreditRowDto::hours).sum(), 0.001);
+        assertEquals(2.0, created.credits().stream()
+                .filter(row -> "2026-07-04".equals(row.workedDate()))
+                .mapToDouble(OvertimeCreditRowDto::hours).sum(), 0.001);
+
+        OvertimeAccountDto withUsage = overtime.createUsage(user,
+                new OvertimeUsageCreateRequest("2026-07-05", 3.0, "projection FIFO"));
+        List<String> absoluteBefore = withUsage.usages().get(0).allocations().stream()
+                .map(allocation -> allocation.startInstant() + "/" + allocation.endInstant())
+                .toList();
+        assertEquals(180, withUsage.usages().get(0).allocations().stream()
+                .mapToInt(allocation -> allocation.minutes()).sum());
+
+        user.setWorkTimezone("Europe/Samara");
+        users.save(user);
+        OvertimeAccountDto plusOne = overtime.account(user);
+        assertEquals(1.0, plusOne.credits().stream()
+                .filter(row -> "2026-07-03".equals(row.workedDate()))
+                .mapToDouble(OvertimeCreditRowDto::hours).sum(), 0.001);
+        assertEquals(3.0, plusOne.credits().stream()
+                .filter(row -> "2026-07-04".equals(row.workedDate()))
+                .mapToDouble(OvertimeCreditRowDto::hours).sum(), 0.001);
+        assertEquals(1.0, plusOne.credits().stream()
+                .filter(row -> "2026-07-03".equals(row.workedDate()))
+                .mapToDouble(OvertimeCreditRowDto::usedHours).sum(), 0.001);
+        assertEquals(2.0, plusOne.credits().stream()
+                .filter(row -> "2026-07-04".equals(row.workedDate()))
+                .mapToDouble(OvertimeCreditRowDto::usedHours).sum(), 0.001);
+        assertTrue(plusOne.credits().stream()
+                .filter(row -> "2026-07-04".equals(row.workedDate()))
+                .allMatch(row -> Math.abs(row.projection().dayEarnedHours() - 3.0) < 0.001));
+        assertEquals(4.0, plusOne.totalEarnedHours(), 0.001);
+        assertEquals(3.0, plusOne.totalUsedHours(), 0.001);
+        assertEquals(1.0, plusOne.balanceHours(), 0.001);
+
+        user.setWorkTimezone("Asia/Yekaterinburg");
+        users.save(user);
+        OvertimeAccountDto plusTwo = overtime.account(user);
+        assertTrue(plusTwo.credits().stream().noneMatch(row -> "2026-07-03".equals(row.workedDate())));
+        assertEquals(4.0, plusTwo.credits().stream()
+                .filter(row -> "2026-07-04".equals(row.workedDate()))
+                .mapToDouble(OvertimeCreditRowDto::hours).sum(), 0.001);
+        assertEquals(3.0, plusTwo.credits().stream()
+                .filter(row -> "2026-07-04".equals(row.workedDate()))
+                .mapToDouble(OvertimeCreditRowDto::usedHours).sum(), 0.001);
+        assertEquals(180, plusTwo.usages().get(0).allocations().stream()
+                .mapToInt(allocation -> allocation.minutes()).sum());
+        assertEquals(absoluteBefore.get(0).split("/")[0],
+                plusTwo.usages().get(0).allocations().get(0).startInstant(),
+                "timezone projection must not move the first FIFO minute");
+        assertEquals(1.0, plusTwo.balanceHours(), 0.001);
+
+        user.setWorkTimezone("Europe/Moscow");
+        users.save(user);
+        OvertimeAccountDto projectedBack = overtime.account(user);
+        assertEquals(2.0, projectedBack.credits().stream()
+                .filter(row -> "2026-07-03".equals(row.workedDate()))
+                .mapToDouble(OvertimeCreditRowDto::hours).sum(), 0.001);
+        assertEquals(2.0, projectedBack.credits().stream()
+                .filter(row -> "2026-07-04".equals(row.workedDate()))
+                .mapToDouble(OvertimeCreditRowDto::hours).sum(), 0.001);
+        assertEquals(180, projectedBack.usages().get(0).allocations().stream()
+                .mapToInt(allocation -> allocation.minutes()).sum());
+        assertEquals(1.0, projectedBack.balanceHours(), 0.001);
+    }
+
+    @Test
+    void accountPageFiltersByProjectedCalendarDate() {
+        user.setWorkTimezone("Europe/Moscow");
+        users.save(user);
+        overtime.createCredit(user,
+                interval("2026-07-03", "2026-07-03T22:00", "2026-07-04T02:00", 0, 0.0));
+
+        user.setWorkTimezone("Asia/Yekaterinburg");
+        users.save(user);
+
+        var julyThird = overtime.accountPage(user, "2026-07-03", "2026-07-03", "all", "", 0, 50);
+        assertEquals(0, julyThird.credits().total());
+
+        var julyFourth = overtime.accountPage(user, "2026-07-04", "2026-07-04", "all", "", 0, 50);
+        assertTrue(julyFourth.credits().total() >= 1);
+        assertEquals(4.0, julyFourth.credits().items().stream()
+                .mapToDouble(OvertimeCreditRowDto::hours).sum(), 0.001);
+    }
+
     @Test
     void calculatedCreditPersistsAbsoluteIdentityAndDisplayProjection() {
         user.setWorkTimezone("Asia/Yekaterinburg");

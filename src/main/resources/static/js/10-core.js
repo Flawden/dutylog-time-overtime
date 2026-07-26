@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.11.4"
+const DUTYLOG_VERSION = "27.12.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){

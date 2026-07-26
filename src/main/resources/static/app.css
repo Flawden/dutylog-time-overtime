@@ -2951,3 +2951,30 @@ body.panel-open .globalQuickAdd { display:none !important; }
 }
 .shiftProjectionHint.warn { color:var(--warn, #f5b841); }
 .legacyShiftProjection { display:grid; gap:2px; margin-top:5px; font-size:11px; color:var(--mut); }
+
+/* v27.12.0 — timezone-aware daily overtime projection. */
+.overtimeProjectionBadge{
+  display:inline-flex;
+  align-items:center;
+  margin-left:.35rem;
+  padding:.08rem .38rem;
+  border:1px solid color-mix(in srgb, var(--accent) 38%, var(--line));
+  border-radius:999px;
+  font-size:.68rem;
+  line-height:1.25;
+  color:var(--muted);
+  vertical-align:middle;
+}
+.overtimeDaySummary{
+  margin-top:.35rem;
+  padding:.28rem .42rem;
+  border-left:2px solid var(--accent);
+  border-radius:.3rem;
+  background:color-mix(in srgb, var(--accent) 8%, transparent);
+  color:var(--muted);
+  font-family:var(--font-ui, inherit);
+  font-size:.72rem;
+  line-height:1.35;
+  white-space:normal;
+}
+.overtimeDaySummary b{ color:var(--text); }

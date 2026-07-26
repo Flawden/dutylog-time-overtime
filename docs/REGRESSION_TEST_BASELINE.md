@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.11.4.
+Status: v27.12.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.11.4 gives timed task deadlines one absolute identity across canonical timezone changes and routes browser/mobile/Telegram reminders through the same instant. Current application baseline: 86 Java test classes / 456 `@Test` methods and 20 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.12.0 projects immutable overtime and FIFO intervals onto the user's current local calendar days without moving source minutes. Current application baseline: 87 Java test classes / 460 `@Test` methods and 21 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,15 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.12.0 Zoned Daily Projection Engine extension
+
+- `OvertimeServiceTest.dailyProjectionRedistributesExactMinutesWithoutMovingFifo` protects `2/2 → 1/3 → 0/4` projection and unchanged earned/used/balance totals.
+- `OvertimeServiceTest.accountPageFiltersByProjectedCalendarDate` protects server-side date filters against stale source dates.
+- `OvertimeDailyProjectionFrontendContractTest` protects daily subtotals and source-credit edit/delete guards.
+- `overtime-daily-projection.spec.js` reproduces timezone movement with a partial FIFO usage through the real API and ledger UI.
+- Flyway remains at V34 because this is a pure projection layer over already absolute intervals.
 
 
 ## v27.11.4 Task Deadline & Reminder Timezone Hotfix extension

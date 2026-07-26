@@ -1,25 +1,27 @@
-> Current release: **v27.11.4 — Task Deadline & Reminder Timezone Hotfix**.
+> Current release: **v27.12.0 — Zoned Daily Projection Engine**.
 
 # DutyLog
 
-Current release: **v27.11.4 — Task Deadline & Reminder Timezone Hotfix**
+Current release: **v27.12.0 — Zoned Daily Projection Engine**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.11.4 — Task Deadline & Reminder Timezone Hotfix
+## Текущая версия: v27.12.0 — Zoned Daily Projection Engine
 
-Предыдущий функциональный релиз: **v27.11.0 — Shift Occurrences & Calendar Projection**. Предыдущие исправляющие релизы: **v27.11.1 — CI & Contract Hotfix**, **v27.11.2 — E2E Stability Hotfix** и **v27.11.3 — Shift Template & Reminder Timezone Hotfix**.
+Предыдущий функциональный релиз: **v27.11.0 — Shift Occurrences & Calendar Projection**. Предыдущие исправляющие релизы: **v27.11.1–v27.11.4**, которые стабилизировали CI/E2E и перевели шаблоны смен, напоминания и точные сроки задач на абсолютную временную модель.
 
-**v27.11.4** переносит точные сроки задач в ту же абсолютную временную модель, что уже используется сменами и переработками. Срок `14:10 Asia/Yekaterinburg` хранится как один `dueInstant` и после перехода в `Europe/Moscow` отображается как `12:10`, не переставая быть просроченным или актуальным из-за одной только смены зоны.
+**v27.12.0** добавляет недостающий слой дневной проекции переработок. Абсолютные интервалы начислений и FIFO-списаний теперь раскладываются по полуночам текущего канонического IANA-пояса без изменения базы и без пересборки FIFO.
 
-У каждой новой или явно отредактированной задачи со сроком «дата + время» сохраняются исходная IANA-зона, исходные дата/время и абсолютный момент. Проекция может перейти на соседний день; дата самой задачи остаётся организационной датой, а точный срок меняет локальное представление. Сроки только с датой остаются плавающими календарными датами.
+Один интервал `22:00–02:00 Europe/Moscow` отображается как `2 ч / 2 ч` в UTC+3, как `1 ч / 3 ч` в UTC+4 и целиком как `4 ч` на следующем дне в UTC+5. Общие начисленные, использованные и оставшиеся минуты при этом неизменны.
 
-Старые local-only сроки не угадываются миграцией V34. В настройках появился мастер, где пользователь выбирает фактическую исходную зону и подтверждает конкретные задачи. Напоминания браузера, мобильного API и Telegram используют один `remindAtInstant`, рассчитанный от `dueInstant`.
+Таблица, календарная карточка дня, фильтры и экспорт используют текущую локальную дату проекции. Для каждой строки API дополнительно возвращает исходную дату/диапазон, номер части, дневные суммы и полные суммы исходного начисления. Кнопки редактирования и удаления защищены полным source-credit usage, поэтому частично использованное начисление нельзя удалить через визуально свободный фрагмент.
 
-Flyway продолжается до **V34**. Текущая автоматическая база: **86 Java-тестовых классов, 456 `@Test` методов и 20 Playwright browser scenarios**.
+Legacy quantity-only строки без точного абсолютного интервала остаются плавающими: DutyLog не придумывает отсутствующий источник времени.
 
-История фундамента: **v27.11.3 — Shift Template & Reminder Timezone Hotfix**, **v27.10.0 — Task Details**, **v27.9.4 — Overtime Split Projection Contract Hotfix**, **v27.9.3 — Overtime Preflight Integrity Hotfix**, **v27.9.2 — Overtime Ledger Integrity Hotfix**, **v27.9.0 — Overtime Interval Engine**, **v27.8.1 — Timezone Projection Refresh Hotfix**, **v27.8.0 — Zoned Work Intervals**, **v27.7.1 — Task & Ledger Layout Hotfix**, **v27.7.0 — Time Foundation**.
+Flyway остаётся на **V34**. Текущая автоматическая база: **87 Java-тестовых классов, 460 `@Test` методов и 21 Playwright browser scenario**.
+
+История фундамента: **v27.11.4 — Task Deadline & Reminder Timezone Hotfix**, **v27.11.3 — Shift Template & Reminder Timezone Hotfix**, **v27.11.2 — E2E Stability Hotfix**, **v27.11.1 — CI & Contract Hotfix**, **v27.10.0 — Task Details**, **v27.9.4 — Overtime Split Projection Contract Hotfix**, **v27.9.3 — Overtime Preflight Integrity Hotfix**, **v27.9.2 — Overtime Ledger Integrity Hotfix**, **v27.9.0 — Overtime Interval Engine**, **v27.8.1 — Timezone Projection Refresh Hotfix**, **v27.8.0 — Zoned Work Intervals**, **v27.7.1 — Task & Ledger Layout Hotfix**, **v27.7.0 — Time Foundation**.
 
 ## Возможности
 
@@ -324,7 +326,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.11.4 через полный Maven и Playwright gate, затем на staging проверить `14:10 GMT+5 → 12:10 GMT+3`, неизменный overdue-статус, перенос срока через полночь, legacy-мастер задач и одинаковый `remindAtInstant` для браузера и Telegram.
+Следующий практический шаг — пропустить v27.12.0 через полный Maven и Playwright gate, затем на staging проверить перераспределение `2/2 → 1/3 → 0/4`, неизменный FIFO и одинаковые общие начисленные/использованные/остаточные минуты во всех часовых поясах.
 
 ## Служебный профиль администратора
 

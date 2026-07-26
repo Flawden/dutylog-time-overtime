@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.11.4}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.12.0}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -972,7 +972,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.11.4"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.12.0"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1025,7 +1025,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.11.4"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.12.0"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1047,7 +1047,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.11.4"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.12.0"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1142,7 +1142,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.11.4"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.12.0"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -1301,7 +1301,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.10.0 — Task Details"
 contains README.md "v27.10.0 — Task Details"
 contains docs/TASK_DETAILS_V27.10.0.md "read-first"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.11.4"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.12.0"
 contains src/main/resources/db/migration/postgresql/V32__task_details.sql "ADD COLUMN description"
 contains src/main/java/ru/daniil/shifts/model/DayTask.java "private String description"
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "public TaskDto get(AppUser user, Long id)"
@@ -1322,7 +1322,7 @@ contains e2e/task-details.spec.js 'task details separate reading from editing an
 contains CHANGES.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains README.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md "immutable absolute occurrence"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.11.4"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.12.0"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_start_instant"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_source_timezone"
 contains src/main/java/ru/daniil/shifts/model/DayEntry.java "captureShiftOccurrence"
@@ -1342,7 +1342,7 @@ contains e2e/important-timezone.spec.js "a timezone projection can move a late s
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.11.4"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.12.0"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1438,7 +1438,7 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "20" ]]; then
+if [[ "$E2E_TESTS" == "21" ]]; then
   # v27.11.1 CI & Contract Hotfix
 contains CHANGES.md "v27.11.1 — CI & Contract Hotfix"
 contains README.md "v27.11.1 — CI & Contract Hotfix"
@@ -1477,22 +1477,36 @@ contains src/main/resources/static/js/50-tasks.js "Исходный срок"
 contains e2e/task-details.spec.js "deadlineAbsolute"
 contains src/test/java/ru/daniil/shifts/web/TaskDeadlineTimezoneFrontendContractTest.java "class TaskDeadlineTimezoneFrontendContractTest"
 
-ok "Playwright test baseline: 20"
+  # v27.12.0 Zoned Daily Projection Engine
+contains CHANGES.md "v27.12.0 — Zoned Daily Projection Engine"
+contains README.md "v27.12.0 — Zoned Daily Projection Engine"
+contains docs/ZONED_DAILY_PROJECTION_ENGINE_V27.12.0.md "Zoned Daily Projection Engine"
+contains src/main/java/ru/daniil/shifts/dto/Dtos.java "record OvertimeDailyProjectionDto"
+contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "splitByLocalDay"
+contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "sourceUsedMinutes"
+contains src/main/resources/static/js/40-overtime.js "function overtimeDaySummaryHtml(credit)"
+contains src/main/resources/static/js/40-overtime.js "projection.sourceUsedHours <= 0.0001"
+contains src/main/resources/static/openapi/dutylog-v1.yaml "OvertimeDailyProjection:"
+contains src/test/java/ru/daniil/shifts/service/OvertimeServiceTest.java "dailyProjectionRedistributesExactMinutesWithoutMovingFifo"
+contains src/test/java/ru/daniil/shifts/web/OvertimeDailyProjectionFrontendContractTest.java "class OvertimeDailyProjectionFrontendContractTest"
+contains e2e/overtime-daily-projection.spec.js "overtime and FIFO are redistributed by current timezone day"
+
+ok "Playwright test baseline: 21"
 else
-  fail "expected 20 Playwright tests, found $E2E_TESTS"
+  fail "expected 21 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "456" ]]; then
-  ok "test method baseline: 456"
+if [[ "$TEST_METHODS" == "460" ]]; then
+  ok "test method baseline: 460"
 else
-  fail "expected 456 @Test methods, found $TEST_METHODS"
+  fail "expected 460 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "86" ]]; then
-  ok "test class baseline: 86"
+if [[ "$TEST_CLASSES" == "87" ]]; then
+  ok "test class baseline: 87"
 else
-  fail "expected 86 test classes, found $TEST_CLASSES"
+  fail "expected 87 test classes, found $TEST_CLASSES"
 fi
 
 echo

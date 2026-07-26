@@ -1297,6 +1297,29 @@ public final class Dtos {
         }
     }
 
+    /**
+     * Current-timezone daily projection metadata for one overtime credit row.
+     *
+     * <p>The persisted credit and FIFO allocation remain absolute. A single
+     * credit may therefore produce several display rows when its credited
+     * interval crosses midnight in the user's current IANA timezone.</p>
+     */
+    public record OvertimeDailyProjectionDto(
+            String sourceWorkedDate,
+            String sourceTimeRange,
+            int partIndex,
+            int partCount,
+            int dayRowIndex,
+            int dayRowCount,
+            double dayEarnedHours,
+            double dayUsedHours,
+            double dayRemainingHours,
+            double sourceCreditHours,
+            double sourceUsedHours,
+            double sourceRemainingHours,
+            boolean exact
+    ) {}
+
     /** Строка таблицы начислений переработки. */
     public record OvertimeCreditRowDto(
             Long id,
@@ -1324,7 +1347,8 @@ public final class Dtos {
             String creditedDisplayStart,
             String creditedDisplayEnd,
             boolean migratedFromLegacy,
-            boolean legacyTimezoneRequired
+            boolean legacyTimezoneRequired,
+            OvertimeDailyProjectionDto projection
     ) {
         /** Source-compatible constructor for v27.8 service/tests. */
         public OvertimeCreditRowDto(Long id, String workedDate, String timeRange,
@@ -1337,7 +1361,12 @@ public final class Dtos {
                     calculated, hours, reason, usedHours, remainingHours, usages,
                     startInstant, endInstant, sourceTimezone, displayStart, displayEnd, displayTimezone,
                     (int) Math.round(hours * 60.0), null, null, null, null, false,
-                    calculated && startInstant == null);
+                    calculated && startInstant == null,
+                    new OvertimeDailyProjectionDto(
+                            workedDate, timeRange, 1, 1, 1, 1,
+                            hours, usedHours, remainingHours,
+                            hours, usedHours, remainingHours,
+                            startInstant != null));
         }
     }
 

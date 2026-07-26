@@ -13,6 +13,7 @@ import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAllocationDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditRowDto;
+import ru.daniil.shifts.dto.Dtos.OvertimeDailyProjectionDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeLedgerItemDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeSummaryDto;
@@ -36,6 +37,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -107,18 +109,9 @@ public class OvertimeService {
         List<OvertimeUsage> usageList = usages.findByOwnerOrderByUsageDateAscIdAsc(user);
         List<OvertimeAllocation> allocationList = allocations.findAllByOwner(user);
 
-        Map<Long, List<OvertimeAllocation>> byCredit = allocationList.stream()
-                .collect(Collectors.groupingBy(a -> a.getCredit().getId()));
-        Map<Long, List<OvertimeAllocation>> byUsage = allocationList.stream()
-                .collect(Collectors.groupingBy(a -> a.getUsage().getId()));
-
-        List<OvertimeCreditRowDto> creditRows = creditList.stream()
-                .map(c -> creditRow(user, c, byCredit.getOrDefault(c.getId(), List.of()), byUsage))
-                .toList();
-
-        List<OvertimeUsageDto> usageRows = usageList.stream()
-                .map(u -> usageRow(user, u, byUsage.getOrDefault(u.getId(), List.of())))
-                .toList();
+        AccountProjection projection = projectAccount(user, creditList, usageList, allocationList);
+        List<OvertimeCreditRowDto> creditRows = projection.creditRows();
+        List<OvertimeUsageDto> usageRows = projection.usageRows();
 
         int earnedMinutes = creditList.stream().mapToInt(OvertimeCredit::getCreditedMinutes).sum();
         int usedMinutes = usageList.stream().mapToInt(OvertimeUsage::getRequestedMinutes).sum();
@@ -167,7 +160,7 @@ public class OvertimeService {
         for (OvertimeCreditRowDto row : rows) {
             appendCsvLine(sb, List.of(
                     row.workedDate(),
-                    value(row.timeRange()),
+                    exportTimeRange(row),
                     fmt(row.hours()),
                     value(row.reason()),
                     fmt(row.usedHours()),
@@ -212,7 +205,7 @@ public class OvertimeService {
         for (OvertimeCreditRowDto row : rows) {
             html.append("<tr>")
                     .append("<td>").append(escHtml(row.workedDate())).append("</td>")
-                    .append("<td>").append(escHtml(value(row.timeRange()))).append("</td>")
+                    .append("<td>").append(escHtml(exportTimeRange(row))).append("</td>")
                     .append("<td class=\"num\">").append(escHtml(fmt(row.hours()))).append("</td>")
                     .append("<td>").append(escHtml(value(row.reason()))).append("</td>")
                     .append("<td class=\"num\">").append(escHtml(fmt(row.usedHours()))).append("</td>")
@@ -775,66 +768,230 @@ public class OvertimeService {
         );
     }
 
-    private OvertimeCreditRowDto creditRow(AppUser user,
-                                               OvertimeCredit credit,
-                                               List<OvertimeAllocation> allocationList,
-                                               Map<Long, List<OvertimeAllocation>> allocationsByUsage) {
-        List<OvertimeAllocation> sorted = allocationList.stream()
-                .sorted(Comparator.comparing((OvertimeAllocation a) -> a.getUsage().getUsageDate())
-                        .thenComparing(OvertimeAllocation::getId))
+    /**
+     * Builds a pure display projection. Persisted credits and FIFO allocations
+     * are never rewritten when the canonical timezone changes.
+     */
+    private AccountProjection projectAccount(AppUser user,
+                                             List<OvertimeCredit> creditList,
+                                             List<OvertimeUsage> usageList,
+                                             List<OvertimeAllocation> allocationList) {
+        ZoneId displayZone = userTimeService.displayZone(user);
+
+        List<AllocationFragment> allFragments = allocationList.stream()
+                .flatMap(allocation -> projectAllocation(allocation, displayZone).stream())
                 .toList();
-        int usedMinutes = sorted.stream().mapToInt(OvertimeAllocation::getAllocatedMinutes).sum();
-        List<OvertimeUsageRefDto> usageRefs = sorted.stream()
-                .map(a -> {
-                    List<OvertimeAllocation> usageParts = allocationsByUsage
-                            .getOrDefault(a.getUsage().getId(), List.of())
-                            .stream()
-                            .sorted(Comparator.comparing((OvertimeAllocation part) -> part.getCredit().getWorkDate())
-                                    .thenComparing(part -> part.getCredit().getId())
-                                    .thenComparing(OvertimeAllocation::getId))
-                            .toList();
-                    int partIndex = 1;
-                    for (int i = 0; i < usageParts.size(); i++) {
-                        if (Objects.equals(usageParts.get(i).getId(), a.getId())) {
-                            partIndex = i + 1;
-                            break;
-                        }
-                    }
-                    int partCount = Math.max(1, usageParts.size());
-                    return new OvertimeUsageRefDto(
-                            a.getUsage().getId(),
-                            a.getUsage().getUsageDate().toString(),
-                            hoursFromMinutes(a.getAllocatedMinutes()),
-                            a.getUsage().getReason(),
-                            a.getAllocatedMinutes(),
-                            instantText(a.getStartAtInstant()),
-                            instantText(a.getEndAtInstant()),
-                            displayLocal(user, a.getStartAtInstant()),
-                            displayLocal(user, a.getEndAtInstant()),
-                            a.getSourceTimezone(),
-                            partIndex,
-                            partCount,
-                            a.getStartAtInstant() != null && a.getEndAtInstant() != null,
-                            a.isReconstructed()
-                    );
-                })
+        Map<Long, List<AllocationFragment>> fragmentsByCredit = allFragments.stream()
+                .collect(Collectors.groupingBy(fragment -> fragment.allocation().getCredit().getId()));
+        Map<Long, List<AllocationFragment>> fragmentsByUsage = allFragments.stream()
+                .collect(Collectors.groupingBy(fragment -> fragment.allocation().getUsage().getId()));
+        Map<AllocationFragment, AllocationPartPosition> partPositions = allocationPartPositions(fragmentsByUsage);
+
+        List<OvertimeCreditRowDto> projectedRows = new ArrayList<>();
+        for (OvertimeCredit credit : creditList) {
+            List<CreditProjectionSlice> slices = projectCredit(credit, displayZone);
+            List<OvertimeAllocation> creditAllocations = allocationList.stream()
+                    .filter(allocation -> Objects.equals(allocation.getCredit().getId(), credit.getId()))
+                    .toList();
+            List<AllocationFragment> creditFragments = fragmentsByCredit.getOrDefault(credit.getId(), List.of());
+            int sourceUsedMinutes = creditAllocations.stream()
+                    .mapToInt(OvertimeAllocation::getAllocatedMinutes)
+                    .sum();
+            for (int i = 0; i < slices.size(); i++) {
+                projectedRows.add(projectedCreditRow(
+                        user,
+                        credit,
+                        slices.get(i),
+                        i + 1,
+                        slices.size(),
+                        sourceUsedMinutes,
+                        creditFragments,
+                        partPositions
+                ));
+            }
+        }
+
+        projectedRows.sort(Comparator
+                .comparing(OvertimeCreditRowDto::workedDate)
+                .thenComparing(row -> row.displayStart() == null ? "" : row.displayStart())
+                .thenComparing(OvertimeCreditRowDto::id)
+                .thenComparing(row -> row.projection() == null ? 1 : row.projection().partIndex()));
+        List<OvertimeCreditRowDto> rowsWithDaySummaries = attachDaySummaries(projectedRows);
+
+        List<OvertimeUsageDto> projectedUsages = usageList.stream()
+                .map(usage -> projectedUsageRow(
+                        user,
+                        usage,
+                        fragmentsByUsage.getOrDefault(usage.getId(), List.of())
+                ))
                 .toList();
-        String displayStart = displayLocal(user, credit.getStartAtInstant());
-        String displayEnd = displayLocal(user, credit.getEndAtInstant());
-        String displayTimezone = credit.getStartAtInstant() == null ? null : userTimeService.displayZone(user).getId();
+
+        return new AccountProjection(rowsWithDaySummaries, projectedUsages);
+    }
+
+    private List<CreditProjectionSlice> projectCredit(OvertimeCredit credit, ZoneId displayZone) {
+        Instant start = credit.getCreditedStartAtInstant();
+        int creditedMinutes = credit.getCreditedMinutes();
+        if (start == null || creditedMinutes <= 0) {
+            return List.of(new CreditProjectionSlice(
+                    credit.getWorkDate(), null, null, creditedMinutes, false));
+        }
+
+        // Integer minutes are the accounting authority. Historical rows may
+        // contain an end value reconstructed by an older release, so derive the
+        // effective end from the authoritative minute count.
+        Instant effectiveEnd = start.plusSeconds(creditedMinutes * 60L);
+        List<DailyInstantSegment> daily = splitByLocalDay(start, effectiveEnd, displayZone);
+        if (daily.isEmpty()) {
+            return List.of(new CreditProjectionSlice(
+                    credit.getWorkDate(), null, null, creditedMinutes, false));
+        }
+        return daily.stream()
+                .map(segment -> new CreditProjectionSlice(
+                        segment.date(),
+                        segment.start(),
+                        segment.end(),
+                        segment.minutes(),
+                        true
+                ))
+                .toList();
+    }
+
+    private List<AllocationFragment> projectAllocation(OvertimeAllocation allocation, ZoneId displayZone) {
+        Instant start = allocation.getStartAtInstant();
+        int allocatedMinutes = allocation.getAllocatedMinutes();
+        if (start == null || allocatedMinutes <= 0) {
+            return List.of(new AllocationFragment(
+                    allocation,
+                    allocation.getCredit().getWorkDate(),
+                    null,
+                    null,
+                    allocatedMinutes,
+                    false
+            ));
+        }
+        Instant effectiveEnd = start.plusSeconds(allocatedMinutes * 60L);
+        List<DailyInstantSegment> segments = splitByLocalDay(start, effectiveEnd, displayZone);
+        if (segments.isEmpty()) {
+            return List.of(new AllocationFragment(
+                    allocation,
+                    allocation.getCredit().getWorkDate(),
+                    null,
+                    null,
+                    allocatedMinutes,
+                    false
+            ));
+        }
+        return segments.stream()
+                .map(segment -> new AllocationFragment(
+                        allocation,
+                        segment.date(),
+                        segment.start(),
+                        segment.end(),
+                        segment.minutes(),
+                        true
+                ))
+                .toList();
+    }
+
+    private List<DailyInstantSegment> splitByLocalDay(Instant start, Instant end, ZoneId zone) {
+        if (start == null || end == null || !end.isAfter(start)) return List.of();
+        List<DailyInstantSegment> result = new ArrayList<>();
+        Instant cursor = start;
+        while (cursor.isBefore(end)) {
+            ZonedDateTime localCursor = cursor.atZone(zone);
+            LocalDate date = localCursor.toLocalDate();
+            Instant nextMidnight = date.plusDays(1).atStartOfDay(zone).toInstant();
+            Instant segmentEnd = nextMidnight.isBefore(end) ? nextMidnight : end;
+            if (!segmentEnd.isAfter(cursor)) {
+                throw new IllegalStateException("Timezone projection did not advance at " + cursor + " in " + zone);
+            }
+            int minutes = Math.toIntExact(Duration.between(cursor, segmentEnd).toMinutes());
+            if (minutes > 0) {
+                result.add(new DailyInstantSegment(date, cursor, segmentEnd, minutes));
+            }
+            cursor = segmentEnd;
+        }
+        return List.copyOf(result);
+    }
+
+    private Map<AllocationFragment, AllocationPartPosition> allocationPartPositions(
+            Map<Long, List<AllocationFragment>> fragmentsByUsage) {
+        Map<AllocationFragment, AllocationPartPosition> result = new LinkedHashMap<>();
+        for (List<AllocationFragment> usageFragments : fragmentsByUsage.values()) {
+            List<AllocationFragment> sorted = usageFragments.stream()
+                    .sorted(Comparator
+                            .comparing((AllocationFragment fragment) -> fragment.start() == null
+                                    ? Instant.MAX : fragment.start())
+                            .thenComparing(fragment -> fragment.allocation().getCredit().getWorkDate())
+                            .thenComparing(fragment -> fragment.allocation().getCredit().getId())
+                            .thenComparing(fragment -> fragment.allocation().getId()))
+                    .toList();
+            int count = Math.max(1, sorted.size());
+            for (int i = 0; i < sorted.size(); i++) {
+                result.put(sorted.get(i), new AllocationPartPosition(i + 1, count));
+            }
+        }
+        return result;
+    }
+
+    private OvertimeCreditRowDto projectedCreditRow(AppUser user,
+                                                     OvertimeCredit credit,
+                                                     CreditProjectionSlice slice,
+                                                     int partIndex,
+                                                     int partCount,
+                                                     int sourceUsedMinutes,
+                                                     List<AllocationFragment> creditFragments,
+                                                     Map<AllocationFragment, AllocationPartPosition> partPositions) {
+        List<AllocationFragment> fragments = creditFragments.stream()
+                .filter(fragment -> fragmentBelongsToSlice(fragment, slice))
+                .sorted(Comparator
+                        .comparing((AllocationFragment fragment) -> fragment.start() == null
+                                ? Instant.MAX : fragment.start())
+                        .thenComparing(fragment -> fragment.allocation().getId()))
+                .toList();
+        int sliceUsedMinutes = fragments.stream().mapToInt(AllocationFragment::minutes).sum();
+        List<OvertimeUsageRefDto> usageRefs = fragments.stream()
+                .map(fragment -> usageRef(user, fragment, partPositions.get(fragment)))
+                .toList();
+
+        int sourceMinutes = credit.getCreditedMinutes();
+        int sourceRemainingMinutes = Math.max(0, sourceMinutes - sourceUsedMinutes);
+        int sliceRemainingMinutes = Math.max(0, slice.minutes() - sliceUsedMinutes);
+        String displayStart = slice.exact() ? displayLocal(user, slice.start()) : displayLocal(user, credit.getStartAtInstant());
+        String displayEnd = slice.exact() ? displayLocal(user, slice.end()) : displayLocal(user, credit.getEndAtInstant());
+        String displayTimezone = slice.exact() ? userTimeService.displayZone(user).getId()
+                : (credit.getStartAtInstant() == null ? null : userTimeService.displayZone(user).getId());
+
+        OvertimeDailyProjectionDto projection = new OvertimeDailyProjectionDto(
+                credit.getWorkDate().toString(),
+                credit.getTimeRange(),
+                partIndex,
+                partCount,
+                1,
+                1,
+                hoursFromMinutes(slice.minutes()),
+                hoursFromMinutes(sliceUsedMinutes),
+                hoursFromMinutes(sliceRemainingMinutes),
+                hoursFromMinutes(sourceMinutes),
+                hoursFromMinutes(sourceUsedMinutes),
+                hoursFromMinutes(sourceRemainingMinutes),
+                slice.exact()
+        );
+
         return new OvertimeCreditRowDto(
                 credit.getId(),
-                credit.getWorkDate().toString(),
+                slice.date().toString(),
                 credit.getTimeRange(),
                 credit.getStartAt() == null ? null : credit.getStartAt().toString(),
                 credit.getEndAt() == null ? null : credit.getEndAt().toString(),
                 credit.getBreakMinutes(),
                 round2(credit.getPlannedHours()),
                 credit.isCalculated(),
-                hoursFromMinutes(credit.getCreditedMinutes()),
+                hoursFromMinutes(slice.minutes()),
                 credit.getReason(),
-                hoursFromMinutes(usedMinutes),
-                hoursFromMinutes(credit.getCreditedMinutes() - usedMinutes),
+                hoursFromMinutes(sliceUsedMinutes),
+                hoursFromMinutes(sliceRemainingMinutes),
                 usageRefs,
                 instantText(credit.getStartAtInstant()),
                 instantText(credit.getEndAtInstant()),
@@ -842,40 +999,141 @@ public class OvertimeService {
                 displayStart,
                 displayEnd,
                 displayTimezone,
-                credit.getCreditedMinutes(),
-                instantText(credit.getCreditedStartAtInstant()),
-                instantText(credit.getCreditedEndAtInstant()),
-                displayLocal(user, credit.getCreditedStartAtInstant()),
-                displayLocal(user, credit.getCreditedEndAtInstant()),
+                slice.minutes(),
+                instantText(slice.exact() ? slice.start() : credit.getCreditedStartAtInstant()),
+                instantText(slice.exact() ? slice.end() : credit.getCreditedEndAtInstant()),
+                slice.exact() ? displayStart : displayLocal(user, credit.getCreditedStartAtInstant()),
+                slice.exact() ? displayEnd : displayLocal(user, credit.getCreditedEndAtInstant()),
                 credit.isMigratedFromLegacy(),
-                credit.getCreditedStartAtInstant() == null || credit.getCreditedEndAtInstant() == null
+                credit.getCreditedStartAtInstant() == null || credit.getCreditedEndAtInstant() == null,
+                projection
         );
     }
 
+    private boolean fragmentBelongsToSlice(AllocationFragment fragment, CreditProjectionSlice slice) {
+        if (!slice.exact()) return !fragment.exact();
+        if (!fragment.exact()) return false;
+        return fragment.start().isBefore(slice.end()) && fragment.end().isAfter(slice.start());
+    }
 
-    private OvertimeUsageDto usageRow(AppUser user, OvertimeUsage usage, List<OvertimeAllocation> allocationList) {
-        List<OvertimeAllocationDto> refs = allocationList.stream()
-                .sorted(Comparator.comparing((OvertimeAllocation a) -> a.getCredit().getWorkDate())
-                        .thenComparing(a -> a.getCredit().getId()))
-                .map(a -> new OvertimeAllocationDto(
-                        a.getCredit().getId(),
-                        a.getCredit().getWorkDate().toString(),
-                        a.getCredit().getTimeRange(),
-                        hoursFromMinutes(a.getAllocatedMinutes()),
-                        a.getCredit().getReason(),
-                        a.getAllocatedMinutes(),
-                        instantText(a.getStartAtInstant()),
-                        instantText(a.getEndAtInstant()),
-                        displayLocal(user, a.getStartAtInstant()),
-                        displayLocal(user, a.getEndAtInstant()),
-                        a.getSourceTimezone(),
-                        a.getStartAtInstant() != null && a.getEndAtInstant() != null,
-                        a.isReconstructed()
-                ))
+    private OvertimeUsageRefDto usageRef(AppUser user,
+                                         AllocationFragment fragment,
+                                         AllocationPartPosition position) {
+        OvertimeAllocation allocation = fragment.allocation();
+        AllocationPartPosition safePosition = position == null
+                ? new AllocationPartPosition(1, 1)
+                : position;
+        return new OvertimeUsageRefDto(
+                allocation.getUsage().getId(),
+                allocation.getUsage().getUsageDate().toString(),
+                hoursFromMinutes(fragment.minutes()),
+                allocation.getUsage().getReason(),
+                fragment.minutes(),
+                instantText(fragment.start()),
+                instantText(fragment.end()),
+                displayLocal(user, fragment.start()),
+                displayLocal(user, fragment.end()),
+                allocation.getSourceTimezone(),
+                safePosition.index(),
+                safePosition.count(),
+                fragment.exact(),
+                allocation.isReconstructed()
+        );
+    }
+
+    private OvertimeUsageDto projectedUsageRow(AppUser user,
+                                               OvertimeUsage usage,
+                                               List<AllocationFragment> fragments) {
+        List<OvertimeAllocationDto> refs = fragments.stream()
+                .sorted(Comparator
+                        .comparing((AllocationFragment fragment) -> fragment.start() == null
+                                ? Instant.MAX : fragment.start())
+                        .thenComparing(fragment -> fragment.allocation().getCredit().getId()))
+                .map(fragment -> {
+                    OvertimeAllocation allocation = fragment.allocation();
+                    return new OvertimeAllocationDto(
+                            allocation.getCredit().getId(),
+                            fragment.date().toString(),
+                            fragment.exact()
+                                    ? projectedRange(fragment.start(), fragment.end(), userTimeService.displayZone(user))
+                                    : allocation.getCredit().getTimeRange(),
+                            hoursFromMinutes(fragment.minutes()),
+                            allocation.getCredit().getReason(),
+                            fragment.minutes(),
+                            instantText(fragment.start()),
+                            instantText(fragment.end()),
+                            displayLocal(user, fragment.start()),
+                            displayLocal(user, fragment.end()),
+                            allocation.getSourceTimezone(),
+                            fragment.exact(),
+                            allocation.isReconstructed()
+                    );
+                })
                 .toList();
-        return new OvertimeUsageDto(usage.getId(), usage.getUsageDate().toString(),
-                hoursFromMinutes(usage.getRequestedMinutes()), usage.getReason(), refs,
-                usage.getRequestedMinutes());
+        return new OvertimeUsageDto(
+                usage.getId(),
+                usage.getUsageDate().toString(),
+                hoursFromMinutes(usage.getRequestedMinutes()),
+                usage.getReason(),
+                refs,
+                usage.getRequestedMinutes()
+        );
+    }
+
+    private String projectedRange(Instant start, Instant end, ZoneId zone) {
+        if (start == null || end == null) return null;
+        LocalDateTime localStart = start.atZone(zone).toLocalDateTime();
+        LocalDateTime localEnd = end.atZone(zone).toLocalDateTime();
+        return formatTimeRange(localStart, localEnd);
+    }
+
+    private List<OvertimeCreditRowDto> attachDaySummaries(List<OvertimeCreditRowDto> rows) {
+        Map<String, List<OvertimeCreditRowDto>> byDay = rows.stream()
+                .collect(Collectors.groupingBy(
+                        OvertimeCreditRowDto::workedDate,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+        List<OvertimeCreditRowDto> result = new ArrayList<>(rows.size());
+        for (List<OvertimeCreditRowDto> dayRows : byDay.values()) {
+            double earned = round2(dayRows.stream().mapToDouble(OvertimeCreditRowDto::hours).sum());
+            double used = round2(dayRows.stream().mapToDouble(OvertimeCreditRowDto::usedHours).sum());
+            double remaining = round2(dayRows.stream().mapToDouble(OvertimeCreditRowDto::remainingHours).sum());
+            for (int i = 0; i < dayRows.size(); i++) {
+                OvertimeCreditRowDto row = dayRows.get(i);
+                OvertimeDailyProjectionDto base = row.projection();
+                OvertimeDailyProjectionDto projection = new OvertimeDailyProjectionDto(
+                        base.sourceWorkedDate(),
+                        base.sourceTimeRange(),
+                        base.partIndex(),
+                        base.partCount(),
+                        i + 1,
+                        dayRows.size(),
+                        earned,
+                        used,
+                        remaining,
+                        base.sourceCreditHours(),
+                        base.sourceUsedHours(),
+                        base.sourceRemainingHours(),
+                        base.exact()
+                );
+                result.add(copyWithProjection(row, projection));
+            }
+        }
+        return List.copyOf(result);
+    }
+
+    private OvertimeCreditRowDto copyWithProjection(OvertimeCreditRowDto row,
+                                                     OvertimeDailyProjectionDto projection) {
+        return new OvertimeCreditRowDto(
+                row.id(), row.workedDate(), row.timeRange(), row.startDateTime(), row.endDateTime(),
+                row.breakMinutes(), row.plannedHours(), row.calculated(), row.hours(), row.reason(),
+                row.usedHours(), row.remainingHours(), row.usages(), row.startInstant(), row.endInstant(),
+                row.sourceTimezone(), row.displayStart(), row.displayEnd(), row.displayTimezone(),
+                row.creditedMinutes(), row.creditedStartInstant(), row.creditedEndInstant(),
+                row.creditedDisplayStart(), row.creditedDisplayEnd(), row.migratedFromLegacy(),
+                row.legacyTimezoneRequired(), projection
+        );
     }
 
 
@@ -923,10 +1181,27 @@ public class OvertimeService {
     }
 
     private String exportSearchHaystack(OvertimeCreditRowDto row) {
-        return (row.workedDate() + " " + value(row.timeRange()) + " "
+        OvertimeDailyProjectionDto projection = row.projection();
+        String sourceDate = projection == null ? "" : value(projection.sourceWorkedDate());
+        String sourceRange = projection == null ? "" : value(projection.sourceTimeRange());
+        return (row.workedDate() + " " + sourceDate + " " + value(row.timeRange()) + " " + sourceRange + " "
                 + value(row.displayStart()) + " " + value(row.displayEnd()) + " "
                 + value(row.sourceTimezone()) + " " + value(row.displayTimezone()) + " "
                 + fmt(row.hours()) + " " + value(row.reason()) + " " + usagesText(row)).toLowerCase();
+    }
+
+    private String exportTimeRange(OvertimeCreditRowDto row) {
+        if (hasText(row.displayStart()) && hasText(row.displayEnd())) {
+            try {
+                return formatTimeRange(
+                        LocalDateTime.parse(row.displayStart()),
+                        LocalDateTime.parse(row.displayEnd())
+                );
+            } catch (RuntimeException ignored) {
+                // Keep the historical source range for malformed legacy display values.
+            }
+        }
+        return value(row.timeRange());
     }
 
     private String usagesText(OvertimeCreditRowDto row) {
@@ -1252,6 +1527,37 @@ public class OvertimeService {
         return Math.round(value * 100.0) / 100.0;
     }
 
+
+    private record AccountProjection(
+            List<OvertimeCreditRowDto> creditRows,
+            List<OvertimeUsageDto> usageRows
+    ) {}
+
+    private record DailyInstantSegment(
+            LocalDate date,
+            Instant start,
+            Instant end,
+            int minutes
+    ) {}
+
+    private record CreditProjectionSlice(
+            LocalDate date,
+            Instant start,
+            Instant end,
+            int minutes,
+            boolean exact
+    ) {}
+
+    private record AllocationFragment(
+            OvertimeAllocation allocation,
+            LocalDate date,
+            Instant start,
+            Instant end,
+            int minutes,
+            boolean exact
+    ) {}
+
+    private record AllocationPartPosition(int index, int count) {}
 
     private record CalculatedCredit(
             String timeRange,

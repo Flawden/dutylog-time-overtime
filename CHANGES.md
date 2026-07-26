@@ -1,3 +1,15 @@
+# v27.12.0 — Zoned Daily Projection Engine
+
+- Exact overtime credits are projected into current-timezone calendar-day slices without rewriting persisted source rows.
+- A `22:00–02:00` absolute interval now redistributes as `2/2`, `1/3` or `0/4` when the canonical timezone moves.
+- FIFO allocation intervals are split by the same local-midnight boundaries while credit IDs, allocation IDs and total minutes stay unchanged.
+- Ledger rows expose daily earned/used/remaining totals and full source-credit totals through an additive projection DTO.
+- Calendar selected-day totals, server-side date filters, CSV and Excel exports use the projected local date.
+- Edit/delete actions use full source-credit usage, preventing deletion through an unused projected fragment.
+- Legacy quantity-only credits remain one floating row because their missing source instant cannot be inferred safely.
+- Added service, frontend-contract and Playwright coverage. Flyway remains at V34.
+- Regression baseline: 87 Java test classes, 460 `@Test` methods and 21 Playwright scenarios.
+
 # v27.11.4 — Task Deadline & Reminder Timezone Hotfix
 
 - Timed task deadlines now persist one absolute `dueInstant` plus their original IANA timezone and source local date/time.

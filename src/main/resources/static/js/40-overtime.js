@@ -34,7 +34,8 @@ Object.assign(I18N_EN, {
   "точный интервал":"exact interval", "реконструировано":"reconstructed",
   "без точного времени":"no exact time", "старые записи":"legacy entries",
   "нет старых записей для миграции":"no legacy entries to migrate",
-  "Привязать старые записи":"Attach legacy entries"
+  "Привязать старые записи":"Attach legacy entries",
+  "проекция":"projection", "итого за день":"day total"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -156,6 +157,37 @@ function readIntInput(id){
   return Number.isFinite(n) && n >= 0 ? Math.round(n) : NaN;
 }
 
+function overtimeProjection(credit){
+  const p = credit?.projection || {};
+  return {
+    sourceWorkedDate: p.sourceWorkedDate || credit?.workedDate || "",
+    sourceTimeRange: p.sourceTimeRange || credit?.timeRange || "",
+    partIndex: Math.max(1, Number(p.partIndex) || 1),
+    partCount: Math.max(1, Number(p.partCount) || 1),
+    dayRowIndex: Math.max(1, Number(p.dayRowIndex) || 1),
+    dayRowCount: Math.max(1, Number(p.dayRowCount) || 1),
+    dayEarnedHours: numOr0(p.dayEarnedHours ?? credit?.hours),
+    dayUsedHours: numOr0(p.dayUsedHours ?? credit?.usedHours),
+    dayRemainingHours: numOr0(p.dayRemainingHours ?? credit?.remainingHours),
+    sourceCreditHours: numOr0(p.sourceCreditHours ?? credit?.hours),
+    sourceUsedHours: numOr0(p.sourceUsedHours ?? credit?.usedHours),
+    sourceRemainingHours: numOr0(p.sourceRemainingHours ?? credit?.remainingHours),
+    exact: p.exact === true,
+  };
+}
+
+function overtimeProjectionBadge(credit){
+  const p = overtimeProjection(credit);
+  if (p.partCount <= 1) return "";
+  return `<span class="overtimeProjectionBadge">${esc(t("проекция"))} ${p.partIndex}/${p.partCount}</span>`;
+}
+
+function overtimeDaySummaryHtml(credit){
+  const p = overtimeProjection(credit);
+  if (p.dayRowIndex !== 1) return "";
+  return `<div class="overtimeDaySummary">${esc(t("итого за день"))}: <b>+${fmtHours(p.dayEarnedHours)} ч</b>${p.dayUsedHours > 0.0001 ? ` · ${esc(t("использовано"))}: ${fmtHours(p.dayUsedHours)} ч` : ""} · ${esc(t("остаток"))}: ${fmtHours(p.dayRemainingHours)} ч</div>`;
+}
+
 function overtimeCreditDisplayRange(credit){
   if (!credit) return "";
   if (credit.displayStart && credit.displayEnd) return displayDateTimeRange(credit.displayStart, credit.displayEnd);
@@ -165,17 +197,23 @@ function overtimeCreditDisplayRange(credit){
 function overtimeCreditTimeHtml(credit){
   const display = overtimeCreditDisplayRange(credit) || "—";
   const absolute = !!(credit?.startInstant && credit?.endInstant);
+  const p = overtimeProjection(credit);
   const differentZone = absolute
     && credit.sourceTimezone
     && credit.displayTimezone
     && credit.sourceTimezone !== credit.displayTimezone;
-  if (!differentZone) {
+  const projectionBadge = overtimeProjectionBadge(credit);
+  const sourceRange = p.sourceTimeRange || credit.timeRange || displayDateTimeRange(credit.startDateTime, credit.endDateTime) || "—";
+  const sourceDate = p.sourceWorkedDate && p.sourceWorkedDate !== credit.workedDate
+    ? `${formatDateHuman(p.sourceWorkedDate)} · `
+    : "";
+  if (!differentZone && p.partCount <= 1) {
     return `<div class="ledgerTimePrimary">${esc(display)}</div>${absolute && credit.displayTimezone ? `<div class="ledgerTimeZone">${esc(credit.displayTimezone)}</div>` : ""}`;
   }
   return `
-    <div class="ledgerTimePrimary">${esc(display)}</div>
-    <div class="ledgerTimeZone">${esc(credit.displayTimezone)}</div>
-    <div class="ledgerTimeSecondary">${esc(credit.timeRange || displayDateTimeRange(credit.startDateTime, credit.endDateTime) || "—")} · ${esc(credit.sourceTimezone)}</div>
+    <div class="ledgerTimePrimary">${esc(display)} ${projectionBadge}</div>
+    ${credit.displayTimezone ? `<div class="ledgerTimeZone">${esc(credit.displayTimezone)}</div>` : ""}
+    <div class="ledgerTimeSecondary">${esc(sourceDate + sourceRange)}${credit.sourceTimezone ? ` · ${esc(credit.sourceTimezone)}` : ""}</div>
   `;
 }
 
@@ -242,7 +280,11 @@ function renderOvertimeDayDetails(){
     row.className = "overtimeDayEntry credit";
     const text = document.createElement("div");
     const shownRange = overtimeCreditDisplayRange(c);
-    text.innerHTML = `<b>+${fmtHours(c.hours)} ч</b><span>${esc(shownRange)}${c.reason ? `${shownRange ? " · " : ""}${esc(c.reason)}` : ""}</span>${c.sourceTimezone && c.displayTimezone && c.sourceTimezone !== c.displayTimezone ? `<small>${esc(c.timeRange || "")} · ${esc(c.sourceTimezone)}</small>` : ""}<small>${esc(t("остаток"))}: ${fmtHours(c.remainingHours)} ч</small>`;
+    const projection = overtimeProjection(c);
+    const daySummary = projection.dayRowIndex === 1 && projection.dayRowCount > 1
+      ? `<small><b>${esc(t("итого за день"))}: +${fmtHours(projection.dayEarnedHours)} ч</b></small>`
+      : "";
+    text.innerHTML = `<b>+${fmtHours(c.hours)} ч</b><span>${esc(shownRange)}${c.reason ? `${shownRange ? " · " : ""}${esc(c.reason)}` : ""} ${overtimeProjectionBadge(c)}</span>${c.sourceTimezone && c.displayTimezone && (c.sourceTimezone !== c.displayTimezone || projection.partCount > 1) ? `<small>${esc(projection.sourceTimeRange || c.timeRange || "")} · ${esc(c.sourceTimezone)}</small>` : ""}${daySummary}<small>${esc(t("остаток"))}: ${fmtHours(c.remainingHours)} ч</small>`;
     const edit = document.createElement("button");
     edit.type = "button"; edit.textContent = t("ред.");
     edit.addEventListener("click", () => startEditOvertimeCredit(c.id));
@@ -862,19 +904,20 @@ function findUsageById(id){
 function startEditOvertimeCredit(id){
   const c = (state.overtimeAccount?.credits || []).find(x => Number(x.id) === Number(id)) || (state.ledgerPage?.items || []).find(x => Number(x.id) === Number(id));
   if (!c) return setSave("err", t("начисление не найдено"));
-  resetOvertimeForms(c.workedDate);
+  const projection = overtimeProjection(c);
+  resetOvertimeForms(projection.sourceWorkedDate || c.workedDate);
   state.editingCreditId = Number(id);
   state.editingUsageId = null;
-  $("creditDate").value = c.workedDate;
+  $("creditDate").value = projection.sourceWorkedDate || c.workedDate;
   state.editingCreditLegacyTimeRange = c.calculated ? null : (c.timeRange || null);
   $("creditStart").value = toDateTimeLocal(c.startDateTime);
   $("creditEnd").value = toDateTimeLocal(c.endDateTime);
   $("creditBreak").value = String(c.breakMinutes || 0);
   $("creditPlanned").value = fmtHours(c.plannedHours || 0);
-  $("creditHours").value = fmtHours(c.hours);
+  $("creditHours").value = fmtHours(projection.sourceCreditHours);
   $("creditReason").value = c.reason || "";
   $("creditAdd").textContent = t("Сохранить");
-  $("creditDelete").hidden = numOr0(c.usedHours) > 0.0001;
+  $("creditDelete").hidden = projection.sourceUsedHours > 0.0001;
   $("creditEditNotice").hidden = false;
   const sourceZoneHint = c.sourceTimezone ? ` ${t("Исходный часовой пояс")}: ${c.sourceTimezone}.` : "";
   $("creditEditNotice").textContent = `${t("Редактируется существующее начисление. Изменение периода может пересобрать строки начислений.")}${sourceZoneHint}`;
@@ -936,7 +979,8 @@ function startEditOvertimeUsage(id){
 
 async function removeOvertimeCredit(id){
   const credit = (state.overtimeAccount?.credits || []).find(c => Number(c.id) === Number(id)) || (state.ledgerPage?.items || []).find(c => Number(c.id) === Number(id));
-  const label = credit ? `${credit.workedDate} ${credit.timeRange || ""} +${fmtHours(credit.hours)} ч` : `#${id}`;
+  const projection = overtimeProjection(credit);
+  const label = credit ? `${projection.sourceWorkedDate || credit.workedDate} ${projection.sourceTimeRange || credit.timeRange || ""} +${fmtHours(projection.sourceCreditHours)} ч` : `#${id}`;
   if (!confirm(`Удалить начисление переработки ${label}?\n\nЭто действие нельзя отменить.`)) return;
   setSave("saving");
   try {
@@ -1009,7 +1053,8 @@ function statusLabel(status){
 
 function creditSearchHaystack(c){
   const usages = (c.usages || []).map(u => `${u.usageDate} ${u.hours} ${u.reason || ""}`).join(" " );
-  return `${c.workedDate} ${c.timeRange || ""} ${c.displayStart || ""} ${c.displayEnd || ""} ${c.sourceTimezone || ""} ${c.displayTimezone || ""} ${c.hours} ${c.reason || ""} ${usages}`.toLowerCase();
+  const p = overtimeProjection(c);
+  return `${c.workedDate} ${p.sourceWorkedDate} ${c.timeRange || ""} ${p.sourceTimeRange} ${c.displayStart || ""} ${c.displayEnd || ""} ${c.sourceTimezone || ""} ${c.displayTimezone || ""} ${c.hours} ${p.dayEarnedHours} ${c.reason || ""} ${usages}`.toLowerCase();
 }
 
 function getFilteredLedgerCredits(){
@@ -1148,13 +1193,14 @@ function renderLedgerTable(){
           </div>`;
         }).join("")
       : `<span class="small">${esc(t("не списывалось"))}</span>`;
+    const projection = overtimeProjection(c);
     const legacyBadge = c.legacyTimezoneRequired ? ` · <span class="legacyTimezoneBadge">⚠ ${esc(t("без точного времени"))}</span>` : "";
     const calcInfo = c.calculated ? `<div class="small">${esc(t("обед"))}: ${c.breakMinutes || 0} ${state.language === "en" ? "min" : "мин"}${numOr0(c.plannedHours) ? ` · ${esc(t("план"))}: ${fmtHours(c.plannedHours)} ${state.language === "en" ? "h" : "ч"}` : ""}${legacyBadge}</div>` : legacyBadge;
-    const deleteBtn = numOr0(c.usedHours) <= 0.0001
+    const deleteBtn = projection.sourceUsedHours <= 0.0001
       ? `<button type="button" data-del-credit="${c.id}" title="${esc(t("Удалить переработку"))}">${esc(t("удалить"))}</button>`
       : `<span class="small" title="${esc(t("Сначала удали списания, которые используют это начисление"))}">${esc(t("сначала списания"))}</span>`;
     tr.innerHTML = `
-      <td class="mono">${esc(c.workedDate)}<div class="ledgerStatus ${status}">${statusLabel(status)}</div></td>
+      <td class="mono">${esc(c.workedDate)}${overtimeDaySummaryHtml(c)}<div class="ledgerStatus ${status}">${statusLabel(status)}</div></td>
       <td>${overtimeCreditTimeHtml(c)}${calcInfo}</td>
       <td class="numc">+${fmtHours(c.hours)} ч</td>
       <td class="reason">${esc(c.reason || "—")}</td>

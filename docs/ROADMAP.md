@@ -188,3 +188,12 @@ API уже достаточно стабилен для первого Android-�
 - Date-only deadlines stay floating.
 - Legacy timed task deadlines can be explicitly linked to their real source IANA timezone.
 - Browser, mobile and Telegram task reminders consume the same authoritative instant.
+
+
+## Completed in v27.12.0
+
+- Exact overtime credits are split at midnight in the current canonical timezone.
+- Exact FIFO allocation minutes follow the same daily projection without being rebuilt.
+- Daily earned, used and remaining totals are additive projections, not persisted copies.
+- Ledger filters and exports operate on projected local dates.
+- Source-credit edit/delete integrity is preserved across multi-day projections.
