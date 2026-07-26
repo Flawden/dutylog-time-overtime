@@ -440,13 +440,10 @@ class TaskControllerTest {
                         .with(user(owner.getUsername()).roles("USER"))
                         .with(csrf())
                         .contentType("application/json")
-                        .content("""
-                                {
-                                  "date":"2026-08-10",
-                                  "text":"Подготовить релиз",
-                                  "description":"Контекст\nСсылка на staging"
-                                }
-                                """))
+                        .content(objectMapper.writeValueAsString(objectMapper.createObjectNode()
+                                .put("date", "2026-08-10")
+                                .put("text", "Подготовить релиз")
+                                .put("description", "Контекст\nСсылка на staging"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.description").value("Контекст\nСсылка на staging"))
                 .andReturn().getResponse().getContentAsString();

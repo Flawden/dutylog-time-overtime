@@ -1,13 +1,15 @@
-> Current release: **v27.11.0 — Shift Occurrences & Calendar Projection**.
+> Current release: **v27.11.1 — CI & Contract Hotfix**.
 
 # DutyLog
 
-Current release: **v27.11.0 — Shift Occurrences & Calendar Projection**
+Current release: **v27.11.1 — CI & Contract Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.11.0 — Shift Occurrences & Calendar Projection
+## Текущая версия: v27.11.1 — CI & Contract Hotfix
+
+Предыдущий функциональный релиз: **v27.11.0 — Shift Occurrences & Calendar Projection**.
 
 Конкретная назначенная смена теперь получает неизменные `startInstant`/`endInstant` и исходную IANA-зону. Поэтому `08:30–17:00 Asia/Yekaterinburg` после переезда в `Europe/Kyiv` отображается как `06:30–15:00`, а не заново трактуется как местные `08:30–17:00`.
 
@@ -324,7 +326,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.11.0 через полный Maven и Playwright gate, затем на staging проверить `08:30 GMT+5 → 06:30 GMT+3`, перенос поздней смены на следующий день, legacy-мастер и read-first Task Details после обновления PWA.
+Следующий практический шаг — пропустить v27.11.1 через полный Maven и Playwright gate, затем на staging проверить `08:30 GMT+5 → 06:30 GMT+3`, перенос поздней смены на следующий день, legacy-мастер и read-first Task Details после обновления PWA.
 
 ## Служебный профиль администратора
 

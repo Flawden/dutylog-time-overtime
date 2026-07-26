@@ -19,8 +19,9 @@ class ZonedWorkIntervalsFrontendContractTest {
         assertTrue(html.contains("id=\"shiftProjection\""));
         assertTrue(calendar.contains("shiftIntervalRange"));
         assertTrue(tasks.contains("renderShiftProjection"));
-        assertTrue(tasks.contains("interval.displayTimezone"));
-        assertTrue(tasks.contains("interval.workTimezone"));
+        assertTrue(tasks.contains("primaryShiftSegment"));
+        assertTrue(tasks.contains("occurrence.displayTimezone"));
+        assertTrue(tasks.contains("occurrence.sourceTimezone"));
     }
 
     @Test

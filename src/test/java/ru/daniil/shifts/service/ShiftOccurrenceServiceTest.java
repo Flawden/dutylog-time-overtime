@@ -120,14 +120,18 @@ class ShiftOccurrenceServiceTest {
         first.setShiftType(day);
         DayEntry second = new DayEntry(user, LocalDate.of(2026, 7, 4));
         second.setShiftType(day);
-        days.saveAll(List.of(first, second));
-        days.flush();
+        first = days.saveAndFlush(first);
+        second = days.saveAndFlush(second);
+        Long firstId = first.getId();
+        Long secondId = second.getId();
+        assertNotNull(firstId);
+        assertNotNull(secondId);
 
         occurrences.migrate(user, new ru.daniil.shifts.dto.Dtos.LegacyShiftMigrationRequest(
-                "Asia/Yekaterinburg", List.of(first.getId())));
+                "Asia/Yekaterinburg", List.of(firstId)));
 
-        assertTrue(days.findById(first.getId()).orElseThrow().hasShiftOccurrenceSnapshot());
-        assertFalse(days.findById(second.getId()).orElseThrow().hasShiftOccurrenceSnapshot());
+        assertTrue(days.findById(firstId).orElseThrow().hasShiftOccurrenceSnapshot());
+        assertFalse(days.findById(secondId).orElseThrow().hasShiftOccurrenceSnapshot());
     }
 
     private DayUpsertRequest request(Long shiftTypeId, String note) {

@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.11.0.
+Status: v27.11.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.11.0 adds immutable dated shift occurrences, source-zone snapshots, display-date projection, legacy migration and stronger PWA activation while preserving v27.10 Task Details. Current application baseline: 85 Java test classes / 442 `@Test` methods and 19 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.11.1 adds immutable dated shift occurrences, source-zone snapshots, display-date projection, legacy migration and stronger PWA activation while preserving v27.10 Task Details. Current application baseline: 85 Java test classes / 442 `@Test` methods and 19 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -16,7 +16,7 @@ This release converts the successful v27.2.6 manual acceptance pass into an auto
 
 
 
-## v27.11.0 Shift Occurrences & Calendar Projection extension
+## v27.11.1 Shift Occurrences & Calendar Projection extension
 
 - `ShiftOccurrenceServiceTest` proves absolute identity survives a timezone move, `08:30 GMT+5` becomes `06:30 GMT+3`, a late shift can move completely to the next date, unrelated note saves do not guess legacy zones, and explicit migration affects only selected rows.
 - `ShiftOccurrenceFrontendContractTest` protects occurrence segmentation, projected-date indexing, migration UI, authoritative refresh and Service Worker activation.

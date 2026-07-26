@@ -72,8 +72,8 @@ class OvertimeIntervalEngineFrontendContractTest {
     void shiftProjectionExplainsNetWorkAndBreakSeparately() throws Exception {
         String tasks = resource("js/50-tasks.js");
 
-        assertTrue(tasks.contains("interval.netMinutes"));
-        assertTrue(tasks.contains("interval.breakMinutes"));
+        assertTrue(tasks.contains("occurrence?.netMinutes ?? interval?.netMinutes"));
+        assertTrue(tasks.contains("occurrence?.breakMinutes ?? interval?.breakMinutes"));
         assertTrue(tasks.contains("Рабочее время смены"));
         assertTrue(tasks.contains("Обед в смене"));
         assertFalse(tasks.contains("Фактическая длительность"));

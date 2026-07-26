@@ -1,3 +1,10 @@
+# v27.11.1 — CI & Contract Hotfix
+
+- обновлены два устаревших frontend-контракта под occurrence-based проекцию смен;
+- тест Task Details теперь формирует валидный JSON через ObjectMapper;
+- тест legacy-миграции получает гарантированно сохранённые идентификаторы строк;
+- production-логика и Flyway V33 не изменялись.
+
 ## v27.11.0 — Shift Occurrences & Calendar Projection
 
 - Concrete dated shifts now persist immutable UTC start/end identity and their original IANA timezone.
