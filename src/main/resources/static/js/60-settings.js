@@ -429,6 +429,7 @@ async function saveTimeSettings(){
     if (typeof loadMonth === "function") await loadMonth({ fresh:true });
     if (moduleEnabled("overtime") && typeof loadLedgerPage === "function") await loadLedgerPage(true);
     if (state.selected && typeof renderSelectedDayModules === "function") renderSelectedDayModules();
+    await refreshLegacyShiftIndicator();
     setSave("saved", t("настройки времени сохранены"));
     return true;
   } catch (err) {
@@ -507,9 +508,90 @@ async function applyTimeSettingsToBuiltins(silent = false){
     renderOvertimeControls();
   } catch (err) { console.error(err); setSave("err", err.message); }
 }
+let legacyShiftPreviewState = null;
+function legacyShiftStatus(text = "", tone = ""){
+  const box = $("legacyShiftStatus");
+  if (!box) return;
+  box.textContent = text;
+  box.className = `legacyMigrationStatus ${tone}`.trim();
+}
+function renderLegacyShiftPreview(preview){
+  legacyShiftPreviewState = preview;
+  const list = $("legacyShiftList");
+  if (!list) return;
+  list.innerHTML = "";
+  const items = preview?.occurrences || [];
+  $("legacyShiftOpen").hidden = items.length === 0;
+  if (!items.length) {
+    legacyShiftStatus(t("Все смены уже имеют точный часовой пояс."), "ok");
+    return;
+  }
+  legacyShiftStatus(`${t("Найдено старых смен")}: ${items.length}`);
+  for (const item of items) {
+    const row = document.createElement("label");
+    row.className = "legacyMigrationRow";
+    row.innerHTML = `
+      <input type="checkbox" data-legacy-shift-id="${Number(item.dayEntryId)}" checked>
+      <span><b>${esc(item.sourceDate)} · ${esc(item.shiftName || t("Смена"))}</b>
+      <small>${esc(displayDateTimeRange(item.localStart, item.localEnd))} · ${esc(item.sourceTimezone || "")}</small>
+      <small>→ ${esc(displayDateTimeRange(item.projectedStart, item.projectedEnd))}</small></span>`;
+    list.appendChild(row);
+  }
+}
+async function refreshLegacyShiftPreview({ quiet = false } = {}){
+  const timezone = $("legacyShiftTimezone")?.value || state.profile?.workTimezone || browserTimeZone();
+  try {
+    const preview = await api.previewLegacyShifts(timezone);
+    renderLegacyShiftPreview(preview);
+    return preview;
+  } catch (err) {
+    if (!quiet) legacyShiftStatus(err.message || t("Не удалось загрузить старые смены"), "err");
+    return null;
+  }
+}
+async function refreshLegacyShiftIndicator(){
+  const timezone = state.profile?.workTimezone || state.timeSettings?.workTimezone || browserTimeZone();
+  const preview = await api.previewLegacyShifts(timezone).catch(() => null);
+  if ($("legacyShiftOpen")) $("legacyShiftOpen").hidden = !preview?.legacyCount;
+}
+async function openLegacyShiftMigration(){
+  const timezone = state.profile?.workTimezone || state.timeSettings?.workTimezone || browserTimeZone();
+  populateTimeZoneSelect("legacyShiftTimezone", timezone);
+  $("legacyShiftTimezone").value = timezone;
+  openAppModal("legacyShiftModal", "legacyShiftTimezone");
+  legacyShiftStatus(t("Загрузка…"));
+  await refreshLegacyShiftPreview();
+}
+function closeLegacyShiftMigration(){ closeAppModal("legacyShiftModal"); }
+async function applyLegacyShiftMigration(){
+  const ids = [...document.querySelectorAll("[data-legacy-shift-id]:checked")].map(input => Number(input.dataset.legacyShiftId));
+  if (!ids.length) return legacyShiftStatus(t("Выберите хотя бы одну смену"), "err");
+  const sourceTimezone = $("legacyShiftTimezone").value;
+  $("legacyShiftApply").disabled = true;
+  legacyShiftStatus(t("Сохранение…"));
+  try {
+    const preview = await api.migrateLegacyShifts({ sourceTimezone, dayEntryIds:ids });
+    renderLegacyShiftPreview(preview);
+    await loadMonth({ fresh:true });
+    setSave("saved", t("Старые смены привязаны"));
+    if (!preview.legacyCount) closeLegacyShiftMigration();
+  } catch (err) {
+    legacyShiftStatus(err.message || t("Не удалось привязать смены"), "err");
+  } finally {
+    $("legacyShiftApply").disabled = false;
+  }
+}
+
 function initTimeSettingsEvents(){
   if (!$("timeSettingsCard")) return;
   $("timeSaveTimezone")?.addEventListener("click", saveTimeSettings);
+  $("legacyShiftOpen")?.addEventListener("click", openLegacyShiftMigration);
+  $("legacyShiftClose")?.addEventListener("click", closeLegacyShiftMigration);
+  $("legacyShiftCancel")?.addEventListener("click", closeLegacyShiftMigration);
+  $("legacyShiftBackdrop")?.addEventListener("click", closeLegacyShiftMigration);
+  $("legacyShiftPreview")?.addEventListener("click", () => refreshLegacyShiftPreview());
+  $("legacyShiftSelectAll")?.addEventListener("click", () => document.querySelectorAll("[data-legacy-shift-id]").forEach(input => { input.checked = true; }));
+  $("legacyShiftApply")?.addEventListener("click", applyLegacyShiftMigration);
   $("timeDetectBrowser")?.addEventListener("click", () => {
     populateTimeZoneSelect("workTimezone", browserTimeZone());
     $("workTimezone").value = browserTimeZone();
@@ -939,6 +1021,7 @@ function renderSettingsPanels(){
   applyModuleVisibility();
   renderTelegramPanel();
   if (moduleEnabled("telegram")) loadTelegramStatus();
+  refreshLegacyShiftIndicator().catch(() => {});
 }
 
 /* ─── Уведомления ───────────────────────────────────────────── */

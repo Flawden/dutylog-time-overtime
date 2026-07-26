@@ -198,7 +198,64 @@ public final class Dtos {
             long netMinutes,
             boolean crossesWorkMidnight,
             boolean crossesDisplayMidnight,
-            boolean sameTimezone
+            boolean sameTimezone,
+            boolean legacyLocal
+    ) {
+        /** Source-compatible constructor used by v27.8-v27.10 tests and adapters. */
+        public ShiftIntervalDto(String startInstant, String endInstant, String workStart, String workEnd,
+                                String displayStart, String displayEnd, String workTimezone, String displayTimezone,
+                                int breakMinutes, long elapsedMinutes, long netMinutes, boolean crossesWorkMidnight,
+                                boolean crossesDisplayMidnight, boolean sameTimezone) {
+            this(startInstant, endInstant, workStart, workEnd, displayStart, displayEnd,
+                    workTimezone, displayTimezone, breakMinutes, elapsedMinutes, netMinutes,
+                    crossesWorkMidnight, crossesDisplayMidnight, sameTimezone, false);
+        }
+    }
+
+    /** One immutable dated shift and its current calendar projection. */
+    public record ShiftOccurrenceDto(
+            Long dayEntryId,
+            String sourceDate,
+            Long shiftTypeId,
+            String startInstant,
+            String endInstant,
+            String sourceStart,
+            String sourceEnd,
+            String displayStart,
+            String displayEnd,
+            String sourceTimezone,
+            String displayTimezone,
+            int breakMinutes,
+            long elapsedMinutes,
+            long netMinutes,
+            boolean legacyLocal
+    ) {}
+
+    public record LegacyShiftOccurrenceDto(
+            Long dayEntryId,
+            String sourceDate,
+            Long shiftTypeId,
+            String shiftName,
+            String localStart,
+            String localEnd,
+            String sourceTimezone,
+            String projectedStart,
+            String projectedEnd
+    ) {}
+
+    public record LegacyShiftMigrationPreviewDto(
+            String sourceTimezone,
+            int legacyCount,
+            List<LegacyShiftOccurrenceDto> occurrences
+    ) {}
+
+    public record LegacyShiftMigrationRequest(
+            @NotBlank(message = "Нужен исходный часовой пояс")
+            @Size(max = 80, message = "Часовой пояс: максимум 80 символов")
+            String sourceTimezone,
+            @NotEmpty(message = "Выберите хотя бы одну смену")
+            @Size(max = 5000, message = "За один раз можно привязать максимум 5000 смен")
+            List<@NotNull Long> dayEntryIds
     ) {}
 
     /** Запись дня наружу: дата в ISO (yyyy-MM-dd). */
@@ -1343,6 +1400,7 @@ public final class Dtos {
             String to,
             List<ShiftTypeDto> shiftTypes,
             List<DayDto> days,
+            List<ShiftOccurrenceDto> shiftOccurrences,
             List<TaskDto> tasks,
             List<ImportantDayOccurrenceDto> importantDays,
             OvertimeSummaryDto overtime,
@@ -1351,5 +1409,15 @@ public final class Dtos {
             List<NotificationReminderDto> reminders,
             List<QuickScenarioDto> quickScenarios,
             List<ModuleDto> modules
-    ) {}
+    ) {
+        /** Compatibility constructor for code written before shift occurrences. */
+        public CalendarRangeDto(String from, String to, List<ShiftTypeDto> shiftTypes, List<DayDto> days,
+                                List<TaskDto> tasks, List<ImportantDayOccurrenceDto> importantDays,
+                                OvertimeSummaryDto overtime, OvertimeAccountDto overtimeAccount,
+                                NotificationSettingsDto notificationSettings, List<NotificationReminderDto> reminders,
+                                List<QuickScenarioDto> quickScenarios, List<ModuleDto> modules) {
+            this(from, to, shiftTypes, days, List.of(), tasks, importantDays, overtime, overtimeAccount,
+                    notificationSettings, reminders, quickScenarios, modules);
+        }
+    }
 }

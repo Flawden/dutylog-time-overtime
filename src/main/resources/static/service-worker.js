@@ -1,6 +1,6 @@
 const RAW_BUILD_ID = "__DUTYLOG_BUILD_ID__";
 const BUILD_ID = RAW_BUILD_ID.startsWith("__") ? "local" : RAW_BUILD_ID;
-const CACHE_NAME = `dutylog-shell-v27.10.0-${BUILD_ID}`; // unique per immutable image build
+const CACHE_NAME = `dutylog-shell-v27.11.0-${BUILD_ID}`; // unique per immutable image build
 
 const SHELL = [
   "/manifest.json",
@@ -15,11 +15,14 @@ self.addEventListener("install", event => {
 
 self.addEventListener("activate", event => {
   event.waitUntil(
-    caches.keys().then(keys => Promise.all(
-      keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-    ))
+    caches.keys()
+      .then(keys => Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))))
+      .then(() => self.clients.claim())
   );
-  self.clients.claim();
+});
+
+self.addEventListener("message", event => {
+  if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("fetch", event => {

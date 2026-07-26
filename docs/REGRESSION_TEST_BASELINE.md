@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.10.0.
+Status: v27.11.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.10.0 adds a read-first Task Details surface, owner-scoped single-task API reads and an optional 4000-character plain-text description while preserving the fast task capture path. Current application baseline: 83 Java test classes / 434 `@Test` methods and 18 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.11.0 adds immutable dated shift occurrences, source-zone snapshots, display-date projection, legacy migration and stronger PWA activation while preserving v27.10 Task Details. Current application baseline: 85 Java test classes / 442 `@Test` methods and 19 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -14,6 +14,15 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
+
+
+## v27.11.0 Shift Occurrences & Calendar Projection extension
+
+- `ShiftOccurrenceServiceTest` proves absolute identity survives a timezone move, `08:30 GMT+5` becomes `06:30 GMT+3`, a late shift can move completely to the next date, unrelated note saves do not guess legacy zones, and explicit migration affects only selected rows.
+- `ShiftOccurrenceFrontendContractTest` protects occurrence segmentation, projected-date indexing, migration UI, authoritative refresh and Service Worker activation.
+- `important-timezone.spec.js` covers both same-day reprojection and a complete `03 July 23:00 → 04 July 01:00` date move.
+- OpenAPI documents the shift occurrence and legacy migration contracts.
+- Flyway V33 adds immutable occurrence snapshot columns and an overlap index.
 
 
 ## v27.10.0 Task Details extension

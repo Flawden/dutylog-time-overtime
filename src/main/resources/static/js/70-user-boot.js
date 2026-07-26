@@ -13,6 +13,8 @@ function applyCalendarBundle(bundle){
   if (Array.isArray(bundle)) {
     // На всякий случай оставлен fallback под старый endpoint.
     state.days = {};
+    state.shiftOccurrences = [];
+    state.shiftSegmentsByDate = {};
     state.tasksByDate = {};
     state.importantByDate = {};
     state.remindersByDate = {};
@@ -20,11 +22,18 @@ function applyCalendarBundle(bundle){
     return;
   }
   state.days = {};
+  state.shiftOccurrences = [];
+  state.shiftSegmentsByDate = {};
   state.tasksByDate = {};
   state.importantByDate = {};
   state.remindersByDate = {};
   if (bundle.shiftTypes) state.shiftTypes = bundle.shiftTypes;
   for (const e of bundle.days || []) state.days[e.date] = normalizeDay(e);
+  state.shiftOccurrences = Array.isArray(bundle.shiftOccurrences) ? bundle.shiftOccurrences.map(normalizeShiftOccurrence) : [];
+  if (!state.shiftOccurrences.length) {
+    state.shiftOccurrences = (bundle.days || []).map(occurrenceFromLegacyDay).filter(Boolean);
+  }
+  rebuildShiftOccurrenceIndex();
   if (moduleEnabled("tasks")) for (const t of bundle.tasks || []) addToDateMap(state.tasksByDate, t);
   if (moduleEnabled("important_dates")) for (const i of bundle.importantDays || []) addToDateMap(state.importantByDate, i);
   state.notificationSettings = moduleEnabled("notifications") ? (bundle.notificationSettings || state.notificationSettings) : null;
@@ -91,7 +100,30 @@ $("logout").addEventListener("click", async () => {
 });
 
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker.js", { updateViaCache: "none" }).catch(() => {}));
+  window.addEventListener("load", async () => {
+    let reloading = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (reloading) return;
+      const reloadKey = `dutylog-sw-reload-${DUTYLOG_VERSION}`;
+      if (sessionStorage.getItem(reloadKey) === "1") return;
+      sessionStorage.setItem(reloadKey, "1");
+      reloading = true;
+      window.location.reload();
+    });
+    try {
+      const registration = await navigator.serviceWorker.register("/service-worker.js", { updateViaCache: "none" });
+      registration.waiting?.postMessage({ type:"SKIP_WAITING" });
+      registration.addEventListener("updatefound", () => {
+        const worker = registration.installing;
+        worker?.addEventListener("statechange", () => {
+          if (worker.state === "installed" && navigator.serviceWorker.controller) {
+            worker.postMessage({ type:"SKIP_WAITING" });
+          }
+        });
+      });
+      await registration.update();
+    } catch (_) { /* offline startup keeps the currently controlled shell */ }
+  });
 }
 
 let bootFailsafeTimer = null;

@@ -1,27 +1,29 @@
-> Current release: **v27.10.0 — Task Details**.
+> Current release: **v27.11.0 — Shift Occurrences & Calendar Projection**.
 
 # DutyLog
 
-Current release: **v27.10.0 — Task Details**
+Current release: **v27.11.0 — Shift Occurrences & Calendar Projection**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.10.0 — Task Details
+## Текущая версия: v27.11.0 — Shift Occurrences & Calendar Projection
 
-Нажатие на карточку задачи теперь открывает отдельный режим просмотра, а не сразу форму редактирования. В нём видны статус, метаданные, описание, сроки, напоминание и чек-лист; редактирование, выполнение/возврат и удаление стали явными действиями.
+Конкретная назначенная смена теперь получает неизменные `startInstant`/`endInstant` и исходную IANA-зону. Поэтому `08:30–17:00 Asia/Yekaterinburg` после переезда в `Europe/Kyiv` отображается как `06:30–15:00`, а не заново трактуется как местные `08:30–17:00`.
 
-У задачи появилось необязательное многострочное описание до 4000 символов. Оно хранится отдельно от короткого названия, сохраняет переносы строк, участвует в поиске по доске и безопасно выводится как обычный текст.
+Если проекция переносит интервал на другой календарный день, календарь показывает его на новой локальной дате. Один абсолютный интервал может визуально разбиваться у полуночи, но в базе остаётся одной сменой. Выходной и другие типы без точного времени остаются плавающими маркерами дня.
 
-Backend добавляет owner-scoped `GET /api/tasks/{id}` и `/api/v1/tasks/{id}`, а Flyway V32 — nullable-колонку `day_tasks.description`. Быстрый ввод не усложнился: для новой задачи по-прежнему достаточно текста и даты.
+Старые смены можно безопасно привязать к исходной зоне через мастер с предпросмотром. Перед обычной сменой часового пояса DutyLog автоматически фиксирует legacy-смены в прежней зоне. Flyway продолжается до **V33**.
 
-Текущая автоматическая база: **83 Java-тестовых класса, 434 `@Test` метода и 18 Playwright browser scenarios**. Flyway продолжается до **V32**.
+**v27.10.0 — Task Details** сохранён и дополнительно защищён от старого PWA-кэша: карточка задачи открывает read-first детали, а редактор — только явная кнопка.
 
-История фундамента: **v27.9.4 — Overtime Split Projection Contract Hotfix**, **v27.9.3 — Overtime Preflight Integrity Hotfix**, **v27.9.2 — Overtime Ledger Integrity Hotfix**, **v27.9.0 — Overtime Interval Engine**, **v27.8.1 — Timezone Projection Refresh Hotfix**, **v27.8.0 — Zoned Work Intervals**, **v27.7.1 — Task & Ledger Layout Hotfix**, **v27.7.0 — Time Foundation**.
+Текущая автоматическая база: **85 Java-тестовых классов, 442 `@Test` метода и 19 Playwright browser scenarios**.
+
+История фундамента: **v27.10.0 — Task Details**, **v27.9.4 — Overtime Split Projection Contract Hotfix**, **v27.9.3 — Overtime Preflight Integrity Hotfix**, **v27.9.2 — Overtime Ledger Integrity Hotfix**, **v27.9.0 — Overtime Interval Engine**, **v27.8.1 — Timezone Projection Refresh Hotfix**, **v27.8.0 — Zoned Work Intervals**, **v27.7.1 — Task & Ledger Layout Hotfix**, **v27.7.0 — Time Foundation**.
 
 ## Возможности
 
-- Календарь смен с типами `Дневная`, `Ночная`, `Выходной` и пользовательскими сменами.
+- Календарь смен с неизменными абсолютными экземплярами, timezone-проекцией, переносом на соседний день и типами `Дневная`, `Ночная`, `Выходной`.
 - Модульный режим: пользователь может включать и выключать Notes, Tasks, Overtime, Important dates, Notifications, Telegram и Scenarios без удаления данных.
 - Первый запуск: новый пользователь выбирает нужные модули через спокойный onboarding, а не сразу попадает в перегруженный интерфейс.
 - Автозаполнение графиков: 2/2, день/ночь/48, 5/2, день/72, ночь/72.
@@ -242,6 +244,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
+- [`docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md`](docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md) — абсолютные экземпляры смен, перенос по локальным датам и миграция legacy-строк.
 - [`docs/TASK_DETAILS_V27.10.0.md`](docs/TASK_DETAILS_V27.10.0.md) — read-first детали задачи, описание, owner-scoped GET и границы редактора.
 - [`docs/OVERTIME_SPLIT_PROJECTION_CONTRACT_HOTFIX_V27.9.4.md`](docs/OVERTIME_SPLIT_PROJECTION_CONTRACT_HOTFIX_V27.9.4.md) — устойчивые номера частей split-отгула в ledger DTO и корректный midnight E2E-контракт.
 - [`docs/OVERTIME_PREFLIGHT_INTEGRITY_HOTFIX_V27.9.3.md`](docs/OVERTIME_PREFLIGHT_INTEGRITY_HOTFIX_V27.9.3.md) — preflight-проверка отгулов до мутации и синхронизация CI-контрактов.
@@ -321,7 +324,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.10.0 через полный Maven и Playwright gate, затем на staging проверить read-first детали, сохранение многострочного описания, поиск по описанию и действия с чек-листом на desktop и mobile.
+Следующий практический шаг — пропустить v27.11.0 через полный Maven и Playwright gate, затем на staging проверить `08:30 GMT+5 → 06:30 GMT+3`, перенос поздней смены на следующий день, legacy-мастер и read-first Task Details после обновления PWA.
 
 ## Служебный профиль администратора
 

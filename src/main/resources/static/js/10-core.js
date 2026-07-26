@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.10.0"
+const DUTYLOG_VERSION = "27.11.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -70,7 +70,9 @@ const state = {
   y: new Date().getFullYear(),
   m: new Date().getMonth(),      // 0–11
   shiftTypes: [],                 // [{id,name,hours,color,builtin,startTime,endTime,breakMinutes,plannedHours}]
-  days: {},                       // { 'YYYY-MM-DD': {shiftTypeId, note, overtimeHours, timeOffHours} }
+  days: {},                       // floating day data keyed by source date
+  shiftOccurrences: [],           // immutable dated shifts projected into the current timezone
+  shiftSegmentsByDate: {},         // display-date -> projected occurrence segments
   tasksByDate: {},                // { 'YYYY-MM-DD': [{id,date,text,done,category,priority,dueDate,dueTime,overdue}] }
   taskFilters: { status:"all", category:"all" },
   taskBoard: { items: [], filters: { status:"open", category:"all", priority:"all", q:"", from:"", to:"" }, page: { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false } },

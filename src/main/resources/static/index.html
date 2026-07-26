@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.10.0" rel="stylesheet"/>
+<link href="app.css?v=27.11.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -583,6 +583,7 @@
 <div class="timeSettingsActions timezoneActions">
 <button class="primary" id="timeSaveTimezone" type="button">Сохранить часовой пояс</button>
 <button id="timeDetectBrowser" type="button">Определить автоматически</button>
+<button id="legacyShiftOpen" type="button" hidden>⚠ Привязать старые смены</button>
 </div>
 <div class="wideHint" id="timeZoneHelp">DutyLog хранит IANA-идентификатор, например Europe/Chisinau. Календарные даты остаются на своём дне, а абсолютные интервалы переработок отображаются в выбранной зоне.</div>
 
@@ -727,7 +728,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.10.0</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.11.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -1129,6 +1130,33 @@
 
 <button class="globalQuickAdd" id="globalQuickAdd" type="button" aria-label="Быстро добавить" title="Быстро добавить">＋</button>
 
+<div class="appModal" id="legacyShiftModal" hidden>
+  <button class="appModalBackdrop" id="legacyShiftBackdrop" type="button" aria-label="Закрыть"></button>
+  <div class="appModalPanel legacyOvertimePanel" role="dialog" aria-modal="true" aria-labelledby="legacyShiftTitle">
+    <div class="appModalHead">
+      <div>
+        <div class="eyebrow">Миграция смен</div>
+        <div class="appModalTitle" id="legacyShiftTitle">Привязать старые смены</div>
+        <div class="appModalHint">Выбери пояс, в котором старые часы действительно означали 08:30–17:00. После подтверждения смены получат неизменные UTC-интервалы.</div>
+      </div>
+      <button class="appModalClose" id="legacyShiftClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div class="legacyMigrationToolbar">
+      <label>Исходный часовой пояс
+        <select id="legacyShiftTimezone"></select>
+      </label>
+      <button id="legacyShiftPreview" type="button">Обновить предпросмотр</button>
+      <button id="legacyShiftSelectAll" type="button">Выбрать все</button>
+    </div>
+    <div class="legacyMigrationStatus" id="legacyShiftStatus" role="status" aria-live="polite"></div>
+    <div class="legacyMigrationList" id="legacyShiftList"></div>
+    <div class="appModalActions">
+      <button id="legacyShiftCancel" type="button">Отмена</button>
+      <button class="primary" id="legacyShiftApply" type="button">Привязать выбранные смены</button>
+    </div>
+  </div>
+</div>
+
 <div class="appModal" id="legacyOvertimeModal" hidden>
   <button class="appModalBackdrop" id="legacyOvertimeBackdrop" type="button" aria-label="Закрыть"></button>
   <div class="appModalPanel legacyOvertimePanel" role="dialog" aria-modal="true" aria-labelledby="legacyOvertimeTitle">
@@ -1192,12 +1220,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.10.0"></script>
-<script src="js/20-data.js?v=27.10.0"></script>
-<script src="js/30-calendar.js?v=27.10.0"></script>
-<script src="js/40-overtime.js?v=27.10.0"></script>
-<script src="js/50-tasks.js?v=27.10.0"></script>
-<script src="js/60-settings.js?v=27.10.0"></script>
-<script src="js/70-user-boot.js?v=27.10.0"></script>
+<script src="js/10-core.js?v=27.11.0"></script>
+<script src="js/20-data.js?v=27.11.0"></script>
+<script src="js/30-calendar.js?v=27.11.0"></script>
+<script src="js/40-overtime.js?v=27.11.0"></script>
+<script src="js/50-tasks.js?v=27.11.0"></script>
+<script src="js/60-settings.js?v=27.11.0"></script>
+<script src="js/70-user-boot.js?v=27.11.0"></script>
 </body>
 </html>

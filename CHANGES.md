@@ -1,3 +1,13 @@
+## v27.11.0 — Shift Occurrences & Calendar Projection
+
+- Concrete dated shifts now persist immutable UTC start/end identity and their original IANA timezone.
+- Changing the canonical user timezone reprojects existing shifts instead of reinterpreting `08:30` as `08:30` in the new zone.
+- Calendar projection can move an occurrence to another local date and split it visually at midnight without duplicating the database row.
+- Added safe legacy-shift preview/migration and automatic freezing in the old zone before a timezone change.
+- Unrelated day saves no longer silently guess a legacy shift timezone.
+- Hardened Service Worker activation so v27.10 Task Details cannot remain hidden behind stale frontend assets.
+- Flyway continues with V33.
+
 ## v27.10.0 — Task Details
 
 - Added a dedicated read-first task details modal; card clicks no longer throw users directly into editing.

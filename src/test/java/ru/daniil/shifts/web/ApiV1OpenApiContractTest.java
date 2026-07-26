@@ -22,4 +22,17 @@ class ApiV1OpenApiContractTest {
             assertTrue(yaml.contains("VERSION_CONFLICT"));
         }
     }
+    @Test
+    void openApiDocumentsImmutableShiftOccurrencesAndLegacyMigration() throws Exception {
+        try (var stream = getClass().getResourceAsStream("/static/openapi/dutylog-v1.yaml")) {
+            assertNotNull(stream, "OpenAPI v1 file must be packaged");
+            String yaml = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
+            assertTrue(yaml.contains("/api/v1/shifts/legacy-migration/preview:"));
+            assertTrue(yaml.contains("/api/v1/shifts/legacy-migration:"));
+            assertTrue(yaml.contains("ShiftOccurrence:"));
+            assertTrue(yaml.contains("LegacyShiftMigrationRequest:"));
+            assertTrue(yaml.contains("legacyLocal:"));
+        }
+    }
+
 }

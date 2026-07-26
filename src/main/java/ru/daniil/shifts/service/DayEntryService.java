@@ -28,15 +28,18 @@ public class DayEntryService {
     private final DayEntryRepository days;
     private final ShiftTypeService shiftTypeService;
     private final WorkIntervalService workIntervalService;
+    private final ShiftOccurrenceService shiftOccurrenceService;
     private final EntityManager entityManager;
 
     public DayEntryService(DayEntryRepository days,
                            ShiftTypeService shiftTypeService,
                            WorkIntervalService workIntervalService,
+                           ShiftOccurrenceService shiftOccurrenceService,
                            EntityManager entityManager) {
         this.days = days;
         this.shiftTypeService = shiftTypeService;
         this.workIntervalService = workIntervalService;
+        this.shiftOccurrenceService = shiftOccurrenceService;
         this.entityManager = entityManager;
     }
 
@@ -90,7 +93,7 @@ public class DayEntryService {
 
         DayEntry entry = days.findByOwnerAndDate(user, d)
                 .orElseGet(() -> new DayEntry(user, d));
-        entry.setShiftType(st);
+        shiftOccurrenceService.assign(user, entry, st, false);
         if (notesMutable) {
             entry.setNote(normalizeNote(req.note()));
         }
@@ -147,7 +150,7 @@ public class DayEntryService {
                 continue;
             }
 
-            entry.setShiftType(plannedShift);
+            shiftOccurrenceService.assign(user, entry, plannedShift, false);
             expectedShiftByDate.put(d, plannedShift.getId());
 
             // Save every date explicitly. With IDENTITY ids this immediately inserts new
@@ -211,9 +214,10 @@ public class DayEntryService {
                 .orElseGet(() -> new DayEntry(user, d));
 
         if (Boolean.TRUE.equals(req.clearShiftType())) {
-            entry.setShiftType(null);
+            shiftOccurrenceService.clear(entry);
         } else if (req.shiftTypeId() != null) {
-            entry.setShiftType(shiftTypeService.requireOwnedShiftType(user, req.shiftTypeId()));
+            shiftOccurrenceService.assign(user, entry,
+                    shiftTypeService.requireOwnedShiftType(user, req.shiftTypeId()), false);
         }
 
         if (Boolean.TRUE.equals(req.clearNote())) {
@@ -260,7 +264,8 @@ public class DayEntryService {
                     projection.netMinutes(),
                     projection.crossesWorkMidnight(),
                     projection.crossesDisplayMidnight(),
-                    projection.sameTimezone()
+                    projection.sameTimezone(),
+                    projection.legacyLocal()
             );
         }
         return DayDto.from(entry, shiftInterval);

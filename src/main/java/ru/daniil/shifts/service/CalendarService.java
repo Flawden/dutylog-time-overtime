@@ -12,6 +12,7 @@ import ru.daniil.shifts.dto.Dtos.NotificationSettingsDto;
 import ru.daniil.shifts.dto.Dtos.ModuleDto;
 import ru.daniil.shifts.dto.Dtos.QuickScenarioDto;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeDto;
+import ru.daniil.shifts.dto.Dtos.ShiftOccurrenceDto;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.model.AppUser;
 
@@ -22,6 +23,7 @@ import java.util.List;
 public class CalendarService {
     private final DayEntryService dayEntryService;
     private final ShiftTypeService shiftTypeService;
+    private final ShiftOccurrenceService shiftOccurrenceService;
     private final OvertimeService overtimeService;
     private final TaskService taskService;
     private final ImportantDayService importantDayService;
@@ -31,6 +33,7 @@ public class CalendarService {
 
     public CalendarService(DayEntryService dayEntryService,
                            ShiftTypeService shiftTypeService,
+                           ShiftOccurrenceService shiftOccurrenceService,
                            OvertimeService overtimeService,
                            TaskService taskService,
                            ImportantDayService importantDayService,
@@ -39,6 +42,7 @@ public class CalendarService {
                            ModuleService moduleService) {
         this.dayEntryService = dayEntryService;
         this.shiftTypeService = shiftTypeService;
+        this.shiftOccurrenceService = shiftOccurrenceService;
         this.overtimeService = overtimeService;
         this.taskService = taskService;
         this.importantDayService = importantDayService;
@@ -73,6 +77,7 @@ public class CalendarService {
                         day.shiftInterval()
                 ))
                 .toList();
+        List<ShiftOccurrenceDto> shiftOccurrences = shiftOccurrenceService.listForDisplayRange(user, from, to);
         List<TaskDto> tasks = tasksEnabled ? taskService.listRange(user, from, to) : List.of();
         List<ImportantDayOccurrenceDto> importantDays = importantEnabled ? importantDayService.occurrences(user, from, to) : List.of();
         OvertimeSummaryDto overtime = overtimeEnabled
@@ -84,6 +89,6 @@ public class CalendarService {
         NotificationSettingsDto notificationSettings = notificationsEnabled ? notificationService.settings(user) : null;
         List<NotificationReminderDto> reminders = notificationsEnabled ? notificationService.upcoming(user, from, to) : List.of();
         List<QuickScenarioDto> quickScenarios = scenariosEnabled && overtimeEnabled ? quickScenarioService.list(user) : List.of();
-        return new CalendarRangeDto(from.toString(), to.toString(), shiftTypes, dayEntries, tasks, importantDays, overtime, overtimeAccount, notificationSettings, reminders, quickScenarios, modules);
+        return new CalendarRangeDto(from.toString(), to.toString(), shiftTypes, dayEntries, shiftOccurrences, tasks, importantDays, overtime, overtimeAccount, notificationSettings, reminders, quickScenarios, modules);
     }
 }

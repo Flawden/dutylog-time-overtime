@@ -1669,14 +1669,15 @@ $("quickActionUsage")?.addEventListener("click", () => quickActionOvertime("usag
 function renderShiftProjection(){
   const box = $("shiftProjection");
   if (!box) return;
-  const interval = state.selected ? state.days[state.selected]?.shiftInterval : null;
-  if (!interval) {
+  const segment = state.selected ? primaryShiftSegment(state.selected) : null;
+  const occurrence = segment?.occurrence || null;
+  const floatingEntry = state.selected ? state.days[state.selected] : null;
+  const interval = floatingEntry?.shiftInterval || null;
+  if (!occurrence && !interval) {
     box.hidden = true;
     box.innerHTML = "";
     return;
   }
-  const work = shiftIntervalRange(interval, "work");
-  const display = shiftIntervalRange(interval, "display");
   const durationLabel = minutes => {
     const safe = Math.max(0, Number(minutes || 0));
     if (!safe) return state.language === "en" ? "0m" : "0м";
@@ -1684,27 +1685,33 @@ function renderShiftProjection(){
     const minutesLeft = safe % 60;
     return `${hours ? `${hours}${state.language === "en" ? "h" : "ч"}` : ""}${hours && minutesLeft ? " " : ""}${minutesLeft ? `${minutesLeft}${state.language === "en" ? "m" : "м"}` : ""}`;
   };
-  const workDurationText = durationLabel(interval.netMinutes);
-  const breakText = durationLabel(interval.breakMinutes);
-  const durationHint = `${t("Рабочее время смены")}: ${workDurationText}${Number(interval.breakMinutes || 0) > 0 ? ` · ${t("Обед в смене")}: ${breakText}` : ""}`;
+  const netMinutes = occurrence?.netMinutes ?? interval?.netMinutes ?? 0;
+  const breakMinutes = occurrence?.breakMinutes ?? interval?.breakMinutes ?? 0;
+  const durationHint = `${t("Рабочее время смены")}: ${durationLabel(netMinutes)}${Number(breakMinutes) > 0 ? ` · ${t("Обед в смене")}: ${durationLabel(breakMinutes)}` : ""}`;
 
-  if (interval.sameTimezone) {
+  if (occurrence) {
+    const currentRange = segment?.range || displayDateTimeRange(occurrence.displayStart, occurrence.displayEnd);
+    const sourceRange = displayDateTimeRange(occurrence.sourceStart, occurrence.sourceEnd);
+    const movedDay = occurrence.sourceDate !== state.selected;
     box.innerHTML = `
       <div class="shiftProjectionRow primary">
-        <span>${esc(t("Рабочая смена"))}</span>
-        <strong>${esc(work)}</strong>
-        <code>${esc(interval.workTimezone || "")}</code>
+        <span>${esc(t("Текущее отображение"))}</span>
+        <strong>${esc(currentRange)}</strong>
+        <code>${esc(occurrence.displayTimezone || "")}</code>
       </div>
+      <div class="shiftProjectionRow">
+        <span>${esc(t("Исходная смена"))}</span>
+        <strong>${esc(sourceRange)}</strong>
+        <code>${esc(occurrence.sourceTimezone || "")}</code>
+      </div>
+      ${movedDay ? `<div class="shiftProjectionHint">${esc(t("Смена назначена на исходную дату"))}: ${esc(occurrence.sourceDate)}</div>` : ""}
+      ${occurrence.legacyLocal ? `<div class="shiftProjectionHint warn">⚠ ${esc(t("Старая смена ещё не привязана к часовому поясу"))}</div>` : ""}
       <div class="shiftProjectionHint">${esc(durationHint)}</div>
     `;
   } else {
+    const work = shiftIntervalRange(interval, "work");
     box.innerHTML = `
       <div class="shiftProjectionRow primary">
-        <span>${esc(t("В часовом поясе отображения"))}</span>
-        <strong>${esc(display)}</strong>
-        <code>${esc(interval.displayTimezone || "")}</code>
-      </div>
-      <div class="shiftProjectionRow">
         <span>${esc(t("Рабочая смена"))}</span>
         <strong>${esc(work)}</strong>
         <code>${esc(interval.workTimezone || "")}</code>
@@ -1718,7 +1725,9 @@ function renderShiftProjection(){
 function renderChips(){
   const box = $("chips");
   box.innerHTML = "";
-  const cur = state.days[state.selected]?.shiftTypeId ?? null;
+  const projectedOccurrence = state.selected ? shiftOccurrenceForDate(state.selected) : null;
+  const sourceDate = projectedOccurrence?.sourceDate || state.selected;
+  const cur = projectedOccurrence?.shiftTypeId ?? state.days[sourceDate]?.shiftTypeId ?? null;
   for (const s of state.shiftTypes) {
     const b = document.createElement("button");
     const on = cur === s.id;
@@ -1792,8 +1801,9 @@ async function setDayEmoji(value){
 }
 
 async function toggleShift(id){
-  const k = state.selected;
-  if (!k) return;
+  const selectedDate = state.selected;
+  const k = shiftSourceDateForSelected();
+  if (!selectedDate || !k) return;
   // A debounced note save contains a full day snapshot. Flush it first, otherwise
   // its older shiftTypeId can arrive after the deletion and resurrect the shift.
   await flushPendingSave();
@@ -1810,6 +1820,10 @@ async function toggleShift(id){
   updateAccSummaries();
   renderChips(); renderCalendar();
   await pushDaySnapshot(k, next);
+  // The projected calendar date may differ from the source date. Always reload the
+  // authoritative occurrence list after assigning or clearing a shift.
+  await loadMonth({ fresh:true });
+  if (selectedDate) selectDay(selectedDate);
 }
 
 const daySaveChains = new Map();

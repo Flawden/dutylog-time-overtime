@@ -53,7 +53,88 @@ function renderMd(src){
 }
 
 /* ─── Рендер календаря ──────────────────────────────────────── */
-function stOf(k){ const e = state.days[k]; return e ? state.shiftTypes.find(s => s.id === e.shiftTypeId) : null; }
+function occurrenceFromLegacyDay(day){
+  const interval = day?.shiftInterval;
+  if (!day?.shiftTypeId || !interval?.displayStart || !interval?.displayEnd) return null;
+  return normalizeShiftOccurrence({
+    dayEntryId:null, sourceDate:day.date, shiftTypeId:day.shiftTypeId,
+    startInstant:interval.startInstant, endInstant:interval.endInstant,
+    sourceStart:interval.workStart, sourceEnd:interval.workEnd,
+    displayStart:interval.displayStart, displayEnd:interval.displayEnd,
+    sourceTimezone:interval.workTimezone, displayTimezone:interval.displayTimezone,
+    breakMinutes:interval.breakMinutes, elapsedMinutes:interval.elapsedMinutes,
+    netMinutes:interval.netMinutes, legacyLocal:interval.legacyLocal !== false
+  });
+}
+
+function normalizeShiftOccurrence(value = {}){
+  return {
+    ...value,
+    dayEntryId:Number(value.dayEntryId || 0) || null,
+    shiftTypeId:Number(value.shiftTypeId || 0) || null,
+    sourceDate:String(value.sourceDate || ""),
+    sourceStart:String(value.sourceStart || ""),
+    sourceEnd:String(value.sourceEnd || ""),
+    displayStart:String(value.displayStart || ""),
+    displayEnd:String(value.displayEnd || ""),
+    breakMinutes:Number(value.breakMinutes || 0),
+    elapsedMinutes:Number(value.elapsedMinutes || 0),
+    netMinutes:Number(value.netMinutes || 0),
+    legacyLocal:!!value.legacyLocal,
+  };
+}
+function localDatePart(value){ return String(value || "").slice(0,10); }
+function localTimePart(value){ return String(value || "").slice(11,16); }
+function nextIsoDate(value){
+  const [y,m,d] = String(value).split("-").map(Number);
+  const next = new Date(Date.UTC(y, m - 1, d + 1));
+  return `${next.getUTCFullYear()}-${String(next.getUTCMonth()+1).padStart(2,"0")}-${String(next.getUTCDate()).padStart(2,"0")}`;
+}
+function occurrenceSegments(occurrence){
+  const occ = normalizeShiftOccurrence(occurrence);
+  const startDate = localDatePart(occ.displayStart);
+  const endDate = localDatePart(occ.displayEnd);
+  const startTime = localTimePart(occ.displayStart);
+  const endTime = localTimePart(occ.displayEnd);
+  if (!startDate || !endDate || !startTime || !endTime) return [];
+  if (startDate === endDate) return [{ occurrence:occ, displayDate:startDate, startTime, endTime, range:`${startTime}–${endTime}`, first:true, last:true }];
+  const segments = [];
+  let date = startDate;
+  let guard = 0;
+  while (date <= endDate && guard++ < 8) {
+    const first = date === startDate;
+    const last = date === endDate;
+    if (last && endTime === "00:00") break;
+    const segmentStart = first ? startTime : "00:00";
+    const segmentEnd = last ? endTime : "24:00";
+    segments.push({ occurrence:occ, displayDate:date, startTime:segmentStart, endTime:segmentEnd, range:`${segmentStart}–${segmentEnd}`, first, last });
+    date = nextIsoDate(date);
+  }
+  return segments;
+}
+function rebuildShiftOccurrenceIndex(){
+  state.shiftSegmentsByDate = {};
+  for (const occurrence of state.shiftOccurrences || []) {
+    for (const segment of occurrenceSegments(occurrence)) {
+      (state.shiftSegmentsByDate[segment.displayDate] ||= []).push(segment);
+    }
+  }
+  for (const segments of Object.values(state.shiftSegmentsByDate)) {
+    segments.sort((a,b) => a.startTime.localeCompare(b.startTime) || Number(a.occurrence.dayEntryId || 0) - Number(b.occurrence.dayEntryId || 0));
+  }
+}
+function shiftSegmentsOf(k){ return state.shiftSegmentsByDate?.[k] || []; }
+function primaryShiftSegment(k){ return shiftSegmentsOf(k)[0] || null; }
+function shiftOccurrenceForDate(k){ return primaryShiftSegment(k)?.occurrence || null; }
+function shiftSourceDateForSelected(){ return shiftOccurrenceForDate(state.selected)?.sourceDate || state.selected; }
+function stOf(k){
+  const projected = primaryShiftSegment(k);
+  if (projected) return state.shiftTypes.find(s => Number(s.id) === Number(projected.occurrence.shiftTypeId)) || null;
+  const e = state.days[k];
+  const sourceType = e ? state.shiftTypes.find(s => Number(s.id) === Number(e.shiftTypeId)) : null;
+  // Untimed types such as “Выходной” remain floating calendar-day markers.
+  return sourceType && (!sourceType.startTime || !sourceType.endTime) ? sourceType : null;
+}
 
 function shiftIntervalRange(interval, projection = "display"){
   if (!interval) return "";
@@ -139,17 +220,20 @@ function renderCalendar(){
       const nm = document.createElement("span");
       nm.className = "shift"; nm.style.color = st.color; nm.textContent = shiftDisplayName(st);
       cell.appendChild(nm);
-      const interval = entry?.shiftInterval;
-      if (interval) {
-        const range = shiftIntervalRange(interval, "display");
-        if (range) {
-          cell.title = shiftIntervalTitle(interval);
-          if (!interval.sameTimezone) {
-            const clock = document.createElement("span");
-            clock.className = "shiftClock";
-            clock.textContent = range;
-            cell.appendChild(clock);
-          }
+      const segment = primaryShiftSegment(k);
+      if (segment) {
+        const occ = segment.occurrence;
+        cell.title = `${t("Текущее отображение")}: ${segment.range} · ${occ.displayTimezone || ""}\n${t("Исходная смена")}: ${displayDateTimeRange(occ.sourceStart, occ.sourceEnd)} · ${occ.sourceTimezone || ""}`;
+        const clock = document.createElement("span");
+        clock.className = "shiftClock";
+        clock.textContent = segment.range;
+        cell.appendChild(clock);
+        const extra = shiftSegmentsOf(k).length - 1;
+        if (extra > 0) {
+          const more = document.createElement("span");
+          more.className = "shiftMore";
+          more.textContent = `+${extra}`;
+          cell.appendChild(more);
         }
       }
     }
@@ -215,14 +299,20 @@ function renderCalendar(){
 
 function renderSummary(){
   const counts = {}; let hours = 0, overtime = 0, timeOff = 0;
-  for (const [k, v] of Object.entries(state.days)) {
+  for (const v of Object.values(state.days)) {
     if (moduleEnabled("overtime")) {
       overtime += numOr0(v.overtimeHours);
       timeOff += numOr0(v.timeOffHours);
     }
-    if (!v.shiftTypeId) continue;
-    counts[v.shiftTypeId] = (counts[v.shiftTypeId] || 0) + 1;
-    const st = state.shiftTypes.find(s => s.id === v.shiftTypeId);
+    const sourceType = state.shiftTypes.find(s => Number(s.id) === Number(v.shiftTypeId));
+    if (sourceType && (!sourceType.startTime || !sourceType.endTime)) counts[sourceType.id] = (counts[sourceType.id] || 0) + 1;
+  }
+  const monthStart = monthFromTo().from;
+  const monthEnd = monthFromTo().to;
+  for (const occurrence of state.shiftOccurrences || []) {
+    if (!occurrenceSegments(occurrence).some(segment => segment.displayDate >= monthStart && segment.displayDate <= monthEnd)) continue;
+    counts[occurrence.shiftTypeId] = (counts[occurrence.shiftTypeId] || 0) + 1;
+    const st = state.shiftTypes.find(s => Number(s.id) === Number(occurrence.shiftTypeId));
     if (st) hours += shiftPlannedHours(st);
   }
   const el = $("summary");
@@ -397,7 +487,7 @@ function updateAccSummaries(){
   if (!k) return;
 
   // Смена
-  const st = state.shiftTypes.find(s => s.id === state.days[k]?.shiftTypeId);
+  const st = stOf(k);
   $("sumShift").innerHTML = st
     ? `<span class="dot" style="background:${st.color}"></span><span style="color:${st.color}">${esc(shiftDisplayName(st))}${shiftPlannedHours(st) ? " · " + fmtHours(shiftPlannedHours(st)) + (state.language === "en" ? "h" : "ч") : ""}</span>`
     : t("не отмечена");

@@ -22,13 +22,16 @@ public class ShiftTypeService {
 
     private final ShiftTypeRepository shiftTypes;
     private final DayEntryRepository days;
+    private final ShiftOccurrenceService shiftOccurrenceService;
     private final SecurityEventLogger securityEvents;
 
     public ShiftTypeService(ShiftTypeRepository shiftTypes,
                             DayEntryRepository days,
+                            ShiftOccurrenceService shiftOccurrenceService,
                             SecurityEventLogger securityEvents) {
         this.shiftTypes = shiftTypes;
         this.days = days;
+        this.shiftOccurrenceService = shiftOccurrenceService;
         this.securityEvents = securityEvents;
     }
 
@@ -97,7 +100,7 @@ public class ShiftTypeService {
         }
 
         days.findByShiftType(st).forEach(entry -> {
-            entry.setShiftType(null);
+            shiftOccurrenceService.clear(entry);
             if (entry.isEmpty()) {
                 days.delete(entry);
             } else {

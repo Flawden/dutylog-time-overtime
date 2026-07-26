@@ -2941,3 +2941,13 @@ body.panel-open .globalQuickAdd { display:none !important; }
   .taskDetailsActions { display:grid; grid-template-columns:1fr; }
   .taskDetailsActions button { width:100%; }
 }
+
+/* v27.11.0 — immutable dated shift occurrences and calendar projection. */
+.cell .shiftMore {
+  position:absolute; right:6px; bottom:5px; min-width:18px; height:18px; padding:0 5px;
+  border-radius:999px; display:inline-flex; align-items:center; justify-content:center;
+  font:700 9px/1 ui-monospace,monospace; color:var(--text); background:var(--panel2);
+  border:1px solid var(--line);
+}
+.shiftProjectionHint.warn { color:var(--warn, #f5b841); }
+.legacyShiftProjection { display:grid; gap:2px; margin-top:5px; font-size:11px; color:var(--mut); }

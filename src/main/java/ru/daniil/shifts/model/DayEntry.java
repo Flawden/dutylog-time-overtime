@@ -2,6 +2,7 @@ package ru.daniil.shifts.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.Instant;
 
 /**
@@ -36,6 +37,32 @@ public class DayEntry {
     @JoinColumn(name = "shift_type_id")
     private ShiftType shiftType; // может быть null
 
+    /** Immutable absolute identity of this concrete dated shift occurrence. */
+    @Column(name = "shift_start_instant")
+    private Instant shiftStartInstant;
+
+    @Column(name = "shift_end_instant")
+    private Instant shiftEndInstant;
+
+    /** IANA zone in which the occurrence was originally assigned. */
+    @Column(name = "shift_source_timezone", length = 80)
+    private String shiftSourceTimezone;
+
+    @Column(name = "shift_source_date")
+    private LocalDate shiftSourceDate;
+
+    @Column(name = "shift_source_start_time")
+    private LocalTime shiftSourceStartTime;
+
+    @Column(name = "shift_source_end_time")
+    private LocalTime shiftSourceEndTime;
+
+    @Column(name = "shift_break_minutes")
+    private Integer shiftBreakMinutes;
+
+    @Column(name = "shift_net_minutes")
+    private Long shiftNetMinutes;
+
     @Column(name = "overtime_hours", nullable = false)
     private Double overtimeHours = 0.0;
 
@@ -69,6 +96,50 @@ public class DayEntry {
     public LocalDate getDate() { return date; }
     public ShiftType getShiftType() { return shiftType; }
     public void setShiftType(ShiftType shiftType) { this.shiftType = shiftType; }
+    public Instant getShiftStartInstant() { return shiftStartInstant; }
+    public Instant getShiftEndInstant() { return shiftEndInstant; }
+    public String getShiftSourceTimezone() { return shiftSourceTimezone; }
+    public LocalDate getShiftSourceDate() { return shiftSourceDate; }
+    public LocalTime getShiftSourceStartTime() { return shiftSourceStartTime; }
+    public LocalTime getShiftSourceEndTime() { return shiftSourceEndTime; }
+    public int getShiftBreakMinutes() { return shiftBreakMinutes == null ? 0 : Math.max(0, shiftBreakMinutes); }
+    public long getShiftNetMinutes() { return shiftNetMinutes == null ? 0L : Math.max(0L, shiftNetMinutes); }
+
+    public boolean hasShiftOccurrenceSnapshot() {
+        return shiftStartInstant != null
+                && shiftEndInstant != null
+                && shiftSourceTimezone != null
+                && !shiftSourceTimezone.isBlank();
+    }
+
+    public void captureShiftOccurrence(Instant startInstant,
+                                       Instant endInstant,
+                                       String sourceTimezone,
+                                       LocalDate sourceDate,
+                                       LocalTime sourceStartTime,
+                                       LocalTime sourceEndTime,
+                                       int breakMinutes,
+                                       long netMinutes) {
+        this.shiftStartInstant = startInstant;
+        this.shiftEndInstant = endInstant;
+        this.shiftSourceTimezone = sourceTimezone;
+        this.shiftSourceDate = sourceDate;
+        this.shiftSourceStartTime = sourceStartTime;
+        this.shiftSourceEndTime = sourceEndTime;
+        this.shiftBreakMinutes = Math.max(0, breakMinutes);
+        this.shiftNetMinutes = Math.max(0L, netMinutes);
+    }
+
+    public void clearShiftOccurrence() {
+        this.shiftStartInstant = null;
+        this.shiftEndInstant = null;
+        this.shiftSourceTimezone = null;
+        this.shiftSourceDate = null;
+        this.shiftSourceStartTime = null;
+        this.shiftSourceEndTime = null;
+        this.shiftBreakMinutes = null;
+        this.shiftNetMinutes = null;
+    }
     public double getOvertimeHours() { return overtimeHours == null ? 0.0 : overtimeHours; }
     public void setOvertimeHours(double overtimeHours) { this.overtimeHours = Math.max(0.0, overtimeHours); }
     public double getTimeOffHours() { return timeOffHours == null ? 0.0 : timeOffHours; }

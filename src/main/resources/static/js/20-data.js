@@ -23,6 +23,8 @@ const api = {
   async createShiftType(b)  { return jfetch("/api/shift-types", { method:"POST", body:b }); },
   async updateShiftType(id, b) { return jfetch(`/api/shift-types/${id}`, { method:"PATCH", body:b }); },
   async deleteShiftType(id) { return jfetch(`/api/shift-types/${id}`, { method:"DELETE" }); },
+  async previewLegacyShifts(sourceTimezone) { return jfetch(`/api/shifts/legacy-migration/preview?sourceTimezone=${encodeURIComponent(sourceTimezone)}`); },
+  async migrateLegacyShifts(b) { return jfetch("/api/shifts/legacy-migration", { method:"POST", body:b }); },
   async month(y, m, opts = {}) {
     const r = monthFromTo(y, m);
     const fresh = !!opts.fresh;
@@ -168,6 +170,7 @@ function sanitizeCalendarBundleForModules(bundle){
   const clean = { ...bundle };
   clean.modules = Array.isArray(bundle.modules) ? bundle.modules : (state.modulesList || []);
   clean.days = (bundle.days || []).map(sanitizeDayForModules);
+  clean.shiftOccurrences = Array.isArray(bundle.shiftOccurrences) ? bundle.shiftOccurrences : [];
   if (!moduleEnabled("tasks")) clean.tasks = [];
   if (!moduleEnabled("important_dates")) clean.importantDays = [];
   if (!moduleEnabled("overtime")) {

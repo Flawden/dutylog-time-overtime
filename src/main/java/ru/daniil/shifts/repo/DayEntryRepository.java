@@ -8,6 +8,7 @@ import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.ShiftType;
 
 import java.time.LocalDate;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,6 +24,21 @@ public interface DayEntryRepository extends JpaRepository<DayEntry, Long> {
 
     /** Все записи владельца от первой до последней — для совместимости и общих отчётов. */
     List<DayEntry> findByOwnerOrderByDateAsc(AppUser owner);
+
+    /** Absolute shift occurrences intersecting a requested display interval. */
+    List<DayEntry> findByOwnerAndShiftStartInstantLessThanAndShiftEndInstantGreaterThanOrderByShiftStartInstantAsc(
+            AppUser owner, Instant endExclusive, Instant startInclusive);
+
+    /** Legacy dated shifts that still need an absolute occurrence snapshot. */
+    @Query("""
+            select d from DayEntry d
+            join fetch d.shiftType
+            where d.owner = :owner
+              and d.shiftType is not null
+              and d.shiftStartInstant is null
+            order by d.date asc, d.id asc
+            """)
+    List<DayEntry> findLegacyShiftOccurrences(@Param("owner") AppUser owner);
 
     /** Conservative preflight count for bounded note export (blank notes count toward the cap). */
     long countByOwnerAndNoteIsNotNull(AppUser owner);

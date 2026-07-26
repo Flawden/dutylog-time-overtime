@@ -10,11 +10,12 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 
 /**
- * Resolves work-local wall-clock ranges into absolute intervals.
- * This is the shared boundary that Overtime 2.0 will consume.
+ * Resolves wall-clock work ranges into immutable absolute occurrences and
+ * reprojects those occurrences into the user's current canonical timezone.
  */
 @Service
 public class WorkIntervalService {
@@ -24,18 +25,55 @@ public class WorkIntervalService {
         this.userTimeService = userTimeService;
     }
 
+    /**
+     * Resolves a concrete dated shift. Existing occurrence snapshots are the
+     * source of truth; legacy rows fall back to the user's current timezone.
+     */
     public ResolvedWorkInterval resolveShift(AppUser user, DayEntry dayEntry) {
         if (dayEntry == null || dayEntry.getDate() == null || dayEntry.getShiftType() == null) {
             throw new IllegalArgumentException("A dated shift entry is required");
         }
+        if (dayEntry.hasShiftOccurrenceSnapshot()) {
+            ZoneId sourceZone = userTimeService.resolveZone(
+                    dayEntry.getShiftSourceTimezone(), userTimeService.workZone(user));
+            ZonedDateTime sourceStart = dayEntry.getShiftStartInstant().atZone(sourceZone);
+            ZonedDateTime sourceEnd = dayEntry.getShiftEndInstant().atZone(sourceZone);
+            long elapsed = Duration.between(dayEntry.getShiftStartInstant(), dayEntry.getShiftEndInstant()).toMinutes();
+            int breakMinutes = dayEntry.getShiftBreakMinutes();
+            long netMinutes = dayEntry.getShiftNetMinutes() > 0
+                    ? dayEntry.getShiftNetMinutes()
+                    : Math.max(0L, elapsed - breakMinutes);
+            return new ResolvedWorkInterval(
+                    dayEntry.getShiftSourceDate() != null ? dayEntry.getShiftSourceDate() : sourceStart.toLocalDate(),
+                    sourceStart.toLocalDateTime(),
+                    sourceEnd.toLocalDateTime(),
+                    dayEntry.getShiftStartInstant(),
+                    dayEntry.getShiftEndInstant(),
+                    sourceZone.getId(),
+                    elapsed,
+                    breakMinutes,
+                    netMinutes,
+                    !sourceStart.toLocalDate().equals(sourceEnd.toLocalDate()),
+                    false
+            );
+        }
+
         ShiftType shift = dayEntry.getShiftType();
-        return resolve(user, dayEntry.getDate(), shift.getStartTime(), shift.getEndTime(), shift.getBreakMinutes());
+        ResolvedWorkInterval legacy = resolve(
+                user,
+                dayEntry.getDate(),
+                shift.getStartTime(),
+                shift.getEndTime(),
+                shift.getBreakMinutes());
+        return new ResolvedWorkInterval(
+                legacy.workDate(), legacy.localStart(), legacy.localEnd(),
+                legacy.startInstant(), legacy.endInstant(), legacy.workTimezone(),
+                legacy.elapsedMinutes(), legacy.breakMinutes(), legacy.netMinutes(),
+                legacy.crossesMidnight(), true
+        );
     }
 
-    /**
-     * Projects one dated work shift into both user zones without changing its
-     * absolute identity. This is safe to call repeatedly after display-zone changes.
-     */
+    /** Projects one occurrence into its source zone and the user's current zone. */
     public ShiftProjection projectShift(AppUser user, DayEntry dayEntry) {
         return project(user, resolveShift(user, dayEntry));
     }
@@ -44,27 +82,29 @@ public class WorkIntervalService {
         if (interval == null) {
             throw new IllegalArgumentException("Resolved work interval is required");
         }
-        ZonedDateTime workStart = userTimeService.inWorkZone(interval.startInstant(), user);
-        ZonedDateTime workEnd = userTimeService.inWorkZone(interval.endInstant(), user);
-        ZonedDateTime displayStart = userTimeService.inDisplayZone(interval.startInstant(), user);
-        ZonedDateTime displayEnd = userTimeService.inDisplayZone(interval.endInstant(), user);
-        String workTimezone = userTimeService.workZone(user).getId();
-        String displayTimezone = userTimeService.displayZone(user).getId();
+        ZoneId sourceZone = userTimeService.resolveZone(
+                interval.workTimezone(), userTimeService.workZone(user));
+        ZoneId displayZone = userTimeService.workZone(user);
+        ZonedDateTime sourceStart = interval.startInstant().atZone(sourceZone);
+        ZonedDateTime sourceEnd = interval.endInstant().atZone(sourceZone);
+        ZonedDateTime displayStart = interval.startInstant().atZone(displayZone);
+        ZonedDateTime displayEnd = interval.endInstant().atZone(displayZone);
         return new ShiftProjection(
                 interval.startInstant(),
                 interval.endInstant(),
-                workStart,
-                workEnd,
+                sourceStart,
+                sourceEnd,
                 displayStart,
                 displayEnd,
-                workTimezone,
-                displayTimezone,
+                sourceZone.getId(),
+                displayZone.getId(),
                 interval.breakMinutes(),
                 interval.elapsedMinutes(),
                 interval.netMinutes(),
-                !workStart.toLocalDate().equals(workEnd.toLocalDate()),
+                !sourceStart.toLocalDate().equals(sourceEnd.toLocalDate()),
                 !displayStart.toLocalDate().equals(displayEnd.toLocalDate()),
-                workTimezone.equals(displayTimezone)
+                sourceZone.equals(displayZone),
+                interval.legacyLocal()
         );
     }
 
@@ -73,15 +113,25 @@ public class WorkIntervalService {
                                         LocalTime startTime,
                                         LocalTime endTime,
                                         int breakMinutes) {
+        return resolveInZone(userTimeService.workZone(user), workDate, startTime, endTime, breakMinutes);
+    }
+
+    /** Resolves a wall-clock interval in an explicitly selected source zone. */
+    public ResolvedWorkInterval resolveInZone(ZoneId sourceZone,
+                                              LocalDate workDate,
+                                              LocalTime startTime,
+                                              LocalTime endTime,
+                                              int breakMinutes) {
         if (workDate == null || startTime == null || endTime == null) {
             throw new IllegalArgumentException("Work date, start time and end time are required");
         }
+        ZoneId safeZone = sourceZone == null ? UserTimeService.FALLBACK_ZONE : sourceZone;
         int safeBreak = Math.max(0, breakMinutes);
         LocalDateTime localStart = LocalDateTime.of(workDate, startTime);
         LocalDate endDate = endTime.isAfter(startTime) ? workDate : workDate.plusDays(1);
         LocalDateTime localEnd = LocalDateTime.of(endDate, endTime);
-        Instant startInstant = userTimeService.toWorkInstant(user, localStart);
-        Instant endInstant = userTimeService.toWorkInstant(user, localEnd);
+        Instant startInstant = userTimeService.resolveLocalDateTime(localStart, safeZone).toInstant();
+        Instant endInstant = userTimeService.resolveLocalDateTime(localEnd, safeZone).toInstant();
         long elapsed = Duration.between(startInstant, endInstant).toMinutes();
         if (elapsed <= 0) {
             throw new IllegalArgumentException("Work interval must have a positive duration");
@@ -93,11 +143,12 @@ public class WorkIntervalService {
                 localEnd,
                 startInstant,
                 endInstant,
-                userTimeService.workZone(user).getId(),
+                safeZone.getId(),
                 elapsed,
                 safeBreak,
                 net,
-                !workDate.equals(endDate)
+                !workDate.equals(endDate),
+                false
         );
     }
 
@@ -111,7 +162,8 @@ public class WorkIntervalService {
             long elapsedMinutes,
             int breakMinutes,
             long netMinutes,
-            boolean crossesMidnight
+            boolean crossesMidnight,
+            boolean legacyLocal
     ) {}
 
     public record ShiftProjection(
@@ -128,6 +180,7 @@ public class WorkIntervalService {
             long netMinutes,
             boolean crossesWorkMidnight,
             boolean crossesDisplayMidnight,
-            boolean sameTimezone
+            boolean sameTimezone,
+            boolean legacyLocal
     ) {}
 }

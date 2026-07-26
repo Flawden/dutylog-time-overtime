@@ -187,8 +187,42 @@ paths:
   /api/v1/calendar:
     get:
       operationId: calendarRange
+      description: Calendar aggregate including immutable dated shift occurrences projected into the current user timezone.
       responses:
         '200': { description: Calendar aggregate }
+  /api/v1/shifts/legacy-migration/preview:
+    get:
+      operationId: previewLegacyShiftMigration
+      parameters:
+        - in: query
+          name: sourceTimezone
+          required: true
+          schema: { type: string, example: Asia/Yekaterinburg }
+      responses:
+        '200':
+          description: Legacy dated shifts interpreted in the selected source timezone without writing changes
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegacyShiftMigrationPreview' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/shifts/legacy-migration:
+    post:
+      operationId: migrateLegacyShifts
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LegacyShiftMigrationRequest' }
+      responses:
+        '200':
+          description: Remaining legacy shifts after the selected occurrences were frozen as absolute intervals
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegacyShiftMigrationPreview' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
   /api/v1/days/{date}:
     put:
       operationId: upsertDay
@@ -777,23 +811,74 @@ components:
         active: { type: boolean }
     ShiftInterval:
       type: object
-      description: One dated work shift resolved to absolute instants in the canonical user timezone. Legacy work/display projections are identical.
-      required: [startInstant, endInstant, workStart, workEnd, displayStart, displayEnd, workTimezone, displayTimezone, breakMinutes, elapsedMinutes, netMinutes, crossesWorkMidnight, crossesDisplayMidnight, sameTimezone]
+      description: One dated shift with immutable absolute identity, its original source-zone projection and its current user-zone projection.
+      required: [startInstant, endInstant, workStart, workEnd, displayStart, displayEnd, workTimezone, displayTimezone, breakMinutes, elapsedMinutes, netMinutes, crossesWorkMidnight, crossesDisplayMidnight, sameTimezone, legacyLocal]
       properties:
         startInstant: { type: string, format: date-time }
         endInstant: { type: string, format: date-time }
         workStart: { type: string, example: '2026-07-25T08:30' }
         workEnd: { type: string, example: '2026-07-25T17:00' }
-        displayStart: { type: string, example: '2026-07-25T08:30', description: Compatibility alias of workStart }
-        displayEnd: { type: string, example: '2026-07-25T17:00', description: Compatibility alias of workEnd }
+        displayStart: { type: string, example: '2026-07-25T06:30' }
+        displayEnd: { type: string, example: '2026-07-25T15:00' }
         workTimezone: { type: string, example: Asia/Yekaterinburg }
-        displayTimezone: { type: string, example: Asia/Yekaterinburg, description: Compatibility alias of workTimezone }
+        displayTimezone: { type: string, example: Europe/Kyiv }
         breakMinutes: { type: integer, minimum: 0 }
         elapsedMinutes: { type: integer, format: int64, minimum: 1 }
         netMinutes: { type: integer, format: int64, minimum: 0 }
         crossesWorkMidnight: { type: boolean }
         crossesDisplayMidnight: { type: boolean }
         sameTimezone: { type: boolean }
+        legacyLocal: { type: boolean, description: True only when the server had to interpret an old row without a stored source timezone }
+    ShiftOccurrence:
+      type: object
+      required: [sourceDate, startInstant, endInstant, sourceStart, sourceEnd, displayStart, displayEnd, sourceTimezone, displayTimezone, breakMinutes, elapsedMinutes, netMinutes, legacyLocal]
+      properties:
+        dayEntryId: { type: integer, format: int64, nullable: true }
+        sourceDate: { type: string, format: date }
+        shiftTypeId: { type: integer, format: int64, nullable: true }
+        startInstant: { type: string, format: date-time }
+        endInstant: { type: string, format: date-time }
+        sourceStart: { type: string, example: '2026-07-03T08:30' }
+        sourceEnd: { type: string, example: '2026-07-03T17:00' }
+        displayStart: { type: string, example: '2026-07-03T06:30' }
+        displayEnd: { type: string, example: '2026-07-03T15:00' }
+        sourceTimezone: { type: string, example: Asia/Yekaterinburg }
+        displayTimezone: { type: string, example: Europe/Kyiv }
+        breakMinutes: { type: integer, minimum: 0 }
+        elapsedMinutes: { type: integer, format: int64, minimum: 1 }
+        netMinutes: { type: integer, format: int64, minimum: 0 }
+        legacyLocal: { type: boolean }
+    LegacyShiftOccurrence:
+      type: object
+      properties:
+        dayEntryId: { type: integer, format: int64 }
+        sourceDate: { type: string, format: date }
+        shiftTypeId: { type: integer, format: int64 }
+        shiftName: { type: string }
+        localStart: { type: string }
+        localEnd: { type: string }
+        sourceTimezone: { type: string }
+        projectedStart: { type: string }
+        projectedEnd: { type: string }
+    LegacyShiftMigrationPreview:
+      type: object
+      required: [sourceTimezone, legacyCount, occurrences]
+      properties:
+        sourceTimezone: { type: string }
+        legacyCount: { type: integer, minimum: 0 }
+        occurrences:
+          type: array
+          items: { $ref: '#/components/schemas/LegacyShiftOccurrence' }
+    LegacyShiftMigrationRequest:
+      type: object
+      required: [sourceTimezone, dayEntryIds]
+      properties:
+        sourceTimezone: { type: string, maxLength: 80 }
+        dayEntryIds:
+          type: array
+          minItems: 1
+          maxItems: 5000
+          items: { type: integer, format: int64 }
     Day:
       type: object
       required: [date, overtimeHours, timeOffHours, overtimeBalanceHours, version]

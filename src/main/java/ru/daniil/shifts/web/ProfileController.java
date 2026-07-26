@@ -13,6 +13,7 @@ import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.MobileAuthService;
 import ru.daniil.shifts.service.RememberMeTokenService;
 import ru.daniil.shifts.service.UserTimeService;
+import ru.daniil.shifts.service.ShiftOccurrenceService;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.security.Principal;
@@ -39,6 +40,7 @@ public class ProfileController {
     private final MobileAuthService mobileAuthService;
     private final RememberMeTokenService rememberMeTokenService;
     private final UserTimeService userTimeService;
+    private final ShiftOccurrenceService shiftOccurrenceService;
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
 
@@ -49,12 +51,14 @@ public class ProfileController {
                              MobileAuthService mobileAuthService,
                              RememberMeTokenService rememberMeTokenService,
                              UserTimeService userTimeService,
+                             ShiftOccurrenceService shiftOccurrenceService,
                              PasswordEncoder encoder) {
         this.users = users;
         this.currentUserService = currentUserService;
         this.mobileAuthService = mobileAuthService;
         this.rememberMeTokenService = rememberMeTokenService;
         this.userTimeService = userTimeService;
+        this.shiftOccurrenceService = shiftOccurrenceService;
         this.encoder = encoder;
     }
 
@@ -95,6 +99,12 @@ public class ProfileController {
         String requestedTimezone = req.workTimezone() != null ? req.workTimezone() : req.displayTimezone();
         if (requestedTimezone != null) {
             String timezone = validatedTimezone(requestedTimezone, "Часовой пояс");
+            String previousTimezone = user.getWorkTimezone();
+            if (!previousTimezone.equals(timezone)) {
+                // Freeze all legacy dated shifts in the old zone before changing the
+                // canonical projection. This makes the common upgrade path automatic.
+                shiftOccurrenceService.captureLegacyBeforeTimezoneChange(user, previousTimezone);
+            }
             user.setWorkTimezone(timezone);
             user.setDisplayTimezone(timezone);
         }
