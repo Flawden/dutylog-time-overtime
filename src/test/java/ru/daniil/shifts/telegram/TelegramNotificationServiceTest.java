@@ -93,6 +93,29 @@ class TelegramNotificationServiceTest {
     }
 
     @Test
+    void taskReminderUsesAuthoritativeInstantInsteadOfReinterpretingProjectedLocalTime() {
+        Instant authoritative = Instant.parse("2035-07-26T09:10:00Z");
+        when(userTimeService.nowInstant()).thenReturn(authoritative);
+        NotificationReminderDto reminder = new NotificationReminderDto(
+                "task:absolute", "TASK", "2035-07-26", "2035-07-26T12:10",
+                "Задача: созвон", "Срок 2035-07-26 12:10 Europe/Moscow", 30,
+                authoritative.toString(), "Europe/Moscow", "2035-07-26T12:10", "Europe/Moscow");
+        when(linkService.isConfigured()).thenReturn(true);
+        when(linkRepository.findByEnabledTrueAndNotificationsEnabledTrue()).thenReturn(List.of(link));
+        when(notificationService.upcoming(eq(user), any(), any(), eq(true))).thenReturn(List.of(reminder));
+        when(botService.sendMessage(eq(700L), contains("Задача: созвон"))).thenReturn(true);
+
+        service.scanAndSendDueNotifications();
+
+        ArgumentCaptor<TelegramNotificationDelivery> saved = ArgumentCaptor.forClass(TelegramNotificationDelivery.class);
+        verify(deliveryRepository).existsByOwnerAndReminderIdAndRemindAtInstant(
+                user, "task:absolute", authoritative);
+        verify(deliveryRepository).save(saved.capture());
+        assertEquals(authoritative, saved.getValue().getRemindAtInstant());
+        verify(userTimeService, never()).toWorkInstant(any(AppUser.class), any(LocalDateTime.class));
+    }
+
+    @Test
     void duplicateMalformedAndOutOfWindowRemindersAreSkipped() {
         LocalDateTime now = LocalDateTime.of(2026, 7, 17, 12, 0);
         when(userTimeService.nowInstant()).thenReturn(now.toInstant(ZoneOffset.UTC));

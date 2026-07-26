@@ -13,7 +13,11 @@ import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.repo.ShiftTypeRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Service
@@ -23,15 +27,18 @@ public class ShiftTypeService {
     private final ShiftTypeRepository shiftTypes;
     private final DayEntryRepository days;
     private final ShiftOccurrenceService shiftOccurrenceService;
+    private final UserTimeService userTimeService;
     private final SecurityEventLogger securityEvents;
 
     public ShiftTypeService(ShiftTypeRepository shiftTypes,
                             DayEntryRepository days,
                             ShiftOccurrenceService shiftOccurrenceService,
+                            UserTimeService userTimeService,
                             SecurityEventLogger securityEvents) {
         this.shiftTypes = shiftTypes;
         this.days = days;
         this.shiftOccurrenceService = shiftOccurrenceService;
+        this.userTimeService = userTimeService;
         this.securityEvents = securityEvents;
     }
 
@@ -90,6 +97,48 @@ public class ShiftTypeService {
         if (req.notificationMinutesBefore() != null) st.setNotificationMinutesBefore(req.notificationMinutesBefore() < 0 ? null : req.notificationMinutesBefore());
 
         return ShiftTypeDto.from(shiftTypes.save(st));
+    }
+
+    /**
+     * Rebase every timed shift template when the user changes the canonical
+     * timezone. Existing dated occurrences are frozen before this method runs;
+     * only future assignments use the projected wall-clock values.
+     *
+     * <p>The anchor date is the current date in the old zone. This preserves the
+     * exact start/end instants and elapsed duration across ordinary offset and
+     * DST changes while keeping the template editable as HH:mm values.</p>
+     */
+    @Transactional
+    public int rebaseForTimezoneChange(AppUser user, String oldTimezone, String newTimezone) {
+        ZoneId oldZone = userTimeService.resolveZone(oldTimezone, UserTimeService.FALLBACK_ZONE);
+        ZoneId newZone = userTimeService.resolveZone(newTimezone, UserTimeService.FALLBACK_ZONE);
+        if (oldZone.equals(newZone)) return 0;
+
+        LocalDate anchorDate = userTimeService.nowInstant().atZone(oldZone).toLocalDate();
+        int changed = 0;
+        for (ShiftType shift : shiftTypes.findByOwner(user)) {
+            LocalTime start = shift.getStartTime();
+            LocalTime end = shift.getEndTime();
+            if (start == null || end == null) continue;
+
+            ZonedDateTime oldStart = userTimeService.resolveLocalDateTime(
+                    LocalDateTime.of(anchorDate, start), oldZone);
+            LocalDate endDate = end.isAfter(start) ? anchorDate : anchorDate.plusDays(1);
+            ZonedDateTime oldEnd = userTimeService.resolveLocalDateTime(
+                    LocalDateTime.of(endDate, end), oldZone);
+
+            LocalTime projectedStart = oldStart.toInstant().atZone(newZone).toLocalTime()
+                    .withSecond(0).withNano(0);
+            LocalTime projectedEnd = oldEnd.toInstant().atZone(newZone).toLocalTime()
+                    .withSecond(0).withNano(0);
+            if (!projectedStart.equals(start) || !projectedEnd.equals(end)) {
+                shift.setStartTime(projectedStart);
+                shift.setEndTime(projectedEnd);
+                changed++;
+            }
+        }
+        if (changed > 0) shiftTypes.flush();
+        return changed;
     }
 
     @Transactional

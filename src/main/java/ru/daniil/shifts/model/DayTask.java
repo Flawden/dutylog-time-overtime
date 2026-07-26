@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -52,6 +53,25 @@ public class DayTask {
     @Column(name = "due_time")
     private LocalTime dueTime;
 
+    /**
+     * Absolute deadline for tasks that have both a due date and a due time.
+     *
+     * <p>The legacy {@code dueDate}/{@code dueTime} columns remain the current
+     * canonical-timezone projection used by existing API clients and indexes.
+     * This instant is the source of truth across timezone changes.</p>
+     */
+    @Column(name = "due_instant")
+    private Instant dueInstant;
+
+    @Column(name = "due_source_timezone", length = 80)
+    private String dueSourceTimezone;
+
+    @Column(name = "due_source_date")
+    private LocalDate dueSourceDate;
+
+    @Column(name = "due_source_time")
+    private LocalTime dueSourceTime;
+
     @Column(name = "reminder_enabled", nullable = false)
     private boolean reminderEnabled = false;
 
@@ -97,6 +117,15 @@ public class DayTask {
     public void setDueDate(LocalDate dueDate) { this.dueDate = dueDate; }
     public LocalTime getDueTime() { return dueTime; }
     public void setDueTime(LocalTime dueTime) { this.dueTime = dueTime; }
+    public Instant getDueInstant() { return dueInstant; }
+    public void setDueInstant(Instant dueInstant) { this.dueInstant = dueInstant; }
+    public String getDueSourceTimezone() { return dueSourceTimezone; }
+    public void setDueSourceTimezone(String dueSourceTimezone) { this.dueSourceTimezone = dueSourceTimezone; }
+    public LocalDate getDueSourceDate() { return dueSourceDate; }
+    public void setDueSourceDate(LocalDate dueSourceDate) { this.dueSourceDate = dueSourceDate; }
+    public LocalTime getDueSourceTime() { return dueSourceTime; }
+    public void setDueSourceTime(LocalTime dueSourceTime) { this.dueSourceTime = dueSourceTime; }
+    public boolean hasAbsoluteDeadline() { return dueInstant != null; }
     public boolean isReminderEnabled() { return reminderEnabled; }
     public void setReminderEnabled(boolean reminderEnabled) { this.reminderEnabled = reminderEnabled; }
     public Integer getReminderMinutesBefore() { return reminderMinutesBefore; }

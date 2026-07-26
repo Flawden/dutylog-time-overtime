@@ -1,3 +1,24 @@
+# v27.11.4 — Task Deadline & Reminder Timezone Hotfix
+
+- Timed task deadlines now persist one absolute `dueInstant` plus their original IANA timezone and source local date/time.
+- Changing the canonical timezone reprojects the displayed deadline without changing overdue state or the underlying moment.
+- Deadline projection can cross midnight; date-only deadlines remain floating civil dates.
+- Added an explicit legacy task-deadline preview/migration wizard because historical local-only rows have no trustworthy source timezone.
+- Task-specific browser, mobile and Telegram reminders now share the same authoritative `remindAtInstant`.
+- Task details expose the original deadline whenever it differs from the current projection.
+- Added Flyway V34, API/OpenAPI fields, service/controller/frontend/Telegram tests and a Playwright scenario for `14:10 UTC+5 → 12:10 UTC+3`.
+- Regression baseline: 86 Java test classes, 456 `@Test` methods and 20 Playwright scenarios.
+
+# v27.11.3 — Shift Template & Reminder Timezone Hotfix
+
+- Timed shift templates are rebased when the canonical IANA timezone changes, preserving the same real start/end instants for future assignments.
+- Built-in and custom timed templates refresh back into the settings form after the authoritative calendar reload.
+- Existing dated shifts remain immutable because legacy rows are frozen before template rebasing.
+- Shift reminders now use the occurrence `shiftStartInstant`, including projected local date changes across midnight and month boundaries.
+- Browser and Telegram delivery consume the same `remindAtInstant`; the legacy wall-clock fallback remains only for unmigrated rows.
+- Added service, controller, frontend-contract and Playwright coverage. Flyway remains at V33.
+- Regression baseline: 85 Java test classes, 446 `@Test` methods and 19 Playwright scenarios.
+
 # v27.11.2 — E2E Stability Hotfix
 
 - The shift editor Playwright flow now waits for the authoritative `/api/calendar` refresh triggered by assignment before reloading the page, preventing an intentional navigation abort from being reported as `console.error: Failed to fetch`.

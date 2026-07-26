@@ -12,11 +12,14 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
+import ru.daniil.shifts.model.DayTask;
 import ru.daniil.shifts.model.TaskPriority;
+import ru.daniil.shifts.repo.DayTaskRepository;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.TaskService;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.nullValue;
@@ -39,6 +42,7 @@ class TaskControllerTest {
     @Autowired ObjectMapper objectMapper;
     @Autowired UserRepository users;
     @Autowired TaskService taskService;
+    @Autowired DayTaskRepository taskRepository;
 
     AppUser owner;
     AppUser other;
@@ -124,6 +128,45 @@ class TaskControllerTest {
                         .param("date", "2026-08-10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(0));
+    }
+
+    @Test
+    void legacyTimedTaskDeadlineCanBePreviewedAndMigratedThroughTheApi() throws Exception {
+        owner.setWorkTimezone("Europe/Moscow");
+        owner.setDisplayTimezone("Europe/Moscow");
+        owner = users.save(owner);
+        setTasksEnabled(owner, true);
+
+        DayTask legacy = new DayTask(owner, LocalDate.parse("2035-07-26"), "Старая задача");
+        legacy.setDueDate(LocalDate.parse("2035-07-26"));
+        legacy.setDueTime(LocalTime.parse("14:10"));
+        legacy = taskRepository.saveAndFlush(legacy);
+
+        mvc.perform(get("/api/v1/tasks/legacy-deadline-migration/preview")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .param("sourceTimezone", "Asia/Yekaterinburg"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.legacyCount").value(1))
+                .andExpect(jsonPath("$.tasks[0].taskId").value(legacy.getId()))
+                .andExpect(jsonPath("$.tasks[0].projectedTime").value("12:10"))
+                .andExpect(jsonPath("$.tasks[0].dueInstant").value("2035-07-26T09:10:00Z"));
+
+        mvc.perform(post("/api/tasks/legacy-deadline-migration")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content(objectMapper.writeValueAsString(java.util.Map.of(
+                                "sourceTimezone", "Asia/Yekaterinburg",
+                                "taskIds", java.util.List.of(legacy.getId())))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.legacyCount").value(0));
+
+        mvc.perform(get("/api/tasks/{id}", legacy.getId())
+                        .with(user(owner.getUsername()).roles("USER")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.deadlineAbsolute").value(true))
+                .andExpect(jsonPath("$.dueTime").value("12:10"))
+                .andExpect(jsonPath("$.dueSourceTimezone").value("Asia/Yekaterinburg"));
     }
 
     @Test

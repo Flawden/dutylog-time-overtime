@@ -10,15 +10,19 @@ import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
+import ru.daniil.shifts.dto.Dtos.LegacyTaskDeadlineMigrationRequest;
 import ru.daniil.shifts.dto.Dtos.SubtaskInput;
 import ru.daniil.shifts.dto.Dtos.SubtaskUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
+import ru.daniil.shifts.model.DayTask;
 import ru.daniil.shifts.model.TaskPriority;
 import ru.daniil.shifts.repo.DayTaskRepository;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.time.Instant;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -445,6 +449,87 @@ class TaskServiceTest {
                 null, null, "x".repeat(4001)
         )));
         assertThrows(ApiException.class, () -> taskService.get(other, created.id()));
+    }
+
+    @Test
+    void timedDeadlineKeepsOneInstantAndReprojectsWithTheCanonicalTimezone() {
+        owner.setWorkTimezone("Asia/Yekaterinburg");
+        owner.setDisplayTimezone("Asia/Yekaterinburg");
+        owner = users.save(owner);
+
+        TaskDto created = taskService.create(owner, new TaskCreateRequest(
+                "2035-07-26", "Созвон", null, null, TaskPriority.NORMAL,
+                "2035-07-26", "14:10", true, 0));
+
+        DayTask stored = taskRepository.findById(created.id()).orElseThrow();
+        assertEquals(Instant.parse("2035-07-26T09:10:00Z"), stored.getDueInstant());
+        assertEquals("Asia/Yekaterinburg", stored.getDueSourceTimezone());
+        assertEquals(LocalDate.parse("2035-07-26"), stored.getDueSourceDate());
+        assertEquals(LocalTime.parse("14:10"), stored.getDueSourceTime());
+        assertTrue(created.deadlineAbsolute());
+
+        taskService.rebaseForTimezoneChange(owner, "Asia/Yekaterinburg", "Europe/Moscow");
+        owner.setWorkTimezone("Europe/Moscow");
+        owner.setDisplayTimezone("Europe/Moscow");
+        owner = users.save(owner);
+
+        TaskDto projected = taskService.get(owner, created.id());
+        assertEquals("2035-07-26", projected.dueDate());
+        assertEquals("12:10", projected.dueTime());
+        assertEquals("Asia/Yekaterinburg", projected.dueSourceTimezone());
+        assertEquals("2035-07-26", projected.dueSourceDate());
+        assertEquals("14:10", projected.dueSourceTime());
+        assertEquals(Instant.parse("2035-07-26T09:10:00Z"),
+                taskRepository.findById(created.id()).orElseThrow().getDueInstant());
+    }
+
+    @Test
+    void timedDeadlineMayMoveToTheNextProjectedCalendarDate() {
+        owner.setWorkTimezone("Europe/Kyiv");
+        owner.setDisplayTimezone("Europe/Kyiv");
+        owner = users.save(owner);
+
+        TaskDto created = taskService.create(owner, new TaskCreateRequest(
+                "2026-07-03", "Поздний срок", null, null, TaskPriority.NORMAL,
+                "2026-07-03", "23:10", true, 0));
+
+        taskService.rebaseForTimezoneChange(owner, "Europe/Kyiv", "Asia/Yekaterinburg");
+        owner.setWorkTimezone("Asia/Yekaterinburg");
+        owner.setDisplayTimezone("Asia/Yekaterinburg");
+        owner = users.save(owner);
+
+        TaskDto projected = taskService.get(owner, created.id());
+        assertEquals("2026-07-04", projected.dueDate());
+        assertEquals("01:10", projected.dueTime());
+        assertEquals("2026-07-03", projected.dueSourceDate());
+        assertEquals("23:10", projected.dueSourceTime());
+    }
+
+    @Test
+    void legacyTimedDeadlineMigrationUsesAnExplicitSourceTimezone() {
+        owner.setWorkTimezone("Europe/Moscow");
+        owner.setDisplayTimezone("Europe/Moscow");
+        owner = users.save(owner);
+
+        DayTask legacy = new DayTask(owner, LocalDate.parse("2035-07-26"), "Старая задача");
+        legacy.setDueDate(LocalDate.parse("2035-07-26"));
+        legacy.setDueTime(LocalTime.parse("14:10"));
+        legacy = taskRepository.saveAndFlush(legacy);
+        assertNull(legacy.getDueInstant());
+
+        var preview = taskService.previewLegacyDeadlines(owner, "Asia/Yekaterinburg");
+        assertEquals(1, preview.legacyCount());
+        assertEquals("12:10", preview.tasks().get(0).projectedTime());
+        assertEquals("2035-07-26T09:10:00Z", preview.tasks().get(0).dueInstant());
+
+        var remaining = taskService.migrateLegacyDeadlines(owner,
+                new LegacyTaskDeadlineMigrationRequest("Asia/Yekaterinburg", List.of(legacy.getId())));
+        assertEquals(0, remaining.legacyCount());
+
+        TaskDto migrated = taskService.get(owner, legacy.getId());
+        assertTrue(migrated.deadlineAbsolute());
+        assertEquals("12:10", migrated.dueTime());
+        assertEquals("Asia/Yekaterinburg", migrated.dueSourceTimezone());
     }
 
 }

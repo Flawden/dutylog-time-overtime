@@ -258,6 +258,34 @@ public final class Dtos {
             List<@NotNull Long> dayEntryIds
     ) {}
 
+    public record LegacyTaskDeadlineDto(
+            Long taskId,
+            String text,
+            String sourceDate,
+            String sourceTime,
+            String sourceTimezone,
+            String projectedDate,
+            String projectedTime,
+            String targetTimezone,
+            String dueInstant
+    ) {}
+
+    public record LegacyTaskDeadlineMigrationPreviewDto(
+            String sourceTimezone,
+            String targetTimezone,
+            int legacyCount,
+            List<LegacyTaskDeadlineDto> tasks
+    ) {}
+
+    public record LegacyTaskDeadlineMigrationRequest(
+            @NotBlank(message = "Нужен исходный часовой пояс")
+            @Size(max = 80, message = "Часовой пояс: максимум 80 символов")
+            String sourceTimezone,
+            @NotEmpty(message = "Выберите хотя бы одну задачу")
+            @Size(max = 5000, message = "За один раз можно привязать максимум 5000 задач")
+            List<@NotNull Long> taskIds
+    ) {}
+
     /** Запись дня наружу: дата в ISO (yyyy-MM-dd). */
     public record DayDto(
             String date,
@@ -540,15 +568,30 @@ public final class Dtos {
             Integer reminderMinutesBefore,
             boolean overdue,
             List<SubtaskDto> subtasks,
-            String description
+            String description,
+            boolean deadlineAbsolute,
+            String dueSourceTimezone,
+            String dueSourceDate,
+            String dueSourceTime
     ) {
+        /** Source-compatible canonical constructor from v27.10.x. */
+        public TaskDto(Long id, String date, String text, boolean done, String category,
+                       List<String> tags, TaskPriority priority, String dueDate, String dueTime,
+                       boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue,
+                       List<SubtaskDto> subtasks, String description) {
+            this(id, date, text, done, category, tags, priority, dueDate, dueTime,
+                    reminderEnabled, reminderMinutesBefore, overdue, subtasks, description,
+                    false, null, null, null);
+        }
+
         /** Source-compatible canonical constructor from v27.9.x. */
         public TaskDto(Long id, String date, String text, boolean done, String category,
                        List<String> tags, TaskPriority priority, String dueDate, String dueTime,
                        boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue,
                        List<SubtaskDto> subtasks) {
             this(id, date, text, done, category, tags, priority, dueDate, dueTime,
-                    reminderEnabled, reminderMinutesBefore, overdue, subtasks, null);
+                    reminderEnabled, reminderMinutesBefore, overdue, subtasks, null,
+                    false, null, null, null);
         }
 
         /** Source-compatible constructor for callers created before subtasks were added. */
@@ -556,7 +599,8 @@ public final class Dtos {
                        List<String> tags, TaskPriority priority, String dueDate, String dueTime,
                        boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue) {
             this(id, date, text, done, category, tags, priority, dueDate, dueTime,
-                    reminderEnabled, reminderMinutesBefore, overdue, List.of(), null);
+                    reminderEnabled, reminderMinutesBefore, overdue, List.of(), null,
+                    false, null, null, null);
         }
 
         /** Source-compatible constructor for callers created before task tags were added. */
@@ -564,14 +608,19 @@ public final class Dtos {
                        TaskPriority priority, String dueDate, String dueTime,
                        boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue) {
             this(id, date, text, done, category, List.of(), priority, dueDate, dueTime,
-                    reminderEnabled, reminderMinutesBefore, overdue, List.of(), null);
+                    reminderEnabled, reminderMinutesBefore, overdue, List.of(), null,
+                    false, null, null, null);
         }
 
         public static TaskDto from(DayTask task) {
-            return from(task, java.time.LocalDateTime.now());
+            return from(task, java.time.LocalDateTime.now(), java.time.Instant.now());
         }
 
         public static TaskDto from(DayTask task, java.time.LocalDateTime now) {
+            return from(task, now, null);
+        }
+
+        public static TaskDto from(DayTask task, java.time.LocalDateTime now, java.time.Instant nowInstant) {
             return new TaskDto(
                     task.getId(),
                     task.getDate().toString(),
@@ -584,18 +633,25 @@ public final class Dtos {
                     task.getDueTime() != null ? task.getDueTime().toString() : null,
                     task.isReminderEnabled(),
                     task.getReminderMinutesBefore(),
-                    isOverdue(task, now),
+                    isOverdue(task, now, nowInstant),
                     task.getSubtasks().stream()
                             .sorted(java.util.Comparator
                                     .comparingInt(TaskSubtask::getSortOrder)
                                     .thenComparing(subtask -> subtask.getId() == null ? Long.MAX_VALUE : subtask.getId()))
                             .map(SubtaskDto::from)
                             .toList(),
-                    task.getDescription()
+                    task.getDescription(),
+                    task.hasAbsoluteDeadline(),
+                    task.getDueSourceTimezone(),
+                    task.getDueSourceDate() != null ? task.getDueSourceDate().toString() : null,
+                    task.getDueSourceTime() != null ? task.getDueSourceTime().toString() : null
             );
         }
-        private static boolean isOverdue(DayTask task, java.time.LocalDateTime now) {
+        private static boolean isOverdue(DayTask task, java.time.LocalDateTime now, java.time.Instant nowInstant) {
             if (task.isDone() || task.getDueDate() == null) return false;
+            if (task.getDueInstant() != null && nowInstant != null) {
+                return task.getDueInstant().isBefore(nowInstant);
+            }
             java.time.LocalDate today = now.toLocalDate();
             if (task.getDueDate().isBefore(today)) return true;
             if (task.getDueDate().isAfter(today) || task.getDueTime() == null) return false;

@@ -323,6 +323,38 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/TaskMetadata' }
+  /api/v1/tasks/legacy-deadline-migration/preview:
+    get:
+      operationId: previewLegacyTaskDeadlineMigration
+      parameters:
+        - in: query
+          name: sourceTimezone
+          required: true
+          schema: { type: string, example: Asia/Yekaterinburg }
+      responses:
+        '200':
+          description: Timed legacy tasks interpreted in the selected source timezone without writing changes
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegacyTaskDeadlineMigrationPreview' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/tasks/legacy-deadline-migration:
+    post:
+      operationId: migrateLegacyTaskDeadlines
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LegacyTaskDeadlineMigrationRequest' }
+      responses:
+        '200':
+          description: Remaining legacy timed tasks after selected deadlines were frozen as absolute instants
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegacyTaskDeadlineMigrationPreview' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
   /api/v1/inbox:
     get:
       operationId: listInbox
@@ -515,7 +547,7 @@ components:
         sameTimezone: { type: boolean, enum: [true] }
     Task:
       type: object
-      required: [id, date, text, done, tags, priority, reminderEnabled, overdue, subtasks]
+      required: [id, date, text, done, tags, priority, reminderEnabled, overdue, subtasks, deadlineAbsolute]
       properties:
         id: { type: integer, format: int64 }
         date: { type: string, format: date }
@@ -530,6 +562,10 @@ components:
         priority: { type: string, enum: [LOW, NORMAL, HIGH, URGENT] }
         dueDate: { type: string, format: date, nullable: true }
         dueTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', nullable: true }
+        deadlineAbsolute: { type: boolean, description: True when dueDate/dueTime are a projection of a persisted absolute instant }
+        dueSourceTimezone: { type: string, nullable: true, example: Asia/Yekaterinburg }
+        dueSourceDate: { type: string, format: date, nullable: true }
+        dueSourceTime: { type: string, nullable: true }
         reminderEnabled: { type: boolean }
         reminderMinutesBefore: { type: integer, minimum: 0, maximum: 10080, nullable: true }
         overdue: { type: boolean }
@@ -582,6 +618,39 @@ components:
       properties:
         categories: { type: array, items: { type: string } }
         tags: { type: array, items: { type: string } }
+    LegacyTaskDeadline:
+      type: object
+      required: [taskId, text, sourceDate, sourceTime, sourceTimezone, projectedDate, projectedTime, targetTimezone, dueInstant]
+      properties:
+        taskId: { type: integer, format: int64 }
+        text: { type: string }
+        sourceDate: { type: string, format: date }
+        sourceTime: { type: string }
+        sourceTimezone: { type: string }
+        projectedDate: { type: string, format: date }
+        projectedTime: { type: string }
+        targetTimezone: { type: string }
+        dueInstant: { type: string, format: date-time }
+    LegacyTaskDeadlineMigrationPreview:
+      type: object
+      required: [sourceTimezone, targetTimezone, legacyCount, tasks]
+      properties:
+        sourceTimezone: { type: string }
+        targetTimezone: { type: string }
+        legacyCount: { type: integer, minimum: 0 }
+        tasks:
+          type: array
+          items: { $ref: '#/components/schemas/LegacyTaskDeadline' }
+    LegacyTaskDeadlineMigrationRequest:
+      type: object
+      required: [sourceTimezone, taskIds]
+      properties:
+        sourceTimezone: { type: string, maxLength: 80 }
+        taskIds:
+          type: array
+          minItems: 1
+          maxItems: 5000
+          items: { type: integer, format: int64 }
     InboxItem:
       type: object
       required: [id, text, status, createdAt, updatedAt]

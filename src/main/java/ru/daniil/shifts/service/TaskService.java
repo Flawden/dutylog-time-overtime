@@ -10,6 +10,9 @@ import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.SubtaskInput;
 import ru.daniil.shifts.dto.Dtos.SubtaskUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.PageDto;
+import ru.daniil.shifts.dto.Dtos.LegacyTaskDeadlineDto;
+import ru.daniil.shifts.dto.Dtos.LegacyTaskDeadlineMigrationPreviewDto;
+import ru.daniil.shifts.dto.Dtos.LegacyTaskDeadlineMigrationRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayTask;
 import ru.daniil.shifts.model.TaskPriority;
@@ -20,6 +23,10 @@ import ru.daniil.shifts.service.exception.ApiException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.DateTimeException;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.Comparator;
@@ -30,6 +37,7 @@ import java.util.Set;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
+import java.util.HashMap;
 
 @Service
 public class TaskService {
@@ -60,25 +68,27 @@ public class TaskService {
     public List<TaskDto> listDay(AppUser user, String date) {
         LocalDate d = dayEntryService.parseDate(date, "Дата должна быть в формате yyyy-MM-dd");
         LocalDateTime now = userTimeService.workNow(user);
+        Instant nowInstant = userTimeService.nowInstant();
         return tasks.findByOwnerAndDateOrderByCreatedAtAscIdAsc(user, d).stream()
                 .sorted(TASK_DISPLAY_ORDER)
-                .map(task -> TaskDto.from(task, now)).toList();
+                .map(task -> TaskDto.from(task, now, nowInstant)).toList();
     }
 
     @Transactional(readOnly = true)
     public List<TaskDto> listRange(AppUser user, LocalDate from, LocalDate to) {
         dayEntryService.validateRange(from, to);
         LocalDateTime now = userTimeService.workNow(user);
+        Instant nowInstant = userTimeService.nowInstant();
         return tasks.findByOwnerAndDateBetweenOrderByDateAscCreatedAtAscIdAsc(user, from, to).stream()
                 .sorted(TASK_DISPLAY_ORDER)
-                .map(task -> TaskDto.from(task, now)).toList();
+                .map(task -> TaskDto.from(task, now, nowInstant)).toList();
     }
 
 
     @Transactional(readOnly = true)
     public TaskDto get(AppUser user, Long id) {
         DayTask task = requireOwnedTask(user, id);
-        return TaskDto.from(task, userTimeService.workNow(user));
+        return TaskDto.from(task, userTimeService.workNow(user), userTimeService.nowInstant());
     }
 
     @Transactional(readOnly = true)
@@ -127,6 +137,7 @@ public class TaskService {
         }
 
         LocalDateTime now = userTimeService.workNow(user);
+        Instant nowInstant = userTimeService.nowInstant();
         final String categoryFilter = cat;
         final TaskPriority priorityFinal = priorityFilter;
         int safePage = safePage(page);
@@ -138,7 +149,7 @@ public class TaskService {
                 .filter(t -> withinTaskBoardRange(t, fromDate, toDate))
                 .filter(t -> queryLower == null || taskMatchesQuery(t, queryLower))
                 .sorted(TASK_DISPLAY_ORDER)
-                .map(task -> TaskDto.from(task, now))
+                .map(task -> TaskDto.from(task, now, nowInstant))
                 .toList();
         return PageDto.of(pageSlice(filtered, safePage, safeSize), safePage, safeSize, filtered.size());
     }
@@ -208,6 +219,9 @@ public class TaskService {
 
     private boolean isOverdue(DayTask task, LocalDateTime now) {
         if (task.isDone() || task.getDueDate() == null) return false;
+        if (task.getDueInstant() != null) {
+            return task.getDueInstant().isBefore(userTimeService.nowInstant());
+        }
         LocalDate today = now.toLocalDate();
         if (task.getDueDate().isBefore(today)) return true;
         if (task.getDueDate().isAfter(today) || task.getDueTime() == null) return false;
@@ -220,9 +234,9 @@ public class TaskService {
         LocalDate d = dayEntryService.parseDate(req.date(), "Дата задачи должна быть в формате yyyy-MM-dd");
         String text = cleanTaskText(req.text());
         DayTask task = new DayTask(user, d, text);
-        applyCreateFields(task, req);
+        applyCreateFields(user, task, req);
         validateBusinessRules(task);
-        return TaskDto.from(tasks.save(task), userTimeService.workNow(user));
+        return TaskDto.from(tasks.save(task), userTimeService.workNow(user), userTimeService.nowInstant());
     }
 
     @Transactional
@@ -236,8 +250,14 @@ public class TaskService {
         if (req.category() != null) task.setCategory(cleanCategory(req.category()));
         if (req.tags() != null) task.setTags(cleanTags(req.tags()));
         if (req.priority() != null) task.setPriority(req.priority());
+        LocalDate previousDueDate = task.getDueDate();
+        LocalTime previousDueTime = task.getDueTime();
+        boolean deadlineFieldsProvided = req.dueDate() != null || req.dueTime() != null;
         if (req.dueDate() != null) task.setDueDate(parseOptionalDate(req.dueDate(), "Срок задачи должен быть в формате yyyy-MM-dd"));
         if (req.dueTime() != null) task.setDueTime(parseOptionalTime(req.dueTime(), "Время срока должно быть в формате HH:mm"));
+        boolean deadlineValueChanged = !Objects.equals(previousDueDate, task.getDueDate())
+                || !Objects.equals(previousDueTime, task.getDueTime());
+        if (deadlineFieldsProvided && deadlineValueChanged) captureOrClearDeadline(user, task);
         if (req.reminderEnabled() != null) task.setReminderEnabled(req.reminderEnabled());
         if (req.reminderMinutesBefore() != null) task.setReminderMinutesBefore(req.reminderMinutesBefore());
         if (req.subtasks() != null) reconcileSubtasks(task, req.subtasks());
@@ -246,7 +266,7 @@ public class TaskService {
         }
         if (!task.isReminderEnabled()) task.setReminderMinutesBefore(null);
         validateBusinessRules(task);
-        return TaskDto.from(tasks.save(task), userTimeService.workNow(user));
+        return TaskDto.from(tasks.save(task), userTimeService.workNow(user), userTimeService.nowInstant());
     }
 
     @Transactional
@@ -259,7 +279,7 @@ public class TaskService {
                 .findFirst()
                 .orElseThrow(() -> ApiException.notFound("Подзадача не найдена"));
         subtask.setDone(Boolean.TRUE.equals(req.done()));
-        return TaskDto.from(tasks.save(task), userTimeService.workNow(user));
+        return TaskDto.from(tasks.save(task), userTimeService.workNow(user), userTimeService.nowInstant());
     }
 
     @Transactional
@@ -268,13 +288,139 @@ public class TaskService {
         tasks.delete(task);
     }
 
-    private void applyCreateFields(DayTask task, TaskCreateRequest req) {
+    /**
+     * Freezes every legacy timed deadline in the old canonical timezone and
+     * then reprojects all absolute deadlines into the new timezone.
+     * Date-only deadlines remain floating calendar dates.
+     */
+    @Transactional
+    public void rebaseForTimezoneChange(AppUser user, String previousTimezone, String nextTimezone) {
+        ZoneId sourceZone = strictZone(previousTimezone);
+        ZoneId targetZone = strictZone(nextTimezone);
+        List<DayTask> owned = tasks.findByOwnerOrderByDoneAscDueDateAscDueTimeAscDateAscCreatedAtAscIdAsc(user);
+        boolean changed = false;
+        for (DayTask task : owned) {
+            if (task.getDueDate() == null || task.getDueTime() == null) continue;
+            if (!task.hasAbsoluteDeadline()) {
+                captureDeadline(task, sourceZone);
+                changed = true;
+            }
+            projectDeadline(task, targetZone);
+            changed = true;
+        }
+        if (changed) tasks.saveAll(owned);
+    }
+
+    @Transactional(readOnly = true)
+    public LegacyTaskDeadlineMigrationPreviewDto previewLegacyDeadlines(AppUser user, String sourceTimezone) {
+        ZoneId sourceZone = strictZone(sourceTimezone);
+        ZoneId targetZone = userTimeService.workZone(user);
+        List<LegacyTaskDeadlineDto> rows = legacyTimedTasks(user).stream()
+                .map(task -> previewRow(task, sourceZone, targetZone))
+                .toList();
+        return new LegacyTaskDeadlineMigrationPreviewDto(
+                sourceZone.getId(), targetZone.getId(), rows.size(), rows);
+    }
+
+    @Transactional
+    public LegacyTaskDeadlineMigrationPreviewDto migrateLegacyDeadlines(
+            AppUser user, LegacyTaskDeadlineMigrationRequest request) {
+        if (request == null) throw ApiException.badRequest("Некорректный JSON в запросе");
+        ZoneId sourceZone = strictZone(request.sourceTimezone());
+        ZoneId targetZone = userTimeService.workZone(user);
+        List<DayTask> legacy = legacyTimedTasks(user);
+        Map<Long, DayTask> byId = new HashMap<>();
+        for (DayTask task : legacy) byId.put(task.getId(), task);
+
+        if (request.taskIds() == null) throw ApiException.badRequest("Выберите хотя бы одну задачу");
+        LinkedHashSet<Long> selected = new LinkedHashSet<>(request.taskIds());
+        if (selected.isEmpty()) throw ApiException.badRequest("Выберите хотя бы одну задачу");
+        List<DayTask> migrated = new java.util.ArrayList<>();
+        for (Long id : selected) {
+            DayTask task = byId.get(id);
+            if (task == null) {
+                throw ApiException.badRequest("Задача уже привязана, удалена или не принадлежит пользователю: " + id);
+            }
+            captureDeadline(task, sourceZone);
+            projectDeadline(task, targetZone);
+            migrated.add(task);
+        }
+        tasks.saveAll(migrated);
+        tasks.flush();
+        return previewLegacyDeadlines(user, sourceZone.getId());
+    }
+
+    private List<DayTask> legacyTimedTasks(AppUser user) {
+        return tasks.findByOwnerOrderByDoneAscDueDateAscDueTimeAscDateAscCreatedAtAscIdAsc(user).stream()
+                .filter(task -> task.getDueDate() != null && task.getDueTime() != null)
+                .filter(task -> !task.hasAbsoluteDeadline())
+                .toList();
+    }
+
+    private LegacyTaskDeadlineDto previewRow(DayTask task, ZoneId sourceZone, ZoneId targetZone) {
+        ZonedDateTime source = userTimeService.resolveLocalDateTime(
+                LocalDateTime.of(task.getDueDate(), task.getDueTime()), sourceZone);
+        ZonedDateTime projected = source.toInstant().atZone(targetZone);
+        return new LegacyTaskDeadlineDto(
+                task.getId(), task.getText(),
+                task.getDueDate().toString(), task.getDueTime().toString(), sourceZone.getId(),
+                projected.toLocalDate().toString(), projected.toLocalTime().toString(), targetZone.getId(),
+                source.toInstant().toString());
+    }
+
+    private void captureOrClearDeadline(AppUser user, DayTask task) {
+        if (task.getDueDate() == null || task.getDueTime() == null) {
+            clearDeadlineSnapshot(task);
+            return;
+        }
+        captureDeadline(task, userTimeService.workZone(user));
+    }
+
+    private void captureDeadline(DayTask task, ZoneId sourceZone) {
+        LocalDate sourceDate = task.getDueDate();
+        LocalTime sourceTime = task.getDueTime();
+        ZonedDateTime resolved = userTimeService.resolveLocalDateTime(
+                LocalDateTime.of(sourceDate, sourceTime), sourceZone);
+        task.setDueInstant(resolved.toInstant());
+        task.setDueSourceTimezone(sourceZone.getId());
+        task.setDueSourceDate(sourceDate);
+        task.setDueSourceTime(sourceTime);
+    }
+
+    private void projectDeadline(DayTask task, ZoneId targetZone) {
+        if (!task.hasAbsoluteDeadline()) return;
+        ZonedDateTime projected = task.getDueInstant().atZone(targetZone);
+        task.setDueDate(projected.toLocalDate());
+        task.setDueTime(projected.toLocalTime());
+    }
+
+    private void clearDeadlineSnapshot(DayTask task) {
+        task.setDueInstant(null);
+        task.setDueSourceTimezone(null);
+        task.setDueSourceDate(null);
+        task.setDueSourceTime(null);
+    }
+
+    private ZoneId strictZone(String raw) {
+        String value = raw == null ? "" : raw.trim();
+        if (value.isBlank() || value.length() > 80) {
+            throw ApiException.badRequest("Часовой пояс должен быть IANA-идентификатором");
+        }
+        try {
+            return ZoneId.of(value);
+        } catch (DateTimeException e) {
+            throw ApiException.badRequest("Неизвестный часовой пояс: " + value);
+        }
+    }
+
+    private void applyCreateFields(AppUser user, DayTask task, TaskCreateRequest req) {
         task.setDescription(cleanDescription(req.description()));
         task.setCategory(cleanCategory(req.category()));
         task.setTags(cleanTags(req.tags()));
         task.setPriority(req.priority() != null ? req.priority() : TaskPriority.NORMAL);
         task.setDueDate(parseOptionalDate(req.dueDate(), "Срок задачи должен быть в формате yyyy-MM-dd"));
         task.setDueTime(parseOptionalTime(req.dueTime(), "Время срока должно быть в формате HH:mm"));
+        captureOrClearDeadline(user, task);
         task.setReminderEnabled(Boolean.TRUE.equals(req.reminderEnabled()));
         task.setReminderMinutesBefore(req.reminderMinutesBefore());
         reconcileSubtasks(task, req.subtasks());
@@ -325,7 +471,10 @@ public class TaskService {
     }
 
     private void validateDeadline(DayTask task) {
-        if (task.getDate() != null && task.getDueDate() != null && task.getDueDate().isBefore(task.getDate())) {
+        LocalDate deadlineDate = task.hasAbsoluteDeadline() && task.getDueSourceDate() != null
+                ? task.getDueSourceDate()
+                : task.getDueDate();
+        if (task.getDate() != null && deadlineDate != null && deadlineDate.isBefore(task.getDate())) {
             throw ApiException.badRequest("Срок не может быть раньше времени задачи.");
         }
     }

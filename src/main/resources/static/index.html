@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.11.2" rel="stylesheet"/>
+<link href="app.css?v=27.11.4" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -584,13 +584,15 @@
 <button class="primary" id="timeSaveTimezone" type="button">Сохранить часовой пояс</button>
 <button id="timeDetectBrowser" type="button">Определить автоматически</button>
 <button id="legacyShiftOpen" type="button" hidden>⚠ Привязать старые смены</button>
+<button id="legacyTaskDeadlineOpen" type="button" hidden>⚠ Привязать старые задачи</button>
 </div>
-<div class="wideHint" id="timeZoneHelp">DutyLog хранит IANA-идентификатор, например Europe/Chisinau. Календарные даты остаются на своём дне, а абсолютные интервалы переработок отображаются в выбранной зоне.</div>
+<div class="wideHint" id="timeZoneHelp">DutyLog хранит IANA-идентификатор, например Europe/Chisinau. Календарные даты важных событий остаются на своём дне, а абсолютные интервалы смен и переработок отображаются в выбранной зоне.</div>
 
 <div class="timeDefaults timeSettingsSubcard">
 <div class="timeDefaultsHead">
   <div><b>Шаблоны смен</b><span>Параметры встроенных дневной и ночной смен.</span></div>
 </div>
+<div class="wideHint" id="shiftTemplateZoneHint">Время шаблонов показано в выбранном часовом поясе.</div>
 <div class="timeDefaultRow">
 <b>Дневная</b>
 <label>Начало <input id="defDayStart" type="time"/></label>
@@ -728,7 +730,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.11.2</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.11.4</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -1157,6 +1159,33 @@
   </div>
 </div>
 
+<div class="appModal" id="legacyTaskDeadlineModal" hidden>
+  <button class="appModalBackdrop" id="legacyTaskDeadlineBackdrop" type="button" aria-label="Закрыть"></button>
+  <div class="appModalPanel legacyOvertimePanel" role="dialog" aria-modal="true" aria-labelledby="legacyTaskDeadlineTitle">
+    <div class="appModalHead">
+      <div>
+        <div class="eyebrow">Миграция задач</div>
+        <div class="appModalTitle" id="legacyTaskDeadlineTitle">Привязать старые задачи</div>
+        <div class="appModalHint">Выбери пояс, в котором старые дата и время срока действительно были назначены. DutyLog сохранит абсолютный момент и покажет его в текущем часовом поясе.</div>
+      </div>
+      <button class="appModalClose" id="legacyTaskDeadlineClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div class="legacyMigrationToolbar">
+      <label>Исходный часовой пояс
+        <select id="legacyTaskDeadlineTimezone"></select>
+      </label>
+      <button id="legacyTaskDeadlinePreview" type="button">Обновить предпросмотр</button>
+      <button id="legacyTaskDeadlineSelectAll" type="button">Выбрать все</button>
+    </div>
+    <div class="legacyMigrationStatus" id="legacyTaskDeadlineStatus" role="status" aria-live="polite"></div>
+    <div class="legacyMigrationList" id="legacyTaskDeadlineList"></div>
+    <div class="appModalActions">
+      <button id="legacyTaskDeadlineCancel" type="button">Отмена</button>
+      <button class="primary" id="legacyTaskDeadlineApply" type="button">Привязать выбранные задачи</button>
+    </div>
+  </div>
+</div>
+
 <div class="appModal" id="legacyOvertimeModal" hidden>
   <button class="appModalBackdrop" id="legacyOvertimeBackdrop" type="button" aria-label="Закрыть"></button>
   <div class="appModalPanel legacyOvertimePanel" role="dialog" aria-modal="true" aria-labelledby="legacyOvertimeTitle">
@@ -1220,12 +1249,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.11.2"></script>
-<script src="js/20-data.js?v=27.11.2"></script>
-<script src="js/30-calendar.js?v=27.11.2"></script>
-<script src="js/40-overtime.js?v=27.11.2"></script>
-<script src="js/50-tasks.js?v=27.11.2"></script>
-<script src="js/60-settings.js?v=27.11.2"></script>
-<script src="js/70-user-boot.js?v=27.11.2"></script>
+<script src="js/10-core.js?v=27.11.4"></script>
+<script src="js/20-data.js?v=27.11.4"></script>
+<script src="js/30-calendar.js?v=27.11.4"></script>
+<script src="js/40-overtime.js?v=27.11.4"></script>
+<script src="js/50-tasks.js?v=27.11.4"></script>
+<script src="js/60-settings.js?v=27.11.4"></script>
+<script src="js/70-user-boot.js?v=27.11.4"></script>
 </body>
 </html>

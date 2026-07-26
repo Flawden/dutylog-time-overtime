@@ -7,12 +7,14 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.ImportantDayCreateRequest;
 import ru.daniil.shifts.dto.Dtos.NotificationReminderDto;
+import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.DayTask;
 import ru.daniil.shifts.model.NotificationSettings;
 import ru.daniil.shifts.model.RepeatMode;
 import ru.daniil.shifts.model.ShiftType;
+import ru.daniil.shifts.model.TaskPriority;
 import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.repo.DayTaskRepository;
 import ru.daniil.shifts.repo.NotificationSettingsRepository;
@@ -21,6 +23,7 @@ import ru.daniil.shifts.repo.UserRepository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -43,6 +46,8 @@ class NotificationServiceTest {
     @Autowired DayEntryRepository days;
     @Autowired DayTaskRepository tasks;
     @Autowired NotificationSettingsRepository settingsRepo;
+    @Autowired ShiftOccurrenceService shiftOccurrences;
+    @Autowired TaskService taskService;
 
     AppUser user;
 
@@ -143,6 +148,75 @@ class NotificationServiceTest {
         assertEquals("2026-07-22T14:05", dueReminder.remindAt());
         assertEquals("2026-07-22T09:05:00Z", dueReminder.remindAtInstant());
         assertEquals("2026-07-22T14:05", dueReminder.displayAt());
+    }
+
+    @Test
+    void shiftReminderFollowsTheOccurrenceInstantAndProjectedCalendarDate() {
+        user.setWorkTimezone("Asia/Yekaterinburg");
+        user.setDisplayTimezone("Asia/Yekaterinburg");
+        user = users.save(user);
+
+        LocalDate sourceDate = LocalDate.of(2026, 7, 3);
+        ShiftType shift = new ShiftType(user, "Поздняя", 8, "#334455", false,
+                LocalTime.of(23, 0), LocalTime.of(7, 0), 0, 8.0);
+        shift.setNotificationsEnabled(true);
+        shift = shiftTypes.save(shift);
+
+        DayEntry day = new DayEntry(user, sourceDate);
+        day.setShiftType(shift);
+        shiftOccurrences.capture(day, ZoneId.of("Europe/Kyiv"));
+        days.saveAndFlush(day);
+
+        NotificationSettings settings = notifications.settingsEntity(user);
+        settings.setShiftRemindersEnabled(true);
+        settings.setShiftReminderMinutesBefore(30);
+        settings.setTaskRemindersEnabled(false);
+        settings.setImportantDayRemindersEnabled(false);
+        settings.setTomorrowDigestEnabled(false);
+        settingsRepo.save(settings);
+
+        NotificationReminderDto reminder = notifications
+                .upcoming(user, LocalDate.of(2026, 7, 4), LocalDate.of(2026, 7, 4), true)
+                .stream().filter(r -> r.type().equals("SHIFT")).findFirst().orElseThrow();
+
+        assertEquals("2026-07-04", reminder.sourceDate());
+        assertEquals("2026-07-04T00:30", reminder.remindAt());
+        assertEquals("2026-07-03T19:30:00Z", reminder.remindAtInstant());
+        assertEquals("Asia/Yekaterinburg", reminder.workTimezone());
+        assertTrue(reminder.details().contains("Начало 01:00 Asia/Yekaterinburg"));
+    }
+
+    @Test
+    void taskReminderKeepsTheDeadlineInstantAcrossTimezoneChanges() {
+        user.setWorkTimezone("Asia/Yekaterinburg");
+        user.setDisplayTimezone("Asia/Yekaterinburg");
+        user = users.save(user);
+
+        var task = taskService.create(user, new TaskCreateRequest(
+                "2035-07-26", "Проверить срок", null, null, TaskPriority.NORMAL,
+                "2035-07-26", "14:10", true, 0));
+
+        taskService.rebaseForTimezoneChange(user, "Asia/Yekaterinburg", "Europe/Moscow");
+        user.setWorkTimezone("Europe/Moscow");
+        user.setDisplayTimezone("Europe/Moscow");
+        user = users.save(user);
+
+        NotificationSettings settings = notifications.settingsEntity(user);
+        settings.setShiftRemindersEnabled(false);
+        settings.setTaskRemindersEnabled(true);
+        settings.setImportantDayRemindersEnabled(false);
+        settings.setTomorrowDigestEnabled(false);
+        settingsRepo.save(settings);
+
+        NotificationReminderDto reminder = notifications
+                .upcoming(user, LocalDate.of(2035, 7, 26), LocalDate.of(2035, 7, 26), true)
+                .stream().filter(r -> r.id().equals("task:" + task.id())).findFirst().orElseThrow();
+
+        assertEquals("2035-07-26T12:10", reminder.remindAt());
+        assertEquals("2035-07-26T09:10:00Z", reminder.remindAtInstant());
+        assertEquals("Europe/Moscow", reminder.workTimezone());
+        assertEquals("2035-07-26", reminder.sourceDate());
+        assertTrue(reminder.details().contains("12:10 Europe/Moscow"));
     }
 
     @Test

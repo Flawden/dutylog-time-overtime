@@ -188,6 +188,27 @@ class ShiftTypeServiceTest {
     }
 
     @Test
+    void timezoneChangeRebasesTimedTemplatesButLeavesTheDayOffUntimed() {
+        owner.setWorkTimezone("Asia/Yekaterinburg");
+        owner.setDisplayTimezone("Asia/Yekaterinburg");
+        users.save(owner);
+        shiftTypeService.list(owner);
+
+        int changed = shiftTypeService.rebaseForTimezoneChange(
+                owner, "Asia/Yekaterinburg", "Europe/Moscow");
+
+        Map<String, ShiftType> byName = shiftTypes.findByOwner(owner).stream()
+                .collect(Collectors.toMap(ShiftType::getName, java.util.function.Function.identity()));
+        assertEquals(2, changed);
+        assertEquals(LocalTime.parse("06:30"), byName.get("Дневная").getStartTime());
+        assertEquals(LocalTime.parse("15:00"), byName.get("Дневная").getEndTime());
+        assertEquals(LocalTime.parse("18:00"), byName.get("Ночная").getStartTime());
+        assertEquals(LocalTime.parse("06:00"), byName.get("Ночная").getEndTime());
+        assertNull(byName.get("Выходной").getStartTime());
+        assertNull(byName.get("Выходной").getEndTime());
+    }
+
+    @Test
     void nullBlankForeignAndMissingRequestsUseStableErrors() {
         assertBadRequest(() -> shiftTypeService.create(owner, null));
         assertBadRequest(() -> shiftTypeService.create(owner, new ShiftTypeCreateRequest(

@@ -173,3 +173,18 @@ API уже достаточно стабилен для первого Android-�
 - отчёт по переработке;
 - журнал списаний;
 - статистика за год.
+
+## Completed in v27.11.3
+
+- Canonical timezone rebases future shift templates.
+- Existing dated shifts remain immutable.
+- Shift reminders and Telegram delivery use occurrence instants, including next-day projection.
+
+## Completed in v27.11.4
+
+- Timed task deadlines preserve one absolute instant across canonical timezone changes.
+- Task overdue/upcoming classification is instant-based for absolute deadlines.
+- Deadline projections may cross calendar dates without moving the task's organisational day.
+- Date-only deadlines stay floating.
+- Legacy timed task deadlines can be explicitly linked to their real source IANA timezone.
+- Browser, mobile and Telegram task reminders consume the same authoritative instant.

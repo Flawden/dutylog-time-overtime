@@ -47,6 +47,8 @@ const api = {
     return jfetch(`/api/tasks/board?${qs.toString()}`);
   },
   async taskMetadata() { return jfetch("/api/tasks/metadata"); },
+  async previewLegacyTaskDeadlines(sourceTimezone) { return jfetch(`/api/tasks/legacy-deadline-migration/preview?sourceTimezone=${encodeURIComponent(sourceTimezone)}`); },
+  async migrateLegacyTaskDeadlines(b) { return jfetch("/api/tasks/legacy-deadline-migration", { method:"POST", body:b }); },
   async inbox(status = "open") { return jfetch(`/api/inbox?status=${encodeURIComponent(status)}`); },
   async createInbox(b) { return jfetch("/api/inbox", { method:"POST", body:b }); },
   async updateInbox(id, b) { return jfetch(`/api/inbox/${id}`, { method:"PATCH", body:b }); },

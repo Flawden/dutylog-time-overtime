@@ -9,6 +9,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
+import ru.daniil.shifts.repo.ShiftTypeRepository;
+import ru.daniil.shifts.service.ShiftTypeService;
+import ru.daniil.shifts.service.TaskService;
+import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
+import ru.daniil.shifts.model.TaskPriority;
 
 import java.time.LocalDate;
 
@@ -31,6 +36,9 @@ class ProfileControllerTest {
 
     @Autowired MockMvc mvc;
     @Autowired UserRepository users;
+    @Autowired ShiftTypeRepository shiftTypes;
+    @Autowired ShiftTypeService shiftTypeService;
+    @Autowired TaskService taskService;
 
     AppUser owner;
 
@@ -137,6 +145,50 @@ class ProfileControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.workTimezone").value("Europe/Berlin"))
                 .andExpect(jsonPath("$.displayTimezone").value("Europe/Berlin"));
+    }
+
+    @Test
+    void canonicalTimezoneUpdateAlsoRebasesFutureShiftTemplates() throws Exception {
+        owner.setWorkTimezone("Asia/Yekaterinburg");
+        owner.setDisplayTimezone("Asia/Yekaterinburg");
+        users.save(owner);
+        shiftTypeService.list(owner);
+
+        mvc.perform(put("/api/profile")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("{\"workTimezone\":\"Europe/Moscow\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.workTimezone").value("Europe/Moscow"));
+
+        var day = shiftTypes.findByOwnerAndName(owner, "Дневная").get(0);
+        assertEquals("06:30", day.getStartTime().toString());
+        assertEquals("15:00", day.getEndTime().toString());
+    }
+
+    @Test
+    void canonicalTimezoneUpdateAlsoReprojectsTimedTaskDeadlines() throws Exception {
+        owner.setWorkTimezone("Asia/Yekaterinburg");
+        owner.setDisplayTimezone("Asia/Yekaterinburg");
+        owner = users.save(owner);
+        var task = taskService.create(owner, new TaskCreateRequest(
+                "2035-07-26", "Созвон", null, null, TaskPriority.NORMAL,
+                "2035-07-26", "14:10", true, 0));
+
+        mvc.perform(put("/api/profile")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("{\"workTimezone\":\"Europe/Moscow\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.workTimezone").value("Europe/Moscow"));
+
+        AppUser storedUser = users.findByUsername(owner.getUsername()).orElseThrow();
+        var projected = taskService.get(storedUser, task.id());
+        assertEquals("2035-07-26", projected.dueDate());
+        assertEquals("12:10", projected.dueTime());
+        assertTrue(projected.deadlineAbsolute());
+        assertEquals("Asia/Yekaterinburg", projected.dueSourceTimezone());
+        assertEquals("14:10", projected.dueSourceTime());
     }
 
     @Test

@@ -373,10 +373,31 @@ function renderTimePreview(timeSettings){
   const label = state.language === "en" ? "Current time" : "Текущее время";
   box.innerHTML = `<div><span>${esc(label)}:</span> <b>${esc(safeTzLabel(timeSettings.workTimezone))}</b> <code>${esc(timeSettings.workTimezone)}</code> · ${esc(timezoneOffsetLabel(timeSettings.workTimezone))}</div>`;
 }
+function syncTimeSettingsFromBuiltins(){
+  const current = state.timeSettings || loadTimeSettings();
+  const next = { ...current };
+  const day = state.shiftTypes.find(s => s.name === "Дневная");
+  const night = state.shiftTypes.find(s => s.name === "Ночная");
+  if (day) {
+    if (day.startTime) next.dayStart = day.startTime;
+    if (day.endTime) next.dayEnd = day.endTime;
+    next.dayBreakMinutes = Number(day.breakMinutes ?? next.dayBreakMinutes);
+    next.dayPlannedHours = Number(day.plannedHours ?? day.hours ?? next.dayPlannedHours);
+  }
+  if (night) {
+    if (night.startTime) next.nightStart = night.startTime;
+    if (night.endTime) next.nightEnd = night.endTime;
+    next.nightBreakMinutes = Number(night.breakMinutes ?? next.nightBreakMinutes);
+    next.nightPlannedHours = Number(night.plannedHours ?? night.hours ?? next.nightPlannedHours);
+  }
+  storeTimeSettings(next);
+  return state.timeSettings;
+}
+
 function renderTimeSettings(){
   if (!$("timeSettingsCard")) return;
   if (!state.timeSettings) state.timeSettings = loadTimeSettings();
-  const timeSettings = state.timeSettings;
+  const timeSettings = syncTimeSettingsFromBuiltins();
   const set = (id, value) => { if ($(id)) $(id).value = value ?? ""; };
   populateTimeZoneSelect("workTimezone", timeSettings.workTimezone);
   set("workTimezone", timeSettings.workTimezone);
@@ -391,6 +412,10 @@ function renderTimeSettings(){
   set("defNightBreak", timeSettings.nightBreakMinutes);
   set("defNightPlan", timeSettings.nightPlannedHours);
   renderTimePreview(timeSettings);
+  const templateZone = $("shiftTemplateZoneHint");
+  if (templateZone) templateZone.textContent = state.language === "en"
+    ? `Template times are shown in ${timeSettings.workTimezone}. Existing dated shifts keep their immutable instants.`
+    : `Время шаблонов показано в ${timeSettings.workTimezone}. Уже назначенные смены сохраняют свои абсолютные интервалы.`;
   setTimeSettingsStatus("saved");
 }
 function isRecognizedTimeZone(value){
@@ -427,9 +452,16 @@ async function saveTimeSettings(){
     // Skip the IndexedDB-first path here: it would repaint the old source timezone
     // and could leave the selected-day card stale even though the profile is saved.
     if (typeof loadMonth === "function") await loadMonth({ fresh:true });
+    if (typeof loadTaskBoard === "function" && moduleEnabled("tasks")) await loadTaskBoard(true);
+    syncTimeSettingsFromBuiltins();
+    renderTimeSettings();
+    renderCustomList();
+    renderChips();
     if (moduleEnabled("overtime") && typeof loadLedgerPage === "function") await loadLedgerPage(true);
+    if (moduleEnabled("notifications") && typeof showMonthNotifications === "function") await showMonthNotifications();
     if (state.selected && typeof renderSelectedDayModules === "function") renderSelectedDayModules();
     await refreshLegacyShiftIndicator();
+    await refreshLegacyTaskDeadlineIndicator();
     setSave("saved", t("настройки времени сохранены"));
     return true;
   } catch (err) {
@@ -582,6 +614,97 @@ async function applyLegacyShiftMigration(){
   }
 }
 
+Object.assign(I18N_EN, {
+  "Все задачи со временем уже привязаны к часовому поясу.":"Every timed task is already linked to a timezone.",
+  "Найдено старых задач":"Legacy timed tasks found",
+  "Не удалось загрузить старые задачи":"Failed to load legacy tasks",
+  "Выберите хотя бы одну задачу":"Select at least one task",
+  "Старые задачи привязаны":"Legacy tasks linked",
+  "Не удалось привязать задачи":"Failed to link tasks"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+
+let legacyTaskDeadlinePreviewState = null;
+function legacyTaskDeadlineStatus(text = "", tone = ""){
+  const box = $("legacyTaskDeadlineStatus");
+  if (!box) return;
+  box.textContent = text;
+  box.className = `legacyMigrationStatus ${tone}`.trim();
+}
+function renderLegacyTaskDeadlinePreview(preview){
+  legacyTaskDeadlinePreviewState = preview;
+  const list = $("legacyTaskDeadlineList");
+  if (!list) return;
+  list.innerHTML = "";
+  const items = preview?.tasks || [];
+  if ($("legacyTaskDeadlineOpen")) $("legacyTaskDeadlineOpen").hidden = items.length === 0;
+  if (!items.length) {
+    legacyTaskDeadlineStatus(t("Все задачи со временем уже привязаны к часовому поясу."), "ok");
+    return;
+  }
+  legacyTaskDeadlineStatus(`${t("Найдено старых задач")}: ${items.length}`);
+  for (const item of items) {
+    const row = document.createElement("label");
+    row.className = "legacyMigrationRow";
+    row.innerHTML = `
+      <input type="checkbox" data-legacy-task-deadline-id="${Number(item.taskId)}" checked>
+      <span><b>${esc(item.text || t("Задача"))}</b>
+      <small>${esc(item.sourceDate)} ${esc(item.sourceTime)} · ${esc(item.sourceTimezone || "")}</small>
+      <small>→ ${esc(item.projectedDate)} ${esc(item.projectedTime)} · ${esc(item.targetTimezone || "")}</small></span>`;
+    list.appendChild(row);
+  }
+}
+async function refreshLegacyTaskDeadlinePreview({ quiet = false } = {}){
+  const timezone = $("legacyTaskDeadlineTimezone")?.value || state.profile?.workTimezone || browserTimeZone();
+  try {
+    const preview = await api.previewLegacyTaskDeadlines(timezone);
+    renderLegacyTaskDeadlinePreview(preview);
+    return preview;
+  } catch (err) {
+    if (!quiet) legacyTaskDeadlineStatus(err.message || t("Не удалось загрузить старые задачи"), "err");
+    return null;
+  }
+}
+async function refreshLegacyTaskDeadlineIndicator(){
+  const timezone = state.profile?.workTimezone || state.timeSettings?.workTimezone || browserTimeZone();
+  const preview = await api.previewLegacyTaskDeadlines(timezone).catch(() => null);
+  if ($("legacyTaskDeadlineOpen")) $("legacyTaskDeadlineOpen").hidden = !preview?.legacyCount;
+}
+async function openLegacyTaskDeadlineMigration(){
+  const timezone = state.profile?.workTimezone || state.timeSettings?.workTimezone || browserTimeZone();
+  populateTimeZoneSelect("legacyTaskDeadlineTimezone", timezone);
+  $("legacyTaskDeadlineTimezone").value = timezone;
+  openAppModal("legacyTaskDeadlineModal", "legacyTaskDeadlineTimezone");
+  legacyTaskDeadlineStatus(t("Загрузка…"));
+  await refreshLegacyTaskDeadlinePreview();
+}
+function closeLegacyTaskDeadlineMigration(){ closeAppModal("legacyTaskDeadlineModal"); }
+async function applyLegacyTaskDeadlineMigration(){
+  const ids = [...document.querySelectorAll("[data-legacy-task-deadline-id]:checked")]
+    .map(input => Number(input.dataset.legacyTaskDeadlineId));
+  if (!ids.length) return legacyTaskDeadlineStatus(t("Выберите хотя бы одну задачу"), "err");
+  const sourceTimezone = $("legacyTaskDeadlineTimezone").value;
+  $("legacyTaskDeadlineApply").disabled = true;
+  legacyTaskDeadlineStatus(t("Сохранение…"));
+  try {
+    const preview = await api.migrateLegacyTaskDeadlines({ sourceTimezone, taskIds:ids });
+    renderLegacyTaskDeadlinePreview(preview);
+    if (typeof loadMonth === "function") await loadMonth({ fresh:true });
+    if (typeof loadTaskBoard === "function") await loadTaskBoard(true);
+    if (typeof showMonthNotifications === "function" && moduleEnabled("notifications")) await showMonthNotifications();
+    renderTasks();
+    renderTaskBoard();
+    renderCalendar();
+    if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
+    setSave("saved", t("Старые задачи привязаны"));
+    if (!preview.legacyCount) closeLegacyTaskDeadlineMigration();
+  } catch (err) {
+    legacyTaskDeadlineStatus(err.message || t("Не удалось привязать задачи"), "err");
+  } finally {
+    $("legacyTaskDeadlineApply").disabled = false;
+  }
+}
+
 function initTimeSettingsEvents(){
   if (!$("timeSettingsCard")) return;
   $("timeSaveTimezone")?.addEventListener("click", saveTimeSettings);
@@ -592,6 +715,13 @@ function initTimeSettingsEvents(){
   $("legacyShiftPreview")?.addEventListener("click", () => refreshLegacyShiftPreview());
   $("legacyShiftSelectAll")?.addEventListener("click", () => document.querySelectorAll("[data-legacy-shift-id]").forEach(input => { input.checked = true; }));
   $("legacyShiftApply")?.addEventListener("click", applyLegacyShiftMigration);
+  $("legacyTaskDeadlineOpen")?.addEventListener("click", openLegacyTaskDeadlineMigration);
+  $("legacyTaskDeadlineClose")?.addEventListener("click", closeLegacyTaskDeadlineMigration);
+  $("legacyTaskDeadlineCancel")?.addEventListener("click", closeLegacyTaskDeadlineMigration);
+  $("legacyTaskDeadlineBackdrop")?.addEventListener("click", closeLegacyTaskDeadlineMigration);
+  $("legacyTaskDeadlinePreview")?.addEventListener("click", () => refreshLegacyTaskDeadlinePreview());
+  $("legacyTaskDeadlineSelectAll")?.addEventListener("click", () => document.querySelectorAll("[data-legacy-task-deadline-id]").forEach(input => { input.checked = true; }));
+  $("legacyTaskDeadlineApply")?.addEventListener("click", applyLegacyTaskDeadlineMigration);
   $("timeDetectBrowser")?.addEventListener("click", () => {
     populateTimeZoneSelect("workTimezone", browserTimeZone());
     $("workTimezone").value = browserTimeZone();
@@ -1022,6 +1152,7 @@ function renderSettingsPanels(){
   renderTelegramPanel();
   if (moduleEnabled("telegram")) loadTelegramStatus();
   refreshLegacyShiftIndicator().catch(() => {});
+  refreshLegacyTaskDeadlineIndicator().catch(() => {});
 }
 
 /* ─── Уведомления ───────────────────────────────────────────── */

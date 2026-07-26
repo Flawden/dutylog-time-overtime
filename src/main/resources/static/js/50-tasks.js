@@ -96,6 +96,7 @@ Object.assign(I18N_EN, {
   "Детали задачи":"Task details", "Описание":"Description", "Описание пока не добавлено.":"No description yet.",
   "Открытая задача":"Open task", "Задача выполнена":"Task completed", "Задача просрочена":"Task overdue",
   "Дата задачи":"Task date", "Напоминание":"Reminder", "минут до срока":"minutes before due time",
+  "Исходный срок":"Source deadline",
   "Вернуть в открытые":"Reopen", "Выполнить":"Complete",
   "Контекст, ссылки, договорённости…":"Context, links, agreements…",
   "Описание задачи: максимум 4000 символов":"Task description: maximum 4000 characters"
@@ -721,9 +722,18 @@ function renderTaskDetails(task){
   const facts = $("taskDetailsFacts");
   facts.innerHTML = "";
   const due = task.dueDate ? `${taskDetailsDate(task.dueDate)}${task.dueTime ? " · " + task.dueTime : ""}` : "";
+  const sourceDue = task.deadlineAbsolute && task.dueSourceDate && task.dueSourceTime && task.dueSourceTimezone
+    ? `${taskDetailsDate(task.dueSourceDate)} · ${task.dueSourceTime} · ${task.dueSourceTimezone}`
+    : "";
+  const sourceDiffers = sourceDue && (
+    task.dueSourceDate !== task.dueDate
+    || task.dueSourceTime !== task.dueTime
+    || task.dueSourceTimezone !== state.profile?.workTimezone
+  );
   const rows = [
     taskDetailsFact("Дата задачи", taskDetailsDate(task.date)),
     taskDetailsFact("Срок", due),
+    taskDetailsFact("Исходный срок", sourceDiffers ? sourceDue : ""),
     taskDetailsFact("Напоминание", task.reminderEnabled ? `${task.reminderMinutesBefore ?? 0} ${t("минут до срока")}` : ""),
   ].filter(Boolean);
   facts.append(...rows);
@@ -781,8 +791,11 @@ function refreshOpenTaskDetails(task){
   renderTaskDetails(task);
 }
 
-function validateTaskEditorDeadlines(date, dueDate, subtasks){
-  if (dueDate && dueDate < date) throw new Error(t("Срок не может быть раньше времени задачи."));
+function validateTaskEditorDeadlines(date, dueDate, dueTime, subtasks, original = null){
+  const unchangedAbsolute = !!original?.deadlineAbsolute
+    && dueDate === (original.dueDate || "")
+    && dueTime === (original.dueTime || "");
+  if (!unchangedAbsolute && dueDate && dueDate < date) throw new Error(t("Срок не может быть раньше времени задачи."));
   if ((subtasks || []).some(item => item.dueDate && item.dueDate < date)) {
     throw new Error(t("Срок подзадачи не может быть раньше даты задачи."));
   }
@@ -802,8 +815,9 @@ function taskEditorPayload(original = null){
     throw new Error(t("напоминание: от 0 до 10080 минут"));
   }
   const dueDate = $("taskEditDueDate").value || "";
+  const dueTime = $("taskEditDueTime").value || "";
   const subtasks = collectTaskEditorSubtasks();
-  validateTaskEditorDeadlines(date, dueDate, subtasks);
+  validateTaskEditorDeadlines(date, dueDate, dueTime, subtasks, original);
   return {
     date,
     text,
@@ -812,7 +826,7 @@ function taskEditorPayload(original = null){
     tags,
     priority:$("taskEditPriority").value || "NORMAL",
     dueDate,
-    dueTime:$("taskEditDueTime").value || "",
+    dueTime,
     reminderEnabled,
     reminderMinutesBefore,
     subtasks,

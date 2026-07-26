@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.11.2.
+Status: v27.11.4.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.11.2 stabilizes the Playwright acceptance boundary for authoritative shift refresh and compact source-range rendering while preserving the immutable occurrence model and v27.10 Task Details. Current application baseline: 85 Java test classes / 442 `@Test` methods and 19 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.11.4 gives timed task deadlines one absolute identity across canonical timezone changes and routes browser/mobile/Telegram reminders through the same instant. Current application baseline: 86 Java test classes / 456 `@Test` methods and 20 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -15,6 +15,26 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
 
+
+## v27.11.4 Task Deadline & Reminder Timezone Hotfix extension
+
+- `TaskServiceTest` protects `14:10 Asia/Yekaterinburg → 12:10 Europe/Moscow`, one unchanged `dueInstant`, midnight date crossing and explicit legacy migration.
+- `ProfileControllerTest` proves the canonical profile update automatically reprojects timed deadlines.
+- `NotificationServiceTest` proves a task reminder keeps the same absolute instant after projection.
+- `TelegramNotificationServiceTest` proves Telegram prefers `remindAtInstant` instead of reinterpreting projected wall-clock time.
+- `TaskDeadlineTimezoneFrontendContractTest` protects source-deadline rendering, authoritative task refresh and the migration wizard.
+- `task-details.spec.js` reproduces the reported overdue-task scenario through the real UI.
+- Flyway V34 adds nullable deadline snapshot columns without guessing historical zones.
+
+
+## v27.11.3 Shift Template & Reminder Timezone Hotfix extension
+
+- `ShiftTypeServiceTest` protects template rebasing from UTC+5 to UTC+3 and confirms untimed day-off templates are unchanged.
+- `ProfileControllerTest` proves a canonical timezone update persists the projected built-in times.
+- `NotificationServiceTest` proves a next-day projected shift reminder is calculated from `shiftStartInstant`.
+- `ShiftOccurrenceFrontendContractTest` protects authoritative template refresh and occurrence-based reminder wiring.
+- `important-timezone.spec.js` checks template values, immutable occurrence projection and notification time in one user journey.
+- Flyway remains V33.
 
 ## v27.11.2 E2E Stability Hotfix extension
 
