@@ -1,3 +1,15 @@
+# v27.14.0 — Multiple Daily Notes
+
+- Replaced the single mutable day-note field with independent owner-scoped notes per calendar date.
+- Added titles, pinning, stable ordering, individual edit/delete operations and a dedicated `/api/notes` + `/api/v1/notes` contract.
+- Added Flyway V36 and one-time migration of every non-empty legacy `day_entries.note`; the old field remains a primary-note compatibility shadow.
+- Day/calendar/mobile payloads now expose the full `notes` collection while preserving the legacy `note` field.
+- The day panel now provides a note list, active editor, pin/reorder/delete controls and a calendar count badge.
+- Debounced title/content edits merge into one PATCH so rapid input cannot lose either field.
+- Offline snapshots remain readable; unsupported note mutations are disabled until the server is reachable.
+- ZIP export writes one Markdown file per independent note.
+- Regression baseline: 91 Java test classes, 482 `@Test` methods and 22 Playwright scenarios.
+
 # v27.13.0 — Temporal Consistency & Legacy Cleanup
 
 - Calendar month totals now use the current-timezone overtime projection and never resurrect stale `day_entries` hours when the projected balance is exactly zero.

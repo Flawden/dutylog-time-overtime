@@ -14,8 +14,16 @@ test('installed web shell reopens from IndexedDB snapshot while offline', async 
     await selectDate(page, date);
 
     await openDayModule(page, 'notes');
+    const noteCreated = waitForApi(page, 'POST', '/api/notes', 201);
+    await page.locator('#noteAdd').click();
+    await noteCreated;
     const note = `Offline snapshot ${Date.now()}`;
-    const noteSaved = waitForApi(page, 'PUT', `/api/days/${date}`);
+    const noteSaved = page.waitForResponse(response => {
+      const url = new URL(response.url());
+      return response.request().method() === 'PATCH'
+        && /^\/api\/notes\/\d+$/.test(url.pathname)
+        && response.status() === 200;
+    });
     await page.locator('#noteEdit').fill(note);
     await noteSaved;
 
@@ -33,6 +41,11 @@ test('installed web shell reopens from IndexedDB snapshot while offline', async 
     await expect(page.locator('body')).toHaveClass(/offline/);
     await expect(page.locator('#offlineStatus')).toContainText(/оффлайн|offline/i);
     await expect(page.locator(`#grid [data-date="${date}"] .ear`)).toHaveCount(1);
+    await selectDate(page, date);
+    await openDayModule(page, 'notes');
+    await expect(page.locator('#noteEdit')).toHaveValue(note);
+    await expect(page.locator('#noteEdit')).toHaveAttribute('readonly', '');
+    await expect(page.locator('#noteAdd')).toBeDisabled();
   } finally {
     await context.setOffline(false).catch(() => {});
     await context.close();

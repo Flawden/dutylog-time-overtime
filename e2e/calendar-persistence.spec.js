@@ -66,19 +66,24 @@ test('a shift can be deleted and assigned again while a note save is pending', a
   await expect(shift).toHaveAttribute('aria-pressed', 'true');
 
   await openDayModule(page, 'notes');
+  const noteCreated = waitForApi(page, 'POST', '/api/notes', 201);
+  await page.locator('#noteAdd').click();
+  await noteCreated;
   const note = `pending note ${Date.now()}`;
-  let writes = 0;
-  const countWrite = response => {
-    const url = new URL(response.url());
-    if (response.request().method() === 'PUT' && url.pathname === `/api/days/${date}` && response.status() === 200) writes += 1;
-  };
-  page.on('response', countWrite);
 
-  // The note uses a debounced full-day snapshot. Deleting the shift immediately
-  // after typing used to let that older snapshot restore the deleted shift.
+  // A note now saves through its own PATCH endpoint. Shift deletion must remain
+  // independent even when the debounced note write is flushed immediately first.
+  const noteSaved = page.waitForResponse(response => {
+    const url = new URL(response.url());
+    return response.request().method() === 'PATCH'
+      && /^\/api\/notes\/\d+$/.test(url.pathname)
+      && response.status() === 200;
+  });
+  const shiftDeleted = waitForApi(page, 'PUT', `/api/days/${date}`);
   await page.locator('#noteEdit').fill(note);
   await shift.click();
-  await expect.poll(() => writes, { timeout: 15_000 }).toBeGreaterThanOrEqual(2);
+  await noteSaved;
+  await shiftDeleted;
   await expect(page.locator('#chips [data-shift-type-id][aria-pressed="true"]')).toHaveCount(0);
 
   const reloadAfterDelete = page.waitForResponse(response => new URL(response.url()).pathname === '/api/calendar' && response.status() === 200);
@@ -94,5 +99,4 @@ test('a shift can be deleted and assigned again while a note save is pending', a
   await page.locator('#chips [data-shift-type-id]').first().click();
   await recreated;
   await expect(page.locator('#chips [data-shift-type-id][aria-pressed="true"]')).toHaveCount(1);
-  page.off('response', countWrite);
 });

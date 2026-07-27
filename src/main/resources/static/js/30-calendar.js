@@ -198,12 +198,20 @@ function renderCalendar(){
       bar.className = "bar"; bar.style.background = st.color;
       cell.appendChild(bar);
     }
-    if (showNotes && entry?.note?.trim()) {
+    const dayNotes = showNotes ? notesOfDay(k) : [];
+    if (showNotes && (dayNotes.length || entry?.note?.trim())) {
       const ear = document.createElement("div");
       ear.className = "ear";
       ear.style.borderTop = `14px solid ${st ? st.color : "var(--dim)"}`;
-      ear.title = t("Есть заметка");
+      ear.title = dayNotes.length > 1 ? `${t("Заметки")}: ${dayNotes.length}` : t("Есть заметка");
       cell.appendChild(ear);
+      if (dayNotes.length > 1) {
+        const badge = document.createElement("span");
+        badge.className = "noteCountBadge";
+        badge.textContent = dayNotes.length;
+        badge.title = `${t("Заметки")}: ${dayNotes.length}`;
+        cell.appendChild(badge);
+      }
     }
     if ((entry?.dayEmoji || "").trim()) {
       const em = document.createElement("span");
@@ -365,7 +373,7 @@ function selectDay(k){
     const date = new Date(y, m - 1, d);
     $("pWeekday").textContent = weekdayName((date.getDay() + 6) % 7);
     $("pDate").innerHTML = state.language === "en" ? `${monthNameGen(m - 1)} ${d} <span class="yr mono">${y}</span>` : `${d} ${monthNameGen(m - 1)} <span class="yr mono">${y}</span>`;
-    if (moduleEnabled("notes")) $("noteEdit").value = state.days[k]?.note || "";
+    if (moduleEnabled("notes") && typeof renderDayNotes === "function") renderDayNotes();
     if (moduleEnabled("overtime")) resetOvertimeForms(k);
     if (moduleEnabled("notes")) setTab("edit");
     renderSelectedDayModules();
@@ -528,11 +536,12 @@ function updateAccSummaries(){
   const emoji = (state.days[k]?.dayEmoji || "").trim();
   if ($("sumEmoji")) $("sumEmoji").textContent = emoji || "—";
 
-  // Заметка: первая строка
-  const note = moduleEnabled("notes") ? (state.days[k]?.note || "").trim() : "";
-  const firstLine = note.split("\n")[0].replace(/^#+\s*/, "");
-  if ($("sumNote")) $("sumNote").textContent = !moduleEnabled("notes") ? t("Скрыто модулем") : (note
-    ? (firstLine.length > 34 ? firstLine.slice(0, 34) + "…" : firstLine)
+  // Заметки: количество и название активной/первой
+  const notes = moduleEnabled("notes") ? notesOfDay(k) : [];
+  const first = notes[0] || null;
+  const firstLine = String(first?.title || first?.content || state.days[k]?.note || "").trim().split("\n")[0].replace(/^#+\s*/, "");
+  if ($("sumNote")) $("sumNote").textContent = !moduleEnabled("notes") ? t("Скрыто модулем") : (notes.length
+    ? `${notes.length} · ${firstLine.length > 26 ? firstLine.slice(0, 26) + "…" : (firstLine || t("Без названия"))}`
     : "—");
 }
 

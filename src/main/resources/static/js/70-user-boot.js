@@ -240,7 +240,10 @@ function renderNoteFsPrev(){
 function openNoteFullscreen(){
   if (!moduleEnabled("notes")) return;
   if (!state.selected) return;
+  const active = activeDayNote(state.selected);
+  if (!active) return setSave("err", t("Сначала создайте заметку"));
   $("noteFsEdit").value = $("noteEdit").value;
+  if ($("noteFsName")) $("noteFsName").textContent = noteLabel(active);
   $("noteFsDate").textContent = ($("pWeekday")?.textContent || "") + " · " + ($("pDate")?.textContent || state.selected);
   renderNoteFsPrev();
   $("noteFullscreen").hidden = false;
@@ -249,6 +252,7 @@ function openNoteFullscreen(){
 }
 
 function closeNoteFullscreen(){
+  flushPendingNoteSave().catch(err => console.error(err));
   $("noteFullscreen").hidden = true;
   document.body.style.overflow = "";
 }

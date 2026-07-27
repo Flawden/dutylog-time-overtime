@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.13.0.
+Status: v27.14.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.13.0 unifies calendar totals and compatibility endpoints with the current-timezone overtime projection, moves editor preview to the canonical server DST policy, and adds signed day offsets for FIXED_TIME scenarios. Current application baseline: 88 Java test classes / 467 `@Test` methods and 21 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.14.0 adds independent Markdown notes per calendar date, a dedicated CRUD/order API, legacy primary-note compatibility, per-note export, offline snapshot reading and browser regression coverage. Current application baseline: 91 Java test classes / 482 `@Test` methods and 22 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -15,6 +15,16 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
 
+
+
+## v27.14.0 Multiple Daily Notes extension
+
+- `DayNoteServiceTest` protects independent siblings, primary compatibility shadow, pin/order semantics, deletion promotion and owner isolation.
+- `DayNoteControllerTest` covers legacy/v1 aliases, validation, range reads, module guards, CSRF and ownership.
+- `MultipleDailyNotesFrontendContractTest` protects the list/editor boundary, dedicated endpoints, merged debounce patches, migration and offline read-only behavior.
+- `multiple-daily-notes.spec.js` exercises two notes through edit, pin, reorder, reload and individual deletion.
+- `pwa-offline.spec.js` proves cached notes remain readable while mutations are disabled offline.
+- Flyway V36 migrates non-empty `day_entries.note` rows exactly once and keeps the legacy field as a primary-note shadow.
 
 ## v27.13.0 Temporal Consistency & Legacy Cleanup extension
 

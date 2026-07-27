@@ -286,6 +286,57 @@ public final class Dtos {
             List<@NotNull Long> taskIds
     ) {}
 
+
+    public record DayNoteDto(
+            Long id,
+            String date,
+            String title,
+            String content,
+            boolean pinned,
+            int sortOrder,
+            long version,
+            String createdAt,
+            String updatedAt
+    ) {
+        public static DayNoteDto from(ru.daniil.shifts.model.DayNote note) {
+            return new DayNoteDto(
+                    note.getId(),
+                    note.getDate().toString(),
+                    note.getTitle(),
+                    note.getContent(),
+                    note.isPinned(),
+                    note.getSortOrder(),
+                    note.getVersion(),
+                    note.getCreatedAt() == null ? null : note.getCreatedAt().toString(),
+                    note.getUpdatedAt() == null ? null : note.getUpdatedAt().toString()
+            );
+        }
+    }
+
+    public record DayNoteCreateRequest(
+            @NotBlank(message = "Дата заметки обязательна")
+            String date,
+            @Size(max = 200, message = "Название заметки: максимум 200 символов")
+            String title,
+            @Size(max = 20000, message = "Заметка слишком длинная: максимум 20 000 символов")
+            String content,
+            Boolean pinned
+    ) {}
+
+    public record DayNoteUpdateRequest(
+            @Size(max = 200, message = "Название заметки: максимум 200 символов")
+            String title,
+            @Size(max = 20000, message = "Заметка слишком длинная: максимум 20 000 символов")
+            String content,
+            Boolean pinned
+    ) {}
+
+    public record DayNoteMoveRequest(
+            @NotBlank(message = "Нужно направление UP или DOWN")
+            @Pattern(regexp = "(?i)UP|DOWN", message = "Направление должно быть UP или DOWN")
+            String direction
+    ) {}
+
     /** Запись дня наружу: дата в ISO (yyyy-MM-dd). */
     public record DayDto(
             String date,
@@ -297,7 +348,8 @@ public final class Dtos {
             double overtimeBalanceHours,
             long version,
             String updatedAt,
-            ShiftIntervalDto shiftInterval
+            ShiftIntervalDto shiftInterval,
+            List<DayNoteDto> notes
     ) {
         /** Source-compatible constructor for clients/tests created before v27.8.0. */
         public DayDto(String date,
@@ -310,14 +362,32 @@ public final class Dtos {
                       long version,
                       String updatedAt) {
             this(date, shiftTypeId, note, dayEmoji, overtimeHours, timeOffHours,
-                    overtimeBalanceHours, version, updatedAt, null);
+                    overtimeBalanceHours, version, updatedAt, null, List.of());
+        }
+
+        public DayDto(String date,
+                      Long shiftTypeId,
+                      String note,
+                      String dayEmoji,
+                      double overtimeHours,
+                      double timeOffHours,
+                      double overtimeBalanceHours,
+                      long version,
+                      String updatedAt,
+                      ShiftIntervalDto shiftInterval) {
+            this(date, shiftTypeId, note, dayEmoji, overtimeHours, timeOffHours,
+                    overtimeBalanceHours, version, updatedAt, shiftInterval, List.of());
         }
 
         public static DayDto from(DayEntry e) {
-            return from(e, null);
+            return from(e, null, List.of());
         }
 
         public static DayDto from(DayEntry e, ShiftIntervalDto shiftInterval) {
+            return from(e, shiftInterval, List.of());
+        }
+
+        public static DayDto from(DayEntry e, ShiftIntervalDto shiftInterval, List<DayNoteDto> notes) {
             double overtime = e.getOvertimeHours();
             double timeOff = e.getTimeOffHours();
             return new DayDto(
@@ -330,7 +400,8 @@ public final class Dtos {
                     overtime - timeOff,
                     e.getSyncVersion(),
                     e.getUpdatedAt() != null ? e.getUpdatedAt().toString() : null,
-                    shiftInterval
+                    shiftInterval,
+                    notes == null ? List.of() : List.copyOf(notes)
             );
         }
     }

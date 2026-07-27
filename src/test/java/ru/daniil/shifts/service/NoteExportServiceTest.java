@@ -4,8 +4,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 import ru.daniil.shifts.config.SecurityEventLogger;
 import ru.daniil.shifts.model.AppUser;
-import ru.daniil.shifts.model.DayEntry;
-import ru.daniil.shifts.repo.DayEntryRepository;
+import ru.daniil.shifts.model.DayNote;
+import ru.daniil.shifts.repo.DayNoteRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.io.ByteArrayInputStream;
@@ -33,25 +33,24 @@ class NoteExportServiceTest {
 
     @Test
     void countLimitRejectsBeforeRowsAreLoaded() {
-        DayEntryRepository repository = mock(DayEntryRepository.class);
+        DayNoteRepository repository = mock(DayNoteRepository.class);
         AppUser user = new AppUser("export-limit", "{noop}x");
-        when(repository.countByOwnerAndNoteIsNotNull(user)).thenReturn(3L);
+        when(repository.countByOwner(user)).thenReturn(3L);
 
         NoteExportService service = new NoteExportService(repository, mock(SecurityEventLogger.class), 2, 4096);
         ApiException error = assertThrows(ApiException.class, () -> service.prepare(user));
 
         assertEquals(HttpStatus.PAYLOAD_TOO_LARGE, error.getStatus());
-        verify(repository, never()).findNotesForExport(user);
+        verify(repository, never()).findByOwnerOrderByDateAscPinnedDescSortOrderAscCreatedAtAscIdAsc(user);
     }
 
     @Test
     void uncompressedByteLimitRejectsOversizedExport() {
-        DayEntryRepository repository = mock(DayEntryRepository.class);
+        DayNoteRepository repository = mock(DayNoteRepository.class);
         AppUser user = new AppUser("export-bytes", "{noop}x");
-        DayEntry entry = new DayEntry(user, LocalDate.of(2026, 7, 10));
-        entry.setNote("x".repeat(2048));
-        when(repository.countByOwnerAndNoteIsNotNull(user)).thenReturn(1L);
-        when(repository.findNotesForExport(user)).thenReturn(List.of(entry));
+        DayNote note = note(user, LocalDate.of(2026, 7, 10), "x".repeat(2048));
+        when(repository.countByOwner(user)).thenReturn(1L);
+        when(repository.findByOwnerOrderByDateAscPinnedDescSortOrderAscCreatedAtAscIdAsc(user)).thenReturn(List.of(note));
 
         NoteExportService service = new NoteExportService(repository, mock(SecurityEventLogger.class), 10, 1024);
         ApiException error = assertThrows(ApiException.class, () -> service.prepare(user));
@@ -61,12 +60,12 @@ class NoteExportServiceTest {
 
     @Test
     void postReadLimitProtectsAgainstRowsChangingBetweenCountAndSelect() {
-        DayEntryRepository repository = mock(DayEntryRepository.class);
+        DayNoteRepository repository = mock(DayNoteRepository.class);
         AppUser user = new AppUser("export-race", "{noop}x");
-        DayEntry first = note(user, LocalDate.of(2026, 7, 1), "one");
-        DayEntry second = note(user, LocalDate.of(2026, 7, 2), "two");
-        when(repository.countByOwnerAndNoteIsNotNull(user)).thenReturn(1L);
-        when(repository.findNotesForExport(user)).thenReturn(List.of(first, second));
+        DayNote first = note(user, LocalDate.of(2026, 7, 1), "one");
+        DayNote second = note(user, LocalDate.of(2026, 7, 2), "two");
+        when(repository.countByOwner(user)).thenReturn(1L);
+        when(repository.findByOwnerOrderByDateAscPinnedDescSortOrderAscCreatedAtAscIdAsc(user)).thenReturn(List.of(first, second));
 
         ApiException error = assertThrows(ApiException.class,
                 () -> new NoteExportService(repository, mock(SecurityEventLogger.class), 1, 4096)
@@ -77,41 +76,44 @@ class NoteExportServiceTest {
 
     @Test
     void blankRowsAreFilteredAndSuccessfulPlanIsAudited() {
-        DayEntryRepository repository = mock(DayEntryRepository.class);
+        DayNoteRepository repository = mock(DayNoteRepository.class);
         SecurityEventLogger audit = mock(SecurityEventLogger.class);
         AppUser user = new AppUser("export-plan", "{noop}x");
-        DayEntry blank = note(user, LocalDate.of(2026, 7, 1), "   \n");
-        DayEntry actual = note(user, LocalDate.of(2026, 7, 2), "hello");
-        when(repository.countByOwnerAndNoteIsNotNull(user)).thenReturn(2L);
-        when(repository.findNotesForExport(user)).thenReturn(List.of(blank, actual));
+        DayNote blank = note(user, LocalDate.of(2026, 7, 1), "   \n");
+        DayNote actual = note(user, LocalDate.of(2026, 7, 2), "hello");
+        actual.setTitle("Plan");
+        when(repository.countByOwner(user)).thenReturn(2L);
+        when(repository.findByOwnerOrderByDateAscPinnedDescSortOrderAscCreatedAtAscIdAsc(user)).thenReturn(List.of(blank, actual));
 
         NoteExportService.NoteExportPlan plan =
                 new NoteExportService(repository, audit, 10, 4096).prepare(user);
 
         assertEquals(1, plan.rows().size());
         assertEquals(LocalDate.of(2026, 7, 2), plan.rows().get(0).date());
+        assertEquals("Plan", plan.rows().get(0).title());
         assertTrue(plan.uncompressedBytes() > 0);
         verify(audit).info(eq("DATA_EXPORT_NOTES"), eq("export-plan"), eq("accepted"), anyString());
     }
 
     @Test
-    void zipWriterCreatesYearFoldersAndReadme() throws Exception {
+    void zipWriterCreatesOneFilePerNoteAndReadme() throws Exception {
         NoteExportService service = new NoteExportService(
-                mock(DayEntryRepository.class), mock(SecurityEventLogger.class), 10, 4096);
+                mock(DayNoteRepository.class), mock(SecurityEventLogger.class), 10, 4096);
         NoteExportService.NoteExportPlan plan = new NoteExportService.NoteExportPlan(
                 "zip-owner",
                 java.time.Instant.parse("2026-07-17T00:00:00Z"),
                 List.of(new NoteExportService.NoteExportRow(
-                        LocalDate.of(2026, 7, 17), "body", "Night", "🌙")),
+                        42L, LocalDate.of(2026, 7, 17), "Night", "body", true, 0)),
                 100L);
         ByteArrayOutputStream output = new ByteArrayOutputStream();
 
         service.writeZip(plan, output);
         Map<String, String> files = unzip(output.toByteArray());
 
-        assertTrue(files.containsKey("2026/2026-07-17.md"));
+        assertTrue(files.containsKey("2026/2026-07-17-night-42.md"));
         assertTrue(files.containsKey("README.md"));
-        assertTrue(files.get("2026/2026-07-17.md").contains("shift: \"Night\""));
+        assertTrue(files.get("2026/2026-07-17-night-42.md").contains("title: \"Night\""));
+        assertTrue(files.get("2026/2026-07-17-night-42.md").contains("pinned: true"));
         assertTrue(files.get("README.md").contains("Пользователь: zip-owner"));
     }
 
@@ -123,10 +125,8 @@ class NoteExportServiceTest {
         assertFalse(escaped.contains("\r\n"));
     }
 
-    private static DayEntry note(AppUser user, LocalDate date, String text) {
-        DayEntry entry = new DayEntry(user, date);
-        entry.setNote(text);
-        return entry;
+    private static DayNote note(AppUser user, LocalDate date, String text) {
+        return new DayNote(user, date, text);
     }
 
     private static Map<String, String> unzip(byte[] body) throws Exception {

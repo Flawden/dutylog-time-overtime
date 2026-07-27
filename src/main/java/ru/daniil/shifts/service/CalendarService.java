@@ -74,7 +74,8 @@ public class CalendarService {
                         overtimeEnabled ? day.overtimeBalanceHours() : 0,
                         day.version(),
                         day.updatedAt(),
-                        day.shiftInterval()
+                        day.shiftInterval(),
+                        notesEnabled ? day.notes() : List.of()
                 ))
                 .toList();
         List<ShiftOccurrenceDto> shiftOccurrences = shiftOccurrenceService.listForDisplayRange(user, from, to);

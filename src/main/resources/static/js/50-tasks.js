@@ -1549,24 +1549,26 @@ async function quickActionNote(){
   closeQuickActions();
   await goto(year, month - 1);
   location.hash = "#calendar";
-  setTimeout(() => {
-    selectDay(date);
-    const section = $("accNote");
-    if (section) section.open = true;
-    setTab("edit");
-    const editor = $("noteEdit");
-    if (!editor) return;
-    if (text) {
-      const existing = editor.value.trimEnd();
-      editor.value = existing ? `${existing}
-${text}` : text;
-      editor.dispatchEvent(new Event("input", { bubbles:true }));
-      setSave("saved", t("Запись добавлена в заметку"));
+  selectDay(date);
+  const section = $("accNote");
+  if (section) section.open = true;
+  if (text) {
+    try {
+      setSave("saving");
+      const created = normalizeDayNote(await api.createDayNote({ date, title:null, content:text, pinned:false }));
+      installDayNotes(date, [...notesOfDay(date), created], created.id);
+      await persistNotesSnapshot(date);
+      setSave("saved", t("Создана новая заметка"));
+    } catch (err) {
+      console.error(err);
+      setSave("err", err.message);
     }
-    editor.focus({ preventScroll:true });
-    editor.setSelectionRange(editor.value.length, editor.value.length);
-  }, 0);
+  }
+  renderDayNotes();
+  setTab("edit");
+  $("noteEdit")?.focus({ preventScroll:true });
 }
+
 function quickActionImportant(){
   if (!moduleEnabled("important_dates")) return setSave("err", t("модуль выключен"));
   const text = quickActionDraftText();
@@ -1818,8 +1820,9 @@ async function toggleShift(id){
   const selectedDate = state.selected;
   const k = shiftSourceDateForSelected();
   if (!selectedDate || !k) return;
-  // A debounced note save contains a full day snapshot. Flush it first, otherwise
-  // its older shiftTypeId can arrive after the deletion and resurrect the shift.
+  // Flush an independent note PATCH before changing the selected shift so the
+  // save indicator and local snapshot settle in deterministic order. The note
+  // request no longer carries a day/shift snapshot.
   await flushPendingSave();
   const cur = state.days[k] || {};
   const next = {
@@ -1898,46 +1901,221 @@ async function pushDaySnapshot(k, payload){
   });
 }
 
-/* Заметка: локально сразу, на сервер — с задержкой */
+/* Несколько заметок: независимые сущности, локальный optimistic UI и debounce PATCH */
 let noteTimer = null;
-let pendingDaySave = null;
+let pendingNoteSave = null;
 
-function scheduleDaySave(k, payload){
-  clearTimeout(noteTimer);
-  pendingDaySave = { k, payload: { ...payload } };
-  noteTimer = setTimeout(() => {
-    const p = pendingDaySave;
-    pendingDaySave = null;
-    noteTimer = null;
-    if (p) pushDaySnapshot(p.k, p.payload);
-  }, 600);
+function noteLabel(note){
+  const title = String(note?.title || "").trim();
+  if (title) return title;
+  const first = String(note?.content || "").trim().split("\n")[0].replace(/^#+\s*/, "");
+  return first || t("Без названия");
 }
 
-async function flushPendingSave(){
-  if (!pendingDaySave) return;
-  clearTimeout(noteTimer);
-  const p = pendingDaySave;
-  pendingDaySave = null;
-  noteTimer = null;
-  await pushDaySnapshot(p.k, p.payload);
+function installDayNotes(date, notes, activeId = null){
+  const day = state.days[date] || normalizeDay({ date, notes:[] });
+  day.notes = sortDayNotes(notes);
+  const primary = day.notes[0] || null;
+  day.note = primary
+    ? (primary.content.trim()
+      ? primary.content
+      : (String(primary.title || "").trim() ? `# ${String(primary.title || "").trim()}` : "# Без названия"))
+    : null;
+  state.days[date] = day;
+  if (activeId != null) state.activeNoteByDate[date] = Number(activeId);
+  else if (!day.notes.some(n => n.id === Number(state.activeNoteByDate[date]))) {
+    state.activeNoteByDate[date] = day.notes[0]?.id ?? null;
+  }
+  nextDayLocalRevision(date);
 }
 
-$("noteEdit").addEventListener("input", () => {
-  if (!moduleEnabled("notes")) return;
-  const k = state.selected;
-  if (!k) return;
-  const cur = state.days[k] || {};
-  const next = {
-    shiftTypeId: cur.shiftTypeId ?? null,
-    note: $("noteEdit").value,
-    dayEmoji: cur.dayEmoji || null,
-    overtimeHours: numOr0(cur.overtimeHours),
-    timeOffHours: numOr0(cur.timeOffHours),
+async function persistNotesSnapshot(date){
+  if (!state.offline?.cacheReady) return;
+  const day = state.days[date] || normalizeDay({ date, notes:[] });
+  await dataLayer.updateSnapshotDay(date, { ...day, date });
+}
+
+function renderDayNotes(){
+  const date = state.selected;
+  const list = $("noteList");
+  const pane = $("noteEditorPane");
+  if (!date || !list || !pane) return;
+  const notes = notesOfDay(date);
+  let active = activeDayNote(date);
+  if (active && state.activeNoteByDate[date] !== active.id) state.activeNoteByDate[date] = active.id;
+
+  list.innerHTML = "";
+  if (!notes.length) {
+    list.innerHTML = `<div class="dayNoteListEmpty">${esc(t("На этот день заметок пока нет."))}</div>`;
+  } else {
+    for (const note of notes) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "dayNoteCard" + (active?.id === note.id ? " on" : "");
+      const preview = String(note.content || "").trim().split("\n").slice(0,2).join(" ");
+      button.innerHTML = `<span class="dayNoteCardPin">${note.pinned ? "📌" : ""}</span><span class="dayNoteCardText"><span class="dayNoteCardTitle">${esc(noteLabel(note))}</span><span class="dayNoteCardPreview">${esc(preview || t("Пустая заметка"))}</span></span><span class="dayNoteCardTime">${note.sortOrder + 1}</span>`;
+      button.addEventListener("click", async () => {
+        await flushPendingNoteSave();
+        state.activeNoteByDate[date] = note.id;
+        renderDayNotes();
+        setTab(state.tab || "edit");
+      });
+      list.appendChild(button);
+    }
+  }
+
+  active = activeDayNote(date);
+  const online = navigator.onLine;
+  pane.classList.toggle("is-empty", !active);
+  $("noteAdd").disabled = !online;
+  if ($("noteOfflineHint")) $("noteOfflineHint").textContent = online
+    ? t("Несколько независимых заметок на один день.")
+    : t("Оффлайн доступно чтение snapshot. Создание и редактирование заметок требуют подключения.");
+  if (!active) {
+    $("noteTitle").value = "";
+    $("noteEdit").value = "";
+    $("notePrev").innerHTML = "";
+    return;
+  }
+  if (document.activeElement !== $("noteTitle")) $("noteTitle").value = active.title || "";
+  if (document.activeElement !== $("noteEdit")) $("noteEdit").value = active.content || "";
+  $("noteTitle").disabled = !online;
+  $("noteEdit").readOnly = !online;
+  $("notePin").disabled = !online;
+  $("noteDelete").disabled = !online;
+  $("notePin").classList.toggle("on", active.pinned);
+  $("notePin").title = t(active.pinned ? "Открепить заметку" : "Закрепить заметку");
+  const sameGroup = notes.filter(n => n.pinned === active.pinned);
+  const idx = sameGroup.findIndex(n => n.id === active.id);
+  $("noteMoveUp").disabled = !online || idx <= 0;
+  $("noteMoveDown").disabled = !online || idx < 0 || idx >= sameGroup.length - 1;
+  updateAccSummaries();
+}
+
+async function createDayNote(content = ""){
+  const date = state.selected;
+  if (!date || !navigator.onLine) return setSave("err", t("Создание заметки требует подключения к серверу"));
+  await flushPendingNoteSave();
+  try {
+    setSave("saving");
+    const created = normalizeDayNote(await api.createDayNote({ date, title:content ? null : t("Новая заметка"), content, pinned:false }));
+    installDayNotes(date, [...notesOfDay(date), created], created.id);
+    await persistNotesSnapshot(date);
+    renderDayNotes();
+    renderCalendar();
+    setTab("edit");
+    $("noteTitle")?.focus({ preventScroll:true });
+    setSave("saved");
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+
+function scheduleNoteSave(note, patch){
+  clearTimeout(noteTimer);
+  const sameNote = pendingNoteSave
+    && pendingNoteSave.date === state.selected
+    && Number(pendingNoteSave.noteId) === Number(note.id);
+  pendingNoteSave = {
+    date:state.selected,
+    noteId:note.id,
+    // Title and content inputs may fire inside the same debounce window. Merge
+    // their patches so the later keystroke never silently drops the earlier one.
+    patch:{ ...(sameNote ? pendingNoteSave.patch : {}), ...patch }
   };
-  applyLocal(k, next);
+  noteTimer = setTimeout(() => flushPendingNoteSave(), 600);
+}
+
+async function flushPendingNoteSave(){
+  if (!pendingNoteSave) return;
+  clearTimeout(noteTimer);
+  noteTimer = null;
+  const pending = pendingNoteSave;
+  pendingNoteSave = null;
+  if (!navigator.onLine) {
+    setSave("err", t("Изменение заметки ждёт подключения. Текст сохранён в локальном snapshot только для чтения."));
+    await persistNotesSnapshot(pending.date);
+    return;
+  }
+  try {
+    setSave("saving");
+    const updated = normalizeDayNote(await api.updateDayNote(pending.noteId, pending.patch));
+    const current = notesOfDay(pending.date).map(n => n.id === updated.id ? updated : n);
+    installDayNotes(pending.date, current, updated.id);
+    await persistNotesSnapshot(pending.date);
+    renderDayNotes();
+    renderCalendar();
+    setSave("saved");
+  } catch (err) {
+    console.error(err);
+    setSave("err", err.message);
+  }
+}
+
+async function flushPendingSave(){ await flushPendingNoteSave(); }
+
+$("noteAdd").addEventListener("click", () => createDayNote(""));
+$("noteEdit").addEventListener("input", () => {
+  if (!moduleEnabled("notes") || !navigator.onLine) return;
+  const date = state.selected;
+  const active = activeDayNote(date);
+  if (!date || !active) return;
+  active.content = $("noteEdit").value;
+  installDayNotes(date, notesOfDay(date).map(n => n.id === active.id ? active : n), active.id);
   updateAccSummaries();
   renderCalendar();
-  scheduleDaySave(k, next);
+  scheduleNoteSave(active, { content:active.content });
+});
+$("noteTitle").addEventListener("input", () => {
+  if (!navigator.onLine) return;
+  const date = state.selected;
+  const active = activeDayNote(date);
+  if (!date || !active) return;
+  active.title = $("noteTitle").value;
+  installDayNotes(date, notesOfDay(date).map(n => n.id === active.id ? active : n), active.id);
+  renderDayNotes();
+  scheduleNoteSave(active, { title:active.title });
+});
+$("notePin").addEventListener("click", async () => {
+  const date = state.selected;
+  const active = activeDayNote(date);
+  if (!active || !navigator.onLine) return setSave("err", t("Закрепление требует подключения к серверу"));
+  await flushPendingNoteSave();
+  try {
+    const updated = normalizeDayNote(await api.updateDayNote(active.id, { pinned:!active.pinned }));
+    installDayNotes(date, notesOfDay(date).map(n => n.id === updated.id ? updated : n), updated.id);
+    await persistNotesSnapshot(date);
+    renderDayNotes(); renderCalendar(); setSave("saved");
+  } catch (err) { console.error(err); setSave("err", err.message); }
+});
+async function moveActiveNote(direction){
+  const date = state.selected;
+  const active = activeDayNote(date);
+  if (!active || !navigator.onLine) return setSave("err", t("Изменение порядка требует подключения к серверу"));
+  await flushPendingNoteSave();
+  try {
+    const moved = (await api.moveDayNote(active.id, direction)).map(normalizeDayNote);
+    installDayNotes(date, moved, active.id);
+    await persistNotesSnapshot(date);
+    renderDayNotes(); setSave("saved");
+  } catch (err) { console.error(err); setSave("err", err.message); }
+}
+$("noteMoveUp").addEventListener("click", () => moveActiveNote("UP"));
+$("noteMoveDown").addEventListener("click", () => moveActiveNote("DOWN"));
+$("noteDelete").addEventListener("click", async () => {
+  const date = state.selected;
+  const active = activeDayNote(date);
+  if (!active || !navigator.onLine) return setSave("err", t("Удаление требует подключения к серверу"));
+  if (!confirm(t(`Удалить заметку «${noteLabel(active)}»?`))) return;
+  await flushPendingNoteSave();
+  try {
+    await api.deleteDayNote(active.id);
+    const remaining = notesOfDay(date).filter(n => n.id !== active.id);
+    installDayNotes(date, remaining, remaining[0]?.id ?? null);
+    await persistNotesSnapshot(date);
+    renderDayNotes(); renderCalendar(); setSave("saved");
+  } catch (err) { console.error(err); setSave("err", err.message); }
 });
 
 function setTab(tabName){
@@ -1953,4 +2131,6 @@ function setTab(tabName){
 }
 $("tabEdit").addEventListener("click", () => setTab("edit"));
 $("tabPrev").addEventListener("click", () => setTab("preview"));
+window.addEventListener("online", () => { if (state.selected) renderDayNotes(); });
+window.addEventListener("offline", () => { if (state.selected) renderDayNotes(); });
 $("pClose").addEventListener("click", () => selectDay(null));

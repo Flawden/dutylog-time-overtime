@@ -2978,3 +2978,35 @@ body.panel-open .globalQuickAdd { display:none !important; }
   white-space:normal;
 }
 .overtimeDaySummary b{ color:var(--text); }
+
+/* v27.14.0 — multiple independent notes per day */
+.dayNotesModule{display:flex;flex-direction:column;gap:10px}
+.dayNotesToolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.dayNotesLayout{display:grid;grid-template-columns:minmax(180px,240px) minmax(0,1fr);gap:12px;align-items:start}
+.dayNoteList{display:flex;flex-direction:column;gap:7px;max-height:360px;overflow:auto;padding-right:2px}
+.dayNoteListEmpty{padding:16px 10px;border:1px dashed var(--line);border-radius:10px;color:var(--dim);font-size:12px;text-align:center}
+.dayNoteCard{width:100%;display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;text-align:left;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panelAlt);color:var(--text);cursor:pointer}
+.dayNoteCard:hover{border-color:var(--accent)}
+.dayNoteCard.on{border-color:var(--accent);box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent)}
+.dayNoteCardPin{width:18px;text-align:center;opacity:.75}
+.dayNoteCardText{min-width:0}
+.dayNoteCardTitle{font-size:13px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dayNoteCardPreview{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.dayNoteCardTime{font-size:10px;color:var(--dim)}
+.dayNoteEditor{min-width:0;position:relative}
+.dayNoteEditorHead{display:flex;gap:8px;align-items:center;margin-bottom:8px}
+#noteTitle{flex:1;min-width:0;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-weight:700}
+.dayNoteActions{display:flex;gap:5px;align-items:center}
+.dayNoteActions button{min-width:34px;padding:7px 8px}
+.dangerGhost{color:var(--danger)!important}
+.dayNoteEmpty{padding:24px 12px;border:1px dashed var(--line);border-radius:10px;text-align:center;color:var(--dim);font-size:12px}
+.dayNoteEditor.is-empty .tabs,.dayNoteEditor.is-empty #noteEdit,.dayNoteEditor.is-empty #notePrev,.dayNoteEditor.is-empty .dayNoteEditorHead{display:none!important}
+.dayNoteEditor:not(.is-empty) .dayNoteEmpty{display:none}
+.noteCountBadge{display:inline-flex;min-width:18px;height:18px;padding:0 5px;align-items:center;justify-content:center;border-radius:999px;background:var(--accent);color:#111;font-size:10px;font-weight:800}
+@media(max-width:760px){
+  .dayNotesLayout{grid-template-columns:1fr}
+  .dayNoteList{max-height:170px}
+  .dayNoteEditorHead{align-items:stretch;flex-direction:column}
+  .dayNoteActions{justify-content:flex-end}
+}
+.cell .noteCountBadge{position:absolute;top:2px;right:15px;z-index:3;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.25)}

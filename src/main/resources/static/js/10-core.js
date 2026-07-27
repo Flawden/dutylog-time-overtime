@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.13.0"
+const DUTYLOG_VERSION = "27.14.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -113,6 +113,7 @@ const state = {
   editingUsageId: null,
   selected: null,                 // ключ даты
   tab: "edit",
+  activeNoteByDate: {},
   ui: { booting:true, loadingCalendar:false, loadingTasks:false, loadingLedger:false },
   toasts: [],
   swColor: "#F5B841",
@@ -768,6 +769,30 @@ function translateDynamicEn(core){
   return core;
 }
 
+Object.assign(I18N_EN, {
+  "Заметки":"Notes",
+  "Есть заметка":"Has note",
+  "Новая заметка":"New note",
+  "Создана новая заметка":"New note created",
+  "Без названия":"Untitled",
+  "Пустая заметка":"Empty note",
+  "На этот день заметок пока нет.":"No notes for this day yet.",
+  "Несколько независимых заметок на один день.":"Multiple independent notes for one day.",
+  "Оффлайн доступно чтение snapshot. Создание и редактирование заметок требуют подключения.":"The offline snapshot is available for reading. Creating and editing notes requires a connection.",
+  "Создание заметки требует подключения к серверу":"Creating a note requires a server connection",
+  "Изменение заметки ждёт подключения. Текст сохранён в локальном snapshot только для чтения.":"Note changes require a connection. The local snapshot is read-only.",
+  "Закрепление требует подключения к серверу":"Pinning requires a server connection",
+  "Изменение порядка требует подключения к серверу":"Reordering requires a server connection",
+  "Удаление требует подключения к серверу":"Deleting requires a server connection",
+  "Закрепить заметку":"Pin note",
+  "Открепить заметку":"Unpin note",
+  "Сначала создайте заметку":"Create a note first",
+  "Удалить заметку":"Delete note",
+  "Название заметки (необязательно)":"Note title (optional)",
+  "Редактор":"Editor"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+
 function t(value){
   const s = String(value ?? "");
   if (state.language === "en") return I18N_EN[s] || translateDynamicEn(s) || s;
@@ -1285,14 +1310,44 @@ function updateShiftPlanHint(){
     ? `${t("Норма рассчитана по времени смены:")} ${fmtHours(norm)} ${state.language === "en" ? "h" : "ч"}. ${t("Календарь, ч — короткая метка для календаря. Норма, ч — сколько часов вычитается при расчёте переработки. Если оставить норму пустой, она посчитается по началу, концу и обеду.")}`
     : t("Календарь, ч — короткая метка для календаря. Норма, ч — сколько часов вычитается при расчёте переработки. Если оставить норму пустой, она посчитается по началу, концу и обеду.");
 }
-const normalizeDay = e => ({
-  shiftTypeId: e?.shiftTypeId ?? null,
-  note: e?.note ?? null,
-  dayEmoji: e?.dayEmoji ?? null,
-  overtimeHours: numOr0(e?.overtimeHours),
-  timeOffHours: numOr0(e?.timeOffHours),
-  shiftInterval: e?.shiftInterval ?? null,
+const normalizeDayNote = note => ({
+  id:Number(note?.id),
+  date:String(note?.date || ""),
+  title:note?.title ?? null,
+  content:String(note?.content ?? ""),
+  pinned:!!note?.pinned,
+  sortOrder:Number(note?.sortOrder ?? 0),
+  version:Number(note?.version ?? 0),
+  createdAt:note?.createdAt ?? null,
+  updatedAt:note?.updatedAt ?? null,
 });
+const sortDayNotes = notes => (Array.isArray(notes) ? notes.map(normalizeDayNote).filter(n => Number.isFinite(n.id)) : [])
+  .sort((a,b) => Number(b.pinned)-Number(a.pinned) || a.sortOrder-b.sortOrder || String(a.createdAt||"").localeCompare(String(b.createdAt||"")) || a.id-b.id);
+const normalizeDay = e => {
+  const notes = sortDayNotes(e?.notes || []);
+  const primaryNote = notes[0] || null;
+  const primary = primaryNote
+    ? (primaryNote.content.trim()
+      ? primaryNote.content
+      : (String(primaryNote.title || "").trim() ? `# ${String(primaryNote.title || "").trim()}` : "# Без названия"))
+    : (e?.note ?? null);
+  return {
+    shiftTypeId: e?.shiftTypeId ?? null,
+    note: primary,
+    notes,
+    dayEmoji: e?.dayEmoji ?? null,
+    overtimeHours: numOr0(e?.overtimeHours),
+    timeOffHours: numOr0(e?.timeOffHours),
+    shiftInterval: e?.shiftInterval ?? null,
+  };
+};
+function notesOfDay(date){ return sortDayNotes(state.days?.[date]?.notes || []); }
+function activeDayNote(date = state.selected){
+  if (!date) return null;
+  const notes = notesOfDay(date);
+  const activeId = Number(state.activeNoteByDate?.[date]);
+  return notes.find(n => n.id === activeId) || notes[0] || null;
+}
 
 function addToDateMap(map, item){
   const k = item.date;

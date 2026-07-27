@@ -4,6 +4,7 @@ import jakarta.persistence.EntityManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.DayDto;
+import ru.daniil.shifts.dto.Dtos.DayNoteDto;
 import ru.daniil.shifts.dto.Dtos.DayFillRequest;
 import ru.daniil.shifts.dto.Dtos.DayUpsertRequest;
 import ru.daniil.shifts.dto.Dtos.MobileDayChangeRequest;
@@ -29,17 +30,20 @@ public class DayEntryService {
     private final ShiftTypeService shiftTypeService;
     private final WorkIntervalService workIntervalService;
     private final ShiftOccurrenceService shiftOccurrenceService;
+    private final DayNoteService dayNoteService;
     private final EntityManager entityManager;
 
     public DayEntryService(DayEntryRepository days,
                            ShiftTypeService shiftTypeService,
                            WorkIntervalService workIntervalService,
                            ShiftOccurrenceService shiftOccurrenceService,
+                           DayNoteService dayNoteService,
                            EntityManager entityManager) {
         this.days = days;
         this.shiftTypeService = shiftTypeService;
         this.workIntervalService = workIntervalService;
         this.shiftOccurrenceService = shiftOccurrenceService;
+        this.dayNoteService = dayNoteService;
         this.entityManager = entityManager;
     }
 
@@ -59,8 +63,12 @@ public class DayEntryService {
     @Transactional(readOnly = true)
     public List<DayDto> listRange(AppUser user, LocalDate from, LocalDate to) {
         validateRange(from, to);
+        Map<LocalDate, List<DayNoteDto>> notesByDate = new HashMap<>();
+        for (DayNoteDto note : dayNoteService.listRange(user, from, to)) {
+            notesByDate.computeIfAbsent(LocalDate.parse(note.date()), ignored -> new ArrayList<>()).add(note);
+        }
         return days.findByOwnerAndDateBetweenOrderByDateAsc(user, from, to)
-                .stream().map(entry -> toDto(user, entry)).toList();
+                .stream().map(entry -> toDto(user, entry, notesByDate.getOrDefault(entry.getDate(), List.of()))).toList();
     }
 
     @Transactional
@@ -110,9 +118,16 @@ public class DayEntryService {
                 days.delete(entry);
                 days.flush();
             }
+            if (notesMutable) {
+                dayNoteService.syncPrimaryFromLegacy(user, d, null);
+                DayEntry promoted = days.findByOwnerAndDate(user, d).orElse(null);
+                if (promoted != null) return toDto(user, promoted);
+            }
             return null;
         }
-        return toDto(user, days.saveAndFlush(entry));
+        DayEntry saved = days.saveAndFlush(entry);
+        if (notesMutable) dayNoteService.syncPrimaryFromLegacy(user, d, saved.getNote());
+        return toDto(user, days.findByOwnerAndDate(user, d).orElse(saved));
     }
 
     @Transactional
@@ -240,9 +255,18 @@ public class DayEntryService {
                 days.delete(entry);
                 days.flush();
             }
+            if (Boolean.TRUE.equals(req.clearNote()) || req.note() != null) {
+                dayNoteService.syncPrimaryFromLegacy(user, d, null);
+                DayEntry promoted = days.findByOwnerAndDate(user, d).orElse(null);
+                if (promoted != null) return toDto(user, promoted);
+            }
             return null;
         }
-        return toDto(user, days.saveAndFlush(entry));
+        DayEntry saved = days.saveAndFlush(entry);
+        if (Boolean.TRUE.equals(req.clearNote()) || req.note() != null) {
+            dayNoteService.syncPrimaryFromLegacy(user, d, saved.getNote());
+        }
+        return toDto(user, days.findByOwnerAndDate(user, d).orElse(saved));
     }
 
     public DayDto toDto(AppUser user, DayEntry entry) {
@@ -268,7 +292,23 @@ public class DayEntryService {
                     projection.legacyLocal()
             );
         }
-        return DayDto.from(entry, shiftInterval);
+        return DayDto.from(entry, shiftInterval, dayNoteService.listDate(user, entry.getDate()));
+    }
+
+    private DayDto toDto(AppUser user, DayEntry entry, List<DayNoteDto> notes) {
+        ShiftIntervalDto shiftInterval = null;
+        ShiftType shift = entry == null ? null : entry.getShiftType();
+        if (entry != null && shift != null && shift.getStartTime() != null && shift.getEndTime() != null) {
+            WorkIntervalService.ShiftProjection projection = workIntervalService.projectShift(user, entry);
+            shiftInterval = new ShiftIntervalDto(
+                    projection.startInstant().toString(), projection.endInstant().toString(),
+                    projection.workStart().toLocalDateTime().toString(), projection.workEnd().toLocalDateTime().toString(),
+                    projection.displayStart().toLocalDateTime().toString(), projection.displayEnd().toLocalDateTime().toString(),
+                    projection.workTimezone(), projection.displayTimezone(), projection.breakMinutes(),
+                    projection.elapsedMinutes(), projection.netMinutes(), projection.crossesWorkMidnight(),
+                    projection.crossesDisplayMidnight(), projection.sameTimezone(), projection.legacyLocal());
+        }
+        return DayDto.from(entry, shiftInterval, notes);
     }
 
     public LocalDate parseDate(String date, String message) {

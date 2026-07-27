@@ -32,6 +32,11 @@ const api = {
     return jfetch(`/api/calendar?from=${r.from}&to=${r.to}${suffix}`, { cache:fresh ? "no-store" : undefined });
   },
   async upsertDay(k, b)     { return jfetch(`/api/days/${k}`, { method:"PUT", body:b }); },
+  async dayNotes(date)      { return jfetch(`/api/notes?date=${encodeURIComponent(date)}`); },
+  async createDayNote(b)    { return jfetch("/api/notes", { method:"POST", body:b }); },
+  async updateDayNote(id,b) { return jfetch(`/api/notes/${id}`, { method:"PATCH", body:b }); },
+  async moveDayNote(id,direction) { return jfetch(`/api/notes/${id}/move`, { method:"POST", body:{ direction } }); },
+  async deleteDayNote(id)   { return jfetch(`/api/notes/${id}`, { method:"DELETE" }); },
   async fillDays(b)        { return jfetch("/api/days/fill", { method:"POST", body:b }); },
   async modules()          { return jfetch("/api/modules"); },
   async moduleContracts()  { return jfetch("/api/modules/contracts"); },
@@ -143,6 +148,7 @@ function sanitizeDayForModules(day = {}){
     date: day.date ?? null,
     shiftTypeId: day.shiftTypeId ?? null,
     note: moduleEnabled("notes") ? (day.note ?? null) : null,
+    notes: moduleEnabled("notes") ? sortDayNotes(day.notes || []) : [],
     dayEmoji: day.dayEmoji ?? null,
     overtimeHours: moduleEnabled("overtime") ? numOr0(day.overtimeHours) : 0,
     timeOffHours: moduleEnabled("overtime") ? numOr0(day.timeOffHours) : 0,
@@ -273,7 +279,10 @@ function renderSelectedDayModules(){
   if (moduleEnabled("overtime")) renderOvertimeControls();
   if (moduleEnabled("important_dates")) renderImportantDays();
   if (moduleEnabled("tasks")) renderTasks();
-  if (moduleEnabled("notes")) setTab(state.tab || "edit");
+  if (moduleEnabled("notes")) {
+    if (typeof renderDayNotes === "function") renderDayNotes();
+    setTab(state.tab || "edit");
+  }
   updateAccSummaries();
 }
 function applyModuleVisibility(){
@@ -929,7 +938,7 @@ const dataLayer = {
     const days = Array.isArray(snap.bundle.days) ? snap.bundle.days.slice() : [];
     const clean = normalizeDay(sanitizeDayForModules(day));
     const idx = days.findIndex(x => x.date === date);
-    const empty = !clean.shiftTypeId && !(clean.note || "").trim() && !(clean.dayEmoji || "").trim() && Math.abs(clean.overtimeHours) < 0.0001 && Math.abs(clean.timeOffHours) < 0.0001;
+    const empty = !clean.shiftTypeId && !(clean.note || "").trim() && !(clean.notes || []).length && !(clean.dayEmoji || "").trim() && Math.abs(clean.overtimeHours) < 0.0001 && Math.abs(clean.timeOffHours) < 0.0001;
     if (empty && idx >= 0) days.splice(idx, 1);
     else if (!empty && idx >= 0) days[idx] = { ...days[idx], date, ...clean };
     else if (!empty) days.push({ date, ...clean });

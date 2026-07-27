@@ -8,7 +8,7 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.13.0" rel="stylesheet"/>
+<link href="app.css?v=27.14.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -181,18 +181,37 @@
 </div>
 </details>
 <details class="acc dayPanelModule" data-day-module="notes" id="accNote">
-<summary><span class="accT">Заметка</span><span class="accS" id="sumNote"></span></summary>
-<div class="accB">
-<div class="tabs">
-<button class="on" id="tabEdit">Заметка</button>
-<button id="tabPrev">Превью</button>
-<button id="noteExpand" class="noteExpandBtn" title="Редактор на весь экран" type="button">⛶ развернуть</button>
-</div>
-<textarea id="noteEdit" placeholder="# Заголовок
+<summary><span class="accT">Заметки</span><span class="accS" id="sumNote"></span></summary>
+<div class="accB dayNotesModule">
+  <div class="dayNotesToolbar">
+    <button class="primary" id="noteAdd" type="button">＋ Новая заметка</button>
+    <span class="dayPanelHint" id="noteOfflineHint">Несколько независимых заметок на один день.</span>
+  </div>
+  <div class="dayNotesLayout">
+    <div class="dayNoteList" id="noteList"></div>
+    <div class="dayNoteEditor" id="noteEditorPane">
+      <div class="dayNoteEditorHead">
+        <input id="noteTitle" maxlength="200" placeholder="Название заметки (необязательно)" type="text"/>
+        <div class="dayNoteActions">
+          <button id="notePin" type="button" title="Закрепить заметку">📌</button>
+          <button id="noteMoveUp" type="button" title="Выше">↑</button>
+          <button id="noteMoveDown" type="button" title="Ниже">↓</button>
+          <button id="noteDelete" class="dangerGhost" type="button" title="Удалить заметку">🗑</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="on" id="tabEdit">Редактор</button>
+        <button id="tabPrev">Превью</button>
+        <button id="noteExpand" class="noteExpandBtn" title="Редактор на весь экран" type="button">⛶ развернуть</button>
+      </div>
+      <textarea id="noteEdit" placeholder="# Заголовок
 **жирный**, *курсив*, `код`
 - [ ] задача
 - список" spellcheck="false"></textarea>
-<div hidden="" id="notePrev"></div>
+      <div hidden="" id="notePrev"></div>
+      <div class="dayNoteEmpty" id="noteEmpty">Создайте первую заметку для этого дня.</div>
+    </div>
+  </div>
 </div>
 </details>
 <div class="dayModulesHint" id="dayModulesHint" hidden=""></div>
@@ -730,7 +749,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.13.0</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.14.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -750,7 +769,7 @@
   <div class="noteFsHead">
     <div>
       <div class="eyebrow" id="noteFsDate"></div>
-      <div class="noteFsTitle">Заметка <span class="noteFsAuto">сохраняется автоматически</span></div>
+      <div class="noteFsTitle"><span id="noteFsName">Заметка</span> <span class="noteFsAuto">сохраняется автоматически</span></div>
     </div>
     <div class="noteFsActions">
       <button id="noteFsTab" type="button">превью</button>
@@ -1257,12 +1276,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.13.0"></script>
-<script src="js/20-data.js?v=27.13.0"></script>
-<script src="js/30-calendar.js?v=27.13.0"></script>
-<script src="js/40-overtime.js?v=27.13.0"></script>
-<script src="js/50-tasks.js?v=27.13.0"></script>
-<script src="js/60-settings.js?v=27.13.0"></script>
-<script src="js/70-user-boot.js?v=27.13.0"></script>
+<script src="js/10-core.js?v=27.14.0"></script>
+<script src="js/20-data.js?v=27.14.0"></script>
+<script src="js/30-calendar.js?v=27.14.0"></script>
+<script src="js/40-overtime.js?v=27.14.0"></script>
+<script src="js/50-tasks.js?v=27.14.0"></script>
+<script src="js/60-settings.js?v=27.14.0"></script>
+<script src="js/70-user-boot.js?v=27.14.0"></script>
 </body>
 </html>
