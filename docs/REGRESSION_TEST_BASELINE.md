@@ -1,12 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.16.0.
+Status: v27.16.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.16.0 adds the Today Dashboard as the default DutyLog Next destination. It composes immutable shift occurrences, overtime account totals, today tasks and upcoming important dates without introducing a parallel backend. Current application baseline: 93 Java test classes / 489 `@Test` methods and 24 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.16.1 repairs the Today Dashboard bundle load-order regression and aligns repository documentation with the running Java 17 / Flyway V36 baseline. Current application baseline: 93 Java test classes / 489 `@Test` methods and 24 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
+
+
+## v27.16.1 Today Runtime & Repository Truth Hotfix extension
+
+- `35-today.js` no longer resolves `openQuickActions` while the earlier bundle is being evaluated; the callback resolves it only after `50-tasks.js` has loaded.
+- `TodayDashboardFrontendContractTest` rejects the direct forward-reference form.
+- `release-check.sh` verifies both the safe deferred binding and the absence of the unsafe direct binding.
+- The CI failure presented as 24 broken Playwright scenarios, but every scenario shared the same page error: `openQuickActions is not defined`.
+- README, API, roadmap, release checklist and architecture documentation now match Java 17, v27.16.1 and Flyway V36.
+- No schema or backend behavior change; Flyway remains V36.
 
 
 ## v27.16.0 Today Dashboard extension

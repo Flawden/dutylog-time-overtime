@@ -1,20 +1,33 @@
 # Roadmap до полноценного продукта
 
-## Текущая архитектурная точка — Shift Occurrences & Calendar Projection
+## Текущая продуктовая точка — Today Dashboard стабилизирован
 
-Статус: v27.11.0 отделяет шаблон смены от конкретного абсолютного экземпляра. Назначенная смена сохраняет UTC-интервал и исходную IANA-зону, а календарь проецирует её в текущую зону пользователя и при необходимости переносит на соседнюю локальную дату.
+Статус: **v27.16.1** стабилизирует ежедневный экран DutyLog Next и синхронизирует документацию с фактическим состоянием репозитория.
 
-Сделано:
+Сделано к текущей точке:
 
-- immutable `startInstant` / `endInstant` для датированной смены;
-- snapshot исходной зоны, локальных часов, обеда и чистых минут;
-- отображение `08:30–17:00 GMT+5` как `06:30–15:00 GMT+3`;
-- визуальная сегментация через полночь и границы месяца;
-- safe preview/migration для старых смен;
-- автоматическое сохранение legacy-смен в старой зоне перед переездом;
-- усиленная активация Service Worker для гарантированного Task Details UI.
+- Design System & Mobile Shell Foundation с безопасным Classic fallback;
+- Today Dashboard как основной маршрут DutyLog Next;
+- immutable shift occurrences и timezone-проекция календаря;
+- поминутный overtime/FIFO с дневной проекцией;
+- задачи, подзадачи, Inbox и task details;
+- несколько независимых заметок на день;
+- offline snapshot и очередь синхронизации;
+- staging CI/CD, backup/restore и immutable images;
+- исправлен load-order runtime-регресс `35-today.js → 50-tasks.js`;
+- Flyway V1–V36, Java 17, 93 Java test classes / 489 tests / 24 Playwright scenarios.
 
-Следующий продуктовый этап: **Multiple Daily Notes**, затем **Calendar Zoom** и **Insights**.
+Следующий продуктовый этап: **v27.17.0 — Calendar Mobile Experience**.
+
+Цель этапа:
+
+- ясное переключение `месяц → неделя → день`;
+- мобильная недельная лента;
+- почасовой экран выбранного дня;
+- единая навигация между Today Dashboard и календарными масштабами;
+- сохранение текущих shift/task/note/overtime контрактов без параллельной модели данных.
+
+После Calendar Mobile Experience: **Insights**, отчёты и внешняя календарная синхронизация.
 
 ## Этап 1 — production foundation
 

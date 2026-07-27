@@ -1,24 +1,25 @@
-> Current release: **v27.16.0 — Today Dashboard**.
+> Current release: **v27.16.1 — Today Runtime & Repository Truth Hotfix**.
 
 # DutyLog
 
-Current release: **v27.16.0 — Today Dashboard**
+Current release: **v27.16.1 — Today Runtime & Repository Truth Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.16.0 — Today Dashboard
+## Текущая версия: v27.16.1 — Today Runtime & Repository Truth Hotfix
 
-**v27.16.0** превращает DutyLog Next из новой оболочки в ежедневный рабочий экран. Маршрут `#today` теперь открывается по умолчанию и собирает в одном месте текущую или следующую смену, её прогресс и обратный отсчёт, баланс переработок, задачи дня, ближайшие важные даты и быстрые действия.
+**v27.16.1** исправляет загрузочный runtime-регресс после Today Dashboard. `35-today.js` подключается раньше `50-tasks.js`, поэтому передача ещё не объявленной `openQuickActions` напрямую в `addEventListener` останавливала выполнение frontend bundle и каскадно ломала все 24 Playwright-сценария. Обработчик теперь разрешает зависимость только в момент клика, когда последующий bundle уже загружен.
 
-Dashboard не создаёт вторую модель данных и не добавляет отдельный `/api/today`. Он использует уже загруженные канонические данные календаря: immutable shift occurrences, overtime account, задачи и важные даты. Все изменения по-прежнему выполняются через существующие редакторы и сервисы.
+Быстрый release gate и Java frontend-contract дополнительно защищают порядок загрузки от возврата прямой forward-reference. Backend, схема данных и бизнес-расчёты не менялись; Flyway остаётся **V1–V36**.
 
-Мобильная навигация сохраняет пять ясных направлений: **Сегодня, Календарь, Переработки, Задачи, Ещё**. Полная доска важных дат открывается прямо из блока ближайших событий. Classic остаётся безопасным fallback в настройках внешнего вида.
+В этом же hotfix репозиторий приведён к фактическому состоянию: основной runtime — **Java 17**, API/roadmap/release checklist обновлены до текущей версии, архитектурная документация фиксирует Flyway V36, а следующий продуктовый этап обозначен как **v27.17.0 — Calendar Mobile Experience**.
 
-Production-расчёты смен, задач, переработок, FIFO, заметок и уведомлений не менялись. Flyway остаётся **V1–V36**. Текущая автоматическая база: **93 Java-тестовых класса, 489 `@Test` методов и 24 Playwright browser scenario**.
+Автоматическая база остаётся прежней: **93 Java-тестовых класса, 489 `@Test` методов и 24 Playwright browser scenario**.
 
-Предыдущие визуальные релизы:
+Предыдущие продуктовые релизы:
 
+- **v27.16.0 — Today Dashboard** — ежедневный рабочий экран, смена, переработки, задачи, даты и быстрые действия;
 - **v27.15.0 — Design System & Mobile Shell Foundation** — токены, фирменная оболочка, нижняя навигация и Classic fallback;
 - **v27.14.2 — Calendar Notes Persistence E2E Hotfix** — новый Notes CRUD в календарной регрессии;
 - **v27.14.1 — Mobile Notes Tombstone Hotfix** — сохраняет versioned tombstone Android API v1;
@@ -70,7 +71,7 @@ Production-расчёты смен, задач, переработок, FIFO, з
 
 ## Стек
 
-- Java 21
+- Java 17
 - Spring Boot 3.3.5
 - Spring Web, Data JPA, Security, Validation
 - PostgreSQL + Flyway для production
@@ -268,6 +269,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
+- [`docs/TODAY_RUNTIME_HOTFIX_V27.16.1.md`](docs/TODAY_RUNTIME_HOTFIX_V27.16.1.md) — причина каскадного падения Playwright и контракт исправления forward-reference между frontend bundles.
 - [`docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md`](docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md) — абсолютные экземпляры смен, перенос по локальным датам и миграция legacy-строк.
 - [`docs/TASK_DETAILS_V27.10.0.md`](docs/TASK_DETAILS_V27.10.0.md) — read-first детали задачи, описание, owner-scoped GET и границы редактора.
 - [`docs/OVERTIME_SPLIT_PROJECTION_CONTRACT_HOTFIX_V27.9.4.md`](docs/OVERTIME_SPLIT_PROJECTION_CONTRACT_HOTFIX_V27.9.4.md) — устойчивые номера частей split-отгула в ledger DTO и корректный midnight E2E-контракт.
@@ -348,7 +350,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.15.0 через полный Maven и Playwright gate, затем на staging проверить DutyLog Next и Classic на телефоне/desktop, safe-area нижней навигации, светлую тему, PWA reload и сохранение shellMode. После стабилизации оболочки следующий продуктовый этап — v27.16.0 Today Dashboard.
+Следующий практический шаг — пропустить v27.16.1 через полный Maven и Playwright gate, принять staging на телефоне и desktop и убедиться, что Today, Calendar, быстрые действия, PWA reload и Classic fallback работают без runtime-ошибок. После этого продуктовая линия переходит к **v27.17.0 — Calendar Mobile Experience**: месяц → неделя → почасовой день.
 
 ## Служебный профиль администратора
 

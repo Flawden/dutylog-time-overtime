@@ -1,3 +1,12 @@
+# v27.16.1 — Today Runtime & Repository Truth Hotfix
+
+- Fixed a frontend bundle load-order regression where `35-today.js` resolved `openQuickActions` before `50-tasks.js` had declared it.
+- Deferred the Today quick-actions callback until click time, removing the shared `ReferenceError` that cascaded into all 24 Playwright failures.
+- Added a Java frontend contract and fast release-check guards for the safe callback form.
+- Updated current-release documentation to Java 17, Flyway V36 and the v27.17.0 Calendar Mobile Experience roadmap.
+- No database migration and no backend/business behavior change; Flyway remains V36.
+- Regression baseline remains 93 Java test classes, 489 `@Test` methods and 24 Playwright scenarios.
+
 # v27.16.0 — Today Dashboard
 
 - Added `#today` as the default DutyLog Next destination while preserving the full calendar as a separate primary route.

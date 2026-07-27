@@ -356,7 +356,7 @@ $("todayOpenTasks")?.addEventListener("click", () => { location.hash = "#tasks";
 $("todayOpenImportant")?.addEventListener("click", () => { location.hash = "#important"; });
 $("todayQuickTask")?.addEventListener("click", () => openTaskCreate({ date:todayKey() }));
 $("todayQuickCredit")?.addEventListener("click", () => openOvertimeCreditModal(todayKey()));
-$("todayQuickMore")?.addEventListener("click", openQuickActions);
+$("todayQuickMore")?.addEventListener("click", () => openQuickActions());
 $("todayQuickNote")?.addEventListener("click", async () => {
   const date = todayKey();
   await openTodayCalendarDate(date);
