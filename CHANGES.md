@@ -1,3 +1,30 @@
+# v27.15.0 — Design System & Mobile Shell Foundation
+
+- Added an additive `design-system.css` layer with spacing, radius, surface, shadow, focus and responsive navigation tokens.
+- Introduced the DutyLog Next shell: branded top bar, adaptive month header, icon-based primary navigation and safe-area-aware mobile bottom bar.
+- Preserved the previous layout as Classic; the shell can be switched instantly from Appearance settings without touching domain data or APIs.
+- Persisted the allowlisted `themeConfig.shellMode` enum (`next` / `classic`) through the existing profile theme contract.
+- Refreshed cards, forms, buttons, calendar cells, settings, modals, loading state and login presentation while keeping the existing DOM and business handlers.
+- Added light-theme and reduced-motion boundaries for the new shell.
+- Added static frontend contracts, profile validation coverage and a mobile Playwright scenario that switches Next → Classic → Next and protects horizontal overflow/ARIA navigation state.
+- No schema or business-logic change; Flyway remains V36. Regression baseline: 92 Java test classes, 485 `@Test` methods and 23 Playwright scenarios.
+
+# v27.14.2 — Calendar Notes Persistence E2E Hotfix
+
+- Updated the calendar persistence browser scenario to the Multiple Daily Notes contract.
+- The test now creates a concrete note through `POST /api/notes` before editing, because the empty-state editor is intentionally hidden.
+- Debounced content persistence is awaited through `PATCH /api/notes/{id}` instead of the removed legacy day-level note `PUT`.
+- Month navigation, full reload, shift persistence and emoji persistence are still verified in the same end-to-end flow.
+- No production code or schema change; Flyway remains V36. Regression baseline remains 91 Java test classes, 482 `@Test` methods and 22 Playwright scenarios.
+
+# v27.14.1 — Mobile Notes Tombstone Hotfix
+
+- Fixed Android API v1 note clears deleting the versioned `day_entries` tombstone through the new multiple-note legacy-shadow bridge.
+- `DayNoteService` now accepts an explicit empty-row retention policy from `DayEntryService`; only versioned v1 sync preserves the tombstone, while legacy mobile clear keeps its historical row-deletion behaviour.
+- Optimistic versions remain monotonic after `clearNote`, so stale offline creates still receive a conflict instead of resurrecting deleted content.
+- Explicit clear flags continue to win over contradictory note/emoji values in the same patch.
+- No schema change; Flyway remains V36. Regression baseline remains 91 Java test classes, 482 `@Test` methods and 22 Playwright scenarios.
+
 # v27.14.0 — Multiple Daily Notes
 
 - Replaced the single mutable day-note field with independent owner-scoped notes per calendar date.

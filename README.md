@@ -1,23 +1,25 @@
-> Current release: **v27.14.0 — Multiple Daily Notes**.
+> Current release: **v27.15.0 — Design System & Mobile Shell Foundation**.
 
 # DutyLog
 
-Current release: **v27.14.0 — Multiple Daily Notes**
+Current release: **v27.15.0 — Design System & Mobile Shell Foundation**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.14.0 — Multiple Daily Notes
+## Текущая версия: v27.15.0 — Design System & Mobile Shell Foundation
 
-**v27.14.0** снимает ограничение «один день — одна заметка». На одну дату теперь можно создать несколько независимых Markdown-заметок с собственным названием, содержимым, закреплением и порядком. Редактирование или удаление одной записи не затрагивает соседние.
+**v27.15.0** открывает новый визуальный этап DutyLog без переписывания бизнес-логики. Поверх существующего интерфейса добавлена отдельная дизайн-система `design-system.css`, новый мобильный shell с фирменной шапкой и нижней навигацией, единые токены поверхностей/отступов/скруглений, обновлённые карточки, поля, кнопки, модальные окна, loading-состояние и экран входа.
 
-Flyway V36 переносит существующий `day_entries.note` в первую самостоятельную заметку и сохраняет старое поле как compatibility shadow для старых web/mobile-клиентов. Новые API `/api/notes` и `/api/v1/notes` owner-scoped и защищены модулем Notes.
+Новая оболочка включена по умолчанию как **DutyLog Next**, а прежняя компоновка остаётся доступна как **Classic**. Выбор хранится в безопасном `themeConfig.shellMode`, проходит серверную enum-валидацию и не влияет на данные, роли, модули или API. Переключение выполняется мгновенно из раздела «Внешний вид».
 
-Календарь показывает количество заметок, полноэкранный редактор работает с активной записью, а ZIP-экспорт создаёт отдельный Markdown-файл для каждой заметки. Загруженный snapshot доступен для чтения офлайн; создание и изменение честно требуют подключения, пока полноценная offline-очередь заметок ещё не реализована.
+Production-расчёты смен, задач, переработок, FIFO, заметок и уведомлений не менялись. Flyway остаётся **V1–V36**. Текущая автоматическая база: **92 Java-тестовых класса, 485 `@Test` методов и 23 Playwright browser scenario**.
 
-Flyway: **V1–V36**. Текущая автоматическая база: **91 Java-тестовый класс, 482 `@Test` метод и 22 Playwright browser scenario**.
+Предыдущие релизы серии:
 
-Временной фундамент зафиксирован релизами **v27.13.0 — Temporal Consistency & Legacy Cleanup**, **v27.12.1 — Midnight Projection Contract Hotfix**, **v27.12.0 — Zoned Daily Projection Engine**, **v27.11.4 — Task Deadline & Reminder Timezone Hotfix**, **v27.11.3 — Shift Template & Reminder Timezone Hotfix**, **v27.11.0 — Shift Occurrences & Calendar Projection**, **v27.9.0 — Overtime Interval Engine**.
+- **v27.14.2 — Calendar Notes Persistence E2E Hotfix** — переводит старый календарный E2E на отдельный Notes CRUD;
+- **v27.14.1 — Mobile Notes Tombstone Hotfix** — сохраняет versioned tombstone Android API v1;
+- **v27.14.0 — Multiple Daily Notes** — добавляет независимые заметки, pin/reorder/delete, экспорт и offline snapshot.
 
 ## История временного фундамента
 
@@ -28,6 +30,13 @@ Flyway: **V1–V36**. Текущая автоматическая база: **91
 - v27.9.2 — Overtime Ledger Integrity Hotfix
 - v27.9.3 — Overtime Preflight Integrity Hotfix
 - v27.9.4 — Overtime Split Projection Contract Hotfix
+- v27.9.0 — Overtime Interval Engine
+- v27.11.0 — Shift Occurrences & Calendar Projection
+- v27.11.3 — Shift Template & Reminder Timezone Hotfix
+- v27.11.4 — Task Deadline & Reminder Timezone Hotfix
+- v27.12.0 — Zoned Daily Projection Engine
+- v27.12.1 — Midnight Projection Contract Hotfix
+- v27.13.0 — Temporal Consistency & Legacy Cleanup
 - v27.10.0 — Task Details
 - v27.11.1 — CI & Contract Hotfix
 - v27.11.2 — E2E Stability Hotfix
@@ -39,6 +48,7 @@ Flyway: **V1–V36**. Текущая автоматическая база: **91
 - Первый запуск: новый пользователь выбирает нужные модули через спокойный onboarding, а не сразу попадает в перегруженный интерфейс.
 - Автозаполнение графиков: 2/2, день/ночь/48, 5/2, день/72, ночь/72.
 - Несколько независимых Markdown-заметок на каждый день с названиями, закреплением, сортировкой, полноэкранным редактором, живым превью и ZIP-экспортом для Obsidian/резервной копии.
+- DutyLog Next: адаптивная фирменная шапка, нижняя мобильная навигация, единые компоненты и безопасный Classic fallback.
 - Персонализация: светлая/тёмная/системная тема, акцентный цвет и emoji-маркеры дней без хранения картинок.
 - Задачи дня с быстрым вводом, отдельным режимом деталей, многострочным описанием, категориями, тегами, приоритетами, сроками, напоминаниями и одноуровневыми подзадачами.
 - Универсальный быстрый ввод: запись во «Входящие», заготовка задачи, дополнение заметки на сегодня или форма важного дня.
@@ -335,7 +345,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.14.0 через полный Maven и Playwright gate, затем на staging проверить миграцию старой заметки, несколько заметок на одной дате, pin/reorder/delete, перезагрузку, мобильный payload и ZIP-экспорт.
+Следующий практический шаг — пропустить v27.15.0 через полный Maven и Playwright gate, затем на staging проверить DutyLog Next и Classic на телефоне/desktop, safe-area нижней навигации, светлую тему, PWA reload и сохранение shellMode. После стабилизации оболочки следующий продуктовый этап — v27.16.0 Today Dashboard.
 
 ## Служебный профиль администратора
 

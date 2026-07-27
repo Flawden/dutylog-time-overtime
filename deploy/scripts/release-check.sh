@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.14.0}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.15.0}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -972,7 +972,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.14.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1025,7 +1025,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.14.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1047,7 +1047,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.14.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1142,7 +1142,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.14.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -1301,7 +1301,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.10.0 — Task Details"
 contains README.md "v27.10.0 — Task Details"
 contains docs/TASK_DETAILS_V27.10.0.md "read-first"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.14.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
 contains src/main/resources/db/migration/postgresql/V32__task_details.sql "ADD COLUMN description"
 contains src/main/java/ru/daniil/shifts/model/DayTask.java "private String description"
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "public TaskDto get(AppUser user, Long id)"
@@ -1322,7 +1322,7 @@ contains e2e/task-details.spec.js 'task details separate reading from editing an
 contains CHANGES.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains README.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md "immutable absolute occurrence"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.14.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_start_instant"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_source_timezone"
 contains src/main/java/ru/daniil/shifts/model/DayEntry.java "captureShiftOccurrence"
@@ -1342,7 +1342,7 @@ contains e2e/important-timezone.spec.js "a timezone projection can move a late s
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.14.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1438,7 +1438,7 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "22" ]]; then
+if [[ "$E2E_TESTS" == "23" ]]; then
   # v27.11.1 CI & Contract Hotfix
 contains CHANGES.md "v27.11.1 — CI & Contract Hotfix"
 contains README.md "v27.11.1 — CI & Contract Hotfix"
@@ -1533,22 +1533,54 @@ contains src/test/java/ru/daniil/shifts/web/DayNoteControllerTest.java "class Da
 contains src/test/java/ru/daniil/shifts/web/MultipleDailyNotesFrontendContractTest.java "class MultipleDailyNotesFrontendContractTest"
 contains e2e/multiple-daily-notes.spec.js "multiple notes on one day remain independent"
 
-ok "Playwright test baseline: 22"
+  # v27.14.1 Mobile Notes Tombstone Hotfix
+contains CHANGES.md "v27.14.1 — Mobile Notes Tombstone Hotfix"
+contains README.md "v27.14.1 — Mobile Notes Tombstone Hotfix"
+contains docs/MOBILE_NOTES_TOMBSTONE_HOTFIX_V27.14.1.md "Mobile Notes Tombstone Hotfix"
+contains src/main/java/ru/daniil/shifts/service/DayEntryService.java "preserveEmptyVersionRow"
+contains src/main/java/ru/daniil/shifts/service/DayNoteService.java "preserveEmptyDayEntry"
+contains src/test/java/ru/daniil/shifts/service/MobileSyncServiceTest.java "clearCreatesAVersionedTombstoneSoStaleOfflineCreatesCannotOverwriteIt"
+contains src/test/java/ru/daniil/shifts/service/MobileSyncServiceTest.java "explicitClearFlagsWinOverValuesInTheSamePatch"
+contains src/test/java/ru/daniil/shifts/web/MobileSyncControllerTest.java "legacyClearDeletesEmptyRowWhileV1ClearKeepsVersionedTombstone"
+
+  # v27.14.2 Calendar Notes Persistence E2E Hotfix
+contains CHANGES.md "v27.14.2 — Calendar Notes Persistence E2E Hotfix"
+contains README.md "v27.14.2 — Calendar Notes Persistence E2E Hotfix"
+contains docs/CALENDAR_NOTES_PERSISTENCE_E2E_HOTFIX_V27.14.2.md "Calendar Notes Persistence E2E Hotfix"
+contains e2e/calendar-persistence.spec.js "const noteCreated = waitForApi(page, 'POST', '/api/notes', 201)"
+contains e2e/calendar-persistence.spec.js "^\/api\/notes\/\d+$"
+not_contains e2e/calendar-persistence.spec.js "const noteSaved = waitForApi(page, 'PUT'"
+
+  # v27.15.0 Design System & Mobile Shell Foundation
+contains CHANGES.md "v27.15.0 — Design System & Mobile Shell Foundation"
+contains README.md "v27.15.0 — Design System & Mobile Shell Foundation"
+contains docs/DESIGN_SYSTEM_MOBILE_SHELL_FOUNDATION_V27.15.0.md "Design System & Mobile Shell Foundation"
+contains src/main/resources/static/index.html 'design-system.css?v=27.15.0'
+contains src/main/resources/static/index.html 'id="nextTopbar"'
+contains src/main/resources/static/index.html 'data-shell-choice="classic"'
+contains src/main/resources/static/design-system.css 'html[data-shell="next"] .tabbar'
+contains src/main/resources/static/design-system.css 'env(safe-area-inset-bottom'
+contains src/main/resources/static/js/10-core.js 'root.dataset.shell = cfg.shellMode'
+contains src/main/java/ru/daniil/shifts/web/ProfileController.java 'safeEnum(input.get("shellMode"), "next", "next", "classic")'
+contains src/test/java/ru/daniil/shifts/web/DesignSystemMobileShellFrontendContractTest.java 'class DesignSystemMobileShellFrontendContractTest'
+contains e2e/design-system-shell.spec.js 'DutyLog Next mobile shell stays usable and Classic remains an instant fallback'
+
+  ok "Playwright test baseline: 23"
 else
-  fail "expected 22 Playwright tests, found $E2E_TESTS"
+  fail "expected 23 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "482" ]]; then
-  ok "test method baseline: 482"
+if [[ "$TEST_METHODS" == "485" ]]; then
+  ok "test method baseline: 485"
 else
-  fail "expected 482 @Test methods, found $TEST_METHODS"
+  fail "expected 485 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "91" ]]; then
-  ok "test class baseline: 91"
+if [[ "$TEST_CLASSES" == "92" ]]; then
+  ok "test class baseline: 92"
 else
-  fail "expected 91 test classes, found $TEST_CLASSES"
+  fail "expected 92 test classes, found $TEST_CLASSES"
 fi
 
 echo

@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.14.0.
+Status: v27.15.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.14.0 adds independent Markdown notes per calendar date, a dedicated CRUD/order API, legacy primary-note compatibility, per-note export, offline snapshot reading and browser regression coverage. Current application baseline: 91 Java test classes / 482 `@Test` methods and 22 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.15.0 adds the additive DutyLog Next design system and mobile shell while preserving Classic as a safe fallback. The shell preference is allowlisted through profile themeConfig, and mobile Playwright protects navigation, safe-area layout, horizontal overflow and Next ↔ Classic switching. Current application baseline: 92 Java test classes / 485 `@Test` methods and 23 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -15,6 +15,31 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
 
+
+
+## v27.15.0 Design System & Mobile Shell Foundation extension
+
+- `DesignSystemMobileShellFrontendContractTest` protects the layered CSS load, branded shell DOM, accessible nav icons, server-safe enum and reduced-motion/mobile boundaries.
+- `ProfileControllerTest` protects persistence of `themeConfig.shellMode=classic` and rejection of unknown shell values.
+- `design-system-shell.spec.js` protects the default DutyLog Next shell, fixed mobile navigation, no horizontal overflow, ARIA current state and an instant Next → Classic → Next fallback.
+- The design layer is additive: existing calendar, overtime, tasks, notes, notifications and API handlers are unchanged.
+- Flyway remains V36.
+
+## v27.14.2 Calendar Notes Persistence E2E Hotfix extension
+
+- `calendar-persistence.spec.js` creates the first note through the visible `#noteAdd` empty-state action.
+- The scenario awaits `POST /api/notes` followed by the debounced `PATCH /api/notes/{id}` instead of waiting for the retired legacy day-note `PUT`.
+- The same browser flow still protects shift selection, emoji persistence, month navigation and a full authoritative reload.
+- Flyway remains V36 and the production note/tombstone implementation is unchanged.
+
+
+## v27.14.1 Mobile Notes Tombstone Hotfix extension
+
+- `MobileSyncServiceTest.clearCreatesAVersionedTombstoneSoStaleOfflineCreatesCannotOverwriteIt` protects monotonic optimistic versions after clearing the last note.
+- `MobileSyncServiceTest.explicitClearFlagsWinOverValuesInTheSamePatch` protects clear precedence while retaining the empty v1 row.
+- `MobileSyncControllerTest.legacyClearDeletesEmptyRowWhileV1ClearKeepsVersionedTombstone` protects the intentional legacy/v1 behavioural split through real HTTP contracts.
+- `DayNoteService` receives an explicit `preserveEmptyDayEntry` policy only from versioned sync; normal note CRUD and legacy sync semantics remain unchanged.
+- Flyway remains V36.
 
 
 ## v27.14.0 Multiple Daily Notes extension

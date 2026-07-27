@@ -206,8 +206,12 @@ function applyRoute(){
     const el = document.getElementById(id);
     if (el) el.hidden = key !== active;
   }
-  document.querySelectorAll("#tabbar a").forEach(a =>
-    a.classList.toggle("on", a.dataset.view === active));
+  document.querySelectorAll("#tabbar a").forEach(a => {
+    const selected = a.dataset.view === active;
+    a.classList.toggle("on", selected);
+    if (selected) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
+  });
   // месячная навигация в шапке осмысленна только в календаре
   document.querySelector(".nav #prev").style.visibility =
   document.querySelector(".nav #todayBtn").style.visibility =
@@ -320,6 +324,12 @@ function renderHeaderIdentity(p){
   }
   av.textContent = avatarInitials(shown);
   av.style.background = avatarColor(p.username);
+  const nextAvatar = $("nextHeaderAvatar");
+  if (nextAvatar) {
+    nextAvatar.textContent = avatarInitials(shown);
+    nextAvatar.style.background = avatarColor(p.username);
+    nextAvatar.title = t("Открыть профиль");
+  }
 }
 
 function maybeBirthdayBanner(p){
@@ -369,6 +379,7 @@ async function loadProfile(){
   } catch (e) { console.error(e); }
 }
 
+$("nextHeaderAvatar")?.addEventListener("click", () => { location.hash = "#settings-profile"; });
 $("adminOpen")?.addEventListener("click", () => { location.hash = "#admin"; });
 $("adminBack")?.addEventListener("click", () => { location.hash = "#settings"; });
 $("adminBackNav")?.addEventListener("click", () => { location.hash = "#settings"; });
@@ -415,6 +426,11 @@ document.querySelectorAll('[data-language-choice]').forEach(btn => btn.addEventL
 $('appearancePreset')?.addEventListener('change', e => applyPreset(e.target.value));
 $('appearanceTheme')?.addEventListener('change', markCustomAndPreview);
 $('appearanceAccent')?.addEventListener('input', markCustomAndPreview);
+document.querySelectorAll('[data-shell-choice]').forEach(button => button.addEventListener('click', () => {
+  const mode = button.dataset.shellChoice === 'classic' ? 'classic' : 'next';
+  if ($('themeShellMode')) $('themeShellMode').value = mode;
+  markCustomAndPreview();
+}));
 for (const id of ['themeAppBg','themePanelBg','themePanelAltBg','themeTextColor','themeMutedColor','themeBorderColor','themeButtonStyle','themeCardStyle','themeShadowLevel','themeDensity','themeCardRadius']) {
   $(id)?.addEventListener('input', markCustomAndPreview);
   $(id)?.addEventListener('change', markCustomAndPreview);

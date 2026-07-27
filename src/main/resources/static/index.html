@@ -7,8 +7,10 @@
 <title>DutyLog: Time & Overtime</title>
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
-<meta content="#14171C" name="theme-color"/>
-<link href="app.css?v=27.14.0" rel="stylesheet"/>
+<meta content="#0B1118" name="theme-color"/>
+<script src="js/shell-bootstrap.js?v=27.15.0"></script>
+<link href="app.css?v=27.15.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.15.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -40,6 +42,15 @@
   </div>
 </div>
 <div class="wrap">
+<div class="nextTopbar" id="nextTopbar">
+  <a class="brandLockup" href="#calendar" aria-label="DutyLog — календарь">
+    <span class="brandGlyph" aria-hidden="true">
+      <svg viewBox="0 0 32 32"><path d="M16 3.5 27 8.9v9.2L16 28.5 5 18.1V8.9Z"/><path d="m10.4 15.8 3.6 3.6 7.9-8"/><path d="M16 7.5v3.2"/></svg>
+    </span>
+    <span class="brandCopy"><strong>Duty<span>Log</span></strong><small>Time &amp; Overtime</small></span>
+  </a>
+  <button class="nextHeaderAvatar" id="nextHeaderAvatar" type="button" title="Открыть профиль" aria-label="Открыть профиль">DL</button>
+</div>
 <div class="head">
 <div class="headerTitle">
 <div class="eyebrow">DutyLog: Time &amp; Overtime</div>
@@ -55,12 +66,12 @@
 <button id="logout" class="headerLogout" style="margin-left:8px;" title="Выйти" aria-label="Выйти"><span aria-hidden="true" class="headerLogoutIcon">↪</span><span class="headerLogoutText">Выйти</span></button>
 </div>
 </div>
-<nav class="tabbar" id="tabbar">
-<a data-view="calendar" href="#calendar">Календарь</a>
-<a data-view="overtime" href="#overtime">Переработки</a>
-<a data-view="tasks" href="#tasks">Задачи</a>
-<a data-view="important" href="#important">Даты</a>
-<a data-view="settings" href="#settings" title="Настройки">⚙</a>
+<nav class="tabbar" id="tabbar" aria-label="Основная навигация">
+<a data-view="calendar" href="#calendar"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16v14H4z"/><path d="M8 3v5M16 3v5M4 9.5h16"/></svg></span><span class="navLabel">Календарь</span></a>
+<a data-view="overtime" href="#overtime"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2M7 4.5 5 2.8M17 4.5l2-1.7"/></svg></span><span class="navLabel">Переработки</span></a>
+<a data-view="tasks" href="#tasks"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="m8 9 1.5 1.5L12 8M13.5 10H16M8 15h8"/></svg></span><span class="navLabel">Задачи</span></a>
+<a data-view="important" href="#important"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/></svg></span><span class="navLabel">Даты</span></a>
+<a data-view="settings" href="#settings" title="Настройки"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg></span><span class="navLabel">Ещё</span></a>
 </nav>
 <section class="view" id="view-calendar">
 <div class="layout" id="layout">
@@ -481,6 +492,22 @@
 <div class="status statusThemeSummary" id="appearancePreview">—</div>
 </div>
 
+<div class="profileSub">Оболочка приложения</div>
+<div class="settingsHint">DutyLog Next включает новый мобильный shell и дизайн-систему. Classic сохраняет прежнюю компоновку на тех же данных и API.</div>
+<input id="themeShellMode" type="hidden" value="next"/>
+<div class="shellChoiceGrid" id="shellChoiceGrid" aria-label="Оболочка приложения">
+  <button class="shellChoice" data-shell-choice="next" type="button">
+    <span class="shellChoiceIcon" aria-hidden="true">✦</span>
+    <b>DutyLog Next</b>
+    <span>Новая навигация, адаптивная шапка и единая система компонентов.</span>
+  </button>
+  <button class="shellChoice" data-shell-choice="classic" type="button">
+    <span class="shellChoiceIcon" aria-hidden="true">◫</span>
+    <b>Classic</b>
+    <span>Прежняя оболочка без изменения функций и данных.</span>
+  </button>
+</div>
+
 <div class="themeBuilder">
   <div class="themeBuilderMain">
     <div class="profileSub">Пресет</div>
@@ -749,7 +776,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.14.0</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.15.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -1276,12 +1303,12 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.14.0"></script>
-<script src="js/20-data.js?v=27.14.0"></script>
-<script src="js/30-calendar.js?v=27.14.0"></script>
-<script src="js/40-overtime.js?v=27.14.0"></script>
-<script src="js/50-tasks.js?v=27.14.0"></script>
-<script src="js/60-settings.js?v=27.14.0"></script>
-<script src="js/70-user-boot.js?v=27.14.0"></script>
+<script src="js/10-core.js?v=27.15.0"></script>
+<script src="js/20-data.js?v=27.15.0"></script>
+<script src="js/30-calendar.js?v=27.15.0"></script>
+<script src="js/40-overtime.js?v=27.15.0"></script>
+<script src="js/50-tasks.js?v=27.15.0"></script>
+<script src="js/60-settings.js?v=27.15.0"></script>
+<script src="js/70-user-boot.js?v=27.15.0"></script>
 </body>
 </html>

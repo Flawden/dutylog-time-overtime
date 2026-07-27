@@ -88,6 +88,7 @@ class ProfileControllerTest {
                     "cardStyle":"contrast",
                     "shadowLevel":"strong",
                     "density":"compact",
+                    "shellMode":"classic",
                     "cardRadius":999,
                     "unknownCss":"body{display:none}"
                   },
@@ -114,6 +115,7 @@ class ProfileControllerTest {
                 .andExpect(jsonPath("$.themeConfig.appBg").value("#101010"))
                 .andExpect(jsonPath("$.themeConfig.textColor").value("#FEFEFE"))
                 .andExpect(jsonPath("$.themeConfig.buttonStyle").value("soft"))
+                .andExpect(jsonPath("$.themeConfig.shellMode").value("classic"))
                 .andExpect(jsonPath("$.themeConfig.cardRadius").value(28))
                 .andExpect(jsonPath("$.themeConfig.unknownCss").doesNotExist());
 
@@ -128,6 +130,7 @@ class ProfileControllerTest {
         assertEquals("Europe/Chisinau", stored.getDisplayTimezone());
         assertTrue(stored.isOnboardingCompleted());
         assertTrue(stored.getThemeConfig().contains("\"cardRadius\":28"));
+        assertTrue(stored.getThemeConfig().contains("\"shellMode\":\"classic\""));
         assertTrue(!stored.getThemeConfig().contains("unknownCss"));
     }
 
@@ -248,6 +251,7 @@ class ProfileControllerTest {
                 "{\"languagePreference\":\"ro\"}",
                 "{\"themeConfig\":{\"appBg\":\"red\"}}",
                 "{\"themeConfig\":{\"buttonStyle\":\"javascript\"}}",
+                "{\"themeConfig\":{\"shellMode\":\"immersive\"}}",
                 "{\"workTimezone\":\"Mars/Olympus_Mons\"}",
                 "{\"workTimezone\":\"\"}",
                 "{\"displayTimezone\":\"Mars/Olympus_Mons\"}",

@@ -239,6 +239,7 @@ public class ProfileController {
         out.put("cardStyle", safeEnum(input.get("cardStyle"), "default", "default", "flat", "soft", "contrast", "warm"));
         out.put("shadowLevel", safeEnum(input.get("shadowLevel"), "medium", "none", "low", "soft", "medium", "strong"));
         out.put("density", safeEnum(input.get("density"), "comfortable", "compact", "comfortable", "spacious"));
+        out.put("shellMode", safeEnum(input.get("shellMode"), "next", "next", "classic"));
         out.put("cardRadius", clampInt(input.get("cardRadius"), 14, 6, 28));
         return out;
     }
