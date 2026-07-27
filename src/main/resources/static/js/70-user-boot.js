@@ -3,7 +3,7 @@
  *
  * DutyLog uses ordered browser scripts, not ES modules yet.
  * Keep the order in index.html stable: 10-core → 20-data → 30-calendar
- * → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
+ * → 35-today → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
  */
 
 /* ─── Загрузка данных ───────────────────────────────────────── */
@@ -168,6 +168,13 @@ async function init(){
     // The calendar projection depends on the persisted work/display zones. Load the
     // authoritative profile before the first month request instead of racing both.
     await loadProfile();
+    // The first visible month follows DutyLog's persisted work timezone rather
+    // than the browser clock. This matters near month boundaries and in UTC±14.
+    const [profileTodayYear, profileTodayMonth] = todayKey().split("-").map(Number);
+    if (profileTodayYear && profileTodayMonth) {
+      state.y = profileTodayYear;
+      state.m = profileTodayMonth - 1;
+    }
   } catch (err) {
     console.error(err);
     if (err.status === 401) return; // при 401 нас уже уносит на login.html
@@ -191,11 +198,13 @@ init().catch(err => {
 });
 
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */
-const VIEWS = { calendar:"view-calendar", overtime:"view-overtime", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
+const VIEWS = { today:"view-today", calendar:"view-calendar", overtime:"view-overtime", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
 function applyRoute(){
-  const rawRoute = (location.hash || "#calendar").slice(1);
+  const defaultRoute = document.documentElement.dataset.shell === "classic" ? "#calendar" : "#today";
+  const rawRoute = (location.hash || defaultRoute).slice(1);
   const name = rawRoute.startsWith("settings-") ? "settings" : rawRoute;
-  let active = VIEWS[name] ? name : "calendar";
+  let active = VIEWS[name] ? name : (defaultRoute === "#today" ? "today" : "calendar");
+  if (document.documentElement.dataset.shell === "classic" && active === "today") active = "calendar";
   if (active === "admin" && state.profile && !state.profile.admin) active = "calendar";
   if (active === "tasks" && !moduleEnabled("tasks")) active = "calendar";
   if (active === "overtime" && !moduleEnabled("overtime")) active = "calendar";
@@ -224,6 +233,8 @@ function applyRoute(){
       $("view-settings")?.__openSettingsSection?.(section, true);
     }
   }
+  if (active === "today" && typeof renderTodayDashboard === "function") renderTodayDashboard();
+  if (active === "calendar") renderCalendar();
   if (active === "important" && typeof renderImportantBoard === "function") renderImportantBoard();
   if (active === "admin") {
     if (typeof initAdminNavigation === "function") initAdminNavigation();
@@ -430,6 +441,10 @@ document.querySelectorAll('[data-shell-choice]').forEach(button => button.addEve
   const mode = button.dataset.shellChoice === 'classic' ? 'classic' : 'next';
   if ($('themeShellMode')) $('themeShellMode').value = mode;
   markCustomAndPreview();
+  // Today belongs to DutyLog Next. Classic must fall back to its original
+  // calendar landing page instead of exposing a visually hidden route.
+  if (mode === 'classic' && location.hash === '#today') location.hash = '#calendar';
+  else if (typeof applyRoute === 'function') applyRoute();
 }));
 for (const id of ['themeAppBg','themePanelBg','themePanelAltBg','themeTextColor','themeMutedColor','themeBorderColor','themeButtonStyle','themeCardStyle','themeShadowLevel','themeDensity','themeCardRadius']) {
   $(id)?.addEventListener('input', markCustomAndPreview);

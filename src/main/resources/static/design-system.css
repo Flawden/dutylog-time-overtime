@@ -1,5 +1,5 @@
 /*
- * DutyLog Next design system foundation — v27.15.0
+ * DutyLog Next design system foundation — v27.16.0
  *
  * This file is deliberately layered after app.css. The classic shell remains
  * available through html[data-shell="classic"], while the new shell is an
@@ -293,7 +293,15 @@ html[data-shell="next"] .nav button:hover {
   background: var(--ds-highlight);
 }
 
-/* Navigation */
+/* Navigation
+ * DutyLog Next promotes Today; Classic keeps the original Important Dates tab.
+ * Both shells therefore render exactly five primary destinations from one DOM.
+ */
+html[data-shell="next"] .tabbar a[data-view="important"],
+html[data-shell="classic"] .tabbar a[data-view="today"] {
+  display: none;
+}
+
 html[data-shell="next"] .tabbar {
   display: grid;
   grid-template-columns: repeat(5, minmax(90px, 1fr));
@@ -818,4 +826,226 @@ html[data-shell="next"] .appBootCard::after {
     animation-iteration-count: 1 !important;
     transition-duration: .001ms !important;
   }
+}
+
+/* ─── v27.16.0 Today Dashboard ─────────────────────────────── */
+.todayDashboard { display: grid; gap: 16px; }
+.todayHeroHead,
+.todayCardHead,
+.todayShiftFooter,
+.todayBalanceRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.todayHero h2,
+.todayCardHeading h3 { margin: 0; }
+.todayDateStrip { display: grid; grid-template-columns: repeat(7, minmax(74px, 1fr)); gap: 8px; }
+.todayDateChip { min-height: 76px; display: grid; place-items: center; gap: 2px; }
+.todayDateChip small,
+.todayDateChip span { font-size: 11px; }
+.todayQuickActions { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.todayQuickActions button { min-height: 88px; display: grid; place-items: center; gap: 3px; }
+.todayQuickActions button span { font-size: 24px; }
+.todayQuickActions button small { color: var(--mut); }
+.todayDashboardGrid { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(280px, .65fr); gap: 16px; align-items: stretch; }
+.todayShiftCard { min-height: 260px; }
+.todayCardIcon { width: 44px; height: 44px; display: grid; place-items: center; flex: none; }
+.todayCardIcon svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.todayCardHeading { min-width: 0; flex: 1; }
+.todayCardHeading small { display: block; margin-bottom: 3px; color: var(--mut); }
+.todayStatusPill,
+.todayCountPill { flex: none; }
+.todayShiftTime { margin-top: 28px; font-size: clamp(31px, 4vw, 54px); line-height: 1; font-weight: 760; letter-spacing: -.04em; }
+.todayShiftMeta { min-height: 20px; margin-top: 10px; color: var(--mut); }
+.todayProgress,
+.todayBalanceTrack { overflow: hidden; height: 8px; margin-top: 24px; border-radius: 999px; background: color-mix(in srgb, var(--line) 75%, transparent); }
+.todayProgress span,
+.todayBalanceTrack span { display: block; width: 0; height: 100%; border-radius: inherit; transition: width .3s ease; }
+.todayShiftFooter { margin-top: 15px; }
+.todayShiftFooter span { color: var(--mut); }
+.todayBalanceRow { margin-top: 28px; }
+.todayBalanceRow b { font-size: 28px; }
+.todayMetricGrid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 18px; }
+.todayMetricGrid > div { display: grid; gap: 5px; }
+.todayMetricGrid small { color: var(--mut); }
+.todayMetricGrid b { font-size: 17px; }
+.todayTaskList,
+.todayUpcomingList { display: grid; gap: 8px; margin-top: 15px; }
+.todayTaskRow { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; }
+.todayTaskCheck { width: 25px; height: 25px; padding: 0; border-radius: 8px; }
+.todayTaskMain { min-width: 0; display: grid; gap: 4px; text-align: left; }
+.todayTaskMain b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.todayTaskMain small { color: var(--mut); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.todayTaskChevron { color: var(--dim); font-size: 22px; }
+.todayWideLink { width: 100%; margin-top: 12px; }
+.todayUpcomingRow { width: 100%; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; text-align: left; }
+.todayUpcomingRow > span:nth-child(2) { min-width: 0; display: grid; gap: 4px; }
+.todayUpcomingRow b,
+.todayUpcomingRow small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.todayUpcomingRow small { color: var(--mut); }
+.todayUpcomingDot { width: 10px; height: 36px; border-radius: 999px; background: var(--event-color); }
+.todayEmpty { min-height: 92px; display: grid; place-content: center; gap: 5px; text-align: center; color: var(--mut); }
+.todayEmpty b { color: var(--text); }
+
+html[data-shell="next"] .todayDashboard { max-width: 1180px; margin: 0 auto; }
+html[data-shell="next"] .todayHero,
+html[data-shell="next"] .todayShiftCard,
+html[data-shell="next"] .todayOvertimeCard,
+html[data-shell="next"] .todayTasksCard,
+html[data-shell="next"] .todayUpcomingCard {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--ds-border);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--panel) 97%, #0a1621), color-mix(in srgb, var(--panel2) 72%, var(--panel)));
+}
+html[data-shell="next"] .todayHero::after,
+html[data-shell="next"] .todayShiftCard::after {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: -120px;
+  top: -150px;
+  border-radius: 50%;
+  pointer-events: none;
+  background: radial-gradient(circle, color-mix(in srgb, var(--accent) 14%, transparent), transparent 68%);
+}
+html[data-shell="next"] .todayDateSubtitle { margin-top: 5px; color: var(--mut); font-size: 13px; }
+html[data-shell="next"] .todayCalendarButton,
+html[data-shell="next"] .todayCardLink,
+html[data-shell="next"] .todayWideLink,
+html[data-shell="next"] .todayShiftFooter button {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 25%, var(--line));
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+html[data-shell="next"] .todayDateChip {
+  position: relative;
+  color: var(--mut);
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 15px;
+  background: color-mix(in srgb, var(--panel2) 62%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+html[data-shell="next"] .todayDateChip:hover { color: var(--text); border-color: color-mix(in srgb, var(--accent) 35%, var(--line)); transform: translateY(-1px); }
+html[data-shell="next"] .todayDateChip b { color: var(--text); font-size: 21px; }
+html[data-shell="next"] .todayDateChip.isToday {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 64%, var(--line));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 20%, transparent), color-mix(in srgb, var(--panel2) 82%, transparent));
+  box-shadow: var(--ds-shadow-accent), inset 0 1px 0 rgba(255,255,255,.06);
+}
+html[data-shell="next"] .todayDateChip.isToday::after {
+  content: "";
+  width: 5px;
+  height: 5px;
+  position: absolute;
+  bottom: 7px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 10px var(--accent);
+}
+html[data-shell="next"] .todayQuickActions button {
+  color: var(--text);
+  border: 1px solid var(--ds-border);
+  border-radius: var(--ds-radius-md);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--panel2) 78%, transparent), color-mix(in srgb, var(--panel) 92%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+}
+html[data-shell="next"] .todayQuickActions button:hover { border-color: color-mix(in srgb, var(--accent) 42%, var(--line)); background: var(--ds-highlight); transform: translateY(-2px); }
+html[data-shell="next"] .todayQuickActions button span { color: var(--accent); text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 45%, transparent); }
+html[data-shell="next"] .todayCardIcon {
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--line));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+html[data-shell="next"] .todayStatusPill,
+html[data-shell="next"] .todayCountPill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 30px;
+  padding: 5px 10px;
+  border: 1px solid var(--ds-border);
+  border-radius: 999px;
+  color: var(--mut);
+  background: color-mix(in srgb, var(--panel2) 72%, transparent);
+  font-size: 12px;
+}
+html[data-shell="next"] .todayShiftCard[data-shift-state="active"] .todayStatusPill {
+  color: #6ee7a8;
+  border-color: color-mix(in srgb, #2ed47a 42%, var(--line));
+  background: color-mix(in srgb, #2ed47a 12%, transparent);
+}
+html[data-shell="next"] .todayShiftCard[data-shift-state="active"] .todayStatusPill::before {
+  content: "";
+  width: 7px;
+  height: 7px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: #2ed47a;
+  box-shadow: 0 0 12px #2ed47a;
+}
+html[data-shell="next"] .todayShiftCard[data-shift-state="future"] .todayStatusPill,
+html[data-shell="next"] .todayShiftCard[data-shift-state="next"] .todayStatusPill { color: var(--accent); }
+html[data-shell="next"] .todayShiftCard[data-shift-state="off"] .todayCardIcon,
+html[data-shell="next"] .todayShiftCard[data-shift-state="off"] .todayStatusPill { color: #6bd68d; border-color: color-mix(in srgb, #6bd68d 35%, var(--line)); background: color-mix(in srgb, #6bd68d 10%, transparent); }
+html[data-shell="next"] .todayProgress span,
+html[data-shell="next"] .todayBalanceTrack span {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 82%, #fff), var(--accent), color-mix(in srgb, var(--accent) 72%, #ff9d38));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+html[data-shell="next"] .todayOvertimeBalance.negative { color: var(--danger); }
+html[data-shell="next"] .todayTaskRow,
+html[data-shell="next"] .todayUpcomingRow {
+  min-height: 61px;
+  padding: 9px 10px;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--panel2) 55%, transparent);
+}
+html[data-shell="next"] .todayTaskRow { position: relative; overflow: hidden; }
+html[data-shell="next"] .todayTaskRow::before { content: ""; position: absolute; inset: 8px auto 8px 0; width: 3px; border-radius: 999px; background: color-mix(in srgb, var(--mut) 65%, transparent); }
+html[data-shell="next"] .todayTaskRow.priority-high::before { background: #ff9b4a; }
+html[data-shell="next"] .todayTaskRow.priority-urgent::before { background: #ff5c68; box-shadow: 0 0 10px rgba(255,92,104,.35); }
+html[data-shell="next"] .todayTaskCheck {
+  border: 1px solid color-mix(in srgb, var(--mut) 55%, var(--line));
+  background: transparent;
+}
+html[data-shell="next"] .todayTaskCheck:hover { border-color: var(--accent); background: var(--ds-highlight); }
+html[data-shell="next"] .todayTaskMain,
+html[data-shell="next"] .todayUpcomingRow { color: var(--text); background: transparent; border: 0; box-shadow: none; }
+html[data-shell="next"] .todayTaskMain:hover,
+html[data-shell="next"] .todayUpcomingRow:hover { color: var(--text); background: transparent; transform: none; }
+html[data-shell="next"] .todayUpcomingRow strong { color: var(--accent); font-size: 12px; white-space: nowrap; }
+html[data-shell="next"] .todayEmpty { border: 1px dashed var(--ds-border-soft); border-radius: 13px; background: color-mix(in srgb, var(--panel2) 34%, transparent); }
+
+@media (max-width: 900px) {
+  .todayDashboardGrid { grid-template-columns: 1fr; }
+  .todayShiftCard { min-height: 235px; }
+}
+
+@media (max-width: 720px) {
+  html[data-shell="next"] .todayDashboard { gap: 12px; }
+  html[data-shell="next"] .todayHero { padding: 14px 12px; }
+  html[data-shell="next"] .todayHeroHead { align-items: flex-start; }
+  html[data-shell="next"] .todayHero h2 { font-size: 21px; }
+  html[data-shell="next"] .todayCalendarButton { min-height: 38px; padding: 7px 10px; font-size: 11px; }
+  .todayDateStrip { display: flex; overflow-x: auto; margin: 12px -4px -2px; padding: 2px 4px 6px; scrollbar-width: none; scroll-snap-type: x proximity; }
+  .todayDateStrip::-webkit-scrollbar { display: none; }
+  html[data-shell="next"] .todayDateChip { flex: 0 0 68px; min-height: 70px; scroll-snap-align: start; }
+  .todayQuickActions { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+  html[data-shell="next"] .todayQuickActions button { min-height: 82px; padding: 7px 4px; border-radius: 15px; }
+  .todayQuickActions button span { font-size: 21px; }
+  .todayQuickActions button b { font-size: 11px; line-height: 1.15; }
+  .todayQuickActions button small { display: none; }
+  .todayDashboardGrid { gap: 12px; }
+  .todayShiftCard { min-height: 225px; }
+  .todayCardIcon { width: 40px; height: 40px; }
+  .todayShiftTime { margin-top: 22px; font-size: 36px; }
+  .todayShiftMeta { font-size: 11px; line-height: 1.45; }
+  .todayShiftFooter { align-items: flex-end; }
+  .todayShiftFooter span { max-width: 58%; font-size: 12px; }
+  .todayTaskRow,
+  .todayUpcomingRow { min-height: 58px; padding: 8px; }
 }

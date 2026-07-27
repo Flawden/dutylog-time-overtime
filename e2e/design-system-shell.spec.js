@@ -8,8 +8,8 @@ test('DutyLog Next mobile shell stays usable and Classic remains an instant fall
 
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'next');
   await expect(page.locator('#nextTopbar')).toBeVisible();
-  await expect(page.locator('#tabbar .navIcon')).toHaveCount(5);
-  await expect(page.locator('#tabbar a[data-view="calendar"]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('#tabbar a:visible .navIcon')).toHaveCount(5);
+  await expect(page.locator('#tabbar a[data-view="today"]')).toHaveAttribute('aria-current', 'page');
 
   const before = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
@@ -27,10 +27,14 @@ test('DutyLog Next mobile shell stays usable and Classic remains an instant fall
   await page.locator('[data-shell-choice="classic"]').click();
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'classic');
   await expect(page.locator('#nextTopbar')).toBeHidden();
+  await expect(page.locator('#tabbar a[data-view="today"]')).toBeHidden();
+  await expect(page.locator('#tabbar a[data-view="important"]')).toBeVisible();
   await expect(page.locator('[data-shell-choice="classic"]')).toHaveAttribute('aria-pressed', 'true');
 
   await page.locator('[data-shell-choice="next"]').click();
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'next');
   await expect(page.locator('#nextTopbar')).toBeVisible();
+  await expect(page.locator('#tabbar a[data-view="today"]')).toBeVisible();
+  await expect(page.locator('#tabbar a[data-view="important"]')).toBeHidden();
   await expect(page.locator('[data-shell-choice="next"]')).toHaveAttribute('aria-pressed', 'true');
 });

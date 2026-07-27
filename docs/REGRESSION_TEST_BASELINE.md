@@ -1,12 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.15.0.
+Status: v27.16.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.15.0 adds the additive DutyLog Next design system and mobile shell while preserving Classic as a safe fallback. The shell preference is allowlisted through profile themeConfig, and mobile Playwright protects navigation, safe-area layout, horizontal overflow and Next ↔ Classic switching. Current application baseline: 92 Java test classes / 485 `@Test` methods and 23 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.16.0 adds the Today Dashboard as the default DutyLog Next destination. It composes immutable shift occurrences, overtime account totals, today tasks and upcoming important dates without introducing a parallel backend. Current application baseline: 93 Java test classes / 489 `@Test` methods and 24 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
+
+
+## v27.16.0 Today Dashboard extension
+
+- `TodayDashboardFrontendContractTest` protects the default `#today` route, additive composition over existing stores, instant-based shift progress and responsive dashboard layout.
+- `today-dashboard.spec.js` creates a real task from the dashboard, verifies immediate composition, opens the selected calendar day and returns through the brand route.
+- The dashboard reads existing calendar, shift occurrence, overtime, task and important-date state; no `/api/today` endpoint or duplicate persistence model was added.
+- Active shift progress and countdown use immutable `startInstant` / `endInstant`, while visible dates and ranges stay projected in the selected DutyLog timezone.
+- Mobile navigation remains five destinations: Today, Calendar, Overtime, Tasks and More. Important dates remain available from the dashboard and their full board.
+- Flyway remains V36.
 
 Historical extension: v27.2.31 adds an authenticated, CSRF-aware deployment smoke-test regression.
 

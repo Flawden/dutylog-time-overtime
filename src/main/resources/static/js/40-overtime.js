@@ -3,7 +3,7 @@
  *
  * DutyLog uses ordered browser scripts, not ES modules yet.
  * Keep the order in index.html stable: 10-core → 20-data → 30-calendar
- * → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
+ * → 35-today → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
  */
 
 Object.assign(I18N_EN, {

@@ -8,9 +8,9 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.15.0"></script>
-<link href="app.css?v=27.15.0" rel="stylesheet"/>
-<link href="design-system.css?v=27.15.0" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.16.0"></script>
+<link href="app.css?v=27.16.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.16.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -43,7 +43,7 @@
 </div>
 <div class="wrap">
 <div class="nextTopbar" id="nextTopbar">
-  <a class="brandLockup" href="#calendar" aria-label="DutyLog — календарь">
+  <a class="brandLockup" href="#today" aria-label="DutyLog — сегодня">
     <span class="brandGlyph" aria-hidden="true">
       <svg viewBox="0 0 32 32"><path d="M16 3.5 27 8.9v9.2L16 28.5 5 18.1V8.9Z"/><path d="m10.4 15.8 3.6 3.6 7.9-8"/><path d="M16 7.5v3.2"/></svg>
     </span>
@@ -67,12 +67,87 @@
 </div>
 </div>
 <nav class="tabbar" id="tabbar" aria-label="Основная навигация">
+<a data-view="today" href="#today"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 11 9-7 9 7"/><path d="M5.5 9.5V20h13V9.5M9.5 20v-6h5v6"/></svg></span><span class="navLabel">Сегодня</span></a>
 <a data-view="calendar" href="#calendar"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16v14H4z"/><path d="M8 3v5M16 3v5M4 9.5h16"/></svg></span><span class="navLabel">Календарь</span></a>
 <a data-view="overtime" href="#overtime"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2M7 4.5 5 2.8M17 4.5l2-1.7"/></svg></span><span class="navLabel">Переработки</span></a>
 <a data-view="tasks" href="#tasks"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="m8 9 1.5 1.5L12 8M13.5 10H16M8 15h8"/></svg></span><span class="navLabel">Задачи</span></a>
 <a data-view="important" href="#important"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/></svg></span><span class="navLabel">Даты</span></a>
 <a data-view="settings" href="#settings" title="Настройки"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1-2.8 2.8-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.2h-4V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1L4.2 17l.1-.1a1.7 1.7 0 0 0 .3-1.9A1.7 1.7 0 0 0 3 14H2.8v-4H3a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9L4.2 7 7 4.2l.1.1A1.7 1.7 0 0 0 9 4.6 1.7 1.7 0 0 0 10 3V2.8h4V3a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1L19.8 7l-.1.1a1.7 1.7 0 0 0-.3 1.9 1.7 1.7 0 0 0 1.6 1h.2v4H21a1.7 1.7 0 0 0-1.6 1Z"/></svg></span><span class="navLabel">Ещё</span></a>
 </nav>
+<section class="view todayView" id="view-today" hidden>
+  <div class="todayDashboard">
+    <section class="card todayHero" aria-labelledby="todayDateTitle">
+      <div class="todayHeroHead">
+        <div>
+          <div class="eyebrow">Сегодня</div>
+          <h2 id="todayDateTitle">Текущий день</h2>
+          <div class="todayDateSubtitle" id="todayDateSubtitle"></div>
+        </div>
+        <button class="todayCalendarButton" id="todayOpenCalendar" type="button">Открыть календарь</button>
+      </div>
+      <div class="todayDateStrip" id="todayDateStrip" aria-label="Ближайшие дни"></div>
+    </section>
+
+    <section class="todayQuickActions" aria-label="Быстрые действия">
+      <button id="todayQuickTask" type="button"><span aria-hidden="true">✓</span><b>Новая задача</b><small>на сегодня</small></button>
+      <button id="todayQuickNote" type="button"><span aria-hidden="true">▤</span><b>Новая заметка</b><small>в выбранный день</small></button>
+      <button id="todayQuickCredit" type="button"><span aria-hidden="true">＋</span><b>Переработка</b><small>начислить часы</small></button>
+      <button id="todayQuickMore" type="button"><span aria-hidden="true">⋯</span><b>Быстро добавить</b><small>все действия</small></button>
+    </section>
+
+    <div class="todayDashboardGrid">
+      <section class="card todayShiftCard" id="todayShiftCard" aria-labelledby="todayShiftTitle">
+        <div class="todayCardHead">
+          <span class="todayCardIcon todayCardIconShift" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16v14H4z"/><path d="M8 3v5M16 3v5M4 9.5h16"/><path d="M8 14h3"/></svg></span>
+          <div class="todayCardHeading"><small>Смена</small><h3 id="todayShiftTitle">Смена не назначена</h3></div>
+          <span class="todayStatusPill" id="todayShiftStatus">нет смены</span>
+        </div>
+        <div class="todayShiftTime" id="todayShiftTime">—</div>
+        <div class="todayShiftMeta" id="todayShiftMeta"></div>
+        <div class="todayProgress" id="todayShiftProgressWrap" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+          <span id="todayShiftProgress"></span>
+        </div>
+        <div class="todayShiftFooter">
+          <span id="todayShiftCountdown">День свободен для планирования</span>
+          <button id="todayOpenShiftDay" type="button">Открыть день</button>
+        </div>
+      </section>
+
+      <section class="card todayOvertimeCard" aria-labelledby="todayOvertimeTitle">
+        <div class="todayCardHead">
+          <span class="todayCardIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></span>
+          <div class="todayCardHeading"><small>Учёт времени</small><h3 id="todayOvertimeTitle">Переработки</h3></div>
+          <button class="todayCardLink" id="todayOpenOvertime" type="button">Журнал</button>
+        </div>
+        <div class="todayBalanceRow"><span>Доступно</span><b id="todayOvertimeBalance">0 ч</b></div>
+        <div class="todayBalanceTrack"><span id="todayOvertimeProgress"></span></div>
+        <div class="todayMetricGrid">
+          <div><small>Начислено</small><b id="todayOvertimeEarned">0 ч</b></div>
+          <div><small>Использовано</small><b id="todayOvertimeUsed">0 ч</b></div>
+        </div>
+      </section>
+
+      <section class="card todayTasksCard" aria-labelledby="todayTasksTitle">
+        <div class="todayCardHead">
+          <span class="todayCardIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="m8 9 1.5 1.5L12 8M13.5 10H16M8 15h8"/></svg></span>
+          <div class="todayCardHeading"><small>План дня</small><h3 id="todayTasksTitle">Задачи</h3></div>
+          <span class="todayCountPill" id="todayTaskCount">0</span>
+        </div>
+        <div class="todayTaskList" id="todayTaskList"></div>
+        <button class="todayWideLink" id="todayOpenTasks" type="button">Показать все задачи →</button>
+      </section>
+
+      <section class="card todayUpcomingCard" aria-labelledby="todayUpcomingTitle">
+        <div class="todayCardHead">
+          <span class="todayCardIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/></svg></span>
+          <div class="todayCardHeading"><small>Не пропустить</small><h3 id="todayUpcomingTitle">Ближайшие даты</h3></div>
+          <button class="todayCardLink" id="todayOpenImportant" type="button">Все даты</button>
+        </div>
+        <div class="todayUpcomingList" id="todayUpcomingList"></div>
+      </section>
+    </div>
+  </div>
+</section>
 <section class="view" id="view-calendar">
 <div class="layout" id="layout">
 <div class="card">
@@ -776,7 +851,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.15.0</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.16.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -1303,12 +1378,13 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.15.0"></script>
-<script src="js/20-data.js?v=27.15.0"></script>
-<script src="js/30-calendar.js?v=27.15.0"></script>
-<script src="js/40-overtime.js?v=27.15.0"></script>
-<script src="js/50-tasks.js?v=27.15.0"></script>
-<script src="js/60-settings.js?v=27.15.0"></script>
-<script src="js/70-user-boot.js?v=27.15.0"></script>
+<script src="js/10-core.js?v=27.16.0"></script>
+<script src="js/20-data.js?v=27.16.0"></script>
+<script src="js/30-calendar.js?v=27.16.0"></script>
+<script src="js/35-today.js?v=27.16.0"></script>
+<script src="js/40-overtime.js?v=27.16.0"></script>
+<script src="js/50-tasks.js?v=27.16.0"></script>
+<script src="js/60-settings.js?v=27.16.0"></script>
+<script src="js/70-user-boot.js?v=27.16.0"></script>
 </body>
 </html>

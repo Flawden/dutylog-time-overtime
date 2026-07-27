@@ -14,8 +14,8 @@ class DesignSystemMobileShellFrontendContractTest {
     @Test
     void htmlLoadsTheLayeredDesignSystemAndExposesAccessibleShellControls() throws Exception {
         String html = read("src/main/resources/static/index.html");
-        assertTrue(html.contains("js/shell-bootstrap.js?v=27.15.0"));
-        assertTrue(html.contains("design-system.css?v=27.15.0"));
+        assertTrue(html.contains("js/shell-bootstrap.js?v=27.16.0"));
+        assertTrue(html.contains("design-system.css?v=27.16.0"));
         assertTrue(html.contains("id=\"nextTopbar\""));
         assertTrue(html.contains("id=\"nextHeaderAvatar\""));
         assertTrue(html.contains("class=\"navIcon\""));
@@ -43,6 +43,8 @@ class DesignSystemMobileShellFrontendContractTest {
         assertTrue(css.contains("position: fixed"));
         assertTrue(css.contains("env(safe-area-inset-bottom"));
         assertTrue(css.contains("@media (prefers-reduced-motion: reduce)"));
+        assertTrue(css.contains("html[data-shell=\"classic\"] .tabbar a[data-view=\"today\"]"));
+        assertTrue(css.contains("html[data-shell=\"next\"] .tabbar a[data-view=\"important\"]"));
         assertTrue(css.contains(".nextTopbar,\n.navIcon"));
     }
 

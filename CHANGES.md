@@ -1,3 +1,13 @@
+# v27.16.0 — Today Dashboard
+
+- Added `#today` as the default DutyLog Next destination while preserving the full calendar as a separate primary route.
+- Added a responsive seven-day strip, active/next shift card, immutable-instant progress and countdown, overtime balance, today tasks, upcoming important dates and quick actions.
+- Reused the existing calendar bundle, shift occurrence, overtime account, task and important-date stores; no parallel dashboard API or persistence model was introduced.
+- Kept all writes inside existing task, note, overtime, important-date and quick-action flows.
+- Reduced mobile primary navigation to five focused destinations: Today, Calendar, Overtime, Tasks and More.
+- Added static frontend contracts and a mobile Playwright scenario covering task creation, immediate dashboard composition, calendar opening and brand navigation.
+- No schema change; Flyway remains V36. Regression baseline: 93 Java test classes, 489 `@Test` methods and 24 Playwright scenarios.
+
 # v27.15.0 — Design System & Mobile Shell Foundation
 
 - Added an additive `design-system.css` layer with spacing, radius, surface, shadow, focus and responsive navigation tokens.

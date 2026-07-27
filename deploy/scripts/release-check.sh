@@ -9,12 +9,13 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.15.0}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.16.0}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
   "js/20-data.js"
   "js/30-calendar.js"
+  "js/35-today.js"
   "js/40-overtime.js"
   "js/50-tasks.js"
   "js/60-settings.js"
@@ -142,6 +143,7 @@ expected = [
     'js/10-core.js',
     'js/20-data.js',
     'js/30-calendar.js',
+    'js/35-today.js',
     'js/40-overtime.js',
     'js/50-tasks.js',
     'js/60-settings.js',
@@ -963,7 +965,7 @@ contains src/main/resources/db/migration/postgresql/V25__user_work_timezone.sql 
 contains src/main/java/ru/daniil/shifts/model/AppUser.java "private String workTimezone"
 contains src/main/java/ru/daniil/shifts/web/ProfileController.java 'out.put("workTimezone"'
 contains src/main/java/ru/daniil/shifts/service/UserTimeService.java "LocalDate today"
-contains src/main/resources/static/index.html 'data-view="important"'
+contains src/main/resources/static/index.html 'id="view-important"'
 contains src/main/resources/static/js/50-tasks.js "renderImportantBoard"
 contains src/main/resources/static/js/40-overtime.js "startEditOvertimeCredit"
 contains src/main/resources/static/js/40-overtime.js "ledgerEditingRow"
@@ -972,7 +974,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.0"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1025,7 +1027,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.0"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1047,7 +1049,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.0"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1142,7 +1144,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.0"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -1301,7 +1303,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.10.0 — Task Details"
 contains README.md "v27.10.0 — Task Details"
 contains docs/TASK_DETAILS_V27.10.0.md "read-first"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.0"
 contains src/main/resources/db/migration/postgresql/V32__task_details.sql "ADD COLUMN description"
 contains src/main/java/ru/daniil/shifts/model/DayTask.java "private String description"
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "public TaskDto get(AppUser user, Long id)"
@@ -1322,7 +1324,7 @@ contains e2e/task-details.spec.js 'task details separate reading from editing an
 contains CHANGES.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains README.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md "immutable absolute occurrence"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.0"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_start_instant"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_source_timezone"
 contains src/main/java/ru/daniil/shifts/model/DayEntry.java "captureShiftOccurrence"
@@ -1342,7 +1344,7 @@ contains e2e/important-timezone.spec.js "a timezone projection can move a late s
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.15.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.0"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1438,7 +1440,7 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "23" ]]; then
+if [[ "$E2E_TESTS" == "24" ]]; then
   # v27.11.1 CI & Contract Hotfix
 contains CHANGES.md "v27.11.1 — CI & Contract Hotfix"
 contains README.md "v27.11.1 — CI & Contract Hotfix"
@@ -1555,7 +1557,7 @@ not_contains e2e/calendar-persistence.spec.js "const noteSaved = waitForApi(page
 contains CHANGES.md "v27.15.0 — Design System & Mobile Shell Foundation"
 contains README.md "v27.15.0 — Design System & Mobile Shell Foundation"
 contains docs/DESIGN_SYSTEM_MOBILE_SHELL_FOUNDATION_V27.15.0.md "Design System & Mobile Shell Foundation"
-contains src/main/resources/static/index.html 'design-system.css?v=27.15.0'
+contains src/main/resources/static/index.html 'design-system.css?v=27.16.0'
 contains src/main/resources/static/index.html 'id="nextTopbar"'
 contains src/main/resources/static/index.html 'data-shell-choice="classic"'
 contains src/main/resources/static/design-system.css 'html[data-shell="next"] .tabbar'
@@ -1565,22 +1567,38 @@ contains src/main/java/ru/daniil/shifts/web/ProfileController.java 'safeEnum(inp
 contains src/test/java/ru/daniil/shifts/web/DesignSystemMobileShellFrontendContractTest.java 'class DesignSystemMobileShellFrontendContractTest'
 contains e2e/design-system-shell.spec.js 'DutyLog Next mobile shell stays usable and Classic remains an instant fallback'
 
-  ok "Playwright test baseline: 23"
+  # v27.16.0 Today Dashboard
+contains CHANGES.md "v27.16.0 — Today Dashboard"
+contains README.md "v27.16.0 — Today Dashboard"
+contains docs/TODAY_DASHBOARD_V27.16.0.md "Today Dashboard"
+contains src/main/resources/static/index.html 'id="view-today"'
+contains src/main/resources/static/index.html 'data-view="today" href="#today"'
+contains src/main/resources/static/index.html 'js/35-today.js?v=27.16.0'
+contains src/main/resources/static/js/35-today.js 'function todayDashboardShiftModel'
+contains src/main/resources/static/js/35-today.js 'state.shiftOccurrences'
+contains src/main/resources/static/js/35-today.js 'state.overtimeAccount'
+not_contains src/main/resources/static/js/35-today.js '/api/today'
+contains src/main/resources/static/js/70-user-boot.js 'dataset.shell === "classic" ? "#calendar" : "#today"'
+contains src/main/resources/static/design-system.css '.todayDashboardGrid'
+contains src/test/java/ru/daniil/shifts/web/TodayDashboardFrontendContractTest.java 'class TodayDashboardFrontendContractTest'
+contains e2e/today-dashboard.spec.js 'Today Dashboard composes the day and opens existing feature flows'
+
+  ok "Playwright test baseline: 24"
 else
-  fail "expected 23 Playwright tests, found $E2E_TESTS"
+  fail "expected 24 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "485" ]]; then
-  ok "test method baseline: 485"
+if [[ "$TEST_METHODS" == "489" ]]; then
+  ok "test method baseline: 489"
 else
-  fail "expected 485 @Test methods, found $TEST_METHODS"
+  fail "expected 489 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "92" ]]; then
-  ok "test class baseline: 92"
+if [[ "$TEST_CLASSES" == "93" ]]; then
+  ok "test class baseline: 93"
 else
-  fail "expected 92 test classes, found $TEST_CLASSES"
+  fail "expected 93 test classes, found $TEST_CLASSES"
 fi
 
 echo

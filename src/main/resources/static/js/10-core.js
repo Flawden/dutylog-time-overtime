@@ -3,7 +3,7 @@
  *
  * DutyLog uses ordered browser scripts, not ES modules yet.
  * Keep the order in index.html stable: 10-core → 20-data → 30-calendar
- * → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
+ * → 35-today → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
  */
 
 "use strict";
@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.15.0"
+const DUTYLOG_VERSION = "27.16.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){

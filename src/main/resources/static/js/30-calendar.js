@@ -3,7 +3,7 @@
  *
  * DutyLog uses ordered browser scripts, not ES modules yet.
  * Keep the order in index.html stable: 10-core → 20-data → 30-calendar
- * → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
+ * → 35-today → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
  */
 
 /* ─── Markdown (мини-парсер) ────────────────────────────────── */
@@ -166,6 +166,7 @@ function renderCalendar(){
     }
     const summary = $("summary");
     if (summary) summary.innerHTML = `<span class="lbl">${esc(t("загрузка…"))}</span><span style="color:var(--dim)">${esc(t("Загружаю календарь…"))}</span>`;
+    if (typeof renderTodayDashboard === "function" && document.body.dataset.view === "today") renderTodayDashboard();
     return;
   }
   const first = new Date(state.y, state.m, 1);
@@ -301,6 +302,7 @@ function renderCalendar(){
     grid.appendChild(cell);
   }
   renderSummary();
+  if (typeof renderTodayDashboard === "function" && document.body.dataset.view === "today") renderTodayDashboard();
 }
 
 function renderSummary(){
