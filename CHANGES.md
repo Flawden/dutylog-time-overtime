@@ -1,3 +1,11 @@
+# v27.14.2 — Calendar Notes Persistence E2E Hotfix
+
+- Updated the calendar persistence browser scenario to the Multiple Daily Notes contract.
+- The test now creates a concrete note through `POST /api/notes` before editing, because the empty-state editor is intentionally hidden.
+- Debounced content persistence is awaited through `PATCH /api/notes/{id}` instead of the removed legacy day-level note `PUT`.
+- Month navigation, full reload, shift persistence and emoji persistence are still verified in the same end-to-end flow.
+- No production code or schema change; Flyway remains V36. Regression baseline remains 91 Java test classes, 482 `@Test` methods and 22 Playwright scenarios.
+
 # v27.14.1 — Mobile Notes Tombstone Hotfix
 
 - Fixed Android API v1 note clears deleting the versioned `day_entries` tombstone through the new multiple-note legacy-shadow bridge.

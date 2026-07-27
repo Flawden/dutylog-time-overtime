@@ -1,21 +1,24 @@
-> Current release: **v27.14.1 — Mobile Notes Tombstone Hotfix**.
+> Current release: **v27.14.2 — Calendar Notes Persistence E2E Hotfix**.
 
 # DutyLog
 
-Current release: **v27.14.1 — Mobile Notes Tombstone Hotfix**
+Current release: **v27.14.2 — Calendar Notes Persistence E2E Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.14.1 — Mobile Notes Tombstone Hotfix
+## Текущая версия: v27.14.2 — Calendar Notes Persistence E2E Hotfix
 
-**v27.14.1** закрывает конфликт между несколькими заметками и versioned tombstone Android API v1. Очистка последней заметки через `/api/v1/mobile/sync` сохраняет пустую строку дня и её возрастающую optimistic-версию, поэтому устаревшая offline-операция больше не может воскресить удалённый текст.
+**v27.14.2** синхронизирует старый календарный Playwright-сценарий с архитектурой Multiple Daily Notes. Пустой модуль заметок сначала создаёт отдельную запись через `POST /api/notes`, затем текст сохраняется через `PATCH /api/notes/{id}`; скрытый legacy-редактор и старый `PUT /api/days/{date}` больше не используются тестом.
 
-Legacy `/api/mobile/sync` сохраняет прежнее поведение и удаляет полностью пустую строку. Независимые заметки, pin/reorder/delete, экспорт и offline snapshot из v27.14.0 не менялись.
+Production-поведение v27.14.1 не менялось: versioned tombstone Android API v1 сохранён, legacy-clear остаётся совместимым, несколько заметок, pin/reorder/delete, экспорт и offline snapshot работают по прежнему контракту.
 
 Flyway: **V1–V36**. Текущая автоматическая база: **91 Java-тестовый класс, 482 `@Test` метода и 22 Playwright browser scenario**.
 
-Релиз **v27.14.0 — Multiple Daily Notes** остаётся продуктовой основой этой серии; v27.14.1 исправляет только границу мобильной optimistic-синхронизации.
+Предыдущие релизы серии:
+
+- **v27.14.1 — Mobile Notes Tombstone Hotfix** — сохраняет versioned tombstone Android API v1;
+- **v27.14.0 — Multiple Daily Notes** — добавляет независимые заметки, pin/reorder/delete, экспорт и offline snapshot.
 
 ## История временного фундамента
 
@@ -340,7 +343,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.14.1 через полный Maven и Playwright gate, затем на staging проверить legacy-clear, versioned tombstone, конфликт устаревшей offline-операции и обычные сценарии нескольких заметок.
+Следующий практический шаг — пропустить v27.14.2 через полный Maven и Playwright gate, затем на staging проверить создание первой заметки в пустом дне, навигацию по месяцам, полный reload, legacy-clear, versioned tombstone и обычные сценарии нескольких заметок.
 
 ## Служебный профиль администратора
 
