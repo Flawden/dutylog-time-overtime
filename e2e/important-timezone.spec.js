@@ -1,11 +1,10 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, currentLocalDateKey, waitForApi } = require('./helpers');
+const { registerAndOnboard, currentLocalDateKey, waitForApi, openView } = require('./helpers');
 
 test('important dates stay floating while canonical timezone survives reload', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'important' });
 
-  await page.locator('#tabbar a[data-view="important"]').click();
-  await expect(page.locator('#view-important')).toBeVisible();
+  await openView(page, 'important');
   await expect(page.locator('#importantBoardList')).toBeVisible();
 
   const date = await currentLocalDateKey(page);
@@ -95,7 +94,7 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await expect(page.locator('#defDayStart')).toHaveValue('08:30');
   await expect(page.locator('#defDayEnd')).toHaveValue('17:00');
 
-  await page.locator('#tabbar a[data-view="calendar"]').click();
+  await openView(page, 'calendar');
   const day = page.locator('#grid .cell:not(.empty)').first();
   await day.click();
   await expect(page.locator('#panel')).toBeVisible();
@@ -137,7 +136,7 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await expect(page.locator('#notifyList')).toContainText('Начало 06:30 Europe/Kyiv');
   await expect(page.locator('#notifyList')).toContainText('06:00');
 
-  await page.locator('#tabbar a[data-view="calendar"]').click();
+  await openView(page, 'calendar');
   await day.click();
   const projection = page.locator('#shiftProjection');
   await expect(projection).toBeVisible();
@@ -184,7 +183,7 @@ test('a timezone projection can move a late shift to the next calendar date', as
   expect(projectedTemplate.startTime).toBe('01:00');
   expect(projectedTemplate.endTime).toBe('09:00');
 
-  await page.locator('#tabbar a[data-view="calendar"]').click();
+  await openView(page, 'calendar');
   const julyFourth = page.locator('#grid [data-date="2026-07-04"]');
   await expect(julyFourth).toContainText('Поздняя E2E');
   await expect(julyFourth).toContainText('01:00–09:00');

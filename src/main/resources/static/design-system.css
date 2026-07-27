@@ -1,5 +1,5 @@
 /*
- * DutyLog Next design system foundation — v27.16.1
+ * DutyLog Next design system foundation — v27.16.2
  *
  * This file is deliberately layered after app.css. The classic shell remains
  * available through html[data-shell="classic"], while the new shell is an
@@ -828,7 +828,7 @@ html[data-shell="next"] .appBootCard::after {
   }
 }
 
-/* ─── v27.16.1 Today Dashboard ─────────────────────────────── */
+/* ─── v27.16.2 Today Dashboard ─────────────────────────────── */
 .todayDashboard { display: grid; gap: 16px; }
 .todayHeroHead,
 .todayCardHead,

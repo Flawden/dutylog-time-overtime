@@ -2,7 +2,7 @@
 
 ## Текущая продуктовая точка — Today Dashboard стабилизирован
 
-Статус: **v27.16.1** стабилизирует ежедневный экран DutyLog Next и синхронизирует документацию с фактическим состоянием репозитория.
+Статус: **v27.16.2** закрепляет Today как домашний маршрут DutyLog Next, выравнивает E2E-навигацию и устраняет гонку ручного/автоматического применения шаблонов смен.
 
 Сделано к текущей точке:
 
@@ -15,6 +15,8 @@
 - offline snapshot и очередь синхронизации;
 - staging CI/CD, backup/restore и immutable images;
 - исправлен load-order runtime-регресс `35-today.js → 50-tasks.js`;
+- E2E-сценарии открывают календарь и скрытые legacy-workspace явно, не полагаясь на старый default route;
+- ручное применение времени смен отменяет ожидающий debounce и не гоняется с autosave;
 - Flyway V1–V36, Java 17, 93 Java test classes / 489 tests / 24 Playwright scenarios.
 
 Следующий продуктовый этап: **v27.17.0 — Calendar Mobile Experience**.

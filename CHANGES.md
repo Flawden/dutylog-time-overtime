@@ -1,3 +1,12 @@
+# v27.16.2 — Next Route & Time Settings E2E Hotfix
+
+- Aligned browser scenarios with the intentional DutyLog Next startup route: `#today` remains home, while shared helpers explicitly open Calendar before selecting a date.
+- Added robust E2E workspace navigation that uses visible tabs when available and hash routing for hidden legacy workspaces such as Important Dates.
+- Updated onboarding regression expectations to protect Today persistence across reload instead of the retired Calendar default.
+- Fixed the built-in shift-time apply race by cancelling the pending autosave debounce before an explicit apply.
+- Added static regression guards for the route helper and debounce cancellation.
+- No schema or backend API change; Flyway remains V36. Regression baseline remains 93 Java test classes, 489 `@Test` methods and 24 Playwright scenarios.
+
 # v27.16.1 — Today Runtime & Repository Truth Hotfix
 
 - Fixed a frontend bundle load-order regression where `35-today.js` resolved `openQuickActions` before `50-tasks.js` had declared it.

@@ -1,13 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.16.1.
+Status: v27.16.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.16.1 repairs the Today Dashboard bundle load-order regression and aligns repository documentation with the running Java 17 / Flyway V36 baseline. Current application baseline: 93 Java test classes / 489 `@Test` methods and 24 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.16.2 aligns the 24 Playwright scenarios with the DutyLog Next `#today` default route and removes the manual-vs-debounced shift-template apply race. Current application baseline: 93 Java test classes / 489 `@Test` methods and 24 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+
+## v27.16.2 Next Route & Time Settings E2E Hotfix extension
+
+- Shared E2E navigation opens the requested workspace explicitly; calendar tests no longer assume that `#calendar` is the startup route.
+- Hidden legacy workspaces such as Important Dates are reached through hash routing when their Next-shell tab is intentionally not visible.
+- Onboarding now asserts the product contract: DutyLog Next opens on Today and keeps it after reload.
+- Explicit built-in shift-template apply cancels the pending debounce before saving, preventing duplicate/racing PATCH pairs.
+- No schema or backend API change; Flyway remains V36.
 
 ## v27.16.1 Today Runtime & Repository Truth Hotfix extension
 

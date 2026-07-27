@@ -58,7 +58,24 @@ async function currentLocalDateKey(page) {
   });
 }
 
+async function openView(page, view) {
+  const section = page.locator(`#view-${view}`);
+  if (await section.isVisible()) return section;
+
+  const tab = page.locator(`#tabbar a[data-view="${view}"]`);
+  if (await tab.isVisible()) {
+    await tab.click();
+  } else {
+    await page.evaluate(target => {
+      window.location.hash = `#${target}`;
+    }, view);
+  }
+  await expect(section).toBeVisible();
+  return section;
+}
+
 async function selectDate(page, date) {
+  await openView(page, 'calendar');
   const cell = page.locator(`#grid [data-date="${date}"]`);
   await expect(cell).toBeVisible();
   await cell.click();
@@ -102,6 +119,7 @@ async function toggleModule(page, key, enabled) {
 module.exports = {
   registerAndOnboard,
   currentLocalDateKey,
+  openView,
   selectDate,
   waitForApi,
   openDayModule,

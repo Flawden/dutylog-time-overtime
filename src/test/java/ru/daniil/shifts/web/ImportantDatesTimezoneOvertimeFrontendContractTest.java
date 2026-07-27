@@ -81,6 +81,8 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
         assertTrue(settings.contains("function populateTimeZoneSelect"));
         assertTrue(settings.contains("function timezoneOffsetLabel"));
         assertTrue(settings.contains("timeSaveTimezone"));
+        assertTrue(settings.contains("function cancelTimeSettingsAutoApply()"));
+        assertTrue(settings.contains("if (!silent) cancelTimeSettingsAutoApply();"));
         assertFalse(settings.contains("workOffsetMoscow: Math.round"));
     }
 

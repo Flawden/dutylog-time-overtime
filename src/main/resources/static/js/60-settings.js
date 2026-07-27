@@ -472,9 +472,17 @@ async function saveTimeSettings(){
   }
 }
 let timeAutoApplyTimer = null;
+function cancelTimeSettingsAutoApply(){
+  if (!timeAutoApplyTimer) return;
+  clearTimeout(timeAutoApplyTimer);
+  timeAutoApplyTimer = null;
+}
 function scheduleTimeSettingsApply(){
-  if (timeAutoApplyTimer) clearTimeout(timeAutoApplyTimer);
-  timeAutoApplyTimer = setTimeout(() => applyTimeSettingsToBuiltins(true), 700);
+  cancelTimeSettingsAutoApply();
+  timeAutoApplyTimer = setTimeout(() => {
+    timeAutoApplyTimer = null;
+    applyTimeSettingsToBuiltins(true);
+  }, 700);
 }
 function fillShiftFormFromDefaults(kind){
   const timeSettings = state.timeSettings || loadTimeSettings();
@@ -516,6 +524,7 @@ function patchForBuiltInShift(name, timeSettings){
   };
 }
 async function applyTimeSettingsToBuiltins(silent = false){
+  if (!silent) cancelTimeSettingsAutoApply();
   const form = readTimeSettingsForm();
   const timeSettings = {
     ...form,
