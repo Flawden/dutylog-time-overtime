@@ -1,24 +1,23 @@
-> Current release: **v27.14.2 — Calendar Notes Persistence E2E Hotfix**.
+> Current release: **v27.14.0 — Multiple Daily Notes**.
 
 # DutyLog
 
-Current release: **v27.14.2 — Calendar Notes Persistence E2E Hotfix**
+Current release: **v27.14.0 — Multiple Daily Notes**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.14.2 — Calendar Notes Persistence E2E Hotfix
+## Текущая версия: v27.14.0 — Multiple Daily Notes
 
-**v27.14.2** синхронизирует старый календарный Playwright-сценарий с архитектурой Multiple Daily Notes. Пустой модуль заметок сначала создаёт отдельную запись через `POST /api/notes`, затем текст сохраняется через `PATCH /api/notes/{id}`; скрытый legacy-редактор и старый `PUT /api/days/{date}` больше не используются тестом.
+**v27.14.0** снимает ограничение «один день — одна заметка». На одну дату теперь можно создать несколько независимых Markdown-заметок с собственным названием, содержимым, закреплением и порядком. Редактирование или удаление одной записи не затрагивает соседние.
 
-Production-поведение v27.14.1 не менялось: versioned tombstone Android API v1 сохранён, legacy-clear остаётся совместимым, несколько заметок, pin/reorder/delete, экспорт и offline snapshot работают по прежнему контракту.
+Flyway V36 переносит существующий `day_entries.note` в первую самостоятельную заметку и сохраняет старое поле как compatibility shadow для старых web/mobile-клиентов. Новые API `/api/notes` и `/api/v1/notes` owner-scoped и защищены модулем Notes.
 
-Flyway: **V1–V36**. Текущая автоматическая база: **91 Java-тестовый класс, 482 `@Test` метода и 22 Playwright browser scenario**.
+Календарь показывает количество заметок, полноэкранный редактор работает с активной записью, а ZIP-экспорт создаёт отдельный Markdown-файл для каждой заметки. Загруженный snapshot доступен для чтения офлайн; создание и изменение честно требуют подключения, пока полноценная offline-очередь заметок ещё не реализована.
 
-Предыдущие релизы серии:
+Flyway: **V1–V36**. Текущая автоматическая база: **91 Java-тестовый класс, 482 `@Test` метод и 22 Playwright browser scenario**.
 
-- **v27.14.1 — Mobile Notes Tombstone Hotfix** — сохраняет versioned tombstone Android API v1;
-- **v27.14.0 — Multiple Daily Notes** — добавляет независимые заметки, pin/reorder/delete, экспорт и offline snapshot.
+Временной фундамент зафиксирован релизами **v27.13.0 — Temporal Consistency & Legacy Cleanup**, **v27.12.1 — Midnight Projection Contract Hotfix**, **v27.12.0 — Zoned Daily Projection Engine**, **v27.11.4 — Task Deadline & Reminder Timezone Hotfix**, **v27.11.3 — Shift Template & Reminder Timezone Hotfix**, **v27.11.0 — Shift Occurrences & Calendar Projection**, **v27.9.0 — Overtime Interval Engine**.
 
 ## История временного фундамента
 
@@ -29,13 +28,6 @@ Flyway: **V1–V36**. Текущая автоматическая база: **91
 - v27.9.2 — Overtime Ledger Integrity Hotfix
 - v27.9.3 — Overtime Preflight Integrity Hotfix
 - v27.9.4 — Overtime Split Projection Contract Hotfix
-- v27.9.0 — Overtime Interval Engine
-- v27.11.0 — Shift Occurrences & Calendar Projection
-- v27.11.3 — Shift Template & Reminder Timezone Hotfix
-- v27.11.4 — Task Deadline & Reminder Timezone Hotfix
-- v27.12.0 — Zoned Daily Projection Engine
-- v27.12.1 — Midnight Projection Contract Hotfix
-- v27.13.0 — Temporal Consistency & Legacy Cleanup
 - v27.10.0 — Task Details
 - v27.11.1 — CI & Contract Hotfix
 - v27.11.2 — E2E Stability Hotfix
@@ -343,7 +335,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.14.2 через полный Maven и Playwright gate, затем на staging проверить создание первой заметки в пустом дне, навигацию по месяцам, полный reload, legacy-clear, versioned tombstone и обычные сценарии нескольких заметок.
+Следующий практический шаг — пропустить v27.14.0 через полный Maven и Playwright gate, затем на staging проверить миграцию старой заметки, несколько заметок на одной дате, pin/reorder/delete, перезагрузку, мобильный payload и ZIP-экспорт.
 
 ## Служебный профиль администратора
 

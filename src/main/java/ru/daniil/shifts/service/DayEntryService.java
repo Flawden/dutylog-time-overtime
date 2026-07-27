@@ -264,7 +264,7 @@ public class DayEntryService {
         }
         DayEntry saved = days.saveAndFlush(entry);
         if (Boolean.TRUE.equals(req.clearNote()) || req.note() != null) {
-            dayNoteService.syncPrimaryFromLegacy(user, d, saved.getNote(), preserveEmptyVersionRow);
+            dayNoteService.syncPrimaryFromLegacy(user, d, saved.getNote());
         }
         return toDto(user, days.findByOwnerAndDate(user, d).orElse(saved));
     }

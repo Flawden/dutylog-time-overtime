@@ -142,28 +142,10 @@ public class DayNoteService {
      */
     @Transactional
     public void syncPrimaryFromLegacy(AppUser user, LocalDate date, String content) {
-        syncPrimaryFromLegacy(user, date, content, false);
-    }
-
-    /**
-     * Compatibility bridge with an explicit tombstone policy for Android API v1.
-     *
-     * A versioned clear must keep the empty day_entries row so its optimistic
-     * version stays monotonic. Regular web/legacy note flows still remove an
-     * otherwise empty day row.
-     */
-    @Transactional
-    public void syncPrimaryFromLegacy(AppUser user,
-                                      LocalDate date,
-                                      String content,
-                                      boolean preserveEmptyDayEntry) {
         List<DayNote> ordered = ordered(user, date);
         String normalized = normalizeNullableContent(content);
         if (ordered.isEmpty()) {
-            if (normalized == null) {
-                syncLegacyShadow(user, date, preserveEmptyDayEntry);
-                return;
-            }
+            if (normalized == null) return;
             DayNote note = new DayNote(user, date, normalized);
             note.setSortOrder(0);
             notes.saveAndFlush(note);
@@ -178,7 +160,7 @@ public class DayNoteService {
             }
         }
         normalizeOrders(user, date);
-        syncLegacyShadow(user, date, preserveEmptyDayEntry);
+        syncLegacyShadow(user, date);
     }
 
     private DayNote requireOwned(AppUser user, Long id) {
@@ -205,23 +187,13 @@ public class DayNoteService {
     }
 
     private void syncLegacyShadow(AppUser user, LocalDate date) {
-        syncLegacyShadow(user, date, false);
-    }
-
-    private void syncLegacyShadow(AppUser user,
-                                  LocalDate date,
-                                  boolean preserveEmptyDayEntry) {
         List<DayNote> ordered = ordered(user, date);
         String primary = ordered.isEmpty() ? null : legacyShadowText(ordered.get(0));
         DayEntry day = days.findByOwnerAndDate(user, date).orElse(null);
         if (day == null && !ordered.isEmpty()) day = new DayEntry(user, date);
         if (day == null) return;
         day.setNote(primary);
-        if (day.isEmpty() && !preserveEmptyDayEntry) {
-            days.delete(day);
-        } else {
-            days.save(day);
-        }
+        if (day.isEmpty()) days.delete(day); else days.save(day);
         days.flush();
     }
 

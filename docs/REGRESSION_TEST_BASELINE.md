@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.14.2.
+Status: v27.14.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.14.2 aligns the calendar persistence Playwright flow with Multiple Daily Notes: create the first concrete note through `POST /api/notes`, then await its debounced `PATCH /api/notes/{id}` while still proving month navigation and full reload persistence. Current application baseline: 91 Java test classes / 482 `@Test` methods and 22 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.14.0 adds independent Markdown notes per calendar date, a dedicated CRUD/order API, legacy primary-note compatibility, per-note export, offline snapshot reading and browser regression coverage. Current application baseline: 91 Java test classes / 482 `@Test` methods and 22 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -15,23 +15,6 @@ Historical extension: v27.2.30 adds host-nginx deployment, loopback publication 
 This release converts the successful v27.2.6 manual acceptance pass into an automated safety net. The goal is not a vanity coverage percentage; every test names a product promise that must remain true.
 
 
-
-
-## v27.14.2 Calendar Notes Persistence E2E Hotfix extension
-
-- `calendar-persistence.spec.js` creates the first note through the visible `#noteAdd` empty-state action.
-- The scenario awaits `POST /api/notes` followed by the debounced `PATCH /api/notes/{id}` instead of waiting for the retired legacy day-note `PUT`.
-- The same browser flow still protects shift selection, emoji persistence, month navigation and a full authoritative reload.
-- Flyway remains V36 and the production note/tombstone implementation is unchanged.
-
-
-## v27.14.1 Mobile Notes Tombstone Hotfix extension
-
-- `MobileSyncServiceTest.clearCreatesAVersionedTombstoneSoStaleOfflineCreatesCannotOverwriteIt` protects monotonic optimistic versions after clearing the last note.
-- `MobileSyncServiceTest.explicitClearFlagsWinOverValuesInTheSamePatch` protects clear precedence while retaining the empty v1 row.
-- `MobileSyncControllerTest.legacyClearDeletesEmptyRowWhileV1ClearKeepsVersionedTombstone` protects the intentional legacy/v1 behavioural split through real HTTP contracts.
-- `DayNoteService` receives an explicit `preserveEmptyDayEntry` policy only from versioned sync; normal note CRUD and legacy sync semantics remain unchanged.
-- Flyway remains V36.
 
 
 ## v27.14.0 Multiple Daily Notes extension

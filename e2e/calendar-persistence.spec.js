@@ -24,22 +24,8 @@ test('shift, emoji and note survive month navigation and full reload', async ({ 
   await emojiSaved;
 
   await openDayModule(page, 'notes');
-  const note = `# E2E ${Date.now()}
-Calendar persistence check`;
-
-  // Multiple Daily Notes keeps the editor hidden until a concrete note exists.
-  // Create it through the dedicated notes API, then wait for the debounced PATCH
-  // instead of the removed legacy PUT /api/days/{date} note contract.
-  const noteCreated = waitForApi(page, 'POST', '/api/notes', 201);
-  await page.locator('#noteAdd').click();
-  await noteCreated;
-
-  const noteSaved = page.waitForResponse(response => {
-    const url = new URL(response.url());
-    return response.request().method() === 'PATCH'
-      && /^\/api\/notes\/\d+$/.test(url.pathname)
-      && response.status() === 200;
-  });
+  const note = `# E2E ${Date.now()}\nCalendar persistence check`;
+  const noteSaved = waitForApi(page, 'PUT', `/api/days/${date}`);
   await page.locator('#noteEdit').fill(note);
   await noteSaved;
 
