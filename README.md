@@ -1,23 +1,21 @@
-> Current release: **v27.14.0 — Multiple Daily Notes**.
+> Current release: **v27.14.1 — Mobile Notes Tombstone Hotfix**.
 
 # DutyLog
 
-Current release: **v27.14.0 — Multiple Daily Notes**
+Current release: **v27.14.1 — Mobile Notes Tombstone Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.14.0 — Multiple Daily Notes
+## Текущая версия: v27.14.1 — Mobile Notes Tombstone Hotfix
 
-**v27.14.0** снимает ограничение «один день — одна заметка». На одну дату теперь можно создать несколько независимых Markdown-заметок с собственным названием, содержимым, закреплением и порядком. Редактирование или удаление одной записи не затрагивает соседние.
+**v27.14.1** закрывает конфликт между несколькими заметками и versioned tombstone Android API v1. Очистка последней заметки через `/api/v1/mobile/sync` сохраняет пустую строку дня и её возрастающую optimistic-версию, поэтому устаревшая offline-операция больше не может воскресить удалённый текст.
 
-Flyway V36 переносит существующий `day_entries.note` в первую самостоятельную заметку и сохраняет старое поле как compatibility shadow для старых web/mobile-клиентов. Новые API `/api/notes` и `/api/v1/notes` owner-scoped и защищены модулем Notes.
+Legacy `/api/mobile/sync` сохраняет прежнее поведение и удаляет полностью пустую строку. Независимые заметки, pin/reorder/delete, экспорт и offline snapshot из v27.14.0 не менялись.
 
-Календарь показывает количество заметок, полноэкранный редактор работает с активной записью, а ZIP-экспорт создаёт отдельный Markdown-файл для каждой заметки. Загруженный snapshot доступен для чтения офлайн; создание и изменение честно требуют подключения, пока полноценная offline-очередь заметок ещё не реализована.
+Flyway: **V1–V36**. Текущая автоматическая база: **91 Java-тестовый класс, 482 `@Test` метода и 22 Playwright browser scenario**.
 
-Flyway: **V1–V36**. Текущая автоматическая база: **91 Java-тестовый класс, 482 `@Test` метод и 22 Playwright browser scenario**.
-
-Временной фундамент зафиксирован релизами **v27.13.0 — Temporal Consistency & Legacy Cleanup**, **v27.12.1 — Midnight Projection Contract Hotfix**, **v27.12.0 — Zoned Daily Projection Engine**, **v27.11.4 — Task Deadline & Reminder Timezone Hotfix**, **v27.11.3 — Shift Template & Reminder Timezone Hotfix**, **v27.11.0 — Shift Occurrences & Calendar Projection**, **v27.9.0 — Overtime Interval Engine**.
+Релиз **v27.14.0 — Multiple Daily Notes** остаётся продуктовой основой этой серии; v27.14.1 исправляет только границу мобильной optimistic-синхронизации.
 
 ## История временного фундамента
 
@@ -28,6 +26,13 @@ Flyway: **V1–V36**. Текущая автоматическая база: **91
 - v27.9.2 — Overtime Ledger Integrity Hotfix
 - v27.9.3 — Overtime Preflight Integrity Hotfix
 - v27.9.4 — Overtime Split Projection Contract Hotfix
+- v27.9.0 — Overtime Interval Engine
+- v27.11.0 — Shift Occurrences & Calendar Projection
+- v27.11.3 — Shift Template & Reminder Timezone Hotfix
+- v27.11.4 — Task Deadline & Reminder Timezone Hotfix
+- v27.12.0 — Zoned Daily Projection Engine
+- v27.12.1 — Midnight Projection Contract Hotfix
+- v27.13.0 — Temporal Consistency & Legacy Cleanup
 - v27.10.0 — Task Details
 - v27.11.1 — CI & Contract Hotfix
 - v27.11.2 — E2E Stability Hotfix
@@ -335,7 +340,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.14.0 через полный Maven и Playwright gate, затем на staging проверить миграцию старой заметки, несколько заметок на одной дате, pin/reorder/delete, перезагрузку, мобильный payload и ZIP-экспорт.
+Следующий практический шаг — пропустить v27.14.1 через полный Maven и Playwright gate, затем на staging проверить legacy-clear, versioned tombstone, конфликт устаревшей offline-операции и обычные сценарии нескольких заметок.
 
 ## Служебный профиль администратора
 
