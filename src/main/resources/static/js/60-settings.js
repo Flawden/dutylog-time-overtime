@@ -3,7 +3,7 @@
  *
  * DutyLog uses ordered browser scripts, not ES modules yet.
  * Keep the order in index.html stable: 10-core → 20-data → 30-calendar
- * → 35-today → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
+ * → 35-today → 37-calendar-experience → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
  */
 
 /* ─── Управление типами смен ────────────────────────────────── */
@@ -254,9 +254,16 @@ async function goto(y, m){
   applyModuleVisibility();
   renderCalendar();
 }
-$("prev").addEventListener("click", () => goto(state.y, state.m - 1));
-$("next").addEventListener("click", () => goto(state.y, state.m + 1));
+$("prev").addEventListener("click", () => {
+  if (typeof calendarExperienceHeaderNavigate === "function" && calendarExperienceHeaderNavigate(-1)) return;
+  goto(state.y, state.m - 1);
+});
+$("next").addEventListener("click", () => {
+  if (typeof calendarExperienceHeaderNavigate === "function" && calendarExperienceHeaderNavigate(1)) return;
+  goto(state.y, state.m + 1);
+});
 $("todayBtn").addEventListener("click", async () => {
+  if (typeof calendarExperienceHeaderToday === "function" && calendarExperienceHeaderToday()) return;
   const t = new Date();
   await goto(t.getFullYear(), t.getMonth());
   selectDay(todayKey());

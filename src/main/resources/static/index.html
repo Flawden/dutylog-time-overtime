@@ -8,9 +8,9 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.16.3"></script>
-<link href="app.css?v=27.16.3" rel="stylesheet"/>
-<link href="design-system.css?v=27.16.3" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.17.0"></script>
+<link href="app.css?v=27.17.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.17.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -149,6 +149,32 @@
   </div>
 </section>
 <section class="view" id="view-calendar">
+<div class="calendarExperience" id="calendarExperience">
+  <div class="calendarExperienceBar" aria-label="Масштаб календаря">
+    <div class="calendarModeSwitch" role="group" aria-label="Масштаб календаря">
+      <button type="button" data-calendar-mode="month" aria-pressed="true">Месяц</button>
+      <button type="button" data-calendar-mode="week" aria-pressed="false">Неделя</button>
+      <button type="button" data-calendar-mode="day" aria-pressed="false">День</button>
+    </div>
+    <div class="calendarFocusLabel" id="calendarFocusLabel">—</div>
+  </div>
+  <section class="calendarWeekExperience" id="calendarWeekExperience" hidden aria-label="Недельный календарь">
+    <div class="calendarWeekStrip" id="calendarWeekStrip"></div>
+    <div class="calendarWeekAgenda" id="calendarWeekAgenda"></div>
+  </section>
+  <section class="calendarDayExperience" id="calendarDayExperience" hidden aria-label="Почасовой календарь дня">
+    <div class="calendarDayHeader">
+      <div><div class="eyebrow">День</div><h2 id="calendarDayTitle">—</h2><div id="calendarDaySubtitle" class="calendarDaySubtitle"></div></div>
+      <button type="button" id="calendarDayOpenDetails">Все детали дня</button>
+    </div>
+    <div class="calendarAllDay" id="calendarAllDay" hidden></div>
+    <div class="calendarTimeline" id="calendarTimeline" aria-label="Почасовая шкала">
+      <div class="calendarTimelineHours" id="calendarTimelineHours"></div>
+      <div class="calendarTimelineCanvas" id="calendarTimelineCanvas"></div>
+    </div>
+  </section>
+</div>
+<div id="calendarMonthExperience">
 <div class="layout" id="layout">
 <div class="card">
 <div class="wd">
@@ -301,6 +327,7 @@
 </div>
 </details>
 <div class="dayModulesHint" id="dayModulesHint" hidden=""></div>
+</div>
 </div>
 </div>
 </section>
@@ -851,7 +878,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.16.3</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.17.0</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -1378,13 +1405,14 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.16.3"></script>
-<script src="js/20-data.js?v=27.16.3"></script>
-<script src="js/30-calendar.js?v=27.16.3"></script>
-<script src="js/35-today.js?v=27.16.3"></script>
-<script src="js/40-overtime.js?v=27.16.3"></script>
-<script src="js/50-tasks.js?v=27.16.3"></script>
-<script src="js/60-settings.js?v=27.16.3"></script>
-<script src="js/70-user-boot.js?v=27.16.3"></script>
+<script src="js/10-core.js?v=27.17.0"></script>
+<script src="js/20-data.js?v=27.17.0"></script>
+<script src="js/30-calendar.js?v=27.17.0"></script>
+<script src="js/35-today.js?v=27.17.0"></script>
+<script src="js/37-calendar-experience.js?v=27.17.0"></script>
+<script src="js/40-overtime.js?v=27.17.0"></script>
+<script src="js/50-tasks.js?v=27.17.0"></script>
+<script src="js/60-settings.js?v=27.17.0"></script>
+<script src="js/70-user-boot.js?v=27.17.0"></script>
 </body>
 </html>

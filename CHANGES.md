@@ -1,3 +1,13 @@
+# v27.17.0 — Calendar Mobile Experience
+
+- Added a persistent Month / Week / Day calendar scale for DutyLog Next.
+- Added a mobile week strip, selected-day agenda and swipe navigation.
+- Added an hourly day timeline for shifts, timed tasks, reminders and overtime, plus all-day items and a live current-time marker.
+- Connected Today Dashboard cards and date strip to the hourly day view while preserving the full legacy day editor.
+- Reused the existing authoritative calendar/task/overtime stores; no parallel API or persistence model was introduced.
+- Kept Classic as an immediate fallback and preserved all business logic.
+- No schema or backend API change; Flyway remains V36. Regression baseline: 94 Java test classes, 492 `@Test` methods and 25 Playwright scenarios.
+
 # v27.16.3 — Time Settings Transaction Hotfix
 
 - Preserved unsaved shift-template form values while a timezone save continues background calendar/task/ledger refreshes.

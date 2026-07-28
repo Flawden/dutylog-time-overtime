@@ -1,14 +1,24 @@
 # DutyLog regression test baseline
 
-Status: v27.16.3.
+Status: v27.17.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.16.3 preserves shift-template drafts during asynchronous timezone refreshes and serializes debounced/manual built-in updates. Current application baseline: 93 Java test classes / 489 `@Test` methods and 24 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.17.0 adds persistent Month / Week / Day calendar scales and an hourly mobile day timeline without duplicating domain data. Current application baseline: 94 Java test classes / 492 `@Test` methods and 25 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
+
+
+## v27.17.0 Calendar Mobile Experience extension
+
+- Month / Week / Day scale state and focused date survive reload as local UI preferences.
+- Week mode exposes seven date targets and a selected-day agenda.
+- Day mode projects immutable shift segments, tasks, reminders and overtime into one hourly timeline.
+- Today Dashboard opens the Day scale; the complete selected-day editor and Classic remain fallbacks.
+- `CalendarMobileExperienceFrontendContractTest` and `calendar-mobile-experience.spec.js` protect the new layer.
+- No schema or backend API change; Flyway remains V36.
 
 ## v27.16.3 Time Settings Transaction Hotfix extension
 

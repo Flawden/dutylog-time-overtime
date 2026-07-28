@@ -9,13 +9,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.16.3}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.17.0}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
   "js/20-data.js"
   "js/30-calendar.js"
   "js/35-today.js"
+  "js/37-calendar-experience.js"
   "js/40-overtime.js"
   "js/50-tasks.js"
   "js/60-settings.js"
@@ -116,13 +117,27 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.16.3"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.16.3."
+contains docs/API.md "# DutyLog API v27.17.0"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.17.0."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
 contains src/main/resources/static/js/60-settings.js "preserveShiftDefaults = timeSettingsDefaultsDirty()"
 contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFrontendContractTest.java "let timeSettingsApplyQueue = Promise.resolve();"
+
+  # v27.17.0 Calendar Mobile Experience
+contains CHANGES.md "v27.17.0 — Calendar Mobile Experience"
+contains README.md "v27.17.0 — Calendar Mobile Experience"
+contains docs/CALENDAR_MOBILE_EXPERIENCE_V27.17.0.md "Calendar Mobile Experience"
+contains src/main/resources/static/index.html 'data-calendar-mode="month"'
+contains src/main/resources/static/index.html 'data-calendar-mode="week"'
+contains src/main/resources/static/index.html 'data-calendar-mode="day"'
+contains src/main/resources/static/index.html 'js/37-calendar-experience.js?v=27.17.0'
+contains src/main/resources/static/js/37-calendar-experience.js 'dutylog.calendar.mode.v1'
+contains src/main/resources/static/js/37-calendar-experience.js 'calendarExperienceOpenLegacyDetails'
+contains src/main/resources/static/js/35-today.js 'calendarExperienceOpen(date, mode)'
+contains e2e/calendar-mobile-experience.spec.js 'calendar switches month week and hourly day'
+contains src/test/java/ru/daniil/shifts/web/CalendarMobileExperienceFrontendContractTest.java 'class CalendarMobileExperienceFrontendContractTest'
 
 if grep -R "result.put(\"version\", \"" -n src/main/java >/tmp/dutylog-version-hardcode.txt; then
   cat /tmp/dutylog-version-hardcode.txt >&2
@@ -190,6 +205,7 @@ expected = [
     'js/20-data.js',
     'js/30-calendar.js',
     'js/35-today.js',
+    'js/37-calendar-experience.js',
     'js/40-overtime.js',
     'js/50-tasks.js',
     'js/60-settings.js',
@@ -618,7 +634,7 @@ contains docs/RELEASE_CANDIDATE.md "v27.2.5 — Calendar day identity hotfix"
 contains docs/USER_GUIDE.md "Status: v27.2.5."
 contains docs/PRODUCTION_DEPLOY.md "same GHCR digest that already passed staging"
 contains docs/BACKUP_RESTORE.md "Status: v27.2.30."
-contains docs/RELEASE_CHECKLIST.md "git tag -a v27.16.3"
+contains docs/RELEASE_CHECKLIST.md "git tag -a v27.17.0"
 
 # v27.2.5 calendar persistence regression guards
 contains src/main/resources/static/js/30-calendar.js "api.month(requestedYear, requestedMonth, { fresh:true })"
@@ -1020,7 +1036,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.0"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1073,7 +1089,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.0"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1095,7 +1111,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.0"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1190,7 +1206,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.0"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -1349,7 +1365,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.10.0 — Task Details"
 contains README.md "v27.10.0 — Task Details"
 contains docs/TASK_DETAILS_V27.10.0.md "read-first"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.0"
 contains src/main/resources/db/migration/postgresql/V32__task_details.sql "ADD COLUMN description"
 contains src/main/java/ru/daniil/shifts/model/DayTask.java "private String description"
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "public TaskDto get(AppUser user, Long id)"
@@ -1370,7 +1386,7 @@ contains e2e/task-details.spec.js 'task details separate reading from editing an
 contains CHANGES.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains README.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md "immutable absolute occurrence"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.0"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_start_instant"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_source_timezone"
 contains src/main/java/ru/daniil/shifts/model/DayEntry.java "captureShiftOccurrence"
@@ -1390,7 +1406,7 @@ contains e2e/important-timezone.spec.js "a timezone projection can move a late s
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.16.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.0"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1486,7 +1502,7 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "24" ]]; then
+if [[ "$E2E_TESTS" == "25" ]]; then
   # v27.11.1 CI & Contract Hotfix
 contains CHANGES.md "v27.11.1 — CI & Contract Hotfix"
 contains README.md "v27.11.1 — CI & Contract Hotfix"
@@ -1654,30 +1670,30 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.16.3"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.16.3."
+contains docs/API.md "# DutyLog API v27.17.0"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.17.0."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
 contains src/main/resources/static/js/60-settings.js "preserveShiftDefaults = timeSettingsDefaultsDirty()"
 contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFrontendContractTest.java "let timeSettingsApplyQueue = Promise.resolve();"
 
-  ok "Playwright test baseline: 24"
+  ok "Playwright test baseline: 25"
 else
-  fail "expected 24 Playwright tests, found $E2E_TESTS"
+  fail "expected 25 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "489" ]]; then
-  ok "test method baseline: 489"
+if [[ "$TEST_METHODS" == "492" ]]; then
+  ok "test method baseline: 492"
 else
-  fail "expected 489 @Test methods, found $TEST_METHODS"
+  fail "expected 492 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "93" ]]; then
-  ok "test class baseline: 93"
+if [[ "$TEST_CLASSES" == "94" ]]; then
+  ok "test class baseline: 94"
 else
-  fail "expected 93 test classes, found $TEST_CLASSES"
+  fail "expected 94 test classes, found $TEST_CLASSES"
 fi
 
 echo

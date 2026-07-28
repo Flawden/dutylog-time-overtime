@@ -1,31 +1,36 @@
-> Current release: **v27.16.3 — Time Settings Transaction Hotfix**.
+> Current release: **v27.17.0 — Calendar Mobile Experience**.
 
 # DutyLog
 
-Current release: **v27.16.3 — Time Settings Transaction Hotfix**
+Current release: **v27.17.0 — Calendar Mobile Experience**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.16.3 — Time Settings Transaction Hotfix
+## Текущая версия: v27.17.0 — Calendar Mobile Experience
 
-**v27.16.3** закрывает последнюю воспроизводимую гонку настроек времени, из-за которой единственный Playwright-сценарий продолжал получать `10:30` вместо введённых `08:30`.
+**v27.17.0** превращает календарь DutyLog Next из одного месячного экрана в единое пространство времени:
 
-Проблема состояла из двух независимых асинхронных процессов: сохранение часового пояса продолжало обновлять календарь и повторно рендерить форму уже после ответа `/api/profile`, а автоматическое применение шаблонов могло быть уже запущено к моменту ручного нажатия. Простая отмена ожидающего debounce из v27.16.2 не могла остановить уже выполняющийся запрос.
+```text
+Месяц → Неделя → День
+```
 
-Теперь несохранённый пользовательский ввод переживает фоновые перерисовки, а применения встроенных смен сериализованы. Более старый autosave не может перерисовать или победить более новое ручное сохранение.
+Недельный режим показывает семь дней, смены и ключевые сигналы. Дневной режим собирает на почасовой шкале смены, задачи со временем, напоминания и переработки. Выбранная дата и масштаб сохраняются после перезагрузки, стрелки в шапке меняют смысл в зависимости от масштаба, а свайп позволяет перемещаться одной рукой.
 
-Backend API и схема данных не менялись; Flyway остаётся **V1–V36**. Автоматическая база: **93 Java-тестовых класса, 489 `@Test` методов и 24 Playwright browser scenario**.
+Новая оболочка не создаёт параллельную модель календаря: она использует существующие immutable shift occurrences, задачи, важные даты, заметки, уведомления и FIFO-журнал переработок. Полный редактор выбранного дня и Classic остаются доступны как безопасный fallback.
+
+Backend API и схема данных не менялись; Flyway остаётся **V1–V36**. Автоматическая база: **94 Java-тестовых класса, 492 `@Test` метода и 25 Playwright browser scenarios**.
 
 Предыдущие продуктовые релизы:
 
-- **v27.16.2 — Next Route & Time Settings E2E Hotfix** — выровнял E2E с Today-first навигацией и отменял ожидающий debounce;
-- **v27.16.1 — Today Runtime & Repository Truth Hotfix** — устранил общий `openQuickActions` load-order crash;
-- **v27.16.0 — Today Dashboard** — ежедневный рабочий экран, смена, переработки, задачи, даты и быстрые действия;
-- **v27.15.0 — Design System & Mobile Shell Foundation** — токены, фирменная оболочка, нижняя навигация и Classic fallback;
-- **v27.14.2 — Calendar Notes Persistence E2E Hotfix** — новый Notes CRUD в календарной регрессии;
-- **v27.14.1 — Mobile Notes Tombstone Hotfix** — сохраняет versioned tombstone Android API v1;
-- **v27.14.0 — Multiple Daily Notes** — независимые заметки, pin/reorder/delete и offline snapshot.
+- **v27.16.3 — Time Settings Transaction Hotfix** — сериализовал ручное и автоматическое применение времени;
+- **v27.16.2 — Next Route & Time Settings E2E Hotfix** — выровнял E2E с Today-first навигацией;
+- **v27.16.1 — Today Runtime & Repository Truth Hotfix** — устранил `openQuickActions` load-order crash;
+- **v27.16.0 — Today Dashboard** — ежедневный рабочий экран;
+- **v27.15.0 — Design System & Mobile Shell Foundation** — токены, новая оболочка и Classic fallback.
+- **v27.14.2 — Calendar Notes Persistence E2E Hotfix** — закрепил новый Notes CRUD в календарной регрессии;
+- **v27.14.1 — Mobile Notes Tombstone Hotfix** — сохранил versioned tombstone Android API v1;
+- **v27.14.0 — Multiple Daily Notes** — добавил независимые заметки, pin/reorder/delete и offline snapshot.
 
 ## История временного фундамента
 
@@ -271,6 +276,7 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
+- [`docs/CALENDAR_MOBILE_EXPERIENCE_V27.17.0.md`](docs/CALENDAR_MOBILE_EXPERIENCE_V27.17.0.md) — контракт месяца, недели и почасового дня.
 - [`docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md`](docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md) — защита черновика формы и сериализация ручного/автоматического применения времени.
 - [`docs/NEXT_ROUTE_TIME_SETTINGS_E2E_HOTFIX_V27.16.2.md`](docs/NEXT_ROUTE_TIME_SETTINGS_E2E_HOTFIX_V27.16.2.md) — выравнивание E2E с Today route и базовая отмена debounce.
 - [`docs/TODAY_RUNTIME_HOTFIX_V27.16.1.md`](docs/TODAY_RUNTIME_HOTFIX_V27.16.1.md) — причина каскадного падения Playwright и контракт исправления forward-reference между frontend bundles.
@@ -354,7 +360,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.16.3 через полный Maven и Playwright gate, затем подтвердить `/actuator/info` на staging и принять Today на телефоне и desktop. После этого продуктовая линия переходит к **v27.17.0 — Calendar Mobile Experience**: месяц → неделя → почасовой день.
+Следующий практический шаг — пропустить v27.17.0 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и принять три масштаба на телефоне и desktop. После этого продуктовая линия переходит к **v27.18.0 — Overtime Next**.
 
 ## Служебный профиль администратора
 

@@ -1,35 +1,34 @@
 # Roadmap до полноценного продукта
 
-## Текущая продуктовая точка — Today Dashboard стабилизирован
+Current release: **v27.17.0 — Calendar Mobile Experience**.
 
-Статус: **v27.16.3** стабилизирует транзакцию настроек времени: пользовательский черновик не теряется при фоновой перерисовке, а ручное применение всегда новее autosave.
+## Текущая продуктовая точка — Calendar Mobile Experience
+
+Статус: **v27.17.0** соединяет Month / Week / Day в один календарный опыт DutyLog Next.
 
 Сделано к текущей точке:
 
 - Design System & Mobile Shell Foundation с безопасным Classic fallback;
-- Today Dashboard как основной маршрут DutyLog Next;
-- immutable shift occurrences и timezone-проекция календаря;
-- поминутный overtime/FIFO с дневной проекцией;
-- задачи, подзадачи, Inbox и task details;
-- несколько независимых заметок на день;
-- offline snapshot и очередь синхронизации;
-- staging CI/CD, backup/restore и immutable images;
-- исправлен load-order runtime-регресс `35-today.js → 50-tasks.js`;
-- E2E-сценарии открывают календарь и скрытые legacy-workspace явно, не полагаясь на старый default route;
-- ручное и автоматическое применение времени сериализованы; фоновые refresh не перезаписывают несохранённый ввод;
-- Flyway V1–V36, Java 17, 93 Java test classes / 489 tests / 24 Playwright scenarios.
+- Today Dashboard как основной маршрут;
+- недельная лента и выбранный день;
+- почасовой день со сменами, задачами, напоминаниями и переработками;
+- переходы Today → Day и возврат в полный редактор дня;
+- immutable shift occurrences и timezone-проекция;
+- поминутный overtime/FIFO;
+- задачи, подзадачи, Inbox, важные даты и несколько заметок;
+- offline snapshot, staging CI/CD и backup/restore;
+- Flyway V1–V36, Java 17, 94 Java test classes / 492 tests / 25 Playwright scenarios.
 
-Следующий продуктовый этап: **v27.17.0 — Calendar Mobile Experience**.
+Следующий продуктовый этап: **v27.18.0 — Overtime Next**.
 
 Цель этапа:
 
-- ясное переключение `месяц → неделя → день`;
-- мобильная недельная лента;
-- почасовой экран выбранного дня;
-- единая навигация между Today Dashboard и календарными масштабами;
-- сохранение текущих shift/task/note/overtime контрактов без параллельной модели данных.
+- перевести журнал переработок на новый визуальный язык;
+- сделать понятнее баланс, FIFO-историю и детализацию списаний;
+- улучшить мобильное добавление начисления и отгула;
+- сохранить точные интервалы и provenance без изменения расчётного ядра.
 
-После Calendar Mobile Experience: **Insights**, отчёты и внешняя календарная синхронизация.
+После Overtime Next: **Tasks & Inbox Next**, затем Notes / Important Days / Profile.
 
 ## Этап 1 — production foundation
 

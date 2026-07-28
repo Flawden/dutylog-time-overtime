@@ -3,7 +3,7 @@
  *
  * DutyLog uses ordered browser scripts, not ES modules yet.
  * Keep the order in index.html stable: 10-core → 20-data → 30-calendar
- * → 35-today → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
+ * → 35-today → 37-calendar-experience → 40-overtime → 50-tasks → 60-settings → 70-user-boot.
  */
 
 /* ─── Загрузка данных ───────────────────────────────────────── */
@@ -185,6 +185,7 @@ async function init(){
   if (moduleEnabled("overtime")) await loadLedgerPage(true);
   if (moduleEnabled("tasks")) await Promise.all([loadTaskBoard(true), loadTaskMetadata(true), loadInbox(true)]);
   applyModuleVisibility();
+  if (typeof calendarExperienceRestoreFocus === "function") await calendarExperienceRestoreFocus();
   renderCalendar();
   clearBootFailsafe();
   setAppBooting(false);

@@ -26,7 +26,9 @@ test('Today Dashboard composes the day and opens existing feature flows', async 
 
   await page.locator('#todayOpenCalendar').click();
   await expect(page.locator('#view-calendar')).toBeVisible();
-  await expect(page.locator(`#grid [data-date="${date}"]`)).toHaveClass(/sel/);
+  await expect(page.locator('#calendarDayExperience')).toBeVisible();
+  await expect(page.locator('[data-calendar-mode="day"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#calendarDayTitle')).not.toHaveText('—');
 
   await page.locator('.brandLockup').click();
   await expect(page.locator('#view-today')).toBeVisible();

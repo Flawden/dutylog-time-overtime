@@ -341,16 +341,20 @@ function renderTodayDashboard(){
   }
 }
 
-async function openTodayCalendarDate(date){
+async function openTodayCalendarDate(date, mode = "day"){
   if (!date) return;
+  if (typeof calendarExperienceOpen === "function" && mode !== "panel") {
+    await calendarExperienceOpen(date, mode);
+    return;
+  }
   const { year, month } = todayDashboardDateParts(date);
   await goto(year, month - 1);
   location.hash = "#calendar";
   selectDay(date);
 }
 
-$("todayOpenCalendar")?.addEventListener("click", () => openTodayCalendarDate(todayKey()));
-$("todayOpenShiftDay")?.addEventListener("click", event => openTodayCalendarDate(event.currentTarget.dataset.date || todayKey()));
+$("todayOpenCalendar")?.addEventListener("click", () => openTodayCalendarDate(todayKey(), "day"));
+$("todayOpenShiftDay")?.addEventListener("click", event => openTodayCalendarDate(event.currentTarget.dataset.date || todayKey(), "day"));
 $("todayOpenOvertime")?.addEventListener("click", () => { location.hash = "#overtime"; });
 $("todayOpenTasks")?.addEventListener("click", () => { location.hash = "#tasks"; });
 $("todayOpenImportant")?.addEventListener("click", () => { location.hash = "#important"; });
@@ -359,7 +363,7 @@ $("todayQuickCredit")?.addEventListener("click", () => openOvertimeCreditModal(t
 $("todayQuickMore")?.addEventListener("click", () => openQuickActions());
 $("todayQuickNote")?.addEventListener("click", async () => {
   const date = todayKey();
-  await openTodayCalendarDate(date);
+  await openTodayCalendarDate(date, "panel");
   $("accNote").open = true;
   await createDayNote("");
 });
