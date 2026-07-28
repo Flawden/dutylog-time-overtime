@@ -21,6 +21,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 SMOKE_TEST = ROOT / "deploy" / "scripts" / "smoke-test.sh"
 STATIC_JS = [
     "js/10-core.js",
+    "js/12-ui-platform.js",
     "js/20-data.js",
     "js/30-calendar.js",
     "js/35-today.js",
@@ -29,6 +30,20 @@ STATIC_JS = [
     "js/50-tasks.js",
     "js/60-settings.js",
     "js/70-user-boot.js",
+]
+
+STATIC_CSS = [
+    "app.css",
+    "design-system.css",
+    "ui/tokens.css",
+    "ui/themes/dutylog-default.css",
+    "ui/themes/midnight.css",
+    "ui/themes/oled.css",
+    "ui/themes/forest.css",
+    "ui/themes/sunset.css",
+    "ui/themes/industrial.css",
+    "ui/themes/soft-purple.css",
+    "ui/platform.css",
 ]
 
 
@@ -71,13 +86,15 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 else:
                     self._send(401, '{"code":"AUTH_REQUIRED"}', "application/json")
                 return
-            assets = "".join(f'<script src="/{asset}?v={VERSION}"></script>' for asset in STATIC_JS)
+            scripts = "".join(f'<script src="/{asset}?v={VERSION}"></script>' for asset in STATIC_JS)
+            styles = "".join(f'<link href="/{asset}?v={VERSION}" rel="stylesheet">' for asset in STATIC_CSS)
             # Large multiline output reproduces the former `echo "$APP_HTML" | grep -q`
             # SIGPIPE/141 failure under `set -o pipefail` after an early match.
             padding = "deployment-smoke-padding\n" * 20000
             body = (
-                f'<html><head><link href="app.css?v={VERSION}" rel="stylesheet"></head>'
-                f'<body>DutyLog\n{assets}\n{padding}</body></html>'
+                f'<html><head>{styles}</head>'
+                f'<body>DutyLog<select id="uiWorkspace"></select><select id="uiLayout"></select>'
+                f'\n{scripts}\n{padding}</body></html>'
             )
             self._send(200, body, "text/html")
             return
@@ -87,7 +104,7 @@ class Handler(http.server.BaseHTTPRequestHandler):
         if path == "/service-worker.js":
             self._send(200, f'const CACHE_NAME = "dutylog-shell-v{VERSION}";', "application/javascript")
             return
-        if path == "/app.css":
+        if path in {f"/{asset}" for asset in STATIC_CSS}:
             if not self._authenticated():
                 self._send(401, '{"code":"AUTH_REQUIRED"}', "application/json")
             else:
@@ -128,6 +145,12 @@ class Handler(http.server.BaseHTTPRequestHandler):
                 self._send(401, '{"code":"AUTH_REQUIRED"}', "application/json")
             else:
                 self._send(200, f'const DUTYLOG_VERSION = "{VERSION}";', "application/javascript")
+            return
+        if path == "/js/12-ui-platform.js":
+            if not self._authenticated():
+                self._send(401, '{"code":"AUTH_REQUIRED"}', "application/json")
+            else:
+                self._send(200, '"use strict"; window.DutyLogUI = api;', "application/javascript")
             return
         if path in {f"/{asset}" for asset in STATIC_JS[1:]}:
             if not self._authenticated():

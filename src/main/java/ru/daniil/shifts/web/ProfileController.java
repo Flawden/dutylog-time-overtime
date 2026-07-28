@@ -24,10 +24,13 @@ import java.time.LocalDate;
 import java.time.DateTimeException;
 import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Профиль пользователя: отображаемое имя, день рождения, смена пароля.
@@ -241,6 +244,14 @@ public class ProfileController {
         out.put("density", safeEnum(input.get("density"), "comfortable", "compact", "comfortable", "spacious"));
         out.put("shellMode", safeEnum(input.get("shellMode"), "next", "next", "classic"));
         out.put("cardRadius", clampInt(input.get("cardRadius"), 14, 6, 28));
+        out.put("uiContract", clampInt(input.get("uiContract"), 1, 1, 1));
+        out.put("workspaceId", safeEnum(input.get("workspaceId"), "shift-worker", "shift-worker", "planner", "minimal"));
+        out.put("layoutId", safeEnum(input.get("layoutId"), "dashboard", "dashboard", "compact", "focus"));
+        out.put("themeId", safeEnum(input.get("themeId"), "default", "default", "custom", "midnight", "oled", "forest", "sunset", "industrial", "softPurple"));
+        out.put("paletteId", safeEnum(input.get("paletteId"), "theme", "theme", "gold-teal", "teal-gold", "violet", "ember", "custom"));
+        out.put("decorationId", safeEnum(input.get("decorationId"), "none", "none"));
+        out.put("accentSecondary", safeColor(input.get("accentSecondary"), "#14CDB4"));
+        out.put("todayWidgets", safeStringList(input.get("todayWidgets"), "shift", "overtime", "tasks", "important"));
         return out;
     }
 
@@ -267,6 +278,17 @@ public class ProfileController {
             catch (NumberFormatException e) { n = fallback; }
         }
         return Math.max(min, Math.min(max, n));
+    }
+
+    private List<String> safeStringList(Object value, String... allowed) {
+        if (!(value instanceof Collection<?> collection)) return List.of();
+        Set<String> allowedValues = Set.of(allowed);
+        LinkedHashSet<String> result = new LinkedHashSet<>();
+        for (Object item : collection) {
+            String candidate = item == null ? "" : item.toString().trim();
+            if (allowedValues.contains(candidate)) result.add(candidate);
+        }
+        return List.copyOf(result);
     }
 
 

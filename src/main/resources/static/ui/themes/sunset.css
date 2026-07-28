@@ -1,0 +1,16 @@
+/* Theme package: Sunset — isolated UI Core contract v1. */
+html[data-ui-theme="sunset"] {
+  --color-background:#1C1413;
+  --color-surface:#2A1B19;
+  --color-surface-elevated:#35231F;
+  --color-text-primary:#FFF0E8;
+  --color-text-secondary:#C9A397;
+  --color-border:#4A302A;
+  --bg:var(--color-background);
+  --panel:var(--color-surface);
+  --panel2:var(--color-surface-elevated);
+  --text:var(--color-text-primary);
+  --mut:var(--color-text-secondary);
+  --line:var(--color-border);
+  color-scheme:dark;
+}

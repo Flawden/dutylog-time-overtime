@@ -1,37 +1,36 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.17.2 — Calendar Timeline Readability Hotfix**.
+Current release: **v27.17.4 — UI Core & Workspace Foundation**.
 
-## Текущая продуктовая точка — Calendar Timeline Readability
+## Текущая продуктовая точка — UI Core v1
 
-Статус: **v27.17.2** завершает первый цикл desktop/mobile стабилизации Calendar Mobile Experience.
+Статус: **v27.17.4** завершает выделение первого независимого UI-фундамента поверх общей бизнес-логики DutyLog.
 
 Сделано к текущей точке:
 
-- Design System & Mobile Shell Foundation с безопасным Classic fallback;
-- Today Dashboard как основной маршрут;
-- Month / Week / Day и почасовой календарь;
-- важные даты вынесены в явную зону «Весь день» и больше не дублируются как ложное временное событие;
-- редактор нескольких заметок адаптируется к ширине собственной панели через container queries;
-- срок задачи поддерживает любую минуту, а не только пятиминутный шаг;
-- короткие timed-события на desktop сохраняют две читаемые строки и не перекрывают соседние lane-события;
-- immutable shift occurrences и timezone-проекция;
-- поминутный overtime/FIFO;
-- задачи, подзадачи, Inbox, важные даты и несколько заметок;
+- Design System, Today Dashboard и Month / Week / Day;
+- единый UI Core contract v1;
+- декларативные registry для workspace, layout, theme, palette, decorations, screens и Today widgets;
+- рабочие окружения `Shift Worker`, `Planner`, `Minimal`;
+- компоновки `Dashboard`, `Compact`, `Focus`;
+- независимые CSS-пакеты встроенных тем и отдельный слой палитры;
+- pre-paint bootstrap без shell/theme/layout flash;
+- автоматическое сохранение внешнего вида с debounce, ревизиями и очередью;
+- безопасный whitelist UI-параметров в профиле;
+- Classic остаётся аварийным fallback;
+- immutable shift occurrences, timezone-проекция, поминутный overtime/FIFO, задачи, Inbox, важные даты и несколько заметок;
 - offline snapshot, staging CI/CD и backup/restore;
-- Flyway V1–V36, Java 17, 94 Java test classes / 492 tests / 25 Playwright scenarios.
+- Flyway V1–V36, Java 17, 95 Java test classes / 496 tests / 25 Playwright scenarios.
 
-Следующий архитектурный этап: **v27.17.3 — UI Core & Workspace Foundation**.
+Следующий архитектурный этап: **v27.17.5 — Classic Sunset**.
 
 Цель этапа:
 
-- отделить UI Core от конкретной оболочки;
-- выделить независимые workspace, layout, theme, palette и decorations;
-- подготовить безопасные theme contracts и container-aware компоненты;
-- превратить DutyLog Next из надстройки в стандартную конфигурацию общего UI Core;
-- подготовить последующий **v27.17.4 — Classic Sunset** без потери общих компонентов.
-
-После UI Core и Classic Sunset: **v27.18.0 — Overtime Next**, затем Tasks & Inbox Next, Notes / Important Days Next и Vacation Planner.
+- извлечь последние общие Classic-зависимости в UI Core;
+- мигрировать сохранённый `shellMode=classic` в `next`;
+- удалить Classic-only маршруты, CSS и настройки;
+- заменить внутренний fallback на Git/Docker rollback;
+- оставить одну интерфейсную матрицу перед `v27.18.0 — Overtime Next`.
 
 ## Этап 1 — production foundation
 
@@ -222,4 +221,5 @@ API уже достаточно стабилен для первого Android-�
 - `v27.17.4` — UI Core & Workspace Foundation.
 - `v27.17.5` — Classic Sunset.
 - `v27.18.0` — Overtime Next.
+- `v27.19.0` — Tasks & Inbox Next, including independent planned task intervals (`start → end`), duration, deadlines and timeline cards.
 - `v27.20.0` — Notes & Important Events Next, including all-day/timed/multi-day events, place, description, reminders and read-first event cards.

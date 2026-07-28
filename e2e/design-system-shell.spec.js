@@ -3,10 +3,13 @@ const { registerAndOnboard } = require('./helpers');
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-test('DutyLog Next mobile shell stays usable and Classic remains an instant fallback', async ({ page }) => {
+test('UI Core workspace stays persistent while Classic remains an instant fallback', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'shell' });
 
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'next');
+  await expect(page.locator('html')).toHaveAttribute('data-ui-contract', '1');
+  await expect(page.locator('html')).toHaveAttribute('data-ui-workspace', 'shift-worker');
+  await expect(page.locator('html')).toHaveAttribute('data-ui-layout', 'dashboard');
   await expect(page.locator('#nextTopbar')).toBeVisible();
   await expect(page.locator('#tabbar a:visible .navIcon')).toHaveCount(5);
   await expect(page.locator('#tabbar a[data-view="today"]')).toHaveAttribute('aria-current', 'page');
@@ -23,6 +26,24 @@ test('DutyLog Next mobile shell stays usable and Classic remains an instant fall
   await expect(page.locator('#view-settings')).toBeVisible();
   await page.locator('#appearanceCard .settingsHead').click();
   await expect(page.locator('[data-shell-choice="classic"]')).toBeVisible();
+  await expect(page.locator('#uiPlatformStatus')).toContainText('UI Core v1');
+
+  await page.locator('#uiWorkspace').selectOption('planner');
+  await expect(page.locator('html')).toHaveAttribute('data-ui-workspace', 'planner');
+  await expect(page.locator('#tabbar a:visible').nth(1)).toHaveAttribute('data-view', 'tasks');
+
+  await page.locator('#uiLayout').selectOption('compact');
+  await expect(page.locator('html')).toHaveAttribute('data-ui-layout', 'compact');
+
+  await page.locator('#uiPalette').selectOption('violet');
+  await expect(page.locator('html')).toHaveAttribute('data-ui-palette', 'violet');
+  await expect(page.locator('#appearanceMsg')).toContainText(/Сохранено автоматически|Saved automatically/);
+
+  await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-ui-workspace', 'planner');
+  await expect(page.locator('html')).toHaveAttribute('data-ui-layout', 'compact');
+  await expect(page.locator('html')).toHaveAttribute('data-ui-palette', 'violet');
+  await page.locator('#appearanceCard .settingsHead').click();
 
   await page.locator('[data-shell-choice="classic"]').click();
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'classic');

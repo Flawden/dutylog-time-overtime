@@ -314,6 +314,7 @@ function applyModuleVisibility(){
   if (location.hash === "#settings-notifications" && !moduleEnabled("notifications")) location.hash = "#settings-modules";
   if (location.hash === "#important" && !moduleEnabled("important_dates")) location.hash = "#calendar";
   renderModuleSettings();
+  window.DutyLogUI?.apply?.(state.preferences, normalizeThemeConfig(state.preferences?.themeConfig));
 }
 async function loadModules(){
   try {

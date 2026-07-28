@@ -9,10 +9,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.17.3}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.17.4}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
+  "js/12-ui-platform.js"
   "js/20-data.js"
   "js/30-calendar.js"
   "js/35-today.js"
@@ -21,6 +22,19 @@ STATIC_JS=(
   "js/50-tasks.js"
   "js/60-settings.js"
   "js/70-user-boot.js"
+)
+STATIC_CSS=(
+  "app.css"
+  "design-system.css"
+  "ui/tokens.css"
+  "ui/themes/dutylog-default.css"
+  "ui/themes/midnight.css"
+  "ui/themes/oled.css"
+  "ui/themes/forest.css"
+  "ui/themes/sunset.css"
+  "ui/themes/industrial.css"
+  "ui/themes/soft-purple.css"
+  "ui/platform.css"
 )
 
 fail() {
@@ -82,7 +96,9 @@ echo
 echo "1) Version consistency"
 contains src/main/resources/static/js/10-core.js "DUTYLOG_VERSION = \"$VERSION\""
 contains src/main/resources/static/service-worker.js "dutylog-shell-v$VERSION"
-contains src/main/resources/static/index.html "app.css?v=$VERSION"
+for asset in "${STATIC_CSS[@]}"; do
+  contains src/main/resources/static/index.html "$asset?v=$VERSION"
+done
 contains src/main/resources/static/login.html "/js/login.js?v=$VERSION"
 for asset in "${STATIC_JS[@]}"; do
   contains src/main/resources/static/index.html "$asset?v=$VERSION"
@@ -118,8 +134,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.17.3"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.17.3."
+contains docs/API.md "# DutyLog API v27.17.4"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.17.4."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
@@ -177,6 +193,27 @@ contains README.md "v27.17.3 — Java Contract Build Gate Hotfix"
 contains docs/JAVA_CONTRACT_BUILD_GATE_HOTFIX_V27.17.3.md "Java Contract Build Gate Hotfix"
 contains src/test/java/ru/daniil/shifts/web/CalendarMobileExperienceFrontendContractTest.java 'assertTrue(js.contains("[range, event.meta].filter(Boolean).join(\" · \")"));'
 contains deploy/scripts/release-check.sh 'Static frontend contract Java sources compile'
+
+  # v27.17.4 UI Core & Workspace Foundation
+contains CHANGES.md "v27.17.4 — UI Core & Workspace Foundation"
+contains README.md "v27.17.4 — UI Core & Workspace Foundation"
+contains docs/UI_CORE_WORKSPACE_FOUNDATION_V27.17.4.md "UI Core & Workspace Foundation"
+contains src/main/resources/static/js/12-ui-platform.js 'const workspaces = Object.freeze'
+contains src/main/resources/static/js/12-ui-platform.js 'const layouts = Object.freeze'
+contains src/main/resources/static/js/12-ui-platform.js 'const themes = Object.freeze'
+contains src/main/resources/static/js/12-ui-platform.js 'const palettes = Object.freeze'
+contains src/main/resources/static/js/12-ui-platform.js 'window.DutyLogUI = api'
+not_contains src/main/resources/static/js/12-ui-platform.js 'fetch('
+not_contains src/main/resources/static/js/12-ui-platform.js 'jfetch('
+contains src/main/resources/static/js/shell-bootstrap.js 'root.dataset.uiWorkspace'
+contains src/main/resources/static/js/shell-bootstrap.js 'root.dataset.uiLayout'
+contains src/main/resources/static/js/70-user-boot.js 'scheduleAppearanceAutoSave'
+contains src/main/resources/static/js/70-user-boot.js 'appearanceSaveQueue = Promise.resolve()'
+contains src/main/java/ru/daniil/shifts/web/ProfileController.java 'out.put("workspaceId"'
+contains src/main/java/ru/daniil/shifts/web/ProfileController.java 'out.put("layoutId"'
+contains src/main/java/ru/daniil/shifts/web/ProfileController.java 'out.put("paletteId"'
+contains src/test/java/ru/daniil/shifts/web/UiCoreWorkspaceFrontendContractTest.java 'class UiCoreWorkspaceFrontendContractTest'
+contains e2e/design-system-shell.spec.js 'UI Core workspace stays persistent'
 
 if grep -R "result.put(\"version\", \"" -n src/main/java >/tmp/dutylog-version-hardcode.txt; then
   cat /tmp/dutylog-version-hardcode.txt >&2
@@ -280,6 +317,7 @@ version = sys.argv[1]
 html = Path('src/main/resources/static/index.html').read_text(encoding='utf-8')
 expected = [
     'js/10-core.js',
+    'js/12-ui-platform.js',
     'js/20-data.js',
     'js/30-calendar.js',
     'js/35-today.js',
@@ -297,6 +335,41 @@ if actual_paths != expected:
 if actual_versions != {version}:
     raise SystemExit(f'static js versions mismatch: {actual_versions}, expected {version}')
 print('OK:    static js order and cache-busting version')
+PY
+
+python3 - <<'PY'
+from pathlib import Path
+
+themes = {
+    'midnight':'src/main/resources/static/ui/themes/midnight.css',
+    'oled':'src/main/resources/static/ui/themes/oled.css',
+    'forest':'src/main/resources/static/ui/themes/forest.css',
+    'sunset':'src/main/resources/static/ui/themes/sunset.css',
+    'industrial':'src/main/resources/static/ui/themes/industrial.css',
+    'softPurple':'src/main/resources/static/ui/themes/soft-purple.css',
+}
+required = [
+    '--color-background', '--color-surface', '--color-surface-elevated',
+    '--color-text-primary', '--color-text-secondary', '--color-border',
+]
+for theme_id, path in themes.items():
+    css = Path(path).read_text(encoding='utf-8')
+    selector = f'html[data-ui-theme="{theme_id}"]'
+    if selector not in css:
+        raise SystemExit(f'{path}: missing isolated selector {selector}')
+    for token in required:
+        if token not in css:
+            raise SystemExit(f'{path}: missing required token {token}')
+    for other in themes:
+        if other != theme_id and f'data-ui-theme="{other}"' in css:
+            raise SystemExit(f'{path}: leaks into theme {other}')
+    if '@layer' in css:
+        raise SystemExit(f'{path}: theme package must remain later-cascade scoped, not hidden in a legacy-external layer')
+platform = Path('src/main/resources/static/ui/platform.css').read_text(encoding='utf-8')
+for expected in ['--workspace-nav-count', 'data-ui-layout="compact"', 'data-ui-layout="focus"']:
+    if expected not in platform:
+        raise SystemExit(f'ui/platform.css missing {expected}')
+print('OK:    UI Core theme packages satisfy isolated contract v1')
 PY
 
 node - <<'NODE'
@@ -712,7 +785,7 @@ contains docs/RELEASE_CANDIDATE.md "v27.2.5 — Calendar day identity hotfix"
 contains docs/USER_GUIDE.md "Status: v27.2.5."
 contains docs/PRODUCTION_DEPLOY.md "same GHCR digest that already passed staging"
 contains docs/BACKUP_RESTORE.md "Status: v27.2.30."
-contains docs/RELEASE_CHECKLIST.md "git tag -a v27.17.3"
+contains docs/RELEASE_CHECKLIST.md "git tag -a v27.17.4"
 
 # v27.2.5 calendar persistence regression guards
 contains src/main/resources/static/js/30-calendar.js "api.month(requestedYear, requestedMonth, { fresh:true })"
@@ -1114,7 +1187,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.4"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1167,7 +1240,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.4"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1189,7 +1262,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.4"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1284,7 +1357,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.4"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -1443,7 +1516,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.10.0 — Task Details"
 contains README.md "v27.10.0 — Task Details"
 contains docs/TASK_DETAILS_V27.10.0.md "read-first"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.4"
 contains src/main/resources/db/migration/postgresql/V32__task_details.sql "ADD COLUMN description"
 contains src/main/java/ru/daniil/shifts/model/DayTask.java "private String description"
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "public TaskDto get(AppUser user, Long id)"
@@ -1464,7 +1537,7 @@ contains e2e/task-details.spec.js 'task details separate reading from editing an
 contains CHANGES.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains README.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md "immutable absolute occurrence"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.4"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_start_instant"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_source_timezone"
 contains src/main/java/ru/daniil/shifts/model/DayEntry.java "captureShiftOccurrence"
@@ -1484,7 +1557,7 @@ contains e2e/important-timezone.spec.js "a timezone projection can move a late s
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.4"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1705,7 +1778,7 @@ contains src/main/resources/static/design-system.css 'env(safe-area-inset-bottom
 contains src/main/resources/static/js/10-core.js 'root.dataset.shell = cfg.shellMode'
 contains src/main/java/ru/daniil/shifts/web/ProfileController.java 'safeEnum(input.get("shellMode"), "next", "next", "classic")'
 contains src/test/java/ru/daniil/shifts/web/DesignSystemMobileShellFrontendContractTest.java 'class DesignSystemMobileShellFrontendContractTest'
-contains e2e/design-system-shell.spec.js 'DutyLog Next mobile shell stays usable and Classic remains an instant fallback'
+contains e2e/design-system-shell.spec.js 'Classic remains an instant fallback'
 
   # v27.16.0 Today Dashboard
 contains CHANGES.md "v27.16.0 — Today Dashboard"
@@ -1727,7 +1800,7 @@ contains e2e/today-dashboard.spec.js 'Today Dashboard composes the day and opens
 contains CHANGES.md "v27.16.1 — Today Runtime & Repository Truth Hotfix"
 contains README.md "v27.16.1 — Today Runtime & Repository Truth Hotfix"
 contains docs/TODAY_RUNTIME_HOTFIX_V27.16.1.md "Today Runtime & Repository Truth Hotfix"
-contains docs/ROADMAP.md "v27.17.2 — Calendar Timeline Readability Hotfix"
+contains docs/ROADMAP.md "v27.17.4 — UI Core & Workspace Foundation"
 contains docs/ARCHITECTURE.md "V36 Multiple Daily Notes"
 contains src/main/resources/static/js/35-today.js '$("todayQuickMore")?.addEventListener("click", () => openQuickActions());'
 not_contains src/main/resources/static/js/35-today.js '$("todayQuickMore")?.addEventListener("click", openQuickActions);'
@@ -1748,8 +1821,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.17.3"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.17.3."
+contains docs/API.md "# DutyLog API v27.17.4"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.17.4."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
@@ -1763,15 +1836,15 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "492" ]]; then
-  ok "test method baseline: 492"
+if [[ "$TEST_METHODS" == "496" ]]; then
+  ok "test method baseline: 496"
 else
-  fail "expected 492 @Test methods, found $TEST_METHODS"
+  fail "expected 496 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "94" ]]; then
-  ok "test class baseline: 94"
+if [[ "$TEST_CLASSES" == "95" ]]; then
+  ok "test class baseline: 95"
 else
-  fail "expected 94 test classes, found $TEST_CLASSES"
+  fail "expected 95 test classes, found $TEST_CLASSES"
 fi
 
 echo

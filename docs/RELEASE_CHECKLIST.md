@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.17.3.
+Status: v27.17.4.
 
 ## Local gate
 
@@ -22,6 +22,10 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - confirm `Deploy staging` is green;
 - verify calendar, notes export, tasks, overtime, modules, admin and Android API v1;
 - verify `/actuator/info` shows staging, commit and build metadata;
+- verify Shift Worker / Planner / Minimal navigation and hidden-route links;
+- verify Dashboard / Compact / Focus on desktop and mobile;
+- verify theme + palette independence and automatic persistence after reload;
+- verify Classic still restores its original five-destination navigation;
 - test the migration against the persistent staging database;
 - optionally reset staging and verify a clean V1..latest install.
 
@@ -48,6 +52,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.17.3 -m "v27.17.3 — Java Contract Build Gate Hotfix"
-git push origin v27.17.3
+git tag -a v27.17.4 -m "v27.17.4 — UI Core & Workspace Foundation"
+git push origin v27.17.4
 ```

@@ -1,3 +1,16 @@
+# v27.17.4 — UI Core & Workspace Foundation
+
+- Introduced UI Core contract v1: one shared DOM/business layer with declarative registries for workspaces, layouts, themes, palettes, decorations, screens and Today widgets.
+- Added three workspaces (`Shift Worker`, `Planner`, `Minimal`) that reorder and selectively expose the same existing routes without duplicating screens or APIs.
+- Added three layout presets (`Dashboard`, `Compact`, `Focus`) and made primary navigation adapt to the active workspace.
+- Split built-in visual themes into isolated CSS packages scoped by `data-ui-theme`; user palettes remain independent from layout and workspace selection.
+- Added synchronous pre-paint bootstrap for shell, theme, palette, layout and custom colors to avoid interface flashes.
+- Added automatic appearance persistence with debounce, revision guards and a serialized save queue; the explicit save button remains as a manual retry/flush.
+- Extended the existing profile whitelist with UI Core v1 fields and safe widget ordering; arbitrary CSS/JavaScript remains rejected.
+- Preserved Classic as a real emergency fallback: workspace hiding never overrides Classic navigation.
+- Added static Java contracts, an expanded Playwright shell scenario, theme-package contract checks and deployment smoke coverage for the new assets.
+- No schema or domain API change; Flyway remains V36. Regression baseline: 95 Java test classes, 496 `@Test` methods and 25 Playwright scenarios.
+
 # v27.17.3 — Java Contract Build Gate Hotfix
 
 - Fixed the malformed escaped Java string literal in `CalendarMobileExperienceFrontendContractTest` that stopped Maven during `testCompile` before Playwright and deployment.

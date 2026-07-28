@@ -1,0 +1,16 @@
+/* Theme package: Forest — isolated UI Core contract v1. */
+html[data-ui-theme="forest"] {
+  --color-background:#101812;
+  --color-surface:#182219;
+  --color-surface-elevated:#203020;
+  --color-text-primary:#EAF4EA;
+  --color-text-secondary:#9CAF9E;
+  --color-border:#314335;
+  --bg:var(--color-background);
+  --panel:var(--color-surface);
+  --panel2:var(--color-surface-elevated);
+  --text:var(--color-text-primary);
+  --mut:var(--color-text-secondary);
+  --line:var(--color-border);
+  color-scheme:dark;
+}

@@ -199,7 +199,7 @@ init().catch(err => {
 });
 
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */
-const VIEWS = { today:"view-today", calendar:"view-calendar", overtime:"view-overtime", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
+const VIEWS = window.DutyLogUI?.views?.() || { today:"view-today", calendar:"view-calendar", overtime:"view-overtime", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
 function applyRoute(){
   const defaultRoute = document.documentElement.dataset.shell === "classic" ? "#calendar" : "#today";
   const rawRoute = (location.hash || defaultRoute).slice(1);
@@ -422,6 +422,65 @@ function currentProfilePayload(extra = {}){
     ...extra,
   };
 }
+
+let appearanceSaveTimer = null;
+let appearanceRevision = 0;
+let appearanceSaveQueue = Promise.resolve();
+
+function appearanceStatus(text = "", ok = false){
+  setProfileMsg('appearanceMsg', text, ok);
+}
+
+function localAppearanceSnapshot(){
+  const prefs = normalizeAppearance(state.preferences || readAppearanceFromControls());
+  state.preferences = storeLocalAppearance(prefs);
+  return prefs;
+}
+
+function persistAppearanceRevision(revision, snapshot){
+  const operation = async () => {
+    if (revision < appearanceRevision) return;
+    appearanceStatus(t('Сохраняется…'), true);
+    try {
+      const p = await jfetch('/api/profile', { method:'PUT', body: currentProfilePayload(snapshot) });
+      if (revision !== appearanceRevision) return;
+      state.profile = p;
+      state.preferences = storeLocalAppearance({
+        themePreference:p.themePreference,
+        accentColor:p.accentColor,
+        themePreset:p.themePreset,
+        themeConfig:p.themeConfig
+      });
+      applyAppearance(state.preferences);
+      applyLanguage(p.languagePreference || state.language);
+      appearanceStatus(t('Сохранено автоматически'), true);
+      setTimeout(() => {
+        if (revision === appearanceRevision) appearanceStatus('');
+      }, 1800);
+    } catch (error) {
+      if (revision === appearanceRevision) appearanceStatus(error.message || t('Ошибка сохранения'));
+      throw error;
+    }
+  };
+  const pending = appearanceSaveQueue.then(operation, operation);
+  appearanceSaveQueue = pending.catch(() => {});
+  return pending;
+}
+
+function scheduleAppearanceAutoSave(delay = 650){
+  const snapshot = localAppearanceSnapshot();
+  const revision = ++appearanceRevision;
+  clearTimeout(appearanceSaveTimer);
+  appearanceStatus(t('Сохраняется…'), true);
+  appearanceSaveTimer = setTimeout(() => persistAppearanceRevision(revision, snapshot).catch(() => {}), delay);
+}
+
+function persistAppearanceNow(){
+  clearTimeout(appearanceSaveTimer);
+  const snapshot = localAppearanceSnapshot();
+  const revision = ++appearanceRevision;
+  return persistAppearanceRevision(revision, snapshot);
+}
 document.querySelectorAll('[data-language-choice]').forEach(btn => btn.addEventListener('click', async () => {
   const lang = normalizeLanguage(btn.dataset.languageChoice);
   applyLanguage(lang);
@@ -435,38 +494,48 @@ document.querySelectorAll('[data-language-choice]').forEach(btn => btn.addEventL
     setProfileMsg('languageMsg', e.message || 'Language was changed locally');
   }
 }));
-$('appearancePreset')?.addEventListener('change', e => applyPreset(e.target.value));
-$('appearanceTheme')?.addEventListener('change', markCustomAndPreview);
-$('appearanceAccent')?.addEventListener('input', markCustomAndPreview);
+$('appearancePreset')?.addEventListener('change', e => {
+  applyPreset(e.target.value);
+  scheduleAppearanceAutoSave();
+});
+$('appearanceTheme')?.addEventListener('change', () => { updateUiPlatformAndPreview(); scheduleAppearanceAutoSave(); });
+$('appearanceAccent')?.addEventListener('input', () => {
+  if ($('uiPalette')) $('uiPalette').value = 'custom';
+  markPaletteCustomAndPreview();
+  scheduleAppearanceAutoSave();
+});
+$('uiWorkspace')?.addEventListener('change', () => { updateUiPlatformAndPreview(); scheduleAppearanceAutoSave(); });
+$('uiLayout')?.addEventListener('change', () => { updateUiPlatformAndPreview(); scheduleAppearanceAutoSave(); });
+$('uiPalette')?.addEventListener('change', e => {
+  window.DutyLogUI?.selectPalette?.(e.target.value);
+  updateUiPlatformAndPreview();
+  scheduleAppearanceAutoSave();
+});
+$('uiAccentSecondary')?.addEventListener('input', () => {
+  if ($('uiPalette')) $('uiPalette').value = 'custom';
+  markPaletteCustomAndPreview();
+  scheduleAppearanceAutoSave();
+});
 document.querySelectorAll('[data-shell-choice]').forEach(button => button.addEventListener('click', () => {
   const mode = button.dataset.shellChoice === 'classic' ? 'classic' : 'next';
   if ($('themeShellMode')) $('themeShellMode').value = mode;
-  markCustomAndPreview();
+  updateUiPlatformAndPreview();
   // Today belongs to DutyLog Next. Classic must fall back to its original
   // calendar landing page instead of exposing a visually hidden route.
   if (mode === 'classic' && location.hash === '#today') location.hash = '#calendar';
   else if (typeof applyRoute === 'function') applyRoute();
+  scheduleAppearanceAutoSave();
 }));
 for (const id of ['themeAppBg','themePanelBg','themePanelAltBg','themeTextColor','themeMutedColor','themeBorderColor','themeButtonStyle','themeCardStyle','themeShadowLevel','themeDensity','themeCardRadius']) {
-  $(id)?.addEventListener('input', markCustomAndPreview);
-  $(id)?.addEventListener('change', markCustomAndPreview);
+  $(id)?.addEventListener('input', () => { markThemeCustomAndPreview(); scheduleAppearanceAutoSave(); });
+  $(id)?.addEventListener('change', () => { markThemeCustomAndPreview(); scheduleAppearanceAutoSave(); });
 }
 $('themeCardRadius')?.addEventListener('input', e => { if ($('themeCardRadiusValue')) $('themeCardRadiusValue').textContent = `${e.target.value}px`; });
-$('appearanceSave')?.addEventListener('click', async () => {
-  try {
-    const prefs = readAppearanceFromControls();
-    const p = await jfetch('/api/profile', { method:'PUT', body: currentProfilePayload(prefs) });
-    state.profile = p;
-    state.preferences = storeLocalAppearance({ themePreference:p.themePreference, accentColor:p.accentColor, themePreset:p.themePreset, themeConfig:p.themeConfig });
-    applyAppearance(state.preferences);
-    applyLanguage(p.languagePreference || state.language);
-    setProfileMsg('appearanceMsg', t('Внешний вид сохранён'), true);
-    setTimeout(() => setProfileMsg('appearanceMsg', ''), 2000);
-  } catch (e) { setProfileMsg('appearanceMsg', e.message); }
-});
+$('appearanceSave')?.addEventListener('click', () => persistAppearanceNow().catch(() => {}));
 $('appearanceReset')?.addEventListener('click', () => {
   state.preferences = normalizeAppearance(DEFAULT_APPEARANCE);
   applyAppearance(state.preferences);
+  scheduleAppearanceAutoSave(0);
 });
 $('dayEmojiClear')?.addEventListener('click', () => setDayEmoji(null));
 $('dayEmojiApply')?.addEventListener('click', () => setDayEmoji($('dayEmojiCustom')?.value || ''));

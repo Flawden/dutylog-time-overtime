@@ -1,0 +1,87 @@
+/* DutyLog UI platform: workspace/layout contracts — v27.17.4, UI Core v1.
+ * This file is intentionally loaded last. Every rule is scoped to a UI
+ * platform attribute or component class so presets cannot leak into each other.
+ */
+.workspaceHidden { display:none !important; }
+
+html[data-shell="next"] .tabbar {
+  grid-template-columns:repeat(var(--workspace-nav-count, 5), minmax(90px, 1fr));
+}
+
+.uiPlatformPanel {
+  margin:0 0 18px;
+  padding:14px;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-card);
+  background:color-mix(in srgb, var(--color-surface-elevated) 72%, transparent);
+}
+.uiPlatformHead {
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:16px;
+  margin-bottom:12px;
+}
+.uiPlatformStatus {
+  display:grid;
+  justify-items:end;
+  gap:3px;
+  color:var(--color-text-secondary);
+  font-size:11px;
+  font-family:ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+.uiPlatformStatus b { color:var(--color-accent); }
+.uiPlatformGrid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.workspaceRouteBlock {
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  align-items:center;
+  gap:10px;
+  margin-top:12px;
+  color:var(--color-text-secondary);
+  font-size:12px;
+}
+.workspaceRouteLinks { display:flex; flex-wrap:wrap; gap:8px; min-width:0; }
+.workspaceRouteLinks a {
+  display:inline-flex;
+  align-items:center;
+  min-height:32px;
+  padding:6px 10px;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-control);
+  color:var(--color-text-primary);
+  text-decoration:none;
+  background:var(--color-surface);
+}
+.workspaceRouteLinks a:hover,
+.workspaceRouteLinks a:focus-visible {
+  border-color:var(--color-accent);
+  outline:none;
+}
+
+html[data-ui-layout="compact"][data-shell="next"] .wrap { max-width:1440px; }
+html[data-ui-layout="compact"][data-shell="next"] .head,
+html[data-ui-layout="compact"][data-shell="next"] .tabbar,
+html[data-ui-layout="compact"][data-shell="next"] .nextTopbar { padding-block:10px; }
+html[data-ui-layout="compact"][data-shell="next"] .todayDashboard,
+html[data-ui-layout="compact"][data-shell="next"] .todayDashboardGrid { gap:10px; }
+html[data-ui-layout="compact"][data-shell="next"] .todayDashboardGrid > .card { padding:12px; }
+
+html[data-ui-layout="focus"][data-shell="next"] .wrap { max-width:980px; }
+html[data-ui-layout="focus"][data-shell="next"] .todayDashboardGrid { grid-template-columns:1fr; }
+html[data-ui-layout="focus"][data-shell="next"] .todayDashboardGrid > .card { grid-column:1; }
+html[data-ui-layout="focus"][data-shell="next"] .todayQuickActions { grid-template-columns:repeat(2,minmax(0,1fr)); }
+
+@media (max-width:840px) {
+  html[data-shell="next"] .tabbar {
+    grid-template-columns:repeat(var(--workspace-nav-count, 5), minmax(0,1fr));
+  }
+  .uiPlatformGrid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .uiPlatformHead { display:grid; }
+  .uiPlatformStatus { justify-items:start; }
+  .workspaceRouteBlock { grid-template-columns:1fr; }
+}
+@media (max-width:520px) {
+  .uiPlatformGrid { grid-template-columns:1fr; }
+  html[data-ui-layout="focus"][data-shell="next"] .todayQuickActions { grid-template-columns:1fr 1fr; }
+}

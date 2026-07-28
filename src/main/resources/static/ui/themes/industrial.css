@@ -1,0 +1,16 @@
+/* Theme package: Industrial — isolated UI Core contract v1. */
+html[data-ui-theme="industrial"] {
+  --color-background:#121417;
+  --color-surface:#1B1F24;
+  --color-surface-elevated:#242A31;
+  --color-text-primary:#ECEFF3;
+  --color-text-secondary:#A0A8B2;
+  --color-border:#343C46;
+  --bg:var(--color-background);
+  --panel:var(--color-surface);
+  --panel2:var(--color-surface-elevated);
+  --text:var(--color-text-primary);
+  --mut:var(--color-text-secondary);
+  --line:var(--color-border);
+  color-scheme:dark;
+}

@@ -4,13 +4,14 @@ set -Eeuo pipefail
 BASE_URL="${1:-${DUTYLOG_BASE_URL:-http://localhost:8080}}"
 BASE_URL="${BASE_URL%/}"
 TIMEOUT="${DUTYLOG_SMOKE_TIMEOUT:-10}"
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.17.3}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.17.4}"
 SMOKE_USERNAME="${DUTYLOG_SMOKE_USERNAME:-${DUTYLOG_ADMIN_USERNAME:-}}"
 SMOKE_PASSWORD="${DUTYLOG_SMOKE_PASSWORD:-${DUTYLOG_ADMIN_PASSWORD:-}}"
 REQUIRE_AUTH="${DUTYLOG_SMOKE_REQUIRE_AUTH:-false}"
 AUTHENTICATED=false
 STATIC_JS=(
   "js/10-core.js"
+  "js/12-ui-platform.js"
   "js/20-data.js"
   "js/30-calendar.js"
   "js/35-today.js"
@@ -19,6 +20,19 @@ STATIC_JS=(
   "js/50-tasks.js"
   "js/60-settings.js"
   "js/70-user-boot.js"
+)
+STATIC_CSS=(
+  "app.css"
+  "design-system.css"
+  "ui/tokens.css"
+  "ui/themes/dutylog-default.css"
+  "ui/themes/midnight.css"
+  "ui/themes/oled.css"
+  "ui/themes/forest.css"
+  "ui/themes/sunset.css"
+  "ui/themes/industrial.css"
+  "ui/themes/soft-purple.css"
+  "ui/platform.css"
 )
 
 need() {
@@ -176,10 +190,14 @@ else
   AUTHENTICATED=true
   APP_HTML="$(curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/")"
   contains_literal_ci "$APP_HTML" 'DutyLog'
-  contains_literal "$APP_HTML" "app.css?v=$VERSION"
+  for asset in "${STATIC_CSS[@]}"; do
+    contains_literal "$APP_HTML" "$asset?v=$VERSION"
+  done
   for asset in "${STATIC_JS[@]}"; do
     contains_literal "$APP_HTML" "$asset?v=$VERSION"
   done
+  contains_literal "$APP_HTML" 'id="uiWorkspace"'
+  contains_literal "$APP_HTML" 'id="uiLayout"'
   if contains_literal "$APP_HTML" 'app.js?v='; then
     echo "Unexpected legacy app.js reference in app shell" >&2
     exit 1
@@ -204,8 +222,12 @@ if [[ "$AUTHENTICATED" == "true" ]]; then
   for asset in "${STATIC_JS[@]:1}"; do
     curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/$asset" >/dev/null
   done
-  APP_CSS="$(curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/app.css")"
-  contains_literal "$APP_CSS" ':root'
+  for asset in "${STATIC_CSS[@]}"; do
+    CSS_BODY="$(curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/$asset")"
+    [[ -n "$CSS_BODY" ]] || { echo "Empty stylesheet: $asset" >&2; exit 1; }
+  done
+  UI_PLATFORM_JS="$(curl -fsS --max-time "$TIMEOUT" -b "$AUTH_COOKIE_JAR" "$BASE_URL/js/12-ui-platform.js")"
+  contains_literal "$UI_PLATFORM_JS" 'window.DutyLogUI = api'
   echo "   ok"
 else
   echo "   skipped (authenticated session not available)"

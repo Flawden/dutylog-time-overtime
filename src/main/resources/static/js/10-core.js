@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.17.3"
+const DUTYLOG_VERSION = "27.17.4"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -195,7 +195,25 @@ const THEME_PRESETS = {
     themeConfig:{ appBg:"#F7F3FF", panelBg:"#FFFFFF", panelAltBg:"#EFE7FF", textColor:"#231B33", mutedColor:"#685B79", borderColor:"#D8C9F5", buttonStyle:"soft", cardStyle:"soft", cardRadius:20, shadowLevel:"soft", density:"comfortable", shellMode:"next" }
   }
 };
-const DEFAULT_THEME_CONFIG = THEME_PRESETS.default.themeConfig;
+const UI_CONTRACT_VERSION = 1;
+const UI_PLATFORM_DEFAULTS = Object.freeze({
+  uiContract:UI_CONTRACT_VERSION,
+  workspaceId:"shift-worker",
+  layoutId:"dashboard",
+  themeId:"default",
+  paletteId:"theme",
+  decorationId:"none",
+  accentSecondary:"#14CDB4",
+  todayWidgets:[]
+});
+const UI_WORKSPACE_IDS = Object.freeze(["shift-worker","planner","minimal"]);
+const UI_LAYOUT_IDS = Object.freeze(["dashboard","compact","focus"]);
+const UI_THEME_IDS = Object.freeze(["default","custom","midnight","oled","forest","sunset","industrial","softPurple"]);
+const UI_PALETTE_IDS = Object.freeze(["theme","gold-teal","teal-gold","violet","ember","custom"]);
+const UI_DECORATION_IDS = Object.freeze(["none"]);
+const UI_TODAY_WIDGET_IDS = Object.freeze(["shift","overtime","tasks","important"]);
+
+const DEFAULT_THEME_CONFIG = { ...THEME_PRESETS.default.themeConfig, ...UI_PLATFORM_DEFAULTS };
 const DEFAULT_APPEARANCE = { themePreference:"system", accentColor:"#F5B841", themePreset:"default", themeConfig:{ ...DEFAULT_THEME_CONFIG } };
 
 
@@ -992,6 +1010,7 @@ function applyLanguage(lang){
   applyLanguagePolish();
   translateStaticTree();
   applyLanguagePolish();
+  window.DutyLogUI?.renderControls?.(state.preferences);
 }
 function renderLanguageControls(){
   document.querySelectorAll('[data-language-choice]').forEach(btn => btn.classList.toggle('on', btn.dataset.languageChoice === state.language));
@@ -1087,6 +1106,15 @@ function normalizeThemeConfig(config = {}){
   out.density = ["compact","comfortable","spacious"].includes(String(c.density || "")) ? String(c.density) : base.density;
   out.shellMode = ["next","classic"].includes(String(c.shellMode || "")) ? String(c.shellMode) : (base.shellMode || "next");
   out.cardRadius = Math.round(clampNumber(c.cardRadius, 6, 28, base.cardRadius));
+  out.uiContract = UI_CONTRACT_VERSION;
+  out.workspaceId = UI_WORKSPACE_IDS.includes(String(c.workspaceId || "")) ? String(c.workspaceId) : UI_PLATFORM_DEFAULTS.workspaceId;
+  out.layoutId = UI_LAYOUT_IDS.includes(String(c.layoutId || "")) ? String(c.layoutId) : UI_PLATFORM_DEFAULTS.layoutId;
+  out.themeId = UI_THEME_IDS.includes(String(c.themeId || "")) ? String(c.themeId) : UI_PLATFORM_DEFAULTS.themeId;
+  out.paletteId = UI_PALETTE_IDS.includes(String(c.paletteId || "")) ? String(c.paletteId) : UI_PLATFORM_DEFAULTS.paletteId;
+  out.decorationId = UI_DECORATION_IDS.includes(String(c.decorationId || "")) ? String(c.decorationId) : UI_PLATFORM_DEFAULTS.decorationId;
+  out.accentSecondary = isHexColor(c.accentSecondary) ? String(c.accentSecondary).toUpperCase() : UI_PLATFORM_DEFAULTS.accentSecondary;
+  const rawWidgets = Array.isArray(c.todayWidgets) ? c.todayWidgets.map(String) : [];
+  out.todayWidgets = [...new Set(rawWidgets.filter(id => UI_TODAY_WIDGET_IDS.includes(id)))];
   return out;
 }
 function normalizeAppearance(p = {}){
@@ -1097,7 +1125,9 @@ function normalizeAppearance(p = {}){
   const preset = Object.prototype.hasOwnProperty.call(THEME_PRESETS, String(p.themePreset || ""))
     ? String(p.themePreset)
     : DEFAULT_APPEARANCE.themePreset;
-  return { themePreference:theme, accentColor:accent, themePreset:preset, themeConfig:normalizeThemeConfig(p.themeConfig) };
+  const themeConfig = normalizeThemeConfig(p.themeConfig);
+  if ((!p.themeConfig || !p.themeConfig.themeId) && UI_THEME_IDS.includes(preset)) themeConfig.themeId = preset;
+  return { themePreference:theme, accentColor:accent, themePreset:preset, themeConfig };
 }
 function loadLocalAppearance(){
   try { return normalizeAppearance(JSON.parse(localStorage.getItem(APPEARANCE_KEY) || "{}")); }
@@ -1127,25 +1157,37 @@ function applyThemeCssVariables(prefs){
   const root = document.documentElement;
   const variables = {
     "--accent": prefs.accentColor,
+    "--color-accent": prefs.accentColor,
+    "--accent-secondary": cfg.accentSecondary,
+    "--color-accent-secondary": cfg.accentSecondary,
     "--theme-card-radius": `${cfg.cardRadius}px`,
     "--theme-shadow": themeShadow(cfg.shadowLevel),
   };
-  if (cfg.appBg) variables["--bg"] = cfg.appBg;
-  if (cfg.panelBg) variables["--panel"] = cfg.panelBg;
-  if (cfg.panelAltBg) variables["--panel2"] = cfg.panelAltBg;
-  if (cfg.textColor) variables["--text"] = cfg.textColor;
-  if (cfg.mutedColor) variables["--mut"] = cfg.mutedColor;
-  if (cfg.borderColor) variables["--line"] = cfg.borderColor;
-  for (const name of ["--bg","--panel","--panel2","--text","--mut","--line","--accent","--theme-card-radius","--theme-shadow"]) {
+  // Built-in themes are isolated CSS packages. Only the Custom theme receives
+  // inline surface/text variables; otherwise an old saved config would mask the
+  // selected package and make themes depend on each other again.
+  const customTheme = cfg.themeId === "custom";
+  if (customTheme && cfg.appBg) { variables["--bg"] = cfg.appBg; variables["--color-background"] = cfg.appBg; }
+  if (customTheme && cfg.panelBg) { variables["--panel"] = cfg.panelBg; variables["--color-surface"] = cfg.panelBg; }
+  if (customTheme && cfg.panelAltBg) { variables["--panel2"] = cfg.panelAltBg; variables["--color-surface-elevated"] = cfg.panelAltBg; }
+  if (customTheme && cfg.textColor) { variables["--text"] = cfg.textColor; variables["--color-text-primary"] = cfg.textColor; }
+  if (customTheme && cfg.mutedColor) { variables["--mut"] = cfg.mutedColor; variables["--color-text-secondary"] = cfg.mutedColor; }
+  if (customTheme && cfg.borderColor) { variables["--line"] = cfg.borderColor; variables["--color-border"] = cfg.borderColor; }
+  for (const name of ["--bg","--panel","--panel2","--text","--mut","--line","--accent","--accent-secondary","--color-background","--color-surface","--color-surface-elevated","--color-text-primary","--color-text-secondary","--color-border","--color-accent","--color-accent-secondary","--theme-card-radius","--theme-shadow"]) {
     root.style.removeProperty(name);
   }
-  for (const [name, value] of Object.entries(variables)) {
-    root.style.setProperty(name, value);
-  }
+  for (const [name, value] of Object.entries(variables)) root.style.setProperty(name, value);
   root.dataset.buttonStyle = cfg.buttonStyle;
   root.dataset.cardStyle = cfg.cardStyle;
   root.dataset.density = cfg.density;
   root.dataset.shell = cfg.shellMode;
+  root.dataset.uiContract = String(cfg.uiContract);
+  root.dataset.uiWorkspace = cfg.workspaceId;
+  root.dataset.uiLayout = cfg.layoutId;
+  root.dataset.uiTheme = cfg.themeId;
+  root.dataset.uiPalette = cfg.paletteId;
+  root.dataset.uiDecoration = cfg.decorationId;
+  window.DutyLogUI?.apply?.(prefs, cfg);
 }
 function applyAppearance(p = state.preferences){
   const prefs = normalizeAppearance(p);
@@ -1180,6 +1222,7 @@ function readAppearanceFromControls(){
       shadowLevel:$('themeShadowLevel')?.value || "medium",
       density:$('themeDensity')?.value || "comfortable",
       shellMode:$('themeShellMode')?.value || "next",
+      ...window.DutyLogUI?.readControls?.(normalizeThemeConfig(state.preferences?.themeConfig))
     }
   });
 }
@@ -1207,6 +1250,7 @@ function setThemeBuilderControls(prefs){
   });
   if (byId('themeCardRadius')) byId('themeCardRadius').value = cfg.cardRadius;
   if (byId('themeCardRadiusValue')) byId('themeCardRadiusValue').textContent = `${cfg.cardRadius}px`;
+  window.DutyLogUI?.renderControls?.(prefs);
 }
 function renderAppearanceControls(){
   const byId = id => document.getElementById(id);
@@ -1228,9 +1272,15 @@ function renderAppearanceControls(){
       b.style.background = color;
       b.title = color;
       b.addEventListener("click", () => {
-        state.preferences = normalizeAppearance({ ...readAppearanceFromControls(), accentColor:color, themePreset:"custom" });
-        if ($('appearancePreset')) $('appearancePreset').value = state.preferences.themePreset;
+        const prefs = readAppearanceFromControls();
+        state.preferences = normalizeAppearance({
+          ...prefs,
+          accentColor:color,
+          themeConfig:{ ...prefs.themeConfig, paletteId:"custom" }
+        });
+        if ($('uiPalette')) $('uiPalette').value = "custom";
         applyAppearance(state.preferences);
+        if (typeof scheduleAppearanceAutoSave === "function") scheduleAppearanceAutoSave();
       });
       row.appendChild(b);
     }
@@ -1238,21 +1288,67 @@ function renderAppearanceControls(){
   const preview = byId('appearancePreview');
   const presetLabel = THEME_PRESETS[prefs.themePreset]?.label || "Custom";
   const modeLabel = t(prefs.themePreference === "system" ? "как в системе" : prefs.themePreference === "light" ? "светлая" : "тёмная");
-  const shellLabel = normalizeThemeConfig(prefs.themeConfig).shellMode === "classic" ? "Classic" : "DutyLog Next";
+  const cfg = normalizeThemeConfig(prefs.themeConfig);
+  const shellLabel = cfg.shellMode === "classic" ? "Classic" : "DutyLog Next";
+  const workspaceLabel = window.DutyLogUI?.workspaces?.[cfg.workspaceId]
+    ? (state.language === "en" ? window.DutyLogUI.workspaces[cfg.workspaceId].labelEn : window.DutyLogUI.workspaces[cfg.workspaceId].labelRu)
+    : cfg.workspaceId;
+  const layoutLabel = window.DutyLogUI?.layouts?.[cfg.layoutId]
+    ? (state.language === "en" ? window.DutyLogUI.layouts[cfg.layoutId].labelEn : window.DutyLogUI.layouts[cfg.layoutId].labelRu)
+    : cfg.layoutId;
   if (preview) {
     preview.className = "status statusThemeSummary";
-    preview.innerHTML = `<span class="statusChip statusChipPrimary">${esc(presetLabel)}</span><span class="statusChip">${esc(shellLabel)}</span><span class="statusChip">${esc(modeLabel)}</span><span class="statusChip statusChipAccent"><span class="statusChipSwatch" style="background:${prefs.accentColor}"></span>${esc(prefs.accentColor)}</span>`;
+    preview.innerHTML = `<span class="statusChip statusChipPrimary">${esc(presetLabel)}</span><span class="statusChip">${esc(workspaceLabel)}</span><span class="statusChip">${esc(layoutLabel)}</span><span class="statusChip">${esc(shellLabel)}</span><span class="statusChip">${esc(modeLabel)}</span><span class="statusChip statusChipAccent"><span class="statusChipSwatch" style="background:${prefs.accentColor}"></span>${esc(prefs.accentColor)}</span>`;
   }
 }
 function applyPreset(key){
   const preset = THEME_PRESETS[key] || THEME_PRESETS.default;
-  state.preferences = normalizeAppearance({ ...preset, themePreset:key });
+  const currentPrefs = normalizeAppearance(state.preferences);
+  const current = normalizeThemeConfig(currentPrefs.themeConfig);
+  const palette = window.DutyLogUI?.palettes?.[current.paletteId];
+  const keepPalette = current.paletteId || "theme";
+  const primary = palette?.accent || (keepPalette === "custom" ? currentPrefs.accentColor : preset.accentColor);
+  const secondary = palette?.secondary || current.accentSecondary;
+  state.preferences = normalizeAppearance({
+    ...preset,
+    accentColor:primary,
+    themePreset:key,
+    themeConfig:{
+      ...preset.themeConfig,
+      uiContract:current.uiContract,
+      workspaceId:current.workspaceId,
+      layoutId:current.layoutId,
+      themeId:key,
+      paletteId:keepPalette,
+      decorationId:current.decorationId,
+      accentSecondary:secondary,
+      todayWidgets:current.todayWidgets
+    }
+  });
   applyAppearance(state.preferences);
 }
-function markCustomAndPreview(){
+function markThemeCustomAndPreview(){
   const prefs = readAppearanceFromControls();
-  state.preferences = normalizeAppearance({ ...prefs, themePreset:"custom" });
+  state.preferences = normalizeAppearance({
+    ...prefs,
+    themePreset:"custom",
+    themeConfig:{ ...prefs.themeConfig, themeId:"custom" }
+  });
   if ($('appearancePreset')) $('appearancePreset').value = "custom";
+  applyAppearance(state.preferences);
+}
+function markPaletteCustomAndPreview(){
+  const prefs = readAppearanceFromControls();
+  state.preferences = normalizeAppearance({
+    ...prefs,
+    themeConfig:{ ...prefs.themeConfig, paletteId:"custom" }
+  });
+  if ($('uiPalette')) $('uiPalette').value = "custom";
+  applyAppearance(state.preferences);
+}
+function updateUiPlatformAndPreview(){
+  const prefs = readAppearanceFromControls();
+  state.preferences = normalizeAppearance(prefs);
   applyAppearance(state.preferences);
 }
 applyAppearance(loadLocalAppearance());

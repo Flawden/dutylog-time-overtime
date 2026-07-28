@@ -1,0 +1,16 @@
+/* Theme package: Soft Purple — isolated UI Core contract v1. */
+html[data-ui-theme="softPurple"] {
+  --color-background:#F7F3FF;
+  --color-surface:#FFFFFF;
+  --color-surface-elevated:#EFE7FF;
+  --color-text-primary:#231B33;
+  --color-text-secondary:#685B79;
+  --color-border:#D8C9F5;
+  --bg:var(--color-background);
+  --panel:var(--color-surface);
+  --panel2:var(--color-surface-elevated);
+  --text:var(--color-text-primary);
+  --mut:var(--color-text-secondary);
+  --line:var(--color-border);
+  color-scheme:light;
+}

@@ -1,4 +1,4 @@
-# DutyLog API v27.17.3
+# DutyLog API v27.17.4
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -184,7 +184,16 @@ A day with a shift type that has both start/end clock values includes one calcul
     "cardStyle": "contrast",
     "shadowLevel": "medium",
     "density": "comfortable",
-    "cardRadius": 16
+    "cardRadius": 16,
+    "shellMode": "next",
+    "uiContract": 1,
+    "workspaceId": "shift-worker",
+    "layoutId": "dashboard",
+    "themeId": "midnight",
+    "paletteId": "violet",
+    "decorationId": "none",
+    "accentSecondary": "#58C6C8",
+    "todayWidgets": ["shift", "overtime", "tasks", "important"]
   },
   "languagePreference": "ru",
   "workTimezone": "Europe/Chisinau",
@@ -195,7 +204,7 @@ A day with a shift type that has both start/end clock values includes one calcul
 
 ### PUT `/api/profile`
 
-Обновляет профиль и/или внешний вид. `themePreference`: `system`, `light`, `dark`. `accentColor`: `#RRGGBB`. `themeConfig` принимает только whitelist-поля Theme Builder, без пользовательского CSS.
+Обновляет профиль и/или внешний вид. `themePreference`: `system`, `light`, `dark`. `accentColor`: `#RRGGBB`. `themeConfig` принимает только whitelist-поля Theme Builder и UI Core v1: `shellMode`, `workspaceId`, `layoutId`, `themeId`, `paletteId`, `decorationId`, `accentSecondary`, `todayWidgets`. Пользовательский CSS и JavaScript не принимаются.
 
 ```json
 {
@@ -215,7 +224,16 @@ A day with a shift type that has both start/end clock values includes one calcul
     "cardStyle": "contrast",
     "shadowLevel": "medium",
     "density": "comfortable",
-    "cardRadius": 16
+    "cardRadius": 16,
+    "shellMode": "next",
+    "uiContract": 1,
+    "workspaceId": "shift-worker",
+    "layoutId": "dashboard",
+    "themeId": "midnight",
+    "paletteId": "violet",
+    "decorationId": "none",
+    "accentSecondary": "#58C6C8",
+    "todayWidgets": ["shift", "overtime", "tasks", "important"]
   },
   "languagePreference": "en",
   "workTimezone": "Europe/Chisinau",
@@ -1142,7 +1160,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "27.17.3",
+  "version": "27.17.4",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],

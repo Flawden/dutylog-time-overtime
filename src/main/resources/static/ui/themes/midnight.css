@@ -1,0 +1,16 @@
+/* Theme package: Midnight — isolated UI Core contract v1. */
+html[data-ui-theme="midnight"] {
+  --color-background:#0F1220;
+  --color-surface:#181C2B;
+  --color-surface-elevated:#20263A;
+  --color-text-primary:#EEF2FF;
+  --color-text-secondary:#A7B0C9;
+  --color-border:#2D3550;
+  --bg:var(--color-background);
+  --panel:var(--color-surface);
+  --panel2:var(--color-surface-elevated);
+  --text:var(--color-text-primary);
+  --mut:var(--color-text-secondary);
+  --line:var(--color-border);
+  color-scheme:dark;
+}

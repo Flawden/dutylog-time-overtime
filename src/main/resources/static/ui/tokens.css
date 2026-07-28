@@ -1,0 +1,23 @@
+/* DutyLog UI Core semantic tokens — contract v1.
+ * Loaded after the legacy styles so every new component can consume one stable
+ * semantic vocabulary without importing a concrete theme.
+ */
+:root {
+  --color-background: var(--bg);
+  --color-surface: var(--panel);
+  --color-surface-elevated: var(--panel2);
+  --color-text-primary: var(--text);
+  --color-text-secondary: var(--mut);
+  --color-border: var(--line);
+  --color-accent: var(--accent);
+  --color-accent-secondary: var(--accent-secondary, var(--accent));
+  --color-success: #58D68D;
+  --color-warning: #F5B841;
+  --color-danger: var(--danger, #E0653A);
+  --color-focus-ring: color-mix(in srgb, var(--color-accent) 72%, #ffffff 28%);
+  --radius-card: var(--theme-card-radius, 14px);
+  --radius-control: 10px;
+  --shadow-card: var(--theme-shadow, 0 14px 40px rgba(0,0,0,.20));
+  --motion-fast: 120ms;
+  --motion-normal: 220ms;
+}

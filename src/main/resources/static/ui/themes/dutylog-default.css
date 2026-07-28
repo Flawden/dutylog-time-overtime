@@ -1,0 +1,8 @@
+/* Theme package: DutyLog Default — UI Core contract v1.
+ * Default keeps the established light/dark values from app.css and exposes only
+ * the secondary accent hook. Custom values are supplied as validated variables.
+ */
+html[data-ui-theme="default"],
+html[data-ui-theme="custom"] {
+  --color-accent-secondary: var(--accent-secondary, #14CDB4);
+}

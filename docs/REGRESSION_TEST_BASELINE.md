@@ -1,15 +1,24 @@
 # DutyLog regression test baseline
 
-Status: v27.17.3.
+Status: v27.17.4.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.17.3 restores the Java testCompile gate and adds fast syntax compilation for static frontend-contract tests before packaging. Current application baseline: 94 Java test classes / 492 `@Test` methods and 25 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.17.4 adds UI Core contract v1, declarative workspaces/layouts/themes/palettes, automatic appearance persistence and isolated theme-package checks. Current application baseline: 95 Java test classes / 496 `@Test` methods and 25 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.17.4 UI Core & Workspace Foundation extension
+
+- `UiCoreWorkspaceFrontendContractTest` protects bundle order, declarative registries, semantic tokens, isolated theme selectors and profile whitelist fields.
+- `design-system-shell.spec.js` now switches workspace, layout and palette, waits for automatic persistence, reloads and verifies the same configuration.
+- Release checks verify every built-in theme package exposes the UI Core v1 token contract and does not leak selectors into another theme.
+- Deployment smoke verifies all UI Core JS/CSS assets and the workspace/layout controls in the authenticated shell.
+- Classic fallback remains covered in the same Playwright scenario.
+- Baseline grows to 95 Java test classes / 496 `@Test` methods / 25 Chromium Playwright scenarios.
 
 ## v27.17.3 Java Contract Build Gate Hotfix extension
 

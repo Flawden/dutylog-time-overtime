@@ -8,9 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.17.3"></script>
-<link href="app.css?v=27.17.3" rel="stylesheet"/>
-<link href="design-system.css?v=27.17.3" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.17.4"></script>
+<link href="app.css?v=27.17.4" rel="stylesheet"/>
+<link href="design-system.css?v=27.17.4" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.17.4" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.17.4" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.17.4" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.17.4" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.17.4" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.17.4" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.17.4" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.17.4" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.17.4" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -113,7 +122,7 @@
         </div>
       </section>
 
-      <section class="card todayOvertimeCard" aria-labelledby="todayOvertimeTitle">
+      <section class="card todayOvertimeCard" id="todayOvertimeCard" aria-labelledby="todayOvertimeTitle">
         <div class="todayCardHead">
           <span class="todayCardIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2"/></svg></span>
           <div class="todayCardHeading"><small>Учёт времени</small><h3 id="todayOvertimeTitle">Переработки</h3></div>
@@ -127,7 +136,7 @@
         </div>
       </section>
 
-      <section class="card todayTasksCard" aria-labelledby="todayTasksTitle">
+      <section class="card todayTasksCard" id="todayTasksCard" aria-labelledby="todayTasksTitle">
         <div class="todayCardHead">
           <span class="todayCardIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="m8 9 1.5 1.5L12 8M13.5 10H16M8 15h8"/></svg></span>
           <div class="todayCardHeading"><small>План дня</small><h3 id="todayTasksTitle">Задачи</h3></div>
@@ -137,7 +146,7 @@
         <button class="todayWideLink" id="todayOpenTasks" type="button">Показать все задачи →</button>
       </section>
 
-      <section class="card todayUpcomingCard" aria-labelledby="todayUpcomingTitle">
+      <section class="card todayUpcomingCard" id="todayUpcomingCard" aria-labelledby="todayUpcomingTitle">
         <div class="todayCardHead">
           <span class="todayCardIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/></svg></span>
           <div class="todayCardHeading"><small>Не пропустить</small><h3 id="todayUpcomingTitle">Ближайшие даты</h3></div>
@@ -610,6 +619,34 @@
   </button>
 </div>
 
+<div class="uiPlatformPanel" aria-labelledby="uiPlatformTitle">
+  <div class="uiPlatformHead">
+    <div>
+      <div class="profileSub" id="uiPlatformTitle">UI Core и рабочее окружение</div>
+      <div class="settingsHint" id="uiPlatformDescription">Одна база интерфейса, независимые окружения, компоновки, темы и палитры.</div>
+    </div>
+    <div class="uiPlatformStatus" id="uiPlatformStatus"><b>UI Core v1</b><span>загрузка…</span></div>
+  </div>
+  <div class="appearanceGrid uiPlatformGrid">
+    <label>Рабочее окружение
+      <select id="uiWorkspace"></select>
+    </label>
+    <label>Компоновка
+      <select id="uiLayout"></select>
+    </label>
+    <label>Цветовая палитра
+      <select id="uiPalette"></select>
+    </label>
+    <label>Дополнительный акцент
+      <input id="uiAccentSecondary" type="color" value="#14CDB4"/>
+    </label>
+  </div>
+  <div class="workspaceRouteBlock">
+    <span>Разделы вне основной навигации</span>
+    <div class="workspaceRouteLinks" id="workspaceRouteLinks"></div>
+  </div>
+</div>
+
 <div class="themeBuilder">
   <div class="themeBuilderMain">
     <div class="profileSub">Пресет</div>
@@ -700,8 +737,8 @@
 </div>
 
 <div class="appearanceActions">
-<button class="primary" id="appearanceSave" type="button">Сохранить внешний вид</button>
-<button id="appearanceReset" type="button">Сбросить локально</button>
+<button class="primary" id="appearanceSave" type="button">Сохранить сейчас</button>
+<button id="appearanceReset" type="button">Сбросить оформление</button>
 </div>
 <div class="profileMsg" id="appearanceMsg"></div>
 <div class="settingsHint">Роли `USER/ADMIN`, будущий тариф `FREE/PAID/VIP` и внешний вид остаются разными слоями. Theme Builder хранит только разрешённые параметры, не CSS.</div>
@@ -878,7 +915,8 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.17.3</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.17.4</b></div>
+  <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
   <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
@@ -1405,14 +1443,15 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.17.3"></script>
-<script src="js/20-data.js?v=27.17.3"></script>
-<script src="js/30-calendar.js?v=27.17.3"></script>
-<script src="js/35-today.js?v=27.17.3"></script>
-<script src="js/37-calendar-experience.js?v=27.17.3"></script>
-<script src="js/40-overtime.js?v=27.17.3"></script>
-<script src="js/50-tasks.js?v=27.17.3"></script>
-<script src="js/60-settings.js?v=27.17.3"></script>
-<script src="js/70-user-boot.js?v=27.17.3"></script>
+<script src="js/10-core.js?v=27.17.4"></script>
+<script src="js/12-ui-platform.js?v=27.17.4"></script>
+<script src="js/20-data.js?v=27.17.4"></script>
+<script src="js/30-calendar.js?v=27.17.4"></script>
+<script src="js/35-today.js?v=27.17.4"></script>
+<script src="js/37-calendar-experience.js?v=27.17.4"></script>
+<script src="js/40-overtime.js?v=27.17.4"></script>
+<script src="js/50-tasks.js?v=27.17.4"></script>
+<script src="js/60-settings.js?v=27.17.4"></script>
+<script src="js/70-user-boot.js?v=27.17.4"></script>
 </body>
 </html>

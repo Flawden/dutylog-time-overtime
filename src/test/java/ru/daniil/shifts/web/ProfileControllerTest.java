@@ -90,6 +90,14 @@ class ProfileControllerTest {
                     "density":"compact",
                     "shellMode":"classic",
                     "cardRadius":999,
+                    "uiContract":1,
+                    "workspaceId":"planner",
+                    "layoutId":"focus",
+                    "themeId":"midnight",
+                    "paletteId":"violet",
+                    "decorationId":"none",
+                    "accentSecondary":"#123456",
+                    "todayWidgets":["tasks","important","tasks","javascript"],
                     "unknownCss":"body{display:none}"
                   },
                   "languagePreference":" EN ",
@@ -117,6 +125,16 @@ class ProfileControllerTest {
                 .andExpect(jsonPath("$.themeConfig.buttonStyle").value("soft"))
                 .andExpect(jsonPath("$.themeConfig.shellMode").value("classic"))
                 .andExpect(jsonPath("$.themeConfig.cardRadius").value(28))
+                .andExpect(jsonPath("$.themeConfig.uiContract").value(1))
+                .andExpect(jsonPath("$.themeConfig.workspaceId").value("planner"))
+                .andExpect(jsonPath("$.themeConfig.layoutId").value("focus"))
+                .andExpect(jsonPath("$.themeConfig.themeId").value("midnight"))
+                .andExpect(jsonPath("$.themeConfig.paletteId").value("violet"))
+                .andExpect(jsonPath("$.themeConfig.decorationId").value("none"))
+                .andExpect(jsonPath("$.themeConfig.accentSecondary").value("#123456"))
+                .andExpect(jsonPath("$.themeConfig.todayWidgets[0]").value("tasks"))
+                .andExpect(jsonPath("$.themeConfig.todayWidgets[1]").value("important"))
+                .andExpect(jsonPath("$.themeConfig.todayWidgets.length()").value(2))
                 .andExpect(jsonPath("$.themeConfig.unknownCss").doesNotExist());
 
         AppUser stored = users.findByUsername(owner.getUsername()).orElseThrow();
@@ -131,6 +149,8 @@ class ProfileControllerTest {
         assertTrue(stored.isOnboardingCompleted());
         assertTrue(stored.getThemeConfig().contains("\"cardRadius\":28"));
         assertTrue(stored.getThemeConfig().contains("\"shellMode\":\"classic\""));
+        assertTrue(stored.getThemeConfig().contains("\"workspaceId\":\"planner\""));
+        assertTrue(stored.getThemeConfig().contains("\"todayWidgets\":[\"tasks\",\"important\"]"));
         assertTrue(!stored.getThemeConfig().contains("unknownCss"));
     }
 
@@ -252,6 +272,11 @@ class ProfileControllerTest {
                 "{\"themeConfig\":{\"appBg\":\"red\"}}",
                 "{\"themeConfig\":{\"buttonStyle\":\"javascript\"}}",
                 "{\"themeConfig\":{\"shellMode\":\"immersive\"}}",
+                "{\"themeConfig\":{\"workspaceId\":\"chaos\"}}",
+                "{\"themeConfig\":{\"layoutId\":\"absolute\"}}",
+                "{\"themeConfig\":{\"themeId\":\"javascript\"}}",
+                "{\"themeConfig\":{\"paletteId\":\"rainbow-script\"}}",
+                "{\"themeConfig\":{\"accentSecondary\":\"orange\"}}",
                 "{\"workTimezone\":\"Mars/Olympus_Mons\"}",
                 "{\"workTimezone\":\"\"}",
                 "{\"displayTimezone\":\"Mars/Olympus_Mons\"}",
