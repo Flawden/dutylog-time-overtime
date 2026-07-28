@@ -1,15 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.17.4.
+Status: v27.17.5.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.17.4 adds UI Core contract v1, declarative workspaces/layouts/themes/palettes, automatic appearance persistence and isolated theme-package checks. Current application baseline: 95 Java test classes / 496 `@Test` methods and 25 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.17.5 fixes the state-aware UI Core accordion browser contract while preserving UI Core v1, declarative workspaces/layouts/themes/palettes, automatic appearance persistence and isolated theme-package checks. Current application baseline: 95 Java test classes / 496 `@Test` methods and 25 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.17.5 UI Core E2E Accordion Hotfix extension
+
+- `design-system-shell.spec.js` no longer toggles the Appearance accordion blindly after reload.
+- The scenario now proves that `#appearanceCard` restores `is-open`, the Classic selector is visible and `dutylog.settings.openSection` remains `appearance`.
+- The Next → Classic → Next fallback contract is exercised only after the persisted accordion state is confirmed.
+- Production UI behavior is unchanged; baseline remains 95 Java test classes / 496 `@Test` methods / 25 Chromium Playwright scenarios.
 
 ## v27.17.4 UI Core & Workspace Foundation extension
 

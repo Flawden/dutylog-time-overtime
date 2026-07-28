@@ -1,3 +1,10 @@
+# v27.17.5 — UI Core E2E Accordion Hotfix
+
+- Fixed the UI Core Playwright scenario so it respects the persisted Appearance accordion state after reload instead of blindly clicking the already-open header and collapsing the Classic selector.
+- The browser contract now explicitly verifies that the Appearance card remains open, the Classic choice is visible and `dutylog.settings.openSection=appearance` survives reload before testing the fallback switch.
+- No production UI, profile, domain API or schema behavior changed; Flyway remains V36.
+- Regression baseline remains 95 Java test classes, 496 `@Test` methods and 25 Playwright scenarios.
+
 # v27.17.4 — UI Core & Workspace Foundation
 
 - Introduced UI Core contract v1: one shared DOM/business layer with declarative registries for workspaces, layouts, themes, palettes, decorations, screens and Today widgets.

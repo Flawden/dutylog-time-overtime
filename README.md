@@ -1,28 +1,26 @@
-> Current release: **v27.17.4 — UI Core & Workspace Foundation**.
+> Current release: **v27.17.5 — UI Core E2E Accordion Hotfix**.
 
 # DutyLog
 
-Current release: **v27.17.4 — UI Core & Workspace Foundation**
+Current release: **v27.17.5 — UI Core E2E Accordion Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.17.4 — UI Core & Workspace Foundation
+## Текущая версия: v27.17.5 — UI Core E2E Accordion Hotfix
 
-**v27.17.4** превращает DutyLog Next из отдельной надстройки в первую конфигурацию общего UI Core:
+**v27.17.5** восстанавливает зелёный browser gate после ошибки в самом UI Core E2E-сценарии:
 
-- одна DOM- и бизнес-база используется всеми рабочими окружениями;
-- `Shift Worker`, `Planner` и `Minimal` меняют порядок и доступность основных разделов без копирования экранов;
-- `Dashboard`, `Compact` и `Focus` меняют компоновку через отдельный layout-контракт;
-- встроенные темы вынесены в независимые CSS-пакеты, а цветовая палитра применяется отдельным слоем;
-- shell, workspace, layout, theme и palette выставляются до первого рендера;
-- изменения внешнего вида сохраняются автоматически с debounce, ревизиями и последовательной очередью;
-- Classic остаётся аварийным fallback до отдельного этапа Classic Sunset;
-- сервер принимает только whitelist-поля UI Core, без произвольного CSS и JavaScript.
+- после reload тест больше не кликает вслепую по уже открытому разделу «Внешний вид»;
+- сценарий явно проверяет восстановление класса `is-open`, видимость выбора Classic и `dutylog.settings.openSection=appearance`;
+- только после подтверждения сохранённого состояния выполняется переключение Next → Classic → Next;
+- production UI Core из `v27.17.4` не менялся.
 
-Backend domain API и схема данных не менялись; Flyway остаётся **V1–V36**. Автоматическая база: **95 Java-тестовых классов, 496 `@Test` методов и 25 Playwright browser scenarios**.
+Backend API и схема данных не менялись; Flyway остаётся **V1–V36**. Автоматическая база: **95 Java-тестовых классов, 496 `@Test` методов и 25 Playwright browser scenarios**.
 
 Предыдущие продуктовые релизы:
+
+- **v27.17.4 — UI Core & Workspace Foundation** — добавил UI Core v1, workspaces, layouts, независимые темы и палитры;
 
 - **v27.17.3 — Java Contract Build Gate Hotfix** — вернул зелёный `testCompile` и добавил быстрый `javac`-gate;
 - **v27.17.2 — Calendar Timeline Readability Hotfix** — исправил читаемость коротких timed-events на desktop;
@@ -365,7 +363,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.17.4 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и проверить переключение workspace/layout/palette на телефоне и desktop. После этого начинается **v27.17.5 — Classic Sunset**.
+Следующий практический шаг — пропустить v27.17.5 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и проверить переключение workspace/layout/palette и Next → Classic → Next. После этого начинается **v27.17.6 — Classic Sunset**.
 
 ## Служебный профиль администратора
 

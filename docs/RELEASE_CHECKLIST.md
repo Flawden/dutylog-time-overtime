@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.17.4.
+Status: v27.17.5.
 
 ## Local gate
 
@@ -26,6 +26,7 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - verify Dashboard / Compact / Focus on desktop and mobile;
 - verify theme + palette independence and automatic persistence after reload;
 - verify Classic still restores its original five-destination navigation;
+- verify Appearance remains open after reload before switching Next → Classic → Next;
 - test the migration against the persistent staging database;
 - optionally reset staging and verify a clean V1..latest install.
 
@@ -52,6 +53,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.17.4 -m "v27.17.4 — UI Core & Workspace Foundation"
-git push origin v27.17.4
+git tag -a v27.17.5 -m "v27.17.5 — UI Core E2E Accordion Hotfix"
+git push origin v27.17.5
 ```

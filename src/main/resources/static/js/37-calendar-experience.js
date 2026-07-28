@@ -1,5 +1,5 @@
 /*
- * 37-calendar-experience.js — v27.17.4 Calendar Timeline Readability Hotfix
+ * 37-calendar-experience.js — v27.17.5 Calendar Timeline Readability Hotfix
  *
  * Adds Month / Week / Day scales on top of the existing authoritative
  * calendar model. Business logic and the legacy selected-day editor stay in

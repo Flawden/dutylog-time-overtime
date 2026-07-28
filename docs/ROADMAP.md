@@ -1,10 +1,10 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.17.4 — UI Core & Workspace Foundation**.
+Current release: **v27.17.5 — UI Core E2E Accordion Hotfix**.
 
 ## Текущая продуктовая точка — UI Core v1
 
-Статус: **v27.17.4** завершает выделение первого независимого UI-фундамента поверх общей бизнес-логики DutyLog.
+Статус: **v27.17.5** восстанавливает зелёный E2E-gate для уже завершённого UI Core v1 и не меняет production-поведение.
 
 Сделано к текущей точке:
 
@@ -22,7 +22,7 @@ Current release: **v27.17.4 — UI Core & Workspace Foundation**.
 - offline snapshot, staging CI/CD и backup/restore;
 - Flyway V1–V36, Java 17, 95 Java test classes / 496 tests / 25 Playwright scenarios.
 
-Следующий архитектурный этап: **v27.17.5 — Classic Sunset**.
+Следующий архитектурный этап: **v27.17.6 — Classic Sunset**.
 
 Цель этапа:
 
@@ -219,7 +219,8 @@ API уже достаточно стабилен для первого Android-�
 
 - `v27.17.3` — Java Contract Build Gate Hotfix.
 - `v27.17.4` — UI Core & Workspace Foundation.
-- `v27.17.5` — Classic Sunset.
+- `v27.17.5` — UI Core E2E Accordion Hotfix.
+- `v27.17.6` — Classic Sunset.
 - `v27.18.0` — Overtime Next.
 - `v27.19.0` — Tasks & Inbox Next, including independent planned task intervals (`start → end`), duration, deadlines and timeline cards.
 - `v27.20.0` — Notes & Important Events Next, including all-day/timed/multi-day events, place, description, reminders and read-first event cards.

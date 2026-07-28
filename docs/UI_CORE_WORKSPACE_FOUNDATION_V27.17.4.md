@@ -123,7 +123,7 @@ This prevents the old shell or wrong theme from flashing before the main bundles
 
 Classic remains available in v27.17.4. Workspace classes are disabled for Classic navigation so the fallback preserves its original destination set. No new workspace/layout behavior is added to Classic.
 
-Classic removal is deferred to v27.17.5 after staging acceptance of UI Core v1.
+Classic removal is deferred to v27.17.6 after the v27.17.5 E2E accordion hotfix and staging acceptance of UI Core v1.
 
 ## Compatibility
 

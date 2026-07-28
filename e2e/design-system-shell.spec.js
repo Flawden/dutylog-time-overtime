@@ -24,8 +24,10 @@ test('UI Core workspace stays persistent while Classic remains an instant fallba
 
   await page.locator('#tabbar a[data-view="settings"]').click();
   await expect(page.locator('#view-settings')).toBeVisible();
-  await page.locator('#appearanceCard .settingsHead').click();
-  await expect(page.locator('[data-shell-choice="classic"]')).toBeVisible();
+  const appearanceCard = page.locator('#appearanceCard');
+  const classicChoice = appearanceCard.locator('[data-shell-choice="classic"]');
+  await appearanceCard.locator('.settingsHead').click();
+  await expect(classicChoice).toBeVisible();
   await expect(page.locator('#uiPlatformStatus')).toContainText('UI Core v1');
 
   await page.locator('#uiWorkspace').selectOption('planner');
@@ -43,9 +45,11 @@ test('UI Core workspace stays persistent while Classic remains an instant fallba
   await expect(page.locator('html')).toHaveAttribute('data-ui-workspace', 'planner');
   await expect(page.locator('html')).toHaveAttribute('data-ui-layout', 'compact');
   await expect(page.locator('html')).toHaveAttribute('data-ui-palette', 'violet');
-  await page.locator('#appearanceCard .settingsHead').click();
+  await expect(appearanceCard).toHaveClass(/is-open/);
+  await expect(classicChoice).toBeVisible();
+  expect(await page.evaluate(() => localStorage.getItem('dutylog.settings.openSection'))).toBe('appearance');
 
-  await page.locator('[data-shell-choice="classic"]').click();
+  await classicChoice.click();
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'classic');
   await expect(page.locator('#nextTopbar')).toBeHidden();
   await expect(page.locator('#tabbar a[data-view="today"]')).toBeHidden();
