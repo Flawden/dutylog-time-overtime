@@ -19,7 +19,7 @@ class TodayDashboardFrontendContractTest {
         assertTrue(html.contains("data-view=\"today\" href=\"#today\""));
         assertTrue(html.contains("data-view=\"calendar\" href=\"#calendar\""));
         assertTrue(html.contains("id=\"view-today\""));
-        assertTrue(html.contains("js/35-today.js?v=27.17.2"));
+        assertTrue(html.contains("js/35-today.js?v=27.17.3"));
         assertTrue(boot.contains("dataset.shell === \"classic\" ? \"#calendar\" : \"#today\""));
         assertTrue(boot.contains("dataset.shell === \"classic\" && active === \"today\""));
         assertTrue(boot.contains("today:\"view-today\""));

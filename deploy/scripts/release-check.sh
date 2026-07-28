@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.17.2}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.17.3}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -70,6 +70,7 @@ need python3
 need bash
 need sha256sum
 need flock
+need javac
 
 if (( ERRORS > 0 )); then
   echo "Missing required commands; aborting." >&2
@@ -117,8 +118,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.17.2"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.17.2."
+contains docs/API.md "# DutyLog API v27.17.3"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.17.3."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
@@ -170,6 +171,13 @@ contains src/main/resources/static/design-system.css 'height: max(48px, calc(var
 contains e2e/editor-modals.spec.js "expect(eventLayout.height).toBeGreaterThanOrEqual(47);"
 contains src/test/java/ru/daniil/shifts/web/CalendarMobileExperienceFrontendContractTest.java 'function calendarExperienceVisualEnd(event)'
 
+  # v27.17.3 Java Contract Build Gate Hotfix
+contains CHANGES.md "v27.17.3 — Java Contract Build Gate Hotfix"
+contains README.md "v27.17.3 — Java Contract Build Gate Hotfix"
+contains docs/JAVA_CONTRACT_BUILD_GATE_HOTFIX_V27.17.3.md "Java Contract Build Gate Hotfix"
+contains src/test/java/ru/daniil/shifts/web/CalendarMobileExperienceFrontendContractTest.java 'assertTrue(js.contains("[range, event.meta].filter(Boolean).join(\" · \")"));'
+contains deploy/scripts/release-check.sh 'Static frontend contract Java sources compile'
+
 if grep -R "result.put(\"version\", \"" -n src/main/java >/tmp/dutylog-version-hardcode.txt; then
   cat /tmp/dutylog-version-hardcode.txt >&2
   fail "hardcoded admin status version found; use info.app.version instead"
@@ -204,6 +212,45 @@ if (!handlers.some(item => item.type === 'click' && typeof item.handler === 'fun
 }
 console.log('OK:    Today bundle evaluates safely before later feature bundles');
 NODE
+
+echo
+echo "3) Static frontend contract Java syntax"
+JAVA_CONTRACT_TMP="$(mktemp -d)"
+cleanup_java_contract_tmp() {
+  rm -rf "$JAVA_CONTRACT_TMP"
+}
+trap cleanup_java_contract_tmp EXIT
+mkdir -p "$JAVA_CONTRACT_TMP/stubs/org/junit/jupiter/api" "$JAVA_CONTRACT_TMP/classes"
+cat > "$JAVA_CONTRACT_TMP/stubs/org/junit/jupiter/api/Test.java" <<'JAVA'
+package org.junit.jupiter.api;
+public @interface Test {}
+JAVA
+cat > "$JAVA_CONTRACT_TMP/stubs/org/junit/jupiter/api/Assertions.java" <<'JAVA'
+package org.junit.jupiter.api;
+public final class Assertions {
+  private Assertions() {}
+  public static void assertTrue(boolean condition) {}
+  public static void assertTrue(boolean condition, String message) {}
+  public static void assertFalse(boolean condition) {}
+  public static void assertFalse(boolean condition, String message) {}
+}
+JAVA
+javac -encoding UTF-8 -d "$JAVA_CONTRACT_TMP/classes" \
+  "$JAVA_CONTRACT_TMP/stubs/org/junit/jupiter/api/Test.java" \
+  "$JAVA_CONTRACT_TMP/stubs/org/junit/jupiter/api/Assertions.java"
+mapfile -d '' FRONTEND_CONTRACT_TESTS < <(
+  find src/test/java/ru/daniil/shifts/web -maxdepth 1 -name '*FrontendContractTest.java' -print0 | sort -z
+)
+if (( ${#FRONTEND_CONTRACT_TESTS[@]} == 0 )); then
+  fail "no static frontend contract Java sources found"
+else
+  javac -encoding UTF-8 -proc:none -cp "$JAVA_CONTRACT_TMP/classes" \
+    -d "$JAVA_CONTRACT_TMP/classes" "${FRONTEND_CONTRACT_TESTS[@]}"
+  ok "Static frontend contract Java sources compile"
+fi
+cleanup_java_contract_tmp
+trap - EXIT
+
 node --check src/main/resources/static/service-worker.js >/dev/null
 ok "node --check service-worker.js"
 node --check playwright.config.js >/dev/null
@@ -665,7 +712,7 @@ contains docs/RELEASE_CANDIDATE.md "v27.2.5 — Calendar day identity hotfix"
 contains docs/USER_GUIDE.md "Status: v27.2.5."
 contains docs/PRODUCTION_DEPLOY.md "same GHCR digest that already passed staging"
 contains docs/BACKUP_RESTORE.md "Status: v27.2.30."
-contains docs/RELEASE_CHECKLIST.md "git tag -a v27.17.2"
+contains docs/RELEASE_CHECKLIST.md "git tag -a v27.17.3"
 
 # v27.2.5 calendar persistence regression guards
 contains src/main/resources/static/js/30-calendar.js "api.month(requestedYear, requestedMonth, { fresh:true })"
@@ -1067,7 +1114,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1120,7 +1167,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1142,7 +1189,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1237,7 +1284,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -1396,7 +1443,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.10.0 — Task Details"
 contains README.md "v27.10.0 — Task Details"
 contains docs/TASK_DETAILS_V27.10.0.md "read-first"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
 contains src/main/resources/db/migration/postgresql/V32__task_details.sql "ADD COLUMN description"
 contains src/main/java/ru/daniil/shifts/model/DayTask.java "private String description"
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "public TaskDto get(AppUser user, Long id)"
@@ -1417,7 +1464,7 @@ contains e2e/task-details.spec.js 'task details separate reading from editing an
 contains CHANGES.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains README.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md "immutable absolute occurrence"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_start_instant"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_source_timezone"
 contains src/main/java/ru/daniil/shifts/model/DayEntry.java "captureShiftOccurrence"
@@ -1437,7 +1484,7 @@ contains e2e/important-timezone.spec.js "a timezone projection can move a late s
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.17.3"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1701,8 +1748,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.17.2"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.17.2."
+contains docs/API.md "# DutyLog API v27.17.3"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.17.3."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"

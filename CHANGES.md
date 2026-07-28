@@ -1,3 +1,10 @@
+# v27.17.3 — Java Contract Build Gate Hotfix
+
+- Fixed the malformed escaped Java string literal in `CalendarMobileExperienceFrontendContractTest` that stopped Maven during `testCompile` before Playwright and deployment.
+- Added a fast `javac` syntax gate for all static `*FrontendContractTest.java` files using minimal local JUnit stubs, so this class of source-level regression is caught by `release-check.sh` before packaging.
+- Kept the v27.17.2 timeline readability behavior unchanged.
+- No schema, backend API or frontend behavior change; Flyway remains V36. Regression baseline remains 94 Java test classes, 492 `@Test` methods and 25 Playwright scenarios.
+
 # v27.17.2 — Calendar Timeline Readability Hotfix
 
 - Increased the desktop visual floor for short timed tasks, reminders and overtime events so title and time remain readable.

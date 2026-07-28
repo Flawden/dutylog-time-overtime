@@ -214,3 +214,12 @@ API уже достаточно стабилен для первого Android-�
 - Daily earned, used and remaining totals are additive projections, not persisted copies.
 - Ledger filters and exports operate on projected local dates.
 - Source-credit edit/delete integrity is preserved across multi-day projections.
+
+
+## DutyLog Next UI platform sequence after v27.17.3
+
+- `v27.17.3` — Java Contract Build Gate Hotfix.
+- `v27.17.4` — UI Core & Workspace Foundation.
+- `v27.17.5` — Classic Sunset.
+- `v27.18.0` — Overtime Next.
+- `v27.20.0` — Notes & Important Events Next, including all-day/timed/multi-day events, place, description, reminders and read-first event cards.

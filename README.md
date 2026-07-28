@@ -1,27 +1,26 @@
-> Current release: **v27.17.2 — Calendar Timeline Readability Hotfix**.
+> Current release: **v27.17.3 — Java Contract Build Gate Hotfix**.
 
 # DutyLog
 
-Current release: **v27.17.2 — Calendar Timeline Readability Hotfix**
+Current release: **v27.17.3 — Java Contract Build Gate Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.17.2 — Calendar Timeline Readability Hotfix
+## Текущая версия: v27.17.3 — Java Contract Build Gate Hotfix
 
-**v27.17.2** закрывает последний визуальный дефект почасового дня, найденный после desktop/mobile приёмки:
+**v27.17.3** восстанавливает зелёный Maven gate после опечатки в статическом frontend-contract тесте:
 
-- короткие задачи, напоминания и переработки на desktop получают достаточную визуальную высоту для двух строк — названия и времени;
-- диапазон времени задачи всегда показывается первой частью второй строки, даже если у задачи есть категория или приоритет;
-- короткие события резервируют безопасную визуальную высоту в lane-раскладке и не накладываются на соседнее событие;
-- длинный заголовок остаётся в одной строке с ellipsis, а время не выталкивается за границы карточки;
-- мобильная компоновка не меняется: существующий компактный вариант остаётся прежним;
-- desktop E2E теперь проверяет реальную задачу на `17:41`, высоту карточки и нахождение обеих строк внутри события.
+- исправлена незакрытая Java-строка в `CalendarMobileExperienceFrontendContractTest`;
+- `release-check.sh` теперь синтаксически компилирует все `*FrontendContractTest.java` через `javac` с минимальными JUnit-заглушками;
+- ошибка уровня Java source теперь ловится до создания архива и до запуска GitHub Actions;
+- визуальная логика `v27.17.2` не менялась.
 
 Backend API и схема данных не менялись; Flyway остаётся **V1–V36**. Автоматическая база: **94 Java-тестовых класса, 492 `@Test` метода и 25 Playwright browser scenarios**.
 
 Предыдущие продуктовые релизы:
 
+- **v27.17.2 — Calendar Timeline Readability Hotfix** — исправил читаемость коротких timed-events на desktop;
 - **v27.17.1 — Calendar & Notes Quality Hotfix** — исправил container-aware заметки, all-day rail и минутную точность срока;
 - **v27.17.0 — Calendar Mobile Experience** — добавил Month / Week / Day и почасовой день;
 - **v27.16.3 — Time Settings Transaction Hotfix** — сериализовал ручное и автоматическое применение времени;
@@ -361,7 +360,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.17.2 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и повторить desktop/mobile приёмку Day view. После этого начинается **v27.17.3 — UI Core & Workspace Foundation**.
+Следующий практический шаг — пропустить v27.17.3 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и повторить desktop/mobile приёмку Day view. После этого начинается **v27.17.4 — UI Core & Workspace Foundation**.
 
 ## Служебный профиль администратора
 

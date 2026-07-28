@@ -1,15 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.17.2.
+Status: v27.17.3.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.17.2 hardens short desktop timeline events so title and time stay visible without changing domain data. Current application baseline: 94 Java test classes / 492 `@Test` methods and 25 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.17.3 restores the Java testCompile gate and adds fast syntax compilation for static frontend-contract tests before packaging. Current application baseline: 94 Java test classes / 492 `@Test` methods and 25 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.17.3 Java Contract Build Gate Hotfix extension
+
+- fixes the escaped string literal in `CalendarMobileExperienceFrontendContractTest`;
+- compiles every `*FrontendContractTest.java` with `javac` and local JUnit stubs inside `release-check.sh`;
+- catches Java syntax errors before Maven, image build and remote deployment;
+- keeps the 94 / 492 / 25 regression baseline unchanged.
 
 ## v27.17.2 Calendar Timeline Readability Hotfix extension
 

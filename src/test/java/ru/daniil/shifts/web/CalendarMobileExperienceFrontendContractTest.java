@@ -14,9 +14,9 @@ class CalendarMobileExperienceFrontendContractTest {
     @Test
     void shellLoadsCalendarExperienceAfterTodayAndBeforeFeatureEditors() throws Exception {
         String html = read("src/main/resources/static/index.html");
-        int today = html.indexOf("js/35-today.js?v=27.17.2");
-        int calendar = html.indexOf("js/37-calendar-experience.js?v=27.17.2");
-        int overtime = html.indexOf("js/40-overtime.js?v=27.17.2");
+        int today = html.indexOf("js/35-today.js?v=27.17.3");
+        int calendar = html.indexOf("js/37-calendar-experience.js?v=27.17.3");
+        int overtime = html.indexOf("js/40-overtime.js?v=27.17.3");
         assertTrue(today >= 0 && calendar > today && overtime > calendar);
         assertTrue(html.contains("data-calendar-mode=\"month\""));
         assertTrue(html.contains("data-calendar-mode=\"week\""));
@@ -40,7 +40,7 @@ class CalendarMobileExperienceFrontendContractTest {
         assertTrue(js.contains("calendarExperienceOpenLegacyDetails"));
         assertTrue(js.contains("function calendarExperienceVisualEnd(event)"));
         assertTrue(js.contains("laneEnds[lane] = calendarExperienceVisualEnd(event);"));
-        assertTrue(js.contains("[range, event.meta].filter(Boolean).join(\" · ")"));
+        assertTrue(js.contains("[range, event.meta].filter(Boolean).join(\" · \")"));
         String calendar = read("src/main/resources/static/js/30-calendar.js");
         assertTrue(calendar.contains("if ($(\"impDate\")) $(\"impDate\").value = k;"));
     }
