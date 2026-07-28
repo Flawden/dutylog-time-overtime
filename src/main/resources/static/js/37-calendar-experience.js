@@ -1,5 +1,5 @@
 /*
- * 37-calendar-experience.js — v27.17.0 Calendar Mobile Experience
+ * 37-calendar-experience.js — v27.17.1 Calendar & Notes Quality Hotfix
  *
  * Adds Month / Week / Day scales on top of the existing authoritative
  * calendar model. Business logic and the legacy selected-day editor stay in
@@ -141,10 +141,18 @@ function calendarExperienceTimeMinutes(value){
   if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
   return hour * 60 + minute;
 }
+function calendarExperienceReminderDate(reminder){
+  const value = String(reminder?.displayAt || reminder?.remindAt || "");
+  const match = value.match(/^(\d{4}-\d{2}-\d{2})T/);
+  return match ? match[1] : "";
+}
 function calendarExperienceReminderTime(reminder){
-  const value = String(reminder?.remindAt || "");
+  const value = String(reminder?.displayAt || reminder?.remindAt || "");
   const match = value.match(/T(\d{2}:\d{2})/);
   return match ? match[1] : "";
+}
+function calendarExperienceRemindersForDate(key){
+  return (state.reminders || []).filter(reminder => calendarExperienceReminderDate(reminder) === key);
 }
 function calendarExperienceTaskLabel(task){
   const category = String(task?.category || "").trim();
@@ -156,7 +164,7 @@ function calendarExperienceDayFacts(key){
   const segments = shiftSegmentsOf(key);
   const tasks = moduleEnabled("tasks") ? activeTasksOf(key) : [];
   const important = moduleEnabled("important_dates") ? importantOf(key) : [];
-  const reminders = moduleEnabled("notifications") ? remindersOf(key) : [];
+  const reminders = moduleEnabled("notifications") ? calendarExperienceRemindersForDate(key) : [];
   const notes = moduleEnabled("notes") ? notesOfDay(key) : [];
   const overtime = moduleEnabled("overtime") ? ledgerNetOf(key) : 0;
   return { shift, segments, tasks, important, reminders, notes, overtime };
@@ -256,6 +264,9 @@ function calendarExperienceTimelineEvents(key){
     events.push({ type:"task", start, end:Math.min(1440, start + 45), title:task.text || t("Задача"), meta:calendarExperienceTaskLabel(task), task });
   }
   for (const reminder of facts.reminders) {
+    // Important dates already live in the all-day rail. Their notification time
+    // is delivery metadata, not a second calendar event inside the hourly grid.
+    if (String(reminder?.type || "").toUpperCase() === "IMPORTANT_DAY") continue;
     const time = calendarExperienceReminderTime(reminder);
     const start = calendarExperienceTimeMinutes(time);
     if (start == null) continue;
@@ -276,24 +287,32 @@ function calendarExperienceRenderAllDay(key){
   if (!box) return;
   const facts = calendarExperienceDayFacts(key);
   const items = [];
-  if (facts.shift && !facts.segments.length) items.push({ type:"shift", text:shiftDisplayName(facts.shift), color:facts.shift.color });
-  for (const item of facts.important) items.push({ type:"important", text:item.title || t("Важная дата"), color:item.color });
-  for (const task of facts.tasks.filter(item => !item.dueTime)) items.push({ type:"task", text:task.text || t("Задача"), task });
-  if (facts.notes.length) items.push({ type:"note", text:`${state.language === "en" ? "Notes" : "Заметки"}: ${facts.notes.length}` });
+  if (facts.shift && !facts.segments.length) items.push({ type:"shift", icon:"◷", text:shiftDisplayName(facts.shift), color:facts.shift.color });
+  for (const item of facts.important) items.push({ type:"important", icon:"★", text:item.title || t("Важная дата"), color:item.color });
+  for (const task of facts.tasks.filter(item => !item.dueTime)) items.push({ type:"task", icon:"✓", text:task.text || t("Задача"), task });
+  if (facts.notes.length) items.push({ type:"note", icon:"▤", text:`${state.language === "en" ? "Notes" : "Заметки"}: ${facts.notes.length}` });
   box.hidden = !items.length;
   box.innerHTML = "";
+  if (!items.length) return;
+
+  const head = document.createElement("div");
+  head.className = "calendarAllDayHead";
+  head.innerHTML = `<span>${esc(state.language === "en" ? "All day" : "Весь день")}</span><small>${items.length}</small>`;
+  const list = document.createElement("div");
+  list.className = "calendarAllDayItems";
   for (const item of items) {
     const button = document.createElement("button");
     button.type = "button";
     button.className = `calendarAllDayItem ${item.type}`;
     if (item.color) button.style.setProperty("--event-color", item.color);
-    button.textContent = item.text;
+    button.innerHTML = `<span aria-hidden="true">${esc(item.icon || "○")}</span><b>${esc(item.text)}</b>`;
     button.addEventListener("click", () => {
       if (item.task && typeof openTaskDetails === "function") openTaskDetails(item.task.id);
       else calendarExperienceOpenLegacyDetails(key);
     });
-    box.appendChild(button);
+    list.appendChild(button);
   }
+  box.append(head, list);
 }
 function calendarExperienceRenderDay(){
   const title = $("calendarDayTitle");

@@ -2979,13 +2979,28 @@ body.panel-open .globalQuickAdd { display:none !important; }
 }
 .overtimeDaySummary b{ color:var(--text); }
 
-/* v27.14.0 — multiple independent notes per day */
-.dayNotesModule{display:flex;flex-direction:column;gap:10px}
-.dayNotesToolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.dayNotesLayout{display:grid;grid-template-columns:minmax(180px,240px) minmax(0,1fr);gap:12px;align-items:start}
-.dayNoteList{display:flex;flex-direction:column;gap:7px;max-height:360px;overflow:auto;padding-right:2px}
+/* v27.14.0 — multiple independent notes per day
+   v27.17.1 — the editor now responds to its own container, not the browser viewport. */
+.dayNotesModule{
+  display:flex;
+  min-width:0;
+  flex-direction:column;
+  gap:10px;
+  container-type:inline-size;
+  container-name:day-notes;
+}
+.dayNotesToolbar{display:flex;min-width:0;align-items:center;gap:10px;flex-wrap:wrap}
+.dayNotesLayout{
+  display:grid;
+  min-width:0;
+  grid-template-columns:minmax(180px,240px) minmax(260px,1fr);
+  gap:12px;
+  align-items:start;
+}
+.dayNotesLayout>*{min-width:0;max-width:100%}
+.dayNoteList{display:flex;min-width:0;max-height:360px;overflow:auto;flex-direction:column;gap:7px;padding-right:2px}
 .dayNoteListEmpty{padding:16px 10px;border:1px dashed var(--line);border-radius:10px;color:var(--dim);font-size:12px;text-align:center}
-.dayNoteCard{width:100%;display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;text-align:left;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panelAlt);color:var(--text);cursor:pointer}
+.dayNoteCard{width:100%;min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px;align-items:center;text-align:left;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panelAlt);color:var(--text);cursor:pointer}
 .dayNoteCard:hover{border-color:var(--accent)}
 .dayNoteCard.on{border-color:var(--accent);box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 40%,transparent)}
 .dayNoteCardPin{width:18px;text-align:center;opacity:.75}
@@ -2993,19 +3008,41 @@ body.panel-open .globalQuickAdd { display:none !important; }
 .dayNoteCardTitle{font-size:13px;font-weight:750;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .dayNoteCardPreview{font-size:11px;color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
 .dayNoteCardTime{font-size:10px;color:var(--dim)}
-.dayNoteEditor{min-width:0;position:relative}
-.dayNoteEditorHead{display:flex;gap:8px;align-items:center;margin-bottom:8px}
-#noteTitle{flex:1;min-width:0;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-weight:700}
-.dayNoteActions{display:flex;gap:5px;align-items:center}
+.dayNoteEditor{width:100%;min-width:0;max-width:100%;position:relative;overflow:hidden}
+.dayNoteEditorHead{display:flex;min-width:0;gap:8px;align-items:center;margin-bottom:8px}
+#noteTitle{width:100%;flex:1 1 auto;min-width:0;background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-weight:700}
+.dayNoteActions{display:flex;min-width:0;gap:5px;align-items:center;flex-wrap:wrap}
 .dayNoteActions button{min-width:34px;padding:7px 8px}
+.dayNoteEditor .tabs{min-width:0;max-width:100%;display:flex;align-items:flex-end;gap:4px;flex-wrap:wrap}
+.dayNoteEditor .tabs button{min-width:0}
+.dayNoteEditor #noteEdit,.dayNoteEditor #notePrev{width:100%;max-width:100%;box-sizing:border-box}
 .dangerGhost{color:var(--danger)!important}
 .dayNoteEmpty{padding:24px 12px;border:1px dashed var(--line);border-radius:10px;text-align:center;color:var(--dim);font-size:12px}
 .dayNoteEditor.is-empty .tabs,.dayNoteEditor.is-empty #noteEdit,.dayNoteEditor.is-empty #notePrev,.dayNoteEditor.is-empty .dayNoteEditorHead{display:none!important}
 .dayNoteEditor:not(.is-empty) .dayNoteEmpty{display:none}
 .noteCountBadge{display:inline-flex;min-width:18px;height:18px;padding:0 5px;align-items:center;justify-content:center;border-radius:999px;background:var(--accent);color:#111;font-size:10px;font-weight:800}
+
+/* A notes editor can live in a 4K browser and still be only 360 px wide inside
+   the selected-day rail. Container queries keep that rail in the phone-safe flow. */
+@container day-notes (max-width:720px){
+  .dayNotesLayout{grid-template-columns:minmax(0,1fr)}
+  .dayNoteList{max-height:190px}
+  .dayNoteEditorHead{align-items:stretch;flex-direction:column}
+  .dayNoteActions{justify-content:flex-end}
+  .dayNoteEditor .tabs{display:grid;grid-template-columns:auto auto minmax(0,1fr);align-items:end}
+  .dayNoteEditor .noteExpandBtn{justify-self:end;margin-left:0;white-space:nowrap}
+}
+@container day-notes (max-width:420px){
+  .dayNotesToolbar>*{width:100%}
+  .dayNoteActions{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));width:100%}
+  .dayNoteActions button{width:100%}
+  .dayNoteEditor .tabs{grid-template-columns:1fr 1fr}
+  .dayNoteEditor .noteExpandBtn{grid-column:1/-1;justify-self:stretch;width:100%;margin-top:4px}
+}
+/* Fallback for browsers without container queries. */
 @media(max-width:760px){
-  .dayNotesLayout{grid-template-columns:1fr}
-  .dayNoteList{max-height:170px}
+  .dayNotesLayout{grid-template-columns:minmax(0,1fr)}
+  .dayNoteList{max-height:190px}
   .dayNoteEditorHead{align-items:stretch;flex-direction:column}
   .dayNoteActions{justify-content:flex-end}
 }

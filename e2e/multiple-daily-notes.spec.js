@@ -17,6 +17,7 @@ function waitForNotePatch(page) {
 }
 
 test('multiple notes on one day remain independent across pin, reorder, reload and delete', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
   await registerAndOnboard(page, { preset: 'work', prefix: 'multinote' });
   const date = await currentLocalDateKey(page);
   await selectDate(page, date);
@@ -43,6 +44,25 @@ test('multiple notes on one day remain independent across pin, reorder, reload a
   await expect(page.locator('#noteList .dayNoteCard')).toHaveCount(2);
   await expect(page.locator(`#grid [data-date="${date}"] .noteCountBadge`)).toHaveText('2');
   await expect(page.locator('#sumNote')).toContainText('2');
+
+  const noteLayout = await page.evaluate(() => {
+    const module = document.querySelector('.dayNotesModule').getBoundingClientRect();
+    const list = document.querySelector('#noteList').getBoundingClientRect();
+    const editor = document.querySelector('#noteEditorPane').getBoundingClientRect();
+    return {
+      viewport: document.documentElement.clientWidth,
+      scrollWidth: document.documentElement.scrollWidth,
+      moduleRight: module.right,
+      listBottom: list.bottom,
+      editorTop: editor.top,
+      editorRight: editor.right,
+      editorWidth: editor.width
+    };
+  });
+  expect(noteLayout.scrollWidth).toBeLessThanOrEqual(noteLayout.viewport + 1);
+  expect(noteLayout.editorTop).toBeGreaterThanOrEqual(noteLayout.listBottom - 1);
+  expect(noteLayout.editorRight).toBeLessThanOrEqual(noteLayout.moduleRight + 1);
+  expect(noteLayout.editorWidth).toBeGreaterThan(250);
 
   const pinned = waitForNotePatch(page);
   await page.locator('#notePin').click();

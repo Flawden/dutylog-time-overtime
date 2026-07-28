@@ -24,6 +24,7 @@ class TaskAndShiftEditorsFrontendContractTest {
         assertTrue(html.contains("id=\"taskEditText\""));
         assertTrue(html.contains("id=\"taskEditPriority\""));
         assertTrue(html.contains("id=\"taskEditReminderEnabled\""));
+        assertTrue(html.contains("id=\"taskEditDueTime\" type=\"time\" step=\"60\""));
         assertTrue(tasks.contains("openAppModal(\"taskEditModal\""));
         assertTrue(tasks.contains("async function saveTaskEditor()"));
         assertFalse(tasks.contains("prompt(\"Текст задачи\""));

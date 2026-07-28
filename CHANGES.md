@@ -1,3 +1,14 @@
+# v27.17.1 — Calendar & Notes Quality Hotfix
+
+- Made the multiple-notes editor responsive to its own selected-day container with container queries instead of global viewport breakpoints.
+- Prevented list, action toolbar, tabs, preview and editor controls from escaping narrow desktop side rails.
+- Added an explicit all-day rail with a label, count and compact chips for important dates, untimed tasks, notes and untimed shifts.
+- Prefilled important-date creation with the currently selected calendar day instead of a stale previous value.
+- Projected reminders by their actual display/reminder date and removed duplicate `IMPORTANT_DAY` notification blocks from the hourly shift grid.
+- Changed task deadline time precision from five minutes to one minute, including the `17:41` E2E contract.
+- Extended existing Playwright and static frontend contracts without increasing the test-count baseline.
+- No schema or backend API change; Flyway remains V36. Regression baseline: 94 Java test classes, 492 `@Test` methods and 25 Playwright scenarios.
+
 # v27.17.0 — Calendar Mobile Experience
 
 - Added a persistent Month / Week / Day calendar scale for DutyLog Next.

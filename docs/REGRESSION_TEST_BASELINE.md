@@ -1,15 +1,25 @@
 # DutyLog regression test baseline
 
-Status: v27.17.0.
+Status: v27.17.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.17.0 adds persistent Month / Week / Day calendar scales and an hourly mobile day timeline without duplicating domain data. Current application baseline: 94 Java test classes / 492 `@Test` methods and 25 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.17.1 hardens Calendar Mobile Experience with container-aware notes, a true all-day rail and minute-precise task deadlines without changing domain data. Current application baseline: 94 Java test classes / 492 `@Test` methods and 25 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.17.1 Calendar & Notes Quality Hotfix extension
+
+- `multiple-daily-notes.spec.js` now runs at desktop width and proves that the notes editor stacks according to the selected-day rail width instead of the global viewport.
+- `calendar-mobile-experience.spec.js` creates a real important date and protects the explicit «Весь день» rail in Day mode.
+- Reminder projection uses `displayAt` / `remindAt` date identity, so delivery metadata from another date cannot appear on the focused day.
+- `IMPORTANT_DAY` notification delivery is not rendered as a duplicate timed event over a shift.
+- `editor-modals.spec.js` persists `17:41`, protecting one-minute deadline precision.
+- Static contracts protect the container-query boundary, all-day composition and `step="60"` input contract.
+- No schema or backend API change; Flyway remains V36.
 
 ## v27.17.0 Calendar Mobile Experience extension
 

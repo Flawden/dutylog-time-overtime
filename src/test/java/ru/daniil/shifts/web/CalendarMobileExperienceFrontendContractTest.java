@@ -14,9 +14,9 @@ class CalendarMobileExperienceFrontendContractTest {
     @Test
     void shellLoadsCalendarExperienceAfterTodayAndBeforeFeatureEditors() throws Exception {
         String html = read("src/main/resources/static/index.html");
-        int today = html.indexOf("js/35-today.js?v=27.17.0");
-        int calendar = html.indexOf("js/37-calendar-experience.js?v=27.17.0");
-        int overtime = html.indexOf("js/40-overtime.js?v=27.17.0");
+        int today = html.indexOf("js/35-today.js?v=27.17.1");
+        int calendar = html.indexOf("js/37-calendar-experience.js?v=27.17.1");
+        int overtime = html.indexOf("js/40-overtime.js?v=27.17.1");
         assertTrue(today >= 0 && calendar > today && overtime > calendar);
         assertTrue(html.contains("data-calendar-mode=\"month\""));
         assertTrue(html.contains("data-calendar-mode=\"week\""));
@@ -31,19 +31,30 @@ class CalendarMobileExperienceFrontendContractTest {
         assertTrue(js.contains("activeTasksOf(key)"));
         assertTrue(js.contains("importantOf(key)"));
         assertTrue(js.contains("creditsOf(key)"));
+        assertTrue(js.contains("calendarExperienceReminderDate"));
+        assertTrue(js.contains("calendarExperienceRemindersForDate"));
+        assertTrue(js.contains("toUpperCase() === \"IMPORTANT_DAY\""));
+        assertTrue(js.contains("calendarAllDayHead"));
         assertTrue(js.contains("dutylog.calendar.mode.v1"));
         assertTrue(js.contains("calendarExperienceBaseRenderCalendar"));
         assertTrue(js.contains("calendarExperienceOpenLegacyDetails"));
+        String calendar = read("src/main/resources/static/js/30-calendar.js");
+        assertTrue(calendar.contains("if ($(\"impDate\")) $(\"impDate\").value = k;"));
     }
 
     @Test
     void designSystemProvidesScrollableWeekStripAndHourlyTimeline() throws Exception {
         String css = read("src/main/resources/static/design-system.css");
+        String appCss = read("src/main/resources/static/app.css");
         assertTrue(css.contains(".calendarModeSwitch"));
         assertTrue(css.contains(".calendarWeekStrip"));
         assertTrue(css.contains("scroll-snap-type: x mandatory"));
         assertTrue(css.contains(".calendarTimelineEvent"));
         assertTrue(css.contains(".calendarNowLine"));
+        assertTrue(css.contains(".calendarAllDayHead"));
+        assertTrue(css.contains(".calendarAllDayItems"));
+        assertTrue(appCss.contains("container-name:day-notes"));
+        assertTrue(appCss.contains("@container day-notes (max-width:720px)"));
     }
 
     private static String read(String path) throws Exception {

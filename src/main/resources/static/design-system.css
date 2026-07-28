@@ -1,5 +1,5 @@
 /*
- * DutyLog Next design system foundation — v27.17.0
+ * DutyLog Next design system foundation — v27.17.1
  *
  * This file is deliberately layered after app.css. The classic shell remains
  * available through html[data-shell="classic"], while the new shell is an
@@ -828,7 +828,7 @@ html[data-shell="next"] .appBootCard::after {
   }
 }
 
-/* ─── v27.17.0 Today Dashboard ─────────────────────────────── */
+/* ─── v27.17.1 Today Dashboard ─────────────────────────────── */
 .todayDashboard { display: grid; gap: 16px; }
 .todayHeroHead,
 .todayCardHead,
@@ -1050,7 +1050,7 @@ html[data-shell="next"] .todayEmpty { border: 1px dashed var(--ds-border-soft); 
   .todayUpcomingRow { min-height: 58px; padding: 8px; }
 }
 
-/* ─── v27.17.0 Calendar Mobile Experience ─────────────────── */
+/* ─── v27.17.1 Calendar Mobile Experience ─────────────────── */
 html[data-shell="next"] .calendarExperience {
   max-width: 1180px;
   margin: 0 auto 14px;
@@ -1208,26 +1208,78 @@ html[data-shell="next"] .calendarDayHeader { display: flex; align-items: flex-st
 html[data-shell="next"] .calendarDayHeader h2 { margin: 2px 0 4px; font-size: clamp(22px, 3.2vw, 34px); text-transform: capitalize; }
 html[data-shell="next"] .calendarDaySubtitle { color: var(--mut); font-size: 13px; }
 html[data-shell="next"] .calendarAllDay {
-  display: flex;
-  gap: 8px;
+  display: grid;
+  grid-template-columns: auto minmax(0,1fr);
+  align-items: center;
+  gap: 10px;
   margin-top: 14px;
-  padding: 10px;
-  overflow-x: auto;
+  padding: 9px 10px;
   border: 1px solid var(--ds-border-soft);
   border-radius: 14px;
   background: color-mix(in srgb, var(--panel2) 45%, transparent);
+}
+html[data-shell="next"] .calendarAllDayHead {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding-right: 10px;
+  border-right: 1px solid var(--ds-border-soft);
+  color: var(--mut);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+html[data-shell="next"] .calendarAllDayHead small {
+  min-width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: 999px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel) 82%, transparent);
+  font-size: 10px;
+  letter-spacing: 0;
+}
+html[data-shell="next"] .calendarAllDayItems {
+  min-width: 0;
+  display: flex;
+  gap: 7px;
+  overflow-x: auto;
+  padding-bottom: 1px;
   scrollbar-width: thin;
 }
 html[data-shell="next"] .calendarAllDayItem {
   flex: 0 0 auto;
-  max-width: min(340px, 78vw);
-  min-height: 38px;
+  max-width: min(340px, 72vw);
+  min-height: 36px;
+  display: inline-grid;
+  grid-template-columns: 22px minmax(0,1fr);
+  align-items: center;
+  gap: 6px;
   overflow: hidden;
+  padding: 6px 10px 6px 7px;
   border-color: color-mix(in srgb, var(--event-color, var(--accent)) 38%, var(--line));
   color: var(--event-color, var(--text));
+  text-align: left;
+  background: color-mix(in srgb, var(--event-color, var(--accent)) 10%, transparent);
+}
+html[data-shell="next"] .calendarAllDayItem span {
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border-radius: 7px;
+  background: color-mix(in srgb, var(--event-color, var(--accent)) 14%, transparent);
+}
+html[data-shell="next"] .calendarAllDayItem b {
+  min-width: 0;
+  overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  background: color-mix(in srgb, var(--event-color, var(--accent)) 10%, transparent);
+  font-size: 12px;
 }
 html[data-shell="next"] .calendarTimeline {
   position: relative;
@@ -1342,6 +1394,10 @@ html[data-shell="next"] .calendarTimelineEmpty b { color: var(--text); }
   html[data-shell="next"] .calendarDayHeader h2 { font-size: 21px; }
   html[data-shell="next"] #calendarDayOpenDetails { min-height: 38px; padding: 7px 9px; font-size: 10px; }
   html[data-shell="next"] .calendarDaySubtitle { max-width: 230px; font-size: 10px; line-height: 1.4; }
+  html[data-shell="next"] .calendarAllDay { grid-template-columns: 1fr; align-items: stretch; gap: 7px; padding: 8px; }
+  html[data-shell="next"] .calendarAllDayHead { justify-content: space-between; padding-right: 0; padding-bottom: 6px; border-right: 0; border-bottom: 1px solid var(--ds-border-soft); }
+  html[data-shell="next"] .calendarAllDayItems { margin-inline: -1px; }
+  html[data-shell="next"] .calendarAllDayItem { max-width: 82vw; min-height: 34px; }
   html[data-shell="next"] .calendarTimeline { grid-template-columns: 48px minmax(0,1fr); min-height: 570px; height: calc(100vh - 250px); margin-top: 12px; border-radius: 15px; }
   html[data-shell="next"] .calendarTimelineHours,
   html[data-shell="next"] .calendarTimelineCanvas { min-height: 960px; }

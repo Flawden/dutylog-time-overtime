@@ -375,6 +375,9 @@ function selectDay(k){
     const date = new Date(y, m - 1, d);
     $("pWeekday").textContent = weekdayName((date.getDay() + 6) % 7);
     $("pDate").innerHTML = state.language === "en" ? `${monthNameGen(m - 1)} ${d} <span class="yr mono">${y}</span>` : `${d} ${monthNameGen(m - 1)} <span class="yr mono">${y}</span>`;
+    // Contextual creation from the day panel must target the day the user clicked,
+    // not a stale value left by a previous important-date draft.
+    if ($("impDate")) $("impDate").value = k;
     if (moduleEnabled("notes") && typeof renderDayNotes === "function") renderDayNotes();
     if (moduleEnabled("overtime")) resetOvertimeForms(k);
     if (moduleEnabled("notes")) setTab("edit");

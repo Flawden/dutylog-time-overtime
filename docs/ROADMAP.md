@@ -1,34 +1,36 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.17.0 — Calendar Mobile Experience**.
+Current release: **v27.17.1 — Calendar & Notes Quality Hotfix**.
 
-## Текущая продуктовая точка — Calendar Mobile Experience
+## Текущая продуктовая точка — Calendar & Notes Quality
 
-Статус: **v27.17.0** соединяет Month / Week / Day в один календарный опыт DutyLog Next.
+Статус: **v27.17.1** стабилизирует Calendar Mobile Experience после первой реальной desktop/mobile приёмки.
 
 Сделано к текущей точке:
 
 - Design System & Mobile Shell Foundation с безопасным Classic fallback;
 - Today Dashboard как основной маршрут;
-- недельная лента и выбранный день;
-- почасовой день со сменами, задачами, напоминаниями и переработками;
-- переходы Today → Day и возврат в полный редактор дня;
+- Month / Week / Day и почасовой календарь;
+- важные даты вынесены в явную зону «Весь день» и больше не дублируются как ложное временное событие;
+- редактор нескольких заметок адаптируется к ширине собственной панели через container queries;
+- срок задачи поддерживает любую минуту, а не только пятиминутный шаг;
 - immutable shift occurrences и timezone-проекция;
 - поминутный overtime/FIFO;
 - задачи, подзадачи, Inbox, важные даты и несколько заметок;
 - offline snapshot, staging CI/CD и backup/restore;
 - Flyway V1–V36, Java 17, 94 Java test classes / 492 tests / 25 Playwright scenarios.
 
-Следующий продуктовый этап: **v27.18.0 — Overtime Next**.
+Следующий архитектурный этап: **v27.17.2 — UI Core & Workspace Foundation**.
 
 Цель этапа:
 
-- перевести журнал переработок на новый визуальный язык;
-- сделать понятнее баланс, FIFO-историю и детализацию списаний;
-- улучшить мобильное добавление начисления и отгула;
-- сохранить точные интервалы и provenance без изменения расчётного ядра.
+- отделить UI Core от конкретной оболочки;
+- выделить независимые workspace, layout, theme, palette и decorations;
+- подготовить безопасные theme contracts и container-aware компоненты;
+- превратить DutyLog Next из надстройки в стандартную конфигурацию общего UI Core;
+- подготовить последующий **v27.17.3 — Classic Sunset** без потери общих компонентов.
 
-После Overtime Next: **Tasks & Inbox Next**, затем Notes / Important Days / Profile.
+После UI Core и Classic Sunset: **v27.18.0 — Overtime Next**, затем Tasks & Inbox Next, Notes / Important Days Next и Vacation Planner.
 
 ## Этап 1 — production foundation
 
