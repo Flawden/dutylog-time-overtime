@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.16.2.
+Status: v27.16.3.
 
 ## Local gate
 
@@ -48,6 +48,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.16.2 -m "v27.16.2 — Next Route & Time Settings E2E Hotfix"
-git push origin v27.16.2
+git tag -a v27.16.3 -m "v27.16.3 — Time Settings Transaction Hotfix"
+git push origin v27.16.3
 ```

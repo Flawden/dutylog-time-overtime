@@ -394,29 +394,54 @@ function syncTimeSettingsFromBuiltins(){
   return state.timeSettings;
 }
 
-function renderTimeSettings(){
+const TIME_SHIFT_DEFAULT_IDS = [
+  "defDayStart", "defDayEnd", "defDayBreak", "defDayPlan",
+  "defNightStart", "defNightEnd", "defNightBreak", "defNightPlan"
+];
+let timeSettingsDefaultsRevision = 0;
+let timeSettingsDefaultsCommittedRevision = 0;
+function timeSettingsDefaultsDirty(){
+  return timeSettingsDefaultsRevision !== timeSettingsDefaultsCommittedRevision;
+}
+function readShiftDefaultsDraft(){
+  const value = id => $(id)?.value ?? "";
+  return {
+    dayStart:value("defDayStart"),
+    dayEnd:value("defDayEnd"),
+    dayBreakMinutes:value("defDayBreak"),
+    dayPlannedHours:value("defDayPlan"),
+    nightStart:value("defNightStart"),
+    nightEnd:value("defNightEnd"),
+    nightBreakMinutes:value("defNightBreak"),
+    nightPlannedHours:value("defNightPlan")
+  };
+}
+
+function renderTimeSettings({ preserveShiftDefaults = timeSettingsDefaultsDirty() } = {}){
   if (!$("timeSettingsCard")) return;
   if (!state.timeSettings) state.timeSettings = loadTimeSettings();
+  const preservedDefaults = preserveShiftDefaults ? readShiftDefaultsDraft() : null;
   const timeSettings = syncTimeSettingsFromBuiltins();
+  const renderedDefaults = preservedDefaults ? { ...timeSettings, ...preservedDefaults } : timeSettings;
   const set = (id, value) => { if ($(id)) $(id).value = value ?? ""; };
   populateTimeZoneSelect("workTimezone", timeSettings.workTimezone);
   set("workTimezone", timeSettings.workTimezone);
   set("displayTimezone", timeSettings.workTimezone);
   set("timeFormatPref", timeSettings.timeFormat || "24h");
-  set("defDayStart", timeSettings.dayStart);
-  set("defDayEnd", timeSettings.dayEnd);
-  set("defDayBreak", timeSettings.dayBreakMinutes);
-  set("defDayPlan", timeSettings.dayPlannedHours);
-  set("defNightStart", timeSettings.nightStart);
-  set("defNightEnd", timeSettings.nightEnd);
-  set("defNightBreak", timeSettings.nightBreakMinutes);
-  set("defNightPlan", timeSettings.nightPlannedHours);
+  set("defDayStart", renderedDefaults.dayStart);
+  set("defDayEnd", renderedDefaults.dayEnd);
+  set("defDayBreak", renderedDefaults.dayBreakMinutes);
+  set("defDayPlan", renderedDefaults.dayPlannedHours);
+  set("defNightStart", renderedDefaults.nightStart);
+  set("defNightEnd", renderedDefaults.nightEnd);
+  set("defNightBreak", renderedDefaults.nightBreakMinutes);
+  set("defNightPlan", renderedDefaults.nightPlannedHours);
   renderTimePreview(timeSettings);
   const templateZone = $("shiftTemplateZoneHint");
   if (templateZone) templateZone.textContent = state.language === "en"
     ? `Template times are shown in ${timeSettings.workTimezone}. Existing dated shifts keep their immutable instants.`
     : `Время шаблонов показано в ${timeSettings.workTimezone}. Уже назначенные смены сохраняют свои абсолютные интервалы.`;
-  setTimeSettingsStatus("saved");
+  setTimeSettingsStatus(preserveShiftDefaults ? "dirty" : "saved");
 }
 function isRecognizedTimeZone(value){
   try {
@@ -472,6 +497,8 @@ async function saveTimeSettings(){
   }
 }
 let timeAutoApplyTimer = null;
+let timeSettingsApplyQueue = Promise.resolve();
+let timeSettingsApplyRevision = 0;
 function cancelTimeSettingsAutoApply(){
   if (!timeAutoApplyTimer) return;
   clearTimeout(timeAutoApplyTimer);
@@ -523,31 +550,53 @@ function patchForBuiltInShift(name, timeSettings){
     hours: timeSettings.dayPlannedHours,
   };
 }
-async function applyTimeSettingsToBuiltins(silent = false){
+function applyTimeSettingsToBuiltins(silent = false){
   if (!silent) cancelTimeSettingsAutoApply();
   const form = readTimeSettingsForm();
-  const timeSettings = {
-    ...form,
-    workTimezone:state.timeSettings?.workTimezone || loadTimeSettings().workTimezone,
-    timeFormat:state.timeSettings?.timeFormat || loadTimeSettings().timeFormat
-  };
-  storeTimeSettings(timeSettings);
-  const targets = state.shiftTypes.filter(s => s.name === "Дневная" || s.name === "Ночная");
-  if (!targets.length) return setSave("err", t("не нашёл Дневную/Ночную смену"));
-  if (!silent) setSave("saving");
-  try {
-    for (const shift of targets) {
-      const updated = await api.updateShiftType(shift.id, patchForBuiltInShift(shift.name, timeSettings));
-      const index = state.shiftTypes.findIndex(item => Number(item.id) === Number(shift.id));
-      if (index >= 0) state.shiftTypes[index] = updated;
+  const defaultsRevision = timeSettingsDefaultsRevision;
+  const applyRevision = ++timeSettingsApplyRevision;
+  const operation = async () => {
+    // A newer manual or debounced request already captured fresher form data.
+    if (applyRevision !== timeSettingsApplyRevision) return false;
+    const timeSettings = {
+      ...form,
+      workTimezone:state.timeSettings?.workTimezone || loadTimeSettings().workTimezone,
+      timeFormat:state.timeSettings?.timeFormat || loadTimeSettings().timeFormat
+    };
+    storeTimeSettings(timeSettings);
+    const targets = state.shiftTypes.filter(s => s.name === "Дневная" || s.name === "Ночная");
+    if (!targets.length) {
+      if (applyRevision === timeSettingsApplyRevision) setSave("err", t("не нашёл Дневную/Ночную смену"));
+      return false;
     }
-    setSave("saved", silent ? t("время смен применено") : t("встроенные смены обновлены"));
-    renderTimeSettings();
-    renderCustomList();
-    renderChips();
-    renderCalendar();
-    renderOvertimeControls();
-  } catch (err) { console.error(err); setSave("err", err.message); }
+    if (!silent && applyRevision === timeSettingsApplyRevision) setSave("saving");
+    try {
+      for (const shift of targets) {
+        const updated = await api.updateShiftType(shift.id, patchForBuiltInShift(shift.name, timeSettings));
+        const index = state.shiftTypes.findIndex(item => Number(item.id) === Number(shift.id));
+        if (index >= 0) state.shiftTypes[index] = updated;
+      }
+      // Never let an older in-flight autosave repaint a newer manual edit.
+      if (applyRevision !== timeSettingsApplyRevision) return true;
+      if (defaultsRevision === timeSettingsDefaultsRevision) {
+        timeSettingsDefaultsCommittedRevision = defaultsRevision;
+      }
+      setSave("saved", silent ? t("время смен применено") : t("встроенные смены обновлены"));
+      renderTimeSettings();
+      renderCustomList();
+      renderChips();
+      renderCalendar();
+      renderOvertimeControls();
+      return true;
+    } catch (err) {
+      console.error(err);
+      if (applyRevision === timeSettingsApplyRevision) setSave("err", err.message);
+      return false;
+    }
+  };
+  const pending = timeSettingsApplyQueue.then(operation, operation);
+  timeSettingsApplyQueue = pending.catch(() => false);
+  return pending;
 }
 let legacyShiftPreviewState = null;
 function legacyShiftStatus(text = "", tone = ""){
@@ -747,8 +796,11 @@ function initTimeSettingsEvents(){
       setTimeSettingsStatus("dirty");
     });
   }
-  const shiftDefaultIds = ["defDayStart","defDayEnd","defDayBreak","defDayPlan","defNightStart","defNightEnd","defNightBreak","defNightPlan"];
-  for (const id of shiftDefaultIds) {
+  for (const id of TIME_SHIFT_DEFAULT_IDS) {
+    $(id)?.addEventListener("input", () => {
+      timeSettingsDefaultsRevision += 1;
+      setTimeSettingsStatus("dirty");
+    });
     $(id)?.addEventListener("change", () => {
       const form = readTimeSettingsForm();
       storeTimeSettings({

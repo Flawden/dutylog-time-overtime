@@ -1,3 +1,11 @@
+# v27.16.3 — Time Settings Transaction Hotfix
+
+- Preserved unsaved shift-template form values while a timezone save continues background calendar/task/ledger refreshes.
+- Serialized debounced and manual built-in shift-template updates so an older in-flight autosave cannot repaint or win over a newer manual apply.
+- Added revision guards that only mark the exact captured draft as committed and ignore stale UI completion work.
+- Extended frontend contracts and release checks for the queue and draft-preservation invariants.
+- No schema or backend API change; Flyway remains V36. Regression baseline remains 93 Java test classes, 489 `@Test` methods and 24 Playwright scenarios.
+
 # v27.16.2 — Next Route & Time Settings E2E Hotfix
 
 - Aligned browser scenarios with the intentional DutyLog Next startup route: `#today` remains home, while shared helpers explicitly open Calendar before selecting a date.

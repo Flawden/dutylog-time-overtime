@@ -83,6 +83,10 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
         assertTrue(settings.contains("timeSaveTimezone"));
         assertTrue(settings.contains("function cancelTimeSettingsAutoApply()"));
         assertTrue(settings.contains("if (!silent) cancelTimeSettingsAutoApply();"));
+        assertTrue(settings.contains("let timeSettingsApplyQueue = Promise.resolve();"));
+        assertTrue(settings.contains("const pending = timeSettingsApplyQueue.then(operation, operation);"));
+        assertTrue(settings.contains("function readShiftDefaultsDraft()"));
+        assertTrue(settings.contains("preserveShiftDefaults = timeSettingsDefaultsDirty()"));
         assertFalse(settings.contains("workOffsetMoscow: Math.round"));
     }
 

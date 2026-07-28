@@ -1,22 +1,25 @@
-> Current release: **v27.16.2 — Next Route & Time Settings E2E Hotfix**.
+> Current release: **v27.16.3 — Time Settings Transaction Hotfix**.
 
 # DutyLog
 
-Current release: **v27.16.2 — Next Route & Time Settings E2E Hotfix**
+Current release: **v27.16.3 — Time Settings Transaction Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.16.2 — Next Route & Time Settings E2E Hotfix
+## Текущая версия: v27.16.3 — Time Settings Transaction Hotfix
 
-**v27.16.2** завершает стабилизацию Today Dashboard после исправления runtime load-order. Само приложение теперь загружается корректно, но половина старых Playwright-сценариев всё ещё предполагала, что календарь остаётся стартовым экраном. В DutyLog Next стартовым маршрутом является `#today`, поэтому общие E2E-помощники теперь явно открывают нужный workspace перед взаимодействием с календарём или скрытым legacy-разделом важных дат.
+**v27.16.3** закрывает последнюю воспроизводимую гонку настроек времени, из-за которой единственный Playwright-сценарий продолжал получать `10:30` вместо введённых `08:30`.
 
-Также устранена гонка настроек времени: явное нажатие «Применить к встроенным сменам» отменяет ожидающий debounce autosave. Ручное сохранение больше не конкурирует с отложенным применением и не может вернуть уже перепроецированное время шаблона.
+Проблема состояла из двух независимых асинхронных процессов: сохранение часового пояса продолжало обновлять календарь и повторно рендерить форму уже после ответа `/api/profile`, а автоматическое применение шаблонов могло быть уже запущено к моменту ручного нажатия. Простая отмена ожидающего debounce из v27.16.2 не могла остановить уже выполняющийся запрос.
 
-Backend API и схема данных не менялись; Flyway остаётся **V1–V36**. Автоматическая база остаётся прежней: **93 Java-тестовых класса, 489 `@Test` методов и 24 Playwright browser scenario**.
+Теперь несохранённый пользовательский ввод переживает фоновые перерисовки, а применения встроенных смен сериализованы. Более старый autosave не может перерисовать или победить более новое ручное сохранение.
+
+Backend API и схема данных не менялись; Flyway остаётся **V1–V36**. Автоматическая база: **93 Java-тестовых класса, 489 `@Test` методов и 24 Playwright browser scenario**.
 
 Предыдущие продуктовые релизы:
 
+- **v27.16.2 — Next Route & Time Settings E2E Hotfix** — выровнял E2E с Today-first навигацией и отменял ожидающий debounce;
 - **v27.16.1 — Today Runtime & Repository Truth Hotfix** — устранил общий `openQuickActions` load-order crash;
 - **v27.16.0 — Today Dashboard** — ежедневный рабочий экран, смена, переработки, задачи, даты и быстрые действия;
 - **v27.15.0 — Design System & Mobile Shell Foundation** — токены, фирменная оболочка, нижняя навигация и Classic fallback;
@@ -268,7 +271,8 @@ DUTYLOG_TELEGRAM_NOTIFICATIONS_ENABLED=true
 - [`docs/OFFLINE_MODE.md`](docs/OFFLINE_MODE.md) — offline-режим, локальный снимок и очередь синхронизации.
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — ручная проверка web/PWA-монолита перед релизом и VPS-деплоем.
 - [`docs/REGRESSION_TEST_BASELINE.md`](docs/REGRESSION_TEST_BASELINE.md) — карта ручных сценариев и автоматических regression-тестов, запуск `mvn verify` и JaCoCo.
-- [`docs/NEXT_ROUTE_TIME_SETTINGS_E2E_HOTFIX_V27.16.2.md`](docs/NEXT_ROUTE_TIME_SETTINGS_E2E_HOTFIX_V27.16.2.md) — выравнивание E2E с Today route и защита ручного применения времени от debounce-гонки.
+- [`docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md`](docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md) — защита черновика формы и сериализация ручного/автоматического применения времени.
+- [`docs/NEXT_ROUTE_TIME_SETTINGS_E2E_HOTFIX_V27.16.2.md`](docs/NEXT_ROUTE_TIME_SETTINGS_E2E_HOTFIX_V27.16.2.md) — выравнивание E2E с Today route и базовая отмена debounce.
 - [`docs/TODAY_RUNTIME_HOTFIX_V27.16.1.md`](docs/TODAY_RUNTIME_HOTFIX_V27.16.1.md) — причина каскадного падения Playwright и контракт исправления forward-reference между frontend bundles.
 - [`docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md`](docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md) — абсолютные экземпляры смен, перенос по локальным датам и миграция legacy-строк.
 - [`docs/TASK_DETAILS_V27.10.0.md`](docs/TASK_DETAILS_V27.10.0.md) — read-first детали задачи, описание, owner-scoped GET и границы редактора.
@@ -350,7 +354,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.16.2 через полный Maven и Playwright gate, принять staging на телефоне и desktop и убедиться, что Today, Calendar, быстрые действия, PWA reload и Classic fallback работают без runtime-ошибок. После этого продуктовая линия переходит к **v27.17.0 — Calendar Mobile Experience**: месяц → неделя → почасовой день.
+Следующий практический шаг — пропустить v27.16.3 через полный Maven и Playwright gate, затем подтвердить `/actuator/info` на staging и принять Today на телефоне и desktop. После этого продуктовая линия переходит к **v27.17.0 — Calendar Mobile Experience**: месяц → неделя → почасовой день.
 
 ## Служебный профиль администратора
 
