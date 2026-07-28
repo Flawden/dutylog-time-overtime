@@ -1,5 +1,5 @@
 /*
- * 37-calendar-experience.js — v27.17.1 Calendar & Notes Quality Hotfix
+ * 37-calendar-experience.js — v27.17.2 Calendar Timeline Readability Hotfix
  *
  * Adds Month / Week / Day scales on top of the existing authoritative
  * calendar model. Business logic and the legacy selected-day editor stay in
@@ -314,6 +314,10 @@ function calendarExperienceRenderAllDay(key){
   }
   box.append(head, list);
 }
+function calendarExperienceVisualEnd(event){
+  const minimumMinutes = event?.type === "shift" ? 0 : 60;
+  return Math.min(1440, Math.max(Number(event?.end || 0), Number(event?.start || 0) + minimumMinutes));
+}
 function calendarExperienceRenderDay(){
   const title = $("calendarDayTitle");
   const subtitle = $("calendarDaySubtitle");
@@ -341,17 +345,23 @@ function calendarExperienceRenderDay(){
   for (const event of calendarExperienceTimelineEvents(key)) {
     let lane = laneEnds.findIndex(end => end <= event.start);
     if (lane < 0) lane = laneEnds.length;
-    laneEnds[lane] = event.end;
+    laneEnds[lane] = calendarExperienceVisualEnd(event);
     const button = document.createElement("button");
     button.type = "button";
     button.className = `calendarTimelineEvent ${event.type}`;
+    button.classList.toggle("isCompact", event.end - event.start < 60);
     button.style.setProperty("--start", String(event.start / 14.4));
     button.style.setProperty("--duration", String(Math.max(2.8, (event.end - event.start) / 14.4)));
     button.style.setProperty("--lane", String(Math.min(lane, 3)));
     if (event.color) button.style.setProperty("--event-color", event.color);
     const start = `${String(Math.floor(event.start / 60)).padStart(2,"0")}:${String(event.start % 60).padStart(2,"0")}`;
     const end = `${String(Math.floor(event.end / 60)).padStart(2,"0")}:${String(event.end % 60).padStart(2,"0")}`.replace(/^24:/,"24:");
-    button.innerHTML = `<b>${esc(event.title)}</b><span>${esc(event.meta || `${start}–${end}`)}</span>`;
+    const range = `${start}–${end}`;
+    const detail = event.type === "task"
+      ? [range, event.meta].filter(Boolean).join(" · ")
+      : (event.meta || range);
+    button.innerHTML = `<b>${esc(event.title)}</b><span>${esc(detail)}</span>`;
+    button.title = `${event.title} · ${detail}`;
     button.addEventListener("click", () => {
       if (event.task && typeof openTaskDetails === "function") openTaskDetails(event.task.id);
       else if (event.type === "overtime") location.hash = "#overtime";

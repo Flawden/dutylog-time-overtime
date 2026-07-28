@@ -1,3 +1,12 @@
+# v27.17.2 — Calendar Timeline Readability Hotfix
+
+- Increased the desktop visual floor for short timed tasks, reminders and overtime events so title and time remain readable.
+- Preserved the compact mobile timeline layout unchanged.
+- Always renders a task time range before optional category / priority metadata.
+- Added visual lane reservation for short events so the larger readable card cannot overlap the next timed item.
+- Extended the existing desktop editor E2E scenario to verify a real `17:41` task, event height and both text rows staying inside the card.
+- No schema or backend API change; Flyway remains V36. Regression baseline remains 94 Java test classes, 492 `@Test` methods and 25 Playwright scenarios.
+
 # v27.17.1 — Calendar & Notes Quality Hotfix
 
 - Made the multiple-notes editor responsive to its own selected-day container with container queries instead of global viewport breakpoints.

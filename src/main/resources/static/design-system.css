@@ -1,5 +1,5 @@
 /*
- * DutyLog Next design system foundation — v27.17.1
+ * DutyLog Next design system foundation — v27.17.2
  *
  * This file is deliberately layered after app.css. The classic shell remains
  * available through html[data-shell="classic"], while the new shell is an
@@ -1338,8 +1338,19 @@ html[data-shell="next"] .calendarTimelineEvent {
 }
 html[data-shell="next"] .calendarTimelineEvent:hover { z-index: 5; border-color: var(--event-color); transform: translateX(2px); }
 html[data-shell="next"] .calendarTimelineEvent b,
-html[data-shell="next"] .calendarTimelineEvent span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-html[data-shell="next"] .calendarTimelineEvent span { color: color-mix(in srgb, var(--text) 72%, var(--mut)); font-size: 11px; }
+html[data-shell="next"] .calendarTimelineEvent span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html[data-shell="next"] .calendarTimelineEvent b { font-size: 12px; line-height: 1.15; }
+html[data-shell="next"] .calendarTimelineEvent span { color: color-mix(in srgb, var(--text) 72%, var(--mut)); font-size: 11px; line-height: 1.15; }
+html[data-shell="next"] .calendarTimelineEvent.isCompact { gap: 2px; }
+@media (min-width: 761px) {
+  html[data-shell="next"] .calendarTimelineEvent.task,
+  html[data-shell="next"] .calendarTimelineEvent.reminder,
+  html[data-shell="next"] .calendarTimelineEvent.overtime {
+    min-height: 48px;
+    height: max(48px, calc(var(--duration) * 1%));
+    padding-block: 7px;
+  }
+}
 html[data-shell="next"] .calendarTimelineEvent.task { --event-color: #4fd1c5; }
 html[data-shell="next"] .calendarTimelineEvent.reminder { --event-color: #a98cff; }
 html[data-shell="next"] .calendarTimelineEvent.overtime { --event-color: #f5b841; }

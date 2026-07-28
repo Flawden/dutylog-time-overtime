@@ -1,10 +1,10 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.17.1 — Calendar & Notes Quality Hotfix**.
+Current release: **v27.17.2 — Calendar Timeline Readability Hotfix**.
 
-## Текущая продуктовая точка — Calendar & Notes Quality
+## Текущая продуктовая точка — Calendar Timeline Readability
 
-Статус: **v27.17.1** стабилизирует Calendar Mobile Experience после первой реальной desktop/mobile приёмки.
+Статус: **v27.17.2** завершает первый цикл desktop/mobile стабилизации Calendar Mobile Experience.
 
 Сделано к текущей точке:
 
@@ -14,13 +14,14 @@ Current release: **v27.17.1 — Calendar & Notes Quality Hotfix**.
 - важные даты вынесены в явную зону «Весь день» и больше не дублируются как ложное временное событие;
 - редактор нескольких заметок адаптируется к ширине собственной панели через container queries;
 - срок задачи поддерживает любую минуту, а не только пятиминутный шаг;
+- короткие timed-события на desktop сохраняют две читаемые строки и не перекрывают соседние lane-события;
 - immutable shift occurrences и timezone-проекция;
 - поминутный overtime/FIFO;
 - задачи, подзадачи, Inbox, важные даты и несколько заметок;
 - offline snapshot, staging CI/CD и backup/restore;
 - Flyway V1–V36, Java 17, 94 Java test classes / 492 tests / 25 Playwright scenarios.
 
-Следующий архитектурный этап: **v27.17.2 — UI Core & Workspace Foundation**.
+Следующий архитектурный этап: **v27.17.3 — UI Core & Workspace Foundation**.
 
 Цель этапа:
 
@@ -28,7 +29,7 @@ Current release: **v27.17.1 — Calendar & Notes Quality Hotfix**.
 - выделить независимые workspace, layout, theme, palette и decorations;
 - подготовить безопасные theme contracts и container-aware компоненты;
 - превратить DutyLog Next из надстройки в стандартную конфигурацию общего UI Core;
-- подготовить последующий **v27.17.3 — Classic Sunset** без потери общих компонентов.
+- подготовить последующий **v27.17.4 — Classic Sunset** без потери общих компонентов.
 
 После UI Core и Classic Sunset: **v27.18.0 — Overtime Next**, затем Tasks & Inbox Next, Notes / Important Days Next и Vacation Planner.
 

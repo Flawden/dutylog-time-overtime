@@ -1,15 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.17.1.
+Status: v27.17.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.17.1 hardens Calendar Mobile Experience with container-aware notes, a true all-day rail and minute-precise task deadlines without changing domain data. Current application baseline: 94 Java test classes / 492 `@Test` methods and 25 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.17.2 hardens short desktop timeline events so title and time stay visible without changing domain data. Current application baseline: 94 Java test classes / 492 `@Test` methods and 25 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.17.2 Calendar Timeline Readability Hotfix extension
+
+- `editor-modals.spec.js` now opens Day mode on desktop after creating a real timed task at `17:41`.
+- The browser contract verifies the task card is at least 47 px high and both title/detail rectangles remain within the event bounds.
+- `calendarExperienceVisualEnd(event)` reserves one visual hour for short non-shift events so readable cards cannot overlap the following lane item.
+- Static frontend contracts protect the 48 px desktop floor, compact-event class and task time-first detail line.
+- Test counts stay unchanged: 94 Java test classes / 492 `@Test` methods / 25 Chromium Playwright scenarios.
 
 ## v27.17.1 Calendar & Notes Quality Hotfix extension
 

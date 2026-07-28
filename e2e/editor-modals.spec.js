@@ -2,6 +2,7 @@ const { test, expect } = require('./fixtures');
 const {
   registerAndOnboard,
   currentLocalDateKey,
+  openView,
   selectDate,
   waitForApi,
   openDayModule
@@ -89,4 +90,23 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   await page.reload();
   await expect(page.locator('#appBoot')).toBeHidden({ timeout: 30_000 });
   await expect(page.locator(`#grid [data-date="${date}"]`)).toContainText(shiftName);
+
+  await openView(page, 'calendar');
+  await page.locator('[data-calendar-mode="day"]').click();
+  const timelineTask = page.locator('#calendarTimelineCanvas .calendarTimelineEvent.task', { hasText: edited });
+  await expect(timelineTask).toBeVisible();
+  await expect(timelineTask).toContainText('17:41');
+  const eventLayout = await timelineTask.evaluate(element => {
+    const box = element.getBoundingClientRect();
+    const title = element.querySelector('b')?.getBoundingClientRect();
+    const detail = element.querySelector('span')?.getBoundingClientRect();
+    return {
+      height: box.height,
+      titleInside: Boolean(title && title.top >= box.top - 0.5 && title.bottom <= box.bottom + 0.5),
+      detailInside: Boolean(detail && detail.top >= box.top - 0.5 && detail.bottom <= box.bottom + 0.5)
+    };
+  });
+  expect(eventLayout.height).toBeGreaterThanOrEqual(47);
+  expect(eventLayout.titleInside).toBe(true);
+  expect(eventLayout.detailInside).toBe(true);
 });
