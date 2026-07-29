@@ -115,7 +115,11 @@ test('deleting one split time-off keeps every credit and the other usage', async
 
   const deleted = waitForApi(page, 'DELETE', `/api/overtime/usages/${firstUsageId}`);
   page.once('dialog', dialog => dialog.accept());
-  await page.locator(`[data-del-usage="${firstUsageId}"]`).first().click();
+  const firstUsageDesktopDelete = page
+    .locator(`#ledgerRows [data-del-usage="${firstUsageId}"]`)
+    .first();
+  await expect(firstUsageDesktopDelete).toBeVisible();
+  await firstUsageDesktopDelete.click();
   await deleted;
 
   const rebuilt = await callApi('/api/overtime/account', 'GET');
@@ -125,7 +129,7 @@ test('deleting one split time-off keeps every credit and the other usage', async
   expect(rebuilt.usages[0].allocations).toHaveLength(1);
   expect(rebuilt.usages[0].allocations[0].creditId).toBe(firstCreditId);
 
-  await expect(page.locator(`[data-del-usage="${firstUsageId}"]`)).toHaveCount(0);
-  await expect(page.locator(`[data-del-usage="${secondUsageId}"]`)).toHaveCount(1);
+  await expect(page.locator(`#ledgerRows [data-del-usage="${firstUsageId}"]`)).toHaveCount(0);
+  await expect(page.locator(`#ledgerRows [data-del-usage="${secondUsageId}"]`)).toHaveCount(1);
   await expect(page.locator('#ledgerRows tr[data-credit-id]')).toHaveCount(2);
 });

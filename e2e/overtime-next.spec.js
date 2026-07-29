@@ -38,6 +38,11 @@ test('Overtime Next keeps the professional desktop ledger and replaces it with d
   await expect(page.locator('#ledgerOldestCredit')).toContainText('1 ч');
   await expect(page.locator('#ledgerFifoQueue')).toContainText('Overtime Next second credit');
   expect(await page.locator('#ledgerChart .overtimeChartColumn').count()).toBeGreaterThan(0);
+  const monthKey = today.slice(0, 7);
+  await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${monthKey}"]`)).toHaveAttribute('title', /−4/);
+
+  await page.locator('#ledgerThisMonth').click();
+  await expect(page.locator('#ledgerThisMonth')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${today}"]`)).toHaveAttribute('title', /−4/);
 
   await expect(page.locator('.ledgerTableWrap')).toBeVisible();

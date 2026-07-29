@@ -1,15 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.18.0.
+Status: v27.18.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.18.0 adds the balance-first Overtime Next workspace, daily/monthly trend rendering, visible FIFO queue, responsive mobile credit cards and desktop/mobile parity checks while preserving the existing minute-accurate accounting API. Current application baseline: 96 Java test classes / 500 `@Test` methods and 26 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.18.1 aligns the Overtime Next browser contracts with responsive duplicate actions and daily/monthly chart keys. Current application baseline remains 96 Java test classes / 500 `@Test` methods and 26 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+
+## v27.18.1 Overtime Next E2E Contract Hotfix extension
+
+- `overtime-editor-modals.spec.js` targets the visible desktop delete action inside `#ledgerRows` and scopes post-delete assertions to the same presentation.
+- `overtime-next.spec.js` verifies monthly `YYYY-MM` keys in All-time and daily `YYYY-MM-DD` keys after switching to Month.
+- Production behavior is unchanged; the 96 / 500 / 26 baseline remains.
 
 
 ## v27.18.0 Overtime Next extension

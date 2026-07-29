@@ -1,10 +1,10 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.18.0 — Overtime Next**.
+Current release: **v27.18.1 — Overtime Next E2E Contract Hotfix**.
 
-## Текущая продуктовая точка — Overtime Next на едином UI Core
+## Текущая продуктовая точка — Overtime Next после E2E contract hotfix
 
-Статус: **v27.18.0** переводит журнал переработок с desktop-first таблицы на адаптивное рабочее пространство без изменения бухгалтерской модели.
+Статус: **v27.18.1** выравнивает browser contracts с responsive-представлениями Overtime Next и дневной/месячной группировкой тренда; production-логика v27.18.0 не менялась.
 
 Сделано к текущей точке:
 
@@ -19,7 +19,7 @@ Current release: **v27.18.0 — Overtime Next**.
 - Classic удалён, rollback выполняется через Git/immutable Docker image;
 - Flyway V1–V36, Java 17, 96 Java test classes / 500 tests / 26 Playwright scenarios.
 
-Следующий продуктовый этап: **v27.19.0 — Tasks & Inbox Next**.
+Ближайший quality-релиз: **v27.18.2 — UI Settings & Button Variants Quality Hotfix**. Следующий продуктовый этап: **v27.19.0 — Tasks & Inbox Next**.
 
 Цель этапа:
 
@@ -218,5 +218,7 @@ API уже достаточно стабилен для первого Android-�
 - `v27.17.5` — UI Core E2E Accordion Hotfix.
 - `v27.17.6` — Classic Sunset.
 - `v27.18.0` — Overtime Next.
+- `v27.18.1` — Overtime Next E2E Contract Hotfix.
+- `v27.18.2` — UI Settings & Button Variants Quality Hotfix.
 - `v27.19.0` — Tasks & Inbox Next, including independent planned task intervals (`start → end`), duration, deadlines and timeline cards.
 - `v27.20.0` — Notes & Important Events Next, including all-day/timed/multi-day events, place, description, reminders and read-first event cards.

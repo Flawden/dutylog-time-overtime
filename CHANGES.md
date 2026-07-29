@@ -1,3 +1,12 @@
+# v27.18.1 — Overtime Next E2E Contract Hotfix
+
+- Fixed the overtime integrity browser scenario so desktop runs target the visible delete action inside `#ledgerRows` instead of the earlier hidden mobile-card duplicate.
+- Scoped the post-delete assertions to the desktop ledger, preserving the intentional shared action attributes across responsive presentations.
+- Fixed the Overtime Next trend scenario to respect the real grouping contract: All-time/Year use monthly keys while Month uses daily keys.
+- The trend scenario now proves both `YYYY-MM` and `YYYY-MM-DD` projections before continuing to desktop/mobile parity checks.
+- No production accounting logic, domain API or schema changed; Flyway remains V36.
+- Regression baseline remains 96 Java test classes, 500 `@Test` methods and 26 Playwright scenarios.
+
 # v27.18.0 — Overtime Next
 
 - Rebuilt the overtime workspace around a calm balance-first summary while preserving the existing minute-accurate FIFO accounting model.

@@ -1,6 +1,8 @@
-# DutyLog API v27.18.0
+# DutyLog API v27.18.1
 
 Проект: **DutyLog: Time & Overtime**.
+
+Текущий v27.18.1 является E2E contract hotfix и не меняет HTTP API v27.18.0.
 
 Веб-версия работает через `JSESSIONID`, Android/PWA-клиенты могут использовать `Authorization: Bearer <accessToken>`. Старые endpoint'ы сохранены, поверх них добавлен mobile-слой.
 
@@ -1174,7 +1176,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "27.18.0",
+  "version": "27.18.1",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],

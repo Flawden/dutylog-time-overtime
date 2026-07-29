@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.18.0}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.18.1}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -172,8 +172,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.18.0"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.18.0."
+contains docs/API.md "# DutyLog API v27.18.1"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.18.1."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
@@ -261,7 +261,7 @@ not_contains src/main/resources/static/design-system.css '.shellChoice'
 not_contains src/main/java/ru/daniil/shifts/web/ProfileController.java 'input.get("shellMode")'
 contains e2e/design-system-shell.spec.js "shellMode: 'classic'"
 contains e2e/design-system-shell.spec.js "toHaveCount(0)"
-contains docs/ROADMAP.md "v27.18.0 — Overtime Next"
+contains docs/ROADMAP.md '`v27.18.0` — Overtime Next'
 contains docs/ROADMAP.md '`v27.17.6` — Classic Sunset'
 contains src/main/resources/static/js/12-ui-platform.js 'const workspaces = Object.freeze'
 contains src/main/resources/static/js/12-ui-platform.js 'const layouts = Object.freeze'
@@ -285,7 +285,7 @@ contains e2e/design-system-shell.spec.js 'UI Core workspace persists in the sing
 contains CHANGES.md "v27.18.0 — Overtime Next"
 contains README.md "v27.18.0 — Overtime Next"
 contains docs/OVERTIME_NEXT_V27.18.0.md "Overtime Next"
-contains docs/ROADMAP.md "Current release: **v27.18.0 — Overtime Next**"
+contains docs/ROADMAP.md "Current release: **v27.18.1 — Overtime Next E2E Contract Hotfix**"
 contains src/main/resources/static/index.html 'id="overtimeWorkspaceTitle"'
 contains src/main/resources/static/index.html 'id="ledgerThisYear"'
 contains src/main/resources/static/index.html 'id="ledgerChart"'
@@ -302,6 +302,16 @@ contains src/main/resources/static/design-system.css '.overtimeMobileList { disp
 contains src/test/java/ru/daniil/shifts/web/OvertimeNextFrontendContractTest.java 'class OvertimeNextFrontendContractTest'
 contains e2e/overtime-next.spec.js 'Overtime Next keeps the professional desktop ledger'
 contains e2e/overtime-next.spec.js 'data-series-key'
+
+  # v27.18.1 Overtime Next E2E Contract Hotfix
+contains CHANGES.md "v27.18.1 — Overtime Next E2E Contract Hotfix"
+contains README.md "v27.18.1 — Overtime Next E2E Contract Hotfix"
+contains docs/OVERTIME_NEXT_E2E_CONTRACT_HOTFIX_V27.18.1.md "Overtime Next E2E Contract Hotfix"
+contains docs/ROADMAP.md "v27.18.2 — UI Settings & Button Variants Quality Hotfix"
+contains e2e/overtime-editor-modals.spec.js '#ledgerRows [data-del-usage="${firstUsageId}"]'
+contains e2e/overtime-editor-modals.spec.js 'await expect(firstUsageDesktopDelete).toBeVisible();'
+contains e2e/overtime-next.spec.js 'const monthKey = today.slice(0, 7);'
+contains e2e/overtime-next.spec.js "page.locator('#ledgerThisMonth').click()"
 
 if grep -R "result.put(\"version\", \"" -n src/main/java >/tmp/dutylog-version-hardcode.txt; then
   cat /tmp/dutylog-version-hardcode.txt >&2
@@ -873,7 +883,7 @@ contains docs/RELEASE_CANDIDATE.md "v27.2.5 — Calendar day identity hotfix"
 contains docs/USER_GUIDE.md "Status: v27.2.5."
 contains docs/PRODUCTION_DEPLOY.md "same GHCR digest that already passed staging"
 contains docs/BACKUP_RESTORE.md "Status: v27.2.30."
-contains docs/RELEASE_CHECKLIST.md "git tag -a v27.18.0"
+contains docs/RELEASE_CHECKLIST.md "git tag -a v27.18.1"
 
 # v27.2.5 calendar persistence regression guards
 contains src/main/resources/static/js/30-calendar.js "api.month(requestedYear, requestedMonth, { fresh:true })"
@@ -1275,7 +1285,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.1"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1328,7 +1338,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.1"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1350,7 +1360,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.1"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1445,7 +1455,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.1"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -1604,7 +1614,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.10.0 — Task Details"
 contains README.md "v27.10.0 — Task Details"
 contains docs/TASK_DETAILS_V27.10.0.md "read-first"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.1"
 contains src/main/resources/db/migration/postgresql/V32__task_details.sql "ADD COLUMN description"
 contains src/main/java/ru/daniil/shifts/model/DayTask.java "private String description"
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "public TaskDto get(AppUser user, Long id)"
@@ -1625,7 +1635,7 @@ contains e2e/task-details.spec.js 'task details separate reading from editing an
 contains CHANGES.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains README.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md "immutable absolute occurrence"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.1"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_start_instant"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_source_timezone"
 contains src/main/java/ru/daniil/shifts/model/DayEntry.java "captureShiftOccurrence"
@@ -1645,7 +1655,7 @@ contains e2e/important-timezone.spec.js "a timezone projection can move a late s
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.18.1"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1909,8 +1919,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.18.0"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.18.0."
+contains docs/API.md "# DutyLog API v27.18.1"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.18.1."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"

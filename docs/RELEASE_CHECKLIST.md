@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.18.0.
+Status: v27.18.1.
 
 ## Local gate
 
@@ -27,7 +27,7 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - verify theme + palette independence and automatic persistence after reload;
 - verify no Classic selector remains and `shellMode=classic` from an old local cache still boots the single shell;
 - verify Appearance remains open after reload and workspace/layout/palette persist;
-- verify Overtime Next summary, Month/Year/All-time presets, chart and FIFO queue;
+- verify Overtime Next summary, Month/Year/All-time presets, daily/monthly chart keys and FIFO queue;
 - verify the professional ledger table on desktop and detailed credit cards on a phone viewport;
 - verify credit/usage editors, legacy migration and CSV/Excel export remain available;
 - test the migration against the persistent staging database;
@@ -56,6 +56,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.18.0 -m "v27.18.0 — Overtime Next"
-git push origin v27.18.0
+git tag -a v27.18.1 -m "v27.18.1 — Overtime Next E2E Contract Hotfix"
+git push origin v27.18.1
 ```
