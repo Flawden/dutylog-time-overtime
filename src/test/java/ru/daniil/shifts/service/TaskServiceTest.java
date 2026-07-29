@@ -532,4 +532,70 @@ class TaskServiceTest {
         assertEquals("Asia/Yekaterinburg", migrated.dueSourceTimezone());
     }
 
+    @Test
+    void plannedIntervalPersistsProjectDurationAndAppearsOnEveryCoveredDay() {
+        TaskDto created = taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", "Ночная подготовка", "работа", List.of("релиз"),
+                TaskPriority.HIGH, "2026-08-11", "02:00", false, null,
+                List.of(), "Проверить staging", "DutyLog", false,
+                "2026-08-10", "23:30", "2026-08-11", "01:00", null));
+
+        assertEquals("DutyLog", created.project());
+        assertFalse(created.allDay());
+        assertEquals("2026-08-10", created.scheduledStartDate());
+        assertEquals("23:30", created.scheduledStartTime());
+        assertEquals("2026-08-11", created.scheduledEndDate());
+        assertEquals("01:00", created.scheduledEndTime());
+        assertEquals(90L, created.scheduledDurationMinutes());
+        assertTrue(created.scheduleAbsolute());
+        assertEquals("UTC", created.scheduledSourceTimezone());
+        assertEquals(List.of(created.id()), taskService.listDay(owner, "2026-08-10").stream().map(TaskDto::id).toList());
+        assertEquals(List.of(created.id()), taskService.listDay(owner, "2026-08-11").stream().map(TaskDto::id).toList());
+        assertEquals(List.of("DutyLog"), taskService.metadata(owner).projects());
+        assertEquals(List.of(created.id()), taskService.listBoard(
+                owner, "all", "all", "DutyLog", "all", "", null, null, 0, 50
+        ).items().stream().map(TaskDto::id).toList());
+    }
+
+    @Test
+    void plannedIntervalRejectsAnEndBeforeStartAndADeadlineBeforeThePlan() {
+        assertBadRequest(() -> taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", "Обратный интервал", null, List.of(), TaskPriority.NORMAL,
+                null, null, false, null, List.of(), null, null, false,
+                "2026-08-10", "18:00", "2026-08-10", "17:59", null)));
+
+        assertBadRequest(() -> taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", "Ранний дедлайн", null, List.of(), TaskPriority.NORMAL,
+                "2026-08-10", "18:30", false, null, List.of(), null, null, false,
+                "2026-08-10", "18:00", "2026-08-10", "19:00", null)));
+
+        assertBadRequest(() -> taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", "Слишком длинный интервал", null, List.of(), TaskPriority.NORMAL,
+                null, null, false, null, List.of(), null, null, false,
+                "2026-08-10", "18:00", "2026-08-17", "18:01", null)));
+    }
+
+    @Test
+    void plannedIntervalKeepsItsInstantAcrossTimezoneChanges() {
+        TaskDto created = taskService.create(owner, new TaskCreateRequest(
+                "2026-08-10", "Абсолютный интервал", null, List.of(), TaskPriority.NORMAL,
+                null, null, false, null, List.of(), null, null, false,
+                "2026-08-10", "23:30", "2026-08-11", "00:30", null));
+
+        taskService.rebaseForTimezoneChange(owner, "UTC", "Europe/Moscow");
+        owner.setWorkTimezone("Europe/Moscow");
+        owner.setDisplayTimezone("Europe/Moscow");
+        owner = users.save(owner);
+
+        TaskDto projected = taskService.get(owner, created.id());
+        assertEquals("2026-08-11", projected.scheduledStartDate());
+        assertEquals("02:30", projected.scheduledStartTime());
+        assertEquals("2026-08-11", projected.scheduledEndDate());
+        assertEquals("03:30", projected.scheduledEndTime());
+        assertEquals("UTC", projected.scheduledSourceTimezone());
+        assertEquals("2026-08-10", projected.scheduledSourceStartDate());
+        assertEquals("23:30", projected.scheduledSourceStartTime());
+        assertEquals(60L, projected.scheduledDurationMinutes());
+    }
+
 }

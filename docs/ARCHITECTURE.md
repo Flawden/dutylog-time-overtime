@@ -176,7 +176,7 @@ RequestDiagnosticsFilter
 
 ## База данных
 
-В production схема управляется Flyway; текущая последовательность заканчивается на V36 Multiple Daily Notes. Новые изменения БД добавляются только новыми миграциями:
+В production схема управляется Flyway; текущая последовательность заканчивается на V37 Task Planning Intervals & Projects. Новые изменения БД добавляются только новыми миграциями:
 
 ```text
 src/main/resources/db/migration/V14__example.sql

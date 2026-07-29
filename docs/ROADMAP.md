@@ -1,34 +1,23 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.18.3 — UI Settings & Button Variants Quality Hotfix**.
+Current release: **v27.19.0 — Tasks & Inbox Next**.
 
-## Текущая продуктовая точка — UI settings и button variant contracts
+## Текущая продуктовая точка — Tasks & Inbox Next
 
-Статус: **v27.18.3** превращает Theme palette в реальный источник цветов и разводит Outline/Ghost на уровне семантических токенов и computed UI behavior.
+Статус: **v27.19.0** вводит независимые planned intervals, проекты и searchable Inbox поверх единого UI Core.
 
 Сделано к текущей точке:
 
-- явный reset основного и дополнительного акцента к активной теме;
-- reset работает при уже выбранном `paletteId=theme` и исправляет legacy inconsistent snapshots;
-- Theme / Preset / Custom palette имеют видимое состояние;
-- смена готовой темы обновляет оба theme accents, custom/preset palette сохраняются при смене workspace/layout;
-- Solid / Soft / Outline / Ghost имеют разные контракты;
-- Secondary / Danger / Link / Icon подготовлены как повторно используемые UI Core variants;
-- disabled, busy, focus-visible и mobile touch targets входят в общий контракт;
-- live preview показывает семь вариантов кнопок;
-- Overtime Next использует coherent usage snapshot;
-- единый UI Core, workspaces, layouts, темы и палитры;
-- Classic удалён, rollback выполняется через Git/immutable Docker image;
-- Flyway V1–V36, Java 17, 96 Java test classes / 500 tests / 27 Playwright scenarios.
+- all-day, point, exact interval и duration presets;
+- overnight mapping на каждый покрытый день;
+- канонические instants и source timezone для timed planning;
+- дедлайн и напоминание отделены от запланированного интервала;
+- read-first details, проектные chips/filters/search;
+- hourly calendar использует реальную длительность;
+- Inbox search работает с local queue и server rows;
+- Flyway V1–V37, Java 17, 97 Java test classes / 507 tests / 28 Playwright scenarios.
 
-Следующий продуктовый этап: **v27.19.0 — Tasks & Inbox Next**.
-
-Цель этапа:
-
-- полноценный Inbox и read-first карточка задачи;
-- планируемые интервалы задач `С → До` и длительность на почасовом графике;
-- независимые дедлайны, напоминания и валидация;
-- мобильный редактор, подзадачи, категории, проекты, поиск и фильтры.
+Следующий продуктовый этап: **v27.20.0 — Notes & Important Events Next**.
 
 ## Этап 1 — production foundation
 
@@ -223,5 +212,6 @@ API уже достаточно стабилен для первого Android-�
 - `v27.18.1` — Overtime Next E2E Contract Hotfix.
 - `v27.18.2` — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix.
 - `v27.18.3` — UI Settings & Button Variants Quality Hotfix.
+- `v27.19.0` — Tasks & Inbox Next.
 - `v27.19.0` — Tasks & Inbox Next, including independent planned task intervals (`start → end`), duration, deadlines and timeline cards.
 - `v27.20.0` — Notes & Important Events Next, including all-day/timed/multi-day events, place, description, reminders and read-first event cards.

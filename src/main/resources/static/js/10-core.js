@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.18.3"
+const DUTYLOG_VERSION = "27.19.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -74,10 +74,10 @@ const state = {
   shiftOccurrences: [],           // immutable dated shifts projected into the current timezone
   shiftSegmentsByDate: {},         // display-date -> projected occurrence segments
   tasksByDate: {},                // { 'YYYY-MM-DD': [{id,date,text,done,category,priority,dueDate,dueTime,overdue}] }
-  taskFilters: { status:"all", category:"all" },
-  taskBoard: { items: [], filters: { status:"open", category:"all", priority:"all", q:"", from:"", to:"" }, page: { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false } },
-  taskMetadata: { categories: [], tags: [] },
-  inbox: { items: [], loading:false, includeArchived:false },
+  taskFilters: { status:"all", category:"all", project:"all" },
+  taskBoard: { items: [], filters: { status:"open", category:"all", project:"all", priority:"all", q:"", from:"", to:"" }, page: { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false } },
+  taskMetadata: { categories: [], tags: [], projects: [] },
+  inbox: { items: [], loading:false, includeArchived:false, q:"" },
   importantByDate: {},            // { 'YYYY-MM-DD': [{id,date,title,repeatMode,color}] }
   importantDays: [],               // самостоятельный список важных дней: [{id,date,title,repeatMode,color}]
   importantFilters: { scope:"all", q:"" },
@@ -1502,6 +1502,26 @@ function addToDateMap(map, item){
   if (!map[k]) map[k] = [];
   map[k].push(item);
 }
+function taskCalendarDates(task){
+  const start = String(task?.scheduledStartDate || task?.date || "");
+  const end = String(task?.scheduledEndDate || start);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(start)) return [];
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(end) || end < start) return [start];
+  const result = [];
+  const cursor = new Date(`${start}T00:00:00Z`);
+  const finish = new Date(`${end}T00:00:00Z`);
+  for (let guard = 0; guard < 32 && cursor <= finish; guard += 1) {
+    result.push(cursor.toISOString().slice(0,10));
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return result.length ? result : [start];
+}
+function addTaskToDateMap(map, task){
+  for (const date of taskCalendarDates(task)) {
+    if (!map[date]) map[date] = [];
+    if (!map[date].some(item => Number(item.id) === Number(task.id))) map[date].push(task);
+  }
+}
 function tasksOf(k){ return state.tasksByDate[k] || []; }
 function importantOf(k){ return state.importantByDate[k] || []; }
 function remindersOf(k){ return state.remindersByDate[k] || []; }
@@ -1524,6 +1544,26 @@ function allTaskTags(){
   for (const arr of Object.values(state.tasksByDate)) for (const task of arr) for (const tag of task.tags || []) if (String(tag).trim()) set.add(String(tag).trim().toLowerCase());
   for (const task of state.taskBoard?.items || []) for (const tag of task.tags || []) if (String(tag).trim()) set.add(String(tag).trim().toLowerCase());
   return Array.from(set).filter(Boolean).sort((a,b) => a.localeCompare(b, currentLocale()));
+}
+function allTaskProjects(){
+  const set = new Set(state.taskMetadata?.projects || []);
+  for (const arr of Object.values(state.tasksByDate)) for (const task of arr) if (String(task.project || "").trim()) set.add(String(task.project).trim());
+  for (const task of state.taskBoard?.items || []) if (String(task.project || "").trim()) set.add(String(task.project).trim());
+  return Array.from(set).filter(Boolean).sort((a,b) => a.localeCompare(b, currentLocale()));
+}
+function taskPlannedLabel(task, { includeDate = true } = {}){
+  if (!task) return "";
+  const startDate = task.scheduledStartDate || task.date || "";
+  if (task.allDay || !task.scheduledStartTime) {
+    return includeDate && startDate ? `${t("Весь день")} · ${startDate.split("-").reverse().join(".")}` : t("Весь день");
+  }
+  const start = `${includeDate ? startDate.split("-").reverse().join(".") + " · " : ""}${String(task.scheduledStartTime).slice(0,5)}`;
+  if (!task.scheduledEndDate || !task.scheduledEndTime) return start;
+  const sameDate = task.scheduledEndDate === startDate;
+  const end = `${sameDate || !includeDate ? "" : task.scheduledEndDate.split("-").reverse().join(".") + " · "}${String(task.scheduledEndTime).slice(0,5)}`;
+  const duration = Number(task.scheduledDurationMinutes);
+  const suffix = Number.isFinite(duration) && duration > 0 ? ` · ${duration} ${t("мин")}` : "";
+  return `${start}–${end}${suffix}`;
 }
 const repeatLabel = mode => t(mode === "YEARLY" ? "каждый год" : mode === "MONTHLY" ? "каждый месяц" : "один раз");
 function creditsOf(k){ return (state.overtimeAccount?.credits || []).filter(x => x.workedDate === k); }

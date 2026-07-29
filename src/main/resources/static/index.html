@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.18.3"></script>
-<link href="app.css?v=27.18.3" rel="stylesheet"/>
-<link href="design-system.css?v=27.18.3" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.18.3" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.18.3" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.18.3" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.18.3" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.18.3" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.18.3" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.18.3" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.18.3" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.18.3" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.19.0"></script>
+<link href="app.css?v=27.19.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.19.0" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.19.0" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.19.0" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.19.0" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.19.0" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.19.0" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.19.0" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.19.0" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.19.0" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.19.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -464,6 +464,7 @@
     </div>
     <div class="inboxToolbar">
       <span class="inboxStatus" id="inboxStatus" role="status" aria-live="polite"></span>
+      <input id="inboxSearch" type="search" maxlength="200" placeholder="поиск во входящих…" aria-label="Поиск во входящих"/>
       <label class="inlineCheck"><input id="inboxShowArchived" type="checkbox"/> показать разобранные</label>
       <button id="inboxRefresh" type="button">Обновить</button>
     </div>
@@ -485,6 +486,7 @@
 <option value="all">все задачи</option>
 </select>
 <select id="taskBoardCategory" title="Категория"><option value="all">все категории</option></select>
+<select id="taskBoardProject" title="Проект"><option value="all">все проекты</option></select>
 <select id="taskBoardPriority" title="Приоритет">
 <option value="all">любой приоритет</option>
 <option value="URGENT">срочные</option>
@@ -492,7 +494,7 @@
 <option value="NORMAL">обычные</option>
 <option value="LOW">низкие</option>
 </select>
-<input id="taskBoardSearch" placeholder="поиск: текст, категория, дата…" type="text"/>
+<input id="taskBoardSearch" placeholder="поиск: текст, проект, категория, дата…" type="text"/>
 <button id="taskBoardThisMonth" type="button">этот месяц</button>
 <button id="taskBoardClear" type="button">сброс</button>
 </div>
@@ -966,7 +968,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.18.3</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.19.0</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1205,6 +1207,11 @@
     </div>
     <div class="taskDetailsBody">
       <div class="taskMeta taskDetailsMeta" id="taskDetailsMeta"></div>
+      <section class="taskDetailsSection taskDetailsSchedule" id="taskDetailsSchedule">
+        <h3>Запланировано</h3>
+        <div class="taskDetailsScheduleMain" id="taskDetailsScheduleMain"></div>
+        <div class="taskDetailsScheduleSource" id="taskDetailsScheduleSource" hidden></div>
+      </section>
       <section class="taskDetailsSection taskDetailsDescription" id="taskDetailsDescription">
         <h3>Описание</h3>
         <div class="taskDetailsDescriptionText" id="taskDetailsDescriptionText"></div>
@@ -1238,9 +1245,39 @@
       <label class="appField appFieldWide">Текст задачи
         <textarea id="taskEditText" maxlength="500" rows="4" placeholder="Что нужно сделать?" required></textarea>
       </label>
-      <label class="appField appFieldWide taskPrimaryDate">Дата
-        <input id="taskEditDate" type="date" required/>
-      </label>
+      <section class="taskPlanningEditor appFieldWide" id="taskPlanningEditor">
+        <div class="taskPlanningHead">
+          <div><b>Запланировано</b><small>Интервал не является дедлайном</small></div>
+          <label class="appCheck"><input id="taskEditAllDay" type="checkbox" checked/> Весь день</label>
+        </div>
+        <div class="taskPlanningGrid">
+          <label class="appField taskPrimaryDate">Дата начала
+            <input id="taskEditDate" type="date" required/>
+          </label>
+          <label class="appField taskTimedField">Время начала
+            <input id="taskEditStartTime" type="time" step="60"/>
+          </label>
+          <label class="appField taskTimedField">Дата окончания
+            <input id="taskEditEndDate" type="date"/>
+          </label>
+          <label class="appField taskTimedField">Время окончания
+            <input id="taskEditEndTime" type="time" step="60"/>
+          </label>
+          <label class="appField taskTimedField">Длительность, минут
+            <input id="taskEditDuration" type="number" min="1" max="10080" step="1" inputmode="numeric" placeholder="45"/>
+          </label>
+          <div class="taskDurationPresets taskTimedField" id="taskDurationPresets" aria-label="Быстрый выбор длительности">
+            <button type="button" data-task-duration="15">15</button>
+            <button type="button" data-task-duration="30">30</button>
+            <button type="button" data-task-duration="45">45</button>
+            <button type="button" data-task-duration="60">60</button>
+            <button type="button" data-task-duration="90">90</button>
+            <button type="button" data-task-duration="120">120</button>
+          </div>
+        </div>
+        <div class="taskPlanningSummary" id="taskPlanningSummary">Весь день</div>
+        <div class="taskPlanningError" id="taskPlanningError" role="alert"></div>
+      </section>
       <details class="taskSubtaskEditor appFieldWide" id="taskEditSubtasks">
         <summary>Подзадачи <span id="taskEditSubtaskSummary">необязательно</span></summary>
         <div class="taskSubtaskEditorBody">
@@ -1250,10 +1287,14 @@
         </div>
       </details>
       <details class="taskAdvanced appFieldWide" id="taskEditAdvanced">
-        <summary>Дополнительно <span>описание, категория, теги, срок и напоминание</span></summary>
+        <summary>Дополнительно <span>описание, проект, категория, теги, дедлайн и напоминание</span></summary>
         <div class="taskAdvancedGrid">
           <label class="appField appFieldWide">Описание
             <textarea id="taskEditDescription" maxlength="4000" rows="5" placeholder="Контекст, ссылки, договорённости…"></textarea>
+          </label>
+          <label class="appField">Проект
+            <input id="taskEditProject" list="taskProjectSuggestions" maxlength="80" placeholder="DutyLog, Дом, Учёба" type="text" autocomplete="off"/>
+            <datalist id="taskProjectSuggestions"></datalist>
           </label>
           <label class="appField">Категория
             <input id="taskEditCategory" list="taskCategorySuggestions" maxlength="80" placeholder="работа, дом, здоровье" type="text" autocomplete="off"/>
@@ -1272,10 +1313,10 @@
               <option value="URGENT">срочный</option>
             </select>
           </label>
-          <label class="appField">Срок
+          <label class="appField">Дедлайн
             <input id="taskEditDueDate" type="date"/>
           </label>
-          <label class="appField">Время срока
+          <label class="appField">Время дедлайна
             <input id="taskEditDueTime" type="time" step="60"/>
           </label>
           <label class="appCheck"><input id="taskEditReminderEnabled" type="checkbox"/> Напомнить о задаче</label>
@@ -1494,15 +1535,15 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.18.3"></script>
-<script src="js/12-ui-platform.js?v=27.18.3"></script>
-<script src="js/20-data.js?v=27.18.3"></script>
-<script src="js/30-calendar.js?v=27.18.3"></script>
-<script src="js/35-today.js?v=27.18.3"></script>
-<script src="js/37-calendar-experience.js?v=27.18.3"></script>
-<script src="js/40-overtime.js?v=27.18.3"></script>
-<script src="js/50-tasks.js?v=27.18.3"></script>
-<script src="js/60-settings.js?v=27.18.3"></script>
-<script src="js/70-user-boot.js?v=27.18.3"></script>
+<script src="js/10-core.js?v=27.19.0"></script>
+<script src="js/12-ui-platform.js?v=27.19.0"></script>
+<script src="js/20-data.js?v=27.19.0"></script>
+<script src="js/30-calendar.js?v=27.19.0"></script>
+<script src="js/35-today.js?v=27.19.0"></script>
+<script src="js/37-calendar-experience.js?v=27.19.0"></script>
+<script src="js/40-overtime.js?v=27.19.0"></script>
+<script src="js/50-tasks.js?v=27.19.0"></script>
+<script src="js/60-settings.js?v=27.19.0"></script>
+<script src="js/70-user-boot.js?v=27.19.0"></script>
 </body>
 </html>

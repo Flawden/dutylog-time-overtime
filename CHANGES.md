@@ -1,3 +1,14 @@
+# v27.19.0 — Tasks & Inbox Next
+
+- Added first-class task planning independent from deadlines: all-day, point, exact start/end, duration presets and overnight intervals.
+- Added Flyway V37 with project, projected planning fields, canonical instants and source-timezone provenance while preserving existing tasks as all-day rows.
+- Added project metadata, suggestions, chips, search participation and a board project filter.
+- Rebuilt read-first task details around the planned interval and retained deadline/reminder facts as separate concepts.
+- Replaced the calendar’s synthetic 45-minute deadline block with exact planned segments, including cross-midnight splitting and point events.
+- Added searchable Inbox presentation across local queued and server-backed entries without changing quick-capture/offline semantics.
+- Added mobile planning controls, 15/30/45/60/90/120-minute presets, frontend/server validation and timezone reprojection tests.
+- Regression baseline is now 97 Java test classes, 507 `@Test` methods and 28 Playwright scenarios. Flyway advances to V37.
+
 # v27.18.3 — UI Settings & Button Variants Quality Hotfix
 
 - Turned Theme palette into an executable source mode: selecting it restores both accents from the active theme instead of leaving stale custom overrides in place.

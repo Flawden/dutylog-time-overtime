@@ -72,6 +72,7 @@ public class TaskController {
     @GetMapping("/board")
     public PageDto<TaskDto> board(@RequestParam(name = "status", required = false, defaultValue = "open") String status,
                                   @RequestParam(name = "category", required = false) String category,
+                                  @RequestParam(name = "project", required = false) String project,
                                   @RequestParam(name = "priority", required = false) String priority,
                                   @RequestParam(name = "q", required = false) String q,
                                   @RequestParam(name = "from", required = false) String from,
@@ -81,7 +82,7 @@ public class TaskController {
                                   Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         moduleService.requireEnabled(current, ModuleService.TASKS);
-        return taskService.listBoard(current, status, category, priority, q, from, to, page, size);
+        return taskService.listBoard(current, status, category, project, priority, q, from, to, page, size);
     }
 
     @PostMapping

@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.18.3.
+Status: v27.19.0.
 
 ## Local gate
 
@@ -21,6 +21,10 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - push the exact candidate tree to `test`;
 - confirm `Deploy staging` is green;
 - verify calendar, notes export, tasks, overtime, modules, admin and Android API v1;
+- create all-day, point, same-day and overnight task plans and verify the hourly timeline uses exact duration;
+- verify a deadline before planned end is rejected while a later deadline/reminder stays independent;
+- change canonical timezone and confirm timed planning keeps source provenance while all-day dates stay floating;
+- verify project suggestions/chips/filter/search and Inbox search across open/archived/local queued entries;
 - verify `/actuator/info` shows staging, commit and build metadata;
 - verify Shift Worker / Planner / Minimal navigation and hidden-route links;
 - verify Dashboard / Compact / Focus on desktop and mobile;
@@ -63,6 +67,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.18.3 -m "v27.18.3 — UI Settings & Button Variants Quality Hotfix"
-git push origin v27.18.3
+git tag -a v27.19.0 -m "v27.19.0 — Tasks & Inbox Next"
+git push origin v27.19.0
 ```

@@ -1,4 +1,4 @@
-/* DutyLog UI platform: workspace/layout contracts — v27.18.3, UI Core v1.
+/* DutyLog UI platform: workspace/layout contracts — v27.19.0, UI Core v1.
  * This file is intentionally loaded last. Every rule is scoped to a UI
  * platform attribute or component class so presets cannot leak into each other.
  */
@@ -86,7 +86,7 @@ html[data-ui-layout="focus"][data-shell="next"] .todayQuickActions { grid-templa
   html[data-ui-layout="focus"][data-shell="next"] .todayQuickActions { grid-template-columns:1fr 1fr; }
 }
 
-/* Palette source and explicit theme reset — v27.18.3. */
+/* Palette source and explicit theme reset — v27.19.0. */
 .paletteControlBar {
   display:flex;
   align-items:center;

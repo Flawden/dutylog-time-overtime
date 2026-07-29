@@ -103,6 +103,25 @@ Object.assign(I18N_EN, {
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
+Object.assign(I18N_EN, {
+  "Проект":"Project", "все проекты":"all projects", "Запланировано":"Planned",
+  "Весь день":"All day", "Дата начала":"Start date", "Время начала":"Start time",
+  "Дата окончания":"End date", "Время окончания":"End time", "Длительность, минут":"Duration, minutes",
+  "Интервал не является дедлайном":"The planned interval is not a deadline",
+  "Точечная задача":"Point task", "Длительность":"Duration", "мин":"min",
+  "Дедлайн":"Deadline", "Исходный интервал":"Source interval",
+  "Укажите время начала или включите «Весь день».":"Choose a start time or enable All day.",
+  "Дата и время окончания должны быть заполнены вместе.":"End date and end time must be filled together.",
+  "Окончание должно быть позже начала.":"The end must be later than the start.",
+  "Длительность: от 1 минуты до 7 дней.":"Duration must be between 1 minute and 7 days.",
+  "Дедлайн не может быть раньше окончания запланированного интервала.":"The deadline cannot be earlier than the planned end.",
+  "Дедлайн не может быть раньше начала задачи.":"The deadline cannot be earlier than the planned start.",
+  "поиск во входящих…":"search Inbox…", "По запросу во входящих ничего не найдено.":"No Inbox items match the search.",
+  "Очисти поиск или измени запрос.":"Clear the search or change the query.",
+  "описание, проект, категория, теги, дедлайн и напоминание":"description, project, category, tags, deadline and reminder"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+
 /* ─── Важные дни ───────────────────────────────────────────── */
 async function refreshImportantSettings(){
   if (!moduleEnabled("important_dates")) {
@@ -376,6 +395,8 @@ function renderTaskMetadataSuggestions(){
   const categories = allTaskCategories();
   const categoryList = $("taskCategorySuggestions");
   if (categoryList) categoryList.innerHTML = categories.map(value => `<option value="${esc(value)}"></option>`).join("");
+  const projectList = $("taskProjectSuggestions");
+  if (projectList) projectList.innerHTML = allTaskProjects().map(value => `<option value="${esc(value)}"></option>`).join("");
   const tagList = $("taskTagSuggestions");
   if (tagList) tagList.innerHTML = allTaskTags().map(value => `<option value="${esc(value)}"></option>`).join("");
   const chips = $("taskSuggestedTags");
@@ -399,7 +420,7 @@ function renderTaskMetadataSuggestions(){
 }
 async function loadTaskMetadata(silent = true){
   if (!moduleEnabled("tasks")) {
-    state.taskMetadata = { categories:[], tags:[] };
+    state.taskMetadata = { categories:[], tags:[], projects:[] };
     renderTaskMetadataSuggestions();
     return;
   }
@@ -408,10 +429,12 @@ async function loadTaskMetadata(silent = true){
     state.taskMetadata = {
       categories:Array.isArray(metadata?.categories) ? metadata.categories : [],
       tags:Array.isArray(metadata?.tags) ? metadata.tags : [],
+      projects:Array.isArray(metadata?.projects) ? metadata.projects : [],
     };
     renderTaskMetadataSuggestions();
     renderTaskCategoryFilter();
     renderTaskBoardCategoryFilter();
+    renderTaskBoardProjectFilter();
   } catch (err) {
     console.error(err);
     if (!silent) setSave("err", err.message);
@@ -620,13 +643,94 @@ function buildTaskSubtasksInline(task){
   return details;
 }
 
+function taskLocalDateTime(date, time){
+  if (!date || !time) return null;
+  const value = new Date(`${date}T${time}:00`);
+  return Number.isNaN(value.getTime()) ? null : value;
+}
+function taskDateTimeParts(value){
+  const pad = number => String(number).padStart(2, "0");
+  return {
+    date:`${value.getFullYear()}-${pad(value.getMonth()+1)}-${pad(value.getDate())}`,
+    time:`${pad(value.getHours())}:${pad(value.getMinutes())}`,
+  };
+}
+function taskScheduleDuration(startDate, startTime, endDate, endTime){
+  const start = taskLocalDateTime(startDate, startTime);
+  const end = taskLocalDateTime(endDate, endTime);
+  if (!start || !end) return null;
+  return Math.round((end.getTime() - start.getTime()) / 60000);
+}
+function setTaskPlanningError(message = ""){
+  const box = $("taskPlanningError");
+  if (box) box.textContent = message ? t(message) : "";
+}
+function taskPlanningDisplay(date, time){
+  return date ? `${taskDetailsDate(date)}${time ? ` · ${time}` : ""}` : "";
+}
+function updateTaskPlanningControls({ source = "end" } = {}){
+  const allDay = !!$("taskEditAllDay")?.checked;
+  $("taskPlanningEditor")?.classList.toggle("allDay", allDay);
+  for (const field of document.querySelectorAll("#taskPlanningEditor .taskTimedField")) field.hidden = allDay;
+  setTaskPlanningError();
+  const date = $("taskEditDate")?.value || "";
+  if (allDay) {
+    if ($("taskPlanningSummary")) $("taskPlanningSummary").textContent = date ? `${t("Весь день")} · ${taskDetailsDate(date)}` : t("Весь день");
+    return;
+  }
+  const startTime = $("taskEditStartTime")?.value || "";
+  let endDate = $("taskEditEndDate")?.value || "";
+  let endTime = $("taskEditEndTime")?.value || "";
+  const durationInput = $("taskEditDuration");
+  const durationValue = Number(durationInput?.value || 0);
+  if (source === "duration" && date && startTime && Number.isInteger(durationValue) && durationValue > 0) {
+    const start = taskLocalDateTime(date, startTime);
+    if (start) {
+      const end = new Date(start.getTime() + durationValue * 60000);
+      const parts = taskDateTimeParts(end);
+      endDate = parts.date; endTime = parts.time;
+      $("taskEditEndDate").value = endDate;
+      $("taskEditEndTime").value = endTime;
+    }
+  } else if (date && startTime && endDate && endTime) {
+    const calculated = taskScheduleDuration(date, startTime, endDate, endTime);
+    if (calculated != null && calculated > 0 && durationInput) durationInput.value = String(calculated);
+  }
+  const duration = taskScheduleDuration(date, startTime, endDate, endTime);
+  let summary = startTime ? taskPlanningDisplay(date, startTime) : t("Укажите время начала или включите «Весь день».");
+  if (startTime && endDate && endTime && duration != null && duration > 0) summary += ` → ${taskPlanningDisplay(endDate, endTime)} · ${duration} ${t("мин")}`;
+  else if (startTime) summary += ` · ${t("Точечная задача")}`;
+  if ($("taskPlanningSummary")) $("taskPlanningSummary").textContent = summary;
+}
+function validateTaskPlanning(){
+  const allDay = !!$("taskEditAllDay")?.checked;
+  const date = $("taskEditDate")?.value || "";
+  if (allDay) return { allDay:true, date, startTime:"", endDate:"", endTime:"", duration:null };
+  const startTime = $("taskEditStartTime")?.value || "";
+  const endDate = $("taskEditEndDate")?.value || "";
+  const endTime = $("taskEditEndTime")?.value || "";
+  if (!startTime) throw new Error(t("Укажите время начала или включите «Весь день»."));
+  if (!!endDate !== !!endTime) throw new Error(t("Дата и время окончания должны быть заполнены вместе."));
+  const duration = endDate && endTime ? taskScheduleDuration(date, startTime, endDate, endTime) : null;
+  if (duration != null && (duration < 1 || duration > 10080)) {
+    throw new Error(duration <= 0 ? t("Окончание должно быть позже начала.") : t("Длительность: от 1 минуты до 7 дней."));
+  }
+  return { allDay:false, date, startTime, endDate, endTime, duration };
+}
+
 function resetTaskEditorFields({ date = null, text = "", inboxId = null } = {}){
   state.editingTaskId = null;
   state.editingTaskMode = "create";
   state.editingTaskInboxId = inboxId == null ? null : Number(inboxId);
   $("taskEditText").value = text || "";
   $("taskEditDate").value = date || state.selected || todayKey();
+  $("taskEditAllDay").checked = true;
+  $("taskEditStartTime").value = "09:00";
+  $("taskEditEndDate").value = "";
+  $("taskEditEndTime").value = "";
+  $("taskEditDuration").value = "";
   $("taskEditDescription").value = "";
+  $("taskEditProject").value = "";
   $("taskEditCategory").value = "";
   $("taskEditTags").value = "";
   $("taskEditPriority").value = "NORMAL";
@@ -643,6 +747,7 @@ function resetTaskEditorFields({ date = null, text = "", inboxId = null } = {}){
   $("taskEditSave").textContent = inboxId ? t("Создать задачу") : t("Добавить задачу");
   taskEditorMessage();
   updateTaskReminderControls();
+  updateTaskPlanningControls();
   renderTaskMetadataSuggestions();
 }
 function openTaskCreate(options = {}){
@@ -668,7 +773,13 @@ function editTask(task){
   state.editingTaskInboxId = null;
   $("taskEditText").value = task.text || "";
   $("taskEditDescription").value = task.description || "";
-  $("taskEditDate").value = task.date || state.selected || todayKey();
+  $("taskEditProject").value = task.project || "";
+  $("taskEditAllDay").checked = task.allDay !== false;
+  $("taskEditDate").value = task.scheduledStartDate || task.date || state.selected || todayKey();
+  $("taskEditStartTime").value = task.scheduledStartTime || "09:00";
+  $("taskEditEndDate").value = task.scheduledEndDate || "";
+  $("taskEditEndTime").value = task.scheduledEndTime || "";
+  $("taskEditDuration").value = task.scheduledDurationMinutes || "";
   $("taskEditCategory").value = task.category || "";
   $("taskEditTags").value = (task.tags || []).join(", ");
   $("taskEditPriority").value = task.priority || "NORMAL";
@@ -677,12 +788,13 @@ function editTask(task){
   $("taskEditReminderEnabled").checked = !!task.reminderEnabled;
   $("taskEditReminderBefore").value = String(task.reminderMinutesBefore ?? 60);
   renderTaskEditorSubtasks(normalizedTaskSubtasks(task));
-  $("taskEditAdvanced").open = !!(task.description || task.category || (task.tags || []).length || task.priority !== "NORMAL" || task.dueDate || task.dueTime || task.reminderEnabled);
+  $("taskEditAdvanced").open = !!(task.description || task.project || task.category || (task.tags || []).length || task.priority !== "NORMAL" || task.dueDate || task.dueTime || task.reminderEnabled);
   $("taskEditTitle").textContent = t("Редактировать задачу");
   $("taskEditHint").textContent = t("Изменения применятся к существующей задаче.");
   $("taskEditSave").textContent = t("Сохранить");
   taskEditorMessage();
   updateTaskReminderControls();
+  updateTaskPlanningControls();
   renderTaskMetadataSuggestions();
   openAppModal("taskEditModal", "taskEditText");
 }
@@ -713,6 +825,24 @@ function renderTaskDetails(task){
   meta.innerHTML = "";
   meta.append(...buildTaskMeta(task).childNodes);
 
+  const scheduleMain = $("taskDetailsScheduleMain");
+  scheduleMain.textContent = taskPlannedLabel(task, { includeDate:true });
+  const sourceSchedule = $("taskDetailsScheduleSource");
+  const sourceStart = task.scheduledSourceStartDate && task.scheduledSourceStartTime
+    ? `${taskDetailsDate(task.scheduledSourceStartDate)} · ${task.scheduledSourceStartTime}` : "";
+  const sourceEnd = task.scheduledSourceEndDate && task.scheduledSourceEndTime
+    ? `${taskDetailsDate(task.scheduledSourceEndDate)} · ${task.scheduledSourceEndTime}` : "";
+  const sourceDiffers = !!sourceStart && (
+    task.scheduledSourceStartDate !== task.scheduledStartDate
+    || task.scheduledSourceStartTime !== task.scheduledStartTime
+    || task.scheduledSourceEndDate !== task.scheduledEndDate
+    || task.scheduledSourceEndTime !== task.scheduledEndTime
+    || task.scheduledSourceTimezone !== state.profile?.workTimezone
+  );
+  sourceSchedule.hidden = !sourceDiffers;
+  sourceSchedule.textContent = sourceDiffers
+    ? `${t("Исходный интервал")}: ${sourceStart}${sourceEnd ? ` → ${sourceEnd}` : ""} · ${task.scheduledSourceTimezone}` : "";
+
   const description = $("taskDetailsDescription");
   const descriptionText = $("taskDetailsDescriptionText");
   const hasDescription = !!String(task.description || "").trim();
@@ -723,17 +853,14 @@ function renderTaskDetails(task){
   facts.innerHTML = "";
   const due = task.dueDate ? `${taskDetailsDate(task.dueDate)}${task.dueTime ? " · " + task.dueTime : ""}` : "";
   const sourceDue = task.deadlineAbsolute && task.dueSourceDate && task.dueSourceTime && task.dueSourceTimezone
-    ? `${taskDetailsDate(task.dueSourceDate)} · ${task.dueSourceTime} · ${task.dueSourceTimezone}`
-    : "";
-  const sourceDiffers = sourceDue && (
-    task.dueSourceDate !== task.dueDate
-    || task.dueSourceTime !== task.dueTime
-    || task.dueSourceTimezone !== state.profile?.workTimezone
+    ? `${taskDetailsDate(task.dueSourceDate)} · ${task.dueSourceTime} · ${task.dueSourceTimezone}` : "";
+  const deadlineSourceDiffers = sourceDue && (
+    task.dueSourceDate !== task.dueDate || task.dueSourceTime !== task.dueTime || task.dueSourceTimezone !== state.profile?.workTimezone
   );
   const rows = [
-    taskDetailsFact("Дата задачи", taskDetailsDate(task.date)),
-    taskDetailsFact("Срок", due),
-    taskDetailsFact("Исходный срок", sourceDiffers ? sourceDue : ""),
+    taskDetailsFact("Проект", task.project || ""),
+    taskDetailsFact("Дедлайн", due),
+    taskDetailsFact("Исходный срок", deadlineSourceDiffers ? sourceDue : ""),
     taskDetailsFact("Напоминание", task.reminderEnabled ? `${task.reminderMinutesBefore ?? 0} ${t("минут до срока")}` : ""),
   ].filter(Boolean);
   facts.append(...rows);
@@ -791,12 +918,18 @@ function refreshOpenTaskDetails(task){
   renderTaskDetails(task);
 }
 
-function validateTaskEditorDeadlines(date, dueDate, dueTime, subtasks, original = null){
+function validateTaskEditorDeadlines(planning, dueDate, dueTime, subtasks, original = null){
   const unchangedAbsolute = !!original?.deadlineAbsolute
-    && dueDate === (original.dueDate || "")
-    && dueTime === (original.dueTime || "");
-  if (!unchangedAbsolute && dueDate && dueDate < date) throw new Error(t("Срок не может быть раньше времени задачи."));
-  if ((subtasks || []).some(item => item.dueDate && item.dueDate < date)) {
+    && dueDate === (original.dueDate || "") && dueTime === (original.dueTime || "");
+  const plannedEndDate = planning.endDate || planning.date;
+  const plannedEndTime = planning.endTime || planning.startTime || "00:00";
+  if (!unchangedAbsolute && dueDate) {
+    if (dueDate < plannedEndDate) throw new Error(t("Дедлайн не может быть раньше окончания запланированного интервала."));
+    if (dueDate === plannedEndDate && dueTime && plannedEndTime && dueTime < plannedEndTime) {
+      throw new Error(t("Дедлайн не может быть раньше окончания запланированного интервала."));
+    }
+  }
+  if ((subtasks || []).some(item => item.dueDate && item.dueDate < planning.date)) {
     throw new Error(t("Срок подзадачи не может быть раньше даты задачи."));
   }
 }
@@ -805,6 +938,7 @@ function taskEditorPayload(original = null){
   const date = $("taskEditDate").value;
   if (!text) throw new Error(t("напиши текст задачи"));
   if (!date) throw new Error(t("укажи дату"));
+  const planning = validateTaskPlanning();
   const tags = parseTaskTags($("taskEditTags").value);
   const remindersAvailable = state.modulesLoaded && moduleEnabled("notifications");
   const reminderEnabled = remindersAvailable ? !!$("taskEditReminderEnabled").checked : !!original?.reminderEnabled;
@@ -817,19 +951,23 @@ function taskEditorPayload(original = null){
   const dueDate = $("taskEditDueDate").value || "";
   const dueTime = $("taskEditDueTime").value || "";
   const subtasks = collectTaskEditorSubtasks();
-  validateTaskEditorDeadlines(date, dueDate, dueTime, subtasks, original);
+  validateTaskEditorDeadlines(planning, dueDate, dueTime, subtasks, original);
   return {
-    date,
+    date:planning.date,
     text,
     description:$("taskEditDescription").value.trim(),
+    project:String($("taskEditProject").value || "").trim(),
     category:normalizeTaskCategory($("taskEditCategory").value),
     tags,
     priority:$("taskEditPriority").value || "NORMAL",
-    dueDate,
-    dueTime,
-    reminderEnabled,
-    reminderMinutesBefore,
-    subtasks,
+    dueDate, dueTime,
+    reminderEnabled, reminderMinutesBefore, subtasks,
+    allDay:planning.allDay,
+    scheduledStartDate:planning.date,
+    scheduledStartTime:planning.startTime,
+    scheduledEndDate:planning.endDate,
+    scheduledEndTime:planning.endTime,
+    scheduledDurationMinutes:null,
   };
 }
 async function saveTaskEditor(){
@@ -882,7 +1020,7 @@ function removeTaskFromMaps(id){
 function upsertTaskInMaps(task){
   if (!task) return;
   removeTaskFromMaps(task.id);
-  addToDateMap(state.tasksByDate, task);
+  addTaskToDateMap(state.tasksByDate, task);
 }
 function upsertTaskEverywhere(task){
   if (!task) return;
@@ -1060,6 +1198,16 @@ function filteredTasksForSelected(){
 function buildTaskMeta(task){
   const meta = document.createElement("div");
   meta.className = "taskMeta";
+  const planned = document.createElement("span");
+  planned.className = "taskPlannedChip";
+  planned.textContent = `◷ ${taskPlannedLabel(task, { includeDate:false })}`;
+  meta.appendChild(planned);
+  if (task.project) {
+    const project = document.createElement("span");
+    project.className = "taskProjectChip";
+    project.textContent = `▣ ${task.project}`;
+    meta.appendChild(project);
+  }
   if (task.category) {
     const badge = document.createElement("span");
     badge.className = "taskBadge cat";
@@ -1229,14 +1377,19 @@ function inboxTimeLabel(value){
 function renderInbox(){
   const list = $("inboxList");
   if (!list) return;
-  const items = state.inbox.items || [];
-  const openCount = items.filter(item => item.status === "OPEN").length;
+  const allItems = state.inbox.items || [];
+  const query = String(state.inbox.q || "").trim().toLowerCase();
+  const items = query ? allItems.filter(item => String(item.text || "").toLowerCase().includes(query)) : allItems;
+  const totalOpenCount = allItems.filter(item => item.status === "OPEN").length;
+  const visibleOpenCount = items.filter(item => item.status === "OPEN").length;
   const tray = $("taskInboxCard");
-  tray?.classList.toggle("empty", openCount === 0);
-  if ($("inboxCount")) $("inboxCount").textContent = String(openCount);
+  tray?.classList.toggle("empty", totalOpenCount === 0);
+  if ($("inboxCount")) $("inboxCount").textContent = String(totalOpenCount);
   if ($("inboxStatus")) $("inboxStatus").textContent = state.inbox.loading
     ? t("загрузка…")
-    : (openCount ? `${openCount} ${t("не разобрано")}` : t("пусто"));
+    : (query
+      ? `${visibleOpenCount} / ${totalOpenCount} ${t("не разобрано")}`
+      : (totalOpenCount ? `${totalOpenCount} ${t("не разобрано")}` : t("пусто")));
   if (state.inbox.loading && !items.length) {
     renderLoadingState(list, "Загружаю входящие…", 2);
     return;
@@ -1245,8 +1398,8 @@ function renderInbox(){
   if (!items.length) {
     renderEmptyState(list, {
       icon:"↘",
-      title:"Входящие пусты.",
-      text:"Сохраняй записи сразу — структуру можно добавить позже.",
+      title:query ? "По запросу во входящих ничего не найдено." : "Входящие пусты.",
+      text:query ? "Очисти поиск или измени запрос." : "Сохраняй записи сразу — структуру можно добавить позже.",
       variant:"compact"
     });
     return;
@@ -1366,9 +1519,22 @@ function renderTaskBoardCategoryFilter(){
   select.value = [...select.options].some(option => option.value === current) ? current : "all";
   state.taskBoard.filters.category = select.value;
 }
+function renderTaskBoardProjectFilter(){
+  const select = $("taskBoardProject");
+  if (!select) return;
+  const current = select.value || state.taskBoard.filters.project || "all";
+  select.innerHTML = `<option value="all">${esc(t("все проекты"))}</option>`;
+  for (const project of allTaskProjects()) {
+    const option = document.createElement("option");
+    option.value = project; option.textContent = project; select.appendChild(option);
+  }
+  select.value = [...select.options].some(option => option.value === current) ? current : "all";
+  state.taskBoard.filters.project = select.value;
+}
 function syncTaskBoardFiltersToInputs(){
   const filters = state.taskBoard.filters;
   if ($("taskBoardStatusFilter")) $("taskBoardStatusFilter").value = filters.status || "open";
+  if ($("taskBoardProject")) $("taskBoardProject").value = filters.project || "all";
   if ($("taskBoardPriority")) $("taskBoardPriority").value = filters.priority || "all";
   if ($("taskBoardSearch")) $("taskBoardSearch").value = filters.q || "";
   if ($("taskBoardFrom")) $("taskBoardFrom").value = filters.from || "";
@@ -1389,6 +1555,7 @@ async function loadTaskBoard(silent = true){
     const query = {
       status:filters.status || "open",
       category:filters.category !== "all" ? filters.category : "",
+      project:filters.project !== "all" ? filters.project : "",
       priority:filters.priority !== "all" ? filters.priority : "",
       q:filters.q || "",
       from:filters.from || "",
@@ -1411,15 +1578,14 @@ function resetTaskBoardPage(){
   state.taskBoard.page = { ...(state.taskBoard.page || {}), page:0 };
 }
 function taskBoardDateLabel(task){
-  const main = (task.dueDate || task.date || "").split("-").reverse().join(".");
-  if (!task.dueDate) return main;
-  return `${main}${task.dueTime ? " " + task.dueTime : ""}`;
+  return taskPlannedLabel(task, { includeDate:true });
 }
 function renderTaskBoard(){
   const list = $("taskBoardList");
   if (!list) return;
   syncTaskBoardFiltersToInputs();
   renderTaskBoardCategoryFilter();
+  renderTaskBoardProjectFilter();
   if (state.ui?.loadingTasks) {
     $("taskBoardStatus").textContent = t("загрузка…");
     $("taskBoardStats").innerHTML = "";
@@ -1468,8 +1634,9 @@ function renderTaskBoard(){
     date.type = "button";
     date.className = "taskBoardDate";
     date.textContent = taskBoardDateLabel(task);
-    date.title = `${t("Открыть день")} ${task.date}`;
-    date.addEventListener("click", () => goToTaskDate(task.date));
+    const plannedDate = task.scheduledStartDate || task.date;
+    date.title = `${t("Открыть день")} ${plannedDate}`;
+    date.addEventListener("click", () => goToTaskDate(plannedDate));
     const body = document.createElement("button");
     body.type = "button";
     body.className = "taskBoardBody";
@@ -1612,7 +1779,18 @@ $("taskCreateForDay")?.addEventListener("click", () => openTaskCreate({ date:sta
 $("taskBoardCreate")?.addEventListener("click", () => openTaskCreate({ date:state.selected || todayKey() }));
 $("taskStatusFilter")?.addEventListener("change", () => { state.taskFilters.status = $("taskStatusFilter").value; renderTasks(); });
 $("taskCategoryFilter")?.addEventListener("change", () => { state.taskFilters.category = $("taskCategoryFilter").value; renderTasks(); });
+$("taskEditProject")?.addEventListener("blur", () => { $("taskEditProject").value = String($("taskEditProject").value || "").trim(); });
 $("taskEditCategory")?.addEventListener("blur", () => { $("taskEditCategory").value = normalizeTaskCategory($("taskEditCategory").value); });
+$("taskEditAllDay")?.addEventListener("change", () => updateTaskPlanningControls());
+$("taskEditDate")?.addEventListener("change", () => updateTaskPlanningControls({ source:"duration" }));
+$("taskEditStartTime")?.addEventListener("change", () => updateTaskPlanningControls({ source:"duration" }));
+$("taskEditEndDate")?.addEventListener("change", () => updateTaskPlanningControls({ source:"end" }));
+$("taskEditEndTime")?.addEventListener("change", () => updateTaskPlanningControls({ source:"end" }));
+$("taskEditDuration")?.addEventListener("input", () => updateTaskPlanningControls({ source:"duration" }));
+for (const button of document.querySelectorAll("[data-task-duration]")) button.addEventListener("click", () => {
+  $("taskEditDuration").value = button.dataset.taskDuration || "";
+  updateTaskPlanningControls({ source:"duration" });
+});
 $("taskEditDueDate")?.addEventListener("change", () => {
   if ($("taskEditDueDate").value && state.modulesLoaded && moduleEnabled("notifications")) $("taskEditReminderEnabled").checked = true;
   updateTaskReminderControls();
@@ -1652,14 +1830,16 @@ $("inboxShowArchived")?.addEventListener("change", () => {
   loadInbox(false);
 });
 $("inboxRefresh")?.addEventListener("click", () => loadInbox(false));
+$("inboxSearch")?.addEventListener("input", () => { state.inbox.q = $("inboxSearch").value.trim(); renderInbox(); });
 
 $("taskBoardOpen")?.addEventListener("click", () => setTaskBoardQuickStatus("open"));
 $("taskBoardOverdue")?.addEventListener("click", () => setTaskBoardQuickStatus("overdue"));
 $("taskBoardAll")?.addEventListener("click", () => setTaskBoardQuickStatus("all"));
 $("taskBoardThisMonth")?.addEventListener("click", () => { const range = monthFromTo(); state.taskBoard.filters.from = range.from; state.taskBoard.filters.to = range.to; resetTaskBoardPage(); loadTaskBoard(false); });
-$("taskBoardClear")?.addEventListener("click", () => { state.taskBoard.filters = { status:"open", category:"all", priority:"all", q:"", from:"", to:"" }; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardClear")?.addEventListener("click", () => { state.taskBoard.filters = { status:"open", category:"all", project:"all", priority:"all", q:"", from:"", to:"" }; resetTaskBoardPage(); loadTaskBoard(false); });
 $("taskBoardStatusFilter")?.addEventListener("change", () => { state.taskBoard.filters.status = $("taskBoardStatusFilter").value; resetTaskBoardPage(); loadTaskBoard(false); });
 $("taskBoardCategory")?.addEventListener("change", () => { state.taskBoard.filters.category = $("taskBoardCategory").value; resetTaskBoardPage(); loadTaskBoard(false); });
+$("taskBoardProject")?.addEventListener("change", () => { state.taskBoard.filters.project = $("taskBoardProject").value; resetTaskBoardPage(); loadTaskBoard(false); });
 $("taskBoardPriority")?.addEventListener("change", () => { state.taskBoard.filters.priority = $("taskBoardPriority").value; resetTaskBoardPage(); loadTaskBoard(false); });
 $("taskBoardFrom")?.addEventListener("change", () => { state.taskBoard.filters.from = $("taskBoardFrom").value; resetTaskBoardPage(); loadTaskBoard(false); });
 $("taskBoardTo")?.addEventListener("change", () => { state.taskBoard.filters.to = $("taskBoardTo").value; resetTaskBoardPage(); loadTaskBoard(false); });

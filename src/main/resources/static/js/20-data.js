@@ -345,7 +345,7 @@ async function refreshModuleAwareData(){
   if (moduleEnabled("tasks")) {
     await Promise.all([loadTaskBoard(true), loadTaskMetadata(true), loadInbox(true)]);
   } else {
-    state.tasksByDate = {}; state.taskBoard.items = []; state.taskMetadata = { categories:[], tags:[] }; state.inbox.items = [];
+    state.tasksByDate = {}; state.taskBoard.items = []; state.taskMetadata = { categories:[], tags:[], projects:[] }; state.inbox.items = [];
   }
   if (moduleEnabled("overtime")) await loadLedgerPage(true); else { state.ledgerPage.items = []; state.overtimeAccount = { totalEarnedHours:0,totalUsedHours:0,balanceHours:0,credits:[],usages:[] }; }
   if (moduleEnabled("notifications")) await showMonthNotifications(); else { state.reminders=[]; state.remindersByDate={}; state.notificationSettings=null; }

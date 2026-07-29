@@ -43,6 +43,45 @@ public class DayTask {
     @Column(length = 80)
     private String category;
 
+    @Column(length = 80)
+    private String project;
+
+    @Column(name = "all_day", nullable = false)
+    private boolean allDay = true;
+
+    @Column(name = "scheduled_start_date")
+    private LocalDate scheduledStartDate;
+
+    @Column(name = "scheduled_start_time")
+    private LocalTime scheduledStartTime;
+
+    @Column(name = "scheduled_end_date")
+    private LocalDate scheduledEndDate;
+
+    @Column(name = "scheduled_end_time")
+    private LocalTime scheduledEndTime;
+
+    @Column(name = "scheduled_start_instant")
+    private Instant scheduledStartInstant;
+
+    @Column(name = "scheduled_end_instant")
+    private Instant scheduledEndInstant;
+
+    @Column(name = "scheduled_source_timezone", length = 80)
+    private String scheduledSourceTimezone;
+
+    @Column(name = "scheduled_source_start_date")
+    private LocalDate scheduledSourceStartDate;
+
+    @Column(name = "scheduled_source_start_time")
+    private LocalTime scheduledSourceStartTime;
+
+    @Column(name = "scheduled_source_end_date")
+    private LocalDate scheduledSourceEndDate;
+
+    @Column(name = "scheduled_source_end_time")
+    private LocalTime scheduledSourceEndTime;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)
     private TaskPriority priority = TaskPriority.NORMAL;
@@ -111,6 +150,34 @@ public class DayTask {
     public void setDone(boolean done) { this.done = done; }
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+    public String getProject() { return project; }
+    public void setProject(String project) { this.project = project; }
+    public boolean isAllDay() { return allDay; }
+    public void setAllDay(boolean allDay) { this.allDay = allDay; }
+    public LocalDate getScheduledStartDate() { return scheduledStartDate; }
+    public void setScheduledStartDate(LocalDate scheduledStartDate) { this.scheduledStartDate = scheduledStartDate; }
+    public LocalTime getScheduledStartTime() { return scheduledStartTime; }
+    public void setScheduledStartTime(LocalTime scheduledStartTime) { this.scheduledStartTime = scheduledStartTime; }
+    public LocalDate getScheduledEndDate() { return scheduledEndDate; }
+    public void setScheduledEndDate(LocalDate scheduledEndDate) { this.scheduledEndDate = scheduledEndDate; }
+    public LocalTime getScheduledEndTime() { return scheduledEndTime; }
+    public void setScheduledEndTime(LocalTime scheduledEndTime) { this.scheduledEndTime = scheduledEndTime; }
+    public Instant getScheduledStartInstant() { return scheduledStartInstant; }
+    public void setScheduledStartInstant(Instant scheduledStartInstant) { this.scheduledStartInstant = scheduledStartInstant; }
+    public Instant getScheduledEndInstant() { return scheduledEndInstant; }
+    public void setScheduledEndInstant(Instant scheduledEndInstant) { this.scheduledEndInstant = scheduledEndInstant; }
+    public String getScheduledSourceTimezone() { return scheduledSourceTimezone; }
+    public void setScheduledSourceTimezone(String scheduledSourceTimezone) { this.scheduledSourceTimezone = scheduledSourceTimezone; }
+    public LocalDate getScheduledSourceStartDate() { return scheduledSourceStartDate; }
+    public void setScheduledSourceStartDate(LocalDate scheduledSourceStartDate) { this.scheduledSourceStartDate = scheduledSourceStartDate; }
+    public LocalTime getScheduledSourceStartTime() { return scheduledSourceStartTime; }
+    public void setScheduledSourceStartTime(LocalTime scheduledSourceStartTime) { this.scheduledSourceStartTime = scheduledSourceStartTime; }
+    public LocalDate getScheduledSourceEndDate() { return scheduledSourceEndDate; }
+    public void setScheduledSourceEndDate(LocalDate scheduledSourceEndDate) { this.scheduledSourceEndDate = scheduledSourceEndDate; }
+    public LocalTime getScheduledSourceEndTime() { return scheduledSourceEndTime; }
+    public void setScheduledSourceEndTime(LocalTime scheduledSourceEndTime) { this.scheduledSourceEndTime = scheduledSourceEndTime; }
+    public boolean hasScheduledStart() { return scheduledStartInstant != null; }
+    public boolean hasScheduledEnd() { return scheduledEndInstant != null; }
     public TaskPriority getPriority() { return priority; }
     public void setPriority(TaskPriority priority) { this.priority = priority; }
     public LocalDate getDueDate() { return dueDate; }

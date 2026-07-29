@@ -1,8 +1,8 @@
-# DutyLog API v27.18.3
+# DutyLog API v27.19.0
 
 Проект: **DutyLog: Time & Overtime**.
 
-Текущий v27.18.3 не меняет domain API: релиз исправляет источник цветов Theme palette и семантические button variants. Аддитивный `usages` snapshot в `GET /api/overtime/account-page`, добавленный в v27.18.2, сохраняется без изменений.
+v27.19.0 аддитивно расширяет Tasks API проектами и каноническими planned intervals. Старые клиенты могут продолжать отправлять только `date`; такие задачи остаются all-day. Flyway V37 сохраняет обратную совместимость существующих данных.
 
 Веб-версия работает через `JSESSIONID`, Android/PWA-клиенты могут использовать `Authorization: Bearer <accessToken>`. Старые endpoint'ы сохранены, поверх них добавлен mobile-слой.
 
@@ -24,6 +24,41 @@ Since v27.18.2 `account-page` is the coherent Overtime workspace snapshot: it re
 
 
 
+
+
+
+## Tasks & Inbox Next API
+
+### Task planning fields
+
+`POST /api/tasks`, `PATCH /api/tasks/{id}` and `POST /api/inbox/{id}/task` accept:
+
+```json
+{
+  "project": "DutyLog",
+  "allDay": false,
+  "scheduledStartDate": "2026-07-29",
+  "scheduledStartTime": "18:33",
+  "scheduledEndDate": "2026-07-29",
+  "scheduledEndTime": "19:18",
+  "scheduledDurationMinutes": null,
+  "dueDate": "2026-07-29",
+  "dueTime": "20:00"
+}
+```
+
+A client may send an explicit end or `scheduledDurationMinutes`. Responses expose the projected interval, computed duration, `scheduleAbsolute` and source-timezone provenance. `allDay=true` clears timed planning while preserving the task’s floating `date`.
+
+Validation rejects partial/negative/over-seven-day intervals and deadlines earlier than the planned boundary.
+
+### Board and metadata
+
+```text
+GET /api/tasks/board?project=DutyLog
+GET /api/tasks/metadata
+```
+
+Metadata now returns `categories`, `tags` and `projects`. Search matches text, description, project, category, tags, planned dates/times, deadlines and subtasks.
 
 
 ## Telegram web API

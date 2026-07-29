@@ -37,7 +37,7 @@ function applyCalendarBundle(bundle){
     state.shiftOccurrences = (bundle.days || []).map(occurrenceFromLegacyDay).filter(Boolean);
   }
   rebuildShiftOccurrenceIndex();
-  if (moduleEnabled("tasks")) for (const t of bundle.tasks || []) addToDateMap(state.tasksByDate, t);
+  if (moduleEnabled("tasks")) for (const t of bundle.tasks || []) addTaskToDateMap(state.tasksByDate, t);
   if (moduleEnabled("important_dates")) for (const i of bundle.importantDays || []) addToDateMap(state.importantByDate, i);
   state.notificationSettings = moduleEnabled("notifications") ? (bundle.notificationSettings || state.notificationSettings) : null;
   state.quickScenarios = moduleEnabled("scenarios") ? (bundle.quickScenarios || state.quickScenarios || []) : [];

@@ -677,8 +677,34 @@ public final class Dtos {
             boolean deadlineAbsolute,
             String dueSourceTimezone,
             String dueSourceDate,
-            String dueSourceTime
+            String dueSourceTime,
+            String project,
+            boolean allDay,
+            String scheduledStartDate,
+            String scheduledStartTime,
+            String scheduledEndDate,
+            String scheduledEndTime,
+            Long scheduledDurationMinutes,
+            boolean scheduleAbsolute,
+            String scheduledSourceTimezone,
+            String scheduledSourceStartDate,
+            String scheduledSourceStartTime,
+            String scheduledSourceEndDate,
+            String scheduledSourceEndTime
     ) {
+        /** Source-compatible canonical constructor from v27.11.x. */
+        public TaskDto(Long id, String date, String text, boolean done, String category,
+                       List<String> tags, TaskPriority priority, String dueDate, String dueTime,
+                       boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue,
+                       List<SubtaskDto> subtasks, String description, boolean deadlineAbsolute,
+                       String dueSourceTimezone, String dueSourceDate, String dueSourceTime) {
+            this(id, date, text, done, category, tags, priority, dueDate, dueTime,
+                    reminderEnabled, reminderMinutesBefore, overdue, subtasks, description,
+                    deadlineAbsolute, dueSourceTimezone, dueSourceDate, dueSourceTime,
+                    null, true, date, null, null, null, null, false,
+                    null, null, null, null, null);
+        }
+
         /** Source-compatible canonical constructor from v27.10.x. */
         public TaskDto(Long id, String date, String text, boolean done, String category,
                        List<String> tags, TaskPriority priority, String dueDate, String dueTime,
@@ -695,8 +721,7 @@ public final class Dtos {
                        boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue,
                        List<SubtaskDto> subtasks) {
             this(id, date, text, done, category, tags, priority, dueDate, dueTime,
-                    reminderEnabled, reminderMinutesBefore, overdue, subtasks, null,
-                    false, null, null, null);
+                    reminderEnabled, reminderMinutesBefore, overdue, subtasks, null);
         }
 
         /** Source-compatible constructor for callers created before subtasks were added. */
@@ -704,8 +729,7 @@ public final class Dtos {
                        List<String> tags, TaskPriority priority, String dueDate, String dueTime,
                        boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue) {
             this(id, date, text, done, category, tags, priority, dueDate, dueTime,
-                    reminderEnabled, reminderMinutesBefore, overdue, List.of(), null,
-                    false, null, null, null);
+                    reminderEnabled, reminderMinutesBefore, overdue, List.of(), null);
         }
 
         /** Source-compatible constructor for callers created before task tags were added. */
@@ -713,8 +737,7 @@ public final class Dtos {
                        TaskPriority priority, String dueDate, String dueTime,
                        boolean reminderEnabled, Integer reminderMinutesBefore, boolean overdue) {
             this(id, date, text, done, category, List.of(), priority, dueDate, dueTime,
-                    reminderEnabled, reminderMinutesBefore, overdue, List.of(), null,
-                    false, null, null, null);
+                    reminderEnabled, reminderMinutesBefore, overdue, List.of(), null);
         }
 
         public static TaskDto from(DayTask task) {
@@ -726,6 +749,14 @@ public final class Dtos {
         }
 
         public static TaskDto from(DayTask task, java.time.LocalDateTime now, java.time.Instant nowInstant) {
+            Long durationMinutes = null;
+            if (task.getScheduledStartInstant() != null && task.getScheduledEndInstant() != null) {
+                durationMinutes = java.time.Duration.between(
+                        task.getScheduledStartInstant(), task.getScheduledEndInstant()).toMinutes();
+            }
+            String startDate = task.getScheduledStartDate() != null
+                    ? task.getScheduledStartDate().toString()
+                    : task.getDate().toString();
             return new TaskDto(
                     task.getId(),
                     task.getDate().toString(),
@@ -749,9 +780,23 @@ public final class Dtos {
                     task.hasAbsoluteDeadline(),
                     task.getDueSourceTimezone(),
                     task.getDueSourceDate() != null ? task.getDueSourceDate().toString() : null,
-                    task.getDueSourceTime() != null ? task.getDueSourceTime().toString() : null
+                    task.getDueSourceTime() != null ? task.getDueSourceTime().toString() : null,
+                    task.getProject(),
+                    task.isAllDay(),
+                    startDate,
+                    task.getScheduledStartTime() != null ? task.getScheduledStartTime().toString() : null,
+                    task.getScheduledEndDate() != null ? task.getScheduledEndDate().toString() : null,
+                    task.getScheduledEndTime() != null ? task.getScheduledEndTime().toString() : null,
+                    durationMinutes,
+                    task.hasScheduledStart(),
+                    task.getScheduledSourceTimezone(),
+                    task.getScheduledSourceStartDate() != null ? task.getScheduledSourceStartDate().toString() : null,
+                    task.getScheduledSourceStartTime() != null ? task.getScheduledSourceStartTime().toString() : null,
+                    task.getScheduledSourceEndDate() != null ? task.getScheduledSourceEndDate().toString() : null,
+                    task.getScheduledSourceEndTime() != null ? task.getScheduledSourceEndTime().toString() : null
             );
         }
+
         private static boolean isOverdue(DayTask task, java.time.LocalDateTime now, java.time.Instant nowInstant) {
             if (task.isDone() || task.getDueDate() == null) return false;
             if (task.getDueInstant() != null && nowInstant != null) {
@@ -795,8 +840,30 @@ public final class Dtos {
             List<SubtaskInput> subtasks,
 
             @Size(max = 4000, message = "Описание задачи: максимум 4000 символов")
-            String description
+            String description,
+
+            @Size(max = 80, message = "Проект: максимум 80 символов")
+            String project,
+
+            Boolean allDay,
+            String scheduledStartDate,
+            String scheduledStartTime,
+            String scheduledEndDate,
+            String scheduledEndTime,
+
+            @Min(value = 1, message = "Длительность должна быть больше нуля")
+            @Max(value = 10080, message = "Длительность: максимум 7 дней")
+            Integer scheduledDurationMinutes
     ) {
+        /** Source-compatible canonical constructor from v27.10.x. */
+        public TaskCreateRequest(String date, String text, String category, List<String> tags,
+                                 TaskPriority priority, String dueDate, String dueTime,
+                                 Boolean reminderEnabled, Integer reminderMinutesBefore,
+                                 List<SubtaskInput> subtasks, String description) {
+            this(date, text, category, tags, priority, dueDate, dueTime, reminderEnabled,
+                    reminderMinutesBefore, subtasks, description, null, true,
+                    null, null, null, null, null);
+        }
         /** Source-compatible canonical constructor from v27.9.x. */
         public TaskCreateRequest(String date, String text, String category, List<String> tags,
                                  TaskPriority priority, String dueDate, String dueTime,
@@ -812,12 +879,12 @@ public final class Dtos {
             this(date, text, category, tags, priority, dueDate, dueTime, reminderEnabled,
                     reminderMinutesBefore, null, null);
         }
-
         /** Source-compatible constructor for older internal callers. */
         public TaskCreateRequest(String date, String text, String category, TaskPriority priority,
                                  String dueDate, String dueTime, Boolean reminderEnabled,
                                  Integer reminderMinutesBefore) {
-            this(date, text, category, null, priority, dueDate, dueTime, reminderEnabled, reminderMinutesBefore, null, null);
+            this(date, text, category, null, priority, dueDate, dueTime, reminderEnabled,
+                    reminderMinutesBefore, null, null);
         }
     }
 
@@ -846,8 +913,30 @@ public final class Dtos {
             Boolean completeSubtasks,
 
             @Size(max = 4000, message = "Описание задачи: максимум 4000 символов")
-            String description
+            String description,
+
+            @Size(max = 80, message = "Проект: максимум 80 символов")
+            String project,
+
+            Boolean allDay,
+            String scheduledStartDate,
+            String scheduledStartTime,
+            String scheduledEndDate,
+            String scheduledEndTime,
+
+            @Min(value = 1, message = "Длительность должна быть больше нуля")
+            @Max(value = 10080, message = "Длительность: максимум 7 дней")
+            Integer scheduledDurationMinutes
     ) {
+        /** Source-compatible canonical constructor from v27.10.x. */
+        public TaskUpdateRequest(String text, Boolean done, String date, String category,
+                                 List<String> tags, TaskPriority priority, String dueDate, String dueTime,
+                                 Boolean reminderEnabled, Integer reminderMinutesBefore,
+                                 List<SubtaskInput> subtasks, Boolean completeSubtasks, String description) {
+            this(text, done, date, category, tags, priority, dueDate, dueTime, reminderEnabled,
+                    reminderMinutesBefore, subtasks, completeSubtasks, description,
+                    null, null, null, null, null, null, null);
+        }
         /** Source-compatible canonical constructor from v27.9.x. */
         public TaskUpdateRequest(String text, Boolean done, String date, String category,
                                  List<String> tags, TaskPriority priority, String dueDate, String dueTime,
@@ -863,7 +952,6 @@ public final class Dtos {
             this(text, done, date, category, tags, priority, dueDate, dueTime, reminderEnabled,
                     reminderMinutesBefore, null, null, null);
         }
-
         /** Source-compatible constructor for older internal callers. */
         public TaskUpdateRequest(String text, Boolean done, String date, String category,
                                  TaskPriority priority, String dueDate, String dueTime,
@@ -873,8 +961,12 @@ public final class Dtos {
         }
     }
 
-    /** Saved task metadata used by category/tag suggestions. */
-    public record TaskMetadataDto(List<String> categories, List<String> tags) {}
+    /** Saved task metadata used by category/tag/project suggestions. */
+    public record TaskMetadataDto(List<String> categories, List<String> tags, List<String> projects) {
+        public TaskMetadataDto(List<String> categories, List<String> tags) {
+            this(categories, tags, List.of());
+        }
+    }
 
     /** A raw thought captured before the user decides how to organise it. */
     public record InboxItemDto(
@@ -931,8 +1023,27 @@ public final class Dtos {
             @Size(max = 50, message = "Подзадач: максимум 50")
             List<SubtaskInput> subtasks,
             @Size(max = 4000, message = "Описание задачи: максимум 4000 символов")
-            String description
+            String description,
+            @Size(max = 80, message = "Проект: максимум 80 символов")
+            String project,
+            Boolean allDay,
+            String scheduledStartDate,
+            String scheduledStartTime,
+            String scheduledEndDate,
+            String scheduledEndTime,
+            @Min(value = 1, message = "Длительность должна быть больше нуля")
+            @Max(value = 10080, message = "Длительность: максимум 7 дней")
+            Integer scheduledDurationMinutes
     ) {
+        /** Source-compatible canonical constructor from v27.10.x. */
+        public InboxToTaskRequest(String date, String category, List<String> tags, TaskPriority priority,
+                                  String dueDate, String dueTime, Boolean reminderEnabled,
+                                  Integer reminderMinutesBefore, List<SubtaskInput> subtasks,
+                                  String description) {
+            this(date, category, tags, priority, dueDate, dueTime, reminderEnabled,
+                    reminderMinutesBefore, subtasks, description, null, true,
+                    null, null, null, null, null);
+        }
         /** Source-compatible canonical constructor from v27.9.x. */
         public InboxToTaskRequest(String date, String category, List<String> tags, TaskPriority priority,
                                   String dueDate, String dueTime, Boolean reminderEnabled,
@@ -940,7 +1051,6 @@ public final class Dtos {
             this(date, category, tags, priority, dueDate, dueTime, reminderEnabled,
                     reminderMinutesBefore, subtasks, null);
         }
-
         public InboxToTaskRequest(String date, String category, List<String> tags, TaskPriority priority,
                                   String dueDate, String dueTime, Boolean reminderEnabled,
                                   Integer reminderMinutesBefore) {

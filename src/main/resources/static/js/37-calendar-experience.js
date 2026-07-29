@@ -155,9 +155,10 @@ function calendarExperienceRemindersForDate(key){
   return (state.reminders || []).filter(reminder => calendarExperienceReminderDate(reminder) === key);
 }
 function calendarExperienceTaskLabel(task){
+  const project = String(task?.project || "").trim();
   const category = String(task?.category || "").trim();
   const priority = task?.priority === "URGENT" ? t("срочные") : task?.priority === "HIGH" ? t("важные") : "";
-  return [category, priority].filter(Boolean).join(" · ");
+  return [project, category, priority].filter(Boolean).join(" · ");
 }
 function calendarExperienceDayFacts(key){
   const shift = stOf(key);
@@ -224,7 +225,7 @@ function calendarExperienceRenderWeek(){
   list.className = "calendarWeekAgendaList";
   const rows = [];
   for (const segment of facts.segments) rows.push({ icon:"◷", title:facts.shift ? shiftDisplayName(facts.shift) : t("Смена"), meta:segment.range, color:facts.shift?.color });
-  for (const task of facts.tasks.slice(0, 5)) rows.push({ icon:"✓", title:task.text || t("Задача"), meta:[task.dueTime, calendarExperienceTaskLabel(task)].filter(Boolean).join(" · "), task });
+  for (const task of facts.tasks.slice(0, 5)) rows.push({ icon:"✓", title:task.text || t("Задача"), meta:[taskPlannedLabel(task, { includeDate:false }), calendarExperienceTaskLabel(task)].filter(Boolean).join(" · "), task });
   for (const item of facts.important.slice(0, 3)) rows.push({ icon:"★", title:item.title || t("Важная дата"), meta:repeatLabel(item.repeatMode), color:item.color, important:true });
   if (Math.abs(facts.overtime) > .001) rows.push({ icon:"＋", title:t("Переработка"), meta:`${facts.overtime > 0 ? "+" : ""}${fmtHours(facts.overtime)} ${state.language === "en" ? "h" : "ч"}`, overtime:true });
   if (!rows.length) rows.push({ icon:"○", title:t("Планов на этот день нет"), meta:t("Можно спокойно оставить его свободным") });
@@ -245,6 +246,27 @@ function calendarExperienceRenderWeek(){
   agenda.appendChild(list);
 }
 
+function calendarExperienceTaskSegment(task, key){
+  if (!task || task.allDay !== false || !task.scheduledStartTime) return null;
+  const startDate = task.scheduledStartDate || task.date;
+  const endDate = task.scheduledEndDate || "";
+  if (!startDate || key < startDate || (endDate && key > endDate)) return null;
+  const startMinute = calendarExperienceTimeMinutes(task.scheduledStartTime);
+  if (startMinute == null) return null;
+  if (!endDate || !task.scheduledEndTime) {
+    if (key !== startDate) return null;
+    return { start:startMinute, end:Math.min(1440, startMinute + 1), point:true };
+  }
+  const endMinute = calendarExperienceTimeMinutes(task.scheduledEndTime);
+  if (endMinute == null) return null;
+  if (startDate === endDate) {
+    if (key !== startDate || endMinute <= startMinute) return null;
+    return { start:startMinute, end:endMinute, point:false };
+  }
+  if (key === startDate) return { start:startMinute, end:1440, point:false };
+  if (key === endDate) return { start:0, end:endMinute, point:false };
+  return { start:0, end:1440, point:false };
+}
 function calendarExperienceTimelineEvents(key){
   const facts = calendarExperienceDayFacts(key);
   const events = [];
@@ -258,10 +280,12 @@ function calendarExperienceTimelineEvents(key){
     });
   }
   for (const task of facts.tasks) {
-    const time = task.dueTime || "";
-    const start = calendarExperienceTimeMinutes(time);
-    if (start == null) continue;
-    events.push({ type:"task", start, end:Math.min(1440, start + 45), title:task.text || t("Задача"), meta:calendarExperienceTaskLabel(task), task });
+    const segment = calendarExperienceTaskSegment(task, key);
+    if (!segment) continue;
+    events.push({
+      type:"task", start:segment.start, end:segment.end, point:segment.point,
+      title:task.text || t("Задача"), meta:calendarExperienceTaskLabel(task), task
+    });
   }
   for (const reminder of facts.reminders) {
     // Important dates already live in the all-day rail. Their notification time
@@ -289,7 +313,7 @@ function calendarExperienceRenderAllDay(key){
   const items = [];
   if (facts.shift && !facts.segments.length) items.push({ type:"shift", icon:"◷", text:shiftDisplayName(facts.shift), color:facts.shift.color });
   for (const item of facts.important) items.push({ type:"important", icon:"★", text:item.title || t("Важная дата"), color:item.color });
-  for (const task of facts.tasks.filter(item => !item.dueTime)) items.push({ type:"task", icon:"✓", text:task.text || t("Задача"), task });
+  for (const task of facts.tasks.filter(item => item.allDay !== false || !item.scheduledStartTime)) items.push({ type:"task", icon:"✓", text:task.text || t("Задача"), task });
   if (facts.notes.length) items.push({ type:"note", icon:"▤", text:`${state.language === "en" ? "Notes" : "Заметки"}: ${facts.notes.length}` });
   box.hidden = !items.length;
   box.innerHTML = "";
@@ -315,7 +339,7 @@ function calendarExperienceRenderAllDay(key){
   box.append(head, list);
 }
 function calendarExperienceVisualEnd(event){
-  const minimumMinutes = event?.type === "shift" ? 0 : 60;
+  const minimumMinutes = event?.type === "shift" ? 0 : event?.type === "task" ? 15 : 60;
   return Math.min(1440, Math.max(Number(event?.end || 0), Number(event?.start || 0) + minimumMinutes));
 }
 function calendarExperienceRenderDay(){
@@ -356,7 +380,7 @@ function calendarExperienceRenderDay(){
     if (event.color) button.style.setProperty("--event-color", event.color);
     const start = `${String(Math.floor(event.start / 60)).padStart(2,"0")}:${String(event.start % 60).padStart(2,"0")}`;
     const end = `${String(Math.floor(event.end / 60)).padStart(2,"0")}:${String(event.end % 60).padStart(2,"0")}`.replace(/^24:/,"24:");
-    const range = `${start}–${end}`;
+    const range = event.point ? start : `${start}–${end}`;
     const detail = event.type === "task"
       ? [range, event.meta].filter(Boolean).join(" · ")
       : (event.meta || range);

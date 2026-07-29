@@ -1,13 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.18.3.
+Status: v27.19.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.18.3 restores active theme colors explicitly, separates Ghost from Outline at the semantic token/computed-style level, and protects palette persistence across reload/workspace/layout changes. Current application baseline remains 96 Java test classes / 500 `@Test` methods and grows to 27 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.19.0 separates planned task intervals from deadlines, adds project metadata/search/filtering and a searchable Inbox, and places exact timed/overnight segments on the hourly calendar. Current application baseline is 97 Java test classes / 507 `@Test` methods / 28 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+
+## v27.19.0 Tasks & Inbox Next extension
+
+- `TaskServiceTest` covers planned duration, overnight day coverage, project filtering, invalid boundaries and timezone reprojection.
+- `TasksInboxNextFrontendContractTest` protects editor, details, calendar, Inbox and responsive contracts.
+- `tasks-inbox-next.spec.js` covers planned interval creation, project/deadline separation, project filtering, Inbox search, exact hourly placement and the mobile editor.
+- `editor-modals.spec.js` now creates a real planned interval instead of using a deadline as a synthetic timeline start.
+- Baseline is 97 Java classes / 507 `@Test` methods / 28 Playwright scenarios.
+- Flyway advances to V37.
 
 
 ## v27.18.3 UI Settings & Button Variants Quality extension

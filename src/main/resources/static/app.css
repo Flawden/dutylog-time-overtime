@@ -3056,3 +3056,40 @@ body.panel-open .globalQuickAdd { display:none !important; }
   .dayNoteActions{justify-content:flex-end}
 }
 .cell .noteCountBadge{position:absolute;top:2px;right:15px;z-index:3;pointer-events:none;box-shadow:0 1px 3px rgba(0,0,0,.25)}
+
+/* v27.19.0 — Tasks & Inbox Next */
+.taskPlanningEditor{
+  display:grid;gap:12px;padding:14px;border:1px solid color-mix(in srgb,var(--accent) 28%,var(--line));
+  border-radius:14px;background:color-mix(in srgb,var(--panelAlt) 88%,var(--accent) 12%);
+}
+.taskPlanningHead{display:flex;align-items:center;justify-content:space-between;gap:14px}
+.taskPlanningHead>div{display:grid;gap:2px}.taskPlanningHead small{color:var(--dim);font-size:11px}
+.taskPlanningGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end}
+.taskPlanningGrid .taskPrimaryDate{grid-column:span 1}.taskPlanningGrid .taskDurationPresets{grid-column:span 3}
+.taskDurationPresets{display:flex;gap:6px;flex-wrap:wrap}
+.taskDurationPresets button{min-width:44px;min-height:36px;padding:6px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);font-weight:700}
+.taskDurationPresets button:hover,.taskDurationPresets button:focus-visible{border-color:var(--accent);color:var(--accent);outline:none}
+.taskPlanningSummary{padding:10px 12px;border-radius:10px;background:var(--panel2);color:var(--text);font-weight:700;font-size:13px}
+.taskPlanningError{min-height:0;color:var(--danger);font-size:12px;font-weight:650}.taskPlanningError:empty{display:none}
+.taskPlanningEditor.allDay .taskTimedField{display:none!important}
+.taskDetailsSchedule{border-color:color-mix(in srgb,var(--accent) 35%,var(--line));background:color-mix(in srgb,var(--panelAlt) 90%,var(--accent) 10%)}
+.taskDetailsScheduleMain{font-size:16px;font-weight:800;line-height:1.35;color:var(--text)}
+.taskDetailsScheduleSource{margin-top:7px;color:var(--dim);font-size:11px;line-height:1.45}
+.taskProjectChip,.taskPlannedChip{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:999px;border:1px solid var(--line);background:var(--panelAlt);font-size:10px;color:var(--mut)}
+.taskProjectChip{border-color:color-mix(in srgb,var(--accent) 36%,var(--line));color:var(--accent)}
+.inboxToolbar #inboxSearch{min-width:180px;flex:1 1 240px;background:var(--bg);border:1px solid var(--line);border-radius:9px;color:var(--text);padding:8px 10px}
+.taskBoardFilters #taskBoardProject{min-width:130px}
+@media(max-width:760px){
+  .taskEditorPanel{width:min(100vw,100%);max-height:96dvh;border-radius:18px 18px 0 0;align-self:end}
+  .taskEditorForm{grid-template-columns:minmax(0,1fr)}
+  .taskPlanningGrid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .taskPlanningGrid .taskDurationPresets{grid-column:1/-1}
+  .taskPlanningHead{align-items:flex-start;flex-direction:column}
+  .taskPlanningHead .appCheck{min-height:44px}
+  .taskDurationPresets button{min-height:44px;flex:1 1 54px}
+  .inboxToolbar #inboxSearch{width:100%;flex-basis:100%}
+}
+@media(max-width:430px){
+  .taskPlanningGrid{grid-template-columns:minmax(0,1fr)}
+  .taskPlanningGrid .taskDurationPresets{grid-column:auto}
+}

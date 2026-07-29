@@ -14,9 +14,9 @@ class CalendarMobileExperienceFrontendContractTest {
     @Test
     void shellLoadsCalendarExperienceAfterTodayAndBeforeFeatureEditors() throws Exception {
         String html = read("src/main/resources/static/index.html");
-        int today = html.indexOf("js/35-today.js?v=27.18.3");
-        int calendar = html.indexOf("js/37-calendar-experience.js?v=27.18.3");
-        int overtime = html.indexOf("js/40-overtime.js?v=27.18.3");
+        int today = html.indexOf("js/35-today.js?v=27.19.0");
+        int calendar = html.indexOf("js/37-calendar-experience.js?v=27.19.0");
+        int overtime = html.indexOf("js/40-overtime.js?v=27.19.0");
         assertTrue(today >= 0 && calendar > today && overtime > calendar);
         assertTrue(html.contains("data-calendar-mode=\"month\""));
         assertTrue(html.contains("data-calendar-mode=\"week\""));

@@ -27,6 +27,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.DateTimeException;
+import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
 import java.util.Comparator;
@@ -43,9 +44,10 @@ import java.util.HashMap;
 public class TaskService {
     private static final Comparator<DayTask> TASK_DISPLAY_ORDER = Comparator
             .comparing(DayTask::isDone)
-            .thenComparing(TaskService::taskSortDate, Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(TaskService::taskPlannedStartDate, Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(TaskService::taskPlannedStartTime, Comparator.nullsLast(Comparator.naturalOrder()))
+            .thenComparing(DayTask::getDueDate, Comparator.nullsLast(Comparator.naturalOrder()))
             .thenComparing(DayTask::getDueTime, Comparator.nullsLast(Comparator.naturalOrder()))
-            .thenComparing(DayTask::getDate, Comparator.nullsLast(Comparator.naturalOrder()))
             .thenComparing(DayTask::getCreatedAt, Comparator.nullsLast(Comparator.naturalOrder()))
             .thenComparing(DayTask::getId, Comparator.nullsLast(Comparator.naturalOrder()));
 
@@ -69,7 +71,8 @@ public class TaskService {
         LocalDate d = dayEntryService.parseDate(date, "Дата должна быть в формате yyyy-MM-dd");
         LocalDateTime now = userTimeService.workNow(user);
         Instant nowInstant = userTimeService.nowInstant();
-        return tasks.findByOwnerAndDateOrderByCreatedAtAscIdAsc(user, d).stream()
+        return tasks.findByOwnerOrderByDoneAscDueDateAscDueTimeAscDateAscCreatedAtAscIdAsc(user).stream()
+                .filter(task -> taskIntersectsRange(task, d, d))
                 .sorted(TASK_DISPLAY_ORDER)
                 .map(task -> TaskDto.from(task, now, nowInstant)).toList();
     }
@@ -79,7 +82,8 @@ public class TaskService {
         dayEntryService.validateRange(from, to);
         LocalDateTime now = userTimeService.workNow(user);
         Instant nowInstant = userTimeService.nowInstant();
-        return tasks.findByOwnerAndDateBetweenOrderByDateAscCreatedAtAscIdAsc(user, from, to).stream()
+        return tasks.findByOwnerOrderByDoneAscDueDateAscDueTimeAscDateAscCreatedAtAscIdAsc(user).stream()
+                .filter(task -> taskIntersectsRange(task, from, to))
                 .sorted(TASK_DISPLAY_ORDER)
                 .map(task -> TaskDto.from(task, now, nowInstant)).toList();
     }
@@ -107,7 +111,29 @@ public class TaskService {
                 .sorted()
                 .limit(200)
                 .toList();
-        return new TaskMetadataDto(categories, tags);
+        List<String> projects = tasks.findDistinctProjects(user).stream()
+                .map(this::cleanProject)
+                .filter(Objects::nonNull)
+                .distinct()
+                .sorted()
+                .limit(100)
+                .toList();
+        return new TaskMetadataDto(categories, tags, projects);
+    }
+
+
+    /** Source-compatible board query for callers created before project filters. */
+    @Transactional(readOnly = true)
+    public PageDto<TaskDto> listBoard(AppUser user,
+                                      String status,
+                                      String category,
+                                      String priority,
+                                      String q,
+                                      String from,
+                                      String to,
+                                      int page,
+                                      int size) {
+        return listBoard(user, status, category, "all", priority, q, from, to, page, size);
     }
 
 
@@ -115,6 +141,7 @@ public class TaskService {
     public PageDto<TaskDto> listBoard(AppUser user,
                                       String status,
                                       String category,
+                                      String project,
                                       String priority,
                                       String q,
                                       String from,
@@ -127,6 +154,7 @@ public class TaskService {
 
         String statusFilter = normalizeBoardStatus(status);
         String cat = cleanOptional(category);
+        String projectValue = cleanOptional(project);
         String pr = cleanOptional(priority);
         String query = cleanOptional(q);
         String queryLower = query != null ? query.toLowerCase(Locale.ROOT) : null;
@@ -139,12 +167,14 @@ public class TaskService {
         LocalDateTime now = userTimeService.workNow(user);
         Instant nowInstant = userTimeService.nowInstant();
         final String categoryFilter = cat;
+        final String projectFilter = projectValue;
         final TaskPriority priorityFinal = priorityFilter;
         int safePage = safePage(page);
         int safeSize = safeSize(size);
         List<TaskDto> filtered = tasks.findByOwnerOrderByDoneAscDueDateAscDueTimeAscDateAscCreatedAtAscIdAsc(user).stream()
                 .filter(t -> matchStatus(t, statusFilter, now))
                 .filter(t -> categoryFilter == null || "all".equalsIgnoreCase(categoryFilter) || categoryFilter.equalsIgnoreCase(t.getCategory() == null ? "" : t.getCategory()))
+                .filter(t -> projectFilter == null || "all".equalsIgnoreCase(projectFilter) || projectFilter.equalsIgnoreCase(t.getProject() == null ? "" : t.getProject()))
                 .filter(t -> priorityFinal == null || t.getPriority() == priorityFinal)
                 .filter(t -> withinTaskBoardRange(t, fromDate, toDate))
                 .filter(t -> queryLower == null || taskMatchesQuery(t, queryLower))
@@ -192,21 +222,35 @@ public class TaskService {
     }
 
     private boolean withinTaskBoardRange(DayTask task, LocalDate from, LocalDate to) {
-        LocalDate d = taskSortDate(task);
-        if (d == null) return from == null && to == null;
-        if (from != null && d.isBefore(from)) return false;
-        return to == null || !d.isAfter(to);
+        return taskIntersectsRange(task, from, to);
     }
 
-    private static LocalDate taskSortDate(DayTask task) {
-        return task.getDueDate() != null ? task.getDueDate() : task.getDate();
+    private static boolean taskIntersectsRange(DayTask task, LocalDate from, LocalDate to) {
+        LocalDate start = taskPlannedStartDate(task);
+        LocalDate end = task.getScheduledEndDate() != null ? task.getScheduledEndDate() : start;
+        if (start == null) return from == null && to == null;
+        if (from != null && end != null && end.isBefore(from)) return false;
+        return to == null || !start.isAfter(to);
+    }
+
+    private static LocalDate taskPlannedStartDate(DayTask task) {
+        return task.getScheduledStartDate() != null ? task.getScheduledStartDate() : task.getDate();
+    }
+
+    private static LocalTime taskPlannedStartTime(DayTask task) {
+        return task.isAllDay() ? null : task.getScheduledStartTime();
     }
 
     private boolean taskMatchesQuery(DayTask task, String q) {
         return contains(task.getText(), q)
                 || contains(task.getDescription(), q)
                 || contains(task.getCategory(), q)
+                || contains(task.getProject(), q)
                 || contains(task.getDate() != null ? task.getDate().toString() : null, q)
+                || contains(task.getScheduledStartDate() != null ? task.getScheduledStartDate().toString() : null, q)
+                || contains(task.getScheduledStartTime() != null ? task.getScheduledStartTime().toString() : null, q)
+                || contains(task.getScheduledEndDate() != null ? task.getScheduledEndDate().toString() : null, q)
+                || contains(task.getScheduledEndTime() != null ? task.getScheduledEndTime().toString() : null, q)
                 || contains(task.getDueDate() != null ? task.getDueDate().toString() : null, q)
                 || contains(task.getPriority() != null ? task.getPriority().name() : null, q)
                 || task.getTags().stream().anyMatch(tag -> contains(tag, q))
@@ -248,8 +292,10 @@ public class TaskService {
         if (req.done() != null) task.setDone(req.done());
         if (req.date() != null && !req.date().isBlank()) task.setDate(dayEntryService.parseDate(req.date(), "Дата задачи должна быть в формате yyyy-MM-dd"));
         if (req.category() != null) task.setCategory(cleanCategory(req.category()));
+        if (req.project() != null) task.setProject(cleanProject(req.project()));
         if (req.tags() != null) task.setTags(cleanTags(req.tags()));
         if (req.priority() != null) task.setPriority(req.priority());
+        if (scheduleFieldsProvided(req)) applyScheduleUpdate(user, task, req);
         LocalDate previousDueDate = task.getDueDate();
         LocalTime previousDueTime = task.getDueTime();
         boolean deadlineFieldsProvided = req.dueDate() != null || req.dueTime() != null;
@@ -300,13 +346,16 @@ public class TaskService {
         List<DayTask> owned = tasks.findByOwnerOrderByDoneAscDueDateAscDueTimeAscDateAscCreatedAtAscIdAsc(user);
         boolean changed = false;
         for (DayTask task : owned) {
-            if (task.getDueDate() == null || task.getDueTime() == null) continue;
-            if (!task.hasAbsoluteDeadline()) {
-                captureDeadline(task, sourceZone);
+            if (task.getDueDate() != null && task.getDueTime() != null) {
+                if (!task.hasAbsoluteDeadline()) captureDeadline(task, sourceZone);
+                projectDeadline(task, targetZone);
                 changed = true;
             }
-            projectDeadline(task, targetZone);
-            changed = true;
+            if (!task.isAllDay() && task.getScheduledStartDate() != null && task.getScheduledStartTime() != null) {
+                if (!task.hasScheduledStart()) captureSchedule(task, sourceZone);
+                projectSchedule(task, targetZone);
+                changed = true;
+            }
         }
         if (changed) tasks.saveAll(owned);
     }
@@ -416,8 +465,10 @@ public class TaskService {
     private void applyCreateFields(AppUser user, DayTask task, TaskCreateRequest req) {
         task.setDescription(cleanDescription(req.description()));
         task.setCategory(cleanCategory(req.category()));
+        task.setProject(cleanProject(req.project()));
         task.setTags(cleanTags(req.tags()));
         task.setPriority(req.priority() != null ? req.priority() : TaskPriority.NORMAL);
+        applyScheduleCreate(user, task, req);
         task.setDueDate(parseOptionalDate(req.dueDate(), "Срок задачи должен быть в формате yyyy-MM-dd"));
         task.setDueTime(parseOptionalTime(req.dueTime(), "Время срока должно быть в формате HH:mm"));
         captureOrClearDeadline(user, task);
@@ -465,16 +516,195 @@ public class TaskService {
     }
 
 
+    private boolean scheduleFieldsProvided(TaskUpdateRequest req) {
+        return req.allDay() != null
+                || req.scheduledStartDate() != null
+                || req.scheduledStartTime() != null
+                || req.scheduledEndDate() != null
+                || req.scheduledEndTime() != null
+                || req.scheduledDurationMinutes() != null;
+    }
+
+    private void applyScheduleCreate(AppUser user, DayTask task, TaskCreateRequest req) {
+        boolean allDay = req.allDay() == null || req.allDay();
+        LocalDate startDate = parseOptionalDate(req.scheduledStartDate(), "Дата начала должна быть в формате yyyy-MM-dd");
+        LocalTime startTime = parseOptionalTime(req.scheduledStartTime(), "Время начала должно быть в формате HH:mm");
+        LocalDate endDate = parseOptionalDate(req.scheduledEndDate(), "Дата окончания должна быть в формате yyyy-MM-dd");
+        LocalTime endTime = parseOptionalTime(req.scheduledEndTime(), "Время окончания должно быть в формате HH:mm");
+        applySchedule(user, task, allDay, startDate, startTime, endDate, endTime, req.scheduledDurationMinutes());
+    }
+
+    private void applyScheduleUpdate(AppUser user, DayTask task, TaskUpdateRequest req) {
+        boolean allDay = req.allDay() != null ? req.allDay() : task.isAllDay();
+        LocalDate startDate = req.scheduledStartDate() != null
+                ? parseOptionalDate(req.scheduledStartDate(), "Дата начала должна быть в формате yyyy-MM-dd")
+                : task.getScheduledStartDate();
+        LocalTime startTime = req.scheduledStartTime() != null
+                ? parseOptionalTime(req.scheduledStartTime(), "Время начала должно быть в формате HH:mm")
+                : task.getScheduledStartTime();
+        LocalDate endDate = req.scheduledEndDate() != null
+                ? parseOptionalDate(req.scheduledEndDate(), "Дата окончания должна быть в формате yyyy-MM-dd")
+                : task.getScheduledEndDate();
+        LocalTime endTime = req.scheduledEndTime() != null
+                ? parseOptionalTime(req.scheduledEndTime(), "Время окончания должно быть в формате HH:mm")
+                : task.getScheduledEndTime();
+
+        Integer duration = req.scheduledDurationMinutes();
+        boolean startChanged = req.scheduledStartDate() != null || req.scheduledStartTime() != null;
+        boolean endExplicit = req.scheduledEndDate() != null || req.scheduledEndTime() != null;
+        if (duration == null && startChanged && !endExplicit
+                && task.getScheduledStartInstant() != null && task.getScheduledEndInstant() != null) {
+            long existing = Duration.between(task.getScheduledStartInstant(), task.getScheduledEndInstant()).toMinutes();
+            if (existing > 0 && existing <= 10080) duration = (int) existing;
+        }
+        applySchedule(user, task, allDay, startDate, startTime, endDate, endTime, duration);
+    }
+
+    private void applySchedule(AppUser user,
+                               DayTask task,
+                               boolean allDay,
+                               LocalDate startDate,
+                               LocalTime startTime,
+                               LocalDate endDate,
+                               LocalTime endTime,
+                               Integer durationMinutes) {
+        task.setAllDay(allDay);
+        if (allDay) {
+            clearScheduleSnapshot(task);
+            return;
+        }
+        LocalDate resolvedStartDate = startDate != null ? startDate : task.getDate();
+        if (startTime == null) throw ApiException.badRequest("Для задачи со временем укажите начало.");
+        task.setScheduledStartDate(resolvedStartDate);
+        task.setScheduledStartTime(startTime);
+        task.setDate(resolvedStartDate);
+
+        boolean hasEndDate = endDate != null;
+        boolean hasEndTime = endTime != null;
+        if (hasEndDate != hasEndTime) {
+            throw ApiException.badRequest("Для окончания нужны и дата, и время.");
+        }
+        task.setScheduledEndDate(endDate);
+        task.setScheduledEndTime(endTime);
+        captureSchedule(task, userTimeService.workZone(user));
+
+        if (durationMinutes != null) {
+            if (durationMinutes <= 0 || durationMinutes > 10080) {
+                throw ApiException.badRequest("Длительность должна быть от 1 минуты до 7 дней.");
+            }
+            Instant endInstant = task.getScheduledStartInstant().plus(Duration.ofMinutes(durationMinutes));
+            ZonedDateTime localEnd = endInstant.atZone(userTimeService.workZone(user));
+            task.setScheduledEndInstant(endInstant);
+            task.setScheduledEndDate(localEnd.toLocalDate());
+            task.setScheduledEndTime(localEnd.toLocalTime());
+            task.setScheduledSourceEndDate(localEnd.toLocalDate());
+            task.setScheduledSourceEndTime(localEnd.toLocalTime());
+        }
+    }
+
+    private void captureSchedule(DayTask task, ZoneId sourceZone) {
+        LocalDate startDate = task.getScheduledStartDate();
+        LocalTime startTime = task.getScheduledStartTime();
+        if (startDate == null || startTime == null) {
+            clearScheduleSnapshot(task);
+            task.setAllDay(false);
+            return;
+        }
+        ZonedDateTime start = userTimeService.resolveLocalDateTime(LocalDateTime.of(startDate, startTime), sourceZone);
+        task.setScheduledStartInstant(start.toInstant());
+        task.setScheduledSourceTimezone(sourceZone.getId());
+        task.setScheduledSourceStartDate(startDate);
+        task.setScheduledSourceStartTime(startTime);
+
+        if (task.getScheduledEndDate() != null && task.getScheduledEndTime() != null) {
+            ZonedDateTime end = userTimeService.resolveLocalDateTime(
+                    LocalDateTime.of(task.getScheduledEndDate(), task.getScheduledEndTime()), sourceZone);
+            task.setScheduledEndInstant(end.toInstant());
+            task.setScheduledSourceEndDate(task.getScheduledEndDate());
+            task.setScheduledSourceEndTime(task.getScheduledEndTime());
+        } else {
+            task.setScheduledEndInstant(null);
+            task.setScheduledSourceEndDate(null);
+            task.setScheduledSourceEndTime(null);
+        }
+    }
+
+    private void projectSchedule(DayTask task, ZoneId targetZone) {
+        if (!task.hasScheduledStart()) return;
+        ZonedDateTime start = task.getScheduledStartInstant().atZone(targetZone);
+        task.setScheduledStartDate(start.toLocalDate());
+        task.setScheduledStartTime(start.toLocalTime());
+        task.setDate(start.toLocalDate());
+        if (task.hasScheduledEnd()) {
+            ZonedDateTime end = task.getScheduledEndInstant().atZone(targetZone);
+            task.setScheduledEndDate(end.toLocalDate());
+            task.setScheduledEndTime(end.toLocalTime());
+        } else {
+            task.setScheduledEndDate(null);
+            task.setScheduledEndTime(null);
+        }
+    }
+
+    private void clearScheduleSnapshot(DayTask task) {
+        task.setScheduledStartDate(null);
+        task.setScheduledStartTime(null);
+        task.setScheduledEndDate(null);
+        task.setScheduledEndTime(null);
+        task.setScheduledStartInstant(null);
+        task.setScheduledEndInstant(null);
+        task.setScheduledSourceTimezone(null);
+        task.setScheduledSourceStartDate(null);
+        task.setScheduledSourceStartTime(null);
+        task.setScheduledSourceEndDate(null);
+        task.setScheduledSourceEndTime(null);
+    }
+
+
     private void validateBusinessRules(DayTask task) {
+        validateSchedule(task);
         validateDeadline(task);
         validateSubtaskDeadlines(task);
     }
 
+    private void validateSchedule(DayTask task) {
+        if (task.isAllDay()) return;
+        if (task.getScheduledStartDate() == null || task.getScheduledStartTime() == null || task.getScheduledStartInstant() == null) {
+            throw ApiException.badRequest("Для задачи со временем укажите начало.");
+        }
+        boolean hasEndDate = task.getScheduledEndDate() != null;
+        boolean hasEndTime = task.getScheduledEndTime() != null;
+        if (hasEndDate != hasEndTime) {
+            throw ApiException.badRequest("Для окончания нужны и дата, и время.");
+        }
+        if (task.getScheduledEndInstant() != null) {
+            Duration interval = Duration.between(task.getScheduledStartInstant(), task.getScheduledEndInstant());
+            if (interval.isZero() || interval.isNegative()) {
+                throw ApiException.badRequest("Окончание должно быть позже начала.");
+            }
+            if (interval.compareTo(Duration.ofDays(7)) > 0) {
+                throw ApiException.badRequest("Длительность должна быть не больше 7 дней.");
+            }
+        }
+    }
+
     private void validateDeadline(DayTask task) {
+        if (task.getDueDate() == null) return;
+        Instant plannedBoundary = task.getScheduledEndInstant() != null
+                ? task.getScheduledEndInstant()
+                : task.getScheduledStartInstant();
+        if (task.getDueInstant() != null && plannedBoundary != null) {
+            if (task.getDueInstant().isBefore(plannedBoundary)) {
+                throw ApiException.badRequest("Дедлайн не может быть раньше окончания запланированного интервала.");
+            }
+            return;
+        }
+        LocalDate plannedDate = task.getScheduledEndDate() != null
+                ? task.getScheduledEndDate()
+                : taskPlannedStartDate(task);
         LocalDate deadlineDate = task.hasAbsoluteDeadline() && task.getDueSourceDate() != null
                 ? task.getDueSourceDate()
                 : task.getDueDate();
-        if (task.getDate() != null && deadlineDate != null && deadlineDate.isBefore(task.getDate())) {
+        if (plannedDate != null && deadlineDate != null && deadlineDate.isBefore(plannedDate)) {
             throw ApiException.badRequest("Срок не может быть раньше времени задачи.");
         }
     }
@@ -537,6 +767,13 @@ public class TaskService {
         if (cleaned == null) return null;
         if (cleaned.length() > 80) throw ApiException.badRequest("Категория: максимум 80 символов");
         return cleaned.toLowerCase(Locale.ROOT);
+    }
+
+    private String cleanProject(String value) {
+        String cleaned = cleanOptional(value);
+        if (cleaned == null) return null;
+        if (cleaned.length() > 80) throw ApiException.badRequest("Проект: максимум 80 символов");
+        return cleaned;
     }
 
     private List<String> cleanTags(Collection<String> values) {
