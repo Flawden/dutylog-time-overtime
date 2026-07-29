@@ -1,8 +1,24 @@
-# DutyLog API v27.17.6
+# DutyLog API v27.18.0
 
 Проект: **DutyLog: Time & Overtime**.
 
 Веб-версия работает через `JSESSIONID`, Android/PWA-клиенты могут использовать `Authorization: Bearer <accessToken>`. Старые endpoint'ы сохранены, поверх них добавлен mobile-слой.
+
+## Overtime Next presentation contract (v27.18.0)
+
+Overtime Next is a frontend presentation release. It continues to use the existing endpoints:
+
+```text
+GET  /api/overtime/account
+GET  /api/overtime/account-page
+POST /api/overtime/credits
+POST /api/overtime/usages
+GET  /api/overtime/export.csv
+GET  /api/overtime/export.xls
+```
+
+The global balance/FIFO queue is derived from the full account response. Period filters and the professional ledger continue to use `account-page`. No response field, ownership rule, minute accounting rule or timezone projection semantics changed.
+
 
 
 
@@ -1158,7 +1174,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "27.17.6",
+  "version": "27.18.0",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],

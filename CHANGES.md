@@ -1,3 +1,16 @@
+# v27.18.0 — Overtime Next
+
+- Rebuilt the overtime workspace around a calm balance-first summary while preserving the existing minute-accurate FIFO accounting model.
+- Added global available balance, total earned/used metrics, usage ratio and a visible next-in-FIFO credit.
+- Added fast Month / Year / All-time period controls plus custom date, status and text filters.
+- Added responsive earned-versus-used charts that switch between daily and monthly grouping without introducing a chart dependency; usage is plotted on its actual time-off date rather than the source-credit date.
+- Added an explicit FIFO queue that explains which open credit will be consumed next.
+- Replaced the wide ledger table on phones with detailed credit cards, allocation details and edit/delete actions; the professional table remains on desktop.
+- Preserved quick credit/usage editors, legacy timezone migration and CSV/Excel exports.
+- Added a dedicated frontend contract and Playwright scenario for desktop/mobile parity and actual usage-date chart projection.
+- Updated the local release gate for the 26-scenario baseline and reused one cached matcher process instead of spawning a new fixed-string search for every contract.
+- No domain API or schema change; Flyway remains V36. Regression baseline is now 96 Java test classes, 500 `@Test` methods and 26 Playwright scenarios.
+
 # v27.17.6 — Classic Sunset
 
 - Removed the user-facing Classic shell selector and all runtime switching branches after UI Core v1 staging acceptance.

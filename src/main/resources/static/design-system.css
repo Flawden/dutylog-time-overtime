@@ -1,5 +1,5 @@
 /*
- * DutyLog UI Core design system foundation — v27.17.6
+ * DutyLog UI Core design system foundation — v27.18.0
  *
  * This file is deliberately layered after app.css. Since Classic Sunset the
  * application has one UI Core shell; html[data-shell="next"] remains only as
@@ -1330,4 +1330,652 @@ html[data-shell="next"] .calendarTimelineEmpty b { color: var(--text); }
   html[data-shell="next"] .calendarTimelineEvent { left: calc(6px + var(--lane) * 11px); right: 6px; padding: 6px 8px; border-radius: 10px; }
   html[data-shell="next"] .calendarTimelineEvent b { font-size: 11px; }
   html[data-shell="next"] .calendarTimelineEvent span { font-size: 9px; }
+}
+
+/* v27.18.0 — Overtime Next */
+html[data-shell="next"] .overtimeWorkspace {
+  display: grid;
+  gap: 16px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+html[data-shell="next"] .overtimeHero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(220px, 300px);
+  gap: 16px;
+  align-items: stretch;
+}
+
+html[data-shell="next"] .overtimeHeroIntro {
+  min-width: 0;
+  padding: 6px 2px;
+}
+
+html[data-shell="next"] .overtimeHeroIntro h2,
+html[data-shell="next"] .overtimeInsightsHead h3 {
+  margin: 3px 0 0;
+  color: var(--text);
+  letter-spacing: -.025em;
+}
+
+html[data-shell="next"] .overtimeHeroIntro h2 {
+  font-size: clamp(24px, 3vw, 34px);
+}
+
+html[data-shell="next"] .overtimeHeroIntro p {
+  max-width: 700px;
+  margin: 8px 0 0;
+  color: var(--mut);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+html[data-shell="next"] .overtimeBalanceCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-width: 0;
+  min-height: 132px;
+  padding: 18px;
+  overflow: hidden;
+  border: 1px solid color-mix(in srgb, var(--accent) 34%, var(--ds-border));
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 88% 8%, color-mix(in srgb, var(--accent) 18%, transparent), transparent 46%),
+    linear-gradient(145deg, color-mix(in srgb, var(--panel2) 88%, var(--accent) 4%), color-mix(in srgb, var(--panel) 94%, #06111a));
+  box-shadow: var(--ds-shadow-sm), inset 0 1px 0 rgba(255,255,255,.04);
+}
+
+html[data-shell="next"] .overtimeBalanceCard::after {
+  content: "";
+  position: absolute;
+  right: -28px;
+  bottom: -38px;
+  width: 120px;
+  height: 120px;
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, transparent);
+  border-radius: 50%;
+}
+
+html[data-shell="next"] .overtimeBalanceCard > * {
+  position: relative;
+  z-index: 1;
+}
+
+html[data-shell="next"] .overtimeBalanceCard span,
+html[data-shell="next"] .overtimeMetricCard > span {
+  color: var(--mut);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+html[data-shell="next"] .overtimeBalanceCard strong {
+  margin: 5px 0 2px;
+  color: var(--accent);
+  font: 900 clamp(30px, 4.2vw, 46px)/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  letter-spacing: -.06em;
+}
+
+html[data-shell="next"] .overtimeBalanceCard small,
+html[data-shell="next"] .overtimeMetricCard small {
+  color: var(--dim);
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+html[data-shell="next"] .overtimeMetricGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+html[data-shell="next"] .overtimeMetricCard {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 104px;
+  padding: 13px 14px;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 16px;
+  background: color-mix(in srgb, var(--panel2) 78%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+}
+
+html[data-shell="next"] .overtimeMetricCard b {
+  margin: 6px 0 4px;
+  overflow: hidden;
+  color: var(--text);
+  font: 850 20px/1.15 ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-overflow: ellipsis;
+}
+
+html[data-shell="next"] .overtimeMetricCard.earned b { color: var(--accent); }
+html[data-shell="next"] .overtimeMetricCard.used b { color: var(--accent-2, #61d3c7); }
+html[data-shell="next"] .overtimeMetricCard.fifo b {
+  font-family: inherit;
+  font-size: 15px;
+  line-height: 1.25;
+  white-space: normal;
+}
+
+html[data-shell="next"] .overtimeRatioTrack,
+html[data-shell="next"] .overtimeLedgerProgress {
+  height: 6px;
+  margin-top: auto;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--line) 78%, transparent);
+}
+
+html[data-shell="next"] .overtimeRatioTrack span,
+html[data-shell="next"] .overtimeLedgerProgress span {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2, #61d3c7));
+  transition: width .22s ease;
+}
+
+html[data-shell="next"] .ledgerPrimaryActions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 0;
+}
+
+html[data-shell="next"] .ledgerPrimaryActions button {
+  min-height: 42px;
+  padding: 9px 14px;
+  border: 1px solid var(--ds-border);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--panel2) 86%, transparent);
+  color: var(--text);
+  cursor: pointer;
+}
+
+html[data-shell="next"] .ledgerPrimaryActions #ledgerMigrateLegacy {
+  margin-left: auto;
+  color: var(--warn);
+}
+
+html[data-shell="next"] .ledgerPeriodBar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 6px;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg) 48%, var(--panel2));
+}
+
+html[data-shell="next"] .ledgerPeriodTabs {
+  display: flex;
+  gap: 4px;
+  min-width: 0;
+}
+
+html[data-shell="next"] .ledgerPeriodTabs button {
+  min-height: 34px;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--mut);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+html[data-shell="next"] .ledgerPeriodTabs button.active,
+html[data-shell="next"] .ledgerPeriodTabs button[aria-pressed="true"] {
+  border-color: color-mix(in srgb, var(--accent) 28%, var(--ds-border));
+  background: color-mix(in srgb, var(--accent) 12%, var(--panel2));
+  color: var(--accent);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.035);
+}
+
+html[data-shell="next"] .ledgerPeriodLabel {
+  min-width: 0;
+  padding-right: 8px;
+  overflow: hidden;
+  color: var(--dim);
+  font: 700 11px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-shell="next"] .overtimeInsights {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(240px, .8fr);
+  gap: 14px;
+  min-width: 0;
+  padding: 14px;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--panel2) 66%, transparent);
+}
+
+html[data-shell="next"] .overtimeInsightsHead {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 12px;
+  align-items: end;
+  justify-content: space-between;
+}
+
+html[data-shell="next"] .overtimeInsightsHead h3 { font-size: 17px; }
+html[data-shell="next"] .overtimeInsightsHead > span {
+  color: var(--dim);
+  font-size: 11px;
+  font-weight: 750;
+}
+
+html[data-shell="next"] .overtimeChart {
+  min-width: 0;
+  min-height: 218px;
+  padding: 10px 8px 4px;
+  overflow-x: auto;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 14px;
+  background:
+    repeating-linear-gradient(to top, transparent 0 43px, color-mix(in srgb, var(--line) 52%, transparent) 44px),
+    color-mix(in srgb, var(--bg) 42%, transparent);
+  scrollbar-width: thin;
+}
+
+html[data-shell="next"] .overtimeChartLegend {
+  display: flex;
+  gap: 14px;
+  min-width: max-content;
+  color: var(--dim);
+  font-size: 10px;
+  font-weight: 800;
+}
+
+html[data-shell="next"] .overtimeChartLegend span::before {
+  content: "";
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-right: 5px;
+  border-radius: 3px;
+  background: var(--accent);
+}
+
+html[data-shell="next"] .overtimeChartLegend .used::before { background: var(--accent-2, #61d3c7); }
+
+html[data-shell="next"] .overtimeChartBars {
+  display: flex;
+  gap: 7px;
+  align-items: end;
+  min-width: max(100%, max-content);
+  height: 176px;
+  padding-top: 12px;
+}
+
+html[data-shell="next"] .overtimeChartColumn {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 7px;
+  width: max(34px, calc((100% - 77px) / 12));
+  min-width: 34px;
+  height: 100%;
+}
+
+html[data-shell="next"] .overtimeChartValues {
+  display: flex;
+  gap: 3px;
+  align-items: end;
+  justify-content: center;
+  min-height: 0;
+}
+
+html[data-shell="next"] .overtimeChartValues i {
+  width: min(12px, 42%);
+  height: var(--bar-size, 0%);
+  min-height: 0;
+  border-radius: 5px 5px 2px 2px;
+  background: linear-gradient(to top, color-mix(in srgb, var(--accent) 70%, #80610c), var(--accent));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent) 10%, transparent);
+}
+
+html[data-shell="next"] .overtimeChartValues i.used {
+  background: linear-gradient(to top, color-mix(in srgb, var(--accent-2, #61d3c7) 64%, #14443f), var(--accent-2, #61d3c7));
+  box-shadow: 0 0 18px color-mix(in srgb, var(--accent-2, #61d3c7) 10%, transparent);
+}
+
+html[data-shell="next"] .overtimeChartColumn > span {
+  overflow: hidden;
+  color: var(--dim);
+  font: 650 9px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-shell="next"] .overtimeFifoQueue {
+  min-width: 0;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg) 42%, transparent);
+}
+
+html[data-shell="next"] .overtimeFifoTitle {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 12px;
+  border-bottom: 1px solid var(--ds-border-soft);
+  color: var(--mut);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+html[data-shell="next"] .overtimeFifoTitle b {
+  display: inline-grid;
+  place-items: center;
+  min-width: 24px;
+  min-height: 24px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+html[data-shell="next"] .overtimeFifoRows { display: grid; }
+
+html[data-shell="next"] .overtimeFifoRow {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  gap: 9px;
+  align-items: center;
+  min-width: 0;
+  padding: 10px 11px;
+  border-bottom: 1px solid var(--ds-border-soft);
+}
+
+html[data-shell="next"] .overtimeFifoRow:last-child { border-bottom: 0; }
+html[data-shell="next"] .overtimeFifoRow > span {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border: 1px solid var(--ds-border);
+  border-radius: 8px;
+  color: var(--dim);
+  font: 800 10px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+html[data-shell="next"] .overtimeFifoRow.next > span {
+  border-color: color-mix(in srgb, var(--accent) 44%, var(--ds-border));
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+}
+
+html[data-shell="next"] .overtimeFifoRow > div {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+html[data-shell="next"] .overtimeFifoRow b,
+html[data-shell="next"] .overtimeFifoRow small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+html[data-shell="next"] .overtimeFifoRow b { color: var(--text); font-size: 12px; }
+html[data-shell="next"] .overtimeFifoRow small { color: var(--dim); font-size: 10px; }
+html[data-shell="next"] .overtimeFifoRow strong {
+  color: var(--accent);
+  font: 800 12px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+  white-space: nowrap;
+}
+
+html[data-shell="next"] .overtimeFifoEmpty {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 180px;
+  padding: 18px;
+  text-align: center;
+}
+
+html[data-shell="next"] .overtimeFifoEmpty b { color: var(--text); }
+html[data-shell="next"] .overtimeFifoEmpty span { margin-top: 5px; color: var(--dim); font-size: 11px; line-height: 1.45; }
+
+html[data-shell="next"] .ledgerFilters {
+  margin: 0;
+  padding: 12px;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg) 38%, transparent);
+}
+
+html[data-shell="next"] .ledgerFilters label {
+  color: var(--dim);
+  font-size: 10px;
+}
+
+html[data-shell="next"] .overtimeMobileList { display: none; }
+
+html[data-shell="next"] .overtimeTimezoneNote {
+  margin: -4px 2px 0;
+  color: var(--dim);
+  font-size: 10.5px;
+  line-height: 1.45;
+}
+
+html[data-shell="next"] .ledgerTableWrap {
+  min-width: 0;
+  border-color: var(--ds-border-soft);
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg) 34%, transparent);
+}
+
+html[data-shell="next"] .ledgerTable th {
+  background: color-mix(in srgb, var(--panel) 96%, #06111a);
+}
+
+@media (max-width: 980px) {
+  html[data-shell="next"] .overtimeMetricGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html[data-shell="next"] .overtimeInsights { grid-template-columns: minmax(0, 1fr); }
+  html[data-shell="next"] .overtimeInsightsHead { grid-column: 1; }
+}
+
+@media (max-width: 760px) {
+  html[data-shell="next"] .overtimeWorkspace {
+    gap: 12px;
+    overflow: visible;
+  }
+
+  html[data-shell="next"] .overtimeHero { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  html[data-shell="next"] .overtimeHeroIntro { padding: 0 2px; }
+  html[data-shell="next"] .overtimeHeroIntro h2 { font-size: 25px; }
+  html[data-shell="next"] .overtimeHeroIntro p { font-size: 12px; }
+  html[data-shell="next"] .overtimeBalanceCard { min-height: 112px; padding: 15px; border-radius: 17px; }
+  html[data-shell="next"] .overtimeBalanceCard strong { font-size: 36px; }
+  html[data-shell="next"] .overtimeMetricGrid { gap: 7px; }
+  html[data-shell="next"] .overtimeMetricCard { min-height: 92px; padding: 11px; border-radius: 14px; }
+  html[data-shell="next"] .overtimeMetricCard b { font-size: 17px; }
+  html[data-shell="next"] .overtimeMetricCard.fifo { grid-column: 1 / -1; min-height: 78px; }
+  html[data-shell="next"] .ledgerPrimaryActions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html[data-shell="next"] .ledgerPrimaryActions button { width: 100%; min-width: 0; }
+  html[data-shell="next"] .ledgerPrimaryActions #ledgerMigrateLegacy { grid-column: 1 / -1; margin-left: 0; }
+  html[data-shell="next"] .ledgerPeriodBar { align-items: stretch; flex-direction: column; gap: 5px; }
+  html[data-shell="next"] .ledgerPeriodTabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  html[data-shell="next"] .ledgerPeriodTabs button { width: 100%; min-width: 0; padding-inline: 4px; }
+  html[data-shell="next"] .ledgerPeriodLabel { padding: 2px 6px 4px; text-align: center; }
+  html[data-shell="next"] .overtimeInsights { gap: 10px; padding: 10px; border-radius: 16px; }
+  html[data-shell="next"] .overtimeChart { min-height: 192px; padding-inline: 6px; }
+  html[data-shell="next"] .overtimeChartBars { height: 150px; }
+  html[data-shell="next"] .overtimeFifoQueue { border-radius: 13px; }
+  html[data-shell="next"] .ledgerFilters { padding: 9px; }
+  html[data-shell="next"] .ledgerStats { margin-bottom: 0; }
+  html[data-shell="next"] .ledgerTableWrap { display: none; }
+  html[data-shell="next"] .overtimeMobileList { display: grid; gap: 9px; min-width: 0; }
+
+  html[data-shell="next"] .overtimeLedgerCard {
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--ds-border-soft);
+    border-radius: 16px;
+    background: linear-gradient(145deg, color-mix(in srgb, var(--panel2) 88%, #08141e), color-mix(in srgb, var(--panel) 92%, transparent));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.025);
+  }
+
+  html[data-shell="next"] .overtimeLedgerCard > header {
+    display: flex;
+    gap: 10px;
+    align-items: start;
+    justify-content: space-between;
+    padding: 12px 12px 8px;
+  }
+
+  html[data-shell="next"] .overtimeLedgerCard > header > div {
+    display: flex;
+    gap: 7px;
+    align-items: center;
+    min-width: 0;
+  }
+
+  html[data-shell="next"] .overtimeLedgerCard time {
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 850;
+  }
+
+  html[data-shell="next"] .overtimeLedgerCard > header > strong {
+    color: var(--accent);
+    font: 900 18px/1 ui-monospace, SFMono-Regular, Consolas, monospace;
+    white-space: nowrap;
+  }
+
+  html[data-shell="next"] .overtimeLedgerCardMain {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+    padding: 0 12px 10px;
+  }
+
+  html[data-shell="next"] .overtimeLedgerCardMain > b {
+    overflow-wrap: anywhere;
+    color: var(--text);
+    font-size: 13px;
+  }
+
+  html[data-shell="next"] .overtimeLedgerCardRange {
+    min-width: 0;
+    color: var(--mut);
+    font-size: 11px;
+  }
+
+  html[data-shell="next"] .overtimeLedgerCardRange .ledgerTimeSecondary,
+  html[data-shell="next"] .overtimeLedgerCardRange .ledgerTimeZone { font-size: 9.5px; }
+  html[data-shell="next"] .overtimeLedgerProgress { margin: 0 12px; }
+  html[data-shell="next"] .overtimeLedgerAmounts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+    padding: 9px 12px 11px;
+  }
+
+  html[data-shell="next"] .overtimeLedgerAmounts span {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    color: var(--dim);
+    font-size: 9.5px;
+    text-transform: uppercase;
+  }
+
+  html[data-shell="next"] .overtimeLedgerAmounts b {
+    color: var(--text);
+    font: 800 13px/1.2 ui-monospace, SFMono-Regular, Consolas, monospace;
+    text-transform: none;
+  }
+
+  html[data-shell="next"] .overtimeLedgerDetails {
+    border-top: 1px solid var(--ds-border-soft);
+  }
+
+  html[data-shell="next"] .overtimeLedgerDetails > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 42px;
+    padding: 9px 12px;
+    color: var(--mut);
+    font-size: 11px;
+    font-weight: 800;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  html[data-shell="next"] .overtimeLedgerDetails > summary::-webkit-details-marker { display: none; }
+  html[data-shell="next"] .overtimeLedgerDetails > summary span {
+    display: grid;
+    place-items: center;
+    min-width: 22px;
+    min-height: 22px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--accent) 10%, transparent);
+    color: var(--accent);
+  }
+
+  html[data-shell="next"] .overtimeCardUsageList { display: grid; gap: 7px; padding: 0 10px 10px; }
+  html[data-shell="next"] .overtimeCardUsage {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 7px;
+    align-items: start;
+    min-width: 0;
+    padding: 9px;
+    border: 1px solid var(--ds-border-soft);
+    border-radius: 11px;
+    background: color-mix(in srgb, var(--bg) 44%, transparent);
+  }
+
+  html[data-shell="next"] .overtimeCardUsage > div:first-child { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  html[data-shell="next"] .overtimeCardUsage b { color: var(--accent-2, #61d3c7); font: 800 12px/1 ui-monospace, monospace; }
+  html[data-shell="next"] .overtimeCardUsage span { color: var(--mut); font-size: 10.5px; overflow-wrap: anywhere; }
+  html[data-shell="next"] .overtimeCardUsageActions,
+  html[data-shell="next"] .overtimeLedgerCardActions { display: flex; gap: 8px; align-items: center; }
+  html[data-shell="next"] .overtimeCardUsageActions button,
+  html[data-shell="next"] .overtimeLedgerCardActions button {
+    padding: 4px 2px;
+    border: 0;
+    background: transparent;
+    color: var(--dim);
+    font-size: 10.5px;
+    cursor: pointer;
+  }
+
+  html[data-shell="next"] .overtimeLedgerCardActions {
+    justify-content: flex-end;
+    padding: 0 12px 11px;
+  }
+  html[data-shell="next"] .overtimeLedgerCardActions > span { color: var(--dim); font-size: 10px; }
+  html[data-shell="next"] .overtimeCardEmptyUsage { padding: 8px; color: var(--dim); font-size: 11px; text-align: center; }
+}
+
+@media (max-width: 430px) {
+  html[data-shell="next"] .overtimeMetricCard.ratio { grid-column: 1 / -1; min-height: 78px; }
+  html[data-shell="next"] .overtimeChartColumn { width: 32px; min-width: 32px; }
+  html[data-shell="next"] .overtimeInsightsHead { align-items: start; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-shell="next"] .overtimeRatioTrack span,
+  html[data-shell="next"] .overtimeLedgerProgress span { transition: none; }
 }

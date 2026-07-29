@@ -1,36 +1,32 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.17.6 — Classic Sunset**.
+Current release: **v27.18.0 — Overtime Next**.
 
-## Текущая продуктовая точка — единый UI Core v1
+## Текущая продуктовая точка — Overtime Next на едином UI Core
 
-Статус: **v27.17.6** завершает переходный период и удаляет второй пользовательский shell.
+Статус: **v27.18.0** переводит журнал переработок с desktop-first таблицы на адаптивное рабочее пространство без изменения бухгалтерской модели.
 
 Сделано к текущей точке:
 
-- Design System, Today Dashboard и Month / Week / Day;
-- единый UI Core contract v1;
-- декларативные registry для workspace, layout, theme, palette, decorations, screens и Today widgets;
-- рабочие окружения `Shift Worker`, `Planner`, `Minimal`;
-- компоновки `Dashboard`, `Compact`, `Focus`;
-- независимые CSS-пакеты встроенных тем и отдельный слой палитры;
-- pre-paint bootstrap без theme/layout flash;
-- автоматическое сохранение внешнего вида с debounce, ревизиями и очередью;
-- безопасный whitelist UI-параметров в профиле;
-- Classic удалён; старые `shellMode=classic` безопасно игнорируются;
-- rollback выполняется через Git/immutable Docker image;
-- immutable shift occurrences, timezone-проекция, поминутный overtime/FIFO, задачи, Inbox, важные даты и несколько заметок;
-- offline snapshot, staging CI/CD и backup/restore;
-- Flyway V1–V36, Java 17, 95 Java test classes / 496 tests / 25 Playwright scenarios.
+- крупная balance-first сводка: доступно, начислено, использовано и доля списания;
+- видимый следующий FIFO-остаток и очередь открытых начислений;
+- быстрые периоды «Месяц / Год / Всё время» и произвольный диапазон;
+- динамика начислений/списаний по дням или месяцам;
+- карточный мобильный журнал вместо сжатой широкой таблицы;
+- профессиональная desktop-таблица сохранена;
+- сохранены точные интервалы, timezone-проекция, provenance списаний, legacy migration и CSV/Excel export;
+- единый UI Core, workspaces, layouts, темы и палитры;
+- Classic удалён, rollback выполняется через Git/immutable Docker image;
+- Flyway V1–V36, Java 17, 96 Java test classes / 500 tests / 26 Playwright scenarios.
 
-Следующий продуктовый этап: **v27.18.0 — Overtime Next**.
+Следующий продуктовый этап: **v27.19.0 — Tasks & Inbox Next**.
 
 Цель этапа:
 
-- заменить мобильное сжатие таблицы карточным представлением;
-- сохранить подробную desktop-таблицу как профессиональный режим;
-- улучшить сводку баланса, FIFO и детализацию начислений/списаний;
-- добавить понятные фильтры и графики без изменения бухгалтерской модели.
+- полноценный Inbox и read-first карточка задачи;
+- планируемые интервалы задач `С → До` и длительность на почасовом графике;
+- независимые дедлайны, напоминания и валидация;
+- мобильный редактор, подзадачи, категории, проекты, поиск и фильтры.
 
 ## Этап 1 — production foundation
 

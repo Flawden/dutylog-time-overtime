@@ -1,15 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.17.6.
+Status: v27.18.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.17.6 removes the user-facing Classic shell, discards legacy `shellMode` safely and protects the single UI Core migration path while preserving declarative workspaces/layouts/themes/palettes and automatic appearance persistence. Current application baseline: 95 Java test classes / 496 `@Test` methods and 25 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.18.0 adds the balance-first Overtime Next workspace, daily/monthly trend rendering, visible FIFO queue, responsive mobile credit cards and desktop/mobile parity checks while preserving the existing minute-accurate accounting API. Current application baseline: 96 Java test classes / 500 `@Test` methods and 26 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+
+## v27.18.0 Overtime Next extension
+
+- `OvertimeNextFrontendContractTest` protects the summary, period controls, chart, FIFO queue, mobile cards and preserved editors/exports.
+- `overtime-next.spec.js` creates credits and a FIFO usage, verifies the 5h/4h/1h summary, switches the year preset, then proves the desktop table is replaced by detailed cards at a phone viewport.
+- Existing overtime projection, editor, integrity and scenario tests remain unchanged.
+- No Flyway or domain API change is required.
 
 ## v27.17.6 Classic Sunset extension
 

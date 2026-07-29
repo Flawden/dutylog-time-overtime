@@ -1,5 +1,5 @@
 /*
- * 40-overtime.js — Overtime: ledger, credits, usages and quick scenarios
+ * 40-overtime.js — v27.18.0 Overtime Next: balance, FIFO, mobile cards and professional ledger
  *
  * DutyLog uses ordered browser scripts, not ES modules yet.
  * Keep the order in index.html stable: 10-core → 20-data → 30-calendar
@@ -38,7 +38,22 @@ Object.assign(I18N_EN, {
   "проекция":"projection", "итого за день":"day total",
   "за два дня до":"two days before", "предыдущий день":"previous day", "тот же день":"same day",
   "следующий день":"next day", "через день":"day after next",
-  "канонический расчёт":"canonical calculation"
+  "канонический расчёт":"canonical calculation",
+  "Учёт переработок":"Overtime tracking", "Баланс времени":"Time balance",
+  "Доступно сейчас":"Available now", "Общий остаток за всё время":"All-time available balance",
+  "Начислено":"Earned", "Использовано":"Used", "Доля использования":"Usage rate",
+  "Следующим спишется":"Used next", "Нет открытых начислений":"No open credits",
+  "FIFO: сначала используется самый старый остаток":"FIFO uses the oldest available credit first",
+  "Месяц":"Month", "Год":"Year", "Всё время":"All time", "Динамика":"Trend",
+  "Начисления и списания":"Credits and usage", "по дням":"by day", "по месяцам":"by month",
+  "Открытые остатки FIFO":"Open FIFO balance", "Свободных часов нет":"No available hours",
+  "Сначала начислите переработку, чтобы появилось доступное время.":"Earn overtime first to create an available balance.",
+  "Списания":"Usage", "Не использовано":"Not used", "Подробности":"Details",
+  "Интервалы отображаются в выбранном часовом поясе. Абсолютная длительность и FIFO не меняются.":"Intervals are displayed in the selected timezone. Absolute duration and FIFO do not change.",
+  "Фильтры и экспорт":"Filters and export", "Сбросить":"Reset",
+  "за период начислено":"earned in period", "за период использовано":"used in period",
+  "остаток начислений периода":"period credit balance", "Следующий остаток":"Next balance",
+  "профессиональная таблица":"professional table", "мобильные карточки":"mobile cards"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -1081,9 +1096,15 @@ ${partsText} will be removed. Overtime credits will remain and the minutes will 
 }
 
 function currentMonthRange(){
-  const from = keyOf(state.y, state.m, 1);
-  const to = keyOf(state.y, state.m, new Date(state.y, state.m + 1, 0).getDate());
-  return { from, to };
+  const today = localDateFromKey(todayKey()) || new Date();
+  const year = today.getFullYear();
+  const month = today.getMonth();
+  return { from:keyOf(year, month, 1), to:keyOf(year, month, new Date(year, month + 1, 0).getDate()) };
+}
+function currentYearRange(){
+  const today = localDateFromKey(todayKey()) || new Date();
+  const year = today.getFullYear();
+  return { from:`${year}-01-01`, to:`${year}-12-31` };
 }
 
 function creditStatus(c){
@@ -1100,19 +1121,49 @@ function statusLabel(status){
   return t("остаток");
 }
 
-function creditSearchHaystack(c){
-  const usages = (c.usages || []).map(u => `${u.usageDate} ${u.hours} ${u.reason || ""}`).join(" " );
-  const p = overtimeProjection(c);
-  return `${c.workedDate} ${p.sourceWorkedDate} ${c.timeRange || ""} ${p.sourceTimeRange} ${c.displayStart || ""} ${c.displayEnd || ""} ${c.sourceTimezone || ""} ${c.displayTimezone || ""} ${c.hours} ${p.dayEarnedHours} ${c.reason || ""} ${usages}`.toLowerCase();
+
+function ledgerSourceCredits(){
+  const accountCredits = state.overtimeAccount?.credits || [];
+  return accountCredits.length ? accountCredits : (state.ledgerPage?.items || []);
 }
 
-function getFilteredLedgerCredits(){
-  const acc = state.overtimeAccount || { credits:[] };
+function localDateFromKey(key){
+  const [year, month, day] = String(key || "").split("-").map(Number);
+  return Number.isFinite(year) && Number.isFinite(month) && Number.isFinite(day)
+    ? new Date(year, month - 1, day, 12, 0, 0)
+    : null;
+}
+
+function ledgerShortDate(key){
+  const date = localDateFromKey(key);
+  if (!date) return key || "—";
+  return new Intl.DateTimeFormat(state.language === "en" ? "en" : "ru", { day:"numeric", month:"short" }).format(date);
+}
+
+function ledgerMonthLabel(key){
+  const [year, month] = String(key || "").split("-").map(Number);
+  if (!Number.isFinite(year) || !Number.isFinite(month)) return key || "—";
+  const date = new Date(year, month - 1, 1, 12, 0, 0);
+  return new Intl.DateTimeFormat(state.language === "en" ? "en" : "ru", { month:"short", year:"2-digit" }).format(date);
+}
+
+function ledgerPeriodText(){
+  const f = state.ledgerFilters || {};
+  if (f.preset === "month") return t("Месяц");
+  if (f.preset === "year") return t("Год");
+  if (!f.from && !f.to) return t("Всё время");
+  const from = f.from ? ledgerShortDate(f.from) : "…";
+  const to = f.to ? ledgerShortDate(f.to) : "…";
+  return `${from} — ${to}`;
+}
+
+function ledgerFilteredCredits(){
   const f = state.ledgerFilters || { from:"", to:"", status:"all", q:"" };
   const q = String(f.q || "").trim().toLowerCase();
-  return (acc.credits || []).filter(c => {
-    if (f.from && c.workedDate < f.from) return false;
-    if (f.to && c.workedDate > f.to) return false;
+  return ledgerSourceCredits().filter(c => {
+    const date = overtimeProjection(c).sourceWorkedDate || c.workedDate || "";
+    if (f.from && date < f.from) return false;
+    if (f.to && date > f.to) return false;
     const st = creditStatus(c);
     if (f.status === "open" && st === "closed") return false;
     if (f.status === "partial" && st !== "partial") return false;
@@ -1122,12 +1173,232 @@ function getFilteredLedgerCredits(){
   });
 }
 
+function uniqueSourceCredits(rows){
+  const grouped = new Map();
+  for (const row of rows || []) {
+    const projection = overtimeProjection(row);
+    const key = String(row.id ?? `${projection.sourceWorkedDate}:${projection.sourceTimeRange}:${row.reason || ""}`);
+    const current = grouped.get(key);
+    const candidate = {
+      ...row,
+      workedDate: projection.sourceWorkedDate || row.workedDate,
+      timeRange: projection.sourceTimeRange || row.timeRange,
+      hours: projection.sourceCreditHours,
+      usedHours: projection.sourceUsedHours,
+      remainingHours: projection.sourceRemainingHours,
+    };
+    if (!current || numOr0(candidate.remainingHours) > numOr0(current.remainingHours)) grouped.set(key, candidate);
+  }
+  return [...grouped.values()];
+}
+
+function ledgerDateMatchesPeriod(date, filters = state.ledgerFilters || {}){
+  if (!date) return false;
+  if (filters.from && date < filters.from) return false;
+  if (filters.to && date > filters.to) return false;
+  return true;
+}
+
+function ledgerFilteredUsages(){
+  const filters = state.ledgerFilters || {};
+  const query = String(filters.q || "").trim().toLowerCase();
+  return (state.overtimeAccount?.usages || []).filter(usage => {
+    if (!ledgerDateMatchesPeriod(usage.usageDate, filters)) return false;
+    if (!query) return true;
+    return `${usage.usageDate || ""} ${usage.hours || ""} ${usage.reason || ""}`.toLowerCase().includes(query);
+  });
+}
+
+function ledgerInsightSeries(credits, usages){
+  const filters = state.ledgerFilters || {};
+  const from = localDateFromKey(filters.from);
+  const to = localDateFromKey(filters.to);
+  const daySpan = from && to ? Math.round((to - from) / 86400000) + 1 : Infinity;
+  const daily = daySpan <= 45;
+  const groups = new Map();
+  const bucket = date => {
+    const key = daily ? date : date.slice(0, 7);
+    if (!groups.has(key)) groups.set(key, { key, earned:0, used:0 });
+    return groups.get(key);
+  };
+  for (const row of credits || []) {
+    const date = overtimeProjection(row).sourceWorkedDate || row.workedDate || "";
+    if (!ledgerDateMatchesPeriod(date, filters)) continue;
+    bucket(date).earned += numOr0(row.hours);
+  }
+  for (const usage of usages || []) {
+    const date = usage.usageDate || "";
+    if (!ledgerDateMatchesPeriod(date, filters)) continue;
+    bucket(date).used += numOr0(usage.hours);
+  }
+  let values = [...groups.values()].sort((a,b) => a.key.localeCompare(b.key));
+  const limit = daily ? 31 : 12;
+  if (values.length > limit) values = values.slice(-limit);
+  return { daily, values };
+}
+
+function renderLedgerChart(credits, usages){
+  const chart = $("ledgerChart");
+  const mode = $("ledgerChartMode");
+  if (!chart) return;
+  const series = ledgerInsightSeries(credits, usages);
+  if (mode) mode.textContent = t(series.daily ? "по дням" : "по месяцам");
+  if (!series.values.length) {
+    chart.innerHTML = emptyStateHtml({ icon:"↗", title:"Нет данных за период", text:"Начисления появятся здесь после первой записи.", variant:"compact" });
+    chart.setAttribute("aria-label", state.language === "en" ? "No overtime data for the selected period" : "Нет данных о переработках за выбранный период");
+    return;
+  }
+  const max = Math.max(1, ...series.values.flatMap(item => [item.earned, item.used]));
+  const totalEarned = series.values.reduce((sum, item) => sum + item.earned, 0);
+  const totalUsed = series.values.reduce((sum, item) => sum + item.used, 0);
+  chart.setAttribute("aria-label", `${t("Начислено")}: ${fmtHours(totalEarned)} ч. ${t("Использовано")}: ${fmtHours(totalUsed)} ч.`);
+  chart.innerHTML = `
+    <div class="overtimeChartLegend" aria-hidden="true"><span class="earned">${esc(t("Начислено"))}</span><span class="used">${esc(t("Использовано"))}</span></div>
+    <div class="overtimeChartBars">
+      ${series.values.map(item => {
+        const earnedHeight = Math.max(item.earned > 0 ? 4 : 0, Math.round(item.earned / max * 100));
+        const usedHeight = Math.max(item.used > 0 ? 4 : 0, Math.round(item.used / max * 100));
+        const label = series.daily ? ledgerShortDate(item.key) : ledgerMonthLabel(item.key);
+        return `<div class="overtimeChartColumn" data-series-key="${esc(item.key)}" title="${esc(label)} · +${fmtHours(item.earned)} ч · −${fmtHours(item.used)} ч">
+          <div class="overtimeChartValues"><i class="earned" style="--bar-size:${earnedHeight}%"></i><i class="used" style="--bar-size:${usedHeight}%"></i></div>
+          <span>${esc(label)}</span>
+        </div>`;
+      }).join("")}
+    </div>`;
+}
+
+function renderFifoQueue(rows){
+  const queue = $("ledgerFifoQueue");
+  const oldest = $("ledgerOldestCredit");
+  const hint = $("ledgerFifoHint");
+  const open = uniqueSourceCredits(rows)
+    .filter(row => numOr0(row.remainingHours) > 0.0001)
+    .sort((a,b) => String(a.creditedStartInstant || a.startInstant || a.workedDate || "").localeCompare(String(b.creditedStartInstant || b.startInstant || b.workedDate || "")) || Number(a.id || 0) - Number(b.id || 0));
+  if (!open.length) {
+    if (oldest) oldest.textContent = t("Нет открытых начислений");
+    if (hint) hint.textContent = t("FIFO: сначала используется самый старый остаток");
+    if (queue) queue.innerHTML = `<div class="overtimeFifoEmpty"><b>${esc(t("Свободных часов нет"))}</b><span>${esc(t("Сначала начислите переработку, чтобы появилось доступное время."))}</span></div>`;
+    return;
+  }
+  const first = open[0];
+  if (oldest) oldest.textContent = `${ledgerShortDate(first.workedDate)} · ${fmtHours(first.remainingHours)} ч`;
+  if (hint) hint.textContent = first.reason || t("FIFO: сначала используется самый старый остаток");
+  if (queue) queue.innerHTML = `
+    <div class="overtimeFifoTitle"><span>${esc(t("Открытые остатки FIFO"))}</span><b>${open.length}</b></div>
+    <div class="overtimeFifoRows">
+      ${open.slice(0, 4).map((row, index) => `<div class="overtimeFifoRow ${index === 0 ? "next" : ""}">
+        <span>${index + 1}</span>
+        <div><b>${esc(ledgerShortDate(row.workedDate))}</b><small>${esc(row.reason || t("переработка"))}</small></div>
+        <strong>${fmtHours(row.remainingHours)} ч</strong>
+      </div>`).join("")}
+    </div>`;
+}
+
+function renderOvertimeOverview(){
+  const acc = state.overtimeAccount || { totalEarnedHours:0, totalUsedHours:0, balanceHours:0 };
+  const earned = numOr0(acc.totalEarnedHours);
+  const used = numOr0(acc.totalUsedHours);
+  const balance = numOr0(acc.balanceHours);
+  const ratio = earned > 0 ? Math.min(100, Math.max(0, used / earned * 100)) : 0;
+  if ($("ledgerBalance")) $("ledgerBalance").textContent = `${balance > 0 ? "+" : ""}${fmtHours(balance)} ч`;
+  if ($("ledgerEarned")) $("ledgerEarned").textContent = `+${fmtHours(earned)} ч`;
+  if ($("ledgerUsed")) $("ledgerUsed").textContent = `−${fmtHours(used)} ч`;
+  if ($("ledgerUsageRatio")) $("ledgerUsageRatio").textContent = `${Math.round(ratio)}%`;
+  if ($("ledgerUsageRatioBar")) $("ledgerUsageRatioBar").style.width = `${ratio}%`;
+  if ($("ledgerPeriodLabel")) $("ledgerPeriodLabel").textContent = ledgerPeriodText();
+  const filteredCredits = ledgerFilteredCredits();
+  const filteredUsages = ledgerFilteredUsages();
+  renderLedgerChart(filteredCredits, filteredUsages);
+  renderFifoQueue(ledgerSourceCredits());
+}
+
+function bindLedgerActions(root){
+  if (!root) return;
+  root.querySelectorAll("[data-edit-credit]").forEach(btn => btn.addEventListener("click", () => startEditOvertimeCredit(Number(btn.dataset.editCredit))));
+  root.querySelectorAll("[data-del-credit]").forEach(btn => btn.addEventListener("click", () => removeOvertimeCredit(Number(btn.dataset.delCredit))));
+  root.querySelectorAll("[data-edit-usage]").forEach(btn => btn.addEventListener("click", () => startEditOvertimeUsage(Number(btn.dataset.editUsage))));
+  root.querySelectorAll("[data-del-usage]").forEach(btn => btn.addEventListener("click", () => removeOvertimeUsage(Number(btn.dataset.delUsage))));
+}
+
+function ledgerUsageItemsHtml(credit){
+  const usages = credit.usages || [];
+  if (!usages.length) return `<div class="overtimeCardEmptyUsage">${esc(t("Не использовано"))}</div>`;
+  return usages.map(u => {
+    const fullUsage = findUsageById(u.usageId);
+    const accountParts = fullUsage?.allocations || [];
+    const partCount = Math.max(Number(u.allocationPartCount) || 0, accountParts.length);
+    const responsePartIndex = Math.max(0, Number(u.allocationPartIndex) || 0);
+    const accountPartIndex = accountParts.findIndex(part => Number(part.creditId) === Number(credit.id)) + 1;
+    const partIndex = responsePartIndex || accountPartIndex || 1;
+    const partLabel = partCount > 1 ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.min(partIndex, partCount)}/${partCount}</span>` : "";
+    return `<div class="overtimeCardUsage">
+      <div><b>−${fmtHours(u.hours)} ч</b><span>${esc(u.usageDate)}${u.reason ? ` · ${esc(u.reason)}` : ""} ${partLabel}</span>${allocationDetailHtml(u)}</div>
+      <div class="overtimeCardUsageActions"><button type="button" data-edit-usage="${u.usageId}">${esc(t("ред."))}</button><button type="button" data-del-usage="${u.usageId}">${esc(t("удалить"))}</button></div>
+    </div>`;
+  }).join("");
+}
+
+function renderLedgerCards(credits, options = {}){
+  const list = $("ledgerCards");
+  if (!list) return;
+  if (options.loading) {
+    list.innerHTML = `<div class="loadingState" role="status" aria-live="polite"><span>${htmlSafe(t("Загружаю переработки…"))}</span><i></i><i></i><i></i></div>`;
+    return;
+  }
+  if (!credits.length) {
+    list.innerHTML = emptyStateHtml({ icon: options.emptyAll ? "+" : "⌕", title: options.emptyAll ? "Данных пока нет" : "Ничего не найдено", text: options.emptyAll ? "Начислите первые часы — журнал и FIFO соберутся автоматически." : "Попробуйте другой период или сбросьте фильтры.", variant:"board" });
+    return;
+  }
+  list.innerHTML = credits.map(c => {
+    const projection = overtimeProjection(c);
+    const status = creditStatus(c);
+    const percent = numOr0(c.hours) > 0 ? Math.min(100, Math.max(0, numOr0(c.usedHours) / numOr0(c.hours) * 100)) : 0;
+    const deleteButton = projection.sourceUsedHours <= 0.0001
+      ? `<button type="button" data-del-credit="${c.id}">${esc(t("удалить"))}</button>`
+      : `<span title="${esc(t("Сначала удали списания, которые используют это начисление"))}">${esc(t("сначала списания"))}</span>`;
+    return `<article class="overtimeLedgerCard" data-credit-id="${c.id}">
+      <header>
+        <div><time datetime="${esc(c.workedDate)}">${esc(ledgerShortDate(c.workedDate))}</time><span class="ledgerStatus ${status}">${esc(statusLabel(status))}</span></div>
+        <strong>+${fmtHours(c.hours)} ч</strong>
+      </header>
+      <div class="overtimeLedgerCardMain">
+        <div class="overtimeLedgerCardRange">${overtimeCreditTimeHtml(c)}</div>
+        <b>${esc(c.reason || (state.language === "en" ? "Overtime" : "Переработка"))}</b>
+      </div>
+      <div class="overtimeLedgerProgress" aria-label="${esc(t("Использовано"))}: ${fmtHours(c.usedHours)} ч"><span style="width:${percent}%"></span></div>
+      <div class="overtimeLedgerAmounts"><span>${esc(t("Использовано"))}<b>−${fmtHours(c.usedHours)} ч</b></span><span>${esc(t("остаток"))}<b>${fmtHours(c.remainingHours)} ч</b></span></div>
+      <details class="overtimeLedgerDetails">
+        <summary>${esc(t("Подробности"))}<span>${(c.usages || []).length}</span></summary>
+        <div class="overtimeCardUsageList">${ledgerUsageItemsHtml(c)}</div>
+        <div class="overtimeLedgerCardActions"><button type="button" data-edit-credit="${c.id}">${esc(t("ред."))}</button>${deleteButton}</div>
+      </details>
+    </article>`;
+  }).join("");
+  bindLedgerActions(list);
+}
+
+function creditSearchHaystack(c){
+  const usages = (c.usages || []).map(u => `${u.usageDate} ${u.hours} ${u.reason || ""}`).join(" " );
+  const p = overtimeProjection(c);
+  return `${c.workedDate} ${p.sourceWorkedDate} ${c.timeRange || ""} ${p.sourceTimeRange} ${c.displayStart || ""} ${c.displayEnd || ""} ${c.sourceTimezone || ""} ${c.displayTimezone || ""} ${c.hours} ${p.dayEarnedHours} ${c.reason || ""} ${usages}`.toLowerCase();
+}
+
+function getFilteredLedgerCredits(){
+  return ledgerFilteredCredits();
+}
+
 function syncLedgerFilterInputs(){
   const f = state.ledgerFilters || {};
   if ($("ledgerFrom")) $("ledgerFrom").value = f.from || "";
   if ($("ledgerTo")) $("ledgerTo").value = f.to || "";
   if ($("ledgerStatus")) $("ledgerStatus").value = f.status || "all";
   if ($("ledgerSearch")) $("ledgerSearch").value = f.q || "";
+  document.querySelectorAll("[data-ledger-period]").forEach(button => {
+    const active = String(button.dataset.ledgerPeriod) === String(f.preset || "all");
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  if ($("ledgerPeriodLabel")) $("ledgerPeriodLabel").textContent = ledgerPeriodText();
 }
 
 function renderLedgerTable(){
@@ -1137,13 +1408,12 @@ function renderLedgerTable(){
   if (!tbody || !balanceEl) return;
 
   const acc = state.overtimeAccount || { credits:[], balanceHours:0 };
-  const bal = numOr0(acc.balanceHours);
-  balanceEl.textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
   syncLedgerFilterInputs();
+  renderOvertimeOverview();
 
   if (state.ui?.loadingLedger) {
     if (statsEl) statsEl.innerHTML = "";
-    $("ledgerPager").innerHTML = "";
+    if ($("ledgerPager")) $("ledgerPager").innerHTML = "";
     const tr = document.createElement("tr");
     const td = document.createElement("td");
     td.colSpan = 8;
@@ -1151,25 +1421,27 @@ function renderLedgerTable(){
     td.innerHTML = `<div class="loadingState" role="status" aria-live="polite"><span>${htmlSafe(t("Загружаю переработки…"))}</span><i></i><i></i><i></i></div>`;
     tr.appendChild(td);
     tbody.replaceChildren(tr);
+    renderLedgerCards([], { loading:true });
     return;
   }
 
   const page = { ...(state.ledgerPage || {}), items: (state.ledgerPage?.items || []) };
-  const allCredits = acc.credits || [];
+  const allCredits = ledgerSourceCredits();
   const credits = page.items || [];
-  const totalEarned = credits.reduce((sum, c) => sum + numOr0(c.hours), 0);
-  const totalUsed = credits.reduce((sum, c) => sum + numOr0(c.usedHours), 0);
-  const totalRemain = credits.reduce((sum, c) => sum + numOr0(c.remainingHours), 0);
-  const openCount = credits.filter(c => numOr0(c.remainingHours) > 0.0001).length;
-  const closedCount = credits.filter(c => numOr0(c.remainingHours) <= 0.0001).length;
+  const filteredCredits = ledgerFilteredCredits();
+  const periodEarned = filteredCredits.reduce((sum, c) => sum + numOr0(c.hours), 0);
+  const periodUsed = ledgerFilteredUsages().reduce((sum, usage) => sum + numOr0(usage.hours), 0);
+  const periodRemain = uniqueSourceCredits(filteredCredits).reduce((sum, c) => sum + numOr0(c.remainingHours), 0);
+  const openCount = filteredCredits.filter(c => numOr0(c.remainingHours) > 0.0001).length;
+  const closedCount = filteredCredits.filter(c => numOr0(c.remainingHours) <= 0.0001).length;
   if (statsEl) {
     statsEl.innerHTML = `
-      <span class="pill">показано: <b>${pageRangeText(page)}</b></span>
-      <span class="pill">на странице начислено: <b>+${fmtHours(totalEarned)} ч</b></span>
-      <span class="pill">использовано: <b>${fmtHours(totalUsed)} ч</b></span>
-      <span class="pill">остаток на странице: <b>${fmtHours(totalRemain)} ч</b></span>
-      <span class="pill">с остатком: <b>${openCount}</b></span>
-      <span class="pill">закрыто: <b>${closedCount}</b></span>
+      <span class="pill">${esc(t("за период начислено"))}: <b>+${fmtHours(periodEarned)} ч</b></span>
+      <span class="pill">${esc(t("за период использовано"))}: <b>${fmtHours(periodUsed)} ч</b></span>
+      <span class="pill">${esc(t("остаток начислений периода"))}: <b>${fmtHours(periodRemain)} ч</b></span>
+      <span class="pill">${state.language === "en" ? "shown" : "показано"}: <b>${pageRangeText(page)}</b></span>
+      <span class="pill">${state.language === "en" ? "open" : "с остатком"}: <b>${openCount}</b></span>
+      <span class="pill">${state.language === "en" ? "closed" : "закрыто"}: <b>${closedCount}</b></span>
     `;
   }
   renderPager("ledgerPager", page, nextPage => { state.ledgerPage.page = nextPage; loadLedgerPage(false); }, nextSize => { state.ledgerPage.size = nextSize; resetLedgerPage(); loadLedgerPage(false); });
@@ -1179,14 +1451,10 @@ function renderLedgerTable(){
     const td = document.createElement("td");
     td.colSpan = 8;
     td.className = "emptyTableCell";
-    td.innerHTML = emptyStateHtml({
-      icon:"+",
-      title:"Данных пока нет",
-      text:"Добавь запись из панели выбранного дня в календаре.",
-      variant:"board"
-    });
+    td.innerHTML = emptyStateHtml({ icon:"+", title:"Данных пока нет", text:"Начислите первые часы — журнал и FIFO соберутся автоматически.", variant:"board" });
     tr.appendChild(td);
     tbody.replaceChildren(tr);
+    renderLedgerCards([], { emptyAll:true });
     return;
   }
 
@@ -1195,89 +1463,64 @@ function renderLedgerTable(){
     const td = document.createElement("td");
     td.colSpan = 8;
     td.className = "emptyTableCell";
-    td.innerHTML = emptyStateHtml({
-      icon:"⌕",
-      title:"Ничего не найдено",
-      text:"Попробуй сбросить фильтры или выбрать другой период.",
-      variant:"board"
-    });
+    td.innerHTML = emptyStateHtml({ icon:"⌕", title:"Ничего не найдено", text:"Попробуйте другой период или сбросьте фильтры.", variant:"board" });
     tr.appendChild(td);
     tbody.replaceChildren(tr);
+    renderLedgerCards([], { emptyAll:false });
     return;
   }
 
   const fragment = document.createDocumentFragment();
   try {
-  for (const c of credits) {
-    const tr = document.createElement("tr");
-    tr.dataset.creditId = String(c.id);
-    const usageIds = (c.usages || []).map(u => Number(u.usageId));
-    const editingCredit = Number(state.editingCreditId) === Number(c.id);
-    const editingUsage = state.editingUsageId != null && usageIds.includes(Number(state.editingUsageId));
-    if (editingUsage) tr.dataset.usageRowId = String(state.editingUsageId);
-    tr.classList.toggle("ledgerEditingRow", editingCredit || editingUsage);
-    const status = creditStatus(c);
-    const usedText = (c.usages || []).length
-      ? (c.usages || []).map(u => {
-          const fullUsage = findUsageById(u.usageId);
-          const accountParts = fullUsage?.allocations || [];
-          const responsePartCount = Math.max(0, Number(u.allocationPartCount) || 0);
-          const partCount = Math.max(responsePartCount, accountParts.length);
-          const responsePartIndex = Math.max(0, Number(u.allocationPartIndex) || 0);
-          const accountPartIndex = accountParts.findIndex(part => Number(part.creditId) === Number(c.id)) + 1;
-          const partIndex = responsePartIndex || accountPartIndex || 1;
-          const partLabel = partCount > 1
-            ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.min(partIndex, partCount)}/${partCount}</span>`
-            : "";
-          return `
-          <div class="ledgerUsageItem">
-            <span class="ledgerUsageText">
-              <span>${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""} ${partLabel}</span>
-              ${allocationDetailHtml(u)}
-            </span>
-            <span class="ledgerUsageActions" aria-label="${esc(t("Действия списания"))}">
-              <button type="button" data-edit-usage="${u.usageId}" title="${esc(t("Редактировать весь отгул"))}">${esc(t("ред. отгул"))}</button>
-              <button type="button" data-del-usage="${u.usageId}" title="${esc(t("Удалить весь отгул"))}">${esc(t("удалить весь отгул"))}</button>
-            </span>
-          </div>`;
-        }).join("")
-      : `<span class="small">${esc(t("не списывалось"))}</span>`;
-    const projection = overtimeProjection(c);
-    const legacyBadge = c.legacyTimezoneRequired ? ` · <span class="legacyTimezoneBadge">⚠ ${esc(t("без точного времени"))}</span>` : "";
-    const calcInfo = c.calculated ? `<div class="small">${esc(t("обед"))}: ${c.breakMinutes || 0} ${state.language === "en" ? "min" : "мин"}${numOr0(c.plannedHours) ? ` · ${esc(t("план"))}: ${fmtHours(c.plannedHours)} ${state.language === "en" ? "h" : "ч"}` : ""}${legacyBadge}</div>` : legacyBadge;
-    const deleteBtn = projection.sourceUsedHours <= 0.0001
-      ? `<button type="button" data-del-credit="${c.id}" title="${esc(t("Удалить переработку"))}">${esc(t("удалить"))}</button>`
-      : `<span class="small" title="${esc(t("Сначала удали списания, которые используют это начисление"))}">${esc(t("сначала списания"))}</span>`;
-    tr.innerHTML = `
-      <td class="mono">${esc(c.workedDate)}${overtimeDaySummaryHtml(c)}<div class="ledgerStatus ${status}">${statusLabel(status)}</div></td>
-      <td>${overtimeCreditTimeHtml(c)}${calcInfo}</td>
-      <td class="numc">+${fmtHours(c.hours)} ч</td>
-      <td class="reason">${esc(c.reason || "—")}</td>
-      <td class="numc used">${fmtHours(c.usedHours)} ч</td>
-      <td class="small">${usedText}</td>
-      <td class="numc remain">${fmtHours(c.remainingHours)} ч</td>
-      <td class="ledgerRowActions"><button type="button" data-edit-credit="${c.id}" title="${esc(t("Редактировать переработку"))}">${esc(t("ред."))}</button>${deleteBtn}</td>
-    `;
-    fragment.appendChild(tr);
-  }
+    for (const c of credits) {
+      const tr = document.createElement("tr");
+      tr.dataset.creditId = String(c.id);
+      const usageIds = (c.usages || []).map(u => Number(u.usageId));
+      const editingCredit = Number(state.editingCreditId) === Number(c.id);
+      const editingUsage = state.editingUsageId != null && usageIds.includes(Number(state.editingUsageId));
+      if (editingUsage) tr.dataset.usageRowId = String(state.editingUsageId);
+      tr.classList.toggle("ledgerEditingRow", editingCredit || editingUsage);
+      const status = creditStatus(c);
+      const usedText = (c.usages || []).length
+        ? (c.usages || []).map(u => {
+            const fullUsage = findUsageById(u.usageId);
+            const accountParts = fullUsage?.allocations || [];
+            const responsePartCount = Math.max(0, Number(u.allocationPartCount) || 0);
+            const partCount = Math.max(responsePartCount, accountParts.length);
+            const responsePartIndex = Math.max(0, Number(u.allocationPartIndex) || 0);
+            const accountPartIndex = accountParts.findIndex(part => Number(part.creditId) === Number(c.id)) + 1;
+            const partIndex = responsePartIndex || accountPartIndex || 1;
+            const partLabel = partCount > 1
+              ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.min(partIndex, partCount)}/${partCount}</span>`
+              : "";
+            return `<div class="ledgerUsageItem"><span class="ledgerUsageText"><span>${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""} ${partLabel}</span>${allocationDetailHtml(u)}</span><span class="ledgerUsageActions" aria-label="${esc(t("Действия списания"))}"><button type="button" data-edit-usage="${u.usageId}" title="${esc(t("Редактировать весь отгул"))}">${esc(t("ред. отгул"))}</button><button type="button" data-del-usage="${u.usageId}" title="${esc(t("Удалить весь отгул"))}">${esc(t("удалить весь отгул"))}</button></span></div>`;
+          }).join("")
+        : `<span class="small">${esc(t("не списывалось"))}</span>`;
+      const projection = overtimeProjection(c);
+      const legacyBadge = c.legacyTimezoneRequired ? ` · <span class="legacyTimezoneBadge">⚠ ${esc(t("без точного времени"))}</span>` : "";
+      const calcInfo = c.calculated ? `<div class="small">${esc(t("обед"))}: ${c.breakMinutes || 0} ${state.language === "en" ? "min" : "мин"}${numOr0(c.plannedHours) ? ` · ${esc(t("план"))}: ${fmtHours(c.plannedHours)} ${state.language === "en" ? "h" : "ч"}` : ""}${legacyBadge}</div>` : legacyBadge;
+      const deleteBtn = projection.sourceUsedHours <= 0.0001
+        ? `<button type="button" data-del-credit="${c.id}" title="${esc(t("Удалить переработку"))}">${esc(t("удалить"))}</button>`
+        : `<span class="small" title="${esc(t("Сначала удали списания, которые используют это начисление"))}">${esc(t("сначала списания"))}</span>`;
+      tr.innerHTML = `
+        <td class="mono">${esc(c.workedDate)}${overtimeDaySummaryHtml(c)}<div class="ledgerStatus ${status}">${statusLabel(status)}</div></td>
+        <td>${overtimeCreditTimeHtml(c)}${calcInfo}</td>
+        <td class="numc">+${fmtHours(c.hours)} ч</td>
+        <td class="reason">${esc(c.reason || "—")}</td>
+        <td class="numc used">${fmtHours(c.usedHours)} ч</td>
+        <td class="small">${usedText}</td>
+        <td class="numc remain">${fmtHours(c.remainingHours)} ч</td>
+        <td class="ledgerRowActions"><button type="button" data-edit-credit="${c.id}" title="${esc(t("Редактировать переработку"))}">${esc(t("ред."))}</button>${deleteBtn}</td>`;
+      fragment.appendChild(tr);
+    }
   } catch (err) {
     console.error("Failed to render overtime ledger atomically", err);
     setSave("err", `${t("Не удалось отрисовать журнал переработок")}: ${err.message}`);
     return;
   }
-  fragment.querySelectorAll("[data-edit-credit]").forEach(btn => {
-    btn.addEventListener("click", () => startEditOvertimeCredit(Number(btn.dataset.editCredit)));
-  });
-  fragment.querySelectorAll("[data-del-credit]").forEach(btn => {
-    btn.addEventListener("click", () => removeOvertimeCredit(Number(btn.dataset.delCredit)));
-  });
-  fragment.querySelectorAll("[data-edit-usage]").forEach(btn => {
-    btn.addEventListener("click", () => startEditOvertimeUsage(Number(btn.dataset.editUsage)));
-  });
-  fragment.querySelectorAll("[data-del-usage]").forEach(btn => {
-    btn.addEventListener("click", () => removeOvertimeUsage(Number(btn.dataset.delUsage)));
-  });
   tbody.replaceChildren(fragment);
+  bindLedgerActions(tbody);
+  renderLedgerCards(credits);
 }
 
 async function loadLedgerPage(silent = true){
@@ -1324,19 +1567,23 @@ function resetLedgerPage(){
 
 function setLedgerThisMonth(){
   const r = currentMonthRange();
-  state.ledgerFilters.from = r.from;
-  state.ledgerFilters.to = r.to;
+  state.ledgerFilters = { ...(state.ledgerFilters || {}), from:r.from, to:r.to, preset:"month" };
+  resetLedgerPage();
+  loadLedgerPage(false);
+}
+function setLedgerThisYear(){
+  const r = currentYearRange();
+  state.ledgerFilters = { ...(state.ledgerFilters || {}), from:r.from, to:r.to, preset:"year" };
   resetLedgerPage();
   loadLedgerPage(false);
 }
 function setLedgerAllTime(){
-  state.ledgerFilters.from = "";
-  state.ledgerFilters.to = "";
+  state.ledgerFilters = { ...(state.ledgerFilters || {}), from:"", to:"", preset:"all" };
   resetLedgerPage();
   loadLedgerPage(false);
 }
 function clearLedgerFilters(){
-  state.ledgerFilters = { from:"", to:"", status:"all", q:"" };
+  state.ledgerFilters = { from:"", to:"", status:"all", q:"", preset:"all" };
   resetLedgerPage();
   loadLedgerPage(false);
 }
@@ -1430,10 +1677,11 @@ async function applyLegacyOvertimeMigration(){
 }
 
 $("ledgerThisMonth").addEventListener("click", setLedgerThisMonth);
+$("ledgerThisYear").addEventListener("click", setLedgerThisYear);
 $("ledgerAllTime").addEventListener("click", setLedgerAllTime);
 $("ledgerClear").addEventListener("click", clearLedgerFilters);
-$("ledgerFrom").addEventListener("input", e => { state.ledgerFilters.from = e.target.value; resetLedgerPage(); loadLedgerPage(false); });
-$("ledgerTo").addEventListener("input", e => { state.ledgerFilters.to = e.target.value; resetLedgerPage(); loadLedgerPage(false); });
+$("ledgerFrom").addEventListener("input", e => { state.ledgerFilters.from = e.target.value; state.ledgerFilters.preset = "custom"; resetLedgerPage(); loadLedgerPage(false); });
+$("ledgerTo").addEventListener("input", e => { state.ledgerFilters.to = e.target.value; state.ledgerFilters.preset = "custom"; resetLedgerPage(); loadLedgerPage(false); });
 $("ledgerStatus").addEventListener("change", e => { state.ledgerFilters.status = e.target.value; resetLedgerPage(); loadLedgerPage(false); });
 $("ledgerSearch").addEventListener("input", e => { clearTimeout(window.__ledgerTimer); window.__ledgerTimer = setTimeout(() => { state.ledgerFilters.q = e.target.value.trim(); resetLedgerPage(); loadLedgerPage(true); }, 350); });
 $("ledgerExportCsv").addEventListener("click", () => exportLedger("csv"));
