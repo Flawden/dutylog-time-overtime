@@ -1,23 +1,32 @@
-> Current release: **v27.19.3 — Task Deadline Validation E2E Contract Hotfix**.
+> Current release: **v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix**.
 
 # DutyLog
 
-Current release: **v27.19.3 — Task Deadline Validation E2E Contract Hotfix**
+Current release: **v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.19.3 — Task Deadline Validation E2E Contract Hotfix
+## Текущая версия: v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix
 
-**v27.19.3** синхронизирует единственное устаревшее Playwright-ожидание с действующим контрактом Tasks & Inbox Next:
+**v27.19.4** стабилизирует проверку Ghost/Outline в реальном Chromium:
 
-- timed-задача с плановым интервалом показывает точную ошибку «Дедлайн не может быть раньше окончания запланированного интервала.»;
-- E2E больше не ожидает старое сообщение, предназначенное для all-day/date fallback;
-- production-валидация, Tasks API и данные не менялись;
-- `release-check.sh` теперь защищает точный planned-interval E2E-контракт;
-- полный предыдущий прогон уже подтвердил 27 из 28 browser scenarios, а единственное падение было детерминированным текстовым mismatch.
+- E2E ждёт завершения CSS-перехода рамки вместо чтения промежуточного кадра;
+- прозрачность проверяется по фактическому alpha-каналу, а не по строке `rgba(...)`;
+- корректно принимаются современные сериализации Chromium, включая `oklab(...)`;
+- production CSS, Ghost/Outline tokens и 150 ms transition не менялись;
+- предыдущий прогон подтвердил 27 из 28 browser scenarios, а единственное падение воспроизводилось на одном и том же промежуточном alpha-значении.
 
 Схема остаётся на **Flyway V37**. Автоматическая база: **97 Java-тестовых классов, 507 `@Test` методов и 28 Playwright browser scenarios**.
+
+### Предыдущий hotfix: v27.19.3 — Task Deadline Validation E2E Contract Hotfix
+
+**v27.19.3** синхронизировал planned-interval deadline validation с browser-контрактом:
+
+- timed-задача сохраняет точную ошибку «Дедлайн не может быть раньше окончания запланированного интервала.»;
+- all-day/date fallback остаётся отдельным контрактом;
+- production-валидация, Tasks API и данные не менялись;
+- `release-check.sh` защищает planned-interval E2E-сообщение.
 
 ### Предыдущий hotfix: v27.19.2 — Frontend Asset Contract Stability Hotfix
 
@@ -405,7 +414,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.19.3 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить all-day, point, interval, overnight, project filter, Inbox search и timezone reprojection. Следующий продуктовый этап — **v27.20.0 — Notes & Important Events Next**.
+Следующий практический шаг — пропустить v27.19.4 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить all-day, point, interval, overnight, project filter, Inbox search и timezone reprojection. Следующий продуктовый этап — **v27.20.0 — Notes & Important Events Next**.
 
 ## Служебный профиль администратора
 

@@ -25,9 +25,18 @@ async function setColor(page, selector, value) {
 async function previewStyle(page) {
   return page.locator('[data-preview-variant="primary"]').evaluate(button => {
     const css = getComputedStyle(button);
+    const canvas = document.createElement('canvas');
+    canvas.width = 1;
+    canvas.height = 1;
+    const context = canvas.getContext('2d', { willReadFrequently: true });
+    context.clearRect(0, 0, 1, 1);
+    context.fillStyle = css.borderTopColor;
+    context.fillRect(0, 0, 1, 1);
+    const borderAlpha = context.getImageData(0, 0, 1, 1).data[3];
     return {
       backgroundColor: css.backgroundColor,
       borderColor: css.borderTopColor,
+      borderAlpha,
       borderStyle: css.borderTopStyle,
       boxShadow: css.boxShadow,
     };
@@ -93,16 +102,16 @@ test('theme palette can be restored explicitly and Ghost stays distinct from Out
 
   await page.locator('#themeButtonStyle').selectOption('outline');
   await expect(page.locator('html')).toHaveAttribute('data-button-style', 'outline');
+  await expect.poll(async () => (await previewStyle(page)).borderAlpha).toBeGreaterThan(0);
   const outline = await previewStyle(page);
   expect(outline.borderStyle).toBe('solid');
-  expect(outline.borderColor).not.toBe('rgba(0, 0, 0, 0)');
 
   await page.locator('#themeButtonStyle').selectOption('ghost');
   await expect(page.locator('html')).toHaveAttribute('data-button-style', 'ghost');
+  await expect.poll(async () => (await previewStyle(page)).borderAlpha).toBe(0);
+  await expect.poll(async () => (await previewStyle(page)).boxShadow).toBe('none');
   const ghost = await previewStyle(page);
   expect(ghost.borderStyle).toBe('solid');
-  expect(ghost.borderColor).toBe('rgba(0, 0, 0, 0)');
-  expect(ghost.boxShadow).toBe('none');
 
   const ghostButton = page.locator('[data-preview-variant="primary"]');
   const beforeHover = ghost.backgroundColor;

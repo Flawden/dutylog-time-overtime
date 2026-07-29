@@ -1,3 +1,11 @@
+# v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix
+
+- Stabilized the Ghost-versus-Outline browser contract by polling the end of the CSS border transition instead of sampling an intermediate animation frame.
+- Replaced exact CSS color-string equality with semantic alpha measurement through Chromium's canvas rasterizer, covering `rgba()`, `oklab()` and other valid serializations.
+- Kept the production button tokens and the 150 ms visual transition unchanged; this is an E2E contract fix, not a UI behavior change.
+- Preserved visible Outline borders, fully transparent Ghost borders, hover-surface coverage and the seven-variant preview contract.
+- No API, database or Flyway changes; the regression baseline remains 97 Java test classes, 507 `@Test` methods and 28 Playwright scenarios.
+
 # v27.19.3 — Task Deadline Validation E2E Contract Hotfix
 
 - Updated the single stale Playwright deadline-validation assertion to match the planned-interval contract introduced by Tasks & Inbox Next.

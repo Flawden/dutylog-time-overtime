@@ -1,14 +1,21 @@
 # DutyLog regression test baseline
 
-Status: v27.19.3.
+Status: v27.19.4.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.19.3 aligns the planned-interval deadline validation browser assertion with the runtime contract while preserving v27.19.2 asset stability and v27.19.1 task-board range compatibility. Current application baseline is 97 Java test classes / 507 `@Test` methods / 28 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.19.4 stabilizes the Ghost/Outline transition browser assertion with semantic alpha polling while preserving v27.19.3 deadline validation, v27.19.2 asset stability and v27.19.1 task-board range compatibility. Current application baseline is 97 Java test classes / 507 `@Test` methods / 28 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
+
+## v27.19.4 Ghost Button Transition E2E Stabilization Hotfix extension
+
+- `appearance-quality.spec.js` polls until the Ghost border transition reaches a fully transparent alpha channel.
+- Border transparency is measured through Chromium rasterization instead of exact `rgba()` string serialization, so `oklab()` interpolation is valid.
+- Outline remains required to expose a non-zero border alpha; Ghost hover and seven preview variants remain covered.
+- Production CSS, API, Flyway and test counts are unchanged.
 
 ## v27.19.3 Task Deadline Validation E2E Contract Hotfix extension
 
