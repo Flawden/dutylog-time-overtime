@@ -1,10 +1,10 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.17.5 — UI Core E2E Accordion Hotfix**.
+Current release: **v27.17.6 — Classic Sunset**.
 
-## Текущая продуктовая точка — UI Core v1
+## Текущая продуктовая точка — единый UI Core v1
 
-Статус: **v27.17.5** восстанавливает зелёный E2E-gate для уже завершённого UI Core v1 и не меняет production-поведение.
+Статус: **v27.17.6** завершает переходный период и удаляет второй пользовательский shell.
 
 Сделано к текущей точке:
 
@@ -14,23 +14,23 @@ Current release: **v27.17.5 — UI Core E2E Accordion Hotfix**.
 - рабочие окружения `Shift Worker`, `Planner`, `Minimal`;
 - компоновки `Dashboard`, `Compact`, `Focus`;
 - независимые CSS-пакеты встроенных тем и отдельный слой палитры;
-- pre-paint bootstrap без shell/theme/layout flash;
+- pre-paint bootstrap без theme/layout flash;
 - автоматическое сохранение внешнего вида с debounce, ревизиями и очередью;
 - безопасный whitelist UI-параметров в профиле;
-- Classic остаётся аварийным fallback;
+- Classic удалён; старые `shellMode=classic` безопасно игнорируются;
+- rollback выполняется через Git/immutable Docker image;
 - immutable shift occurrences, timezone-проекция, поминутный overtime/FIFO, задачи, Inbox, важные даты и несколько заметок;
 - offline snapshot, staging CI/CD и backup/restore;
 - Flyway V1–V36, Java 17, 95 Java test classes / 496 tests / 25 Playwright scenarios.
 
-Следующий архитектурный этап: **v27.17.6 — Classic Sunset**.
+Следующий продуктовый этап: **v27.18.0 — Overtime Next**.
 
 Цель этапа:
 
-- извлечь последние общие Classic-зависимости в UI Core;
-- мигрировать сохранённый `shellMode=classic` в `next`;
-- удалить Classic-only маршруты, CSS и настройки;
-- заменить внутренний fallback на Git/Docker rollback;
-- оставить одну интерфейсную матрицу перед `v27.18.0 — Overtime Next`.
+- заменить мобильное сжатие таблицы карточным представлением;
+- сохранить подробную desktop-таблицу как профессиональный режим;
+- улучшить сводку баланса, FIFO и детализацию начислений/списаний;
+- добавить понятные фильтры и графики без изменения бухгалтерской модели.
 
 ## Этап 1 — production foundation
 

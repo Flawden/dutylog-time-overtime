@@ -1,5 +1,5 @@
 /*
- * 37-calendar-experience.js — v27.17.5 Calendar Timeline Readability Hotfix
+ * 37-calendar-experience.js — v27.17.6 Calendar Timeline Readability Hotfix
  *
  * Adds Month / Week / Day scales on top of the existing authoritative
  * calendar model. Business logic and the legacy selected-day editor stay in
@@ -392,9 +392,8 @@ function calendarExperienceRenderDay(){
 function renderCalendarExperience(){
   const root = $("calendarExperience");
   if (!root) return;
-  const shellNext = document.documentElement.dataset.shell !== "classic";
-  root.hidden = !shellNext;
-  const mode = shellNext ? state.calendarExperience.mode : "month";
+  root.hidden = false;
+  const mode = state.calendarExperience.mode;
   const month = $("calendarMonthExperience");
   const week = $("calendarWeekExperience");
   const day = $("calendarDayExperience");

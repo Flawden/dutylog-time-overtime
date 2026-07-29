@@ -1,27 +1,29 @@
-> Current release: **v27.17.5 — UI Core E2E Accordion Hotfix**.
+> Current release: **v27.17.6 — Classic Sunset**.
 
 # DutyLog
 
-Current release: **v27.17.5 — UI Core E2E Accordion Hotfix**
+Current release: **v27.17.6 — Classic Sunset**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.17.5 — UI Core E2E Accordion Hotfix
+## Текущая версия: v27.17.6 — Classic Sunset
 
-**v27.17.5** восстанавливает зелёный browser gate после ошибки в самом UI Core E2E-сценарии:
+**v27.17.6** завершает переход на единый DutyLog UI Core:
 
-- после reload тест больше не кликает вслепую по уже открытому разделу «Внешний вид»;
-- сценарий явно проверяет восстановление класса `is-open`, видимость выбора Classic и `dutylog.settings.openSection=appearance`;
-- только после подтверждения сохранённого состояния выполняется переключение Next → Classic → Next;
-- production UI Core из `v27.17.4` не менялся.
+- удалён пользовательский переключатель Classic и runtime-ветки второго shell;
+- Today стал единственной стартовой точкой;
+- workspace управляет навигацией без параллельной Classic-матрицы;
+- старые `shellMode=classic` в профиле или PWA-кэше безопасно игнорируются;
+- профиль больше не хранит и не возвращает `shellMode`;
+- аварийный откат выполняется проверенным Git/Docker-релизом, а не вторым интерфейсом внутри приложения.
 
-Backend API и схема данных не менялись; Flyway остаётся **V1–V36**. Автоматическая база: **95 Java-тестовых классов, 496 `@Test` методов и 25 Playwright browser scenarios**.
+Backend domain API и схема данных не менялись; Flyway остаётся **V1–V36**. Автоматическая база: **95 Java-тестовых классов, 496 `@Test` методов и 25 Playwright browser scenarios**.
 
 Предыдущие продуктовые релизы:
 
+- **v27.17.5 — UI Core E2E Accordion Hotfix** — восстановил state-aware browser gate;
 - **v27.17.4 — UI Core & Workspace Foundation** — добавил UI Core v1, workspaces, layouts, независимые темы и палитры;
-
 - **v27.17.3 — Java Contract Build Gate Hotfix** — вернул зелёный `testCompile` и добавил быстрый `javac`-gate;
 - **v27.17.2 — Calendar Timeline Readability Hotfix** — исправил читаемость коротких timed-events на desktop;
 - **v27.17.1 — Calendar & Notes Quality Hotfix** — исправил container-aware заметки, all-day rail и минутную точность срока;
@@ -30,7 +32,7 @@ Backend API и схема данных не менялись; Flyway остаё�
 - **v27.16.2 — Next Route & Time Settings E2E Hotfix** — выровнял E2E с Today-first навигацией;
 - **v27.16.1 — Today Runtime & Repository Truth Hotfix** — устранил `openQuickActions` load-order crash;
 - **v27.16.0 — Today Dashboard** — ежедневный рабочий экран;
-- **v27.15.0 — Design System & Mobile Shell Foundation** — токены, новая оболочка и Classic fallback;
+- **v27.15.0 — Design System & Mobile Shell Foundation** — заложил дизайн-систему и переходный Classic fallback;
 - **v27.14.2 — Calendar Notes Persistence E2E Hotfix** — закрепил новый Notes CRUD в календарной регрессии;
 - **v27.14.1 — Mobile Notes Tombstone Hotfix** — сохранил versioned tombstone Android API v1;
 - **v27.14.0 — Multiple Daily Notes** — добавил независимые заметки, pin/reorder/delete и offline snapshot.
@@ -62,7 +64,7 @@ Backend API и схема данных не менялись; Flyway остаё�
 - Первый запуск: новый пользователь выбирает нужные модули через спокойный onboarding, а не сразу попадает в перегруженный интерфейс.
 - Автозаполнение графиков: 2/2, день/ночь/48, 5/2, день/72, ночь/72.
 - Несколько независимых Markdown-заметок на каждый день с названиями, закреплением, сортировкой, полноэкранным редактором, живым превью и ZIP-экспортом для Obsidian/резервной копии.
-- DutyLog Next: адаптивная фирменная шапка, нижняя мобильная навигация, единые компоненты и безопасный Classic fallback.
+- Единый DutyLog UI Core: адаптивная фирменная шапка, нижняя мобильная навигация, workspaces, layouts, независимые темы и палитры.
 - Персонализация: светлая/тёмная/системная тема, акцентный цвет и emoji-маркеры дней без хранения картинок.
 - Задачи дня с быстрым вводом, отдельным режимом деталей, многострочным описанием, категориями, тегами, приоритетами, сроками, напоминаниями и одноуровневыми подзадачами.
 - Универсальный быстрый ввод: запись во «Входящие», заготовка задачи, дополнение заметки на сегодня или форма важного дня.
@@ -363,7 +365,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.17.5 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и проверить переключение workspace/layout/palette и Next → Classic → Next. После этого начинается **v27.17.6 — Classic Sunset**.
+Следующий практический шаг — пропустить v27.17.6 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и проверить миграцию старого `shellMode=classic`. После этого начинается **v27.18.0 — Overtime Next**.
 
 ## Служебный профиль администратора
 

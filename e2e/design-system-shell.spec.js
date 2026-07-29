@@ -3,7 +3,7 @@ const { registerAndOnboard } = require('./helpers');
 
 test.use({ viewport: { width: 390, height: 844 } });
 
-test('UI Core workspace stays persistent while Classic remains an instant fallback', async ({ page }) => {
+test('UI Core workspace persists in the single DutyLog shell after Classic sunset', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'shell' });
 
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'next');
@@ -25,10 +25,10 @@ test('UI Core workspace stays persistent while Classic remains an instant fallba
   await page.locator('#tabbar a[data-view="settings"]').click();
   await expect(page.locator('#view-settings')).toBeVisible();
   const appearanceCard = page.locator('#appearanceCard');
-  const classicChoice = appearanceCard.locator('[data-shell-choice="classic"]');
   await appearanceCard.locator('.settingsHead').click();
-  await expect(classicChoice).toBeVisible();
   await expect(page.locator('#uiPlatformStatus')).toContainText('UI Core v1');
+  await expect(page.locator('#singleShellNotice')).toBeVisible();
+  await expect(page.locator('[data-shell-choice]')).toHaveCount(0);
 
   await page.locator('#uiWorkspace').selectOption('planner');
   await expect(page.locator('html')).toHaveAttribute('data-ui-workspace', 'planner');
@@ -42,24 +42,26 @@ test('UI Core workspace stays persistent while Classic remains an instant fallba
   await expect(page.locator('#appearanceMsg')).toContainText(/Сохранено автоматически|Saved automatically/);
 
   await page.reload();
+  await expect(page.locator('html')).toHaveAttribute('data-shell', 'next');
   await expect(page.locator('html')).toHaveAttribute('data-ui-workspace', 'planner');
   await expect(page.locator('html')).toHaveAttribute('data-ui-layout', 'compact');
   await expect(page.locator('html')).toHaveAttribute('data-ui-palette', 'violet');
   await expect(appearanceCard).toHaveClass(/is-open/);
-  await expect(classicChoice).toBeVisible();
+  await expect(page.locator('#singleShellNotice')).toBeVisible();
+  await expect(page.locator('[data-shell-choice]')).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem('dutylog.settings.openSection'))).toBe('appearance');
 
-  await classicChoice.click();
-  await expect(page.locator('html')).toHaveAttribute('data-shell', 'classic');
-  await expect(page.locator('#nextTopbar')).toBeHidden();
-  await expect(page.locator('#tabbar a[data-view="today"]')).toBeHidden();
-  await expect(page.locator('#tabbar a[data-view="important"]')).toBeVisible();
-  await expect(page.locator('[data-shell-choice="classic"]')).toHaveAttribute('aria-pressed', 'true');
-
-  await page.locator('[data-shell-choice="next"]').click();
+  // Simulate a user upgrading from a profile/local cache that still contains
+  // the retired shellMode=classic field. Bootstrap and runtime must ignore it.
+  await page.evaluate(() => {
+    const key = 'dutylog.appearance.v2';
+    const appearance = JSON.parse(localStorage.getItem(key) || '{}');
+    appearance.themeConfig = { ...(appearance.themeConfig || {}), shellMode: 'classic' };
+    localStorage.setItem(key, JSON.stringify(appearance));
+  });
+  await page.reload();
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'next');
   await expect(page.locator('#nextTopbar')).toBeVisible();
   await expect(page.locator('#tabbar a[data-view="today"]')).toBeVisible();
-  await expect(page.locator('#tabbar a[data-view="important"]')).toBeHidden();
-  await expect(page.locator('[data-shell-choice="next"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('[data-shell-choice]')).toHaveCount(0);
 });

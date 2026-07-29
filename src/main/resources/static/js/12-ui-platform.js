@@ -18,7 +18,9 @@
     "Компоновка":"Layout",
     "Цветовая палитра":"Color palette",
     "Дополнительный акцент":"Secondary accent",
-    "Разделы вне основной навигации":"Sections outside primary navigation"
+    "Разделы вне основной навигации":"Sections outside primary navigation",
+    "Единый интерфейс DutyLog":"Single DutyLog interface",
+    "Classic завершён: все окружения, компоновки, темы и палитры работают поверх одного UI Core. Для аварийного отката используются проверенные Git/Docker-релизы, а не второй интерфейс внутри приложения.":"Classic has been retired: all workspaces, layouts, themes and palettes now run on one UI Core. Emergency recovery uses tested Git/Docker releases instead of a second in-app interface."
   });
   Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -162,7 +164,7 @@
     root.dataset.uiDecoration = cfg.decorationId;
   }
 
-  const classicNavigation = Object.freeze(["today","calendar","overtime","tasks","important","settings"]);
+  const navigationUniverse = Object.freeze(["today","calendar","overtime","tasks","important","settings"]);
 
   function applyNavigation(cfg){
     const workspace = workspaces[cfg.workspaceId] || workspaces["shift-worker"];
@@ -170,20 +172,15 @@
     if (!tabbar) return;
     const anchors = [...tabbar.querySelectorAll("a[data-view]")];
     const byView = Object.fromEntries(anchors.map(anchor => [anchor.dataset.view, anchor]));
-    const nextShell = cfg.shellMode !== "classic";
-    const primary = nextShell ? workspace.navigation : classicNavigation;
-    const order = [...primary, ...classicNavigation.filter(view => !primary.includes(view))];
+    const primary = workspace.navigation;
+    const order = [...primary, ...navigationUniverse.filter(view => !primary.includes(view))];
     for (const view of order) {
       const anchor = byView[view];
       if (!anchor) continue;
-      // Classic remains a real emergency fallback until Classic Sunset. Its own
-      // CSS decides between Today and Important Dates, so workspace hiding must
-      // never override that contract.
-      anchor.classList.toggle("workspaceHidden", nextShell && !primary.includes(view));
+      anchor.classList.toggle("workspaceHidden", !primary.includes(view));
       tabbar.appendChild(anchor);
     }
-    const visibleCount = nextShell ? Math.max(1, primary.length) : 5;
-    tabbar.style.setProperty("--workspace-nav-count", String(visibleCount));
+    tabbar.style.setProperty("--workspace-nav-count", String(Math.max(1, primary.length)));
     renderWorkspaceRoutes(cfg);
   }
 

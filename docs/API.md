@@ -1,4 +1,4 @@
-# DutyLog API v27.17.5
+# DutyLog API v27.17.6
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -185,7 +185,6 @@ A day with a shift type that has both start/end clock values includes one calcul
     "shadowLevel": "medium",
     "density": "comfortable",
     "cardRadius": 16,
-    "shellMode": "next",
     "uiContract": 1,
     "workspaceId": "shift-worker",
     "layoutId": "dashboard",
@@ -204,7 +203,7 @@ A day with a shift type that has both start/end clock values includes one calcul
 
 ### PUT `/api/profile`
 
-Обновляет профиль и/или внешний вид. `themePreference`: `system`, `light`, `dark`. `accentColor`: `#RRGGBB`. `themeConfig` принимает только whitelist-поля Theme Builder и UI Core v1: `shellMode`, `workspaceId`, `layoutId`, `themeId`, `paletteId`, `decorationId`, `accentSecondary`, `todayWidgets`. Пользовательский CSS и JavaScript не принимаются.
+Обновляет профиль и/или внешний вид. `themePreference`: `system`, `light`, `dark`. `accentColor`: `#RRGGBB`. `themeConfig` принимает только whitelist-поля Theme Builder и UI Core v1: `workspaceId`, `layoutId`, `themeId`, `paletteId`, `decorationId`, `accentSecondary`, `todayWidgets`. Пользовательский CSS и JavaScript не принимаются.
 
 ```json
 {
@@ -225,7 +224,6 @@ A day with a shift type that has both start/end clock values includes one calcul
     "shadowLevel": "medium",
     "density": "comfortable",
     "cardRadius": 16,
-    "shellMode": "next",
     "uiContract": 1,
     "workspaceId": "shift-worker",
     "layoutId": "dashboard",
@@ -1160,7 +1158,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "27.17.5",
+  "version": "27.17.6",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],

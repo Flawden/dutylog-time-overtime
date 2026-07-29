@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.17.5.
+Status: v27.17.6.
 
 ## Local gate
 
@@ -25,8 +25,8 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - verify Shift Worker / Planner / Minimal navigation and hidden-route links;
 - verify Dashboard / Compact / Focus on desktop and mobile;
 - verify theme + palette independence and automatic persistence after reload;
-- verify Classic still restores its original five-destination navigation;
-- verify Appearance remains open after reload before switching Next → Classic → Next;
+- verify no Classic selector remains and `shellMode=classic` from an old local cache still boots the single shell;
+- verify Appearance remains open after reload and workspace/layout/palette persist;
 - test the migration against the persistent staging database;
 - optionally reset staging and verify a clean V1..latest install.
 
@@ -53,6 +53,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.17.5 -m "v27.17.5 — UI Core E2E Accordion Hotfix"
-git push origin v27.17.5
+git tag -a v27.17.6 -m "v27.17.6 — Classic Sunset"
+git push origin v27.17.6
 ```

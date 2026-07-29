@@ -15,14 +15,14 @@ class UiCoreWorkspaceFrontendContractTest {
     @Test
     void appShellLoadsUiPlatformBetweenCoreAndFeatureBundles() throws Exception {
         String html = read("src/main/resources/static/index.html");
-        int core = html.indexOf("js/10-core.js?v=27.17.5");
-        int platform = html.indexOf("js/12-ui-platform.js?v=27.17.5");
-        int data = html.indexOf("js/20-data.js?v=27.17.5");
+        int core = html.indexOf("js/10-core.js?v=27.17.6");
+        int platform = html.indexOf("js/12-ui-platform.js?v=27.17.6");
+        int data = html.indexOf("js/20-data.js?v=27.17.6");
         assertTrue(core >= 0);
         assertTrue(platform > core);
         assertTrue(data > platform);
-        assertTrue(html.contains("ui/tokens.css?v=27.17.5"));
-        assertTrue(html.contains("ui/platform.css?v=27.17.5"));
+        assertTrue(html.contains("ui/tokens.css?v=27.17.6"));
+        assertTrue(html.contains("ui/platform.css?v=27.17.6"));
         assertTrue(html.contains("id=\"uiWorkspace\""));
         assertTrue(html.contains("id=\"uiLayout\""));
         assertTrue(html.contains("id=\"uiPalette\""));
@@ -41,6 +41,9 @@ class UiCoreWorkspaceFrontendContractTest {
         assertTrue(js.contains("navigation:[\"today\",\"calendar\",\"overtime\",\"tasks\",\"settings\"]"));
         assertTrue(js.contains("todayWidgets:[\"tasks\",\"important\",\"shift\",\"overtime\"]"));
         assertTrue(js.contains("window.DutyLogUI = api"));
+        assertTrue(js.contains("const navigationUniverse = Object.freeze"));
+        assertFalse(js.contains("classicNavigation"));
+        assertFalse(js.contains("cfg.shellMode"));
         assertFalse(js.contains("fetch("));
         assertFalse(js.contains("jfetch("));
     }

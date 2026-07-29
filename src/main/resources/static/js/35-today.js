@@ -1,5 +1,5 @@
 /*
- * 35-today.js — DutyLog Next Today Dashboard
+ * 35-today.js — DutyLog Today Dashboard
  *
  * Read-only composition layer over the existing calendar, shift occurrence,
  * overtime, task and important-date stores. Business mutations keep using the

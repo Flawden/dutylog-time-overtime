@@ -121,9 +121,9 @@ This prevents the old shell or wrong theme from flashing before the main bundles
 
 ## Classic boundary
 
-Classic remains available in v27.17.4. Workspace classes are disabled for Classic navigation so the fallback preserves its original destination set. No new workspace/layout behavior is added to Classic.
+Classic remained available in v27.17.4 as a temporary transition boundary. It was removed in v27.17.6 after UI Core v1 staging acceptance.
 
-Classic removal is deferred to v27.17.6 after the v27.17.5 E2E accordion hotfix and staging acceptance of UI Core v1.
+Classic removal was completed in v27.17.6; rollback now uses immutable Git/Docker releases.
 
 ## Compatibility
 

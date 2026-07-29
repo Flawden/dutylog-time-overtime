@@ -1,3 +1,13 @@
+# v27.17.6 — Classic Sunset
+
+- Removed the user-facing Classic shell selector and all runtime switching branches after UI Core v1 staging acceptance.
+- Made Today the single default route and workspace navigation the only primary-navigation authority.
+- Removed Classic-only CSS/navigation rules while keeping `data-shell="next"` as an inert internal stylesheet scope for a safe incremental cleanup.
+- Removed `shellMode` from the profile whitelist/API response; legacy stored `shellMode=classic` values are silently discarded and cannot reactivate the retired interface.
+- Replaced the browser fallback scenario with a migration regression that injects the legacy local value and proves the single DutyLog shell still boots.
+- Classic rollback is now handled by immutable Git/Docker releases instead of a second interface inside the application.
+- No schema or domain API change; Flyway remains V36. Regression baseline remains 95 Java test classes, 496 `@Test` methods and 25 Playwright scenarios.
+
 # v27.17.5 — UI Core E2E Accordion Hotfix
 
 - Fixed the UI Core Playwright scenario so it respects the persisted Appearance accordion state after reload instead of blindly clicking the already-open header and collapsing the Classic selector.

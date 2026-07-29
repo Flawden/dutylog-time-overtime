@@ -24,7 +24,7 @@
       : themePreference;
 
     root.dataset.theme = effectiveTheme;
-    root.dataset.shell = cfg.shellMode === "classic" ? "classic" : "next";
+    root.dataset.shell = "next";
     root.dataset.uiContract = "1";
     root.dataset.uiWorkspace = allowed(cfg.workspaceId, ["shift-worker","planner","minimal"], "shift-worker");
     root.dataset.uiLayout = allowed(cfg.layoutId, ["dashboard","compact","focus"], "dashboard");

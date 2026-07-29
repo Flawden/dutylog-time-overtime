@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.17.5"
+const DUTYLOG_VERSION = "27.17.6"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -150,49 +150,49 @@ const THEME_PRESETS = {
     label:"DutyLog Default",
     themePreference:"system",
     accentColor:"#F5B841",
-    themeConfig:{ appBg:"", panelBg:"", panelAltBg:"", textColor:"", mutedColor:"", borderColor:"", buttonStyle:"solid", cardStyle:"default", cardRadius:14, shadowLevel:"medium", density:"comfortable", shellMode:"next" }
+    themeConfig:{ appBg:"", panelBg:"", panelAltBg:"", textColor:"", mutedColor:"", borderColor:"", buttonStyle:"solid", cardStyle:"default", cardRadius:14, shadowLevel:"medium", density:"comfortable" }
   },
   custom: {
     label:"Custom",
     themePreference:"system",
     accentColor:"#F5B841",
-    themeConfig:{ appBg:"", panelBg:"", panelAltBg:"", textColor:"", mutedColor:"", borderColor:"", buttonStyle:"solid", cardStyle:"default", cardRadius:14, shadowLevel:"medium", density:"comfortable", shellMode:"next" }
+    themeConfig:{ appBg:"", panelBg:"", panelAltBg:"", textColor:"", mutedColor:"", borderColor:"", buttonStyle:"solid", cardStyle:"default", cardRadius:14, shadowLevel:"medium", density:"comfortable" }
   },
   midnight: {
     label:"Midnight",
     themePreference:"dark",
     accentColor:"#7B8CE0",
-    themeConfig:{ appBg:"#0F1220", panelBg:"#181C2B", panelAltBg:"#20263A", textColor:"#EEF2FF", mutedColor:"#A7B0C9", borderColor:"#2D3550", buttonStyle:"soft", cardStyle:"contrast", cardRadius:16, shadowLevel:"medium", density:"comfortable", shellMode:"next" }
+    themeConfig:{ appBg:"#0F1220", panelBg:"#181C2B", panelAltBg:"#20263A", textColor:"#EEF2FF", mutedColor:"#A7B0C9", borderColor:"#2D3550", buttonStyle:"soft", cardStyle:"contrast", cardRadius:16, shadowLevel:"medium", density:"comfortable" }
   },
   oled: {
     label:"OLED Black",
     themePreference:"dark",
     accentColor:"#00D1B2",
-    themeConfig:{ appBg:"#000000", panelBg:"#080A0D", panelAltBg:"#11151A", textColor:"#F2F5F7", mutedColor:"#9AA4AE", borderColor:"#20262E", buttonStyle:"solid", cardStyle:"flat", cardRadius:12, shadowLevel:"none", density:"compact", shellMode:"next" }
+    themeConfig:{ appBg:"#000000", panelBg:"#080A0D", panelAltBg:"#11151A", textColor:"#F2F5F7", mutedColor:"#9AA4AE", borderColor:"#20262E", buttonStyle:"solid", cardStyle:"flat", cardRadius:12, shadowLevel:"none", density:"compact" }
   },
   forest: {
     label:"Forest",
     themePreference:"dark",
     accentColor:"#6FBF73",
-    themeConfig:{ appBg:"#101812", panelBg:"#182219", panelAltBg:"#203020", textColor:"#EAF4EA", mutedColor:"#9CAF9E", borderColor:"#314335", buttonStyle:"soft", cardStyle:"default", cardRadius:18, shadowLevel:"soft", density:"comfortable", shellMode:"next" }
+    themeConfig:{ appBg:"#101812", panelBg:"#182219", panelAltBg:"#203020", textColor:"#EAF4EA", mutedColor:"#9CAF9E", borderColor:"#314335", buttonStyle:"soft", cardStyle:"default", cardRadius:18, shadowLevel:"soft", density:"comfortable" }
   },
   sunset: {
     label:"Sunset",
     themePreference:"dark",
     accentColor:"#E0653A",
-    themeConfig:{ appBg:"#1C1413", panelBg:"#2A1B19", panelAltBg:"#35231F", textColor:"#FFF0E8", mutedColor:"#C9A397", borderColor:"#4A302A", buttonStyle:"solid", cardStyle:"warm", cardRadius:18, shadowLevel:"medium", density:"comfortable", shellMode:"next" }
+    themeConfig:{ appBg:"#1C1413", panelBg:"#2A1B19", panelAltBg:"#35231F", textColor:"#FFF0E8", mutedColor:"#C9A397", borderColor:"#4A302A", buttonStyle:"solid", cardStyle:"warm", cardRadius:18, shadowLevel:"medium", density:"comfortable" }
   },
   industrial: {
     label:"Industrial",
     themePreference:"dark",
     accentColor:"#B5A642",
-    themeConfig:{ appBg:"#121417", panelBg:"#1B1F24", panelAltBg:"#242A31", textColor:"#ECEFF3", mutedColor:"#A0A8B2", borderColor:"#343C46", buttonStyle:"outline", cardStyle:"contrast", cardRadius:8, shadowLevel:"low", density:"compact", shellMode:"next" }
+    themeConfig:{ appBg:"#121417", panelBg:"#1B1F24", panelAltBg:"#242A31", textColor:"#ECEFF3", mutedColor:"#A0A8B2", borderColor:"#343C46", buttonStyle:"outline", cardStyle:"contrast", cardRadius:8, shadowLevel:"low", density:"compact" }
   },
   softPurple: {
     label:"Soft Purple",
     themePreference:"light",
     accentColor:"#9B7BE0",
-    themeConfig:{ appBg:"#F7F3FF", panelBg:"#FFFFFF", panelAltBg:"#EFE7FF", textColor:"#231B33", mutedColor:"#685B79", borderColor:"#D8C9F5", buttonStyle:"soft", cardStyle:"soft", cardRadius:20, shadowLevel:"soft", density:"comfortable", shellMode:"next" }
+    themeConfig:{ appBg:"#F7F3FF", panelBg:"#FFFFFF", panelAltBg:"#EFE7FF", textColor:"#231B33", mutedColor:"#685B79", borderColor:"#D8C9F5", buttonStyle:"soft", cardStyle:"soft", cardRadius:20, shadowLevel:"soft", density:"comfortable" }
   }
 };
 const UI_CONTRACT_VERSION = 1;
@@ -228,7 +228,7 @@ const I18N_EN = {
   "Профиль пользователя":"User profile", "Отображаемое имя":"Display name", "День рождения":"Birthday", "Сохранить":"Save",
   "Смена пароля":"Change password", "Текущий пароль":"Current password", "Новый пароль":"New password", "Ещё раз":"Repeat", "Сменить пароль":"Change password", "Активные устройства":"Active devices", "Telegram-бот":"Telegram bot",
   "Интерфейс":"Interface", "Модульность":"Modularity", "Модули приложения":"App modules", "Отключайте функции, которые сейчас не нужны. Данные не удаляются: модуль можно включить обратно в любой момент.":"Turn off features you do not need right now. Data is not deleted: you can enable a module again at any time.", "Ядро, календарь и смены всегда включены. Зависимости включаются автоматически, чтобы приложение не ломалось.":"Core, calendar and shifts are always enabled. Dependencies are enabled automatically so the app stays consistent.", "Скрытые блоки":"Hidden blocks", "Настроить модули":"Configure modules", "Скрыть подсказку":"Hide hint", "Отключённый модуль не удаляет данные — его можно включить обратно в настройках.":"A disabled module does not delete data — you can enable it again in settings.", "Сейчас включены только базовые блоки дня.":"Only basic day blocks are enabled now.", "включено":"enabled", "выключено":"disabled", "всегда включён":"always on", "зависит от":"depends on", "модули сохранены":"modules saved", "модули загружаются…":"modules are loading…", "модуль выключен":"module disabled", "включено модулей":"modules enabled", "snapshot модулей":"modules snapshot", "модули не загружены":"modules not loaded", "операция относится к выключенному модулю":"operation belongs to a disabled module", "контракт":"contract", "слоты":"slots", "API":"API", "offline":"offline", "категория":"category", "ядро":"core", "календарь":"calendar", "продуктивность":"productivity", "учёт времени":"time accounting", "интеграции":"integrations", "администрирование":"administration", "Язык приложения":"App language", "Русский":"Russian", "Основной язык":"Main language", "Дополнительный язык":"Additional language", "Язык сохранён":"Language saved",
-  "Персонализация":"Personalization", "Пресет":"Preset", "Готовая тема":"Theme preset", "Базовый режим":"Base mode", "Акцент":"Accent", "Оболочка приложения":"App shell", "DutyLog Next включает новый мобильный shell и дизайн-систему. Classic сохраняет прежнюю компоновку на тех же данных и API.":"DutyLog Next enables the new mobile shell and design system. Classic keeps the previous layout on the same data and APIs.", "Новая навигация, адаптивная шапка и единая система компонентов.":"New navigation, responsive header and a unified component system.", "Прежняя оболочка без изменения функций и данных.":"Previous shell without changing features or data.", "Ещё":"More", "Точная настройка":"Fine tuning", "Фон приложения":"App background", "Карточки":"Cards", "Внутренние блоки":"Inner blocks", "Основной текст":"Primary text", "Вторичный текст":"Secondary text", "Границы":"Borders", "Стиль кнопок":"Button style", "Стиль карточек":"Card style", "Тени":"Shadows", "Плотность":"Density", "Скругление карточек":"Card radius", "Сохранить внешний вид":"Save appearance", "Сбросить локально":"Reset locally",
+  "Персонализация":"Personalization", "Пресет":"Preset", "Готовая тема":"Theme preset", "Базовый режим":"Base mode", "Акцент":"Accent", "Ещё":"More", "Точная настройка":"Fine tuning", "Фон приложения":"App background", "Карточки":"Cards", "Внутренние блоки":"Inner blocks", "Основной текст":"Primary text", "Вторичный текст":"Secondary text", "Границы":"Borders", "Стиль кнопок":"Button style", "Стиль карточек":"Card style", "Тени":"Shadows", "Плотность":"Density", "Скругление карточек":"Card radius", "Сохранить внешний вид":"Save appearance", "Сбросить локально":"Reset locally",
   "как в системе":"system", "тёмная":"dark", "светлая":"light", "заливка":"solid", "мягкие":"soft", "контурные":"outline", "призрачные":"ghost", "стандартные":"standard", "плоские":"flat", "контрастные":"contrast", "тёплые":"warm", "без теней":"no shadows", "лёгкие":"light", "средние":"medium", "сильные":"strong", "компактно":"compact", "обычно":"comfortable", "просторно":"spacious",
   "Время и регион":"Time and region", "Часовой пояс и формат времени":"Timezone and time format", "Рабочий часовой пояс":"Work timezone", "Определить автоматически":"Detect automatically", "Сохранить часовой пояс":"Save timezone", "Формат времени":"Time format", "Сохранить настройки":"Save settings",
   "Типы смен и их время":"Shift types and time", "Короткие часы для календаря":"Short calendar hours", "Календарь, ч":"Calendar label, h", "Норма, ч":"Norm, h", "Название смены":"Shift name", "Добавить":"Add", "Сохранить параметры смен":"Save shift settings", "Дневная":"Day shift", "Ночная":"Night shift", "Выходной":"Day off",
@@ -1104,7 +1104,6 @@ function normalizeThemeConfig(config = {}){
   out.cardStyle = ["default","flat","soft","contrast","warm"].includes(String(c.cardStyle || "")) ? String(c.cardStyle) : base.cardStyle;
   out.shadowLevel = ["none","low","soft","medium","strong"].includes(String(c.shadowLevel || "")) ? String(c.shadowLevel) : base.shadowLevel;
   out.density = ["compact","comfortable","spacious"].includes(String(c.density || "")) ? String(c.density) : base.density;
-  out.shellMode = ["next","classic"].includes(String(c.shellMode || "")) ? String(c.shellMode) : (base.shellMode || "next");
   out.cardRadius = Math.round(clampNumber(c.cardRadius, 6, 28, base.cardRadius));
   out.uiContract = UI_CONTRACT_VERSION;
   out.workspaceId = UI_WORKSPACE_IDS.includes(String(c.workspaceId || "")) ? String(c.workspaceId) : UI_PLATFORM_DEFAULTS.workspaceId;
@@ -1180,7 +1179,7 @@ function applyThemeCssVariables(prefs){
   root.dataset.buttonStyle = cfg.buttonStyle;
   root.dataset.cardStyle = cfg.cardStyle;
   root.dataset.density = cfg.density;
-  root.dataset.shell = cfg.shellMode;
+  root.dataset.shell = "next";
   root.dataset.uiContract = String(cfg.uiContract);
   root.dataset.uiWorkspace = cfg.workspaceId;
   root.dataset.uiLayout = cfg.layoutId;
@@ -1221,7 +1220,6 @@ function readAppearanceFromControls(){
       cardRadius:$('themeCardRadius')?.value || 14,
       shadowLevel:$('themeShadowLevel')?.value || "medium",
       density:$('themeDensity')?.value || "comfortable",
-      shellMode:$('themeShellMode')?.value || "next",
       ...window.DutyLogUI?.readControls?.(normalizeThemeConfig(state.preferences?.themeConfig))
     }
   });
@@ -1242,12 +1240,6 @@ function setThemeBuilderControls(prefs){
   if (byId('themeCardStyle')) byId('themeCardStyle').value = cfg.cardStyle;
   if (byId('themeShadowLevel')) byId('themeShadowLevel').value = cfg.shadowLevel;
   if (byId('themeDensity')) byId('themeDensity').value = cfg.density;
-  if (byId('themeShellMode')) byId('themeShellMode').value = cfg.shellMode;
-  document.querySelectorAll('[data-shell-choice]').forEach(button => {
-    const active = button.dataset.shellChoice === cfg.shellMode;
-    button.classList.toggle('on', active);
-    button.setAttribute('aria-pressed', active ? 'true' : 'false');
-  });
   if (byId('themeCardRadius')) byId('themeCardRadius').value = cfg.cardRadius;
   if (byId('themeCardRadiusValue')) byId('themeCardRadiusValue').textContent = `${cfg.cardRadius}px`;
   window.DutyLogUI?.renderControls?.(prefs);
@@ -1289,7 +1281,6 @@ function renderAppearanceControls(){
   const presetLabel = THEME_PRESETS[prefs.themePreset]?.label || "Custom";
   const modeLabel = t(prefs.themePreference === "system" ? "как в системе" : prefs.themePreference === "light" ? "светлая" : "тёмная");
   const cfg = normalizeThemeConfig(prefs.themeConfig);
-  const shellLabel = cfg.shellMode === "classic" ? "Classic" : "DutyLog Next";
   const workspaceLabel = window.DutyLogUI?.workspaces?.[cfg.workspaceId]
     ? (state.language === "en" ? window.DutyLogUI.workspaces[cfg.workspaceId].labelEn : window.DutyLogUI.workspaces[cfg.workspaceId].labelRu)
     : cfg.workspaceId;
@@ -1298,7 +1289,7 @@ function renderAppearanceControls(){
     : cfg.layoutId;
   if (preview) {
     preview.className = "status statusThemeSummary";
-    preview.innerHTML = `<span class="statusChip statusChipPrimary">${esc(presetLabel)}</span><span class="statusChip">${esc(workspaceLabel)}</span><span class="statusChip">${esc(layoutLabel)}</span><span class="statusChip">${esc(shellLabel)}</span><span class="statusChip">${esc(modeLabel)}</span><span class="statusChip statusChipAccent"><span class="statusChipSwatch" style="background:${prefs.accentColor}"></span>${esc(prefs.accentColor)}</span>`;
+    preview.innerHTML = `<span class="statusChip statusChipPrimary">${esc(presetLabel)}</span><span class="statusChip">${esc(workspaceLabel)}</span><span class="statusChip">${esc(layoutLabel)}</span><span class="statusChip">${esc(modeLabel)}</span><span class="statusChip statusChipAccent"><span class="statusChipSwatch" style="background:${prefs.accentColor}"></span>${esc(prefs.accentColor)}</span>`;
   }
 }
 function applyPreset(key){

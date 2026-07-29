@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.17.5"></script>
-<link href="app.css?v=27.17.5" rel="stylesheet"/>
-<link href="design-system.css?v=27.17.5" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.17.5" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.17.5" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.17.5" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.17.5" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.17.5" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.17.5" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.17.5" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.17.5" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.17.5" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.17.6"></script>
+<link href="app.css?v=27.17.6" rel="stylesheet"/>
+<link href="design-system.css?v=27.17.6" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.17.6" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.17.6" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.17.6" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.17.6" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.17.6" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.17.6" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.17.6" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.17.6" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.17.6" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -603,21 +603,8 @@
 <div class="status statusThemeSummary" id="appearancePreview">—</div>
 </div>
 
-<div class="profileSub">Оболочка приложения</div>
-<div class="settingsHint">DutyLog Next включает новый мобильный shell и дизайн-систему. Classic сохраняет прежнюю компоновку на тех же данных и API.</div>
-<input id="themeShellMode" type="hidden" value="next"/>
-<div class="shellChoiceGrid" id="shellChoiceGrid" aria-label="Оболочка приложения">
-  <button class="shellChoice" data-shell-choice="next" type="button">
-    <span class="shellChoiceIcon" aria-hidden="true">✦</span>
-    <b>DutyLog Next</b>
-    <span>Новая навигация, адаптивная шапка и единая система компонентов.</span>
-  </button>
-  <button class="shellChoice" data-shell-choice="classic" type="button">
-    <span class="shellChoiceIcon" aria-hidden="true">◫</span>
-    <b>Classic</b>
-    <span>Прежняя оболочка без изменения функций и данных.</span>
-  </button>
-</div>
+<div class="profileSub">Единый интерфейс DutyLog</div>
+<div class="settingsHint" id="singleShellNotice">Classic завершён: все окружения, компоновки, темы и палитры работают поверх одного UI Core. Для аварийного отката используются проверенные Git/Docker-релизы, а не второй интерфейс внутри приложения.</div>
 
 <div class="uiPlatformPanel" aria-labelledby="uiPlatformTitle">
   <div class="uiPlatformHead">
@@ -915,7 +902,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.17.5</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.17.6</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1443,15 +1430,15 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.17.5"></script>
-<script src="js/12-ui-platform.js?v=27.17.5"></script>
-<script src="js/20-data.js?v=27.17.5"></script>
-<script src="js/30-calendar.js?v=27.17.5"></script>
-<script src="js/35-today.js?v=27.17.5"></script>
-<script src="js/37-calendar-experience.js?v=27.17.5"></script>
-<script src="js/40-overtime.js?v=27.17.5"></script>
-<script src="js/50-tasks.js?v=27.17.5"></script>
-<script src="js/60-settings.js?v=27.17.5"></script>
-<script src="js/70-user-boot.js?v=27.17.5"></script>
+<script src="js/10-core.js?v=27.17.6"></script>
+<script src="js/12-ui-platform.js?v=27.17.6"></script>
+<script src="js/20-data.js?v=27.17.6"></script>
+<script src="js/30-calendar.js?v=27.17.6"></script>
+<script src="js/35-today.js?v=27.17.6"></script>
+<script src="js/37-calendar-experience.js?v=27.17.6"></script>
+<script src="js/40-overtime.js?v=27.17.6"></script>
+<script src="js/50-tasks.js?v=27.17.6"></script>
+<script src="js/60-settings.js?v=27.17.6"></script>
+<script src="js/70-user-boot.js?v=27.17.6"></script>
 </body>
 </html>

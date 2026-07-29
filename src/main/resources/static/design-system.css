@@ -1,9 +1,9 @@
 /*
- * DutyLog Next design system foundation — v27.17.5
+ * DutyLog UI Core design system foundation — v27.17.6
  *
- * This file is deliberately layered after app.css. The classic shell remains
- * available through html[data-shell="classic"], while the new shell is an
- * additive presentation layer over the same DOM, APIs and business logic.
+ * This file is deliberately layered after app.css. Since Classic Sunset the
+ * application has one UI Core shell; html[data-shell="next"] remains only as
+ * a stable internal scope for the existing component contract.
  */
 
 .nextTopbar,
@@ -11,42 +11,9 @@
   display: none;
 }
 
-.shellChoiceGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 10px 0 18px;
-}
 
-.shellChoice {
-  min-height: 88px;
-  padding: 12px;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto auto;
-  gap: 5px 10px;
-  text-align: left;
-  color: var(--mut);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  background: var(--panel2);
-  cursor: pointer;
-}
 
-.shellChoiceIcon {
-  grid-row: 1 / 3;
-  width: 36px;
-  height: 36px;
-  display: grid;
-  place-items: center;
-  border-radius: 10px;
-  color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 10%, transparent);
-}
 
-.shellChoice b { color: var(--text); }
-.shellChoice span:last-child { font-size: 12px; line-height: 1.35; }
-.shellChoice.on { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 
 html[data-shell="next"] {
   --ds-space-1: 4px;
@@ -293,14 +260,8 @@ html[data-shell="next"] .nav button:hover {
   background: var(--ds-highlight);
 }
 
-/* Navigation
- * DutyLog Next promotes Today; Classic keeps the original Important Dates tab.
- * Both shells therefore render exactly five primary destinations from one DOM.
- */
-html[data-shell="next"] .tabbar a[data-view="important"],
-html[data-shell="classic"] .tabbar a[data-view="today"] {
-  display: none;
-}
+/* Navigation is owned by the active UI Core workspace. Routes outside the
+ * primary workspace remain available through the generated secondary links. */
 
 html[data-shell="next"] .tabbar {
   display: grid;
@@ -544,55 +505,11 @@ html[data-shell="next"] .settingsIndex a.on {
   color: var(--accent);
 }
 
-html[data-shell="next"] .shellChoiceGrid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-  margin: 10px 0 18px;
-}
 
-html[data-shell="next"] .shellChoice {
-  min-height: 94px;
-  padding: 13px;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: auto auto;
-  gap: 5px 11px;
-  text-align: left;
-  color: var(--mut);
-  border: 1px solid var(--ds-border);
-  border-radius: 15px;
-  background: color-mix(in srgb, var(--panel2) 72%, transparent);
-  cursor: pointer;
-}
 
-html[data-shell="next"] .shellChoiceIcon {
-  grid-row: 1 / 3;
-  width: 40px;
-  height: 40px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  color: var(--accent);
-  background: var(--ds-highlight);
-  font-size: 20px;
-}
 
-html[data-shell="next"] .shellChoice b {
-  color: var(--text);
-  font-size: 14px;
-}
 
-html[data-shell="next"] .shellChoice span:last-child {
-  font-size: 12px;
-  line-height: 1.35;
-}
 
-html[data-shell="next"] .shellChoice.on {
-  border-color: color-mix(in srgb, var(--accent) 68%, var(--line));
-  background: linear-gradient(145deg, var(--ds-highlight-strong), color-mix(in srgb, var(--panel2) 72%, transparent));
-  box-shadow: var(--ds-shadow-accent);
-}
 
 /* Modals and loading */
 html[data-shell="next"] .appModalCard,
@@ -802,9 +719,6 @@ html[data-shell="next"] .appBootCard::after {
     background: linear-gradient(var(--panel) 78%, transparent);
   }
 
-  html[data-shell="next"] .shellChoiceGrid {
-    grid-template-columns: 1fr;
-  }
 
   html[data-shell="next"] .settingsIndex {
     box-shadow: none;

@@ -201,11 +201,10 @@ init().catch(err => {
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */
 const VIEWS = window.DutyLogUI?.views?.() || { today:"view-today", calendar:"view-calendar", overtime:"view-overtime", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
 function applyRoute(){
-  const defaultRoute = document.documentElement.dataset.shell === "classic" ? "#calendar" : "#today";
+  const defaultRoute = "#today";
   const rawRoute = (location.hash || defaultRoute).slice(1);
   const name = rawRoute.startsWith("settings-") ? "settings" : rawRoute;
-  let active = VIEWS[name] ? name : (defaultRoute === "#today" ? "today" : "calendar");
-  if (document.documentElement.dataset.shell === "classic" && active === "today") active = "calendar";
+  let active = VIEWS[name] ? name : "today";
   if (active === "admin" && state.profile && !state.profile.admin) active = "calendar";
   if (active === "tasks" && !moduleEnabled("tasks")) active = "calendar";
   if (active === "overtime" && !moduleEnabled("overtime")) active = "calendar";
@@ -516,16 +515,6 @@ $('uiAccentSecondary')?.addEventListener('input', () => {
   markPaletteCustomAndPreview();
   scheduleAppearanceAutoSave();
 });
-document.querySelectorAll('[data-shell-choice]').forEach(button => button.addEventListener('click', () => {
-  const mode = button.dataset.shellChoice === 'classic' ? 'classic' : 'next';
-  if ($('themeShellMode')) $('themeShellMode').value = mode;
-  updateUiPlatformAndPreview();
-  // Today belongs to DutyLog Next. Classic must fall back to its original
-  // calendar landing page instead of exposing a visually hidden route.
-  if (mode === 'classic' && location.hash === '#today') location.hash = '#calendar';
-  else if (typeof applyRoute === 'function') applyRoute();
-  scheduleAppearanceAutoSave();
-}));
 for (const id of ['themeAppBg','themePanelBg','themePanelAltBg','themeTextColor','themeMutedColor','themeBorderColor','themeButtonStyle','themeCardStyle','themeShadowLevel','themeDensity','themeCardRadius']) {
   $(id)?.addEventListener('input', () => { markThemeCustomAndPreview(); scheduleAppearanceAutoSave(); });
   $(id)?.addEventListener('change', () => { markThemeCustomAndPreview(); scheduleAppearanceAutoSave(); });
