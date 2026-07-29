@@ -15,17 +15,20 @@ class UiCoreWorkspaceFrontendContractTest {
     @Test
     void appShellLoadsUiPlatformBetweenCoreAndFeatureBundles() throws Exception {
         String html = read("src/main/resources/static/index.html");
-        int core = html.indexOf("js/10-core.js?v=27.18.2");
-        int platform = html.indexOf("js/12-ui-platform.js?v=27.18.2");
-        int data = html.indexOf("js/20-data.js?v=27.18.2");
+        int core = html.indexOf("js/10-core.js?v=27.18.3");
+        int platform = html.indexOf("js/12-ui-platform.js?v=27.18.3");
+        int data = html.indexOf("js/20-data.js?v=27.18.3");
         assertTrue(core >= 0);
         assertTrue(platform > core);
         assertTrue(data > platform);
-        assertTrue(html.contains("ui/tokens.css?v=27.18.2"));
-        assertTrue(html.contains("ui/platform.css?v=27.18.2"));
+        assertTrue(html.contains("ui/tokens.css?v=27.18.3"));
+        assertTrue(html.contains("ui/platform.css?v=27.18.3"));
         assertTrue(html.contains("id=\"uiWorkspace\""));
         assertTrue(html.contains("id=\"uiLayout\""));
         assertTrue(html.contains("id=\"uiPalette\""));
+        assertTrue(html.contains("id=\"uiPaletteState\""));
+        assertTrue(html.contains("id=\"paletteThemeReset\""));
+        assertTrue(html.contains("id=\"buttonVariantPreview\""));
         assertTrue(html.contains("id=\"workspaceRouteLinks\""));
     }
 
@@ -53,10 +56,18 @@ class UiCoreWorkspaceFrontendContractTest {
         String tokens = read("src/main/resources/static/ui/tokens.css");
         String midnight = read("src/main/resources/static/ui/themes/midnight.css");
         String platform = read("src/main/resources/static/ui/platform.css");
+        String core = read("src/main/resources/static/js/10-core.js");
         assertTrue(tokens.contains("--color-background"));
         assertTrue(tokens.contains("--color-surface"));
         assertTrue(tokens.contains("--color-text-primary"));
         assertTrue(tokens.contains("--color-accent-secondary"));
+        assertTrue(tokens.contains("--button-outline-border"));
+        assertTrue(tokens.contains("--button-ghost-border: transparent"));
+        assertTrue(platform.contains("[data-button-style=\"outline\"]"));
+        assertTrue(platform.contains("[data-button-style=\"ghost\"]"));
+        assertTrue(platform.contains("border:1px solid var(--button-ghost-border)"));
+        assertTrue(core.contains("function restoreThemePalette()"));
+        assertTrue(core.contains("paletteId:\"theme\""));
         assertTrue(midnight.contains("html[data-ui-theme=\"midnight\"]"));
         assertFalse(midnight.contains("data-ui-theme=\"oled\""));
         assertTrue(platform.contains("html[data-ui-layout=\"compact\"]"));

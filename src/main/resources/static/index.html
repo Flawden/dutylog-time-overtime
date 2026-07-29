@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.18.2"></script>
-<link href="app.css?v=27.18.2" rel="stylesheet"/>
-<link href="design-system.css?v=27.18.2" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.18.2" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.18.2" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.18.2" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.18.2" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.18.2" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.18.2" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.18.2" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.18.2" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.18.2" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.18.3"></script>
+<link href="app.css?v=27.18.3" rel="stylesheet"/>
+<link href="design-system.css?v=27.18.3" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.18.3" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.18.3" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.18.3" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.18.3" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.18.3" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.18.3" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.18.3" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.18.3" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.18.3" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -682,6 +682,10 @@
       <input id="uiAccentSecondary" type="color" value="#14CDB4"/>
     </label>
   </div>
+  <div class="paletteControlBar">
+    <div class="paletteModeStatus" id="uiPaletteState" data-palette-mode="theme" aria-live="polite"><span class="paletteModeDot" aria-hidden="true"></span><span>Цвета темы</span></div>
+    <button class="buttonOutline" id="paletteThemeReset" type="button" title="Текущая тема снова станет источником основного и дополнительного акцента.">Вернуть цвета темы</button>
+  </div>
   <div class="workspaceRouteBlock">
     <span>Разделы вне основной навигации</span>
     <div class="workspaceRouteLinks" id="workspaceRouteLinks"></div>
@@ -769,9 +773,15 @@
       <div class="eyebrow">Карточка</div>
       <b>Выбранный день</b>
       <p>Так будут выглядеть фон, границы, текст, скругление и тени.</p>
-      <div class="themePreviewActions">
-        <button class="primary" type="button">Главная кнопка</button>
-        <button type="button">Обычная</button>
+      <div class="themePreviewVariantTitle">Варианты кнопок</div>
+      <div class="themePreviewActions buttonVariantPreview" id="buttonVariantPreview">
+        <button class="primary" data-preview-variant="primary" type="button">Главная кнопка</button>
+        <button class="buttonSecondary" data-preview-variant="secondary" type="button">Обычная</button>
+        <button class="buttonOutline" data-preview-variant="outline" type="button">Контурная</button>
+        <button class="buttonGhost" data-preview-variant="ghost" type="button">Призрачная</button>
+        <button class="buttonDanger" data-preview-variant="danger" type="button">Опасная</button>
+        <button class="buttonLink" data-preview-variant="link" type="button">Ссылка</button>
+        <button class="buttonIcon" data-preview-variant="icon" type="button" aria-label="Ещё действия" title="Ещё действия">⋯</button>
       </div>
     </div>
   </div>
@@ -956,7 +966,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.18.2</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.18.3</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1484,15 +1494,15 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.18.2"></script>
-<script src="js/12-ui-platform.js?v=27.18.2"></script>
-<script src="js/20-data.js?v=27.18.2"></script>
-<script src="js/30-calendar.js?v=27.18.2"></script>
-<script src="js/35-today.js?v=27.18.2"></script>
-<script src="js/37-calendar-experience.js?v=27.18.2"></script>
-<script src="js/40-overtime.js?v=27.18.2"></script>
-<script src="js/50-tasks.js?v=27.18.2"></script>
-<script src="js/60-settings.js?v=27.18.2"></script>
-<script src="js/70-user-boot.js?v=27.18.2"></script>
+<script src="js/10-core.js?v=27.18.3"></script>
+<script src="js/12-ui-platform.js?v=27.18.3"></script>
+<script src="js/20-data.js?v=27.18.3"></script>
+<script src="js/30-calendar.js?v=27.18.3"></script>
+<script src="js/35-today.js?v=27.18.3"></script>
+<script src="js/37-calendar-experience.js?v=27.18.3"></script>
+<script src="js/40-overtime.js?v=27.18.3"></script>
+<script src="js/50-tasks.js?v=27.18.3"></script>
+<script src="js/60-settings.js?v=27.18.3"></script>
+<script src="js/70-user-boot.js?v=27.18.3"></script>
 </body>
 </html>

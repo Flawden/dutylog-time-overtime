@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.18.2"
+const DUTYLOG_VERSION = "27.18.3"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -150,49 +150,49 @@ const THEME_PRESETS = {
     label:"DutyLog Default",
     themePreference:"system",
     accentColor:"#F5B841",
-    themeConfig:{ appBg:"", panelBg:"", panelAltBg:"", textColor:"", mutedColor:"", borderColor:"", buttonStyle:"solid", cardStyle:"default", cardRadius:14, shadowLevel:"medium", density:"comfortable" }
+    themeConfig:{ appBg:"", panelBg:"", panelAltBg:"", textColor:"", mutedColor:"", borderColor:"", buttonStyle:"solid", cardStyle:"default", cardRadius:14, shadowLevel:"medium", density:"comfortable", accentSecondary:"#14CDB4" }
   },
   custom: {
     label:"Custom",
     themePreference:"system",
     accentColor:"#F5B841",
-    themeConfig:{ appBg:"", panelBg:"", panelAltBg:"", textColor:"", mutedColor:"", borderColor:"", buttonStyle:"solid", cardStyle:"default", cardRadius:14, shadowLevel:"medium", density:"comfortable" }
+    themeConfig:{ appBg:"", panelBg:"", panelAltBg:"", textColor:"", mutedColor:"", borderColor:"", buttonStyle:"solid", cardStyle:"default", cardRadius:14, shadowLevel:"medium", density:"comfortable", accentSecondary:"#14CDB4" }
   },
   midnight: {
     label:"Midnight",
     themePreference:"dark",
     accentColor:"#7B8CE0",
-    themeConfig:{ appBg:"#0F1220", panelBg:"#181C2B", panelAltBg:"#20263A", textColor:"#EEF2FF", mutedColor:"#A7B0C9", borderColor:"#2D3550", buttonStyle:"soft", cardStyle:"contrast", cardRadius:16, shadowLevel:"medium", density:"comfortable" }
+    themeConfig:{ appBg:"#0F1220", panelBg:"#181C2B", panelAltBg:"#20263A", textColor:"#EEF2FF", mutedColor:"#A7B0C9", borderColor:"#2D3550", buttonStyle:"soft", cardStyle:"contrast", cardRadius:16, shadowLevel:"medium", density:"comfortable", accentSecondary:"#58C6C8" }
   },
   oled: {
     label:"OLED Black",
     themePreference:"dark",
     accentColor:"#00D1B2",
-    themeConfig:{ appBg:"#000000", panelBg:"#080A0D", panelAltBg:"#11151A", textColor:"#F2F5F7", mutedColor:"#9AA4AE", borderColor:"#20262E", buttonStyle:"solid", cardStyle:"flat", cardRadius:12, shadowLevel:"none", density:"compact" }
+    themeConfig:{ appBg:"#000000", panelBg:"#080A0D", panelAltBg:"#11151A", textColor:"#F2F5F7", mutedColor:"#9AA4AE", borderColor:"#20262E", buttonStyle:"solid", cardStyle:"flat", cardRadius:12, shadowLevel:"none", density:"compact", accentSecondary:"#F5B841" }
   },
   forest: {
     label:"Forest",
     themePreference:"dark",
     accentColor:"#6FBF73",
-    themeConfig:{ appBg:"#101812", panelBg:"#182219", panelAltBg:"#203020", textColor:"#EAF4EA", mutedColor:"#9CAF9E", borderColor:"#314335", buttonStyle:"soft", cardStyle:"default", cardRadius:18, shadowLevel:"soft", density:"comfortable" }
+    themeConfig:{ appBg:"#101812", panelBg:"#182219", panelAltBg:"#203020", textColor:"#EAF4EA", mutedColor:"#9CAF9E", borderColor:"#314335", buttonStyle:"soft", cardStyle:"default", cardRadius:18, shadowLevel:"soft", density:"comfortable", accentSecondary:"#A7C957" }
   },
   sunset: {
     label:"Sunset",
     themePreference:"dark",
     accentColor:"#E0653A",
-    themeConfig:{ appBg:"#1C1413", panelBg:"#2A1B19", panelAltBg:"#35231F", textColor:"#FFF0E8", mutedColor:"#C9A397", borderColor:"#4A302A", buttonStyle:"solid", cardStyle:"warm", cardRadius:18, shadowLevel:"medium", density:"comfortable" }
+    themeConfig:{ appBg:"#1C1413", panelBg:"#2A1B19", panelAltBg:"#35231F", textColor:"#FFF0E8", mutedColor:"#C9A397", borderColor:"#4A302A", buttonStyle:"solid", cardStyle:"warm", cardRadius:18, shadowLevel:"medium", density:"comfortable", accentSecondary:"#F5B841" }
   },
   industrial: {
     label:"Industrial",
     themePreference:"dark",
     accentColor:"#B5A642",
-    themeConfig:{ appBg:"#121417", panelBg:"#1B1F24", panelAltBg:"#242A31", textColor:"#ECEFF3", mutedColor:"#A0A8B2", borderColor:"#343C46", buttonStyle:"outline", cardStyle:"contrast", cardRadius:8, shadowLevel:"low", density:"compact" }
+    themeConfig:{ appBg:"#121417", panelBg:"#1B1F24", panelAltBg:"#242A31", textColor:"#ECEFF3", mutedColor:"#A0A8B2", borderColor:"#343C46", buttonStyle:"outline", cardStyle:"contrast", cardRadius:8, shadowLevel:"low", density:"compact", accentSecondary:"#58C6C8" }
   },
   softPurple: {
     label:"Soft Purple",
     themePreference:"light",
     accentColor:"#9B7BE0",
-    themeConfig:{ appBg:"#F7F3FF", panelBg:"#FFFFFF", panelAltBg:"#EFE7FF", textColor:"#231B33", mutedColor:"#685B79", borderColor:"#D8C9F5", buttonStyle:"soft", cardStyle:"soft", cardRadius:20, shadowLevel:"soft", density:"comfortable" }
+    themeConfig:{ appBg:"#F7F3FF", panelBg:"#FFFFFF", panelAltBg:"#EFE7FF", textColor:"#231B33", mutedColor:"#685B79", borderColor:"#D8C9F5", buttonStyle:"soft", cardStyle:"soft", cardRadius:20, shadowLevel:"soft", density:"comfortable", accentSecondary:"#58C6C8" }
   }
 };
 const UI_CONTRACT_VERSION = 1;
@@ -228,7 +228,7 @@ const I18N_EN = {
   "Профиль пользователя":"User profile", "Отображаемое имя":"Display name", "День рождения":"Birthday", "Сохранить":"Save",
   "Смена пароля":"Change password", "Текущий пароль":"Current password", "Новый пароль":"New password", "Ещё раз":"Repeat", "Сменить пароль":"Change password", "Активные устройства":"Active devices", "Telegram-бот":"Telegram bot",
   "Интерфейс":"Interface", "Модульность":"Modularity", "Модули приложения":"App modules", "Отключайте функции, которые сейчас не нужны. Данные не удаляются: модуль можно включить обратно в любой момент.":"Turn off features you do not need right now. Data is not deleted: you can enable a module again at any time.", "Ядро, календарь и смены всегда включены. Зависимости включаются автоматически, чтобы приложение не ломалось.":"Core, calendar and shifts are always enabled. Dependencies are enabled automatically so the app stays consistent.", "Скрытые блоки":"Hidden blocks", "Настроить модули":"Configure modules", "Скрыть подсказку":"Hide hint", "Отключённый модуль не удаляет данные — его можно включить обратно в настройках.":"A disabled module does not delete data — you can enable it again in settings.", "Сейчас включены только базовые блоки дня.":"Only basic day blocks are enabled now.", "включено":"enabled", "выключено":"disabled", "всегда включён":"always on", "зависит от":"depends on", "модули сохранены":"modules saved", "модули загружаются…":"modules are loading…", "модуль выключен":"module disabled", "включено модулей":"modules enabled", "snapshot модулей":"modules snapshot", "модули не загружены":"modules not loaded", "операция относится к выключенному модулю":"operation belongs to a disabled module", "контракт":"contract", "слоты":"slots", "API":"API", "offline":"offline", "категория":"category", "ядро":"core", "календарь":"calendar", "продуктивность":"productivity", "учёт времени":"time accounting", "интеграции":"integrations", "администрирование":"administration", "Язык приложения":"App language", "Русский":"Russian", "Основной язык":"Main language", "Дополнительный язык":"Additional language", "Язык сохранён":"Language saved",
-  "Персонализация":"Personalization", "Пресет":"Preset", "Готовая тема":"Theme preset", "Базовый режим":"Base mode", "Акцент":"Accent", "Ещё":"More", "Точная настройка":"Fine tuning", "Фон приложения":"App background", "Карточки":"Cards", "Внутренние блоки":"Inner blocks", "Основной текст":"Primary text", "Вторичный текст":"Secondary text", "Границы":"Borders", "Стиль кнопок":"Button style", "Стиль карточек":"Card style", "Тени":"Shadows", "Плотность":"Density", "Скругление карточек":"Card radius", "Сохранить внешний вид":"Save appearance", "Сбросить локально":"Reset locally",
+  "Персонализация":"Personalization", "Пресет":"Preset", "Готовая тема":"Theme preset", "Базовый режим":"Base mode", "Акцент":"Accent", "Ещё":"More", "Точная настройка":"Fine tuning", "Цвета темы":"Theme colors", "Изменено пользователем":"Customized", "Готовая палитра":"Preset palette", "Вернуть цвета темы":"Restore theme colors", "Текущая тема снова станет источником основного и дополнительного акцента.":"The current theme will again provide the primary and secondary accents.", "Варианты кнопок":"Button variants", "Главная кнопка":"Primary", "Обычная":"Secondary", "Контурная":"Outline", "Призрачная":"Ghost", "Опасная":"Danger", "Ссылка":"Link", "Ещё действия":"More actions", "Фон приложения":"App background", "Карточки":"Cards", "Внутренние блоки":"Inner blocks", "Основной текст":"Primary text", "Вторичный текст":"Secondary text", "Границы":"Borders", "Стиль кнопок":"Button style", "Стиль карточек":"Card style", "Тени":"Shadows", "Плотность":"Density", "Скругление карточек":"Card radius", "Сохранить внешний вид":"Save appearance", "Сбросить локально":"Reset locally",
   "как в системе":"system", "тёмная":"dark", "светлая":"light", "заливка":"solid", "мягкие":"soft", "контурные":"outline", "призрачные":"ghost", "стандартные":"standard", "плоские":"flat", "контрастные":"contrast", "тёплые":"warm", "без теней":"no shadows", "лёгкие":"light", "средние":"medium", "сильные":"strong", "компактно":"compact", "обычно":"comfortable", "просторно":"spacious",
   "Время и регион":"Time and region", "Часовой пояс и формат времени":"Timezone and time format", "Рабочий часовой пояс":"Work timezone", "Определить автоматически":"Detect automatically", "Сохранить часовой пояс":"Save timezone", "Формат времени":"Time format", "Сохранить настройки":"Save settings",
   "Типы смен и их время":"Shift types and time", "Короткие часы для календаря":"Short calendar hours", "Календарь, ч":"Calendar label, h", "Норма, ч":"Norm, h", "Название смены":"Shift name", "Добавить":"Add", "Сохранить параметры смен":"Save shift settings", "Дневная":"Day shift", "Ночная":"Night shift", "Выходной":"Day off",
@@ -1128,6 +1128,46 @@ function normalizeAppearance(p = {}){
   if ((!p.themeConfig || !p.themeConfig.themeId) && UI_THEME_IDS.includes(preset)) themeConfig.themeId = preset;
   return { themePreference:theme, accentColor:accent, themePreset:preset, themeConfig };
 }
+function resolveThemePalette(themeId = state.preferences?.themeConfig?.themeId){
+  const key = Object.prototype.hasOwnProperty.call(THEME_PRESETS, String(themeId || ""))
+    ? String(themeId)
+    : "default";
+  const preset = THEME_PRESETS[key] || THEME_PRESETS.default;
+  const secondary = preset?.themeConfig?.accentSecondary;
+  return {
+    accent:isHexColor(preset.accentColor) ? String(preset.accentColor).toUpperCase() : DEFAULT_APPEARANCE.accentColor,
+    secondary:isHexColor(secondary) ? String(secondary).toUpperCase() : UI_PLATFORM_DEFAULTS.accentSecondary
+  };
+}
+function applyPaletteMode(paletteId){
+  const prefs = readAppearanceFromControls();
+  const id = UI_PALETTE_IDS.includes(String(paletteId || "")) ? String(paletteId) : "theme";
+  const palette = window.DutyLogUI?.palettes?.[id];
+  let accent = prefs.accentColor;
+  let secondary = prefs.themeConfig.accentSecondary;
+  if (id === "theme") {
+    const themePalette = resolveThemePalette(prefs.themeConfig.themeId || prefs.themePreset);
+    accent = themePalette.accent;
+    secondary = themePalette.secondary;
+  } else if (palette?.accent) {
+    accent = palette.accent;
+    secondary = palette.secondary || palette.accent;
+  }
+  state.preferences = normalizeAppearance({
+    ...prefs,
+    accentColor:accent,
+    themeConfig:{ ...prefs.themeConfig, paletteId:id, accentSecondary:secondary }
+  });
+  if ($('uiPalette')) $('uiPalette').value = id;
+  if ($('appearanceAccent')) $('appearanceAccent').value = accent;
+  if ($('uiAccentSecondary')) $('uiAccentSecondary').value = secondary;
+  applyAppearance(state.preferences);
+  return state.preferences;
+}
+function restoreThemePalette(){
+  return applyPaletteMode("theme");
+}
+
 function loadLocalAppearance(){
   try { return normalizeAppearance(JSON.parse(localStorage.getItem(APPEARANCE_KEY) || "{}")); }
   catch (_) { return normalizeAppearance(DEFAULT_APPEARANCE); }
@@ -1287,9 +1327,15 @@ function renderAppearanceControls(){
   const layoutLabel = window.DutyLogUI?.layouts?.[cfg.layoutId]
     ? (state.language === "en" ? window.DutyLogUI.layouts[cfg.layoutId].labelEn : window.DutyLogUI.layouts[cfg.layoutId].labelRu)
     : cfg.layoutId;
+  const paletteEntry = window.DutyLogUI?.palettes?.[cfg.paletteId];
+  const paletteLabel = cfg.paletteId === "theme"
+    ? t("Цвета темы")
+    : cfg.paletteId === "custom"
+      ? t("Изменено пользователем")
+      : (state.language === "en" ? paletteEntry?.labelEn : paletteEntry?.labelRu) || cfg.paletteId;
   if (preview) {
     preview.className = "status statusThemeSummary";
-    preview.innerHTML = `<span class="statusChip statusChipPrimary">${esc(presetLabel)}</span><span class="statusChip">${esc(workspaceLabel)}</span><span class="statusChip">${esc(layoutLabel)}</span><span class="statusChip">${esc(modeLabel)}</span><span class="statusChip statusChipAccent"><span class="statusChipSwatch" style="background:${prefs.accentColor}"></span>${esc(prefs.accentColor)}</span>`;
+    preview.innerHTML = `<span class="statusChip statusChipPrimary">${esc(presetLabel)}</span><span class="statusChip">${esc(workspaceLabel)}</span><span class="statusChip">${esc(layoutLabel)}</span><span class="statusChip">${esc(paletteLabel)}</span><span class="statusChip">${esc(modeLabel)}</span><span class="statusChip statusChipAccent"><span class="statusChipSwatch" style="background:${prefs.accentColor}"></span>${esc(prefs.accentColor)}</span>`;
   }
 }
 function applyPreset(key){
@@ -1298,8 +1344,13 @@ function applyPreset(key){
   const current = normalizeThemeConfig(currentPrefs.themeConfig);
   const palette = window.DutyLogUI?.palettes?.[current.paletteId];
   const keepPalette = current.paletteId || "theme";
-  const primary = palette?.accent || (keepPalette === "custom" ? currentPrefs.accentColor : preset.accentColor);
-  const secondary = palette?.secondary || current.accentSecondary;
+  const themePalette = resolveThemePalette(key);
+  const primary = keepPalette === "theme"
+    ? themePalette.accent
+    : (palette?.accent || currentPrefs.accentColor);
+  const secondary = keepPalette === "theme"
+    ? themePalette.secondary
+    : (palette?.secondary || current.accentSecondary);
   state.preferences = normalizeAppearance({
     ...preset,
     accentColor:primary,

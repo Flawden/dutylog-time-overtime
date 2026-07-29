@@ -19,7 +19,7 @@ class TodayDashboardFrontendContractTest {
         assertTrue(html.contains("data-view=\"today\" href=\"#today\""));
         assertTrue(html.contains("data-view=\"calendar\" href=\"#calendar\""));
         assertTrue(html.contains("id=\"view-today\""));
-        assertTrue(html.contains("js/35-today.js?v=27.18.2"));
+        assertTrue(html.contains("js/35-today.js?v=27.18.3"));
         assertTrue(boot.contains("const defaultRoute = \"#today\""));
         assertTrue(boot.contains("let active = VIEWS[name] ? name : \"today\""));
         assertFalse(boot.contains("dataset.shell === \"classic\""));

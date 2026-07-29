@@ -18,6 +18,11 @@
     "Компоновка":"Layout",
     "Цветовая палитра":"Color palette",
     "Дополнительный акцент":"Secondary accent",
+    "Цвета темы":"Theme colors",
+    "Изменено пользователем":"Customized",
+    "Готовая палитра":"Preset palette",
+    "Вернуть цвета темы":"Restore theme colors",
+    "Текущая тема снова станет источником основного и дополнительного акцента.":"The current theme will again provide the primary and secondary accents.",
     "Разделы вне основной навигации":"Sections outside primary navigation",
     "Единый интерфейс DutyLog":"Single DutyLog interface",
     "Classic завершён: все окружения, компоновки, темы и палитры работают поверх одного UI Core. Для аварийного отката используются проверенные Git/Docker-релизы, а не второй интерфейс внутри приложения.":"Classic has been retired: all workspaces, layouts, themes and palettes now run on one UI Core. Emergency recovery uses tested Git/Docker releases instead of a second in-app interface."
@@ -246,6 +251,20 @@
     return cfg;
   }
 
+  function renderPaletteState(prefs = state.preferences){
+    const cfg = configFrom(prefs);
+    const status = $("uiPaletteState");
+    if (!status) return;
+    const palette = palettes[cfg.paletteId] || palettes.theme;
+    const text = cfg.paletteId === "theme"
+      ? (state.language === "en" ? "Theme colors" : "Цвета темы")
+      : cfg.paletteId === "custom"
+        ? (state.language === "en" ? "Customized" : "Изменено пользователем")
+        : `${state.language === "en" ? "Preset palette" : "Готовая палитра"}: ${label(palette)}`;
+    status.dataset.paletteMode = cfg.paletteId === "theme" ? "theme" : (cfg.paletteId === "custom" ? "custom" : "preset");
+    status.innerHTML = `<span class="paletteModeDot" aria-hidden="true"></span><span>${esc(text)}</span>`;
+  }
+
   function renderControls(prefs = state.preferences){
     const cfg = configFrom(prefs);
     populateSelect("uiWorkspace", workspaces);
@@ -255,6 +274,7 @@
     if ($("uiLayout")) $("uiLayout").value = cfg.layoutId;
     if ($("uiPalette")) $("uiPalette").value = cfg.paletteId;
     if ($("uiAccentSecondary") && isHexColor(cfg.accentSecondary)) $("uiAccentSecondary").value = cfg.accentSecondary;
+    renderPaletteState(prefs);
     const workspace = workspaces[cfg.workspaceId] || workspaces["shift-worker"];
     const layout = layouts[cfg.layoutId] || layouts.dashboard;
     const status = $("uiPlatformStatus");
@@ -291,6 +311,7 @@
     selectPalette,
     apply,
     renderControls,
+    renderPaletteState,
     renderWorkspaceRoutes
   });
 

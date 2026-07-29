@@ -1,27 +1,29 @@
-> Current release: **v27.18.2 — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix**.
+> Current release: **v27.18.3 — UI Settings & Button Variants Quality Hotfix**.
 
 # DutyLog
 
-Current release: **v27.18.2 — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix**
+Current release: **v27.18.3 — UI Settings & Button Variants Quality Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.18.2 — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix
+## Текущая версия: v27.18.3 — UI Settings & Button Variants Quality Hotfix
 
-**v27.18.2** устраняет реальную рассинхронизацию Overtime Next и стабилизирует timezone E2E:
+**v27.18.3** стабилизирует источник цветов и визуальный контракт кнопок:
 
-- `account-page` отдаёт полный канонический список списаний вместе со сводкой и страницей начислений;
-- сводка, график, FIFO и responsive-журнал строятся из одного серверного snapshot;
-- график больше не показывает `−0 ч`, когда верхняя сводка уже показывает фактические `−4 ч`;
-- списания не восстанавливаются из paginated credit rows, где один отгул мог бы быть неполным или задвоенным;
-- `selectDate()` стал идемпотентным и не закрывает уже выбранный день;
-- timezone projection E2E повторно открывает точную дату назначения после обновления календаря.
+- «Палитра темы» теперь действительно восстанавливает основной и дополнительный акценты активной темы;
+- отдельная команда «Вернуть цвета темы» работает даже при уже выбранном значении и исправляет старые несогласованные snapshots;
+- смена готовой темы в режиме Theme palette применяет оба цвета новой темы, а custom/preset palette не сбрасывается при смене workspace или layout;
+- интерфейс различает «Цвета темы», «Готовая палитра» и «Изменено пользователем»;
+- Outline сохраняет постоянную рамку, Ghost не имеет видимой рамки/тени в покое и получает поверхность только при hover/active;
+- добавлены семантические состояния Solid, Soft, Outline, Ghost, Secondary, Danger, Link и Icon, включая disabled, busy, focus и mobile touch targets;
+- новый browser scenario проверяет reset, reload, смену темы, независимость workspace/layout и computed styles Ghost/Outline.
 
-API изменён аддитивно: в ответ `GET /api/overtime/account-page` добавлено поле `usages`. Схема данных не менялась; Flyway остаётся **V1–V36**. Автоматическая база: **96 Java-тестовых классов, 500 `@Test` методов и 26 Playwright browser scenarios**.
+Схема данных и domain API не менялись; Flyway остаётся **V1–V36**. Автоматическая база: **96 Java-тестовых классов, 500 `@Test` методов и 27 Playwright browser scenarios**.
 
 Предыдущие продуктовые релизы:
 
+- **v27.18.2 — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix** — синхронизировал usage snapshot и стабилизировал выбор дня;
 - **v27.18.1 — Overtime Next E2E Contract Hotfix** — выровнял responsive delete selectors и дневные/месячные chart keys;
 - **v27.18.0 — Overtime Next** — добавил balance-first сводку, периоды, тренд, FIFO-очередь, desktop-таблицу и мобильные карточки;
 - **v27.17.6 — Classic Sunset** — удалил второй пользовательский shell и оставил единый UI Core;
@@ -368,7 +370,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.18.2 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить единый `account-page` snapshot: сводка `+5 / −4 / +1`, месячный и дневной график, FIFO, desktop-таблицу и мобильные карточки. После этого идёт **v27.18.3 — UI Settings & Button Variants Quality Hotfix**, затем **v27.19.0 — Tasks & Inbox Next**.
+Следующий практический шаг — пропустить v27.18.3 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить три состояния палитры (`Theme / Preset / Custom`), явный сброс к цветам темы, reload и визуальную разницу Outline/Ghost во всех встроенных темах. Следующий продуктовый этап — **v27.19.0 — Tasks & Inbox Next**.
 
 ## Служебный профиль администратора
 

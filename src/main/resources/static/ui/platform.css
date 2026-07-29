@@ -1,4 +1,4 @@
-/* DutyLog UI platform: workspace/layout contracts — v27.18.2, UI Core v1.
+/* DutyLog UI platform: workspace/layout contracts — v27.18.3, UI Core v1.
  * This file is intentionally loaded last. Every rule is scoped to a UI
  * platform attribute or component class so presets cannot leak into each other.
  */
@@ -84,4 +84,155 @@ html[data-ui-layout="focus"][data-shell="next"] .todayQuickActions { grid-templa
 @media (max-width:520px) {
   .uiPlatformGrid { grid-template-columns:1fr; }
   html[data-ui-layout="focus"][data-shell="next"] .todayQuickActions { grid-template-columns:1fr 1fr; }
+}
+
+/* Palette source and explicit theme reset — v27.18.3. */
+.paletteControlBar {
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  margin-top:12px;
+  padding-top:12px;
+  border-top:1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
+}
+.paletteModeStatus {
+  display:inline-flex;
+  align-items:center;
+  gap:7px;
+  min-height:34px;
+  color:var(--color-text-secondary);
+  font-size:12px;
+}
+.paletteModeDot {
+  width:9px;
+  height:9px;
+  border-radius:999px;
+  background:var(--color-accent);
+  box-shadow:0 0 0 4px color-mix(in srgb, var(--color-accent) 13%, transparent);
+}
+.paletteModeStatus[data-palette-mode="custom"] .paletteModeDot { background:var(--color-warning); }
+.paletteModeStatus[data-palette-mode="preset"] .paletteModeDot { background:var(--color-accent-secondary); }
+#paletteThemeReset { min-height:38px; }
+
+/* Primary style presets. Ghost preserves the control box with a transparent
+ * border, so layout does not move while the border remains visually absent. */
+html[data-shell="next"][data-button-style="solid"] :is(button.primary, button.apply, button.addSmall, .mgr button.add, .tplBox button.apply) {
+  background:var(--button-solid-bg);
+  color:var(--button-solid-text);
+  border:1px solid var(--button-solid-border);
+  box-shadow:var(--button-solid-shadow);
+}
+html[data-shell="next"][data-button-style="soft"] :is(button.primary, button.apply, button.addSmall, .mgr button.add, .tplBox button.apply) {
+  background:var(--button-soft-bg);
+  color:var(--button-soft-text);
+  border:1px solid var(--button-soft-border);
+  box-shadow:none;
+}
+html[data-shell="next"][data-button-style="soft"] :is(button.primary, button.apply, button.addSmall, .mgr button.add, .tplBox button.apply):not(:disabled):hover {
+  background:var(--button-soft-hover-bg);
+}
+html[data-shell="next"][data-button-style="outline"] :is(button.primary, button.apply, button.addSmall, .mgr button.add, .tplBox button.apply) {
+  background:var(--button-outline-bg);
+  color:var(--button-outline-text);
+  border:1px solid var(--button-outline-border);
+  box-shadow:none;
+}
+html[data-shell="next"][data-button-style="outline"] :is(button.primary, button.apply, button.addSmall, .mgr button.add, .tplBox button.apply):not(:disabled):hover {
+  background:var(--button-outline-hover-bg);
+  border-color:var(--color-accent);
+}
+html[data-shell="next"][data-button-style="ghost"] :is(button.primary, button.apply, button.addSmall, .mgr button.add, .tplBox button.apply) {
+  background:var(--button-ghost-bg);
+  color:var(--button-ghost-text);
+  border:1px solid var(--button-ghost-border);
+  box-shadow:none;
+}
+html[data-shell="next"][data-button-style="ghost"] :is(button.primary, button.apply, button.addSmall, .mgr button.add, .tplBox button.apply):not(:disabled):hover {
+  background:var(--button-ghost-hover-bg);
+  border-color:transparent;
+}
+html[data-shell="next"][data-button-style="ghost"] :is(button.primary, button.apply, button.addSmall, .mgr button.add, .tplBox button.apply):not(:disabled):active {
+  background:var(--button-ghost-active-bg);
+}
+
+/* Reusable semantic button variants used by previews and new UI Core screens. */
+html[data-shell="next"] :is(.buttonSecondary,.buttonOutline,.buttonGhost,.buttonDanger,.buttonLink,.buttonIcon) {
+  min-height:38px;
+  border-radius:var(--radius-control);
+  cursor:pointer;
+}
+html[data-shell="next"] .buttonSecondary {
+  background:var(--button-secondary-bg);
+  color:var(--button-secondary-text);
+  border:1px solid var(--button-secondary-border);
+}
+html[data-shell="next"] .buttonSecondary:not(:disabled):hover { background:var(--button-secondary-hover-bg); }
+html[data-shell="next"] .buttonOutline {
+  background:var(--button-outline-bg);
+  color:var(--button-outline-text);
+  border:1px solid var(--button-outline-border);
+  box-shadow:none;
+}
+html[data-shell="next"] .buttonOutline:not(:disabled):hover { background:var(--button-outline-hover-bg); }
+html[data-shell="next"] .buttonGhost,
+html[data-shell="next"] button.dangerGhost {
+  background:var(--button-ghost-bg);
+  border:1px solid var(--button-ghost-border);
+  box-shadow:none;
+}
+html[data-shell="next"] .buttonGhost { color:var(--button-ghost-text); }
+html[data-shell="next"] .buttonGhost:not(:disabled):hover { background:var(--button-ghost-hover-bg); border-color:transparent; }
+html[data-shell="next"] button.dangerGhost:not(:disabled):hover { background:color-mix(in srgb, var(--color-danger) 13%, transparent); border-color:transparent; }
+html[data-shell="next"] .buttonDanger {
+  background:var(--button-danger-bg);
+  color:var(--button-danger-text);
+  border:1px solid var(--button-danger-border);
+}
+html[data-shell="next"] .buttonDanger:not(:disabled):hover { background:var(--button-danger-hover-bg); }
+html[data-shell="next"] .buttonLink {
+  min-height:32px;
+  padding-inline:3px;
+  background:transparent;
+  color:var(--color-accent);
+  border:1px solid transparent;
+  text-decoration:underline;
+  text-decoration-color:color-mix(in srgb, var(--color-accent) 45%, transparent);
+  text-underline-offset:3px;
+  box-shadow:none;
+}
+html[data-shell="next"] .buttonLink:not(:disabled):hover { text-decoration-color:currentColor; }
+html[data-shell="next"] .buttonIcon {
+  width:40px;
+  min-width:40px;
+  padding:0;
+  display:inline-grid;
+  place-items:center;
+  background:var(--button-secondary-bg);
+  color:var(--button-secondary-text);
+  border:1px solid var(--button-secondary-border);
+}
+html[data-shell="next"] button:disabled,
+html[data-shell="next"] button[aria-disabled="true"] {
+  opacity:.48;
+  cursor:not-allowed;
+  transform:none !important;
+  box-shadow:none;
+}
+html[data-shell="next"] button[aria-busy="true"] { cursor:wait; }
+.themePreviewVariantTitle {
+  margin:12px 0 7px;
+  color:var(--color-text-secondary);
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+}
+.buttonVariantPreview { align-items:center; }
+.buttonVariantPreview button { min-height:36px; }
+
+@media (max-width:520px) {
+  .paletteControlBar { align-items:stretch; flex-direction:column; }
+  #paletteThemeReset { width:100%; min-height:44px; }
+  html[data-shell="next"] :is(.buttonSecondary,.buttonOutline,.buttonGhost,.buttonDanger,.buttonIcon) { min-height:44px; }
 }

@@ -1,8 +1,8 @@
-# DutyLog API v27.18.2
+# DutyLog API v27.18.3
 
 Проект: **DutyLog: Time & Overtime**.
 
-Текущий v27.18.2 аддитивно расширяет `GET /api/overtime/account-page`: ответ теперь включает полный канонический массив `usages`, чтобы summary, paged ledger, FIFO и chart использовали один snapshot.
+Текущий v27.18.3 не меняет domain API: релиз исправляет источник цветов Theme palette и семантические button variants. Аддитивный `usages` snapshot в `GET /api/overtime/account-page`, добавленный в v27.18.2, сохраняется без изменений.
 
 Веб-версия работает через `JSESSIONID`, Android/PWA-клиенты могут использовать `Authorization: Bearer <accessToken>`. Старые endpoint'ы сохранены, поверх них добавлен mobile-слой.
 

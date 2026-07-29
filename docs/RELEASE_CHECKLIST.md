@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.18.2.
+Status: v27.18.3.
 
 ## Local gate
 
@@ -25,6 +25,11 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - verify Shift Worker / Planner / Minimal navigation and hidden-route links;
 - verify Dashboard / Compact / Focus on desktop and mobile;
 - verify theme + palette independence and automatic persistence after reload;
+- verify custom accent → Theme palette restores both theme accents without switching themes;
+- verify «Вернуть цвета темы» also works while the select already says Theme palette;
+- verify Theme / Preset / Custom palette status and reload persistence;
+- verify Outline keeps a visible border while Ghost has no visible idle border/shadow and gains a hover surface;
+- verify Secondary / Danger / Link / Icon preview variants, disabled state, keyboard focus and phone touch targets;
 - verify no Classic selector remains and `shellMode=classic` from an old local cache still boots the single shell;
 - verify Appearance remains open after reload and workspace/layout/palette persist;
 - verify Overtime Next summary, Month/Year/All-time presets, daily/monthly chart keys and FIFO queue;
@@ -58,6 +63,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.18.2 -m "v27.18.2 — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix"
-git push origin v27.18.2
+git tag -a v27.18.3 -m "v27.18.3 — UI Settings & Button Variants Quality Hotfix"
+git push origin v27.18.3
 ```

@@ -506,9 +506,12 @@ $('appearanceAccent')?.addEventListener('input', () => {
 $('uiWorkspace')?.addEventListener('change', () => { updateUiPlatformAndPreview(); scheduleAppearanceAutoSave(); });
 $('uiLayout')?.addEventListener('change', () => { updateUiPlatformAndPreview(); scheduleAppearanceAutoSave(); });
 $('uiPalette')?.addEventListener('change', e => {
-  window.DutyLogUI?.selectPalette?.(e.target.value);
-  updateUiPlatformAndPreview();
+  applyPaletteMode(e.target.value);
   scheduleAppearanceAutoSave();
+});
+$('paletteThemeReset')?.addEventListener('click', () => {
+  restoreThemePalette();
+  scheduleAppearanceAutoSave(0);
 });
 $('uiAccentSecondary')?.addEventListener('input', () => {
   if ($('uiPalette')) $('uiPalette').value = 'custom';

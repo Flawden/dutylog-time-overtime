@@ -21,3 +21,41 @@
   --motion-fast: 120ms;
   --motion-normal: 220ms;
 }
+
+/* Button variant contract — v27.18.3. These semantic tokens keep theme packages
+ * independent from component behavior and make Outline/Ghost visually distinct.
+ */
+:root {
+  --button-solid-bg: linear-gradient(135deg, color-mix(in srgb, var(--color-accent) 92%, #fff 8%), color-mix(in srgb, var(--color-accent) 78%, #a66f00));
+  --button-solid-text: #11151A;
+  --button-solid-border: color-mix(in srgb, var(--color-accent) 72%, #fff 8%);
+  --button-solid-shadow: 0 8px 22px color-mix(in srgb, var(--color-accent) 15%, transparent), inset 0 1px 0 rgba(255,255,255,.22);
+  --button-soft-bg: color-mix(in srgb, var(--color-accent) 20%, var(--color-surface));
+  --button-soft-hover-bg: color-mix(in srgb, var(--color-accent) 28%, var(--color-surface));
+  --button-soft-text: var(--color-text-primary);
+  --button-soft-border: color-mix(in srgb, var(--color-accent) 48%, var(--color-border));
+  --button-accent-text: var(--color-accent);
+  --button-outline-bg: transparent;
+  --button-outline-hover-bg: color-mix(in srgb, var(--color-accent) 10%, transparent);
+  --button-outline-text: var(--button-accent-text);
+  --button-outline-border: color-mix(in srgb, var(--color-accent) 82%, var(--color-border));
+  --button-ghost-bg: transparent;
+  --button-ghost-hover-bg: color-mix(in srgb, var(--color-accent) 13%, transparent);
+  --button-ghost-active-bg: color-mix(in srgb, var(--color-accent) 20%, transparent);
+  --button-ghost-text: var(--button-accent-text);
+  --button-ghost-border: transparent;
+  --button-secondary-bg: color-mix(in srgb, var(--color-surface-elevated) 82%, var(--color-surface));
+  --button-secondary-hover-bg: color-mix(in srgb, var(--color-surface-elevated) 62%, var(--color-accent) 10%);
+  --button-secondary-text: var(--color-text-primary);
+  --button-secondary-border: var(--color-border);
+  --button-danger-bg: color-mix(in srgb, var(--color-danger) 18%, var(--color-surface));
+  --button-danger-hover-bg: color-mix(in srgb, var(--color-danger) 27%, var(--color-surface));
+  --button-danger-text: color-mix(in srgb, var(--color-danger) 80%, #fff 20%);
+  --button-danger-border: color-mix(in srgb, var(--color-danger) 58%, var(--color-border));
+}
+
+/* Light surfaces keep accent geometry but use the theme's readable primary text
+ * for borderless/outline labels. */
+html[data-theme="light"] {
+  --button-accent-text: var(--color-text-primary);
+}

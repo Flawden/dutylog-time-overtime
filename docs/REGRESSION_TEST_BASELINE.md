@@ -1,15 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.18.2.
+Status: v27.18.3.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.18.2 synchronizes the Overtime Next usage snapshot across summary, paged ledger and chart, and makes calendar date selection idempotent for timezone projection E2E. Current application baseline remains 96 Java test classes / 500 `@Test` methods and 26 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.18.3 restores active theme colors explicitly, separates Ghost from Outline at the semantic token/computed-style level, and protects palette persistence across reload/workspace/layout changes. Current application baseline remains 96 Java test classes / 500 `@Test` methods and grows to 27 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+## v27.18.3 UI Settings & Button Variants Quality extension
+
+- `appearance-quality.spec.js` covers custom accent → Theme palette reset, explicit same-value reset, reload and built-in theme switching.
+- The scenario preserves a custom palette while workspace/layout change and compares computed Outline/Ghost border, shadow and hover behavior.
+- `UiCoreWorkspaceFrontendContractTest` protects reset controls, semantic button tokens and separate Ghost/Outline CSS contracts.
+- Baseline remains 96 Java classes / 500 `@Test` methods and grows to 27 Playwright scenarios.
+- No Flyway or domain API change is added.
 
 
 ## v27.18.2 Overtime Snapshot Sync & Timezone E2E Stabilization extension

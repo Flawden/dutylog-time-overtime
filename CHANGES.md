@@ -1,3 +1,14 @@
+# v27.18.3 — UI Settings & Button Variants Quality Hotfix
+
+- Turned Theme palette into an executable source mode: selecting it restores both accents from the active theme instead of leaving stale custom overrides in place.
+- Added an explicit Restore theme colors action that works even when the palette select already says Theme palette, covering legacy/inconsistent saved snapshots.
+- Added theme-owned secondary accents and made built-in theme changes refresh both colors only while Theme palette is active; preset/custom palettes remain independent across workspace and layout changes.
+- Added visible palette-source states for Theme colors, Preset palette and Customized, reusing the revisioned serialized appearance autosave queue.
+- Split Outline and Ghost button contracts: Outline keeps a persistent accent border, while Ghost has no visible idle border or shadow and reveals its surface only on hover/active.
+- Added semantic Solid, Soft, Outline, Ghost, Secondary, Danger, Link and Icon tokens/states, including disabled, busy, focus and mobile touch-target behavior.
+- Added a live seven-variant button preview, static frontend contracts and a browser regression covering palette reset, reload, theme switching, workspace/layout independence and computed Ghost/Outline styles.
+- No schema or domain API change; Flyway remains V36. Regression baseline remains 96 Java test classes and 500 `@Test` methods, and grows to 27 Playwright scenarios.
+
 # v27.18.2 — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix
 
 - Extended `GET /api/overtime/account-page` with the canonical full `usages` snapshot so the summary, paged ledger, FIFO details and chart are rendered from one coherent server projection.

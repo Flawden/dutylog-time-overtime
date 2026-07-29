@@ -1,27 +1,27 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.18.2 — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix**.
+Current release: **v27.18.3 — UI Settings & Button Variants Quality Hotfix**.
 
-## Текущая продуктовая точка — Overtime Next после snapshot sync hotfix
+## Текущая продуктовая точка — UI settings и button variant contracts
 
-Статус: **v27.18.2** делает `account-page` единым snapshot-контрактом для сводки, paged ledger и полного списка usages, а также устраняет flaky toggle выбранного дня в timezone E2E.
+Статус: **v27.18.3** превращает Theme palette в реальный источник цветов и разводит Outline/Ghost на уровне семантических токенов и computed UI behavior.
 
 Сделано к текущей точке:
 
-- крупная balance-first сводка: доступно, начислено, использовано и доля списания;
-- видимый следующий FIFO-остаток и очередь открытых начислений;
-- быстрые периоды «Месяц / Год / Всё время» и произвольный диапазон;
-- динамика начислений/списаний по дням или месяцам;
-- карточный мобильный журнал вместо сжатой широкой таблицы;
-- профессиональная desktop-таблица сохранена;
-- summary, chart, FIFO и responsive ledger используют единый canonical usage snapshot;
-- `selectDate()` идемпотентен, timezone projection E2E повторно открывает точную дату;
-- сохранены точные интервалы, timezone-проекция, provenance списаний, legacy migration и CSV/Excel export;
+- явный reset основного и дополнительного акцента к активной теме;
+- reset работает при уже выбранном `paletteId=theme` и исправляет legacy inconsistent snapshots;
+- Theme / Preset / Custom palette имеют видимое состояние;
+- смена готовой темы обновляет оба theme accents, custom/preset palette сохраняются при смене workspace/layout;
+- Solid / Soft / Outline / Ghost имеют разные контракты;
+- Secondary / Danger / Link / Icon подготовлены как повторно используемые UI Core variants;
+- disabled, busy, focus-visible и mobile touch targets входят в общий контракт;
+- live preview показывает семь вариантов кнопок;
+- Overtime Next использует coherent usage snapshot;
 - единый UI Core, workspaces, layouts, темы и палитры;
 - Classic удалён, rollback выполняется через Git/immutable Docker image;
-- Flyway V1–V36, Java 17, 96 Java test classes / 500 tests / 26 Playwright scenarios.
+- Flyway V1–V36, Java 17, 96 Java test classes / 500 tests / 27 Playwright scenarios.
 
-Ближайший quality-релиз: **v27.18.3 — UI Settings & Button Variants Quality Hotfix**. Следующий продуктовый этап: **v27.19.0 — Tasks & Inbox Next**.
+Следующий продуктовый этап: **v27.19.0 — Tasks & Inbox Next**.
 
 Цель этапа:
 

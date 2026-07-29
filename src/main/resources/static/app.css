@@ -1122,7 +1122,16 @@ body.offline #telegramBox::before{content:"Telegram-интеграция нас�
 :root[data-button-style="ghost"] .appearanceActions button.primary {
   background:transparent;
   color:var(--accent);
-  border:1px dashed color-mix(in srgb, var(--accent) 65%, var(--line));
+  border:1px solid transparent;
+  box-shadow:none;
+}
+:root[data-button-style="ghost"] button.primary:not(:disabled):hover,
+:root[data-button-style="ghost"] .primary:not(:disabled):hover,
+:root[data-button-style="ghost"] .mgr .add:not(:disabled):hover,
+:root[data-button-style="ghost"] .tplBox .apply:not(:disabled):hover,
+:root[data-button-style="ghost"] .appearanceActions button.primary:not(:disabled):hover {
+  background:color-mix(in srgb, var(--accent) 13%, transparent);
+  border-color:transparent;
 }
 
 .themeBuilder { display:grid; grid-template-columns:minmax(0,1fr) minmax(240px,320px); gap:14px; align-items:start; margin-top:10px; }
