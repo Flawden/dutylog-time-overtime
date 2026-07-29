@@ -1,10 +1,10 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.19.2 — Frontend Asset Contract Stability Hotfix**.
+Current release: **v27.19.3 — Task Deadline Validation E2E Contract Hotfix**.
 
 ## Текущая продуктовая точка — Tasks & Inbox Next
 
-Статус: **v27.19.2** стабилизирует frontend asset contracts поверх v27.19.1, сохраняя Tasks & Inbox Next и совместимость диапазонов доски.
+Статус: **v27.19.3** синхронизирует planned-deadline E2E-контракт поверх v27.19.2, сохраняя Tasks & Inbox Next, asset contract stability и совместимость диапазонов доски.
 
 Сделано к текущей точке:
 
@@ -215,5 +215,6 @@ API уже достаточно стабилен для первого Android-�
 - `v27.19.0` — Tasks & Inbox Next.
 - `v27.19.1` — Task Board Date Range Compatibility Hotfix.
 - `v27.19.2` — Frontend Asset Contract Stability Hotfix.
+- `v27.19.3` — Task Deadline Validation E2E Contract Hotfix.
 - `v27.19.0` — Tasks & Inbox Next, including independent planned task intervals (`start → end`), duration, deadlines and timeline cards.
 - `v27.20.0` — Notes & Important Events Next, including all-day/timed/multi-day events, place, description, reminders and read-first event cards.

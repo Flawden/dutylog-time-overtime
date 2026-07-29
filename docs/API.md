@@ -1,8 +1,8 @@
-# DutyLog API v27.19.2
+# DutyLog API v27.19.3
 
 Проект: **DutyLog: Time & Overtime**.
 
-v27.19.0 аддитивно расширил Tasks API проектами и каноническими planned intervals. v27.19.1 восстановил прежнюю семантику `from` / `to` на доске и добавил отдельные `scheduledFrom` / `scheduledTo` для планового диапазона. v27.19.2 меняет только frontend asset contracts и release gates; HTTP API и схема данных остаются без изменений. Старые клиенты могут продолжать отправлять только `date`; такие задачи остаются all-day. Flyway V37 сохраняет обратную совместимость существующих данных.
+v27.19.0 аддитивно расширил Tasks API проектами и каноническими planned intervals. v27.19.1 восстановил прежнюю семантику `from` / `to` на доске и добавил отдельные `scheduledFrom` / `scheduledTo` для планового диапазона. v27.19.2 стабилизировал frontend asset contracts, а v27.19.3 синхронизирует только Playwright-ожидание planned-deadline validation; HTTP API и схема данных остаются без изменений. Старые клиенты могут продолжать отправлять только `date`; такие задачи остаются all-day. Flyway V37 сохраняет обратную совместимость существующих данных.
 
 Веб-версия работает через `JSESSIONID`, Android/PWA-клиенты могут использовать `Authorization: Bearer <accessToken>`. Старые endpoint'ы сохранены, поверх них добавлен mobile-слой.
 

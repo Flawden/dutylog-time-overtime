@@ -1,23 +1,33 @@
-> Current release: **v27.19.2 — Frontend Asset Contract Stability Hotfix**.
+> Current release: **v27.19.3 — Task Deadline Validation E2E Contract Hotfix**.
 
 # DutyLog
 
-Current release: **v27.19.2 — Frontend Asset Contract Stability Hotfix**
+Current release: **v27.19.3 — Task Deadline Validation E2E Contract Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.19.2 — Frontend Asset Contract Stability Hotfix
+## Текущая версия: v27.19.3 — Task Deadline Validation E2E Contract Hotfix
 
-**v27.19.2** стабилизирует статические frontend-контракты после cache-busting обновлений:
+**v27.19.3** синхронизирует единственное устаревшее Playwright-ожидание с действующим контрактом Tasks & Inbox Next:
+
+- timed-задача с плановым интервалом показывает точную ошибку «Дедлайн не может быть раньше окончания запланированного интервала.»;
+- E2E больше не ожидает старое сообщение, предназначенное для all-day/date fallback;
+- production-валидация, Tasks API и данные не менялись;
+- `release-check.sh` теперь защищает точный planned-interval E2E-контракт;
+- полный предыдущий прогон уже подтвердил 27 из 28 browser scenarios, а единственное падение было детерминированным текстовым mismatch.
+
+Схема остаётся на **Flyway V37**. Автоматическая база: **97 Java-тестовых классов, 507 `@Test` методов и 28 Playwright browser scenarios**.
+
+### Предыдущий hotfix: v27.19.2 — Frontend Asset Contract Stability Hotfix
+
+**v27.19.2** стабилизировал статические frontend-контракты после cache-busting обновлений:
 
 - Today, UI Core, Calendar Experience и Design System по-прежнему проверяют точные имена ассетов и порядок загрузки;
 - тесты больше не зашивают конкретный номер релиза в `?v=...`;
 - `release-check.sh` отклоняет новые hardcoded semantic versions в `*FrontendContractTest.java`;
-- runtime-ассеты, Service Worker, backend metadata и smoke-проверки остаются строго привязаны к `27.19.2`;
+- runtime-ассеты, Service Worker, backend metadata и smoke-проверки строго привязаны к версии релиза;
 - API, бизнес-логика задач и схема данных не менялись.
-
-Схема остаётся на **Flyway V37**. Автоматическая база: **97 Java-тестовых классов, 507 `@Test` методов и 28 Playwright browser scenarios**.
 
 ### Предыдущий hotfix: v27.19.1 — Task Board Date Range Compatibility Hotfix
 
@@ -395,7 +405,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.19.2 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить all-day, point, interval, overnight, project filter, Inbox search и timezone reprojection. Следующий продуктовый этап — **v27.20.0 — Notes & Important Events Next**.
+Следующий практический шаг — пропустить v27.19.3 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить all-day, point, interval, overnight, project filter, Inbox search и timezone reprojection. Следующий продуктовый этап — **v27.20.0 — Notes & Important Events Next**.
 
 ## Служебный профиль администратора
 

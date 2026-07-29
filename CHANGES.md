@@ -1,3 +1,11 @@
+# v27.19.3 — Task Deadline Validation E2E Contract Hotfix
+
+- Updated the single stale Playwright deadline-validation assertion to match the planned-interval contract introduced by Tasks & Inbox Next.
+- Kept the more precise runtime validation message for timed tasks: a deadline cannot precede the planned interval end.
+- Preserved the legacy all-day/date fallback message and its Java service/controller coverage.
+- Added a release gate assertion for the planned-interval E2E message so this contract cannot silently drift again.
+- No runtime behavior, API or schema changes; Flyway remains V37 and the regression baseline remains 97 Java test classes, 507 `@Test` methods and 28 Playwright scenarios.
+
 # v27.19.2 — Frontend Asset Contract Stability Hotfix
 
 - Replaced release-number-specific frontend asset assertions with version-neutral `?v=` contract checks while retaining exact bundle names and load-order guarantees.

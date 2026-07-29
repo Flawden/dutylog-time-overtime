@@ -161,7 +161,7 @@ test('task polish validates deadlines, persists subtask dates and keeps complete
   await page.locator('#taskEditAdvanced').evaluate(element => { element.open = true; });
   await page.locator('#taskEditDueDate').fill(previousDate);
   await page.locator('#taskEditSave').click();
-  await expect(page.locator('#taskEditMessage')).toHaveText('Срок не может быть раньше времени задачи.');
+  await expect(page.locator('#taskEditMessage')).toHaveText('Дедлайн не может быть раньше окончания запланированного интервала.');
   await expect(page.locator('#taskEditModal')).toBeVisible();
 
   await page.locator('#taskEditDueDate').fill(date);

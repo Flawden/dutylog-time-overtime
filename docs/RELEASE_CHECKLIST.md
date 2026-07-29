@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.19.2.
+Status: v27.19.3.
 
 ## Local gate
 
@@ -23,6 +23,7 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - verify calendar, notes export, tasks, overtime, modules, admin and Android API v1;
 - create all-day, point, same-day and overnight task plans and verify the hourly timeline uses exact duration;
 - verify a deadline before planned end is rejected while a later deadline/reminder stays independent;
+- verify the timed-task editor reports «Дедлайн не может быть раньше окончания запланированного интервала.» and keeps the modal open;
 - change canonical timezone and confirm timed planning keeps source provenance while all-day dates stay floating;
 - verify project suggestions/chips/filter/search and Inbox search across open/archived/local queued entries;
 - verify `/api/tasks/board?from=...&to=...` still filters by deadline/date for older clients;
@@ -70,6 +71,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.19.2 -m "v27.19.2 — Frontend Asset Contract Stability Hotfix"
-git push origin v27.19.2
+git tag -a v27.19.3 -m "v27.19.3 — Task Deadline Validation E2E Contract Hotfix"
+git push origin v27.19.3
 ```
