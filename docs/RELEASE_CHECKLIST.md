@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.19.0.
+Status: v27.19.1.
 
 ## Local gate
 
@@ -25,6 +25,9 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - verify a deadline before planned end is rejected while a later deadline/reminder stays independent;
 - change canonical timezone and confirm timed planning keeps source provenance while all-day dates stay floating;
 - verify project suggestions/chips/filter/search and Inbox search across open/archived/local queued entries;
+- verify `/api/tasks/board?from=...&to=...` still filters by deadline/date for older clients;
+- verify `/api/tasks/board?scheduledFrom=...&scheduledTo=...` filters by planned overlap, including overnight intervals;
+- verify the Web/PWA board date fields and «этот месяц» use the planned-range contract;
 - verify `/actuator/info` shows staging, commit and build metadata;
 - verify Shift Worker / Planner / Minimal navigation and hidden-route links;
 - verify Dashboard / Compact / Focus on desktop and mobile;
@@ -67,6 +70,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.19.0 -m "v27.19.0 — Tasks & Inbox Next"
-git push origin v27.19.0
+git tag -a v27.19.1 -m "v27.19.1 — Task Board Date Range Compatibility Hotfix"
+git push origin v27.19.1
 ```

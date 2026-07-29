@@ -1,13 +1,21 @@
 # DutyLog regression test baseline
 
-Status: v27.19.0.
+Status: v27.19.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.19.0 separates planned task intervals from deadlines, adds project metadata/search/filtering and a searchable Inbox, and places exact timed/overnight segments on the hourly calendar. Current application baseline is 97 Java test classes / 507 `@Test` methods / 28 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.19.1 preserves the legacy deadline/date board range while exposing explicit planned-range filters on top of v27.19.0 Tasks & Inbox Next. Current application baseline is 97 Java test classes / 507 `@Test` methods / 28 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+
+## v27.19.1 Task Board Date Range Compatibility Hotfix extension
+
+- `TaskServiceTest` keeps the legacy `from` / `to` deadline-or-date behavior and proves `scheduledFrom` / `scheduledTo` intersect overnight planning.
+- `TaskControllerTest` protects both public query contracts on `/api/tasks/board`.
+- `TasksInboxNextFrontendContractTest` ensures Web/PWA date fields send planned-range parameters instead of silently changing the old API meaning.
+- Baseline remains 97 Java classes / 507 `@Test` methods / 28 Playwright scenarios; Flyway remains V37.
 
 
 ## v27.19.0 Tasks & Inbox Next extension

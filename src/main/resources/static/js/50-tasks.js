@@ -1558,8 +1558,8 @@ async function loadTaskBoard(silent = true){
       project:filters.project !== "all" ? filters.project : "",
       priority:filters.priority !== "all" ? filters.priority : "",
       q:filters.q || "",
-      from:filters.from || "",
-      to:filters.to || "",
+      scheduledFrom:filters.from || "",
+      scheduledTo:filters.to || "",
       page:page.page || 0,
       size:page.size || 50,
     };

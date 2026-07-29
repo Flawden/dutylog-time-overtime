@@ -77,12 +77,15 @@ public class TaskController {
                                   @RequestParam(name = "q", required = false) String q,
                                   @RequestParam(name = "from", required = false) String from,
                                   @RequestParam(name = "to", required = false) String to,
+                                  @RequestParam(name = "scheduledFrom", required = false) String scheduledFrom,
+                                  @RequestParam(name = "scheduledTo", required = false) String scheduledTo,
                                   @RequestParam(name = "page", required = false, defaultValue = "0") int page,
                                   @RequestParam(name = "size", required = false, defaultValue = "50") int size,
                                   Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         moduleService.requireEnabled(current, ModuleService.TASKS);
-        return taskService.listBoard(current, status, category, project, priority, q, from, to, page, size);
+        return taskService.listBoard(current, status, category, project, priority, q,
+                from, to, scheduledFrom, scheduledTo, page, size);
     }
 
     @PostMapping

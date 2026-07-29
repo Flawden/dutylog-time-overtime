@@ -1,13 +1,26 @@
-> Current release: **v27.19.0 — Tasks & Inbox Next**.
+> Current release: **v27.19.1 — Task Board Date Range Compatibility Hotfix**.
 
 # DutyLog
 
-Current release: **v27.19.0 — Tasks & Inbox Next**
+Current release: **v27.19.1 — Task Board Date Range Compatibility Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.19.0 — Tasks & Inbox Next
+## Текущая версия: v27.19.1 — Task Board Date Range Compatibility Hotfix
+
+**v27.19.1** сохраняет обратную совместимость фильтров доски задач и отделяет её от нового планового диапазона:
+
+- `from` / `to` снова фильтруют по дедлайну, а без дедлайна — по дате задачи;
+- `scheduledFrom` / `scheduledTo` фильтруют по пересечению запланированного интервала;
+- экран задач использует плановый диапазон для полей дат и пресета «этот месяц»;
+- старые Web/API/mobile-вызовы не меняют смысл после обновления;
+- overnight-интервалы попадают в каждый пересекаемый плановый день.
+
+Схема остаётся на **Flyway V37**. Автоматическая база: **97 Java-тестовых классов, 507 `@Test` методов и 28 Playwright browser scenarios**.
+
+### Базовый продуктовый релиз: v27.19.0 — Tasks & Inbox Next
+
 
 **v27.19.0** превращает задачи из списка сроков в полноценный план дня:
 
@@ -372,7 +385,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.19.0 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить all-day, point, interval, overnight, project filter, Inbox search и timezone reprojection. Следующий продуктовый этап — **v27.20.0 — Notes & Important Events Next**.
+Следующий практический шаг — пропустить v27.19.1 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить all-day, point, interval, overnight, project filter, Inbox search и timezone reprojection. Следующий продуктовый этап — **v27.20.0 — Notes & Important Events Next**.
 
 ## Служебный профиль администратора
 

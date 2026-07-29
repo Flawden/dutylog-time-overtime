@@ -1,8 +1,8 @@
-# DutyLog API v27.19.0
+# DutyLog API v27.19.1
 
 Проект: **DutyLog: Time & Overtime**.
 
-v27.19.0 аддитивно расширяет Tasks API проектами и каноническими planned intervals. Старые клиенты могут продолжать отправлять только `date`; такие задачи остаются all-day. Flyway V37 сохраняет обратную совместимость существующих данных.
+v27.19.0 аддитивно расширил Tasks API проектами и каноническими planned intervals. v27.19.1 восстанавливает прежнюю семантику `from` / `to` на доске и добавляет отдельные `scheduledFrom` / `scheduledTo` для планового диапазона. Старые клиенты могут продолжать отправлять только `date`; такие задачи остаются all-day. Flyway V37 сохраняет обратную совместимость существующих данных.
 
 Веб-версия работает через `JSESSIONID`, Android/PWA-клиенты могут использовать `Authorization: Bearer <accessToken>`. Старые endpoint'ы сохранены, поверх них добавлен mobile-слой.
 
@@ -1157,7 +1157,10 @@ GET /api/notifications/upcoming?from=2026-07-01&to=2026-07-31&includePast=true
 - `category`: фильтр по категории, опционально;
 - `priority`: `LOW`, `NORMAL`, `HIGH`, `URGENT`, опционально;
 - `q`: поиск по заголовку, описанию, категории, тегам, дате и приоритету;
-- `from`, `to`: период в формате `yyyy-MM-dd`. Для фильтра используется срок задачи, а если срока нет — дата задачи.
+- `from`, `to`: совместимый период в формате `yyyy-MM-dd`; используется срок задачи, а если срока нет — дата задачи;
+- `scheduledFrom`, `scheduledTo`: плановый период в формате `yyyy-MM-dd`; задача включается при пересечении её all-day/point/interval плана с диапазоном.
+
+Обе пары можно комбинировать: сначала применяется дедлайнный/датный диапазон, затем плановый.
 
 Примеры:
 
@@ -1166,6 +1169,7 @@ GET /api/tasks/board?status=open
 GET /api/tasks/board?status=overdue
 GET /api/tasks/board?category=здоровье&priority=HIGH
 GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
+GET /api/tasks/board?scheduledFrom=2026-07-01&scheduledTo=2026-07-31
 ```
 
 Ответ: массив `TaskDto`.
@@ -1310,7 +1314,7 @@ Admin reset requires at least 12 characters and revokes mobile tokens for the ta
 Large UI lists are paged server-side before being returned to the browser. Supported query params:
 
 - `GET /api/admin/users?page=0&size=50&q=&role=all` — admin users page.
-- `GET /api/tasks/board?page=0&size=50&status=open&category=&priority=&q=&from=&to=` — global task board page.
+- `GET /api/tasks/board?page=0&size=50&status=open&category=&priority=&q=&from=&to=&scheduledFrom=&scheduledTo=` — global task board page.
 - `GET /api/overtime/account-page?page=0&size=50&from=&to=&status=all&q=` — coherent overtime workspace snapshot with account summary, paged credits and full canonical `usages`.
   Since v27.9.4 each usage reference inside a credit row also includes `allocationPartIndex` and `allocationPartCount`, so paged clients can render stable split labels. Since v27.18.2 the top-level `usages` array is included because chart totals and whole-usage actions cannot be reconstructed safely from one credit page.
 

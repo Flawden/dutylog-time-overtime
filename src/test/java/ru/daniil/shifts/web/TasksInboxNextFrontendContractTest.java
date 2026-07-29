@@ -8,7 +8,7 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static contract for v27.19.0 Tasks & Inbox Next. */
+/** Static contract for v27.19.x Tasks & Inbox Next. */
 class TasksInboxNextFrontendContractTest {
 
     @Test
@@ -33,6 +33,8 @@ class TasksInboxNextFrontendContractTest {
         assertTrue(html.contains("id=\"taskBoardProject\""));
         assertTrue(js.contains("function validateTaskPlanning()"));
         assertTrue(js.contains("function renderTaskBoardProjectFilter()"));
+        assertTrue(js.contains("scheduledFrom:filters.from || \"\""));
+        assertTrue(js.contains("scheduledTo:filters.to || \"\""));
         assertTrue(js.contains("addTaskToDateMap(state.tasksByDate, task)"));
     }
 

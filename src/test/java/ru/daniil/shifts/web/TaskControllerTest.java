@@ -221,6 +221,15 @@ class TaskControllerTest {
                 .andExpect(jsonPath("$.items[0].id").value(futureTask.id()))
                 .andExpect(jsonPath("$.page").value(0))
                 .andExpect(jsonPath("$.size").value(10));
+
+        mvc.perform(get("/api/tasks/board")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .param("status", "all")
+                        .param("scheduledFrom", today.toString())
+                        .param("scheduledTo", today.toString()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.items[0].id").value(futureTask.id()));
     }
 
 

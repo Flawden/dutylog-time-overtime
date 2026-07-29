@@ -133,7 +133,28 @@ public class TaskService {
                                       String to,
                                       int page,
                                       int size) {
-        return listBoard(user, status, category, "all", priority, q, from, to, page, size);
+        return listBoard(user, status, category, "all", priority, q,
+                from, to, null, null, page, size);
+    }
+
+
+    /**
+     * Source-compatible v27.19.0 signature. The long-standing from/to contract
+     * filters by deadline (or the task date when there is no deadline).
+     */
+    @Transactional(readOnly = true)
+    public PageDto<TaskDto> listBoard(AppUser user,
+                                      String status,
+                                      String category,
+                                      String project,
+                                      String priority,
+                                      String q,
+                                      String from,
+                                      String to,
+                                      int page,
+                                      int size) {
+        return listBoard(user, status, category, project, priority, q,
+                from, to, null, null, page, size);
     }
 
 
@@ -146,11 +167,20 @@ public class TaskService {
                                       String q,
                                       String from,
                                       String to,
+                                      String scheduledFrom,
+                                      String scheduledTo,
                                       int page,
                                       int size) {
         LocalDate fromDate = parseOptionalDate(from, "Дата from должна быть в формате yyyy-MM-dd");
         LocalDate toDate = parseOptionalDate(to, "Дата to должна быть в формате yyyy-MM-dd");
+        LocalDate scheduledFromDate = parseOptionalDate(scheduledFrom,
+                "Дата scheduledFrom должна быть в формате yyyy-MM-dd");
+        LocalDate scheduledToDate = parseOptionalDate(scheduledTo,
+                "Дата scheduledTo должна быть в формате yyyy-MM-dd");
         if (fromDate != null && toDate != null) dayEntryService.validateRange(fromDate, toDate);
+        if (scheduledFromDate != null && scheduledToDate != null) {
+            dayEntryService.validateRange(scheduledFromDate, scheduledToDate);
+        }
 
         String statusFilter = normalizeBoardStatus(status);
         String cat = cleanOptional(category);
@@ -176,7 +206,8 @@ public class TaskService {
                 .filter(t -> categoryFilter == null || "all".equalsIgnoreCase(categoryFilter) || categoryFilter.equalsIgnoreCase(t.getCategory() == null ? "" : t.getCategory()))
                 .filter(t -> projectFilter == null || "all".equalsIgnoreCase(projectFilter) || projectFilter.equalsIgnoreCase(t.getProject() == null ? "" : t.getProject()))
                 .filter(t -> priorityFinal == null || t.getPriority() == priorityFinal)
-                .filter(t -> withinTaskBoardRange(t, fromDate, toDate))
+                .filter(t -> withinTaskBoardDeadlineRange(t, fromDate, toDate))
+                .filter(t -> taskIntersectsRange(t, scheduledFromDate, scheduledToDate))
                 .filter(t -> queryLower == null || taskMatchesQuery(t, queryLower))
                 .sorted(TASK_DISPLAY_ORDER)
                 .map(task -> TaskDto.from(task, now, nowInstant))
@@ -221,8 +252,12 @@ public class TaskService {
         };
     }
 
-    private boolean withinTaskBoardRange(DayTask task, LocalDate from, LocalDate to) {
-        return taskIntersectsRange(task, from, to);
+    private boolean withinTaskBoardDeadlineRange(DayTask task, LocalDate from, LocalDate to) {
+        if (from == null && to == null) return true;
+        LocalDate effectiveDate = task.getDueDate() != null ? task.getDueDate() : task.getDate();
+        if (effectiveDate == null) return false;
+        if (from != null && effectiveDate.isBefore(from)) return false;
+        return to == null || !effectiveDate.isAfter(to);
     }
 
     private static boolean taskIntersectsRange(DayTask task, LocalDate from, LocalDate to) {

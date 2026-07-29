@@ -555,6 +555,14 @@ class TaskServiceTest {
         assertEquals(List.of(created.id()), taskService.listBoard(
                 owner, "all", "all", "DutyLog", "all", "", null, null, 0, 50
         ).items().stream().map(TaskDto::id).toList());
+        assertEquals(List.of(created.id()), taskService.listBoard(
+                owner, "all", "all", "DutyLog", "all", "", null, null,
+                "2026-08-11", "2026-08-11", 0, 50
+        ).items().stream().map(TaskDto::id).toList());
+        assertTrue(taskService.listBoard(
+                owner, "all", "all", "DutyLog", "all", "", null, null,
+                "2026-08-12", "2026-08-12", 0, 50
+        ).items().isEmpty());
     }
 
     @Test

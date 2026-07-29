@@ -1,3 +1,12 @@
+# v27.19.1 — Task Board Date Range Compatibility Hotfix
+
+- Restored the long-standing `from` / `to` task-board contract: filters use `dueDate`, falling back to the task `date` when no deadline exists.
+- Added explicit `scheduledFrom` / `scheduledTo` parameters for planned-range intersection without changing existing API clients.
+- Switched the Web/PWA board date controls and “this month” preset to the planned-range parameters while keeping their existing UI state and labels.
+- Preserved source-compatible `TaskService.listBoard(...)` overloads for internal and downstream callers.
+- Added service, controller and frontend contract assertions for both deadline/date compatibility and planned-interval filtering, including overnight overlap.
+- No schema change; Flyway remains V37. Regression baseline remains 97 Java test classes, 507 `@Test` methods and 28 Playwright scenarios.
+
 # v27.19.0 — Tasks & Inbox Next
 
 - Added first-class task planning independent from deadlines: all-day, point, exact start/end, duration presets and overnight intervals.
