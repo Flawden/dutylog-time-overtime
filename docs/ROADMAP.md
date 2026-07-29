@@ -1,10 +1,10 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.19.1 — Task Board Date Range Compatibility Hotfix**.
+Current release: **v27.19.2 — Frontend Asset Contract Stability Hotfix**.
 
 ## Текущая продуктовая точка — Tasks & Inbox Next
 
-Статус: **v27.19.1** закрепляет обратную совместимость диапазонов доски поверх v27.19.0 Tasks & Inbox Next.
+Статус: **v27.19.2** стабилизирует frontend asset contracts поверх v27.19.1, сохраняя Tasks & Inbox Next и совместимость диапазонов доски.
 
 Сделано к текущей точке:
 
@@ -214,5 +214,6 @@ API уже достаточно стабилен для первого Android-�
 - `v27.18.3` — UI Settings & Button Variants Quality Hotfix.
 - `v27.19.0` — Tasks & Inbox Next.
 - `v27.19.1` — Task Board Date Range Compatibility Hotfix.
+- `v27.19.2` — Frontend Asset Contract Stability Hotfix.
 - `v27.19.0` — Tasks & Inbox Next, including independent planned task intervals (`start → end`), duration, deadlines and timeline cards.
 - `v27.20.0` — Notes & Important Events Next, including all-day/timed/multi-day events, place, description, reminders and read-first event cards.

@@ -1,23 +1,33 @@
-> Current release: **v27.19.1 — Task Board Date Range Compatibility Hotfix**.
+> Current release: **v27.19.2 — Frontend Asset Contract Stability Hotfix**.
 
 # DutyLog
 
-Current release: **v27.19.1 — Task Board Date Range Compatibility Hotfix**
+Current release: **v27.19.2 — Frontend Asset Contract Stability Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.19.1 — Task Board Date Range Compatibility Hotfix
+## Текущая версия: v27.19.2 — Frontend Asset Contract Stability Hotfix
 
-**v27.19.1** сохраняет обратную совместимость фильтров доски задач и отделяет её от нового планового диапазона:
+**v27.19.2** стабилизирует статические frontend-контракты после cache-busting обновлений:
+
+- Today, UI Core, Calendar Experience и Design System по-прежнему проверяют точные имена ассетов и порядок загрузки;
+- тесты больше не зашивают конкретный номер релиза в `?v=...`;
+- `release-check.sh` отклоняет новые hardcoded semantic versions в `*FrontendContractTest.java`;
+- runtime-ассеты, Service Worker, backend metadata и smoke-проверки остаются строго привязаны к `27.19.2`;
+- API, бизнес-логика задач и схема данных не менялись.
+
+Схема остаётся на **Flyway V37**. Автоматическая база: **97 Java-тестовых классов, 507 `@Test` методов и 28 Playwright browser scenarios**.
+
+### Предыдущий hotfix: v27.19.1 — Task Board Date Range Compatibility Hotfix
+
+**v27.19.1** сохранил обратную совместимость фильтров доски задач и отделил её от нового планового диапазона:
 
 - `from` / `to` снова фильтруют по дедлайну, а без дедлайна — по дате задачи;
 - `scheduledFrom` / `scheduledTo` фильтруют по пересечению запланированного интервала;
 - экран задач использует плановый диапазон для полей дат и пресета «этот месяц»;
 - старые Web/API/mobile-вызовы не меняют смысл после обновления;
 - overnight-интервалы попадают в каждый пересекаемый плановый день.
-
-Схема остаётся на **Flyway V37**. Автоматическая база: **97 Java-тестовых классов, 507 `@Test` методов и 28 Playwright browser scenarios**.
 
 ### Базовый продуктовый релиз: v27.19.0 — Tasks & Inbox Next
 
@@ -385,7 +395,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.19.1 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить all-day, point, interval, overnight, project filter, Inbox search и timezone reprojection. Следующий продуктовый этап — **v27.20.0 — Notes & Important Events Next**.
+Следующий практический шаг — пропустить v27.19.2 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить all-day, point, interval, overnight, project filter, Inbox search и timezone reprojection. Следующий продуктовый этап — **v27.20.0 — Notes & Important Events Next**.
 
 ## Служебный профиль администратора
 

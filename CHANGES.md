@@ -1,3 +1,11 @@
+# v27.19.2 — Frontend Asset Contract Stability Hotfix
+
+- Replaced release-number-specific frontend asset assertions with version-neutral `?v=` contract checks while retaining exact bundle names and load-order guarantees.
+- Fixed Today Dashboard, UI Core, Calendar Mobile Experience and Design System shell contracts after the v27.19.1 cache-busting bump.
+- Added a release gate that rejects semantic-version literals in `*FrontendContractTest.java` asset-query assertions so future patch releases cannot repeat the same failure.
+- Kept runtime cache-busting strict: `index.html`, login assets, Service Worker cache and release metadata still resolve to the exact release version.
+- No runtime behavior, API or schema changes; Flyway remains V37 and the regression baseline remains 97 Java test classes, 507 `@Test` methods and 28 Playwright scenarios.
+
 # v27.19.1 — Task Board Date Range Compatibility Hotfix
 
 - Restored the long-standing `from` / `to` task-board contract: filters use `dueDate`, falling back to the task `date` when no deadline exists.

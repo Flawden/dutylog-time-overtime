@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.19.1.
+Status: v27.19.2.
 
 ## Local gate
 
@@ -70,6 +70,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.19.1 -m "v27.19.1 — Task Board Date Range Compatibility Hotfix"
-git push origin v27.19.1
+git tag -a v27.19.2 -m "v27.19.2 — Frontend Asset Contract Stability Hotfix"
+git push origin v27.19.2
 ```

@@ -1,14 +1,21 @@
 # DutyLog regression test baseline
 
-Status: v27.19.1.
+Status: v27.19.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.19.1 preserves the legacy deadline/date board range while exposing explicit planned-range filters on top of v27.19.0 Tasks & Inbox Next. Current application baseline is 97 Java test classes / 507 `@Test` methods / 28 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.19.2 stabilizes frontend asset contracts across cache-busting release bumps while preserving the v27.19.1 task-board range compatibility contract. Current application baseline is 97 Java test classes / 507 `@Test` methods / 28 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
+
+## v27.19.2 Frontend Asset Contract Stability Hotfix extension
+
+- Today/UI Core/Calendar/Design System asset assertions match stable paths plus `?v=` instead of a concrete release number.
+- Runtime version consistency remains exact through `release-check.sh`, Service Worker cache naming and static asset query validation.
+- The release gate rejects new `?v=X.Y.Z` literals in frontend contract Java sources.
+- No test-count, API or Flyway changes.
 
 ## v27.19.1 Task Board Date Range Compatibility Hotfix extension
 

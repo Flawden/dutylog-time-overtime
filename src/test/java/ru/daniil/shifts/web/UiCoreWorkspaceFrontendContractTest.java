@@ -15,14 +15,14 @@ class UiCoreWorkspaceFrontendContractTest {
     @Test
     void appShellLoadsUiPlatformBetweenCoreAndFeatureBundles() throws Exception {
         String html = read("src/main/resources/static/index.html");
-        int core = html.indexOf("js/10-core.js?v=27.19.0");
-        int platform = html.indexOf("js/12-ui-platform.js?v=27.19.0");
-        int data = html.indexOf("js/20-data.js?v=27.19.0");
+        int core = html.indexOf("js/10-core.js?v=");
+        int platform = html.indexOf("js/12-ui-platform.js?v=");
+        int data = html.indexOf("js/20-data.js?v=");
         assertTrue(core >= 0);
         assertTrue(platform > core);
         assertTrue(data > platform);
-        assertTrue(html.contains("ui/tokens.css?v=27.19.0"));
-        assertTrue(html.contains("ui/platform.css?v=27.19.0"));
+        assertTrue(html.contains("ui/tokens.css?v="));
+        assertTrue(html.contains("ui/platform.css?v="));
         assertTrue(html.contains("id=\"uiWorkspace\""));
         assertTrue(html.contains("id=\"uiLayout\""));
         assertTrue(html.contains("id=\"uiPalette\""));
