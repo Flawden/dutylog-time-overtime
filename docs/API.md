@@ -1,8 +1,8 @@
-# DutyLog API v27.18.1
+# DutyLog API v27.18.2
 
 Проект: **DutyLog: Time & Overtime**.
 
-Текущий v27.18.1 является E2E contract hotfix и не меняет HTTP API v27.18.0.
+Текущий v27.18.2 аддитивно расширяет `GET /api/overtime/account-page`: ответ теперь включает полный канонический массив `usages`, чтобы summary, paged ledger, FIFO и chart использовали один snapshot.
 
 Веб-версия работает через `JSESSIONID`, Android/PWA-клиенты могут использовать `Authorization: Bearer <accessToken>`. Старые endpoint'ы сохранены, поверх них добавлен mobile-слой.
 
@@ -19,7 +19,7 @@ GET  /api/overtime/export.csv
 GET  /api/overtime/export.xls
 ```
 
-The global balance/FIFO queue is derived from the full account response. Period filters and the professional ledger continue to use `account-page`. No response field, ownership rule, minute accounting rule or timezone projection semantics changed.
+Since v27.18.2 `account-page` is the coherent Overtime workspace snapshot: it returns global totals, the requested credit page and the full canonical `usages` list. Existing fields remain unchanged. The usage list is intentionally not reconstructed from paged credit rows because one usage can span several credits/pages. Ownership, minute accounting and timezone projection semantics are unchanged.
 
 
 
@@ -1176,7 +1176,7 @@ GET /api/tasks/board?from=2026-07-01&to=2026-07-31&q=врач
 ```json
 {
   "app": "DutyLog: Time & Overtime",
-  "version": "27.18.1",
+  "version": "27.18.2",
   "serverTime": "2026-07-06T11:40:00Z",
   "serverTimezone": "Europe/Moscow",
   "profiles": ["prod"],
@@ -1276,10 +1276,39 @@ Large UI lists are paged server-side before being returned to the browser. Suppo
 
 - `GET /api/admin/users?page=0&size=50&q=&role=all` — admin users page.
 - `GET /api/tasks/board?page=0&size=50&status=open&category=&priority=&q=&from=&to=` — global task board page.
-- `GET /api/overtime/account-page?page=0&size=50&from=&to=&status=all&q=` — overtime ledger page with account summary.
-  Since v27.9.4 each usage reference inside a credit row also includes `allocationPartIndex` and `allocationPartCount`, so paged clients can render stable split labels without loading the full overtime account first.
+- `GET /api/overtime/account-page?page=0&size=50&from=&to=&status=all&q=` — coherent overtime workspace snapshot with account summary, paged credits and full canonical `usages`.
+  Since v27.9.4 each usage reference inside a credit row also includes `allocationPartIndex` and `allocationPartCount`, so paged clients can render stable split labels. Since v27.18.2 the top-level `usages` array is included because chart totals and whole-usage actions cannot be reconstructed safely from one credit page.
 
 Backend caps `size` to max `100`. CSV/XLS export endpoints are intentionally not paged: they export all rows matching selected filters.
+
+Minimal `account-page` shape since v27.18.2:
+
+```json
+{
+  "totalEarnedHours": 5,
+  "totalUsedHours": 4,
+  "balanceHours": 1,
+  "credits": {
+    "items": [],
+    "page": 0,
+    "size": 50,
+    "total": 0,
+    "totalPages": 0,
+    "hasPrevious": false,
+    "hasNext": false
+  },
+  "usages": [
+    {
+      "id": 21,
+      "usageDate": "2026-07-29",
+      "hours": 4,
+      "reason": "Отгул",
+      "allocations": [],
+      "minutes": 240
+    }
+  ]
+}
+```
 
 
 ## v24.0/v26.0 profile preferences

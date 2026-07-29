@@ -1,3 +1,13 @@
+# v27.18.2 — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix
+
+- Extended `GET /api/overtime/account-page` with the canonical full `usages` snapshot so the summary, paged ledger, FIFO details and chart are rendered from one coherent server projection.
+- Stopped reconstructing usage totals from paged credit rows; one usage can span several credits and pages, so the authoritative usage list now travels explicitly with the page response.
+- Updated `loadLedgerPage()` to replace summary totals and usages together before rendering, fixing the real `+5 / −4 / +1` state split where the chart showed `−0` while the overview was correct.
+- Added service and controller assertions that filtered/paged account responses still include complete usage allocations.
+- Made the shared Playwright `selectDate()` helper idempotent so selecting an already active day does not toggle it off.
+- Stabilized the timezone projection scenario by capturing the exact assigned calendar date and reopening that date after the canonical timezone refresh.
+- No schema change; Flyway remains V36. Regression baseline remains 96 Java test classes, 500 `@Test` methods and 26 Playwright scenarios.
+
 # v27.18.1 — Overtime Next E2E Contract Hotfix
 
 - Fixed the overtime integrity browser scenario so desktop runs target the visible delete action inside `#ledgerRows` instead of the earlier hidden mobile-card duplicate.

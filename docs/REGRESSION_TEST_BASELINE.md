@@ -1,15 +1,24 @@
 # DutyLog regression test baseline
 
-Status: v27.18.1.
+Status: v27.18.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.18.1 aligns the Overtime Next browser contracts with responsive duplicate actions and daily/monthly chart keys. Current application baseline remains 96 Java test classes / 500 `@Test` methods and 26 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.18.2 synchronizes the Overtime Next usage snapshot across summary, paged ledger and chart, and makes calendar date selection idempotent for timezone projection E2E. Current application baseline remains 96 Java test classes / 500 `@Test` methods and 26 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+
+## v27.18.2 Overtime Snapshot Sync & Timezone E2E Stabilization extension
+
+- `OvertimeAccountPageDto` now carries the canonical full `usages` list beside summary totals and paged credits.
+- Service/controller assertions prove filtered credit pages never truncate usage allocations required by the chart.
+- `overtime-next.spec.js` waits for the usage snapshot before verifying monthly and daily `−4 h` bars.
+- Shared `selectDate()` is idempotent; `important-timezone.spec.js` reuses the exact assigned `data-date` after refresh.
+- Baseline remains 96 / 500 / 26; no Flyway migration is added.
 
 
 ## v27.18.1 Overtime Next E2E Contract Hotfix extension

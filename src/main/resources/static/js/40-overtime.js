@@ -1544,13 +1544,15 @@ async function loadLedgerPage(silent = true){
     };
     const res = await api.overtimeAccountPage(query);
     const creditsPage = normalizePageResponse(res?.credits, page.size || 50);
-    state.ledgerPage = creditsPage;
-    state.overtimeAccount = {
+    const accountSnapshot = {
       ...(state.overtimeAccount || {}),
       totalEarnedHours: numOr0(res?.totalEarnedHours),
       totalUsedHours: numOr0(res?.totalUsedHours),
       balanceHours: numOr0(res?.balanceHours),
+      usages: Array.isArray(res?.usages) ? res.usages : [],
     };
+    state.ledgerPage = creditsPage;
+    state.overtimeAccount = accountSnapshot;
     renderLedgerTable();
     updateOvertimeBalanceLabel();
   } catch (err) {

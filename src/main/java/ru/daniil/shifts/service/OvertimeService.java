@@ -155,8 +155,8 @@ public class OvertimeService {
     }
 
     /**
-     * Страничный ответ для таблицы переработок: итог аккаунта считается полностью,
-     * но клиент получает только текущую страницу строк журнала.
+     * Страничный ответ для экрана переработок: итог аккаунта считается полностью,
+     * клиент получает текущую страницу начислений и полный canonical usage snapshot.
      */
     @Transactional(readOnly = true)
     public OvertimeAccountPageDto accountPage(AppUser user, String from, String to, String status, String q, int page, int size) {
@@ -168,7 +168,8 @@ public class OvertimeService {
                 account.totalEarnedHours(),
                 account.totalUsedHours(),
                 account.balanceHours(),
-                PageDto.of(pageSlice(filtered, safePage, safeSize), safePage, safeSize, filtered.size())
+                PageDto.of(pageSlice(filtered, safePage, safeSize), safePage, safeSize, filtered.size()),
+                account.usages()
         );
     }
 

@@ -157,7 +157,11 @@ class OvertimeControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.credits.total").value(1))
                 .andExpect(jsonPath("$.credits.items[0].workedDate").value("2026-07-02"))
-                .andExpect(jsonPath("$.credits.items[0].usedHours").value(2.0));
+                .andExpect(jsonPath("$.credits.items[0].usedHours").value(2.0))
+                .andExpect(jsonPath("$.usages.length()").value(1))
+                .andExpect(jsonPath("$.usages[0].usageDate").value("2026-07-05"))
+                .andExpect(jsonPath("$.usages[0].hours").value(4.0))
+                .andExpect(jsonPath("$.usages[0].allocations.length()").value(2));
 
         byte[] csv = mvc.perform(get("/api/overtime/export.csv")
                         .with(user(owner.getUsername()).roles("USER"))

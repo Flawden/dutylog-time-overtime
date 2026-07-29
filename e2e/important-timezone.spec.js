@@ -1,5 +1,5 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, currentLocalDateKey, waitForApi, openView } = require('./helpers');
+const { registerAndOnboard, currentLocalDateKey, waitForApi, openView, selectDate } = require('./helpers');
 
 test('important dates stay floating while canonical timezone survives reload', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'important' });
@@ -95,9 +95,10 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await expect(page.locator('#defDayEnd')).toHaveValue('17:00');
 
   await openView(page, 'calendar');
-  const day = page.locator('#grid .cell:not(.empty)').first();
-  await day.click();
-  await expect(page.locator('#panel')).toBeVisible();
+  const firstDay = page.locator('#grid .cell:not(.empty)').first();
+  const shiftDate = await firstDay.getAttribute('data-date');
+  expect(shiftDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  await selectDate(page, shiftDate);
   const dayShift = page.locator('#chips .chip').filter({ hasText: /Дневная|Day shift/ }).first();
   const saved = page.waitForResponse(response => {
     const url = new URL(response.url());
@@ -136,8 +137,7 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await expect(page.locator('#notifyList')).toContainText('Начало 06:30 Europe/Kyiv');
   await expect(page.locator('#notifyList')).toContainText('06:00');
 
-  await openView(page, 'calendar');
-  await day.click();
+  await selectDate(page, shiftDate);
   const projection = page.locator('#shiftProjection');
   await expect(projection).toBeVisible();
   await expect(projection).toContainText('Europe/Kyiv');

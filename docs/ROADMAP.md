@@ -1,10 +1,10 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.18.1 — Overtime Next E2E Contract Hotfix**.
+Current release: **v27.18.2 — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix**.
 
-## Текущая продуктовая точка — Overtime Next после E2E contract hotfix
+## Текущая продуктовая точка — Overtime Next после snapshot sync hotfix
 
-Статус: **v27.18.1** выравнивает browser contracts с responsive-представлениями Overtime Next и дневной/месячной группировкой тренда; production-логика v27.18.0 не менялась.
+Статус: **v27.18.2** делает `account-page` единым snapshot-контрактом для сводки, paged ledger и полного списка usages, а также устраняет flaky toggle выбранного дня в timezone E2E.
 
 Сделано к текущей точке:
 
@@ -14,12 +14,14 @@ Current release: **v27.18.1 — Overtime Next E2E Contract Hotfix**.
 - динамика начислений/списаний по дням или месяцам;
 - карточный мобильный журнал вместо сжатой широкой таблицы;
 - профессиональная desktop-таблица сохранена;
+- summary, chart, FIFO и responsive ledger используют единый canonical usage snapshot;
+- `selectDate()` идемпотентен, timezone projection E2E повторно открывает точную дату;
 - сохранены точные интервалы, timezone-проекция, provenance списаний, legacy migration и CSV/Excel export;
 - единый UI Core, workspaces, layouts, темы и палитры;
 - Classic удалён, rollback выполняется через Git/immutable Docker image;
 - Flyway V1–V36, Java 17, 96 Java test classes / 500 tests / 26 Playwright scenarios.
 
-Ближайший quality-релиз: **v27.18.2 — UI Settings & Button Variants Quality Hotfix**. Следующий продуктовый этап: **v27.19.0 — Tasks & Inbox Next**.
+Ближайший quality-релиз: **v27.18.3 — UI Settings & Button Variants Quality Hotfix**. Следующий продуктовый этап: **v27.19.0 — Tasks & Inbox Next**.
 
 Цель этапа:
 
@@ -219,6 +221,7 @@ API уже достаточно стабилен для первого Android-�
 - `v27.17.6` — Classic Sunset.
 - `v27.18.0` — Overtime Next.
 - `v27.18.1` — Overtime Next E2E Contract Hotfix.
-- `v27.18.2` — UI Settings & Button Variants Quality Hotfix.
+- `v27.18.2` — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix.
+- `v27.18.3` — UI Settings & Button Variants Quality Hotfix.
 - `v27.19.0` — Tasks & Inbox Next, including independent planned task intervals (`start → end`), duration, deadlines and timeline cards.
 - `v27.20.0` — Notes & Important Events Next, including all-day/timed/multi-day events, place, description, reminders and read-first event cards.

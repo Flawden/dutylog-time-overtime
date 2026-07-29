@@ -1553,12 +1553,18 @@ public final class Dtos {
             List<OvertimeUsageDto> usages
     ) {}
 
-    /** Страничный ответ для таблицы переработок: summary аккаунта + только текущая страница начислений. */
+    /**
+     * Страничный ответ для экрана переработок: summary аккаунта, текущая страница
+     * начислений и полный список списаний. Списания не восстанавливаются из
+     * paged credit rows: один отгул может быть распределён между несколькими
+     * начислениями и страницами.
+     */
     public record OvertimeAccountPageDto(
             double totalEarnedHours,
             double totalUsedHours,
             double balanceHours,
-            PageDto<OvertimeCreditRowDto> credits
+            PageDto<OvertimeCreditRowDto> credits,
+            List<OvertimeUsageDto> usages
     ) {}
 
     /** Сводка переработок за диапазон. */

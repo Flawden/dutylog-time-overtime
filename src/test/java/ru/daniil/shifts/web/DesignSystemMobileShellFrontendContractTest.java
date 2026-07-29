@@ -15,8 +15,8 @@ class DesignSystemMobileShellFrontendContractTest {
     @Test
     void htmlLoadsTheLayeredDesignSystemWithoutAClassicSelector() throws Exception {
         String html = read("src/main/resources/static/index.html");
-        assertTrue(html.contains("js/shell-bootstrap.js?v=27.18.1"));
-        assertTrue(html.contains("design-system.css?v=27.18.1"));
+        assertTrue(html.contains("js/shell-bootstrap.js?v=27.18.2"));
+        assertTrue(html.contains("design-system.css?v=27.18.2"));
         assertTrue(html.contains("id=\"nextTopbar\""));
         assertTrue(html.contains("id=\"nextHeaderAvatar\""));
         assertTrue(html.contains("class=\"navIcon\""));

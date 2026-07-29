@@ -1,26 +1,28 @@
-> Current release: **v27.18.1 — Overtime Next E2E Contract Hotfix**.
+> Current release: **v27.18.2 — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix**.
 
 # DutyLog
 
-Current release: **v27.18.1 — Overtime Next E2E Contract Hotfix**
+Current release: **v27.18.2 — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
 
-## Текущая версия: v27.18.1 — Overtime Next E2E Contract Hotfix
+## Текущая версия: v27.18.2 — Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix
 
-**v27.18.1** восстанавливает browser gate после появления двух представлений одного журнала и адаптивной группировки графика:
+**v27.18.2** устраняет реальную рассинхронизацию Overtime Next и стабилизирует timezone E2E:
 
-- desktop E2E удаляет отгул через видимую кнопку профессиональной таблицы, а не через скрытый мобильный дубль;
-- проверки после удаления ограничены `#ledgerRows`, поэтому responsive DOM больше не создаёт ложные совпадения;
-- All-time/Year график проверяется по месячному ключу `YYYY-MM`;
-- Month график отдельно проверяется по дневному ключу `YYYY-MM-DD`;
-- production-логика Overtime Next из v27.18.0 не менялась.
+- `account-page` отдаёт полный канонический список списаний вместе со сводкой и страницей начислений;
+- сводка, график, FIFO и responsive-журнал строятся из одного серверного snapshot;
+- график больше не показывает `−0 ч`, когда верхняя сводка уже показывает фактические `−4 ч`;
+- списания не восстанавливаются из paginated credit rows, где один отгул мог бы быть неполным или задвоенным;
+- `selectDate()` стал идемпотентным и не закрывает уже выбранный день;
+- timezone projection E2E повторно открывает точную дату назначения после обновления календаря.
 
-Backend API и схема данных не менялись; Flyway остаётся **V1–V36**. Автоматическая база: **96 Java-тестовых классов, 500 `@Test` методов и 26 Playwright browser scenarios**.
+API изменён аддитивно: в ответ `GET /api/overtime/account-page` добавлено поле `usages`. Схема данных не менялась; Flyway остаётся **V1–V36**. Автоматическая база: **96 Java-тестовых классов, 500 `@Test` методов и 26 Playwright browser scenarios**.
 
 Предыдущие продуктовые релизы:
 
+- **v27.18.1 — Overtime Next E2E Contract Hotfix** — выровнял responsive delete selectors и дневные/месячные chart keys;
 - **v27.18.0 — Overtime Next** — добавил balance-first сводку, периоды, тренд, FIFO-очередь, desktop-таблицу и мобильные карточки;
 - **v27.17.6 — Classic Sunset** — удалил второй пользовательский shell и оставил единый UI Core;
 - **v27.17.5 — UI Core E2E Accordion Hotfix** — восстановил state-aware browser gate;
@@ -366,7 +368,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.18.1 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить desktop-таблицу, мобильные карточки, FIFO-очередь и дневную/месячную группировку графика. После этого идёт **v27.18.2 — UI Settings & Button Variants Quality Hotfix**, затем **v27.19.0 — Tasks & Inbox Next**.
+Следующий практический шаг — пропустить v27.18.2 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить единый `account-page` snapshot: сводка `+5 / −4 / +1`, месячный и дневной график, FIFO, desktop-таблицу и мобильные карточки. После этого идёт **v27.18.3 — UI Settings & Button Variants Quality Hotfix**, затем **v27.19.0 — Tasks & Inbox Next**.
 
 ## Служебный профиль администратора
 

@@ -48,6 +48,10 @@ class OvertimeAccountQueryServiceTest {
         assertEquals(9.0, all.totalEarnedHours());
         assertEquals(4.0, all.totalUsedHours());
         assertEquals(5.0, all.balanceHours());
+        assertEquals(1, all.usages().size());
+        assertEquals("2026-07-05", all.usages().get(0).usageDate());
+        assertEquals(4.0, all.usages().get(0).hours());
+        assertEquals(2, all.usages().get(0).allocations().size());
 
         OvertimeAccountPageDto closed = overtimeService.accountPage(owner, null, null, "closed", "", 0, 50);
         assertEquals(1, closed.credits().total());
@@ -61,6 +65,9 @@ class OvertimeAccountQueryServiceTest {
         assertEquals(1, open.credits().total());
         assertEquals("2026-07-03", open.credits().items().get(0).workedDate());
         assertEquals("ППР; резерв", open.credits().items().get(0).reason());
+        // Credit filters never truncate the canonical usage snapshot used by the chart.
+        assertEquals(1, open.usages().size());
+        assertEquals(4.0, open.usages().get(0).hours());
     }
 
     @Test

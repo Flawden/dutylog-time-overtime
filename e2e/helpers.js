@@ -77,9 +77,23 @@ async function openView(page, view) {
 async function selectDate(page, date) {
   await openView(page, 'calendar');
   const cell = page.locator(`#grid [data-date="${date}"]`);
+  const panel = page.locator('#panel');
   await expect(cell).toBeVisible();
-  await cell.click();
-  await expect(page.locator('#panel')).toBeVisible();
+
+  const selected = await cell.evaluate(element => element.classList.contains('sel'));
+  const panelVisible = await panel.isVisible();
+  if (selected && !panelVisible) {
+    // Recover an inconsistent selected/hidden state without letting the next
+    // click merely toggle the requested day off.
+    await cell.click();
+    await expect(cell).not.toHaveClass(/sel/);
+  }
+  if (!(await cell.evaluate(element => element.classList.contains('sel')))) {
+    await cell.click();
+  }
+
+  await expect(cell).toHaveClass(/sel/);
+  await expect(panel).toBeVisible();
   return cell;
 }
 
