@@ -40,7 +40,14 @@ class MultipleDailyNotesFrontendContractTest {
         assertTrue(data.contains("async updateDayNote(noteId, patch, date)"));
         assertTrue(data.contains("item.type === \"updateNote\""));
         assertTrue(notes.contains("Редактирование доступно оффлайн"));
+        assertTrue(notes.contains("$(\"noteEdit\").readOnly = false;"));
+        assertTrue(notes.contains("$(\"noteAdd\").disabled = !online;"));
         assertTrue(notes.contains("function runNoteSearch()"));
+        String offlineE2e = read("e2e/pwa-offline.spec.js");
+        assertTrue(offlineE2e.contains("preserves and synchronizes an existing note edited offline"));
+        assertTrue(offlineE2e.contains("queuedNoteUpdates"));
+        assertTrue(offlineE2e.contains("toBeEditable()"));
+        assertTrue(offlineE2e.contains("toBeDisabled()"));
     }
 
     @Test

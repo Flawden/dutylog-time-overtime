@@ -78,11 +78,31 @@ async function selectDate(page, date) {
   await openView(page, 'calendar');
   const cell = page.locator(`#grid [data-date="${date}"]`);
   const panel = page.locator('#panel');
-  await expect(cell).toBeVisible();
+  const activeModeButton = page.locator('[data-calendar-mode][aria-pressed="true"]');
+  const originalMode = await activeModeButton.count()
+    ? await activeModeButton.first().getAttribute('data-calendar-mode')
+    : 'month';
+
+  const cellExists = await cell.count() > 0;
+  const alreadySelected = cellExists
+    ? await cell.first().evaluate(element => element.classList.contains('sel'))
+    : false;
+  const panelVisible = await panel.isVisible();
+
+  // Day and week modes intentionally hide the month grid. When the requested
+  // day is already focused, selecting it again must be idempotent and must not
+  // force a hidden month cell to become visible.
+  if (alreadySelected && panelVisible) return cell.first();
+
+  if (!cellExists || !(await cell.first().isVisible())) {
+    const monthButton = page.locator('[data-calendar-mode="month"]');
+    await monthButton.click();
+    await expect(monthButton).toHaveAttribute('aria-pressed', 'true');
+    await expect(cell).toBeVisible();
+  }
 
   const selected = await cell.evaluate(element => element.classList.contains('sel'));
-  const panelVisible = await panel.isVisible();
-  if (selected && !panelVisible) {
+  if (selected && !(await panel.isVisible())) {
     // Recover an inconsistent selected/hidden state without letting the next
     // click merely toggle the requested day off.
     await cell.click();
@@ -94,6 +114,12 @@ async function selectDate(page, date) {
 
   await expect(cell).toHaveClass(/sel/);
   await expect(panel).toBeVisible();
+
+  if (originalMode && originalMode !== 'month') {
+    const restoreMode = page.locator(`[data-calendar-mode="${originalMode}"]`);
+    await restoreMode.click();
+    await expect(restoreMode).toHaveAttribute('aria-pressed', 'true');
+  }
   return cell;
 }
 

@@ -24,6 +24,7 @@ test('important dates stay floating while canonical timezone survives reload', a
   await expect(row).toBeVisible();
   await row.locator('[data-important-edit]').click();
   await expect(page.locator('#importantEditModal')).toBeVisible();
+  await expect(page.locator('#importantDetailsModal')).toBeHidden();
   await expect(page.locator('#importantEditName')).toHaveValue(originalTitle);
 
   const updatedTitle = `${originalTitle} updated`;
@@ -35,6 +36,7 @@ test('important dates stay floating while canonical timezone survives reload', a
   await page.locator('#importantEditSave').click();
   await updated;
   await expect(page.locator('#importantEditModal')).toBeHidden();
+  await expect(page.locator('#importantDetailsModal')).toBeHidden();
   await expect(page.locator('#importantBoardList .importantBoardRow', { hasText: updatedTitle })).toBeVisible();
 
   await page.locator('#tabbar a[data-view="settings"]').click();

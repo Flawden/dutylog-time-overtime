@@ -44,6 +44,7 @@ test('Notes and Important Events Next combine searchable notes with read-first t
   await expect(page.locator('#importantDetailsTitle')).toContainText(eventTitle);
   await expect(page.locator('#importantDetailsBody')).toContainText('Дом сообщества');
   await page.locator('#importantDetailsClose').click();
+  await expect(page.locator('#importantDetailsModal')).toBeHidden();
 
   await openView(page, 'calendar');
   await selectDate(page, date);
@@ -54,6 +55,7 @@ test('Notes and Important Events Next combine searchable notes with read-first t
   await event.click();
   await expect(page.locator('#importantDetailsModal')).toBeVisible();
   await page.locator('#importantDetailsClose').click();
+  await expect(page.locator('#importantDetailsModal')).toBeHidden();
 
   await selectDate(page, date);
   await openDayModule(page, 'notes');

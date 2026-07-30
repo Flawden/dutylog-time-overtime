@@ -1,15 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.20.0.
+Status: v27.20.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.20.0 delivers searchable/offline-safe notes and timezone-correct important events. Current application baseline is 97 Java test classes / 513 `@Test` methods / 29 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.20.1 stabilizes important-event modal exclusivity, calendar-mode-aware date selection and offline note synchronization. Current application baseline is 97 Java test classes / 513 `@Test` methods / 29 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.20.1 Important Event Modal & Offline Notes E2E Hotfix extension
+
+- `important-timezone.spec.js` requires the details modal to remain hidden while editing and after save.
+- `50-tasks.js` enforces a single-open-modal lifecycle and stops interactive board actions from reaching row navigation.
+- `helpers.selectDate()` is idempotent when Month is hidden by Week/Day and restores the original mode after cross-date selection.
+- `pwa-offline.spec.js` edits an existing note offline, verifies the coalesced `updateNote` queue and IndexedDB snapshot, reconnects, drains the queue and reloads the server-authoritative text.
+- API and Flyway remain unchanged; baseline stays 97 Java classes / 513 `@Test` methods / 29 Playwright scenarios.
 
 ## v27.20.0 Notes & Important Events Next extension
 

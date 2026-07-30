@@ -1,3 +1,11 @@
+# v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix
+
+- Enforced a single-open-modal lifecycle for important-event details and editor dialogs, including propagation guards for board actions and a final close after save/refresh.
+- Made the shared Playwright `selectDate()` helper idempotent across Month, Week and Day modes instead of requiring a hidden month-grid cell to be visible.
+- Replaced the obsolete read-only offline-note assertion with an end-to-end queue contract: edit existing note offline, persist IndexedDB snapshot and `updateNote`, reconnect, synchronize and verify the server-authoritative value.
+- Added explicit browser/static regression guards for modal exclusivity, interactive-row propagation, calendar-mode restoration and offline note queue behavior.
+- No API or database changes; Flyway remains V38 and the baseline remains 97 Java test classes, 513 `@Test` methods and 29 Playwright scenarios.
+
 # v27.20.0 — Notes & Important Events Next
 
 - Added owner-scoped note search across titles and Markdown content with date-range and result-limit controls.

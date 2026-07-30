@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.20.0.
+Status: v27.20.1.
 
 ## Local gate
 
@@ -21,6 +21,10 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - push the exact candidate tree to `test`;
 - confirm `Deploy staging` is green;
 - verify calendar, note search/export/offline queued edits, tasks, overtime, modules, admin and Android API v1;
+- open an important-event details card, choose Edit, save and confirm both details/editor modals are hidden before navigating to Settings;
+- in Day mode call the same-date flow again and confirm the selected-day panel stays open without requiring the hidden month grid;
+- edit an existing note offline, reload offline, reconnect and confirm the pending `updateNote` queue drains and the text survives an online reload;
+- confirm creating, pinning, moving and deleting notes remain disabled offline while editing an existing note remains enabled;
 - create an important date, timed event and multi-day period; verify read-first details, all-day rail and hourly timeline;
 - change canonical timezone and verify timed events keep canonical instants while all-day dates/periods stay floating;
 - create all-day, point, same-day and overnight task plans and verify the hourly timeline uses exact duration;
@@ -73,6 +77,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.20.0 -m "v27.20.0 — Notes & Important Events Next"
-git push origin v27.20.0
+git tag -a v27.20.1 -m "v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix"
+git push origin v27.20.1
 ```

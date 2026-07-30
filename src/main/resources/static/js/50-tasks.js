@@ -230,19 +230,34 @@ function importantBoardItems(){
   }).sort((a,b) => String(a.nextOccurrence).localeCompare(String(b.nextOccurrence)) || String(a.title).localeCompare(String(b.title), currentLocale()));
 }
 
+function updateImportantModalState(){
+  const detailsOpen = $("importantDetailsModal")?.hidden === false;
+  const editorOpen = $("importantEditModal")?.hidden === false;
+  document.body.classList.toggle("modalOpen", detailsOpen || editorOpen);
+}
 function setImportantModalVisible(id, visible){
   const modal = $(id);
   if (!modal) return;
   modal.hidden = !visible;
-  document.body.classList.toggle("modalOpen", visible || !$("importantDetailsModal")?.hidden || !$("importantEditModal")?.hidden);
+  updateImportantModalState();
 }
 function closeImportantDetails(){ setImportantModalVisible("importantDetailsModal", false); state.viewingImportantDayId = null; }
 function closeImportantEditor(){ setImportantModalVisible("importantEditModal", false); state.editingImportantDayId = null; }
+function closeImportantEventModals(){
+  const details = $("importantDetailsModal");
+  const editor = $("importantEditModal");
+  if (details) details.hidden = true;
+  if (editor) editor.hidden = true;
+  state.viewingImportantDayId = null;
+  state.editingImportantDayId = null;
+  updateImportantModalState();
+}
 function importantById(id){ return normalizeImportantEvent((state.importantDays || []).find(x => Number(x.id) === Number(id))); }
 
 function openImportantDetails(id){
   const item = importantById(id);
   if (!item?.id) return setSave("err", t("Важный день не найден"));
+  closeImportantEventModals();
   state.viewingImportantDayId = Number(id);
   $("importantDetailsType").textContent = importantTypeLabel(item.eventType);
   $("importantDetailsTitle").textContent = `${item.icon || "★"} ${item.title || ""}`.trim();
@@ -269,6 +284,7 @@ function syncImportantEditorFields(){
 }
 function openImportantEditor(id = null, contextDate = null){
   const item = id == null ? null : importantById(id);
+  closeImportantEventModals();
   state.editingImportantDayId = item?.id ? Number(item.id) : null;
   $("importantEditTitle").textContent = t(item ? "Редактировать событие" : "Новое событие");
   $("importantEditName").value = item?.title || "";
@@ -288,7 +304,6 @@ function openImportantEditor(id = null, contextDate = null){
   document.querySelectorAll('input[name="importantReminder"]').forEach(input => { input.checked = (item?.reminders || []).includes(Number(input.value)); });
   $("importantEditMessage").hidden = true;
   syncImportantEditorFields();
-  closeImportantDetails();
   setImportantModalVisible("importantEditModal", true);
   $("importantEditName")?.focus({ preventScroll:true });
 }
@@ -323,11 +338,22 @@ function renderImportantBoard(){
     row.dataset.importantDetails = item.id;
     const secondary = [importantTypeLabel(item.eventType), item.place, item.category].filter(Boolean).join(" · ");
     row.innerHTML = `<span class="importantDot" style="background:${esc(item.color || "#F5B841")}"></span><span class="importantBoardMain"><b>${esc(item.icon || "★")} ${esc(item.title || "")}</b><small>${esc(importantScheduleLabel(item))} · ${esc(repeatLabel(item.repeatMode))}</small><span class="importantBoardMetaLine">${esc(secondary)}</span></span><span class="importantBoardNext"><small>${esc(t("Следующее событие"))}</small><b class="mono">${esc(formatDateHuman(item.nextOccurrence))}</b></span><span class="importantBoardActions"><button type="button" data-important-details="${item.id}">${esc(t("Подробнее"))}</button><button type="button" data-important-edit="${item.id}">${esc(t("ред."))}</button></span>`;
-    row.addEventListener("click", e => { if (!e.target.closest("button")) openImportantDetails(item.id); });
+    row.addEventListener("click", e => {
+      if (e.target.closest("button,a,input,select,textarea,[role=button],[data-important-details],[data-important-edit]")) return;
+      openImportantDetails(item.id);
+    });
     box.appendChild(row);
   }
-  box.querySelectorAll("[data-important-details]").forEach(btn => btn.addEventListener("click", () => openImportantDetails(Number(btn.dataset.importantDetails))));
-  box.querySelectorAll("[data-important-edit]").forEach(btn => btn.addEventListener("click", () => startEditImportantDay(Number(btn.dataset.importantEdit))));
+  box.querySelectorAll("[data-important-details]").forEach(btn => btn.addEventListener("click", e => {
+    e.preventDefault();
+    e.stopPropagation();
+    openImportantDetails(Number(btn.dataset.importantDetails));
+  }));
+  box.querySelectorAll("[data-important-edit]").forEach(btn => btn.addEventListener("click", e => {
+    e.preventDefault();
+    e.stopPropagation();
+    startEditImportantDay(Number(btn.dataset.importantEdit));
+  }));
 }
 
 async function saveImportantEvent(e){
@@ -355,11 +381,12 @@ async function saveImportantEvent(e){
   try {
     if (state.editingImportantDayId) await api.updateImportantDay(state.editingImportantDayId, payload);
     else await api.createImportantDay(payload);
-    closeImportantEditor();
+    closeImportantEventModals();
     await refreshImportantSettings();
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     await loadMonth();
     renderCalendar(); renderImportantDays(); updateAccSummaries();
+    closeImportantEventModals();
     setSave("saved", t("Событие сохранено"));
   } catch (err) {
     console.error(err);
@@ -432,9 +459,9 @@ $("importantEditStartDate")?.addEventListener("change", () => { if (!$("importan
 $("importantEditForm")?.addEventListener("submit", saveImportantEvent);
 for (const id of ["importantEditClose","importantEditCancel","importantEditBackdrop"]) $(id)?.addEventListener("click", closeImportantEditor);
 for (const id of ["importantDetailsClose","importantDetailsBackdrop"]) $(id)?.addEventListener("click", closeImportantDetails);
-$("importantDetailsEdit")?.addEventListener("click", () => openImportantEditor(state.viewingImportantDayId));
-$("importantDetailsDelete")?.addEventListener("click", () => removeImportantDay(state.viewingImportantDayId));
-$("importantDetailsOpenDay")?.addEventListener("click", () => { const item = importantById(state.viewingImportantDayId); closeImportantDetails(); openImportantCalendarDay(importantNextOccurrence(item)); });
+$("importantDetailsEdit")?.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); openImportantEditor(state.viewingImportantDayId); });
+$("importantDetailsDelete")?.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); removeImportantDay(state.viewingImportantDayId); });
+$("importantDetailsOpenDay")?.addEventListener("click", e => { e.preventDefault(); e.stopPropagation(); const item = importantById(state.viewingImportantDayId); closeImportantDetails(); openImportantCalendarDay(importantNextOccurrence(item)); });
 document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (!$("importantEditModal")?.hidden) closeImportantEditor(); else if (!$("importantDetailsModal")?.hidden) closeImportantDetails(); });
 resetImportantBoardForm();
 

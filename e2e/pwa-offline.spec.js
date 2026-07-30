@@ -1,7 +1,14 @@
 const { test, expect } = require('@playwright/test');
 const { registerAndOnboard, currentLocalDateKey, selectDate, waitForApi, openDayModule } = require('./helpers');
 
-test('installed web shell reopens from IndexedDB snapshot while offline', async ({ browser, baseURL }) => {
+async function queuedNoteUpdates(page) {
+  return page.evaluate(async () => {
+    const items = await dataLayer.getQueueItems();
+    return items.filter(item => item.type === 'updateNote').length;
+  });
+}
+
+test('installed web shell preserves and synchronizes an existing note edited offline', async ({ browser, baseURL }) => {
   const context = await browser.newContext({
     baseURL,
     locale: 'ru-RU',
@@ -44,8 +51,39 @@ test('installed web shell reopens from IndexedDB snapshot while offline', async 
     await selectDate(page, date);
     await openDayModule(page, 'notes');
     await expect(page.locator('#noteEdit')).toHaveValue(note);
-    await expect(page.locator('#noteEdit')).toHaveAttribute('readonly', '');
+    await expect(page.locator('#noteEdit')).toBeEditable();
     await expect(page.locator('#noteAdd')).toBeDisabled();
+
+    const offlineEdit = `${note} · queued offline edit`;
+    await page.locator('#noteEdit').fill(offlineEdit);
+    await expect.poll(() => queuedNoteUpdates(page)).toBe(1);
+    await expect(page.locator('#offlineStatus')).toContainText(/1 не отправлено|1 pending/i);
+
+    // The optimistic snapshot and the queue must both survive a full offline reload.
+    await page.reload({ waitUntil: 'domcontentloaded' });
+    await expect(page.locator('#appBoot')).toBeHidden({ timeout: 30_000 });
+    await selectDate(page, date);
+    await openDayModule(page, 'notes');
+    await expect(page.locator('#noteEdit')).toHaveValue(offlineEdit);
+    await expect.poll(() => queuedNoteUpdates(page)).toBe(1);
+
+    const synchronized = page.waitForResponse(response => {
+      const url = new URL(response.url());
+      return response.request().method() === 'PATCH'
+        && /^\/api\/notes\/\d+$/.test(url.pathname)
+        && response.status() === 200;
+    });
+    await context.setOffline(false);
+    await synchronized;
+    await expect.poll(() => queuedNoteUpdates(page)).toBe(0);
+    await expect(page.locator('#offlineStatus')).not.toContainText(/не отправлено|pending/i);
+
+    // Finally verify the server-authoritative value after reconnect and reload.
+    await page.reload();
+    await expect(page.locator('#appBoot')).toBeHidden({ timeout: 30_000 });
+    await selectDate(page, date);
+    await openDayModule(page, 'notes');
+    await expect(page.locator('#noteEdit')).toHaveValue(offlineEdit);
   } finally {
     await context.setOffline(false).catch(() => {});
     await context.close();

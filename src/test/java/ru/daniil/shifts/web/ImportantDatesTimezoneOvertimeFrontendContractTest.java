@@ -32,6 +32,10 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
         assertFalse(html.contains("id=\"importantSettingsCard\""));
         assertTrue(js.contains("function renderImportantBoard()"));
         assertTrue(js.contains("function openImportantDetails(id)"));
+        assertTrue(js.contains("function closeImportantEventModals()"));
+        assertTrue(js.contains("closeImportantEventModals();"));
+        assertTrue(js.contains("e.stopPropagation();"));
+        assertTrue(js.contains("button,a,input,select,textarea,[role=button]"));
         assertTrue(js.contains("async function saveImportantEvent(e)"));
         assertTrue(js.contains("openImportantEditor(null, date);"));
         assertTrue(js.contains("eventType:type"));

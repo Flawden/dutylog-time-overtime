@@ -1,18 +1,26 @@
-> Current release: **v27.20.0 — Notes & Important Events Next**.
+> Current release: **v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix**.
 
 # DutyLog
 
-Current release: **v27.20.0 — Notes & Important Events Next**
+Current release: **v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.20.0 — Notes & Important Events Next
+## Текущая версия: v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix
+
+**v27.20.1** закрывает три регрессии, найденные полным Playwright gate после Notes & Important Events Next:
+
+- details/editor важных событий теперь взаимоисключающие и гарантированно закрываются после сохранения;
+- общий `selectDate()` корректно работает, когда месячная сетка скрыта режимами Week/Day, и восстанавливает исходный масштаб;
+- PWA-тест проверяет реальный контракт оффлайн-редактирования существующей заметки: IndexedDB snapshot, coalesced `updateNote` queue, reconnect, sync и серверное подтверждение.
+
+API и схема не менялись. Сохраняются **Flyway V38**, **97 Java-тестовых классов, 513 `@Test` методов и 29 Playwright browser scenarios**.
+
+### Базовый продуктовый релиз: v27.20.0 — Notes & Important Events Next
 
 **Заметки** получили поиск по заголовкам и Markdown-тексту, переход к точному дню/заметке, экспорт и безопасное оффлайн-редактирование существующих записей через синхронизируемую очередь.
 
-**Важные события** теперь имеют три режима: важная дата, событие и период. Поддерживаются весь день или точное время, исходная IANA-зона, абсолютные моменты, место, описание, значок, категория, цвет, повторение и собственные напоминания. Карточки стали read-first, timed-события появились в почасовом календаре, а периоды — в all-day rail.
-
-Схема обновлена до **Flyway V38**. Автоматическая база: **97 Java-тестовых классов, 513 `@Test` методов и 29 Playwright browser scenarios**.
+**Важные события** получили режимы `IMPORTANT_DATE / EVENT / PERIOD`, all-day/timed семантику, исходную IANA-зону, canonical instants, read-first карточки, полноценный редактор, почасовой календарь и индивидуальные напоминания.
 
 ### Предыдущий hotfix: v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix
 
@@ -413,7 +421,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.20.0 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить all-day, point, interval, overnight, project filter, Inbox search и timezone reprojection. Следующий продуктовый этап — **v27.20.0 — Notes & Important Events Next**.
+Следующий практический шаг — пропустить v27.20.1 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить modal exclusivity, Day-mode date selection и offline note reconnect/sync. Следующий продуктовый этап — **v27.21.0 — Schedule Templates & Calendar Layers**.
 
 ## Служебный профиль администратора
 
