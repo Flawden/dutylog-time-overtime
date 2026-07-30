@@ -39,6 +39,16 @@ const api = {
   async moveDayNote(id,direction) { return jfetch(`/api/notes/${id}/move`, { method:"POST", body:{ direction } }); },
   async deleteDayNote(id)   { return jfetch(`/api/notes/${id}`, { method:"DELETE" }); },
   async fillDays(b)        { return jfetch("/api/days/fill", { method:"POST", body:b }); },
+  async scheduleTemplates() { return jfetch("/api/schedule-templates"); },
+  async createScheduleTemplate(b) { return jfetch("/api/schedule-templates", { method:"POST", body:b }); },
+  async updateScheduleTemplate(id,b) { return jfetch(`/api/schedule-templates/${id}`, { method:"PATCH", body:b }); },
+  async deleteScheduleTemplate(id) { return jfetch(`/api/schedule-templates/${id}`, { method:"DELETE" }); },
+  async previewScheduleTemplate(id,b) { return jfetch(`/api/schedule-templates/${id}/preview`, { method:"POST", body:b }); },
+  async applyScheduleTemplate(id,b) { return jfetch(`/api/schedule-templates/${id}/apply`, { method:"POST", body:b }); },
+  async calendarLayers() { return jfetch("/api/calendar-layers"); },
+  async createCalendarLayer(b) { return jfetch("/api/calendar-layers", { method:"POST", body:b }); },
+  async updateCalendarLayer(id,b) { return jfetch(`/api/calendar-layers/${id}`, { method:"PATCH", body:b }); },
+  async deleteCalendarLayer(id) { return jfetch(`/api/calendar-layers/${id}`, { method:"DELETE" }); },
   async modules()          { return jfetch("/api/modules"); },
   async moduleContracts()  { return jfetch("/api/modules/contracts"); },
   async updateModules(enabled) { return jfetch("/api/modules", { method:"PATCH", body:{ enabled } }); },
@@ -181,6 +191,7 @@ function sanitizeCalendarBundleForModules(bundle){
   clean.modules = Array.isArray(bundle.modules) ? bundle.modules : (state.modulesList || []);
   clean.days = (bundle.days || []).map(sanitizeDayForModules);
   clean.shiftOccurrences = Array.isArray(bundle.shiftOccurrences) ? bundle.shiftOccurrences : [];
+  clean.calendarLayers = Array.isArray(bundle.calendarLayers) ? bundle.calendarLayers : [];
   if (!moduleEnabled("tasks")) clean.tasks = [];
   if (!moduleEnabled("important_dates")) clean.importantDays = [];
   if (!moduleEnabled("overtime")) {

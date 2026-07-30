@@ -657,6 +657,126 @@ paths:
           content:
             application/zip:
               schema: { type: string, format: binary }
+  /api/v1/schedule-templates:
+    get:
+      operationId: listScheduleTemplates
+      responses:
+        '200':
+          description: Built-in and user-defined reusable shift cycles
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ScheduleTemplate' } }
+    post:
+      operationId: createScheduleTemplate
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScheduleTemplateInput' }
+      responses:
+        '201':
+          description: User template created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ScheduleTemplate' }
+        '400': { $ref: '#/components/responses/ApiError' }
+  /api/v1/schedule-templates/{id}:
+    patch:
+      operationId: updateScheduleTemplate
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScheduleTemplatePatch' }
+      responses:
+        '200': { description: User template updated }
+        '404': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: deleteScheduleTemplate
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: User template deleted }
+        '404': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/schedule-templates/{id}/preview:
+    post:
+      operationId: previewScheduleTemplate
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScheduleTemplateApplyRequest' }
+      responses:
+        '200':
+          description: Conflict-aware non-mutating preview
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ScheduleTemplatePreview' }
+  /api/v1/schedule-templates/{id}/apply:
+    post:
+      operationId: applyScheduleTemplate
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ScheduleTemplateApplyRequest' }
+      responses:
+        '200':
+          description: Dated shifts written; occupied days are skipped unless overwrite is explicit
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ScheduleTemplateApplyResult' }
+  /api/v1/calendar-layers:
+    get:
+      operationId: listCalendarLayers
+      responses:
+        '200':
+          description: Read-only companion calendar layers
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/CalendarLayer' } }
+    post:
+      operationId: createCalendarLayer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CalendarLayerInput' }
+      responses:
+        '201':
+          description: Layer created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarLayer' }
+  /api/v1/calendar-layers/{id}:
+    patch:
+      operationId: updateCalendarLayer
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CalendarLayerPatch' }
+      responses:
+        '200': { description: Layer metadata or visibility updated }
+        '404': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: deleteCalendarLayer
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Layer deleted }
+        '404': { $ref: '#/components/responses/ApiError' }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -671,6 +791,161 @@ components:
           schema:
             $ref: '#/components/schemas/ApiError'
   schemas:
+    ScheduleTemplateStep:
+      type: object
+      required: [position, shiftTypeId, shiftTypeName, shiftColor, dayOff]
+      properties:
+        position: { type: integer, minimum: 0, maximum: 63 }
+        shiftTypeId: { type: integer, format: int64 }
+        shiftTypeName: { type: string }
+        shiftColor: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+        dayOff: { type: boolean }
+    ScheduleTemplateInput:
+      type: object
+      required: [name, shiftTypeIds]
+      properties:
+        name: { type: string, maxLength: 100 }
+        description: { type: string, maxLength: 400, nullable: true }
+        alignmentMode: { type: string, enum: [CYCLE_START, WEEKDAY], default: CYCLE_START }
+        shiftTypeIds:
+          type: array
+          minItems: 1
+          maxItems: 64
+          items: { type: integer, format: int64 }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+    ScheduleTemplatePatch:
+      type: object
+      description: All fields are optional for PATCH; built-in presets are immutable.
+      properties:
+        name: { type: string, maxLength: 100 }
+        description: { type: string, maxLength: 400, nullable: true }
+        alignmentMode: { type: string, enum: [CYCLE_START, WEEKDAY] }
+        shiftTypeIds:
+          type: array
+          minItems: 1
+          maxItems: 64
+          items: { type: integer, format: int64 }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+    ScheduleTemplate:
+      type: object
+      required: [id, name, alignmentMode, systemPreset, sortOrder, steps]
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        description: { type: string, nullable: true }
+        alignmentMode: { type: string, enum: [CYCLE_START, WEEKDAY] }
+        systemPreset: { type: boolean }
+        sortOrder: { type: integer }
+        steps: { type: array, items: { $ref: '#/components/schemas/ScheduleTemplateStep' } }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ScheduleTemplateApplyRequest:
+      type: object
+      required: [startDate, endDate]
+      properties:
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        anchorDate: { type: string, format: date, nullable: true }
+        overwriteExistingShift: { type: boolean, default: false }
+    ScheduleTemplatePreviewItem:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        cyclePosition: { type: integer }
+        shiftTypeId: { type: integer, format: int64 }
+        shiftTypeName: { type: string }
+        shiftColor: { type: string }
+        existingShiftTypeId: { type: integer, format: int64, nullable: true }
+        existingShiftTypeName: { type: string, nullable: true }
+        action: { type: string, enum: [APPLY, OVERWRITE, SAME, SKIP_CONFLICT] }
+    ScheduleTemplatePreview:
+      type: object
+      properties:
+        templateId: { type: integer, format: int64 }
+        templateName: { type: string }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        anchorDate: { type: string, format: date }
+        overwriteExistingShift: { type: boolean }
+        totalDays: { type: integer }
+        writeCount: { type: integer }
+        unchangedCount: { type: integer }
+        skippedCount: { type: integer }
+        conflictCount: { type: integer }
+        items: { type: array, items: { $ref: '#/components/schemas/ScheduleTemplatePreviewItem' } }
+    ScheduleTemplateApplyResult:
+      type: object
+      properties:
+        templateId: { type: integer, format: int64 }
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        appliedCount: { type: integer }
+        unchangedCount: { type: integer }
+        skippedCount: { type: integer }
+        conflictCount: { type: integer }
+        days: { type: array, items: { $ref: '#/components/schemas/Day' } }
+    CalendarLayerInput:
+      type: object
+      required: [name, timezone, templateId, anchorDate, startDate]
+      properties:
+        name: { type: string, maxLength: 80 }
+        color: { type: string, pattern: '^#[0-9a-fA-F]{6}$', default: '#7AB8FF' }
+        timezone: { type: string, maxLength: 80, example: Europe/Berlin }
+        visible: { type: boolean, default: true }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+        templateId: { type: integer, format: int64 }
+        anchorDate: { type: string, format: date }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date, nullable: true }
+    CalendarLayerPatch:
+      type: object
+      description: All fields are optional for PATCH; clearEndDate removes the upper bound.
+      properties:
+        name: { type: string, maxLength: 80 }
+        color: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+        timezone: { type: string, maxLength: 80, example: Europe/Berlin }
+        visible: { type: boolean }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+        templateId: { type: integer, format: int64 }
+        anchorDate: { type: string, format: date }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date, nullable: true }
+        clearEndDate: { type: boolean, default: false }
+    CalendarLayerEntry:
+      type: object
+      properties:
+        layerId: { type: integer, format: int64 }
+        layerName: { type: string }
+        layerColor: { type: string }
+        sourceDate: { type: string, format: date }
+        date: { type: string, format: date }
+        shiftTypeId: { type: integer, format: int64 }
+        shiftTypeName: { type: string }
+        shiftColor: { type: string }
+        sourceTimezone: { type: string }
+        startInstant: { type: string, format: date-time, nullable: true }
+        endInstant: { type: string, format: date-time, nullable: true }
+        displayStart: { type: string, nullable: true }
+        displayEnd: { type: string, nullable: true }
+        timed: { type: boolean }
+        dayOff: { type: boolean }
+    CalendarLayer:
+      type: object
+      required: [id, name, color, timezone, visible, templateId, anchorDate, startDate, readOnly, entries]
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        color: { type: string }
+        timezone: { type: string }
+        visible: { type: boolean }
+        sortOrder: { type: integer }
+        templateId: { type: integer, format: int64 }
+        templateName: { type: string }
+        anchorDate: { type: string, format: date }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date, nullable: true }
+        readOnly: { type: boolean, enum: [true] }
+        entries: { type: array, items: { $ref: '#/components/schemas/CalendarLayerEntry' } }
     ApiError:
       type: object
       required: [code, message, error, timestamp]

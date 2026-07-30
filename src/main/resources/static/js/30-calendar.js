@@ -387,88 +387,120 @@ function selectDay(k){
 }
 
 
+function scheduleDateOffset(key, days){
+  const [year, month, day] = String(key || "").split("-").map(Number);
+  const value = new Date(Date.UTC(year, month - 1, day + Number(days || 0)));
+  return `${value.getUTCFullYear()}-${String(value.getUTCMonth() + 1).padStart(2,"0")}-${String(value.getUTCDate()).padStart(2,"0")}`;
+}
+function selectedScheduleTemplate(){
+  const id = Number($("tplPreset")?.value || 0);
+  return (state.scheduleTemplates || []).find(item => Number(item.id) === id) || null;
+}
+function renderScheduleTemplateOptions(){
+  const select = $("tplPreset");
+  if (!select) return;
+  const previous = select.value;
+  select.innerHTML = "";
+  for (const template of state.scheduleTemplates || []) {
+    const option = document.createElement("option");
+    option.value = template.id;
+    option.textContent = `${template.name} · ${template.steps?.length || 0}`;
+    select.appendChild(option);
+  }
+  if (previous && [...select.options].some(option => option.value === previous)) select.value = previous;
+}
+function renderSchedulePreview(preview){
+  const box = $("tplPreview");
+  if (!box) return;
+  state.scheduleTemplatePreview = preview || null;
+  box.hidden = !preview;
+  if (!preview) { box.innerHTML = ""; return; }
+  const items = (preview.items || []).slice(0, 14);
+  box.innerHTML = `
+    <div class="schedulePreviewSummary">
+      <b>${esc(preview.templateName || t("Шаблон"))}</b>
+      <span>${esc(`${preview.writeCount} ${t("будет записано")} · ${preview.unchangedCount} ${t("без изменений")} · ${preview.skippedCount} ${t("пропущено")}`)}</span>
+      ${preview.conflictCount ? `<strong>${esc(`${preview.conflictCount} ${t("конфликтов")}`)}</strong>` : ""}
+    </div>
+    <div class="schedulePreviewItems">${items.map(item => `
+      <span class="schedulePreviewItem ${String(item.action || "").toLowerCase()}">
+        <i style="background:${esc(item.shiftColor || "var(--accent)")}"></i>
+        <b>${esc(item.date)}</b>
+        <em>${esc(item.shiftTypeName || "—")}</em>
+        <small>${esc({APPLY:t("записать"), OVERWRITE:t("заменить"), SAME:t("уже совпадает"), SKIP_CONFLICT:t("пропустить")}[item.action] || item.action)}</small>
+      </span>`).join("")}</div>
+    ${(preview.items || []).length > items.length ? `<small class="schedulePreviewMore">${esc(t(`И ещё ${preview.items.length - items.length} дней`))}</small>` : ""}`;
+}
 function renderScheduleControls(){
   if (!state.selected) return;
+  renderScheduleTemplateOptions();
   const input = $("tplDays");
   if (!input.dataset.userTouched) input.value = DEFAULT_SCHEDULE_DAYS;
-
-  const tpl = SCHEDULE_TEMPLATES[$("tplPreset").value];
-  const names = effectiveTemplateNames(tpl, state.selected).map(shiftDisplayName);
-  const missing = [...new Set(tpl.names)].filter(name => !findShiftByName(name));
+  const template = selectedScheduleTemplate();
   const hint = $("tplHint");
-  if (missing.length) {
-    hint.textContent = t(`Не хватает смен: ${missing.map(shiftDisplayName).join(", ")}. Перезагрузи страницу или создай их вручную.`);
+  if (!template) {
+    hint.textContent = t("Шаблоны графика ещё не загружены.");
     $("tplApply").disabled = true;
-  } else if (tpl.weekly) {
-    hint.textContent = t(`Пятидневка привязана к дням недели: Пн–Пт рабочие, Сб–Вс выходные. От выбранного дня пойдёт так: ${names.join(" → ")}.`);
-    $("tplApply").disabled = false;
-  } else {
-    hint.textContent = t(`Шаблон от выбранного дня: ${names.join(" → ")}. Заметки не стираются, меняется только тип смены.`);
-    $("tplApply").disabled = false;
+    $("tplPreviewBtn").disabled = true;
+    return;
+  }
+  const names = (template.steps || []).map(step => shiftDisplayName(step.shiftTypeName || ""));
+  const mode = template.alignmentMode === "WEEKDAY" ? t("привязка к дням недели") : t("цикл от выбранной даты");
+  hint.textContent = `${mode}: ${names.join(" → ")}. ${t("Занятые дни по умолчанию не перезаписываются.")}`;
+  $("tplApply").disabled = false;
+  $("tplPreviewBtn").disabled = false;
+  $("sumSched").textContent = template.name;
+}
+async function previewScheduleTemplateSelection(){
+  const selected = state.selected;
+  const template = selectedScheduleTemplate();
+  if (!selected || !template) return null;
+  const count = Number($("tplDays").value);
+  if (!Number.isInteger(count) || count < 1 || count > 366) {
+    setSave("err", t("количество дней: от 1 до 366"));
+    return null;
+  }
+  const payload = {
+    startDate:selected,
+    endDate:scheduleDateOffset(selected, count - 1),
+    anchorDate:selected,
+    overwriteExistingShift:!!$("tplOverwrite").checked,
+  };
+  setSave("saving", t("проверяю график…"));
+  try {
+    const preview = await api.previewScheduleTemplate(template.id, payload);
+    renderSchedulePreview(preview);
+    setSave("saved", preview.conflictCount ? t("предпросмотр готов — есть конфликты") : t("предпросмотр готов"));
+    return { preview, payload, template };
+  } catch (error) {
+    console.error(error);
+    setSave("err", error.message);
+    return null;
   }
 }
-
 async function applyScheduleTemplate(event){
   event?.preventDefault();
   event?.stopPropagation();
-  const k = state.selected;
-  if (!k) return;
   await flushPendingSave();
-
-  const tpl = SCHEDULE_TEMPLATES[$("tplPreset").value];
-  const names = effectiveTemplateNames(tpl, k);
-  const displayNames = names.map(shiftDisplayName);
-  const shifts = names.map(findShiftByName);
-  if (shifts.some(s => !s)) {
-    renderScheduleControls();
-    return setSave("err", t("не хватает смен для шаблона"));
+  const prepared = await previewScheduleTemplateSelection();
+  if (!prepared) return;
+  const { preview, payload, template } = prepared;
+  if (preview.conflictCount && payload.overwriteExistingShift) {
+    const accepted = window.confirm(t(`Будут заменены занятые дни: ${preview.conflictCount}. Продолжить?`));
+    if (!accepted) return setSave("", t("применение отменено"));
   }
-
-  const count = Number($("tplDays").value);
-  if (!Number.isInteger(count) || count < 1 || count > 366) {
-    return setSave("err", t("количество дней: от 1 до 366"));
-  }
-
-  setSave("saving");
+  setSave("saving", t("заполняю график…"));
   try {
-    const changed = await api.fillDays({
-      startDate: k,
-      days: count,
-      shiftTypeIds: shifts.map(s => s.id),
-      overwriteExistingShift: $("tplOverwrite").checked,
-    });
-
-    const prefix = monthPrefix();
-    for (const e of changed) {
-      if (e.date.startsWith(prefix)) state.days[e.date] = normalizeDay(e);
+    const result = await api.applyScheduleTemplate(template.id, payload);
+    for (const entry of result.days || []) {
+      if (entry?.date) state.days[entry.date] = normalizeDay(entry);
     }
-
-    // A successful mutation must be followed by a direct, cache-bypassing read from the
-    // server. Do not route this through loadMonth(): that path is intentionally allowed
-    // to paint IndexedDB first, which is useful on boot but wrong immediately after a
-    // write where the user expects authoritative state.
-    const requestedYear = state.y;
-    const requestedMonth = state.m;
-    const bundle = await api.month(requestedYear, requestedMonth, { fresh:true });
-    if (state.y !== requestedYear || state.m !== requestedMonth) return;
-    await dataLayer.writeSnapshot(bundle, requestedYear, requestedMonth);
-    applyCalendarBundle(bundle);
-
-    const monthStart = monthFromTo(requestedYear, requestedMonth).from;
-    const monthEnd = monthFromTo(requestedYear, requestedMonth).to;
-    const expectedVisible = changed.filter(e => e.date >= monthStart && e.date <= monthEnd).length;
-    const actualVisible = Object.keys(state.days).filter(date => date >= monthStart && date <= monthEnd && state.days[date]?.shiftTypeId).length;
-    if (actualVisible < expectedVisible) {
-      throw new Error(`${t("Сервер вернул неполный график. Изменения не подтверждены.")} (${actualVisible}/${expectedVisible})`);
-    }
-
-    setSave("saved");
-    renderChips();
-    renderNotifications();
-    renderCalendar();
-  } catch (err) {
-    console.error(err);
-    setSave("err", err.message);
+    await loadMonth({ fresh:true });
+    renderSchedulePreview(null);
+    setSave("saved", t(`График применён: ${result.appliedCount} дней`));
+  } catch (error) {
+    console.error(error);
+    setSave("err", error.message);
   }
 }
 
@@ -505,8 +537,8 @@ function updateAccSummaries(){
     : t("не отмечена");
 
   // График — какой шаблон сейчас выбран
-  const tpl = SCHEDULE_TEMPLATES[$("tplPreset").value];
-  $("sumSched").textContent = scheduleTemplateLabel(tpl);
+  const selectedTemplate = selectedScheduleTemplate();
+  $("sumSched").textContent = selectedTemplate?.name || t("не выбран");
 
   // Переработка: движение за день, иначе общий баланс
   if ($("sumOt")) {
@@ -550,6 +582,8 @@ function updateAccSummaries(){
     : "—");
 }
 
-$("tplPreset").addEventListener("change", renderScheduleControls);
-$("tplDays").addEventListener("input", () => { $("tplDays").dataset.userTouched = "1"; });
+$("tplPreset").addEventListener("change", () => { renderSchedulePreview(null); renderScheduleControls(); });
+$("tplDays").addEventListener("input", () => { $("tplDays").dataset.userTouched = "1"; renderSchedulePreview(null); });
+$("tplOverwrite").addEventListener("change", () => renderSchedulePreview(null));
+$("tplPreviewBtn").addEventListener("click", previewScheduleTemplateSelection);
 $("tplApply").addEventListener("click", applyScheduleTemplate);

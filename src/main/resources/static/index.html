@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.20.2"></script>
-<link href="app.css?v=27.20.2" rel="stylesheet"/>
-<link href="design-system.css?v=27.20.2" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.20.2" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.20.2" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.20.2" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.20.2" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.20.2" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.20.2" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.20.2" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.20.2" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.20.2" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.21.0"></script>
+<link href="app.css?v=27.21.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.21.0" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.21.0" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.21.0" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.21.0" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.21.0" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.21.0" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.21.0" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.21.0" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.21.0" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.21.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -166,6 +166,7 @@
       <button type="button" data-calendar-mode="day" aria-pressed="false">День</button>
     </div>
     <div class="calendarFocusLabel" id="calendarFocusLabel">—</div>
+    <div class="calendarLayerBar" id="calendarLayerBar" aria-label="Слои календаря" hidden></div>
   </div>
   <section class="calendarWeekExperience" id="calendarWeekExperience" hidden aria-label="Недельный календарь">
     <div class="calendarWeekStrip" id="calendarWeekStrip"></div>
@@ -226,22 +227,19 @@
 <summary><span class="accT">График</span><span class="accS" id="sumSched"></span></summary>
 <div class="accB">
 <div class="tplBox" id="tplBox">
-<div class="row">
-<select id="tplPreset">
-<option value="2x2-day">2 через 2: день / день / выходной / выходной</option>
-<option value="day-night-48">День / ночь / 48 часов отдыха</option>
-<option value="5x2">Пятидневка: Пн–Пт рабочие / Сб–Вс выходные</option>
-<option value="1x3-day">День / 72 часа отдыха</option>
-<option value="1x3-night">Ночь / 72 часа отдыха</option>
-</select>
+<div class="row scheduleApplyRow">
+<label class="scheduleTemplateSelectLabel">Шаблон
+<select id="tplPreset" aria-label="Шаблон графика"><option value="">Загрузка шаблонов…</option></select>
+</label>
+<label>Дней <input id="tplDays" max="366" min="1" type="number" value="31"/></label>
 </div>
-<div class="row">
-<span style="color:var(--mut)">Дней:</span>
-<input id="tplDays" max="366" min="1" type="number" value="31"/>
-<label><input checked="" id="tplOverwrite" type="checkbox"/> перезаписывать уже отмеченные смены</label>
-<button class="apply" id="tplApply" type="button">Заполнить</button>
+<div class="row scheduleApplyActions">
+<label><input id="tplOverwrite" type="checkbox"/> перезаписывать занятые дни</label>
+<button id="tplPreviewBtn" type="button">Предпросмотр</button>
+<button class="apply" id="tplApply" type="button">Применить безопасно</button>
 </div>
-<div class="tplHint" id="tplHint">По умолчанию заполняется 31 день вперёд, включая следующий месяц. Заметки не стираются.</div>
+<div class="tplHint" id="tplHint">По умолчанию занятые дни пропускаются. Перед применением DutyLog покажет конфликты.</div>
+<div class="schedulePreview" id="tplPreview" hidden></div>
 </div>
 </div>
 </details>
@@ -542,7 +540,8 @@
     <a data-settings-jump="language" href="#settings-language"><b>Язык</b><span>русский / English</span></a>
     <a data-settings-jump="modules" href="#settings-modules"><b>Модули</b><span>включить нужные функции</span></a>
     <a data-settings-jump="appearance" href="#settings-appearance"><b>Внешний вид</b><span>тема, акцент, маркеры</span></a>
-    <a data-settings-jump="time" href="#settings-time"><b>Время</b><span>часовой пояс и шаблоны смен</span></a>
+    <a data-settings-jump="time" href="#settings-time"><b>Время</b><span>часовой пояс и параметры смен</span></a>
+    <a data-settings-jump="schedule" href="#settings-schedule"><b>Графики</b><span>циклы и календарные слои</span></a>
     <a data-settings-jump="notifications" href="#settings-notifications"><b>Уведомления</b><span>браузер и расписания</span></a>
     <div class="settingsIndexActions">
       <button id="settingsExpandAll" type="button">развернуть всё</button>
@@ -847,6 +846,57 @@
 </div>
 </div>
 </section>
+<section class="settingsCard scheduleSettingsCard" id="scheduleSettingsCard" data-settings-section="schedule">
+<a class="settingsAnchor" id="settings-schedule"></a>
+<div class="settingsHead">
+<div>
+<div class="eyebrow">Графики</div>
+<div class="settingsTitle">Шаблоны и календарные слои</div>
+<div class="settingsHint">Соберите повторяющийся цикл, сначала просмотрите результат, затем заполните диапазон. Слои близких отображаются рядом с вашим графиком и остаются только для чтения.</div>
+</div>
+<div class="status" id="scheduleSettingsStatus">—</div>
+</div>
+<div class="scheduleSettingsGrid">
+<section class="schedulePane" aria-labelledby="scheduleTemplatesTitle">
+<div class="schedulePaneHead"><div><b id="scheduleTemplatesTitle">Шаблоны графика</b><span>До 64 элементов в цикле.</span></div><button class="primary" id="scheduleTemplateNew" type="button">＋ Новый</button></div>
+<div class="scheduleTemplateList" id="scheduleTemplateList"></div>
+<form class="scheduleEditor" id="scheduleTemplateForm" hidden>
+<input id="scheduleTemplateId" type="hidden"/>
+<label>Название <input id="scheduleTemplateName" maxlength="100" required/></label>
+<label>Описание <textarea id="scheduleTemplateDescription" maxlength="400" rows="2"></textarea></label>
+<label>Привязка
+<select id="scheduleTemplateAlignment"><option value="CYCLE_START">от опорной даты</option><option value="WEEKDAY">по дням недели (7 шагов)</option></select>
+</label>
+<div class="scheduleStepBuilder">
+<label>Добавить смену <select id="scheduleStepShift"></select></label>
+<button id="scheduleStepAdd" type="button">＋ В цикл</button>
+</div>
+<div class="scheduleStepList" id="scheduleStepList"></div>
+<div class="scheduleEditorActions"><button class="primary" type="submit">Сохранить шаблон</button><button id="scheduleTemplateCancel" type="button">Отмена</button><button class="dangerGhost" id="scheduleTemplateDelete" type="button" hidden>Удалить</button></div>
+<div class="profileMsg" id="scheduleTemplateMessage"></div>
+</form>
+</section>
+<section class="schedulePane" aria-labelledby="calendarLayersTitle">
+<div class="schedulePaneHead"><div><b id="calendarLayersTitle">Слои календаря</b><span>Например: мама, отец, напарник.</span></div><button class="primary" id="calendarLayerNew" type="button">＋ Новый</button></div>
+<div class="calendarLayerList" id="calendarLayerList"></div>
+<form class="scheduleEditor" id="calendarLayerForm" hidden>
+<input id="calendarLayerId" type="hidden"/>
+<div class="scheduleEditorGrid two">
+<label>Название <input id="calendarLayerName" maxlength="80" required/></label>
+<label>Цвет <input id="calendarLayerColor" type="color" value="#7AB8FF"/></label>
+<label>Часовой пояс <select id="calendarLayerTimezone"></select></label>
+<label>Шаблон <select id="calendarLayerTemplate"></select></label>
+<label>Опорная дата <input id="calendarLayerAnchor" type="date" required/></label>
+<label>Начало показа <input id="calendarLayerStart" type="date" required/></label>
+<label>Остановить после <input id="calendarLayerEnd" type="date"/></label>
+<label class="scheduleCheck"><input id="calendarLayerVisible" type="checkbox" checked/> показывать слой</label>
+</div>
+<div class="scheduleEditorActions"><button class="primary" type="submit">Сохранить слой</button><button id="calendarLayerCancel" type="button">Отмена</button><button class="dangerGhost" id="calendarLayerDelete" type="button" hidden>Удалить</button></div>
+<div class="profileMsg" id="calendarLayerMessage"></div>
+</form>
+</section>
+</div>
+</section>
 <div class="notifyCard settingsCard" id="notifyCard" data-settings-section="notifications">
 <a class="settingsAnchor" id="settings-notifications"></a>
 <div class="notifyHead">
@@ -963,7 +1013,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.20.2</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.21.0</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1575,15 +1625,16 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.20.2"></script>
-<script src="js/12-ui-platform.js?v=27.20.2"></script>
-<script src="js/20-data.js?v=27.20.2"></script>
-<script src="js/30-calendar.js?v=27.20.2"></script>
-<script src="js/35-today.js?v=27.20.2"></script>
-<script src="js/37-calendar-experience.js?v=27.20.2"></script>
-<script src="js/40-overtime.js?v=27.20.2"></script>
-<script src="js/50-tasks.js?v=27.20.2"></script>
-<script src="js/60-settings.js?v=27.20.2"></script>
-<script src="js/70-user-boot.js?v=27.20.2"></script>
+<script src="js/10-core.js?v=27.21.0"></script>
+<script src="js/12-ui-platform.js?v=27.21.0"></script>
+<script src="js/20-data.js?v=27.21.0"></script>
+<script src="js/30-calendar.js?v=27.21.0"></script>
+<script src="js/35-today.js?v=27.21.0"></script>
+<script src="js/37-calendar-experience.js?v=27.21.0"></script>
+<script src="js/38-schedule-layers.js?v=27.21.0"></script>
+<script src="js/40-overtime.js?v=27.21.0"></script>
+<script src="js/50-tasks.js?v=27.21.0"></script>
+<script src="js/60-settings.js?v=27.21.0"></script>
+<script src="js/70-user-boot.js?v=27.21.0"></script>
 </body>
 </html>

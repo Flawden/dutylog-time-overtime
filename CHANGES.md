@@ -1,3 +1,14 @@
+# v27.21.0 — Schedule Templates & Calendar Layers
+
+- Added reusable owner-scoped schedule templates with up to 64 ordered shift steps, cycle-start or weekday alignment and five immutable built-in presets.
+- Added conflict-aware preview and safe application: occupied days are skipped by default, overwrite is explicit, and manual day edits remain ordinary dated records after application.
+- Added read-only companion calendar layers with name, color, IANA timezone, template, anchor, date bounds and server-owned visibility.
+- Projected timed layer shifts from their source timezone into the user's display timezone while keeping all-day/off occurrences floating.
+- Composed visible layers into month cells, week agenda and hourly day timeline without duplicating or mutating the owner's calendar rows.
+- Added full settings management, API v1 contracts, Flyway V39 and end-to-end coverage for preview, apply, projection and visibility.
+- Protected template integrity: a custom shift type cannot be deleted while any schedule template still references it.
+- Regression baseline is now 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
+
 # v27.20.2 — Calendar Day Details E2E Flow Hotfix
 
 - Replaced the final hidden Month-grid assumption in `notes-important-events-next.spec.js` with the real «Все детали дня» product route from the focused Day view.

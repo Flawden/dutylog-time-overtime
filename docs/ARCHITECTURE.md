@@ -176,7 +176,7 @@ RequestDiagnosticsFilter
 
 ## База данных
 
-В production схема управляется Flyway; текущая последовательность заканчивается на V38 Important Events Next. Новые изменения БД добавляются только новыми миграциями:
+В production схема управляется Flyway; текущая последовательность заканчивается на V39 Schedule Templates & Calendar Layers. Новые изменения БД добавляются только новыми миграциями:
 
 ```text
 src/main/resources/db/migration/V14__example.sql
@@ -270,3 +270,7 @@ Since v25.0 DutyLog has a user-module layer. Modules are registered in backend c
 The user-facing time model is one canonical IANA timezone. Historical work/display fields remain aliases so older clients keep working. Absolute overtime is reprojected without changing UTC identity; floating dates are not shifted.
 
 Legacy local-only credits cross an explicit migration boundary. The user chooses the source timezone, previews the conversion and confirms selected rows. Rows without precise local start/end stay quantity-only. Reconstructed allocations carry a marker instead of claiming original certainty.
+
+## Schedule templates and calendar layers
+
+`ScheduleTemplate` stores reusable rules; applying a template writes ordinary `DayEntry` shifts. `CalendarLayer` stores only read-only projection metadata and derives occurrences at query time. Timed occurrences resolve in the layer IANA timezone and project into the user's display timezone. No companion occurrence is persisted as an owner day.

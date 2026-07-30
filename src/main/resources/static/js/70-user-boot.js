@@ -27,6 +27,7 @@ function applyCalendarBundle(bundle){
   state.tasksByDate = {};
   state.importantByDate = {};
   state.remindersByDate = {};
+  state.calendarLayerEntriesByDate = {};
   if (bundle.shiftTypes) {
     state.shiftTypes = bundle.shiftTypes;
     if (typeof syncTimeSettingsFromBuiltins === "function") syncTimeSettingsFromBuiltins();
@@ -41,6 +42,10 @@ function applyCalendarBundle(bundle){
   if (moduleEnabled("important_dates")) for (const i of bundle.importantDays || []) addToDateMap(state.importantByDate, i);
   state.notificationSettings = moduleEnabled("notifications") ? (bundle.notificationSettings || state.notificationSettings) : null;
   state.quickScenarios = moduleEnabled("scenarios") ? (bundle.quickScenarios || state.quickScenarios || []) : [];
+  state.calendarLayers = Array.isArray(bundle.calendarLayers) ? bundle.calendarLayers : (state.calendarLayers || []);
+  for (const layer of state.calendarLayers) {
+    for (const entry of layer.entries || []) addToDateMap(state.calendarLayerEntriesByDate, { ...entry, layer });
+  }
   state.reminders = moduleEnabled("notifications") ? (bundle.reminders || []) : [];
   for (const r of state.reminders) addToDateMap(state.remindersByDate, { ...r, date:r.sourceDate });
   if (moduleEnabled("overtime") && bundle.overtimeAccount) state.overtimeAccount = bundle.overtimeAccount;
@@ -164,6 +169,8 @@ async function init(){
     setAppBooting(true, "Загружаю календарь…");
     state.shiftTypes = await api.shiftTypes();
     state.quickScenarios = moduleEnabled("scenarios") ? await api.quickScenarios() : [];
+    state.scheduleTemplates = await api.scheduleTemplates();
+    state.calendarLayers = await api.calendarLayers();
     if (moduleEnabled("important_dates")) await refreshImportantSettings();
     // The calendar projection depends on the persisted work/display zones. Load the
     // authoritative profile before the first month request instead of racing both.

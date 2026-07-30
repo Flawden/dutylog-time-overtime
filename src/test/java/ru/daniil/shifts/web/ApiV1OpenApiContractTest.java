@@ -20,6 +20,12 @@ class ApiV1OpenApiContractTest {
             assertTrue(yaml.contains("ApiError:"));
             assertTrue(yaml.contains("ALREADY_APPLIED"));
             assertTrue(yaml.contains("VERSION_CONFLICT"));
+            assertTrue(yaml.contains("/api/v1/schedule-templates:"));
+            assertTrue(yaml.contains("/api/v1/schedule-templates/{id}/preview:"));
+            assertTrue(yaml.contains("/api/v1/calendar-layers:"));
+            assertTrue(yaml.contains("ScheduleTemplatePreview:"));
+            assertTrue(yaml.contains("CalendarLayerEntry:"));
+            assertTrue(yaml.contains("clearEndDate: { type: boolean, default: false }"));
         }
     }
     @Test

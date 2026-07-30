@@ -1,20 +1,38 @@
-> Current release: **v27.20.2 — Calendar Day Details E2E Flow Hotfix**.
+# v27.21.0 — Schedule Templates & Calendar Layers
+
+- Added reusable owner-scoped schedule templates with up to 64 ordered shift steps, cycle-start or weekday alignment and five immutable built-in presets.
+- Added conflict-aware preview and safe application: occupied days are skipped by default, overwrite is explicit, and manual day edits remain ordinary dated records after application.
+- Added read-only companion calendar layers with name, color, IANA timezone, template, anchor, date bounds and server-owned visibility.
+- Projected timed layer shifts from their source timezone into the user's display timezone while keeping all-day/off occurrences floating.
+- Composed visible layers into month cells, week agenda and hourly day timeline without duplicating or mutating the owner's calendar rows.
+- Added full settings management, API v1 contracts, Flyway V39 and end-to-end coverage for preview, apply, projection and visibility.
+- Protected template integrity: a custom shift type cannot be deleted while any schedule template still references it.
+- Regression baseline is now 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
+
+> Current release: **v27.21.0 — Schedule Templates & Calendar Layers**.
 
 # DutyLog
 
-Current release: **v27.20.2 — Calendar Day Details E2E Flow Hotfix**
+Current release: **v27.21.0 — Schedule Templates & Calendar Layers**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.20.2 — Calendar Day Details E2E Flow Hotfix
+## Текущая версия: v27.21.0 — Schedule Templates & Calendar Layers
 
-**v27.20.2** закрывает последнее падение полного Playwright gate после v27.20.1:
+**v27.21.0** отделяет повторяемые правила планирования от фактических записей календаря:
 
-- сценарий Notes & Important Events больше не пытается открыть скрытый Month-only модуль заметок, оставаясь в почасовом Day-view;
-- общий helper `openSelectedDayDetails()` использует реальную кнопку «Все детали дня», сохраняет focused date и ждёт возвращения к полной панели выбранного дня;
-- `selectDate()` остаётся mode-aware и не принуждает скрытую месячную ячейку становиться видимой.
+- пользовательские шаблоны графиков поддерживают циклы от 1 до 64 шагов, выравнивание от даты начала или по дням недели и пять неизменяемых встроенных пресетов;
+- preview заранее показывает `APPLY / OVERWRITE / SAME / SKIP_CONFLICT`, а безопасное применение по умолчанию не трогает занятые дни;
+- явный overwrite меняет только смену и сохраняет остальные данные дня;
+- календарные слои отображают чужой или вспомогательный повторяющийся график как read-only проекцию в Month / Week / Day;
+- слой хранит имя, цвет, IANA timezone, шаблон, anchor, границы дат, порядок и серверную видимость;
+- пользовательскую смену нельзя удалить, пока её использует хотя бы один шаблон графика.
 
-API, production-календарь и схема не менялись. Сохраняются **Flyway V38**, **97 Java-тестовых классов, 513 `@Test` методов и 29 Playwright browser scenarios**.
+Схема обновлена до **Flyway V39**. Автоматическая база: **100 Java-тестовых классов, 525 `@Test` методов и 30 Playwright browser scenarios**.
+
+### Предыдущий релиз: v27.20.2 — Calendar Day Details E2E Flow Hotfix
+
+**v27.20.2** закрыл последнее падение полного Playwright gate после Notes & Important Events Next: сценарий использует реальную кнопку «Все детали дня» вместо прямого обращения к скрытому Month-only модулю.
 
 ### Предыдущий hotfix: v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix
 
@@ -122,7 +140,8 @@ API, production-календарь и схема не менялись. Сохр
 - Календарь смен с неизменными абсолютными экземплярами, timezone-проекцией, переносом на соседний день и типами `Дневная`, `Ночная`, `Выходной`.
 - Модульный режим: пользователь может включать и выключать Notes, Tasks, Overtime, Important dates, Notifications, Telegram и Scenarios без удаления данных.
 - Первый запуск: новый пользователь выбирает нужные модули через спокойный onboarding, а не сразу попадает в перегруженный интерфейс.
-- Автозаполнение графиков: 2/2, день/ночь/48, 5/2, день/72, ночь/72.
+- Шаблоны графиков: пять встроенных пресетов, пользовательские циклы до 64 шагов, preview, безопасное применение и явное перезаписывание конфликтов.
+- Календарные слои: read-only графики других людей или вспомогательные расписания с цветом, IANA timezone, границами и общей серверной видимостью.
 - Несколько независимых Markdown-заметок на каждый день с названиями, закреплением, сортировкой, полноэкранным редактором, живым превью и ZIP-экспортом для Obsidian/резервной копии.
 - Единый DutyLog UI Core: адаптивная фирменная шапка, нижняя мобильная навигация, workspaces, layouts, независимые темы и палитры.
 - Персонализация: светлая/тёмная/системная тема, акцентный цвет и emoji-маркеры дней без хранения картинок.

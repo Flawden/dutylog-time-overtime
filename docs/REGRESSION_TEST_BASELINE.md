@@ -1,22 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.20.2.
+Status: v27.21.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.20.2 routes Day-view browser coverage through the real selected-day details action while preserving v27.20.1 modal, timezone and offline-note fixes. Current application baseline is 97 Java test classes / 513 `@Test` methods / 29 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.21.0 covers reusable schedule templates, safe preview/apply and read-only timezone-aware calendar layers. Current application baseline is 100 Java test classes / 525 `@Test` methods / 30 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
 
-## v27.20.2 Calendar Day Details E2E Flow Hotfix extension
+## v27.21.0 Schedule Templates & Calendar Layers extension
 
-- `notes-important-events-next.spec.js` leaves the hourly Day view through the visible `#calendarDayOpenDetails` product action before opening Notes.
-- `helpers.openSelectedDayDetails()` preserves the focused date, reaches Day mode when necessary and waits for Month + `#panel` instead of touching a hidden grid cell.
-- `CalendarMobileExperienceFrontendContractTest` and `release-check.sh` protect the helper export, product-route selector and scenario usage.
-- API, production runtime, Flyway and test counts remain unchanged.
+- `ScheduleTemplatesAndLayersServiceTest` covers built-in seeding, immutable presets, safe conflicts, overwrite, weekday alignment, ownership, timezone projection, visibility and validation.
+- `ScheduleTemplatesAndLayersControllerTest` protects Web/v1 CRUD, preview/apply, calendar aggregation, CSRF, authentication and foreign-resource boundaries.
+- `ScheduleTemplatesCalendarLayersFrontendContractTest` protects bundle order, safe preview defaults and month/week/day layer composition.
+- `schedule-templates-calendar-layers.spec.js` covers the real browser flow from preview and apply through layer creation, projection and server-owned visibility.
+- Baseline advances to 100 Java classes / 525 `@Test` methods / 30 Playwright scenarios; Flyway advances to V39.
 
 ## v27.20.1 Important Event Modal & Offline Notes E2E Hotfix extension
 

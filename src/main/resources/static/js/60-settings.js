@@ -1218,6 +1218,7 @@ function renderSettingsPanels(){
   renderModuleSettings();
   applyModuleVisibility();
   renderTelegramPanel();
+  if (typeof renderScheduleLayerSettings === "function") renderScheduleLayerSettings();
   if (moduleEnabled("telegram")) loadTelegramStatus();
   refreshLegacyShiftIndicator().catch(() => {});
   refreshLegacyTaskDeadlineIndicator().catch(() => {});

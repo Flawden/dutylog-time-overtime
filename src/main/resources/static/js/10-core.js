@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.20.2"
+const DUTYLOG_VERSION = "27.21.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -95,6 +95,10 @@ const state = {
   notificationPreviewTitle: "Напоминания текущего месяца",
   remindersByDate: {},
   quickScenarios: [],
+  scheduleTemplates: [],
+  calendarLayers: [],
+  calendarLayerEntriesByDate: {},
+  scheduleTemplatePreview: null,
   timeSettings: null,
   telegramStatus: null,
   registrationSettings: null,

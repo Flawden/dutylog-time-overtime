@@ -3,6 +3,7 @@ package ru.daniil.shifts.service;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.CalendarRangeDto;
+import ru.daniil.shifts.dto.Dtos.CalendarLayerDto;
 import ru.daniil.shifts.dto.Dtos.DayDto;
 import ru.daniil.shifts.dto.Dtos.ImportantDayOccurrenceDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeSummaryDto;
@@ -30,6 +31,7 @@ public class CalendarService {
     private final NotificationService notificationService;
     private final QuickScenarioService quickScenarioService;
     private final ModuleService moduleService;
+    private final CalendarLayerService calendarLayerService;
 
     public CalendarService(DayEntryService dayEntryService,
                            ShiftTypeService shiftTypeService,
@@ -39,7 +41,8 @@ public class CalendarService {
                            ImportantDayService importantDayService,
                            NotificationService notificationService,
                            QuickScenarioService quickScenarioService,
-                           ModuleService moduleService) {
+                           ModuleService moduleService,
+                           CalendarLayerService calendarLayerService) {
         this.dayEntryService = dayEntryService;
         this.shiftTypeService = shiftTypeService;
         this.shiftOccurrenceService = shiftOccurrenceService;
@@ -49,6 +52,7 @@ public class CalendarService {
         this.notificationService = notificationService;
         this.quickScenarioService = quickScenarioService;
         this.moduleService = moduleService;
+        this.calendarLayerService = calendarLayerService;
     }
 
     @Transactional
@@ -90,6 +94,7 @@ public class CalendarService {
         NotificationSettingsDto notificationSettings = notificationsEnabled ? notificationService.settings(user) : null;
         List<NotificationReminderDto> reminders = notificationsEnabled ? notificationService.upcoming(user, from, to) : List.of();
         List<QuickScenarioDto> quickScenarios = scenariosEnabled && overtimeEnabled ? quickScenarioService.list(user) : List.of();
-        return new CalendarRangeDto(from.toString(), to.toString(), shiftTypes, dayEntries, shiftOccurrences, tasks, importantDays, overtime, overtimeAccount, notificationSettings, reminders, quickScenarios, modules);
+        List<CalendarLayerDto> calendarLayers = calendarLayerService.listForRange(user, from, to);
+        return new CalendarRangeDto(from.toString(), to.toString(), shiftTypes, dayEntries, shiftOccurrences, tasks, importantDays, overtime, overtimeAccount, notificationSettings, reminders, quickScenarios, calendarLayers, modules);
     }
 }

@@ -1,63 +1,25 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.20.2 — Calendar Day Details E2E Flow Hotfix**.
+Current release: **v27.21.0 — Schedule Templates & Calendar Layers**.
 
-## Текущая продуктовая точка — Notes & Important Events Next, browser-flow stabilized
+## Текущая продуктовая точка — reusable schedules and read-only calendar composition
 
-Статус: **v27.20.2** завершает browser-flow стабилизацию Notes & Important Events Next поверх продуктового релиза v27.20.0.
+Статус: **v27.21.0** завершает первый полноценный этап шаблонов графика и календарных слоёв.
 
-Закрыто в текущем hotfix:
+Закрыто:
 
-- Day-view покидается через реальную кнопку «Все детали дня», а не через скрытую Month-grid ячейку;
-- `openSelectedDayDetails()` сохраняет focused date и ждёт полную панель дня перед открытием Notes;
-- полный Chromium-сценарий больше не смешивает hourly Day view и Month-only accordion modules.
+- пять встроенных шаблонов и пользовательские циклы до 64 шагов;
+- alignment от anchor date или по дням недели;
+- обязательный preview с безопасным `SKIP_CONFLICT` по умолчанию;
+- явное overwrite занятых дней без скрытого изменения поведения;
+- обычные датированные смены после применения, доступные для ручной правки;
+- несколько read-only слоёв близких людей;
+- имя, цвет, IANA timezone, template, anchor, start/end и visibility слоя;
+- проекция timed shifts в display timezone пользователя;
+- month chips, week agenda и hourly day events;
+- Flyway V39, API v1, Java/static/Playwright contracts.
 
-Сохранено из v27.20.1:
-
-- одновременно открыт не более одного important-event modal;
-- board actions не всплывают в read-first row handler;
-- `selectDate()` идемпотентен в Month / Week / Day и возвращает исходный mode;
-- существующая заметка редактируется оффлайн, переживает reload, синхронизируется после reconnect и подтверждается сервером.
-
-Сделано в базовом Notes & Important Events Next:
-
-- независимые заметки дня, полноэкранный Markdown, pin/order и отдельное автосохранение;
-- owner-scoped поиск по заголовку и содержимому с переходом к точной заметке;
-- оффлайн-редактирование существующих заметок через coalesced `updateNote` queue;
-- единая модель `IMPORTANT_DATE / EVENT / PERIOD`;
-- floating all-day семантика и canonical instants + source IANA zone для timed events;
-- read-first карточка события, полноценный editor modal и индивидуальные напоминания;
-- all-day rail, week agenda и timed cards на почасовом календаре;
-- сохранены Tasks & Inbox Next, Overtime Next и единый UI Core;
-- Flyway V1–V38, Java 17, 97 Java test classes / 513 tests / 29 Playwright scenarios.
-
-Следующий продуктовый этап: **v27.21.0 — Schedule Templates & Calendar Layers**.
-
-## Этап 1 — production foundation
-
-Статус: начато в v9.
-
-Сделано:
-
-- PostgreSQL для production;
-- Flyway-миграции;
-- Dockerfile;
-- Docker Compose;
-- `.env.example`;
-- health endpoint;
-- nginx-конфиг пример;
-- backup script.
-
-Что проверить руками:
-
-1. `docker compose up -d --build`
-2. открыть `http://localhost:8080`
-3. зарегистрироваться;
-4. создать кастомную смену;
-5. заполнить график;
-6. записать переработку;
-7. перезапустить контейнеры;
-8. убедиться, что данные остались.
+Следующий этап: довести Calendar Layers до совместного доступа и импорта, не смешивая это с текущей локальной read-only моделью.
 
 ## Этап 2 — нормальная API-архитектура
 

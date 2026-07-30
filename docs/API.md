@@ -1,8 +1,32 @@
-# DutyLog API v27.20.2
+# DutyLog API v27.21.0
 
 Проект: **DutyLog: Time & Overtime**.
 
-v27.20.2 не меняет HTTP API и стабилизирует переход из почасового Day-view к полным деталям выбранного дня. Контракты v27.20.0–v27.20.1 сохраняются без изменений. Аддитивное расширение заметок и важных дат сохраняется без изменений. Старые payload'ы важных дат (`title`, `date`, `repeatMode`, `color`) остаются валидными и создают плавающий `IMPORTANT_DATE`. Flyway V38 сохраняет исторические данные без изменения их семантики.
+v27.21.0 аддитивно добавляет owner-scoped шаблоны графика и календарные слои. Существующие calendar/day/task/note/event payload'ы не меняются. Flyway V39 создаёт отдельные таблицы правил; датированные смены и исторические данные не переписываются.
+
+### Шаблоны графика
+
+```text
+GET    /api/schedule-templates
+POST   /api/schedule-templates
+PATCH  /api/schedule-templates/{id}
+DELETE /api/schedule-templates/{id}
+POST   /api/schedule-templates/{id}/preview
+POST   /api/schedule-templates/{id}/apply
+```
+
+Те же операции доступны в стабильном namespace `/api/v1/schedule-templates`. Preview возвращает `APPLY / OVERWRITE / SAME / SKIP_CONFLICT`; `overwriteExistingShift` по умолчанию равен `false`.
+
+### Календарные слои
+
+```text
+GET    /api/calendar-layers
+POST   /api/calendar-layers
+PATCH  /api/calendar-layers/{id}
+DELETE /api/calendar-layers/{id}
+```
+
+Стабильные aliases: `/api/v1/calendar-layers`. Слой хранит имя, цвет, IANA timezone, шаблон, anchor/start/end и visibility. Проекции read-only; видимые occurrences также входят в `calendar.calendarLayers`.
 
 ### Поиск заметок
 

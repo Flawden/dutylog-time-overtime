@@ -10,6 +10,7 @@ import ru.daniil.shifts.dto.Dtos.DayUpsertRequest;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeCreateRequest;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeDto;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeUpdateRequest;
+import ru.daniil.shifts.dto.Dtos.ScheduleTemplateCreateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.ShiftType;
@@ -37,6 +38,7 @@ class ShiftTypeServiceTest {
 
     @Autowired ShiftTypeService shiftTypeService;
     @Autowired DayEntryService dayEntryService;
+    @Autowired ScheduleTemplateService scheduleTemplateService;
     @Autowired ShiftTypeRepository shiftTypes;
     @Autowired DayEntryRepository days;
     @Autowired UserRepository users;
@@ -150,6 +152,11 @@ class ShiftTypeServiceTest {
                 new DayUpsertRequest(custom.id(), null, null, null, null));
         dayEntryService.upsert(owner, "2026-08-11",
                 new DayUpsertRequest(custom.id(), "сохранить", "🛠️", 2.5, 0.5));
+
+        var template = scheduleTemplateService.create(owner, new ScheduleTemplateCreateRequest(
+                "Шаблон с резервом", null, "CYCLE_START", List.of(custom.id()), 100));
+        assertConflict(() -> shiftTypeService.delete(owner, custom.id()));
+        scheduleTemplateService.delete(owner, template.id());
 
         shiftTypeService.delete(owner, custom.id());
 

@@ -3110,3 +3110,92 @@ body.panel-open .globalQuickAdd { display:none !important; }
 .calendarImportantTimed{border-left:3px solid var(--event-color,#F5B841)}
 @media(max-width:700px){.dayNotesToolbar #noteSearch{flex-basis:100%}.importantDetailsBody{grid-template-columns:1fr}.importantDetailsItem.wide{grid-column:auto}.importantEventForm{grid-template-columns:1fr!important}}
 .importantItem{width:100%;color:var(--text);text-align:left;cursor:pointer}.importantItem:hover{border-color:var(--accent)}
+
+/* v27.21.0 — Schedule Templates & Calendar Layers */
+.calendarExperienceBar{flex-wrap:wrap}
+.calendarLayerBar{display:flex;gap:8px;align-items:center;overflow-x:auto;max-width:100%;padding:2px 0;scrollbar-width:none}
+.calendarLayerBar::-webkit-scrollbar{display:none}
+.calendarLayerToggle{min-height:36px;display:inline-grid;grid-template-columns:10px auto;grid-template-areas:"dot label" "dot state";gap:0 8px;align-items:center;white-space:nowrap;padding:7px 10px;border-radius:12px}
+.calendarLayerToggle i{grid-area:dot;width:9px;height:9px;border-radius:50%;background:var(--layer-color);box-shadow:0 0 0 3px color-mix(in srgb,var(--layer-color) 22%,transparent)}
+.calendarLayerToggle span{grid-area:label;font-weight:800;font-size:12px}
+.calendarLayerToggle small{grid-area:state;color:var(--dim);font-size:10px}
+.calendarLayerToggle.isHidden{opacity:.55}
+.calendarLayerToggle.isHidden i{background:transparent;border:1px solid var(--layer-color);box-shadow:none}
+
+.calendarLayerStack{position:absolute;left:5px;right:5px;bottom:4px;display:flex;flex-direction:column;gap:2px;pointer-events:none;z-index:3}
+.calendarLayerChip{min-width:0;height:15px;display:grid;grid-template-columns:5px auto minmax(0,1fr);align-items:center;gap:3px;padding:0 4px;border-radius:5px;background:color-mix(in srgb,var(--layer-color) 14%,var(--panel));border:1px solid color-mix(in srgb,var(--layer-color) 34%,transparent);font-size:8px;line-height:1;overflow:hidden}
+.calendarLayerChip i{width:4px;height:4px;border-radius:50%;background:var(--layer-color)}
+.calendarLayerChip b,.calendarLayerChip em{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-style:normal;font-weight:700}
+.calendarLayerChip em{color:var(--dim);font-weight:600}
+.calendarLayerMore{align-self:flex-end;font-size:8px;color:var(--dim)}
+.cell:has(.calendarLayerStack){padding-bottom:35px}
+
+.calendarTimelineEvent.layer{border-color:color-mix(in srgb,var(--event-color) 62%,var(--border));background:color-mix(in srgb,var(--event-color) 17%,var(--panel));border-style:dashed}
+.calendarAllDayItem.layer{cursor:default;border-style:dashed}
+.calendarLayerAgendaRow{cursor:default;border-style:dashed}
+.calendarLayerAgendaRow>i{font-size:10px;color:var(--dim);font-style:normal}
+
+.scheduleApplyRow{align-items:end}
+.scheduleTemplateSelectLabel{flex:1;min-width:220px}
+.scheduleApplyActions{justify-content:space-between}
+.schedulePreview{margin-top:10px;padding:10px;border:1px solid var(--border);border-radius:12px;background:var(--panel2)}
+.schedulePreviewSummary{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:8px}
+.schedulePreviewSummary span{color:var(--dim);font-size:12px}
+.schedulePreviewSummary strong{color:var(--danger);font-size:12px}
+.schedulePreviewItems{display:grid;gap:5px}
+.schedulePreviewItem{display:grid;grid-template-columns:7px 86px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 8px;border-radius:9px;background:var(--panel);font-size:11px}
+.schedulePreviewItem i{width:7px;height:7px;border-radius:50%}
+.schedulePreviewItem em{font-style:normal;color:var(--text)}
+.schedulePreviewItem small{color:var(--dim)}
+.schedulePreviewItem.overwrite,.schedulePreviewItem.skip_conflict{outline:1px solid color-mix(in srgb,var(--danger) 38%,transparent)}
+.schedulePreviewMore{display:block;margin-top:8px;color:var(--dim)}
+
+.scheduleSettingsGrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px}
+.schedulePane{min-width:0;border:1px solid var(--border);background:var(--panel2);border-radius:16px;padding:12px}
+.schedulePaneHead{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px}
+.schedulePaneHead>div{display:grid;gap:3px}
+.schedulePaneHead span{color:var(--dim);font-size:11px}
+.scheduleTemplateList,.calendarLayerList{display:grid;gap:8px}
+.scheduleTemplateCard{width:100%;display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:10px;align-items:center;text-align:left;padding:10px 12px;border-radius:12px}
+.scheduleTemplateCard>span{display:grid;gap:3px;min-width:0}
+.scheduleTemplateCard b,.scheduleTemplateCard small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.scheduleTemplateCard small{color:var(--dim);font-weight:500}
+.scheduleTemplateCard em{font-style:normal;font-weight:900;color:var(--accent)}
+.scheduleTemplateCard>i{font-style:normal;color:var(--dim);font-size:10px;text-transform:uppercase}
+.calendarLayerCard{display:grid;grid-template-columns:9px minmax(0,1fr) auto;gap:9px;align-items:center;padding:8px 10px;border:1px solid var(--border);border-radius:12px;background:var(--panel)}
+.calendarLayerCard>i{width:8px;height:28px;border-radius:6px;background:var(--layer-color)}
+.calendarLayerCardMain{border:0;background:transparent;padding:0;text-align:left;display:grid;gap:2px;min-width:0}
+.calendarLayerCardMain b,.calendarLayerCardMain small{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calendarLayerCardMain small{color:var(--dim)}
+.calendarLayerCard>label{font-size:11px;white-space:nowrap}
+.scheduleEditor{margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:grid;gap:10px}
+.scheduleEditor[hidden]{display:none}
+.scheduleEditor label{display:grid;gap:5px;font-size:12px;color:var(--mut)}
+.scheduleEditor textarea{resize:vertical;min-height:58px}
+.scheduleEditorGrid{display:grid;gap:10px}
+.scheduleEditorGrid.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.scheduleStepBuilder{display:flex;gap:8px;align-items:end}
+.scheduleStepBuilder label{flex:1}
+.scheduleStepList{display:grid;gap:5px;max-height:260px;overflow:auto}
+.scheduleStepRow{display:grid;grid-template-columns:8px 24px minmax(0,1fr) auto;gap:8px;align-items:center;padding:7px 8px;border-radius:10px;background:var(--panel);border:1px solid var(--border)}
+.scheduleStepRow>i{width:7px;height:24px;border-radius:5px}
+.scheduleStepRow>div{display:flex;gap:4px}
+.scheduleStepRow button{min-width:30px;padding:5px}
+.scheduleEditorActions{display:flex;flex-wrap:wrap;gap:8px}
+.scheduleCheck{display:flex!important;grid-column:1/-1;align-items:center;gap:8px!important}
+.scheduleEmpty{padding:14px;border:1px dashed var(--border);border-radius:10px;color:var(--dim);font-size:12px;text-align:center}
+
+@media(max-width:900px){
+  .scheduleSettingsGrid{grid-template-columns:1fr}
+  .calendarExperienceBar{align-items:stretch}
+  .calendarLayerBar{width:100%}
+}
+@media(max-width:640px){
+  .scheduleEditorGrid.two{grid-template-columns:1fr}
+  .scheduleApplyActions{align-items:stretch}
+  .scheduleApplyActions label{width:100%}
+  .schedulePreviewItem{grid-template-columns:7px 76px minmax(0,1fr)}
+  .schedulePreviewItem small{grid-column:2/-1}
+  .cell:has(.calendarLayerStack){padding-bottom:29px}
+  .calendarLayerChip{height:13px;font-size:7px}
+}

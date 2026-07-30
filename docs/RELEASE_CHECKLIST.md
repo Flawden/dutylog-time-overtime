@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.20.2.
+Status: v27.21.0.
 
 ## Local gate
 
@@ -21,6 +21,10 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - push the exact candidate tree to `test`;
 - confirm `Deploy staging` is green;
 - verify calendar, note search/export/offline queued edits, tasks, overtime, modules, admin and Android API v1;
+- verify schedule-template list seeds five presets exactly once and built-ins open as copies;
+- preview a four-day cycle with an occupied date and confirm safe mode reports `SKIP_CONFLICT`;
+- apply the preview and confirm manual edits remain possible afterward;
+- create a companion layer in another IANA timezone and verify month/week/day projection plus server-owned visibility;
 - open an important-event details card, choose Edit, save and confirm both details/editor modals are hidden before navigating to Settings;
 - in Day mode call the same-date flow again and confirm the selected-day panel stays open without requiring the hidden month grid;
 - from the hourly Day view press «Все детали дня», confirm Month mode and the full selected-day panel become visible, then open Notes;
@@ -78,6 +82,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.20.2 -m "v27.20.2 — Calendar Day Details E2E Flow Hotfix"
-git push origin v27.20.2
+git tag -a v27.21.0 -m "v27.21.0 — Schedule Templates & Calendar Layers"
+git push origin v27.21.0
 ```

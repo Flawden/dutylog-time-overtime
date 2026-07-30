@@ -612,6 +612,194 @@ public final class Dtos {
         }
     }
 
+
+    /** One ordered step in a reusable schedule cycle. */
+    public record ScheduleTemplateStepDto(
+            int position,
+            Long shiftTypeId,
+            String shiftTypeName,
+            String shiftColor,
+            boolean dayOff
+    ) {
+        public static ScheduleTemplateStepDto from(ru.daniil.shifts.model.ScheduleTemplateStep step) {
+            ShiftType shift = step.getShiftType();
+            return new ScheduleTemplateStepDto(
+                    step.getPosition(), shift.getId(), shift.getName(), shift.getColor(),
+                    shift.effectivePlannedHours() <= 0.0001
+            );
+        }
+    }
+
+    /** Reusable user-owned shift cycle. */
+    public record ScheduleTemplateDto(
+            Long id,
+            String name,
+            String description,
+            String alignmentMode,
+            boolean systemPreset,
+            int sortOrder,
+            List<ScheduleTemplateStepDto> steps,
+            String createdAt,
+            String updatedAt
+    ) {
+        public static ScheduleTemplateDto from(ru.daniil.shifts.model.ScheduleTemplate template) {
+            return new ScheduleTemplateDto(
+                    template.getId(), template.getName(), template.getDescription(), template.getAlignmentMode(),
+                    template.isSystemPreset(), template.getSortOrder(),
+                    template.getSteps().stream().map(ScheduleTemplateStepDto::from).toList(),
+                    template.getCreatedAt() == null ? null : template.getCreatedAt().toString(),
+                    template.getUpdatedAt() == null ? null : template.getUpdatedAt().toString()
+            );
+        }
+    }
+
+    public record ScheduleTemplateCreateRequest(
+            @NotBlank(message = "Название шаблона не должно быть пустым")
+            @Size(max = 100, message = "Название шаблона: максимум 100 символов")
+            String name,
+            @Size(max = 400, message = "Описание шаблона: максимум 400 символов")
+            String description,
+            @Pattern(regexp = "CYCLE_START|WEEKDAY", message = "alignmentMode: CYCLE_START или WEEKDAY")
+            String alignmentMode,
+            @NotEmpty(message = "Цикл должен содержать хотя бы один элемент")
+            @Size(max = 64, message = "Цикл: максимум 64 элемента")
+            List<@NotNull Long> shiftTypeIds,
+            @Min(value = 0, message = "Порядок не может быть отрицательным")
+            @Max(value = 10000, message = "Порядок слишком большой")
+            Integer sortOrder
+    ) {}
+
+    public record ScheduleTemplateUpdateRequest(
+            @Size(max = 100, message = "Название шаблона: максимум 100 символов")
+            String name,
+            @Size(max = 400, message = "Описание шаблона: максимум 400 символов")
+            String description,
+            @Pattern(regexp = "CYCLE_START|WEEKDAY", message = "alignmentMode: CYCLE_START или WEEKDAY")
+            String alignmentMode,
+            @Size(min = 1, max = 64, message = "Цикл должен содержать от 1 до 64 элементов")
+            List<@NotNull Long> shiftTypeIds,
+            @Min(value = 0, message = "Порядок не может быть отрицательным")
+            @Max(value = 10000, message = "Порядок слишком большой")
+            Integer sortOrder
+    ) {}
+
+    /** Preview/apply range for a schedule template. */
+    public record ScheduleTemplateApplyRequest(
+            @NotBlank(message = "Дата начала обязательна") String startDate,
+            @NotBlank(message = "Дата окончания обязательна") String endDate,
+            String anchorDate,
+            Boolean overwriteExistingShift
+    ) {}
+
+    public record ScheduleTemplatePreviewItemDto(
+            String date,
+            int cyclePosition,
+            Long shiftTypeId,
+            String shiftTypeName,
+            String shiftColor,
+            Long existingShiftTypeId,
+            String existingShiftTypeName,
+            String action
+    ) {}
+
+    public record ScheduleTemplatePreviewDto(
+            Long templateId,
+            String templateName,
+            String from,
+            String to,
+            String anchorDate,
+            boolean overwriteExistingShift,
+            int totalDays,
+            int writeCount,
+            int unchangedCount,
+            int skippedCount,
+            int conflictCount,
+            List<ScheduleTemplatePreviewItemDto> items
+    ) {}
+
+    public record ScheduleTemplateApplyResultDto(
+            Long templateId,
+            String from,
+            String to,
+            int appliedCount,
+            int unchangedCount,
+            int skippedCount,
+            int conflictCount,
+            List<DayDto> days
+    ) {}
+
+    /** One projected read-only occurrence from a companion calendar layer. */
+    public record CalendarLayerEntryDto(
+            Long layerId,
+            String layerName,
+            String layerColor,
+            String sourceDate,
+            String date,
+            Long shiftTypeId,
+            String shiftTypeName,
+            String shiftColor,
+            String sourceTimezone,
+            String startInstant,
+            String endInstant,
+            String displayStart,
+            String displayEnd,
+            boolean timed,
+            boolean dayOff
+    ) {}
+
+    public record CalendarLayerDto(
+            Long id,
+            String name,
+            String color,
+            String timezone,
+            boolean visible,
+            int sortOrder,
+            Long templateId,
+            String templateName,
+            String anchorDate,
+            String startDate,
+            String endDate,
+            boolean readOnly,
+            List<CalendarLayerEntryDto> entries
+    ) {}
+
+    public record CalendarLayerCreateRequest(
+            @NotBlank(message = "Название слоя не должно быть пустым")
+            @Size(max = 80, message = "Название слоя: максимум 80 символов")
+            String name,
+            @Pattern(regexp = "#[0-9a-fA-F]{6}", message = "Цвет должен быть в формате #RRGGBB")
+            String color,
+            @NotBlank(message = "Часовой пояс слоя обязателен")
+            @Size(max = 80, message = "Часовой пояс: максимум 80 символов")
+            String timezone,
+            Boolean visible,
+            @Min(value = 0, message = "Порядок не может быть отрицательным")
+            @Max(value = 10000, message = "Порядок слишком большой")
+            Integer sortOrder,
+            @NotNull(message = "Выберите шаблон") Long templateId,
+            @NotBlank(message = "Опорная дата обязательна") String anchorDate,
+            @NotBlank(message = "Дата начала обязательна") String startDate,
+            String endDate
+    ) {}
+
+    public record CalendarLayerUpdateRequest(
+            @Size(max = 80, message = "Название слоя: максимум 80 символов")
+            String name,
+            @Pattern(regexp = "#[0-9a-fA-F]{6}", message = "Цвет должен быть в формате #RRGGBB")
+            String color,
+            @Size(max = 80, message = "Часовой пояс: максимум 80 символов")
+            String timezone,
+            Boolean visible,
+            @Min(value = 0, message = "Порядок не может быть отрицательным")
+            @Max(value = 10000, message = "Порядок слишком большой")
+            Integer sortOrder,
+            Long templateId,
+            String anchorDate,
+            String startDate,
+            String endDate,
+            Boolean clearEndDate
+    ) {}
+
     /** One checklist item inside a task. Subtasks cannot contain children. */
     public record SubtaskDto(
             Long id,
@@ -1867,8 +2055,20 @@ public final class Dtos {
             NotificationSettingsDto notificationSettings,
             List<NotificationReminderDto> reminders,
             List<QuickScenarioDto> quickScenarios,
+            List<CalendarLayerDto> calendarLayers,
             List<ModuleDto> modules
     ) {
+        /** Compatibility constructor for code written before calendar layers. */
+        public CalendarRangeDto(String from, String to, List<ShiftTypeDto> shiftTypes, List<DayDto> days,
+                                List<ShiftOccurrenceDto> shiftOccurrences, List<TaskDto> tasks,
+                                List<ImportantDayOccurrenceDto> importantDays, OvertimeSummaryDto overtime,
+                                OvertimeAccountDto overtimeAccount, NotificationSettingsDto notificationSettings,
+                                List<NotificationReminderDto> reminders, List<QuickScenarioDto> quickScenarios,
+                                List<ModuleDto> modules) {
+            this(from, to, shiftTypes, days, shiftOccurrences, tasks, importantDays, overtime, overtimeAccount,
+                    notificationSettings, reminders, quickScenarios, List.of(), modules);
+        }
+
         /** Compatibility constructor for code written before shift occurrences. */
         public CalendarRangeDto(String from, String to, List<ShiftTypeDto> shiftTypes, List<DayDto> days,
                                 List<TaskDto> tasks, List<ImportantDayOccurrenceDto> importantDays,
@@ -1876,7 +2076,7 @@ public final class Dtos {
                                 NotificationSettingsDto notificationSettings, List<NotificationReminderDto> reminders,
                                 List<QuickScenarioDto> quickScenarios, List<ModuleDto> modules) {
             this(from, to, shiftTypes, days, List.of(), tasks, importantDays, overtime, overtimeAccount,
-                    notificationSettings, reminders, quickScenarios, modules);
+                    notificationSettings, reminders, quickScenarios, List.of(), modules);
         }
     }
 }

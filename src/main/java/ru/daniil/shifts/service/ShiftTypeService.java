@@ -11,6 +11,7 @@ import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.ShiftType;
 import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.repo.ShiftTypeRepository;
+import ru.daniil.shifts.repo.ScheduleTemplateRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.LocalDate;
@@ -27,17 +28,20 @@ public class ShiftTypeService {
     private final ShiftTypeRepository shiftTypes;
     private final DayEntryRepository days;
     private final ShiftOccurrenceService shiftOccurrenceService;
+    private final ScheduleTemplateRepository scheduleTemplates;
     private final UserTimeService userTimeService;
     private final SecurityEventLogger securityEvents;
 
     public ShiftTypeService(ShiftTypeRepository shiftTypes,
                             DayEntryRepository days,
                             ShiftOccurrenceService shiftOccurrenceService,
+                            ScheduleTemplateRepository scheduleTemplates,
                             UserTimeService userTimeService,
                             SecurityEventLogger securityEvents) {
         this.shiftTypes = shiftTypes;
         this.days = days;
         this.shiftOccurrenceService = shiftOccurrenceService;
+        this.scheduleTemplates = scheduleTemplates;
         this.userTimeService = userTimeService;
         this.securityEvents = securityEvents;
     }
@@ -146,6 +150,10 @@ public class ShiftTypeService {
         ShiftType st = requireOwnedShiftType(user, id);
         if (st.isBuiltin()) {
             throw new ApiException(HttpStatus.CONFLICT, "Встроенную смену удалить нельзя");
+        }
+        if (scheduleTemplates.countUsingShiftType(st) > 0) {
+            throw new ApiException(HttpStatus.CONFLICT,
+                    "Смена используется шаблоном графика; сначала измените или удалите шаблон");
         }
 
         days.findByShiftType(st).forEach(entry -> {
