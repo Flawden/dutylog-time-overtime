@@ -1083,7 +1083,7 @@ public final class Dtos {
             String category,
             List<Integer> reminders
     ) {
-        /** Source-compatible constructor for callers created before v27.20.1. */
+        /** Source-compatible constructor for callers created before v27.20.0. */
         public ImportantDayDto(Long id, String title, String date, RepeatMode repeatMode, String color) {
             this(id, title, date, repeatMode, color, ImportantEventType.IMPORTANT_DATE,
                     null, true, null, null, null, null, null,

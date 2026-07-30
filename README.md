@@ -1,20 +1,24 @@
-> Current release: **v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix**.
+> Current release: **v27.20.2 — Calendar Day Details E2E Flow Hotfix**.
 
 # DutyLog
 
-Current release: **v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix**
+Current release: **v27.20.2 — Calendar Day Details E2E Flow Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix
+## Текущая версия: v27.20.2 — Calendar Day Details E2E Flow Hotfix
 
-**v27.20.1** закрывает три регрессии, найденные полным Playwright gate после Notes & Important Events Next:
+**v27.20.2** закрывает последнее падение полного Playwright gate после v27.20.1:
 
-- details/editor важных событий теперь взаимоисключающие и гарантированно закрываются после сохранения;
-- общий `selectDate()` корректно работает, когда месячная сетка скрыта режимами Week/Day, и восстанавливает исходный масштаб;
-- PWA-тест проверяет реальный контракт оффлайн-редактирования существующей заметки: IndexedDB snapshot, coalesced `updateNote` queue, reconnect, sync и серверное подтверждение.
+- сценарий Notes & Important Events больше не пытается открыть скрытый Month-only модуль заметок, оставаясь в почасовом Day-view;
+- общий helper `openSelectedDayDetails()` использует реальную кнопку «Все детали дня», сохраняет focused date и ждёт возвращения к полной панели выбранного дня;
+- `selectDate()` остаётся mode-aware и не принуждает скрытую месячную ячейку становиться видимой.
 
-API и схема не менялись. Сохраняются **Flyway V38**, **97 Java-тестовых классов, 513 `@Test` методов и 29 Playwright browser scenarios**.
+API, production-календарь и схема не менялись. Сохраняются **Flyway V38**, **97 Java-тестовых классов, 513 `@Test` методов и 29 Playwright browser scenarios**.
+
+### Предыдущий hotfix: v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix
+
+**v27.20.1** закрыл single-modal lifecycle важных событий, mode-aware выбор даты и полный offline→sync контракт существующей заметки.
 
 ### Базовый продуктовый релиз: v27.20.0 — Notes & Important Events Next
 
@@ -421,7 +425,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.20.1 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить modal exclusivity, Day-mode date selection и offline note reconnect/sync. Следующий продуктовый этап — **v27.21.0 — Schedule Templates & Calendar Layers**.
+Следующий практический шаг — пропустить v27.20.2 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить путь «День → Все детали дня → Заметки» вместе с modal exclusivity и offline note reconnect/sync. Следующий продуктовый этап — **v27.21.0 — Schedule Templates & Calendar Layers**.
 
 ## Служебный профиль администратора
 

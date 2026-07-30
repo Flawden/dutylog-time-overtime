@@ -1,3 +1,11 @@
+# v27.20.2 — Calendar Day Details E2E Flow Hotfix
+
+- Replaced the final hidden Month-grid assumption in `notes-important-events-next.spec.js` with the real «Все детали дня» product route from the focused Day view.
+- Added shared `openSelectedDayDetails()` Playwright infrastructure that preserves the focused date, enters Day mode when needed and waits for the full selected-day panel before opening modules.
+- Kept `selectDate()` mode-preserving and idempotent; the hotfix does not weaken the v27.20.1 calendar contract or change production calendar behavior.
+- Added static and release-gate assertions so Notes & Important Events browser coverage cannot reopen hidden Month-only modules directly from Day mode.
+- No API, schema or Flyway changes; the baseline remains 97 Java test classes, 513 `@Test` methods and 29 Playwright scenarios.
+
 # v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix
 
 - Enforced a single-open-modal lifecycle for important-event details and editor dialogs, including propagation guards for board actions and a final close after save/refresh.

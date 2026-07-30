@@ -1,15 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.20.1.
+Status: v27.20.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.20.1 stabilizes important-event modal exclusivity, calendar-mode-aware date selection and offline note synchronization. Current application baseline is 97 Java test classes / 513 `@Test` methods / 29 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.20.2 routes Day-view browser coverage through the real selected-day details action while preserving v27.20.1 modal, timezone and offline-note fixes. Current application baseline is 97 Java test classes / 513 `@Test` methods / 29 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.20.2 Calendar Day Details E2E Flow Hotfix extension
+
+- `notes-important-events-next.spec.js` leaves the hourly Day view through the visible `#calendarDayOpenDetails` product action before opening Notes.
+- `helpers.openSelectedDayDetails()` preserves the focused date, reaches Day mode when necessary and waits for Month + `#panel` instead of touching a hidden grid cell.
+- `CalendarMobileExperienceFrontendContractTest` and `release-check.sh` protect the helper export, product-route selector and scenario usage.
+- API, production runtime, Flyway and test counts remain unchanged.
 
 ## v27.20.1 Important Event Modal & Offline Notes E2E Hotfix extension
 

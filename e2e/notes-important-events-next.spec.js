@@ -4,6 +4,7 @@ const {
   currentLocalDateKey,
   openView,
   selectDate,
+  openSelectedDayDetails,
   openDayModule,
   waitForApi
 } = require('./helpers');
@@ -57,7 +58,7 @@ test('Notes and Important Events Next combine searchable notes with read-first t
   await page.locator('#importantDetailsClose').click();
   await expect(page.locator('#importantDetailsModal')).toBeHidden();
 
-  await selectDate(page, date);
+  await openSelectedDayDetails(page);
   await openDayModule(page, 'notes');
   const createdNote = waitForApi(page, 'POST', '/api/notes', 201);
   await page.locator('#noteAdd').click();

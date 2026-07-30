@@ -43,6 +43,13 @@ class CalendarMobileExperienceFrontendContractTest {
         assertTrue(js.contains("[range, event.meta].filter(Boolean).join(\" · \")"));
         String calendar = read("src/main/resources/static/js/30-calendar.js");
         assertTrue(calendar.contains("if ($(\"impDate\")) $(\"impDate\").value = k;"));
+
+        String helpers = read("e2e/helpers.js");
+        String notesImportantE2e = read("e2e/notes-important-events-next.spec.js");
+        assertTrue(helpers.contains("async function openSelectedDayDetails(page)"));
+        assertTrue(helpers.contains("page.locator('#calendarDayOpenDetails')"));
+        assertTrue(helpers.contains("await expect(monthButton).toHaveAttribute('aria-pressed', 'true');"));
+        assertTrue(notesImportantE2e.contains("await openSelectedDayDetails(page);"));
     }
 
     @Test

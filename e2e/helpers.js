@@ -127,6 +127,32 @@ function waitForApi(page, method, path, status = 200) {
   return page.waitForResponse(response => matchesApi(response, method, path) && response.status() === status);
 }
 
+async function openSelectedDayDetails(page) {
+  await openView(page, 'calendar');
+  const monthButton = page.locator('[data-calendar-mode="month"]');
+  const dayButton = page.locator('[data-calendar-mode="day"]');
+  const dayDetailsButton = page.locator('#calendarDayOpenDetails');
+  const panel = page.locator('#panel');
+
+  if (await monthButton.getAttribute('aria-pressed') === 'true' && await panel.isVisible()) {
+    return panel;
+  }
+
+  // "Все детали дня" is the product route from the focused Day view back to
+  // the full selected-day panel. Reuse it instead of reaching into a hidden
+  // Month grid or changing calendar state directly in the test.
+  if (!(await dayDetailsButton.isVisible())) {
+    await dayButton.click();
+    await expect(dayButton).toHaveAttribute('aria-pressed', 'true');
+    await expect(dayDetailsButton).toBeVisible();
+  }
+  await dayDetailsButton.click();
+
+  await expect(monthButton).toHaveAttribute('aria-pressed', 'true');
+  await expect(panel).toBeVisible();
+  return panel;
+}
+
 async function openDayModule(page, moduleKey) {
   const section = page.locator(`[data-day-module="${moduleKey}"]`);
   await expect(section).toBeVisible();
@@ -162,6 +188,7 @@ module.exports = {
   openView,
   selectDate,
   waitForApi,
+  openSelectedDayDetails,
   openDayModule,
   toggleModule
 };

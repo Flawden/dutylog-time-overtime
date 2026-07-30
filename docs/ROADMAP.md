@@ -1,12 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix**.
+Current release: **v27.20.2 — Calendar Day Details E2E Flow Hotfix**.
 
-## Текущая продуктовая точка — Notes & Important Events Next, stabilized
+## Текущая продуктовая точка — Notes & Important Events Next, browser-flow stabilized
 
-Статус: **v27.20.1** стабилизирует жизненный цикл event-модалок, выбор даты во всех масштабах календаря и полный offline→sync контракт заметок поверх продуктового релиза v27.20.0.
+Статус: **v27.20.2** завершает browser-flow стабилизацию Notes & Important Events Next поверх продуктового релиза v27.20.0.
 
-Закрыто в hotfix:
+Закрыто в текущем hotfix:
+
+- Day-view покидается через реальную кнопку «Все детали дня», а не через скрытую Month-grid ячейку;
+- `openSelectedDayDetails()` сохраняет focused date и ждёт полную панель дня перед открытием Notes;
+- полный Chromium-сценарий больше не смешивает hourly Day view и Month-only accordion modules.
+
+Сохранено из v27.20.1:
 
 - одновременно открыт не более одного important-event modal;
 - board actions не всплывают в read-first row handler;
@@ -224,6 +230,6 @@ API уже достаточно стабилен для первого Android-�
 - `v27.19.1` — Task Board Date Range Compatibility Hotfix.
 - `v27.19.2` — Frontend Asset Contract Stability Hotfix.
 - `v27.19.3` — Task Deadline Validation E2E Contract Hotfix.
-- `v27.20.1` — Ghost Button Transition E2E Stabilization Hotfix.
+- `v27.19.4` — Ghost Button Transition E2E Stabilization Hotfix.
 - `v27.19.0` — Tasks & Inbox Next, including independent planned task intervals (`start → end`), duration, deadlines and timeline cards.
-- `v27.20.1` — Notes & Important Events Next, including all-day/timed/multi-day events, place, description, reminders and read-first event cards.
+- `v27.20.0` — Notes & Important Events Next, including all-day/timed/multi-day events, place, description, reminders and read-first event cards.
