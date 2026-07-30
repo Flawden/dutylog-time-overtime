@@ -1,14 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.21.1.
+Status: v27.21.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.21.1 aligns the static frontend contracts with the reusable schedule-template and calendar-layer runtime introduced in v27.21.0. Current application baseline is 100 Java test classes / 525 `@Test` methods / 30 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.21.2 gives the schedule-template browser flow an exact accordion selector while preserving strict generic module lookup. Current application baseline is 100 Java test classes / 525 `@Test` methods / 30 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
+
+
+## v27.21.2 Schedule Accordion E2E Selector Hotfix extension
+
+- `helpers.openDayModuleById()` requires exactly one visible accordion and opens its direct summary.
+- `schedule-templates-calendar-layers.spec.js` targets `#accSched` instead of the duplicated `data-day-module="shifts"` surface shared with `#accShift`.
+- The generic `openDayModule()` remains strict; no `.first()` fallback can silently route a scenario to the wrong panel.
+- Runtime JavaScript, HTTP API and Flyway remain unchanged; baseline stays 100 Java classes / 525 `@Test` methods / 30 Playwright scenarios.
 
 
 ## v27.21.1 Schedule Templates Frontend Contract Alignment Hotfix extension

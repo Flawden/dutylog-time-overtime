@@ -1,10 +1,10 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix**.
+Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**.
 
 ## Текущая продуктовая точка — reusable schedules and read-only calendar composition
 
-Статус: **v27.21.1** закрепляет зелёный Maven-контракт поверх первого полноценного этапа шаблонов графика и календарных слоёв.
+Статус: **v27.21.2** сохраняет зелёный Maven-контракт и устраняет последний неоднозначный Playwright selector в браузерном потоке шаблонов графика.
 
 Закрыто:
 
@@ -19,6 +19,7 @@ Current release: **v27.21.1 — Schedule Templates Frontend Contract Alignment H
 - month chips, week agenda и hourly day events;
 - Flyway V39, API v1, Java/static/Playwright contracts.
 - static frontend-контракты выровнены с server-owned preview/apply, data-layer fresh reload и реальным `tplPreview`.
+- E2E открывает шаблоны графика через точный `#accSched`, не смешивая его с обычной секцией смен `#accShift`.
 
 Следующий этап: довести Calendar Layers до совместного доступа и импорта, не смешивая это с текущей локальной read-only моделью.
 

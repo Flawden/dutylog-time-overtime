@@ -4,7 +4,7 @@ const {
   currentLocalDateKey,
   openView,
   selectDate,
-  openDayModule,
+  openDayModuleById,
   waitForApi
 } = require('./helpers');
 
@@ -19,7 +19,7 @@ test('schedule templates preview safely and read-only layers compose across cale
   }, date);
 
   await selectDate(page, date);
-  await openDayModule(page, 'shifts');
+  await openDayModuleById(page, 'accSched');
   await expect(page.locator('#tplPreset option')).toHaveCount(5);
   const ownTemplateValue = await page.locator('#tplPreset option', { hasText:'2 через 2' }).getAttribute('value');
   await page.locator('#tplPreset').selectOption(ownTemplateValue);

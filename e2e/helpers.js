@@ -163,6 +163,17 @@ async function openDayModule(page, moduleKey) {
   return section;
 }
 
+async function openDayModuleById(page, id) {
+  const section = page.locator(`#${id}`);
+  await expect(section).toHaveCount(1);
+  await expect(section).toBeVisible();
+  if (!(await section.evaluate(element => element.open))) {
+    await section.locator(':scope > summary').click();
+  }
+  await expect(section).toHaveAttribute('open', '');
+  return section;
+}
+
 async function toggleModule(page, key, enabled) {
   await page.locator('#tabbar a[data-view="settings"]').click();
   await page.locator('[data-settings-jump="modules"]').click();
@@ -190,5 +201,6 @@ module.exports = {
   waitForApi,
   openSelectedDayDetails,
   openDayModule,
+  openDayModuleById,
   toggleModule
 };

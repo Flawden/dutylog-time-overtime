@@ -1,3 +1,11 @@
+# v27.21.2 — Schedule Accordion E2E Selector Hotfix
+
+- Added strict `openDayModuleById()` Playwright infrastructure for day panels that share one product module key.
+- Updated the schedule-template browser flow to open `#accSched` explicitly instead of resolving both `#accShift` and `#accSched` through `[data-day-module="shifts"]`.
+- Kept the generic `openDayModule()` helper strict for modules that still have a one-to-one selector contract; no `.first()` fallback masks duplicate surfaces.
+- Added release-gate assertions for the exact helper export and schedule accordion route.
+- No runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
+
 # v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix
 
 - Aligned the fresh-calendar regression guard with the actual `loadMonth → dataLayer.loadCalendar → api.month` architecture instead of requiring a direct API call inside `30-calendar.js`.

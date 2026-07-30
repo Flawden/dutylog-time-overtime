@@ -1,29 +1,32 @@
-# v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix
+# v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
-- Aligned four stale static frontend assertions with the authoritative schedule-template architecture introduced in v27.21.0.
-- Preserved the full fresh-month chain through `loadMonth`, the data layer and cache-bypassing month API.
-- Replaced legacy browser-side rotation and `/api/days/fill` expectations with server preview/apply contracts.
-- Corrected API method syntax and the real `tplPreview` DOM id.
-- No runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
+- Added an ID-specific accordion helper for browser scenarios where one product module owns multiple day panels.
+- Routed the schedule-template E2E through `#accSched` instead of the ambiguous `[data-day-module="shifts"]` selector.
+- Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
+- No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix**.
+> Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**.
 
 # DutyLog
 
-Current release: **v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix**
+Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix
+## Текущая версия: v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
-**v27.21.1** синхронизирует четыре статических frontend-контракта с уже работающей архитектурой шаблонов графика:
+**v27.21.2** устраняет последнее падение полного Playwright gate после Schedule Templates & Calendar Layers:
 
-- fresh reload проверяется через цепочку `loadMonth → dataLayer.loadCalendar → api.month`, а не через устаревший прямой вызов из календарного bundle;
-- preview/apply и weekday alignment остаются authoritative server behavior;
-- API adapter проверяется по реальным async methods;
-- DOM-контракт использует фактический `tplPreview`.
+- общий `openDayModule()` остаётся строгим и по-прежнему ловит неоднозначные module-key селекторы;
+- новый `openDayModuleById()` открывает ровно один указанный `<details>`;
+- сценарий шаблонов графика обращается к `#accSched`, а не к двум секциям модуля `shifts` одновременно;
+- `.first()` не используется, поэтому тест не может случайно открыть обычный редактор смен вместо шаблонов.
 
 Production-код и схема не менялись. Flyway остаётся **V39**, автоматическая база — **100 Java-тестовых классов, 525 `@Test` методов и 30 Playwright browser scenarios**.
+
+### Предыдущий hotfix: v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix
+
+**v27.21.1** синхронизировал четыре статических frontend-контракта с data-layer fresh reload, server-owned preview/apply, реальными async API methods и `tplPreview`.
 
 ### Базовый продуктовый релиз: v27.21.0 — Schedule Templates & Calendar Layers
 
@@ -452,7 +455,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.21.1 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить preview/apply шаблонов, fresh reload календаря и read-only слои в Month / Week / Day. Следующий продуктовый этап — **v27.22.0 — Vacation Planner**.
+Следующий практический шаг — пропустить v27.21.2 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить preview/apply шаблонов, точное открытие секции графиков и read-only слои в Month / Week / Day. Следующий продуктовый этап — **v27.22.0 — Vacation Planner**.
 
 ## Служебный профиль администратора
 
