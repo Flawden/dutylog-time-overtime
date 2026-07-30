@@ -1,14 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.21.0.
+Status: v27.21.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.21.0 covers reusable schedule templates, safe preview/apply and read-only timezone-aware calendar layers. Current application baseline is 100 Java test classes / 525 `@Test` methods / 30 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.21.1 aligns the static frontend contracts with the reusable schedule-template and calendar-layer runtime introduced in v27.21.0. Current application baseline is 100 Java test classes / 525 `@Test` methods / 30 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
+
+
+## v27.21.1 Schedule Templates Frontend Contract Alignment Hotfix extension
+
+- `CalendarMonthReloadContractTest` protects the complete fresh-reload chain across calendar, boot/data layer and cache-bypassing month API.
+- `ScheduleTemplateFrontendContractTest` requires authoritative preview/apply payloads instead of browser-side weekday rotation and legacy `/api/days/fill`.
+- `ScheduleTemplatesCalendarLayersFrontendContractTest` matches the real async API methods and `tplPreview` surface.
+- Runtime JavaScript, HTTP API and Flyway remain unchanged; baseline stays 100 Java classes / 525 `@Test` methods / 30 Playwright scenarios.
 
 
 ## v27.21.0 Schedule Templates & Calendar Layers extension

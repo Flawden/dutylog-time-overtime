@@ -23,7 +23,7 @@ class ScheduleTemplatesCalendarLayersFrontendContractTest {
         assertTrue(html.contains("id=\"calendarLayerBar\"")
                         && html.contains("id=\"scheduleTemplateList\"")
                         && html.contains("id=\"calendarLayerList\"")
-                        && html.contains("id=\"schedulePreview\""),
+                        && html.contains("id=\"tplPreview\""),
                 "calendar and settings must expose the schedule-template/layer surfaces");
     }
 
@@ -34,10 +34,12 @@ class ScheduleTemplatesCalendarLayersFrontendContractTest {
         String layers = resource("/static/js/38-schedule-layers.js");
         String settings = resource("/static/js/60-settings.js");
 
-        assertTrue(data.contains("scheduleTemplates:")
+        assertTrue(data.contains("async scheduleTemplates()")
                         && data.contains("previewScheduleTemplate")
                         && data.contains("applyScheduleTemplate")
-                        && data.contains("calendarLayers:"),
+                        && data.contains("async calendarLayers()")
+                        && data.contains("/api/schedule-templates")
+                        && data.contains("/api/calendar-layers"),
                 "API adapter must expose authoritative schedule and layer resources");
         assertTrue(calendar.contains("overwriteExistingShift:!!$(\"tplOverwrite\").checked")
                         && calendar.contains("previewScheduleTemplateSelection")

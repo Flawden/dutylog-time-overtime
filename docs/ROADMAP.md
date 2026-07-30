@@ -1,10 +1,10 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.21.0 — Schedule Templates & Calendar Layers**.
+Current release: **v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix**.
 
 ## Текущая продуктовая точка — reusable schedules and read-only calendar composition
 
-Статус: **v27.21.0** завершает первый полноценный этап шаблонов графика и календарных слоёв.
+Статус: **v27.21.1** закрепляет зелёный Maven-контракт поверх первого полноценного этапа шаблонов графика и календарных слоёв.
 
 Закрыто:
 
@@ -18,6 +18,7 @@ Current release: **v27.21.0 — Schedule Templates & Calendar Layers**.
 - проекция timed shifts в display timezone пользователя;
 - month chips, week agenda и hourly day events;
 - Flyway V39, API v1, Java/static/Playwright contracts.
+- static frontend-контракты выровнены с server-owned preview/apply, data-layer fresh reload и реальным `tplPreview`.
 
 Следующий этап: довести Calendar Layers до совместного доступа и импорта, не смешивая это с текущей локальной read-only моделью.
 

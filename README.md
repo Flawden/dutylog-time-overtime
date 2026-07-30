@@ -1,23 +1,31 @@
-# v27.21.0 — Schedule Templates & Calendar Layers
+# v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix
 
-- Added reusable owner-scoped schedule templates with up to 64 ordered shift steps, cycle-start or weekday alignment and five immutable built-in presets.
-- Added conflict-aware preview and safe application: occupied days are skipped by default, overwrite is explicit, and manual day edits remain ordinary dated records after application.
-- Added read-only companion calendar layers with name, color, IANA timezone, template, anchor, date bounds and server-owned visibility.
-- Projected timed layer shifts from their source timezone into the user's display timezone while keeping all-day/off occurrences floating.
-- Composed visible layers into month cells, week agenda and hourly day timeline without duplicating or mutating the owner's calendar rows.
-- Added full settings management, API v1 contracts, Flyway V39 and end-to-end coverage for preview, apply, projection and visibility.
-- Protected template integrity: a custom shift type cannot be deleted while any schedule template still references it.
-- Regression baseline is now 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
+- Aligned four stale static frontend assertions with the authoritative schedule-template architecture introduced in v27.21.0.
+- Preserved the full fresh-month chain through `loadMonth`, the data layer and cache-bypassing month API.
+- Replaced legacy browser-side rotation and `/api/days/fill` expectations with server preview/apply contracts.
+- Corrected API method syntax and the real `tplPreview` DOM id.
+- No runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.21.0 — Schedule Templates & Calendar Layers**.
+> Current release: **v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix**.
 
 # DutyLog
 
-Current release: **v27.21.0 — Schedule Templates & Calendar Layers**
+Current release: **v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.21.0 — Schedule Templates & Calendar Layers
+## Текущая версия: v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix
+
+**v27.21.1** синхронизирует четыре статических frontend-контракта с уже работающей архитектурой шаблонов графика:
+
+- fresh reload проверяется через цепочку `loadMonth → dataLayer.loadCalendar → api.month`, а не через устаревший прямой вызов из календарного bundle;
+- preview/apply и weekday alignment остаются authoritative server behavior;
+- API adapter проверяется по реальным async methods;
+- DOM-контракт использует фактический `tplPreview`.
+
+Production-код и схема не менялись. Flyway остаётся **V39**, автоматическая база — **100 Java-тестовых классов, 525 `@Test` методов и 30 Playwright browser scenarios**.
+
+### Базовый продуктовый релиз: v27.21.0 — Schedule Templates & Calendar Layers
 
 **v27.21.0** отделяет повторяемые правила планирования от фактических записей календаря:
 
@@ -444,7 +452,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.20.2 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить путь «День → Все детали дня → Заметки» вместе с modal exclusivity и offline note reconnect/sync. Следующий продуктовый этап — **v27.21.0 — Schedule Templates & Calendar Layers**.
+Следующий практический шаг — пропустить v27.21.1 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить preview/apply шаблонов, fresh reload календаря и read-only слои в Month / Week / Day. Следующий продуктовый этап — **v27.22.0 — Vacation Planner**.
 
 ## Служебный профиль администратора
 

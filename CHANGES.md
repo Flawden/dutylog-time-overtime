@@ -1,3 +1,11 @@
+# v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix
+
+- Aligned the fresh-calendar regression guard with the actual `loadMonth → dataLayer.loadCalendar → api.month` architecture instead of requiring a direct API call inside `30-calendar.js`.
+- Replaced the obsolete browser-side weekday rotation and `/api/days/fill` expectation with authoritative server preview/apply contracts.
+- Corrected static API adapter assertions to match `async scheduleTemplates()` and `async calendarLayers()`.
+- Corrected the preview surface contract from the invented `schedulePreview` id to the runtime/Playwright id `tplPreview`.
+- No runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
+
 # v27.21.0 — Schedule Templates & Calendar Layers
 
 - Added reusable owner-scoped schedule templates with up to 64 ordered shift steps, cycle-start or weekday alignment and five immutable built-in presets.

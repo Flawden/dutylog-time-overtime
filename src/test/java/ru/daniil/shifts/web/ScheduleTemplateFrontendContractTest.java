@@ -23,20 +23,24 @@ class ScheduleTemplateFrontendContractTest {
     }
 
     @Test
-    void weeklyTemplateIsRotatedBySelectedWeekdayAndTheEffectiveSequenceIsSentToTheServer() throws IOException {
-        String core = resource("/static/js/10-core.js");
+    void authoritativeTemplatePreviewAndApplyKeepAlignmentOnTheServer() throws IOException {
+        String data = resource("/static/js/20-data.js");
         String calendar = resource("/static/js/30-calendar.js");
 
-        assertTrue(core.contains("function weekdayIndex(k)")
-                        && core.contains("return (new Date(y, m - 1, d).getDay() + 6) % 7"),
-                "weekday mapping must remain Monday=0 through Sunday=6");
-        assertTrue(core.contains("function effectiveTemplateNames(tpl, startDateKey)")
-                        && core.contains("const offset = weekdayIndex(startDateKey)")
-                        && core.contains("return tpl.names.slice(offset).concat(tpl.names.slice(0, offset))"),
-                "five-day pattern must rotate to the selected weekday");
-        assertTrue(calendar.contains("const names = effectiveTemplateNames(tpl, k)")
-                        && calendar.contains("shiftTypeIds: shifts.map(s => s.id)"),
-                "the rotated sequence, not the unrotated preset, must be posted to /api/days/fill");
+        assertTrue(data.contains("async previewScheduleTemplate(id,b)")
+                        && data.contains("/api/schedule-templates/${id}/preview")
+                        && data.contains("async applyScheduleTemplate(id,b)")
+                        && data.contains("/api/schedule-templates/${id}/apply"),
+                "browser adapter must use the authoritative server preview/apply resources");
+        assertTrue(calendar.contains("startDate:selected")
+                        && calendar.contains("endDate:scheduleDateOffset(selected, count - 1)")
+                        && calendar.contains("anchorDate:selected")
+                        && calendar.contains("overwriteExistingShift:!!$(\"tplOverwrite\").checked"),
+                "preview/apply payload must preserve range, anchor and explicit overwrite semantics");
+        int preview = calendar.indexOf("const prepared = await previewScheduleTemplateSelection();");
+        int apply = calendar.indexOf("api.applyScheduleTemplate(template.id, payload)", preview);
+        assertTrue(preview >= 0 && apply > preview,
+                "application must always follow the server preview instead of rotating a browser-only sequence");
     }
 
     private static String resource(String path) throws IOException {

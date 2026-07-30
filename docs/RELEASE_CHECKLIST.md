@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.21.0.
+Status: v27.21.1.
 
 ## Local gate
 
@@ -19,6 +19,8 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Staging
 
 - push the exact candidate tree to `test`;
+- confirm the Maven gate executes all 525 tests with zero failures after the frontend contract alignment;
+- confirm fresh schedule apply reloads the authoritative month through the data layer;
 - confirm `Deploy staging` is green;
 - verify calendar, note search/export/offline queued edits, tasks, overtime, modules, admin and Android API v1;
 - verify schedule-template list seeds five presets exactly once and built-ins open as copies;
@@ -82,6 +84,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.21.0 -m "v27.21.0 — Schedule Templates & Calendar Layers"
-git push origin v27.21.0
+git tag -a v27.21.1 -m "v27.21.1 — Schedule Templates Frontend Contract Alignment Hotfix"
+git push origin v27.21.1
 ```

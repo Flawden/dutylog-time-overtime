@@ -18,12 +18,24 @@ class CalendarMonthReloadContractTest {
     void scheduleFillReloadsServerStateAndMonthLoaderRejectsStaleResponses() throws IOException {
         String calendarJs = resource("/static/js/30-calendar.js");
         String bootJs = resource("/static/js/70-user-boot.js");
+        String dataJs = resource("/static/js/20-data.js");
 
-        assertTrue(calendarJs.contains("api.month(requestedYear, requestedMonth, { fresh:true })"),
-                "после массового заполнения календарь должен читать сервер напрямую без IndexedDB-first");
-        assertTrue(calendarJs.contains("applyCalendarBundle(bundle);")
-                        && calendarJs.contains("dataLayer.writeSnapshot(bundle, requestedYear, requestedMonth)"),
-                "подтверждённый серверный месяц должен заменить UI и локальный snapshot");
+        int apply = calendarJs.indexOf("api.applyScheduleTemplate(template.id, payload)");
+        int freshReload = calendarJs.indexOf("await loadMonth({ fresh:true })", apply);
+        assertTrue(apply >= 0 && freshReload > apply,
+                "после применения серверного шаблона календарь должен запрашивать свежий месяц");
+        int loadMonth = bootJs.indexOf("async function loadMonth(opts = {})");
+        int dataLayerCall = bootJs.indexOf("dataLayer.loadCalendar(requestedYear, requestedMonth", loadMonth);
+        int freshForwarding = bootJs.indexOf("{ fresh:!!opts.fresh }", dataLayerCall);
+        assertTrue(loadMonth >= 0 && dataLayerCall > loadMonth && freshForwarding > dataLayerCall,
+                "month loader должен передавать fresh-флаг в data layer");
+
+        int loadCalendar = dataJs.indexOf("async loadCalendar(y, m, applyBundle, opts = {})");
+        int dataFresh = dataJs.indexOf("const fresh = !!opts.fresh;", loadCalendar);
+        int monthApi = dataJs.indexOf("api.month(y, m, { fresh })", dataFresh);
+        assertTrue(loadCalendar >= 0 && dataFresh > loadCalendar && monthApi > dataFresh,
+                "data layer должен доводить fresh-флаг до authoritative month API");
+
         assertTrue(bootJs.contains("calendarLoadGeneration"),
                 "переключение месяцев должно иметь generation guard от поздних ответов");
         assertTrue(bootJs.contains("state.y !== requestedYear") && bootJs.contains("state.m !== requestedMonth"),
@@ -33,7 +45,6 @@ class CalendarMonthReloadContractTest {
                         && bootJs.contains("renderCalendar();"),
                 "каждый принятый bundle, включая сетевой ответ после cache-hit, должен быть отрисован");
 
-        String dataJs = resource("/static/js/20-data.js");
         assertTrue(dataJs.contains("snap.y === y") && dataJs.contains("snap.m === m"),
                 "IndexedDB snapshot можно применять только к тому месяцу, для которого он сохранён");
         assertTrue(dataJs.contains("date: day.date ?? null"),
