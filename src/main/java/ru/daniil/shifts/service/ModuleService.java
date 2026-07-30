@@ -33,6 +33,7 @@ public class ModuleService {
     public static final String TASKS = ModuleKeys.TASKS;
     public static final String OVERTIME = ModuleKeys.OVERTIME;
     public static final String IMPORTANT_DATES = ModuleKeys.IMPORTANT_DATES;
+    public static final String VACATION = ModuleKeys.VACATION;
     public static final String NOTIFICATIONS = ModuleKeys.NOTIFICATIONS;
     public static final String TELEGRAM = ModuleKeys.TELEGRAM;
     public static final String SCENARIOS = ModuleKeys.SCENARIOS;

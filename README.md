@@ -1,3 +1,13 @@
+# v27.22.0 — Vacation Planner
+
+- Added a separate vacation/absence domain instead of encoding leave as a shift.
+- Added annual allowance, carryover, configurable work year and calendar-day / Monday-Friday counting.
+- Added 14 / 28 / 35 day presets, conflict-aware preview, hard overlap protection and work-year allowance validation.
+- Added owner-scoped absence types, calendar projections and a responsive unified-shell planner.
+- Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
+
+> Current release: **v27.22.0 — Vacation Planner**.
+
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
 - Added an ID-specific accordion helper for browser scenarios where one product module owns multiple day panels.
@@ -5,15 +15,30 @@
 - Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
 - No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**.
+> Current release: **v27.22.0 — Vacation Planner**.
 
 # DutyLog
 
-Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**
+Current release: **v27.22.0 — Vacation Planner**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.21.2 — Schedule Accordion E2E Selector Hotfix
+## Текущая версия: v27.22.0 — Vacation Planner
+
+
+**v27.22.0** добавляет отдельный планировщик отпусков и отсутствий:
+
+- отпуск не является сменой и не меняет рабочие часы, статистику смен или FIFO переработок;
+- годовая норма, перенос остатка, начало рабочего года и способ подсчёта настраиваются пользователем;
+- доступны шаблоны 14 / 28 / 35 дней и произвольный период;
+- preview заранее показывает списываемые дни, пересечения со сменами, другие отсутствия и остаток;
+- пересечение отсутствий и превышение лимита блокируются с понятным кодом ошибки; конкурентные записи сериализуются по пользователю, а изменение правил проверяет все сохранённые рабочие годы;
+- больничный, отпуск без содержания и пользовательские типы существуют в той же независимой модели;
+- календарь показывает отсутствие в месяце, неделе, почасовом дне и панели выбранной даты.
+
+Схема обновлена до **Flyway V40**. Автоматическая база: **103 Java-тестовых класса, 544 `@Test` метода и 31 Playwright browser scenario**.
+
+### Предыдущий hotfix: v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
 **v27.21.2** устраняет последнее падение полного Playwright gate после Schedule Templates & Calendar Layers:
 
@@ -455,7 +480,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.21.2 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить preview/apply шаблонов, точное открытие секции графиков и read-only слои в Month / Week / Day. Следующий продуктовый этап — **v27.22.0 — Vacation Planner**.
+Следующий практический шаг — пропустить v27.22.0 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить нормы, preview, конфликты, пресеты 14/28/35 и проекции отсутствий в Month / Week / Day. Следующий продуктовый этап — **v27.23.0 — External Calendar Sync**.
 
 ## Служебный профиль администратора
 

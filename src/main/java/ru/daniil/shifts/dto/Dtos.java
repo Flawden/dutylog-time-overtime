@@ -2038,6 +2038,192 @@ public final class Dtos {
         }
     }
 
+
+    /** Vacation policy is user-configurable and deliberately country-neutral. */
+    public record VacationSettingsDto(
+            int annualAllowanceDays,
+            int carryoverDays,
+            String countMode,
+            int workYearStartMonth,
+            int workYearStartDay,
+            String updatedAt
+    ) {
+        public static VacationSettingsDto from(ru.daniil.shifts.model.VacationSettings settings) {
+            return new VacationSettingsDto(
+                    settings.getAnnualAllowanceDays(), settings.getCarryoverDays(), settings.getCountMode(),
+                    settings.getWorkYearStartMonth(), settings.getWorkYearStartDay(),
+                    settings.getUpdatedAt() == null ? null : settings.getUpdatedAt().toString()
+            );
+        }
+    }
+
+    public record VacationSettingsUpdateRequest(
+            @Min(value = 0, message = "Годовая норма не может быть отрицательной")
+            @Max(value = 366, message = "Годовая норма: максимум 366 дней")
+            Integer annualAllowanceDays,
+            @Min(value = 0, message = "Перенос не может быть отрицательным")
+            @Max(value = 366, message = "Перенос: максимум 366 дней")
+            Integer carryoverDays,
+            @Pattern(regexp = "CALENDAR_DAYS|WEEKDAYS", message = "countMode: CALENDAR_DAYS или WEEKDAYS")
+            String countMode,
+            @Min(value = 1, message = "Месяц начала рабочего года: минимум 1")
+            @Max(value = 12, message = "Месяц начала рабочего года: максимум 12")
+            Integer workYearStartMonth,
+            @Min(value = 1, message = "День начала рабочего года: минимум 1")
+            @Max(value = 28, message = "День начала рабочего года: максимум 28")
+            Integer workYearStartDay
+    ) {}
+
+    public record AbsenceTypeDto(
+            Long id,
+            String name,
+            String color,
+            boolean countsAgainstAllowance,
+            boolean systemPreset,
+            String systemCode,
+            int sortOrder
+    ) {
+        public static AbsenceTypeDto from(ru.daniil.shifts.model.AbsenceType type) {
+            return new AbsenceTypeDto(type.getId(), type.getName(), type.getColor(),
+                    type.isCountsAgainstAllowance(), type.isSystemPreset(), type.getSystemCode(), type.getSortOrder());
+        }
+    }
+
+    public record AbsenceTypeCreateRequest(
+            @NotBlank(message = "Название типа отсутствия не должно быть пустым")
+            @Size(max = 80, message = "Название типа отсутствия: максимум 80 символов")
+            String name,
+            @Pattern(regexp = "#[0-9a-fA-F]{6}", message = "Цвет должен быть в формате #RRGGBB")
+            String color,
+            Boolean countsAgainstAllowance,
+            @Min(value = 0, message = "Порядок не может быть отрицательным")
+            @Max(value = 10000, message = "Порядок слишком большой")
+            Integer sortOrder
+    ) {}
+
+    public record AbsenceTypeUpdateRequest(
+            @Size(max = 80, message = "Название типа отсутствия: максимум 80 символов")
+            String name,
+            @Pattern(regexp = "#[0-9a-fA-F]{6}", message = "Цвет должен быть в формате #RRGGBB")
+            String color,
+            Boolean countsAgainstAllowance,
+            @Min(value = 0, message = "Порядок не может быть отрицательным")
+            @Max(value = 10000, message = "Порядок слишком большой")
+            Integer sortOrder
+    ) {}
+
+    public record VacationSummaryDto(
+            String workYearStart,
+            String workYearEnd,
+            int annualAllowanceDays,
+            int carryoverDays,
+            int availableDays,
+            int plannedDays,
+            int remainingDays,
+            String countMode
+    ) {}
+
+    public record AbsencePeriodDto(
+            Long id,
+            Long typeId,
+            String typeName,
+            String typeColor,
+            String systemCode,
+            boolean countsAgainstAllowance,
+            String title,
+            String startDate,
+            String endDate,
+            String status,
+            String note,
+            int calendarDays,
+            int countedDays,
+            int shiftConflictCount,
+            String createdAt,
+            String updatedAt
+    ) {}
+
+    public record AbsencePeriodCreateRequest(
+            @NotNull(message = "Выберите тип отсутствия") Long typeId,
+            @Size(max = 120, message = "Название периода: максимум 120 символов") String title,
+            @NotBlank(message = "Дата начала обязательна") String startDate,
+            @NotBlank(message = "Дата окончания обязательна") String endDate,
+            @Pattern(regexp = "PLANNED|APPROVED", message = "status: PLANNED или APPROVED") String status,
+            @Size(max = 1000, message = "Комментарий: максимум 1000 символов") String note
+    ) {}
+
+    public record AbsencePeriodUpdateRequest(
+            Long typeId,
+            @Size(max = 120, message = "Название периода: максимум 120 символов") String title,
+            String startDate,
+            String endDate,
+            @Pattern(regexp = "PLANNED|APPROVED", message = "status: PLANNED или APPROVED") String status,
+            @Size(max = 1000, message = "Комментарий: максимум 1000 символов") String note,
+            Boolean clearTitle,
+            Boolean clearNote
+    ) {}
+
+    public record AbsencePreviewRequest(
+            @NotNull(message = "Выберите тип отсутствия") Long typeId,
+            @NotBlank(message = "Дата начала обязательна") String startDate,
+            @NotBlank(message = "Дата окончания обязательна") String endDate,
+            Long excludePeriodId
+    ) {}
+
+    public record AbsencePreviewItemDto(
+            String date,
+            boolean weekend,
+            boolean counted,
+            boolean shiftConflict,
+            Long existingAbsenceId,
+            String existingAbsenceTitle,
+            String action
+    ) {}
+
+    public record AbsencePreviewDto(
+            Long typeId,
+            String typeName,
+            String startDate,
+            String endDate,
+            int calendarDays,
+            int countedDays,
+            int shiftConflictCount,
+            int absenceConflictCount,
+            String workYearStart,
+            String workYearEnd,
+            int availableDays,
+            int plannedBefore,
+            int projectedPlanned,
+            int remainingAfter,
+            boolean exceedsAllowance,
+            int exceededBy,
+            List<AbsencePreviewItemDto> items
+    ) {}
+
+    /** One day-sized projection of an absence period into the calendar. */
+    public record AbsenceOccurrenceDto(
+            Long periodId,
+            Long typeId,
+            String typeName,
+            String typeColor,
+            String systemCode,
+            String title,
+            String date,
+            String startDate,
+            String endDate,
+            String status,
+            boolean countedDay,
+            boolean shiftConflict
+    ) {}
+
+    public record VacationPlannerDto(
+            VacationSettingsDto settings,
+            VacationSummaryDto summary,
+            List<Integer> durationPresets,
+            List<AbsenceTypeDto> types,
+            List<AbsencePeriodDto> absences,
+            List<AbsenceOccurrenceDto> occurrences
+    ) {}
+
     /**
      * Удобный ответ для Android/PWA: одним запросом получаем диапазон дней,
      * доступные типы смен, задачи, важные дни и итоговый баланс переработок.
@@ -2050,6 +2236,7 @@ public final class Dtos {
             List<ShiftOccurrenceDto> shiftOccurrences,
             List<TaskDto> tasks,
             List<ImportantDayOccurrenceDto> importantDays,
+            List<AbsenceOccurrenceDto> absences,
             OvertimeSummaryDto overtime,
             OvertimeAccountDto overtimeAccount,
             NotificationSettingsDto notificationSettings,
@@ -2065,7 +2252,7 @@ public final class Dtos {
                                 OvertimeAccountDto overtimeAccount, NotificationSettingsDto notificationSettings,
                                 List<NotificationReminderDto> reminders, List<QuickScenarioDto> quickScenarios,
                                 List<ModuleDto> modules) {
-            this(from, to, shiftTypes, days, shiftOccurrences, tasks, importantDays, overtime, overtimeAccount,
+            this(from, to, shiftTypes, days, shiftOccurrences, tasks, importantDays, List.of(), overtime, overtimeAccount,
                     notificationSettings, reminders, quickScenarios, List.of(), modules);
         }
 
@@ -2075,7 +2262,7 @@ public final class Dtos {
                                 OvertimeSummaryDto overtime, OvertimeAccountDto overtimeAccount,
                                 NotificationSettingsDto notificationSettings, List<NotificationReminderDto> reminders,
                                 List<QuickScenarioDto> quickScenarios, List<ModuleDto> modules) {
-            this(from, to, shiftTypes, days, List.of(), tasks, importantDays, overtime, overtimeAccount,
+            this(from, to, shiftTypes, days, List.of(), tasks, importantDays, List.of(), overtime, overtimeAccount,
                     notificationSettings, reminders, quickScenarios, List.of(), modules);
         }
     }

@@ -1,3 +1,13 @@
+# v27.22.0 — Vacation Planner
+
+- Added owner-scoped vacation settings, absence types and planned/approved absence periods as an independent domain.
+- Added annual allowance, carryover, configurable work-year boundaries and `CALENDAR_DAYS` / `WEEKDAYS` counting without country-specific holiday assumptions.
+- Added 14/28/35-day presets, per-day preview, shift-conflict warnings, overlap rejection and per-work-year allowance enforcement; cross-year preview reports the most constrained balance.
+- Serialized allowance-sensitive writes per owner to prevent concurrent overbooking and validate rule changes against every stored work year.
+- Added additive calendar `absences` projections across Month, Week, Day and focused-day details without mutating shift rows.
+- Added responsive Vacation Planner UI, custom types, stable Web/v1 API aliases, OpenAPI documentation and browser coverage.
+- Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
+
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
 - Added strict `openDayModuleById()` Playwright infrastructure for day panels that share one product module key.

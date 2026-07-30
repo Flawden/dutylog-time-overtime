@@ -36,7 +36,7 @@
       labelEn:"Shift Worker",
       descriptionRu:"Смены, календарь и переработки находятся в первом плане.",
       descriptionEn:"Shifts, calendar and overtime stay in the foreground.",
-      navigation:["today","calendar","overtime","tasks","settings"],
+      navigation:["today","calendar","vacation","overtime","settings"],
       todayWidgets:["shift","overtime","tasks","important"]
     }),
     planner: Object.freeze({
@@ -45,7 +45,7 @@
       labelEn:"Planner",
       descriptionRu:"Задачи и важные даты поднимаются выше рабочего графика.",
       descriptionEn:"Tasks and important dates move ahead of the work schedule.",
-      navigation:["today","tasks","calendar","overtime","settings"],
+      navigation:["today","tasks","calendar","vacation","settings"],
       todayWidgets:["tasks","important","shift","overtime"]
     }),
     minimal: Object.freeze({
@@ -110,6 +110,7 @@
   const screens = Object.freeze({
     today:Object.freeze({ id:"today", elementId:"view-today", module:"core" }),
     calendar:Object.freeze({ id:"calendar", elementId:"view-calendar", module:"calendar" }),
+    vacation:Object.freeze({ id:"vacation", elementId:"view-vacation", module:"vacation" }),
     overtime:Object.freeze({ id:"overtime", elementId:"view-overtime", module:"overtime" }),
     tasks:Object.freeze({ id:"tasks", elementId:"view-tasks", module:"tasks" }),
     important:Object.freeze({ id:"important", elementId:"view-important", module:"important_dates" }),
@@ -169,7 +170,7 @@
     root.dataset.uiDecoration = cfg.decorationId;
   }
 
-  const navigationUniverse = Object.freeze(["today","calendar","overtime","tasks","important","settings"]);
+  const navigationUniverse = Object.freeze(["today","calendar","vacation","overtime","tasks","important","settings"]);
 
   function applyNavigation(cfg){
     const workspace = workspaces[cfg.workspaceId] || workspaces["shift-worker"];

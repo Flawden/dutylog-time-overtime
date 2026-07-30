@@ -124,6 +124,21 @@ public final class DutyLogModules {
                     70
             ),
             new ModuleContract(
+                    VACATION,
+                    ModuleCategory.TIME_ACCOUNTING,
+                    "Отпуск и отсутствия",
+                    "Vacation & absences",
+                    "Годовой лимит, перенос, периоды отпуска и другие виды отсутствия.",
+                    "Annual allowance, carryover, vacation periods and other absence types.",
+                    false,
+                    true,
+                    List.of(CALENDAR),
+                    List.of("nav:vacation", "day:vacation", "calendar-marker:vacation", "vacation:planner"),
+                    List.of("/api/vacation-planner", "/api/v1/vacation-planner"),
+                    List.of(),
+                    75
+            ),
+            new ModuleContract(
                     NOTIFICATIONS,
                     ModuleCategory.INTEGRATION,
                     "Уведомления",

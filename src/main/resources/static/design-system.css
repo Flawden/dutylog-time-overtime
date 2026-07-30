@@ -1979,3 +1979,176 @@ html[data-shell="next"] .ledgerTable th {
   html[data-shell="next"] .overtimeRatioTrack span,
   html[data-shell="next"] .overtimeLedgerProgress span { transition: none; }
 }
+
+/* v27.22.0 — Vacation Planner */
+html[data-shell="next"] .vacationWorkspace { display: grid; gap: 18px; }
+html[data-shell="next"] .vacationHero,
+html[data-shell="next"] .vacationPlannerCard,
+html[data-shell="next"] .vacationListCard,
+html[data-shell="next"] .vacationSettingsCard,
+html[data-shell="next"] .vacationTypesCard { padding: clamp(16px, 2.4vw, 24px); }
+html[data-shell="next"] .vacationHeroHead,
+html[data-shell="next"] .vacationSectionHead,
+html[data-shell="next"] .vacationPeriodTop,
+html[data-shell="next"] .vacationFormActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+html[data-shell="next"] .vacationHeroHead h2,
+html[data-shell="next"] .vacationSectionHead h3 { margin: 2px 0 0; }
+html[data-shell="next"] .vacationWorkYear {
+  color: var(--mut);
+  font-size: 12px;
+  font-weight: 700;
+  text-align: right;
+}
+html[data-shell="next"] .vacationSummaryGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+html[data-shell="next"] .vacationSummaryGrid > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 15px;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: var(--radius-card, 16px);
+  background: color-mix(in srgb, var(--surface, var(--card)) 88%, var(--accent) 12%);
+}
+html[data-shell="next"] .vacationSummaryGrid span,
+html[data-shell="next"] .vacationSummaryGrid small { color: var(--mut); }
+html[data-shell="next"] .vacationSummaryGrid span { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; }
+html[data-shell="next"] .vacationSummaryGrid b { font-size: clamp(28px, 5vw, 42px); line-height: 1; }
+html[data-shell="next"] .vacationSummaryGrid small { font-size: 11px; }
+html[data-shell="next"] .vacationMainGrid,
+html[data-shell="next"] .vacationConfigGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(300px, .9fr);
+  gap: 18px;
+  align-items: start;
+}
+html[data-shell="next"] .vacationForm,
+html[data-shell="next"] .vacationSettingsForm {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 16px;
+}
+html[data-shell="next"] .vacationForm label,
+html[data-shell="next"] .vacationSettingsForm label {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+  color: var(--mut);
+  font-size: 12px;
+  font-weight: 700;
+}
+html[data-shell="next"] .vacationWide { grid-column: 1 / -1; }
+html[data-shell="next"] .vacationPresetRow { display: flex; flex-wrap: wrap; gap: 8px; }
+html[data-shell="next"] .vacationPresetRow button { min-height: 38px; padding-inline: 13px; }
+html[data-shell="next"] .vacationFormActions { justify-content: flex-end; }
+html[data-shell="next"] .vacationPreview {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  padding: 14px;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, var(--ds-border-soft));
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+html[data-shell="next"] .vacationPreview[hidden] { display: none; }
+html[data-shell="next"] .vacationPreviewHead,
+html[data-shell="next"] .vacationPreviewBalance { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+html[data-shell="next"] .vacationPreviewBalance b { color: var(--accent); }
+html[data-shell="next"] .vacationPreviewWarnings { color: var(--warn, #e5a84b); font-size: 12px; font-weight: 700; }
+html[data-shell="next"] .vacationPreviewOk { color: var(--good, #55c792); font-size: 12px; font-weight: 700; }
+html[data-shell="next"] .vacationPreviewDays {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(42px, 1fr));
+  gap: 6px;
+}
+html[data-shell="next"] .vacationPreviewDays > span {
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  padding: 5px;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 9px;
+  color: var(--mut);
+  font-size: 10px;
+}
+html[data-shell="next"] .vacationPreviewDays > .conflict { border-color: color-mix(in srgb, var(--danger, #e06464) 55%, transparent); color: var(--danger, #e06464); }
+html[data-shell="next"] .vacationPeriodList,
+html[data-shell="next"] .vacationTypeList,
+html[data-shell="next"] .vacationDayList { display: grid; gap: 10px; margin-top: 14px; }
+html[data-shell="next"] .vacationPeriodCard,
+html[data-shell="next"] .vacationTypeRow,
+html[data-shell="next"] .vacationDayItem {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  padding: 13px;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--surface, var(--card)) 94%, transparent);
+}
+html[data-shell="next"] .vacationPeriodCard { grid-template-columns: 5px minmax(0, 1fr); }
+html[data-shell="next"] .vacationPeriodColor { border-radius: 999px; background: var(--absence-color, var(--accent)); }
+html[data-shell="next"] .vacationPeriodMain { display: grid; gap: 7px; min-width: 0; }
+html[data-shell="next"] .vacationPeriodTop strong,
+html[data-shell="next"] .vacationDayItem strong { overflow-wrap: anywhere; }
+html[data-shell="next"] .vacationPeriodDates,
+html[data-shell="next"] .vacationPeriodMeta,
+html[data-shell="next"] .dayPanelHint { color: var(--mut); font-size: 11px; }
+html[data-shell="next"] .vacationPeriodMeta { display: flex; flex-wrap: wrap; gap: 6px 10px; }
+html[data-shell="next"] .vacationConflict { color: var(--warn, #e5a84b); font-weight: 700; }
+html[data-shell="next"] .vacationPeriodActions { display: flex; flex-wrap: wrap; gap: 8px; }
+html[data-shell="next"] .vacationPeriodActions button { min-height: 36px; }
+html[data-shell="next"] .dangerGhost { color: var(--danger, #e06464); }
+html[data-shell="next"] .vacationTypeRow { grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; }
+html[data-shell="next"] .vacationTypeDot { width: 13px; height: 13px; border-radius: 999px; background: var(--absence-color, var(--accent)); }
+html[data-shell="next"] .vacationTypeRow small { color: var(--mut); }
+html[data-shell="next"] .vacationTypeForm {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  margin-top: 14px;
+}
+html[data-shell="next"] .vacationTypeForm label { grid-column: 1 / -1; color: var(--mut); font-size: 12px; }
+html[data-shell="next"] .vacationLegalHint,
+html[data-shell="next"] .vacationEmpty { color: var(--mut); font-size: 12px; line-height: 1.5; }
+html[data-shell="next"] .vacationDayItem { cursor: pointer; }
+html[data-shell="next"] .vacationDayItem:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--ds-border-soft)); }
+html[data-shell="next"] .calDay.hasVacation { box-shadow: inset 0 -2px 0 color-mix(in srgb, var(--accent-2, #61d3c7) 70%, transparent); }
+html[data-shell="next"] .vacationMark { color: var(--accent-2, #61d3c7); }
+
+@media (max-width: 900px) {
+  html[data-shell="next"] .vacationMainGrid,
+  html[data-shell="next"] .vacationConfigGrid { grid-template-columns: 1fr; }
+}
+@media (max-width: 560px) {
+  html[data-shell="next"] .vacationHero,
+  html[data-shell="next"] .vacationPlannerCard,
+  html[data-shell="next"] .vacationListCard,
+  html[data-shell="next"] .vacationSettingsCard,
+  html[data-shell="next"] .vacationTypesCard { padding: 14px; }
+  html[data-shell="next"] .vacationHeroHead { align-items: flex-start; }
+  html[data-shell="next"] .vacationSummaryGrid { grid-template-columns: 1fr; }
+  html[data-shell="next"] .vacationSummaryGrid > div { grid-template-columns: 1fr auto; align-items: center; }
+  html[data-shell="next"] .vacationSummaryGrid small { grid-column: 1 / -1; }
+  html[data-shell="next"] .vacationForm,
+  html[data-shell="next"] .vacationSettingsForm { grid-template-columns: 1fr; }
+  html[data-shell="next"] .vacationWide { grid-column: auto; }
+  html[data-shell="next"] .vacationFormActions { justify-content: stretch; }
+  html[data-shell="next"] .vacationFormActions button { flex: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-shell="next"] .vacationDayItem { transition: none; }
+}

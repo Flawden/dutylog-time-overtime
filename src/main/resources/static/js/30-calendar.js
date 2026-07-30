@@ -176,6 +176,7 @@ function renderCalendar(){
   const showNotes = moduleEnabled("notes");
   const showTasks = moduleEnabled("tasks");
   const showImportant = moduleEnabled("important_dates");
+  const showVacation = moduleEnabled("vacation");
   const showOvertime = moduleEnabled("overtime");
   const showNotifications = moduleEnabled("notifications");
 
@@ -255,12 +256,22 @@ function renderCalendar(){
     }
 
     const important = showImportant ? importantOf(k) : [];
+    const absences = showVacation && typeof absencesOf === "function" ? absencesOf(k) : [];
     const activeTasks = showTasks ? activeTasksOf(k) : [];
     const allTasks = showTasks ? tasksOf(k) : [];
     const reminders = showNotifications ? remindersOf(k) : [];
-    if (important.length || activeTasks.length || allTasks.length || reminders.length) {
+    if (important.length || absences.length || activeTasks.length || allTasks.length || reminders.length) {
       const marks = document.createElement("span");
       marks.className = "miniMarks";
+      if (absences.length) {
+        const vm = document.createElement("span");
+        vm.className = "vacationMark";
+        vm.textContent = "☂";
+        vm.style.background = absences[0].typeColor || "var(--accent-secondary)";
+        vm.title = absences.map(x => typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(x) : (x.title || x.typeName)).join(", ");
+        marks.appendChild(vm);
+        cell.classList.add("hasVacation");
+      }
       if (important.length) {
         const im = document.createElement("span");
         im.className = "importantMark";
@@ -550,6 +561,14 @@ function updateAccSummaries(){
         : `${t("баланс")} ${bal > 0 ? "+" : ""}${fmtHours(bal)} ${state.language === "en" ? "h" : "ч"}`;
       $("sumOt").style.color = Math.abs(dayNet) > 0.001 ? "var(--accent)" : "";
     } else { $("sumOt").textContent = t("Скрыто модулем"); $("sumOt").style.color = ""; }
+  }
+
+  // Отпуск и другие отсутствия
+  if ($("sumVacation")) {
+    const absences = moduleEnabled("vacation") && typeof absencesOf === "function" ? absencesOf(k) : [];
+    $("sumVacation").innerHTML = !moduleEnabled("vacation")
+      ? esc(t("Скрыто модулем"))
+      : (absences.length ? `<span style="color:${esc(absences[0].typeColor || "var(--accent-secondary)")}">☂ ${absences.length}</span>&nbsp;${esc(typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absences[0]) : (absences[0].title || absences[0].typeName || t("Отсутствие")))}` : "—");
   }
 
   // Важные дни

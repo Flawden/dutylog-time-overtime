@@ -26,6 +26,8 @@ STATIC_JS = [
     "js/30-calendar.js",
     "js/35-today.js",
     "js/37-calendar-experience.js",
+    "js/38-schedule-layers.js",
+    "js/39-vacation-planner.js",
     "js/40-overtime.js",
     "js/50-tasks.js",
     "js/60-settings.js",

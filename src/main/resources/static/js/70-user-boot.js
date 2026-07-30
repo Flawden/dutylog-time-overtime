@@ -17,6 +17,8 @@ function applyCalendarBundle(bundle){
     state.shiftSegmentsByDate = {};
     state.tasksByDate = {};
     state.importantByDate = {};
+    state.absenceOccurrences = [];
+    state.absencesByDate = {};
     state.remindersByDate = {};
     for (const e of bundle) state.days[e.date] = normalizeDay(e);
     return;
@@ -26,6 +28,8 @@ function applyCalendarBundle(bundle){
   state.shiftSegmentsByDate = {};
   state.tasksByDate = {};
   state.importantByDate = {};
+  state.absenceOccurrences = [];
+  state.absencesByDate = {};
   state.remindersByDate = {};
   state.calendarLayerEntriesByDate = {};
   if (bundle.shiftTypes) {
@@ -40,6 +44,8 @@ function applyCalendarBundle(bundle){
   rebuildShiftOccurrenceIndex();
   if (moduleEnabled("tasks")) for (const t of bundle.tasks || []) addTaskToDateMap(state.tasksByDate, t);
   if (moduleEnabled("important_dates")) for (const i of bundle.importantDays || []) addToDateMap(state.importantByDate, i);
+  state.absenceOccurrences = moduleEnabled("vacation") && Array.isArray(bundle.absences) ? bundle.absences : [];
+  if (moduleEnabled("vacation")) for (const absence of state.absenceOccurrences) addToDateMap(state.absencesByDate, absence);
   state.notificationSettings = moduleEnabled("notifications") ? (bundle.notificationSettings || state.notificationSettings) : null;
   state.quickScenarios = moduleEnabled("scenarios") ? (bundle.quickScenarios || state.quickScenarios || []) : [];
   state.calendarLayers = Array.isArray(bundle.calendarLayers) ? bundle.calendarLayers : (state.calendarLayers || []);
@@ -206,7 +212,7 @@ init().catch(err => {
 });
 
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */
-const VIEWS = window.DutyLogUI?.views?.() || { today:"view-today", calendar:"view-calendar", overtime:"view-overtime", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
+const VIEWS = window.DutyLogUI?.views?.() || { today:"view-today", calendar:"view-calendar", vacation:"view-vacation", overtime:"view-overtime", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
 function applyRoute(){
   const defaultRoute = "#today";
   const rawRoute = (location.hash || defaultRoute).slice(1);
@@ -216,6 +222,7 @@ function applyRoute(){
   if (active === "tasks" && !moduleEnabled("tasks")) active = "calendar";
   if (active === "overtime" && !moduleEnabled("overtime")) active = "calendar";
   if (active === "important" && !moduleEnabled("important_dates")) active = "calendar";
+  if (active === "vacation" && !moduleEnabled("vacation")) active = "calendar";
   document.body.dataset.view = active;
   if (active !== "calendar") selectDay(null);
   for (const [key, id] of Object.entries(VIEWS)) {
@@ -243,6 +250,7 @@ function applyRoute(){
   if (active === "today" && typeof renderTodayDashboard === "function") renderTodayDashboard();
   if (active === "calendar") renderCalendar();
   if (active === "important" && typeof renderImportantBoard === "function") renderImportantBoard();
+  if (active === "vacation" && typeof openVacationPlannerView === "function") openVacationPlannerView();
   if (active === "admin") {
     if (typeof initAdminNavigation === "function") initAdminNavigation();
     renderDiagnosticsClient();

@@ -777,6 +777,122 @@ paths:
         '204': { description: Layer deleted }
         '404': { $ref: '#/components/responses/ApiError' }
 
+  /api/v1/vacation-planner:
+    get:
+      operationId: getVacationPlanner
+      parameters:
+        - { in: query, name: referenceDate, schema: { type: string, format: date } }
+        - { in: query, name: from, schema: { type: string, format: date } }
+        - { in: query, name: to, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Vacation settings, work-year balance, types, periods and calendar occurrences
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VacationPlanner' }
+  /api/v1/vacation-planner/settings:
+    patch:
+      operationId: updateVacationSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VacationSettingsInput' }
+      responses:
+        '200': { description: Vacation settings updated }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/vacation-planner/types:
+    get:
+      operationId: listAbsenceTypes
+      responses:
+        '200':
+          description: Built-in and custom absence types
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/AbsenceType' } }
+    post:
+      operationId: createAbsenceType
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AbsenceTypeInput' }
+      responses:
+        '201': { description: Absence type created }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/vacation-planner/types/{id}:
+    patch:
+      operationId: updateAbsenceType
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AbsenceTypePatch' }
+      responses:
+        '200': { description: Absence type updated }
+        '404': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: deleteAbsenceType
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Custom absence type deleted }
+        '404': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/vacation-planner/preview:
+    post:
+      operationId: previewAbsence
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AbsencePreviewInput' }
+      responses:
+        '200':
+          description: Per-day conflict and balance preview
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AbsencePreview' }
+  /api/v1/vacation-planner/absences:
+    post:
+      operationId: createAbsencePeriod
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AbsencePeriodInput' }
+      responses:
+        '201':
+          description: Absence period created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AbsencePeriod' }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/vacation-planner/absences/{id}:
+    patch:
+      operationId: updateAbsencePeriod
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AbsencePeriodPatch' }
+      responses:
+        '200': { description: Absence period updated }
+        '404': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: deleteAbsencePeriod
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Absence period deleted }
+        '404': { $ref: '#/components/responses/ApiError' }
+
 components:
   securitySchemes:
     bearerAuth:
@@ -791,6 +907,116 @@ components:
           schema:
             $ref: '#/components/schemas/ApiError'
   schemas:
+    VacationSettingsInput:
+      type: object
+      properties:
+        annualAllowanceDays: { type: integer, minimum: 0, maximum: 366 }
+        carryoverDays: { type: integer, minimum: 0, maximum: 366 }
+        countMode: { type: string, enum: [CALENDAR_DAYS, WEEKDAYS] }
+        workYearStartMonth: { type: integer, minimum: 1, maximum: 12 }
+        workYearStartDay: { type: integer, minimum: 1, maximum: 28 }
+    VacationSettings:
+      allOf:
+        - $ref: '#/components/schemas/VacationSettingsInput'
+        - type: object
+          properties:
+            updatedAt: { type: string, format: date-time }
+    VacationSummary:
+      type: object
+      required: [workYearStart, workYearEnd, availableDays, plannedDays, remainingDays, countMode]
+      properties:
+        workYearStart: { type: string, format: date }
+        workYearEnd: { type: string, format: date }
+        annualAllowanceDays: { type: integer }
+        carryoverDays: { type: integer }
+        availableDays: { type: integer }
+        plannedDays: { type: integer }
+        remainingDays: { type: integer }
+        countMode: { type: string, enum: [CALENDAR_DAYS, WEEKDAYS] }
+    AbsenceTypeInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, maxLength: 80 }
+        color: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+        countsAgainstAllowance: { type: boolean, default: false }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+    AbsenceTypePatch:
+      allOf:
+        - $ref: '#/components/schemas/AbsenceTypeInput'
+    AbsenceType:
+      allOf:
+        - $ref: '#/components/schemas/AbsenceTypeInput'
+        - type: object
+          required: [id, systemPreset]
+          properties:
+            id: { type: integer, format: int64 }
+            systemPreset: { type: boolean }
+            systemCode: { type: string, nullable: true, enum: [VACATION, SICK, UNPAID, OTHER] }
+    AbsencePeriodInput:
+      type: object
+      required: [typeId, startDate, endDate]
+      properties:
+        typeId: { type: integer, format: int64 }
+        title: { type: string, maxLength: 120, nullable: true }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        status: { type: string, enum: [PLANNED, APPROVED], default: PLANNED }
+        note: { type: string, maxLength: 1000, nullable: true }
+    AbsencePeriodPatch:
+      allOf:
+        - $ref: '#/components/schemas/AbsencePeriodInput'
+    AbsencePeriod:
+      allOf:
+        - $ref: '#/components/schemas/AbsencePeriodInput'
+        - type: object
+          required: [id, typeName, typeColor, calendarDays, countedDays, shiftConflictCount]
+          properties:
+            id: { type: integer, format: int64 }
+            typeName: { type: string }
+            typeColor: { type: string }
+            systemCode: { type: string, nullable: true }
+            countsAgainstAllowance: { type: boolean }
+            calendarDays: { type: integer }
+            countedDays: { type: integer }
+            shiftConflictCount: { type: integer }
+    AbsenceOccurrence:
+      type: object
+      required: [periodId, typeId, typeName, typeColor, date, startDate, endDate, status, countedDay, shiftConflict]
+      properties:
+        periodId: { type: integer, format: int64 }
+        typeId: { type: integer, format: int64 }
+        typeName: { type: string }
+        typeColor: { type: string }
+        systemCode: { type: string, nullable: true }
+        title: { type: string, nullable: true }
+        date: { type: string, format: date }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        status: { type: string, enum: [PLANNED, APPROVED] }
+        countedDay: { type: boolean }
+        shiftConflict: { type: boolean }
+    AbsencePreviewInput:
+      type: object
+      required: [typeId, startDate, endDate]
+      properties:
+        typeId: { type: integer, format: int64 }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        excludePeriodId: { type: integer, format: int64, nullable: true }
+    AbsencePreview:
+      type: object
+      additionalProperties: true
+    VacationPlanner:
+      type: object
+      required: [settings, summary, durationPresets, types, absences, occurrences]
+      properties:
+        settings: { $ref: '#/components/schemas/VacationSettings' }
+        summary: { $ref: '#/components/schemas/VacationSummary' }
+        durationPresets: { type: array, items: { type: integer, enum: [14, 28, 35] } }
+        types: { type: array, items: { $ref: '#/components/schemas/AbsenceType' } }
+        absences: { type: array, items: { $ref: '#/components/schemas/AbsencePeriod' } }
+        occurrences: { type: array, items: { $ref: '#/components/schemas/AbsenceOccurrence' } }
     ScheduleTemplateStep:
       type: object
       required: [position, shiftTypeId, shiftTypeName, shiftColor, dayOff]

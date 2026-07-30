@@ -6,6 +6,7 @@ import ru.daniil.shifts.dto.Dtos.CalendarRangeDto;
 import ru.daniil.shifts.dto.Dtos.CalendarLayerDto;
 import ru.daniil.shifts.dto.Dtos.DayDto;
 import ru.daniil.shifts.dto.Dtos.ImportantDayOccurrenceDto;
+import ru.daniil.shifts.dto.Dtos.AbsenceOccurrenceDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeSummaryDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.NotificationReminderDto;
@@ -32,6 +33,7 @@ public class CalendarService {
     private final QuickScenarioService quickScenarioService;
     private final ModuleService moduleService;
     private final CalendarLayerService calendarLayerService;
+    private final VacationPlannerService vacationPlannerService;
 
     public CalendarService(DayEntryService dayEntryService,
                            ShiftTypeService shiftTypeService,
@@ -42,7 +44,8 @@ public class CalendarService {
                            NotificationService notificationService,
                            QuickScenarioService quickScenarioService,
                            ModuleService moduleService,
-                           CalendarLayerService calendarLayerService) {
+                           CalendarLayerService calendarLayerService,
+                           VacationPlannerService vacationPlannerService) {
         this.dayEntryService = dayEntryService;
         this.shiftTypeService = shiftTypeService;
         this.shiftOccurrenceService = shiftOccurrenceService;
@@ -53,6 +56,7 @@ public class CalendarService {
         this.quickScenarioService = quickScenarioService;
         this.moduleService = moduleService;
         this.calendarLayerService = calendarLayerService;
+        this.vacationPlannerService = vacationPlannerService;
     }
 
     @Transactional
@@ -63,6 +67,7 @@ public class CalendarService {
         boolean tasksEnabled = moduleService.isEnabled(user, ModuleService.TASKS);
         boolean overtimeEnabled = moduleService.isEnabled(user, ModuleService.OVERTIME);
         boolean importantEnabled = moduleService.isEnabled(user, ModuleService.IMPORTANT_DATES);
+        boolean vacationEnabled = moduleService.isEnabled(user, ModuleService.VACATION);
         boolean notificationsEnabled = moduleService.isEnabled(user, ModuleService.NOTIFICATIONS);
         boolean scenariosEnabled = moduleService.isEnabled(user, ModuleService.SCENARIOS);
 
@@ -85,6 +90,7 @@ public class CalendarService {
         List<ShiftOccurrenceDto> shiftOccurrences = shiftOccurrenceService.listForDisplayRange(user, from, to);
         List<TaskDto> tasks = tasksEnabled ? taskService.listRange(user, from, to) : List.of();
         List<ImportantDayOccurrenceDto> importantDays = importantEnabled ? importantDayService.occurrences(user, from, to) : List.of();
+        List<AbsenceOccurrenceDto> absences = vacationEnabled ? vacationPlannerService.occurrences(user, from, to) : List.of();
         OvertimeSummaryDto overtime = overtimeEnabled
                 ? overtimeService.summary(user, from, to)
                 : new OvertimeSummaryDto(from.toString(), to.toString(), 0, 0, 0);
@@ -95,6 +101,6 @@ public class CalendarService {
         List<NotificationReminderDto> reminders = notificationsEnabled ? notificationService.upcoming(user, from, to) : List.of();
         List<QuickScenarioDto> quickScenarios = scenariosEnabled && overtimeEnabled ? quickScenarioService.list(user) : List.of();
         List<CalendarLayerDto> calendarLayers = calendarLayerService.listForRange(user, from, to);
-        return new CalendarRangeDto(from.toString(), to.toString(), shiftTypes, dayEntries, shiftOccurrences, tasks, importantDays, overtime, overtimeAccount, notificationSettings, reminders, quickScenarios, calendarLayers, modules);
+        return new CalendarRangeDto(from.toString(), to.toString(), shiftTypes, dayEntries, shiftOccurrences, tasks, importantDays, absences, overtime, overtimeAccount, notificationSettings, reminders, quickScenarios, calendarLayers, modules);
     }
 }

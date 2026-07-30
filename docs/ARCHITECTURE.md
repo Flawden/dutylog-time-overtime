@@ -176,7 +176,7 @@ RequestDiagnosticsFilter
 
 ## База данных
 
-В production схема управляется Flyway; текущая последовательность заканчивается на V39 Schedule Templates & Calendar Layers. Новые изменения БД добавляются только новыми миграциями:
+В production схема управляется Flyway; текущая последовательность заканчивается на V40 Vacation Planner; предыдущая доменная миграция — V39 Schedule Templates & Calendar Layers. Новые изменения БД добавляются только новыми миграциями:
 
 ```text
 src/main/resources/db/migration/V14__example.sql

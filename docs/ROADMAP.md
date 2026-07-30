@@ -1,27 +1,42 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**.
+Current release: **v27.22.0 — Vacation Planner**.
 
-## Текущая продуктовая точка — reusable schedules and read-only calendar composition
 
-Статус: **v27.21.2** сохраняет зелёный Maven-контракт и устраняет последний неоднозначный Playwright selector в браузерном потоке шаблонов графика.
+## v27.22.0 — Vacation Planner — completed
+
+- [x] Separate absence model; vacation never becomes a shift row.
+- [x] Annual allowance and carryover.
+- [x] Configurable work-year boundary.
+- [x] Calendar-day or Monday-Friday counting.
+- [x] 14 / 28 / 35-day presets and custom periods.
+- [x] Preview with shift and absence conflicts.
+- [x] Overlap and allowance protection.
+- [x] Built-in and custom absence types.
+- [x] Month / Week / Day / selected-day composition.
+- [x] Flyway V40, Web/v1 API, Java/static/Playwright contracts.
+
+Next product stage: **v27.23.0 — External Calendar Sync**.
+
+## Текущая продуктовая точка — Vacation Planner
+
+Статус: **v27.22.0** добавляет отдельный домен отпусков и отсутствий, не смешивая его со сменами, рабочими часами и FIFO переработок.
 
 Закрыто:
 
-- пять встроенных шаблонов и пользовательские циклы до 64 шагов;
-- alignment от anchor date или по дням недели;
-- обязательный preview с безопасным `SKIP_CONFLICT` по умолчанию;
-- явное overwrite занятых дней без скрытого изменения поведения;
-- обычные датированные смены после применения, доступные для ручной правки;
-- несколько read-only слоёв близких людей;
-- имя, цвет, IANA timezone, template, anchor, start/end и visibility слоя;
-- проекция timed shifts в display timezone пользователя;
-- month chips, week agenda и hourly day events;
-- Flyway V39, API v1, Java/static/Playwright contracts.
-- static frontend-контракты выровнены с server-owned preview/apply, data-layer fresh reload и реальным `tplPreview`.
-- E2E открывает шаблоны графика через точный `#accSched`, не смешивая его с обычной секцией смен `#accShift`.
+- отдельные owner-scoped настройки отпуска, типы отсутствий и периоды;
+- годовая норма, перенос и настраиваемая граница рабочего года;
+- подсчёт календарных дней или Пн–Пт без выдуманного законодательства;
+- быстрые периоды 14 / 28 / 35 дней и произвольный диапазон;
+- per-day preview со сменами, другими отсутствиями и остатком;
+- проверка каждого пересечённого рабочего года с показом наиболее ограниченного баланса;
+- стабильные `VACATION_LIMIT_EXCEEDED`, `ABSENCE_OVERLAP` и `ABSENCE_TYPE_IN_USE`;
+- встроенные и пользовательские типы отсутствий;
+- Month / Week / Day / selected-day проекция без записи отпуска в смены;
+- Flyway V40, API v1, OpenAPI, Java/static/Playwright contracts;
+- baseline 103 Java test classes / 544 tests / 31 Playwright scenario.
 
-Следующий этап: довести Calendar Layers до совместного доступа и импорта, не смешивая это с текущей локальной read-only моделью.
+Следующий этап: **v27.23.0 — External Calendar Sync**, начиная с безопасного `.ics`-экспорта и одностороннего обмена.
 
 ## Этап 2 — нормальная API-архитектура
 
@@ -37,8 +52,9 @@ Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**.
 
 Осталось:
 
-- разнести DTO из одного `Dtos.java` по отдельным файлам;
-- добавить OpenAPI/Swagger.
+- разнести DTO из одного `Dtos.java` по отдельным файлам.
+
+OpenAPI v1 уже поддерживается и расширяется вместе с доменными релизами.
 
 ## Этап 3 — важные дни и задачи
 

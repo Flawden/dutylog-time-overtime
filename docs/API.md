@@ -1,6 +1,35 @@
-# DutyLog API v27.21.2
+# DutyLog API v27.22.0
 
 Проект: **DutyLog: Time & Overtime**.
+
+
+v27.22.0 additively introduces an independent Vacation Planner API. Vacation and other absences never write a shift type into a calendar day. Flyway V40 adds owner-scoped settings, absence types and absence periods; existing endpoints remain compatible.
+
+## Vacation Planner
+
+```text
+GET    /api/v1/vacation-planner
+PATCH  /api/v1/vacation-planner/settings
+GET    /api/v1/vacation-planner/types
+POST   /api/v1/vacation-planner/types
+PATCH  /api/v1/vacation-planner/types/{id}
+DELETE /api/v1/vacation-planner/types/{id}
+POST   /api/v1/vacation-planner/preview
+POST   /api/v1/vacation-planner/absences
+PATCH  /api/v1/vacation-planner/absences/{id}
+DELETE /api/v1/vacation-planner/absences/{id}
+```
+
+`GET /api/v1/vacation-planner` accepts optional `referenceDate`; optional `from` and `to` must be passed together. The response contains settings, current work-year summary, presets `[14, 28, 35]`, types, periods and day-sized occurrences.
+
+Stable conflict codes:
+
+```text
+ABSENCE_OVERLAP
+VACATION_LIMIT_EXCEEDED
+```
+
+The calendar response additively includes `absences[]`; shift payloads and `day_entries` semantics are unchanged.
 
 v27.21.2 не меняет HTTP API и production runtime. Исправлен только Playwright selector contract. v27.21.1 также не менял HTTP API. Базовый v27.21.0 аддитивно добавляет owner-scoped шаблоны графика и календарные слои. Существующие calendar/day/task/note/event payload'ы не меняются. Flyway V39 создаёт отдельные таблицы правил; датированные смены и исторические данные не переписываются.
 

@@ -1,15 +1,24 @@
 # DutyLog regression test baseline
 
-Status: v27.21.2.
+Status: v27.22.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.21.2 gives the schedule-template browser flow an exact accordion selector while preserving strict generic module lookup. Current application baseline is 100 Java test classes / 525 `@Test` methods / 30 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.22.0 adds the independent Vacation Planner domain, V40 migration and Month/Week/Day browser composition. Current application baseline is 103 Java test classes / 544 `@Test` methods / 31 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+
+## v27.22.0 Vacation Planner extension
+
+- `VacationPlannerServiceTest` protects defaults, calendar/weekday counting, work-year boundaries, carryover, conflicts, allowance, ownership and CRUD.
+- `VacationPlannerControllerTest` protects Web/v1 routes, CSRF, validation, calendar aggregation and stable error codes.
+- `VacationPlannerFrontendContractTest` protects bundle order, separate state/API and Month/Week/Day composition.
+- `vacation-planner.spec.js` covers preview, save, calendar projection, edit and delete in Chromium.
+- Baseline advances to 103 Java classes / 544 `@Test` methods / 31 Playwright scenarios; Flyway advances to V40.
 
 ## v27.21.2 Schedule Accordion E2E Selector Hotfix extension
 

@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.21.2.
+Status: v27.22.0.
 
 ## Local gate
 
@@ -19,8 +19,13 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Staging
 
 - push the exact candidate tree to `test`;
-- confirm the Maven gate executes all 525 tests with zero failures after the frontend contract alignment;
+- confirm the Maven gate executes all 544 tests with zero failures after the frontend contract alignment;
 - confirm fresh schedule apply reloads the authoritative month through the data layer;
+- confirm Vacation Planner shows 28 available days by default and presets 14 / 28 / 35;
+- preview a vacation over an existing shift and confirm the shift is warned about but remains intact;
+- confirm overlapping absences and allowance overflow return `ABSENCE_OVERLAP` / `VACATION_LIMIT_EXCEEDED`;
+- switch to Monday-Friday counting and confirm weekends remain visible but do not consume allowance;
+- change the work-year boundary and carryover, then verify the balance is recomputed for the selected reference date;
 - confirm `Deploy staging` is green;
 - verify calendar, note search/export/offline queued edits, tasks, overtime, modules, admin and Android API v1;
 - verify schedule-template list seeds five presets exactly once and built-ins open as copies;
@@ -84,6 +89,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.21.2 -m "v27.21.2 — Schedule Accordion E2E Selector Hotfix"
-git push origin v27.21.2
+git tag -a v27.22.0 -m "v27.22.0 — Vacation Planner"
+git push origin v27.22.0
 ```

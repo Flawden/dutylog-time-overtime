@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.21.2}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.22.0}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -19,6 +19,7 @@ STATIC_JS=(
   "js/35-today.js"
   "js/37-calendar-experience.js"
   "js/38-schedule-layers.js"
+  "js/39-vacation-planner.js"
   "js/40-overtime.js"
   "js/50-tasks.js"
   "js/60-settings.js"
@@ -173,8 +174,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.21.2"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.21.2."
+contains docs/API.md "# DutyLog API v27.22.0"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.22.0."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
@@ -286,7 +287,7 @@ contains e2e/design-system-shell.spec.js 'UI Core workspace persists in the sing
 contains CHANGES.md "v27.18.0 — Overtime Next"
 contains README.md "v27.18.0 — Overtime Next"
 contains docs/OVERTIME_NEXT_V27.18.0.md "Overtime Next"
-contains docs/ROADMAP.md "Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.22.0 — Vacation Planner**"
 contains src/main/resources/static/index.html 'id="overtimeWorkspaceTitle"'
 contains src/main/resources/static/index.html 'id="ledgerThisYear"'
 contains src/main/resources/static/index.html 'id="ledgerChart"'
@@ -334,7 +335,7 @@ contains e2e/important-timezone.spec.js 'await selectDate(page, shiftDate);'
 contains CHANGES.md "v27.18.3 — UI Settings & Button Variants Quality Hotfix"
 contains README.md "v27.18.3 — UI Settings & Button Variants Quality Hotfix"
 contains docs/UI_SETTINGS_BUTTON_VARIANTS_QUALITY_HOTFIX_V27.18.3.md "UI Settings & Button Variants Quality Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.22.0 — Vacation Planner**"
 contains src/main/resources/static/index.html 'id="uiPaletteState"'
 contains src/main/resources/static/index.html 'id="paletteThemeReset"'
 contains src/main/resources/static/index.html 'id="buttonVariantPreview"'
@@ -352,7 +353,7 @@ contains src/test/java/ru/daniil/shifts/web/UiCoreWorkspaceFrontendContractTest.
 contains CHANGES.md "v27.19.0 — Tasks & Inbox Next"
 contains README.md "v27.19.0 — Tasks & Inbox Next"
 contains docs/TASKS_INBOX_NEXT_V27.19.0.md "Tasks & Inbox Next"
-contains docs/ROADMAP.md "Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.22.0 — Vacation Planner**"
 contains src/main/resources/db/migration/postgresql/V37__task_planning_intervals_and_projects.sql "scheduled_start_instant"
 
   # v27.20.0 Notes & Important Events Next
@@ -381,7 +382,7 @@ contains e2e/important-timezone.spec.js "page.locator('#importantEditName')"
 contains CHANGES.md "v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix"
 contains README.md "v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix"
 contains docs/IMPORTANT_EVENT_MODAL_OFFLINE_NOTES_E2E_HOTFIX_V27.20.1.md "Important Event Modal & Offline Notes E2E Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.22.0 — Vacation Planner**"
 contains src/main/resources/static/js/50-tasks.js "function closeImportantEventModals()"
 contains src/main/resources/static/js/50-tasks.js 'button,a,input,select,textarea,[role=button]'
 contains src/main/resources/static/js/50-tasks.js "e.stopPropagation();"
@@ -420,8 +421,8 @@ contains src/test/java/ru/daniil/shifts/web/CalendarMobileExperienceFrontendCont
 contains CHANGES.md "v27.21.0 — Schedule Templates & Calendar Layers"
 contains README.md "v27.21.0 — Schedule Templates & Calendar Layers"
 contains docs/SCHEDULE_TEMPLATES_CALENDAR_LAYERS_V27.21.0.md "Schedule Templates & Calendar Layers"
-contains docs/ROADMAP.md "Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.21.2"
+contains docs/ROADMAP.md "Current release: **v27.22.0 — Vacation Planner**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.22.0"
 contains docs/ARCHITECTURE.md "V39 Schedule Templates & Calendar Layers"
 contains src/main/resources/db/migration/postgresql/V39__schedule_templates_and_calendar_layers.sql "CREATE TABLE schedule_templates"
 contains src/main/resources/db/migration/postgresql/V39__schedule_templates_and_calendar_layers.sql "CREATE TABLE calendar_layers"
@@ -449,8 +450,8 @@ not_contains e2e/schedule-templates-calendar-layers.spec.js "await openDayModule
 contains CHANGES.md "v27.21.2 — Schedule Accordion E2E Selector Hotfix"
 contains README.md "v27.21.2 — Schedule Accordion E2E Selector Hotfix"
 contains docs/SCHEDULE_ACCORDION_E2E_SELECTOR_HOTFIX_V27.21.2.md "Schedule Accordion E2E Selector Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.21.2"
+contains docs/ROADMAP.md "Current release: **v27.22.0 — Vacation Planner**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.22.0"
 contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "dataLayer.loadCalendar(requestedYear, requestedMonth"
 contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "api.month(y, m, { fresh })"
 contains src/test/java/ru/daniil/shifts/web/ScheduleTemplateFrontendContractTest.java "authoritativeTemplatePreviewAndApplyKeepAlignmentOnTheServer"
@@ -458,11 +459,47 @@ contains src/test/java/ru/daniil/shifts/web/ScheduleTemplateFrontendContractTest
 contains src/test/java/ru/daniil/shifts/web/ScheduleTemplatesCalendarLayersFrontendContractTest.java "async scheduleTemplates()"
 contains src/test/java/ru/daniil/shifts/web/ScheduleTemplatesCalendarLayersFrontendContractTest.java 'id=\"tplPreview\"'
 
+  # v27.22.0 Vacation Planner
+contains CHANGES.md "v27.22.0 — Vacation Planner"
+contains README.md "v27.22.0 — Vacation Planner"
+contains docs/VACATION_PLANNER_V27.22.0.md "Vacation Planner"
+contains docs/ROADMAP.md "Current release: **v27.22.0 — Vacation Planner**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.22.0"
+contains docs/ARCHITECTURE.md "V40 Vacation Planner"
+contains src/main/resources/db/migration/postgresql/V40__vacation_planner.sql "CREATE TABLE vacation_settings"
+contains src/main/resources/db/migration/postgresql/V40__vacation_planner.sql "INSERT INTO vacation_settings(user_id)"
+contains src/main/resources/db/migration/postgresql/V40__vacation_planner.sql "CREATE TABLE absence_types"
+contains src/main/resources/db/migration/postgresql/V40__vacation_planner.sql "CREATE TABLE absence_periods"
+not_contains src/main/resources/db/migration/postgresql/V40__vacation_planner.sql "ALTER TABLE day_entries"
+contains src/main/java/ru/daniil/shifts/module/ModuleKeys.java 'VACATION = "vacation"'
+contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java "DURATION_PRESETS = List.of(14, 28, 35)"
+contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java '"VACATION_LIMIT_EXCEEDED"'
+contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java '"ABSENCE_OVERLAP"'
+contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java '"ABSENCE_TYPE_IN_USE"'
+contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java "mostConstrainedProjection"
+contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java "validateAllStoredWorkYears"
+contains src/main/java/ru/daniil/shifts/repo/VacationSettingsRepository.java "PESSIMISTIC_WRITE"
+contains src/main/java/ru/daniil/shifts/web/VacationPlannerController.java '"/api/v1/vacation-planner"'
+contains src/main/java/ru/daniil/shifts/service/CalendarService.java "vacationPlannerService.occurrences"
+contains src/main/resources/static/index.html "js/39-vacation-planner.js?v=$VERSION"
+contains src/main/resources/static/index.html 'id="view-vacation"'
+contains src/main/resources/static/index.html 'id="accVacation"'
+contains src/main/resources/static/js/39-vacation-planner.js "function loadVacationPlanner(force = false)"
+contains src/main/resources/static/js/39-vacation-planner.js "function renderVacationPreview(preview)"
+contains src/main/resources/static/js/30-calendar.js "vacationMark"
+contains src/main/resources/static/js/37-calendar-experience.js "facts.absences"
+contains src/test/java/ru/daniil/shifts/service/VacationPlannerServiceTest.java "class VacationPlannerServiceTest"
+contains src/test/java/ru/daniil/shifts/service/VacationPlannerServiceTest.java "crossWorkYearPreviewReportsTheMostConstrainedBalance"
+contains src/test/java/ru/daniil/shifts/web/VacationPlannerControllerTest.java "class VacationPlannerControllerTest"
+contains src/test/java/ru/daniil/shifts/web/VacationPlannerFrontendContractTest.java "class VacationPlannerFrontendContractTest"
+contains e2e/vacation-planner.spec.js "vacation planner previews allowance"
+contains src/main/resources/static/openapi/dutylog-v1.yaml "/api/v1/vacation-planner:"
+
   # v27.19.1 Task Board Date Range Compatibility Hotfix
 contains CHANGES.md "v27.19.1 — Task Board Date Range Compatibility Hotfix"
 contains README.md "v27.19.1 — Task Board Date Range Compatibility Hotfix"
 contains docs/TASK_BOARD_DATE_RANGE_COMPATIBILITY_HOTFIX_V27.19.1.md "Task Board Date Range Compatibility Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.22.0 — Vacation Planner**"
 contains src/main/java/ru/daniil/shifts/web/TaskController.java '@RequestParam(name = "scheduledFrom"'
 contains src/main/java/ru/daniil/shifts/web/TaskController.java '@RequestParam(name = "scheduledTo"'
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "withinTaskBoardDeadlineRange"
@@ -478,7 +515,7 @@ contains e2e/tasks-inbox-next.spec.js "Tasks & Inbox Next keeps planning"
 contains CHANGES.md "v27.19.2 — Frontend Asset Contract Stability Hotfix"
 contains README.md "v27.19.2 — Frontend Asset Contract Stability Hotfix"
 contains docs/FRONTEND_ASSET_CONTRACT_STABILITY_HOTFIX_V27.19.2.md "Frontend Asset Contract Stability Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.22.0 — Vacation Planner**"
 contains src/test/java/ru/daniil/shifts/web/TodayDashboardFrontendContractTest.java 'js/35-today.js?v='
 contains src/test/java/ru/daniil/shifts/web/UiCoreWorkspaceFrontendContractTest.java 'js/12-ui-platform.js?v='
 contains src/test/java/ru/daniil/shifts/web/CalendarMobileExperienceFrontendContractTest.java 'js/37-calendar-experience.js?v='
@@ -488,14 +525,14 @@ contains src/test/java/ru/daniil/shifts/web/DesignSystemMobileShellFrontendContr
 contains CHANGES.md "v27.19.3 — Task Deadline Validation E2E Contract Hotfix"
 contains README.md "v27.19.3 — Task Deadline Validation E2E Contract Hotfix"
 contains docs/TASK_DEADLINE_VALIDATION_E2E_CONTRACT_HOTFIX_V27.19.3.md "Task Deadline Validation E2E Contract Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.22.0 — Vacation Planner**"
 contains e2e/task-modules.spec.js "Дедлайн не может быть раньше окончания запланированного интервала."
 
   # v27.19.4 Ghost Button Transition E2E Stabilization Hotfix
 contains CHANGES.md "v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix"
 contains README.md "v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix"
 contains docs/GHOST_BUTTON_TRANSITION_E2E_STABILIZATION_HOTFIX_V27.19.4.md "Ghost Button Transition E2E Stabilization Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.21.2 — Schedule Accordion E2E Selector Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.22.0 — Vacation Planner**"
 contains e2e/appearance-quality.spec.js "const borderAlpha = context.getImageData(0, 0, 1, 1).data[3];"
 contains e2e/appearance-quality.spec.js "await expect.poll(async () => (await previewStyle(page)).borderAlpha).toBe(0);"
 not_contains e2e/appearance-quality.spec.js "expect(ghost.borderColor).toBe('rgba(0, 0, 0, 0)');"
@@ -629,6 +666,7 @@ expected = [
     'js/35-today.js',
     'js/37-calendar-experience.js',
     'js/38-schedule-layers.js',
+    'js/39-vacation-planner.js',
     'js/40-overtime.js',
     'js/50-tasks.js',
     'js/60-settings.js',
@@ -1092,7 +1130,7 @@ contains docs/RELEASE_CANDIDATE.md "v27.2.5 — Calendar day identity hotfix"
 contains docs/USER_GUIDE.md "Status: v27.2.5."
 contains docs/PRODUCTION_DEPLOY.md "same GHCR digest that already passed staging"
 contains docs/BACKUP_RESTORE.md "Status: v27.2.30."
-contains docs/RELEASE_CHECKLIST.md "git tag -a v27.21.2"
+contains docs/RELEASE_CHECKLIST.md "git tag -a v27.22.0"
 
 # v27.2.5 calendar persistence regression guards
 contains src/main/resources/static/js/70-user-boot.js "dataLayer.loadCalendar(requestedYear, requestedMonth"
@@ -1496,7 +1534,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.21.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.22.0"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1549,7 +1587,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.21.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.22.0"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1571,7 +1609,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.21.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.22.0"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1666,7 +1704,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.21.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.22.0"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -1825,7 +1863,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.10.0 — Task Details"
 contains README.md "v27.10.0 — Task Details"
 contains docs/TASK_DETAILS_V27.10.0.md "read-first"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.21.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.22.0"
 contains src/main/resources/db/migration/postgresql/V32__task_details.sql "ADD COLUMN description"
 contains src/main/java/ru/daniil/shifts/model/DayTask.java "private String description"
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "public TaskDto get(AppUser user, Long id)"
@@ -1846,7 +1884,7 @@ contains e2e/task-details.spec.js 'task details separate reading from editing an
 contains CHANGES.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains README.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md "immutable absolute occurrence"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.21.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.22.0"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_start_instant"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_source_timezone"
 contains src/main/java/ru/daniil/shifts/model/DayEntry.java "captureShiftOccurrence"
@@ -1866,7 +1904,7 @@ contains e2e/important-timezone.spec.js "a timezone projection can move a late s
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.21.2"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.22.0"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -1962,7 +2000,7 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "30" ]]; then
+if [[ "$E2E_TESTS" == "31" ]]; then
   # v27.11.1 CI & Contract Hotfix
 contains CHANGES.md "v27.11.1 — CI & Contract Hotfix"
 contains README.md "v27.11.1 — CI & Contract Hotfix"
@@ -2130,30 +2168,30 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.21.2"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.21.2."
+contains docs/API.md "# DutyLog API v27.22.0"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.22.0."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
 contains src/main/resources/static/js/60-settings.js "preserveShiftDefaults = timeSettingsDefaultsDirty()"
 contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFrontendContractTest.java "let timeSettingsApplyQueue = Promise.resolve();"
 
-  ok "Playwright test baseline: 30"
+  ok "Playwright test baseline: 31"
 else
-  fail "expected 30 Playwright tests, found $E2E_TESTS"
+  fail "expected 31 Playwright tests, found $E2E_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "525" ]]; then
-  ok "test method baseline: 525"
+if [[ "$TEST_METHODS" == "544" ]]; then
+  ok "test method baseline: 544"
 else
-  fail "expected 525 @Test methods, found $TEST_METHODS"
+  fail "expected 544 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "100" ]]; then
-  ok "test class baseline: 100"
+if [[ "$TEST_CLASSES" == "103" ]]; then
+  ok "test class baseline: 103"
 else
-  fail "expected 100 test classes, found $TEST_CLASSES"
+  fail "expected 103 test classes, found $TEST_CLASSES"
 fi
 
 echo

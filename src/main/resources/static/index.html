@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.21.2"></script>
-<link href="app.css?v=27.21.2" rel="stylesheet"/>
-<link href="design-system.css?v=27.21.2" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.21.2" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.21.2" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.21.2" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.21.2" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.21.2" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.21.2" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.21.2" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.21.2" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.21.2" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.22.0"></script>
+<link href="app.css?v=27.22.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.22.0" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.22.0" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.22.0" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.22.0" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.22.0" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.22.0" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.22.0" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.22.0" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.22.0" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.22.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -78,6 +78,7 @@
 <nav class="tabbar" id="tabbar" aria-label="Основная навигация">
 <a data-view="today" href="#today"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 11 9-7 9 7"/><path d="M5.5 9.5V20h13V9.5M9.5 20v-6h5v6"/></svg></span><span class="navLabel">Сегодня</span></a>
 <a data-view="calendar" href="#calendar"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16v14H4z"/><path d="M8 3v5M16 3v5M4 9.5h16"/></svg></span><span class="navLabel">Календарь</span></a>
+<a data-view="vacation" href="#vacation"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18h16"/><path d="M6 18c1-5 3-8 6-12 3 4 5 7 6 12"/><path d="M9 10h6M8 14h8"/></svg></span><span class="navLabel">Отпуск</span></a>
 <a data-view="overtime" href="#overtime"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2M7 4.5 5 2.8M17 4.5l2-1.7"/></svg></span><span class="navLabel">Переработки</span></a>
 <a data-view="tasks" href="#tasks"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="m8 9 1.5 1.5L12 8M13.5 10H16M8 15h8"/></svg></span><span class="navLabel">Задачи</span></a>
 <a data-view="important" href="#important"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m12 3 2.7 5.5 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/></svg></span><span class="navLabel">Даты</span></a>
@@ -254,6 +255,16 @@
 </div>
 <div class="overtimeDayEntries" id="otDayDetails">На этот день в журнале переработок записей нет.</div>
 </div>
+</div>
+</details>
+<details class="acc dayPanelModule" data-day-module="vacation" id="accVacation">
+<summary><span class="accT">Отпуск и отсутствия</span><span class="accS" id="sumVacation"></span></summary>
+<div class="accB dayForm">
+  <div class="vacationDayList" id="vacationDayList"></div>
+  <div class="taskDayToolbar">
+    <button class="primary" id="vacationPlanSelected" type="button">＋ Запланировать отсутствие</button>
+    <span class="dayPanelHint">Выбранный день станет началом периода. Смена останется в календаре как отдельный факт.</span>
+  </div>
 </div>
 </details>
 <details class="acc dayPanelModule" data-day-module="important_dates" id="accImp">
@@ -502,6 +513,100 @@
 <div class="taskBoardStats" id="taskBoardStats"></div>
 <div class="pagerRow" id="taskBoardPager"></div>
 <div class="taskBoardList" id="taskBoardList"></div>
+</div>
+</section>
+<section class="view vacationView" hidden id="view-vacation">
+<div class="vacationWorkspace">
+  <section class="vacationHero card">
+    <div class="vacationHeroHead">
+      <div>
+        <div class="eyebrow">Vacation Planner</div>
+        <h2>Отпуск и отсутствия</h2>
+        <p>Отдельный слой календаря: отпуск не считается рабочей сменой и не влияет на FIFO переработок.</p>
+      </div>
+      <div class="vacationWorkYear" id="vacationWorkYear">—</div>
+    </div>
+    <div class="vacationSummaryGrid">
+      <div><span>Доступно</span><b id="vacationAvailable">—</b><small>годовая норма + перенос</small></div>
+      <div><span>Запланировано</span><b id="vacationPlanned">—</b><small>в текущем рабочем году</small></div>
+      <div><span>Осталось</span><b id="vacationRemaining">—</b><small id="vacationCountModeLabel">—</small></div>
+    </div>
+  </section>
+
+  <div class="vacationMainGrid">
+    <section class="card vacationPlannerCard">
+      <div class="vacationSectionHead">
+        <div><div class="eyebrow">Новый период</div><h3 id="vacationEditorTitle">Запланировать отсутствие</h3></div>
+        <button id="vacationEditorReset" type="button" hidden>Отмена</button>
+      </div>
+      <form id="vacationPeriodForm" class="vacationForm">
+        <label>Тип
+          <select id="vacationType" required></select>
+        </label>
+        <label>Статус
+          <select id="vacationStatus"><option value="PLANNED">Запланировано</option><option value="APPROVED">Подтверждено</option></select>
+        </label>
+        <label class="vacationWide">Название
+          <input id="vacationTitle" maxlength="120" placeholder="Например: основной отпуск"/>
+        </label>
+        <label>С
+          <input id="vacationStart" type="date" required/>
+        </label>
+        <label>По
+          <input id="vacationEnd" type="date" required/>
+        </label>
+        <div class="vacationPresetRow vacationWide" aria-label="Быстрая длительность">
+          <span>Длительность:</span>
+          <button type="button" data-vacation-days="14">14 дней</button>
+          <button type="button" data-vacation-days="28">28 дней</button>
+          <button type="button" data-vacation-days="35">35 дней</button>
+          <button type="button" data-vacation-days="1">1 день</button>
+        </div>
+        <label class="vacationWide">Комментарий
+          <textarea id="vacationNote" maxlength="1000" rows="3" placeholder="Необязательно"></textarea>
+        </label>
+        <div class="vacationFormActions vacationWide">
+          <button id="vacationPreviewBtn" type="button">Предпросмотр</button>
+          <button class="primary" id="vacationSaveBtn" type="submit">Сохранить период</button>
+        </div>
+      </form>
+      <div class="vacationPreview" id="vacationPreview" hidden></div>
+      <div class="appModalMessage" id="vacationMessage" role="status" aria-live="polite"></div>
+    </section>
+
+    <section class="card vacationListCard">
+      <div class="vacationSectionHead">
+        <div><div class="eyebrow">План</div><h3>Периоды рабочего года</h3></div>
+        <button id="vacationReload" type="button">Обновить</button>
+      </div>
+      <div class="vacationPeriodList" id="vacationPeriodList"></div>
+    </section>
+  </div>
+
+  <div class="vacationConfigGrid">
+    <section class="card vacationSettingsCard">
+      <div class="vacationSectionHead"><div><div class="eyebrow">Правила</div><h3>Норма и рабочий год</h3></div></div>
+      <form id="vacationSettingsForm" class="vacationSettingsForm">
+        <label>Годовая норма, дней<input id="vacationAllowance" type="number" min="0" max="366" required/></label>
+        <label>Перенос, дней<input id="vacationCarryover" type="number" min="0" max="366" required/></label>
+        <label>Считать дни<select id="vacationCountMode"><option value="CALENDAR_DAYS">Календарные дни</option><option value="WEEKDAYS">Пн–Пт</option></select></label>
+        <label>Начало рабочего года<input id="vacationWorkYearStart" type="date" value="2026-01-01"/></label>
+        <button class="primary" type="submit">Сохранить правила</button>
+      </form>
+      <p class="vacationLegalHint">Законодательство страны не хардкодится. Режим Пн–Пт исключает выходные, но государственные праздники пока не вычитаются автоматически.</p>
+    </section>
+
+    <section class="card vacationTypesCard">
+      <div class="vacationSectionHead"><div><div class="eyebrow">Категории</div><h3>Типы отсутствий</h3></div></div>
+      <div class="vacationTypeList" id="vacationTypeList"></div>
+      <form id="vacationTypeForm" class="vacationTypeForm">
+        <input id="vacationTypeName" maxlength="80" placeholder="Новый тип" required/>
+        <input id="vacationTypeColor" type="color" value="#4FA3A5"/>
+        <label><input id="vacationTypeCounts" type="checkbox"/> списывать из нормы</label>
+        <button type="submit">Добавить тип</button>
+      </form>
+    </section>
+  </div>
 </div>
 </section>
 <section class="view" hidden="" id="view-important">
@@ -1013,7 +1118,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.21.2</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.22.0</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1625,16 +1730,17 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.21.2"></script>
-<script src="js/12-ui-platform.js?v=27.21.2"></script>
-<script src="js/20-data.js?v=27.21.2"></script>
-<script src="js/30-calendar.js?v=27.21.2"></script>
-<script src="js/35-today.js?v=27.21.2"></script>
-<script src="js/37-calendar-experience.js?v=27.21.2"></script>
-<script src="js/38-schedule-layers.js?v=27.21.2"></script>
-<script src="js/40-overtime.js?v=27.21.2"></script>
-<script src="js/50-tasks.js?v=27.21.2"></script>
-<script src="js/60-settings.js?v=27.21.2"></script>
-<script src="js/70-user-boot.js?v=27.21.2"></script>
+<script src="js/10-core.js?v=27.22.0"></script>
+<script src="js/12-ui-platform.js?v=27.22.0"></script>
+<script src="js/20-data.js?v=27.22.0"></script>
+<script src="js/30-calendar.js?v=27.22.0"></script>
+<script src="js/35-today.js?v=27.22.0"></script>
+<script src="js/37-calendar-experience.js?v=27.22.0"></script>
+<script src="js/38-schedule-layers.js?v=27.22.0"></script>
+<script src="js/39-vacation-planner.js?v=27.22.0"></script>
+<script src="js/40-overtime.js?v=27.22.0"></script>
+<script src="js/50-tasks.js?v=27.22.0"></script>
+<script src="js/60-settings.js?v=27.22.0"></script>
+<script src="js/70-user-boot.js?v=27.22.0"></script>
 </body>
 </html>

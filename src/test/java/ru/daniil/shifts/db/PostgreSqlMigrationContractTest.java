@@ -105,6 +105,26 @@ class PostgreSqlMigrationContractTest {
                 "quantity-only legacy credits intentionally remain non-exact");
     }
 
+    @Test
+    void vacationPlannerMigrationKeepsAbsencesSeparateFromShiftRows() throws IOException {
+        String sql = Files.readString(MIGRATION_ROOT.resolve("V40__vacation_planner.sql"));
+
+        assertTrue(sql.contains("CREATE TABLE vacation_settings"));
+        assertTrue(sql.contains("INSERT INTO vacation_settings(user_id)"));
+        assertTrue(sql.contains("ON CONFLICT (user_id) DO NOTHING"));
+        assertTrue(sql.contains("CREATE TABLE absence_types"));
+        assertTrue(sql.contains("CREATE TABLE absence_periods"));
+        assertTrue(sql.contains("counts_against_allowance"));
+        assertTrue(sql.contains("CALENDAR_DAYS"));
+        assertTrue(sql.contains("WEEKDAYS"));
+        assertTrue(sql.contains("PLANNED"));
+        assertTrue(sql.contains("APPROVED"));
+        assertFalse(sql.contains("ALTER TABLE day_entries"),
+                "vacation periods must not be encoded as shift rows");
+        assertFalse(sql.contains("INSERT INTO shift_types"),
+                "absence types are a separate domain from shift types");
+    }
+
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);

@@ -49,6 +49,15 @@ const api = {
   async createCalendarLayer(b) { return jfetch("/api/calendar-layers", { method:"POST", body:b }); },
   async updateCalendarLayer(id,b) { return jfetch(`/api/calendar-layers/${id}`, { method:"PATCH", body:b }); },
   async deleteCalendarLayer(id) { return jfetch(`/api/calendar-layers/${id}`, { method:"DELETE" }); },
+  async vacationPlanner(params = {}) { const qs = new URLSearchParams(); for (const [k,v] of Object.entries(params)) if (v !== undefined && v !== null && String(v).trim() !== "") qs.set(k, v); return jfetch(`/api/vacation-planner?${qs.toString()}`); },
+  async updateVacationSettings(b) { return jfetch("/api/vacation-planner/settings", { method:"PATCH", body:b }); },
+  async createAbsenceType(b) { return jfetch("/api/vacation-planner/types", { method:"POST", body:b }); },
+  async updateAbsenceType(id,b) { return jfetch(`/api/vacation-planner/types/${id}`, { method:"PATCH", body:b }); },
+  async deleteAbsenceType(id) { return jfetch(`/api/vacation-planner/types/${id}`, { method:"DELETE" }); },
+  async previewAbsence(b) { return jfetch("/api/vacation-planner/preview", { method:"POST", body:b }); },
+  async createAbsence(b) { return jfetch("/api/vacation-planner/absences", { method:"POST", body:b }); },
+  async updateAbsence(id,b) { return jfetch(`/api/vacation-planner/absences/${id}`, { method:"PATCH", body:b }); },
+  async deleteAbsence(id) { return jfetch(`/api/vacation-planner/absences/${id}`, { method:"DELETE" }); },
   async modules()          { return jfetch("/api/modules"); },
   async moduleContracts()  { return jfetch("/api/modules/contracts"); },
   async updateModules(enabled) { return jfetch("/api/modules", { method:"PATCH", body:{ enabled } }); },
@@ -104,7 +113,7 @@ const api = {
   async updateRegistrationSettings(enabled) { return jfetch("/api/admin/settings/registration", { method:"PATCH", body:{ enabled } }); },
 };
 
-const MODULE_KEYS = ["core","calendar","shifts","notes","tasks","overtime","important_dates","notifications","telegram","scenarios","admin"];
+const MODULE_KEYS = ["core","calendar","shifts","notes","tasks","overtime","important_dates","vacation","notifications","telegram","scenarios","admin"];
 function setModuleList(list){
   state.modulesList = Array.isArray(list) ? list.filter(m => !m.hidden) : [];
   const map = { ...state.modules };
@@ -192,8 +201,10 @@ function sanitizeCalendarBundleForModules(bundle){
   clean.days = (bundle.days || []).map(sanitizeDayForModules);
   clean.shiftOccurrences = Array.isArray(bundle.shiftOccurrences) ? bundle.shiftOccurrences : [];
   clean.calendarLayers = Array.isArray(bundle.calendarLayers) ? bundle.calendarLayers : [];
+  clean.absences = Array.isArray(bundle.absences) ? bundle.absences : [];
   if (!moduleEnabled("tasks")) clean.tasks = [];
   if (!moduleEnabled("important_dates")) clean.importantDays = [];
+  if (!moduleEnabled("vacation")) clean.absences = [];
   if (!moduleEnabled("overtime")) {
     clean.overtime = { from:bundle.from, to:bundle.to, overtimeHours:0, timeOffHours:0, balanceHours:0 };
     clean.overtimeAccount = { totalEarnedHours:0, totalUsedHours:0, balanceHours:0, credits:[], usages:[] };
@@ -233,6 +244,7 @@ const DAY_PANEL_SECTIONS = [
   { id:"accEmoji", module:"core", titleRu:"Маркер", titleEn:"Marker" },
   { id:"accSched", module:"shifts", titleRu:"График", titleEn:"Schedule" },
   { id:"accOt", module:"overtime", titleRu:"Переработка", titleEn:"Overtime" },
+  { id:"accVacation", module:"vacation", titleRu:"Отпуск", titleEn:"Vacation" },
   { id:"accImp", module:"important_dates", titleRu:"Важные дни", titleEn:"Important days" },
   { id:"accTasks", module:"tasks", titleRu:"Задачи", titleEn:"Tasks" },
   { id:"accNote", module:"notes", titleRu:"Заметка", titleEn:"Note" },
@@ -291,6 +303,7 @@ function renderSelectedDayModules(){
   renderScheduleControls();
   if (moduleEnabled("overtime")) renderOvertimeControls();
   if (moduleEnabled("important_dates")) renderImportantDays();
+  if (moduleEnabled("vacation") && typeof renderVacationDay === "function") renderVacationDay();
   if (moduleEnabled("tasks")) renderTasks();
   if (moduleEnabled("notes")) {
     if (typeof renderDayNotes === "function") renderDayNotes();
@@ -316,6 +329,8 @@ function applyModuleVisibility(){
   toggle($("quickActionUsage"), moduleEnabled("overtime"));
   toggle(document.querySelector('#tabbar a[data-view="important"]'), moduleEnabled("important_dates"));
   toggle($("view-important"), moduleEnabled("important_dates"));
+  toggle(document.querySelector('#tabbar a[data-view="vacation"]'), moduleEnabled("vacation"));
+  toggle($("view-vacation"), moduleEnabled("vacation"));
   setDayPanelSectionVisibility();
   document.querySelectorAll('.scenarioFeature').forEach(el => toggle(el, moduleEnabled("scenarios") && moduleEnabled("overtime")));
   toggle($("notifyCard"), moduleEnabled("notifications"));
@@ -326,6 +341,7 @@ function applyModuleVisibility(){
   if (location.hash === "#overtime" && !moduleEnabled("overtime")) location.hash = "#calendar";
   if (location.hash === "#settings-notifications" && !moduleEnabled("notifications")) location.hash = "#settings-modules";
   if (location.hash === "#important" && !moduleEnabled("important_dates")) location.hash = "#calendar";
+  if (location.hash === "#vacation" && !moduleEnabled("vacation")) location.hash = "#calendar";
   renderModuleSettings();
   window.DutyLogUI?.apply?.(state.preferences, normalizeThemeConfig(state.preferences?.themeConfig));
 }
@@ -355,6 +371,8 @@ async function saveModuleEnabled(key, enabled){
 }
 async function refreshModuleAwareData(){
   if (moduleEnabled("important_dates")) await refreshImportantSettings(); else { state.importantDays = []; state.importantByDate = {}; }
+  if (moduleEnabled("vacation") && typeof loadVacationPlanner === "function") await loadVacationPlanner(true);
+  else if (!moduleEnabled("vacation")) { state.vacationPlanner = null; state.absenceOccurrences = []; state.absencesByDate = {}; }
   if (moduleEnabled("tasks")) {
     await Promise.all([loadTaskBoard(true), loadTaskMetadata(true), loadInbox(true)]);
   } else {
@@ -420,11 +438,11 @@ function renderModuleSettings(){
   }));
 }
 
-const ONBOARDING_OPTIONAL_MODULES = ["notes","tasks","overtime","important_dates","notifications","telegram","scenarios"];
+const ONBOARDING_OPTIONAL_MODULES = ["notes","tasks","overtime","important_dates","vacation","notifications","telegram","scenarios"];
 const ONBOARDING_PRESETS = {
-  basic: { notes:false, tasks:false, overtime:false, important_dates:false, notifications:false, telegram:false, scenarios:false },
-  work: { notes:true, tasks:false, overtime:true, important_dates:true, notifications:false, telegram:false, scenarios:true },
-  full: { notes:true, tasks:true, overtime:true, important_dates:true, notifications:true, telegram:true, scenarios:true },
+  basic: { notes:false, tasks:false, overtime:false, important_dates:false, vacation:false, notifications:false, telegram:false, scenarios:false },
+  work: { notes:true, tasks:false, overtime:true, important_dates:true, vacation:true, notifications:false, telegram:false, scenarios:true },
+  full: { notes:true, tasks:true, overtime:true, important_dates:true, vacation:true, notifications:true, telegram:true, scenarios:true },
 };
 function onboardingModules(){
   return (state.modulesList || [])
