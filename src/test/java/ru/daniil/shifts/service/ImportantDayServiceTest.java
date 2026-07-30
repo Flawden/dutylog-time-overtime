@@ -11,6 +11,7 @@ import ru.daniil.shifts.dto.Dtos.ImportantDayDto;
 import ru.daniil.shifts.dto.Dtos.ImportantDayOccurrenceDto;
 import ru.daniil.shifts.dto.Dtos.ImportantDayUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
+import ru.daniil.shifts.model.ImportantEventType;
 import ru.daniil.shifts.model.RepeatMode;
 import ru.daniil.shifts.repo.ImportantDayRepository;
 import ru.daniil.shifts.repo.UserRepository;
@@ -171,6 +172,64 @@ class ImportantDayServiceTest {
                 new ImportantDayUpdateRequest("Взломано", null, null, null)));
         assertNotFound(() -> importantDayService.delete(owner, foreign.id()));
         assertNotFound(() -> importantDayService.delete(owner, Long.MAX_VALUE));
+    }
+
+    @Test
+    void timedEventKeepsCanonicalInstantAndReprojectsInChangedUserTimezone() {
+        owner.setWorkTimezone("Europe/Chisinau");
+        users.save(owner);
+        ImportantDayDto created = importantDayService.create(owner,
+                new ImportantDayCreateRequest(
+                        "Созвон", "2026-08-10", RepeatMode.NONE, "#334455",
+                        ImportantEventType.EVENT, "2026-08-10", false,
+                        "22:30", "23:30", "Europe/Chisinau", "Online",
+                        "Обсудить релиз", "☎", "DutyLog", List.of(30)));
+
+        assertEquals(ImportantEventType.EVENT, created.eventType());
+        assertEquals("Europe/Chisinau", created.sourceTimezone());
+        assertNotNull(created.startInstant());
+
+        owner.setWorkTimezone("Asia/Tokyo");
+        users.save(owner);
+        List<ImportantDayOccurrenceDto> projected = importantDayService.occurrences(
+                owner, LocalDate.parse("2026-08-11"), LocalDate.parse("2026-08-11"));
+
+        assertEquals(1, projected.size());
+        assertEquals("2026-08-11", projected.get(0).date());
+        assertEquals(created.startInstant(), projected.get(0).startInstant());
+        assertEquals("Asia/Tokyo", projected.get(0).displayTimezone());
+    }
+
+    @Test
+    void allDayPeriodEmitsEachVisibleDateAndStaysFloating() {
+        ImportantDayDto created = importantDayService.create(owner,
+                new ImportantDayCreateRequest(
+                        "Отпуск", "2026-08-29", RepeatMode.NONE, "#ABC123",
+                        ImportantEventType.PERIOD, "2026-09-02", true,
+                        null, null, null, "Море", null, "☀", "Отдых", List.of(1440)));
+
+        List<ImportantDayOccurrenceDto> occurrences = importantDayService.occurrences(
+                owner, LocalDate.parse("2026-08-30"), LocalDate.parse("2026-09-01"));
+
+        assertEquals(List.of("2026-08-30", "2026-08-31", "2026-09-01"),
+                occurrences.stream().filter(item -> item.id().equals(created.id()))
+                        .map(ImportantDayOccurrenceDto::date).toList());
+        assertTrue(occurrences.stream().allMatch(ImportantDayOccurrenceDto::allDay));
+        assertTrue(occurrences.stream().allMatch(item -> item.startInstant() == null));
+    }
+
+    @Test
+    void invalidPeriodAndTimedEndAreRejected() {
+        assertBadRequest(() -> importantDayService.create(owner,
+                new ImportantDayCreateRequest(
+                        "Плохой период", "2026-08-10", RepeatMode.NONE, "#123456",
+                        ImportantEventType.PERIOD, "2026-08-09", true,
+                        null, null, null, null, null, null, null, List.of())));
+        assertBadRequest(() -> importantDayService.create(owner,
+                new ImportantDayCreateRequest(
+                        "Плохое время", "2026-08-10", RepeatMode.NONE, "#123456",
+                        ImportantEventType.EVENT, "2026-08-10", false,
+                        "18:00", "17:00", "Europe/Chisinau", null, null, null, null, List.of())));
     }
 
     private void assertBadRequest(org.junit.jupiter.api.function.Executable action) {

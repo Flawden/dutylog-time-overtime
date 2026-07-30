@@ -261,6 +261,22 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/DayNote' }
+  /api/v1/notes/search:
+    get:
+      operationId: searchDayNotes
+      description: Owner-scoped title/content search with optional inclusive date range.
+      parameters:
+        - { in: query, name: q, required: true, schema: { type: string, minLength: 1, maxLength: 200 } }
+        - { in: query, name: from, required: false, schema: { type: string, format: date } }
+        - { in: query, name: to, required: false, schema: { type: string, format: date } }
+        - { in: query, name: limit, required: false, schema: { type: integer, minimum: 1, maximum: 100, default: 40 } }
+      responses:
+        '200':
+          description: Matching notes newest first
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/DayNote' } }
+        '400': { $ref: '#/components/responses/ApiError' }
   /api/v1/notes/{id}:
     patch:
       operationId: updateDayNote
@@ -494,8 +510,35 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/InboxConversion' }
   /api/v1/important-days:
-    get: { operationId: listImportantDays, responses: { '200': { description: Important dates } } }
-    post: { operationId: createImportantDay, responses: { '200': { description: Created important date } } }
+    get:
+      operationId: listImportantDays
+      responses:
+        '200':
+          description: Important dates, events and periods
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ImportantEvent' } }
+    post:
+      operationId: createImportantDay
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ImportantEventInput' }
+      responses:
+        '200':
+          description: Created important event
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ImportantEvent' }
+  /api/v1/important-days/occurrences:
+    get:
+      operationId: listImportantDayOccurrences
+      parameters:
+        - { in: query, name: from, required: true, schema: { type: string, format: date } }
+        - { in: query, name: to, required: true, schema: { type: string, format: date } }
+      responses:
+        '200': { description: Projected occurrences }
   /api/v1/overtime/account:
     get:
       operationId: overtimeAccount
@@ -1129,6 +1172,34 @@ components:
           minItems: 1
           maxItems: 5000
           items: { type: integer, format: int64 }
+    ImportantEventInput:
+      type: object
+      required: [title, date]
+      properties:
+        title: { type: string, maxLength: 120 }
+        date: { type: string, format: date }
+        endDate: { type: string, format: date, nullable: true }
+        eventType: { type: string, enum: [IMPORTANT_DATE, EVENT, PERIOD], default: IMPORTANT_DATE }
+        allDay: { type: boolean, default: true }
+        startTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', nullable: true }
+        endTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', nullable: true }
+        sourceTimezone: { type: string, maxLength: 80, nullable: true }
+        place: { type: string, maxLength: 240, nullable: true }
+        description: { type: string, maxLength: 10000, nullable: true }
+        icon: { type: string, maxLength: 32, nullable: true }
+        category: { type: string, maxLength: 80, nullable: true }
+        color: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+        repeatMode: { type: string, enum: [NONE, MONTHLY, YEARLY], default: NONE }
+        reminders: { type: array, maxItems: 10, items: { type: integer, minimum: 0, maximum: 525600 } }
+    ImportantEvent:
+      allOf:
+        - $ref: '#/components/schemas/ImportantEventInput'
+        - type: object
+          required: [id, startInstant, endInstant]
+          properties:
+            id: { type: integer, format: int64 }
+            startInstant: { type: string, format: date-time, nullable: true }
+            endInstant: { type: string, format: date-time, nullable: true }
     DayNote:
       type: object
       required: [id, date, content, pinned, sortOrder, version]

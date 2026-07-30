@@ -145,4 +145,20 @@ class DayNoteServiceTest {
                 .orElseThrow().getNote());
     }
 
+    @Test
+    void searchFindsTitleAndContentAcrossDatesButNeverOtherUsersNotes() {
+        DayNoteDto titleMatch = service.create(owner,
+                new DayNoteCreateRequest("2026-08-20", "DutyLog release", "checklist", false));
+        DayNoteDto contentMatch = service.create(owner,
+                new DayNoteCreateRequest("2026-08-21", "Other", "DutyLog retrospective", false));
+        service.create(other, new DayNoteCreateRequest("2026-08-22", "DutyLog secret", "hidden", false));
+
+        List<DayNoteDto> result = service.search(owner, "dutylog", null, null, 20);
+
+        assertEquals(List.of(contentMatch.id(), titleMatch.id()), result.stream().map(DayNoteDto::id).toList());
+        assertEquals(List.of(titleMatch.id()), service.search(owner, "dutylog",
+                LocalDate.parse("2026-08-20"), LocalDate.parse("2026-08-20"), 20)
+                .stream().map(DayNoteDto::id).toList());
+    }
+
 }

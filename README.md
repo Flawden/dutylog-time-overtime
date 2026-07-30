@@ -1,23 +1,22 @@
-> Current release: **v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix**.
+> Current release: **v27.20.0 — Notes & Important Events Next**.
 
 # DutyLog
 
-Current release: **v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix**
+Current release: **v27.20.0 — Notes & Important Events Next**
 
-DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных дат и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
+DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
+## Текущая версия: v27.20.0 — Notes & Important Events Next
 
-## Текущая версия: v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix
+**Заметки** получили поиск по заголовкам и Markdown-тексту, переход к точному дню/заметке, экспорт и безопасное оффлайн-редактирование существующих записей через синхронизируемую очередь.
 
-**v27.19.4** стабилизирует проверку Ghost/Outline в реальном Chromium:
+**Важные события** теперь имеют три режима: важная дата, событие и период. Поддерживаются весь день или точное время, исходная IANA-зона, абсолютные моменты, место, описание, значок, категория, цвет, повторение и собственные напоминания. Карточки стали read-first, timed-события появились в почасовом календаре, а периоды — в all-day rail.
 
-- E2E ждёт завершения CSS-перехода рамки вместо чтения промежуточного кадра;
-- прозрачность проверяется по фактическому alpha-каналу, а не по строке `rgba(...)`;
-- корректно принимаются современные сериализации Chromium, включая `oklab(...)`;
-- production CSS, Ghost/Outline tokens и 150 ms transition не менялись;
-- предыдущий прогон подтвердил 27 из 28 browser scenarios, а единственное падение воспроизводилось на одном и том же промежуточном alpha-значении.
+Схема обновлена до **Flyway V38**. Автоматическая база: **97 Java-тестовых классов, 513 `@Test` методов и 29 Playwright browser scenarios**.
 
-Схема остаётся на **Flyway V37**. Автоматическая база: **97 Java-тестовых классов, 507 `@Test` методов и 28 Playwright browser scenarios**.
+### Предыдущий hotfix: v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix
+
+**v27.19.4** стабилизировал semantic alpha-проверку Ghost/Outline в Chromium без изменения production CSS.
 
 ### Предыдущий hotfix: v27.19.3 — Task Deadline Validation E2E Contract Hotfix
 
@@ -414,7 +413,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.19.4 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить all-day, point, interval, overnight, project filter, Inbox search и timezone reprojection. Следующий продуктовый этап — **v27.20.0 — Notes & Important Events Next**.
+Следующий практический шаг — пропустить v27.20.0 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить all-day, point, interval, overnight, project filter, Inbox search и timezone reprojection. Следующий продуктовый этап — **v27.20.0 — Notes & Important Events Next**.
 
 ## Служебный профиль администратора
 

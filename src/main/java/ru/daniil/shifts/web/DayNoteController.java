@@ -41,6 +41,17 @@ public class DayNoteController {
         return notes.listRange(user, parseDate(from), parseDate(to));
     }
 
+    @GetMapping("/search")
+    public List<DayNoteDto> search(@RequestParam("q") String query,
+                                   @RequestParam(value = "from", required = false) String from,
+                                   @RequestParam(value = "to", required = false) String to,
+                                   @RequestParam(value = "limit", defaultValue = "40") int limit,
+                                   Principal principal) {
+        LocalDate fromDate = from == null || from.isBlank() ? null : parseDate(from);
+        LocalDate toDate = to == null || to.isBlank() ? null : parseDate(to);
+        return notes.search(requireNotes(principal), query, fromDate, toDate, limit);
+    }
+
     @PostMapping
     public ResponseEntity<DayNoteDto> create(@Valid @RequestBody(required = false) DayNoteCreateRequest request,
                                               Principal principal) {

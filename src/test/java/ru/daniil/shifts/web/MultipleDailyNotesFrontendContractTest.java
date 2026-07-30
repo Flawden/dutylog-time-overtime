@@ -21,6 +21,9 @@ class MultipleDailyNotesFrontendContractTest {
         assertTrue(html.contains("id=\"noteMoveUp\""));
         assertTrue(html.contains("id=\"noteMoveDown\""));
         assertTrue(html.contains("id=\"noteDelete\""));
+        assertTrue(html.contains("id=\"noteSearch\""));
+        assertTrue(html.contains("id=\"noteSearchResults\""));
+        assertTrue(html.contains("id=\"noteExport\""));
     }
 
     @Test
@@ -33,7 +36,11 @@ class MultipleDailyNotesFrontendContractTest {
         assertTrue(data.contains("async deleteDayNote"));
         assertTrue(notes.contains("function renderDayNotes()"));
         assertTrue(notes.contains("patch:{ ...(sameNote ? pendingNoteSave.patch : {}), ...patch }"));
-        assertTrue(notes.contains("Оффлайн доступно чтение snapshot"));
+        assertTrue(data.contains("async searchNotes"));
+        assertTrue(data.contains("async updateDayNote(noteId, patch, date)"));
+        assertTrue(data.contains("item.type === \"updateNote\""));
+        assertTrue(notes.contains("Редактирование доступно оффлайн"));
+        assertTrue(notes.contains("function runNoteSearch()"));
     }
 
     @Test

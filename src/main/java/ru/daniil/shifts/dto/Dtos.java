@@ -16,6 +16,7 @@ import ru.daniil.shifts.model.DayTask;
 import ru.daniil.shifts.model.TaskPriority;
 import ru.daniil.shifts.model.TaskSubtask;
 import ru.daniil.shifts.model.ImportantDay;
+import ru.daniil.shifts.model.ImportantEventType;
 import ru.daniil.shifts.model.InboxItem;
 import ru.daniil.shifts.model.InboxItemStatus;
 import ru.daniil.shifts.model.RepeatMode;
@@ -1061,53 +1062,190 @@ public final class Dtos {
 
     public record InboxConversionDto(InboxItemDto inboxItem, TaskDto task) {}
 
-    /** Важный день как настройка: дата-основа + режим повтора. */
+    /** Important calendar entity; legacy fields remain first for source/API compatibility. */
     public record ImportantDayDto(
             Long id,
             String title,
             String date,
             RepeatMode repeatMode,
-            String color
+            String color,
+            ImportantEventType eventType,
+            String endDate,
+            boolean allDay,
+            String startTime,
+            String endTime,
+            String startInstant,
+            String endInstant,
+            String sourceTimezone,
+            String place,
+            String description,
+            String icon,
+            String category,
+            List<Integer> reminders
     ) {
+        /** Source-compatible constructor for callers created before v27.20.0. */
+        public ImportantDayDto(Long id, String title, String date, RepeatMode repeatMode, String color) {
+            this(id, title, date, repeatMode, color, ImportantEventType.IMPORTANT_DATE,
+                    null, true, null, null, null, null, null,
+                    null, null, null, null, List.of());
+        }
+
         public static ImportantDayDto from(ImportantDay day) {
-            return new ImportantDayDto(day.getId(), day.getTitle(), day.getDate().toString(), day.getRepeatMode(), day.getColor());
+            return new ImportantDayDto(
+                    day.getId(),
+                    day.getTitle(),
+                    day.getDate().toString(),
+                    day.getRepeatMode(),
+                    day.getColor(),
+                    day.getEventType(),
+                    day.getEndDate() == null ? null : day.getEndDate().toString(),
+                    day.isAllDay(),
+                    day.getStartTime() == null ? null : day.getStartTime().toString(),
+                    day.getEndTime() == null ? null : day.getEndTime().toString(),
+                    day.getStartInstant() == null ? null : day.getStartInstant().toString(),
+                    day.getEndInstant() == null ? null : day.getEndInstant().toString(),
+                    day.getSourceTimezone(),
+                    day.getPlace(),
+                    day.getDescription(),
+                    day.getIcon(),
+                    day.getCategory(),
+                    parseReminderOffsets(day.getReminderOffsets())
+            );
         }
     }
 
-    /** Конкретное появление важного дня в диапазоне календаря. */
+    /** Concrete projected occurrence inside a calendar range. */
     public record ImportantDayOccurrenceDto(
             Long id,
             String date,
             String title,
             RepeatMode repeatMode,
-            String color
-    ) {}
+            String color,
+            ImportantEventType eventType,
+            String startDate,
+            String endDate,
+            boolean allDay,
+            String startTime,
+            String endTime,
+            String startInstant,
+            String endInstant,
+            String sourceTimezone,
+            String displayTimezone,
+            String place,
+            String description,
+            String icon,
+            String category,
+            List<Integer> reminders
+    ) {
+        /** Source-compatible constructor for v27.19.x code and tests. */
+        public ImportantDayOccurrenceDto(Long id, String date, String title,
+                                         RepeatMode repeatMode, String color) {
+            this(id, date, title, repeatMode, color, ImportantEventType.IMPORTANT_DATE,
+                    date, date, true, null, null, null, null, null, null,
+                    null, null, null, null, List.of());
+        }
+    }
 
-    /** Создание важного дня. Для дней рождения обычно repeatMode = YEARLY. */
+    /** Create an important date, timed event or multi-day period. */
     public record ImportantDayCreateRequest(
-            @NotBlank(message = "Название важного дня не должно быть пустым")
-            @Size(max = 120, message = "Название важного дня: максимум 120 символов")
+            @NotBlank(message = "Название важного события не должно быть пустым")
+            @Size(max = 120, message = "Название важного события: максимум 120 символов")
             String title,
 
-            @NotBlank(message = "Дата важного дня должна быть в формате yyyy-MM-dd")
+            @NotBlank(message = "Дата начала должна быть в формате yyyy-MM-dd")
             String date,
 
             RepeatMode repeatMode,
 
             @Pattern(regexp = "#[0-9a-fA-F]{6}", message = "Цвет должен быть в формате #RRGGBB")
-            String color
-    ) {}
+            String color,
 
-    /** Обновление важного дня. Поля опциональны. */
+            ImportantEventType eventType,
+            String endDate,
+            Boolean allDay,
+
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время начала должно быть в формате HH:mm")
+            String startTime,
+
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время окончания должно быть в формате HH:mm")
+            String endTime,
+
+            @Size(max = 80, message = "Часовой пояс: максимум 80 символов")
+            String sourceTimezone,
+
+            @Size(max = 240, message = "Место: максимум 240 символов")
+            String place,
+
+            @Size(max = 10000, message = "Описание: максимум 10 000 символов")
+            String description,
+
+            @Size(max = 32, message = "Значок: максимум 32 символа")
+            String icon,
+
+            @Size(max = 80, message = "Категория: максимум 80 символов")
+            String category,
+
+            @Size(max = 10, message = "Можно задать максимум 10 напоминаний")
+            List<@Min(value = 0, message = "Напоминание не может быть отрицательным")
+                 @Max(value = 525600, message = "Напоминание: максимум за один год") Integer> reminders
+    ) {
+        /** Source-compatible constructor for the historical important-day API. */
+        public ImportantDayCreateRequest(String title, String date, RepeatMode repeatMode, String color) {
+            this(title, date, repeatMode, color, ImportantEventType.IMPORTANT_DATE,
+                    null, true, null, null, null, null, null, null, null, List.of());
+        }
+    }
+
+    /** Partial update. Null fields keep the stored value. */
     public record ImportantDayUpdateRequest(
-            @Size(max = 120, message = "Название важного дня: максимум 120 символов")
+            @Size(max = 120, message = "Название важного события: максимум 120 символов")
             String title,
             String date,
             RepeatMode repeatMode,
             @Pattern(regexp = "#[0-9a-fA-F]{6}", message = "Цвет должен быть в формате #RRGGBB")
-            String color
-    ) {}
+            String color,
+            ImportantEventType eventType,
+            String endDate,
+            Boolean allDay,
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время начала должно быть в формате HH:mm")
+            String startTime,
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время окончания должно быть в формате HH:mm")
+            String endTime,
+            @Size(max = 80, message = "Часовой пояс: максимум 80 символов")
+            String sourceTimezone,
+            @Size(max = 240, message = "Место: максимум 240 символов")
+            String place,
+            @Size(max = 10000, message = "Описание: максимум 10 000 символов")
+            String description,
+            @Size(max = 32, message = "Значок: максимум 32 символа")
+            String icon,
+            @Size(max = 80, message = "Категория: максимум 80 символов")
+            String category,
+            @Size(max = 10, message = "Можно задать максимум 10 напоминаний")
+            List<@Min(value = 0, message = "Напоминание не может быть отрицательным")
+                 @Max(value = 525600, message = "Напоминание: максимум за один год") Integer> reminders
+    ) {
+        /** Source-compatible constructor for the historical important-day API. */
+        public ImportantDayUpdateRequest(String title, String date, RepeatMode repeatMode, String color) {
+            this(title, date, repeatMode, color, null, null, null,
+                    null, null, null, null, null, null, null, null);
+        }
+    }
 
+    private static List<Integer> parseReminderOffsets(String raw) {
+        if (raw == null || raw.isBlank()) return List.of();
+        return java.util.Arrays.stream(raw.split(","))
+                .map(String::trim)
+                .filter(value -> !value.isBlank())
+                .map(value -> {
+                    try { return Integer.valueOf(value); }
+                    catch (NumberFormatException ignored) { return null; }
+                })
+                .filter(java.util.Objects::nonNull)
+                .distinct()
+                .sorted()
+                .toList();
+    }
 
     /** Настройки уведомлений и напоминаний пользователя. */
     public record NotificationSettingsDto(

@@ -313,8 +313,9 @@ function renderTodayUpcoming(key){
     const row = document.createElement("button");
     row.type = "button";
     row.className = "todayUpcomingRow";
-    row.innerHTML = `<span class="todayUpcomingDot" style="--event-color:${esc(item.color || "#F5B841")}"></span><span><b>${esc(item.title || "")}</b><small>${esc(formatDateHuman(item.nextOccurrence))} · ${esc(repeatLabel(item.repeatMode))}</small></span><strong>${esc(importantCountdownLabel(item.nextOccurrence, key))}</strong>`;
-    row.addEventListener("click", () => openTodayCalendarDate(item.nextOccurrence));
+    const meta = typeof importantScheduleLabel === "function" ? importantScheduleLabel({ ...item, startDate:item.nextOccurrence, endDate:item.nextOccurrence }) : `${formatDateHuman(item.nextOccurrence)} · ${repeatLabel(item.repeatMode)}`;
+    row.innerHTML = `<span class="todayUpcomingDot" style="--event-color:${esc(item.color || "#F5B841")}"></span><span><b>${esc(item.icon || "★")} ${esc(item.title || "")}</b><small>${esc(meta)} · ${esc(repeatLabel(item.repeatMode))}</small></span><strong>${esc(importantCountdownLabel(item.nextOccurrence, key))}</strong>`;
+    row.addEventListener("click", () => typeof openImportantDetails === "function" ? openImportantDetails(item.id) : openTodayCalendarDate(item.nextOccurrence));
     box.appendChild(row);
   }
 }

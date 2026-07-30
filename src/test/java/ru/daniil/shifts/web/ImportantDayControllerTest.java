@@ -258,6 +258,39 @@ class ImportantDayControllerTest {
                 .andExpect(jsonPath("$[*].title", hasItem("Бета")));
     }
 
+    @Test
+    void importantEventsNextExposesTimedContractAndReminderOffsets() throws Exception {
+        setImportantDatesEnabled(owner, true);
+        mvc.perform(post("/api/important-days")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {
+                                  "title":"Релиз",
+                                  "date":"2026-08-10",
+                                  "endDate":"2026-08-10",
+                                  "eventType":"EVENT",
+                                  "allDay":false,
+                                  "startTime":"18:00",
+                                  "endTime":"19:30",
+                                  "sourceTimezone":"Europe/Chisinau",
+                                  "place":"Дом",
+                                  "category":"DutyLog",
+                                  "icon":"★",
+                                  "reminders":[30,1440]
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.eventType").value("EVENT"))
+                .andExpect(jsonPath("$.allDay").value(false))
+                .andExpect(jsonPath("$.startInstant").isNotEmpty())
+                .andExpect(jsonPath("$.sourceTimezone").value("Europe/Chisinau"))
+                .andExpect(jsonPath("$.place").value("Дом"))
+                .andExpect(jsonPath("$.reminders", hasItem(30)))
+                .andExpect(jsonPath("$.reminders", hasItem(1440)));
+    }
+
     private void setImportantDatesEnabled(AppUser account, boolean enabled) throws Exception {
         mvc.perform(patch("/api/modules")
                         .with(user(account.getUsername()).roles("USER"))

@@ -29,6 +29,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Расчёт напоминаний. Пока это «центр правил»: backend отдаёт список будущих
@@ -199,19 +200,61 @@ public class NotificationService {
         }
 
         if (s.isImportantDayRemindersEnabled()) {
+            Map<String, ImportantDayOccurrenceDto> uniqueEvents = new LinkedHashMap<>();
             for (ImportantDayOccurrenceDto item : importantDayService.occurrences(user, from, to)) {
-                LocalDate eventDate = LocalDate.parse(item.date());
-                LocalDateTime remindAt = LocalDateTime.of(eventDate.minusDays(s.getImportantDayDaysBefore()), s.getImportantDayReminderTime());
-                out.add(reminder(
-                        user,
-                        "important:" + item.id() + ":" + item.date(),
-                        "IMPORTANT_DAY",
-                        item.date(),
-                        remindAt,
-                        "Важный день: " + item.title(),
-                        s.getImportantDayDaysBefore() == 0 ? "Напоминание в день события" : "За " + s.getImportantDayDaysBefore() + " дн. до события",
-                        20
-                ));
+                String occurrenceKey = item.id() + ":" + item.startDate() + ":" + Objects.toString(item.startInstant(), "all-day");
+                uniqueEvents.putIfAbsent(occurrenceKey, item);
+            }
+            for (ImportantDayOccurrenceDto item : uniqueEvents.values()) {
+                LocalDate eventDate = LocalDate.parse(item.startDate() == null ? item.date() : item.startDate());
+                List<Integer> offsets = item.reminders() == null ? List.of() : item.reminders();
+                if (!offsets.isEmpty()) {
+                    for (Integer offset : offsets) {
+                        int before = Math.max(0, offset == null ? 0 : offset);
+                        String reminderId = "important:" + item.id() + ":" + eventDate + ":" + before;
+                        if (!item.allDay() && item.startInstant() != null) {
+                            Instant remindAt = Instant.parse(item.startInstant()).minusSeconds(before * 60L);
+                            out.add(reminderAtInstant(
+                                    user,
+                                    reminderId,
+                                    "IMPORTANT_DAY",
+                                    eventDate.toString(),
+                                    remindAt,
+                                    "Событие: " + item.title(),
+                                    before == 0 ? "Напоминание в момент начала" : "За " + before + " мин. до события",
+                                    20
+                            ));
+                        } else {
+                            LocalDateTime remindAt = LocalDateTime.of(eventDate, s.getImportantDayReminderTime()).minusMinutes(before);
+                            out.add(reminder(
+                                    user,
+                                    reminderId,
+                                    "IMPORTANT_DAY",
+                                    eventDate.toString(),
+                                    remindAt,
+                                    "Важное событие: " + item.title(),
+                                    before == 0 ? "Напоминание в день события" : "За " + before + " мин. до события",
+                                    20
+                            ));
+                        }
+                    }
+                } else {
+                    LocalDateTime remindAt = LocalDateTime.of(
+                            eventDate.minusDays(s.getImportantDayDaysBefore()),
+                            s.getImportantDayReminderTime());
+                    out.add(reminder(
+                            user,
+                            "important:" + item.id() + ":" + eventDate,
+                            "IMPORTANT_DAY",
+                            eventDate.toString(),
+                            remindAt,
+                            "Важное событие: " + item.title(),
+                            s.getImportantDayDaysBefore() == 0
+                                    ? "Напоминание в день события"
+                                    : "За " + s.getImportantDayDaysBefore() + " дн. до события",
+                            20
+                    ));
+                }
                 digestParts.computeIfAbsent(eventDate, k -> new ArrayList<>()).add("важно: " + item.title());
             }
         }

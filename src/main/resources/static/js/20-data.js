@@ -33,6 +33,7 @@ const api = {
   },
   async upsertDay(k, b)     { return jfetch(`/api/days/${k}`, { method:"PUT", body:b }); },
   async dayNotes(date)      { return jfetch(`/api/notes?date=${encodeURIComponent(date)}`); },
+  async searchNotes(q, from = "", to = "", limit = 50) { const qs = new URLSearchParams({ q, limit:String(limit) }); if (from) qs.set("from", from); if (to) qs.set("to", to); return jfetch(`/api/notes/search?${qs.toString()}`); },
   async createDayNote(b)    { return jfetch("/api/notes", { method:"POST", body:b }); },
   async updateDayNote(id,b) { return jfetch(`/api/notes/${id}`, { method:"PATCH", body:b }); },
   async moveDayNote(id,direction) { return jfetch(`/api/notes/${id}/move`, { method:"POST", body:{ direction } }); },
@@ -196,6 +197,7 @@ function sanitizeCalendarBundleForModules(bundle){
 function offlineOperationRequiredModules(item){
   if (!item) return [];
   if (item.type === "toggleTask" || item.type === "captureInbox") return ["tasks"];
+  if (item.type === "updateNote") return ["notes"];
   if (item.type === "putDay") {
     const day = item.payload?.day || {};
     const modules = [];
@@ -749,6 +751,7 @@ function describeOfflineOperation(item){
   }
   if (item.type === "toggleTask") return `${t("Задача")} #${item.payload?.taskId}: ${item.payload?.done ? t("выполнена") : t("открыта")}`;
   if (item.type === "captureInbox") return `${t("Входящие")}: ${String(item.payload?.text || "").slice(0, 80)}`;
+  if (item.type === "updateNote") return `${t("Заметка")} #${item.payload?.noteId}: ${item.payload?.date || t("дата")}`;
   return item.type || "Операция";
 }
 function acquireOfflineSyncLock(){
@@ -961,6 +964,18 @@ const dataLayer = {
     if (year === Number(snap.y) && month - 1 === Number(snap.m)) snap.bundle.tasks.push(task);
     await offlineDb.put("snapshot", snap);
   },
+  async updateSnapshotNote(noteId, patch, date){
+    const snap = await this.readSnapshot();
+    if (!snap?.bundle || !Array.isArray(snap.bundle.days)) return;
+    const dayIndex = snap.bundle.days.findIndex(day => day.date === date);
+    if (dayIndex < 0) return;
+    const day = normalizeDay(snap.bundle.days[dayIndex]);
+    day.notes = sortDayNotes(day.notes.map(note => Number(note.id) === Number(noteId) ? { ...note, ...patch, updatedAt:new Date().toISOString() } : note));
+    const primary = day.notes[0] || null;
+    day.note = primary ? (primary.content || (primary.title ? `# ${primary.title}` : null)) : null;
+    snap.bundle.days[dayIndex] = { ...snap.bundle.days[dayIndex], ...day, date };
+    await offlineDb.put("snapshot", snap);
+  },
   async enqueue(type, payload){
     if (!state.offline.cacheReady) throw new Error(t("Нет связи с сервером, а локальная очередь недоступна"));
     const disabledReason = offlineOperationDisabledReason({ type, payload });
@@ -1105,6 +1120,36 @@ const dataLayer = {
     await this.enqueue("putDay", { date, day: normalizeDay(cleanDay) });
     return { queued:true, day:normalizeDay(cleanDay) };
   },
+  async updateDayNote(noteId, patch, date){
+    requireModuleEnabled("notes");
+    const cleanPatch = {};
+    if (Object.prototype.hasOwnProperty.call(patch || {}, "title")) cleanPatch.title = patch.title == null ? null : String(patch.title).slice(0, 200);
+    if (Object.prototype.hasOwnProperty.call(patch || {}, "content")) cleanPatch.content = String(patch.content ?? "").slice(0, 20000);
+    if (Object.prototype.hasOwnProperty.call(patch || {}, "pinned")) cleanPatch.pinned = !!patch.pinned;
+    await this.updateSnapshotNote(noteId, cleanPatch, date);
+    if (navigator.onLine) {
+      try {
+        const updated = await api.updateDayNote(noteId, cleanPatch);
+        state.offline.online = true;
+        updateOfflineStatus();
+        return { queued:false, note:updated };
+      } catch (err) {
+        if (!isNetworkError(err)) throw err;
+      }
+    }
+    state.offline.online = false;
+    const queued = (await this.getQueueItems()).reverse().find(item => item.type === "updateNote" && Number(item.payload?.noteId) === Number(noteId));
+    if (queued) {
+      queued.payload = { ...queued.payload, date, patch:{ ...(queued.payload?.patch || {}), ...cleanPatch } };
+      queued.createdAt = new Date().toISOString();
+      await offlineDb.put("queue", queued);
+      await this.refreshQueueState();
+      updateOfflineStatus();
+    } else {
+      await this.enqueue("updateNote", { noteId, date, patch:cleanPatch });
+    }
+    return { queued:true, note:null };
+  },
   async setTaskDone(taskId, done){
     requireModuleEnabled("tasks");
     await this.updateSnapshotTaskDone(taskId, done);
@@ -1185,6 +1230,8 @@ const dataLayer = {
               text:item.payload.text,
               clientOperationId:item.payload.clientOperationId || item.id
             });
+          } else if (item.type === "updateNote") {
+            await api.updateDayNote(item.payload.noteId, item.payload.patch || {});
           } else {
             throw Object.assign(new Error("Неизвестный тип операции: " + item.type), { status:400 });
           }

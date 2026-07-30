@@ -226,7 +226,7 @@ function calendarExperienceRenderWeek(){
   const rows = [];
   for (const segment of facts.segments) rows.push({ icon:"◷", title:facts.shift ? shiftDisplayName(facts.shift) : t("Смена"), meta:segment.range, color:facts.shift?.color });
   for (const task of facts.tasks.slice(0, 5)) rows.push({ icon:"✓", title:task.text || t("Задача"), meta:[taskPlannedLabel(task, { includeDate:false }), calendarExperienceTaskLabel(task)].filter(Boolean).join(" · "), task });
-  for (const item of facts.important.slice(0, 3)) rows.push({ icon:"★", title:item.title || t("Важная дата"), meta:repeatLabel(item.repeatMode), color:item.color, important:true });
+  for (const item of facts.important.slice(0, 3)) rows.push({ icon:item.icon || "★", title:item.title || t("Важная дата"), meta:typeof importantScheduleLabel === "function" ? importantScheduleLabel(item) : repeatLabel(item.repeatMode), color:item.color, important:item });
   if (Math.abs(facts.overtime) > .001) rows.push({ icon:"＋", title:t("Переработка"), meta:`${facts.overtime > 0 ? "+" : ""}${fmtHours(facts.overtime)} ${state.language === "en" ? "h" : "ч"}`, overtime:true });
   if (!rows.length) rows.push({ icon:"○", title:t("Планов на этот день нет"), meta:t("Можно спокойно оставить его свободным") });
   for (const row of rows) {
@@ -237,7 +237,7 @@ function calendarExperienceRenderWeek(){
     button.innerHTML = `<span>${esc(row.icon)}</span><span><b>${esc(row.title)}</b><small>${esc(row.meta || "")}</small></span><i>›</i>`;
     button.addEventListener("click", () => {
       if (row.task && typeof openTaskDetails === "function") openTaskDetails(row.task.id);
-      else if (row.important) location.hash = "#important";
+      else if (row.important && typeof openImportantDetails === "function") openImportantDetails(row.important.id);
       else if (row.overtime) location.hash = "#overtime";
       else calendarExperienceSetMode("day");
     });
@@ -279,6 +279,21 @@ function calendarExperienceTimelineEvents(key){
       title:facts.shift ? shiftDisplayName(facts.shift) : t("Смена"), meta:segment.range,
     });
   }
+  for (const important of facts.important.filter(item => item.allDay === false)) {
+    const start = calendarExperienceTimeMinutes(important.startTime);
+    const endRaw = calendarExperienceTimeMinutes(important.endTime);
+    if (start == null) continue;
+    const startDate = important.startDate || important.date || key;
+    const endDate = important.endDate || startDate;
+    let eventStart = start, eventEnd = endRaw == null ? Math.min(1440, start + 60) : endRaw;
+    if (startDate !== endDate) {
+      if (key === startDate) eventEnd = 1440;
+      else if (key === endDate) { eventStart = 0; eventEnd = endRaw == null ? 60 : endRaw; }
+      else { eventStart = 0; eventEnd = 1440; }
+    }
+    if (eventEnd <= eventStart) eventEnd = Math.min(1440, eventStart + 60);
+    events.push({ type:"important", start:eventStart, end:eventEnd, color:important.color, title:important.title || t("Событие"), meta:important.place || important.category || "", important });
+  }
   for (const task of facts.tasks) {
     const segment = calendarExperienceTaskSegment(task, key);
     if (!segment) continue;
@@ -312,7 +327,7 @@ function calendarExperienceRenderAllDay(key){
   const facts = calendarExperienceDayFacts(key);
   const items = [];
   if (facts.shift && !facts.segments.length) items.push({ type:"shift", icon:"◷", text:shiftDisplayName(facts.shift), color:facts.shift.color });
-  for (const item of facts.important) items.push({ type:"important", icon:"★", text:item.title || t("Важная дата"), color:item.color });
+  for (const item of facts.important.filter(entry => entry.allDay !== false)) items.push({ type:"important", icon:item.icon || "★", text:item.title || t("Важная дата"), color:item.color, important:item });
   for (const task of facts.tasks.filter(item => item.allDay !== false || !item.scheduledStartTime)) items.push({ type:"task", icon:"✓", text:task.text || t("Задача"), task });
   if (facts.notes.length) items.push({ type:"note", icon:"▤", text:`${state.language === "en" ? "Notes" : "Заметки"}: ${facts.notes.length}` });
   box.hidden = !items.length;
@@ -332,6 +347,7 @@ function calendarExperienceRenderAllDay(key){
     button.innerHTML = `<span aria-hidden="true">${esc(item.icon || "○")}</span><b>${esc(item.text)}</b>`;
     button.addEventListener("click", () => {
       if (item.task && typeof openTaskDetails === "function") openTaskDetails(item.task.id);
+      else if (item.important && typeof openImportantDetails === "function") openImportantDetails(item.important.id);
       else calendarExperienceOpenLegacyDetails(key);
     });
     list.appendChild(button);
@@ -388,6 +404,7 @@ function calendarExperienceRenderDay(){
     button.title = `${event.title} · ${detail}`;
     button.addEventListener("click", () => {
       if (event.task && typeof openTaskDetails === "function") openTaskDetails(event.task.id);
+      else if (event.important && typeof openImportantDetails === "function") openImportantDetails(event.important.id);
       else if (event.type === "overtime") location.hash = "#overtime";
       else calendarExperienceOpenLegacyDetails(key);
     });

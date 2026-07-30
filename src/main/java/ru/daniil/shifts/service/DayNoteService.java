@@ -1,5 +1,6 @@
 package ru.daniil.shifts.service;
 
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.DayNoteCreateRequest;
@@ -44,6 +45,19 @@ public class DayNoteService {
             throw ApiException.badRequest("Некорректный диапазон заметок");
         }
         return notes.findByOwnerAndDateBetweenOrderByDateAscPinnedDescSortOrderAscCreatedAtAscIdAsc(user, from, to)
+                .stream().map(DayNoteDto::from).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<DayNoteDto> search(AppUser user, String query, LocalDate from, LocalDate to, int limit) {
+        String normalized = query == null ? "" : query.trim();
+        if (normalized.isBlank()) throw ApiException.badRequest("Поисковый запрос заметок не должен быть пустым");
+        if (normalized.length() > 200) throw ApiException.badRequest("Поисковый запрос: максимум 200 символов");
+        if (from != null && to != null && (to.isBefore(from) || from.plusYears(10).isBefore(to))) {
+            throw ApiException.badRequest("Некорректный диапазон поиска заметок");
+        }
+        int safeLimit = Math.max(1, Math.min(100, limit));
+        return notes.search(user, normalized, from, to, PageRequest.of(0, safeLimit))
                 .stream().map(DayNoteDto::from).toList();
     }
 

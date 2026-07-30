@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.19.4"
+const DUTYLOG_VERSION = "27.20.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -78,10 +78,11 @@ const state = {
   taskBoard: { items: [], filters: { status:"open", category:"all", project:"all", priority:"all", q:"", from:"", to:"" }, page: { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false } },
   taskMetadata: { categories: [], tags: [], projects: [] },
   inbox: { items: [], loading:false, includeArchived:false, q:"" },
-  importantByDate: {},            // { 'YYYY-MM-DD': [{id,date,title,repeatMode,color}] }
-  importantDays: [],               // самостоятельный список важных дней: [{id,date,title,repeatMode,color}]
+  importantByDate: {},            // projected dates, timed events and periods by display date
+  importantDays: [],               // source important dates/events/periods with timezone provenance
   importantFilters: { scope:"all", q:"" },
   editingImportantDayId: null,
+  viewingImportantDayId: null,
   editingTaskId: null,
   editingTaskMode: "create",
   editingTaskInboxId: null,

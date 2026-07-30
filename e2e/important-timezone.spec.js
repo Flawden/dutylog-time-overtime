@@ -9,27 +9,32 @@ test('important dates stay floating while canonical timezone survives reload', a
 
   const date = await currentLocalDateKey(page);
   const originalTitle = `Important ${Date.now()}`;
-  await page.locator('#importantBoardTitle').fill(originalTitle);
-  await page.locator('#importantBoardDate').fill(date);
-  await page.locator('#importantBoardRepeat').selectOption('YEARLY');
+  await page.locator('#importantBoardNew').click();
+  await expect(page.locator('#importantEditModal')).toBeVisible();
+  await page.locator('#importantEditName').fill(originalTitle);
+  await page.locator('#importantEditStartDate').fill(date);
+  await page.locator('#importantEditRepeat').selectOption('YEARLY');
 
   const created = waitForApi(page, 'POST', '/api/important-days');
-  await page.locator('#importantBoardSave').click();
+  await page.locator('#importantEditSave').click();
   await created;
+  await expect(page.locator('#importantEditModal')).toBeHidden();
 
   const row = page.locator('#importantBoardList .importantBoardRow', { hasText: originalTitle });
   await expect(row).toBeVisible();
   await row.locator('[data-important-edit]').click();
-  await expect(page.locator('#importantBoardTitle')).toHaveValue(originalTitle);
+  await expect(page.locator('#importantEditModal')).toBeVisible();
+  await expect(page.locator('#importantEditName')).toHaveValue(originalTitle);
 
   const updatedTitle = `${originalTitle} updated`;
-  await page.locator('#importantBoardTitle').fill(updatedTitle);
+  await page.locator('#importantEditName').fill(updatedTitle);
   const updated = page.waitForResponse(response => {
     const url = new URL(response.url());
     return response.request().method() === 'PATCH' && /^\/api\/important-days\/\d+$/.test(url.pathname) && response.status() === 200;
   });
-  await page.locator('#importantBoardSave').click();
+  await page.locator('#importantEditSave').click();
   await updated;
+  await expect(page.locator('#importantEditModal')).toBeHidden();
   await expect(page.locator('#importantBoardList .importantBoardRow', { hasText: updatedTitle })).toBeVisible();
 
   await page.locator('#tabbar a[data-view="settings"]').click();

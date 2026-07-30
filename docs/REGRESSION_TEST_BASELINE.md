@@ -1,14 +1,25 @@
 # DutyLog regression test baseline
 
-Status: v27.19.4.
+Status: v27.20.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.19.4 stabilizes the Ghost/Outline transition browser assertion with semantic alpha polling while preserving v27.19.3 deadline validation, v27.19.2 asset stability and v27.19.1 task-board range compatibility. Current application baseline is 97 Java test classes / 507 `@Test` methods / 28 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.20.0 delivers searchable/offline-safe notes and timezone-correct important events. Current application baseline is 97 Java test classes / 513 `@Test` methods / 29 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
+
+
+## v27.20.0 Notes & Important Events Next extension
+
+- `ImportantDayServiceTest` covers timed source-zone preservation/reprojection, floating periods and invalid boundaries.
+- `DayNoteServiceTest` covers owner-scoped title/content search and date ranges.
+- `ImportantDayControllerTest` protects the additive timed-event JSON contract and reminders.
+- `DayNoteControllerTest` protects the owner-scoped search alias, ranges and validation envelope.
+- `MultipleDailyNotesFrontendContractTest` and `ImportantDatesTimezoneOvertimeFrontendContractTest` protect search/offline queue and editor/details contracts.
+- `notes-important-events-next.spec.js` covers real event creation, read-first details, hourly placement and note search.
+- Baseline is 97 Java classes / 513 `@Test` methods / 29 Playwright scenarios; Flyway advances to V38.
 
 ## v27.19.4 Ghost Button Transition E2E Stabilization Hotfix extension
 

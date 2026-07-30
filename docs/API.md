@@ -1,10 +1,42 @@
-# DutyLog API v27.19.4
+# DutyLog API v27.20.0
 
 Проект: **DutyLog: Time & Overtime**.
 
-v27.19.0 аддитивно расширил Tasks API проектами и каноническими planned intervals. v27.19.1 восстановил прежнюю семантику `from` / `to` на доске и добавил отдельные `scheduledFrom` / `scheduledTo` для планового диапазона. v27.19.2 стабилизировал frontend asset contracts, v27.19.3 синхронизировал planned-deadline Playwright-ожидание, а v27.19.4 стабилизирует только Ghost/Outline transition E2E-контракт; HTTP API и схема данных остаются без изменений. Старые клиенты могут продолжать отправлять только `date`; такие задачи остаются all-day. Flyway V37 сохраняет обратную совместимость существующих данных.
+v27.20.0 аддитивно расширяет API заметок и важных дат. Старые payload'ы важных дат (`title`, `date`, `repeatMode`, `color`) остаются валидными и создают плавающий `IMPORTANT_DATE`. Flyway V38 сохраняет исторические данные без изменения их семантики.
 
-Веб-версия работает через `JSESSIONID`, Android/PWA-клиенты могут использовать `Authorization: Bearer <accessToken>`. Старые endpoint'ы сохранены, поверх них добавлен mobile-слой.
+### Поиск заметок
+
+```text
+GET /api/notes/search?q=DutyLog&from=2026-07-01&to=2026-07-31&limit=40
+```
+
+Поиск owner-scoped, регистронезависимый, совпадает по `title` или `content`, допускает необязательный диапазон и ограничивает ответ 100 записями.
+
+### Important Events Next
+
+`POST /api/important-days` и `PATCH /api/important-days/{id}` поддерживают:
+
+```json
+{
+  "title": "Релиз",
+  "date": "2026-07-29",
+  "endDate": "2026-07-29",
+  "eventType": "EVENT",
+  "allDay": false,
+  "startTime": "18:00",
+  "endTime": "19:30",
+  "sourceTimezone": "Europe/Chisinau",
+  "place": "Дом сообщества",
+  "description": "Проверить staging",
+  "icon": "★",
+  "category": "DutyLog",
+  "color": "#F5B841",
+  "repeatMode": "NONE",
+  "reminders": [30, 1440]
+}
+```
+
+`eventType`: `IMPORTANT_DATE`, `EVENT` или `PERIOD`. All-day записи остаются плавающими датами. Timed-записи возвращают `startInstant`, `endInstant`, `sourceTimezone` и проецируются в текущую рабочую зону в occurrences/calendar API.
 
 ## Overtime Next presentation contract (v27.18.0)
 

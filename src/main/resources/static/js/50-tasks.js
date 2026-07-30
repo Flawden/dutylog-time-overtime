@@ -122,7 +122,31 @@ Object.assign(I18N_EN, {
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
-/* ─── Важные дни ───────────────────────────────────────────── */
+/* ─── Notes & Important Events Next ─────────────────────────── */
+Object.assign(I18N_EN, {
+  "Важная дата":"Important date", "Событие":"Event", "Период":"Period",
+  "Новое событие":"New event", "Редактировать событие":"Edit event",
+  "Весь день":"All day", "Место":"Place", "Категория":"Category",
+  "Описание":"Description", "Напоминания":"Reminders", "без напоминаний":"no reminders",
+  "Открыть в календаре":"Open in calendar", "поиск по заметкам…":"search notes…",
+  "По заметкам ничего не найдено.":"No notes found.", "Оффлайн-правка поставлена в очередь":"Offline edit queued",
+  "Редактирование доступно оффлайн и синхронизируется позже.":"Editing works offline and syncs later."
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+
+function normalizeImportantEvent(item){
+  const eventType = item?.eventType || "IMPORTANT_DATE";
+  const allDay = eventType === "IMPORTANT_DATE" ? true : item?.allDay !== false;
+  return {
+    ...item,
+    eventType,
+    allDay,
+    startDate:item?.startDate || item?.date || "",
+    endDate:item?.endDate || item?.startDate || item?.date || "",
+    reminders:Array.isArray(item?.reminders) ? item.reminders.map(Number).filter(Number.isFinite) : []
+  };
+}
+
 async function refreshImportantSettings(){
   if (!moduleEnabled("important_dates")) {
     state.importantDays = [];
@@ -130,7 +154,7 @@ async function refreshImportantSettings(){
     return;
   }
   try {
-    state.importantDays = await api.importantDays();
+    state.importantDays = (await api.importantDays()).map(normalizeImportantEvent);
     renderImportantBoard();
   } catch (err) {
     console.error(err);
@@ -147,6 +171,7 @@ function clampedDate(year, monthIndex, day){
   return keyOf(year, monthIndex, Math.min(day, last));
 }
 function importantNextOccurrence(item, today = todayKey()){
+  item = normalizeImportantEvent(item);
   const parts = importantDateParts(item.date);
   if (!parts) return item.date || "";
   const [year, month, day] = parts;
@@ -167,43 +192,108 @@ function importantNextOccurrence(item, today = todayKey()){
   }
   return keyOf(year, month - 1, day);
 }
+function importantTypeLabel(type){
+  return t({ IMPORTANT_DATE:"Важная дата", EVENT:"Событие", PERIOD:"Период" }[type] || "Важная дата");
+}
+function importantReminderLabel(minutes){
+  const n = Number(minutes);
+  if (n === 0) return t("в момент начала");
+  if (n < 60) return `${n} ${t("мин")}`;
+  if (n % 10080 === 0) return `${n / 10080} ${t("нед.")}`;
+  if (n % 1440 === 0) return `${n / 1440} ${t("дн.")}`;
+  return `${n / 60} ${t("ч")}`;
+}
+function importantScheduleLabel(item){
+  item = normalizeImportantEvent(item);
+  const start = item.startDate || item.date;
+  const end = item.endDate || start;
+  if (item.allDay) {
+    return start === end ? formatDateHuman(start) : `${formatDateHuman(start)} — ${formatDateHuman(end)}`;
+  }
+  const dates = start === end ? formatDateHuman(start) : `${formatDateHuman(start)} — ${formatDateHuman(end)}`;
+  return `${dates} · ${item.startTime || "—"}–${item.endTime || "—"}`;
+}
 function importantBoardItems(){
   const filters = state.importantFilters || { scope:"all", q:"" };
   const today = todayKey();
   const q = String(filters.q || "").trim().toLowerCase();
-  return (state.importantDays || []).map(item => ({ ...item, nextOccurrence:importantNextOccurrence(item, today) }))
-    .filter(item => {
-      if (filters.scope === "recurring" && item.repeatMode === "NONE") return false;
-      if (filters.scope === "past" && !(item.repeatMode === "NONE" && item.date < today)) return false;
-      if (filters.scope === "upcoming" && item.repeatMode === "NONE" && item.date < today) return false;
-      if (q && !`${item.title || ""} ${item.date || ""} ${item.nextOccurrence || ""}`.toLowerCase().includes(q)) return false;
-      return true;
-    })
-    .sort((a,b) => String(a.nextOccurrence).localeCompare(String(b.nextOccurrence)) || String(a.title).localeCompare(String(b.title), currentLocale()));
+  return (state.importantDays || []).map(raw => {
+    const item = normalizeImportantEvent(raw);
+    return { ...item, nextOccurrence:importantNextOccurrence(item, today) };
+  }).filter(item => {
+    if (filters.scope === "recurring" && item.repeatMode === "NONE") return false;
+    if (filters.scope === "past" && !(item.repeatMode === "NONE" && item.endDate < today)) return false;
+    if (filters.scope === "upcoming" && item.repeatMode === "NONE" && item.endDate < today) return false;
+    const hay = `${item.title || ""} ${item.date || ""} ${item.endDate || ""} ${item.place || ""} ${item.category || ""} ${item.description || ""}`.toLowerCase();
+    if (q && !hay.includes(q)) return false;
+    return true;
+  }).sort((a,b) => String(a.nextOccurrence).localeCompare(String(b.nextOccurrence)) || String(a.title).localeCompare(String(b.title), currentLocale()));
 }
-function resetImportantBoardForm(){
-  state.editingImportantDayId = null;
-  if ($("importantBoardTitle")) $("importantBoardTitle").value = "";
-  if ($("importantBoardDate")) $("importantBoardDate").value = todayKey();
-  if ($("importantBoardRepeat")) $("importantBoardRepeat").value = "YEARLY";
-  if ($("importantBoardColor")) $("importantBoardColor").value = "#F5B841";
-  if ($("importantBoardSave")) $("importantBoardSave").textContent = t("Добавить");
-  if ($("importantBoardCancel")) $("importantBoardCancel").hidden = true;
+
+function setImportantModalVisible(id, visible){
+  const modal = $(id);
+  if (!modal) return;
+  modal.hidden = !visible;
+  document.body.classList.toggle("modalOpen", visible || !$("importantDetailsModal")?.hidden || !$("importantEditModal")?.hidden);
 }
-function startEditImportantDay(id){
-  const item = (state.importantDays || []).find(x => Number(x.id) === Number(id));
-  if (!item) return setSave("err", t("Важный день не найден"));
-  state.editingImportantDayId = Number(id);
-  location.hash = "#important";
-  $("importantBoardTitle").value = item.title || "";
-  $("importantBoardDate").value = item.date || todayKey();
-  $("importantBoardRepeat").value = item.repeatMode || "NONE";
-  $("importantBoardColor").value = item.color || "#F5B841";
-  $("importantBoardSave").textContent = t("Сохранить");
-  $("importantBoardCancel").hidden = false;
-  $("importantBoardTitle").focus();
-  renderImportantBoard();
+function closeImportantDetails(){ setImportantModalVisible("importantDetailsModal", false); state.viewingImportantDayId = null; }
+function closeImportantEditor(){ setImportantModalVisible("importantEditModal", false); state.editingImportantDayId = null; }
+function importantById(id){ return normalizeImportantEvent((state.importantDays || []).find(x => Number(x.id) === Number(id))); }
+
+function openImportantDetails(id){
+  const item = importantById(id);
+  if (!item?.id) return setSave("err", t("Важный день не найден"));
+  state.viewingImportantDayId = Number(id);
+  $("importantDetailsType").textContent = importantTypeLabel(item.eventType);
+  $("importantDetailsTitle").textContent = `${item.icon || "★"} ${item.title || ""}`.trim();
+  $("importantDetailsSchedule").textContent = `${importantScheduleLabel(item)} · ${repeatLabel(item.repeatMode)}`;
+  const details = [];
+  if (item.place) details.push([t("Место"), item.place]);
+  if (item.category) details.push([t("Категория"), item.category]);
+  if (!item.allDay && item.sourceTimezone) details.push([t("Исходный интервал"), item.sourceTimezone]);
+  details.push([t("Напоминания"), item.reminders.length ? item.reminders.map(importantReminderLabel).join(", ") : t("без напоминаний")]);
+  if (item.description) details.push([t("Описание"), item.description, true]);
+  $("importantDetailsBody").innerHTML = details.map(([label,value,wide]) => `<div class="importantDetailsItem${wide ? " wide" : ""}"><span>${esc(label)}</span><p>${esc(value)}</p></div>`).join("");
+  setImportantModalVisible("importantDetailsModal", true);
+  $("importantDetailsClose")?.focus({ preventScroll:true });
 }
+
+function syncImportantEditorFields(){
+  const type = $("importantEditType")?.value || "IMPORTANT_DATE";
+  const allDay = type === "IMPORTANT_DATE" || !!$("importantEditAllDay")?.checked;
+  $("importantEditAllDay").disabled = type === "IMPORTANT_DATE";
+  if (type === "IMPORTANT_DATE") $("importantEditAllDay").checked = true;
+  $("importantEditEndDateField").hidden = type === "IMPORTANT_DATE";
+  document.querySelectorAll(".importantTimedField").forEach(el => { el.hidden = allDay; });
+  if (type === "EVENT" && !$("importantEditEndDate").value) $("importantEditEndDate").value = $("importantEditStartDate").value;
+}
+function openImportantEditor(id = null, contextDate = null){
+  const item = id == null ? null : importantById(id);
+  state.editingImportantDayId = item?.id ? Number(item.id) : null;
+  $("importantEditTitle").textContent = t(item ? "Редактировать событие" : "Новое событие");
+  $("importantEditName").value = item?.title || "";
+  $("importantEditType").value = item?.eventType || "IMPORTANT_DATE";
+  $("importantEditRepeat").value = item?.repeatMode || "NONE";
+  $("importantEditStartDate").value = item?.date || contextDate || state.selected || todayKey();
+  $("importantEditEndDate").value = item?.endDate || item?.date || contextDate || state.selected || todayKey();
+  $("importantEditAllDay").checked = item ? item.allDay : true;
+  $("importantEditStartTime").value = item?.startTime || "09:00";
+  $("importantEditEndTime").value = item?.endTime || "10:00";
+  $("importantEditTimezone").value = item?.sourceTimezone || state.timeSettings?.workTimezone || browserTimeZone();
+  $("importantEditPlace").value = item?.place || "";
+  $("importantEditCategory").value = item?.category || "";
+  $("importantEditIcon").value = item?.icon || "★";
+  $("importantEditColor").value = item?.color || "#F5B841";
+  $("importantEditDescription").value = item?.description || "";
+  document.querySelectorAll('input[name="importantReminder"]').forEach(input => { input.checked = (item?.reminders || []).includes(Number(input.value)); });
+  $("importantEditMessage").hidden = true;
+  syncImportantEditorFields();
+  closeImportantDetails();
+  setImportantModalVisible("importantEditModal", true);
+  $("importantEditName")?.focus({ preventScroll:true });
+}
+function resetImportantBoardForm(){ state.editingImportantDayId = null; }
+function startEditImportantDay(id){ openImportantEditor(id); }
 async function openImportantCalendarDay(date){
   if (!date) return;
   const [y,m] = date.split("-").map(Number);
@@ -212,6 +302,7 @@ async function openImportantCalendarDay(date){
   location.hash = "#calendar";
   selectDay(date);
 }
+
 function renderImportantBoard(){
   const box = $("importantBoardList");
   if (!box) return;
@@ -222,61 +313,58 @@ function renderImportantBoard(){
     $("importantBoardStatus").innerHTML = `<span class="statusChip"><b>${items.length}</b> ${esc(t("показано"))}</span><span class="statusChip"><b>${total}</b> ${esc(t("всего"))}</span>`;
   }
   if ($("importantBoardScope")) $("importantBoardScope").value = state.importantFilters?.scope || "all";
-  if ($("importantBoardSearch")) $("importantBoardSearch").value = state.importantFilters?.q || "";
+  if ($("importantBoardSearch") && document.activeElement !== $("importantBoardSearch")) $("importantBoardSearch").value = state.importantFilters?.q || "";
   box.innerHTML = "";
-  if (!total) {
-    renderEmptyState(box, { icon:"★", title:"Важных дат пока нет.", text:"Добавь первую дату здесь или из выбранного дня календаря.", variant:"board" });
-    return;
-  }
-  if (!items.length) {
-    renderEmptyState(box, { icon:"⌕", title:"По фильтрам ничего не найдено.", text:"Сбрось поиск или выбери другой период.", variant:"board" });
-    return;
-  }
+  if (!total) return renderEmptyState(box, { icon:"★", title:"Важных дат пока нет.", text:"Добавь важную дату, событие со временем или период.", variant:"board" });
+  if (!items.length) return renderEmptyState(box, { icon:"⌕", title:"По фильтрам ничего не найдено.", text:"Сбрось поиск или выбери другой период.", variant:"board" });
   for (const item of items) {
-    const row = document.createElement("div");
-    row.className = "importantBoardRow" + (Number(item.id) === Number(state.editingImportantDayId) ? " editing" : "");
-    row.innerHTML = `
-      <span class="importantDot" style="background:${esc(item.color || "#F5B841")}"></span>
-      <span class="importantBoardMain"><b>${esc(item.title)}</b><small>${esc(t("Базовая дата"))}: ${esc(formatDateHuman(item.date))} · ${esc(repeatLabel(item.repeatMode))}</small></span>
-      <span class="importantBoardNext"><small>${esc(t("Следующее событие"))}</small><b class="mono">${esc(formatDateHuman(item.nextOccurrence))}</b></span>
-      <span class="importantBoardActions">
-        <button type="button" data-important-open="${item.id}">${esc(t("Открыть день"))}</button>
-        <button type="button" data-important-edit="${item.id}">${esc(t("ред."))}</button>
-        <button type="button" data-important-delete="${item.id}">${esc(t("удалить"))}</button>
-      </span>`;
+    const row = document.createElement("article");
+    row.className = "importantBoardRow";
+    row.dataset.importantDetails = item.id;
+    const secondary = [importantTypeLabel(item.eventType), item.place, item.category].filter(Boolean).join(" · ");
+    row.innerHTML = `<span class="importantDot" style="background:${esc(item.color || "#F5B841")}"></span><span class="importantBoardMain"><b>${esc(item.icon || "★")} ${esc(item.title || "")}</b><small>${esc(importantScheduleLabel(item))} · ${esc(repeatLabel(item.repeatMode))}</small><span class="importantBoardMetaLine">${esc(secondary)}</span></span><span class="importantBoardNext"><small>${esc(t("Следующее событие"))}</small><b class="mono">${esc(formatDateHuman(item.nextOccurrence))}</b></span><span class="importantBoardActions"><button type="button" data-important-details="${item.id}">${esc(t("Подробнее"))}</button><button type="button" data-important-edit="${item.id}">${esc(t("ред."))}</button></span>`;
+    row.addEventListener("click", e => { if (!e.target.closest("button")) openImportantDetails(item.id); });
     box.appendChild(row);
   }
-  box.querySelectorAll("[data-important-open]").forEach(btn => btn.addEventListener("click", () => {
-    const item = (state.importantDays || []).find(x => Number(x.id) === Number(btn.dataset.importantOpen));
-    openImportantCalendarDay(importantNextOccurrence(item));
-  }));
+  box.querySelectorAll("[data-important-details]").forEach(btn => btn.addEventListener("click", () => openImportantDetails(Number(btn.dataset.importantDetails))));
   box.querySelectorAll("[data-important-edit]").forEach(btn => btn.addEventListener("click", () => startEditImportantDay(Number(btn.dataset.importantEdit))));
-  box.querySelectorAll("[data-important-delete]").forEach(btn => btn.addEventListener("click", () => removeImportantDay(Number(btn.dataset.importantDelete))));
 }
-async function saveImportantBoardItem(){
+
+async function saveImportantEvent(e){
+  e?.preventDefault();
   if (!moduleEnabled("important_dates")) return setSave("err", t("модуль выключен"));
-  const title = $("importantBoardTitle")?.value.trim();
-  const date = $("importantBoardDate")?.value;
-  if (!title) return setSave("err", t("укажи название важного дня"));
-  if (!date) return setSave("err", t("укажи дату важного дня"));
+  const type = $("importantEditType").value;
+  const allDay = type === "IMPORTANT_DATE" || $("importantEditAllDay").checked;
   const payload = {
-    title, date,
-    repeatMode:$("importantBoardRepeat")?.value || "NONE",
-    color:$("importantBoardColor")?.value || "#F5B841"
+    title:$("importantEditName").value.trim(), eventType:type,
+    date:$("importantEditStartDate").value, endDate:type === "IMPORTANT_DATE" ? "" : $("importantEditEndDate").value,
+    allDay, startTime:allDay ? "" : $("importantEditStartTime").value,
+    endTime:allDay ? "" : $("importantEditEndTime").value,
+    sourceTimezone:allDay ? "" : $("importantEditTimezone").value.trim(),
+    repeatMode:$("importantEditRepeat").value, color:$("importantEditColor").value || "#F5B841",
+    place:$("importantEditPlace").value.trim(), category:$("importantEditCategory").value.trim(),
+    icon:$("importantEditIcon").value.trim(), description:$("importantEditDescription").value.trim(),
+    reminders:[...document.querySelectorAll('input[name="importantReminder"]:checked')].map(x => Number(x.value))
   };
+  if (!payload.title || !payload.date) {
+    $("importantEditMessage").hidden = false;
+    $("importantEditMessage").textContent = t("Укажи название и дату начала.");
+    return;
+  }
   setSave("saving");
   try {
     if (state.editingImportantDayId) await api.updateImportantDay(state.editingImportantDayId, payload);
     else await api.createImportantDay(payload);
-    const wasEditing = !!state.editingImportantDayId;
-    resetImportantBoardForm();
+    closeImportantEditor();
     await refreshImportantSettings();
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
     await loadMonth();
-    renderCalendar();
-    setSave("saved", t(wasEditing ? "Событие обновлено" : "Событие добавлено"));
+    renderCalendar(); renderImportantDays(); updateAccSummaries();
+    setSave("saved", t("Событие сохранено"));
   } catch (err) {
     console.error(err);
+    $("importantEditMessage").hidden = false;
+    $("importantEditMessage").textContent = err.message;
     setSave("err", err.message);
   }
 }
@@ -285,80 +373,69 @@ function renderImportantDays(){
   if (!moduleEnabled("important_dates")) { updateAccSummaries(); return; }
   const box = $("importantList");
   if (!box || !state.selected) return;
-  const items = importantOf(state.selected);
+  const items = importantOf(state.selected).map(normalizeImportantEvent);
   box.innerHTML = "";
   if (!items.length) {
     renderEmptyState(box, { icon:"★", title:"В этот день важных событий нет.", text:"Отлично. Здесь пока чисто.", variant:"compact" });
-    updateAccSummaries();
-    return;
+    updateAccSummaries(); return;
   }
   for (const item of items) {
-    const row = document.createElement("div");
+    const row = document.createElement("button");
+    row.type = "button";
     row.className = "importantItem";
-    row.innerHTML = `<span class="importantDot" style="background:${esc(item.color || "#F5B841")}"></span><span class="importantTitle">${esc(item.title)}</span><span class="importantMode">${esc(repeatLabel(item.repeatMode))}</span><button type="button" data-day-important-edit="${item.id}">${esc(t("ред."))}</button><button class="tinyDel" type="button" data-day-important-delete="${item.id}">${esc(t("удалить"))}</button>`;
+    row.innerHTML = `<span class="importantDot" style="background:${esc(item.color || "#F5B841")}"></span><span class="importantTitle">${esc(item.icon || "★")} ${esc(item.title || "")}</span><span class="importantMode">${esc(item.allDay ? repeatLabel(item.repeatMode) : `${item.startTime || ""}–${item.endTime || ""}`)}</span>`;
+    row.addEventListener("click", () => openImportantDetails(item.id));
     box.appendChild(row);
   }
-  box.querySelectorAll("[data-day-important-edit]").forEach(btn => btn.addEventListener("click", () => startEditImportantDay(Number(btn.dataset.dayImportantEdit))));
-  box.querySelectorAll("[data-day-important-delete]").forEach(btn => btn.addEventListener("click", () => removeImportantDay(Number(btn.dataset.dayImportantDelete))));
   updateAccSummaries();
 }
 
 async function addImportantDay(){
   if (!moduleEnabled("important_dates")) return setSave("err", t("модуль выключен"));
-  const k = $("impDate")?.value || state.selected;
-  if (!k) return setSave("err", t("укажи дату важного дня"));
-  const title = $("impTitle").value.trim();
-  if (!title) return setSave("err", t("укажи название важного дня"));
+  const date = $("impDate")?.value || state.selected;
+  const title = $("impTitle")?.value.trim();
+  if (!date || !title) return setSave("err", t("укажи название и дату важного дня"));
   setSave("saving");
   try {
-    await api.createImportantDay({ title, date:k, repeatMode:$("impRepeat").value, color:$("impColor").value || "#F5B841" });
+    await api.createImportantDay({ title, date, repeatMode:$("impRepeat").value, color:$("impColor").value || "#F5B841", eventType:"IMPORTANT_DATE", allDay:true });
     $("impTitle").value = "";
-    if ($("impDate")) $("impDate").value = k;
     await refreshImportantSettings();
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
-    await loadMonth();
-    setSave("saved");
-    renderImportantDays();
-    renderImportantBoard();
-    renderCalendar();
-    updateAccSummaries();
-  } catch (err) {
-    console.error(err);
-    setSave("err", err.message);
-  }
+    await loadMonth(); renderImportantDays(); renderCalendar(); updateAccSummaries(); setSave("saved");
+  } catch (err) { console.error(err); setSave("err", err.message); }
 }
 
 async function removeImportantDay(id){
-  if (!confirm(t("Удалить важный день целиком, включая повторения?"))) return;
+  if (!confirm(t("Удалить важное событие целиком, включая повторения?"))) return;
   setSave("saving");
   try {
     await api.deleteImportantDay(id);
-    if (Number(state.editingImportantDayId) === Number(id)) resetImportantBoardForm();
+    closeImportantDetails(); closeImportantEditor();
     await refreshImportantSettings();
     if (typeof invalidateBrowserNotificationSchedule === "function") invalidateBrowserNotificationSchedule();
-    await loadMonth();
-    setSave("saved");
-    renderImportantDays();
-    renderImportantBoard();
-    renderCalendar();
-    updateAccSummaries();
-  } catch (err) {
-    console.error(err);
-    setSave("err", err.message);
-  }
+    await loadMonth(); renderImportantDays(); renderCalendar(); updateAccSummaries(); setSave("saved");
+  } catch (err) { console.error(err); setSave("err", err.message); }
 }
 
 $("impAdd")?.addEventListener("click", addImportantDay);
 $("impTitle")?.addEventListener("keydown", e => { if (e.key === "Enter") addImportantDay(); });
 $("impDateSelected")?.addEventListener("click", () => { if (!state.selected) return setSave("err", t("сначала выбери день в календаре")); $("impDate").value = state.selected; });
 $("impDateToday")?.addEventListener("click", () => { $("impDate").value = todayKey(); });
-$("importantBoardSave")?.addEventListener("click", saveImportantBoardItem);
-$("importantBoardCancel")?.addEventListener("click", resetImportantBoardForm);
-$("importantBoardTitle")?.addEventListener("keydown", e => { if (e.key === "Enter") saveImportantBoardItem(); });
+$("importantBoardNew")?.addEventListener("click", () => openImportantEditor(null, todayKey()));
 $("importantBoardScope")?.addEventListener("change", e => { state.importantFilters.scope = e.target.value; renderImportantBoard(); });
 $("importantBoardSearch")?.addEventListener("input", e => { state.importantFilters.q = e.target.value; renderImportantBoard(); });
-$("importantBoardToday")?.addEventListener("click", () => { $("importantBoardDate").value = todayKey(); });
+$("importantBoardToday")?.addEventListener("click", () => openImportantEditor(null, todayKey()));
 $("importantBoardClear")?.addEventListener("click", () => { state.importantFilters = { scope:"all", q:"" }; renderImportantBoard(); });
+$("importantEditType")?.addEventListener("change", syncImportantEditorFields);
+$("importantEditAllDay")?.addEventListener("change", syncImportantEditorFields);
+$("importantEditStartDate")?.addEventListener("change", () => { if (!$("importantEditEndDate").value || $("importantEditEndDate").value < $("importantEditStartDate").value) $("importantEditEndDate").value = $("importantEditStartDate").value; });
+$("importantEditForm")?.addEventListener("submit", saveImportantEvent);
+for (const id of ["importantEditClose","importantEditCancel","importantEditBackdrop"]) $(id)?.addEventListener("click", closeImportantEditor);
+for (const id of ["importantDetailsClose","importantDetailsBackdrop"]) $(id)?.addEventListener("click", closeImportantDetails);
+$("importantDetailsEdit")?.addEventListener("click", () => openImportantEditor(state.viewingImportantDayId));
+$("importantDetailsDelete")?.addEventListener("click", () => removeImportantDay(state.viewingImportantDayId));
+$("importantDetailsOpenDay")?.addEventListener("click", () => { const item = importantById(state.viewingImportantDayId); closeImportantDetails(); openImportantCalendarDay(importantNextOccurrence(item)); });
+document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (!$("importantEditModal")?.hidden) closeImportantEditor(); else if (!$("importantDetailsModal")?.hidden) closeImportantDetails(); });
 resetImportantBoardForm();
 
 /* ─── Задачи, входящие и быстрый захват ─────────────────────── */
@@ -1741,12 +1818,11 @@ function quickActionImportant(){
   const text = quickActionDraftText();
   const date = state.selected || todayKey();
   closeQuickActions();
-  resetImportantBoardForm();
   location.hash = "#important";
   setTimeout(() => {
-    if ($("importantBoardTitle")) $("importantBoardTitle").value = text;
-    if ($("importantBoardDate")) $("importantBoardDate").value = date;
-    $("importantBoardTitle")?.focus({ preventScroll:true });
+    openImportantEditor(null, date);
+    if (text) $("importantEditName").value = text;
+    $("importantEditName")?.focus({ preventScroll:true });
   }, 0);
 }
 function quickActionOvertime(kind){
@@ -2132,6 +2208,7 @@ function renderDayNotes(){
       const button = document.createElement("button");
       button.type = "button";
       button.className = "dayNoteCard" + (active?.id === note.id ? " on" : "");
+      button.setAttribute("aria-expanded", active?.id === note.id ? "true" : "false");
       const preview = String(note.content || "").trim().split("\n").slice(0,2).join(" ");
       button.innerHTML = `<span class="dayNoteCardPin">${note.pinned ? "📌" : ""}</span><span class="dayNoteCardText"><span class="dayNoteCardTitle">${esc(noteLabel(note))}</span><span class="dayNoteCardPreview">${esc(preview || t("Пустая заметка"))}</span></span><span class="dayNoteCardTime">${note.sortOrder + 1}</span>`;
       button.addEventListener("click", async () => {
@@ -2150,7 +2227,7 @@ function renderDayNotes(){
   $("noteAdd").disabled = !online;
   if ($("noteOfflineHint")) $("noteOfflineHint").textContent = online
     ? t("Несколько независимых заметок на один день.")
-    : t("Оффлайн доступно чтение snapshot. Создание и редактирование заметок требуют подключения.");
+    : t("Редактирование доступно оффлайн и синхронизируется позже.");
   if (!active) {
     $("noteTitle").value = "";
     $("noteEdit").value = "";
@@ -2159,8 +2236,8 @@ function renderDayNotes(){
   }
   if (document.activeElement !== $("noteTitle")) $("noteTitle").value = active.title || "";
   if (document.activeElement !== $("noteEdit")) $("noteEdit").value = active.content || "";
-  $("noteTitle").disabled = !online;
-  $("noteEdit").readOnly = !online;
+  $("noteTitle").disabled = false;
+  $("noteEdit").readOnly = false;
   $("notePin").disabled = !online;
   $("noteDelete").disabled = !online;
   $("notePin").classList.toggle("on", active.pinned);
@@ -2213,20 +2290,18 @@ async function flushPendingNoteSave(){
   noteTimer = null;
   const pending = pendingNoteSave;
   pendingNoteSave = null;
-  if (!navigator.onLine) {
-    setSave("err", t("Изменение заметки ждёт подключения. Текст сохранён в локальном snapshot только для чтения."));
-    await persistNotesSnapshot(pending.date);
-    return;
-  }
   try {
     setSave("saving");
-    const updated = normalizeDayNote(await api.updateDayNote(pending.noteId, pending.patch));
-    const current = notesOfDay(pending.date).map(n => n.id === updated.id ? updated : n);
-    installDayNotes(pending.date, current, updated.id);
+    const result = await dataLayer.updateDayNote(pending.noteId, pending.patch, pending.date);
+    if (result.note) {
+      const updated = normalizeDayNote(result.note);
+      const current = notesOfDay(pending.date).map(n => n.id === updated.id ? updated : n);
+      installDayNotes(pending.date, current, updated.id);
+    }
     await persistNotesSnapshot(pending.date);
     renderDayNotes();
     renderCalendar();
-    setSave("saved");
+    setSave(result.queued ? "saved" : "saved", result.queued ? t("Оффлайн-правка поставлена в очередь") : undefined);
   } catch (err) {
     console.error(err);
     setSave("err", err.message);
@@ -2237,7 +2312,7 @@ async function flushPendingSave(){ await flushPendingNoteSave(); }
 
 $("noteAdd").addEventListener("click", () => createDayNote(""));
 $("noteEdit").addEventListener("input", () => {
-  if (!moduleEnabled("notes") || !navigator.onLine) return;
+  if (!moduleEnabled("notes")) return;
   const date = state.selected;
   const active = activeDayNote(date);
   if (!date || !active) return;
@@ -2248,7 +2323,6 @@ $("noteEdit").addEventListener("input", () => {
   scheduleNoteSave(active, { content:active.content });
 });
 $("noteTitle").addEventListener("input", () => {
-  if (!navigator.onLine) return;
   const date = state.selected;
   const active = activeDayNote(date);
   if (!date || !active) return;
@@ -2297,6 +2371,45 @@ $("noteDelete").addEventListener("click", async () => {
     renderDayNotes(); renderCalendar(); setSave("saved");
   } catch (err) { console.error(err); setSave("err", err.message); }
 });
+
+let noteSearchTimer = null;
+async function runNoteSearch(){
+  const input = $("noteSearch");
+  const box = $("noteSearchResults");
+  if (!input || !box) return;
+  const q = input.value.trim();
+  if (q.length < 2) { box.hidden = true; box.innerHTML = ""; return; }
+  if (!navigator.onLine) {
+    const local = Object.values(state.days || {}).flatMap(day => notesOfDay(day.date || "").map(note => ({ ...note, date:day.date })))
+      .filter(note => `${note.title || ""} ${note.content || ""}`.toLowerCase().includes(q.toLowerCase())).slice(0,50);
+    renderNoteSearchResults(local); return;
+  }
+  try { renderNoteSearchResults(await api.searchNotes(q, "", "", 50)); }
+  catch (err) { console.error(err); box.hidden = false; box.innerHTML = `<div class="emptyLine">${esc(err.message)}</div>`; }
+}
+function renderNoteSearchResults(items){
+  const box = $("noteSearchResults");
+  if (!box) return;
+  box.hidden = false; box.innerHTML = "";
+  if (!items?.length) { box.innerHTML = `<div class="emptyLine">${esc(t("По заметкам ничего не найдено."))}</div>`; return; }
+  for (const raw of items) {
+    const note = normalizeDayNote(raw); note.date = raw.date;
+    const btn = document.createElement("button"); btn.type = "button"; btn.className = "noteSearchResult";
+    const preview = String(note.content || "").replace(/\s+/g," ").slice(0,180);
+    btn.innerHTML = `<time>${esc(formatDateHuman(note.date))}</time><span><b>${esc(noteLabel(note))}</b><small>${esc(preview || t("Пустая заметка"))}</small></span>`;
+    btn.addEventListener("click", async () => {
+      await flushPendingNoteSave();
+      const [y,m] = String(note.date).split("-").map(Number);
+      await goto(y, m - 1); location.hash = "#calendar"; selectDay(note.date);
+      state.activeNoteByDate[note.date] = note.id;
+      const acc = $("accNote"); if (acc) acc.open = true;
+      box.hidden = true; renderDayNotes(); $("noteEdit")?.focus({ preventScroll:true });
+    });
+    box.appendChild(btn);
+  }
+}
+$("noteSearch")?.addEventListener("input", () => { clearTimeout(noteSearchTimer); noteSearchTimer = setTimeout(runNoteSearch, 250); });
+$("noteSearch")?.addEventListener("keydown", e => { if (e.key === "Escape") { e.currentTarget.value = ""; $("noteSearchResults").hidden = true; } });
 
 function setTab(tabName){
   state.tab = tabName;

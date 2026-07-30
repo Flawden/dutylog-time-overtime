@@ -3093,3 +3093,20 @@ body.panel-open .globalQuickAdd { display:none !important; }
   .taskPlanningGrid{grid-template-columns:minmax(0,1fr)}
   .taskPlanningGrid .taskDurationPresets{grid-column:auto}
 }
+
+/* v27.20.0 — Notes & Important Events Next */
+.dayNotesToolbar #noteSearch{flex:1 1 220px;min-width:180px}
+.buttonLike{display:inline-flex;align-items:center;justify-content:center;min-height:38px;padding:0 12px;border:1px solid var(--line);border-radius:10px;color:var(--mut);text-decoration:none;background:var(--panelAlt)}
+.buttonLike:hover{border-color:var(--accent);color:var(--text)}
+.noteSearchResults{display:flex;flex-direction:column;gap:6px;margin:8px 0;padding:8px;border:1px solid var(--line);border-radius:12px;background:var(--panelAlt);max-height:280px;overflow:auto}
+.noteSearchResult{display:grid;grid-template-columns:100px minmax(0,1fr);gap:10px;align-items:start;text-align:left;padding:9px 10px;border:1px solid transparent;border-radius:9px;background:transparent;color:var(--text);cursor:pointer}
+.noteSearchResult:hover{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,transparent)}
+.noteSearchResult time{font-size:11px;color:var(--dim)}
+.noteSearchResult span{min-width:0;display:flex;flex-direction:column;gap:2px}.noteSearchResult small{color:var(--dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.importantBoardCreateBar{align-items:center}.importantBoardCreateBar .small{color:var(--dim)}
+.importantBoardRow{cursor:pointer}.importantBoardMain small{line-height:1.35}.importantBoardMetaLine{display:flex;gap:8px;flex-wrap:wrap;color:var(--dim);font-size:11px}
+.importantDetailsBody{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:4px 0 12px}.importantDetailsItem{padding:10px;border:1px solid var(--line);border-radius:10px;background:var(--panelAlt)}.importantDetailsItem.wide{grid-column:1/-1}.importantDetailsItem span{display:block;font-size:11px;color:var(--dim);margin-bottom:4px}.importantDetailsItem p{margin:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.importantEventForm .checkline{align-self:end;min-height:44px}.importantReminderSet{display:flex;gap:12px;flex-wrap:wrap;border:1px solid var(--line);border-radius:10px;padding:10px}.importantReminderSet legend{padding:0 6px;color:var(--dim)}.importantReminderSet label{display:flex;gap:6px;align-items:center}
+.calendarImportantTimed{border-left:3px solid var(--event-color,#F5B841)}
+@media(max-width:700px){.dayNotesToolbar #noteSearch{flex-basis:100%}.importantDetailsBody{grid-template-columns:1fr}.importantDetailsItem.wide{grid-column:auto}.importantEventForm{grid-template-columns:1fr!important}}
+.importantItem{width:100%;color:var(--text);text-align:left;cursor:pointer}.importantItem:hover{border-color:var(--accent)}

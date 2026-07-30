@@ -11,6 +11,7 @@ import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.DayTask;
+import ru.daniil.shifts.model.ImportantEventType;
 import ru.daniil.shifts.model.NotificationSettings;
 import ru.daniil.shifts.model.RepeatMode;
 import ru.daniil.shifts.model.ShiftType;
@@ -21,6 +22,7 @@ import ru.daniil.shifts.repo.NotificationSettingsRepository;
 import ru.daniil.shifts.repo.ShiftTypeRepository;
 import ru.daniil.shifts.repo.UserRepository;
 
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -217,6 +219,44 @@ class NotificationServiceTest {
         assertEquals("Europe/Moscow", reminder.workTimezone());
         assertEquals("2035-07-26", reminder.sourceDate());
         assertTrue(reminder.details().contains("12:10 Europe/Moscow"));
+    }
+
+    @Test
+    void timedImportantEventUsesCanonicalInstantAndPerEventOffsets() {
+        LocalDate date = LocalDate.of(2035, 7, 29);
+        user.setWorkTimezone("Europe/Chisinau");
+        user.setDisplayTimezone("Europe/Chisinau");
+        user = users.save(user);
+
+        var event = importantDays.create(user, new ImportantDayCreateRequest(
+                "DutyLog release", date.toString(), RepeatMode.NONE, "#F5B841",
+                ImportantEventType.EVENT, date.toString(), false,
+                "18:00", "19:00", "Europe/Chisinau", null, null, "★",
+                "DutyLog", List.of(30, 60)));
+
+        NotificationSettings settings = notifications.settingsEntity(user);
+        settings.setShiftRemindersEnabled(false);
+        settings.setTaskRemindersEnabled(false);
+        settings.setImportantDayRemindersEnabled(true);
+        settings.setTomorrowDigestEnabled(false);
+        settingsRepo.save(settings);
+
+        List<NotificationReminderDto> result = notifications.upcoming(user, date, date, true);
+        NotificationReminderDto thirty = result.stream()
+                .filter(r -> r.id().equals("important:" + event.id() + ":" + date + ":30"))
+                .findFirst().orElseThrow();
+        NotificationReminderDto sixty = result.stream()
+                .filter(r -> r.id().equals("important:" + event.id() + ":" + date + ":60"))
+                .findFirst().orElseThrow();
+
+        Instant start = Instant.parse(event.startInstant());
+        assertEquals(start.minusSeconds(30 * 60L).toString(), thirty.remindAtInstant());
+        assertEquals(start.minusSeconds(60 * 60L).toString(), sixty.remindAtInstant());
+        assertEquals(start.minusSeconds(30 * 60L)
+                .atZone(ZoneId.of("Europe/Chisinau")).toLocalDateTime().toString(), thirty.remindAt());
+        assertEquals(start.minusSeconds(60 * 60L)
+                .atZone(ZoneId.of("Europe/Chisinau")).toLocalDateTime().toString(), sixty.remindAt());
+        assertEquals("Europe/Chisinau", thirty.workTimezone());
     }
 
     @Test

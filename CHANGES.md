@@ -1,3 +1,14 @@
+# v27.20.0 — Notes & Important Events Next
+
+- Added owner-scoped note search across titles and Markdown content with date-range and result-limit controls.
+- Added offline editing for existing notes through the coalesced IndexedDB `updateNote` queue while preserving independent notes, pin/order, fullscreen, export and long-text behavior.
+- Expanded important dates into three compatible modes: floating important dates, events and multi-day periods.
+- Added all-day/timed semantics, source IANA timezone, canonical instants, place, description, icon, category and per-event reminder offsets.
+- Added read-first event details, a full editor, contextual calendar opening, hourly timed-event cards and all-day period rails.
+- Routed quick capture and the historical timezone E2E through the new modal editor, removing the hidden inline-editor compatibility shell.
+- Added Flyway V38; historical rows remain floating all-day `IMPORTANT_DATE` records.
+- Regression baseline is now 97 Java test classes, 513 `@Test` methods and 29 Playwright scenarios.
+
 # v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix
 
 - Stabilized the Ghost-versus-Outline browser contract by polling the end of the CSS border transition instead of sampling an intermediate animation frame.

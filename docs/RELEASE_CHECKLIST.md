@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.19.4.
+Status: v27.20.0.
 
 ## Local gate
 
@@ -20,7 +20,9 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 
 - push the exact candidate tree to `test`;
 - confirm `Deploy staging` is green;
-- verify calendar, notes export, tasks, overtime, modules, admin and Android API v1;
+- verify calendar, note search/export/offline queued edits, tasks, overtime, modules, admin and Android API v1;
+- create an important date, timed event and multi-day period; verify read-first details, all-day rail and hourly timeline;
+- change canonical timezone and verify timed events keep canonical instants while all-day dates/periods stay floating;
 - create all-day, point, same-day and overnight task plans and verify the hourly timeline uses exact duration;
 - verify a deadline before planned end is rejected while a later deadline/reminder stays independent;
 - verify the timed-task editor reports «Дедлайн не может быть раньше окончания запланированного интервала.» and keeps the modal open;
@@ -71,6 +73,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.19.4 -m "v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix"
-git push origin v27.19.4
+git tag -a v27.20.0 -m "v27.20.0 — Notes & Important Events Next"
+git push origin v27.20.0
 ```

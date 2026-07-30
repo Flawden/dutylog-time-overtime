@@ -24,9 +24,17 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
         assertTrue(html.contains("data-view=\"important\""));
         assertTrue(html.contains("id=\"view-important\""));
         assertTrue(html.contains("id=\"importantBoardList\""));
+        assertTrue(html.contains("id=\"importantDetailsModal\""));
+        assertTrue(html.contains("id=\"importantEditModal\""));
+        assertTrue(html.contains("id=\"importantEditType\""));
+        assertTrue(html.contains("id=\"importantEditTimezone\""));
+        assertFalse(html.contains("id=\"importantBoardTitle\""));
         assertFalse(html.contains("id=\"importantSettingsCard\""));
         assertTrue(js.contains("function renderImportantBoard()"));
-        assertTrue(js.contains("async function saveImportantBoardItem()"));
+        assertTrue(js.contains("function openImportantDetails(id)"));
+        assertTrue(js.contains("async function saveImportantEvent(e)"));
+        assertTrue(js.contains("openImportantEditor(null, date);"));
+        assertTrue(js.contains("eventType:type"));
     }
 
     @Test

@@ -82,6 +82,17 @@ class DayNoteControllerTest {
                 .andExpect(jsonPath("$[1].id").value(firstId))
                 .andExpect(jsonPath("$[1].content").value("alpha"));
 
+        mvc.perform(get("/api/v1/notes/search")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .param("q", "updated")
+                        .param("from", "2026-09-01")
+                        .param("to", "2026-09-30")
+                        .param("limit", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id").value(secondId))
+                .andExpect(jsonPath("$[0].title").value("Вторая обновлена"));
+
         mvc.perform(delete("/api/v1/notes/{id}", firstId)
                         .with(user(owner.getUsername()).roles("USER"))
                         .with(csrf()))
@@ -144,6 +155,12 @@ class DayNoteControllerTest {
 
         mvc.perform(get("/api/notes")
                         .with(user(owner.getUsername()).roles("USER")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
+
+        mvc.perform(get("/api/notes/search")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .param("q", "   "))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("BAD_REQUEST"));
     }

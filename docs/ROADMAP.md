@@ -1,23 +1,24 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix**.
+Current release: **v27.20.0 — Notes & Important Events Next**.
 
-## Текущая продуктовая точка — Tasks & Inbox Next
+## Текущая продуктовая точка — Notes & Important Events Next
 
-Статус: **v27.19.4** стабилизирует Ghost/Outline transition E2E-контракт поверх v27.19.3, сохраняя Tasks & Inbox Next, planned-deadline validation, asset contract stability и совместимость диапазонов доски.
+Статус: **v27.20.0** развивает единый календарный слой заметок и важных событий поверх стабильной платформы Tasks & Inbox Next.
 
 Сделано к текущей точке:
 
-- all-day, point, exact interval и duration presets;
-- overnight mapping на каждый покрытый день;
-- канонические instants и source timezone для timed planning;
-- дедлайн и напоминание отделены от запланированного интервала;
-- read-first details, проектные chips/filters/search;
-- hourly calendar использует реальную длительность;
-- Inbox search работает с local queue и server rows;
-- Flyway V1–V37, Java 17, 97 Java test classes / 507 tests / 28 Playwright scenarios.
+- независимые заметки дня, полноэкранный Markdown, pin/order и отдельное автосохранение;
+- owner-scoped поиск по заголовку и содержимому с переходом к точной заметке;
+- оффлайн-редактирование существующих заметок через coalesced `updateNote` queue;
+- единая модель `IMPORTANT_DATE / EVENT / PERIOD`;
+- floating all-day семантика и canonical instants + source IANA zone для timed events;
+- read-first карточка события, полноценный editor modal и индивидуальные напоминания;
+- all-day rail, week agenda и timed cards на почасовом календаре;
+- сохранены Tasks & Inbox Next, Overtime Next и единый UI Core;
+- Flyway V1–V38, Java 17, 97 Java test classes / 513 tests / 29 Playwright scenarios.
 
-Следующий продуктовый этап: **v27.20.0 — Notes & Important Events Next**.
+Следующий продуктовый этап: **v27.21.0 — Schedule Templates & Calendar Layers**.
 
 ## Этап 1 — production foundation
 
@@ -216,6 +217,6 @@ API уже достаточно стабилен для первого Android-�
 - `v27.19.1` — Task Board Date Range Compatibility Hotfix.
 - `v27.19.2` — Frontend Asset Contract Stability Hotfix.
 - `v27.19.3` — Task Deadline Validation E2E Contract Hotfix.
-- `v27.19.4` — Ghost Button Transition E2E Stabilization Hotfix.
+- `v27.20.0` — Ghost Button Transition E2E Stabilization Hotfix.
 - `v27.19.0` — Tasks & Inbox Next, including independent planned task intervals (`start → end`), duration, deadlines and timeline cards.
 - `v27.20.0` — Notes & Important Events Next, including all-day/timed/multi-day events, place, description, reminders and read-first event cards.

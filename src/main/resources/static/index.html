@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.19.4"></script>
-<link href="app.css?v=27.19.4" rel="stylesheet"/>
-<link href="design-system.css?v=27.19.4" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.19.4" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.19.4" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.19.4" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.19.4" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.19.4" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.19.4" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.19.4" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.19.4" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.19.4" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.20.0"></script>
+<link href="app.css?v=27.20.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.20.0" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.20.0" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.20.0" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.20.0" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.20.0" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.20.0" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.20.0" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.20.0" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.20.0" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.20.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -306,8 +306,11 @@
 <div class="accB dayNotesModule">
   <div class="dayNotesToolbar">
     <button class="primary" id="noteAdd" type="button">＋ Новая заметка</button>
+    <input id="noteSearch" type="search" placeholder="поиск по заметкам…" autocomplete="off" aria-controls="noteSearchResults"/>
+    <a class="buttonLike" id="noteExport" href="/api/export/notes">Экспорт</a>
     <span class="dayPanelHint" id="noteOfflineHint">Несколько независимых заметок на один день.</span>
   </div>
+  <div class="noteSearchResults" id="noteSearchResults" hidden></div>
   <div class="dayNotesLayout">
     <div class="dayNoteList" id="noteList"></div>
     <div class="dayNoteEditor" id="noteEditorPane">
@@ -512,17 +515,9 @@
     </div>
     <div class="status" id="importantBoardStatus">—</div>
   </div>
-  <div class="importantBoardEditor">
-    <input id="importantBoardTitle" maxlength="120" placeholder="Название важного дня" type="text"/>
-    <input id="importantBoardDate" type="date"/>
-    <select id="importantBoardRepeat" title="Повтор">
-      <option value="YEARLY">каждый год</option>
-      <option value="MONTHLY">каждый месяц</option>
-      <option value="NONE">один раз</option>
-    </select>
-    <input id="importantBoardColor" title="Цвет" type="color" value="#F5B841"/>
-    <button class="primary" id="importantBoardSave" type="button">Добавить</button>
-    <button id="importantBoardCancel" type="button" hidden>Отмена</button>
+  <div class="importantBoardEditor importantBoardCreateBar">
+    <button class="primary" id="importantBoardNew" type="button">＋ Новое событие</button>
+    <span class="small">Важная дата, событие со временем или многодневный период.</span>
   </div>
   <button class="mobileFilterToggle" id="importantBoardFiltersToggle" type="button" aria-controls="importantBoardFilters" aria-expanded="false"><span>Фильтры</span><b aria-hidden="true">⌄</b></button>
   <div class="importantBoardFilters" id="importantBoardFilters">
@@ -968,7 +963,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.19.4</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.20.0</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -985,6 +980,51 @@
 </div>
 </section>
 </div>
+<div class="appModal" id="importantDetailsModal" hidden>
+  <button class="appModalBackdrop" id="importantDetailsBackdrop" type="button" aria-label="Закрыть"></button>
+  <div class="appModalPanel appModalPanelWide" role="dialog" aria-modal="true" aria-labelledby="importantDetailsTitle">
+    <div class="appModalHead">
+      <div><div class="eyebrow" id="importantDetailsType">Важное событие</div><div class="appModalTitle" id="importantDetailsTitle">Событие</div><div class="appModalHint" id="importantDetailsSchedule"></div></div>
+      <button class="appModalClose" id="importantDetailsClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div class="importantDetailsBody" id="importantDetailsBody"></div>
+    <div class="appModalActions">
+      <button id="importantDetailsOpenDay" type="button">Открыть в календаре</button>
+      <button class="primary" id="importantDetailsEdit" type="button">Редактировать</button>
+      <button class="dangerGhost" id="importantDetailsDelete" type="button">Удалить</button>
+    </div>
+  </div>
+</div>
+
+<div class="appModal" id="importantEditModal" hidden>
+  <button class="appModalBackdrop" id="importantEditBackdrop" type="button" aria-label="Закрыть"></button>
+  <div class="appModalPanel appModalPanelWide" role="dialog" aria-modal="true" aria-labelledby="importantEditTitle">
+    <div class="appModalHead">
+      <div><div class="eyebrow">Важные события</div><div class="appModalTitle" id="importantEditTitle">Новое событие</div><div class="appModalHint">Весь день хранится как плавающая дата. Событие со временем хранит абсолютный момент и исходную IANA-зону.</div></div>
+      <button class="appModalClose" id="importantEditClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <form class="appModalForm importantEventForm" id="importantEditForm">
+      <label class="appField appFieldWide">Название<input id="importantEditName" maxlength="120" required/></label>
+      <label class="appField">Тип<select id="importantEditType"><option value="IMPORTANT_DATE">Важная дата</option><option value="EVENT">Событие</option><option value="PERIOD">Период</option></select></label>
+      <label class="appField">Повтор<select id="importantEditRepeat"><option value="NONE">один раз</option><option value="YEARLY">каждый год</option><option value="MONTHLY">каждый месяц</option></select></label>
+      <label class="appField">Дата начала<input id="importantEditStartDate" type="date" required/></label>
+      <label class="appField" id="importantEditEndDateField">Дата окончания<input id="importantEditEndDate" type="date"/></label>
+      <label class="appField checkline"><input id="importantEditAllDay" type="checkbox" checked/><span>Весь день</span></label>
+      <label class="appField importantTimedField">Начало<input id="importantEditStartTime" type="time"/></label>
+      <label class="appField importantTimedField">Окончание<input id="importantEditEndTime" type="time"/></label>
+      <label class="appField importantTimedField">Исходный часовой пояс<input id="importantEditTimezone" maxlength="80" placeholder="Europe/Chisinau"/></label>
+      <label class="appField">Место<input id="importantEditPlace" maxlength="240"/></label>
+      <label class="appField">Категория<input id="importantEditCategory" maxlength="80"/></label>
+      <label class="appField">Значок<input id="importantEditIcon" maxlength="32" placeholder="★"/></label>
+      <label class="appField">Цвет<input id="importantEditColor" type="color" value="#F5B841"/></label>
+      <fieldset class="appField appFieldWide importantReminderSet"><legend>Напомнить заранее</legend><label><input type="checkbox" name="importantReminder" value="0"/> в момент начала</label><label><input type="checkbox" name="importantReminder" value="30"/> за 30 минут</label><label><input type="checkbox" name="importantReminder" value="60"/> за час</label><label><input type="checkbox" name="importantReminder" value="1440"/> за день</label><label><input type="checkbox" name="importantReminder" value="10080"/> за неделю</label></fieldset>
+      <label class="appField appFieldWide">Описание<textarea id="importantEditDescription" maxlength="10000" rows="6"></textarea></label>
+      <div class="appModalMessage appFieldWide" id="importantEditMessage" hidden></div>
+      <div class="appModalActions appFieldWide"><button id="importantEditCancel" type="button">Отмена</button><button class="primary" id="importantEditSave" type="submit">Сохранить</button></div>
+    </form>
+  </div>
+</div>
+
 <div class="noteFs" id="noteFullscreen" hidden>
   <div class="noteFsHead">
     <div>
@@ -1535,15 +1575,15 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.19.4"></script>
-<script src="js/12-ui-platform.js?v=27.19.4"></script>
-<script src="js/20-data.js?v=27.19.4"></script>
-<script src="js/30-calendar.js?v=27.19.4"></script>
-<script src="js/35-today.js?v=27.19.4"></script>
-<script src="js/37-calendar-experience.js?v=27.19.4"></script>
-<script src="js/40-overtime.js?v=27.19.4"></script>
-<script src="js/50-tasks.js?v=27.19.4"></script>
-<script src="js/60-settings.js?v=27.19.4"></script>
-<script src="js/70-user-boot.js?v=27.19.4"></script>
+<script src="js/10-core.js?v=27.20.0"></script>
+<script src="js/12-ui-platform.js?v=27.20.0"></script>
+<script src="js/20-data.js?v=27.20.0"></script>
+<script src="js/30-calendar.js?v=27.20.0"></script>
+<script src="js/35-today.js?v=27.20.0"></script>
+<script src="js/37-calendar-experience.js?v=27.20.0"></script>
+<script src="js/40-overtime.js?v=27.20.0"></script>
+<script src="js/50-tasks.js?v=27.20.0"></script>
+<script src="js/60-settings.js?v=27.20.0"></script>
+<script src="js/70-user-boot.js?v=27.20.0"></script>
 </body>
 </html>
