@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.25.2.
+Status: v27.26.0.
 
 ## Local gate
 
@@ -82,6 +82,18 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - test the migration against the persistent staging database;
 - optionally reset staging and verify a clean V1..latest install.
 
+## v27.26.0 ledger smoke
+
+- create an overtime credit and record its available FIFO balance;
+- create an `OVERTIME_BANK` partial absence and confirm one locked `ABSENCE` usage appears;
+- edit the absence duration and confirm the same source usage is reallocated;
+- delete the absence and confirm the consumed minutes return;
+- verify manual usage edit/delete returns `LINKED_USAGE_MANAGED_BY_ABSENCE`;
+- create `UNPAID` and `SICK_PAY` absences and confirm they do not consume overtime;
+- verify `/api/time-compensation` reports planned, worked, earned, used, covered, vacation, sick and unpaid values;
+- verify V43 converted any legacy standalone balance into the oldest opening credit and left `day_entries` untouched.
+
+
 ## Production
 
 - merge the tested tree into `main`/`master` without additional changes;
@@ -105,6 +117,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.25.2 -m "v27.25.2 — Absence Preview Lambda Compile Hotfix"
-git push origin v27.25.2
+git tag -a v27.26.0 -m "v27.26.0 — Unified Time & Compensation Ledger"
+git push origin v27.26.0
 ```

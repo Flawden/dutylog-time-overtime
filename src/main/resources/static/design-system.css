@@ -2450,3 +2450,104 @@ html[data-shell="next"] .calendarAllDayItem.vacation {
   html[data-shell="next"] .cell .plannedShiftGhost,
   html[data-shell="next"] .cell .partialAbsenceBar { font-size: 7.5px; }
 }
+
+/* v27.26.0 — Unified Time & Compensation Ledger */
+html[data-shell="next"] .timeCompensationCard {
+  display: grid;
+  gap: 14px;
+  margin: 2px 0 16px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--ds-border-soft));
+  border-radius: 18px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 8%, var(--surface)), var(--surface));
+}
+html[data-shell="next"] .timeCompensationHead {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+html[data-shell="next"] .timeCompensationHead h3 { margin: 2px 0 0; font-size: 17px; }
+html[data-shell="next"] .timeCompensationHead > span {
+  color: var(--mut);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: right;
+}
+html[data-shell="next"] .timeCompensationMetrics {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+html[data-shell="next"] .timeCompensationMetrics > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--surface-raised, var(--panel2)) 90%, transparent);
+}
+html[data-shell="next"] .timeCompensationMetrics span { color: var(--mut); font-size: 10px; }
+html[data-shell="next"] .timeCompensationMetrics b { overflow: hidden; font-size: 17px; text-overflow: ellipsis; white-space: nowrap; }
+html[data-shell="next"] .timeCompensationDays { display: grid; gap: 7px; }
+html[data-shell="next"] .timeCompensationDays button {
+  display: grid;
+  grid-template-columns: minmax(92px, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 8px 10px;
+  border-color: var(--ds-border-soft);
+  background: color-mix(in srgb, var(--surface, var(--card)) 92%, transparent);
+  text-align: left;
+}
+html[data-shell="next"] .timeCompensationDays time { color: var(--mut); font-size: 11px; }
+html[data-shell="next"] .timeCompensationDays span { display: grid; min-width: 0; }
+html[data-shell="next"] .timeCompensationDays b,
+html[data-shell="next"] .timeCompensationDays small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html[data-shell="next"] .timeCompensationDays small { color: var(--mut); }
+html[data-shell="next"] .timeCompensationDays em { color: var(--accent); font-size: 11px; font-style: normal; font-weight: 800; }
+html[data-shell="next"] .timeCompensationEmpty { padding: 12px; color: var(--mut); text-align: center; }
+html[data-shell="next"] .overtimeLinkedUsage {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, var(--ds-border-soft));
+  border-radius: 999px;
+  color: var(--accent);
+  font-size: 9px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+html[data-shell="next"] .vacationLedgerBridge {
+  display: grid;
+  gap: 4px;
+  padding: 11px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, var(--ds-border-soft));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+html[data-shell="next"] .vacationLedgerBridge span { color: var(--mut); font-size: 11px; line-height: 1.4; }
+html[data-shell="next"] .vacationPreviewSource {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--accent) 9%, transparent);
+  font-size: 11px;
+}
+html[data-shell="next"] .vacationPreviewSource span { color: var(--mut); }
+
+@media (max-width: 900px) {
+  html[data-shell="next"] .timeCompensationMetrics { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 560px) {
+  html[data-shell="next"] .timeCompensationHead { display: grid; }
+  html[data-shell="next"] .timeCompensationHead > span { text-align: left; }
+  html[data-shell="next"] .timeCompensationDays button { grid-template-columns: 1fr auto; }
+  html[data-shell="next"] .timeCompensationDays time { grid-column: 1 / -1; }
+  html[data-shell="next"] .vacationLedgerBridge { grid-column: 1 / -1; }
+}

@@ -25,6 +25,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class VacationPlannerServiceTest {
 
     @Autowired VacationPlannerService planner;
+    @Autowired OvertimeService overtime;
+    @Autowired TimeCompensationService timeCompensation;
     @Autowired ShiftTypeService shiftTypes;
     @Autowired DayEntryRepository days;
     @Autowired AbsencePeriodRepository periods;
@@ -101,7 +103,8 @@ class VacationPlannerServiceTest {
 
     @Test
     void partialTimeOffChargesHoursPreservesShiftAndAllowsSeparateWindows() {
-        planner.updateSettings(owner, new VacationSettingsUpdateRequest(28, 0, "CALENDAR_DAYS", 1, 1, 8.0, 8.0));
+        planner.updateSettings(owner, new VacationSettingsUpdateRequest(28, 0, "CALENDAR_DAYS", 1, 1, 0.0, 8.0));
+        earnOvertime(8.0);
         AbsenceTypeDto timeOff = planner.types(owner).stream()
                 .filter(type -> "TIME_OFF".equals(type.systemCode())).findFirst().orElseThrow();
         DayEntry shift = new DayEntry(owner, LocalDate.parse("2026-08-06"));
@@ -127,7 +130,7 @@ class VacationPlannerServiceTest {
         ApiException overBalance = assertThrows(ApiException.class, () -> planner.createPeriod(owner,
                 new AbsencePeriodCreateRequest(timeOff.id(), null, "2026-08-07", "2026-08-07", null, null,
                         "PARTIAL", "09:00", "12:00")));
-        assertEquals("TIME_OFF_LIMIT_EXCEEDED", overBalance.getCode());
+        assertEquals("OVERTIME_BALANCE_EXCEEDED", overBalance.getCode());
     }
 
     @Test
@@ -137,7 +140,8 @@ class VacationPlannerServiceTest {
         DayEntry shift = new DayEntry(owner, LocalDate.parse("2026-08-08"));
         shift.setShiftType(shiftTypes.requireOwnedShiftType(owner, shifts.get("Дневная")));
         days.saveAndFlush(shift);
-        planner.updateSettings(owner, new VacationSettingsUpdateRequest(28, 0, "CALENDAR_DAYS", 1, 1, 24.0, 8.0));
+        planner.updateSettings(owner, new VacationSettingsUpdateRequest(28, 0, "CALENDAR_DAYS", 1, 1, 0.0, 8.0));
+        earnOvertime(24.0);
 
         AbsencePeriodDto created = planner.createPeriod(owner, new AbsencePeriodCreateRequest(
                 timeOff.id(), "Полный отгул", "2026-08-08", "2026-08-08", "APPROVED", null,
@@ -148,6 +152,82 @@ class VacationPlannerServiceTest {
         assertEquals(occurrence.plannedShiftMinutes(), created.chargedMinutes());
         assertEquals("Дневная", occurrence.plannedShiftName());
         assertNotNull(days.findByOwnerAndDate(owner, LocalDate.parse("2026-08-08")).orElseThrow().getShiftType());
+    }
+
+    @Test
+    void overtimeCoveredAbsenceCreatesLockedUsageAndDeleteRestoresFifoBalance() {
+        earnOvertime(12.0);
+        AbsenceTypeDto timeOff = planner.types(owner).stream()
+                .filter(type -> "TIME_OFF".equals(type.systemCode())).findFirst().orElseThrow();
+
+        AbsencePeriodDto created = planner.createPeriod(owner, new AbsencePeriodCreateRequest(
+                timeOff.id(), "Отгул за переработку", "2026-08-06", "2026-08-06", "APPROVED", null,
+                "PARTIAL", "09:00", "13:00", "OVERTIME_BANK"));
+
+        assertEquals("OVERTIME_BANK", created.compensationPolicy());
+        assertEquals(240, created.compensatedMinutes());
+        assertNotNull(created.linkedOvertimeUsageId());
+        var linked = overtime.account(owner).usages().stream()
+                .filter(usage -> usage.id().equals(created.linkedOvertimeUsageId())).findFirst().orElseThrow();
+        assertEquals("ABSENCE", linked.sourceKind());
+        assertEquals(created.id(), linked.sourceAbsenceId());
+        assertFalse(linked.editable());
+        assertEquals(8.0, overtime.account(owner).balanceHours(), 0.001);
+
+        AbsencePeriodDto shortened = planner.updatePeriod(owner, created.id(), new AbsencePeriodUpdateRequest(
+                null, null, null, null, null, null, null, null,
+                "PARTIAL", "09:00", "11:00", false, "OVERTIME_BANK"));
+        assertEquals(created.linkedOvertimeUsageId(), shortened.linkedOvertimeUsageId());
+        assertEquals(120, shortened.compensatedMinutes());
+        assertEquals(10.0, overtime.account(owner).balanceHours(), 0.001);
+
+        ApiException directEdit = assertThrows(ApiException.class, () -> overtime.updateUsage(owner,
+                linked.id(), new OvertimeUsageUpdateRequest(null, 1.0, null)));
+        assertEquals("LINKED_USAGE_MANAGED_BY_ABSENCE", directEdit.getCode());
+        ApiException directDelete = assertThrows(ApiException.class, () -> overtime.deleteUsage(owner, linked.id()));
+        assertEquals("LINKED_USAGE_MANAGED_BY_ABSENCE", directDelete.getCode());
+
+        planner.deletePeriod(owner, created.id());
+        assertEquals(12.0, overtime.account(owner).balanceHours(), 0.001);
+        assertTrue(overtime.account(owner).usages().stream().noneMatch(usage -> usage.id().equals(linked.id())));
+    }
+
+    @Test
+    void unifiedMonthlyReadModelJoinsPlanFactOvertimeAndUnpaidTime() {
+        DayEntry firstShift = new DayEntry(owner, LocalDate.parse("2026-08-06"));
+        firstShift.setShiftType(shiftTypes.requireOwnedShiftType(owner, shifts.get("Дневная")));
+        days.saveAndFlush(firstShift);
+        DayEntry secondShift = new DayEntry(owner, LocalDate.parse("2026-08-07"));
+        secondShift.setShiftType(shiftTypes.requireOwnedShiftType(owner, shifts.get("Дневная")));
+        days.saveAndFlush(secondShift);
+        overtime.createCredit(owner, new OvertimeCreditCreateRequest(
+                "2026-08-05", null, null, null, null, null, 8.0, "Переработка"));
+
+        AbsenceTypeDto timeOff = planner.types(owner).stream()
+                .filter(type -> "TIME_OFF".equals(type.systemCode())).findFirst().orElseThrow();
+        AbsenceTypeDto unpaid = planner.types(owner).stream()
+                .filter(type -> "UNPAID".equals(type.systemCode())).findFirst().orElseThrow();
+        planner.createPeriod(owner, new AbsencePeriodCreateRequest(
+                timeOff.id(), "Отгул", "2026-08-06", "2026-08-06", "APPROVED", null,
+                "PARTIAL", "09:00", "13:00", "OVERTIME_BANK"));
+        planner.createPeriod(owner, new AbsencePeriodCreateRequest(
+                unpaid.id(), "Без содержания", "2026-08-07", "2026-08-07", "APPROVED", null,
+                "FULL_DAY", null, null, "UNPAID"));
+
+        TimeCompensationSummaryDto summary = timeCompensation.summary(
+                owner, LocalDate.parse("2026-08-01"), LocalDate.parse("2026-08-31"));
+
+        assertEquals(480, summary.overtimeEarnedMinutes());
+        assertEquals(240, summary.overtimeUsedMinutes());
+        assertEquals(240, summary.compensatedMinutes());
+        assertTrue(summary.plannedMinutes() > summary.unpaidMinutes());
+        assertTrue(summary.unpaidMinutes() > 0);
+        assertEquals(summary.plannedMinutes() - summary.absenceMinutes() + summary.overtimeEarnedMinutes(),
+                summary.workedMinutes());
+        assertTrue(summary.days().stream().anyMatch(day ->
+                "2026-08-06".equals(day.date()) && day.compensationLabel().contains("банка переработок")));
+        assertTrue(summary.days().stream().anyMatch(day ->
+                "2026-08-07".equals(day.date()) && day.unpaidMinutes() > 0));
     }
 
     @Test
@@ -266,6 +346,11 @@ class VacationPlannerServiceTest {
         assertBadRequest(() -> planner.createPeriod(owner,
                 new AbsencePeriodCreateRequest(vacation.id(), null, "2026-01-01", "2027-02-06", null, null)));
         assertTrue(periods.findAll().isEmpty());
+    }
+
+    private void earnOvertime(double hours) {
+        overtime.createCredit(owner, new OvertimeCreditCreateRequest(
+                "2026-07-01", null, null, null, null, null, hours, "Заранее отработанное время"));
     }
 
     private AbsenceTypeDto vacationType(AppUser user) {

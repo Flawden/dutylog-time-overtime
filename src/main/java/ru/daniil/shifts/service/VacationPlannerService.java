@@ -29,6 +29,11 @@ public class VacationPlannerService {
     public static final String NO_BALANCE = "NONE";
     public static final String FULL_DAY = "FULL_DAY";
     public static final String PARTIAL = "PARTIAL";
+    public static final String VACATION_ALLOWANCE = "VACATION_ALLOWANCE";
+    public static final String OVERTIME_BANK = "OVERTIME_BANK";
+    public static final String SICK_PAY = "SICK_PAY";
+    public static final String UNPAID = "UNPAID";
+    public static final String NO_COMPENSATION = "NONE";
 
     private final VacationSettingsRepository settingsRepository;
     private final AbsenceTypeRepository typeRepository;
@@ -37,6 +42,7 @@ public class VacationPlannerService {
     private final DayEntryService dayEntryService;
     private final UserTimeService userTimeService;
     private final SecurityEventLogger securityEvents;
+    private final OvertimeService overtimeService;
 
     public VacationPlannerService(VacationSettingsRepository settingsRepository,
                                   AbsenceTypeRepository typeRepository,
@@ -44,7 +50,8 @@ public class VacationPlannerService {
                                   DayEntryRepository dayRepository,
                                   DayEntryService dayEntryService,
                                   UserTimeService userTimeService,
-                                  SecurityEventLogger securityEvents) {
+                                  SecurityEventLogger securityEvents,
+                                  OvertimeService overtimeService) {
         this.settingsRepository = settingsRepository;
         this.typeRepository = typeRepository;
         this.periodRepository = periodRepository;
@@ -52,6 +59,7 @@ public class VacationPlannerService {
         this.dayEntryService = dayEntryService;
         this.userTimeService = userTimeService;
         this.securityEvents = securityEvents;
+        this.overtimeService = overtimeService;
     }
 
     @Transactional
@@ -86,7 +94,8 @@ public class VacationPlannerService {
         if (req.countMode() != null) settings.setCountMode(normalizeCountMode(req.countMode()));
         if (req.workYearStartMonth() != null) settings.setWorkYearStartMonth(req.workYearStartMonth());
         if (req.workYearStartDay() != null) settings.setWorkYearStartDay(req.workYearStartDay());
-        if (req.timeOffBalanceHours() != null) settings.setTimeOffBalanceMinutes(hoursToMinutes(req.timeOffBalanceHours()));
+        // v27.26: the canonical compensatory balance lives in the overtime ledger.
+        // Keep the deprecated request field wire-compatible, but never recreate a parallel mutable balance.
         if (req.defaultTimeOffDayHours() != null) settings.setDefaultTimeOffDayMinutes(hoursToMinutes(req.defaultTimeOffDayHours()));
         validateSettings(settings);
         validateAllStoredBalances(user, settings);
@@ -166,7 +175,8 @@ public class VacationPlannerService {
         ensureDefaultTypes(user);
         AbsenceType type = requireOwnedType(user, req.typeId());
         AbsenceShape shape = parseShape(req.startDate(), req.endDate(), req.coverage(), req.startTime(), req.endTime());
-        return buildPreview(user, settings, type, shape, req.excludePeriodId());
+        String compensationPolicy = resolveCompensationPolicy(type, req.compensationPolicy(), null);
+        return buildPreview(user, settings, type, shape, req.excludePeriodId(), compensationPolicy);
     }
 
     @Transactional
@@ -177,17 +187,22 @@ public class VacationPlannerService {
         AbsenceType type = requireOwnedType(user, req.typeId());
         AbsenceShape shape = parseShape(req.startDate(), req.endDate(), req.coverage(), req.startTime(), req.endTime());
         validateNoOverlap(user, shape, null);
-        int chargedMinutes = calculateChargedMinutes(user, settings, type, shape);
-        validateBalances(user, settings, type, shape.range(), chargedMinutes, null);
+        String compensationPolicy = resolveCompensationPolicy(type, req.compensationPolicy(), null);
+        int chargedMinutes = calculateChargedMinutes(user, settings, type, shape, compensationPolicy);
+        validateBalances(user, settings, type, shape.range(), chargedMinutes, null, compensationPolicy);
 
         AbsencePeriod period = new AbsencePeriod(user);
         period.setType(type);
         period.setTitle(normalizeOptional(req.title()));
         applyShape(period, shape);
         period.setChargedMinutes(chargedMinutes);
+        period.setCompensationPolicy(compensationPolicy);
+        period.setCompensatedMinutes(OVERTIME_BANK.equals(compensationPolicy) ? chargedMinutes : 0);
         period.setStatus(normalizeStatus(req.status()));
         period.setNote(normalizeOptional(req.note()));
-        return toPeriodDto(settings, periodRepository.saveAndFlush(period));
+        period = periodRepository.saveAndFlush(period);
+        syncLinkedOvertimeUsage(user, period);
+        return toPeriodDto(settings, period);
     }
 
     @Transactional
@@ -205,23 +220,31 @@ public class VacationPlannerService {
                 : req.endTime() != null ? req.endTime() : timeString(period.getEndTime());
         AbsenceShape shape = parseShape(start, end, coverage, startTime, endTime);
         validateNoOverlap(user, shape, id);
-        int chargedMinutes = calculateChargedMinutes(user, settings, type, shape);
-        validateBalances(user, settings, type, shape.range(), chargedMinutes, id);
+        String compensationPolicy = resolveCompensationPolicy(type, req.compensationPolicy(),
+                req.typeId() == null ? period.getCompensationPolicy() : null);
+        int chargedMinutes = calculateChargedMinutes(user, settings, type, shape, compensationPolicy);
+        validateBalances(user, settings, type, shape.range(), chargedMinutes, id, compensationPolicy);
 
         period.setType(type);
         applyShape(period, shape);
         period.setChargedMinutes(chargedMinutes);
+        period.setCompensationPolicy(compensationPolicy);
+        period.setCompensatedMinutes(OVERTIME_BANK.equals(compensationPolicy) ? chargedMinutes : 0);
         if (Boolean.TRUE.equals(req.clearTitle())) period.setTitle(null);
         else if (req.title() != null) period.setTitle(normalizeOptional(req.title()));
         if (Boolean.TRUE.equals(req.clearNote())) period.setNote(null);
         else if (req.note() != null) period.setNote(normalizeOptional(req.note()));
         if (req.status() != null) period.setStatus(normalizeStatus(req.status()));
-        return toPeriodDto(settings, periodRepository.saveAndFlush(period));
+        period = periodRepository.saveAndFlush(period);
+        syncLinkedOvertimeUsage(user, period);
+        return toPeriodDto(settings, period);
     }
 
     @Transactional
     public void deletePeriod(AppUser user, Long id) {
-        periodRepository.delete(requireOwnedPeriod(user, id));
+        AbsencePeriod period = requireOwnedPeriod(user, id);
+        overtimeService.deleteLinkedAbsenceUsage(user, period.getId());
+        periodRepository.delete(period);
     }
 
     @Transactional
@@ -247,7 +270,9 @@ public class VacationPlannerService {
                         period.getStatus(), VACATION_DAYS.equals(type.getBalancePolicy()) && countedByMode(settings, date),
                         plan != null, type.getBalancePolicy(), period.getCoverage(), timeString(period.getStartTime()),
                         timeString(period.getEndTime()), period.getChargedMinutes(), replaces,
-                        plan == null ? null : plan.name(), plan == null ? null : plan.color(), plan == null ? 0 : plan.minutes()
+                        plan == null ? null : plan.name(), plan == null ? null : plan.color(), plan == null ? 0 : plan.minutes(),
+                        period.getCompensationPolicy(), period.getCompensatedMinutes(),
+                        overtimeService.linkedUsageId(user, period.getId())
                 ));
             }
         }
@@ -294,7 +319,8 @@ public class VacationPlannerService {
     }
 
     private AbsencePreviewDto buildPreview(AppUser user, VacationSettings settings, AbsenceType type,
-                                            AbsenceShape shape, Long excludePeriodId) {
+                                            AbsenceShape shape, Long excludePeriodId,
+                                            String compensationPolicy) {
         DateRange range = shape.range();
         List<AbsencePeriod> overlaps = overlappingPeriods(user, shape, excludePeriodId);
         Map<LocalDate, ShiftPlan> plans = shiftPlans(user, range.from(), range.to());
@@ -318,12 +344,14 @@ public class VacationPlannerService {
         }
 
         AllowanceProjection critical = mostConstrainedProjection(user, settings, type, range, excludePeriodId);
-        int charged = calculateChargedMinutes(user, settings, type, shape);
-        int timeOffBefore = timeOffPlannedMinutes(user, excludePeriodId);
-        int timeOffProjected = timeOffBefore + (TIME_OFF_HOURS.equals(type.getBalancePolicy()) ? charged : 0);
-        int timeOffRemaining = settings.getTimeOffBalanceMinutes() - timeOffProjected;
+        int charged = calculateChargedMinutes(user, settings, type, shape, compensationPolicy);
+        int timeOffAvailable = overtimeService.totalEarnedMinutes(user);
+        int editableCapacity = overtimeService.availableMinutesForAbsence(user, excludePeriodId);
+        int timeOffBefore = timeOffAvailable - editableCapacity;
+        int timeOffProjected = timeOffBefore + (OVERTIME_BANK.equals(compensationPolicy) ? charged : 0);
+        int timeOffRemaining = timeOffAvailable - timeOffProjected;
         boolean vacationExceeded = VACATION_DAYS.equals(type.getBalancePolicy()) && critical.remaining() < 0;
-        boolean timeOffExceeded = TIME_OFF_HOURS.equals(type.getBalancePolicy()) && timeOffRemaining < 0;
+        boolean timeOffExceeded = OVERTIME_BANK.equals(compensationPolicy) && timeOffRemaining < 0;
         boolean exceeded = vacationExceeded || timeOffExceeded;
         int exceededBy = vacationExceeded ? Math.max(0, -critical.remaining()) : Math.max(0, -timeOffRemaining);
         return new AbsencePreviewDto(
@@ -331,7 +359,7 @@ public class VacationPlannerService {
                 shiftConflicts, overlaps.size(), critical.year().start().toString(), critical.year().end().toString(),
                 critical.available(), critical.plannedBefore(), critical.projected(), critical.remaining(),
                 exceeded, exceededBy, items, type.getBalancePolicy(), shape.coverage(), charged,
-                settings.getTimeOffBalanceMinutes(), timeOffBefore, timeOffProjected, timeOffRemaining
+                timeOffAvailable, timeOffBefore, timeOffProjected, timeOffRemaining, compensationPolicy
         );
     }
 
@@ -339,11 +367,12 @@ public class VacationPlannerService {
         WorkYear year = workYearContaining(settings, reference);
         int available = settings.getAnnualAllowanceDays() + settings.getCarryoverDays();
         int planned = plannedDays(user, settings, year, excludePeriodId);
-        int timeOffPlanned = timeOffPlannedMinutes(user, excludePeriodId);
+        int timeOffAvailable = overtimeService.totalEarnedMinutes(user);
+        int timeOffUsed = overtimeService.totalUsedMinutes(user);
         return new VacationSummaryDto(year.start().toString(), year.end().toString(),
                 settings.getAnnualAllowanceDays(), settings.getCarryoverDays(), available, planned,
-                available - planned, settings.getCountMode(), settings.getTimeOffBalanceMinutes(),
-                timeOffPlanned, settings.getTimeOffBalanceMinutes() - timeOffPlanned);
+                available - planned, settings.getCountMode(), timeOffAvailable,
+                timeOffUsed, Math.max(0, timeOffAvailable - timeOffUsed));
     }
 
     private AllowanceProjection mostConstrainedProjection(AppUser user, VacationSettings settings, AbsenceType type,
@@ -382,9 +411,6 @@ public class VacationPlannerService {
 
     private void validateAllStoredBalances(AppUser user, VacationSettings settings) {
         validateAllStoredWorkYears(user, settings);
-        if (timeOffPlannedMinutes(user, null) > settings.getTimeOffBalanceMinutes()) {
-            throw ApiException.conflict("TIME_OFF_LIMIT_EXCEEDED", "Новый баланс отгулов меньше уже запланированного расхода");
-        }
     }
 
     /** Keeps the original vacation work-year invariant as a named contract while V42 adds hour balances. */
@@ -409,7 +435,8 @@ public class VacationPlannerService {
     }
 
     private void validateBalances(AppUser user, VacationSettings settings, AbsenceType type,
-                                  DateRange requested, int chargedMinutes, Long excludePeriodId) {
+                                  DateRange requested, int chargedMinutes, Long excludePeriodId,
+                                  String compensationPolicy) {
         if (VACATION_DAYS.equals(type.getBalancePolicy())) {
             WorkYear year = workYearContaining(settings, requested.from());
             while (!year.start().isAfter(requested.to())) {
@@ -425,11 +452,12 @@ public class VacationPlannerService {
                 year = new WorkYear(year.start().plusYears(1), year.end().plusYears(1));
             }
         }
-        if (TIME_OFF_HOURS.equals(type.getBalancePolicy())) {
-            int projected = timeOffPlannedMinutes(user, excludePeriodId) + chargedMinutes;
-            if (projected > settings.getTimeOffBalanceMinutes()) {
-                throw ApiException.conflict("TIME_OFF_LIMIT_EXCEEDED",
-                        "Недостаточно часов отгула: превышение на " + (projected - settings.getTimeOffBalanceMinutes()) + " мин.");
+        if (OVERTIME_BANK.equals(compensationPolicy)) {
+            int available = overtimeService.availableMinutesForAbsence(user, excludePeriodId);
+            if (chargedMinutes > available) {
+                throw ApiException.conflict("OVERTIME_BALANCE_EXCEEDED",
+                        "Недостаточно ранее заработанного времени: доступно " + available
+                                + " мин., требуется " + chargedMinutes + " мин.");
             }
         }
     }
@@ -473,7 +501,9 @@ public class VacationPlannerService {
                 period.getCreatedAt() == null ? null : period.getCreatedAt().toString(),
                 period.getUpdatedAt() == null ? null : period.getUpdatedAt().toString(),
                 type.getBalancePolicy(), period.getCoverage(), timeString(period.getStartTime()), timeString(period.getEndTime()),
-                period.getChargedMinutes(), FULL_DAY.equals(period.getCoverage()) && type.isFullDayReplacesShift()
+                period.getChargedMinutes(), FULL_DAY.equals(period.getCoverage()) && type.isFullDayReplacesShift(),
+                period.getCompensationPolicy(), period.getCompensatedMinutes(),
+                overtimeService.linkedUsageId(period.getOwner(), period.getId())
         );
     }
 
@@ -489,8 +519,56 @@ public class VacationPlannerService {
         return plans;
     }
 
-    private int calculateChargedMinutes(AppUser user, VacationSettings settings, AbsenceType type, AbsenceShape shape) {
-        if (!TIME_OFF_HOURS.equals(type.getBalancePolicy())) return 0;
+    private String resolveCompensationPolicy(AbsenceType type, String requested, String current) {
+        String policy = requested == null || requested.isBlank()
+                ? (current == null || current.isBlank() ? defaultCompensationPolicy(type) : current)
+                : requested.trim().toUpperCase(Locale.ROOT);
+        Set<String> allowed = Set.of(VACATION_ALLOWANCE, OVERTIME_BANK, SICK_PAY, UNPAID, NO_COMPENSATION);
+        if (!allowed.contains(policy)) throw ApiException.badRequest("Некорректный источник компенсации");
+        if (VACATION_DAYS.equals(type.getBalancePolicy()) && !VACATION_ALLOWANCE.equals(policy)) {
+            throw ApiException.badRequest("Оплачиваемый отпуск покрывается только отпускным балансом");
+        }
+        if (TIME_OFF_HOURS.equals(type.getBalancePolicy()) && !OVERTIME_BANK.equals(policy)) {
+            throw ApiException.badRequest("Отгул за ранее отработанное время покрывается только банком переработок");
+        }
+        if (VACATION_ALLOWANCE.equals(policy) && !VACATION_DAYS.equals(type.getBalancePolicy())) {
+            throw ApiException.badRequest("Отпускной баланс доступен только отпускным типам");
+        }
+        if ("SICK".equals(type.getSystemCode()) && !SICK_PAY.equals(policy)) {
+            throw ApiException.badRequest("Больничный использует больничную политику оплаты");
+        }
+        if ("UNPAID".equals(type.getSystemCode()) && !UNPAID.equals(policy)) {
+            throw ApiException.badRequest("Отсутствие без содержания должно оставаться неоплачиваемым");
+        }
+        return policy;
+    }
+
+    private String defaultCompensationPolicy(AbsenceType type) {
+        if (VACATION_DAYS.equals(type.getBalancePolicy())) return VACATION_ALLOWANCE;
+        if (TIME_OFF_HOURS.equals(type.getBalancePolicy())) return OVERTIME_BANK;
+        if ("SICK".equals(type.getSystemCode())) return SICK_PAY;
+        if ("UNPAID".equals(type.getSystemCode())) return UNPAID;
+        return NO_COMPENSATION;
+    }
+
+    private void syncLinkedOvertimeUsage(AppUser user, AbsencePeriod period) {
+        if (OVERTIME_BANK.equals(period.getCompensationPolicy())) {
+            Long usageId = overtimeService.upsertLinkedAbsenceUsage(
+                    user,
+                    period.getId(),
+                    period.getStartDate(),
+                    period.getCompensatedMinutes(),
+                    "Отгул: " + displayTitle(period)
+            );
+            if (usageId == null) throw new IllegalStateException("Linked overtime usage was not created");
+        } else {
+            overtimeService.deleteLinkedAbsenceUsage(user, period.getId());
+        }
+    }
+
+    private int calculateChargedMinutes(AppUser user, VacationSettings settings, AbsenceType type, AbsenceShape shape,
+                                        String compensationPolicy) {
+        if (!OVERTIME_BANK.equals(compensationPolicy)) return 0;
         if (PARTIAL.equals(shape.coverage())) {
             return Math.toIntExact(Duration.between(shape.startTime(), shape.endTime()).toMinutes());
         }

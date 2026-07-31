@@ -1,3 +1,13 @@
+# v27.26.0 — Unified Time & Compensation Ledger
+
+- Unified planned shifts, factual absences and compensation sources into one minute-authoritative read model.
+- Time off covered by previously worked hours now creates one absence-owned FIFO overtime usage; editing reallocates it and deleting the absence restores the balance.
+- Added explicit `VACATION_ALLOWANCE`, `OVERTIME_BANK`, `SICK_PAY`, `UNPAID` and `NONE` compensation policies without deleting planned shifts.
+- Added `/api/time-compensation` and `/api/v1/time-compensation`, a monthly Plan → Fact → Compensation UI, linked-usage locks and owner-scoped no-store responses.
+- Flyway V43 converts the legacy standalone time-off balance to the oldest opening overtime credit and links existing time-off absences without changing `day_entries`.
+- The deprecated settings balance remains wire-compatible but is no longer mutable authority; salary calculation is intentionally deferred to Payroll Foundation.
+- Regression baseline advances to 110 Java test classes, 590 `@Test` methods and 35 Playwright scenarios.
+
 # v27.25.2 — Absence Experience Frontend Contract Hotfix
 
 - Aligned the Vacation Planner frontend contract with the accepted v27.25.0 plan/fact calendar composition.

@@ -1,15 +1,25 @@
 # DutyLog regression test baseline
 
-Status: v27.25.2.
+Status: v27.26.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.25.2 aligns the Vacation Planner frontend contract with the accepted bounded Week agenda and separate partial/full-day plan/fact composition. Production runtime remains unchanged. Current application baseline is 109 Java test classes / 581 `@Test` methods / 34 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.26.0 unifies planned shifts, factual absences and compensation movements. Absence-owned overtime usages are FIFO allocated and reversible; the current application baseline is 110 Java test classes / 590 `@Test` methods / 35 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+
+## v27.26.0 Unified Time & Compensation Ledger extension
+
+- V43 migration/opening-credit/source-link contracts.
+- Linked overtime usage lifecycle and manual mutation guards.
+- Vacation Planner compensation-policy and canonical-bank integration.
+- Plan → Fact → Compensation service/controller/OpenAPI contracts.
+- Monthly unified frontend and locked linked-usage surface.
+- Browser flow covering credit → linked time off → unpaid absence → deletion/restored balance.
 
 ## v27.25.2 Absence Experience Frontend Contract Hotfix extension
 

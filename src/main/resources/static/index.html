@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.25.2"></script>
-<link href="app.css?v=27.25.2" rel="stylesheet"/>
-<link href="design-system.css?v=27.25.2" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.25.2" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.25.2" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.25.2" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.25.2" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.25.2" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.25.2" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.25.2" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.25.2" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.25.2" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.26.0"></script>
+<link href="app.css?v=27.26.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.26.0" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.26.0" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.26.0" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.26.0" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.26.0" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.26.0" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.26.0" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.26.0" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.26.0" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.26.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -360,7 +360,7 @@
     <div class="overtimeHeroIntro">
       <div class="eyebrow">Учёт переработок</div>
       <h2 id="overtimeWorkspaceTitle">Баланс времени</h2>
-      <p>Начисления сохраняются до полного списания. Отгулы автоматически берут часы из самых старых доступных остатков.</p>
+      <p>Смены, отсутствия и переработки связаны одним журналом: отгул за ранее отработанное время автоматически списывает самый старый доступный остаток.</p>
     </div>
     <div class="overtimeBalanceCard">
       <span>Доступно сейчас</span>
@@ -391,6 +391,24 @@
       <small id="ledgerFifoHint">FIFO: сначала используется самый старый остаток</small>
     </article>
   </div>
+
+  <section class="timeCompensationCard" id="timeCompensationCard" aria-labelledby="timeCompensationTitle">
+    <div class="timeCompensationHead">
+      <div><div class="eyebrow">План → факт → компенсация</div><h3 id="timeCompensationTitle">Единая сводка месяца</h3></div>
+      <span id="timeCompensationRange">—</span>
+    </div>
+    <div class="timeCompensationMetrics">
+      <div><span>По графику</span><b id="timeCompPlanned">—</b></div>
+      <div><span>Фактически</span><b id="timeCompWorked">—</b></div>
+      <div><span>Переработка начислена</span><b id="timeCompEarned">—</b></div>
+      <div><span>Использовано как отгул</span><b id="timeCompUsed">—</b></div>
+      <div><span>Отпуск</span><b id="timeCompVacation">—</b></div>
+      <div><span>Больничный</span><b id="timeCompSick">—</b></div>
+      <div><span>Без содержания</span><b id="timeCompUnpaid">—</b></div>
+      <div><span>Покрыто балансами</span><b id="timeCompCovered">—</b></div>
+    </div>
+    <div class="timeCompensationDays" id="timeCompDays"></div>
+  </section>
 
   <div class="ledgerPrimaryActions">
     <button class="primary" id="ledgerAddCredit" type="button">+ Начислить</button>
@@ -524,7 +542,7 @@
       <div>
         <div class="eyebrow">Vacation Planner</div>
         <h2>Отпуск и отсутствия</h2>
-        <p>Отдельный слой календаря: отпуск не считается рабочей сменой и не влияет на FIFO переработок.</p>
+        <p>Плановая смена сохраняется, а фактическое отсутствие получает источник покрытия: отпускной баланс, банк переработок, больничная политика или отсутствие без содержания.</p>
       </div>
       <div class="vacationWorkYear" id="vacationWorkYear">—</div>
     </div>
@@ -551,6 +569,15 @@
         </label>
         <label>Формат
           <select id="vacationCoverage"><option value="FULL_DAY">Полный день</option><option value="PARTIAL">Часть дня</option></select>
+        </label>
+        <label>Чем покрыть
+          <select id="vacationCompensation">
+            <option value="VACATION_ALLOWANCE">Отпускной баланс</option>
+            <option value="OVERTIME_BANK">Банк переработок</option>
+            <option value="SICK_PAY">Больничная политика</option>
+            <option value="UNPAID">Без содержания</option>
+            <option value="NONE">Без покрытия</option>
+          </select>
         </label>
         <label class="vacationWide">Название
           <input id="vacationTitle" maxlength="120" placeholder="Например: основной отпуск"/>
@@ -602,7 +629,8 @@
         <label>Перенос, дней<input id="vacationCarryover" type="number" min="0" max="366" required/></label>
         <label>Считать дни<select id="vacationCountMode"><option value="CALENDAR_DAYS">Календарные дни</option><option value="WEEKDAYS">Пн–Пт</option></select></label>
         <label>Начало рабочего года<input id="vacationWorkYearStart" type="date" value="2026-01-01"/></label>
-        <label>Баланс отгулов, часов<input id="timeOffBalanceHours" type="number" min="0" max="10000" step="0.25" value="0"/></label>
+        <input id="timeOffBalanceHours" type="hidden" value="0"/>
+        <div class="vacationLedgerBridge"><b>Отгулы используют банк переработок</b><span>Начисления и списания хранятся в едином FIFO-журнале. Отдельный ручной баланс больше не применяется.</span></div>
         <label>Полный отгул без смены, часов<input id="defaultTimeOffDayHours" type="number" min="0.25" max="24" step="0.25" value="8"/></label>
         <button class="primary" type="submit">Сохранить правила</button>
       </form>
@@ -1173,7 +1201,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.25.2</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.26.0</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1786,18 +1814,18 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.25.2"></script>
-<script src="js/12-ui-platform.js?v=27.25.2"></script>
-<script src="js/20-data.js?v=27.25.2"></script>
-<script src="js/30-calendar.js?v=27.25.2"></script>
-<script src="js/35-today.js?v=27.25.2"></script>
-<script src="js/37-calendar-experience.js?v=27.25.2"></script>
-<script src="js/38-schedule-layers.js?v=27.25.2"></script>
-<script src="js/39-vacation-planner.js?v=27.25.2"></script>
-<script src="js/40-overtime.js?v=27.25.2"></script>
-<script src="js/50-tasks.js?v=27.25.2"></script>
-<script src="js/55-calendar-sync.js?v=27.25.2"></script>
-<script src="js/60-settings.js?v=27.25.2"></script>
-<script src="js/70-user-boot.js?v=27.25.2"></script>
+<script src="js/10-core.js?v=27.26.0"></script>
+<script src="js/12-ui-platform.js?v=27.26.0"></script>
+<script src="js/20-data.js?v=27.26.0"></script>
+<script src="js/30-calendar.js?v=27.26.0"></script>
+<script src="js/35-today.js?v=27.26.0"></script>
+<script src="js/37-calendar-experience.js?v=27.26.0"></script>
+<script src="js/38-schedule-layers.js?v=27.26.0"></script>
+<script src="js/39-vacation-planner.js?v=27.26.0"></script>
+<script src="js/40-overtime.js?v=27.26.0"></script>
+<script src="js/50-tasks.js?v=27.26.0"></script>
+<script src="js/55-calendar-sync.js?v=27.26.0"></script>
+<script src="js/60-settings.js?v=27.26.0"></script>
+<script src="js/70-user-boot.js?v=27.26.0"></script>
 </body>
 </html>

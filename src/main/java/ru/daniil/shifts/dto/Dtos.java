@@ -1933,11 +1933,20 @@ public final class Dtos {
             double hours,
             String reason,
             List<OvertimeAllocationDto> allocations,
-            int minutes
+            int minutes,
+            String sourceKind,
+            Long sourceAbsenceId,
+            boolean editable
     ) {
         public OvertimeUsageDto(Long id, String usageDate, double hours, String reason,
                                 List<OvertimeAllocationDto> allocations) {
-            this(id, usageDate, hours, reason, allocations, (int) Math.round(hours * 60.0));
+            this(id, usageDate, hours, reason, allocations, (int) Math.round(hours * 60.0),
+                    "MANUAL", null, true);
+        }
+
+        public OvertimeUsageDto(Long id, String usageDate, double hours, String reason,
+                                List<OvertimeAllocationDto> allocations, int minutes) {
+            this(id, usageDate, hours, reason, allocations, minutes, "MANUAL", null, true);
         }
     }
 
@@ -2180,7 +2189,10 @@ public final class Dtos {
             String startTime,
             String endTime,
             int chargedMinutes,
-            boolean replacesShift
+            boolean replacesShift,
+            String compensationPolicy,
+            int compensatedMinutes,
+            Long linkedOvertimeUsageId
     ) {}
 
     public record AbsencePeriodCreateRequest(
@@ -2192,10 +2204,11 @@ public final class Dtos {
             @Size(max = 1000, message = "Комментарий: максимум 1000 символов") String note,
             @Pattern(regexp = "FULL_DAY|PARTIAL", message = "coverage: FULL_DAY или PARTIAL") String coverage,
             @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время начала должно быть в формате HH:mm") String startTime,
-            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время окончания должно быть в формате HH:mm") String endTime
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время окончания должно быть в формате HH:mm") String endTime,
+            @Pattern(regexp = "VACATION_ALLOWANCE|OVERTIME_BANK|SICK_PAY|UNPAID|NONE", message = "Некорректный источник компенсации") String compensationPolicy
     ) {
         public AbsencePeriodCreateRequest(Long typeId, String title, String startDate, String endDate, String status, String note) {
-            this(typeId, title, startDate, endDate, status, note, null, null, null);
+            this(typeId, title, startDate, endDate, status, note, null, null, null, null);
         }
     }
 
@@ -2211,11 +2224,12 @@ public final class Dtos {
             @Pattern(regexp = "FULL_DAY|PARTIAL", message = "coverage: FULL_DAY или PARTIAL") String coverage,
             String startTime,
             String endTime,
-            Boolean clearTimes
+            Boolean clearTimes,
+            @Pattern(regexp = "VACATION_ALLOWANCE|OVERTIME_BANK|SICK_PAY|UNPAID|NONE", message = "Некорректный источник компенсации") String compensationPolicy
     ) {
         public AbsencePeriodUpdateRequest(Long typeId, String title, String startDate, String endDate,
                                           String status, String note, Boolean clearTitle, Boolean clearNote) {
-            this(typeId, title, startDate, endDate, status, note, clearTitle, clearNote, null, null, null, null);
+            this(typeId, title, startDate, endDate, status, note, clearTitle, clearNote, null, null, null, null, null);
         }
     }
 
@@ -2226,10 +2240,11 @@ public final class Dtos {
             Long excludePeriodId,
             @Pattern(regexp = "FULL_DAY|PARTIAL", message = "coverage: FULL_DAY или PARTIAL") String coverage,
             String startTime,
-            String endTime
+            String endTime,
+            @Pattern(regexp = "VACATION_ALLOWANCE|OVERTIME_BANK|SICK_PAY|UNPAID|NONE", message = "Некорректный источник компенсации") String compensationPolicy
     ) {
         public AbsencePreviewRequest(Long typeId, String startDate, String endDate, Long excludePeriodId) {
-            this(typeId, startDate, endDate, excludePeriodId, null, null, null);
+            this(typeId, startDate, endDate, excludePeriodId, null, null, null, null);
         }
     }
 
@@ -2271,7 +2286,8 @@ public final class Dtos {
             int timeOffAvailableMinutes,
             int timeOffPlannedBefore,
             int timeOffProjected,
-            int timeOffRemainingAfter
+            int timeOffRemainingAfter,
+            String compensationPolicy
     ) {}
 
     /** One day-sized projection of an absence period into the calendar. */
@@ -2296,19 +2312,42 @@ public final class Dtos {
             boolean replacesShift,
             String plannedShiftName,
             String plannedShiftColor,
-            int plannedShiftMinutes
+            int plannedShiftMinutes,
+            String compensationPolicy,
+            int compensatedMinutes,
+            Long linkedOvertimeUsageId
     ) {
+        /** Source-compatible constructor for the v27.25 plan/fact projection. */
+        public AbsenceOccurrenceDto(Long periodId, Long typeId, String typeName, String typeColor, String systemCode,
+                                    String title, String date, String startDate, String endDate, String status,
+                                    boolean countedDay, boolean shiftConflict, String balancePolicy, String coverage,
+                                    String startTime, String endTime, int chargedMinutes, boolean replacesShift,
+                                    String plannedShiftName, String plannedShiftColor, int plannedShiftMinutes) {
+            this(periodId, typeId, typeName, typeColor, systemCode, title, date, startDate, endDate, status,
+                    countedDay, shiftConflict, balancePolicy, coverage, startTime, endTime, chargedMinutes,
+                    replacesShift, plannedShiftName, plannedShiftColor, plannedShiftMinutes,
+                    defaultCompensation(systemCode), 0, null);
+        }
+
         /** Source-compatible constructor for v27.23.x iCalendar tests and integrations. */
         public AbsenceOccurrenceDto(Long periodId, Long typeId, String typeName, String typeColor, String systemCode,
                                     String title, String date, String startDate, String endDate, String status,
                                     boolean countedDay, boolean shiftConflict) {
             this(periodId, typeId, typeName, typeColor, systemCode, title, date, startDate, endDate, status,
                     countedDay, shiftConflict, countsPolicy(systemCode), "FULL_DAY", null, null, 0, true,
-                    null, null, 0);
+                    null, null, 0, defaultCompensation(systemCode), 0, null);
         }
 
         private static String countsPolicy(String systemCode) {
             return "VACATION".equalsIgnoreCase(systemCode) ? "VACATION_DAYS" : "NONE";
+        }
+
+        private static String defaultCompensation(String systemCode) {
+            if ("VACATION".equalsIgnoreCase(systemCode)) return "VACATION_ALLOWANCE";
+            if ("TIME_OFF".equalsIgnoreCase(systemCode)) return "OVERTIME_BANK";
+            if ("SICK".equalsIgnoreCase(systemCode)) return "SICK_PAY";
+            if ("UNPAID".equalsIgnoreCase(systemCode)) return "UNPAID";
+            return "NONE";
         }
     }
 
@@ -2331,6 +2370,40 @@ public final class Dtos {
             List<AbsencePeriodDto> absences,
             List<AbsenceOccurrenceDto> occurrences,
             List<AbsenceTypeSummaryDto> typeSummaries
+    ) {}
+
+    /** One day in the unified plan → fact → compensation read model. */
+    public record TimeCompensationDayDto(
+            String date,
+            int plannedMinutes,
+            int workedMinutes,
+            int absenceMinutes,
+            int overtimeEarnedMinutes,
+            int overtimeUsedMinutes,
+            int compensatedMinutes,
+            int vacationDays,
+            int sickMinutes,
+            int unpaidMinutes,
+            String factLabel,
+            String compensationLabel,
+            List<Long> absenceIds
+    ) {}
+
+    /** Payroll-ready monthly foundation without applying money rules yet. */
+    public record TimeCompensationSummaryDto(
+            String from,
+            String to,
+            int plannedMinutes,
+            int workedMinutes,
+            int absenceMinutes,
+            int overtimeEarnedMinutes,
+            int overtimeUsedMinutes,
+            int overtimeBalanceMinutes,
+            int compensatedMinutes,
+            int vacationDays,
+            int sickMinutes,
+            int unpaidMinutes,
+            List<TimeCompensationDayDto> days
     ) {}
 
     /** Private read-only iCalendar subscription state. Raw tokens are returned only on issue/rotation. */

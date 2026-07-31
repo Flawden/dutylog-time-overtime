@@ -1,5 +1,12 @@
 # DutyLog architecture
 
+## Unified time and compensation ledger (v27.26.0)
+
+DutyLog separates three layers: planned schedule, factual state and compensation source. Existing overtime credits/usages/allocations are the canonical minute ledger. `OVERTIME_BANK` absences own one source-linked usage and cannot be independently mutated from the manual ledger. `TimeCompensationService` provides an owner-scoped monthly read model for Payroll Foundation; it contains time semantics only and intentionally no money formulas.
+
+Flyway V43 migrates the V42 standalone balance into an opening credit, links historical time-off absences and leaves planned `day_entries` unchanged. The deprecated settings field remains only for wire compatibility and is not writable authority.
+
+
 DutyLog построен как монолитное Spring Boot приложение. На текущем этапе это осознанный выбор: календарь, переработки, задачи, уведомления и Telegram используют общую модель пользователя и общую базу данных, поэтому отдельные сервисы добавили бы лишнюю сложность без практической пользы.
 
 ## Общая схема

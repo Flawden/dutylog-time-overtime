@@ -1,4 +1,16 @@
-# DutyLog API v27.25.2
+# DutyLog API v27.26.0
+
+## Unified time and compensation ledger
+
+```http
+GET /api/time-compensation?from=2026-07-01&to=2026-07-31
+GET /api/v1/time-compensation?from=2026-07-01&to=2026-07-31
+```
+
+Returns an owner-scoped, no-store Plan → Fact → Compensation projection. It combines planned shift minutes, factual absence minutes, overtime earned/used, absence-linked compensated minutes, vacation days, sick minutes and unpaid minutes. It does not calculate money.
+
+Absence create/update/preview payloads accept `compensationPolicy`: `VACATION_ALLOWANCE`, `OVERTIME_BANK`, `SICK_PAY`, `UNPAID` or `NONE`. Period/occurrence responses expose `compensatedMinutes` and `linkedOvertimeUsageId`. Overtime usage rows expose `sourceKind`, `sourceAbsenceId` and `editable`; `ABSENCE` rows are changed only through Vacation Planner.
+
 
 Проект: **DutyLog: Time & Overtime**.
 

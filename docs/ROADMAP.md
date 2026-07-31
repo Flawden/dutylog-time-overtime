@@ -1,7 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**.
+Current release: **v27.26.0 — Unified Time & Compensation Ledger**.
 
+
+## v27.26.0 — Unified Time & Compensation Ledger — completed
+
+- [x] Existing overtime credits/usages/allocations become the canonical compensatory-time bank.
+- [x] `OVERTIME_BANK` absences own one FIFO usage; edits reallocate it and deletion restores minutes.
+- [x] Manual ledger mutation is blocked for absence-linked usages, preventing double compensation.
+- [x] Explicit vacation, overtime, sick, unpaid and no-coverage policies join Plan → Fact → Compensation.
+- [x] `/api/time-compensation` and the monthly unified UI expose planned, worked, earned, used, covered and unpaid time.
+- [x] Flyway V43 migrates the standalone V42 balance into an opening credit and preserves `day_entries`.
+- [x] Baseline advances to 110 Java test classes / 590 tests / 35 Playwright scenarios.
+
+Next product stage: **v27.27.0 — Payroll Foundation**.
 
 ## v27.25.2 — Absence Experience Frontend Contract Hotfix — completed
 
@@ -112,9 +124,9 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
-## Текущая продуктовая точка — Absence & Time-Off stabilized
+## Текущая продуктовая точка — Unified Time & Compensation Ledger
 
-Статус: **v27.25.2** стабилизирует frontend-контракты уже реализованной модели «плановая смена → фактическое состояние дня». Полно-дневный отпуск, отгул или больничный визуально занимает место смены, но не удаляет её; частичный отгул хранит точный интервал и списывает независимый часовой баланс. Flyway V42 аддитивен, `.ics` сохраняет read-only контракт.
+Статус: **v27.26.0** объединяет плановые смены, фактические отсутствия и компенсационные движения. Отгул за ранее отработанное время больше не списывает отдельное число: он владеет FIFO usage в каноническом overtime ledger. Flyway V43 переносит старый баланс в opening credit, сохраняет `day_entries`, а salary-правила остаются задачей Payroll Foundation.
 
 Закрыто:
 
@@ -130,17 +142,11 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 Следующий этап: **v27.26.0 — Unified Time & Compensation Ledger**.
 
-## Ближайшая продуктовая очередь после стабилизации v27.25.2
+## Ближайшая продуктовая очередь после v27.26.0
 
-### v27.26.0 — Unified Time & Compensation Ledger
+### v27.26.0 — Unified Time & Compensation Ledger — completed
 
-- единый обратимый журнал начислений и списаний рабочего времени;
-- связь отгула «за ранее отработанное время» с конкретными переработками по FIFO/LIFO;
-- запрет двойной компенсации: одни часы нельзя одновременно выплатить и использовать как отгул;
-- источники покрытия отсутствия: отпуск, банк переработок, больничная политика, неоплачиваемое отсутствие;
-- три слоя дня: «По графику», «Фактически», «Как компенсировано/оплачено»;
-- расчёт по occurrence/интервалам для ночных и частичных смен;
-- единая месячная сводка оплачиваемых, неоплачиваемых и компенсированных часов.
+См. завершённый релиз выше и `docs/UNIFIED_TIME_COMPENSATION_LEDGER_V27.26.0.md`.
 
 ### v27.27.0 — Payroll Foundation
 

@@ -10,6 +10,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
+import ru.daniil.shifts.service.OvertimeService;
+
+import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
 
 import java.nio.charset.StandardCharsets;
 
@@ -26,6 +29,7 @@ class VacationPlannerControllerTest {
     @Autowired MockMvc mvc;
     @Autowired UserRepository users;
     @Autowired ObjectMapper objectMapper;
+    @Autowired OvertimeService overtimeService;
 
     AppUser owner;
 
@@ -121,13 +125,15 @@ class VacationPlannerControllerTest {
     }
 
     @Test
-    void partialTimeOffLifecycleUsesIndependentHourBalance() throws Exception {
+    void partialTimeOffLifecycleUsesCanonicalOvertimeBank() throws Exception {
+        overtimeService.createCredit(owner, new OvertimeCreditCreateRequest(
+                "2026-08-01", null, null, null, null, null, 8.0, "Заранее отработанное время"));
         mvc.perform(patch("/api/vacation-planner/settings")
                         .with(user(owner.getUsername()).roles("USER")).with(csrf())
                         .contentType("application/json")
-                        .content("{\"timeOffBalanceHours\":8,\"defaultTimeOffDayHours\":8}"))
+                        .content("{\"timeOffBalanceHours\":99,\"defaultTimeOffDayHours\":8}"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.timeOffBalanceHours").value(8.0));
+                .andExpect(jsonPath("$.timeOffBalanceHours").value(0.0));
 
         String plannerJson = mvc.perform(get("/api/vacation-planner")
                         .with(user(owner.getUsername()).roles("USER")))
@@ -151,6 +157,9 @@ class VacationPlannerControllerTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.coverage").value("PARTIAL"))
                 .andExpect(jsonPath("$.chargedMinutes").value(240))
+                .andExpect(jsonPath("$.compensationPolicy").value("OVERTIME_BANK"))
+                .andExpect(jsonPath("$.compensatedMinutes").value(240))
+                .andExpect(jsonPath("$.linkedOvertimeUsageId").isNumber())
                 .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         long id = objectMapper.readTree(created).path("id").asLong();
 
@@ -165,6 +174,33 @@ class VacationPlannerControllerTest {
         mvc.perform(delete("/api/vacation-planner/absences/{id}", id)
                         .with(user(owner.getUsername()).roles("USER")).with(csrf()))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void unifiedTimeCompensationEndpointIsNoStoreAndAvailableUnderV1() throws Exception {
+        overtimeService.createCredit(owner, new OvertimeCreditCreateRequest(
+                "2026-08-05", null, null, null, null, null, 2.0, "Дополнительная работа"));
+
+        mvc.perform(get("/api/time-compensation")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .param("from", "2026-08-01")
+                        .param("to", "2026-08-31"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
+                .andExpect(jsonPath("$.overtimeEarnedMinutes").value(120))
+                .andExpect(jsonPath("$.overtimeBalanceMinutes").value(120))
+                .andExpect(jsonPath("$.days[0].date").value("2026-08-05"));
+
+        mvc.perform(get("/api/v1/time-compensation")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .param("from", "2026-08-01")
+                        .param("to", "2026-08-31"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/time-compensation")
+                        .param("from", "2026-08-01")
+                        .param("to", "2026-08-31"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test

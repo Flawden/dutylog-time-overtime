@@ -46,6 +46,14 @@ public class AbsencePeriod {
     @Column(name = "charged_minutes", nullable = false)
     private int chargedMinutes;
 
+    /** Explains how this factual absence is covered and later interpreted by payroll. */
+    @Column(name = "compensation_policy", nullable = false, length = 30)
+    private String compensationPolicy = "NONE";
+
+    /** Minutes actually covered by a linked compensation source (currently overtime FIFO). */
+    @Column(name = "compensated_minutes", nullable = false)
+    private int compensatedMinutes;
+
     @Column(length = 1000)
     private String note;
 
@@ -80,6 +88,13 @@ public class AbsencePeriod {
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
     public int getChargedMinutes() { return Math.max(0, chargedMinutes); }
     public void setChargedMinutes(int chargedMinutes) { this.chargedMinutes = Math.max(0, chargedMinutes); }
+    public String getCompensationPolicy() { return compensationPolicy == null ? "NONE" : compensationPolicy; }
+    public void setCompensationPolicy(String compensationPolicy) {
+        String normalized = compensationPolicy == null ? "NONE" : compensationPolicy.trim().toUpperCase();
+        this.compensationPolicy = normalized.isBlank() ? "NONE" : normalized;
+    }
+    public int getCompensatedMinutes() { return Math.max(0, compensatedMinutes); }
+    public void setCompensatedMinutes(int compensatedMinutes) { this.compensatedMinutes = Math.max(0, compensatedMinutes); }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
     public Instant getCreatedAt() { return createdAt; }
@@ -105,5 +120,6 @@ public class AbsencePeriod {
         if (coverage == null || coverage.isBlank()) coverage = "FULL_DAY";
         else coverage = coverage.trim().toUpperCase();
         if ("FULL_DAY".equals(coverage)) { startTime = null; endTime = null; }
+        setCompensationPolicy(compensationPolicy);
     }
 }

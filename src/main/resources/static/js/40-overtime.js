@@ -53,11 +53,53 @@ Object.assign(I18N_EN, {
   "Фильтры и экспорт":"Filters and export", "Сбросить":"Reset",
   "за период начислено":"earned in period", "за период использовано":"used in period",
   "остаток начислений периода":"period credit balance", "Следующий остаток":"Next balance",
-  "профессиональная таблица":"professional table", "мобильные карточки":"mobile cards"
+  "профессиональная таблица":"professional table", "мобильные карточки":"mobile cards",
+  "Единая сводка месяца":"Unified monthly summary", "По графику":"Scheduled",
+  "Фактически":"Worked", "Переработка начислена":"Overtime earned",
+  "Использовано как отгул":"Used as time off", "Покрыто балансами":"Covered by balances",
+  "Управляется отсутствием":"Managed by absence", "Откройте отсутствие, чтобы изменить списание":"Open the absence to change this usage",
+  "Нет событий в этом месяце":"No events this month", "Без содержания":"Unpaid",
+  "Больничный":"Sick leave", "Отпуск":"Vacation"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
 /* ─── Журнал переработки и отгулов ─────────────────────────── */
+function timeCompensationRange(){ return currentMonthRange(); }
+function usageManagedByAbsence(value){
+  return value?.editable === false || String(value?.sourceKind || "MANUAL").toUpperCase() === "ABSENCE" || value?.sourceAbsenceId != null;
+}
+function renderTimeCompensation(){
+  const summary = state.timeCompensation;
+  const card = $("timeCompensationCard");
+  if (!card) return;
+  if (!summary) { card.classList.add("loading"); return; }
+  card.classList.remove("loading");
+  const values = {
+    timeCompPlanned:summary.plannedMinutes, timeCompWorked:summary.workedMinutes,
+    timeCompEarned:summary.overtimeEarnedMinutes, timeCompUsed:summary.overtimeUsedMinutes,
+    timeCompSick:summary.sickMinutes, timeCompUnpaid:summary.unpaidMinutes,
+    timeCompCovered:summary.compensatedMinutes
+  };
+  for (const [id, minutes] of Object.entries(values)) if ($(id)) $(id).textContent = minutesLabel(minutes);
+  if ($("timeCompVacation")) $("timeCompVacation").textContent = `${Number(summary.vacationDays || 0)} ${t("дней")}`;
+  if ($("timeCompensationRange")) $("timeCompensationRange").textContent = `${vacationDateLabel(summary.from)} — ${vacationDateLabel(summary.to)}`;
+  const list = $("timeCompDays");
+  if (!list) return;
+  const meaningful = (summary.days || []).filter(day => Number(day.absenceMinutes || 0) > 0 || Number(day.overtimeEarnedMinutes || 0) > 0 || Number(day.overtimeUsedMinutes || 0) > 0);
+  list.innerHTML = meaningful.length ? meaningful.slice(0, 8).map(day => `
+    <button type="button" data-time-comp-date="${esc(day.date)}">
+      <time>${esc(vacationDateLabel(day.date))}</time>
+      <span><b>${esc(day.factLabel || t("По графику"))}</b><small>${esc(day.compensationLabel || "—")}</small></span>
+      <em>${esc(minutesLabel(day.plannedMinutes))} → ${esc(minutesLabel(day.workedMinutes))}</em>
+    </button>`).join("") : `<div class="timeCompensationEmpty">${esc(t("Нет событий в этом месяце"))}</div>`;
+  list.querySelectorAll("[data-time-comp-date]").forEach(button => button.addEventListener("click", () => { location.hash = "#calendar"; selectDay(button.dataset.timeCompDate); }));
+}
+async function loadTimeCompensation(){
+  if (!moduleEnabled("overtime")) { state.timeCompensation = null; renderTimeCompensation(); return null; }
+  const range = timeCompensationRange();
+  try { state.timeCompensation = await api.timeCompensation(range.from, range.to); renderTimeCompensation(); return state.timeCompensation; }
+  catch (error) { console.error("Failed to load time compensation summary", error); state.timeCompensation = null; renderTimeCompensation(); return null; }
+}
 function updateOvertimeBalanceLabel(){
   const acc = state.overtimeAccount || { balanceHours:0 };
   const bal = numOr0(acc.balanceHours);
@@ -76,6 +118,7 @@ function renderOvertimeControls(){
     legacyButton.textContent = `⚠ ${t("Привязать старые записи")}${count ? ` (${count})` : ""}`;
   }
   renderOvertimeDayDetails();
+  renderTimeCompensation();
   renderQuickScenarios();
   updateAccSummaries();
 }
@@ -1025,6 +1068,7 @@ async function addOvertimeUsage(){
 function startEditOvertimeUsage(id){
   const u = findUsageById(id);
   if (!u) return setSave("err", t("списание не найдено"));
+  if (usageManagedByAbsence(u)) return setSave("err", t("Откройте отсутствие, чтобы изменить списание"));
   resetOvertimeForms(u.usageDate);
   state.editingCreditId = null;
   state.editingUsageId = Number(id);
@@ -1065,6 +1109,7 @@ async function removeOvertimeCredit(id){
 
 async function removeOvertimeUsage(id){
   const usage = findUsageById(id);
+  if (usageManagedByAbsence(usage)) return setSave("err", t("Откройте отсутствие, чтобы изменить списание"));
   const label = usage ? `${usage.usageDate} -${fmtHours(usage.hours)} ч${usage.reason ? " — " + usage.reason : ""}` : `#${id}`;
   const partCount = Math.max(1, Number(usage?.allocations?.length || 0));
   const partsText = state.language === "en"
@@ -1333,7 +1378,7 @@ function ledgerUsageItemsHtml(credit){
     const partLabel = partCount > 1 ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.min(partIndex, partCount)}/${partCount}</span>` : "";
     return `<div class="overtimeCardUsage">
       <div><b>−${fmtHours(u.hours)} ч</b><span>${esc(u.usageDate)}${u.reason ? ` · ${esc(u.reason)}` : ""} ${partLabel}</span>${allocationDetailHtml(u)}</div>
-      <div class="overtimeCardUsageActions"><button type="button" data-edit-usage="${u.usageId}">${esc(t("ред."))}</button><button type="button" data-del-usage="${u.usageId}">${esc(t("удалить"))}</button></div>
+      ${usageManagedByAbsence(fullUsage) ? `<div class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}">↔ ${esc(t("Управляется отсутствием"))}</div>` : `<div class="overtimeCardUsageActions"><button type="button" data-edit-usage="${u.usageId}">${esc(t("ред."))}</button><button type="button" data-del-usage="${u.usageId}">${esc(t("удалить"))}</button></div>`}
     </div>`;
   }).join("");
 }
@@ -1493,7 +1538,10 @@ function renderLedgerTable(){
             const partLabel = partCount > 1
               ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.min(partIndex, partCount)}/${partCount}</span>`
               : "";
-            return `<div class="ledgerUsageItem"><span class="ledgerUsageText"><span>${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""} ${partLabel}</span>${allocationDetailHtml(u)}</span><span class="ledgerUsageActions" aria-label="${esc(t("Действия списания"))}"><button type="button" data-edit-usage="${u.usageId}" title="${esc(t("Редактировать весь отгул"))}">${esc(t("ред. отгул"))}</button><button type="button" data-del-usage="${u.usageId}" title="${esc(t("Удалить весь отгул"))}">${esc(t("удалить весь отгул"))}</button></span></div>`;
+            const actions = usageManagedByAbsence(fullUsage)
+              ? `<span class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}">↔ ${esc(t("Управляется отсутствием"))}</span>`
+              : `<span class="ledgerUsageActions" aria-label="${esc(t("Действия списания"))}"><button type="button" data-edit-usage="${u.usageId}" title="${esc(t("Редактировать весь отгул"))}">${esc(t("ред. отгул"))}</button><button type="button" data-del-usage="${u.usageId}" title="${esc(t("Удалить весь отгул"))}">${esc(t("удалить весь отгул"))}</button></span>`;
+            return `<div class="ledgerUsageItem"><span class="ledgerUsageText"><span>${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""} ${partLabel}</span>${allocationDetailHtml(u)}</span>${actions}</div>`;
           }).join("")
         : `<span class="small">${esc(t("не списывалось"))}</span>`;
       const projection = overtimeProjection(c);
@@ -1555,6 +1603,7 @@ async function loadLedgerPage(silent = true){
     state.overtimeAccount = accountSnapshot;
     renderLedgerTable();
     updateOvertimeBalanceLabel();
+    await loadTimeCompensation();
   } catch (err) {
     console.error(err);
     if (!silent) setSave("err", err.message);
