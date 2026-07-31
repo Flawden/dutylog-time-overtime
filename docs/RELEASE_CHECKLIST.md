@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.25.0.
+Status: v27.25.1.
 
 ## Local gate
 
@@ -19,7 +19,7 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Staging
 
 - push the exact candidate tree to `test`;
-- confirm the Maven gate executes all 579 tests with zero failures;
+- confirm the Maven gate executes all 580 tests with zero failures;
 - confirm all 34 Playwright scenarios pass, including workspace-hidden Tasks routing on mobile and task module re-enable;
 - confirm fresh schedule apply reloads the authoritative month through the data layer;
 - on a phone viewport, navigate away from the current month and confirm the contextual «Сегодня» button appears, returns to today and disappears;
@@ -105,6 +105,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.25.0 -m "v27.25.0 — Absence & Time-Off Overhaul"
-git push origin v27.25.0
+git tag -a v27.25.1 -m "v27.25.1 — Absence Preview Lambda Compile Hotfix"
+git push origin v27.25.1
 ```

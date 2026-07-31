@@ -302,13 +302,14 @@ public class VacationPlannerService {
         int counted = 0;
         int shiftConflicts = 0;
         for (LocalDate date = range.from(); !date.isAfter(range.to()); date = date.plusDays(1)) {
-            boolean countedDay = VACATION_DAYS.equals(type.getBalancePolicy()) && countedByMode(settings, date);
-            ShiftPlan plan = plans.get(date);
-            AbsencePeriod existing = overlaps.stream().filter(period -> covers(period, date)).findFirst().orElse(null);
+            LocalDate previewDate = date;
+            boolean countedDay = VACATION_DAYS.equals(type.getBalancePolicy()) && countedByMode(settings, previewDate);
+            ShiftPlan plan = plans.get(previewDate);
+            AbsencePeriod existing = overlaps.stream().filter(period -> covers(period, previewDate)).findFirst().orElse(null);
             if (countedDay) counted++;
             if (plan != null) shiftConflicts++;
             items.add(new AbsencePreviewItemDto(
-                    date.toString(), isWeekend(date), countedDay, plan != null,
+                    previewDate.toString(), isWeekend(previewDate), countedDay, plan != null,
                     existing == null ? null : existing.getId(), existing == null ? null : displayTitle(existing),
                     existing == null ? "APPLY" : "CONFLICT",
                     plan == null ? null : plan.name(), plan == null ? null : plan.color(), plan == null ? 0 : plan.minutes(),

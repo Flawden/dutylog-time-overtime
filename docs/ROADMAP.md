@@ -1,7 +1,15 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.25.0 — Absence & Time-Off Overhaul**.
+Current release: **v27.25.1 — Absence Preview Lambda Compile Hotfix**.
 
+
+## v27.25.1 — Absence Preview Lambda Compile Hotfix — completed
+
+- [x] Fixed the Java compiler blocker in the absence preview overlap lookup.
+- [x] Snapshot the mutable loop date before lambda capture; preview semantics remain unchanged.
+- [x] Added Java/static and release-gate protection against direct capture of the incremented loop variable.
+- [x] API, OpenAPI, database and Flyway V42 remain unchanged.
+- [x] Baseline advances to 109 Java test classes / 580 tests / 34 Playwright scenarios.
 
 ## v27.25.0 — Absence & Time-Off Overhaul — completed
 
@@ -96,9 +104,9 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
-## Текущая продуктовая точка — Absence & Time-Off Overhaul completed
+## Текущая продуктовая точка — Absence & Time-Off stabilized
 
-Статус: **v27.25.0** завершает переход от декоративных меток отсутствий к доменной модели «плановая смена → фактическое состояние дня». Полно-дневный отпуск, отгул или больничный визуально занимает место смены, но не удаляет её; частичный отгул хранит точный интервал и списывает независимый часовой баланс. Flyway V42 аддитивен, `.ics` сохраняет read-only контракт.
+Статус: **v27.25.1** стабилизирует компиляцию уже реализованной модели «плановая смена → фактическое состояние дня». Полно-дневный отпуск, отгул или больничный визуально занимает место смены, но не удаляет её; частичный отгул хранит точный интервал и списывает независимый часовой баланс. Flyway V42 аддитивен, `.ics` сохраняет read-only контракт.
 
 Закрыто:
 
@@ -110,25 +118,35 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 - сводка по видам отсутствий и частичным часам;
 - timed `.ics` для частичного отгула;
 - Flyway V42, OpenAPI, Java/static/Playwright contracts;
-- baseline 109 Java test classes / 579 tests / 34 Playwright scenarios.
+- baseline 109 Java test classes / 580 tests / 34 Playwright scenarios.
 
-Следующий этап: **v27.26.0 — Workspace, Layout & Theme Studio**.
+Следующий этап: **v27.26.0 — Unified Time & Compensation Ledger**.
 
-## Ближайшая продуктовая очередь после v27.25.0
+## Ближайшая продуктовая очередь после стабилизации v27.25.1
 
-### v27.26.0 — Workspace, Layout & Theme Studio
+### v27.26.0 — Unified Time & Compensation Ledger
 
-- настройка рабочих пространств и порядка блоков;
-- персонализация видимых разделов и календарных поверхностей;
-- темы, акцентные цвета и layout presets;
-- органичное отображение нескольких графиков.
+- единый обратимый журнал начислений и списаний рабочего времени;
+- связь отгула «за ранее отработанное время» с конкретными переработками по FIFO/LIFO;
+- запрет двойной компенсации: одни часы нельзя одновременно выплатить и использовать как отгул;
+- источники покрытия отсутствия: отпуск, банк переработок, больничная политика, неоплачиваемое отсутствие;
+- три слоя дня: «По графику», «Фактически», «Как компенсировано/оплачено»;
+- расчёт по occurrence/интервалам для ночных и частичных смен;
+- единая месячная сводка оплачиваемых, неоплачиваемых и компенсированных часов.
+
+### v27.27.0 — Payroll Foundation
+
+- простой и расширенный расчёт оплачиваемого времени;
+- влияние отпусков, больничных, отсутствий без содержания и отгулов из банка переработок;
+- базовая ставка, ночные, сверхурочные, премии, удержания и налоги;
+- объяснимый расчёт, читающий единый ledger вместо повторного угадывания календаря.
 
 ### Следующие продуктовые циклы
 
-- `v27.27.0` — One-Tap Calendar Connect для Google / Apple / Outlook;
-- `v27.28.0` — архив «Все заметки» и визуальные коллизии задач;
-- `v27.29.0` — Telegram inline-действия и понятные пошаговые команды;
-- `v27.30.0` — простой и расширенный расчёт зарплаты поверх plan/fact absence model;
+- `v27.28.0` — Workspace, Layout & Theme Studio;
+- `v27.29.0` — One-Tap Calendar Connect для Google / Apple / Outlook;
+- `v27.30.0` — архив «Все заметки» и визуальные коллизии задач;
+- `v27.31.0` — Telegram inline-действия и понятные пошаговые команды;
 - затем — контекстные обучалки и отдельный финальный performance / production-readiness цикл.
 
 ## Этап 2 — нормальная API-архитектура

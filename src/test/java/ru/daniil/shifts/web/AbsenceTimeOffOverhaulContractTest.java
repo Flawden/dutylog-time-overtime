@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -47,6 +49,17 @@ class AbsenceTimeOffOverhaulContractTest {
         assertTrue(experience.contains("partialAbsences"));
         assertTrue(experience.contains("plannedShiftName"));
         assertTrue(experience.contains("event.absence"));
+    }
+
+    @Test
+    void previewLoopSnapshotsItsMutableDateBeforeTheOverlapLambda() throws IOException {
+        String service = Files.readString(
+                Path.of("src/main/java/ru/daniil/shifts/service/VacationPlannerService.java"),
+                StandardCharsets.UTF_8
+        );
+        assertTrue(service.contains("LocalDate previewDate = date;"));
+        assertTrue(service.contains("filter(period -> covers(period, previewDate))"));
+        assertFalse(service.contains("filter(period -> covers(period, date))"));
     }
 
     @Test

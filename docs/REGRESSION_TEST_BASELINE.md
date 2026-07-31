@@ -1,15 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.25.0.
+Status: v27.25.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.25.0 protects the plan/fact absence model, independent time-off balance, full/partial overlap rules, calendar composition and timed `.ics` projection. Current application baseline is 109 Java test classes / 579 `@Test` methods / 34 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.25.1 protects Java compilation of the absence preview loop by requiring an effectively-final date snapshot before overlap lookup. The v27.25.0 plan/fact runtime remains unchanged. Current application baseline is 109 Java test classes / 580 `@Test` methods / 34 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.25.1 Absence Preview Lambda Compile Hotfix extension
+
+- `VacationPlannerService.buildPreview(...)` snapshots the incremented loop date as `previewDate` before using it in the overlap-search lambda.
+- The compiler contract forbids `filter(period -> covers(period, date))` inside that mutable loop.
+- Counted-day, shift-plan, overlap and preview-item projections all use the same per-iteration date snapshot.
+- Product behavior, Web/v1 API, OpenAPI, V42 schema and 34 Playwright scenarios remain unchanged.
+- Baseline advances to 109 Java test classes / 580 `@Test` methods / 34 Playwright scenarios.
 
 ## v27.25.0 Absence & Time-Off Overhaul extension
 

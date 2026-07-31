@@ -1,3 +1,11 @@
+# v27.25.1 — Absence Preview Lambda Compile Hotfix
+
+- Fixed Java compilation in `VacationPlannerService.buildPreview(...)` by snapshotting the mutable loop date before the overlap-search lambda.
+- Preserved preview semantics: counted days, shift conflicts, overlap detection and plan/fact projection use the same local date for each iteration.
+- Added a static contract and release guard that reject direct capture of the incremented `date` loop variable.
+- Kept Absence & Time-Off runtime behavior, HTTP API, OpenAPI, database schema and Flyway V42 unchanged.
+- Regression baseline advances to 109 Java test classes, 580 `@Test` methods and 34 Playwright scenarios.
+
 # v27.25.0 — Absence & Time-Off Overhaul
 
 - Introduced a plan/fact absence model: planned shifts remain immutable while full-day absences become the factual calendar surface.

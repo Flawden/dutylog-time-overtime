@@ -1,4 +1,4 @@
-# DutyLog API v27.25.0
+# DutyLog API v27.25.1
 
 Проект: **DutyLog: Time & Overtime**.
 
