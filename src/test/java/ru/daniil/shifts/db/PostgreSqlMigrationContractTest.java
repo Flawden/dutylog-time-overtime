@@ -125,39 +125,6 @@ class PostgreSqlMigrationContractTest {
                 "absence types are a separate domain from shift types");
     }
 
-    @Test
-    void calendarFeedMigrationStoresOnlyTokenHashesAndKeepsOneFeedPerOwner() throws IOException {
-        String sql = Files.readString(MIGRATION_ROOT.resolve("V41__calendar_feed_subscriptions.sql"));
-
-        assertTrue(sql.contains("CREATE TABLE calendar_feed_subscriptions"));
-        assertTrue(sql.contains("token_hash VARCHAR(64)"));
-        assertTrue(sql.contains("token_hint VARCHAR(12)"));
-        assertTrue(sql.contains("UNIQUE (user_id)"));
-        assertTrue(sql.contains("UNIQUE (token_hash)"));
-        assertTrue(sql.contains("ON DELETE CASCADE"));
-        assertTrue(sql.contains("token_hash ~ '^[0-9a-f]{64}$'"));
-        assertFalse(sql.contains("raw_token"));
-        assertFalse(sql.contains("subscription_url"));
-    }
-
-    @Test
-    void absenceTimeOffMigrationPreservesPlannedShiftsAndSeparatesHourBalances() throws IOException {
-        String sql = Files.readString(MIGRATION_ROOT.resolve("V42__absence_time_off_overhaul.sql"));
-
-        assertTrue(sql.contains("time_off_balance_minutes"));
-        assertTrue(sql.contains("default_time_off_day_minutes"));
-        assertTrue(sql.contains("balance_policy"));
-        assertTrue(sql.contains("TIME_OFF_HOURS"));
-        assertTrue(sql.contains("full_day_replaces_shift"));
-        assertTrue(sql.contains("coverage"));
-        assertTrue(sql.contains("PARTIAL"));
-        assertTrue(sql.contains("charged_minutes"));
-        assertTrue(sql.contains("'TIME_OFF'"));
-        assertFalse(sql.contains("DELETE FROM day_entries"));
-        assertFalse(sql.contains("UPDATE day_entries"));
-        assertFalse(sql.contains("INSERT INTO shift_types"));
-    }
-
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);

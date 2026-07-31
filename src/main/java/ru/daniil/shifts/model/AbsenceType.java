@@ -32,12 +32,6 @@ public class AbsenceType {
     @Column(name = "system_preset", nullable = false)
     private boolean systemPreset;
 
-    @Column(name = "balance_policy", nullable = false, length = 30)
-    private String balancePolicy = "NONE";
-
-    @Column(name = "full_day_replaces_shift", nullable = false)
-    private boolean fullDayReplacesShift = true;
-
     @Column(name = "system_code", length = 30)
     private String systemCode;
 
@@ -65,10 +59,6 @@ public class AbsenceType {
     public void setCountsAgainstAllowance(boolean countsAgainstAllowance) { this.countsAgainstAllowance = countsAgainstAllowance; }
     public boolean isSystemPreset() { return systemPreset; }
     public void setSystemPreset(boolean systemPreset) { this.systemPreset = systemPreset; }
-    public String getBalancePolicy() { return balancePolicy; }
-    public void setBalancePolicy(String balancePolicy) { this.balancePolicy = balancePolicy; }
-    public boolean isFullDayReplacesShift() { return fullDayReplacesShift; }
-    public void setFullDayReplacesShift(boolean fullDayReplacesShift) { this.fullDayReplacesShift = fullDayReplacesShift; }
     public String getSystemCode() { return systemCode; }
     public void setSystemCode(String systemCode) { this.systemCode = systemCode; }
     public int getSortOrder() { return sortOrder; }
@@ -91,9 +81,6 @@ public class AbsenceType {
     }
 
     private void normalize() {
-        if (balancePolicy == null || balancePolicy.isBlank()) balancePolicy = countsAgainstAllowance ? "VACATION_DAYS" : "NONE";
-        else balancePolicy = balancePolicy.trim().toUpperCase();
-        countsAgainstAllowance = "VACATION_DAYS".equals(balancePolicy);
         if (systemCode != null) {
             systemCode = systemCode.trim().toUpperCase();
             if (systemCode.isBlank()) systemCode = null;

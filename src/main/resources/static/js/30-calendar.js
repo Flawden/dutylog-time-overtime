@@ -151,35 +151,13 @@ function shiftIntervalTitle(interval){
   return `${t("Рабочая смена")}: ${work} · ${interval.workTimezone}\n${t("В часовом поясе отображения")}: ${display} · ${interval.displayTimezone}`;
 }
 
-function updateCalendarLoadingSurface(loading, refreshing = false){
-  const status = $("calendarLoadStatus");
-  const experience = $("calendarExperience");
-  const month = $("calendarMonthExperience");
-  const grid = $("grid");
-  experience?.classList.toggle("isLoading", loading);
-  month?.classList.toggle("isRefreshing", refreshing);
-  grid?.setAttribute("aria-busy", String(loading));
-  if (status) {
-    status.hidden = !loading;
-    const label = status.querySelector("b");
-    if (label) label.textContent = t("Обновляю календарь…");
-  }
-}
-
 function renderCalendar(){
   $("monthName").textContent = monthName(state.m);
   $("yearName").textContent = state.y;
 
   const grid = $("grid");
-  const loading = !!state.ui?.loadingCalendar;
-  const refreshing = loading && !!state.ui?.calendarHasRendered;
-  updateCalendarLoadingSurface(loading, refreshing);
-  if (refreshing) {
-    if (typeof renderTodayDashboard === "function" && document.body.dataset.view === "today") renderTodayDashboard();
-    return;
-  }
   grid.innerHTML = "";
-  if (loading) {
+  if (state.ui?.loadingCalendar) {
     for (let i = 0; i < 35; i++) {
       const c = document.createElement("div");
       c.className = "cell calendarSkeleton";
@@ -210,25 +188,17 @@ function renderCalendar(){
   for (let d = 1; d <= count; d++) {
     const k = keyOf(state.y, state.m, d);
     const st = stOf(k);
-    const dayAbsences = showVacation && typeof absencesOf === "function" ? absencesOf(k) : [];
-    const factualAbsence = dayAbsences.find(item => item.coverage === "FULL_DAY" && item.replacesShift) || null;
-    const partialAbsences = dayAbsences.filter(item => item.coverage === "PARTIAL");
     const entry = state.days[k];
     const cell = document.createElement("button");
     cell.dataset.date = k;
     cell.setAttribute("aria-label", `${d} ${monthNameGen(state.m)} ${state.y}`);
     cell.className = "cell" + (state.selected === k ? " sel" : "") + (k === tk ? " todayCell" : "");
-    const factualColor = factualAbsence?.typeColor || st?.color;
-    if (factualColor) {
-      cell.style.background = factualColor + (factualAbsence ? "32" : "26");
-      if (state.selected !== k) cell.style.borderColor = factualColor + "66";
+    if (st) {
+      cell.style.background = st.color + "26";
+      if (state.selected !== k) cell.style.borderColor = st.color + "55";
       const bar = document.createElement("div");
-      bar.className = "bar"; bar.style.background = factualColor;
+      bar.className = "bar"; bar.style.background = st.color;
       cell.appendChild(bar);
-    }
-    if (factualAbsence) {
-      cell.classList.add("hasAbsenceFact");
-      cell.style.setProperty("--absence-color", factualColor);
     }
     const dayNotes = showNotes ? notesOfDay(k) : [];
     if (showNotes && (dayNotes.length || entry?.note?.trim())) {
@@ -256,29 +226,14 @@ function renderCalendar(){
     num.className = "num" + (k === tk ? " today" : "");
     num.textContent = d;
     cell.appendChild(num);
-    if (factualAbsence) {
-      const actual = document.createElement("span");
-      actual.className = "absenceFact";
-      actual.style.color = factualColor;
-      actual.textContent = typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(factualAbsence) : (factualAbsence.title || factualAbsence.typeName || t("Отсутствие"));
-      cell.appendChild(actual);
-      if (st) {
-        const planned = document.createElement("span");
-        planned.className = "plannedShiftGhost";
-        planned.textContent = `${t("По графику")}: ${shiftDisplayName(st)}`;
-        cell.appendChild(planned);
-      }
-      cell.title = `${t("Фактически")}: ${actual.textContent}${st ? `
-${t("По графику")}: ${shiftDisplayName(st)}` : ""}`;
-    } else if (st) {
+    if (st) {
       const nm = document.createElement("span");
       nm.className = "shift"; nm.style.color = st.color; nm.textContent = shiftDisplayName(st);
       cell.appendChild(nm);
       const segment = primaryShiftSegment(k);
       if (segment) {
         const occ = segment.occurrence;
-        cell.title = `${t("Текущее отображение")}: ${segment.range} · ${occ.displayTimezone || ""}
-${t("Исходная смена")}: ${displayDateTimeRange(occ.sourceStart, occ.sourceEnd)} · ${occ.sourceTimezone || ""}`;
+        cell.title = `${t("Текущее отображение")}: ${segment.range} · ${occ.displayTimezone || ""}\n${t("Исходная смена")}: ${displayDateTimeRange(occ.sourceStart, occ.sourceEnd)} · ${occ.sourceTimezone || ""}`;
         const clock = document.createElement("span");
         clock.className = "shiftClock";
         clock.textContent = segment.range;
@@ -292,13 +247,6 @@ ${t("Исходная смена")}: ${displayDateTimeRange(occ.sourceStart, occ
         }
       }
     }
-    for (const absence of partialAbsences.slice(0, 2)) {
-      const partial = document.createElement("span");
-      partial.className = "partialAbsenceBar";
-      partial.style.setProperty("--absence-color", absence.typeColor || "var(--accent-secondary)");
-      partial.textContent = `${absence.startTime || "—"}–${absence.endTime || "—"} · ${typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отгул"))}`;
-      cell.appendChild(partial);
-    }
     const bal = showOvertime ? ledgerNetOf(k) : 0;
     if (showOvertime && Math.abs(bal) > 0.0001) {
       const ot = document.createElement("span");
@@ -308,20 +256,19 @@ ${t("Исходная смена")}: ${displayDateTimeRange(occ.sourceStart, occ
     }
 
     const important = showImportant ? importantOf(k) : [];
-    const absences = dayAbsences;
+    const absences = showVacation && typeof absencesOf === "function" ? absencesOf(k) : [];
     const activeTasks = showTasks ? activeTasksOf(k) : [];
     const allTasks = showTasks ? tasksOf(k) : [];
     const reminders = showNotifications ? remindersOf(k) : [];
     if (important.length || absences.length || activeTasks.length || allTasks.length || reminders.length) {
       const marks = document.createElement("span");
       marks.className = "miniMarks";
-      const secondaryAbsences = absences.filter(item => item !== factualAbsence && item.coverage !== "PARTIAL");
-      if (secondaryAbsences.length) {
+      if (absences.length) {
         const vm = document.createElement("span");
         vm.className = "vacationMark";
-        vm.textContent = "●";
-        vm.style.background = secondaryAbsences[0].typeColor || "var(--accent-secondary)";
-        vm.title = secondaryAbsences.map(x => typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(x) : (x.title || x.typeName)).join(", ");
+        vm.textContent = "☂";
+        vm.style.background = absences[0].typeColor || "var(--accent-secondary)";
+        vm.title = absences.map(x => typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(x) : (x.title || x.typeName)).join(", ");
         marks.appendChild(vm);
         cell.classList.add("hasVacation");
       }
@@ -366,8 +313,6 @@ ${t("Исходная смена")}: ${displayDateTimeRange(occ.sourceStart, occ
     grid.appendChild(cell);
   }
   renderSummary();
-  state.ui.calendarHasRendered = true;
-  updateCalendarLoadingSurface(false, false);
   if (typeof renderTodayDashboard === "function" && document.body.dataset.view === "today") renderTodayDashboard();
 }
 
@@ -399,25 +344,6 @@ function renderSummary(){
     const span = document.createElement("span");
     span.innerHTML = `<span class="dot" style="background:${s.color}"></span>${esc(shiftDisplayName(s))} — <b>${counts[s.id]}</b>`;
     el.appendChild(span);
-  }
-  if (moduleEnabled("vacation")) {
-    const grouped = new Map();
-    for (const occurrence of state.absenceOccurrences || []) {
-      if (occurrence.date < monthStart || occurrence.date > monthEnd) continue;
-      const id = String(occurrence.typeId);
-      const bucket = grouped.get(id) || { name:absenceTypeDisplayName(occurrence), color:occurrence.typeColor, fullDays:0, partialMinutes:0 };
-      if (occurrence.coverage === "PARTIAL") bucket.partialMinutes += Number(occurrence.chargedMinutes || 0);
-      else bucket.fullDays += 1;
-      grouped.set(id, bucket);
-    }
-    for (const bucket of grouped.values()) {
-      any = true;
-      const span = document.createElement("span");
-      span.className = "absenceSummaryChip";
-      const amount = [bucket.fullDays ? `${bucket.fullDays} ${t("дней")}` : "", bucket.partialMinutes ? minutesLabel(bucket.partialMinutes) : ""].filter(Boolean).join(" · ");
-      span.innerHTML = `<span class="dot" style="background:${esc(bucket.color || "var(--accent-secondary)")}"></span>${esc(bucket.name)} — <b>${esc(amount)}</b>`;
-      el.appendChild(span);
-    }
   }
   const balance = overtime - timeOff;
   if (Math.abs(overtime) > 0.0001 || Math.abs(timeOff) > 0.0001) {
@@ -462,8 +388,7 @@ function selectDay(k){
     $("pDate").innerHTML = state.language === "en" ? `${monthNameGen(m - 1)} ${d} <span class="yr mono">${y}</span>` : `${d} ${monthNameGen(m - 1)} <span class="yr mono">${y}</span>`;
     // Contextual creation from the day panel must target the day the user clicked,
     // not a stale value left by a previous important-date draft.
-    if (typeof syncImportantSelectedDate === "function") syncImportantSelectedDate(k);
-    else if ($("impDate")) $("impDate").value = k;
+    if ($("impDate")) $("impDate").value = k;
     if (moduleEnabled("notes") && typeof renderDayNotes === "function") renderDayNotes();
     if (moduleEnabled("overtime")) resetOvertimeForms(k);
     if (moduleEnabled("notes")) setTab("edit");
@@ -591,7 +516,7 @@ async function applyScheduleTemplate(event){
 }
 
 /* ─── Аккордеон панели дня ──────────────────────────────────── */
-const ACC_IDS = ["accShift", "accEmoji", "accSched", "accOt", "accVacation", "accImp", "accTasks", "accNote"];
+const ACC_IDS = ["accShift", "accEmoji", "accSched", "accOt", "accImp", "accTasks", "accNote"];
 const ACC_STORE = "acc-open-v1";
 
 // Восстанавливаем, какие секции пользователь держал открытыми
@@ -641,15 +566,9 @@ function updateAccSummaries(){
   // Отпуск и другие отсутствия
   if ($("sumVacation")) {
     const absences = moduleEnabled("vacation") && typeof absencesOf === "function" ? absencesOf(k) : [];
-    if (!moduleEnabled("vacation")) $("sumVacation").innerHTML = esc(t("Скрыто модулем"));
-    else if (!absences.length) $("sumVacation").textContent = "—";
-    else {
-      const primary = absences.find(item => item.coverage === "FULL_DAY" && item.replacesShift) || absences[0];
-      const actual = typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(primary) : (primary.title || primary.typeName || t("Отсутствие"));
-      const planned = primary.plannedShiftName ? ` · ${t("По графику")}: ${primary.plannedShiftName}` : "";
-      const partial = primary.coverage === "PARTIAL" ? ` ${primary.startTime || "—"}–${primary.endTime || "—"}` : "";
-      $("sumVacation").innerHTML = `<span style="color:${esc(primary.typeColor || "var(--accent-secondary)")}">● ${esc(actual)}${esc(partial)}</span>${esc(planned)}${absences.length > 1 ? ` · +${absences.length - 1}` : ""}`;
-    }
+    $("sumVacation").innerHTML = !moduleEnabled("vacation")
+      ? esc(t("Скрыто модулем"))
+      : (absences.length ? `<span style="color:${esc(absences[0].typeColor || "var(--accent-secondary)")}">☂ ${absences.length}</span>&nbsp;${esc(typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absences[0]) : (absences[0].title || absences[0].typeName || t("Отсутствие")))}` : "—");
   }
 
   // Важные дни

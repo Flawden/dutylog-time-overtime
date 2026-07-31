@@ -17,7 +17,6 @@ public final class ModuleKeys {
     public static final String OVERTIME = "overtime";
     public static final String IMPORTANT_DATES = "important_dates";
     public static final String VACATION = "vacation";
-    public static final String CALENDAR_SYNC = "calendar_sync";
     public static final String NOTIFICATIONS = "notifications";
     public static final String TELEGRAM = "telegram";
     public static final String SCENARIOS = "scenarios";

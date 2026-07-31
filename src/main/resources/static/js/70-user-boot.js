@@ -58,36 +58,10 @@ function applyCalendarBundle(bundle){
 }
 
 let calendarLoadGeneration = 0;
-function recordCalendarLoadMetric({ year, month, startedAt, result = null, error = null }){
-  const finishedAt = performance.now();
-  const metric = {
-    year,
-    month:month + 1,
-    durationMs:Math.max(0, Math.round(finishedAt - startedAt)),
-    fromCache:!!result?.fromCache,
-    ok:!error,
-    recordedAt:new Date().toISOString(),
-  };
-  const metrics = Array.isArray(state.ui.calendarLoadMetrics) ? state.ui.calendarLoadMetrics : [];
-  state.ui.calendarLoadMetrics = [...metrics.slice(-19), metric];
-  try {
-    performance.measure(`dutylog.calendar.${year}-${String(month + 1).padStart(2, "0")}`, {
-      start:startedAt,
-      end:finishedAt,
-      detail:metric,
-    });
-  } catch (_) { /* older browsers still keep the in-memory metric */ }
-  document.dispatchEvent(new CustomEvent("dutylog:calendar-load", { detail:metric }));
-  if (metric.durationMs >= 1200) console.info("[DutyLog] slow calendar load", metric);
-}
-
 async function loadMonth(opts = {}){
   const generation = ++calendarLoadGeneration;
   const requestedYear = state.y;
   const requestedMonth = state.m;
-  const startedAt = performance.now();
-  let loadResult = null;
-  let loadError = null;
   state.ui.loadingCalendar = true;
   renderCalendar();
   try {
@@ -103,11 +77,9 @@ async function loadMonth(opts = {}){
       renderNotifications();
       renderCalendar();
     }, { fresh:!!opts.fresh });
-    loadResult = res;
     if (generation !== calendarLoadGeneration) return;
     setSave(res?.fromCache ? "" : "");
   } catch (err) {
-    loadError = err;
     console.error(err);
     setSave("err", err.message);
   } finally {
@@ -116,7 +88,6 @@ async function loadMonth(opts = {}){
       state.ui.loadingCalendar = false;
       // Network errors without a usable snapshot must also remove the skeleton.
       if (wasStillLoading) renderCalendar();
-      recordCalendarLoadMetric({ year:requestedYear, month:requestedMonth, startedAt, result:loadResult, error:loadError });
     }
   }
 }
@@ -210,7 +181,6 @@ async function init(){
     // The calendar projection depends on the persisted work/display zones. Load the
     // authoritative profile before the first month request instead of racing both.
     await loadProfile();
-    if (moduleEnabled("calendar_sync") && typeof loadCalendarSyncStatus === "function") await loadCalendarSyncStatus(true);
     // The first visible month follows DutyLog's persisted work timezone rather
     // than the browser clock. This matters near month boundaries and in UTC±14.
     const [profileTodayYear, profileTodayMonth] = todayKey().split("-").map(Number);

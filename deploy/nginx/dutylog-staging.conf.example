@@ -14,23 +14,6 @@ server {
 
     client_max_body_size 10m;
 
-    # The feed token is a bearer secret in the query string. Never write its
-    # request line to nginx access logs. Keep this exact location in every
-    # Certbot-generated HTTP/HTTPS server block for this host.
-    location = /calendar-feed.ics {
-        access_log off;
-        proxy_pass http://127.0.0.1:18082;
-        proxy_http_version 1.1;
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $remote_addr;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Forwarded-Host $host;
-        proxy_set_header X-Forwarded-Port $server_port;
-        proxy_read_timeout 60s;
-        proxy_redirect off;
-    }
-
     # Defense in depth. DutyLog also rate-limits these endpoints internally.
     location ~ ^/(perform_login|api/auth/register|api/mobile/auth/login|api/v1/mobile/auth/login|api/v1/mobile/auth/register)$ {
         limit_req zone=dutylog_staging_auth burst=5 nodelay;

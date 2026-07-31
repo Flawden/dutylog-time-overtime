@@ -3199,15 +3199,3 @@ body.panel-open .globalQuickAdd { display:none !important; }
   .cell:has(.calendarLayerStack){padding-bottom:29px}
   .calendarLayerChip{height:13px;font-size:7px}
 }
-
-/* v27.23.0 — External Calendar Sync */
-.calendarSyncGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
-.calendarSyncBlock{padding:16px;border:1px solid var(--border);border-radius:var(--card-radius,14px);background:var(--panel-alt)}
-.calendarSyncRange{display:grid;grid-template-columns:1fr 1fr auto;gap:10px;align-items:end}
-.calendarSyncRange label,.calendarSyncSecret label{display:grid;gap:6px;color:var(--muted);font-size:13px}
-.calendarSyncSummary{margin:8px 0 12px;color:var(--text)}
-.calendarSyncSecret{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:end;margin:12px 0}
-.calendarSyncSecret input{font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
-.calendarSyncActions{display:flex;gap:10px;flex-wrap:wrap}
-.calendarSyncWarning{margin-top:12px}
-@media(max-width:760px){.calendarSyncGrid{grid-template-columns:1fr}.calendarSyncRange{grid-template-columns:1fr 1fr}.calendarSyncRange button{grid-column:1/-1}.calendarSyncSecret{grid-template-columns:1fr}.calendarSyncSecret button{width:100%}}

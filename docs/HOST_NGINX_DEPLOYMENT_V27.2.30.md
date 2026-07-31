@@ -56,8 +56,6 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-For `v27.23.0+`, the private calendar bearer secret is carried in the query string. Before issuing the first subscription, verify that every Certbot-managed HTTP and HTTPS `server` block for DutyLog keeps the exact `/calendar-feed.ics` proxy location from the supplied example, including `access_log off;`. Ordinary application deployments do not rewrite `/etc/nginx`, so this is a deliberate one-time host update.
-
 5. After DNS resolves, obtain the independent certificate:
 
 ```bash

@@ -1,95 +1,3 @@
-# v27.26.0 — Unified Time & Compensation Ledger
-
-- Connects planned shifts, factual absences, overtime credits and compensation usage in one reversible ledger.
-- Absence-owned overtime usages are FIFO allocated, locked against manual mutation and returned when the absence is deleted.
-- Adds explicit vacation/overtime/sick/unpaid coverage policies and an owner-scoped monthly Plan → Fact → Compensation read model.
-- Flyway V43 migrates the old standalone time-off balance into the canonical overtime bank without changing planned shifts.
-- Automated baseline advances to 110 Java test classes / 590 `@Test` methods / 35 Playwright scenarios.
-
-> Current release: **v27.26.0 — Unified Time & Compensation Ledger**.
-
-# v27.25.2 — Absence Experience Frontend Contract Hotfix
-
-- Aligns the stale Vacation Planner Java/static contract with the accepted plan/fact frontend implementation.
-- Protects the bounded Week agenda, timed partial-absence projection and full-day all-day rail separately.
-- Does not change production JavaScript, API, database schema or Flyway V42.
-- Automated baseline advances to 109 Java test classes / 581 `@Test` methods / 34 Playwright scenarios.
-
-> Current release: **v27.26.0 — Unified Time & Compensation Ledger**.
-
-# v27.25.1 — Absence Preview Lambda Compile Hotfix
-
-- Fixes the Java compiler error in the absence preview loop without changing product behavior.
-- Each loop iteration snapshots its `LocalDate` before the overlap-search lambda, keeping the preview date stable and effectively final.
-- Adds regression protection against capturing the incremented loop variable directly.
-- Keeps the v27.25.0 plan/fact model, API, Flyway V42 and 34 Playwright scenarios unchanged; Java baseline advances to 580 tests.
-
-> Current release: **v27.26.0 — Unified Time & Compensation Ledger**.
-
-# v27.25.0 — Absence & Time-Off Overhaul
-
-- Separates the planned shift from the factual day status without deleting or rewriting calendar rows.
-- Full-day vacation, time off, sickness and custom absences can visually replace the shift while preserving it for norms, salary and statistics.
-- Partial time off keeps the shift visible, stores an exact local interval and charges an independent minute balance.
-- Adds `VACATION_DAYS`, `TIME_OFF_HOURS` and `NONE` balance policies, plan/fact day details, monthly absence summaries and timed `.ics` projection.
-- Flyway advances to V42; automated baseline advances to 109 Java test classes / 579 `@Test` methods / 34 Playwright scenarios.
-
-> Current release: **v27.26.0 — Unified Time & Compensation Ledger**.
-
-# v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix
-
-- Aligns the new calendar comfort Playwright scenario with the real mobile modal-panel lifecycle.
-- After `↺ Сегодня` selects today in Month mode, the scenario closes `#panel` through `#pClose` before using month navigation.
-- Keeps the blocking backdrop, contextual Today behavior, API and Flyway V41 unchanged.
-- Automated baseline remains 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
-
-> Current release: **v27.26.0 — Unified Time & Compensation Ledger**.
-
-# v27.24.0 — Calendar Comfort & Correctness
-
-- Contextual «Сегодня» return instead of a permanently hidden mobile control.
-- Selected calendar date becomes the default important-day date; reminder checkboxes follow the design system.
-- Overnight Today cards separate compact time from the two-date range.
-- Refresh keeps the existing month visible, adds a calm status and captures bounded in-memory load metrics.
-- Multiple schedule layers use compact accessible pills instead of verbose controls.
-- Flyway remains V41; automated baseline: 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
-
-> Current release: **v27.26.0 — Unified Time & Compensation Ledger**.
-
-# v27.23.2 — Calendar Sync Runtime Boot Hotfix
-
-- Removes the uncaught `localDateKey is not defined` browser error from calendar-sync range initialization.
-- Uses DutyLog's canonical local `keyOf(...)` date helper, preserving floating dates across timezones.
-- Adds Java/static release guards so the undefined helper cannot return unnoticed.
-- Keeps External Calendar Sync API, token security, nginx hardening and Flyway V41 unchanged.
-- Automated baseline: 107 Java test classes / 564 `@Test` methods / 32 Playwright scenarios.
-
-# v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix
-
-- Decodes MockMvc JSON explicitly as UTF-8 in the calendar subscription lifecycle test.
-- Protects the real `prefix…suffix` token-hint contract without changing production responses.
-- Keeps External Calendar Sync runtime, API, nginx hardening and Flyway V41 unchanged.
-- Automated baseline remains 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
-
-# v27.23.0 — External Calendar Sync
-
-- Export one important event or a selected date range as standards-compliant UTF-8 `.ics`.
-- Subscribe Google Calendar, Outlook, Apple Calendar or another compatible client to a private read-only DutyLog feed.
-- Feed links use a 256-bit bearer secret shown only when issued; DutyLog stores only SHA-256 plus a short hint.
-- Rotation immediately invalidates the old link; revocation removes access without deleting calendar data.
-- Flyway V41; automated baseline: 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
-
-> Current release: **v27.26.0 — Unified Time & Compensation Ledger**.
-
-# v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix
-
-- Updated four stale Playwright task flows to use the shared workspace-aware `openView()` route.
-- Tasks stay outside Shift Worker primary navigation by design; the hotfix does not re-add the tab or alter runtime behavior.
-- Module toggling is now asserted through `moduleHidden`, independently from workspace placement through `workspaceHidden`.
-- Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
-
-> Current release: **v27.26.0 — Unified Time & Compensation Ledger**.
-
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
 - Aligned three stale Java/static contracts with the accepted Vacation Planner runtime.
@@ -98,7 +6,7 @@
 - Module persistence derives its expected count from the canonical module registry instead of a hardcoded pre-vacation number.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.26.0 — Unified Time & Compensation Ledger**.
+> Current release: **v27.22.1 — Vacation Planner Frontend Contract Hotfix**.
 
 # v27.22.0 — Vacation Planner
 
@@ -108,7 +16,7 @@
 - Added owner-scoped absence types, calendar projections and a responsive unified-shell planner.
 - Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
 
-> Current release: **v27.26.0 — Unified Time & Compensation Ledger**.
+> Current release: **v27.22.1 — Vacation Planner Frontend Contract Hotfix**.
 
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
@@ -117,33 +25,18 @@
 - Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
 - No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.26.0 — Unified Time & Compensation Ledger**.
+> Current release: **v27.22.1 — Vacation Planner Frontend Contract Hotfix**.
 
 # DutyLog
 
-Current release: **v27.26.0 — Unified Time & Compensation Ledger**
+Current release: **v27.22.1 — Vacation Planner Frontend Contract Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.26.0 — Unified Time & Compensation Ledger
+## Текущая версия: v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
-**v27.26.0** связывает график, фактические отсутствия и компенсационные часы в один обратимый журнал. Отгул за ранее отработанное время создаёт связанное FIFO-списание переработки; редактирование перестраивает его, удаление возвращает часы, а ручной журнал не может изменить операцию, принадлежащую отсутствию. Flyway V43 переносит старый отдельный баланс в канонический банк, не меняя плановые смены.
 
-### Предыдущий hotfix: v27.23.2 — Calendar Sync Runtime Boot Hotfix
-
-**v27.23.2** исправил browser-runtime инициализацию диапазона `.ics`, не меняя API, nginx-защиту и Flyway V41.
-
-### Базовый продуктовый релиз: v27.23.0 — External Calendar Sync
-
-**v27.23.0** добавляет безопасный исходящий календарный контур: разовый `.ics`-экспорт и приватную read-only подписку со строгой ротацией и отзывом токена. Поставляемые nginx-конфиги отключают access log для точного `/calendar-feed.ics`, чтобы bearer URL не попадал в журналы edge-прокси.
-
-### Предыдущий hotfix: v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix
-
-**v27.22.2** перевёл четыре устаревших browser-сценария задач на общий workspace-aware маршрут `openView(page, "tasks")`, не возвращая Tasks в основную навигацию Shift Worker.
-
-### Предыдущий hotfix: v27.22.1 — Vacation Planner Frontend Contract Hotfix
-
-**v27.22.1** синхронизировал три Java/static контракта с принятым runtime Vacation Planner.
+**v27.22.1** исправляет три статических контракта, которые Maven остановил после успешной проверки нового runtime-домена. Production-логика Vacation Planner не меняется.
 
 ### Базовый продуктовый релиз: v27.22.0 — Vacation Planner
 
@@ -601,7 +494,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить **v27.26.0** через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить связанный lifecycle «начисление переработки → отгул → редактирование → возврат часов». После зелёного CI продукт переходит к **v27.27.0 — Payroll Foundation**.
+Следующий практический шаг — пропустить v27.22.1 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и затем вручную проверить нормы, preview, конфликты, пресеты 14/28/35 и проекции отсутствий в Month / Week / Day. Следующий продуктовый этап — **v27.23.0 — External Calendar Sync**.
 
 ## Служебный профиль администратора
 

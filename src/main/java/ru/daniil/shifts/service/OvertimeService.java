@@ -84,7 +84,7 @@ public class OvertimeService {
      * the main overtime account. Legacy day_entries values are deliberately
      * ignored so a zero projected balance can never resurrect stale hours.
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public OvertimeSummaryDto summary(AppUser user, LocalDate from, LocalDate to) {
         List<OvertimeCreditRowDto> rows = projectedRowsInRange(user, from, to);
         double overtime = rows.stream().mapToDouble(OvertimeCreditRowDto::hours).sum();
@@ -103,7 +103,7 @@ public class OvertimeService {
      * Each date is the user's current local calendar date, not the historical
      * source date stored in day_entries.
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public List<OvertimeLedgerItemDto> ledger(AppUser user, LocalDate from, LocalDate to) {
         List<OvertimeCreditRowDto> rows = projectedRowsInRange(user, from, to);
         Map<LocalDate, DayEntry> dayEntries = entries(user, from, to).stream()
@@ -138,9 +138,8 @@ public class OvertimeService {
      * Полная бухгалтерия переработок. Не ограничивается текущим месяцем:
      * начисления из мая могут быть списаны в августе.
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public OvertimeAccountDto account(AppUser user) {
-        ensureAllocationConsistency(user);
         List<OvertimeCredit> creditList = credits.findByOwnerOrderByWorkDateAscIdAsc(user);
         List<OvertimeUsage> usageList = usages.findByOwnerOrderByUsageDateAscIdAsc(user);
         List<OvertimeAllocation> allocationList = allocations.findAllByOwner(user);
@@ -159,7 +158,7 @@ public class OvertimeService {
      * Страничный ответ для экрана переработок: итог аккаунта считается полностью,
      * клиент получает текущую страницу начислений и полный canonical usage snapshot.
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public OvertimeAccountPageDto accountPage(AppUser user, String from, String to, String status, String q, int page, int size) {
         OvertimeAccountDto account = account(user);
         List<OvertimeCreditRowDto> filtered = filterCreditRows(account.credits(), from, to, status, q);
@@ -177,7 +176,7 @@ public class OvertimeService {
     /**
      * Экспорт журнала переработок в CSV. Фильтры совпадают с таблицей на фронте.
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public byte[] exportAccountCsv(AppUser user, String from, String to, String status, String q) {
         List<OvertimeCreditRowDto> rows = filterCreditRows(account(user).credits(), from, to, status, q);
         StringBuilder sb = new StringBuilder();
@@ -214,7 +213,7 @@ public class OvertimeService {
     /**
      * Excel-совместимый .xls без тяжёлых зависимостей: обычная HTML-таблица, которую Excel открывает как книгу.
      */
-    @Transactional
+    @Transactional(readOnly = true)
     public byte[] exportAccountXls(AppUser user, String from, String to, String status, String q) {
         OvertimeAccountDto account = account(user);
         List<OvertimeCreditRowDto> rows = filterCreditRows(account.credits(), from, to, status, q);
@@ -365,87 +364,9 @@ public class OvertimeService {
 
         OvertimeUsage usage = new OvertimeUsage(user, date, hoursFromMinutes(requestedMinutes), normalize(req.reason()));
         usage.setRequestedMinutes(requestedMinutes);
-        usage.setSourceKind("MANUAL");
-        usage.setSourceAbsenceId(null);
         usages.save(usage);
         rebuildAllAllocations(user);
         return account(user);
-    }
-
-    /** Current canonical FIFO balance in integer minutes. */
-    @Transactional
-    public int balanceMinutes(AppUser user) {
-        ensureAllocationConsistency(user);
-        return totalEarnedMinutes(user) - totalUsedMinutes(user);
-    }
-
-    @Transactional(readOnly = true)
-    public int totalEarnedMinutes(AppUser user) {
-        return credits.findByOwnerOrderByWorkDateAscIdAsc(user).stream()
-                .mapToInt(OvertimeCredit::getCreditedMinutes).sum();
-    }
-
-    @Transactional(readOnly = true)
-    public int totalUsedMinutes(AppUser user) {
-        return usages.findByOwnerOrderByUsageDateAscIdAsc(user).stream()
-                .mapToInt(OvertimeUsage::getRequestedMinutes).sum();
-    }
-
-    /** Available balance while editing one source-linked absence. */
-    @Transactional(readOnly = true)
-    public int availableMinutesForAbsence(AppUser user, Long absenceId) {
-        Long excludedUsageId = absenceId == null ? null : usages.findByOwnerAndSourceAbsenceId(user, absenceId)
-                .map(OvertimeUsage::getId).orElse(null);
-        int earned = totalEarnedMinutes(user);
-        int used = usages.findByOwnerOrderByUsageDateAscIdAsc(user).stream()
-                .filter(usage -> excludedUsageId == null || !Objects.equals(usage.getId(), excludedUsageId))
-                .mapToInt(OvertimeUsage::getRequestedMinutes).sum();
-        return Math.max(0, earned - used);
-    }
-
-    @Transactional(readOnly = true)
-    public Long linkedUsageId(AppUser user, Long absenceId) {
-        if (absenceId == null) return null;
-        return usages.findByOwnerAndSourceAbsenceId(user, absenceId).map(OvertimeUsage::getId).orElse(null);
-    }
-
-    /**
-     * Creates or atomically replaces the FIFO usage owned by one absence.
-     * The absence remains the only editor for this usage; manual ledger endpoints
-     * reject direct changes so compensation can never drift away from the calendar.
-     */
-    @Transactional
-    public Long upsertLinkedAbsenceUsage(AppUser user,
-                                         Long absenceId,
-                                         LocalDate usageDate,
-                                         int requestedMinutes,
-                                         String reason) {
-        if (absenceId == null) throw ApiException.badRequest("Отсутствие должно быть сохранено до списания переработки");
-        if (requestedMinutes <= 0) throw ApiException.badRequest("Связанное списание должно быть больше 0 минут");
-        OvertimeUsage usage = usages.findByOwnerAndSourceAbsenceId(user, absenceId).orElse(null);
-        Long excludedId = usage == null ? null : usage.getId();
-        validateUsageCapacity(user, excludedId, requestedMinutes);
-        if (usage == null) usage = new OvertimeUsage(user, usageDate, hoursFromMinutes(requestedMinutes), normalize(reason));
-        usage.setUsageDate(usageDate);
-        usage.setRequestedMinutes(requestedMinutes);
-        usage.setReason(normalize(reason));
-        usage.setSourceKind("ABSENCE");
-        usage.setSourceAbsenceId(absenceId);
-        usages.saveAndFlush(usage);
-        rebuildAllAllocations(user);
-        return usage.getId();
-    }
-
-    @Transactional
-    public void deleteLinkedAbsenceUsage(AppUser user, Long absenceId) {
-        if (absenceId == null) return;
-        OvertimeUsage usage = usages.findByOwnerAndSourceAbsenceId(user, absenceId).orElse(null);
-        if (usage == null) return;
-        allocations.deleteByUsage(usage);
-        allocations.flush();
-        usages.delete(usage);
-        usages.flush();
-        rebuildAllAllocations(user);
     }
 
     @Transactional
@@ -453,7 +374,6 @@ public class OvertimeService {
         if (req == null) {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
-        ensureAllocationConsistency(user);
         OvertimeCredit credit = requireOwnedCredit(user, id);
         double used = hoursFromMinutes(allocations.findByCredit(credit).stream().mapToInt(OvertimeAllocation::getAllocatedMinutes).sum());
         boolean keepLegacyLocalIdentity = credit.getStartAtInstant() == null
@@ -570,12 +490,7 @@ public class OvertimeService {
         if (req == null) {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
-        ensureAllocationConsistency(user);
         OvertimeUsage usage = requireOwnedUsage(user, id);
-        if (usage.isAbsenceLinked()) {
-            throw ApiException.conflict("LINKED_USAGE_MANAGED_BY_ABSENCE",
-                    "Это списание создано отсутствием и редактируется только через Vacation Planner");
-        }
 
         LocalDate date = hasText(req.date())
                 ? dayEntryService.parseDate(req.date(), "Дата списания должна быть в формате yyyy-MM-dd")
@@ -597,7 +512,6 @@ public class OvertimeService {
 
     @Transactional
     public OvertimeAccountDto deleteCredit(AppUser user, long id) {
-        ensureAllocationConsistency(user);
         OvertimeCredit credit = requireOwnedCredit(user, id);
         double used = hoursFromMinutes(allocations.findByCredit(credit).stream().mapToInt(OvertimeAllocation::getAllocatedMinutes).sum());
         if (used > 0.00001) {
@@ -609,12 +523,7 @@ public class OvertimeService {
 
     @Transactional
     public OvertimeAccountDto deleteUsage(AppUser user, long id) {
-        ensureAllocationConsistency(user);
         OvertimeUsage usage = requireOwnedUsage(user, id);
-        if (usage.isAbsenceLinked()) {
-            throw ApiException.conflict("LINKED_USAGE_MANAGED_BY_ABSENCE",
-                    "Связанное списание удаляется вместе с отсутствием в Vacation Planner");
-        }
         List<OvertimeCredit> creditList = credits.findByOwnerOrderByWorkDateAscIdAsc(user);
         List<OvertimeUsage> remainingUsages = usages.findByOwnerOrderByUsageDateAscIdAsc(user).stream()
                 .filter(candidate -> !Objects.equals(candidate.getId(), usage.getId()))
@@ -632,23 +541,6 @@ public class OvertimeService {
         persistAllocationPlan(user, plan);
         verifyLedgerIntegrity(user, creditList, remainingUsages);
         return account(user);
-    }
-
-    /**
-     * V43 can introduce source-linked usages before allocation rows exist.
-     * Repair only when persisted totals disagree; normal reads remain no-op.
-     */
-    private void ensureAllocationConsistency(AppUser user) {
-        List<OvertimeUsage> usageList = usages.findByOwnerOrderByUsageDateAscIdAsc(user);
-        int requested = usageList.stream().mapToInt(OvertimeUsage::getRequestedMinutes).sum();
-        List<OvertimeAllocation> allocationList = allocations.findAllByOwner(user);
-        int allocated = allocationList.stream().mapToInt(OvertimeAllocation::getAllocatedMinutes).sum();
-        Map<Long, Integer> byUsage = allocationList.stream().collect(Collectors.groupingBy(
-                allocation -> allocation.getUsage().getId(),
-                Collectors.summingInt(OvertimeAllocation::getAllocatedMinutes)));
-        boolean mismatch = requested != allocated || usageList.stream().anyMatch(
-                usage -> byUsage.getOrDefault(usage.getId(), 0) != usage.getRequestedMinutes());
-        if (mismatch) rebuildAllAllocations(user);
     }
 
     /**
@@ -1266,10 +1158,7 @@ public class OvertimeService {
                 hoursFromMinutes(usage.getRequestedMinutes()),
                 usage.getReason(),
                 refs,
-                usage.getRequestedMinutes(),
-                usage.getSourceKind(),
-                usage.getSourceAbsenceId(),
-                !usage.isAbsenceLinked()
+                usage.getRequestedMinutes()
         );
     }
 

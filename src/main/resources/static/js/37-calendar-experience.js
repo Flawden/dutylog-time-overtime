@@ -12,14 +12,6 @@ const CALENDAR_MODE_KEY = "dutylog.calendar.mode.v1";
 const CALENDAR_FOCUS_KEY = "dutylog.calendar.focus.v1";
 const CALENDAR_MODES = new Set(["month", "week", "day"]);
 
-Object.assign(I18N_EN, {
-  "Вернуться к сегодняшнему дню":"Back to today",
-  "Обновляю календарь…":"Refreshing calendar…",
-  "Календарь обновлён":"Calendar updated",
-  "Слои":"Layers"
-});
-Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
-
 function calendarExperienceStored(key, fallback){
   try { return localStorage.getItem(key) || fallback; }
   catch (_) { return fallback; }
@@ -87,24 +79,6 @@ function calendarExperienceFocusDate(){
   if (calendarExperienceValidDateKey(state.selected)) return state.selected;
   if (calendarExperienceValidDateKey(state.calendarExperience?.focusDate)) return state.calendarExperience.focusDate;
   return todayKey();
-}
-function calendarExperienceIsAtToday(){
-  const today = todayKey();
-  if (state.calendarExperience?.mode === "month") {
-    const { year, month } = calendarExperienceParts(today);
-    return state.y === year && state.m === month - 1;
-  }
-  return calendarExperienceFocusDate() === today;
-}
-function updateCalendarTodayButton(){
-  const button = $("todayBtn");
-  if (!button) return;
-  const route = (location.hash || "#today").replace(/^#/, "");
-  const visible = route === "calendar" && !calendarExperienceIsAtToday();
-  button.hidden = !visible;
-  button.classList.toggle("isVisible", visible);
-  button.setAttribute("aria-label", t("Вернуться к сегодняшнему дню"));
-  button.title = t("Вернуться к сегодняшнему дню");
 }
 function calendarExperienceSetFocusMemory(key){
   if (!calendarExperienceValidDateKey(key)) return;
@@ -195,17 +169,12 @@ function calendarExperienceDayFacts(key){
   const reminders = moduleEnabled("notifications") ? calendarExperienceRemindersForDate(key) : [];
   const notes = moduleEnabled("notes") ? notesOfDay(key) : [];
   const overtime = moduleEnabled("overtime") ? ledgerNetOf(key) : 0;
-  const factualAbsence = absences.find(item => item.coverage === "FULL_DAY" && item.replacesShift) || null;
-  const partialAbsences = absences.filter(item => item.coverage === "PARTIAL");
-  return { shift, segments, tasks, important, absences, factualAbsence, partialAbsences, reminders, notes, overtime };
+  return { shift, segments, tasks, important, absences, reminders, notes, overtime };
 }
 function calendarExperienceSummaryText(key){
   const facts = calendarExperienceDayFacts(key);
   const pieces = [];
-  if (facts.factualAbsence) {
-    const actual = typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(facts.factualAbsence) : (facts.factualAbsence.title || facts.factualAbsence.typeName || t("Отсутствие"));
-    pieces.push(`${actual}${facts.shift ? ` · ${t("По графику")}: ${shiftDisplayName(facts.shift)}` : ""}`);
-  } else if (facts.shift) pieces.push(shiftDisplayName(facts.shift));
+  if (facts.shift) pieces.push(shiftDisplayName(facts.shift));
   if (facts.tasks.length) pieces.push(`${facts.tasks.length} ${state.language === "en" ? "tasks" : "задач"}`);
   if (facts.important.length) pieces.push(`${facts.important.length} ★`);
   if (facts.absences.length) pieces.push(`${facts.absences.length} ☂`);
@@ -232,13 +201,11 @@ function calendarExperienceRenderWeek(){
     button.dataset.date = key;
     button.classList.toggle("isSelected", key === focus);
     button.classList.toggle("isToday", key === todayKey());
-    const dayColor = facts.factualAbsence?.typeColor || facts.shift?.color;
-    if (dayColor) button.style.setProperty("--day-color", dayColor);
-    button.classList.toggle("hasAbsenceFact", !!facts.factualAbsence);
+    if (facts.shift?.color) button.style.setProperty("--day-color", facts.shift.color);
     button.innerHTML = `
       <span>${esc(new Intl.DateTimeFormat(currentLocale(), { weekday:"short", timeZone:"UTC" }).format(date))}</span>
       <b>${date.getUTCDate()}</b>
-      <small>${esc(loaded ? (facts.factualAbsence ? (typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(facts.factualAbsence) : facts.factualAbsence.typeName) : facts.shift ? shiftDisplayName(facts.shift) : t("Свободно")) : new Intl.DateTimeFormat(currentLocale(), { month:"short", timeZone:"UTC" }).format(date))}</small>
+      <small>${esc(loaded ? (facts.shift ? shiftDisplayName(facts.shift) : t("Свободно")) : new Intl.DateTimeFormat(currentLocale(), { month:"short", timeZone:"UTC" }).format(date))}</small>
       <i>${loaded ? `${facts.tasks.length ? `${facts.tasks.length}✓` : ""}${facts.important.length ? " ★" : ""}${facts.absences.length ? " ☂" : ""}` : "↗"}</i>`;
     button.addEventListener("click", async () => {
       await calendarExperienceEnsureMonth(key);
@@ -259,14 +226,10 @@ function calendarExperienceRenderWeek(){
   const list = document.createElement("div");
   list.className = "calendarWeekAgendaList";
   const rows = [];
-  if (!facts.factualAbsence) for (const segment of facts.segments) rows.push({ icon:"◷", title:facts.shift ? shiftDisplayName(facts.shift) : t("Смена"), meta:segment.range, color:facts.shift?.color });
+  for (const segment of facts.segments) rows.push({ icon:"◷", title:facts.shift ? shiftDisplayName(facts.shift) : t("Смена"), meta:segment.range, color:facts.shift?.color });
   for (const task of facts.tasks.slice(0, 5)) rows.push({ icon:"✓", title:task.text || t("Задача"), meta:[taskPlannedLabel(task, { includeDate:false }), calendarExperienceTaskLabel(task)].filter(Boolean).join(" · "), task });
   for (const item of facts.important.slice(0, 3)) rows.push({ icon:item.icon || "★", title:item.title || t("Важная дата"), meta:typeof importantScheduleLabel === "function" ? importantScheduleLabel(item) : repeatLabel(item.repeatMode), color:item.color, important:item });
-  for (const absence of facts.absences.slice(0, 3)) {
-    const fact = absence.coverage === "PARTIAL" ? `${absence.startTime || "—"}–${absence.endTime || "—"}` : t("Полный день");
-    const planned = absence.plannedShiftName ? `${t("По графику")}: ${absence.plannedShiftName}` : "";
-    rows.push({ icon:absence.coverage === "PARTIAL" ? "◴" : "●", title:typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отсутствие")), meta:[fact, planned].filter(Boolean).join(" · "), color:absence.typeColor, absence });
-  }
+  for (const absence of facts.absences.slice(0, 3)) rows.push({ icon:"☂", title:typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отсутствие")), meta:absence.startDate === absence.endDate ? absence.date : `${absence.startDate} — ${absence.endDate}`, color:absence.typeColor, absence });
   if (Math.abs(facts.overtime) > .001) rows.push({ icon:"＋", title:t("Переработка"), meta:`${facts.overtime > 0 ? "+" : ""}${fmtHours(facts.overtime)} ${state.language === "en" ? "h" : "ч"}`, overtime:true });
   if (!rows.length) rows.push({ icon:"○", title:t("Планов на этот день нет"), meta:t("Можно спокойно оставить его свободным") });
   for (const row of rows) {
@@ -320,12 +283,6 @@ function calendarExperienceTimelineEvents(key){
       title:facts.shift ? shiftDisplayName(facts.shift) : t("Смена"), meta:segment.range,
     });
   }
-  for (const absence of facts.partialAbsences) {
-    const start = calendarExperienceTimeMinutes(absence.startTime);
-    const end = calendarExperienceTimeMinutes(absence.endTime);
-    if (start == null || end == null || end <= start) continue;
-    events.push({ type:"vacation", start, end, color:absence.typeColor, title:typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отгул")), meta:absence.plannedShiftName ? `${t("По графику")}: ${absence.plannedShiftName}` : t("Часть дня"), absence });
-  }
   for (const important of facts.important.filter(item => item.allDay === false)) {
     const start = calendarExperienceTimeMinutes(important.startTime);
     const endRaw = calendarExperienceTimeMinutes(important.endTime);
@@ -373,9 +330,9 @@ function calendarExperienceRenderAllDay(key){
   if (!box) return;
   const facts = calendarExperienceDayFacts(key);
   const items = [];
-  if (facts.shift && !facts.segments.length && !facts.factualAbsence) items.push({ type:"shift", icon:"◷", text:shiftDisplayName(facts.shift), color:facts.shift.color });
+  if (facts.shift && !facts.segments.length) items.push({ type:"shift", icon:"◷", text:shiftDisplayName(facts.shift), color:facts.shift.color });
   for (const item of facts.important.filter(entry => entry.allDay !== false)) items.push({ type:"important", icon:item.icon || "★", text:item.title || t("Важная дата"), color:item.color, important:item });
-  for (const absence of facts.absences.filter(item => item.coverage !== "PARTIAL")) items.push({ type:"vacation", icon:"●", text:`${typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отсутствие"))}${absence.plannedShiftName ? ` · ${t("По графику")}: ${absence.plannedShiftName}` : ""}`, color:absence.typeColor, absence });
+  for (const absence of facts.absences) items.push({ type:"vacation", icon:"☂", text:typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отсутствие")), color:absence.typeColor, absence });
   for (const task of facts.tasks.filter(item => item.allDay !== false || !item.scheduledStartTime)) items.push({ type:"task", icon:"✓", text:task.text || t("Задача"), task });
   if (facts.notes.length) items.push({ type:"note", icon:"▤", text:`${state.language === "en" ? "Notes" : "Заметки"}: ${facts.notes.length}` });
   box.hidden = !items.length;
@@ -454,7 +411,6 @@ function calendarExperienceRenderDay(){
     button.addEventListener("click", () => {
       if (event.task && typeof openTaskDetails === "function") openTaskDetails(event.task.id);
       else if (event.important && typeof openImportantDetails === "function") openImportantDetails(event.important.id);
-      else if (event.absence && typeof editAbsenceFromOccurrence === "function") editAbsenceFromOccurrence(event.absence);
       else if (event.type === "overtime") location.hash = "#overtime";
       else calendarExperienceOpenLegacyDetails(key);
     });
@@ -506,7 +462,6 @@ function renderCalendarExperience(){
   if (label) label.textContent = mode === "week" ? calendarExperienceWeekRangeLabel(calendarExperienceWeekStart(focus)) : calendarExperienceLongLabel(focus);
   if (mode === "week") calendarExperienceRenderWeek();
   if (mode === "day") calendarExperienceRenderDay();
-  updateCalendarTodayButton();
 }
 
 async function calendarExperienceRestoreFocus(){

@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.26.0"
+const DUTYLOG_VERSION = "27.22.1"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -83,8 +83,6 @@ const state = {
   absenceOccurrences: [],          // vacation/absence projections from the calendar bundle
   absencesByDate: {},              // display date -> absence occurrences
   vacationPlanner: null,           // settings, summary, types and source periods
-  calendarSync: null,              // private .ics subscription status
-  calendarSyncIssuedUrl: null,     // shown only after issue/rotation
   editingAbsenceId: null,
   vacationPreview: null,
   importantFilters: { scope:"all", q:"" },
@@ -117,7 +115,7 @@ const state = {
   onboardingDraft: null,
   modulesLoaded: false,
   modulesList: [],
-  modules: { core:true, calendar:true, shifts:true, notes:true, tasks:true, overtime:true, important_dates:true, vacation:true, calendar_sync:true, notifications:true, telegram:false, scenarios:true, admin:false },
+  modules: { core:true, calendar:true, shifts:true, notes:true, tasks:true, overtime:true, important_dates:true, vacation:true, notifications:true, telegram:false, scenarios:true, admin:false },
   activeScenarioId: null,
   ledgerFilters: { from:"", to:"", status:"all", q:"", preset:"all" },
   ledgerPage: { items: [], page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false },
@@ -126,7 +124,7 @@ const state = {
   selected: null,                 // ключ даты
   tab: "edit",
   activeNoteByDate: {},
-  ui: { booting:true, loadingCalendar:false, calendarHasRendered:false, calendarLoadMetrics:[], loadingTasks:false, loadingLedger:false },
+  ui: { booting:true, loadingCalendar:false, loadingTasks:false, loadingLedger:false },
   toasts: [],
   swColor: "#F5B841",
   offline: {

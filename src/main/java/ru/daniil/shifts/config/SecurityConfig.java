@@ -186,8 +186,7 @@ public class SecurityConfig {
                                 "/api/auth/registration-status",
                                 "/h2-console/**",
                                 "/actuator/health",
-                                "/actuator/health/**",
-                                "/calendar-feed.ics"
+                                "/actuator/health/**"
                         ).permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())

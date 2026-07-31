@@ -1,24 +1,12 @@
-# DutyLog API v27.26.0
-
-## Unified time and compensation ledger
-
-```http
-GET /api/time-compensation?from=2026-07-01&to=2026-07-31
-GET /api/v1/time-compensation?from=2026-07-01&to=2026-07-31
-```
-
-Returns an owner-scoped, no-store Plan → Fact → Compensation projection. It combines planned shift minutes, factual absence minutes, overtime earned/used, absence-linked compensated minutes, vacation days, sick minutes and unpaid minutes. It does not calculate money.
-
-Absence create/update/preview payloads accept `compensationPolicy`: `VACATION_ALLOWANCE`, `OVERTIME_BANK`, `SICK_PAY`, `UNPAID` or `NONE`. Period/occurrence responses expose `compensatedMinutes` and `linkedOvertimeUsageId`. Overtime usage rows expose `sourceKind`, `sourceAbsenceId` and `editable`; `ABSENCE` rows are changed only through Vacation Planner.
-
+# DutyLog API v27.22.1
 
 Проект: **DutyLog: Time & Overtime**.
 
-v27.22.2 is a Playwright navigation-contract hotfix. It does not change Vacation Planner endpoints, payloads, error codes or Flyway V40. Tasks remain outside the Shift Worker primary tab bar and are opened through the shared workspace-aware route.
+v27.22.1 is a frontend/static contract hotfix. It does not change Vacation Planner endpoints, payloads, error codes or Flyway V40.
 
 v27.22.0 additively introduces an independent Vacation Planner API. Vacation and other absences never write a shift type into a calendar day. Flyway V40 adds owner-scoped settings, absence types and absence periods; existing endpoints remain compatible.
 
-## Absence & Time-Off Planner
+## Vacation Planner
 
 ```text
 GET    /api/v1/vacation-planner
@@ -33,53 +21,18 @@ PATCH  /api/v1/vacation-planner/absences/{id}
 DELETE /api/v1/vacation-planner/absences/{id}
 ```
 
-`GET /api/v1/vacation-planner` accepts optional `referenceDate`; optional `from` and `to` must be passed together. The response contains settings, vacation and time-off summaries, presets, types, periods, per-type summaries and calendar occurrences.
-
-Settings add independent time-off fields:
-
-```json
-{
-  "timeOffBalanceHours": 24,
-  "defaultTimeOffDayHours": 8
-}
-```
-
-Every absence type has one balance policy:
-
-```text
-VACATION_DAYS
-TIME_OFF_HOURS
-NONE
-```
-
-The built-in `TIME_OFF` type uses `TIME_OFF_HOURS`. `fullDayReplacesShift` controls factual calendar presentation; it never deletes the underlying shift.
-
-An absence request supports:
-
-```json
-{
-  "typeId": 5,
-  "title": "Врач",
-  "startDate": "2026-08-12",
-  "endDate": "2026-08-12",
-  "coverage": "PARTIAL",
-  "startTime": "09:00",
-  "endTime": "13:00"
-}
-```
-
-`FULL_DAY` can span dates and has no times. `PARTIAL` is one local date with `endTime > startTime`. The response includes `chargedMinutes`, `replacesShift` and preserved planned-shift context.
+`GET /api/v1/vacation-planner` accepts optional `referenceDate`; optional `from` and `to` must be passed together. The response contains settings, current work-year summary, presets `[14, 28, 35]`, types, periods and day-sized occurrences.
 
 Stable conflict codes:
 
 ```text
 ABSENCE_OVERLAP
 VACATION_LIMIT_EXCEEDED
-TIME_OFF_LIMIT_EXCEEDED
-ABSENCE_TYPE_IN_USE
 ```
 
-The calendar response additively includes `absences[]`. A full-day factual absence can visually replace the shift, while partial time off coexists with it. Shift payloads and `day_entries` semantics remain unchanged.
+The calendar response additively includes `absences[]`; shift payloads and `day_entries` semantics are unchanged.
+
+v27.21.2 не меняет HTTP API и production runtime. Исправлен только Playwright selector contract. v27.21.1 также не менял HTTP API. Базовый v27.21.0 аддитивно добавляет owner-scoped шаблоны графика и календарные слои. Существующие calendar/day/task/note/event payload'ы не меняются. Flyway V39 создаёт отдельные таблицы правил; датированные смены и исторические данные не переписываются.
 
 ### Шаблоны графика
 
@@ -1591,24 +1544,3 @@ POST /api/overtime/legacy-credits/migrate
 The same routes exist below `/api/v1`. Requests contain selected `creditIds` and an explicit IANA `sourceTimezone`. Preview is read-only; migrate persists exact instants and rebuilds FIFO. Ownership and overtime-module guards are unchanged.
 
 Profile responses still include `workTimezone` and `displayTimezone`, but v27.9.0 treats them as compatibility aliases of one canonical timezone.
-
-
-## External calendar sync (v27.23.0)
-
-Authenticated owner-scoped endpoints:
-
-```http
-GET    /api/v1/calendar-sync/status
-POST   /api/v1/calendar-sync/subscription
-DELETE /api/v1/calendar-sync/subscription
-GET    /api/v1/calendar-sync/export?from=YYYY-MM-DD&to=YYYY-MM-DD
-GET    /api/v1/calendar-sync/events/{id}.ics
-```
-
-External clients read the private feed through:
-
-```http
-GET /calendar-feed.ics?token=<43-character bearer secret>
-```
-
-The raw token is returned only after issue/rotation. Persistent storage contains only SHA-256 and a short hint. Range export is limited to 366 days, 10,000 events and 5 MiB by default. All `.ics` responses use UTF-8, CRLF, RFC 5545 content-line folding and `Cache-Control: no-store`.

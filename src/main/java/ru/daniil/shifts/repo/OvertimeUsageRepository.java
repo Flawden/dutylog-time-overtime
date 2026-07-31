@@ -12,5 +12,4 @@ public interface OvertimeUsageRepository extends JpaRepository<OvertimeUsage, Lo
     List<OvertimeUsage> findByOwnerOrderByUsageDateAscIdAsc(AppUser owner);
     List<OvertimeUsage> findByOwnerAndUsageDateBetweenOrderByUsageDateAscIdAsc(AppUser owner, LocalDate from, LocalDate to);
     Optional<OvertimeUsage> findByOwnerAndId(AppUser owner, Long id);
-    Optional<OvertimeUsage> findByOwnerAndSourceAbsenceId(AppUser owner, Long sourceAbsenceId);
 }

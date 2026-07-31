@@ -41,20 +41,4 @@ class ApiV1OpenApiContractTest {
         }
     }
 
-    @Test
-    void openApiDocumentsPrivateIcsSubscriptionAndReadOnlyExports() throws Exception {
-        try (var stream = getClass().getResourceAsStream("/static/openapi/dutylog-v1.yaml")) {
-            assertNotNull(stream, "OpenAPI v1 file must be packaged");
-            String yaml = new String(stream.readAllBytes(), StandardCharsets.UTF_8);
-            assertTrue(yaml.contains("/api/v1/calendar-sync/status:"));
-            assertTrue(yaml.contains("/api/v1/calendar-sync/subscription:"));
-            assertTrue(yaml.contains("/api/v1/calendar-sync/export:"));
-            assertTrue(yaml.contains("/api/v1/calendar-sync/events/{id}.ics:"));
-            assertTrue(yaml.contains("/calendar-feed.ics:"));
-            assertTrue(yaml.contains("CalendarSyncStatus:"));
-            assertTrue(yaml.contains("CalendarSubscription:"));
-            assertTrue(yaml.contains("text/calendar:"));
-        }
-    }
-
 }

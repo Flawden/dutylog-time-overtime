@@ -10,9 +10,8 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "overtime_usages", indexes = {
-        @Index(name = "idx_overtime_usages_user_date", columnList = "user_id, usage_date"),
-        @Index(name = "idx_overtime_usages_source", columnList = "user_id, source_kind, source_absence_id")
-}, uniqueConstraints = @UniqueConstraint(name = "uq_overtime_usage_source_absence", columnNames = "source_absence_id"))
+        @Index(name = "idx_overtime_usages_user_date", columnList = "user_id, usage_date")
+})
 public class OvertimeUsage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,14 +33,6 @@ public class OvertimeUsage {
 
     @Column(columnDefinition = "text")
     private String reason;
-
-    /** MANUAL for the classic ledger editor, ABSENCE for an automatically linked time-off. */
-    @Column(name = "source_kind", nullable = false, length = 30)
-    private String sourceKind = "MANUAL";
-
-    /** Stable source identity without an entity cycle back to Vacation Planner. */
-    @Column(name = "source_absence_id")
-    private Long sourceAbsenceId;
 
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -71,13 +62,5 @@ public class OvertimeUsage {
     public void setHours(double hours) { setRequestedMinutes((int) Math.round(Math.max(0.0, hours) * 60.0)); }
     public String getReason() { return reason; }
     public void setReason(String reason) { this.reason = reason; }
-    public String getSourceKind() { return sourceKind == null ? "MANUAL" : sourceKind; }
-    public void setSourceKind(String sourceKind) {
-        String normalized = sourceKind == null ? "MANUAL" : sourceKind.trim().toUpperCase();
-        this.sourceKind = normalized.isBlank() ? "MANUAL" : normalized;
-    }
-    public Long getSourceAbsenceId() { return sourceAbsenceId; }
-    public void setSourceAbsenceId(Long sourceAbsenceId) { this.sourceAbsenceId = sourceAbsenceId; }
-    public boolean isAbsenceLinked() { return "ABSENCE".equals(getSourceKind()) && sourceAbsenceId != null; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }
