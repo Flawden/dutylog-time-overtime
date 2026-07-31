@@ -58,6 +58,12 @@ if grep -Fq 'proxy_set_header X-Forwarded-For $remote_addr;' deploy/nginx/dutylo
 else
   fail "production nginx must overwrite X-Forwarded-For"
 fi
+if grep -Fq 'location = /calendar-feed.ics {' deploy/nginx/dutylog-production.conf.example \
+    && grep -Fq 'access_log off;' deploy/nginx/dutylog-production.conf.example; then
+  ok "production nginx suppresses access logs for calendar bearer URLs"
+else
+  fail "production nginx must disable access logging for /calendar-feed.ics"
+fi
 
 for command in docker curl; do
   if command -v "$command" >/dev/null 2>&1; then

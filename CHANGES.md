@@ -1,3 +1,12 @@
+# v27.23.0 — External Calendar Sync
+
+- Added RFC 5545 `.ics` export for one important event and owner-selected ranges up to 366 days.
+- Composed shifts, planned tasks, important events and absences into one read-only external calendar without changing DutyLog source data.
+- Added a private rolling subscription with 256-bit bearer tokens, SHA-256-only persistence, one-time secret display, rotation, revocation and immediate old-token invalidation.
+- Added nginx `access_log off` protection for the exact `/calendar-feed.ics` bearer endpoint in all supplied server templates and production preflight checks.
+- Added a responsive Settings panel, Web/v1 API, OpenAPI, UTF-8 MockMvc decoding contract and browser boot guard using canonical local `keyOf(...)` dates.
+- Flyway advances to V41; regression baseline advances to 107 Java test classes, 564 `@Test` methods and 32 Playwright scenarios.
+
 # v27.22.2 — Workspace Route E2E Navigation Hotfix
 
 - CI v27.22.1 completed 27 of 31 Playwright scenarios and exposed four deterministic tests that still clicked the hidden Tasks tab in the Shift Worker workspace.

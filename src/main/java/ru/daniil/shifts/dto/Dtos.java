@@ -2224,6 +2224,29 @@ public final class Dtos {
             List<AbsenceOccurrenceDto> occurrences
     ) {}
 
+    /** Private read-only iCalendar subscription state. Raw tokens are returned only on issue/rotation. */
+    public record CalendarSyncStatusDto(
+            boolean active,
+            String tokenHint,
+            String createdAt,
+            String rotatedAt,
+            int feedPastDays,
+            int feedFutureDays,
+            List<String> entities
+    ) {}
+
+    /** One-time response after creating or rotating a private calendar feed token. */
+    public record CalendarSubscriptionDto(
+            boolean active,
+            String tokenHint,
+            String createdAt,
+            String rotatedAt,
+            String subscriptionUrl,
+            int feedPastDays,
+            int feedFutureDays,
+            List<String> entities
+    ) {}
+
     /**
      * Удобный ответ для Android/PWA: одним запросом получаем диапазон дней,
      * доступные типы смен, задачи, важные дни и итоговый баланс переработок.

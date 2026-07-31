@@ -1,7 +1,16 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.22.2 — Workspace Route E2E Navigation Hotfix**.
+Current release: **v27.23.0 — External Calendar Sync**.
 
+## v27.23.0 — External Calendar Sync — completed
+
+- [x] RFC 5545 export for a selected range and one important event.
+- [x] Shifts, tasks, important events and absences compose into read-only `.ics`.
+- [x] Private rolling subscription with SHA-256-only token storage.
+- [x] Issue, rotate, revoke and immediate old-token invalidation.
+- [x] nginx access-log protection for bearer feed URLs.
+- [x] UTF-8 JSON and browser boot hardening included in the base release.
+- [x] Flyway V41; baseline 107 / 564 / 32.
 
 ## v27.22.2 — Workspace Route E2E Navigation Hotfix — completed
 
@@ -10,49 +19,29 @@ Current release: **v27.22.2 — Workspace Route E2E Navigation Hotfix**.
 - [x] Module enable/disable assertions are independent from workspace navigation placement.
 - [x] Runtime, API and Flyway remain unchanged; baseline stays 103 / 544 / 31.
 
-
 ## v27.22.1 — Vacation Planner Frontend Contract Hotfix — completed
 
 - [x] Shift Worker static contract includes `vacation` and the accepted Today widget order.
 - [x] Vacation Month/Week/Day static contract follows the real all-day absence composition path.
-- [x] Persisted switchable-module count is derived from `DutyLogModules.ALL` instead of a hardcoded value.
-- [x] Runtime, API and Flyway remain unchanged; baseline stays 103 / 544 / 31.
-
+- [x] Persisted switchable-module count is derived from `DutyLogModules.ALL`.
 
 ## v27.22.0 — Vacation Planner — completed
 
 - [x] Separate absence model; vacation never becomes a shift row.
-- [x] Annual allowance and carryover.
-- [x] Configurable work-year boundary.
-- [x] Calendar-day or Monday-Friday counting.
-- [x] 14 / 28 / 35-day presets and custom periods.
-- [x] Preview with shift and absence conflicts.
-- [x] Overlap and allowance protection.
-- [x] Built-in and custom absence types.
-- [x] Month / Week / Day / selected-day composition.
-- [x] Flyway V40, Web/v1 API, Java/static/Playwright contracts.
+- [x] Annual allowance, carryover, configurable work year and counting policy.
+- [x] Preview, conflict protection, custom types and Month/Week/Day composition.
+- [x] Flyway V40, Web/v1 API and regression coverage.
 
-Next product stage: **v27.23.0 — External Calendar Sync**.
+## Следующие продуктовые этапы
 
-## Текущая продуктовая точка — Vacation Planner
+1. **v27.24.0 — Calendar Comfort & Correctness** — кнопка «Сегодня», выбранная дата важных дней, ночные смены, компактные controls и спокойные загрузки.
+2. **v27.25.0 — Absence & Time-Off Overhaul** — plan/fact модель, полно-дневные и частичные отсутствия, отпуск, больничный, отгулы и отдельные балансы.
+3. **v27.26.0 — Unified Time & Compensation Ledger** — единый обратимый журнал переработок и покрытий отсутствий.
+4. **v27.27.0 — Ledger Integrity & Approval Workflow** — статусы, резервы, проведение, reversals, сверка и закрытие периода.
+5. **v27.28.0 — Payroll Foundation** — оплачиваемые/неоплачиваемые минуты и объяснимый расчёт зарплаты.
+6. **v27.29.0 — Workspace, Layout & Theme Studio**.
 
-Статус: **v27.22.2** стабилизирует browser-навигацию принятого Vacation Planner: раздел Tasks остаётся доступным через штатный workspace route, даже когда не входит в primary navigation Shift Worker. Базовый домен отпусков и отсутствий остаётся реализацией v27.22.0 и не смешивается со сменами, рабочими часами или FIFO переработок.
-
-Закрыто:
-
-- отдельные owner-scoped настройки отпуска, типы отсутствий и периоды;
-- годовая норма, перенос и настраиваемая граница рабочего года;
-- подсчёт календарных дней или Пн–Пт без выдуманного законодательства;
-- быстрые периоды 14 / 28 / 35 дней и произвольный диапазон;
-- per-day preview со сменами, другими отсутствиями и остатком;
-- проверка каждого пересечённого рабочего года с показом наиболее ограниченного баланса;
-- стабильные `VACATION_LIMIT_EXCEEDED`, `ABSENCE_OVERLAP` и `ABSENCE_TYPE_IN_USE`;
-- встроенные и пользовательские типы отсутствий;
-- Month / Week / Day / selected-day проекция без записи отпуска в смены;
-- Flyway V40, API v1, OpenAPI, Java/static/Playwright contracts;
-- baseline 103 Java test classes / 544 tests / 31 Playwright scenario.
-
-Следующий этап: **v27.23.0 — External Calendar Sync**, начиная с безопасного `.ics`-экспорта и одностороннего обмена.
+Read-only импорт внешних `.ics`, one-tap Google/Apple/Outlook connect, Notes Archive, Telegram inline actions и onboarding остаются последующими этапами.
 
 ## Этап 2 — нормальная API-архитектура
 

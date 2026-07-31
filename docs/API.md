@@ -1,4 +1,4 @@
-# DutyLog API v27.22.2
+# DutyLog API v27.23.0
 
 Проект: **DutyLog: Time & Overtime**.
 
@@ -1544,3 +1544,24 @@ POST /api/overtime/legacy-credits/migrate
 The same routes exist below `/api/v1`. Requests contain selected `creditIds` and an explicit IANA `sourceTimezone`. Preview is read-only; migrate persists exact instants and rebuilds FIFO. Ownership and overtime-module guards are unchanged.
 
 Profile responses still include `workTimezone` and `displayTimezone`, but v27.9.0 treats them as compatibility aliases of one canonical timezone.
+
+
+## External calendar sync (v27.23.0)
+
+Authenticated owner-scoped endpoints:
+
+```http
+GET    /api/v1/calendar-sync/status
+POST   /api/v1/calendar-sync/subscription
+DELETE /api/v1/calendar-sync/subscription
+GET    /api/v1/calendar-sync/export?from=YYYY-MM-DD&to=YYYY-MM-DD
+GET    /api/v1/calendar-sync/events/{id}.ics
+```
+
+External clients read the private feed through:
+
+```http
+GET /calendar-feed.ics?token=<43-character bearer secret>
+```
+
+The raw token is returned only after issue/rotation. Persistent storage contains only SHA-256 and a short hint. Range export is limited to 366 days, 10,000 events and 5 MiB by default. All `.ics` responses use UTF-8, CRLF, RFC 5545 content-line folding and `Cache-Control: no-store`.

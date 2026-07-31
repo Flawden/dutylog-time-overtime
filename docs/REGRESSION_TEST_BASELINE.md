@@ -1,15 +1,21 @@
-# DutyLog regression test baseline
+# Regression Test Baseline
 
-Status: v27.22.2.
+Status: v27.23.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.22.2 aligns four stale Playwright navigation assumptions with the accepted workspace routes. Current application baseline remains 103 Java test classes / 544 `@Test` methods / 31 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.23.0 adds standards-compliant `.ics` export and a SHA-only private read-only subscription lifecycle, including the UTF-8 JSON and browser boot hardening discovered during the abandoned branch. Current application baseline is 107 Java test classes / 564 `@Test` methods / 32 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+## v27.23.0 External Calendar Sync extension
 
-
+- `CalendarIcsServiceTest` protects four-domain composition, UTF-8/CRLF/folding, recurrence, escaping, deduplication and payload limits.
+- `CalendarSubscriptionServiceTest` protects 256-bit issuance, SHA-only persistence, bounded feed windows, rotation and revocation.
+- `CalendarSyncControllerTest` protects authenticated management, anonymous feed access, CSRF, module-disable semantics and explicit UTF-8 JSON decoding.
+- `CalendarSyncFrontendContractTest` protects one-time secret handling and rejects the undefined `localDateKey(` boot path in favor of canonical local `keyOf(...)`.
+- `external-calendar-sync.spec.js` covers issue, anonymous feed read, range export, revoke and post-revoke denial.
+- Baseline advances to 107 Java classes / 564 `@Test` methods / 32 Playwright scenarios; Flyway advances to V41.
 
 ## v27.22.2 Workspace Route E2E Navigation Hotfix extension
 
@@ -17,9 +23,6 @@ Historical foundation: v27.2.29 security baseline remains preserved by all later
 - Shift Worker may keep Tasks outside primary navigation while the route remains fully available when the module is enabled.
 - Module-toggle coverage asserts the `moduleHidden` state on `#view-tasks`, separating feature availability from workspace tab placement.
 - Production JavaScript behavior, HTTP API and Flyway V40 are unchanged; baseline stays 103 / 544 / 31.
-
-
-
 
 ## v27.22.1 Vacation Planner Frontend Contract Hotfix extension
 
