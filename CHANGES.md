@@ -1,3 +1,12 @@
+# v27.24.0 — Calendar Comfort & Correctness
+
+- Added a contextual, mobile-friendly «Сегодня» return control that appears only after the calendar leaves the current month/date and works across Month, Week and Day modes.
+- Contextual important-day creation now inherits the selected calendar date instead of reusing a stale draft value; important-event checkboxes are constrained to the design-system size.
+- Reworked the Today shift card for overnight intervals: compact time stays on one line while the two calendar dates move into a separate readable chip.
+- Calendar refreshes preserve the last rendered month, show a calm non-blocking status and record bounded in-memory performance diagnostics without starting the final optimization cycle.
+- Companion schedule layers now use a compact horizontally scrollable pill bar with explicit visibility state and accessible labels.
+- Flyway remains V41; regression baseline advances to 108 Java test classes, 569 `@Test` methods and 33 Playwright scenarios.
+
 # v27.23.2 — Calendar Sync Runtime Boot Hotfix
 
 - Fixed the browser-wide `ReferenceError: localDateKey is not defined` raised while initializing the default `.ics` export range.

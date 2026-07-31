@@ -12,6 +12,14 @@ const CALENDAR_MODE_KEY = "dutylog.calendar.mode.v1";
 const CALENDAR_FOCUS_KEY = "dutylog.calendar.focus.v1";
 const CALENDAR_MODES = new Set(["month", "week", "day"]);
 
+Object.assign(I18N_EN, {
+  "Вернуться к сегодняшнему дню":"Back to today",
+  "Обновляю календарь…":"Refreshing calendar…",
+  "Календарь обновлён":"Calendar updated",
+  "Слои":"Layers"
+});
+Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
+
 function calendarExperienceStored(key, fallback){
   try { return localStorage.getItem(key) || fallback; }
   catch (_) { return fallback; }
@@ -79,6 +87,24 @@ function calendarExperienceFocusDate(){
   if (calendarExperienceValidDateKey(state.selected)) return state.selected;
   if (calendarExperienceValidDateKey(state.calendarExperience?.focusDate)) return state.calendarExperience.focusDate;
   return todayKey();
+}
+function calendarExperienceIsAtToday(){
+  const today = todayKey();
+  if (state.calendarExperience?.mode === "month") {
+    const { year, month } = calendarExperienceParts(today);
+    return state.y === year && state.m === month - 1;
+  }
+  return calendarExperienceFocusDate() === today;
+}
+function updateCalendarTodayButton(){
+  const button = $("todayBtn");
+  if (!button) return;
+  const route = (location.hash || "#today").replace(/^#/, "");
+  const visible = route === "calendar" && !calendarExperienceIsAtToday();
+  button.hidden = !visible;
+  button.classList.toggle("isVisible", visible);
+  button.setAttribute("aria-label", t("Вернуться к сегодняшнему дню"));
+  button.title = t("Вернуться к сегодняшнему дню");
 }
 function calendarExperienceSetFocusMemory(key){
   if (!calendarExperienceValidDateKey(key)) return;
@@ -462,6 +488,7 @@ function renderCalendarExperience(){
   if (label) label.textContent = mode === "week" ? calendarExperienceWeekRangeLabel(calendarExperienceWeekStart(focus)) : calendarExperienceLongLabel(focus);
   if (mode === "week") calendarExperienceRenderWeek();
   if (mode === "day") calendarExperienceRenderDay();
+  updateCalendarTodayButton();
 }
 
 async function calendarExperienceRestoreFocus(){

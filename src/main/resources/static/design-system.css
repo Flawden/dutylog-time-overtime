@@ -2152,3 +2152,188 @@ html[data-shell="next"] .vacationMark { color: var(--accent-2, #61d3c7); }
 @media (prefers-reduced-motion: reduce) {
   html[data-shell="next"] .vacationDayItem { transition: none; }
 }
+
+/* v27.24.0 — Calendar Comfort & Correctness */
+html[data-shell="next"] .nav #todayBtn {
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 8px 13px;
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--ds-border));
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--accent) 88%, var(--text));
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 12%, var(--panel)), color-mix(in srgb, var(--panel2) 94%, transparent));
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--accent) 8%, transparent), inset 0 1px 0 rgba(255,255,255,.05);
+  font-weight: 820;
+  white-space: nowrap;
+}
+html[data-shell="next"] .nav #todayBtn::before {
+  content: "↺";
+  font-size: 16px;
+  line-height: 1;
+}
+html[data-shell="next"] .nav #todayBtn.isVisible { animation: dutylogTodayReturnIn .2s ease-out both; }
+@keyframes dutylogTodayReturnIn {
+  from { opacity: 0; transform: translateY(-3px) scale(.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+html[data-shell="next"] .calendarLoadStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 32px;
+  padding: 6px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--ds-border-soft));
+  border-radius: 999px;
+  color: var(--mut);
+  background: color-mix(in srgb, var(--panel2) 84%, transparent);
+  font-size: 11px;
+  white-space: nowrap;
+}
+html[data-shell="next"] .calendarLoadStatus[hidden] { display: none; }
+html[data-shell="next"] .calendarLoadStatus span {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 11%, transparent);
+  animation: dutylogCalendarPulse .9s ease-in-out infinite alternate;
+}
+html[data-shell="next"] .calendarLoadStatus b { font-weight: 760; }
+@keyframes dutylogCalendarPulse { to { opacity: .42; transform: scale(.78); } }
+html[data-shell="next"] #calendarMonthExperience.isRefreshing > .layout > .card:first-child {
+  opacity: .72;
+  filter: saturate(.78);
+  pointer-events: none;
+  transition: opacity .16s ease, filter .16s ease;
+}
+
+html[data-shell="next"] .todayShiftTime {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  font-variant-numeric: tabular-nums;
+}
+html[data-shell="next"] .todayShiftDateRange {
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 9px;
+  padding: 5px 9px;
+  border: 1px solid color-mix(in srgb, var(--accent) 24%, var(--ds-border-soft));
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--mut) 88%, var(--accent));
+  background: color-mix(in srgb, var(--panel2) 72%, transparent);
+  font-size: 11px;
+  font-weight: 720;
+  letter-spacing: .01em;
+  text-transform: capitalize;
+}
+html[data-shell="next"] .todayShiftDateRange[hidden] { display: none; }
+html[data-shell="next"] .todayShiftCard.isOvernight .todayShiftTime { margin-top: 22px; }
+
+html[data-shell="next"] .importantEventForm .checkline input[type="checkbox"],
+html[data-shell="next"] .importantReminderSet input[type="checkbox"] {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px;
+  min-height: 18px;
+  flex: 0 0 18px;
+  margin: 0;
+}
+html[data-shell="next"] .importantReminderSet {
+  gap: 7px;
+  padding: 10px;
+}
+html[data-shell="next"] .importantReminderSet label {
+  min-height: 32px;
+  padding: 6px 9px;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel2) 62%, transparent);
+  font-size: 11px;
+  font-weight: 690;
+}
+
+html[data-shell="next"] .calendarLayerBar {
+  flex: 1 1 100%;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  max-width: 100%;
+  padding: 7px 8px;
+  overflow-x: auto;
+  border-top: 1px solid var(--ds-border-soft);
+  scrollbar-width: none;
+}
+html[data-shell="next"] .calendarLayerBar[hidden] { display: none; }
+html[data-shell="next"] .calendarLayerBar::-webkit-scrollbar { display: none; }
+html[data-shell="next"] .calendarLayerBar::before {
+  content: attr(data-label);
+  flex: 0 0 auto;
+  padding-right: 2px;
+  color: var(--dim);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+html[data-shell="next"] .calendarLayerToggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  max-width: 190px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+html[data-shell="next"] .calendarLayerToggle > i {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: var(--layer-color);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--layer-color) 16%, transparent);
+}
+html[data-shell="next"] .calendarLayerToggle > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 11px;
+  font-weight: 760;
+}
+html[data-shell="next"] .calendarLayerToggle > small {
+  color: var(--layer-color);
+  font-size: 8px;
+  line-height: 1;
+}
+html[data-shell="next"] .calendarLayerToggle.isHidden { opacity: .56; }
+html[data-shell="next"] .calendarLayerToggle.isHidden > i { background: transparent; border: 1px solid var(--layer-color); box-shadow: none; }
+
+@media (max-width: 760px) {
+  html[data-shell="next"] .head { grid-template-columns: minmax(0,1fr) auto; }
+  html[data-shell="next"] .nav #todayBtn:not([hidden]) {
+    display: inline-flex !important;
+    min-height: 42px;
+    max-width: 104px;
+    padding-inline: 11px;
+    font-size: 11px;
+  }
+  html[data-shell="next"] .calendarExperienceBar { align-items: stretch; }
+  html[data-shell="next"] .calendarLoadStatus { order: 2; margin-left: auto; }
+  html[data-shell="next"] .calendarLayerBar { order: 3; margin: 0 -1px -1px; padding-inline: 5px; }
+  html[data-shell="next"] .calendarLayerToggle { max-width: 150px; min-height: 32px; padding: 5px 9px; }
+  html[data-shell="next"] .todayShiftTime { font-size: clamp(29px, 10vw, 36px); line-height: 1.03; }
+  html[data-shell="next"] .todayShiftDateRange { font-size: 10px; }
+  html[data-shell="next"] .importantReminderSet label { flex: 1 1 145px; border-radius: 11px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-shell="next"] .nav #todayBtn.isVisible,
+  html[data-shell="next"] .calendarLoadStatus span { animation: none; }
+}

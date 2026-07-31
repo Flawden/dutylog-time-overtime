@@ -89,15 +89,22 @@ function todayDashboardDateLabel(key){
 }
 
 function todayDashboardTimeRange(occurrence){
-  const start = String(occurrence?.displayStart || "");
-  const end = String(occurrence?.displayEnd || "");
-  const startDate = localDatePart(start);
-  const endDate = localDatePart(end);
-  const startTime = localTimePart(start);
-  const endTime = localTimePart(end);
+  const startTime = localTimePart(occurrence?.displayStart);
+  const endTime = localTimePart(occurrence?.displayEnd);
   if (!startTime || !endTime) return "—";
-  if (startDate === endDate) return `${startTime}–${endTime}`;
-  return `${startTime} · ${startDate} → ${endTime} · ${endDate}`;
+  return `${startTime}–${endTime}`;
+}
+function todayDashboardCompactDate(key){
+  if (!key) return "";
+  const { year, month, day } = todayDashboardDateParts(key);
+  const date = new Date(Date.UTC(year, month - 1, day, 12));
+  return new Intl.DateTimeFormat(currentLocale(), { day:"numeric", month:"short", timeZone:"UTC" }).format(date);
+}
+function todayDashboardDateRange(occurrence){
+  const startDate = localDatePart(occurrence?.displayStart);
+  const endDate = localDatePart(occurrence?.displayEnd);
+  if (!startDate || !endDate || startDate === endDate) return "";
+  return `${todayDashboardCompactDate(startDate)} → ${todayDashboardCompactDate(endDate)}`;
 }
 
 function todayDashboardCountdown(ms){
@@ -137,6 +144,7 @@ function todayDashboardShiftModel(key = todayKey(), now = Date.now()){
       title:shift ? shiftDisplayName(shift) : t("Смена"),
       status:t(isActive ? "идёт" : (isFuture ? "до начала" : "завершена")),
       time:todayDashboardTimeRange(mostRelevant),
+      dateRange:todayDashboardDateRange(mostRelevant),
       timezone:mostRelevant.displayTimezone || state.timeSettings?.displayTimezone || state.timeSettings?.workTimezone || browserTimeZone(),
       meta:`${t("Рабочее время")}: ${fmtHours(numOr0(mostRelevant.netMinutes) / 60)} ${t("ч")} · ${t("Обед")}: ${Number(mostRelevant.breakMinutes || 0)} ${t("мин")}`,
       countdown:isActive ? `${t("До конца")}: ${todayDashboardCountdown(endMs - now)}` : (isFuture ? `${t("До начала")}: ${todayDashboardCountdown(startMs - now)}` : t("Смена завершена")),
@@ -153,6 +161,7 @@ function todayDashboardShiftModel(key = todayKey(), now = Date.now()){
       title:shiftDisplayName(floating) || t("Свободный день"),
       status:t("выходной"),
       time:t("Свободный день"),
+      dateRange:"",
       timezone:state.timeSettings?.displayTimezone || state.timeSettings?.workTimezone || browserTimeZone(),
       meta:"",
       countdown:t("День свободен для планирования"),
@@ -169,6 +178,7 @@ function todayDashboardShiftModel(key = todayKey(), now = Date.now()){
       title:`${t("следующая")}: ${shift ? shiftDisplayName(shift) : t("Смена")}`,
       status:t("до начала"),
       time:todayDashboardTimeRange(next),
+      dateRange:todayDashboardDateRange(next),
       timezone:next.displayTimezone || state.timeSettings?.displayTimezone || browserTimeZone(),
       meta:`${t("Рабочее время")}: ${fmtHours(numOr0(next.netMinutes) / 60)} ${t("ч")} · ${t("Обед")}: ${Number(next.breakMinutes || 0)} ${t("мин")}`,
       countdown:`${t("До начала")}: ${todayDashboardCountdown(Date.parse(next.startInstant) - now)}`,
@@ -183,6 +193,7 @@ function todayDashboardShiftModel(key = todayKey(), now = Date.now()){
     title:t("Смена не назначена"),
     status:t("нет смены"),
     time:"—",
+    dateRange:"",
     timezone:state.timeSettings?.displayTimezone || state.timeSettings?.workTimezone || browserTimeZone(),
     meta:"",
     countdown:t("День свободен для планирования"),
@@ -218,6 +229,12 @@ function renderTodayShift(key){
   $("todayShiftTitle").textContent = model.title;
   $("todayShiftStatus").textContent = model.status;
   $("todayShiftTime").textContent = model.time;
+  const dateRange = $("todayShiftDateRange");
+  if (dateRange) {
+    dateRange.hidden = !model.dateRange;
+    dateRange.textContent = model.dateRange || "";
+  }
+  card.classList.toggle("isOvernight", !!model.dateRange);
   $("todayShiftMeta").textContent = [model.timezone, model.meta].filter(Boolean).join(" · ");
   $("todayShiftCountdown").textContent = model.countdown;
   $("todayShiftProgress").style.width = `${model.progress}%`;

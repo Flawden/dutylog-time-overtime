@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.23.2"></script>
-<link href="app.css?v=27.23.2" rel="stylesheet"/>
-<link href="design-system.css?v=27.23.2" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.23.2" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.23.2" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.23.2" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.23.2" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.23.2" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.23.2" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.23.2" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.23.2" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.23.2" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.24.0"></script>
+<link href="app.css?v=27.24.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.24.0" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.24.0" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.24.0" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.24.0" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.24.0" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.24.0" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.24.0" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.24.0" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.24.0" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.24.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -68,7 +68,7 @@
 </div>
 <div class="nav" style="display:flex;align-items:center;">
 <button id="prev">‹</button>
-<button id="todayBtn">Сегодня</button>
+<button id="todayBtn" type="button" hidden>Сегодня</button>
 <button id="next">›</button>
 <span class="mono" id="whoami" style="margin-left:14px;font-size:12.5px;color:var(--mut)"></span>
 <button id="adminOpen" hidden title="Администрирование">Система</button>
@@ -113,6 +113,7 @@
           <span class="todayStatusPill" id="todayShiftStatus">нет смены</span>
         </div>
         <div class="todayShiftTime" id="todayShiftTime">—</div>
+        <div class="todayShiftDateRange" id="todayShiftDateRange" hidden></div>
         <div class="todayShiftMeta" id="todayShiftMeta"></div>
         <div class="todayProgress" id="todayShiftProgressWrap" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
           <span id="todayShiftProgress"></span>
@@ -166,6 +167,7 @@
       <button type="button" data-calendar-mode="week" aria-pressed="false">Неделя</button>
       <button type="button" data-calendar-mode="day" aria-pressed="false">День</button>
     </div>
+    <div class="calendarLoadStatus" id="calendarLoadStatus" role="status" aria-live="polite" hidden><span aria-hidden="true"></span><b>Обновляю календарь…</b></div>
     <div class="calendarFocusLabel" id="calendarFocusLabel">—</div>
     <div class="calendarLayerBar" id="calendarLayerBar" aria-label="Слои календаря" hidden></div>
   </div>
@@ -1155,7 +1157,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.23.2</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.24.0</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1768,18 +1770,18 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.23.2"></script>
-<script src="js/12-ui-platform.js?v=27.23.2"></script>
-<script src="js/20-data.js?v=27.23.2"></script>
-<script src="js/30-calendar.js?v=27.23.2"></script>
-<script src="js/35-today.js?v=27.23.2"></script>
-<script src="js/37-calendar-experience.js?v=27.23.2"></script>
-<script src="js/38-schedule-layers.js?v=27.23.2"></script>
-<script src="js/39-vacation-planner.js?v=27.23.2"></script>
-<script src="js/40-overtime.js?v=27.23.2"></script>
-<script src="js/50-tasks.js?v=27.23.2"></script>
-<script src="js/55-calendar-sync.js?v=27.23.2"></script>
-<script src="js/60-settings.js?v=27.23.2"></script>
-<script src="js/70-user-boot.js?v=27.23.2"></script>
+<script src="js/10-core.js?v=27.24.0"></script>
+<script src="js/12-ui-platform.js?v=27.24.0"></script>
+<script src="js/20-data.js?v=27.24.0"></script>
+<script src="js/30-calendar.js?v=27.24.0"></script>
+<script src="js/35-today.js?v=27.24.0"></script>
+<script src="js/37-calendar-experience.js?v=27.24.0"></script>
+<script src="js/38-schedule-layers.js?v=27.24.0"></script>
+<script src="js/39-vacation-planner.js?v=27.24.0"></script>
+<script src="js/40-overtime.js?v=27.24.0"></script>
+<script src="js/50-tasks.js?v=27.24.0"></script>
+<script src="js/55-calendar-sync.js?v=27.24.0"></script>
+<script src="js/60-settings.js?v=27.24.0"></script>
+<script src="js/70-user-boot.js?v=27.24.0"></script>
 </body>
 </html>

@@ -1,15 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.23.2.
+Status: v27.24.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.23.2 fixes the calendar-sync browser boot contract by replacing an undefined `localDateKey()` call with the canonical local `keyOf(...)` helper. Current application baseline is 107 Java test classes / 564 `@Test` methods / 32 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.24.0 protects contextual calendar comfort, important-day date ownership, overnight Today layout, non-destructive refresh diagnostics and compact companion layers. Current application baseline is 108 Java test classes / 569 `@Test` methods / 33 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.24.0 Calendar Comfort & Correctness extension
+
+- `CalendarComfortFrontendContractTest` protects Today return, selected important-date ownership, overnight shift composition, refresh persistence/performance diagnostics and compact controls.
+- `calendar-comfort.spec.js` covers the real phone viewport: leave current month → return to today → select another month/day → open Important Days → verify compact checkboxes.
+- Calendar refresh keeps the last successful grid instead of replacing it with a full skeleton; diagnostics stay bounded to 20 in-memory samples.
+- No API or schema migration; Flyway remains V41.
+- Baseline advances to 108 Java classes / 569 `@Test` methods / 33 Playwright scenarios.
 
 ## v27.23.2 Calendar Sync Runtime Boot Hotfix extension
 

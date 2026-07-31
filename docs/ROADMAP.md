@@ -1,6 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.23.2 — Calendar Sync Runtime Boot Hotfix**.
+Current release: **v27.24.0 — Calendar Comfort & Correctness**.
+
+
+## v27.24.0 — Calendar Comfort & Correctness — completed
+
+- [x] Contextual cozy «Сегодня» control across Month / Week / Day.
+- [x] Selected calendar date owns contextual important-day creation.
+- [x] Important-event checkboxes follow the 18px design-system control size.
+- [x] Overnight Today shift separates compact time and the two-date range.
+- [x] Calendar refresh preserves the existing grid and exposes a calm live status.
+- [x] Bounded in-memory load metrics and `dutylog:calendar-load` diagnostics start before the final optimization cycle.
+- [x] Companion schedule layers use compact accessible visibility pills.
+- [x] Flyway stays V41; baseline advances to 108 / 569 / 33.
 
 ## v27.23.2 — Calendar Sync Runtime Boot Hotfix — completed
 
@@ -10,7 +22,7 @@ Current release: **v27.23.2 — Calendar Sync Runtime Boot Hotfix**.
 - [x] API, token lifecycle, nginx protection and Flyway V41 remain unchanged.
 - [x] Baseline advances to 107 / 564 / 32.
 
-Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
+Next product stage: **v27.25.0 — Absence & Time-Off Overhaul**.
 
 
 ## v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix — completed
@@ -65,9 +77,9 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
-## Текущая продуктовая точка — External Calendar Sync stabilized
+## Текущая продуктовая точка — Calendar Comfort stabilized
 
-Статус: **v27.23.2** устраняет общий browser boot blocker после первой read-only календарной синхронизации. Исходящий `.ics`-контур, приватный rolling feed, SHA-256-only token storage, nginx `access_log off` и Flyway V41 остаются неизменными. После зелёного Maven/Playwright gate продукт переходит к **v27.24.0 — Calendar Comfort & Correctness**, а затем к глубокой модели «плановая смена → фактическое состояние дня» для отпусков, отгулов и больничных.
+Статус: **v27.24.0** закрывает главные ежедневные шероховатости календаря после стабилизации External Calendar Sync: возвращает пользователя к сегодняшней дате, связывает важное событие с выбранным днём, исправляет ночные смены, сохраняет сетку во время обновления и уплотняет несколько графиков. Исходящий `.ics`-контур, nginx `access_log off` и Flyway V41 остаются неизменными. Следующий этап — глубокая модель «плановая смена → фактическое состояние дня» для отпусков, отгулов и больничных.
 
 Закрыто:
 
@@ -83,12 +95,12 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 - Flyway V40, API v1, OpenAPI, Java/static/Playwright contracts;
 - baseline 103 Java test classes / 544 tests / 31 Playwright scenario.
 
-Следующий этап: **v27.24.0 — Calendar Comfort & Correctness**. Затем — `v27.25.0 Absence & Time-Off Overhaul`; read-only импорт внешних `.ics`-источников остаётся отдельным последующим этапом интеграций.
+Следующий этап: **v27.25.0 — Absence & Time-Off Overhaul**; read-only импорт внешних `.ics`-источников остаётся отдельным последующим этапом интеграций.
 
 
-## Ближайшая продуктовая очередь после стабилизации v27.23.x
+## Ближайшая продуктовая очередь после стабилизации v27.24.0
 
-### v27.24.0 — Calendar Comfort & Correctness
+### v27.24.0 — Calendar Comfort & Correctness — completed
 
 - контекстная уютная кнопка «Сегодня» для быстрого возврата из далёкой даты;
 - создание важного дня сразу на выбранной календарной дате;

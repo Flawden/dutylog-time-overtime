@@ -100,6 +100,8 @@ function renderCalendarLayerBar(){
   if (!bar) return;
   const layers = state.calendarLayers || [];
   bar.hidden = !layers.length;
+  bar.classList.toggle("hasMany", layers.length > 1);
+  bar.dataset.label = t("Слои");
   bar.innerHTML = "";
   for (const layer of layers) {
     const button = document.createElement("button");
@@ -107,9 +109,10 @@ function renderCalendarLayerBar(){
     button.className = "calendarLayerToggle";
     button.classList.toggle("isHidden", !layer.visible);
     button.setAttribute("aria-pressed", String(!!layer.visible));
+    button.setAttribute("aria-label", `${layer.name}: ${layer.visible ? t("виден") : t("скрыт")}`);
     button.style.setProperty("--layer-color", layer.color || "#7AB8FF");
-    button.innerHTML = `<i></i><span>${esc(layer.name)}</span><small>${esc(layer.visible ? t("виден") : t("скрыт"))}</small>`;
-    button.title = `${layer.templateName || ""} · ${layer.timezone || ""} · ${t("только чтение")}`;
+    button.innerHTML = `<i></i><span>${esc(layer.name)}</span><small aria-hidden="true">${layer.visible ? "●" : "○"}</small>`;
+    button.title = `${layer.name} · ${layer.visible ? t("виден") : t("скрыт")} · ${layer.templateName || ""} · ${layer.timezone || ""} · ${t("только чтение")}`;
     button.addEventListener("click", async () => {
       button.disabled = true;
       try {

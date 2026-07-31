@@ -151,13 +151,35 @@ function shiftIntervalTitle(interval){
   return `${t("Рабочая смена")}: ${work} · ${interval.workTimezone}\n${t("В часовом поясе отображения")}: ${display} · ${interval.displayTimezone}`;
 }
 
+function updateCalendarLoadingSurface(loading, refreshing = false){
+  const status = $("calendarLoadStatus");
+  const experience = $("calendarExperience");
+  const month = $("calendarMonthExperience");
+  const grid = $("grid");
+  experience?.classList.toggle("isLoading", loading);
+  month?.classList.toggle("isRefreshing", refreshing);
+  grid?.setAttribute("aria-busy", String(loading));
+  if (status) {
+    status.hidden = !loading;
+    const label = status.querySelector("b");
+    if (label) label.textContent = t("Обновляю календарь…");
+  }
+}
+
 function renderCalendar(){
   $("monthName").textContent = monthName(state.m);
   $("yearName").textContent = state.y;
 
   const grid = $("grid");
+  const loading = !!state.ui?.loadingCalendar;
+  const refreshing = loading && !!state.ui?.calendarHasRendered;
+  updateCalendarLoadingSurface(loading, refreshing);
+  if (refreshing) {
+    if (typeof renderTodayDashboard === "function" && document.body.dataset.view === "today") renderTodayDashboard();
+    return;
+  }
   grid.innerHTML = "";
-  if (state.ui?.loadingCalendar) {
+  if (loading) {
     for (let i = 0; i < 35; i++) {
       const c = document.createElement("div");
       c.className = "cell calendarSkeleton";
@@ -313,6 +335,8 @@ function renderCalendar(){
     grid.appendChild(cell);
   }
   renderSummary();
+  state.ui.calendarHasRendered = true;
+  updateCalendarLoadingSurface(false, false);
   if (typeof renderTodayDashboard === "function" && document.body.dataset.view === "today") renderTodayDashboard();
 }
 
@@ -388,7 +412,8 @@ function selectDay(k){
     $("pDate").innerHTML = state.language === "en" ? `${monthNameGen(m - 1)} ${d} <span class="yr mono">${y}</span>` : `${d} ${monthNameGen(m - 1)} <span class="yr mono">${y}</span>`;
     // Contextual creation from the day panel must target the day the user clicked,
     // not a stale value left by a previous important-date draft.
-    if ($("impDate")) $("impDate").value = k;
+    if (typeof syncImportantSelectedDate === "function") syncImportantSelectedDate(k);
+    else if ($("impDate")) $("impDate").value = k;
     if (moduleEnabled("notes") && typeof renderDayNotes === "function") renderDayNotes();
     if (moduleEnabled("overtime")) resetOvertimeForms(k);
     if (moduleEnabled("notes")) setTab("edit");

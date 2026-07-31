@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.23.2.
+Status: v27.24.0.
 
 ## Local gate
 
@@ -19,9 +19,13 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Staging
 
 - push the exact candidate tree to `test`;
-- confirm the Maven gate executes all 564 tests with zero failures;
-- confirm all 32 Playwright scenarios pass, including workspace-hidden Tasks routing on mobile and task module re-enable;
+- confirm the Maven gate executes all 569 tests with zero failures;
+- confirm all 33 Playwright scenarios pass, including workspace-hidden Tasks routing on mobile and task module re-enable;
 - confirm fresh schedule apply reloads the authoritative month through the data layer;
+- on a phone viewport, navigate away from the current month and confirm the contextual «Сегодня» button appears, returns to today and disappears;
+- select a different calendar date, open Important Days and confirm the draft date already matches the selected day;
+- verify important-event checkboxes are compact, an overnight Today card shows a separate two-date chip, and multiple schedule layers remain horizontally usable;
+- refresh an already rendered month and confirm the old grid stays visible while the calm loading status is announced;
 - confirm Vacation Planner shows 28 available days by default and presets 14 / 28 / 35;
 - preview a vacation over an existing shift and confirm the shift is warned about but remains intact;
 - confirm overlapping absences and allowance overflow return `ABSENCE_OVERLAP` / `VACATION_LIMIT_EXCEEDED`;
@@ -97,6 +101,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.23.2 -m "v27.23.2 — Calendar Sync Runtime Boot Hotfix"
-git push origin v27.23.2
+git tag -a v27.24.0 -m "v27.24.0 — Calendar Comfort & Correctness"
+git push origin v27.24.0
 ```
