@@ -1,3 +1,10 @@
+# v27.22.1 — Vacation Planner Frontend Contract Hotfix
+
+- Aligned the Shift Worker workspace contract with the new `vacation` navigation route and the actual Today widget order.
+- Replaced the invented `vacation-day` static expectation with the real all-day composition contract: `facts.absences` → `type:"vacation"` → `editAbsenceFromOccurrence`.
+- Replaced the brittle hardcoded count of seven persisted switchable modules with a count derived from `DutyLogModules.ALL`; Vacation Planner is the eighth switchable non-admin module.
+- Kept Vacation Planner runtime behavior, HTTP API, Flyway V40 and the regression baseline unchanged at 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
+
 # v27.22.0 — Vacation Planner
 
 - Added owner-scoped vacation settings, absence types and planned/approved absence periods as an independent domain.

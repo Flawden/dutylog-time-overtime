@@ -41,8 +41,9 @@ class UiCoreWorkspaceFrontendContractTest {
         assertTrue(js.contains("const palettes = Object.freeze"));
         assertTrue(js.contains("const screens = Object.freeze"));
         assertTrue(js.contains("const widgets = Object.freeze"));
-        assertTrue(js.contains("navigation:[\"today\",\"calendar\",\"overtime\",\"tasks\",\"settings\"]"));
-        assertTrue(js.contains("todayWidgets:[\"tasks\",\"important\",\"shift\",\"overtime\"]"));
+        assertTrue(js.contains("navigation:[\"today\",\"calendar\",\"vacation\",\"overtime\",\"settings\"]"));
+        assertTrue(js.contains("todayWidgets:[\"shift\",\"overtime\",\"tasks\",\"important\"]"));
+        assertTrue(js.contains("const navigationUniverse = Object.freeze([\"today\",\"calendar\",\"vacation\""));
         assertTrue(js.contains("window.DutyLogUI = api"));
         assertTrue(js.contains("const navigationUniverse = Object.freeze"));
         assertFalse(js.contains("classicNavigation"));

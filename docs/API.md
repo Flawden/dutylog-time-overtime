@@ -1,7 +1,8 @@
-# DutyLog API v27.22.0
+# DutyLog API v27.22.1
 
 Проект: **DutyLog: Time & Overtime**.
 
+v27.22.1 is a frontend/static contract hotfix. It does not change Vacation Planner endpoints, payloads, error codes or Flyway V40.
 
 v27.22.0 additively introduces an independent Vacation Planner API. Vacation and other absences never write a shift type into a calendar day. Flyway V40 adds owner-scoped settings, absence types and absence periods; existing endpoints remain compatible.
 

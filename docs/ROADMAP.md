@@ -1,6 +1,14 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.22.0 — Vacation Planner**.
+Current release: **v27.22.1 — Vacation Planner Frontend Contract Hotfix**.
+
+
+## v27.22.1 — Vacation Planner Frontend Contract Hotfix — completed
+
+- [x] Shift Worker static contract includes `vacation` and the accepted Today widget order.
+- [x] Vacation Month/Week/Day static contract follows the real all-day absence composition path.
+- [x] Persisted switchable-module count is derived from `DutyLogModules.ALL` instead of a hardcoded value.
+- [x] Runtime, API and Flyway remain unchanged; baseline stays 103 / 544 / 31.
 
 
 ## v27.22.0 — Vacation Planner — completed
@@ -20,7 +28,7 @@ Next product stage: **v27.23.0 — External Calendar Sync**.
 
 ## Текущая продуктовая точка — Vacation Planner
 
-Статус: **v27.22.0** добавляет отдельный домен отпусков и отсутствий, не смешивая его со сменами, рабочими часами и FIFO переработок.
+Статус: **v27.22.1** стабилизирует статические frontend/module-контракты принятого Vacation Planner. Базовый домен отпусков и отсутствий остаётся реализацией v27.22.0 и не смешивается со сменами, рабочими часами или FIFO переработок.
 
 Закрыто:
 

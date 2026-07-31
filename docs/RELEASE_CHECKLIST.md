@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.22.0.
+Status: v27.22.1.
 
 ## Local gate
 
@@ -89,6 +89,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.22.0 -m "v27.22.0 — Vacation Planner"
-git push origin v27.22.0
+git tag -a v27.22.1 -m "v27.22.1 — Vacation Planner Frontend Contract Hotfix"
+git push origin v27.22.1
 ```

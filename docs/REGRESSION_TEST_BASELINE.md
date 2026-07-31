@@ -1,16 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.22.0.
+Status: v27.22.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.22.0 adds the independent Vacation Planner domain, V40 migration and Month/Week/Day browser composition. Current application baseline is 103 Java test classes / 544 `@Test` methods / 31 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.22.1 aligns three stale static/module assertions with the accepted Vacation Planner runtime. Current application baseline remains 103 Java test classes / 544 `@Test` methods / 31 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
 
+## v27.22.1 Vacation Planner Frontend Contract Hotfix extension
+
+- `UiCoreWorkspaceFrontendContractTest` protects the actual Shift Worker `vacation` route and Today widget order.
+- `VacationPlannerFrontendContractTest` protects the real `facts.absences` all-day composition and edit route instead of an invented `vacation-day` token.
+- `ModuleServiceContractTest` derives persisted switchable-module expectations from `DutyLogModules.ALL`.
+- Runtime JavaScript behavior, HTTP API and Flyway V40 are unchanged; baseline stays 103 / 544 / 31.
 
 ## v27.22.0 Vacation Planner extension
 

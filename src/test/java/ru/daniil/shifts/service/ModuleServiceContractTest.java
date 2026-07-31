@@ -9,6 +9,7 @@ import ru.daniil.shifts.dto.Dtos.ModuleDto;
 import ru.daniil.shifts.dto.Dtos.ModuleSettingsUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.UserModuleSetting;
+import ru.daniil.shifts.module.DutyLogModules;
 import ru.daniil.shifts.repo.UserModuleSettingRepository;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.exception.ApiException;
@@ -78,7 +79,11 @@ class ModuleServiceContractTest {
         assertTrue(effective.get(ModuleService.CORE));
         assertFalse(effective.get(ModuleService.ADMIN));
         assertFalse(effective.containsKey("future-module"));
-        assertEquals(7, settings.findByOwner(regular).size(),
+        long expectedPersisted = DutyLogModules.ALL.stream()
+                .filter(definition -> !definition.locked())
+                .filter(definition -> !ModuleService.ADMIN.equals(definition.key()))
+                .count();
+        assertEquals(expectedPersisted, settings.findByOwner(regular).size(),
                 "only switchable non-admin modules are persisted");
     }
 

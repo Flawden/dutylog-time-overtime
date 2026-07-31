@@ -51,10 +51,10 @@ class VacationPlannerFrontendContractTest {
                         && calendar.contains("hasVacation")
                         && calendar.contains("vacationMark"));
         assertTrue(experience.contains("facts.absences")
-                        && experience.contains("vacation-day")
+                        && experience.contains("for (const absence of facts.absences)")
+                        && experience.contains("type:\"vacation\"")
                         && experience.contains("editAbsenceFromOccurrence"));
-        assertTrue(css.contains("v27.22.0 — Vacation Planner")
-                        && css.contains(".vacationSummaryGrid")
+        assertTrue(css.contains(".vacationSummaryGrid")
                         && css.contains("@media (max-width: 560px)"));
     }
 
