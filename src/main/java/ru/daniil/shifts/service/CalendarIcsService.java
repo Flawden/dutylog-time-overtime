@@ -155,18 +155,30 @@ public class CalendarIcsService {
             LocalDate end = parseDate(absence.endDate());
             if (start == null || end == null || end.isBefore(start)) continue;
             String summary = blank(absence.title()) ? absence.typeName() : absence.title();
-            String description = "DutyLog absence · " + Objects.toString(absence.status(), "PLANNED");
-            events.add(IcsEvent.allDay(
-                    "absence-" + absence.periodId() + "@dutylog",
-                    summary,
-                    description,
-                    null,
-                    "ABSENCE",
-                    start,
-                    end.plusDays(1),
-                    true,
-                    null
-            ));
+            String description = "DutyLog absence · " + Objects.toString(absence.status(), "PLANNED")
+                    + (absence.plannedShiftName() == null ? "" : " · planned shift: " + absence.plannedShiftName());
+            if ("PARTIAL".equals(absence.coverage())) {
+                LocalTime startTime = parseTime(absence.startTime());
+                LocalTime endTime = parseTime(absence.endTime());
+                if (startTime == null || endTime == null || !endTime.isAfter(startTime)) continue;
+                ZoneId zone = userTimeService.workZone(user);
+                Instant startInstant = userTimeService.resolveLocalDateTime(LocalDateTime.of(start, startTime), zone).toInstant();
+                Instant endInstant = userTimeService.resolveLocalDateTime(LocalDateTime.of(start, endTime), zone).toInstant();
+                events.add(IcsEvent.timed("absence-" + absence.periodId() + "@dutylog", summary,
+                        description, null, "ABSENCE,TIME-OFF", startInstant, endInstant, true, null));
+            } else {
+                events.add(IcsEvent.allDay(
+                        "absence-" + absence.periodId() + "@dutylog",
+                        summary,
+                        description,
+                        null,
+                        "ABSENCE",
+                        start,
+                        end.plusDays(1),
+                        true,
+                        null
+                ));
+            }
         }
 
         events.sort(Comparator.comparing(IcsEvent::sortKey).thenComparing(IcsEvent::uid));
@@ -271,7 +283,7 @@ public class CalendarIcsService {
         Instant generatedAt = userTimeService.nowInstant();
         StringBuilder out = new StringBuilder(4096 + events.size() * 240);
         line(out, "BEGIN:VCALENDAR");
-        line(out, "PRODID:-//DutyLog//Time and Overtime 27.24.1//RU");
+        line(out, "PRODID:-//DutyLog//Time and Overtime 27.25.0//RU");
         line(out, "VERSION:2.0");
         line(out, "CALSCALE:GREGORIAN");
         line(out, "METHOD:PUBLISH");

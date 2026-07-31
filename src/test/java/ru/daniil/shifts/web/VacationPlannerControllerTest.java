@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
 
+import java.nio.charset.StandardCharsets;
+
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -41,8 +43,9 @@ class VacationPlannerControllerTest {
                 .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
                 .andExpect(jsonPath("$.settings.annualAllowanceDays").value(28))
                 .andExpect(jsonPath("$.durationPresets[0]").value(14))
-                .andExpect(jsonPath("$.types.length()").value(4))
-                .andExpect(jsonPath("$.summary.remainingDays").value(28));
+                .andExpect(jsonPath("$.types.length()").value(5))
+                .andExpect(jsonPath("$.summary.remainingDays").value(28))
+                .andExpect(jsonPath("$.settings.timeOffBalanceHours").value(0.0));
     }
 
     @Test
@@ -50,7 +53,7 @@ class VacationPlannerControllerTest {
         String planner = mvc.perform(get("/api/vacation-planner")
                         .with(user(owner.getUsername()).roles("USER"))
                         .param("referenceDate", "2026-08-01"))
-                .andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         long typeId = objectMapper.readTree(planner).path("types").get(0).path("id").asLong();
 
         mvc.perform(post("/api/v1/vacation-planner/preview")
@@ -71,7 +74,7 @@ class VacationPlannerControllerTest {
                                 """.formatted(typeId)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.countedDays").value(14))
-                .andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         long id = objectMapper.readTree(created).path("id").asLong();
 
         mvc.perform(patch("/api/vacation-planner/absences/{id}", id)
@@ -109,10 +112,57 @@ class VacationPlannerControllerTest {
                         .content("{\"name\":\"Учёба\",\"color\":\"#112233\",\"countsAgainstAllowance\":false}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.systemPreset").value(false))
-                .andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         long id = objectMapper.readTree(custom).path("id").asLong();
 
         mvc.perform(delete("/api/vacation-planner/types/{id}", id)
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf()))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void partialTimeOffLifecycleUsesIndependentHourBalance() throws Exception {
+        mvc.perform(patch("/api/vacation-planner/settings")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("{\"timeOffBalanceHours\":8,\"defaultTimeOffDayHours\":8}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.timeOffBalanceHours").value(8.0));
+
+        String plannerJson = mvc.perform(get("/api/vacation-planner")
+                        .with(user(owner.getUsername()).roles("USER")))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        long typeId = -1L;
+        for (var type : objectMapper.readTree(plannerJson).path("types")) {
+            if ("TIME_OFF".equals(type.path("systemCode").asText())) {
+                typeId = type.path("id").asLong();
+                break;
+            }
+        }
+        if (typeId < 0) throw new IllegalStateException("TIME_OFF preset missing");
+
+        String created = mvc.perform(post("/api/vacation-planner/absences")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {"typeId":%d,"title":"Врач","startDate":"2026-08-06","endDate":"2026-08-06",
+                                 "coverage":"PARTIAL","startTime":"09:00","endTime":"13:00","status":"APPROVED"}
+                                """.formatted(typeId)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.coverage").value("PARTIAL"))
+                .andExpect(jsonPath("$.chargedMinutes").value(240))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        long id = objectMapper.readTree(created).path("id").asLong();
+
+        mvc.perform(get("/api/calendar")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .param("from", "2026-08-06").param("to", "2026-08-06"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.absences[0].coverage").value("PARTIAL"))
+                .andExpect(jsonPath("$.absences[0].startTime").value("09:00"))
+                .andExpect(jsonPath("$.absences[0].endTime").value("13:00"));
+
+        mvc.perform(delete("/api/vacation-planner/absences/{id}", id)
                         .with(user(owner.getUsername()).roles("USER")).with(csrf()))
                 .andExpect(status().isNoContent());
     }
@@ -132,7 +182,7 @@ class VacationPlannerControllerTest {
     void invalidRangeAndAllowanceOverflowReturnStableErrors() throws Exception {
         String planner = mvc.perform(get("/api/vacation-planner")
                         .with(user(owner.getUsername()).roles("USER")))
-                .andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         long typeId = objectMapper.readTree(planner).path("types").get(0).path("id").asLong();
 
         mvc.perform(post("/api/vacation-planner/absences")

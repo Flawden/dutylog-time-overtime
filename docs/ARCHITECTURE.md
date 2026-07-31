@@ -279,3 +279,16 @@ Legacy local-only credits cross an explicit migration boundary. The user chooses
 ## V41 External Calendar Sync
 
 `calendar_feed_subscriptions` is an owner-scoped credential table for a read-only RFC 5545 feed. It stores one SHA-256 token digest and a short hint per user; raw bearer secrets and complete subscription URLs are never persisted. Calendar content remains projected from authoritative shifts, tasks, important events and absence domains.
+
+## V42 Absence & Time-Off Overhaul
+
+V42 extends the existing vacation bounded context into a factual absence layer without mutating scheduled shifts.
+
+- `vacation_settings` owns the independent time-off minute bank and default full-day duration.
+- `absence_types.balance_policy` selects `VACATION_DAYS`, `TIME_OFF_HOURS` or `NONE`.
+- `absence_types.full_day_replaces_shift` controls presentation only; the shift row remains the plan source.
+- `absence_periods.coverage` distinguishes `FULL_DAY` from one-day `PARTIAL` intervals.
+- `charged_minutes` is persisted so historical balance usage does not depend on later shift-template changes.
+- Calendar projections compose planned shifts and factual absences in Month, Week, Day and `.ics` output.
+
+The migration is additive. It does not alter `day_entries`, rewrite shift occurrences or remove existing vacation data.

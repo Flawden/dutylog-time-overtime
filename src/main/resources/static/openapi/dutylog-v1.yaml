@@ -1012,6 +1012,8 @@ components:
         countMode: { type: string, enum: [CALENDAR_DAYS, WEEKDAYS] }
         workYearStartMonth: { type: integer, minimum: 1, maximum: 12 }
         workYearStartDay: { type: integer, minimum: 1, maximum: 28 }
+        timeOffBalanceHours: { type: number, format: double, minimum: 0, maximum: 10000 }
+        defaultTimeOffDayHours: { type: number, format: double, minimum: 0.25, maximum: 24 }
     VacationSettings:
       allOf:
         - $ref: '#/components/schemas/VacationSettingsInput'
@@ -1030,14 +1032,19 @@ components:
         plannedDays: { type: integer }
         remainingDays: { type: integer }
         countMode: { type: string, enum: [CALENDAR_DAYS, WEEKDAYS] }
+        timeOffAvailableMinutes: { type: integer, minimum: 0 }
+        timeOffPlannedMinutes: { type: integer, minimum: 0 }
+        timeOffRemainingMinutes: { type: integer }
     AbsenceTypeInput:
       type: object
       required: [name]
       properties:
         name: { type: string, maxLength: 80 }
         color: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
-        countsAgainstAllowance: { type: boolean, default: false }
+        countsAgainstAllowance: { type: boolean, default: false, deprecated: true }
         sortOrder: { type: integer, minimum: 0, maximum: 10000 }
+        balancePolicy: { type: string, enum: [VACATION_DAYS, TIME_OFF_HOURS, NONE], default: NONE }
+        fullDayReplacesShift: { type: boolean, default: true }
     AbsenceTypePatch:
       allOf:
         - $ref: '#/components/schemas/AbsenceTypeInput'
@@ -1049,7 +1056,7 @@ components:
           properties:
             id: { type: integer, format: int64 }
             systemPreset: { type: boolean }
-            systemCode: { type: string, nullable: true, enum: [VACATION, SICK, UNPAID, OTHER] }
+            systemCode: { type: string, nullable: true, enum: [VACATION, TIME_OFF, SICK, UNPAID, OTHER] }
     AbsencePeriodInput:
       type: object
       required: [typeId, startDate, endDate]
@@ -1060,6 +1067,9 @@ components:
         endDate: { type: string, format: date }
         status: { type: string, enum: [PLANNED, APPROVED], default: PLANNED }
         note: { type: string, maxLength: 1000, nullable: true }
+        coverage: { type: string, enum: [FULL_DAY, PARTIAL], default: FULL_DAY }
+        startTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', nullable: true }
+        endTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', nullable: true }
     AbsencePeriodPatch:
       allOf:
         - $ref: '#/components/schemas/AbsencePeriodInput'
@@ -1077,6 +1087,9 @@ components:
             calendarDays: { type: integer }
             countedDays: { type: integer }
             shiftConflictCount: { type: integer }
+            balancePolicy: { type: string, enum: [VACATION_DAYS, TIME_OFF_HOURS, NONE] }
+            chargedMinutes: { type: integer, minimum: 0 }
+            replacesShift: { type: boolean }
     AbsenceOccurrence:
       type: object
       required: [periodId, typeId, typeName, typeColor, date, startDate, endDate, status, countedDay, shiftConflict]
@@ -1093,6 +1106,15 @@ components:
         status: { type: string, enum: [PLANNED, APPROVED] }
         countedDay: { type: boolean }
         shiftConflict: { type: boolean }
+        balancePolicy: { type: string, enum: [VACATION_DAYS, TIME_OFF_HOURS, NONE] }
+        coverage: { type: string, enum: [FULL_DAY, PARTIAL] }
+        startTime: { type: string, nullable: true }
+        endTime: { type: string, nullable: true }
+        chargedMinutes: { type: integer, minimum: 0 }
+        replacesShift: { type: boolean }
+        plannedShiftName: { type: string, nullable: true }
+        plannedShiftColor: { type: string, nullable: true }
+        plannedShiftMinutes: { type: integer, minimum: 0 }
     AbsencePreviewInput:
       type: object
       required: [typeId, startDate, endDate]
@@ -1101,12 +1123,15 @@ components:
         startDate: { type: string, format: date }
         endDate: { type: string, format: date }
         excludePeriodId: { type: integer, format: int64, nullable: true }
+        coverage: { type: string, enum: [FULL_DAY, PARTIAL], default: FULL_DAY }
+        startTime: { type: string, nullable: true }
+        endTime: { type: string, nullable: true }
     AbsencePreview:
       type: object
       additionalProperties: true
     VacationPlanner:
       type: object
-      required: [settings, summary, durationPresets, types, absences, occurrences]
+      required: [settings, summary, durationPresets, types, absences, occurrences, typeSummaries]
       properties:
         settings: { $ref: '#/components/schemas/VacationSettings' }
         summary: { $ref: '#/components/schemas/VacationSummary' }
@@ -1114,6 +1139,19 @@ components:
         types: { type: array, items: { $ref: '#/components/schemas/AbsenceType' } }
         absences: { type: array, items: { $ref: '#/components/schemas/AbsencePeriod' } }
         occurrences: { type: array, items: { $ref: '#/components/schemas/AbsenceOccurrence' } }
+        typeSummaries:
+          type: array
+          items:
+            type: object
+            properties:
+              typeId: { type: integer, format: int64 }
+              typeName: { type: string }
+              typeColor: { type: string }
+              systemCode: { type: string, nullable: true }
+              balancePolicy: { type: string, enum: [VACATION_DAYS, TIME_OFF_HOURS, NONE] }
+              fullDays: { type: integer, minimum: 0 }
+              partialMinutes: { type: integer, minimum: 0 }
+              chargedMinutes: { type: integer, minimum: 0 }
     ScheduleTemplateStep:
       type: object
       required: [position, shiftTypeId, shiftTypeName, shiftColor, dayOff]

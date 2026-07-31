@@ -54,9 +54,9 @@ class VacationPlannerServiceTest {
         assertEquals("2026-01-01", first.summary().workYearStart());
         assertEquals("2026-12-31", first.summary().workYearEnd());
         assertEquals(java.util.List.of(14, 28, 35), first.durationPresets());
-        assertEquals(java.util.List.of("VACATION", "SICK", "UNPAID", "OTHER"),
+        assertEquals(java.util.List.of("VACATION", "TIME_OFF", "SICK", "UNPAID", "OTHER"),
                 first.types().stream().map(AbsenceTypeDto::systemCode).toList());
-        assertEquals(4, second.types().size());
+        assertEquals(5, second.types().size());
     }
 
     @Test
@@ -92,7 +92,62 @@ class VacationPlannerServiceTest {
         assertEquals(1, created.shiftConflictCount());
         DayEntry persisted = days.findByOwnerAndDate(owner, LocalDate.parse("2026-08-04")).orElseThrow();
         assertEquals(shifts.get("Дневная"), persisted.getShiftType().getId());
-        assertTrue(planner.occurrences(owner, LocalDate.parse("2026-08-04"), LocalDate.parse("2026-08-04")).get(0).shiftConflict());
+        AbsenceOccurrenceDto occurrence = planner.occurrences(owner, LocalDate.parse("2026-08-04"), LocalDate.parse("2026-08-04")).get(0);
+        assertTrue(occurrence.shiftConflict());
+        assertTrue(occurrence.replacesShift());
+        assertEquals("Дневная", occurrence.plannedShiftName());
+        assertTrue(occurrence.plannedShiftMinutes() > 0);
+    }
+
+    @Test
+    void partialTimeOffChargesHoursPreservesShiftAndAllowsSeparateWindows() {
+        planner.updateSettings(owner, new VacationSettingsUpdateRequest(28, 0, "CALENDAR_DAYS", 1, 1, 8.0, 8.0));
+        AbsenceTypeDto timeOff = planner.types(owner).stream()
+                .filter(type -> "TIME_OFF".equals(type.systemCode())).findFirst().orElseThrow();
+        DayEntry shift = new DayEntry(owner, LocalDate.parse("2026-08-06"));
+        shift.setShiftType(shiftTypes.requireOwnedShiftType(owner, shifts.get("Дневная")));
+        days.saveAndFlush(shift);
+
+        AbsencePeriodDto morning = planner.createPeriod(owner, new AbsencePeriodCreateRequest(
+                timeOff.id(), "Врач", "2026-08-06", "2026-08-06", "APPROVED", null,
+                "PARTIAL", "09:00", "13:00"));
+        AbsencePeriodDto afternoon = planner.createPeriod(owner, new AbsencePeriodCreateRequest(
+                timeOff.id(), "Документы", "2026-08-06", "2026-08-06", "PLANNED", null,
+                "PARTIAL", "14:00", "16:00"));
+
+        assertEquals(240, morning.chargedMinutes());
+        assertEquals(120, afternoon.chargedMinutes());
+        assertEquals("PARTIAL", morning.coverage());
+        assertTrue(days.findByOwnerAndDate(owner, LocalDate.parse("2026-08-06")).orElseThrow().getShiftType() != null);
+        VacationPlannerDto view = planner.planner(owner, LocalDate.parse("2026-08-06"), null, null);
+        assertEquals(360, view.summary().timeOffPlannedMinutes());
+        assertEquals(120, view.summary().timeOffRemainingMinutes());
+        assertEquals(2, view.occurrences().stream().filter(item -> "PARTIAL".equals(item.coverage())).count());
+
+        ApiException overBalance = assertThrows(ApiException.class, () -> planner.createPeriod(owner,
+                new AbsencePeriodCreateRequest(timeOff.id(), null, "2026-08-07", "2026-08-07", null, null,
+                        "PARTIAL", "09:00", "12:00")));
+        assertEquals("TIME_OFF_LIMIT_EXCEEDED", overBalance.getCode());
+    }
+
+    @Test
+    void fullDayTimeOffUsesPlannedShiftMinutesWithoutDeletingThePlan() {
+        AbsenceTypeDto timeOff = planner.types(owner).stream()
+                .filter(type -> "TIME_OFF".equals(type.systemCode())).findFirst().orElseThrow();
+        DayEntry shift = new DayEntry(owner, LocalDate.parse("2026-08-08"));
+        shift.setShiftType(shiftTypes.requireOwnedShiftType(owner, shifts.get("Дневная")));
+        days.saveAndFlush(shift);
+        planner.updateSettings(owner, new VacationSettingsUpdateRequest(28, 0, "CALENDAR_DAYS", 1, 1, 24.0, 8.0));
+
+        AbsencePeriodDto created = planner.createPeriod(owner, new AbsencePeriodCreateRequest(
+                timeOff.id(), "Полный отгул", "2026-08-08", "2026-08-08", "APPROVED", null,
+                "FULL_DAY", null, null));
+        AbsenceOccurrenceDto occurrence = planner.occurrences(owner, LocalDate.parse("2026-08-08"), LocalDate.parse("2026-08-08")).get(0);
+
+        assertTrue(created.replacesShift());
+        assertEquals(occurrence.plannedShiftMinutes(), created.chargedMinutes());
+        assertEquals("Дневная", occurrence.plannedShiftName());
+        assertNotNull(days.findByOwnerAndDate(owner, LocalDate.parse("2026-08-08")).orElseThrow().getShiftType());
     }
 
     @Test

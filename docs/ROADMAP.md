@@ -1,7 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix**.
+Current release: **v27.25.0 — Absence & Time-Off Overhaul**.
 
+
+## v27.25.0 — Absence & Time-Off Overhaul — completed
+
+- [x] Separate planned shifts from factual day status without deleting schedule data.
+- [x] Full-day absences visually replace the shift while retaining plan context.
+- [x] Partial time off stores exact hours and preserves the shift surface.
+- [x] Independent `VACATION_DAYS`, `TIME_OFF_HOURS` and `NONE` balance policies.
+- [x] Built-in Time Off type, configurable hour bank and full-day charge duration.
+- [x] Month / Week / Day / selected-day plan-fact composition and monthly summaries.
+- [x] Timed `.ics` projection for partial absence and Flyway V42.
+- [x] Baseline 109 Java test classes / 579 tests / 34 Playwright scenarios.
 
 ## v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix — completed
 
@@ -85,55 +96,39 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
-## Текущая продуктовая точка — Calendar Comfort stabilized
+## Текущая продуктовая точка — Absence & Time-Off Overhaul completed
 
-Статус: **v27.24.1** стабилизирует browser-контракт уже реализованного Calendar Comfort после зелёного Maven gate: возвращает пользователя к сегодняшней дате, связывает важное событие с выбранным днём, исправляет ночные смены, сохраняет сетку во время обновления и уплотняет несколько графиков. Исходящий `.ics`-контур, nginx `access_log off` и Flyway V41 остаются неизменными. Следующий этап — глубокая модель «плановая смена → фактическое состояние дня» для отпусков, отгулов и больничных.
+Статус: **v27.25.0** завершает переход от декоративных меток отсутствий к доменной модели «плановая смена → фактическое состояние дня». Полно-дневный отпуск, отгул или больничный визуально занимает место смены, но не удаляет её; частичный отгул хранит точный интервал и списывает независимый часовой баланс. Flyway V42 аддитивен, `.ics` сохраняет read-only контракт.
 
 Закрыто:
 
-- отдельные owner-scoped настройки отпуска, типы отсутствий и периоды;
-- годовая норма, перенос и настраиваемая граница рабочего года;
-- подсчёт календарных дней или Пн–Пт без выдуманного законодательства;
-- быстрые периоды 14 / 28 / 35 дней и произвольный диапазон;
-- per-day preview со сменами, другими отсутствиями и остатком;
-- проверка каждого пересечённого рабочего года с показом наиболее ограниченного баланса;
-- стабильные `VACATION_LIMIT_EXCEEDED`, `ABSENCE_OVERLAP` и `ABSENCE_TYPE_IN_USE`;
-- встроенные и пользовательские типы отсутствий;
-- Month / Week / Day / selected-day проекция без записи отпуска в смены;
-- Flyway V40, API v1, OpenAPI, Java/static/Playwright contracts;
-- baseline 103 Java test classes / 544 tests / 31 Playwright scenario.
+- независимые политики `VACATION_DAYS`, `TIME_OFF_HOURS` и `NONE`;
+- встроенный тип «Отгул» и отдельный банк часов;
+- полный и частичный охват с проверкой пересечений;
+- списание полной смены по её net duration либо по настраиваемой длительности дня;
+- план-факт детали и полноценная визуализация в Month / Week / Day;
+- сводка по видам отсутствий и частичным часам;
+- timed `.ics` для частичного отгула;
+- Flyway V42, OpenAPI, Java/static/Playwright contracts;
+- baseline 109 Java test classes / 579 tests / 34 Playwright scenarios.
 
-Следующий этап: **v27.25.0 — Absence & Time-Off Overhaul**; read-only импорт внешних `.ics`-источников остаётся отдельным последующим этапом интеграций.
+Следующий этап: **v27.26.0 — Workspace, Layout & Theme Studio**.
 
+## Ближайшая продуктовая очередь после v27.25.0
 
-## Ближайшая продуктовая очередь после стабилизации v27.24.1
+### v27.26.0 — Workspace, Layout & Theme Studio
 
-### v27.24.0 — Calendar Comfort & Correctness — completed
-
-- контекстная уютная кнопка «Сегодня» для быстрого возврата из далёкой даты;
-- создание важного дня сразу на выбранной календарной дате;
-- чекбоксы важных дней по размерам дизайн-системы;
-- корректная компоновка ночной смены с двумя датами во вкладке «Сегодня»;
-- более спокойные loading-state календаря и первичная диагностика производительности;
-- косметическая стабилизация нескольких графиков.
-
-### v27.25.0 — Absence & Time-Off Overhaul
-
-- разделение «плановая смена» и «фактический статус дня»;
-- полно-дневный отпуск/отгул/больничный визуально заменяет смену, но не удаляет её из графика;
-- частичный отгул сохраняет смену и показывает часы отдельной полосой/бейджем;
-- оплачиваемый отпуск, отпуск без содержания, обычный отгул, компенсаторные часы, больничный и пользовательские категории;
-- только нужные категории расходуют баланс отпуска;
-- сводка месяца считает отпуска, отгулы, больничные и часы наряду со сменами;
-- детали дня показывают план и факт отдельно.
+- настройка рабочих пространств и порядка блоков;
+- персонализация видимых разделов и календарных поверхностей;
+- темы, акцентные цвета и layout presets;
+- органичное отображение нескольких графиков.
 
 ### Следующие продуктовые циклы
 
-- `v27.26.0` — Workspace, Layout & Theme Studio;
 - `v27.27.0` — One-Tap Calendar Connect для Google / Apple / Outlook;
 - `v27.28.0` — архив «Все заметки» и визуальные коллизии задач;
 - `v27.29.0` — Telegram inline-действия и понятные пошаговые команды;
-- `v27.30.0` — простой и расширенный расчёт зарплаты после новой модели отсутствий;
+- `v27.30.0` — простой и расширенный расчёт зарплаты поверх plan/fact absence model;
 - затем — контекстные обучалки и отдельный финальный performance / production-readiness цикл.
 
 ## Этап 2 — нормальная API-архитектура

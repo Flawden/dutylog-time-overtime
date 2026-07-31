@@ -1,3 +1,12 @@
+# v27.25.0 — Absence & Time-Off Overhaul
+
+- Introduced a plan/fact absence model: planned shifts remain immutable while full-day absences become the factual calendar surface.
+- Added partial time off with exact local start/end times, independent hour balances and stable `TIME_OFF_LIMIT_EXCEEDED` validation.
+- Added `VACATION_DAYS`, `TIME_OFF_HOURS` and `NONE` balance policies, a built-in Time Off type, configurable full-day charging and per-type summaries.
+- Added Month/Week/Day/selected-day composition, full-weight absence cells, planned-shift context, partial-time bars and monthly absence totals.
+- Exported partial time off as timed `.ics` events while keeping full-day absences all-day and preserving source shift data.
+- Flyway advances to V42; regression baseline advances to 109 Java test classes, 579 `@Test` methods and 34 Playwright scenarios.
+
 # v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix
 
 - Fixed the new mobile calendar comfort scenario to close the intentionally modal selected-day panel before navigating to another month.

@@ -2337,3 +2337,116 @@ html[data-shell="next"] .calendarLayerToggle.isHidden > i { background: transpar
   html[data-shell="next"] .nav #todayBtn.isVisible,
   html[data-shell="next"] .calendarLoadStatus span { animation: none; }
 }
+
+/* v27.25.0 — Absence & Time-Off factual layer */
+html[data-shell="next"] .vacationSummaryGrid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+html[data-shell="next"] .vacationPartialTimes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  padding: 12px;
+  border: 1px dashed color-mix(in srgb, var(--accent-secondary, var(--accent)) 42%, var(--ds-border-soft));
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--accent-secondary, var(--accent)) 7%, transparent);
+}
+html[data-shell="next"] .vacationPartialTimes[hidden] { display: none; }
+html[data-shell="next"] .vacationTypeForm { grid-template-columns: minmax(0, 1fr) auto minmax(150px, .7fr) auto; }
+html[data-shell="next"] .vacationTypeForm label { grid-column: auto; align-items: center; }
+html[data-shell="next"] .vacationPlanFactHint {
+  color: color-mix(in srgb, var(--good, #55c792) 78%, var(--text));
+  font-size: 11px;
+  font-weight: 760;
+}
+html[data-shell="next"] .vacationDayItem {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  overflow: hidden;
+}
+html[data-shell="next"] .vacationDayItem::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 5px;
+  background: var(--absence-color, var(--accent-secondary));
+}
+html[data-shell="next"] .vacationDayIcon { color: var(--absence-color, var(--accent-secondary)); font-size: 18px; }
+html[data-shell="next"] .vacationDayPlanFact { display: grid; gap: 3px; min-width: 0; text-align: left; }
+html[data-shell="next"] .vacationDayPlanFact > small:first-child {
+  color: var(--absence-color, var(--accent-secondary));
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+html[data-shell="next"] .vacationDayPlanFact b,
+html[data-shell="next"] .vacationDayPlanFact em,
+html[data-shell="next"] .vacationDayPlanFact small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+html[data-shell="next"] .vacationDayPlanFact em { color: var(--mut); font-size: 11px; font-style: normal; }
+html[data-shell="next"] .vacationDayPlanFact small:last-child { color: var(--mut); font-size: 10px; }
+
+html[data-shell="next"] .cell.hasAbsenceFact {
+  background: linear-gradient(145deg, color-mix(in srgb, var(--absence-color) 23%, var(--panel2)), color-mix(in srgb, var(--absence-color) 8%, var(--panel))) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--absence-color) 24%, transparent);
+}
+html[data-shell="next"] .cell .absenceFact {
+  max-width: 100%;
+  overflow: hidden;
+  font-size: 11px;
+  font-weight: 850;
+  line-height: 1.15;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+html[data-shell="next"] .cell .plannedShiftGhost {
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--mut);
+  font-size: 8.5px;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+html[data-shell="next"] .cell .partialAbsenceBar {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  padding: 3px 5px;
+  border-left: 3px solid var(--absence-color, var(--accent-secondary));
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--absence-color, var(--accent-secondary)) 16%, transparent);
+  color: var(--text);
+  font-size: 8.5px;
+  font-weight: 720;
+  line-height: 1.1;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+html[data-shell="next"] .sum .absenceSummaryChip {
+  padding: 4px 8px;
+  border: 1px solid var(--ds-border-soft);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface, var(--card)) 90%, transparent);
+}
+html[data-shell="next"] .calendarWeekDay.hasAbsenceFact {
+  background: color-mix(in srgb, var(--day-color) 13%, var(--surface));
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--day-color) 30%, transparent);
+}
+html[data-shell="next"] .calendarTimelineEvent.vacation,
+html[data-shell="next"] .calendarAllDayItem.vacation {
+  border-color: color-mix(in srgb, var(--event-color) 52%, var(--line));
+  background: color-mix(in srgb, var(--event-color) 18%, var(--surface));
+}
+
+@media (max-width: 900px) {
+  html[data-shell="next"] .vacationSummaryGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  html[data-shell="next"] .vacationTypeForm { grid-template-columns: minmax(0, 1fr) auto; }
+  html[data-shell="next"] .vacationTypeForm select,
+  html[data-shell="next"] .vacationTypeForm label { grid-column: 1 / -1; }
+}
+@media (max-width: 560px) {
+  html[data-shell="next"] .vacationSummaryGrid { grid-template-columns: 1fr; }
+  html[data-shell="next"] .vacationPartialTimes { grid-template-columns: 1fr; }
+  html[data-shell="next"] .cell .absenceFact { font-size: 9.5px; }
+  html[data-shell="next"] .cell .plannedShiftGhost,
+  html[data-shell="next"] .cell .partialAbsenceBar { font-size: 7.5px; }
+}

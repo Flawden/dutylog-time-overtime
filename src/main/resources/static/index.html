@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.24.1"></script>
-<link href="app.css?v=27.24.1" rel="stylesheet"/>
-<link href="design-system.css?v=27.24.1" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.24.1" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.24.1" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.24.1" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.24.1" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.24.1" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.24.1" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.24.1" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.24.1" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.24.1" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.25.0"></script>
+<link href="app.css?v=27.25.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.25.0" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.25.0" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.25.0" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.25.0" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.25.0" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.25.0" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.25.0" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.25.0" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.25.0" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.25.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -532,6 +532,7 @@
       <div><span>Доступно</span><b id="vacationAvailable">—</b><small>годовая норма + перенос</small></div>
       <div><span>Запланировано</span><b id="vacationPlanned">—</b><small>в текущем рабочем году</small></div>
       <div><span>Осталось</span><b id="vacationRemaining">—</b><small id="vacationCountModeLabel">—</small></div>
+      <div><span>Отгулы</span><b id="timeOffRemaining">—</b><small id="timeOffBalanceLabel">баланс часов</small></div>
     </div>
   </section>
 
@@ -548,6 +549,9 @@
         <label>Статус
           <select id="vacationStatus"><option value="PLANNED">Запланировано</option><option value="APPROVED">Подтверждено</option></select>
         </label>
+        <label>Формат
+          <select id="vacationCoverage"><option value="FULL_DAY">Полный день</option><option value="PARTIAL">Часть дня</option></select>
+        </label>
         <label class="vacationWide">Название
           <input id="vacationTitle" maxlength="120" placeholder="Например: основной отпуск"/>
         </label>
@@ -557,6 +561,11 @@
         <label>По
           <input id="vacationEnd" type="date" required/>
         </label>
+        <div class="vacationPartialTimes vacationWide" id="vacationPartialTimes" hidden>
+          <label>С<input id="vacationStartTime" type="time" value="09:00"/></label>
+          <label>До<input id="vacationEndTime" type="time" value="13:00"/></label>
+          <small>Частичное отсутствие сохраняет плановую смену и показывает отдельную полосу времени.</small>
+        </div>
         <div class="vacationPresetRow vacationWide" aria-label="Быстрая длительность">
           <span>Длительность:</span>
           <button type="button" data-vacation-days="14">14 дней</button>
@@ -593,6 +602,8 @@
         <label>Перенос, дней<input id="vacationCarryover" type="number" min="0" max="366" required/></label>
         <label>Считать дни<select id="vacationCountMode"><option value="CALENDAR_DAYS">Календарные дни</option><option value="WEEKDAYS">Пн–Пт</option></select></label>
         <label>Начало рабочего года<input id="vacationWorkYearStart" type="date" value="2026-01-01"/></label>
+        <label>Баланс отгулов, часов<input id="timeOffBalanceHours" type="number" min="0" max="10000" step="0.25" value="0"/></label>
+        <label>Полный отгул без смены, часов<input id="defaultTimeOffDayHours" type="number" min="0.25" max="24" step="0.25" value="8"/></label>
         <button class="primary" type="submit">Сохранить правила</button>
       </form>
       <p class="vacationLegalHint">Законодательство страны не хардкодится. Режим Пн–Пт исключает выходные, но государственные праздники пока не вычитаются автоматически.</p>
@@ -604,7 +615,12 @@
       <form id="vacationTypeForm" class="vacationTypeForm">
         <input id="vacationTypeName" maxlength="80" placeholder="Новый тип" required/>
         <input id="vacationTypeColor" type="color" value="#4FA3A5"/>
-        <label><input id="vacationTypeCounts" type="checkbox"/> списывать из нормы</label>
+        <select id="vacationTypeBalance" aria-label="Баланс типа отсутствия">
+          <option value="NONE">Без списания</option>
+          <option value="VACATION_DAYS">Дни отпуска</option>
+          <option value="TIME_OFF_HOURS">Часы отгулов</option>
+        </select>
+        <label><input id="vacationTypeReplacesShift" type="checkbox" checked/> заменять смену на полном дне</label>
         <button type="submit">Добавить тип</button>
       </form>
     </section>
@@ -1157,7 +1173,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.24.1</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.25.0</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1770,18 +1786,18 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.24.1"></script>
-<script src="js/12-ui-platform.js?v=27.24.1"></script>
-<script src="js/20-data.js?v=27.24.1"></script>
-<script src="js/30-calendar.js?v=27.24.1"></script>
-<script src="js/35-today.js?v=27.24.1"></script>
-<script src="js/37-calendar-experience.js?v=27.24.1"></script>
-<script src="js/38-schedule-layers.js?v=27.24.1"></script>
-<script src="js/39-vacation-planner.js?v=27.24.1"></script>
-<script src="js/40-overtime.js?v=27.24.1"></script>
-<script src="js/50-tasks.js?v=27.24.1"></script>
-<script src="js/55-calendar-sync.js?v=27.24.1"></script>
-<script src="js/60-settings.js?v=27.24.1"></script>
-<script src="js/70-user-boot.js?v=27.24.1"></script>
+<script src="js/10-core.js?v=27.25.0"></script>
+<script src="js/12-ui-platform.js?v=27.25.0"></script>
+<script src="js/20-data.js?v=27.25.0"></script>
+<script src="js/30-calendar.js?v=27.25.0"></script>
+<script src="js/35-today.js?v=27.25.0"></script>
+<script src="js/37-calendar-experience.js?v=27.25.0"></script>
+<script src="js/38-schedule-layers.js?v=27.25.0"></script>
+<script src="js/39-vacation-planner.js?v=27.25.0"></script>
+<script src="js/40-overtime.js?v=27.25.0"></script>
+<script src="js/50-tasks.js?v=27.25.0"></script>
+<script src="js/55-calendar-sync.js?v=27.25.0"></script>
+<script src="js/60-settings.js?v=27.25.0"></script>
+<script src="js/70-user-boot.js?v=27.25.0"></script>
 </body>
 </html>

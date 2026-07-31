@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.24.1.
+Status: v27.25.0.
 
 ## Local gate
 
@@ -19,18 +19,22 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Staging
 
 - push the exact candidate tree to `test`;
-- confirm the Maven gate executes all 569 tests with zero failures;
-- confirm all 33 Playwright scenarios pass, including workspace-hidden Tasks routing on mobile and task module re-enable;
+- confirm the Maven gate executes all 579 tests with zero failures;
+- confirm all 34 Playwright scenarios pass, including workspace-hidden Tasks routing on mobile and task module re-enable;
 - confirm fresh schedule apply reloads the authoritative month through the data layer;
 - on a phone viewport, navigate away from the current month and confirm the contextual «Сегодня» button appears, returns to today and disappears;
 - select a different calendar date, open Important Days and confirm the draft date already matches the selected day;
 - verify important-event checkboxes are compact, an overnight Today card shows a separate two-date chip, and multiple schedule layers remain horizontally usable;
 - refresh an already rendered month and confirm the old grid stays visible while the calm loading status is announced;
-- confirm Vacation Planner shows 28 available days by default and presets 14 / 28 / 35;
-- preview a vacation over an existing shift and confirm the shift is warned about but remains intact;
-- confirm overlapping absences and allowance overflow return `ABSENCE_OVERLAP` / `VACATION_LIMIT_EXCEEDED`;
-- switch to Monday-Friday counting and confirm weekends remain visible but do not consume allowance;
-- change the work-year boundary and carryover, then verify the balance is recomputed for the selected reference date;
+- confirm the planner shows the built-in Vacation, Time Off, Sick, Unpaid and Other types;
+- assign a shift, create a full-day vacation over it and confirm the absence owns the cell visually while «По графику» still names the preserved shift;
+- delete the absence and confirm the original shift reappears without reconstruction;
+- configure an 8-hour time-off bank, create 09:00–13:00 partial time off and confirm the shift remains visible, a 4-hour bar appears and 4 hours remain;
+- create a non-overlapping partial interval on the same day and reject an overlapping interval with `ABSENCE_OVERLAP`;
+- confirm vacation overflow and time-off overflow return `VACATION_LIMIT_EXCEEDED` / `TIME_OFF_LIMIT_EXCEEDED`;
+- switch to Monday-Friday vacation counting and confirm weekends remain visible but do not consume allowance;
+- change the work-year boundary/carryover and verify vacation balance independently from the time-off hour bank;
+- export partial time off and confirm it becomes a timed `.ics` event while full-day absence stays all-day;
 - open Settings → External calendar and confirm the default export range renders without `localDateKey is not defined` or any page error;
 - confirm every active nginx HTTP/HTTPS server block has an exact `/calendar-feed.ics` location with `access_log off` before issuing a token;
 - create a private calendar subscription and copy the one-time URL;
@@ -101,6 +105,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.24.1 -m "v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix"
-git push origin v27.24.1
+git tag -a v27.25.0 -m "v27.25.0 — Absence & Time-Off Overhaul"
+git push origin v27.25.0
 ```

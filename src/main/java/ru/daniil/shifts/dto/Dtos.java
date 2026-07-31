@@ -2046,13 +2046,17 @@ public final class Dtos {
             String countMode,
             int workYearStartMonth,
             int workYearStartDay,
-            String updatedAt
+            String updatedAt,
+            double timeOffBalanceHours,
+            double defaultTimeOffDayHours
     ) {
         public static VacationSettingsDto from(ru.daniil.shifts.model.VacationSettings settings) {
             return new VacationSettingsDto(
                     settings.getAnnualAllowanceDays(), settings.getCarryoverDays(), settings.getCountMode(),
                     settings.getWorkYearStartMonth(), settings.getWorkYearStartDay(),
-                    settings.getUpdatedAt() == null ? null : settings.getUpdatedAt().toString()
+                    settings.getUpdatedAt() == null ? null : settings.getUpdatedAt().toString(),
+                    settings.getTimeOffBalanceMinutes() / 60.0,
+                    settings.getDefaultTimeOffDayMinutes() / 60.0
             );
         }
     }
@@ -2071,8 +2075,19 @@ public final class Dtos {
             Integer workYearStartMonth,
             @Min(value = 1, message = "День начала рабочего года: минимум 1")
             @Max(value = 28, message = "День начала рабочего года: максимум 28")
-            Integer workYearStartDay
-    ) {}
+            Integer workYearStartDay,
+            @DecimalMin(value = "0.0", message = "Баланс отгулов не может быть отрицательным")
+            @DecimalMax(value = "10000.0", message = "Баланс отгулов: максимум 10 000 часов")
+            Double timeOffBalanceHours,
+            @DecimalMin(value = "0.25", message = "Полный отгул: минимум 15 минут")
+            @DecimalMax(value = "24.0", message = "Полный отгул: максимум 24 часа")
+            Double defaultTimeOffDayHours
+    ) {
+        public VacationSettingsUpdateRequest(Integer annualAllowanceDays, Integer carryoverDays, String countMode,
+                                             Integer workYearStartMonth, Integer workYearStartDay) {
+            this(annualAllowanceDays, carryoverDays, countMode, workYearStartMonth, workYearStartDay, null, null);
+        }
+    }
 
     public record AbsenceTypeDto(
             Long id,
@@ -2081,11 +2096,14 @@ public final class Dtos {
             boolean countsAgainstAllowance,
             boolean systemPreset,
             String systemCode,
-            int sortOrder
+            int sortOrder,
+            String balancePolicy,
+            boolean fullDayReplacesShift
     ) {
         public static AbsenceTypeDto from(ru.daniil.shifts.model.AbsenceType type) {
             return new AbsenceTypeDto(type.getId(), type.getName(), type.getColor(),
-                    type.isCountsAgainstAllowance(), type.isSystemPreset(), type.getSystemCode(), type.getSortOrder());
+                    type.isCountsAgainstAllowance(), type.isSystemPreset(), type.getSystemCode(), type.getSortOrder(),
+                    type.getBalancePolicy(), type.isFullDayReplacesShift());
         }
     }
 
@@ -2098,8 +2116,15 @@ public final class Dtos {
             Boolean countsAgainstAllowance,
             @Min(value = 0, message = "Порядок не может быть отрицательным")
             @Max(value = 10000, message = "Порядок слишком большой")
-            Integer sortOrder
-    ) {}
+            Integer sortOrder,
+            @Pattern(regexp = "VACATION_DAYS|TIME_OFF_HOURS|NONE", message = "balancePolicy: VACATION_DAYS, TIME_OFF_HOURS или NONE")
+            String balancePolicy,
+            Boolean fullDayReplacesShift
+    ) {
+        public AbsenceTypeCreateRequest(String name, String color, Boolean countsAgainstAllowance, Integer sortOrder) {
+            this(name, color, countsAgainstAllowance, sortOrder, null, null);
+        }
+    }
 
     public record AbsenceTypeUpdateRequest(
             @Size(max = 80, message = "Название типа отсутствия: максимум 80 символов")
@@ -2109,8 +2134,15 @@ public final class Dtos {
             Boolean countsAgainstAllowance,
             @Min(value = 0, message = "Порядок не может быть отрицательным")
             @Max(value = 10000, message = "Порядок слишком большой")
-            Integer sortOrder
-    ) {}
+            Integer sortOrder,
+            @Pattern(regexp = "VACATION_DAYS|TIME_OFF_HOURS|NONE", message = "balancePolicy: VACATION_DAYS, TIME_OFF_HOURS или NONE")
+            String balancePolicy,
+            Boolean fullDayReplacesShift
+    ) {
+        public AbsenceTypeUpdateRequest(String name, String color, Boolean countsAgainstAllowance, Integer sortOrder) {
+            this(name, color, countsAgainstAllowance, sortOrder, null, null);
+        }
+    }
 
     public record VacationSummaryDto(
             String workYearStart,
@@ -2120,7 +2152,10 @@ public final class Dtos {
             int availableDays,
             int plannedDays,
             int remainingDays,
-            String countMode
+            String countMode,
+            int timeOffAvailableMinutes,
+            int timeOffPlannedMinutes,
+            int timeOffRemainingMinutes
     ) {}
 
     public record AbsencePeriodDto(
@@ -2139,7 +2174,13 @@ public final class Dtos {
             int countedDays,
             int shiftConflictCount,
             String createdAt,
-            String updatedAt
+            String updatedAt,
+            String balancePolicy,
+            String coverage,
+            String startTime,
+            String endTime,
+            int chargedMinutes,
+            boolean replacesShift
     ) {}
 
     public record AbsencePeriodCreateRequest(
@@ -2148,8 +2189,15 @@ public final class Dtos {
             @NotBlank(message = "Дата начала обязательна") String startDate,
             @NotBlank(message = "Дата окончания обязательна") String endDate,
             @Pattern(regexp = "PLANNED|APPROVED", message = "status: PLANNED или APPROVED") String status,
-            @Size(max = 1000, message = "Комментарий: максимум 1000 символов") String note
-    ) {}
+            @Size(max = 1000, message = "Комментарий: максимум 1000 символов") String note,
+            @Pattern(regexp = "FULL_DAY|PARTIAL", message = "coverage: FULL_DAY или PARTIAL") String coverage,
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время начала должно быть в формате HH:mm") String startTime,
+            @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время окончания должно быть в формате HH:mm") String endTime
+    ) {
+        public AbsencePeriodCreateRequest(Long typeId, String title, String startDate, String endDate, String status, String note) {
+            this(typeId, title, startDate, endDate, status, note, null, null, null);
+        }
+    }
 
     public record AbsencePeriodUpdateRequest(
             Long typeId,
@@ -2159,15 +2207,31 @@ public final class Dtos {
             @Pattern(regexp = "PLANNED|APPROVED", message = "status: PLANNED или APPROVED") String status,
             @Size(max = 1000, message = "Комментарий: максимум 1000 символов") String note,
             Boolean clearTitle,
-            Boolean clearNote
-    ) {}
+            Boolean clearNote,
+            @Pattern(regexp = "FULL_DAY|PARTIAL", message = "coverage: FULL_DAY или PARTIAL") String coverage,
+            String startTime,
+            String endTime,
+            Boolean clearTimes
+    ) {
+        public AbsencePeriodUpdateRequest(Long typeId, String title, String startDate, String endDate,
+                                          String status, String note, Boolean clearTitle, Boolean clearNote) {
+            this(typeId, title, startDate, endDate, status, note, clearTitle, clearNote, null, null, null, null);
+        }
+    }
 
     public record AbsencePreviewRequest(
             @NotNull(message = "Выберите тип отсутствия") Long typeId,
             @NotBlank(message = "Дата начала обязательна") String startDate,
             @NotBlank(message = "Дата окончания обязательна") String endDate,
-            Long excludePeriodId
-    ) {}
+            Long excludePeriodId,
+            @Pattern(regexp = "FULL_DAY|PARTIAL", message = "coverage: FULL_DAY или PARTIAL") String coverage,
+            String startTime,
+            String endTime
+    ) {
+        public AbsencePreviewRequest(Long typeId, String startDate, String endDate, Long excludePeriodId) {
+            this(typeId, startDate, endDate, excludePeriodId, null, null, null);
+        }
+    }
 
     public record AbsencePreviewItemDto(
             String date,
@@ -2176,7 +2240,11 @@ public final class Dtos {
             boolean shiftConflict,
             Long existingAbsenceId,
             String existingAbsenceTitle,
-            String action
+            String action,
+            String plannedShiftName,
+            String plannedShiftColor,
+            int plannedShiftMinutes,
+            boolean replacesShift
     ) {}
 
     public record AbsencePreviewDto(
@@ -2196,7 +2264,14 @@ public final class Dtos {
             int remainingAfter,
             boolean exceedsAllowance,
             int exceededBy,
-            List<AbsencePreviewItemDto> items
+            List<AbsencePreviewItemDto> items,
+            String balancePolicy,
+            String coverage,
+            int durationMinutes,
+            int timeOffAvailableMinutes,
+            int timeOffPlannedBefore,
+            int timeOffProjected,
+            int timeOffRemainingAfter
     ) {}
 
     /** One day-sized projection of an absence period into the calendar. */
@@ -2212,7 +2287,40 @@ public final class Dtos {
             String endDate,
             String status,
             boolean countedDay,
-            boolean shiftConflict
+            boolean shiftConflict,
+            String balancePolicy,
+            String coverage,
+            String startTime,
+            String endTime,
+            int chargedMinutes,
+            boolean replacesShift,
+            String plannedShiftName,
+            String plannedShiftColor,
+            int plannedShiftMinutes
+    ) {
+        /** Source-compatible constructor for v27.23.x iCalendar tests and integrations. */
+        public AbsenceOccurrenceDto(Long periodId, Long typeId, String typeName, String typeColor, String systemCode,
+                                    String title, String date, String startDate, String endDate, String status,
+                                    boolean countedDay, boolean shiftConflict) {
+            this(periodId, typeId, typeName, typeColor, systemCode, title, date, startDate, endDate, status,
+                    countedDay, shiftConflict, countsPolicy(systemCode), "FULL_DAY", null, null, 0, true,
+                    null, null, 0);
+        }
+
+        private static String countsPolicy(String systemCode) {
+            return "VACATION".equalsIgnoreCase(systemCode) ? "VACATION_DAYS" : "NONE";
+        }
+    }
+
+    public record AbsenceTypeSummaryDto(
+            Long typeId,
+            String typeName,
+            String typeColor,
+            String systemCode,
+            String balancePolicy,
+            int fullDays,
+            int partialMinutes,
+            int chargedMinutes
     ) {}
 
     public record VacationPlannerDto(
@@ -2221,7 +2329,8 @@ public final class Dtos {
             List<Integer> durationPresets,
             List<AbsenceTypeDto> types,
             List<AbsencePeriodDto> absences,
-            List<AbsenceOccurrenceDto> occurrences
+            List<AbsenceOccurrenceDto> occurrences,
+            List<AbsenceTypeSummaryDto> typeSummaries
     ) {}
 
     /** Private read-only iCalendar subscription state. Raw tokens are returned only on issue/rotation. */

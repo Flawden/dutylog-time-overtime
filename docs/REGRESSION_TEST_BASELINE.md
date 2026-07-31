@@ -1,15 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.24.1.
+Status: v27.25.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.24.1 aligns the Calendar Comfort browser regression with the intentional mobile selected-day modal. The scenario now closes the panel through the product control before month navigation, while the v27.24.0 runtime remains unchanged. Current application baseline is 108 Java test classes / 569 `@Test` methods / 33 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.25.0 protects the plan/fact absence model, independent time-off balance, full/partial overlap rules, calendar composition and timed `.ics` projection. Current application baseline is 109 Java test classes / 579 `@Test` methods / 34 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.25.0 Absence & Time-Off Overhaul extension
+
+- Service tests cover full-day charging from the preserved shift, exact partial minutes, independent hour balances and overlap windows.
+- Controller tests cover settings, built-in Time Off, preview/create/delete and calendar occurrence shape.
+- Migration/static contracts protect V42, plan/fact DOM, full-weight absence cells and partial bars.
+- Calendar export tests keep full-day absence all-day and project partial time off as a timed event.
+- Playwright creates a partial time-off interval over a shift, verifies both plan and fact, then deletes it and restores the balance.
 
 ## v27.24.1 Calendar Comfort E2E Panel Contract Hotfix extension
 
