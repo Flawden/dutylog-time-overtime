@@ -274,3 +274,8 @@ Legacy local-only credits cross an explicit migration boundary. The user chooses
 ## Schedule templates and calendar layers
 
 `ScheduleTemplate` stores reusable rules; applying a template writes ordinary `DayEntry` shifts. `CalendarLayer` stores only read-only projection metadata and derives occurrences at query time. Timed occurrences resolve in the layer IANA timezone and project into the user's display timezone. No companion occurrence is persisted as an owner day.
+
+
+## V41 External Calendar Sync
+
+`calendar_feed_subscriptions` is an owner-scoped credential table for a read-only RFC 5545 feed. It stores one SHA-256 token digest and a short hint per user; raw bearer secrets and complete subscription URLs are never persisted. Calendar content remains projected from authoritative shifts, tasks, important events and absence domains.

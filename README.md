@@ -1,3 +1,13 @@
+# v27.23.0 — External Calendar Sync
+
+- Export one important event or a selected date range as standards-compliant UTF-8 `.ics`.
+- Subscribe Google Calendar, Outlook, Apple Calendar or another compatible client to a private read-only DutyLog feed.
+- Feed links use a 256-bit bearer secret shown only when issued; DutyLog stores only SHA-256 plus a short hint.
+- Rotation immediately invalidates the old link; revocation removes access without deleting calendar data.
+- Flyway V41; automated baseline: 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
+
+> Current release: **v27.23.0 — External Calendar Sync**.
+
 # v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix
 
 - Updated four stale Playwright task flows to use the shared workspace-aware `openView()` route.
@@ -5,7 +15,7 @@
 - Module toggling is now asserted through `moduleHidden`, independently from workspace placement through `workspaceHidden`.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix**.
+> Current release: **v27.23.0 — External Calendar Sync**.
 
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
@@ -15,7 +25,7 @@
 - Module persistence derives its expected count from the canonical module registry instead of a hardcoded pre-vacation number.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix**.
+> Current release: **v27.23.0 — External Calendar Sync**.
 
 # v27.22.0 — Vacation Planner
 
@@ -25,7 +35,7 @@
 - Added owner-scoped absence types, calendar projections and a responsive unified-shell planner.
 - Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
 
-> Current release: **v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix**.
+> Current release: **v27.23.0 — External Calendar Sync**.
 
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
@@ -34,18 +44,22 @@
 - Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
 - No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix**.
+> Current release: **v27.23.0 — External Calendar Sync**.
 
 # DutyLog
 
-Current release: **v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix**
+Current release: **v27.23.0 — External Calendar Sync**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix
+## Текущая версия: v27.23.0 — External Calendar Sync
 
 
-**v27.22.2** исправляет четыре Playwright-сценария, которые пытались кликнуть скрытую рабочим окружением вкладку задач. Сценарии используют общий `openView()`, а включение модуля проверяется независимо через `moduleHidden`. Production-логика не меняется.
+**v27.23.0** добавляет безопасный исходящий календарный контур: разовый `.ics`-экспорт и приватную read-only подписку со строгой ротацией и отзывом токена. Поставляемые nginx-конфиги отключают access log для точного `/calendar-feed.ics`, чтобы bearer URL не попадал в журналы edge-прокси.
+
+### Предыдущий hotfix: v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix
+
+**v27.22.2** перевёл четыре устаревших browser-сценария задач на общий workspace-aware маршрут `openView(page, "tasks")`, не возвращая Tasks в основную навигацию Shift Worker.
 
 ### Предыдущий hotfix: v27.22.1 — Vacation Planner Frontend Contract Hotfix
 

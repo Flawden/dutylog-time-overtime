@@ -139,6 +139,21 @@ public final class DutyLogModules {
                     75
             ),
             new ModuleContract(
+                    CALENDAR_SYNC,
+                    ModuleCategory.INTEGRATION,
+                    "Внешний календарь",
+                    "External calendar",
+                    "Безопасный .ics-экспорт и приватная read-only подписка.",
+                    "Safe .ics export and a private read-only subscription.",
+                    false,
+                    true,
+                    List.of(CALENDAR),
+                    List.of("settings:calendar-sync", "important-events:ics-export"),
+                    List.of("/api/calendar-sync", "/api/v1/calendar-sync", "/calendar-feed.ics"),
+                    List.of(),
+                    78
+            ),
+            new ModuleContract(
                     NOTIFICATIONS,
                     ModuleCategory.INTEGRATION,
                     "Уведомления",

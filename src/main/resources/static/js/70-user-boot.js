@@ -181,6 +181,7 @@ async function init(){
     // The calendar projection depends on the persisted work/display zones. Load the
     // authoritative profile before the first month request instead of racing both.
     await loadProfile();
+    if (moduleEnabled("calendar_sync") && typeof loadCalendarSyncStatus === "function") await loadCalendarSyncStatus(true);
     // The first visible month follows DutyLog's persisted work timezone rather
     // than the browser clock. This matters near month boundaries and in UTC±14.
     const [profileTodayYear, profileTodayMonth] = todayKey().split("-").map(Number);

@@ -125,6 +125,21 @@ class PostgreSqlMigrationContractTest {
                 "absence types are a separate domain from shift types");
     }
 
+    @Test
+    void calendarFeedMigrationStoresOnlyTokenHashesAndKeepsOneFeedPerOwner() throws IOException {
+        String sql = Files.readString(MIGRATION_ROOT.resolve("V41__calendar_feed_subscriptions.sql"));
+
+        assertTrue(sql.contains("CREATE TABLE calendar_feed_subscriptions"));
+        assertTrue(sql.contains("token_hash VARCHAR(64)"));
+        assertTrue(sql.contains("token_hint VARCHAR(12)"));
+        assertTrue(sql.contains("UNIQUE (user_id)"));
+        assertTrue(sql.contains("UNIQUE (token_hash)"));
+        assertTrue(sql.contains("ON DELETE CASCADE"));
+        assertTrue(sql.contains("token_hash ~ '^[0-9a-f]{64}$'"));
+        assertFalse(sql.contains("raw_token"));
+        assertFalse(sql.contains("subscription_url"));
+    }
+
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);

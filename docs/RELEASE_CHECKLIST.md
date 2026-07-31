@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.22.2.
+Status: v27.23.0.
 
 ## Local gate
 
@@ -19,14 +19,20 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Staging
 
 - push the exact candidate tree to `test`;
-- confirm the Maven gate executes all 544 tests with zero failures;
-- confirm all 31 Playwright scenarios pass, including workspace-hidden Tasks routing on mobile and task module re-enable;
+- confirm the Maven gate executes all 563 tests with zero failures;
+- confirm all 32 Playwright scenarios pass, including workspace-hidden Tasks routing on mobile and task module re-enable;
 - confirm fresh schedule apply reloads the authoritative month through the data layer;
 - confirm Vacation Planner shows 28 available days by default and presets 14 / 28 / 35;
 - preview a vacation over an existing shift and confirm the shift is warned about but remains intact;
 - confirm overlapping absences and allowance overflow return `ABSENCE_OVERLAP` / `VACATION_LIMIT_EXCEEDED`;
 - switch to Monday-Friday counting and confirm weekends remain visible but do not consume allowance;
 - change the work-year boundary and carryover, then verify the balance is recomputed for the selected reference date;
+- confirm every active nginx HTTP/HTTPS server block has an exact `/calendar-feed.ics` location with `access_log off` before issuing a token;
+- create a private calendar subscription and copy the one-time URL;
+- fetch the URL without a web session and confirm UTF-8 `text/calendar`, CRLF and `BEGIN:VCALENDAR`;
+- rotate the subscription and confirm the previous URL returns 404;
+- revoke the current URL and confirm it returns 404 without deleting DutyLog events;
+- export a selected range and one important event; verify shifts, tasks, important events and absences remain read-only source data;
 - confirm `Deploy staging` is green;
 - verify calendar, note search/export/offline queued edits, tasks, overtime, modules, admin and Android API v1;
 - verify schedule-template list seeds five presets exactly once and built-ins open as copies;
@@ -90,6 +96,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.22.2 -m "v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix"
-git push origin v27.22.2
+git tag -a v27.23.0 -m "v27.23.0 — External Calendar Sync"
+git push origin v27.23.0
 ```

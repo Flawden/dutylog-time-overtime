@@ -1,3 +1,13 @@
+# v27.23.0 — External Calendar Sync
+
+- Added RFC 5545 `.ics` export for one important event and owner-selected ranges up to 366 days.
+- Composed shifts, planned tasks, important events and absences into one read-only external calendar without changing DutyLog source data.
+- Added a private rolling subscription feed with 256-bit bearer tokens; only SHA-256 digests and non-secret hints are stored.
+- Added explicit issue/rotate/revoke lifecycle, old-token invalidation, module guards, no-store responses and stable Web/v1/OpenAPI contracts.
+- Hardened supplied nginx edge configs with an exact `/calendar-feed.ics` location and `access_log off`, preventing bearer URLs from entering reverse-proxy access logs.
+- Added a responsive Settings integration panel, one-time secret display and per-event export from important-event details.
+- Flyway advances to V41; regression baseline advances to 107 Java test classes, 563 `@Test` methods and 32 Playwright scenarios.
+
 # v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix
 
 - Replaced four direct clicks on the workspace-hidden Tasks tab with the shared `openView(page, "tasks")` product-route helper.

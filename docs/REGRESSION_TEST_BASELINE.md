@@ -1,14 +1,24 @@
 # DutyLog regression test baseline
 
-Status: v27.22.2.
+Status: v27.23.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.22.2 aligns four stale task browser flows with workspace-aware navigation. Current application baseline remains 103 Java test classes / 544 `@Test` methods / 31 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.23.0 adds standards-compliant `.ics` export and a SHA-only private read-only subscription lifecycle. Current application baseline is 107 Java test classes / 563 `@Test` methods / 32 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
+
+
+## v27.23.0 External Calendar Sync extension
+
+- `CalendarIcsServiceTest` protects four-domain composition, UTF-8/CRLF/folding, recurrence, escaping, deduplication and payload limits.
+- `CalendarSubscriptionServiceTest` protects 256-bit issuance, SHA-only persistence, bounded feed windows, rotation and revocation.
+- `CalendarSyncControllerTest` protects auth/CSRF, owner scope, one-time secret disclosure, old-token invalidation, no-store and module boundaries.
+- `CalendarSyncFrontendContractTest` protects responsive Settings wiring and one-time browser state.
+- `external-calendar-sync.spec.js` covers issue → external fetch → range download → revoke → old URL 404.
+- Baseline advances to 107 Java classes / 563 `@Test` methods / 32 Playwright scenarios; Flyway advances to V41.
 
 
 ## v27.22.2 Workspace-Aware Tasks E2E Navigation Hotfix extension

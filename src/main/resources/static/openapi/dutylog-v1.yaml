@@ -657,6 +657,80 @@ paths:
           content:
             application/zip:
               schema: { type: string, format: binary }
+  /api/v1/calendar-sync/status:
+    get:
+      operationId: getCalendarSyncStatus
+      description: Returns private read-only iCalendar subscription state without exposing the bearer token.
+      responses:
+        '200':
+          description: Calendar sync state
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarSyncStatus' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+  /api/v1/calendar-sync/subscription:
+    post:
+      operationId: rotateCalendarSubscription
+      description: Creates or rotates the private feed token. The full URL is returned once and the raw token is never persisted.
+      responses:
+        '200':
+          description: One-time private subscription URL
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarSubscription' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: revokeCalendarSubscription
+      responses:
+        '204': { description: Subscription revoked }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+  /api/v1/calendar-sync/export:
+    get:
+      operationId: exportCalendarRange
+      parameters:
+        - { in: query, name: from, required: true, schema: { type: string, format: date } }
+        - { in: query, name: to, required: true, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: RFC 5545 iCalendar file with enabled DutyLog entities in the requested range
+          content:
+            text/calendar:
+              schema: { type: string, format: binary }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+        '413': { $ref: '#/components/responses/ApiError' }
+  /api/v1/calendar-sync/events/{id}.ics:
+    get:
+      operationId: exportImportantEventIcs
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200':
+          description: RFC 5545 iCalendar file for one owned important event
+          content:
+            text/calendar:
+              schema: { type: string, format: binary }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+  /calendar-feed.ics:
+    get:
+      operationId: readPrivateCalendarFeed
+      security: []
+      description: Token-authenticated read-only rolling iCalendar feed. The token is carried in the query string; DutyLog application diagnostics record only the path and never the token value.
+      parameters:
+        - { in: query, name: token, required: true, schema: { type: string, minLength: 43, maxLength: 128 } }
+      responses:
+        '200':
+          description: Rolling private calendar feed
+          content:
+            text/calendar:
+              schema: { type: string, format: binary }
+        '404': { $ref: '#/components/responses/ApiError' }
   /api/v1/schedule-templates:
     get:
       operationId: listScheduleTemplates
@@ -907,6 +981,29 @@ components:
           schema:
             $ref: '#/components/schemas/ApiError'
   schemas:
+    CalendarSyncStatus:
+      type: object
+      required: [active, feedPastDays, feedFutureDays, entities]
+      properties:
+        active: { type: boolean }
+        tokenHint: { type: string, nullable: true, description: Non-secret prefix/suffix hint only }
+        createdAt: { type: string, format: date-time, nullable: true }
+        rotatedAt: { type: string, format: date-time, nullable: true }
+        feedPastDays: { type: integer, minimum: 0, maximum: 365 }
+        feedFutureDays: { type: integer, minimum: 0, maximum: 365 }
+        entities:
+          type: array
+          items: { type: string, enum: [shifts, tasks, important_events, absences] }
+    CalendarSubscription:
+      allOf:
+        - $ref: '#/components/schemas/CalendarSyncStatus'
+        - type: object
+          required: [subscriptionUrl]
+          properties:
+            subscriptionUrl:
+              type: string
+              format: uri
+              description: Returned only after issue/rotation; contains the raw bearer token and must be treated as a secret.
     VacationSettingsInput:
       type: object
       properties:

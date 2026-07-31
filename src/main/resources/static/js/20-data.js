@@ -58,6 +58,9 @@ const api = {
   async createAbsence(b) { return jfetch("/api/vacation-planner/absences", { method:"POST", body:b }); },
   async updateAbsence(id,b) { return jfetch(`/api/vacation-planner/absences/${id}`, { method:"PATCH", body:b }); },
   async deleteAbsence(id) { return jfetch(`/api/vacation-planner/absences/${id}`, { method:"DELETE" }); },
+  async calendarSyncStatus() { return jfetch("/api/calendar-sync/status"); },
+  async issueCalendarSubscription() { return jfetch("/api/calendar-sync/subscription", { method:"POST" }); },
+  async revokeCalendarSubscription() { return jfetch("/api/calendar-sync/subscription", { method:"DELETE" }); },
   async modules()          { return jfetch("/api/modules"); },
   async moduleContracts()  { return jfetch("/api/modules/contracts"); },
   async updateModules(enabled) { return jfetch("/api/modules", { method:"PATCH", body:{ enabled } }); },
@@ -333,6 +336,9 @@ function applyModuleVisibility(){
   toggle($("view-vacation"), moduleEnabled("vacation"));
   setDayPanelSectionVisibility();
   document.querySelectorAll('.scenarioFeature').forEach(el => toggle(el, moduleEnabled("scenarios") && moduleEnabled("overtime")));
+  toggle($("calendarSyncCard"), moduleEnabled("calendar_sync"));
+  toggle(document.querySelector('[data-settings-jump="calendar-sync"]'), moduleEnabled("calendar_sync"));
+  toggle($("importantDetailsExportIcs"), moduleEnabled("calendar_sync") && moduleEnabled("important_dates"));
   toggle($("notifyCard"), moduleEnabled("notifications"));
   toggle(document.querySelector('[data-settings-jump="notifications"]'), moduleEnabled("notifications"));
   toggle($("telegramProfileTitle"), moduleEnabled("telegram"));
@@ -340,6 +346,7 @@ function applyModuleVisibility(){
   if (location.hash === "#tasks" && !moduleEnabled("tasks")) location.hash = "#calendar";
   if (location.hash === "#overtime" && !moduleEnabled("overtime")) location.hash = "#calendar";
   if (location.hash === "#settings-notifications" && !moduleEnabled("notifications")) location.hash = "#settings-modules";
+  if (location.hash === "#settings-calendar-sync" && !moduleEnabled("calendar_sync")) location.hash = "#settings-modules";
   if (location.hash === "#important" && !moduleEnabled("important_dates")) location.hash = "#calendar";
   if (location.hash === "#vacation" && !moduleEnabled("vacation")) location.hash = "#calendar";
   renderModuleSettings();
@@ -372,7 +379,9 @@ async function saveModuleEnabled(key, enabled){
 async function refreshModuleAwareData(){
   if (moduleEnabled("important_dates")) await refreshImportantSettings(); else { state.importantDays = []; state.importantByDate = {}; }
   if (moduleEnabled("vacation") && typeof loadVacationPlanner === "function") await loadVacationPlanner(true);
-  else if (!moduleEnabled("vacation")) { state.vacationPlanner = null; state.absenceOccurrences = []; state.absencesByDate = {}; }
+  else { state.vacationPlanner = null; state.absenceOccurrences = []; state.absencesByDate = {}; }
+  if (moduleEnabled("calendar_sync") && typeof loadCalendarSyncStatus === "function") await loadCalendarSyncStatus(true);
+  else { state.calendarSync = null; state.calendarSyncIssuedUrl = null; }
   if (moduleEnabled("tasks")) {
     await Promise.all([loadTaskBoard(true), loadTaskMetadata(true), loadInbox(true)]);
   } else {
@@ -438,11 +447,11 @@ function renderModuleSettings(){
   }));
 }
 
-const ONBOARDING_OPTIONAL_MODULES = ["notes","tasks","overtime","important_dates","vacation","notifications","telegram","scenarios"];
+const ONBOARDING_OPTIONAL_MODULES = ["notes","tasks","overtime","important_dates","vacation","calendar_sync","notifications","telegram","scenarios"];
 const ONBOARDING_PRESETS = {
-  basic: { notes:false, tasks:false, overtime:false, important_dates:false, vacation:false, notifications:false, telegram:false, scenarios:false },
-  work: { notes:true, tasks:false, overtime:true, important_dates:true, vacation:true, notifications:false, telegram:false, scenarios:true },
-  full: { notes:true, tasks:true, overtime:true, important_dates:true, vacation:true, notifications:true, telegram:true, scenarios:true },
+  basic: { notes:false, tasks:false, overtime:false, important_dates:false, vacation:false, calendar_sync:false, notifications:false, telegram:false, scenarios:false },
+  work: { notes:true, tasks:false, overtime:true, important_dates:true, vacation:true, calendar_sync:true, notifications:false, telegram:false, scenarios:true },
+  full: { notes:true, tasks:true, overtime:true, important_dates:true, vacation:true, calendar_sync:true, notifications:true, telegram:true, scenarios:true },
 };
 function onboardingModules(){
   return (state.modulesList || [])

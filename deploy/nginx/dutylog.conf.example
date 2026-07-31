@@ -15,6 +15,12 @@ server {
         root /var/www/certbot;
     }
 
+    # Preserve the bearer query across HTTPS redirect, but never log it.
+    location = /calendar-feed.ics {
+        access_log off;
+        return 301 https://$host$request_uri;
+    }
+
     location / {
         return 301 https://$host$request_uri;
     }
@@ -37,6 +43,17 @@ server {
     add_header Permissions-Policy "geolocation=(), microphone=(), camera=()" always;
     add_header Strict-Transport-Security "max-age=31536000" always;
     add_header Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; manifest-src 'self'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'" always;
+
+    # The feed token is a bearer secret in the query string. Never log its request line.
+    location = /calendar-feed.ics {
+        access_log off;
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $remote_addr;
+        proxy_set_header X-Forwarded-Proto https;
+    }
 
     # Optional proxy-level defense in depth: login, registration and mobile login.
     # burst=5 — небольшая очередь на легитимные повторы, nodelay — без искусственной задержки.

@@ -1,7 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix**.
+Current release: **v27.23.0 — External Calendar Sync**.
 
+
+## v27.23.0 — External Calendar Sync — completed
+
+- [x] RFC 5545 export for a selected range and one important event.
+- [x] Shifts, tasks, important events and absences compose into read-only `.ics`.
+- [x] Private rolling subscription with SHA-256-only token storage.
+- [x] Issue, rotate, revoke and immediate old-token invalidation.
+- [x] Responsive Settings UI, Web/v1 API, OpenAPI and browser lifecycle coverage.
+- [x] Flyway V41; baseline 107 / 563 / 32.
+
+Next product stage: **v27.24.0 — Workspace, Layout & Theme Studio**.
 
 ## v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix — completed
 
@@ -32,7 +43,7 @@ Current release: **v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix**.
 - [x] Month / Week / Day / selected-day composition.
 - [x] Flyway V40, Web/v1 API, Java/static/Playwright contracts.
 
-Next product stage: **v27.23.0 — External Calendar Sync**.
+Next product stage: **v27.24.0 — Workspace, Layout & Theme Studio**.
 
 ## Текущая продуктовая точка — Vacation Planner
 
@@ -52,7 +63,7 @@ Next product stage: **v27.23.0 — External Calendar Sync**.
 - Flyway V40, API v1, OpenAPI, Java/static/Playwright contracts;
 - baseline 103 Java test classes / 544 tests / 31 Playwright scenario.
 
-Следующий этап: **v27.23.0 — External Calendar Sync**, начиная с безопасного `.ics`-экспорта и одностороннего обмена.
+Следующий этап: **v27.24.0 — Workspace, Layout & Theme Studio**. Read-only импорт внешних `.ics`-источников остаётся отдельным последующим этапом интеграций.
 
 ## Этап 2 — нормальная API-архитектура
 

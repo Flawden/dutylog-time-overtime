@@ -1,6 +1,6 @@
 # Security review
 
-Status: v27.2.30.
+Status: v27.23.0.
 
 DutyLog is in release stabilization. This document records the security boundaries that are enforced by code and tests in the current release candidate. It is a static review and regression baseline, not a substitute for a live penetration test.
 
@@ -31,6 +31,16 @@ DutyLog now has two explicit Spring Security chains.
 - `OwnershipIsolationTest` checks the exact `404` status for tasks, quick scenarios, important dates, shift types, overtime credits/usages and mobile sessions.
 - `/api/admin/**` remains protected by both `hasRole("ADMIN")` and sensitive-operation service checks.
 - Disabled modules guard backend writes, including aggregated mobile sync.
+
+
+## External calendar subscription
+
+- Subscription tokens contain 256 random bits and are accepted only in URL-safe Base64 form.
+- The raw bearer token is shown only after issue/rotation; the database stores SHA-256 plus a non-secret hint.
+- Rotation invalidates the old digest atomically; revocation deletes the credential without touching calendar data.
+- The public feed is read-only, owner-scoped and returns 404 for malformed, unknown, revoked or module-disabled tokens.
+- Application diagnostics log the path but never the token query value; security audit events log only the hint. The supplied nginx examples disable access logging for the exact `/calendar-feed.ics` location, and every active Certbot-managed HTTP/HTTPS server block must retain that exception before subscriptions are enabled.
+- Feed and exports use `Cache-Control: no-store`, bounded date/event/byte limits and no OAuth credentials.
 
 ## Notes export
 
@@ -90,6 +100,10 @@ The same baseline headers are present in Spring, Caddy and nginx. HSTS is emitte
 - `ADMIN_ROLE_CHANGED`
 - `ADMIN_PASSWORD_RESET`
 - `DATA_EXPORT_NOTES`
+- `DATA_EXPORT_CALENDAR`
+- `DATA_EXPORT_CALENDAR_EVENT`
+- `CALENDAR_FEED_ROTATED`
+- `CALENDAR_FEED_REVOKED`
 
 Fields include event type, result, username, source IP, method, path and request ID. Passwords, bearer/refresh tokens, Telegram link codes and note contents are never logged. Production writes stdout plus a bounded rolling file in the `app_logs` Docker volume.
 
