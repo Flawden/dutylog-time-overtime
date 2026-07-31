@@ -4,7 +4,8 @@ const {
   currentLocalDateKey,
   selectDate,
   waitForApi,
-  openDayModule
+  openDayModule,
+  openView
 } = require('./helpers');
 
 test('task details separate reading from editing and persist a long description', async ({ page }) => {
@@ -131,7 +132,7 @@ test('timed task deadline and reminder keep one instant across timezone changes'
   expect(after.remindAt).toBe(`${expected.date}T${expected.time}`);
   expect(after.workTimezone).toBe('Europe/Moscow');
 
-  await page.locator('#tabbar a[data-view="tasks"]').click();
+  await openView(page, 'tasks');
   const row = page.locator('#taskBoardList .taskBoardItem', { hasText:title });
   await expect(row).toBeVisible();
   await expect(row).toContainText(expected.time);

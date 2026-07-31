@@ -1,5 +1,5 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, currentLocalDateKey, selectDate } = require('./helpers');
+const { registerAndOnboard, currentLocalDateKey, selectDate, openView } = require('./helpers');
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -22,7 +22,7 @@ test('calendar, filters and selected-day panel remain usable on a phone viewport
   await expect(page.locator('#panel')).toBeHidden();
   await expect(page.locator('#tabbar')).toBeVisible();
 
-  await page.locator('#tabbar a[data-view="tasks"]').click();
+  await openView(page, 'tasks');
   await expect(page.locator('#view-tasks')).toBeVisible();
   await expect(page.locator('#taskBoardFiltersToggle')).toBeVisible();
   await expect(page.locator('#taskBoardFilters')).toBeHidden();

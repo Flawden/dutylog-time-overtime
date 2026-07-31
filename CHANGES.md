@@ -1,3 +1,10 @@
+# v27.22.2 — Workspace Route E2E Navigation Hotfix
+
+- CI v27.22.1 completed 27 of 31 Playwright scenarios and exposed four deterministic tests that still clicked the hidden Tasks tab in the Shift Worker workspace.
+- Routed mobile layout, timed-task timezone and quick-capture browser flows through the shared workspace-aware `openView()` helper, which uses a visible primary tab or the canonical hash route.
+- Replaced module enable/disable assertions on primary-navigation membership with assertions on the Tasks screen's `moduleHidden` state.
+- Kept production runtime behavior, HTTP API, Flyway V40 and the regression baseline unchanged at 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
+
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
 - Aligned the Shift Worker workspace contract with the new `vacation` navigation route and the actual Today widget order.

@@ -1,3 +1,12 @@
+# v27.22.2 — Workspace Route E2E Navigation Hotfix
+
+- Fixed four Playwright contracts that treated the hidden Tasks anchor as a visible primary tab in the Shift Worker workspace.
+- Reused the canonical `openView()` route helper for screens outside the active workspace navigation.
+- Module-toggle coverage now checks the Tasks screen's enabled state instead of confusing module availability with primary-navigation membership.
+- Production JavaScript behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
+
+> Current release: **v27.22.2 — Workspace Route E2E Navigation Hotfix**.
+
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
 - Aligned three stale Java/static contracts with the accepted Vacation Planner runtime.
@@ -6,7 +15,7 @@
 - Module persistence derives its expected count from the canonical module registry instead of a hardcoded pre-vacation number.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.22.1 — Vacation Planner Frontend Contract Hotfix**.
+> Current release: **v27.22.2 — Workspace Route E2E Navigation Hotfix**.
 
 # v27.22.0 — Vacation Planner
 
@@ -16,7 +25,7 @@
 - Added owner-scoped absence types, calendar projections and a responsive unified-shell planner.
 - Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
 
-> Current release: **v27.22.1 — Vacation Planner Frontend Contract Hotfix**.
+> Current release: **v27.22.2 — Workspace Route E2E Navigation Hotfix**.
 
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
@@ -25,16 +34,20 @@
 - Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
 - No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.22.1 — Vacation Planner Frontend Contract Hotfix**.
+> Current release: **v27.22.2 — Workspace Route E2E Navigation Hotfix**.
 
 # DutyLog
 
-Current release: **v27.22.1 — Vacation Planner Frontend Contract Hotfix**
+Current release: **v27.22.2 — Workspace Route E2E Navigation Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.22.1 — Vacation Planner Frontend Contract Hotfix
+## Текущая версия: v27.22.2 — Workspace Route E2E Navigation Hotfix
 
+
+**v27.22.2** исправляет четыре browser-контракта, которые пытались нажать скрытый пункт `Tasks` в Shift Worker workspace. Сценарии теперь используют общий `openView()`: видимую вкладку, когда она входит в primary navigation, или штатный hash-route, когда раздел вынесен в «Ещё».
+
+### Предыдущий hotfix: v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
 **v27.22.1** исправляет три статических контракта, которые Maven остановил после успешной проверки нового runtime-домена. Production-логика Vacation Planner не меняется.
 
@@ -494,7 +507,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.22.1 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и затем вручную проверить нормы, preview, конфликты, пресеты 14/28/35 и проекции отсутствий в Month / Week / Day. Следующий продуктовый этап — **v27.23.0 — External Calendar Sync**.
+Следующий практический шаг — пропустить v27.22.2 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и затем вручную проверить нормы, preview, конфликты, пресеты 14/28/35 и проекции отсутствий в Month / Week / Day. Следующий продуктовый этап — **v27.23.0 — External Calendar Sync**.
 
 ## Служебный профиль администратора
 

@@ -1,6 +1,14 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.22.1 — Vacation Planner Frontend Contract Hotfix**.
+Current release: **v27.22.2 — Workspace Route E2E Navigation Hotfix**.
+
+
+## v27.22.2 — Workspace Route E2E Navigation Hotfix — completed
+
+- [x] Four Playwright scenarios no longer assume Tasks is a visible Shift Worker primary tab.
+- [x] Hidden workspace screens use the canonical `openView()` hash route.
+- [x] Module enable/disable assertions are independent from workspace navigation placement.
+- [x] Runtime, API and Flyway remain unchanged; baseline stays 103 / 544 / 31.
 
 
 ## v27.22.1 — Vacation Planner Frontend Contract Hotfix — completed
@@ -28,7 +36,7 @@ Next product stage: **v27.23.0 — External Calendar Sync**.
 
 ## Текущая продуктовая точка — Vacation Planner
 
-Статус: **v27.22.1** стабилизирует статические frontend/module-контракты принятого Vacation Planner. Базовый домен отпусков и отсутствий остаётся реализацией v27.22.0 и не смешивается со сменами, рабочими часами или FIFO переработок.
+Статус: **v27.22.2** стабилизирует browser-навигацию принятого Vacation Planner: раздел Tasks остаётся доступным через штатный workspace route, даже когда не входит в primary navigation Shift Worker. Базовый домен отпусков и отсутствий остаётся реализацией v27.22.0 и не смешивается со сменами, рабочими часами или FIFO переработок.
 
 Закрыто:
 

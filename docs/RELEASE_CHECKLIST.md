@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.22.1.
+Status: v27.22.2.
 
 ## Local gate
 
@@ -19,7 +19,7 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Staging
 
 - push the exact candidate tree to `test`;
-- confirm the Maven gate executes all 544 tests with zero failures after the frontend contract alignment;
+- confirm the Maven gate executes all 544 tests with zero failures and Playwright completes all 31 scenarios after the workspace-route alignment;
 - confirm fresh schedule apply reloads the authoritative month through the data layer;
 - confirm Vacation Planner shows 28 available days by default and presets 14 / 28 / 35;
 - preview a vacation over an existing shift and confirm the shift is warned about but remains intact;
@@ -89,6 +89,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.22.1 -m "v27.22.1 — Vacation Planner Frontend Contract Hotfix"
-git push origin v27.22.1
+git tag -a v27.22.2 -m "v27.22.2 — Workspace Route E2E Navigation Hotfix"
+git push origin v27.22.2
 ```
