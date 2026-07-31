@@ -1,7 +1,15 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.24.0 — Calendar Comfort & Correctness**.
+Current release: **v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix**.
 
+
+## v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix — completed
+
+- GitHub Actions confirmed Maven and reached the new Calendar Comfort browser scenario.
+- Month-mode `↺ Сегодня` correctly selects today and opens the mobile modal day panel.
+- The failed test attempted to click `#next` through the blocking backdrop instead of closing the panel.
+- The scenario now follows the user route `Сегодня → #pClose → next month`; production UI and Flyway V41 are unchanged.
+- Baseline remains 108 Java classes / 569 tests / 33 Playwright scenarios.
 
 ## v27.24.0 — Calendar Comfort & Correctness — completed
 
@@ -79,7 +87,7 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 ## Текущая продуктовая точка — Calendar Comfort stabilized
 
-Статус: **v27.24.0** закрывает главные ежедневные шероховатости календаря после стабилизации External Calendar Sync: возвращает пользователя к сегодняшней дате, связывает важное событие с выбранным днём, исправляет ночные смены, сохраняет сетку во время обновления и уплотняет несколько графиков. Исходящий `.ics`-контур, nginx `access_log off` и Flyway V41 остаются неизменными. Следующий этап — глубокая модель «плановая смена → фактическое состояние дня» для отпусков, отгулов и больничных.
+Статус: **v27.24.1** стабилизирует browser-контракт уже реализованного Calendar Comfort после зелёного Maven gate: возвращает пользователя к сегодняшней дате, связывает важное событие с выбранным днём, исправляет ночные смены, сохраняет сетку во время обновления и уплотняет несколько графиков. Исходящий `.ics`-контур, nginx `access_log off` и Flyway V41 остаются неизменными. Следующий этап — глубокая модель «плановая смена → фактическое состояние дня» для отпусков, отгулов и больничных.
 
 Закрыто:
 
@@ -98,7 +106,7 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 Следующий этап: **v27.25.0 — Absence & Time-Off Overhaul**; read-only импорт внешних `.ics`-источников остаётся отдельным последующим этапом интеграций.
 
 
-## Ближайшая продуктовая очередь после стабилизации v27.24.0
+## Ближайшая продуктовая очередь после стабилизации v27.24.1
 
 ### v27.24.0 — Calendar Comfort & Correctness — completed
 

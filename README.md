@@ -1,3 +1,12 @@
+# v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix
+
+- Aligns the new calendar comfort Playwright scenario with the real mobile modal-panel lifecycle.
+- After `↺ Сегодня` selects today in Month mode, the scenario closes `#panel` through `#pClose` before using month navigation.
+- Keeps the blocking backdrop, contextual Today behavior, API and Flyway V41 unchanged.
+- Automated baseline remains 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
+
+> Current release: **v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix**.
+
 # v27.24.0 — Calendar Comfort & Correctness
 
 - Contextual «Сегодня» return instead of a permanently hidden mobile control.
@@ -7,7 +16,7 @@
 - Multiple schedule layers use compact accessible pills instead of verbose controls.
 - Flyway remains V41; automated baseline: 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
 
-> Current release: **v27.24.0 — Calendar Comfort & Correctness**.
+> Current release: **v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix**.
 
 # v27.23.2 — Calendar Sync Runtime Boot Hotfix
 
@@ -32,7 +41,7 @@
 - Rotation immediately invalidates the old link; revocation removes access without deleting calendar data.
 - Flyway V41; automated baseline: 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
 
-> Current release: **v27.24.0 — Calendar Comfort & Correctness**.
+> Current release: **v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix**.
 
 # v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix
 
@@ -41,7 +50,7 @@
 - Module toggling is now asserted through `moduleHidden`, independently from workspace placement through `workspaceHidden`.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.24.0 — Calendar Comfort & Correctness**.
+> Current release: **v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix**.
 
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
@@ -51,7 +60,7 @@
 - Module persistence derives its expected count from the canonical module registry instead of a hardcoded pre-vacation number.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.24.0 — Calendar Comfort & Correctness**.
+> Current release: **v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix**.
 
 # v27.22.0 — Vacation Planner
 
@@ -61,7 +70,7 @@
 - Added owner-scoped absence types, calendar projections and a responsive unified-shell planner.
 - Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
 
-> Current release: **v27.24.0 — Calendar Comfort & Correctness**.
+> Current release: **v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix**.
 
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
@@ -70,17 +79,17 @@
 - Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
 - No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.24.0 — Calendar Comfort & Correctness**.
+> Current release: **v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix**.
 
 # DutyLog
 
-Current release: **v27.24.0 — Calendar Comfort & Correctness**
+Current release: **v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.24.0 — Calendar Comfort & Correctness
+## Текущая версия: v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix
 
-**v27.24.0** делает ежедневную работу с календарём спокойнее: контекстно возвращает к сегодняшней дате, наследует выбранный день при создании важного события, исправляет ночные смены во вкладке «Сегодня», сохраняет старую сетку во время обновления и компактно показывает несколько графиков. Тяжёлая оптимизация остаётся отдельным финальным циклом; этот релиз начинает только безопасную диагностику загрузок.
+**v27.24.1** выравнивает browser regression с реальным мобильным lifecycle: возврат к сегодняшней дате в Month mode открывает модальную панель дня, и сценарий закрывает её штатной кнопкой перед дальнейшей навигацией. Product runtime v27.24.0, API и Flyway V41 не меняются.
 
 ### Предыдущий hotfix: v27.23.2 — Calendar Sync Runtime Boot Hotfix
 
@@ -554,7 +563,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить **v27.24.0** через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить календарный возврат, выбранную дату важного события, ночную смену, спокойный refresh и несколько графиков. После этого продукт переходит к **v27.25.0 — Absence & Time-Off Overhaul**: плановая смена сохраняется, а отпуск, отгул или больничный становятся полноценным фактическим состоянием дня.
+Следующий практический шаг — пропустить **v27.24.1** через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить маршрут `↺ Сегодня → закрыть детали дня → следующий месяц`. После зелёного CI продукт переходит к **v27.25.0 — Absence & Time-Off Overhaul**: плановая смена сохраняется, а отпуск, отгул или больничный становятся полноценным фактическим состоянием дня.
 
 ## Служебный профиль администратора
 

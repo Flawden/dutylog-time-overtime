@@ -1,15 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.24.0.
+Status: v27.24.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.24.0 protects contextual calendar comfort, important-day date ownership, overnight Today layout, non-destructive refresh diagnostics and compact companion layers. Current application baseline is 108 Java test classes / 569 `@Test` methods / 33 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.24.1 aligns the Calendar Comfort browser regression with the intentional mobile selected-day modal. The scenario now closes the panel through the product control before month navigation, while the v27.24.0 runtime remains unchanged. Current application baseline is 108 Java test classes / 569 `@Test` methods / 33 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.24.1 Calendar Comfort E2E Panel Contract Hotfix extension
+
+- `calendar-comfort.spec.js` requires today's selected-day panel to be visible after the contextual Month-mode return.
+- The scenario closes the modal through `#pClose`, waits for `#panel` to become hidden and verifies `with-panel` is removed before clicking `#next`.
+- The mobile blocking backdrop remains a production contract; the hotfix does not use force-click or weaken Playwright actionability.
+- Runtime JavaScript, API and Flyway V41 remain unchanged; baseline stays 108 Java classes / 569 `@Test` methods / 33 Playwright scenarios.
 
 ## v27.24.0 Calendar Comfort & Correctness extension
 

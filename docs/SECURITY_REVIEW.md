@@ -1,6 +1,6 @@
 # Security review
 
-Status: v27.24.0.
+Status: v27.24.1.
 
 DutyLog is in release stabilization. This document records the security boundaries that are enforced by code and tests in the current release candidate. It is a static review and regression baseline, not a substitute for a live penetration test.
 

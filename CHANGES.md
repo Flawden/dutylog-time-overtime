@@ -1,3 +1,11 @@
+# v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix
+
+- Fixed the new mobile calendar comfort scenario to close the intentionally modal selected-day panel before navigating to another month.
+- Preserved the real product contract: returning to today in Month mode selects the day and opens its details; the backdrop continues to block clicks through the panel.
+- Added release guards for the explicit `#pClose` route, hidden panel state and removal of `with-panel` before the second header navigation.
+- Kept Calendar Comfort runtime behavior, HTTP API, database and Flyway V41 unchanged.
+- Regression baseline remains 108 Java test classes, 569 `@Test` methods and 33 Playwright scenarios.
+
 # v27.24.0 — Calendar Comfort & Correctness
 
 - Added a contextual, mobile-friendly «Сегодня» return control that appears only after the calendar leaves the current month/date and works across Month, Week and Day modes.

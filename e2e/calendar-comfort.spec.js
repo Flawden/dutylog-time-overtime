@@ -16,6 +16,13 @@ test('calendar offers a contextual return to today and keeps important-day contr
   await page.locator('#todayBtn').click();
   await expect(page.locator('#todayBtn')).toBeHidden({ timeout: 30_000 });
   await expect(page.locator(`#grid [data-date="${today}"]`)).toHaveClass(/sel/);
+  await expect(page.locator('#panel')).toBeVisible();
+
+  // Month mode deliberately opens today's modal day panel. Follow the real
+  // mobile route instead of trying to click through its blocking backdrop.
+  await page.locator('#pClose').click();
+  await expect(page.locator('#panel')).toBeHidden();
+  await expect(page.locator('#layout')).not.toHaveClass(/with-panel/);
 
   await page.locator('#next').click();
   await expect(page.locator('#calendarLoadStatus')).toBeHidden({ timeout: 30_000 });
