@@ -1,6 +1,15 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.23.0 — External Calendar Sync**.
+Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
+
+## v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix — completed
+
+- [x] MockMvc subscription JSON is decoded explicitly with `StandardCharsets.UTF_8`.
+- [x] Token hint stays `prefix…suffix`; the test protects U+2026 without mojibake.
+- [x] Runtime, HTTP API, nginx protection and Flyway V41 remain unchanged.
+- [x] Baseline stays 107 / 563 / 32.
+
+Next product stage: **v27.24.0 — Workspace, Layout & Theme Studio**.
 
 
 ## v27.23.0 — External Calendar Sync — completed

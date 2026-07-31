@@ -1,3 +1,12 @@
+# v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix
+
+- Decodes MockMvc JSON explicitly as UTF-8 in the calendar subscription lifecycle test.
+- Protects the real `prefix…suffix` token-hint contract without changing production responses.
+- Keeps External Calendar Sync runtime, API, nginx hardening and Flyway V41 unchanged.
+- Automated baseline remains 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
+
+> Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
+
 # v27.23.0 — External Calendar Sync
 
 - Export one important event or a selected date range as standards-compliant UTF-8 `.ics`.
@@ -6,7 +15,7 @@
 - Rotation immediately invalidates the old link; revocation removes access without deleting calendar data.
 - Flyway V41; automated baseline: 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
 
-> Current release: **v27.23.0 — External Calendar Sync**.
+> Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
 
 # v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix
 
@@ -15,7 +24,7 @@
 - Module toggling is now asserted through `moduleHidden`, independently from workspace placement through `workspaceHidden`.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.23.0 — External Calendar Sync**.
+> Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
 
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
@@ -25,7 +34,7 @@
 - Module persistence derives its expected count from the canonical module registry instead of a hardcoded pre-vacation number.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.23.0 — External Calendar Sync**.
+> Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
 
 # v27.22.0 — Vacation Planner
 
@@ -35,7 +44,7 @@
 - Added owner-scoped absence types, calendar projections and a responsive unified-shell planner.
 - Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
 
-> Current release: **v27.23.0 — External Calendar Sync**.
+> Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
 
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
@@ -44,16 +53,19 @@
 - Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
 - No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.23.0 — External Calendar Sync**.
+> Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
 
 # DutyLog
 
-Current release: **v27.23.0 — External Calendar Sync**
+Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.23.0 — External Calendar Sync
+## Текущая версия: v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix
 
+**v27.23.1** исправляет UTF-8 декодирование JSON в интеграционном тесте lifecycle приватной календарной подписки. Runtime, API, nginx-защита и Flyway V41 не меняются.
+
+### Базовый продуктовый релиз: v27.23.0 — External Calendar Sync
 
 **v27.23.0** добавляет безопасный исходящий календарный контур: разовый `.ics`-экспорт и приватную read-only подписку со строгой ротацией и отзывом токена. Поставляемые nginx-конфиги отключают access log для точного `/calendar-feed.ics`, чтобы bearer URL не попадал в журналы edge-прокси.
 

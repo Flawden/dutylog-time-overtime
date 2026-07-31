@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.23.0.
+Status: v27.23.1.
 
 ## Local gate
 
@@ -96,6 +96,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.23.0 -m "v27.23.0 — External Calendar Sync"
-git push origin v27.23.0
+git tag -a v27.23.1 -m "v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix"
+git push origin v27.23.1
 ```

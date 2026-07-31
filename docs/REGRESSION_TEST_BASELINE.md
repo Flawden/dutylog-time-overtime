@@ -1,14 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.23.0.
+Status: v27.23.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.23.0 adds standards-compliant `.ics` export and a SHA-only private read-only subscription lifecycle. Current application baseline is 107 Java test classes / 563 `@Test` methods / 32 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.23.1 fixes the MockMvc UTF-8 decoding contract for the private subscription lifecycle while preserving the v27.23.0 External Calendar Sync runtime. Current application baseline is 107 Java test classes / 563 `@Test` methods / 32 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
+
+
+## v27.23.1 Calendar Sync JSON UTF-8 Contract Hotfix extension
+
+- `CalendarSyncControllerTest` reads JSON with `getContentAsString(StandardCharsets.UTF_8)` instead of MockMvc's ISO-8859-1 fallback.
+- The lifecycle test protects the real U+2026 token hint and cannot accept the `â¦` mojibake form.
+- Runtime Java, HTTP API, nginx protection and Flyway V41 are unchanged.
+- Baseline stays 107 Java classes / 563 `@Test` methods / 32 Playwright scenarios.
 
 
 ## v27.23.0 External Calendar Sync extension

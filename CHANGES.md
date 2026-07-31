@@ -1,3 +1,10 @@
+# v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix
+
+- Fixed the calendar-sync controller test helper to decode MockMvc JSON explicitly as UTF-8 instead of ISO-8859-1.
+- Preserved the real token hint contract (`prefix…suffix`) and added a Unicode assertion using `\u2026`.
+- Kept calendar feed issuance, rotation, revocation, nginx protection, HTTP API and Flyway V41 unchanged.
+- Regression baseline remains 107 Java test classes, 563 `@Test` methods and 32 Playwright scenarios.
+
 # v27.23.0 — External Calendar Sync
 
 - Added RFC 5545 `.ics` export for one important event and owner-selected ranges up to 366 days.

@@ -17,6 +17,7 @@ import ru.daniil.shifts.repo.ImportantDayRepository;
 import ru.daniil.shifts.repo.UserRepository;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 
 import static org.hamcrest.Matchers.containsString;
@@ -60,6 +61,7 @@ class CalendarSyncControllerTest {
     @Test
     void issueRotateFeedAndRevokeFormOnePrivateTokenLifecycle() throws Exception {
         JsonNode first = issueSubscription();
+        org.junit.jupiter.api.Assertions.assertTrue(first.path("tokenHint").asText().contains("\u2026"));
         String firstUrl = first.path("subscriptionUrl").asText();
         String firstToken = tokenFrom(firstUrl);
 
@@ -68,7 +70,7 @@ class CalendarSyncControllerTest {
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, containsString("text/calendar")))
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("inline")))
                 .andExpect(content().string(containsString("BEGIN:VCALENDAR\r\n")))
-                .andExpect(content().string(containsString("PRODID:-//DutyLog//Time and Overtime 27.23.0//RU")));
+                .andExpect(content().string(containsString("PRODID:-//DutyLog//Time and Overtime 27.23.1//RU")));
 
         mvc.perform(get("/api/calendar-sync/status")
                         .with(user(owner.getUsername()).roles("USER")))
@@ -168,7 +170,7 @@ class CalendarSyncControllerTest {
                 .andExpect(header().string(HttpHeaders.CACHE_CONTROL, containsString("no-store")))
                 .andExpect(jsonPath("$.active").value(true))
                 .andExpect(jsonPath("$.subscriptionUrl", containsString("/calendar-feed.ics?token=")))
-                .andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         return objectMapper.readTree(json);
     }
 
