@@ -1,3 +1,12 @@
+# v27.25.2 — Absence Experience Frontend Contract Hotfix
+
+- Aligned the Vacation Planner frontend contract with the accepted v27.25.0 plan/fact calendar composition.
+- Week agenda absences remain intentionally bounded with `facts.absences.slice(0, 3)`.
+- Partial absences stay timed in the hourly day, while full-day absences stay in the all-day rail.
+- Added a regression contract that rejects the stale unbounded `for (const absence of facts.absences)` expectation.
+- Kept production JavaScript, HTTP API, OpenAPI, PostgreSQL schema and Flyway V42 unchanged.
+- Regression baseline advances to 109 Java test classes, 581 `@Test` methods and 34 Playwright scenarios.
+
 # v27.25.1 — Absence Preview Lambda Compile Hotfix
 
 - Fixed Java compilation in `VacationPlannerService.buildPreview(...)` by snapshotting the mutable loop date before the overlap-search lambda.

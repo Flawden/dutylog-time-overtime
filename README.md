@@ -1,3 +1,12 @@
+# v27.25.2 — Absence Experience Frontend Contract Hotfix
+
+- Aligns the stale Vacation Planner Java/static contract with the accepted plan/fact frontend implementation.
+- Protects the bounded Week agenda, timed partial-absence projection and full-day all-day rail separately.
+- Does not change production JavaScript, API, database schema or Flyway V42.
+- Automated baseline advances to 109 Java test classes / 581 `@Test` methods / 34 Playwright scenarios.
+
+> Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**.
+
 # v27.25.1 — Absence Preview Lambda Compile Hotfix
 
 - Fixes the Java compiler error in the absence preview loop without changing product behavior.
@@ -5,7 +14,7 @@
 - Adds regression protection against capturing the incremented loop variable directly.
 - Keeps the v27.25.0 plan/fact model, API, Flyway V42 and 34 Playwright scenarios unchanged; Java baseline advances to 580 tests.
 
-> Current release: **v27.25.1 — Absence Preview Lambda Compile Hotfix**.
+> Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**.
 
 # v27.25.0 — Absence & Time-Off Overhaul
 
@@ -15,7 +24,7 @@
 - Adds `VACATION_DAYS`, `TIME_OFF_HOURS` and `NONE` balance policies, plan/fact day details, monthly absence summaries and timed `.ics` projection.
 - Flyway advances to V42; automated baseline advances to 109 Java test classes / 579 `@Test` methods / 34 Playwright scenarios.
 
-> Current release: **v27.25.1 — Absence Preview Lambda Compile Hotfix**.
+> Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**.
 
 # v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix
 
@@ -24,7 +33,7 @@
 - Keeps the blocking backdrop, contextual Today behavior, API and Flyway V41 unchanged.
 - Automated baseline remains 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
 
-> Current release: **v27.25.1 — Absence Preview Lambda Compile Hotfix**.
+> Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**.
 
 # v27.24.0 — Calendar Comfort & Correctness
 
@@ -35,7 +44,7 @@
 - Multiple schedule layers use compact accessible pills instead of verbose controls.
 - Flyway remains V41; automated baseline: 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
 
-> Current release: **v27.25.1 — Absence Preview Lambda Compile Hotfix**.
+> Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**.
 
 # v27.23.2 — Calendar Sync Runtime Boot Hotfix
 
@@ -60,7 +69,7 @@
 - Rotation immediately invalidates the old link; revocation removes access without deleting calendar data.
 - Flyway V41; automated baseline: 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
 
-> Current release: **v27.25.1 — Absence Preview Lambda Compile Hotfix**.
+> Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**.
 
 # v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix
 
@@ -69,7 +78,7 @@
 - Module toggling is now asserted through `moduleHidden`, independently from workspace placement through `workspaceHidden`.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.25.1 — Absence Preview Lambda Compile Hotfix**.
+> Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**.
 
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
@@ -79,7 +88,7 @@
 - Module persistence derives its expected count from the canonical module registry instead of a hardcoded pre-vacation number.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.25.1 — Absence Preview Lambda Compile Hotfix**.
+> Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**.
 
 # v27.22.0 — Vacation Planner
 
@@ -89,7 +98,7 @@
 - Added owner-scoped absence types, calendar projections and a responsive unified-shell planner.
 - Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
 
-> Current release: **v27.25.1 — Absence Preview Lambda Compile Hotfix**.
+> Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**.
 
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
@@ -98,17 +107,17 @@
 - Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
 - No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.25.1 — Absence Preview Lambda Compile Hotfix**.
+> Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**.
 
 # DutyLog
 
-Current release: **v27.25.1 — Absence Preview Lambda Compile Hotfix**
+Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.25.1 — Absence Preview Lambda Compile Hotfix
+## Текущая версия: v27.25.2 — Absence Experience Frontend Contract Hotfix
 
-**v27.25.1** исправляет единственный Java compile blocker в уже реализованном Absence & Time-Off Overhaul: изменяемая переменная цикла больше не захватывается overlap-лямбдой. План-факт модель, балансы, HTTP API и Flyway V42 остаются без изменений.
+**v27.25.2** синхронизирует устаревший Java/static frontend-контракт с уже принятой композицией отсутствий: Week agenda показывает не более трёх записей, частичные отсутствия остаются временными событиями, а полно-дневные — all-day элементами. Runtime, API и Flyway V42 не меняются.
 
 ### Предыдущий hotfix: v27.23.2 — Calendar Sync Runtime Boot Hotfix
 
@@ -582,7 +591,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить **v27.25.1** через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить полный и частичный сценарии отсутствий поверх сохранённой плановой смены. После зелёного CI продукт переходит к **v27.26.0 — Unified Time & Compensation Ledger**, который свяжет график, факт, отсутствия, переработки и источники оплаты в один обратимый журнал.
+Следующий практический шаг — пропустить **v27.25.2** через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить полный и частичный сценарии отсутствий поверх сохранённой плановой смены. После зелёного CI продукт переходит к **v27.26.0 — Unified Time & Compensation Ledger**, который свяжет график, факт, отсутствия, переработки и источники оплаты в один обратимый журнал.
 
 ## Служебный профиль администратора
 

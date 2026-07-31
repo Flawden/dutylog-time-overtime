@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.25.1.
+Status: v27.25.2.
 
 ## Local gate
 
@@ -105,6 +105,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.25.1 -m "v27.25.1 — Absence Preview Lambda Compile Hotfix"
-git push origin v27.25.1
+git tag -a v27.25.2 -m "v27.25.2 — Absence Preview Lambda Compile Hotfix"
+git push origin v27.25.2
 ```

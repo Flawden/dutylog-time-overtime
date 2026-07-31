@@ -1,15 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.25.1.
+Status: v27.25.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.25.1 protects Java compilation of the absence preview loop by requiring an effectively-final date snapshot before overlap lookup. The v27.25.0 plan/fact runtime remains unchanged. Current application baseline is 109 Java test classes / 580 `@Test` methods / 34 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.25.2 aligns the Vacation Planner frontend contract with the accepted bounded Week agenda and separate partial/full-day plan/fact composition. Production runtime remains unchanged. Current application baseline is 109 Java test classes / 581 `@Test` methods / 34 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.25.2 Absence Experience Frontend Contract Hotfix extension
+
+- `VacationPlannerFrontendContractTest` follows `facts.absences.slice(0, 3)` for the intentionally compact Week agenda.
+- Hourly Day protects `facts.partialAbsences`; the all-day rail separately protects non-partial absences.
+- The stale unbounded `for (const absence of facts.absences)` expectation is rejected.
+- Product JavaScript, Web/v1 API, OpenAPI, V42 schema and 34 Playwright scenarios remain unchanged.
+- Baseline advances to 109 Java test classes / 581 `@Test` methods / 34 Playwright scenarios.
 
 ## v27.25.1 Absence Preview Lambda Compile Hotfix extension
 

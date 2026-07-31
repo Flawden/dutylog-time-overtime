@@ -56,13 +56,28 @@ class VacationPlannerFrontendContractTest {
                         && calendar.contains("partialAbsenceBar")
                         && calendar.contains("absenceSummaryChip"));
         assertTrue(experience.contains("facts.absences")
-                        && experience.contains("for (const absence of facts.absences)")
+                        && experience.contains("for (const absence of facts.absences.slice(0, 3))")
+                        && experience.contains("for (const absence of facts.partialAbsences)")
+                        && experience.contains("for (const absence of facts.absences.filter(item => item.coverage !== \"PARTIAL\"))")
                         && experience.contains("type:\"vacation\"")
                         && experience.contains("editAbsenceFromOccurrence"));
         assertTrue(css.contains(".vacationSummaryGrid")
                         && css.contains(".cell.hasAbsenceFact")
                         && css.contains(".vacationDayPlanFact")
                         && css.contains("@media (max-width: 560px)"));
+    }
+
+    @Test
+    void absenceExperienceKeepsWeekAgendaBoundedAndDayModesSeparated() throws IOException {
+        String experience = resource("/static/js/37-calendar-experience.js");
+        assertTrue(experience.contains("for (const absence of facts.absences.slice(0, 3))"),
+                "week agenda must keep absence rows compact");
+        assertTrue(experience.contains("for (const absence of facts.partialAbsences)"),
+                "hourly day must project partial absences as timed events");
+        assertTrue(experience.contains("for (const absence of facts.absences.filter(item => item.coverage !== \"PARTIAL\"))"),
+                "all-day rail must project full-day absences separately");
+        assertTrue(!experience.contains("for (const absence of facts.absences)"),
+                "stale unbounded loop contract must not replace the bounded plan/fact composition");
     }
 
     private static String resource(String path) throws IOException {

@@ -1,7 +1,15 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.25.1 — Absence Preview Lambda Compile Hotfix**.
+Current release: **v27.25.2 — Absence Experience Frontend Contract Hotfix**.
 
+
+## v27.25.2 — Absence Experience Frontend Contract Hotfix — completed
+
+- [x] Confirmed Maven compilation and 579 passing tests before the one failing static frontend contract.
+- [x] Replaced the stale unbounded absence-loop expectation with the accepted bounded Week agenda contract.
+- [x] Protected timed partial absences and full-day all-day composition as separate paths.
+- [x] Production runtime, API, OpenAPI, database and Flyway V42 remain unchanged.
+- [x] Baseline advances to 109 Java test classes / 581 tests / 34 Playwright scenarios.
 
 ## v27.25.1 — Absence Preview Lambda Compile Hotfix — completed
 
@@ -106,7 +114,7 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 ## Текущая продуктовая точка — Absence & Time-Off stabilized
 
-Статус: **v27.25.1** стабилизирует компиляцию уже реализованной модели «плановая смена → фактическое состояние дня». Полно-дневный отпуск, отгул или больничный визуально занимает место смены, но не удаляет её; частичный отгул хранит точный интервал и списывает независимый часовой баланс. Flyway V42 аддитивен, `.ics` сохраняет read-only контракт.
+Статус: **v27.25.2** стабилизирует frontend-контракты уже реализованной модели «плановая смена → фактическое состояние дня». Полно-дневный отпуск, отгул или больничный визуально занимает место смены, но не удаляет её; частичный отгул хранит точный интервал и списывает независимый часовой баланс. Flyway V42 аддитивен, `.ics` сохраняет read-only контракт.
 
 Закрыто:
 
@@ -118,11 +126,11 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 - сводка по видам отсутствий и частичным часам;
 - timed `.ics` для частичного отгула;
 - Flyway V42, OpenAPI, Java/static/Playwright contracts;
-- baseline 109 Java test classes / 580 tests / 34 Playwright scenarios.
+- baseline 109 Java test classes / 581 tests / 34 Playwright scenarios.
 
 Следующий этап: **v27.26.0 — Unified Time & Compensation Ledger**.
 
-## Ближайшая продуктовая очередь после стабилизации v27.25.1
+## Ближайшая продуктовая очередь после стабилизации v27.25.2
 
 ### v27.26.0 — Unified Time & Compensation Ledger
 
