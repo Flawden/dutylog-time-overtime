@@ -1,6 +1,14 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.22.1 — Vacation Planner Frontend Contract Hotfix**.
+Current release: **v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix**.
+
+
+## v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix — completed
+
+- [x] Four stale browser flows use shared workspace-aware `openView()` instead of a hidden Tasks tab.
+- [x] Tasks module enablement is asserted with `moduleHidden`, independently from workspace navigation.
+- [x] Shift Worker navigation remains intentionally task-tab-free; runtime, API and Flyway remain unchanged.
+- [x] Baseline stays 103 / 544 / 31.
 
 
 ## v27.22.1 — Vacation Planner Frontend Contract Hotfix — completed
@@ -28,7 +36,7 @@ Next product stage: **v27.23.0 — External Calendar Sync**.
 
 ## Текущая продуктовая точка — Vacation Planner
 
-Статус: **v27.22.1** стабилизирует статические frontend/module-контракты принятого Vacation Planner. Базовый домен отпусков и отсутствий остаётся реализацией v27.22.0 и не смешивается со сменами, рабочими часами или FIFO переработок.
+Статус: **v27.22.2** стабилизирует workspace-aware browser-навигацию задач после принятого Vacation Planner. Базовый домен отпусков и отсутствий остаётся реализацией v27.22.0 и не смешивается со сменами, рабочими часами или FIFO переработок.
 
 Закрыто:
 

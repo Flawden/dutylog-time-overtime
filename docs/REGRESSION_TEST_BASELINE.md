@@ -1,15 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.22.1.
+Status: v27.22.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.22.1 aligns three stale static/module assertions with the accepted Vacation Planner runtime. Current application baseline remains 103 Java test classes / 544 `@Test` methods / 31 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.22.2 aligns four stale task browser flows with workspace-aware navigation. Current application baseline remains 103 Java test classes / 544 `@Test` methods / 31 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.22.2 Workspace-Aware Tasks E2E Navigation Hotfix extension
+
+- `mobile-layout.spec.js`, `task-details.spec.js` and `task-modules.spec.js` use shared `openView(page, "tasks")` instead of clicking a `workspaceHidden` tab.
+- The Tasks module persistence scenario checks `moduleHidden` for enable/disable state, leaving `workspaceHidden` to the selected workspace.
+- `vacation-planner.spec.js` already passes; production JavaScript, HTTP API and Flyway V40 are unchanged.
+- Baseline stays 103 Java classes / 544 `@Test` methods / 31 Playwright scenarios.
 
 ## v27.22.1 Vacation Planner Frontend Contract Hotfix extension
 

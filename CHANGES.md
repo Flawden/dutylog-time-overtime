@@ -1,3 +1,10 @@
+# v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix
+
+- Replaced four direct clicks on the workspace-hidden Tasks tab with the shared `openView(page, "tasks")` product-route helper.
+- Kept Shift Worker navigation unchanged: Tasks remain available through Today/hidden-route navigation without returning to the primary tab bar.
+- Separated module enablement assertions from workspace placement: `moduleHidden` now protects the Tasks toggle contract while `workspaceHidden` remains a layout decision.
+- Kept production JavaScript behavior, HTTP API, Flyway V40 and the regression baseline unchanged at 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
+
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
 - Aligned the Shift Worker workspace contract with the new `vacation` navigation route and the actual Today widget order.

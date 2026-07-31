@@ -4,13 +4,14 @@ const {
   currentLocalDateKey,
   selectDate,
   waitForApi,
-  toggleModule
+  toggleModule,
+  openView
 } = require('./helpers');
 
 test('task data survives disabling and re-enabling the Tasks module', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'basic', prefix: 'tasks' });
   await toggleModule(page, 'tasks', true);
-  await expect(page.locator('#tabbar a[data-view="tasks"]')).toBeVisible();
+  await expect(page.locator('#tabbar a[data-view="tasks"]')).not.toHaveClass(/moduleHidden/);
 
   await page.locator('#tabbar a[data-view="calendar"]').click();
   const date = await currentLocalDateKey(page);
@@ -43,9 +44,9 @@ test('task data survives disabling and re-enabling the Tasks module', async ({ p
   await expect(row).toHaveClass(/done/);
 
   await toggleModule(page, 'tasks', false);
-  await expect(page.locator('#tabbar a[data-view="tasks"]')).toBeHidden();
+  await expect(page.locator('#tabbar a[data-view="tasks"]')).toHaveClass(/moduleHidden/);
   await toggleModule(page, 'tasks', true);
-  await expect(page.locator('#tabbar a[data-view="tasks"]')).toBeVisible();
+  await expect(page.locator('#tabbar a[data-view="tasks"]')).not.toHaveClass(/moduleHidden/);
 
   await page.locator('#tabbar a[data-view="calendar"]').click();
   await selectDate(page, date);
@@ -73,7 +74,7 @@ test('quick capture survives the fast Inbox flow and converts into a task', asyn
   await page.locator('#quickActionInbox').click();
   await captured;
 
-  await page.locator('#tabbar a[data-view="tasks"]').click();
+  await openView(page, 'tasks');
   await page.locator('#taskInboxCard > summary').click();
   const inboxRow = page.locator('#inboxList .inboxItem', { hasText: thought });
   await expect(inboxRow).toBeVisible();
