@@ -31,7 +31,10 @@ Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) 
 function calendarSyncDefaultRange(){
   const start = new Date(state.y, state.m, 1);
   const end = new Date(state.y, state.m + 1, 0);
-  return { from:localDateKey(start), to:localDateKey(end) };
+  return {
+    from:keyOf(start.getFullYear(), start.getMonth(), start.getDate()),
+    to:keyOf(end.getFullYear(), end.getMonth(), end.getDate())
+  };
 }
 
 function initCalendarSyncRange(){

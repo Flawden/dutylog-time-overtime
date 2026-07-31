@@ -1,6 +1,17 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
+Current release: **v27.23.2 — Calendar Sync Runtime Boot Hotfix**.
+
+## v27.23.2 — Calendar Sync Runtime Boot Hotfix — completed
+
+- [x] Removed the uncaught `ReferenceError: localDateKey is not defined` from `.ics` range initialization.
+- [x] Default range boundaries now use the canonical local `keyOf(...)` helper.
+- [x] Added Java/static and release-gate protection against the undefined helper.
+- [x] API, token lifecycle, nginx protection and Flyway V41 remain unchanged.
+- [x] Baseline advances to 107 / 564 / 32.
+
+Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
+
 
 ## v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix — completed
 
@@ -9,7 +20,7 @@ Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
 - [x] Runtime, HTTP API, nginx protection and Flyway V41 remain unchanged.
 - [x] Baseline stays 107 / 563 / 32.
 
-Next product stage: **v27.24.0 — Workspace, Layout & Theme Studio**.
+Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 
 ## v27.23.0 — External Calendar Sync — completed
@@ -21,7 +32,7 @@ Next product stage: **v27.24.0 — Workspace, Layout & Theme Studio**.
 - [x] Responsive Settings UI, Web/v1 API, OpenAPI and browser lifecycle coverage.
 - [x] Flyway V41; baseline 107 / 563 / 32.
 
-Next product stage: **v27.24.0 — Workspace, Layout & Theme Studio**.
+Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 ## v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix — completed
 
@@ -52,11 +63,11 @@ Next product stage: **v27.24.0 — Workspace, Layout & Theme Studio**.
 - [x] Month / Week / Day / selected-day composition.
 - [x] Flyway V40, Web/v1 API, Java/static/Playwright contracts.
 
-Next product stage: **v27.24.0 — Workspace, Layout & Theme Studio**.
+Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
-## Текущая продуктовая точка — Vacation Planner
+## Текущая продуктовая точка — External Calendar Sync stabilized
 
-Статус: **v27.22.2** стабилизирует workspace-aware browser-навигацию задач после принятого Vacation Planner. Базовый домен отпусков и отсутствий остаётся реализацией v27.22.0 и не смешивается со сменами, рабочими часами или FIFO переработок.
+Статус: **v27.23.2** устраняет общий browser boot blocker после первой read-only календарной синхронизации. Исходящий `.ics`-контур, приватный rolling feed, SHA-256-only token storage, nginx `access_log off` и Flyway V41 остаются неизменными. После зелёного Maven/Playwright gate продукт переходит к **v27.24.0 — Calendar Comfort & Correctness**, а затем к глубокой модели «плановая смена → фактическое состояние дня» для отпусков, отгулов и больничных.
 
 Закрыто:
 
@@ -72,7 +83,38 @@ Next product stage: **v27.24.0 — Workspace, Layout & Theme Studio**.
 - Flyway V40, API v1, OpenAPI, Java/static/Playwright contracts;
 - baseline 103 Java test classes / 544 tests / 31 Playwright scenario.
 
-Следующий этап: **v27.24.0 — Workspace, Layout & Theme Studio**. Read-only импорт внешних `.ics`-источников остаётся отдельным последующим этапом интеграций.
+Следующий этап: **v27.24.0 — Calendar Comfort & Correctness**. Затем — `v27.25.0 Absence & Time-Off Overhaul`; read-only импорт внешних `.ics`-источников остаётся отдельным последующим этапом интеграций.
+
+
+## Ближайшая продуктовая очередь после стабилизации v27.23.x
+
+### v27.24.0 — Calendar Comfort & Correctness
+
+- контекстная уютная кнопка «Сегодня» для быстрого возврата из далёкой даты;
+- создание важного дня сразу на выбранной календарной дате;
+- чекбоксы важных дней по размерам дизайн-системы;
+- корректная компоновка ночной смены с двумя датами во вкладке «Сегодня»;
+- более спокойные loading-state календаря и первичная диагностика производительности;
+- косметическая стабилизация нескольких графиков.
+
+### v27.25.0 — Absence & Time-Off Overhaul
+
+- разделение «плановая смена» и «фактический статус дня»;
+- полно-дневный отпуск/отгул/больничный визуально заменяет смену, но не удаляет её из графика;
+- частичный отгул сохраняет смену и показывает часы отдельной полосой/бейджем;
+- оплачиваемый отпуск, отпуск без содержания, обычный отгул, компенсаторные часы, больничный и пользовательские категории;
+- только нужные категории расходуют баланс отпуска;
+- сводка месяца считает отпуска, отгулы, больничные и часы наряду со сменами;
+- детали дня показывают план и факт отдельно.
+
+### Следующие продуктовые циклы
+
+- `v27.26.0` — Workspace, Layout & Theme Studio;
+- `v27.27.0` — One-Tap Calendar Connect для Google / Apple / Outlook;
+- `v27.28.0` — архив «Все заметки» и визуальные коллизии задач;
+- `v27.29.0` — Telegram inline-действия и понятные пошаговые команды;
+- `v27.30.0` — простой и расширенный расчёт зарплаты после новой модели отсутствий;
+- затем — контекстные обучалки и отдельный финальный performance / production-readiness цикл.
 
 ## Этап 2 — нормальная API-архитектура
 

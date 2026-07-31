@@ -41,6 +41,14 @@ class CalendarSyncFrontendContractTest {
     }
 
     @Test
+    void rangeDefaultsUseTheCanonicalCalendarDateKeyHelper() throws IOException {
+        String js = resource("/static/js/55-calendar-sync.js");
+        assertTrue(js.contains("from:keyOf(start.getFullYear(), start.getMonth(), start.getDate())")
+                && js.contains("to:keyOf(end.getFullYear(), end.getMonth(), end.getDate())"));
+        assertTrue(!js.contains("localDateKey("));
+    }
+
+    @Test
     void externalCalendarPanelIsResponsiveAndLoadedBeforeSettingsBoot() throws IOException {
         String html = resource("/static/index.html");
         String css = resource("/static/app.css");

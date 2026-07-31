@@ -1,11 +1,19 @@
+# v27.23.2 — Calendar Sync Runtime Boot Hotfix
+
+- Removes the uncaught `localDateKey is not defined` browser error from calendar-sync range initialization.
+- Uses DutyLog's canonical local `keyOf(...)` date helper, preserving floating dates across timezones.
+- Adds Java/static release guards so the undefined helper cannot return unnoticed.
+- Keeps External Calendar Sync API, token security, nginx hardening and Flyway V41 unchanged.
+- Automated baseline: 107 Java test classes / 564 `@Test` methods / 32 Playwright scenarios.
+
+> Current release: **v27.23.2 — Calendar Sync Runtime Boot Hotfix**.
+
 # v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix
 
 - Decodes MockMvc JSON explicitly as UTF-8 in the calendar subscription lifecycle test.
 - Protects the real `prefix…suffix` token-hint contract without changing production responses.
 - Keeps External Calendar Sync runtime, API, nginx hardening and Flyway V41 unchanged.
 - Automated baseline remains 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
-
-> Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
 
 # v27.23.0 — External Calendar Sync
 
@@ -15,7 +23,7 @@
 - Rotation immediately invalidates the old link; revocation removes access without deleting calendar data.
 - Flyway V41; automated baseline: 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
 
-> Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
+> Current release: **v27.23.2 — Calendar Sync Runtime Boot Hotfix**.
 
 # v27.22.2 — Workspace-Aware Tasks E2E Navigation Hotfix
 
@@ -24,7 +32,7 @@
 - Module toggling is now asserted through `moduleHidden`, independently from workspace placement through `workspaceHidden`.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
+> Current release: **v27.23.2 — Calendar Sync Runtime Boot Hotfix**.
 
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
@@ -34,7 +42,7 @@
 - Module persistence derives its expected count from the canonical module registry instead of a hardcoded pre-vacation number.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
+> Current release: **v27.23.2 — Calendar Sync Runtime Boot Hotfix**.
 
 # v27.22.0 — Vacation Planner
 
@@ -44,7 +52,7 @@
 - Added owner-scoped absence types, calendar projections and a responsive unified-shell planner.
 - Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
 
-> Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
+> Current release: **v27.23.2 — Calendar Sync Runtime Boot Hotfix**.
 
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
@@ -53,17 +61,17 @@
 - Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
 - No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**.
+> Current release: **v27.23.2 — Calendar Sync Runtime Boot Hotfix**.
 
 # DutyLog
 
-Current release: **v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix**
+Current release: **v27.23.2 — Calendar Sync Runtime Boot Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix
+## Текущая версия: v27.23.2 — Calendar Sync Runtime Boot Hotfix
 
-**v27.23.1** исправляет UTF-8 декодирование JSON в интеграционном тесте lifecycle приватной календарной подписки. Runtime, API, nginx-защита и Flyway V41 не меняются.
+**v27.23.2** исправляет browser-runtime инициализацию диапазона `.ics`: несуществующий `localDateKey()` заменён на канонический `keyOf(...)`. API, nginx-защита и Flyway V41 не меняются.
 
 ### Базовый продуктовый релиз: v27.23.0 — External Calendar Sync
 
@@ -533,7 +541,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.22.2 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и затем вручную проверить нормы, preview, конфликты, пресеты 14/28/35 и проекции отсутствий в Month / Week / Day. Следующий продуктовый этап — **v27.23.0 — External Calendar Sync**.
+Следующий практический шаг — пропустить **v27.23.2** через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить выдачу, ротацию и отзыв приватной календарной подписки. После стабилизации External Calendar Sync следующий продуктовый этап — **v27.24.0 — Calendar Comfort & Correctness**: кнопка «Сегодня», корректная дата важных дней, компактные чекбоксы, ночные смены во вкладке «Сегодня» и более спокойные состояния загрузки.
 
 ## Служебный профиль администратора
 

@@ -1,15 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.23.1.
+Status: v27.23.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.23.1 fixes the MockMvc UTF-8 decoding contract for the private subscription lifecycle while preserving the v27.23.0 External Calendar Sync runtime. Current application baseline is 107 Java test classes / 563 `@Test` methods / 32 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.23.2 fixes the calendar-sync browser boot contract by replacing an undefined `localDateKey()` call with the canonical local `keyOf(...)` helper. Current application baseline is 107 Java test classes / 564 `@Test` methods / 32 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.23.2 Calendar Sync Runtime Boot Hotfix extension
+
+- `CalendarSyncFrontendContractTest` requires both default export-range boundaries to use `keyOf(...)`.
+- The static contract rejects `localDateKey(` in `55-calendar-sync.js`.
+- `release-check.sh` mirrors that guard before packaging.
+- The shared browser fixture remains strict about uncaught page errors and unexpected same-origin failures.
+- Baseline advances to 107 Java classes / 564 `@Test` methods / 32 Playwright scenarios; Flyway remains V41.
 
 ## v27.23.1 Calendar Sync JSON UTF-8 Contract Hotfix extension
 

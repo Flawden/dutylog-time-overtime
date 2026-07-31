@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.23.1.
+Status: v27.23.2.
 
 ## Local gate
 
@@ -19,7 +19,7 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Staging
 
 - push the exact candidate tree to `test`;
-- confirm the Maven gate executes all 563 tests with zero failures;
+- confirm the Maven gate executes all 564 tests with zero failures;
 - confirm all 32 Playwright scenarios pass, including workspace-hidden Tasks routing on mobile and task module re-enable;
 - confirm fresh schedule apply reloads the authoritative month through the data layer;
 - confirm Vacation Planner shows 28 available days by default and presets 14 / 28 / 35;
@@ -27,6 +27,7 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - confirm overlapping absences and allowance overflow return `ABSENCE_OVERLAP` / `VACATION_LIMIT_EXCEEDED`;
 - switch to Monday-Friday counting and confirm weekends remain visible but do not consume allowance;
 - change the work-year boundary and carryover, then verify the balance is recomputed for the selected reference date;
+- open Settings → External calendar and confirm the default export range renders without `localDateKey is not defined` or any page error;
 - confirm every active nginx HTTP/HTTPS server block has an exact `/calendar-feed.ics` location with `access_log off` before issuing a token;
 - create a private calendar subscription and copy the one-time URL;
 - fetch the URL without a web session and confirm UTF-8 `text/calendar`, CRLF and `BEGIN:VCALENDAR`;
@@ -96,6 +97,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.23.1 -m "v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix"
-git push origin v27.23.1
+git tag -a v27.23.2 -m "v27.23.2 — Calendar Sync Runtime Boot Hotfix"
+git push origin v27.23.2
 ```

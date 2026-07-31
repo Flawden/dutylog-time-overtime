@@ -1,3 +1,11 @@
+# v27.23.2 — Calendar Sync Runtime Boot Hotfix
+
+- Fixed the browser-wide `ReferenceError: localDateKey is not defined` raised while initializing the default `.ics` export range.
+- Reused the canonical `keyOf(...)` helper for local floating calendar dates instead of introducing UTC conversion or another duplicate formatter.
+- Added static Java and release-gate guards that reject the undefined helper before Playwright packaging.
+- Kept External Calendar Sync business logic, HTTP API, nginx protection and Flyway V41 unchanged.
+- Regression baseline advances to 107 Java test classes, 564 `@Test` methods and 32 Playwright scenarios.
+
 # v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix
 
 - Fixed the calendar-sync controller test helper to decode MockMvc JSON explicitly as UTF-8 instead of ISO-8859-1.
