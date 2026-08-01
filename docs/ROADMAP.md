@@ -1,6 +1,105 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.23.0 — External Calendar Sync**.
+Current release: **v27.26.2 — Canonical Lineage Recovery**.
+
+
+## v27.26.2 — Canonical Lineage Recovery — current
+
+- [x] Restore the accepted v27.26.x product stack on top of the actually deployed canonical v27.23.0 branch.
+- [x] Preserve the current Workspace Route E2E navigation contract instead of reintroducing the older workspace-aware tab assertions.
+- [x] Keep V41 External Calendar Sync, V42 Absence & Time-Off and V43 Unified Time & Compensation Ledger exactly once.
+- [x] Preserve consolidated UTF-8, browser-boot, modal-panel, lambda, frontend-contract and constructor compile fixes.
+- [x] Add lineage integrity contracts that fail if V41–V43, plan/fact absences or source-linked overtime usages disappear.
+- [x] Baseline advances to 110 Java test classes / 592 tests / 35 Playwright scenarios.
+
+Next product stage: **v27.27.0 — Ledger Integrity & Approval Workflow**.
+
+## v27.26.1 — Absence Request Constructor Compile Hotfix — completed
+
+- [x] Repair four stale nine-argument `AbsencePeriodCreateRequest` fixtures after the compensation-source field became explicit.
+- [x] Preserve `OVERTIME_BANK` semantics for partial, full-day and insufficient-balance service tests.
+- [x] Add Java/static and release-gate protection against returning to the removed constructor shape.
+- [x] Keep production runtime, API, OpenAPI, PostgreSQL and Flyway V43 unchanged.
+- [x] Baseline advances to 110 Java test classes / 591 tests / 35 Playwright scenarios.
+
+## v27.26.0 — Unified Time & Compensation Ledger — completed
+
+- [x] Existing overtime credits/usages/allocations become the canonical compensatory-time bank.
+- [x] `OVERTIME_BANK` absences own one FIFO usage; edits reallocate it and deletion restores minutes.
+- [x] Manual ledger mutation is blocked for absence-linked usages, preventing double compensation.
+- [x] Explicit vacation, overtime, sick, unpaid and no-coverage policies join Plan → Fact → Compensation.
+- [x] `/api/time-compensation` and the monthly unified UI expose planned, worked, earned, used, covered and unpaid time.
+- [x] Flyway V43 migrates the standalone V42 balance into an opening credit and preserves `day_entries`.
+- [x] Baseline advances to 110 Java test classes / 590 tests / 35 Playwright scenarios.
+
+Next product stage: **v27.27.0 — Ledger Integrity & Approval Workflow**.
+
+## v27.25.2 — Absence Experience Frontend Contract Hotfix — completed
+
+- [x] Confirmed Maven compilation and 579 passing tests before the one failing static frontend contract.
+- [x] Replaced the stale unbounded absence-loop expectation with the accepted bounded Week agenda contract.
+- [x] Protected timed partial absences and full-day all-day composition as separate paths.
+- [x] Production runtime, API, OpenAPI, database and Flyway V42 remain unchanged.
+- [x] Baseline advances to 109 Java test classes / 581 tests / 34 Playwright scenarios.
+
+## v27.25.1 — Absence Preview Lambda Compile Hotfix — completed
+
+- [x] Fixed the Java compiler blocker in the absence preview overlap lookup.
+- [x] Snapshot the mutable loop date before lambda capture; preview semantics remain unchanged.
+- [x] Added Java/static and release-gate protection against direct capture of the incremented loop variable.
+- [x] API, OpenAPI, database and Flyway V42 remain unchanged.
+- [x] Baseline advances to 109 Java test classes / 580 tests / 34 Playwright scenarios.
+
+## v27.25.0 — Absence & Time-Off Overhaul — completed
+
+- [x] Separate planned shifts from factual day status without deleting schedule data.
+- [x] Full-day absences visually replace the shift while retaining plan context.
+- [x] Partial time off stores exact hours and preserves the shift surface.
+- [x] Independent `VACATION_DAYS`, `TIME_OFF_HOURS` and `NONE` balance policies.
+- [x] Built-in Time Off type, configurable hour bank and full-day charge duration.
+- [x] Month / Week / Day / selected-day plan-fact composition and monthly summaries.
+- [x] Timed `.ics` projection for partial absence and Flyway V42.
+- [x] Baseline 109 Java test classes / 579 tests / 34 Playwright scenarios.
+
+## v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix — completed
+
+- GitHub Actions confirmed Maven and reached the new Calendar Comfort browser scenario.
+- Month-mode `↺ Сегодня` correctly selects today and opens the mobile modal day panel.
+- The failed test attempted to click `#next` through the blocking backdrop instead of closing the panel.
+- The scenario now follows the user route `Сегодня → #pClose → next month`; production UI and Flyway V41 are unchanged.
+- Baseline remains 108 Java classes / 569 tests / 33 Playwright scenarios.
+
+## v27.24.0 — Calendar Comfort & Correctness — completed
+
+- [x] Contextual cozy «Сегодня» control across Month / Week / Day.
+- [x] Selected calendar date owns contextual important-day creation.
+- [x] Important-event checkboxes follow the 18px design-system control size.
+- [x] Overnight Today shift separates compact time and the two-date range.
+- [x] Calendar refresh preserves the existing grid and exposes a calm live status.
+- [x] Bounded in-memory load metrics and `dutylog:calendar-load` diagnostics start before the final optimization cycle.
+- [x] Companion schedule layers use compact accessible visibility pills.
+- [x] Flyway stays V41; baseline advances to 108 / 569 / 33.
+
+## v27.23.2 — Calendar Sync Runtime Boot Hotfix — completed
+
+- [x] Removed the uncaught `ReferenceError: localDateKey is not defined` from `.ics` range initialization.
+- [x] Default range boundaries now use the canonical local `keyOf(...)` helper.
+- [x] Added Java/static and release-gate protection against the undefined helper.
+- [x] API, token lifecycle, nginx protection and Flyway V41 remain unchanged.
+- [x] Baseline advances to 107 / 564 / 32.
+
+Next product stage: **v27.25.0 — Absence & Time-Off Overhaul**.
+
+
+## v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix — completed
+
+- [x] MockMvc subscription JSON is decoded explicitly with `StandardCharsets.UTF_8`.
+- [x] Token hint stays `prefix…suffix`; the test protects U+2026 without mojibake.
+- [x] Runtime, HTTP API, nginx protection and Flyway V41 remain unchanged.
+- [x] Baseline stays 107 / 563 / 32.
+
+Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
+
 
 ## v27.23.0 — External Calendar Sync — completed
 
@@ -8,40 +107,89 @@ Current release: **v27.23.0 — External Calendar Sync**.
 - [x] Shifts, tasks, important events and absences compose into read-only `.ics`.
 - [x] Private rolling subscription with SHA-256-only token storage.
 - [x] Issue, rotate, revoke and immediate old-token invalidation.
-- [x] nginx access-log protection for bearer feed URLs.
-- [x] UTF-8 JSON and browser boot hardening included in the base release.
-- [x] Flyway V41; baseline 107 / 564 / 32.
+- [x] Responsive Settings UI, Web/v1 API, OpenAPI and browser lifecycle coverage.
+- [x] Flyway V41; baseline 107 / 563 / 32.
+
+Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 ## v27.22.2 — Workspace Route E2E Navigation Hotfix — completed
 
-- [x] Four Playwright scenarios no longer assume Tasks is a visible Shift Worker primary tab.
-- [x] Hidden workspace screens use the canonical `openView()` hash route.
-- [x] Module enable/disable assertions are independent from workspace navigation placement.
-- [x] Runtime, API and Flyway remain unchanged; baseline stays 103 / 544 / 31.
+- [x] Stale browser flows use the shared workspace-route `openView()` helper instead of a hidden Tasks tab.
+- [x] Tasks module enablement is asserted on `#view-tasks`, independently from workspace placement.
+- [x] Shift Worker navigation remains intentionally task-tab-free; runtime, API and Flyway remain unchanged.
+- [x] Baseline stays 103 / 544 / 31.
+
 
 ## v27.22.1 — Vacation Planner Frontend Contract Hotfix — completed
 
 - [x] Shift Worker static contract includes `vacation` and the accepted Today widget order.
 - [x] Vacation Month/Week/Day static contract follows the real all-day absence composition path.
-- [x] Persisted switchable-module count is derived from `DutyLogModules.ALL`.
+- [x] Persisted switchable-module count is derived from `DutyLogModules.ALL` instead of a hardcoded value.
+- [x] Runtime, API and Flyway remain unchanged; baseline stays 103 / 544 / 31.
+
 
 ## v27.22.0 — Vacation Planner — completed
 
 - [x] Separate absence model; vacation never becomes a shift row.
-- [x] Annual allowance, carryover, configurable work year and counting policy.
-- [x] Preview, conflict protection, custom types and Month/Week/Day composition.
-- [x] Flyway V40, Web/v1 API and regression coverage.
+- [x] Annual allowance and carryover.
+- [x] Configurable work-year boundary.
+- [x] Calendar-day or Monday-Friday counting.
+- [x] 14 / 28 / 35-day presets and custom periods.
+- [x] Preview with shift and absence conflicts.
+- [x] Overlap and allowance protection.
+- [x] Built-in and custom absence types.
+- [x] Month / Week / Day / selected-day composition.
+- [x] Flyway V40, Web/v1 API, Java/static/Playwright contracts.
 
-## Следующие продуктовые этапы
+Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
-1. **v27.24.0 — Calendar Comfort & Correctness** — кнопка «Сегодня», выбранная дата важных дней, ночные смены, компактные controls и спокойные загрузки.
-2. **v27.25.0 — Absence & Time-Off Overhaul** — plan/fact модель, полно-дневные и частичные отсутствия, отпуск, больничный, отгулы и отдельные балансы.
-3. **v27.26.0 — Unified Time & Compensation Ledger** — единый обратимый журнал переработок и покрытий отсутствий.
-4. **v27.27.0 — Ledger Integrity & Approval Workflow** — статусы, резервы, проведение, reversals, сверка и закрытие периода.
-5. **v27.28.0 — Payroll Foundation** — оплачиваемые/неоплачиваемые минуты и объяснимый расчёт зарплаты.
-6. **v27.29.0 — Workspace, Layout & Theme Studio**.
+## Текущая продуктовая точка — Unified Time & Compensation Ledger
 
-Read-only импорт внешних `.ics`, one-tap Google/Apple/Outlook connect, Notes Archive, Telegram inline actions и onboarding остаются последующими этапами.
+Статус: **v27.26.2** восстанавливает единую каноническую линию; **v27.26.0** объединяет плановые смены, фактические отсутствия и компенсационные движения. Отгул за ранее отработанное время больше не списывает отдельное число: он владеет FIFO usage в каноническом overtime ledger. Flyway V43 переносит старый баланс в opening credit, сохраняет `day_entries`, а salary-правила остаются задачей Payroll Foundation.
+
+Закрыто:
+
+- независимые политики `VACATION_DAYS`, `TIME_OFF_HOURS` и `NONE`;
+- встроенный тип «Отгул» и отдельный банк часов;
+- полный и частичный охват с проверкой пересечений;
+- списание полной смены по её net duration либо по настраиваемой длительности дня;
+- план-факт детали и полноценная визуализация в Month / Week / Day;
+- сводка по видам отсутствий и частичным часам;
+- timed `.ics` для частичного отгула;
+- Flyway V42, OpenAPI, Java/static/Playwright contracts;
+- baseline 109 Java test classes / 581 tests / 34 Playwright scenarios.
+
+Следующий этап: **v27.27.0 — Ledger Integrity & Approval Workflow**.
+
+## Ближайшая продуктовая очередь после v27.26.2
+
+### v27.26.0 — Unified Time & Compensation Ledger — completed
+
+См. завершённый релиз выше и `docs/UNIFIED_TIME_COMPENSATION_LEDGER_V27.26.0.md`.
+
+### v27.27.0 — Ledger Integrity & Approval Workflow
+
+- статусы отсутствий: черновик, запланировано, подано, утверждено, отклонено, отменено и завершено;
+- резервирование и окончательное проведение отпускных/компенсационных операций;
+- неизменяемые reversal-записи вместо скрытого переписывания истории;
+- сверка целостности ledger и безопасное восстановление осиротевших связей;
+- закрытие расчётных периодов и корректировки задним числом;
+- явная фиксация фактически отработанных интервалов поверх плановой смены.
+
+### v27.28.0 — Payroll Foundation
+
+- простой и расширенный расчёт оплачиваемого времени;
+- влияние отпусков, больничных, отсутствий без содержания и отгулов из банка переработок;
+- базовая ставка, ночные, сверхурочные, премии, удержания и налоги;
+- объяснимый расчёт, читающий единый ledger вместо повторного угадывания календаря.
+
+### Следующие продуктовые циклы
+
+- `v27.29.0` — Workspace, Layout & Theme Studio;
+- `v27.30.0` — One-Tap Calendar Connect для Google / Apple / Outlook;
+- `v27.31.0` — архив «Все заметки» и визуальные коллизии задач;
+- `v27.32.0` — Telegram inline-действия и понятные пошаговые команды;
+- затем — контекстные обучалки и отдельный финальный performance / production-readiness цикл.
 
 ## Этап 2 — нормальная API-архитектура
 

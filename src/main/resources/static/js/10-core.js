@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.23.0"
+const DUTYLOG_VERSION = "27.26.2"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -126,7 +126,7 @@ const state = {
   selected: null,                 // ключ даты
   tab: "edit",
   activeNoteByDate: {},
-  ui: { booting:true, loadingCalendar:false, loadingTasks:false, loadingLedger:false },
+  ui: { booting:true, loadingCalendar:false, calendarHasRendered:false, calendarLoadMetrics:[], loadingTasks:false, loadingLedger:false },
   toasts: [],
   swColor: "#F5B841",
   offline: {

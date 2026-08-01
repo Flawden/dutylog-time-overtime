@@ -38,6 +38,8 @@ class VacationPlannerFrontendContractTest {
         assertTrue(vacation.contains("loadVacationPlanner")
                         && vacation.contains("renderVacationDay")
                         && vacation.contains("VACATION_LIMIT_EXCEEDED")
+                        && vacation.contains("TIME_OFF_LIMIT_EXCEEDED")
+                        && vacation.contains("coverage:partial ? \"PARTIAL\" : \"FULL_DAY\"")
                         && !vacation.contains("shiftTypeId:"),
                 "absence editor must never serialize a vacation as a shift type");
     }
@@ -48,14 +50,34 @@ class VacationPlannerFrontendContractTest {
         String experience = resource("/static/js/37-calendar-experience.js");
         String css = resource("/static/design-system.css");
         assertTrue(calendar.contains("absencesOf(k)")
-                        && calendar.contains("hasVacation")
-                        && calendar.contains("vacationMark"));
+                        && calendar.contains("factualAbsence")
+                        && calendar.contains("absenceFact")
+                        && calendar.contains("plannedShiftGhost")
+                        && calendar.contains("partialAbsenceBar")
+                        && calendar.contains("absenceSummaryChip"));
         assertTrue(experience.contains("facts.absences")
-                        && experience.contains("for (const absence of facts.absences)")
+                        && experience.contains("for (const absence of facts.absences.slice(0, 3))")
+                        && experience.contains("for (const absence of facts.partialAbsences)")
+                        && experience.contains("for (const absence of facts.absences.filter(item => item.coverage !== \"PARTIAL\"))")
                         && experience.contains("type:\"vacation\"")
                         && experience.contains("editAbsenceFromOccurrence"));
         assertTrue(css.contains(".vacationSummaryGrid")
+                        && css.contains(".cell.hasAbsenceFact")
+                        && css.contains(".vacationDayPlanFact")
                         && css.contains("@media (max-width: 560px)"));
+    }
+
+    @Test
+    void absenceExperienceKeepsWeekAgendaBoundedAndDayModesSeparated() throws IOException {
+        String experience = resource("/static/js/37-calendar-experience.js");
+        assertTrue(experience.contains("for (const absence of facts.absences.slice(0, 3))"),
+                "week agenda must keep absence rows compact");
+        assertTrue(experience.contains("for (const absence of facts.partialAbsences)"),
+                "hourly day must project partial absences as timed events");
+        assertTrue(experience.contains("for (const absence of facts.absences.filter(item => item.coverage !== \"PARTIAL\"))"),
+                "all-day rail must project full-day absences separately");
+        assertTrue(!experience.contains("for (const absence of facts.absences)"),
+                "stale unbounded loop contract must not replace the bounded plan/fact composition");
     }
 
     private static String resource(String path) throws IOException {

@@ -396,10 +396,18 @@ async function saveImportantEvent(e){
   }
 }
 
+function syncImportantSelectedDate(key = state.selected){
+  const input = $("impDate");
+  if (!input || !/^\d{4}-\d{2}-\d{2}$/.test(String(key || ""))) return;
+  input.value = key;
+  input.dataset.contextDate = key;
+}
+
 function renderImportantDays(){
   if (!moduleEnabled("important_dates")) { updateAccSummaries(); return; }
   const box = $("importantList");
   if (!box || !state.selected) return;
+  syncImportantSelectedDate(state.selected);
   const items = importantOf(state.selected).map(normalizeImportantEvent);
   box.innerHTML = "";
   if (!items.length) {
@@ -448,6 +456,9 @@ $("impAdd")?.addEventListener("click", addImportantDay);
 $("impTitle")?.addEventListener("keydown", e => { if (e.key === "Enter") addImportantDay(); });
 $("impDateSelected")?.addEventListener("click", () => { if (!state.selected) return setSave("err", t("сначала выбери день в календаре")); $("impDate").value = state.selected; });
 $("impDateToday")?.addEventListener("click", () => { $("impDate").value = todayKey(); });
+$("accImp")?.addEventListener("toggle", event => {
+  if (event.currentTarget.open && state.selected) syncImportantSelectedDate(state.selected);
+});
 $("importantBoardNew")?.addEventListener("click", () => openImportantEditor(null, todayKey()));
 $("importantBoardScope")?.addEventListener("change", e => { state.importantFilters.scope = e.target.value; renderImportantBoard(); });
 $("importantBoardSearch")?.addEventListener("input", e => { state.importantFilters.q = e.target.value; renderImportantBoard(); });

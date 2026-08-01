@@ -10,6 +10,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
+import ru.daniil.shifts.service.OvertimeService;
+
+import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
+
+import java.nio.charset.StandardCharsets;
 
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -24,6 +29,7 @@ class VacationPlannerControllerTest {
     @Autowired MockMvc mvc;
     @Autowired UserRepository users;
     @Autowired ObjectMapper objectMapper;
+    @Autowired OvertimeService overtimeService;
 
     AppUser owner;
 
@@ -41,8 +47,9 @@ class VacationPlannerControllerTest {
                 .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
                 .andExpect(jsonPath("$.settings.annualAllowanceDays").value(28))
                 .andExpect(jsonPath("$.durationPresets[0]").value(14))
-                .andExpect(jsonPath("$.types.length()").value(4))
-                .andExpect(jsonPath("$.summary.remainingDays").value(28));
+                .andExpect(jsonPath("$.types.length()").value(5))
+                .andExpect(jsonPath("$.summary.remainingDays").value(28))
+                .andExpect(jsonPath("$.settings.timeOffBalanceHours").value(0.0));
     }
 
     @Test
@@ -50,7 +57,7 @@ class VacationPlannerControllerTest {
         String planner = mvc.perform(get("/api/vacation-planner")
                         .with(user(owner.getUsername()).roles("USER"))
                         .param("referenceDate", "2026-08-01"))
-                .andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         long typeId = objectMapper.readTree(planner).path("types").get(0).path("id").asLong();
 
         mvc.perform(post("/api/v1/vacation-planner/preview")
@@ -71,7 +78,7 @@ class VacationPlannerControllerTest {
                                 """.formatted(typeId)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.countedDays").value(14))
-                .andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         long id = objectMapper.readTree(created).path("id").asLong();
 
         mvc.perform(patch("/api/vacation-planner/absences/{id}", id)
@@ -109,12 +116,91 @@ class VacationPlannerControllerTest {
                         .content("{\"name\":\"Учёба\",\"color\":\"#112233\",\"countsAgainstAllowance\":false}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.systemPreset").value(false))
-                .andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         long id = objectMapper.readTree(custom).path("id").asLong();
 
         mvc.perform(delete("/api/vacation-planner/types/{id}", id)
                         .with(user(owner.getUsername()).roles("USER")).with(csrf()))
                 .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void partialTimeOffLifecycleUsesCanonicalOvertimeBank() throws Exception {
+        overtimeService.createCredit(owner, new OvertimeCreditCreateRequest(
+                "2026-08-01", null, null, null, null, null, 8.0, "Заранее отработанное время"));
+        mvc.perform(patch("/api/vacation-planner/settings")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("{\"timeOffBalanceHours\":99,\"defaultTimeOffDayHours\":8}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.timeOffBalanceHours").value(0.0));
+
+        String plannerJson = mvc.perform(get("/api/vacation-planner")
+                        .with(user(owner.getUsername()).roles("USER")))
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        long typeId = -1L;
+        for (var type : objectMapper.readTree(plannerJson).path("types")) {
+            if ("TIME_OFF".equals(type.path("systemCode").asText())) {
+                typeId = type.path("id").asLong();
+                break;
+            }
+        }
+        if (typeId < 0) throw new IllegalStateException("TIME_OFF preset missing");
+
+        String created = mvc.perform(post("/api/vacation-planner/absences")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("""
+                                {"typeId":%d,"title":"Врач","startDate":"2026-08-06","endDate":"2026-08-06",
+                                 "coverage":"PARTIAL","startTime":"09:00","endTime":"13:00","status":"APPROVED"}
+                                """.formatted(typeId)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.coverage").value("PARTIAL"))
+                .andExpect(jsonPath("$.chargedMinutes").value(240))
+                .andExpect(jsonPath("$.compensationPolicy").value("OVERTIME_BANK"))
+                .andExpect(jsonPath("$.compensatedMinutes").value(240))
+                .andExpect(jsonPath("$.linkedOvertimeUsageId").isNumber())
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
+        long id = objectMapper.readTree(created).path("id").asLong();
+
+        mvc.perform(get("/api/calendar")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .param("from", "2026-08-06").param("to", "2026-08-06"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.absences[0].coverage").value("PARTIAL"))
+                .andExpect(jsonPath("$.absences[0].startTime").value("09:00"))
+                .andExpect(jsonPath("$.absences[0].endTime").value("13:00"));
+
+        mvc.perform(delete("/api/vacation-planner/absences/{id}", id)
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf()))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    void unifiedTimeCompensationEndpointIsNoStoreAndAvailableUnderV1() throws Exception {
+        overtimeService.createCredit(owner, new OvertimeCreditCreateRequest(
+                "2026-08-05", null, null, null, null, null, 2.0, "Дополнительная работа"));
+
+        mvc.perform(get("/api/time-compensation")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .param("from", "2026-08-01")
+                        .param("to", "2026-08-31"))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Cache-Control", org.hamcrest.Matchers.containsString("no-store")))
+                .andExpect(jsonPath("$.overtimeEarnedMinutes").value(120))
+                .andExpect(jsonPath("$.overtimeBalanceMinutes").value(120))
+                .andExpect(jsonPath("$.days[0].date").value("2026-08-05"));
+
+        mvc.perform(get("/api/v1/time-compensation")
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .param("from", "2026-08-01")
+                        .param("to", "2026-08-31"))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/time-compensation")
+                        .param("from", "2026-08-01")
+                        .param("to", "2026-08-31"))
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
@@ -132,7 +218,7 @@ class VacationPlannerControllerTest {
     void invalidRangeAndAllowanceOverflowReturnStableErrors() throws Exception {
         String planner = mvc.perform(get("/api/vacation-planner")
                         .with(user(owner.getUsername()).roles("USER")))
-                .andReturn().getResponse().getContentAsString();
+                .andReturn().getResponse().getContentAsString(StandardCharsets.UTF_8);
         long typeId = objectMapper.readTree(planner).path("types").get(0).path("id").asLong();
 
         mvc.perform(post("/api/vacation-planner/absences")

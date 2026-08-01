@@ -98,6 +98,29 @@ class CalendarIcsServiceTest {
     }
 
     @Test
+    void partialTimeOffExportsAsTimedEventInTheOwnersWorkZone() {
+        AbsenceOccurrenceDto partial = new AbsenceOccurrenceDto(
+                41L, 5L, "Отгул", "#4A90E2", "TIME_OFF", "Врач",
+                "2026-08-06", "2026-08-06", "2026-08-06", "APPROVED", false, true,
+                "TIME_OFF_HOURS", "PARTIAL", "09:00", "13:00", 240, false,
+                "Дневная", "#F5B841", 450);
+        CalendarRangeDto range = new CalendarRangeDto(
+                "2026-08-06", "2026-08-06", List.of(), List.of(), List.of(), List.of(), List.of(),
+                List.of(partial), null, null, null, List.of(), List.of(), List.of(), List.of());
+        when(calendars.range(user, LocalDate.of(2026, 8, 6), LocalDate.of(2026, 8, 6))).thenReturn(range);
+
+        String text = new String(service.exportRange(user, LocalDate.of(2026, 8, 6), LocalDate.of(2026, 8, 6)).bytes(),
+                StandardCharsets.UTF_8);
+
+        assertTrue(text.contains("UID:absence-41@dutylog"));
+        assertTrue(text.contains("DTSTART:20260806T060000Z"));
+        assertTrue(text.contains("DTEND:20260806T100000Z"));
+        assertTrue(text.contains("CATEGORIES:ABSENCE,TIME-OFF"));
+        assertTrue(text.contains("planned shift: Дневная"));
+        assertFalse(text.contains("DTSTART;VALUE=DATE:20260806"));
+    }
+
+    @Test
     void singleImportantEventPreservesRecurrenceAndEscapesText() {
         ImportantDayDto event = new ImportantDayDto(
                 77L, "Ревью; квартал", "2026-08-05", RepeatMode.MONTHLY, "#F5B841",

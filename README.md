@@ -1,21 +1,110 @@
+# v27.26.2 — Canonical Lineage Recovery
+
+- Reunifies the accidentally split DutyLog history into one forward-only canonical release.
+- Restores V41 External Calendar Sync, V42 Absence & Time-Off and V43 Unified Time & Compensation Ledger on top of the currently deployed workspace-route line.
+- Preserves the consolidated UTF-8/browser-boot calendar-sync hardening and the real mobile modal-panel E2E route.
+- Keeps the canonical Tasks route contract: hidden workspace tabs are never force-clicked, and module state is asserted on `#view-tasks`.
+- Adds a lineage integrity contract so future packaging cannot silently lose V41–V43 or the plan/fact/compensation stack.
+- Automated baseline advances to 110 Java test classes / 592 `@Test` methods / 35 Playwright scenarios.
+
+> Previous stable advanced release: **v27.26.1 — Absence Request Constructor Compile Hotfix**.
+>
+> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+
+# v27.26.1 — Absence Request Constructor Compile Hotfix
+
+- Repairs Maven `testCompile` after `AbsencePeriodCreateRequest` gained the explicit `compensationPolicy` argument.
+- Moves four stale Vacation Planner fixtures from the removed nine-argument shape to the full ten-argument contract.
+- Preserves `OVERTIME_BANK` semantics for partial, full-day and insufficient-balance scenarios.
+- Adds Java/static and release-gate protection against returning to the stale constructor shape.
+- Keeps runtime behavior, HTTP API, OpenAPI, PostgreSQL and Flyway V43 unchanged.
+- Automated baseline advances to 110 Java test classes / 591 `@Test` methods / 35 Playwright scenarios.
+
+> Previous product release: **v27.26.0 — Unified Time & Compensation Ledger**.
+>
+> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+
+# v27.25.2 — Absence Experience Frontend Contract Hotfix
+
+- Aligns the stale Vacation Planner Java/static contract with the accepted plan/fact frontend implementation.
+- Protects the bounded Week agenda, timed partial-absence projection and full-day all-day rail separately.
+- Does not change production JavaScript, API, database schema or Flyway V42.
+- Automated baseline advances to 109 Java test classes / 581 `@Test` methods / 34 Playwright scenarios.
+
+> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+
+# v27.25.1 — Absence Preview Lambda Compile Hotfix
+
+- Fixes the Java compiler error in the absence preview loop without changing product behavior.
+- Each loop iteration snapshots its `LocalDate` before the overlap-search lambda, keeping the preview date stable and effectively final.
+- Adds regression protection against capturing the incremented loop variable directly.
+- Keeps the v27.25.0 plan/fact model, API, Flyway V42 and 34 Playwright scenarios unchanged; Java baseline advances to 580 tests.
+
+> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+
+# v27.25.0 — Absence & Time-Off Overhaul
+
+- Separates the planned shift from the factual day status without deleting or rewriting calendar rows.
+- Full-day vacation, time off, sickness and custom absences can visually replace the shift while preserving it for norms, salary and statistics.
+- Partial time off keeps the shift visible, stores an exact local interval and charges an independent minute balance.
+- Adds `VACATION_DAYS`, `TIME_OFF_HOURS` and `NONE` balance policies, plan/fact day details, monthly absence summaries and timed `.ics` projection.
+- Flyway advances to V42; automated baseline advances to 109 Java test classes / 579 `@Test` methods / 34 Playwright scenarios.
+
+> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+
+# v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix
+
+- Aligns the new calendar comfort Playwright scenario with the real mobile modal-panel lifecycle.
+- After `↺ Сегодня` selects today in Month mode, the scenario closes `#panel` through `#pClose` before using month navigation.
+- Keeps the blocking backdrop, contextual Today behavior, API and Flyway V41 unchanged.
+- Automated baseline remains 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
+
+> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+
+# v27.24.0 — Calendar Comfort & Correctness
+
+- Contextual «Сегодня» return instead of a permanently hidden mobile control.
+- Selected calendar date becomes the default important-day date; reminder checkboxes follow the design system.
+- Overnight Today cards separate compact time from the two-date range.
+- Refresh keeps the existing month visible, adds a calm status and captures bounded in-memory load metrics.
+- Multiple schedule layers use compact accessible pills instead of verbose controls.
+- Flyway remains V41; automated baseline: 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
+
+> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+
+# v27.23.2 — Calendar Sync Runtime Boot Hotfix
+
+- Removes the uncaught `localDateKey is not defined` browser error from calendar-sync range initialization.
+- Uses DutyLog's canonical local `keyOf(...)` date helper, preserving floating dates across timezones.
+- Adds Java/static release guards so the undefined helper cannot return unnoticed.
+- Keeps External Calendar Sync API, token security, nginx hardening and Flyway V41 unchanged.
+- Automated baseline: 107 Java test classes / 564 `@Test` methods / 32 Playwright scenarios.
+
+# v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix
+
+- Decodes MockMvc JSON explicitly as UTF-8 in the calendar subscription lifecycle test.
+- Protects the real `prefix…suffix` token-hint contract without changing production responses.
+- Keeps External Calendar Sync runtime, API, nginx hardening and Flyway V41 unchanged.
+- Automated baseline remains 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
+
 # v27.23.0 — External Calendar Sync
 
 - Export one important event or a selected date range as standards-compliant UTF-8 `.ics`.
 - Subscribe Google Calendar, Outlook, Apple Calendar or another compatible client to a private read-only DutyLog feed.
 - Feed links use a 256-bit bearer secret shown only when issued; DutyLog stores only SHA-256 plus a short hint.
 - Rotation immediately invalidates the old link; revocation removes access without deleting calendar data.
-- Flyway V41; automated baseline: 107 Java test classes / 564 `@Test` methods / 32 Playwright scenarios.
+- Flyway V41; automated baseline: 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
 
-> Current release: **v27.23.0 — External Calendar Sync**.
+> Current release: **v27.26.2 — Canonical Lineage Recovery**.
 
 # v27.22.2 — Workspace Route E2E Navigation Hotfix
 
-- Fixed four Playwright contracts that treated the hidden Tasks anchor as a visible primary tab in the Shift Worker workspace.
-- Reused the canonical `openView()` route helper for screens outside the active workspace navigation.
-- Module-toggle coverage checks the Tasks screen enabled state instead of confusing module availability with primary-navigation membership.
+- Updated stale Playwright task flows to use the shared workspace-route `openView()` helper.
+- Tasks stay outside Shift Worker primary navigation by design; the hotfix does not re-add the tab or alter runtime behavior.
+- Module toggling is asserted on `#view-tasks`, independently from workspace placement.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.23.0 — External Calendar Sync**.
+> Current release: **v27.26.2 — Canonical Lineage Recovery**.
 
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
@@ -25,7 +114,7 @@
 - Module persistence derives its expected count from the canonical module registry instead of a hardcoded pre-vacation number.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.23.0 — External Calendar Sync**.
+> Current release: **v27.26.2 — Canonical Lineage Recovery**.
 
 # v27.22.0 — Vacation Planner
 
@@ -35,7 +124,7 @@
 - Added owner-scoped absence types, calendar projections and a responsive unified-shell planner.
 - Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
 
-> Current release: **v27.23.0 — External Calendar Sync**.
+> Current release: **v27.26.2 — Canonical Lineage Recovery**.
 
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
@@ -44,22 +133,29 @@
 - Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
 - No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.23.0 — External Calendar Sync**.
+> Current release: **v27.26.2 — Canonical Lineage Recovery**.
 
 # DutyLog
 
-Current release: **v27.23.0 — External Calendar Sync**
+Current release: **v27.26.2 — Canonical Lineage Recovery**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
-## Текущая версия: v27.23.0 — External Calendar Sync
+## Текущая версия: v27.26.2 — Canonical Lineage Recovery
 
+**v27.26.2** восстанавливает единую каноническую линию после случайного возврата ветки к раннему v27.22.x/v27.23.x baseline. Релиз объединяет актуальный workspace-route контракт, External Calendar Sync, Calendar Comfort, Absence & Time-Off Overhaul и Unified Time & Compensation Ledger, сохраняя Flyway V41–V43 без дублирования.
 
-**v27.23.0** добавляет безопасный исходящий календарный контур: разовый `.ics`-экспорт и приватную read-only подписку со строгой ротацией и отзывом токена. Поставляемые nginx-конфиги отключают access log для точного `/calendar-feed.ics`, чтобы bearer URL не попадал в журналы edge-прокси. В релиз сразу включены UTF-8 JSON contract и browser boot guard, поэтому промежуточные hotfix-версии не требуются.
+### Предыдущий hotfix: v27.23.2 — Calendar Sync Runtime Boot Hotfix
+
+**v27.23.2** исправил browser-runtime инициализацию диапазона `.ics`, не меняя API, nginx-защиту и Flyway V41.
+
+### Базовый продуктовый релиз: v27.23.0 — External Calendar Sync
+
+**v27.23.0** добавляет безопасный исходящий календарный контур: разовый `.ics`-экспорт и приватную read-only подписку со строгой ротацией и отзывом токена. Поставляемые nginx-конфиги отключают access log для точного `/calendar-feed.ics`, чтобы bearer URL не попадал в журналы edge-прокси.
 
 ### Предыдущий hotfix: v27.22.2 — Workspace Route E2E Navigation Hotfix
 
-**v27.22.2** перевёл четыре browser-сценария задач на канонический workspace route `openView(page, "tasks")`, не возвращая Tasks в основную навигацию Shift Worker.
+**v27.22.2** перевёл устаревшие browser-сценарии задач на общий workspace-route `openView(page, "tasks")`, не возвращая Tasks в основную навигацию Shift Worker и проверяя module state на самой view.
 
 ### Предыдущий hotfix: v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
@@ -521,7 +617,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Следующий практический шаг — пропустить v27.22.2 через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и затем вручную проверить нормы, preview, конфликты, пресеты 14/28/35 и проекции отсутствий в Month / Week / Day. Следующий продуктовый этап — **v27.23.0 — External Calendar Sync**.
+Следующий практический шаг — пропустить **v27.26.1** через полный Maven и Playwright gate, подтвердить `/actuator/info` на staging и вручную проверить связанный lifecycle «начисление переработки → отгул → редактирование → возврат часов». После зелёного CI продукт переходит к **v27.27.0 — Ledger Integrity & Approval Workflow**, а Payroll Foundation следует за ним.
 
 ## Служебный профиль администратора
 

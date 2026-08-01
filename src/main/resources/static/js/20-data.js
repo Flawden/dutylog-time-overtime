@@ -87,6 +87,7 @@ const api = {
   async updateImportantDay(id, b) { return jfetch(`/api/important-days/${id}`, { method:"PATCH", body:b }); },
   async deleteImportantDay(id) { return jfetch(`/api/important-days/${id}`, { method:"DELETE" }); },
   async overtimeAccount() { return jfetch("/api/overtime/account"); },
+  async timeCompensation(from, to) { const qs = new URLSearchParams({ from, to }); return jfetch(`/api/time-compensation?${qs.toString()}`); },
   async previewOvertimeCredit(b) { return jfetch("/api/overtime/preview", { method:"POST", body:b }); },
   async overtimeAccountPage(filters = {}) { const qs = new URLSearchParams(); for (const [k, v] of Object.entries(filters)) if (v !== undefined && v !== null && String(v).trim() !== "") qs.set(k, v); return jfetch(`/api/overtime/account-page?${qs.toString()}`); },
   async createOvertimeCredit(b) { return jfetch("/api/overtime/credits", { method:"POST", body:b }); },

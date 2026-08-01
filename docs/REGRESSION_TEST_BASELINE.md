@@ -1,28 +1,112 @@
-# Regression Test Baseline
+# DutyLog regression test baseline
 
-Status: v27.23.0.
+Status: v27.26.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.23.0 adds standards-compliant `.ics` export and a SHA-only private read-only subscription lifecycle, including the UTF-8 JSON and browser boot hardening discovered during the abandoned branch. Current application baseline is 107 Java test classes / 564 `@Test` methods / 32 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.26.2 restores one canonical lineage containing V41–V43, Calendar Comfort, plan/fact absences, the unified compensation ledger and the Workspace Route E2E contract. The current application baseline is 110 Java test classes / 592 `@Test` methods / 35 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
+
+
+
+
+
+## v27.26.2 Canonical Lineage Recovery extension
+
+- `UnifiedTimeCompensationLedgerContractTest` protects the recovered V41/V42/V43 stack, Calendar Sync boot hardening, Calendar Comfort modal route and source-linked overtime ledger.
+- Workspace Route browser contracts use `openView(page, "tasks")` and assert module state on `#view-tasks`, never on a workspace-hidden tab.
+- The release gate requires exactly one V41, V42 and V43 migration and rejects `localDateKey(`, force-click panel navigation and stale Tasks tab module assertions.
+- Product behavior is restored forward from the deployed v27.23.0 baseline; no duplicate migration or rollback SQL is introduced.
+- Baseline advances to 110 Java test classes / 592 `@Test` methods / 35 Playwright scenarios.
+
+## v27.26.1 Absence Request Constructor Compile Hotfix
+
+- `VacationPlannerServiceTest` uses the full ten-argument `AbsencePeriodCreateRequest` for compensation-aware time off.
+- `UnifiedTimeCompensationLedgerContractTest` protects the explicit `OVERTIME_BANK` fixture semantics.
+- `release-check.sh` rejects any nine-argument constructor call in the service fixture source.
+- Production runtime and Flyway remain unchanged at V43.
+
+## v27.26.0 Unified Time & Compensation Ledger extension
+
+- V43 migration/opening-credit/source-link contracts.
+- Linked overtime usage lifecycle and manual mutation guards.
+- Vacation Planner compensation-policy and canonical-bank integration.
+- Plan → Fact → Compensation service/controller/OpenAPI contracts.
+- Monthly unified frontend and locked linked-usage surface.
+- Browser flow covering credit → linked time off → unpaid absence → deletion/restored balance.
+
+## v27.25.2 Absence Experience Frontend Contract Hotfix extension
+
+- `VacationPlannerFrontendContractTest` follows `facts.absences.slice(0, 3)` for the intentionally compact Week agenda.
+- Hourly Day protects `facts.partialAbsences`; the all-day rail separately protects non-partial absences.
+- The stale unbounded `for (const absence of facts.absences)` expectation is rejected.
+- Product JavaScript, Web/v1 API, OpenAPI, V42 schema and 34 Playwright scenarios remain unchanged.
+- Baseline advances to 109 Java test classes / 581 `@Test` methods / 34 Playwright scenarios.
+
+## v27.25.1 Absence Preview Lambda Compile Hotfix extension
+
+- `VacationPlannerService.buildPreview(...)` snapshots the incremented loop date as `previewDate` before using it in the overlap-search lambda.
+- The compiler contract forbids `filter(period -> covers(period, date))` inside that mutable loop.
+- Counted-day, shift-plan, overlap and preview-item projections all use the same per-iteration date snapshot.
+- Product behavior, Web/v1 API, OpenAPI, V42 schema and 34 Playwright scenarios remain unchanged.
+- Baseline advances to 109 Java test classes / 580 `@Test` methods / 34 Playwright scenarios.
+
+## v27.25.0 Absence & Time-Off Overhaul extension
+
+- Service tests cover full-day charging from the preserved shift, exact partial minutes, independent hour balances and overlap windows.
+- Controller tests cover settings, built-in Time Off, preview/create/delete and calendar occurrence shape.
+- Migration/static contracts protect V42, plan/fact DOM, full-weight absence cells and partial bars.
+- Calendar export tests keep full-day absence all-day and project partial time off as a timed event.
+- Playwright creates a partial time-off interval over a shift, verifies both plan and fact, then deletes it and restores the balance.
+
+## v27.24.1 Calendar Comfort E2E Panel Contract Hotfix extension
+
+- `calendar-comfort.spec.js` requires today's selected-day panel to be visible after the contextual Month-mode return.
+- The scenario closes the modal through `#pClose`, waits for `#panel` to become hidden and verifies `with-panel` is removed before clicking `#next`.
+- The mobile blocking backdrop remains a production contract; the hotfix does not use force-click or weaken Playwright actionability.
+- Runtime JavaScript, API and Flyway V41 remain unchanged; baseline stays 108 Java classes / 569 `@Test` methods / 33 Playwright scenarios.
+
+## v27.24.0 Calendar Comfort & Correctness extension
+
+- `CalendarComfortFrontendContractTest` protects Today return, selected important-date ownership, overnight shift composition, refresh persistence/performance diagnostics and compact controls.
+- `calendar-comfort.spec.js` covers the real phone viewport: leave current month → return to today → select another month/day → open Important Days → verify compact checkboxes.
+- Calendar refresh keeps the last successful grid instead of replacing it with a full skeleton; diagnostics stay bounded to 20 in-memory samples.
+- No API or schema migration; Flyway remains V41.
+- Baseline advances to 108 Java classes / 569 `@Test` methods / 33 Playwright scenarios.
+
+## v27.23.2 Calendar Sync Runtime Boot Hotfix extension
+
+- `CalendarSyncFrontendContractTest` requires both default export-range boundaries to use `keyOf(...)`.
+- The static contract rejects `localDateKey(` in `55-calendar-sync.js`.
+- `release-check.sh` mirrors that guard before packaging.
+- The shared browser fixture remains strict about uncaught page errors and unexpected same-origin failures.
+- Baseline advances to 107 Java classes / 564 `@Test` methods / 32 Playwright scenarios; Flyway remains V41.
+
+## v27.23.1 Calendar Sync JSON UTF-8 Contract Hotfix extension
+
+- `CalendarSyncControllerTest` reads JSON with `getContentAsString(StandardCharsets.UTF_8)` instead of MockMvc's ISO-8859-1 fallback.
+- The lifecycle test protects the real U+2026 token hint and cannot accept the `â¦` mojibake form.
+- Runtime Java, HTTP API, nginx protection and Flyway V41 are unchanged.
+- Baseline stays 107 Java classes / 563 `@Test` methods / 32 Playwright scenarios.
+
 
 ## v27.23.0 External Calendar Sync extension
 
 - `CalendarIcsServiceTest` protects four-domain composition, UTF-8/CRLF/folding, recurrence, escaping, deduplication and payload limits.
 - `CalendarSubscriptionServiceTest` protects 256-bit issuance, SHA-only persistence, bounded feed windows, rotation and revocation.
-- `CalendarSyncControllerTest` protects authenticated management, anonymous feed access, CSRF, module-disable semantics and explicit UTF-8 JSON decoding.
-- `CalendarSyncFrontendContractTest` protects one-time secret handling and rejects the undefined `localDateKey(` boot path in favor of canonical local `keyOf(...)`.
-- `external-calendar-sync.spec.js` covers issue, anonymous feed read, range export, revoke and post-revoke denial.
-- Baseline advances to 107 Java classes / 564 `@Test` methods / 32 Playwright scenarios; Flyway advances to V41.
+- `CalendarSyncControllerTest` protects auth/CSRF, owner scope, one-time secret disclosure, old-token invalidation, no-store and module boundaries.
+- `CalendarSyncFrontendContractTest` protects responsive Settings wiring and one-time browser state.
+- `external-calendar-sync.spec.js` covers issue → external fetch → range download → revoke → old URL 404.
+- Baseline advances to 107 Java classes / 563 `@Test` methods / 32 Playwright scenarios; Flyway advances to V41.
+
 
 ## v27.22.2 Workspace Route E2E Navigation Hotfix extension
 
-- `mobile-layout.spec.js`, `task-details.spec.js` and `task-modules.spec.js` open Tasks through the shared workspace-aware `openView()` helper.
-- Shift Worker may keep Tasks outside primary navigation while the route remains fully available when the module is enabled.
-- Module-toggle coverage asserts the `moduleHidden` state on `#view-tasks`, separating feature availability from workspace tab placement.
-- Production JavaScript behavior, HTTP API and Flyway V40 are unchanged; baseline stays 103 / 544 / 31.
+- `mobile-layout.spec.js`, `task-details.spec.js` and `task-modules.spec.js` use shared `openView(page, "tasks")` instead of clicking a workspace-hidden tab.
+- The Tasks module persistence scenario checks `moduleHidden` on `#view-tasks`, leaving workspace placement to the selected workspace.
+- `vacation-planner.spec.js` already passes; production JavaScript, HTTP API and Flyway V40 are unchanged.
+- Baseline stays 103 Java classes / 544 `@Test` methods / 31 Playwright scenarios.
 
 ## v27.22.1 Vacation Planner Frontend Contract Hotfix extension
 

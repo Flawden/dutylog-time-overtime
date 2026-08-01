@@ -1,6 +1,11 @@
 # Security review
 
-Status: v27.23.0.
+Status: v27.26.2.
+
+## Unified ledger authorization
+
+Linked overtime usages are owner-scoped and source-owned by their absence. Manual update/delete endpoints reject `ABSENCE` usages with `LINKED_USAGE_MANAGED_BY_ABSENCE`; Vacation Planner is the only mutation route. The unified summary requires the Overtime module, uses owner-scoped repositories, bounded dates and `Cache-Control: no-store`. No salary or financial data is inferred in v27.26.0.
+
 
 DutyLog is in release stabilization. This document records the security boundaries that are enforced by code and tests in the current release candidate. It is a static review and regression baseline, not a substitute for a live penetration test.
 

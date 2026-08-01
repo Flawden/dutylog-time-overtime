@@ -33,6 +33,12 @@ public class VacationSettings {
     @Column(name = "work_year_start_day", nullable = false)
     private int workYearStartDay = 1;
 
+    @Column(name = "time_off_balance_minutes", nullable = false)
+    private int timeOffBalanceMinutes;
+
+    @Column(name = "default_time_off_day_minutes", nullable = false)
+    private int defaultTimeOffDayMinutes = 480;
+
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt = Instant.now();
 
@@ -55,6 +61,10 @@ public class VacationSettings {
     public void setWorkYearStartMonth(int workYearStartMonth) { this.workYearStartMonth = workYearStartMonth; }
     public int getWorkYearStartDay() { return workYearStartDay; }
     public void setWorkYearStartDay(int workYearStartDay) { this.workYearStartDay = workYearStartDay; }
+    public int getTimeOffBalanceMinutes() { return Math.max(0, timeOffBalanceMinutes); }
+    public void setTimeOffBalanceMinutes(int value) { this.timeOffBalanceMinutes = Math.max(0, value); }
+    public int getDefaultTimeOffDayMinutes() { return Math.max(15, defaultTimeOffDayMinutes); }
+    public void setDefaultTimeOffDayMinutes(int value) { this.defaultTimeOffDayMinutes = Math.max(15, value); }
     public Instant getUpdatedAt() { return updatedAt; }
 
     @PrePersist

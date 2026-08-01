@@ -140,6 +140,24 @@ class PostgreSqlMigrationContractTest {
         assertFalse(sql.contains("subscription_url"));
     }
 
+    @Test
+    void absenceTimeOffMigrationPreservesPlannedShiftsAndSeparatesHourBalances() throws IOException {
+        String sql = Files.readString(MIGRATION_ROOT.resolve("V42__absence_time_off_overhaul.sql"));
+
+        assertTrue(sql.contains("time_off_balance_minutes"));
+        assertTrue(sql.contains("default_time_off_day_minutes"));
+        assertTrue(sql.contains("balance_policy"));
+        assertTrue(sql.contains("TIME_OFF_HOURS"));
+        assertTrue(sql.contains("full_day_replaces_shift"));
+        assertTrue(sql.contains("coverage"));
+        assertTrue(sql.contains("PARTIAL"));
+        assertTrue(sql.contains("charged_minutes"));
+        assertTrue(sql.contains("'TIME_OFF'"));
+        assertFalse(sql.contains("DELETE FROM day_entries"));
+        assertFalse(sql.contains("UPDATE day_entries"));
+        assertFalse(sql.contains("INSERT INTO shift_types"));
+    }
+
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);
