@@ -1936,17 +1936,20 @@ public final class Dtos {
             int minutes,
             String sourceKind,
             Long sourceAbsenceId,
-            boolean editable
+            boolean editable,
+            String postingState,
+            boolean reserved
     ) {
         public OvertimeUsageDto(Long id, String usageDate, double hours, String reason,
                                 List<OvertimeAllocationDto> allocations) {
             this(id, usageDate, hours, reason, allocations, (int) Math.round(hours * 60.0),
-                    "MANUAL", null, true);
+                    "MANUAL", null, true, "POSTED", false);
         }
 
         public OvertimeUsageDto(Long id, String usageDate, double hours, String reason,
                                 List<OvertimeAllocationDto> allocations, int minutes) {
-            this(id, usageDate, hours, reason, allocations, minutes, "MANUAL", null, true);
+            this(id, usageDate, hours, reason, allocations, minutes, "MANUAL", null, true,
+                    "POSTED", false);
         }
     }
 
@@ -2200,7 +2203,7 @@ public final class Dtos {
             @Size(max = 120, message = "Название периода: максимум 120 символов") String title,
             @NotBlank(message = "Дата начала обязательна") String startDate,
             @NotBlank(message = "Дата окончания обязательна") String endDate,
-            @Pattern(regexp = "PLANNED|APPROVED", message = "status: PLANNED или APPROVED") String status,
+            @Pattern(regexp = "DRAFT|PLANNED|SUBMITTED|APPROVED|REJECTED|CANCELLED|COMPLETED", message = "Некорректный статус отсутствия") String status,
             @Size(max = 1000, message = "Комментарий: максимум 1000 символов") String note,
             @Pattern(regexp = "FULL_DAY|PARTIAL", message = "coverage: FULL_DAY или PARTIAL") String coverage,
             @Pattern(regexp = "^$|^([01]\\d|2[0-3]):[0-5]\\d$", message = "Время начала должно быть в формате HH:mm") String startTime,
@@ -2217,7 +2220,7 @@ public final class Dtos {
             @Size(max = 120, message = "Название периода: максимум 120 символов") String title,
             String startDate,
             String endDate,
-            @Pattern(regexp = "PLANNED|APPROVED", message = "status: PLANNED или APPROVED") String status,
+            @Pattern(regexp = "DRAFT|PLANNED|SUBMITTED|APPROVED|REJECTED|CANCELLED|COMPLETED", message = "Некорректный статус отсутствия") String status,
             @Size(max = 1000, message = "Комментарий: максимум 1000 символов") String note,
             Boolean clearTitle,
             Boolean clearNote,
@@ -2386,7 +2389,9 @@ public final class Dtos {
             int unpaidMinutes,
             String factLabel,
             String compensationLabel,
-            List<Long> absenceIds
+            List<Long> absenceIds,
+            String actualSource,
+            List<Long> actualWorkIntervalIds
     ) {}
 
     /** Payroll-ready monthly foundation without applying money rules yet. */
@@ -2403,7 +2408,79 @@ public final class Dtos {
             int vacationDays,
             int sickMinutes,
             int unpaidMinutes,
+            int overtimeReservedMinutes,
+            int overtimePostedMinutes,
+            boolean integrityHealthy,
+            boolean periodClosed,
             List<TimeCompensationDayDto> days
+    ) {}
+
+    /** Immutable audit entry for one time/compensation movement. */
+    public record TimeLedgerEntryDto(
+            Long id,
+            String entryKind,
+            String sourceKind,
+            Long sourceId,
+            String effectiveDate,
+            int signedMinutes,
+            String postingState,
+            Long reversalOfId,
+            String reason,
+            String createdAt
+    ) {}
+
+    public record LedgerIntegrityIssueDto(
+            String code,
+            String severity,
+            String message,
+            String sourceKind,
+            Long sourceId
+    ) {}
+
+    /** Integrity and reservation projection that Payroll Foundation can trust. */
+    public record LedgerIntegrityDto(
+            String from,
+            String to,
+            boolean healthy,
+            int reservedMinutes,
+            int postedMinutes,
+            int reversedMinutes,
+            int orphanUsageCount,
+            int allocationMismatchCount,
+            List<LedgerIntegrityIssueDto> issues,
+            List<TimeLedgerEntryDto> entries,
+            List<AccountingPeriodDto> periods
+    ) {}
+
+    public record AccountingPeriodDto(
+            String month,
+            String status,
+            String closedAt,
+            String updatedAt
+    ) {}
+
+    public record LedgerAdjustmentRequest(
+            @NotBlank(message = "Месяц обязателен") String month,
+            @NotNull(message = "Количество минут обязательно") Integer signedMinutes,
+            @Size(max = 500, message = "Причина: максимум 500 символов") String reason
+    ) {}
+
+    public record ActualWorkIntervalDto(
+            Long id,
+            String workDate,
+            String startTime,
+            String endTime,
+            int workedMinutes,
+            String note,
+            String createdAt,
+            String updatedAt
+    ) {}
+
+    public record ActualWorkIntervalRequest(
+            @NotBlank(message = "Дата обязательна") String workDate,
+            @NotBlank(message = "Время начала обязательно") String startTime,
+            @NotBlank(message = "Время окончания обязательно") String endTime,
+            @Size(max = 500, message = "Комментарий: максимум 500 символов") String note
     ) {}
 
     /** Private read-only iCalendar subscription state. Raw tokens are returned only on issue/rotation. */

@@ -1,3 +1,17 @@
+# v27.27.0 — Ledger Integrity & Approval Workflow
+
+- Gives absences a real lifecycle from draft through submission, approval, cancellation and completion.
+- Reserves compensatory hours before approval and posts them only when the absence becomes final.
+- Records reversals and late corrections in an append-only audit trail.
+- Adds integrity reconciliation, closeable accounting periods and explicit factual work intervals.
+- Closed months freeze payroll-affecting planned shifts across day edits, mobile sync, bulk fill and schedule templates while still allowing notes and day markers.
+- Produces a stable payroll-ready time snapshot without calculating money yet.
+- Automated baseline advances to 112 Java test classes / 598 `@Test` methods / 36 Playwright scenarios.
+
+> Previous release: **v27.26.2 — Canonical Lineage Recovery**.
+>
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
+
 # v27.26.2 — Canonical Lineage Recovery
 
 - Reunifies the accidentally split DutyLog history into one forward-only canonical release.
@@ -9,7 +23,7 @@
 
 > Previous stable advanced release: **v27.26.1 — Absence Request Constructor Compile Hotfix**.
 >
-> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 # v27.26.1 — Absence Request Constructor Compile Hotfix
 
@@ -22,7 +36,7 @@
 
 > Previous product release: **v27.26.0 — Unified Time & Compensation Ledger**.
 >
-> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 # v27.25.2 — Absence Experience Frontend Contract Hotfix
 
@@ -31,7 +45,7 @@
 - Does not change production JavaScript, API, database schema or Flyway V42.
 - Automated baseline advances to 109 Java test classes / 581 `@Test` methods / 34 Playwright scenarios.
 
-> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 # v27.25.1 — Absence Preview Lambda Compile Hotfix
 
@@ -40,7 +54,7 @@
 - Adds regression protection against capturing the incremented loop variable directly.
 - Keeps the v27.25.0 plan/fact model, API, Flyway V42 and 34 Playwright scenarios unchanged; Java baseline advances to 580 tests.
 
-> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 # v27.25.0 — Absence & Time-Off Overhaul
 
@@ -50,7 +64,7 @@
 - Adds `VACATION_DAYS`, `TIME_OFF_HOURS` and `NONE` balance policies, plan/fact day details, monthly absence summaries and timed `.ics` projection.
 - Flyway advances to V42; automated baseline advances to 109 Java test classes / 579 `@Test` methods / 34 Playwright scenarios.
 
-> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 # v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix
 
@@ -59,7 +73,7 @@
 - Keeps the blocking backdrop, contextual Today behavior, API and Flyway V41 unchanged.
 - Automated baseline remains 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
 
-> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 # v27.24.0 — Calendar Comfort & Correctness
 
@@ -70,7 +84,7 @@
 - Multiple schedule layers use compact accessible pills instead of verbose controls.
 - Flyway remains V41; automated baseline: 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
 
-> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 # v27.23.2 — Calendar Sync Runtime Boot Hotfix
 
@@ -95,7 +109,7 @@
 - Rotation immediately invalidates the old link; revocation removes access without deleting calendar data.
 - Flyway V41; automated baseline: 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
 
-> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 # v27.22.2 — Workspace Route E2E Navigation Hotfix
 
@@ -104,7 +118,7 @@
 - Module toggling is asserted on `#view-tasks`, independently from workspace placement.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
@@ -114,7 +128,7 @@
 - Module persistence derives its expected count from the canonical module registry instead of a hardcoded pre-vacation number.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 # v27.22.0 — Vacation Planner
 
@@ -124,7 +138,7 @@
 - Added owner-scoped absence types, calendar projections and a responsive unified-shell planner.
 - Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
 
-> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
@@ -133,7 +147,7 @@
 - Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
 - No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.26.2 — Canonical Lineage Recovery**.
+> Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 # DutyLog
 

@@ -59,7 +59,13 @@ Object.assign(I18N_EN, {
   "Использовано как отгул":"Used as time off", "Покрыто балансами":"Covered by balances",
   "Управляется отсутствием":"Managed by absence", "Откройте отсутствие, чтобы изменить списание":"Open the absence to change this usage",
   "Нет событий в этом месяце":"No events this month", "Без содержания":"Unpaid",
-  "Больничный":"Sick leave", "Отпуск":"Vacation"
+  "Больничный":"Sick leave", "Отпуск":"Vacation",
+  "Целостность учёта":"Ledger integrity", "Все операции согласованы":"All operations agree",
+  "Обнаружено расхождение":"Mismatch found", "Закрыть период":"Close period",
+  "Открыть период":"Reopen period", "Период закрыт":"Period closed", "Период открыт":"Period open",
+  "Зарезервировано":"Reserved", "Проведено":"Posted", "Возвращено":"Reversed",
+  "Фактически отмечено":"Explicit actual work", "Добавить факт":"Add actual work",
+  "Корректировка добавлена":"Adjustment added", "Фактический интервал добавлен":"Actual interval added"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -67,6 +73,15 @@ Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) 
 function timeCompensationRange(){ return currentMonthRange(); }
 function usageManagedByAbsence(value){
   return value?.editable === false || String(value?.sourceKind || "MANUAL").toUpperCase() === "ABSENCE" || value?.sourceAbsenceId != null;
+}
+function usagePostingLabel(value){
+  return String(value?.postingState || "POSTED").toUpperCase() === "RESERVED" ? t("Зарезервировано") : t("Проведено");
+}
+function ledgerMonthRange(monthValue = ""){
+  const month = /^\d{4}-\d{2}$/.test(monthValue) ? monthValue : currentMonthRange().from.slice(0,7);
+  const [year, rawMonth] = month.split("-").map(Number);
+  const last = new Date(Date.UTC(year, rawMonth, 0));
+  return { month, from:`${month}-01`, to:`${year}-${String(rawMonth).padStart(2,"0")}-${String(last.getUTCDate()).padStart(2,"0")}` };
 }
 function renderTimeCompensation(){
   const summary = state.timeCompensation;
@@ -82,14 +97,15 @@ function renderTimeCompensation(){
   };
   for (const [id, minutes] of Object.entries(values)) if ($(id)) $(id).textContent = minutesLabel(minutes);
   if ($("timeCompVacation")) $("timeCompVacation").textContent = `${Number(summary.vacationDays || 0)} ${t("дней")}`;
-  if ($("timeCompensationRange")) $("timeCompensationRange").textContent = `${vacationDateLabel(summary.from)} — ${vacationDateLabel(summary.to)}`;
+  if ($("timeCompensationRange")) $("timeCompensationRange").textContent = `${vacationDateLabel(summary.from)} — ${vacationDateLabel(summary.to)} · ${summary.periodClosed ? t("Период закрыт") : t("Период открыт")}`;
+  card.classList.toggle("integrityError", summary.integrityHealthy === false);
   const list = $("timeCompDays");
   if (!list) return;
-  const meaningful = (summary.days || []).filter(day => Number(day.absenceMinutes || 0) > 0 || Number(day.overtimeEarnedMinutes || 0) > 0 || Number(day.overtimeUsedMinutes || 0) > 0);
+  const meaningful = (summary.days || []).filter(day => day.actualSource === "EXPLICIT" || Number(day.absenceMinutes || 0) > 0 || Number(day.overtimeEarnedMinutes || 0) > 0 || Number(day.overtimeUsedMinutes || 0) > 0);
   list.innerHTML = meaningful.length ? meaningful.slice(0, 8).map(day => `
     <button type="button" data-time-comp-date="${esc(day.date)}">
       <time>${esc(vacationDateLabel(day.date))}</time>
-      <span><b>${esc(day.factLabel || t("По графику"))}</b><small>${esc(day.compensationLabel || "—")}</small></span>
+      <span><b>${esc(day.factLabel || t("По графику"))}</b><small>${esc(day.compensationLabel || "—")}${day.actualSource === "EXPLICIT" ? ` · ${esc(t("Фактически отмечено"))}` : ""}</small></span>
       <em>${esc(minutesLabel(day.plannedMinutes))} → ${esc(minutesLabel(day.workedMinutes))}</em>
     </button>`).join("") : `<div class="timeCompensationEmpty">${esc(t("Нет событий в этом месяце"))}</div>`;
   list.querySelectorAll("[data-time-comp-date]").forEach(button => button.addEventListener("click", () => { location.hash = "#calendar"; selectDay(button.dataset.timeCompDate); }));
@@ -99,6 +115,83 @@ async function loadTimeCompensation(){
   const range = timeCompensationRange();
   try { state.timeCompensation = await api.timeCompensation(range.from, range.to); renderTimeCompensation(); return state.timeCompensation; }
   catch (error) { console.error("Failed to load time compensation summary", error); state.timeCompensation = null; renderTimeCompensation(); return null; }
+}
+
+function renderLedgerIntegrity(){
+  const data = state.ledgerIntegrity;
+  const range = ledgerMonthRange($("ledgerIntegrityMonth")?.value || "");
+  if ($("ledgerIntegrityMonth") && !$("ledgerIntegrityMonth").value) $("ledgerIntegrityMonth").value = range.month;
+  const period = (data?.periods || []).find(item => item.month === range.month);
+  const closed = period?.status === "CLOSED";
+  const healthy = data?.healthy !== false;
+  if ($("ledgerIntegrityCard")) $("ledgerIntegrityCard").dataset.integrity = data ? (healthy ? "healthy" : "broken") : "unknown";
+  if ($("ledgerIntegrityStatus")) {
+    $("ledgerIntegrityStatus").textContent = data ? (healthy ? `✓ ${t("Все операции согласованы")}` : `! ${t("Обнаружено расхождение")}`) : "—";
+    $("ledgerIntegrityStatus").classList.toggle("error", !healthy);
+  }
+  if ($("ledgerReservedMinutes")) $("ledgerReservedMinutes").textContent = minutesLabel(data?.reservedMinutes || 0);
+  if ($("ledgerPostedMinutes")) $("ledgerPostedMinutes").textContent = minutesLabel(data?.postedMinutes || 0);
+  if ($("ledgerReversedMinutes")) $("ledgerReversedMinutes").textContent = minutesLabel(data?.reversedMinutes || 0);
+  if ($("ledgerPeriodState")) $("ledgerPeriodState").textContent = closed ? t("Период закрыт") : t("Период открыт");
+  if ($("ledgerClosePeriod")) $("ledgerClosePeriod").hidden = closed;
+  if ($("ledgerReopenPeriod")) $("ledgerReopenPeriod").hidden = !closed;
+  if ($("ledgerAdjustmentForm")) $("ledgerAdjustmentForm").hidden = !closed;
+  const issues = $("ledgerIntegrityIssues");
+  if (issues) issues.innerHTML = !data ? "" : healthy
+    ? `<div class="ledgerIntegrityOk">✓ ${esc(t("Все операции согласованы"))}</div>`
+    : (data.issues || []).map(item => `<div class="ledgerIntegrityIssue"><b>${esc(item.code)}</b><span>${esc(item.message)}</span></div>`).join("");
+}
+async function loadLedgerIntegrity(){
+  if (!moduleEnabled("overtime")) { state.ledgerIntegrity = null; renderLedgerIntegrity(); return null; }
+  const range = ledgerMonthRange($("ledgerIntegrityMonth")?.value || "");
+  try { state.ledgerIntegrity = await api.ledgerIntegrity(range.from, range.to); renderLedgerIntegrity(); return state.ledgerIntegrity; }
+  catch (error) { console.error("Failed to load ledger integrity", error); state.ledgerIntegrity = null; renderLedgerIntegrity(); return null; }
+}
+function renderActualWork(){
+  const list = $("actualWorkList"); if (!list) return;
+  const items = state.actualWorkIntervals || [];
+  list.innerHTML = items.length ? items.map(item => `<div class="actualWorkItem">
+    <span><b>${esc(vacationDateLabel(item.workDate))} · ${esc(item.startTime)}–${esc(item.endTime)}</b><small>${esc(minutesLabel(item.workedMinutes))}${item.note ? ` · ${esc(item.note)}` : ""}</small></span>
+    <button type="button" data-delete-actual-work="${item.id}" aria-label="${esc(t("Удалить"))}">×</button>
+  </div>`).join("") : `<div class="timeCompensationEmpty">${esc(t("Плановая смена используется как факт"))}</div>`;
+  list.querySelectorAll("[data-delete-actual-work]").forEach(button => button.addEventListener("click", async () => {
+    try { await api.deleteActualWork(button.dataset.deleteActualWork); await Promise.all([loadActualWork(), loadTimeCompensation(), loadLedgerIntegrity()]); }
+    catch (error) { setSave("err", error.message); }
+  }));
+}
+async function loadActualWork(){
+  if (!moduleEnabled("overtime")) { state.actualWorkIntervals = []; renderActualWork(); return []; }
+  const range = ledgerMonthRange($("ledgerIntegrityMonth")?.value || "");
+  try { state.actualWorkIntervals = await api.actualWork(range.from, range.to); renderActualWork(); return state.actualWorkIntervals; }
+  catch (error) { console.error("Failed to load actual work", error); state.actualWorkIntervals = []; renderActualWork(); return []; }
+}
+async function changeAccountingPeriod(close){
+  const range = ledgerMonthRange($("ledgerIntegrityMonth")?.value || "");
+  try {
+    if (close) await api.closeAccountingPeriod(range.month); else await api.reopenAccountingPeriod(range.month);
+    await Promise.all([loadLedgerIntegrity(), loadTimeCompensation()]);
+  } catch (error) { setSave("err", error.message); }
+}
+async function saveActualWork(event){
+  event?.preventDefault();
+  const body = { workDate:$("actualWorkDate")?.value, startTime:$("actualWorkStart")?.value, endTime:$("actualWorkEnd")?.value, note:$("actualWorkNote")?.value?.trim() || null };
+  try {
+    await api.createActualWork(body);
+    if ($("actualWorkNote")) $("actualWorkNote").value = "";
+    await Promise.all([loadActualWork(), loadTimeCompensation(), loadLedgerIntegrity()]);
+    setSave("ok", t("Фактический интервал добавлен"));
+  } catch (error) { setSave("err", error.message); }
+}
+async function saveLedgerAdjustment(event){
+  event?.preventDefault();
+  const range = ledgerMonthRange($("ledgerIntegrityMonth")?.value || "");
+  const hours = Number($("ledgerAdjustmentHours")?.value || 0);
+  try {
+    await api.addLedgerAdjustment({ month:range.month, signedMinutes:Math.round(hours * 60), reason:$("ledgerAdjustmentReason")?.value?.trim() || null });
+    if ($("ledgerAdjustmentHours")) $("ledgerAdjustmentHours").value = "";
+    if ($("ledgerAdjustmentReason")) $("ledgerAdjustmentReason").value = "";
+    await loadLedgerIntegrity(); setSave("ok", t("Корректировка добавлена"));
+  } catch (error) { setSave("err", error.message); }
 }
 function updateOvertimeBalanceLabel(){
   const acc = state.overtimeAccount || { balanceHours:0 };
@@ -1378,7 +1471,7 @@ function ledgerUsageItemsHtml(credit){
     const partLabel = partCount > 1 ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.min(partIndex, partCount)}/${partCount}</span>` : "";
     return `<div class="overtimeCardUsage">
       <div><b>−${fmtHours(u.hours)} ч</b><span>${esc(u.usageDate)}${u.reason ? ` · ${esc(u.reason)}` : ""} ${partLabel}</span>${allocationDetailHtml(u)}</div>
-      ${usageManagedByAbsence(fullUsage) ? `<div class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}">↔ ${esc(t("Управляется отсутствием"))}</div>` : `<div class="overtimeCardUsageActions"><button type="button" data-edit-usage="${u.usageId}">${esc(t("ред."))}</button><button type="button" data-del-usage="${u.usageId}">${esc(t("удалить"))}</button></div>`}
+      ${usageManagedByAbsence(fullUsage) ? `<div class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}">↔ ${esc(t("Управляется отсутствием"))} · ${esc(usagePostingLabel(fullUsage))}</div>` : `<div class="overtimeCardUsageActions"><button type="button" data-edit-usage="${u.usageId}">${esc(t("ред."))}</button><button type="button" data-del-usage="${u.usageId}">${esc(t("удалить"))}</button></div>`}
     </div>`;
   }).join("");
 }
@@ -1539,7 +1632,7 @@ function renderLedgerTable(){
               ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.min(partIndex, partCount)}/${partCount}</span>`
               : "";
             const actions = usageManagedByAbsence(fullUsage)
-              ? `<span class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}">↔ ${esc(t("Управляется отсутствием"))}</span>`
+              ? `<span class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}">↔ ${esc(t("Управляется отсутствием"))} · ${esc(usagePostingLabel(fullUsage))}</span>`
               : `<span class="ledgerUsageActions" aria-label="${esc(t("Действия списания"))}"><button type="button" data-edit-usage="${u.usageId}" title="${esc(t("Редактировать весь отгул"))}">${esc(t("ред. отгул"))}</button><button type="button" data-del-usage="${u.usageId}" title="${esc(t("Удалить весь отгул"))}">${esc(t("удалить весь отгул"))}</button></span>`;
             return `<div class="ledgerUsageItem"><span class="ledgerUsageText"><span>${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""} ${partLabel}</span>${allocationDetailHtml(u)}</span>${actions}</div>`;
           }).join("")
@@ -1603,7 +1696,7 @@ async function loadLedgerPage(silent = true){
     state.overtimeAccount = accountSnapshot;
     renderLedgerTable();
     updateOvertimeBalanceLabel();
-    await loadTimeCompensation();
+    await Promise.all([loadTimeCompensation(), loadLedgerIntegrity(), loadActualWork()]);
   } catch (err) {
     console.error(err);
     if (!silent) setSave("err", err.message);
@@ -1831,3 +1924,16 @@ for (const id of ["creditDate", "creditStart", "creditEnd", "creditBreak", "cred
     else addOvertimeUsage();
   });
 }
+
+
+$("ledgerIntegrityMonth")?.addEventListener("change", async () => {
+  const range = ledgerMonthRange($("ledgerIntegrityMonth").value);
+  if ($("actualWorkDate")) $("actualWorkDate").value = range.from;
+  await Promise.all([loadLedgerIntegrity(), loadActualWork(), loadTimeCompensation()]);
+});
+$("ledgerClosePeriod")?.addEventListener("click", () => changeAccountingPeriod(true));
+$("ledgerReopenPeriod")?.addEventListener("click", () => changeAccountingPeriod(false));
+$("actualWorkForm")?.addEventListener("submit", saveActualWork);
+$("ledgerAdjustmentForm")?.addEventListener("submit", saveLedgerAdjustment);
+if ($("ledgerIntegrityMonth") && !$("ledgerIntegrityMonth").value) $("ledgerIntegrityMonth").value = currentMonthRange().from.slice(0,7);
+if ($("actualWorkDate") && !$("actualWorkDate").value) $("actualWorkDate").value = state.selected || todayKey();

@@ -31,6 +31,7 @@ public class DayEntryService {
     private final WorkIntervalService workIntervalService;
     private final ShiftOccurrenceService shiftOccurrenceService;
     private final DayNoteService dayNoteService;
+    private final AccountingPeriodLockService periodLocks;
     private final EntityManager entityManager;
 
     public DayEntryService(DayEntryRepository days,
@@ -38,12 +39,14 @@ public class DayEntryService {
                            WorkIntervalService workIntervalService,
                            ShiftOccurrenceService shiftOccurrenceService,
                            DayNoteService dayNoteService,
+                           AccountingPeriodLockService periodLocks,
                            EntityManager entityManager) {
         this.days = days;
         this.shiftTypeService = shiftTypeService;
         this.workIntervalService = workIntervalService;
         this.shiftOccurrenceService = shiftOccurrenceService;
         this.dayNoteService = dayNoteService;
+        this.periodLocks = periodLocks;
         this.entityManager = entityManager;
     }
 
@@ -101,6 +104,11 @@ public class DayEntryService {
 
         DayEntry entry = days.findByOwnerAndDate(user, d)
                 .orElseGet(() -> new DayEntry(user, d));
+        Long currentShiftId = entry.getShiftType() == null ? null : entry.getShiftType().getId();
+        Long requestedShiftId = st == null ? null : st.getId();
+        if (!java.util.Objects.equals(currentShiftId, requestedShiftId)) {
+            periodLocks.assertOpen(user, d);
+        }
         shiftOccurrenceService.assign(user, entry, st, false);
         if (notesMutable) {
             entry.setNote(normalizeNote(req.note()));
@@ -165,6 +173,10 @@ public class DayEntryService {
                 continue;
             }
 
+            Long currentShiftId = entry.getShiftType() == null ? null : entry.getShiftType().getId();
+            if (!java.util.Objects.equals(currentShiftId, plannedShift.getId())) {
+                periodLocks.assertOpen(user, d);
+            }
             shiftOccurrenceService.assign(user, entry, plannedShift, false);
             expectedShiftByDate.put(d, plannedShift.getId());
 
@@ -229,10 +241,15 @@ public class DayEntryService {
                 .orElseGet(() -> new DayEntry(user, d));
 
         if (Boolean.TRUE.equals(req.clearShiftType())) {
+            if (entry.getShiftType() != null) periodLocks.assertOpen(user, d);
             shiftOccurrenceService.clear(entry);
         } else if (req.shiftTypeId() != null) {
-            shiftOccurrenceService.assign(user, entry,
-                    shiftTypeService.requireOwnedShiftType(user, req.shiftTypeId()), false);
+            ShiftType requestedShift = shiftTypeService.requireOwnedShiftType(user, req.shiftTypeId());
+            Long currentShiftId = entry.getShiftType() == null ? null : entry.getShiftType().getId();
+            if (!java.util.Objects.equals(currentShiftId, requestedShift.getId())) {
+                periodLocks.assertOpen(user, d);
+            }
+            shiftOccurrenceService.assign(user, entry, requestedShift, false);
         }
 
         if (Boolean.TRUE.equals(req.clearNote())) {

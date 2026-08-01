@@ -43,6 +43,7 @@ public class VacationPlannerService {
     private final UserTimeService userTimeService;
     private final SecurityEventLogger securityEvents;
     private final OvertimeService overtimeService;
+    private final LedgerIntegrityService ledgerIntegrityService;
 
     public VacationPlannerService(VacationSettingsRepository settingsRepository,
                                   AbsenceTypeRepository typeRepository,
@@ -51,7 +52,8 @@ public class VacationPlannerService {
                                   DayEntryService dayEntryService,
                                   UserTimeService userTimeService,
                                   SecurityEventLogger securityEvents,
-                                  OvertimeService overtimeService) {
+                                  OvertimeService overtimeService,
+                                  LedgerIntegrityService ledgerIntegrityService) {
         this.settingsRepository = settingsRepository;
         this.typeRepository = typeRepository;
         this.periodRepository = periodRepository;
@@ -60,6 +62,7 @@ public class VacationPlannerService {
         this.userTimeService = userTimeService;
         this.securityEvents = securityEvents;
         this.overtimeService = overtimeService;
+        this.ledgerIntegrityService = ledgerIntegrityService;
     }
 
     @Transactional
@@ -186,10 +189,14 @@ public class VacationPlannerService {
         ensureDefaultTypes(user);
         AbsenceType type = requireOwnedType(user, req.typeId());
         AbsenceShape shape = parseShape(req.startDate(), req.endDate(), req.coverage(), req.startTime(), req.endTime());
-        validateNoOverlap(user, shape, null);
+        String status = normalizeStatus(req.status());
+        ledgerIntegrityService.assertRangeOpen(user, shape.range().from(), shape.range().to());
+        if (ledgerIntegrityService.consumesBalance(status)) validateNoOverlap(user, shape, null);
         String compensationPolicy = resolveCompensationPolicy(type, req.compensationPolicy(), null);
         int chargedMinutes = calculateChargedMinutes(user, settings, type, shape, compensationPolicy);
-        validateBalances(user, settings, type, shape.range(), chargedMinutes, null, compensationPolicy);
+        if (ledgerIntegrityService.consumesBalance(status)) {
+            validateBalances(user, settings, type, shape.range(), chargedMinutes, null, compensationPolicy);
+        }
 
         AbsencePeriod period = new AbsencePeriod(user);
         period.setType(type);
@@ -198,10 +205,11 @@ public class VacationPlannerService {
         period.setChargedMinutes(chargedMinutes);
         period.setCompensationPolicy(compensationPolicy);
         period.setCompensatedMinutes(OVERTIME_BANK.equals(compensationPolicy) ? chargedMinutes : 0);
-        period.setStatus(normalizeStatus(req.status()));
+        period.setStatus(status);
         period.setNote(normalizeOptional(req.note()));
         period = periodRepository.saveAndFlush(period);
         syncLinkedOvertimeUsage(user, period);
+        ledgerIntegrityService.recordAbsenceTransition(user, period, null, "CREATE");
         return toPeriodDto(settings, period);
     }
 
@@ -210,6 +218,8 @@ public class VacationPlannerService {
         if (req == null) throw ApiException.badRequest("Некорректный JSON в запросе");
         VacationSettings settings = lockSettings(user);
         AbsencePeriod period = requireOwnedPeriod(user, id);
+        LedgerIntegrityService.AbsenceLedgerSnapshot previous = ledgerIntegrityService.snapshot(period);
+        ledgerIntegrityService.assertRangeOpen(user, period.getStartDate(), period.getEndDate());
         AbsenceType type = req.typeId() == null ? period.getType() : requireOwnedType(user, req.typeId());
         String coverage = req.coverage() == null ? period.getCoverage() : req.coverage();
         String start = req.startDate() == null ? period.getStartDate().toString() : req.startDate();
@@ -219,11 +229,15 @@ public class VacationPlannerService {
         String endTime = Boolean.TRUE.equals(req.clearTimes()) ? null
                 : req.endTime() != null ? req.endTime() : timeString(period.getEndTime());
         AbsenceShape shape = parseShape(start, end, coverage, startTime, endTime);
-        validateNoOverlap(user, shape, id);
+        String status = req.status() == null ? period.getStatus() : normalizeStatus(req.status());
+        ledgerIntegrityService.assertRangeOpen(user, shape.range().from(), shape.range().to());
+        if (ledgerIntegrityService.consumesBalance(status)) validateNoOverlap(user, shape, id);
         String compensationPolicy = resolveCompensationPolicy(type, req.compensationPolicy(),
                 req.typeId() == null ? period.getCompensationPolicy() : null);
         int chargedMinutes = calculateChargedMinutes(user, settings, type, shape, compensationPolicy);
-        validateBalances(user, settings, type, shape.range(), chargedMinutes, id, compensationPolicy);
+        if (ledgerIntegrityService.consumesBalance(status)) {
+            validateBalances(user, settings, type, shape.range(), chargedMinutes, id, compensationPolicy);
+        }
 
         period.setType(type);
         applyShape(period, shape);
@@ -234,15 +248,18 @@ public class VacationPlannerService {
         else if (req.title() != null) period.setTitle(normalizeOptional(req.title()));
         if (Boolean.TRUE.equals(req.clearNote())) period.setNote(null);
         else if (req.note() != null) period.setNote(normalizeOptional(req.note()));
-        if (req.status() != null) period.setStatus(normalizeStatus(req.status()));
+        period.setStatus(status);
         period = periodRepository.saveAndFlush(period);
         syncLinkedOvertimeUsage(user, period);
+        ledgerIntegrityService.recordAbsenceTransition(user, period, previous, "UPDATE");
         return toPeriodDto(settings, period);
     }
 
     @Transactional
     public void deletePeriod(AppUser user, Long id) {
         AbsencePeriod period = requireOwnedPeriod(user, id);
+        ledgerIntegrityService.assertRangeOpen(user, period.getStartDate(), period.getEndDate());
+        ledgerIntegrityService.recordAbsenceTransition(user, period, ledgerIntegrityService.snapshot(period), "DELETE");
         overtimeService.deleteLinkedAbsenceUsage(user, period.getId());
         periodRepository.delete(period);
     }
@@ -258,6 +275,7 @@ public class VacationPlannerService {
         Map<LocalDate, ShiftPlan> plans = shiftPlans(user, from, to);
         List<AbsenceOccurrenceDto> out = new ArrayList<>();
         for (AbsencePeriod period : periods) {
+            if (!ledgerIntegrityService.visibleAsFact(period.getStatus())) continue;
             LocalDate visibleFrom = period.getStartDate().isBefore(from) ? from : period.getStartDate();
             LocalDate visibleTo = period.getEndDate().isAfter(to) ? to : period.getEndDate();
             for (LocalDate date = visibleFrom; !date.isAfter(visibleTo); date = date.plusDays(1)) {
@@ -396,7 +414,9 @@ public class VacationPlannerService {
         int total = 0;
         for (AbsencePeriod period : periodRepository
                 .findByOwnerAndEndDateGreaterThanEqualAndStartDateLessThanEqualOrderByStartDateAscIdAsc(user, year.start(), year.end())) {
-            if (Objects.equals(period.getId(), excludePeriodId) || !VACATION_DAYS.equals(period.getType().getBalancePolicy())) continue;
+            if (Objects.equals(period.getId(), excludePeriodId)
+                    || !VACATION_DAYS.equals(period.getType().getBalancePolicy())
+                    || !ledgerIntegrityService.consumesBalance(period.getStatus())) continue;
             total += countIntersection(settings, period.getStartDate(), period.getEndDate(), year.start(), year.end());
         }
         return total;
@@ -406,6 +426,7 @@ public class VacationPlannerService {
         return periodRepository.findByOwnerOrderByStartDateAscIdAsc(user).stream()
                 .filter(period -> !Objects.equals(period.getId(), excludePeriodId))
                 .filter(period -> TIME_OFF_HOURS.equals(period.getType().getBalancePolicy()))
+                .filter(period -> ledgerIntegrityService.consumesBalance(period.getStatus()))
                 .mapToInt(AbsencePeriod::getChargedMinutes).sum();
     }
 
@@ -418,7 +439,8 @@ public class VacationPlannerService {
         int available = settings.getAnnualAllowanceDays() + settings.getCarryoverDays();
         Set<WorkYear> years = new LinkedHashSet<>();
         for (AbsencePeriod period : periodRepository.findByOwnerOrderByStartDateAscIdAsc(user)) {
-            if (!VACATION_DAYS.equals(period.getType().getBalancePolicy())) continue;
+            if (!VACATION_DAYS.equals(period.getType().getBalancePolicy())
+                    || !ledgerIntegrityService.consumesBalance(period.getStatus())) continue;
             WorkYear year = workYearContaining(settings, period.getStartDate());
             while (!year.start().isAfter(period.getEndDate())) {
                 years.add(year);
@@ -474,6 +496,7 @@ public class VacationPlannerService {
                         user, shape.range().from(), shape.range().to())
                 .stream()
                 .filter(period -> !Objects.equals(period.getId(), excludePeriodId))
+                .filter(period -> ledgerIntegrityService.consumesBalance(period.getStatus()))
                 .filter(period -> overlaps(period, shape))
                 .toList();
     }
@@ -552,13 +575,15 @@ public class VacationPlannerService {
     }
 
     private void syncLinkedOvertimeUsage(AppUser user, AbsencePeriod period) {
-        if (OVERTIME_BANK.equals(period.getCompensationPolicy())) {
+        String postingState = ledgerIntegrityService.usagePostingState(period.getStatus());
+        if (OVERTIME_BANK.equals(period.getCompensationPolicy()) && postingState != null) {
             Long usageId = overtimeService.upsertLinkedAbsenceUsage(
                     user,
                     period.getId(),
                     period.getStartDate(),
                     period.getCompensatedMinutes(),
-                    "Отгул: " + displayTitle(period)
+                    "Отгул: " + displayTitle(period),
+                    postingState
             );
             if (usageId == null) throw new IllegalStateException("Linked overtime usage was not created");
         } else {
@@ -694,10 +719,7 @@ public class VacationPlannerService {
     }
 
     private String normalizeStatus(String value) {
-        String status = value == null || value.isBlank() ? "PLANNED" : value.trim().toUpperCase(Locale.ROOT);
-        if (!status.equals("PLANNED") && !status.equals("APPROVED"))
-            throw ApiException.badRequest("status: PLANNED или APPROVED");
-        return status;
+        return ledgerIntegrityService.normalizeStatus(value);
     }
 
     private String normalizeCoverage(String value) {

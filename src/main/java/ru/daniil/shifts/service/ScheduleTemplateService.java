@@ -43,6 +43,7 @@ public class ScheduleTemplateService {
     private final ShiftTypeService shiftTypeService;
     private final ShiftOccurrenceService shiftOccurrenceService;
     private final DayEntryService dayEntryService;
+    private final AccountingPeriodLockService periodLocks;
     private final SecurityEventLogger securityEvents;
     private final EntityManager entityManager;
 
@@ -52,6 +53,7 @@ public class ScheduleTemplateService {
                                    ShiftTypeService shiftTypeService,
                                    ShiftOccurrenceService shiftOccurrenceService,
                                    DayEntryService dayEntryService,
+                                   AccountingPeriodLockService periodLocks,
                                    SecurityEventLogger securityEvents,
                                    EntityManager entityManager) {
         this.templates = templates;
@@ -60,6 +62,7 @@ public class ScheduleTemplateService {
         this.shiftTypeService = shiftTypeService;
         this.shiftOccurrenceService = shiftOccurrenceService;
         this.dayEntryService = dayEntryService;
+        this.periodLocks = periodLocks;
         this.securityEvents = securityEvents;
         this.entityManager = entityManager;
     }
@@ -156,6 +159,10 @@ public class ScheduleTemplateService {
             LocalDate date = LocalDate.parse(item.date());
             DayEntry entry = existing.getOrDefault(date, new DayEntry(user, date));
             ShiftType shift = shiftTypeService.requireOwnedShiftType(user, item.shiftTypeId());
+            Long currentShiftId = entry.getShiftType() == null ? null : entry.getShiftType().getId();
+            if (!java.util.Objects.equals(currentShiftId, shift.getId())) {
+                periodLocks.assertOpen(user, date);
+            }
             shiftOccurrenceService.assign(user, entry, shift, false);
             days.save(entry);
             existing.put(date, entry);

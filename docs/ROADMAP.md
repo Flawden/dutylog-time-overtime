@@ -1,9 +1,25 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.26.2 — Canonical Lineage Recovery**.
+Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
 
-## v27.26.2 — Canonical Lineage Recovery — current
+## v27.27.0 — Ledger Integrity & Approval Workflow — current
+
+- [x] Add draft, planned, submitted, approved, rejected, cancelled and completed absence states.
+- [x] Reserve overtime-bank minutes for planned/submitted requests and post them for approved/completed absences.
+- [x] Keep an append-only audit with explicit reversal entries and closed-period corrections.
+- [x] Add owner-scoped integrity reconciliation for linked usages, FIFO allocations and V43 opening credits.
+- [x] Add close/reopen accounting periods and reject silent mutations in closed months.
+- [x] Freeze payroll-affecting planned shifts in closed months across day edits, mobile sync, bulk fill, schedule-template apply and shift-type deletion, while notes and markers remain editable.
+- [x] Add explicit factual work intervals while preserving plan-as-fact as the default.
+- [x] Extend the no-store time-compensation snapshot for Payroll Foundation.
+- [x] Flyway V44 remains additive and does not alter `day_entries`.
+- [x] Baseline advances to 112 Java test classes / 598 tests / 36 Playwright scenarios.
+
+Next product stage: **v27.28.0 — Payroll Foundation**.
+
+
+## v27.26.2 — Canonical Lineage Recovery — completed
 
 - [x] Restore the accepted v27.26.x product stack on top of the actually deployed canonical v27.23.0 branch.
 - [x] Preserve the current Workspace Route E2E navigation contract instead of reintroducing the older workspace-aware tab assertions.
@@ -12,7 +28,7 @@ Current release: **v27.26.2 — Canonical Lineage Recovery**.
 - [x] Add lineage integrity contracts that fail if V41–V43, plan/fact absences or source-linked overtime usages disappear.
 - [x] Baseline advances to 110 Java test classes / 592 tests / 35 Playwright scenarios.
 
-Next product stage: **v27.27.0 — Ledger Integrity & Approval Workflow**.
+Next product stage: **v27.28.0 — Payroll Foundation**.
 
 ## v27.26.1 — Absence Request Constructor Compile Hotfix — completed
 

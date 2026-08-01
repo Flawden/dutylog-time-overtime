@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.26.2"
+const DUTYLOG_VERSION = "27.27.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -96,6 +96,9 @@ const state = {
   taskDetailsId: null,
   editingShiftTypeId: null,
   overtimeAccount: { totalEarnedHours:0, totalUsedHours:0, balanceHours:0, credits:[], usages:[] },
+  timeCompensation: null,
+  ledgerIntegrity: null,
+  actualWorkIntervals: [],
   notificationSettings: null,
   reminders: [],
   notificationPreview: null,

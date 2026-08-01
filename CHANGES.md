@@ -1,3 +1,15 @@
+# v27.27.0 — Ledger Integrity & Approval Workflow
+
+- Added a full absence approval lifecycle: `DRAFT`, `PLANNED`, `SUBMITTED`, `APPROVED`, `REJECTED`, `CANCELLED` and `COMPLETED`.
+- Split overtime-backed absences into `RESERVED` and `POSTED` usage states so planned requests cannot double-spend compensatory time.
+- Added append-only `time_ledger_entries` with explicit reversals and closed-period adjustments instead of silent historical rewrites.
+- Added accounting-period close/reopen controls, integrity reconciliation and stable conflict codes for locked periods.
+- Closed periods now also protect planned-shift mutations from direct day edits, mobile sync, bulk fill, schedule-template apply and destructive shift-type deletion, while notes and day markers stay editable.
+- Added explicit factual work intervals, including overnight work, while plan-as-fact remains the default simple mode.
+- Extended the Plan → Fact → Compensation read model with actual-work provenance, reservation/posting totals, integrity state and period closure.
+- Flyway V44 is additive and leaves `day_entries` unchanged.
+- Regression baseline advances to 112 Java test classes, 598 `@Test` methods and 36 Playwright scenarios.
+
 # v27.26.2 — Canonical Lineage Recovery
 
 - Restored one canonical release line after an accidental branch rollback from the advanced v27.26.x tree to the earlier v27.22.x/v27.23.x line.

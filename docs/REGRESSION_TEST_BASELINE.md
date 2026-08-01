@@ -1,15 +1,24 @@
 # DutyLog regression test baseline
 
-Status: v27.26.2.
+Status: v27.27.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.26.2 restores one canonical lineage containing V41–V43, Calendar Comfort, plan/fact absences, the unified compensation ledger and the Workspace Route E2E contract. The current application baseline is 110 Java test classes / 592 `@Test` methods / 35 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.27.0 adds approval lifecycle, reservation/posting semantics, append-only reversals, period closure, integrity reconciliation and explicit actual-work intervals on top of the recovered V41–V43 lineage. The current application baseline is 112 Java test classes / 598 `@Test` methods / 36 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+
+## v27.27.0 Ledger Integrity & Approval Workflow extension
+
+- `LedgerIntegrityApprovalWorkflowServiceTest` proves draft → reserve → post → cancel, balance return, closed-period mutation guards and explicit factual work.
+- `LedgerIntegrityApprovalWorkflowContractTest` protects V44, append-only audit, no-store APIs, workflow UI and OpenAPI.
+- `ledger-integrity-approval-workflow.spec.js` exercises the complete browser/API lifecycle without force clicks or state bypasses.
+- The release gate protects V44, seven workflow states, `RESERVED`/`POSTED`, period locks, actual-work APIs and exact baselines.
+- Baseline advances to 112 Java test classes / 598 `@Test` methods / 36 Playwright scenarios.
 
 
 ## v27.26.2 Canonical Lineage Recovery extension

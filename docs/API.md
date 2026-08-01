@@ -1,4 +1,21 @@
-# DutyLog API v27.26.2
+# DutyLog API v27.27.0
+
+## Ledger integrity, approval workflow and factual work
+
+```http
+GET    /api/ledger-integrity?from=2026-08-01&to=2026-08-31
+GET    /api/v1/ledger-integrity?from=2026-08-01&to=2026-08-31
+POST   /api/v1/ledger-integrity/periods/2026-08/close
+POST   /api/v1/ledger-integrity/periods/2026-08/reopen
+POST   /api/v1/ledger-integrity/adjustments
+GET    /api/v1/actual-work?from=2026-08-01&to=2026-08-31
+POST   /api/v1/actual-work
+PUT    /api/v1/actual-work/{id}
+DELETE /api/v1/actual-work/{id}
+```
+
+Workflow statuses are `DRAFT`, `PLANNED`, `SUBMITTED`, `APPROVED`, `REJECTED`, `CANCELLED` and `COMPLETED`. Overtime-backed planned/submitted absences own a `RESERVED` usage; approved/completed absences own a `POSTED` usage. Closed periods reject ordinary absence, overtime, factual-work and planned-shift mutations with `PERIOD_CLOSED`; direct day edits, mobile shift sync, bulk schedule fill, schedule-template apply and destructive shift-type deletion share the same guard, while notes and day markers remain editable. Late corrections append `MANUAL_ADJUSTMENT` entries. Read endpoints are owner-scoped and no-store.
+
 
 ## Unified time and compensation ledger
 

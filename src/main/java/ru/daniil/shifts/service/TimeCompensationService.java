@@ -7,15 +7,19 @@ import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditRowDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageDto;
 import ru.daniil.shifts.dto.Dtos.TimeCompensationDayDto;
+import ru.daniil.shifts.dto.Dtos.LedgerIntegrityDto;
 import ru.daniil.shifts.dto.Dtos.TimeCompensationSummaryDto;
+import ru.daniil.shifts.model.ActualWorkInterval;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.ShiftType;
+import ru.daniil.shifts.repo.ActualWorkIntervalRepository;
 import ru.daniil.shifts.repo.DayEntryRepository;
 
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -23,21 +27,27 @@ import java.util.Map;
 
 /**
  * Read model that joins schedule, factual absences and compensation movements.
- * It intentionally stops before money rules: v27.27 Payroll Foundation consumes
+ * It intentionally stops before money rules: v27.28 Payroll Foundation consumes
  * this projection instead of re-interpreting calendar data independently.
  */
 @Service
 public class TimeCompensationService {
     private final DayEntryRepository days;
+    private final ActualWorkIntervalRepository actualWork;
     private final VacationPlannerService vacationPlanner;
     private final OvertimeService overtime;
+    private final LedgerIntegrityService ledgerIntegrity;
 
     public TimeCompensationService(DayEntryRepository days,
+                                   ActualWorkIntervalRepository actualWork,
                                    VacationPlannerService vacationPlanner,
-                                   OvertimeService overtime) {
+                                   OvertimeService overtime,
+                                   LedgerIntegrityService ledgerIntegrity) {
         this.days = days;
+        this.actualWork = actualWork;
         this.vacationPlanner = vacationPlanner;
         this.overtime = overtime;
+        this.ledgerIntegrity = ledgerIntegrity;
     }
 
     @Transactional
@@ -45,6 +55,12 @@ public class TimeCompensationService {
         Map<LocalDate, DayEntry> planned = new LinkedHashMap<>();
         for (DayEntry entry : days.findByOwnerAndDateBetweenOrderByDateAsc(user, from, to)) {
             planned.put(entry.getDate(), entry);
+        }
+
+        Map<LocalDate, List<ActualWorkInterval>> actualByDate = new LinkedHashMap<>();
+        for (ActualWorkInterval interval : actualWork
+                .findByOwnerAndWorkDateBetweenOrderByWorkDateAscStartTimeAscIdAsc(user, from, to)) {
+            actualByDate.computeIfAbsent(interval.getWorkDate(), ignored -> new ArrayList<>()).add(interval);
         }
 
         Map<LocalDate, List<AbsenceOccurrenceDto>> absences = new LinkedHashMap<>();
@@ -89,14 +105,18 @@ public class TimeCompensationService {
             List<AbsenceOccurrenceDto> dayAbsences = absences.getOrDefault(date, List.of());
             int absenceMinutes = absenceMinutes(plannedMinutes, dayAbsences);
             int earnedMinutes = earnedByDate.getOrDefault(date, 0);
-            int workedMinutes = Math.max(0, plannedMinutes - Math.min(plannedMinutes, absenceMinutes)) + earnedMinutes;
+            List<ActualWorkInterval> actualIntervals = actualByDate.getOrDefault(date, List.of());
+            boolean explicitActual = !actualIntervals.isEmpty();
+            int workedMinutes = explicitActual
+                    ? actualIntervals.stream().mapToInt(ActualWorkInterval::getWorkedMinutes).sum()
+                    : Math.max(0, plannedMinutes - Math.min(plannedMinutes, absenceMinutes)) + earnedMinutes;
             int usedMinutes = usedByDate.getOrDefault(date, 0);
             int compensatedMinutes = compensatedByDate.getOrDefault(date, 0);
             int dayVacationDays = (int) dayAbsences.stream().filter(AbsenceOccurrenceDto::countedDay).count();
             int sickMinutes = policyMinutes(plannedMinutes, dayAbsences, "SICK_PAY");
             int unpaidMinutes = policyMinutes(plannedMinutes, dayAbsences, "UNPAID");
 
-            if (plannedMinutes > 0 || absenceMinutes > 0 || earnedMinutes > 0 || usedMinutes > 0) {
+            if (plannedMinutes > 0 || absenceMinutes > 0 || earnedMinutes > 0 || usedMinutes > 0 || explicitActual) {
                 rows.add(new TimeCompensationDayDto(
                         date.toString(),
                         plannedMinutes,
@@ -108,9 +128,12 @@ public class TimeCompensationService {
                         dayVacationDays,
                         sickMinutes,
                         unpaidMinutes,
-                        factLabel(dayAbsences, workedMinutes, plannedMinutes),
+                        explicitActual ? "Фактически отмечено · " + minutesLabel(workedMinutes)
+                                : factLabel(dayAbsences, workedMinutes, plannedMinutes),
                         compensationLabel(dayAbsences),
-                        dayAbsences.stream().map(AbsenceOccurrenceDto::periodId).distinct().toList()
+                        dayAbsences.stream().map(AbsenceOccurrenceDto::periodId).distinct().toList(),
+                        explicitActual ? "EXPLICIT" : "PLAN_DERIVED",
+                        actualIntervals.stream().map(ActualWorkInterval::getId).toList()
                 ));
             }
 
@@ -125,10 +148,20 @@ public class TimeCompensationService {
             unpaidTotal += unpaidMinutes;
         }
 
+        int reservedMinutes = account.usages().stream().filter(item -> "RESERVED".equals(item.postingState()))
+                .mapToInt(OvertimeUsageDto::minutes).sum();
+        int postedMinutes = account.usages().stream().filter(item -> "POSTED".equals(item.postingState()))
+                .mapToInt(OvertimeUsageDto::minutes).sum();
+        LedgerIntegrityDto integrity = ledgerIntegrity.inspect(user, from, to);
+        long monthCount = java.time.temporal.ChronoUnit.MONTHS.between(YearMonth.from(from), YearMonth.from(to)) + 1;
+        boolean periodClosed = integrity.periods().size() == monthCount
+                && integrity.periods().stream().allMatch(item -> "CLOSED".equals(item.status()));
+
         return new TimeCompensationSummaryDto(
                 from.toString(), to.toString(), plannedTotal, workedTotal, absenceTotal,
                 earnedTotal, usedTotal, (int) Math.round(account.balanceHours() * 60.0),
-                compensatedTotal, vacationDays, sickTotal, unpaidTotal, List.copyOf(rows)
+                compensatedTotal, vacationDays, sickTotal, unpaidTotal,
+                reservedMinutes, postedMinutes, integrity.healthy(), periodClosed, List.copyOf(rows)
         );
     }
 
@@ -162,6 +195,11 @@ public class TimeCompensationService {
     private int partialMinutes(AbsenceOccurrenceDto item) {
         if (item.startTime() == null || item.endTime() == null) return 0;
         return Math.toIntExact(Duration.between(LocalTime.parse(item.startTime()), LocalTime.parse(item.endTime())).toMinutes());
+    }
+
+    private String minutesLabel(int minutes) {
+        int safe = Math.max(0, minutes);
+        return (safe / 60) + " ч " + (safe % 60) + " мин";
     }
 
     private String factLabel(List<AbsenceOccurrenceDto> absences, int workedMinutes, int plannedMinutes) {

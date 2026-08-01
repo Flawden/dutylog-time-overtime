@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.26.2"></script>
-<link href="app.css?v=27.26.2" rel="stylesheet"/>
-<link href="design-system.css?v=27.26.2" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.26.2" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.26.2" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.26.2" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.26.2" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.26.2" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.26.2" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.26.2" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.26.2" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.26.2" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.27.0"></script>
+<link href="app.css?v=27.27.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.27.0" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.27.0" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.27.0" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.27.0" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.27.0" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.27.0" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.27.0" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.27.0" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.27.0" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.27.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -410,6 +410,44 @@
     <div class="timeCompensationDays" id="timeCompDays"></div>
   </section>
 
+  <section class="ledgerIntegrityCard" id="ledgerIntegrityCard" aria-labelledby="ledgerIntegrityTitle">
+    <div class="ledgerIntegrityHead">
+      <div><div class="eyebrow">Workflow & integrity</div><h3 id="ledgerIntegrityTitle">Целостность и расчётный период</h3></div>
+      <span class="ledgerIntegrityStatus" id="ledgerIntegrityStatus">Проверяю…</span>
+    </div>
+    <div class="ledgerIntegrityControls">
+      <label>Месяц<input id="ledgerIntegrityMonth" type="month"/></label>
+      <button id="ledgerClosePeriod" type="button">Закрыть период</button>
+      <button id="ledgerReopenPeriod" type="button" hidden>Открыть период</button>
+    </div>
+    <div class="ledgerIntegrityMetrics">
+      <div><span>Зарезервировано</span><b id="ledgerReservedMinutes">—</b></div>
+      <div><span>Проведено</span><b id="ledgerPostedMinutes">—</b></div>
+      <div><span>Возвращено</span><b id="ledgerReversedMinutes">—</b></div>
+      <div><span>Состояние периода</span><b id="ledgerPeriodState">Открыт</b></div>
+    </div>
+    <div class="ledgerIntegrityIssues" id="ledgerIntegrityIssues"></div>
+
+    <details class="actualWorkPanel" id="actualWorkPanel">
+      <summary>Фактически отработанное время</summary>
+      <p>По умолчанию DutyLog считает плановую смену фактом. Здесь можно указать реальный интервал, ранний уход или вызов в выходной.</p>
+      <form id="actualWorkForm" class="actualWorkForm">
+        <label>Дата<input id="actualWorkDate" type="date" required/></label>
+        <label>С<input id="actualWorkStart" type="time" value="08:00" required/></label>
+        <label>До<input id="actualWorkEnd" type="time" value="20:00" required/></label>
+        <label class="actualWorkNote">Причина<input id="actualWorkNote" maxlength="500" placeholder="Например: ранний уход"/></label>
+        <button class="primary" type="submit">Добавить факт</button>
+      </form>
+      <div class="actualWorkList" id="actualWorkList"></div>
+    </details>
+
+    <form class="ledgerAdjustmentForm" id="ledgerAdjustmentForm" hidden>
+      <label>Корректировка закрытого месяца, ч<input id="ledgerAdjustmentHours" type="number" step="0.25" min="-1000" max="1000"/></label>
+      <label>Причина<input id="ledgerAdjustmentReason" maxlength="500" placeholder="Что исправляем задним числом"/></label>
+      <button type="submit">Добавить корректировку</button>
+    </form>
+  </section>
+
   <div class="ledgerPrimaryActions">
     <button class="primary" id="ledgerAddCredit" type="button">+ Начислить</button>
     <button id="ledgerAddUsage" type="button">− Списать</button>
@@ -565,7 +603,15 @@
           <select id="vacationType" required></select>
         </label>
         <label>Статус
-          <select id="vacationStatus"><option value="PLANNED">Запланировано</option><option value="APPROVED">Подтверждено</option></select>
+          <select id="vacationStatus">
+            <option value="DRAFT">Черновик</option>
+            <option value="PLANNED">Запланировано</option>
+            <option value="SUBMITTED">Подано</option>
+            <option value="APPROVED">Подтверждено</option>
+            <option value="REJECTED">Отклонено</option>
+            <option value="CANCELLED">Отменено</option>
+            <option value="COMPLETED">Завершено</option>
+          </select>
         </label>
         <label>Формат
           <select id="vacationCoverage"><option value="FULL_DAY">Полный день</option><option value="PARTIAL">Часть дня</option></select>
@@ -1201,7 +1247,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.26.2</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.27.0</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1814,18 +1860,18 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.26.2"></script>
-<script src="js/12-ui-platform.js?v=27.26.2"></script>
-<script src="js/20-data.js?v=27.26.2"></script>
-<script src="js/30-calendar.js?v=27.26.2"></script>
-<script src="js/35-today.js?v=27.26.2"></script>
-<script src="js/37-calendar-experience.js?v=27.26.2"></script>
-<script src="js/38-schedule-layers.js?v=27.26.2"></script>
-<script src="js/39-vacation-planner.js?v=27.26.2"></script>
-<script src="js/40-overtime.js?v=27.26.2"></script>
-<script src="js/50-tasks.js?v=27.26.2"></script>
-<script src="js/55-calendar-sync.js?v=27.26.2"></script>
-<script src="js/60-settings.js?v=27.26.2"></script>
-<script src="js/70-user-boot.js?v=27.26.2"></script>
+<script src="js/10-core.js?v=27.27.0"></script>
+<script src="js/12-ui-platform.js?v=27.27.0"></script>
+<script src="js/20-data.js?v=27.27.0"></script>
+<script src="js/30-calendar.js?v=27.27.0"></script>
+<script src="js/35-today.js?v=27.27.0"></script>
+<script src="js/37-calendar-experience.js?v=27.27.0"></script>
+<script src="js/38-schedule-layers.js?v=27.27.0"></script>
+<script src="js/39-vacation-planner.js?v=27.27.0"></script>
+<script src="js/40-overtime.js?v=27.27.0"></script>
+<script src="js/50-tasks.js?v=27.27.0"></script>
+<script src="js/55-calendar-sync.js?v=27.27.0"></script>
+<script src="js/60-settings.js?v=27.27.0"></script>
+<script src="js/70-user-boot.js?v=27.27.0"></script>
 </body>
 </html>

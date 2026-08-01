@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.26.2.
+Status: v27.27.0.
 
 ## Local gate
 
@@ -19,8 +19,12 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Staging
 
 - push the exact candidate tree to `test`;
-- confirm the Maven gate executes all 580 tests with zero failures;
-- confirm all 34 Playwright scenarios pass, including workspace-hidden Tasks routing on mobile and task module re-enable;
+- confirm the Maven gate executes all 598 tests with zero failures;
+- confirm all 36 Playwright scenarios pass, including workflow reservation/posting, closed-period protection and explicit factual work;
+- create a DRAFT overtime-backed absence and confirm no usage exists; submit it and confirm `RESERVED`; approve it and confirm `POSTED`; cancel it and confirm the hours return;
+- close the month, confirm ordinary absence/actual-work edits return `PERIOD_CLOSED`, add an append-only correction, then reopen it;
+- inspect `/api/v1/ledger-integrity` and confirm `healthy=true`, no orphan usage and no allocation mismatch;
+- add an explicit factual interval and confirm the time-compensation day reports `actualSource=EXPLICIT`;
 - confirm fresh schedule apply reloads the authoritative month through the data layer;
 - on a phone viewport, navigate away from the current month and confirm the contextual «Сегодня» button appears, returns to today and disappears;
 - select a different calendar date, open Important Days and confirm the draft date already matches the selected day;
@@ -117,6 +121,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.26.2 -m "v27.26.2 — Absence Request Constructor Compile Hotfix"
-git push origin v27.26.2
+git tag -a v27.27.0 -m "v27.27.0 — Ledger Integrity & Approval Workflow"
+git push origin v27.27.0
 ```

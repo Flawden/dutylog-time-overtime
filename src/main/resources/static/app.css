@@ -3211,3 +3211,23 @@ body.panel-open .globalQuickAdd { display:none !important; }
 .calendarSyncActions{display:flex;gap:10px;flex-wrap:wrap}
 .calendarSyncWarning{margin-top:12px}
 @media(max-width:760px){.calendarSyncGrid{grid-template-columns:1fr}.calendarSyncRange{grid-template-columns:1fr 1fr}.calendarSyncRange button{grid-column:1/-1}.calendarSyncSecret{grid-template-columns:1fr}.calendarSyncSecret button{width:100%}}
+
+/* v27.27.0 — Ledger Integrity & Approval Workflow */
+.ledgerIntegrityCard{margin:18px 0;padding:18px;border:1px solid var(--line);border-radius:22px;background:var(--surface-1);box-shadow:var(--shadow-sm)}
+.ledgerIntegrityHead,.ledgerIntegrityControls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.ledgerIntegrityHead h3{margin:2px 0 0}.ledgerIntegrityStatus{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border-radius:999px;background:color-mix(in srgb,var(--accent) 14%,transparent);font-weight:750}
+.ledgerIntegrityCard[data-integrity="healthy"] .ledgerIntegrityStatus{background:color-mix(in srgb,#55c878 18%,transparent)}
+.ledgerIntegrityCard[data-integrity="broken"] .ledgerIntegrityStatus{background:color-mix(in srgb,#ef6464 18%,transparent)}
+.ledgerIntegrityControls{margin-top:14px;justify-content:flex-start}.ledgerIntegrityControls label{display:grid;gap:5px;min-width:170px}.ledgerIntegrityControls button{min-height:42px}
+.ledgerIntegrityMetrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:14px 0}
+.ledgerIntegrityMetrics>div{padding:12px;border:1px solid var(--line-soft);border-radius:16px;background:var(--surface-2)}
+.ledgerIntegrityMetrics span{display:block;font-size:.78rem;color:var(--muted)}.ledgerIntegrityMetrics b{display:block;margin-top:5px;font-size:1rem}
+.ledgerIntegrityIssues{display:grid;gap:8px}.ledgerIntegrityIssue{padding:10px 12px;border-radius:14px;background:color-mix(in srgb,#ef6464 10%,var(--surface-2));border:1px solid color-mix(in srgb,#ef6464 30%,var(--line))}
+.ledgerIntegrityIssue.ok{background:color-mix(in srgb,#55c878 10%,var(--surface-2));border-color:color-mix(in srgb,#55c878 30%,var(--line))}
+.actualWorkPanel{margin-top:14px;padding:12px 14px;border:1px solid var(--line-soft);border-radius:16px}.actualWorkPanel summary{cursor:pointer;font-weight:800}.actualWorkPanel p{color:var(--muted)}
+.actualWorkForm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;align-items:end}.actualWorkForm label{display:grid;gap:5px}.actualWorkForm .actualWorkNote{grid-column:span 2}
+.actualWorkList{display:grid;gap:8px;margin-top:12px}.actualWorkItem{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border-radius:14px;background:var(--surface-2);border:1px solid var(--line-soft)}
+.actualWorkItem small{display:block;color:var(--muted)}.actualWorkItem button{min-height:36px}
+.ledgerAdjustmentForm{display:grid;grid-template-columns:1fr 2fr auto;gap:10px;align-items:end;margin-top:14px;padding-top:14px;border-top:1px solid var(--line-soft)}.ledgerAdjustmentForm label{display:grid;gap:5px}
+.absenceWorkflowBadge,.absencePostingBadge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:.72rem;font-weight:750;background:var(--surface-3);border:1px solid var(--line-soft)}
+@media(max-width:760px){.ledgerIntegrityMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.actualWorkForm,.ledgerAdjustmentForm{grid-template-columns:1fr 1fr}.actualWorkForm .actualWorkNote,.ledgerAdjustmentForm label:nth-child(2),.ledgerAdjustmentForm button{grid-column:1/-1}.ledgerIntegrityCard{padding:14px;border-radius:18px}}

@@ -40,7 +40,11 @@ Object.assign(I18N_EN, {
   "Банк переработок":"Overtime bank", "Больничная политика":"Sick-pay policy",
   "Без содержания":"Unpaid", "Без покрытия":"Uncovered",
   "Переработки доступны":"Overtime available", "Переработки будут списаны":"Overtime will be used",
-  "Недостаточно часов переработки":"Not enough overtime hours"
+  "Недостаточно часов переработки":"Not enough overtime hours",
+  "Черновик":"Draft", "Подано":"Submitted", "Отклонено":"Rejected",
+  "Отменено":"Cancelled", "Завершено":"Completed", "Зарезервировано":"Reserved",
+  "Проведено":"Posted", "Не резервирует баланс":"Does not reserve balance",
+  "Период закрыт":"Period closed", "Откройте период или добавьте корректировку":"Reopen the period or add an adjustment"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -111,7 +115,19 @@ function vacationDateLabel(value){
   if (!y || !m || !d) return value;
   return new Intl.DateTimeFormat(currentLocale(), { day:"numeric", month:"short", year:"numeric", timeZone:"UTC" }).format(new Date(Date.UTC(y,m-1,d)));
 }
-function vacationStatusLabel(status){ return String(status).toUpperCase() === "APPROVED" ? t("Подтверждено") : t("Запланировано"); }
+function vacationStatusLabel(status){
+  return ({
+    DRAFT:t("Черновик"), PLANNED:t("Запланировано"), SUBMITTED:t("Подано"),
+    APPROVED:t("Подтверждено"), REJECTED:t("Отклонено"), CANCELLED:t("Отменено"),
+    COMPLETED:t("Завершено")
+  })[String(status || "PLANNED").toUpperCase()] || t("Запланировано");
+}
+function absencePostingLabel(period){
+  const status = String(period?.status || "PLANNED").toUpperCase();
+  if (status === "PLANNED" || status === "SUBMITTED") return t("Зарезервировано");
+  if (status === "APPROVED" || status === "COMPLETED") return t("Проведено");
+  return t("Не резервирует баланс");
+}
 function setVacationMessage(text = "", error = false){
   const box = $("vacationMessage");
   if (!box) return;
@@ -210,9 +226,9 @@ function renderVacationPeriods(){
     const coverage = period.coverage === "PARTIAL" ? `${esc(t("Часть дня"))} · ${esc(period.startTime)}–${esc(period.endTime)}` : esc(t("Полный день"));
     return `<article class="vacationPeriodCard" data-absence-id="${period.id}" style="--absence-color:${esc(period.typeColor)}">
       <div class="vacationPeriodColor"></div><div class="vacationPeriodMain">
-        <div class="vacationPeriodTop"><b>${esc(absenceDisplayTitle(period))}</b><span>${esc(vacationStatusLabel(period.status))}</span></div>
+        <div class="vacationPeriodTop"><b>${esc(absenceDisplayTitle(period))}</b><span data-absence-status="${esc(String(period.status || "PLANNED").toLowerCase())}">${esc(vacationStatusLabel(period.status))}</span></div>
         <div class="vacationPeriodDates">${esc(vacationDateLabel(period.startDate))}${period.startDate === period.endDate ? "" : ` — ${esc(vacationDateLabel(period.endDate))}`}</div>
-        <div class="vacationPeriodMeta"><span>${esc(absenceTypeDisplayName(period))}</span><span>${coverage}</span><span>${esc(absenceCompensationLabel(period.compensationPolicy))}${charged}</span></div>
+        <div class="vacationPeriodMeta"><span>${esc(absenceTypeDisplayName(period))}</span><span>${coverage}</span><span>${esc(absenceCompensationLabel(period.compensationPolicy))}${charged}</span><span>${esc(absencePostingLabel(period))}</span></div>
         ${period.shiftConflictCount ? `<div class="vacationPlanFactHint">✓ ${esc(t("Плановая смена сохранена"))} · ${period.shiftConflictCount}</div>` : ""}
         ${period.note ? `<p>${esc(period.note)}</p>` : ""}
         <div class="vacationPeriodActions"><button type="button" data-edit-absence="${period.id}">${esc(t("Изменить"))}</button><button class="dangerGhost" type="button" data-delete-absence="${period.id}">${esc(t("Удалить"))}</button></div>
@@ -310,7 +326,8 @@ function renderVacationPreview(preview){
   const box = $("vacationPreview"); if (!box) return;
   state.vacationPreview = preview;
   const timePolicy = preview.compensationPolicy === "OVERTIME_BANK";
-  const blocked = preview.absenceConflictCount > 0 || preview.exceedsAllowance;
+  const draftStatus = String($("vacationStatus")?.value || "PLANNED").toUpperCase();
+  const blocked = draftStatus !== "DRAFT" && (preview.absenceConflictCount > 0 || preview.exceedsAllowance);
   box.hidden = false; box.classList.toggle("blocked", blocked);
   const warnings = [];
   if (preview.shiftConflictCount) warnings.push(`✓ ${preview.shiftConflictCount} · ${t("Плановая смена сохранена")}`);
@@ -322,6 +339,7 @@ function renderVacationPreview(preview){
   box.innerHTML = `<div class="vacationPreviewHead"><b>${esc(preview.typeName)}</b><span>${esc(absenceCoverageLabel(preview.coverage))}${preview.coverage === "PARTIAL" ? ` · ${esc(minutesLabel(preview.durationMinutes))}` : ` · ${preview.calendarDays} ${esc(t("календарных дней"))}`}</span></div>
     <div class="vacationPreviewBalance"><span>${esc(t("Запланировано"))}: <b>${esc(before)}</b></span><span>${esc(t("После сохранения"))}: <b>${esc(projected)}</b></span><span>${esc(t("Осталось"))}: <b>${esc(remaining)}</b></span></div>
     <div class="vacationPreviewSource"><span>${esc(t("Источник покрытия"))}</span><b>${esc(absenceCompensationLabel(preview.compensationPolicy))}</b></div>
+    <div class="vacationPreviewSource"><span>${esc(t("Статус"))}</span><b>${esc(vacationStatusLabel(draftStatus))} · ${esc(absencePostingLabel({ status:draftStatus }))}</b></div>
     ${warnings.length ? `<div class="vacationPreviewWarnings">${warnings.map(item => `<span>${esc(item)}</span>`).join("")}</div>` : `<div class="vacationPreviewOk">✓ ${esc(t("Предпросмотр готов"))}</div>`}
     <div class="vacationPreviewDays">${(preview.items || []).map(item => `<span class="${item.action === "CONFLICT" ? "conflict" : item.shiftConflict ? "shift" : item.counted ? "counted" : "free"}" title="${esc([item.date,item.plannedShiftName].filter(Boolean).join(" · "))}">${String(item.date).slice(8,10)}</span>`).join("")}</div>`;
   return !blocked;
@@ -339,13 +357,14 @@ async function previewVacationDraft(){
 }
 async function saveVacationPeriod(event){
   event?.preventDefault(); const draft = readVacationDraft(); const preview = await previewVacationDraft();
-  if (!preview || preview.absenceConflictCount > 0 || preview.exceedsAllowance) return;
+  const draftOnly = String(draft.status || "PLANNED").toUpperCase() === "DRAFT";
+  if (!preview || (!draftOnly && (preview.absenceConflictCount > 0 || preview.exceedsAllowance))) return;
   const button = $("vacationSaveBtn"); if (button) button.disabled = true;
   try {
     if (state.editingAbsenceId) await api.updateAbsence(state.editingAbsenceId, draft); else await api.createAbsence(draft);
     resetVacationEditor(); await loadVacationPlanner(true); await loadMonth({ fresh:true }); setVacationMessage(t("Период сохранён"));
   } catch (error) {
-    const message = error.code === "VACATION_LIMIT_EXCEEDED" ? t("Лимит отпуска превышен") : error.code === "TIME_OFF_LIMIT_EXCEEDED" || error.code === "OVERTIME_BALANCE_EXCEEDED" ? t("Недостаточно часов переработки") : error.code === "ABSENCE_OVERLAP" ? t("Пересечение с другим отсутствием") : (error.message || t("Ошибка сохранения"));
+    const message = error.code === "VACATION_LIMIT_EXCEEDED" ? t("Лимит отпуска превышен") : error.code === "TIME_OFF_LIMIT_EXCEEDED" || error.code === "OVERTIME_BALANCE_EXCEEDED" ? t("Недостаточно часов переработки") : error.code === "ABSENCE_OVERLAP" ? t("Пересечение с другим отсутствием") : error.code === "PERIOD_CLOSED" ? `${t("Период закрыт")}. ${t("Откройте период или добавьте корректировку")}` : (error.message || t("Ошибка сохранения"));
     setVacationMessage(message, true);
   } finally { if (button) button.disabled = false; }
 }

@@ -43,6 +43,10 @@ public class OvertimeUsage {
     @Column(name = "source_absence_id")
     private Long sourceAbsenceId;
 
+    /** Future approved absence may reserve hours before they are finally posted. */
+    @Column(name = "posting_state", nullable = false, length = 20)
+    private String postingState = "POSTED";
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 
@@ -78,6 +82,13 @@ public class OvertimeUsage {
     }
     public Long getSourceAbsenceId() { return sourceAbsenceId; }
     public void setSourceAbsenceId(Long sourceAbsenceId) { this.sourceAbsenceId = sourceAbsenceId; }
+    public String getPostingState() { return postingState == null ? "POSTED" : postingState; }
+    public void setPostingState(String postingState) {
+        String normalized = postingState == null ? "POSTED" : postingState.trim().toUpperCase();
+        if (!"RESERVED".equals(normalized) && !"POSTED".equals(normalized)) normalized = "POSTED";
+        this.postingState = normalized;
+    }
+    public boolean isReserved() { return "RESERVED".equals(getPostingState()); }
     public boolean isAbsenceLinked() { return "ABSENCE".equals(getSourceKind()) && sourceAbsenceId != null; }
     public LocalDateTime getCreatedAt() { return createdAt; }
 }

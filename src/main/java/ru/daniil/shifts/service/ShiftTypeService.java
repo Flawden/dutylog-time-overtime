@@ -8,6 +8,7 @@ import ru.daniil.shifts.dto.Dtos.ShiftTypeCreateRequest;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeDto;
 import ru.daniil.shifts.dto.Dtos.ShiftTypeUpdateRequest;
 import ru.daniil.shifts.model.AppUser;
+import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.ShiftType;
 import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.repo.ShiftTypeRepository;
@@ -30,6 +31,7 @@ public class ShiftTypeService {
     private final ShiftOccurrenceService shiftOccurrenceService;
     private final ScheduleTemplateRepository scheduleTemplates;
     private final UserTimeService userTimeService;
+    private final AccountingPeriodLockService periodLocks;
     private final SecurityEventLogger securityEvents;
 
     public ShiftTypeService(ShiftTypeRepository shiftTypes,
@@ -37,12 +39,14 @@ public class ShiftTypeService {
                             ShiftOccurrenceService shiftOccurrenceService,
                             ScheduleTemplateRepository scheduleTemplates,
                             UserTimeService userTimeService,
+                            AccountingPeriodLockService periodLocks,
                             SecurityEventLogger securityEvents) {
         this.shiftTypes = shiftTypes;
         this.days = days;
         this.shiftOccurrenceService = shiftOccurrenceService;
         this.scheduleTemplates = scheduleTemplates;
         this.userTimeService = userTimeService;
+        this.periodLocks = periodLocks;
         this.securityEvents = securityEvents;
     }
 
@@ -156,7 +160,9 @@ public class ShiftTypeService {
                     "Смена используется шаблоном графика; сначала измените или удалите шаблон");
         }
 
-        days.findByShiftType(st).forEach(entry -> {
+        List<DayEntry> assignedEntries = days.findByShiftType(st);
+        assignedEntries.forEach(entry -> periodLocks.assertOpen(user, entry.getDate()));
+        assignedEntries.forEach(entry -> {
             shiftOccurrenceService.clear(entry);
             if (entry.isEmpty()) {
                 days.delete(entry);

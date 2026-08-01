@@ -566,6 +566,89 @@ paths:
         '400': { $ref: '#/components/responses/ApiError' }
         '401': { $ref: '#/components/responses/ApiError' }
 
+  /api/v1/ledger-integrity:
+    get:
+      operationId: inspectLedgerIntegrity
+      description: Reconciles approval reservations, posted usages, FIFO allocations, append-only audit entries and accounting-period state.
+      parameters:
+        - { in: query, name: from, required: true, schema: { type: string, format: date } }
+        - { in: query, name: to, required: true, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Integrity projection with no-store caching
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LedgerIntegrity' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/ledger-integrity/periods/{month}/close:
+    post:
+      operationId: closeAccountingPeriod
+      parameters:
+        - { in: path, name: month, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' } }
+      responses:
+        '200': { description: Closed period, content: { application/json: { schema: { $ref: '#/components/schemas/AccountingPeriod' } } } }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/ledger-integrity/periods/{month}/reopen:
+    post:
+      operationId: reopenAccountingPeriod
+      parameters:
+        - { in: path, name: month, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' } }
+      responses:
+        '200': { description: Reopened period, content: { application/json: { schema: { $ref: '#/components/schemas/AccountingPeriod' } } } }
+  /api/v1/ledger-integrity/adjustments:
+    post:
+      operationId: addClosedPeriodAdjustment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LedgerAdjustmentInput' }
+      responses:
+        '201': { description: Append-only adjustment, content: { application/json: { schema: { $ref: '#/components/schemas/TimeLedgerEntry' } } } }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/actual-work:
+    get:
+      operationId: listActualWorkIntervals
+      parameters:
+        - { in: query, name: from, required: true, schema: { type: string, format: date } }
+        - { in: query, name: to, required: true, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Explicit factual work intervals
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ActualWorkInterval' } }
+    post:
+      operationId: createActualWorkInterval
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActualWorkIntervalInput' }
+      responses:
+        '201': { description: Created factual interval, content: { application/json: { schema: { $ref: '#/components/schemas/ActualWorkInterval' } } } }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/actual-work/{id}:
+    put:
+      operationId: updateActualWorkInterval
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ActualWorkIntervalInput' }
+      responses:
+        '200': { description: Updated factual interval, content: { application/json: { schema: { $ref: '#/components/schemas/ActualWorkInterval' } } } }
+    delete:
+      operationId: deleteActualWorkInterval
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Deleted }
+        '409': { $ref: '#/components/responses/ApiError' }
+
   /api/v1/overtime/preview:
     post:
       operationId: previewOvertimeCredit
@@ -1047,6 +1130,8 @@ components:
         factLabel: { type: string }
         compensationLabel: { type: string }
         absenceIds: { type: array, items: { type: integer, format: int64 } }
+        actualSource: { type: string, enum: [PLAN_DERIVED, EXPLICIT] }
+        actualWorkIntervalIds: { type: array, items: { type: integer, format: int64 } }
     TimeCompensationSummary:
       type: object
       required: [from, to, plannedMinutes, workedMinutes, absenceMinutes, overtimeEarnedMinutes, overtimeUsedMinutes, overtimeBalanceMinutes, compensatedMinutes, vacationDays, sickMinutes, unpaidMinutes, days]
@@ -1063,7 +1148,82 @@ components:
         vacationDays: { type: integer, minimum: 0 }
         sickMinutes: { type: integer, minimum: 0 }
         unpaidMinutes: { type: integer, minimum: 0 }
+        overtimeReservedMinutes: { type: integer, minimum: 0 }
+        overtimePostedMinutes: { type: integer, minimum: 0 }
+        integrityHealthy: { type: boolean }
+        periodClosed: { type: boolean }
         days: { type: array, items: { $ref: '#/components/schemas/TimeCompensationDay' } }
+    TimeLedgerEntry:
+      type: object
+      required: [id, entryKind, sourceKind, effectiveDate, signedMinutes, postingState, createdAt]
+      properties:
+        id: { type: integer, format: int64 }
+        entryKind: { type: string }
+        sourceKind: { type: string }
+        sourceId: { type: integer, format: int64, nullable: true }
+        effectiveDate: { type: string, format: date }
+        signedMinutes: { type: integer }
+        postingState: { type: string, enum: [RESERVED, POSTED, REVERSED] }
+        reversalOfId: { type: integer, format: int64, nullable: true }
+        reason: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+    LedgerIntegrityIssue:
+      type: object
+      required: [code, severity, message, sourceKind]
+      properties:
+        code: { type: string }
+        severity: { type: string, enum: [ERROR, WARNING] }
+        message: { type: string }
+        sourceKind: { type: string }
+        sourceId: { type: integer, format: int64, nullable: true }
+    AccountingPeriod:
+      type: object
+      required: [month, status]
+      properties:
+        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        status: { type: string, enum: [OPEN, CLOSED] }
+        closedAt: { type: string, format: date-time, nullable: true }
+        updatedAt: { type: string, format: date-time, nullable: true }
+    LedgerIntegrity:
+      type: object
+      required: [from, to, healthy, reservedMinutes, postedMinutes, reversedMinutes, orphanUsageCount, allocationMismatchCount, issues, entries, periods]
+      properties:
+        from: { type: string, format: date }
+        to: { type: string, format: date }
+        healthy: { type: boolean }
+        reservedMinutes: { type: integer, minimum: 0 }
+        postedMinutes: { type: integer, minimum: 0 }
+        reversedMinutes: { type: integer, minimum: 0 }
+        orphanUsageCount: { type: integer, minimum: 0 }
+        allocationMismatchCount: { type: integer, minimum: 0 }
+        issues: { type: array, items: { $ref: '#/components/schemas/LedgerIntegrityIssue' } }
+        entries: { type: array, items: { $ref: '#/components/schemas/TimeLedgerEntry' } }
+        periods: { type: array, items: { $ref: '#/components/schemas/AccountingPeriod' } }
+    LedgerAdjustmentInput:
+      type: object
+      required: [month, signedMinutes]
+      properties:
+        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        signedMinutes: { type: integer, minimum: -600000, maximum: 600000 }
+        reason: { type: string, maxLength: 500 }
+    ActualWorkIntervalInput:
+      type: object
+      required: [workDate, startTime, endTime]
+      properties:
+        workDate: { type: string, format: date }
+        startTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$' }
+        endTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$' }
+        note: { type: string, maxLength: 500, nullable: true }
+    ActualWorkInterval:
+      allOf:
+        - $ref: '#/components/schemas/ActualWorkIntervalInput'
+        - type: object
+          required: [id, workedMinutes]
+          properties:
+            id: { type: integer, format: int64 }
+            workedMinutes: { type: integer, minimum: 1, maximum: 2880 }
+            createdAt: { type: string, format: date-time, nullable: true }
+            updatedAt: { type: string, format: date-time, nullable: true }
     VacationSettings:
       allOf:
         - $ref: '#/components/schemas/VacationSettingsInput'
@@ -1115,7 +1275,7 @@ components:
         title: { type: string, maxLength: 120, nullable: true }
         startDate: { type: string, format: date }
         endDate: { type: string, format: date }
-        status: { type: string, enum: [PLANNED, APPROVED], default: PLANNED }
+        status: { type: string, enum: [DRAFT, PLANNED, SUBMITTED, APPROVED, REJECTED, CANCELLED, COMPLETED], default: PLANNED }
         note: { type: string, maxLength: 1000, nullable: true }
         coverage: { type: string, enum: [FULL_DAY, PARTIAL], default: FULL_DAY }
         startTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', nullable: true }
@@ -1157,7 +1317,7 @@ components:
         date: { type: string, format: date }
         startDate: { type: string, format: date }
         endDate: { type: string, format: date }
-        status: { type: string, enum: [PLANNED, APPROVED] }
+        status: { type: string, enum: [DRAFT, PLANNED, SUBMITTED, APPROVED, REJECTED, CANCELLED, COMPLETED] }
         countedDay: { type: boolean }
         shiftConflict: { type: boolean }
         balancePolicy: { type: string, enum: [VACATION_DAYS, TIME_OFF_HOURS, NONE] }
@@ -1616,7 +1776,7 @@ components:
         reconstructed: { type: boolean, description: True when provenance was reconstructed by the legacy migration wizard }
     OvertimeUsage:
       type: object
-      required: [id, usageDate, hours, minutes, allocations, sourceKind, editable]
+      required: [id, usageDate, hours, minutes, allocations, sourceKind, editable, postingState, reserved]
       properties:
         id: { type: integer, format: int64 }
         usageDate: { type: string, format: date }
@@ -1626,6 +1786,8 @@ components:
         sourceKind: { type: string, enum: [MANUAL, ABSENCE] }
         sourceAbsenceId: { type: integer, format: int64, nullable: true }
         editable: { type: boolean, description: False for usages owned by an absence }
+        postingState: { type: string, enum: [RESERVED, POSTED] }
+        reserved: { type: boolean }
         allocations:
           type: array
           items: { $ref: '#/components/schemas/OvertimeAllocation' }

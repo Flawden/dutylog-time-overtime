@@ -27,10 +27,12 @@ import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.OvertimeAllocation;
 import ru.daniil.shifts.model.OvertimeCredit;
 import ru.daniil.shifts.model.OvertimeUsage;
+import ru.daniil.shifts.model.TimeAccountingPeriod;
 import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.repo.OvertimeAllocationRepository;
 import ru.daniil.shifts.repo.OvertimeCreditRepository;
 import ru.daniil.shifts.repo.OvertimeUsageRepository;
+import ru.daniil.shifts.repo.TimeAccountingPeriodRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.Duration;
@@ -38,6 +40,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.YearMonth;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.nio.charset.StandardCharsets;
@@ -60,6 +63,7 @@ public class OvertimeService {
     private final OvertimeCreditRepository credits;
     private final OvertimeUsageRepository usages;
     private final OvertimeAllocationRepository allocations;
+    private final TimeAccountingPeriodRepository accountingPeriods;
     private final SecurityEventLogger securityEvents;
     private final UserTimeService userTimeService;
 
@@ -68,6 +72,7 @@ public class OvertimeService {
                            OvertimeCreditRepository credits,
                            OvertimeUsageRepository usages,
                            OvertimeAllocationRepository allocations,
+                           TimeAccountingPeriodRepository accountingPeriods,
                            SecurityEventLogger securityEvents,
                            UserTimeService userTimeService) {
         this.days = days;
@@ -75,6 +80,7 @@ public class OvertimeService {
         this.credits = credits;
         this.usages = usages;
         this.allocations = allocations;
+        this.accountingPeriods = accountingPeriods;
         this.securityEvents = securityEvents;
         this.userTimeService = userTimeService;
     }
@@ -312,6 +318,7 @@ public class OvertimeService {
         CalculatedCredit calculated = calculateCredit(user, req);
         if (!calculated.calculated()) {
             LocalDate date = dayEntryService.parseDate(req.date(), "Дата переработки должна быть в формате yyyy-MM-dd");
+            assertPeriodOpen(user, date);
             credits.save(new OvertimeCredit(
                     user,
                     date,
@@ -329,6 +336,7 @@ public class OvertimeService {
         }
 
         for (CreditSegment segment : segments) {
+            assertPeriodOpen(user, segment.workDate());
             ensureNoOvertimeOverlap(user, segment.startAt(), segment.endAt(), segment.startInstant(), segment.endInstant(), null);
         }
 
@@ -359,6 +367,7 @@ public class OvertimeService {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
         LocalDate date = dayEntryService.parseDate(req.date(), "Дата списания должна быть в формате yyyy-MM-dd");
+        assertPeriodOpen(user, date);
         int requestedMinutes = requirePositiveMinutes(req.hours(), "Укажи часы списания больше 0");
 
         validateUsageCapacity(user, null, requestedMinutes);
@@ -420,7 +429,18 @@ public class OvertimeService {
                                          LocalDate usageDate,
                                          int requestedMinutes,
                                          String reason) {
+        return upsertLinkedAbsenceUsage(user, absenceId, usageDate, requestedMinutes, reason, "POSTED");
+    }
+
+    @Transactional
+    public Long upsertLinkedAbsenceUsage(AppUser user,
+                                         Long absenceId,
+                                         LocalDate usageDate,
+                                         int requestedMinutes,
+                                         String reason,
+                                         String postingState) {
         if (absenceId == null) throw ApiException.badRequest("Отсутствие должно быть сохранено до списания переработки");
+        assertPeriodOpen(user, usageDate);
         if (requestedMinutes <= 0) throw ApiException.badRequest("Связанное списание должно быть больше 0 минут");
         OvertimeUsage usage = usages.findByOwnerAndSourceAbsenceId(user, absenceId).orElse(null);
         Long excludedId = usage == null ? null : usage.getId();
@@ -431,6 +451,7 @@ public class OvertimeService {
         usage.setReason(normalize(reason));
         usage.setSourceKind("ABSENCE");
         usage.setSourceAbsenceId(absenceId);
+        usage.setPostingState(postingState);
         usages.saveAndFlush(usage);
         rebuildAllAllocations(user);
         return usage.getId();
@@ -455,6 +476,7 @@ public class OvertimeService {
         }
         ensureAllocationConsistency(user);
         OvertimeCredit credit = requireOwnedCredit(user, id);
+        assertPeriodOpen(user, credit.getWorkDate());
         double used = hoursFromMinutes(allocations.findByCredit(credit).stream().mapToInt(OvertimeAllocation::getAllocatedMinutes).sum());
         boolean keepLegacyLocalIdentity = credit.getStartAtInstant() == null
                 && req.date() == null
@@ -485,6 +507,7 @@ public class OvertimeService {
                         + " ч: из него уже списано " + fmt(used) + " ч");
             }
             LocalDate date = dayEntryService.parseDate(normalized.date(), "Дата переработки должна быть в формате yyyy-MM-dd");
+            assertPeriodOpen(user, date);
             credit.setWorkDate(date);
             credit.setTimeRange(normalize(calculated.timeRange()));
             credit.setStartAt(null);
@@ -511,6 +534,7 @@ public class OvertimeService {
         }
 
         for (CreditSegment segment : segments) {
+            assertPeriodOpen(user, segment.workDate());
             ensureNoOvertimeOverlap(user, segment.startAt(), segment.endAt(), segment.startInstant(), segment.endInstant(), credit.getId());
         }
 
@@ -572,6 +596,7 @@ public class OvertimeService {
         }
         ensureAllocationConsistency(user);
         OvertimeUsage usage = requireOwnedUsage(user, id);
+        assertPeriodOpen(user, usage.getUsageDate());
         if (usage.isAbsenceLinked()) {
             throw ApiException.conflict("LINKED_USAGE_MANAGED_BY_ABSENCE",
                     "Это списание создано отсутствием и редактируется только через Vacation Planner");
@@ -580,6 +605,7 @@ public class OvertimeService {
         LocalDate date = hasText(req.date())
                 ? dayEntryService.parseDate(req.date(), "Дата списания должна быть в формате yyyy-MM-dd")
                 : usage.getUsageDate();
+        assertPeriodOpen(user, date);
         int requestedMinutes = req.hours() != null
                 ? requirePositiveMinutes(req.hours(), "Укажи часы списания больше 0")
                 : usage.getRequestedMinutes();
@@ -599,6 +625,7 @@ public class OvertimeService {
     public OvertimeAccountDto deleteCredit(AppUser user, long id) {
         ensureAllocationConsistency(user);
         OvertimeCredit credit = requireOwnedCredit(user, id);
+        assertPeriodOpen(user, credit.getWorkDate());
         double used = hoursFromMinutes(allocations.findByCredit(credit).stream().mapToInt(OvertimeAllocation::getAllocatedMinutes).sum());
         if (used > 0.00001) {
             throw ApiException.badRequest("Нельзя удалить начисление, из которого уже списано " + fmt(used) + " ч. Сначала удали соответствующее списание.");
@@ -611,6 +638,7 @@ public class OvertimeService {
     public OvertimeAccountDto deleteUsage(AppUser user, long id) {
         ensureAllocationConsistency(user);
         OvertimeUsage usage = requireOwnedUsage(user, id);
+        assertPeriodOpen(user, usage.getUsageDate());
         if (usage.isAbsenceLinked()) {
             throw ApiException.conflict("LINKED_USAGE_MANAGED_BY_ABSENCE",
                     "Связанное списание удаляется вместе с отсутствием в Vacation Planner");
@@ -1269,7 +1297,9 @@ public class OvertimeService {
                 usage.getRequestedMinutes(),
                 usage.getSourceKind(),
                 usage.getSourceAbsenceId(),
-                !usage.isAbsenceLinked()
+                !usage.isAbsenceLinked(),
+                usage.getPostingState(),
+                usage.isReserved()
         );
     }
 
@@ -1713,6 +1743,16 @@ public class OvertimeService {
             throw ApiException.badRequest("Одна запись не может быть больше 100 часов");
         }
         return round2(value);
+    }
+
+    private void assertPeriodOpen(AppUser user, LocalDate date) {
+        if (date == null) return;
+        LocalDate month = YearMonth.from(date).atDay(1);
+        if (accountingPeriods.findByOwnerAndPeriodMonth(user, month)
+                .map(TimeAccountingPeriod::isClosed).orElse(false)) {
+            throw ApiException.conflict("PERIOD_CLOSED",
+                    "Расчётный период " + YearMonth.from(date) + " закрыт. Добавь корректировку или сначала открой период.");
+        }
     }
 
     private String normalize(String value) {

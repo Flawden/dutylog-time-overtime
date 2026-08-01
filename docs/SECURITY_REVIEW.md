@@ -1,6 +1,11 @@
 # Security review
 
-Status: v27.26.2.
+Status: v27.27.0.
+
+## Approval and closed-period boundaries
+
+Ledger integrity, accounting periods and factual work are owner-scoped and guarded by the Overtime module. Browser writes remain CSRF-protected. Integrity and factual-work reads use `Cache-Control: no-store`. Closed periods reject ordinary mutations with stable `PERIOD_CLOSED`; corrections are append-only rows rather than hidden rewrites. Linked absence usages remain source-owned and cannot be edited through manual overtime endpoints.
+
 
 ## Unified ledger authorization
 

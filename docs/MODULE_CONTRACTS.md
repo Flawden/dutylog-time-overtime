@@ -1,6 +1,6 @@
 # Module contracts
 
-Status: v27.26.2.
+Status: v27.27.0.
 
 DutyLog uses a modular-monolith approach. A module is not a separate service yet; it is a bounded feature area with a stable key, API guards, UI slots and optional offline queue operation types.
 
@@ -63,7 +63,7 @@ PATCH /api/modules
 | `shifts` | shift selector, schedule, shift settings | `/api/shift-types` | `day.shift` |
 | `notes` | day note, note marker | day note updates | `day.note` |
 | `tasks` | tasks tab, day tasks, task markers | `/api/tasks` | `task.done` |
-| `overtime` | overtime tab, day overtime, unified compensation summary | `/api/overtime`, `/api/time-compensation` | `day.overtime` |
+| `overtime` | overtime tab, day overtime, unified compensation summary, integrity and factual work | `/api/overtime`, `/api/time-compensation`, `/api/ledger-integrity`, `/api/actual-work` | `day.overtime` |
 | `important_dates` | important-day day block, star markers, settings | `/api/important-days` | — |
 | `calendar_sync` | external calendar settings, important-event `.ics` action | `/api/calendar-sync`, `/calendar-feed.ics` | — |
 | `notifications` | reminder settings, reminder markers | `/api/notifications` | — |
