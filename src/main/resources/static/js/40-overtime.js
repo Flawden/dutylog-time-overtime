@@ -155,7 +155,7 @@ function renderActualWork(){
     <button type="button" data-delete-actual-work="${item.id}" aria-label="${esc(t("Удалить"))}">×</button>
   </div>`).join("") : `<div class="timeCompensationEmpty">${esc(t("Плановая смена используется как факт"))}</div>`;
   list.querySelectorAll("[data-delete-actual-work]").forEach(button => button.addEventListener("click", async () => {
-    try { await api.deleteActualWork(button.dataset.deleteActualWork); await Promise.all([loadActualWork(), loadTimeCompensation(), loadLedgerIntegrity()]); }
+    try { await api.deleteActualWork(button.dataset.deleteActualWork); await refreshLedgerReadModels(); }
     catch (error) { setSave("err", error.message); }
   }));
 }
@@ -165,11 +165,27 @@ async function loadActualWork(){
   try { state.actualWorkIntervals = await api.actualWork(range.from, range.to); renderActualWork(); return state.actualWorkIntervals; }
   catch (error) { console.error("Failed to load actual work", error); state.actualWorkIntervals = []; renderActualWork(); return []; }
 }
+let ledgerReadModelRefreshChain = Promise.resolve();
+window.__dutylogLedgerReady = ledgerReadModelRefreshChain;
+function refreshLedgerReadModels(){
+  const run = ledgerReadModelRefreshChain
+    .catch(() => null)
+    .then(async () => {
+      // Integrity reconciliation can repair FIFO allocations. Do not run it in
+      // parallel with time-compensation, which performs the same inspection.
+      await loadLedgerIntegrity();
+      const [summary, actual] = await Promise.all([loadTimeCompensation(), loadActualWork()]);
+      return { integrity:state.ledgerIntegrity, summary, actual };
+    });
+  ledgerReadModelRefreshChain = run;
+  window.__dutylogLedgerReady = run;
+  return run;
+}
 async function changeAccountingPeriod(close){
   const range = ledgerMonthRange($("ledgerIntegrityMonth")?.value || "");
   try {
     if (close) await api.closeAccountingPeriod(range.month); else await api.reopenAccountingPeriod(range.month);
-    await Promise.all([loadLedgerIntegrity(), loadTimeCompensation()]);
+    await refreshLedgerReadModels();
   } catch (error) { setSave("err", error.message); }
 }
 async function saveActualWork(event){
@@ -178,7 +194,7 @@ async function saveActualWork(event){
   try {
     await api.createActualWork(body);
     if ($("actualWorkNote")) $("actualWorkNote").value = "";
-    await Promise.all([loadActualWork(), loadTimeCompensation(), loadLedgerIntegrity()]);
+    await refreshLedgerReadModels();
     setSave("ok", t("Фактический интервал добавлен"));
   } catch (error) { setSave("err", error.message); }
 }
@@ -1696,7 +1712,7 @@ async function loadLedgerPage(silent = true){
     state.overtimeAccount = accountSnapshot;
     renderLedgerTable();
     updateOvertimeBalanceLabel();
-    await Promise.all([loadTimeCompensation(), loadLedgerIntegrity(), loadActualWork()]);
+    await refreshLedgerReadModels();
   } catch (err) {
     console.error(err);
     if (!silent) setSave("err", err.message);
@@ -1929,7 +1945,7 @@ for (const id of ["creditDate", "creditStart", "creditEnd", "creditBreak", "cred
 $("ledgerIntegrityMonth")?.addEventListener("change", async () => {
   const range = ledgerMonthRange($("ledgerIntegrityMonth").value);
   if ($("actualWorkDate")) $("actualWorkDate").value = range.from;
-  await Promise.all([loadLedgerIntegrity(), loadActualWork(), loadTimeCompensation()]);
+  await refreshLedgerReadModels();
 });
 $("ledgerClosePeriod")?.addEventListener("click", () => changeAccountingPeriod(true));
 $("ledgerReopenPeriod")?.addEventListener("click", () => changeAccountingPeriod(false));

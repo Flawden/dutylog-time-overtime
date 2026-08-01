@@ -1,5 +1,5 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, currentLocalDateKey } = require('./helpers');
+const { registerAndOnboard, currentLocalDateKey, openView, waitForLedgerReady } = require('./helpers');
 
 function plusDays(key, days) {
   const value = new Date(`${key}T12:00:00Z`);
@@ -28,8 +28,8 @@ test('Overtime Next keeps the professional desktop ledger and replaces it with d
     });
   }, { firstDate, secondDate, today });
 
-  await page.locator('#tabbar a[data-view="overtime"]').click();
-  await page.evaluate(() => loadLedgerPage(true));
+  await openView(page, 'overtime');
+  await waitForLedgerReady(page);
   await expect.poll(() => page.evaluate(() => state.overtimeAccount?.usages?.length || 0)).toBe(1);
   await expect.poll(() => page.evaluate(() => state.overtimeAccount?.usages?.[0]?.hours || 0)).toBe(4);
 

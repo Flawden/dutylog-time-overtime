@@ -1,6 +1,6 @@
 # Security review
 
-Status: v27.27.0.
+Status: v27.27.1.
 
 ## Approval and closed-period boundaries
 

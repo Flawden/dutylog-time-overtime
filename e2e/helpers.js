@@ -58,19 +58,41 @@ async function currentLocalDateKey(page) {
   });
 }
 
+async function waitForAppIdle(page) {
+  await expect(page.locator('#appBoot')).toBeHidden({ timeout:30_000 });
+  await page.waitForFunction(() => {
+    const ui = typeof state === 'undefined' ? {} : (state.ui || {});
+    return !ui.booting && !ui.loadingCalendar && !ui.loadingTasks && !ui.loadingLedger;
+  }, null, { timeout:30_000 });
+  await page.waitForLoadState('networkidle');
+}
+
+async function waitForLedgerReady(page) {
+  await page.evaluate(async () => {
+    await Promise.resolve(window.__dutylogLedgerRouteReady);
+    await Promise.resolve(window.__dutylogLedgerReady);
+  });
+  await expect.poll(() => page.evaluate(() => ({
+    loading:Boolean(typeof state !== 'undefined' && state.ui?.loadingLedger),
+    summary:Boolean(typeof state !== 'undefined' && state.timeCompensation),
+    integrity:Boolean(typeof state !== 'undefined' && state.ledgerIntegrity)
+  })), { timeout:30_000 }).toEqual({ loading:false, summary:true, integrity:true });
+}
+
 async function openView(page, view) {
   const section = page.locator(`#view-${view}`);
-  if (await section.isVisible()) return section;
-
-  const tab = page.locator(`#tabbar a[data-view="${view}"]`);
-  if (await tab.isVisible()) {
-    await tab.click();
-  } else {
-    await page.evaluate(target => {
-      window.location.hash = `#${target}`;
-    }, view);
+  if (!(await section.isVisible())) {
+    const tab = page.locator(`#tabbar a[data-view="${view}"]`);
+    if (await tab.isVisible()) {
+      await tab.click();
+    } else {
+      await page.evaluate(target => {
+        window.location.hash = `#${target}`;
+      }, view);
+    }
+    await expect(section).toBeVisible();
   }
-  await expect(section).toBeVisible();
+  if (view === 'overtime') await waitForLedgerReady(page);
   return section;
 }
 
@@ -196,6 +218,8 @@ async function toggleModule(page, key, enabled) {
 module.exports = {
   registerAndOnboard,
   currentLocalDateKey,
+  waitForAppIdle,
+  waitForLedgerReady,
   openView,
   selectDate,
   waitForApi,

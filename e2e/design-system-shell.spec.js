@@ -1,5 +1,5 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard } = require('./helpers');
+const { registerAndOnboard, waitForAppIdle } = require('./helpers');
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -41,7 +41,9 @@ test('UI Core workspace persists in the single DutyLog shell after Classic sunse
   await expect(page.locator('html')).toHaveAttribute('data-ui-palette', 'violet');
   await expect(page.locator('#appearanceMsg')).toContainText(/Сохранено автоматически|Saved automatically/);
 
+  await waitForAppIdle(page);
   await page.reload();
+  await waitForAppIdle(page);
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'next');
   await expect(page.locator('html')).toHaveAttribute('data-ui-workspace', 'planner');
   await expect(page.locator('html')).toHaveAttribute('data-ui-layout', 'compact');
@@ -59,7 +61,9 @@ test('UI Core workspace persists in the single DutyLog shell after Classic sunse
     appearance.themeConfig = { ...(appearance.themeConfig || {}), shellMode: 'classic' };
     localStorage.setItem(key, JSON.stringify(appearance));
   });
+  await waitForAppIdle(page);
   await page.reload();
+  await waitForAppIdle(page);
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'next');
   await expect(page.locator('#nextTopbar')).toBeVisible();
   await expect(page.locator('#tabbar a[data-view="today"]')).toBeVisible();

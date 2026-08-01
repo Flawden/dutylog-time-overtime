@@ -1,15 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.27.0.
+Status: v27.27.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.27.0 adds approval lifecycle, reservation/posting semantics, append-only reversals, period closure, integrity reconciliation and explicit actual-work intervals on top of the recovered V41–V43 lineage. The current application baseline is 112 Java test classes / 598 `@Test` methods / 36 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.27.1 stabilizes browser freshness and workflow contracts on top of the v27.27.0 approval ledger. The current application baseline is 113 Java test classes / 599 `@Test` methods / 36 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+
+## v27.27.1 Ledger Workflow Browser Contract Hotfix extension
+
+- `LedgerWorkflowBrowserContractHotfixTest` protects route refresh, serialized ledger projections, explicit expected-status marking, current-month timezone data and application-idle reloads.
+- Overtime navigation waits for `__dutylogLedgerRouteReady` and `__dutylogLedgerReady` instead of asserting stale hidden-view state.
+- The runtime fixture still rejects every unmarked same-origin HTTP failure; only the intentional closed-period `409` carries the expected-status header.
+- Baseline advances to 113 Java test classes / 599 `@Test` methods / 36 Playwright scenarios.
 
 
 ## v27.27.0 Ledger Integrity & Approval Workflow extension

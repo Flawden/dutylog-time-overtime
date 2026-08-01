@@ -29,6 +29,7 @@ test('partial time off keeps the planned shift and spends the unified overtime b
   const timeOffOption = page.locator('#vacationType option', { hasText:'Отгул' });
   const timeOffValue = await timeOffOption.getAttribute('value');
   await page.locator('#vacationType').selectOption(timeOffValue);
+  await page.locator('#vacationStatus').selectOption('APPROVED');
   await expect(page.locator('#vacationCompensation')).toHaveValue('OVERTIME_BANK');
   await page.locator('#vacationCoverage').selectOption('PARTIAL');
   await expect(page.locator('#vacationPartialTimes')).toBeVisible();
@@ -51,6 +52,7 @@ test('partial time off keeps the planned shift and spends the unified overtime b
     && response.request().method() === 'POST' && response.status() === 201);
   await page.locator('#vacationSaveBtn').click();
   const created = await (await createdResponse).json();
+  expect(created.status).toBe('APPROVED');
   expect(created.coverage).toBe('PARTIAL');
   expect(created.chargedMinutes).toBe(240);
   expect(created.compensationPolicy).toBe('OVERTIME_BANK');

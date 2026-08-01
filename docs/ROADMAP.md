@@ -1,9 +1,23 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.27.0 — Ledger Integrity & Approval Workflow**.
+Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**.
 
 
-## v27.27.0 — Ledger Integrity & Approval Workflow — current
+## v27.27.1 — Ledger Workflow Browser Contract Hotfix — current
+
+- [x] Refresh Overtime account and projections whenever the route opens after hidden Vacation Planner mutations.
+- [x] Serialize integrity reconciliation before time-compensation/actual-work reads.
+- [x] Keep strict browser failure detection while marking only the intentional closed-period `409`.
+- [x] Replace the July-fixed timezone E2E data with the current browser month.
+- [x] Make posted-compensation scenarios explicitly `APPROVED`.
+- [x] Wait for application and ledger readiness around reload and route transitions.
+- [x] Keep API, OpenAPI, PostgreSQL and Flyway V44 unchanged.
+- [x] Baseline advances to 113 Java test classes / 599 tests / 36 Playwright scenarios.
+
+Next product stage: **v27.28.0 — Payroll Foundation**.
+
+
+## v27.27.0 — Ledger Integrity & Approval Workflow — completed
 
 - [x] Add draft, planned, submitted, approved, rejected, cancelled and completed absence states.
 - [x] Reserve overtime-bank minutes for planned/submitted requests and post them for approved/completed absences.

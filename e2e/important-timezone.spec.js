@@ -157,10 +157,22 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
 
 test('a timezone projection can move a late shift to the next calendar date', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'shift-next-day' });
+  const dates = await page.evaluate(() => {
+    const now = new Date();
+    const pad = value => String(value).padStart(2, '0');
+    const month = pad(now.getMonth() + 1);
+    const prefix = `${now.getFullYear()}-${month}`;
+    return {
+      source:`${prefix}-03`,
+      projected:`${prefix}-04`,
+      sourceDisplay:`03.${month}`,
+      projectedDisplay:`04.${month}`
+    };
+  });
 
   await page.locator('#tabbar a[data-view="settings"]').click();
   await page.locator('[data-settings-jump="time"]').click();
-  await page.locator('#workTimezone').selectOption('Europe/Kyiv');
+  await page.locator('#workTimezone').selectOption('UTC');
   let profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
@@ -173,13 +185,13 @@ test('a timezone projection can move a late shift to the next calendar date', as
       notificationsEnabled:false
     }
   }));
-  await page.evaluate(({ id }) => jfetch('/api/days/2026-07-03', {
+  await page.evaluate(({ id, source }) => jfetch(`/api/days/${source}`, {
     method:'PUT', body:{ shiftTypeId:id, note:null, dayEmoji:null, overtimeHours:0, timeOffHours:0 }
-  }), lateShift);
+  }), { id:lateShift.id, source:dates.source });
 
   await page.locator('#tabbar a[data-view="settings"]').click();
   await page.locator('[data-settings-jump="time"]').click();
-  // Moving +2 hours sends the whole interval to July 4.
+  // Moving from UTC to fixed UTC+5 sends the whole interval to the next local calendar date.
   await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
   profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
@@ -187,18 +199,18 @@ test('a timezone projection can move a late shift to the next calendar date', as
 
   const projectedTemplate = await page.evaluate(({ id }) => jfetch('/api/shift-types')
     .then(items => items.find(item => Number(item.id) === Number(id))), lateShift);
-  expect(projectedTemplate.startTime).toBe('01:00');
-  expect(projectedTemplate.endTime).toBe('09:00');
+  expect(projectedTemplate.startTime).toBe('04:00');
+  expect(projectedTemplate.endTime).toBe('12:00');
 
   await openView(page, 'calendar');
-  const julyFourth = page.locator('#grid [data-date="2026-07-04"]');
-  await expect(julyFourth).toContainText('Поздняя E2E');
-  await expect(julyFourth).toContainText('01:00–09:00');
-  const julyThird = page.locator('#grid [data-date="2026-07-03"]');
-  await expect(julyThird).not.toContainText('Поздняя E2E');
+  const projectedCell = page.locator(`#grid [data-date="${dates.projected}"]`);
+  await expect(projectedCell).toContainText('Поздняя E2E');
+  await expect(projectedCell).toContainText('04:00–12:00');
+  const sourceCell = page.locator(`#grid [data-date="${dates.source}"]`);
+  await expect(sourceCell).not.toContainText('Поздняя E2E');
 
-  await julyFourth.click();
-  await expect(page.locator('#shiftProjection')).toContainText('01:00–09:00');
-  await expect(page.locator('#shiftProjection')).toContainText('03.07 23:00–04.07 07:00');
-  await expect(page.locator('#shiftProjection')).toContainText('2026-07-03');
+  await projectedCell.click();
+  await expect(page.locator('#shiftProjection')).toContainText('04:00–12:00');
+  await expect(page.locator('#shiftProjection')).toContainText(`${dates.sourceDisplay} 23:00–${dates.projectedDisplay} 07:00`);
+  await expect(page.locator('#shiftProjection')).toContainText(dates.source);
 });

@@ -1,3 +1,13 @@
+# v27.27.1 — Ledger Workflow Browser Contract Hotfix
+
+- Refreshed the Overtime read model on route entry so Vacation Planner mutations cannot leave stale Plan → Fact → Compensation totals.
+- Serialized integrity and time-compensation reads to avoid concurrent FIFO reconciliation.
+- Added explicit browser readiness helpers for ledger routes and application-idle reloads.
+- Kept the strict runtime fixture while allowing only explicitly marked expected HTTP statuses such as `409 PERIOD_CLOSED`.
+- Made the timezone projection scenario current-month safe and made posted-compensation scenarios explicitly `APPROVED`.
+- Kept API, OpenAPI, PostgreSQL and Flyway V44 unchanged.
+- Regression baseline advances to 113 Java test classes, 599 `@Test` methods and 36 Playwright scenarios.
+
 # v27.27.0 — Ledger Integrity & Approval Workflow
 
 - Added a full absence approval lifecycle: `DRAFT`, `PLANNED`, `SUBMITTED`, `APPROVED`, `REJECTED`, `CANCELLED` and `COMPLETED`.

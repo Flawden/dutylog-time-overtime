@@ -28,6 +28,8 @@ const test = base.test.extend({
     page.on('response', response => {
       if (!isSameOrigin(response.url(), baseURL)) return;
       if (response.status() >= 400) {
+        const expected = Number(response.request().headers()['x-dutylog-e2e-expected-status']);
+        if (Number.isInteger(expected) && expected === response.status()) return;
         issues.push(`http ${response.status()}: ${response.request().method()} ${response.url()}`);
       }
     });

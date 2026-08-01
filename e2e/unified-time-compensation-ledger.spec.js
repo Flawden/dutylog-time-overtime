@@ -32,6 +32,7 @@ test('absence compensation is linked to FIFO overtime and monthly plan-fact summ
   await openView(page, 'vacation');
   const timeOffValue = await page.locator('#vacationType option', { hasText:'Отгул' }).getAttribute('value');
   await page.locator('#vacationType').selectOption(timeOffValue);
+  await page.locator('#vacationStatus').selectOption('APPROVED');
   await expect(page.locator('#vacationCompensation')).toHaveValue('OVERTIME_BANK');
   await page.locator('#vacationCoverage').selectOption('PARTIAL');
   await page.locator('#vacationTitle').fill('Отгул за переработку');
@@ -42,12 +43,14 @@ test('absence compensation is linked to FIFO overtime and monthly plan-fact summ
     && response.request().method() === 'POST' && response.status() === 201);
   await page.locator('#vacationSaveBtn').click();
   const timeOff = await (await timeOffCreated).json();
+  expect(timeOff.status).toBe('APPROVED');
   expect(timeOff.compensationPolicy).toBe('OVERTIME_BANK');
   expect(timeOff.compensatedMinutes).toBe(240);
   expect(timeOff.linkedOvertimeUsageId).toBeTruthy();
 
   const unpaidValue = await page.locator('#vacationType option', { hasText:'Без содержания' }).getAttribute('value');
   await page.locator('#vacationType').selectOption(unpaidValue);
+  await page.locator('#vacationStatus').selectOption('APPROVED');
   await expect(page.locator('#vacationCompensation')).toHaveValue('UNPAID');
   await page.locator('#vacationCoverage').selectOption('FULL_DAY');
   await page.locator('#vacationTitle').fill('День без содержания');
@@ -57,6 +60,7 @@ test('absence compensation is linked to FIFO overtime and monthly plan-fact summ
     && response.request().method() === 'POST' && response.status() === 201);
   await page.locator('#vacationSaveBtn').click();
   const unpaid = await (await unpaidCreated).json();
+  expect(unpaid.status).toBe('APPROVED');
   expect(unpaid.compensationPolicy).toBe('UNPAID');
   expect(unpaid.linkedOvertimeUsageId).toBeNull();
 

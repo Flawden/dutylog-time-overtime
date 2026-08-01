@@ -8,8 +8,9 @@ test('approval workflow reserves posts reverses and locks a closed accounting pe
   const result = await page.evaluate(async () => {
     const token = decodeURIComponent((document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/) || [])[1] || '');
     const headers = { 'Content-Type':'application/json', 'X-XSRF-TOKEN':token };
-    const call = async (url, options = {}) => {
-      const response = await fetch(url, { ...options, headers:{ ...headers, ...(options.headers || {}) } });
+    const call = async (url, options = {}, expectedStatus = null) => {
+      const expectedHeader = expectedStatus == null ? {} : { 'X-DutyLog-E2E-Expected-Status':String(expectedStatus) };
+      const response = await fetch(url, { ...options, headers:{ ...headers, ...expectedHeader, ...(options.headers || {}) } });
       const text = await response.text();
       let body = null;
       try { body = text ? JSON.parse(text) : null; } catch { body = text; }
@@ -39,7 +40,7 @@ test('approval workflow reserves posts reverses and locks a closed accounting pe
     const integrity = await call(`/api/ledger-integrity?from=${month}-01&to=${month}-28`);
 
     const closed = await call(`/api/ledger-integrity/periods/${month}/close`, { method:'POST' });
-    const blocked = await call('/api/actual-work', { method:'POST', body:JSON.stringify({ workDate:actualDay, startTime:'08:00', endTime:'12:00', note:'Blocked while closed' }) });
+    const blocked = await call('/api/actual-work', { method:'POST', body:JSON.stringify({ workDate:actualDay, startTime:'08:00', endTime:'12:00', note:'Blocked while closed' }) }, 409);
     await call(`/api/ledger-integrity/periods/${month}/reopen`, { method:'POST' });
     const actual = await call('/api/actual-work', { method:'POST', body:JSON.stringify({ workDate:actualDay, startTime:'08:00', endTime:'12:00', note:'Фактическая работа' }) });
     const summary = await call(`/api/time-compensation?from=${month}-01&to=${month}-28`);

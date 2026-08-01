@@ -243,6 +243,7 @@ init().catch(err => {
 
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */
 const VIEWS = window.DutyLogUI?.views?.() || { today:"view-today", calendar:"view-calendar", vacation:"view-vacation", overtime:"view-overtime", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
+window.__dutylogLedgerRouteReady = Promise.resolve();
 function applyRoute(){
   const defaultRoute = "#today";
   const rawRoute = (location.hash || defaultRoute).slice(1);
@@ -281,6 +282,11 @@ function applyRoute(){
   if (active === "calendar") renderCalendar();
   if (active === "important" && typeof renderImportantBoard === "function") renderImportantBoard();
   if (active === "vacation" && typeof openVacationPlannerView === "function") openVacationPlannerView();
+  if (active === "overtime" && typeof loadLedgerPage === "function") {
+    // The vacation workflow can mutate linked overtime usages while this view
+    // is hidden. Always enter Overtime through a fresh ledger projection.
+    window.__dutylogLedgerRouteReady = Promise.resolve(loadLedgerPage(true));
+  }
   if (active === "admin") {
     if (typeof initAdminNavigation === "function") initAdminNavigation();
     renderDiagnosticsClient();
