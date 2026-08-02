@@ -1,9 +1,21 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.29.0 — Workspace, Layout & Theme Studio**.
+Current release: **v27.29.1 — Theme Package Token Scope Contract Hotfix**.
 
 
-## v27.29.0 — Workspace, Layout & Theme Studio — current
+## v27.29.1 — Theme Package Token Scope Contract Hotfix — current
+
+- [x] Reproduce the single Maven failure at `WorkspaceLayoutThemeStudioFrontendContractTest:74`.
+- [x] Confirm the runtime theme package metadata already contains the correct unescaped JavaScript template literal.
+- [x] Remove the phantom-backslash expectation from the Java source contract.
+- [x] Add a focused regression contract for Java-source escaping versus runtime JavaScript content.
+- [x] Keep Workspace Studio runtime, themes, layouts, profile persistence, APIs, PostgreSQL and Flyway V46 unchanged.
+- [x] Advance baseline to 120 Java classes / 611 tests / 38 Playwright scenarios.
+
+Next product stage after green CI and staging acceptance: **v27.30.0 — One-Tap Calendar Connect**.
+
+
+## v27.29.0 — Workspace, Layout & Theme Studio — completed
 
 - [x] Advance the single DutyLog UI Core to contract v2.
 - [x] Add a safe custom workspace with ordered/visible primary navigation.
@@ -17,7 +29,7 @@ Current release: **v27.29.0 — Workspace, Layout & Theme Studio**.
 - [x] Keep Payroll, Unified Ledger, Vacation, Calendar APIs, PostgreSQL and Flyway V46 unchanged.
 - [x] Advance baseline to 119 Java classes / 610 tests / 38 Playwright scenarios.
 
-Next product stage after green CI and staging acceptance: **v27.30.0 — One-Tap Calendar Connect**.
+Stabilized by: **v27.29.1 — Theme Package Token Scope Contract Hotfix**.
 
 
 ## v27.28.3 — Payroll Snapshot Hash Schema Validation Hotfix — completed

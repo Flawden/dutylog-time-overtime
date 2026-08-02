@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.29.0.
+Status: v27.29.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.29.0 advances the single UI platform to contract v2 with safe workspace, layout, calendar-presentation and decoration customization. The current application baseline is 119 Java test classes / 610 `@Test` methods / 38 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.29.1 aligns the Workspace Studio Java source contract with the already-correct JavaScript theme-token literal and adds a focused escaping regression guard. The current application baseline is 120 Java test classes / 611 `@Test` methods / 38 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -12,6 +12,14 @@ Historical foundation: v27.2.29 security baseline remains preserved by all later
 
 
 
+
+## v27.29.1 Theme Package Token Scope Contract Hotfix extension
+
+- `WorkspaceLayoutThemeStudioFrontendContractTest` now matches the actual runtime template literal instead of requiring Java-only escape backslashes in the JavaScript file.
+- `ThemePackageTokenScopeContractHotfixTest` explicitly distinguishes runtime content from Java source escaping and rejects the former phantom-backslash expectation.
+- Theme registry metadata, Midnight/Forest isolation, decoration packages and all 38 Playwright scenarios remain unchanged.
+- Production JavaScript, CSS, profile persistence, API, PostgreSQL and Flyway V46 remain unchanged.
+- Baseline advances to 120 Java test classes / 611 `@Test` methods / 38 Playwright scenarios.
 
 ## v27.29.0 Workspace, Layout & Theme Studio extension
 

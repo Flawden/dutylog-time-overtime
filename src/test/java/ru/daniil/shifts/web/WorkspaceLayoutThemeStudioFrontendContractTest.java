@@ -71,7 +71,7 @@ class WorkspaceLayoutThemeStudioFrontendContractTest {
         String midnight = read("src/main/resources/static/ui/themes/midnight.css");
         String forest = read("src/main/resources/static/ui/themes/forest.css");
         assertTrue(studio.contains("supportsCustomPalette:true"));
-        assertTrue(studio.contains("tokenScope:`html[data-ui-theme=\\\"${id}\\\"]`"));
+        assertTrue(studio.contains("tokenScope:`html[data-ui-theme=\"${id}\"]`"));
         assertTrue(studio.contains("pointerEvents:\"none\""));
         assertTrue(midnight.contains("html[data-ui-theme=\"midnight\"]"));
         assertFalse(midnight.contains("data-ui-theme=\"forest\""));

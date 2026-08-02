@@ -1,3 +1,11 @@
+# v27.29.1 — Theme Package Token Scope Contract Hotfix
+
+- Fixed the single false Maven assertion in `WorkspaceLayoutThemeStudioFrontendContractTest` by matching the actual JavaScript theme-token template literal instead of searching for Java-only escape backslashes.
+- Added a dedicated regression contract that distinguishes Java source escaping from runtime JavaScript file content.
+- Preserved the real theme registry, token scopes, package isolation, decoration metadata and all 38 Playwright scenarios unchanged.
+- Kept production JavaScript, CSS, profile persistence, API, OpenAPI, PostgreSQL and Flyway V46 unchanged.
+- Regression baseline advances to 120 Java test classes, 611 `@Test` methods and 38 Playwright scenarios.
+
 # v27.29.0 — Workspace, Layout & Theme Studio
 
 - Advanced DutyLog UI Core to contract v2 and turned the declarative foundation into a user-facing Workspace Studio.
