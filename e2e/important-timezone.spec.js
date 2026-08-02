@@ -1,5 +1,5 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, currentLocalDateKey, waitForApi, openView, selectDate } = require('./helpers');
+const { registerAndOnboard, currentLocalDateKey, waitForApi, waitForAppIdle, openView, selectDate } = require('./helpers');
 
 test('important dates stay floating while canonical timezone survives reload', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'important' });
@@ -54,6 +54,8 @@ test('important dates stay floating while canonical timezone survives reload', a
   const profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
+  await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
+  await waitForAppIdle(page);
   await expect(timezone).toHaveValue('Europe/Chisinau');
   await expect(displayTimezone).toHaveValue('Europe/Chisinau');
   await expect(page.locator('#timeSettingsStatus')).toContainText(/сохранено|saved/i);
@@ -77,6 +79,8 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   let profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
+  await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
+  await waitForAppIdle(page);
 
   // The user defines the real local shift while living in UTC+5. Future
   // timezone changes must project this template instead of reinterpreting it.
@@ -130,6 +134,8 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   });
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
+  await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
+  await waitForAppIdle(page);
   await calendarRefreshed;
   await expect(page.locator('#defDayStart')).toHaveValue('06:30');
   await expect(page.locator('#defDayEnd')).toHaveValue('15:00');
@@ -176,6 +182,8 @@ test('a timezone projection can move a late shift to the next calendar date', as
   let profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
+  await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
+  await waitForAppIdle(page);
 
   const lateShift = await page.evaluate(() => jfetch('/api/shift-types', {
     method:'POST',
@@ -196,6 +204,8 @@ test('a timezone projection can move a late shift to the next calendar date', as
   profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
+  await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
+  await waitForAppIdle(page);
 
   const projectedTemplate = await page.evaluate(({ id }) => jfetch('/api/shift-types')
     .then(items => items.find(item => Number(item.id) === Number(id))), lateShift);

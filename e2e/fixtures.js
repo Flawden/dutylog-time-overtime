@@ -12,9 +12,34 @@ function isSameOrigin(url, baseURL) {
 const test = base.test.extend({
   page: async ({ page, baseURL }, use, testInfo) => {
     const issues = [];
+    const expectedStatusConsoleBudget = [];
+    const pruneExpectedStatuses = () => {
+      const cutoff = Date.now() - 10_000;
+      while (expectedStatusConsoleBudget.length && expectedStatusConsoleBudget[0].createdAt < cutoff) {
+        expectedStatusConsoleBudget.shift();
+      }
+    };
+    const consumeExpectedStatusConsole = status => {
+      pruneExpectedStatuses();
+      const index = expectedStatusConsoleBudget.findIndex(item => item.status === status);
+      if (index < 0) return false;
+      expectedStatusConsoleBudget.splice(index, 1);
+      return true;
+    };
 
+    page.on('request', request => {
+      if (!isSameOrigin(request.url(), baseURL)) return;
+      const expected = Number(request.headers()['x-dutylog-e2e-expected-status']);
+      if (Number.isInteger(expected) && expected >= 400) {
+        expectedStatusConsoleBudget.push({ status:expected, createdAt:Date.now() });
+      }
+    });
     page.on('console', message => {
-      if (message.type() === 'error') issues.push(`console.error: ${message.text()}`);
+      if (message.type() !== 'error') return;
+      const text = message.text();
+      const resourceStatus = text.match(/Failed to load resource: the server responded with a status of (\d{3})/i);
+      if (resourceStatus && consumeExpectedStatusConsole(Number(resourceStatus[1]))) return;
+      issues.push(`console.error: ${text}`);
     });
     page.on('pageerror', error => issues.push(`pageerror: ${error.message}`));
     page.on('requestfailed', request => {

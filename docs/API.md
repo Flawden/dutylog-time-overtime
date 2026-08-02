@@ -1,4 +1,4 @@
-# DutyLog API v27.27.1
+# DutyLog API v27.27.2
 
 ## Ledger integrity, approval workflow and factual work
 

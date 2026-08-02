@@ -1,9 +1,21 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**.
+Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**.
 
 
-## v27.27.1 — Ledger Workflow Browser Contract Hotfix — current
+## v27.27.2 — Ledger Browser State & Visibility Hotfix — current
+
+- [x] Refresh Vacation Planner on every route entry so shared overtime-bank totals cannot stay stale.
+- [x] Expose Vacation and timezone-save readiness without bypassing real application routes.
+- [x] Keep strict browser error detection while consuming only a marked expected-status resource console message.
+- [x] Make Overtime Next current-month data deterministic on the first day of a month.
+- [x] Scope responsive Unified Ledger assertions to the visible desktop table.
+- [x] Keep API, OpenAPI, PostgreSQL and Flyway V44 unchanged.
+- [x] Baseline advances to 114 Java test classes / 600 tests / 36 Playwright scenarios.
+
+Next product stage: **v27.28.0 — Payroll Foundation**.
+
+## v27.27.1 — Ledger Workflow Browser Contract Hotfix — completed
 
 - [x] Refresh Overtime account and projections whenever the route opens after hidden Vacation Planner mutations.
 - [x] Serialize integrity reconciliation before time-compensation/actual-work reads.

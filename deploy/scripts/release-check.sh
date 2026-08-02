@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.27.1}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.27.2}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -175,8 +175,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.27.1"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.27.1."
+contains docs/API.md "# DutyLog API v27.27.2"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.27.2."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
@@ -288,7 +288,7 @@ contains e2e/design-system-shell.spec.js 'UI Core workspace persists in the sing
 contains CHANGES.md "v27.18.0 — Overtime Next"
 contains README.md "v27.18.0 — Overtime Next"
 contains docs/OVERTIME_NEXT_V27.18.0.md "Overtime Next"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
 contains src/main/resources/static/index.html 'id="overtimeWorkspaceTitle"'
 contains src/main/resources/static/index.html 'id="ledgerThisYear"'
 contains src/main/resources/static/index.html 'id="ledgerChart"'
@@ -313,7 +313,7 @@ contains docs/OVERTIME_NEXT_E2E_CONTRACT_HOTFIX_V27.18.1.md "Overtime Next E2E C
 contains docs/ROADMAP.md '`v27.18.3` — UI Settings & Button Variants Quality Hotfix'
 contains e2e/overtime-editor-modals.spec.js '#ledgerRows [data-del-usage="${firstUsageId}"]'
 contains e2e/overtime-editor-modals.spec.js 'await expect(firstUsageDesktopDelete).toBeVisible();'
-contains e2e/overtime-next.spec.js 'const monthKey = today.slice(0, 7);'
+contains e2e/overtime-next.spec.js 'const monthKey = usageDate.slice(0, 7);'
 contains e2e/overtime-next.spec.js "page.locator('#ledgerThisMonth').click()"
 
   # v27.18.2 Overtime Snapshot Sync & Timezone E2E Stabilization Hotfix
@@ -336,7 +336,7 @@ contains e2e/important-timezone.spec.js 'await selectDate(page, shiftDate);'
 contains CHANGES.md "v27.18.3 — UI Settings & Button Variants Quality Hotfix"
 contains README.md "v27.18.3 — UI Settings & Button Variants Quality Hotfix"
 contains docs/UI_SETTINGS_BUTTON_VARIANTS_QUALITY_HOTFIX_V27.18.3.md "UI Settings & Button Variants Quality Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
 contains src/main/resources/static/index.html 'id="uiPaletteState"'
 contains src/main/resources/static/index.html 'id="paletteThemeReset"'
 contains src/main/resources/static/index.html 'id="buttonVariantPreview"'
@@ -354,7 +354,7 @@ contains src/test/java/ru/daniil/shifts/web/UiCoreWorkspaceFrontendContractTest.
 contains CHANGES.md "v27.19.0 — Tasks & Inbox Next"
 contains README.md "v27.19.0 — Tasks & Inbox Next"
 contains docs/TASKS_INBOX_NEXT_V27.19.0.md "Tasks & Inbox Next"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
 contains src/main/resources/db/migration/postgresql/V37__task_planning_intervals_and_projects.sql "scheduled_start_instant"
 
   # v27.20.0 Notes & Important Events Next
@@ -383,7 +383,7 @@ contains e2e/important-timezone.spec.js "page.locator('#importantEditName')"
 contains CHANGES.md "v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix"
 contains README.md "v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix"
 contains docs/IMPORTANT_EVENT_MODAL_OFFLINE_NOTES_E2E_HOTFIX_V27.20.1.md "Important Event Modal & Offline Notes E2E Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
 contains src/main/resources/static/js/50-tasks.js "function closeImportantEventModals()"
 contains src/main/resources/static/js/50-tasks.js 'button,a,input,select,textarea,[role=button]'
 contains src/main/resources/static/js/50-tasks.js "e.stopPropagation();"
@@ -422,8 +422,8 @@ contains src/test/java/ru/daniil/shifts/web/CalendarMobileExperienceFrontendCont
 contains CHANGES.md "v27.21.0 — Schedule Templates & Calendar Layers"
 contains README.md "v27.21.0 — Schedule Templates & Calendar Layers"
 contains docs/SCHEDULE_TEMPLATES_CALENDAR_LAYERS_V27.21.0.md "Schedule Templates & Calendar Layers"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains docs/ARCHITECTURE.md "V39 Schedule Templates & Calendar Layers"
 contains src/main/resources/db/migration/postgresql/V39__schedule_templates_and_calendar_layers.sql "CREATE TABLE schedule_templates"
 contains src/main/resources/db/migration/postgresql/V39__schedule_templates_and_calendar_layers.sql "CREATE TABLE calendar_layers"
@@ -451,8 +451,8 @@ not_contains e2e/schedule-templates-calendar-layers.spec.js "await openDayModule
 contains CHANGES.md "v27.21.2 — Schedule Accordion E2E Selector Hotfix"
 contains README.md "v27.21.2 — Schedule Accordion E2E Selector Hotfix"
 contains docs/SCHEDULE_ACCORDION_E2E_SELECTOR_HOTFIX_V27.21.2.md "Schedule Accordion E2E Selector Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "dataLayer.loadCalendar(requestedYear, requestedMonth"
 contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "api.month(y, m, { fresh })"
 contains src/test/java/ru/daniil/shifts/web/ScheduleTemplateFrontendContractTest.java "authoritativeTemplatePreviewAndApplyKeepAlignmentOnTheServer"
@@ -464,8 +464,8 @@ contains src/test/java/ru/daniil/shifts/web/ScheduleTemplatesCalendarLayersFront
 contains CHANGES.md "v27.22.0 — Vacation Planner"
 contains README.md "v27.22.0 — Vacation Planner"
 contains docs/VACATION_PLANNER_V27.22.0.md "Vacation Planner"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains docs/ARCHITECTURE.md "V40 Vacation Planner"
 contains src/main/resources/db/migration/postgresql/V40__vacation_planner.sql "CREATE TABLE vacation_settings"
 contains src/main/resources/db/migration/postgresql/V40__vacation_planner.sql "INSERT INTO vacation_settings(user_id)"
@@ -507,15 +507,15 @@ contains e2e/calendar-comfort.spec.js "await expect(page.locator('#layout')).not
 not_contains e2e/calendar-comfort.spec.js "force: true"
 contains src/main/resources/static/js/50-tasks.js '$("pClose").addEventListener("click", () => selectDay(null));'
 contains src/main/resources/static/app.css '.layout.with-panel::before'
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 
   # v27.24.0 Calendar Comfort & Correctness
 contains CHANGES.md "v27.24.0 — Calendar Comfort & Correctness"
 contains README.md "v27.24.0 — Calendar Comfort & Correctness"
 contains docs/CALENDAR_COMFORT_CORRECTNESS_V27.24.0.md "Contextual return to today"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains src/main/resources/static/index.html 'id="todayBtn" type="button" hidden'
 contains src/main/resources/static/index.html 'id="todayShiftDateRange" hidden'
 contains src/main/resources/static/index.html 'id="calendarLoadStatus" role="status" aria-live="polite" hidden'
@@ -547,8 +547,8 @@ contains src/main/resources/static/js/55-calendar-sync.js "to:keyOf(end.getFullY
 not_contains src/main/resources/static/js/55-calendar-sync.js "localDateKey("
 contains src/test/java/ru/daniil/shifts/web/CalendarSyncFrontendContractTest.java "rangeDefaultsUseTheCanonicalCalendarDateKeyHelper"
 contains src/test/java/ru/daniil/shifts/web/CalendarSyncFrontendContractTest.java "!js.contains(\"localDateKey(\")"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 
   # v27.23.1 Calendar Sync JSON UTF-8 Contract Hotfix
 contains CHANGES.md "v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix"
@@ -557,15 +557,15 @@ contains docs/CALENDAR_SYNC_JSON_UTF8_CONTRACT_HOTFIX_V27.23.1.md "getContentAsS
 contains src/test/java/ru/daniil/shifts/web/CalendarSyncControllerTest.java "getContentAsString(StandardCharsets.UTF_8)"
 contains src/test/java/ru/daniil/shifts/web/CalendarSyncControllerTest.java "contains(\"\\u2026\")"
 not_contains src/test/java/ru/daniil/shifts/web/CalendarSyncControllerTest.java ".getContentAsString();"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 
   # v27.23.0 External Calendar Sync
 contains CHANGES.md "v27.23.0 — External Calendar Sync"
 contains README.md "v27.23.0 — External Calendar Sync"
 contains docs/EXTERNAL_CALENDAR_SYNC_V27.23.0.md "SHA-256-only persistent storage"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains docs/ARCHITECTURE.md "V41 External Calendar Sync"
 contains docs/MODULE_CONTRACTS.md '`calendar_sync`'
 contains docs/SECURITY_REVIEW.md "External calendar subscription"
@@ -634,7 +634,7 @@ not_contains src/test/java/ru/daniil/shifts/service/ModuleServiceContractTest.ja
 contains CHANGES.md "v27.19.1 — Task Board Date Range Compatibility Hotfix"
 contains README.md "v27.19.1 — Task Board Date Range Compatibility Hotfix"
 contains docs/TASK_BOARD_DATE_RANGE_COMPATIBILITY_HOTFIX_V27.19.1.md "Task Board Date Range Compatibility Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
 contains src/main/java/ru/daniil/shifts/web/TaskController.java '@RequestParam(name = "scheduledFrom"'
 contains src/main/java/ru/daniil/shifts/web/TaskController.java '@RequestParam(name = "scheduledTo"'
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "withinTaskBoardDeadlineRange"
@@ -650,7 +650,7 @@ contains e2e/tasks-inbox-next.spec.js "Tasks & Inbox Next keeps planning"
 contains CHANGES.md "v27.19.2 — Frontend Asset Contract Stability Hotfix"
 contains README.md "v27.19.2 — Frontend Asset Contract Stability Hotfix"
 contains docs/FRONTEND_ASSET_CONTRACT_STABILITY_HOTFIX_V27.19.2.md "Frontend Asset Contract Stability Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
 contains src/test/java/ru/daniil/shifts/web/TodayDashboardFrontendContractTest.java 'js/35-today.js?v='
 contains src/test/java/ru/daniil/shifts/web/UiCoreWorkspaceFrontendContractTest.java 'js/12-ui-platform.js?v='
 contains src/test/java/ru/daniil/shifts/web/CalendarMobileExperienceFrontendContractTest.java 'js/37-calendar-experience.js?v='
@@ -660,14 +660,14 @@ contains src/test/java/ru/daniil/shifts/web/DesignSystemMobileShellFrontendContr
 contains CHANGES.md "v27.19.3 — Task Deadline Validation E2E Contract Hotfix"
 contains README.md "v27.19.3 — Task Deadline Validation E2E Contract Hotfix"
 contains docs/TASK_DEADLINE_VALIDATION_E2E_CONTRACT_HOTFIX_V27.19.3.md "Task Deadline Validation E2E Contract Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
 contains e2e/task-modules.spec.js "Дедлайн не может быть раньше окончания запланированного интервала."
 
   # v27.19.4 Ghost Button Transition E2E Stabilization Hotfix
 contains CHANGES.md "v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix"
 contains README.md "v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix"
 contains docs/GHOST_BUTTON_TRANSITION_E2E_STABILIZATION_HOTFIX_V27.19.4.md "Ghost Button Transition E2E Stabilization Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
 contains e2e/appearance-quality.spec.js "const borderAlpha = context.getImageData(0, 0, 1, 1).data[3];"
 contains e2e/appearance-quality.spec.js "await expect.poll(async () => (await previewStyle(page)).borderAlpha).toBe(0);"
 not_contains e2e/appearance-quality.spec.js "expect(ghost.borderColor).toBe('rgba(0, 0, 0, 0)');"
@@ -1065,7 +1065,7 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "Status: v27.27.1."
+contains docs/SECURITY_REVIEW.md "Status: v27.27.2."
 contains docs/FINAL_PRODUCT_AUDIT_V27.2.29.md "## Launch decision"
 contains docs/TEST_CONFIG_HOTFIX.md "v27.2.5"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
@@ -1266,7 +1266,7 @@ contains docs/RELEASE_CANDIDATE.md "v27.2.5 — Calendar day identity hotfix"
 contains docs/USER_GUIDE.md "Status: v27.2.5."
 contains docs/PRODUCTION_DEPLOY.md "same GHCR digest that already passed staging"
 contains docs/BACKUP_RESTORE.md "Status: v27.2.30."
-contains docs/RELEASE_CHECKLIST.md "git tag -a v27.27.1"
+contains docs/RELEASE_CHECKLIST.md "git tag -a v27.27.2"
 
 # v27.2.5 calendar persistence regression guards
 contains src/main/resources/static/js/70-user-boot.js "dataLayer.loadCalendar(requestedYear, requestedMonth"
@@ -1589,7 +1589,7 @@ contains deploy/scripts/remote-deploy.sh 'missing=()'
 contains CHANGES.md "v27.2.29 — Final security and product audit hardening"
 contains README.md "v27.2.29 — Final security and product audit hardening"
 contains docs/REGRESSION_TEST_BASELINE.md "v27.2.29 security baseline"
-contains docs/SECURITY_REVIEW.md "Status: v27.27.1."
+contains docs/SECURITY_REVIEW.md "Status: v27.27.2."
 contains src/main/resources/db/migration/postgresql/V23__web_auth_version.sql "auth_version BIGINT NOT NULL DEFAULT 0"
 contains src/main/java/ru/daniil/shifts/config/DutyLogUserPrincipal.java "private final long authVersion"
 contains src/main/java/ru/daniil/shifts/config/WebAccountStateFilter.java "current.getAuthVersion() != principal.getAuthVersion()"
@@ -1670,7 +1670,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1723,7 +1723,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1745,7 +1745,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1840,7 +1840,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -1999,7 +1999,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.10.0 — Task Details"
 contains README.md "v27.10.0 — Task Details"
 contains docs/TASK_DETAILS_V27.10.0.md "read-first"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains src/main/resources/db/migration/postgresql/V32__task_details.sql "ADD COLUMN description"
 contains src/main/java/ru/daniil/shifts/model/DayTask.java "private String description"
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "public TaskDto get(AppUser user, Long id)"
@@ -2020,7 +2020,7 @@ contains e2e/task-details.spec.js 'task details separate reading from editing an
 contains CHANGES.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains README.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md "immutable absolute occurrence"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_start_instant"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_source_timezone"
 contains src/main/java/ru/daniil/shifts/model/DayEntry.java "captureShiftOccurrence"
@@ -2040,7 +2040,7 @@ contains e2e/important-timezone.spec.js "a timezone projection can move a late s
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -2139,8 +2139,8 @@ fi
 contains CHANGES.md "v27.25.2 — Absence Experience Frontend Contract Hotfix"
 contains README.md "v27.25.2 — Absence Experience Frontend Contract Hotfix"
 contains docs/ABSENCE_EXPERIENCE_FRONTEND_CONTRACT_HOTFIX_V27.25.2.md "stale string contract"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains src/test/java/ru/daniil/shifts/web/VacationPlannerFrontendContractTest.java 'for (const absence of facts.absences.slice(0, 3))'
 contains src/test/java/ru/daniil/shifts/web/VacationPlannerFrontendContractTest.java 'for (const absence of facts.partialAbsences)'
 contains src/test/java/ru/daniil/shifts/web/VacationPlannerFrontendContractTest.java 'for (const absence of facts.absences.filter(item => item.coverage !== \"PARTIAL\"))'
@@ -2151,8 +2151,8 @@ not_contains src/main/resources/static/js/37-calendar-experience.js 'for (const 
 contains CHANGES.md "v27.25.1 — Absence Preview Lambda Compile Hotfix"
 contains README.md "v27.25.1 — Absence Preview Lambda Compile Hotfix"
 contains docs/ABSENCE_PREVIEW_LAMBDA_COMPILE_HOTFIX_V27.25.1.md "effectively-final"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java "LocalDate previewDate = date;"
 contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java "filter(period -> covers(period, previewDate))"
 not_contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java "filter(period -> covers(period, date))"
@@ -2163,8 +2163,8 @@ contains src/test/java/ru/daniil/shifts/web/AbsenceTimeOffOverhaulContractTest.j
 contains CHANGES.md "v27.25.0 — Absence & Time-Off Overhaul"
 contains README.md "v27.25.0 — Absence & Time-Off Overhaul"
 contains docs/ABSENCE_TIME_OFF_OVERHAUL_V27.25.0.md "planned shift from the work schedule"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
 contains src/main/resources/db/migration/postgresql/V42__absence_time_off_overhaul.sql "time_off_balance_minutes"
 contains src/main/resources/db/migration/postgresql/V42__absence_time_off_overhaul.sql "TIME_OFF_HOURS"
 contains src/main/resources/db/migration/postgresql/V42__absence_time_off_overhaul.sql "coverage = 'PARTIAL'"
@@ -2188,12 +2188,12 @@ contains e2e/absence-time-off-overhaul.spec.js 'partial time off keeps the plann
 contains CHANGES.md "v27.26.0 — Unified Time & Compensation Ledger"
 contains README.md "v27.26.0 — Unified Time & Compensation Ledger"
 contains docs/UNIFIED_TIME_COMPENSATION_LEDGER_V27.26.0.md "planned shift / day off"
-contains docs/ROADMAP.md "Current release: **v27.27.1 — Ledger Workflow Browser Contract Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.1"
-contains docs/API.md "# DutyLog API v27.27.1"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.27.1."
-contains docs/SECURITY_REVIEW.md "Status: v27.27.1."
-contains docs/MODULE_CONTRACTS.md "Status: v27.27.1."
+contains docs/ROADMAP.md "Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.27.2"
+contains docs/API.md "# DutyLog API v27.27.2"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.27.2."
+contains docs/SECURITY_REVIEW.md "Status: v27.27.2."
+contains docs/MODULE_CONTRACTS.md "Status: v27.27.2."
 contains src/main/resources/db/migration/postgresql/V43__unified_time_compensation_ledger.sql "compensation_policy"
 contains src/main/resources/db/migration/postgresql/V43__unified_time_compensation_ledger.sql "source_absence_id"
 contains src/main/resources/db/migration/postgresql/V43__unified_time_compensation_ledger.sql "Начальный баланс отгулов — перенос в единый банк V43"
@@ -2316,7 +2316,7 @@ done
 contains CHANGES.md "v27.27.1 — Ledger Workflow Browser Contract Hotfix"
 contains README.md "v27.27.1 — Ledger Workflow Browser Contract Hotfix"
 contains docs/LEDGER_WORKFLOW_BROWSER_CONTRACT_HOTFIX_V27.27.1.md "serialized"
-contains docs/ROADMAP.md "v27.27.1 — Ledger Workflow Browser Contract Hotfix — current"
+contains docs/ROADMAP.md "v27.27.1 — Ledger Workflow Browser Contract Hotfix — completed"
 contains docs/REGRESSION_TEST_BASELINE.md "v27.27.1 Ledger Workflow Browser Contract Hotfix extension"
 contains src/main/resources/static/js/40-overtime.js "function refreshLedgerReadModels()"
 contains src/main/resources/static/js/40-overtime.js "let ledgerReadModelRefreshChain = Promise.resolve()"
@@ -2337,6 +2337,29 @@ contains e2e/unified-time-compensation-ledger.spec.js "#vacationStatus').selectO
 contains e2e/design-system-shell.spec.js "waitForAppIdle(page)"
 contains e2e/overtime-next.spec.js "waitForLedgerReady(page)"
 contains src/test/java/ru/daniil/shifts/web/LedgerWorkflowBrowserContractHotfixTest.java "browserContractsRefreshSerializeAndMarkExpectedFailures"
+
+# v27.27.2 Ledger Browser State & Visibility Hotfix
+contains CHANGES.md "v27.27.2 — Ledger Browser State & Visibility Hotfix"
+contains README.md "v27.27.2 — Ledger Browser State & Visibility Hotfix"
+contains docs/LEDGER_BROWSER_STATE_VISIBILITY_HOTFIX_V27.27.2.md "one-use"
+contains docs/ROADMAP.md "v27.27.2 — Ledger Browser State & Visibility Hotfix — current"
+contains docs/REGRESSION_TEST_BASELINE.md "v27.27.2 Ledger Browser State & Visibility Hotfix extension"
+contains src/main/resources/static/js/39-vacation-planner.js "window.__dutylogVacationReady = Promise.resolve()"
+contains src/main/resources/static/js/39-vacation-planner.js "function openVacationPlannerView(force = false)"
+contains src/main/resources/static/js/70-user-boot.js "openVacationPlannerView(true)"
+contains e2e/helpers.js "async function waitForVacationReady(page)"
+contains e2e/helpers.js "if (view === 'vacation') await waitForVacationReady(page)"
+contains src/main/resources/static/js/60-settings.js "state.ui.savingTimeSettings = true"
+contains src/main/resources/static/js/60-settings.js "window.__dutylogTimeSettingsSaveReady = Promise.resolve()"
+contains src/main/resources/static/js/60-settings.js 'addEventListener("click", runTimeSettingsSave)'
+contains e2e/helpers.js "!ui.savingTimeSettings"
+contains e2e/important-timezone.spec.js "window.__dutylogTimeSettingsSaveReady"
+contains e2e/fixtures.js "expectedStatusConsoleBudget"
+contains e2e/fixtures.js "consumeExpectedStatusConsole"
+not_contains e2e/overtime-next.spec.js "plusDays(today, -2)"
+contains e2e/overtime-next.spec.js 'usageDate:`${prefix}-03`'
+contains e2e/unified-time-compensation-ledger.spec.js ".ledgerTableWrap .overtimeLinkedUsage"
+contains src/test/java/ru/daniil/shifts/web/LedgerBrowserStateVisibilityHotfixTest.java "browserRoutesExposeFreshReadinessAndResponsiveSelectors"
 
 # v27.26.1 Absence Request Constructor Compile Hotfix
 contains CHANGES.md "v27.26.1 — Absence Request Constructor Compile Hotfix"
@@ -2569,8 +2592,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.27.1"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.27.1."
+contains docs/API.md "# DutyLog API v27.27.2"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.27.2."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
@@ -2584,15 +2607,15 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "599" ]]; then
-  ok "test method baseline: 599"
+if [[ "$TEST_METHODS" == "600" ]]; then
+  ok "test method baseline: 600"
 else
-  fail "expected 599 @Test methods, found $TEST_METHODS"
+  fail "expected 600 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "113" ]]; then
-  ok "test class baseline: 113"
+if [[ "$TEST_CLASSES" == "114" ]]; then
+  ok "test class baseline: 114"
 else
-  fail "expected 113 test classes, found $TEST_CLASSES"
+  fail "expected 114 test classes, found $TEST_CLASSES"
 fi
 
 echo

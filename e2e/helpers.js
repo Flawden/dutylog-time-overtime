@@ -62,9 +62,18 @@ async function waitForAppIdle(page) {
   await expect(page.locator('#appBoot')).toBeHidden({ timeout:30_000 });
   await page.waitForFunction(() => {
     const ui = typeof state === 'undefined' ? {} : (state.ui || {});
-    return !ui.booting && !ui.loadingCalendar && !ui.loadingTasks && !ui.loadingLedger;
+    return !ui.booting && !ui.loadingCalendar && !ui.loadingTasks && !ui.loadingLedger && !ui.savingTimeSettings;
   }, null, { timeout:30_000 });
   await page.waitForLoadState('networkidle');
+}
+
+async function waitForVacationReady(page) {
+  await page.evaluate(async () => {
+    await Promise.resolve(window.__dutylogVacationReady);
+  });
+  await expect.poll(() => page.evaluate(() =>
+    Boolean(typeof state !== 'undefined' && state.vacationPlanner)
+  ), { timeout:30_000 }).toBe(true);
 }
 
 async function waitForLedgerReady(page) {
@@ -92,6 +101,7 @@ async function openView(page, view) {
     }
     await expect(section).toBeVisible();
   }
+  if (view === 'vacation') await waitForVacationReady(page);
   if (view === 'overtime') await waitForLedgerReady(page);
   return section;
 }
@@ -219,6 +229,7 @@ module.exports = {
   registerAndOnboard,
   currentLocalDateKey,
   waitForAppIdle,
+  waitForVacationReady,
   waitForLedgerReady,
   openView,
   selectDate,

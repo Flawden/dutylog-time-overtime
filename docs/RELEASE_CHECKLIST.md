@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.27.1.
+Status: v27.27.2.
 
 ## Local gate
 
@@ -19,8 +19,11 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Staging
 
 - push the exact candidate tree to `test`;
-- confirm the Maven gate executes all 599 tests with zero failures;
+- confirm the Maven gate executes all 600 tests with zero failures;
 - confirm all 36 Playwright scenarios pass, including serialized ledger refresh, workflow reservation/posting, closed-period protection and explicit factual work;
+- create an overtime credit while Vacation Planner is hidden, open Vacation and confirm the available compensatory-time balance refreshes without a page reload;
+- save a timezone and wait for the full calendar/tasks/ledger/notification refresh before reloading; confirm no `Failed to fetch` console error;
+- on desktop confirm linked usages are asserted in the visible table, then switch to mobile cards without duplicate-visibility ambiguity;
 - create a DRAFT overtime-backed absence and confirm no usage exists; submit it and confirm `RESERVED`; approve it and confirm `POSTED`; cancel it and confirm the hours return;
 - close the month, confirm ordinary absence/actual-work edits return `PERIOD_CLOSED`, add an append-only correction, then reopen it;
 - inspect `/api/v1/ledger-integrity` and confirm `healthy=true`, no orphan usage and no allocation mismatch;
@@ -121,6 +124,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.27.1 -m "v27.27.1 — Ledger Integrity & Approval Workflow"
-git push origin v27.27.1
+git tag -a v27.27.2 -m "v27.27.2 — Ledger Integrity & Approval Workflow"
+git push origin v27.27.2
 ```

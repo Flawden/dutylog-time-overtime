@@ -281,7 +281,11 @@ function applyRoute(){
   if (active === "today" && typeof renderTodayDashboard === "function") renderTodayDashboard();
   if (active === "calendar") renderCalendar();
   if (active === "important" && typeof renderImportantBoard === "function") renderImportantBoard();
-  if (active === "vacation" && typeof openVacationPlannerView === "function") openVacationPlannerView();
+  if (active === "vacation" && typeof openVacationPlannerView === "function") {
+    // Overtime credits can change while Vacation Planner is hidden. Route entry
+    // must refresh the shared compensation balance instead of repainting cache.
+    window.__dutylogVacationReady = Promise.resolve(openVacationPlannerView(true));
+  }
   if (active === "overtime" && typeof loadLedgerPage === "function") {
     // The vacation workflow can mutate linked overtime usages while this view
     // is hidden. Always enter Overtime through a fresh ledger projection.

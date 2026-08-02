@@ -457,10 +457,13 @@ function isRecognizedTimeZone(value){
   } catch (_) { return false; }
 }
 async function saveTimeSettings(){
+  state.ui = state.ui || {};
+  state.ui.savingTimeSettings = true;
   const next = readTimeSettingsForm();
   if (!isRecognizedTimeZone(next.workTimezone)) {
     setSave("err", t("часовой пояс не распознан"));
     setTimeSettingsStatus("dirty", t("часовой пояс не распознан"));
+    state.ui.savingTimeSettings = false;
     return false;
   }
   setTimeSettingsStatus("dirty", state.language === "en" ? "saving…" : "сохранение…");
@@ -501,7 +504,15 @@ async function saveTimeSettings(){
     setTimeSettingsStatus("dirty", state.language === "en" ? "save failed" : "ошибка сохранения");
     setSave("err", err.message || t("не удалось сохранить часовой пояс"));
     return false;
+  } finally {
+    state.ui.savingTimeSettings = false;
   }
+}
+window.__dutylogTimeSettingsSaveReady = Promise.resolve();
+function runTimeSettingsSave(){
+  const ready = Promise.resolve(saveTimeSettings());
+  window.__dutylogTimeSettingsSaveReady = ready;
+  return ready;
 }
 let timeAutoApplyTimer = null;
 let timeSettingsApplyQueue = Promise.resolve();
@@ -772,7 +783,7 @@ async function applyLegacyTaskDeadlineMigration(){
 
 function initTimeSettingsEvents(){
   if (!$("timeSettingsCard")) return;
-  $("timeSaveTimezone")?.addEventListener("click", saveTimeSettings);
+  $("timeSaveTimezone")?.addEventListener("click", runTimeSettingsSave);
   $("legacyShiftOpen")?.addEventListener("click", openLegacyShiftMigration);
   $("legacyShiftClose")?.addEventListener("click", closeLegacyShiftMigration);
   $("legacyShiftCancel")?.addEventListener("click", closeLegacyShiftMigration);

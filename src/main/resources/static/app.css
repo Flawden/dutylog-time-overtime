@@ -3212,7 +3212,7 @@ body.panel-open .globalQuickAdd { display:none !important; }
 .calendarSyncWarning{margin-top:12px}
 @media(max-width:760px){.calendarSyncGrid{grid-template-columns:1fr}.calendarSyncRange{grid-template-columns:1fr 1fr}.calendarSyncRange button{grid-column:1/-1}.calendarSyncSecret{grid-template-columns:1fr}.calendarSyncSecret button{width:100%}}
 
-/* v27.27.1 — Ledger Integrity & Approval Workflow */
+/* v27.27.2 — Ledger Integrity & Approval Workflow */
 .ledgerIntegrityCard{margin:18px 0;padding:18px;border:1px solid var(--line);border-radius:22px;background:var(--surface-1);box-shadow:var(--shadow-sm)}
 .ledgerIntegrityHead,.ledgerIntegrityControls{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .ledgerIntegrityHead h3{margin:2px 0 0}.ledgerIntegrityStatus{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border-radius:999px;background:color-mix(in srgb,var(--accent) 14%,transparent);font-weight:750}

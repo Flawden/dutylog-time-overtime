@@ -1,3 +1,12 @@
+# v27.27.2 — Ledger Browser State & Visibility Hotfix
+
+- Refreshed Vacation Planner on route entry so overtime credits created while the screen is hidden cannot leave a stale compensatory-time balance.
+- Exposed bounded readiness promises for Vacation Planner and the full timezone-save refresh lifecycle.
+- Completed the explicit expected-status browser contract for Chromium's generic resource console message without weakening unmarked HTTP or console failures.
+- Made Overtime Next month-boundary safe and scoped Unified Ledger assertions to the visible desktop surface.
+- Kept API, OpenAPI, PostgreSQL and Flyway V44 unchanged.
+- Regression baseline advances to 114 Java test classes, 600 `@Test` methods and 36 Playwright scenarios.
+
 # v27.27.1 — Ledger Workflow Browser Contract Hotfix
 
 - Refreshed the Overtime read model on route entry so Vacation Planner mutations cannot leave stale Plan → Fact → Compensation totals.

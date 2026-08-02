@@ -70,7 +70,7 @@ test('absence compensation is linked to FIFO overtime and monthly plan-fact summ
   await expect(page.locator('#timeCompUnpaid')).not.toContainText('0 ч');
   await expect(page.locator('#timeCompDays')).toContainText('Списано из банка переработок');
   await expect(page.locator('#timeCompDays')).toContainText('Неоплачиваемое время');
-  const linked = page.locator('.overtimeLinkedUsage', { hasText:/Управляется отсутствием|Managed by absence/i });
+  const linked = page.locator('.ledgerTableWrap .overtimeLinkedUsage', { hasText:/Управляется отсутствием|Managed by absence/i });
   await expect(linked.first()).toBeVisible();
   await expect(page.locator(`[data-edit-usage="${timeOff.linkedOvertimeUsageId}"]`)).toHaveCount(0);
   await expect(page.locator(`[data-del-usage="${timeOff.linkedOvertimeUsageId}"]`)).toHaveCount(0);
@@ -85,5 +85,5 @@ test('absence compensation is linked to FIFO overtime and monthly plan-fact summ
   await openView(page, 'overtime');
   await expect(page.locator('#ledgerBalance')).toContainText('8');
   await expect(page.locator('#timeCompUsed')).toContainText('0 ч');
-  await expect(page.locator('.overtimeLinkedUsage')).toHaveCount(0);
+  await expect(page.locator('.ledgerTableWrap .overtimeLinkedUsage')).toHaveCount(0);
 });

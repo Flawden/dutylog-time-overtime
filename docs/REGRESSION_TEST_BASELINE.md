@@ -1,16 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.27.1.
+Status: v27.27.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.27.1 stabilizes browser freshness and workflow contracts on top of the v27.27.0 approval ledger. The current application baseline is 113 Java test classes / 599 `@Test` methods / 36 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.27.2 stabilizes Vacation/Settings readiness, expected-status console handling and responsive ledger selectors on top of the v27.27.1 browser workflow contract. The current application baseline is 114 Java test classes / 600 `@Test` methods / 36 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
 
+## v27.27.2 Ledger Browser State & Visibility Hotfix extension
+
+- `LedgerBrowserStateVisibilityHotfixTest` protects Vacation route freshness, timezone-save readiness, expected-status console handling, month-safe overtime data and visible responsive selectors.
+- Vacation navigation waits for `__dutylogVacationReady`; reload-sensitive timezone scenarios wait for `__dutylogTimeSettingsSaveReady` and application idle.
+- Chromium's generic resource console message is ignored only when an explicitly marked expected status provides a one-use matching budget.
+- Baseline advances to 114 Java test classes / 600 `@Test` methods / 36 Playwright scenarios.
 
 ## v27.27.1 Ledger Workflow Browser Contract Hotfix extension
 

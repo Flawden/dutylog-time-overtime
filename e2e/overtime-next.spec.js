@@ -1,19 +1,17 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, currentLocalDateKey, openView, waitForLedgerReady } = require('./helpers');
-
-function plusDays(key, days) {
-  const value = new Date(`${key}T12:00:00Z`);
-  value.setUTCDate(value.getUTCDate() + days);
-  return value.toISOString().slice(0, 10);
-}
+const { registerAndOnboard, openView, waitForLedgerReady } = require('./helpers');
 
 test('Overtime Next keeps the professional desktop ledger and replaces it with detailed mobile cards', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'overtime-next' });
-  const today = await currentLocalDateKey(page);
-  const firstDate = plusDays(today, -2);
-  const secondDate = plusDays(today, -1);
+  const dates = await page.evaluate(() => {
+    const now = new Date();
+    const pad = value => String(value).padStart(2, '0');
+    const prefix = `${now.getFullYear()}-${pad(now.getMonth() + 1)}`;
+    return { firstDate:`${prefix}-01`, secondDate:`${prefix}-02`, usageDate:`${prefix}-03` };
+  });
+  const { firstDate, secondDate, usageDate } = dates;
 
-  await page.evaluate(async ({ firstDate, secondDate, today }) => {
+  await page.evaluate(async ({ firstDate, secondDate, usageDate }) => {
     await jfetch('/api/overtime/credits', {
       method:'POST',
       body:{ date:firstDate, hours:3, reason:'Overtime Next first credit' }
@@ -24,9 +22,9 @@ test('Overtime Next keeps the professional desktop ledger and replaces it with d
     });
     await jfetch('/api/overtime/usages', {
       method:'POST',
-      body:{ date:today, hours:4, reason:'Overtime Next FIFO usage' }
+      body:{ date:usageDate, hours:4, reason:'Overtime Next FIFO usage' }
     });
-  }, { firstDate, secondDate, today });
+  }, { firstDate, secondDate, usageDate });
 
   await openView(page, 'overtime');
   await waitForLedgerReady(page);
@@ -40,12 +38,12 @@ test('Overtime Next keeps the professional desktop ledger and replaces it with d
   await expect(page.locator('#ledgerOldestCredit')).toContainText('1 ч');
   await expect(page.locator('#ledgerFifoQueue')).toContainText('Overtime Next second credit');
   expect(await page.locator('#ledgerChart .overtimeChartColumn').count()).toBeGreaterThan(0);
-  const monthKey = today.slice(0, 7);
+  const monthKey = usageDate.slice(0, 7);
   await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${monthKey}"]`)).toHaveAttribute('title', /−4/);
 
   await page.locator('#ledgerThisMonth').click();
   await expect(page.locator('#ledgerThisMonth')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${today}"]`)).toHaveAttribute('title', /−4/);
+  await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${usageDate}"]`)).toHaveAttribute('title', /−4/);
 
   await expect(page.locator('.ledgerTableWrap')).toBeVisible();
   await expect(page.locator('#ledgerRows tr[data-credit-id]')).toHaveCount(2);

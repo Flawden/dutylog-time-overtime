@@ -400,7 +400,15 @@ function openVacationPlannerForDate(date){
   const key = date || state.selected || todayKey(); location.hash = "#vacation";
   loadVacationPlanner(false).then(() => { resetVacationEditor({ keepDates:true }); if ($("vacationStart")) $("vacationStart").value = key; if ($("vacationEnd")) $("vacationEnd").value = key; syncVacationCoverage(); requestAnimationFrame(() => $("vacationStart")?.focus()); }).catch(console.error);
 }
-function openVacationPlannerView(){ renderVacationPlanner(); if (!state.vacationPlanner) loadVacationPlanner(false).catch(console.error); }
+window.__dutylogVacationReady = Promise.resolve();
+function openVacationPlannerView(force = false){
+  renderVacationPlanner();
+  if (!force && state.vacationPlanner) return Promise.resolve(state.vacationPlanner);
+  const ready = Promise.resolve(loadVacationPlanner(force));
+  window.__dutylogVacationReady = ready;
+  ready.catch(console.error);
+  return ready;
+}
 
 $("vacationPeriodForm")?.addEventListener("submit", saveVacationPeriod);
 $("vacationPreviewBtn")?.addEventListener("click", previewVacationDraft);
