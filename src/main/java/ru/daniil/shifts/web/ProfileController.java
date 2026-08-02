@@ -243,14 +243,18 @@ public class ProfileController {
         out.put("shadowLevel", safeEnum(input.get("shadowLevel"), "medium", "none", "low", "soft", "medium", "strong"));
         out.put("density", safeEnum(input.get("density"), "comfortable", "compact", "comfortable", "spacious"));
         out.put("cardRadius", clampInt(input.get("cardRadius"), 14, 6, 28));
-        out.put("uiContract", clampInt(input.get("uiContract"), 1, 1, 1));
-        out.put("workspaceId", safeEnum(input.get("workspaceId"), "shift-worker", "shift-worker", "planner", "minimal"));
-        out.put("layoutId", safeEnum(input.get("layoutId"), "dashboard", "dashboard", "compact", "focus"));
+        out.put("uiContract", clampInt(input.get("uiContract"), 2, 2, 2));
+        out.put("workspaceId", safeEnum(input.get("workspaceId"), "shift-worker", "shift-worker", "planner", "minimal", "custom"));
+        out.put("layoutId", safeEnum(input.get("layoutId"), "dashboard", "dashboard", "compact", "focus", "sidebar", "mobile-flow"));
         out.put("themeId", safeEnum(input.get("themeId"), "default", "default", "custom", "midnight", "oled", "forest", "sunset", "industrial", "softPurple"));
         out.put("paletteId", safeEnum(input.get("paletteId"), "theme", "theme", "gold-teal", "teal-gold", "violet", "ember", "custom"));
-        out.put("decorationId", safeEnum(input.get("decorationId"), "none", "none"));
+        out.put("decorationId", safeEnum(input.get("decorationId"), "none", "none", "grid"));
         out.put("accentSecondary", safeColor(input.get("accentSecondary"), "#14CDB4"));
-        out.put("todayWidgets", safeStringList(input.get("todayWidgets"), "shift", "overtime", "tasks", "important"));
+        out.put("todayWidgets", safeTodayWidgets(input.get("todayWidgets")));
+        out.put("navigationOrder", safeNavigationOrder(input.get("navigationOrder")));
+        out.put("navigationVisible", safeNavigationVisible(input.get("navigationVisible")));
+        out.put("calendarDensity", safeEnum(input.get("calendarDensity"), "comfortable", "comfortable", "compact"));
+        out.put("calendarLayerStyle", safeEnum(input.get("calendarLayerStyle"), "pills", "pills", "dots"));
         return out;
     }
 
@@ -286,6 +290,43 @@ public class ProfileController {
         for (Object item : collection) {
             String candidate = item == null ? "" : item.toString().trim();
             if (allowedValues.contains(candidate)) result.add(candidate);
+        }
+        return List.copyOf(result);
+    }
+
+
+    private List<String> safeTodayWidgets(Object value) {
+        List<String> selected = safeStringList(value, "shift", "overtime", "tasks", "important");
+        if (selected.isEmpty()) return List.of();
+        LinkedHashSet<String> result = new LinkedHashSet<>();
+        result.add("shift");
+        result.addAll(selected);
+        return List.copyOf(result);
+    }
+
+    private List<String> safeNavigationOrder(Object value) {
+        List<String> canonical = List.of("today", "calendar", "vacation", "overtime", "payroll", "tasks", "important", "settings");
+        LinkedHashSet<String> result = new LinkedHashSet<>(safeStringList(value, canonical.toArray(String[]::new)));
+        result.addAll(canonical);
+        return List.copyOf(result);
+    }
+
+    private List<String> safeNavigationVisible(Object value) {
+        List<String> fallback = List.of("today", "calendar", "vacation", "overtime", "settings");
+        List<String> selected = safeStringList(value, "today", "calendar", "vacation", "overtime", "payroll", "tasks", "important", "settings");
+        if (selected.isEmpty()) selected = fallback;
+        LinkedHashSet<String> requested = new LinkedHashSet<>(selected);
+        requested.add("today");
+        requested.add("settings");
+        List<String> order = safeNavigationOrder(value);
+        List<String> result = new java.util.ArrayList<>();
+        for (String id : order) {
+            if (requested.contains(id) && result.size() < 5) result.add(id);
+        }
+        if (!result.contains("today")) result.add(0, "today");
+        if (!result.contains("settings")) {
+            if (result.size() >= 5) result.remove(result.size() - 1);
+            result.add("settings");
         }
         return List.copyOf(result);
     }

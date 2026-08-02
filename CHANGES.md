@@ -1,3 +1,14 @@
+# v27.29.0 — Workspace, Layout & Theme Studio
+
+- Advanced DutyLog UI Core to contract v2 and turned the declarative foundation into a user-facing Workspace Studio.
+- Added safe custom navigation ordering/visibility with mandatory Today and Settings routes and a five-item primary-navigation limit.
+- Added independent Today-card ordering/visibility while keeping the Shift card mandatory and preserving all hidden data.
+- Added Sidebar and Mobile Flow layout packages without duplicating screens or business logic.
+- Added compact calendar density, pill/dot schedule-layer presentation and a pointer-free calm-grid decoration.
+- Extended the profile whitelist and synchronous bootstrap for the new UI contract while preserving theme package isolation and rejecting arbitrary CSS/JavaScript.
+- Kept Payroll, Ledger, Vacation, Calendar APIs, PostgreSQL and Flyway V46 unchanged.
+- Regression baseline advances to 119 Java test classes, 610 `@Test` methods and 38 Playwright scenarios.
+
 # v27.28.3 — Payroll Snapshot Hash Schema Validation Hotfix
 
 - Added forward-only Flyway V46 to align `payroll_snapshots.calculation_hash` with the existing JPA `VARCHAR(64)` contract.

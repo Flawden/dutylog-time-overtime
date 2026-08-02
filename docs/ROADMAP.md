@@ -1,10 +1,26 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.28.3 — Payroll Snapshot Hash Schema Validation Hotfix**.
+Current release: **v27.29.0 — Workspace, Layout & Theme Studio**.
 
 
+## v27.29.0 — Workspace, Layout & Theme Studio — current
 
-## v27.28.3 — Payroll Snapshot Hash Schema Validation Hotfix — current
+- [x] Advance the single DutyLog UI Core to contract v2.
+- [x] Add a safe custom workspace with ordered/visible primary navigation.
+- [x] Keep Today and Settings mandatory and cap primary navigation at five items.
+- [x] Add independent Today-card order/visibility while keeping Shift mandatory.
+- [x] Add Sidebar and Mobile Flow layout packages without copied screens.
+- [x] Add compact calendar density and pill/dot schedule-layer presentation.
+- [x] Add a pointer-free calm-grid decoration package.
+- [x] Publish theme package metadata and preserve semantic-token isolation.
+- [x] Extend server-side profile whitelisting and synchronous bootstrap to UI contract v2.
+- [x] Keep Payroll, Unified Ledger, Vacation, Calendar APIs, PostgreSQL and Flyway V46 unchanged.
+- [x] Advance baseline to 119 Java classes / 610 tests / 38 Playwright scenarios.
+
+Next product stage after green CI and staging acceptance: **v27.30.0 — One-Tap Calendar Connect**.
+
+
+## v27.28.3 — Payroll Snapshot Hash Schema Validation Hotfix — completed
 
 - [x] Keep released V45 immutable and preserve its Flyway checksum.
 - [x] Add forward-only V46 to convert `payroll_snapshots.calculation_hash` from `CHAR(64)` to `VARCHAR(64)` using `BTRIM(...)`.

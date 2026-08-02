@@ -1,4 +1,4 @@
-/* DutyLog UI platform: workspace/layout contracts — v27.19.0, UI Core v1.
+/* DutyLog UI platform: workspace/layout contracts — v27.29.0, UI Core v2.
  * This file is intentionally loaded last. Every rule is scoped to a UI
  * platform attribute or component class so presets cannot leak into each other.
  */
@@ -235,4 +235,152 @@ html[data-shell="next"] button[aria-busy="true"] { cursor:wait; }
   .paletteControlBar { align-items:stretch; flex-direction:column; }
   #paletteThemeReset { width:100%; min-height:44px; }
   html[data-shell="next"] :is(.buttonSecondary,.buttonOutline,.buttonGhost,.buttonDanger,.buttonIcon) { min-height:44px; }
+}
+
+/* ─── v27.29.0 Workspace, Layout & Theme Studio — UI Core v2 ─── */
+.workspaceStudio {
+  margin-top:14px;
+  padding-top:14px;
+  border-top:1px solid color-mix(in srgb, var(--color-border) 72%, transparent);
+}
+.workspaceStudioHead,
+.workspaceStudioActions,
+.workspaceStudioRow,
+.workspaceStudioMove {
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+.workspaceStudioHead { justify-content:space-between; align-items:flex-start; }
+.workspaceStudioActions { flex-wrap:wrap; justify-content:flex-end; }
+.workspaceStudioGrid {
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:12px;
+}
+.workspaceStudioGrid > section {
+  min-width:0;
+  padding:11px;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-control);
+  background:color-mix(in srgb, var(--color-surface) 82%, transparent);
+}
+.workspaceStudioTitle { margin-bottom:8px; color:var(--color-text-secondary); font-size:12px; font-weight:800; }
+.workspaceStudioList { display:grid; gap:6px; }
+.workspaceStudioRow {
+  justify-content:space-between;
+  min-height:42px;
+  padding:6px 7px 6px 9px;
+  border:1px solid color-mix(in srgb, var(--color-border) 78%, transparent);
+  border-radius:10px;
+  background:var(--color-surface-elevated);
+}
+.workspaceStudioRow > label { display:flex; align-items:center; gap:8px; min-width:0; cursor:pointer; }
+.workspaceStudioRow > label span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.workspaceStudioRow input[type="checkbox"] { width:17px; height:17px; flex:none; accent-color:var(--color-accent); }
+.workspaceStudioMove { gap:4px; flex:none; }
+.workspaceStudioMove .buttonIcon { width:32px; min-width:32px; min-height:32px; font-size:15px; }
+.workspaceStudioMove .buttonIcon:disabled { opacity:.28; cursor:not-allowed; }
+#workspaceStudioMessage { min-height:18px; margin-top:8px; }
+
+/* A true desktop sidebar without creating a second copy of any screen. */
+@media (min-width:961px) {
+  html[data-ui-layout="sidebar"][data-shell="next"] .wrap {
+    max-width:1500px;
+    padding-left:226px;
+  }
+  html[data-ui-layout="sidebar"][data-shell="next"] .tabbar {
+    position:fixed;
+    top:18px;
+    left:max(18px, calc((100vw - 1500px) / 2 + 18px));
+    bottom:auto;
+    z-index:70;
+    width:188px;
+    max-height:calc(100dvh - 36px);
+    overflow:auto;
+    display:flex;
+    flex-direction:column;
+    grid-template-columns:none;
+    margin:0;
+    padding:8px;
+  }
+  html[data-ui-layout="sidebar"][data-shell="next"] .tabbar a,
+  html[data-ui-layout="sidebar"][data-shell="next"] .tabbar a[data-view="settings"] {
+    width:100%;
+    min-height:48px;
+    justify-content:flex-start;
+  }
+}
+html[data-ui-layout="mobile-flow"][data-shell="next"] .wrap { max-width:780px; }
+html[data-ui-layout="mobile-flow"][data-shell="next"] .todayDashboardGrid { grid-template-columns:1fr; }
+html[data-ui-layout="mobile-flow"][data-shell="next"] .todayDashboardGrid > .card { grid-column:1; }
+html[data-ui-layout="mobile-flow"][data-shell="next"] .todayQuickActions { grid-template-columns:repeat(2,minmax(0,1fr)); }
+
+/* Decorations are isolated, pointer-free packages selected by data attribute. */
+html[data-shell="next"] body::before { opacity:0; }
+html[data-shell="next"][data-ui-decoration="grid"] body::before { opacity:.18; pointer-events:none; }
+
+/* Calendar presentation is independent from the global density/theme. */
+html[data-ui-calendar-density="compact"][data-shell="next"] .cell {
+  min-height:58px;
+  padding:5px 6px;
+}
+html[data-ui-calendar-density="compact"][data-shell="next"] .cell .shiftClock { display:none; }
+html[data-ui-calendar-density="compact"][data-shell="next"] .cell:has(.calendarLayerStack) { padding-bottom:25px; }
+
+html[data-ui-calendar-layers="dots"][data-shell="next"] .calendarLayerStack {
+  right:5px;
+  bottom:5px;
+  flex-direction:row;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:4px;
+}
+html[data-ui-calendar-layers="dots"][data-shell="next"] .calendarLayerChip {
+  display:block;
+  width:11px;
+  min-width:11px;
+  height:11px;
+  padding:0;
+  border-radius:999px;
+  background:var(--layer-color);
+  border:1px solid color-mix(in srgb,var(--layer-color) 64%,#fff 18%);
+  box-shadow:0 0 0 2px color-mix(in srgb,var(--layer-color) 13%,transparent);
+}
+html[data-ui-calendar-layers="dots"][data-shell="next"] .calendarLayerChip > * { display:none; }
+html[data-ui-calendar-layers="dots"][data-shell="next"] .calendarLayerMore { font-size:8px; line-height:11px; }
+html[data-ui-calendar-layers="dots"][data-shell="next"] .cell:has(.calendarLayerStack) { padding-bottom:20px; }
+
+@media (max-width:840px) {
+  .workspaceStudioGrid { grid-template-columns:1fr; }
+  .workspaceStudioHead { display:grid; }
+  .workspaceStudioActions { justify-content:flex-start; }
+  html[data-ui-layout="sidebar"][data-shell="next"] .wrap { padding-left:14px; }
+  html[data-ui-layout="sidebar"][data-shell="next"] .tabbar {
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    top:auto;
+    width:auto;
+    max-height:none;
+    overflow:visible;
+    display:grid;
+    grid-template-columns:repeat(var(--workspace-nav-count, 5),minmax(0,1fr));
+    flex-direction:initial;
+    margin:0;
+    padding:7px 6px calc(7px + env(safe-area-inset-bottom,0px));
+  }
+  html[data-ui-layout="sidebar"][data-shell="next"] .tabbar a,
+  html[data-ui-layout="sidebar"][data-shell="next"] .tabbar a[data-view="settings"] {
+    width:auto;
+    min-height:57px;
+    justify-content:center;
+  }
+}
+@media (max-width:520px) {
+  .workspaceStudioActions { display:grid; grid-template-columns:1fr 1fr; width:100%; }
+  .workspaceStudioActions button { width:100%; }
+  html[data-ui-calendar-density="compact"][data-shell="next"] .cell { min-height:48px; padding:4px; }
 }

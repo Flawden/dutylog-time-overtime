@@ -564,6 +564,9 @@ $('appearanceAccent')?.addEventListener('input', () => {
 });
 $('uiWorkspace')?.addEventListener('change', () => { updateUiPlatformAndPreview(); scheduleAppearanceAutoSave(); });
 $('uiLayout')?.addEventListener('change', () => { updateUiPlatformAndPreview(); scheduleAppearanceAutoSave(); });
+$('uiDecoration')?.addEventListener('change', () => { updateUiPlatformAndPreview(); scheduleAppearanceAutoSave(); });
+$('uiCalendarDensity')?.addEventListener('change', () => { updateUiPlatformAndPreview(); scheduleAppearanceAutoSave(); });
+$('uiCalendarLayerStyle')?.addEventListener('change', () => { updateUiPlatformAndPreview(); scheduleAppearanceAutoSave(); });
 $('uiPalette')?.addEventListener('change', e => {
   applyPaletteMode(e.target.value);
   scheduleAppearanceAutoSave();

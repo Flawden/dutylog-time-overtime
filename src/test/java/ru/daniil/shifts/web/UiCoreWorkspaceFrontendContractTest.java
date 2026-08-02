@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static contract for UI Core v1, declarative workspaces and isolated theme packages. */
+/** Static contract for UI Core v2, customizable workspaces and isolated theme packages. */
 class UiCoreWorkspaceFrontendContractTest {
 
     @Test
@@ -26,6 +26,12 @@ class UiCoreWorkspaceFrontendContractTest {
         assertTrue(html.contains("id=\"uiWorkspace\""));
         assertTrue(html.contains("id=\"uiLayout\""));
         assertTrue(html.contains("id=\"uiPalette\""));
+        assertTrue(html.contains("id=\"uiDecoration\""));
+        assertTrue(html.contains("id=\"uiCalendarDensity\""));
+        assertTrue(html.contains("id=\"uiCalendarLayerStyle\""));
+        assertTrue(html.contains("id=\"workspaceStudio\""));
+        assertTrue(html.contains("id=\"workspaceNavigationList\""));
+        assertTrue(html.contains("id=\"todayWidgetList\""));
         assertTrue(html.contains("id=\"uiPaletteState\""));
         assertTrue(html.contains("id=\"paletteThemeReset\""));
         assertTrue(html.contains("id=\"buttonVariantPreview\""));
@@ -41,6 +47,9 @@ class UiCoreWorkspaceFrontendContractTest {
         assertTrue(js.contains("const palettes = Object.freeze"));
         assertTrue(js.contains("const screens = Object.freeze"));
         assertTrue(js.contains("const widgets = Object.freeze"));
+        assertTrue(js.contains("custom: Object.freeze"));
+        assertTrue(js.contains("sidebar: Object.freeze"));
+        assertTrue(js.contains("themePackage("));
         assertTrue(js.contains("navigation:[\"today\",\"calendar\",\"vacation\",\"overtime\",\"settings\"]"));
         assertTrue(js.contains("todayWidgets:[\"shift\",\"overtime\",\"tasks\",\"important\"]"));
         assertTrue(js.contains("const navigationUniverse = Object.freeze([\"today\",\"calendar\",\"vacation\""));
@@ -73,6 +82,10 @@ class UiCoreWorkspaceFrontendContractTest {
         assertFalse(midnight.contains("data-ui-theme=\"oled\""));
         assertTrue(platform.contains("html[data-ui-layout=\"compact\"]"));
         assertTrue(platform.contains("html[data-ui-layout=\"focus\"]"));
+        assertTrue(platform.contains("html[data-ui-layout=\"sidebar\"]"));
+        assertTrue(platform.contains("data-ui-calendar-layers=\"dots\""));
+        assertTrue(platform.contains("data-ui-decoration=\"grid\""));
+        assertTrue(platform.contains(".workspaceStudioRow"));
         assertTrue(platform.contains(".workspaceHidden"));
     }
 
@@ -85,7 +98,12 @@ class UiCoreWorkspaceFrontendContractTest {
         assertTrue(profile.contains("out.put(\"themeId\""));
         assertTrue(profile.contains("out.put(\"paletteId\""));
         assertTrue(profile.contains("out.put(\"todayWidgets\""));
+        assertTrue(profile.contains("out.put(\"navigationOrder\""));
+        assertTrue(profile.contains("out.put(\"navigationVisible\""));
+        assertTrue(profile.contains("out.put(\"calendarDensity\""));
+        assertTrue(profile.contains("out.put(\"calendarLayerStyle\""));
         assertTrue(profile.contains("private List<String> safeStringList"));
+        assertTrue(profile.contains("private List<String> safeNavigationVisible"));
     }
 
     private static String read(String path) throws Exception {

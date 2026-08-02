@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.28.3.
+Status: v27.29.0.
 
 ## Local gate
 
@@ -16,6 +16,21 @@ docker build -t dutylog:release-check .
 bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ```
 
+
+
+## Workspace, Layout & Theme Studio acceptance
+
+- confirm UI Core reports contract v2 before feature bundles boot;
+- confirm custom navigation keeps Today and Settings and never exceeds five primary items;
+- confirm hidden routes remain reachable through generated secondary links;
+- confirm Shift remains available while optional Today cards can be reordered/hidden;
+- confirm Sidebar returns to the bottom mobile navigation below the desktop breakpoint;
+- confirm Mobile Flow stays a single content column;
+- confirm calendar compact/dots modes change presentation only;
+- confirm grid decoration has `pointer-events: none`;
+- confirm arbitrary CSS/JavaScript and unknown ids are not persisted;
+- confirm Payroll, Ledger, Vacation and Calendar smoke paths remain green;
+- confirm Flyway remains V46.
 
 ## Payroll Module Registry Contract Hotfix acceptance
 
@@ -144,6 +159,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.28.3 -m "v27.28.3 — Payroll Snapshot Hash Schema Validation Hotfix"
-git push origin v27.28.3
+git tag -a v27.29.0 -m "v27.29.0 — Workspace, Layout & Theme Studio"
+git push origin v27.29.0
 ```

@@ -25,12 +25,14 @@
 
     root.dataset.theme = effectiveTheme;
     root.dataset.shell = "next";
-    root.dataset.uiContract = "1";
-    root.dataset.uiWorkspace = allowed(cfg.workspaceId, ["shift-worker","planner","minimal"], "shift-worker");
-    root.dataset.uiLayout = allowed(cfg.layoutId, ["dashboard","compact","focus"], "dashboard");
+    root.dataset.uiContract = "2";
+    root.dataset.uiWorkspace = allowed(cfg.workspaceId, ["shift-worker","planner","minimal","custom"], "shift-worker");
+    root.dataset.uiLayout = allowed(cfg.layoutId, ["dashboard","compact","focus","sidebar","mobile-flow"], "dashboard");
     root.dataset.uiTheme = allowed(cfg.themeId, ["default","custom","midnight","oled","forest","sunset","industrial","softPurple"], preset);
     root.dataset.uiPalette = paletteId;
-    root.dataset.uiDecoration = "none";
+    root.dataset.uiDecoration = allowed(cfg.decorationId, ["none","grid"], "none");
+    root.dataset.uiCalendarDensity = allowed(cfg.calendarDensity, ["comfortable","compact"], "comfortable");
+    root.dataset.uiCalendarLayers = allowed(cfg.calendarLayerStyle, ["pills","dots"], "pills");
 
     const packagedPalette = palettes[paletteId];
     const accent = packagedPalette?.[0] || color(appearance?.accentColor) || "#F5B841";
@@ -59,11 +61,13 @@
   } catch (_) {
     root.dataset.theme = "dark";
     root.dataset.shell = "next";
-    root.dataset.uiContract = "1";
+    root.dataset.uiContract = "2";
     root.dataset.uiWorkspace = "shift-worker";
     root.dataset.uiLayout = "dashboard";
     root.dataset.uiTheme = "default";
     root.dataset.uiPalette = "theme";
     root.dataset.uiDecoration = "none";
+    root.dataset.uiCalendarDensity = "comfortable";
+    root.dataset.uiCalendarLayers = "pills";
   }
 })();

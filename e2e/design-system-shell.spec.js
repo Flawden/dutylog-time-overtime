@@ -7,7 +7,7 @@ test('UI Core workspace persists in the single DutyLog shell after Classic sunse
   await registerAndOnboard(page, { preset: 'full', prefix: 'shell' });
 
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'next');
-  await expect(page.locator('html')).toHaveAttribute('data-ui-contract', '1');
+  await expect(page.locator('html')).toHaveAttribute('data-ui-contract', '2');
   await expect(page.locator('html')).toHaveAttribute('data-ui-workspace', 'shift-worker');
   await expect(page.locator('html')).toHaveAttribute('data-ui-layout', 'dashboard');
   await expect(page.locator('#nextTopbar')).toBeVisible();
@@ -26,7 +26,7 @@ test('UI Core workspace persists in the single DutyLog shell after Classic sunse
   await expect(page.locator('#view-settings')).toBeVisible();
   const appearanceCard = page.locator('#appearanceCard');
   await appearanceCard.locator('.settingsHead').click();
-  await expect(page.locator('#uiPlatformStatus')).toContainText('UI Core v1');
+  await expect(page.locator('#uiPlatformStatus')).toContainText('UI Core v2');
   await expect(page.locator('#singleShellNotice')).toBeVisible();
   await expect(page.locator('[data-shell-choice]')).toHaveCount(0);
 

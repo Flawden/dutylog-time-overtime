@@ -1,16 +1,26 @@
 # DutyLog regression test baseline
 
-Status: v27.28.3.
+Status: v27.29.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.28.3 aligns the PostgreSQL snapshot-hash type with the established JPA contract through forward-only V46. The current application baseline is 118 Java test classes / 605 `@Test` methods / 37 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.29.0 advances the single UI platform to contract v2 with safe workspace, layout, calendar-presentation and decoration customization. The current application baseline is 119 Java test classes / 610 `@Test` methods / 38 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
 
+
+
+## v27.29.0 Workspace, Layout & Theme Studio extension
+
+- `WorkspaceLayoutThemeStudioFrontendContractTest` protects UI contract v2, bounded custom navigation, Today-card safety, layout/calendar CSS scoping, synchronous bootstrap and package isolation.
+- `workspace-layout-theme-studio.spec.js` persists a custom route set, Today-card order, Sidebar layout, calendar density, layer dots and decoration through real profile autosave and reload.
+- `ProfileControllerTest` proves the expanded whitelist normalizes contract v1 input to v2, rejects unknown enums and keeps mandatory entries.
+- Existing `UiCoreWorkspaceFrontendContractTest` and `design-system-shell.spec.js` advance from UI Core v1 to v2 without restoring Classic or duplicating screens.
+- Payroll, approval, ledger and calendar business logic remain unchanged; Flyway remains V46.
+- Baseline advances to 119 Java test classes / 610 `@Test` methods / 38 Playwright scenarios.
 
 ## v27.28.3 Payroll Snapshot Hash Schema Validation Hotfix extension
 

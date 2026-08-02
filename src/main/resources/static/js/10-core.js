@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.28.3"
+const DUTYLOG_VERSION = "27.29.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -212,7 +212,8 @@ const THEME_PRESETS = {
     themeConfig:{ appBg:"#F7F3FF", panelBg:"#FFFFFF", panelAltBg:"#EFE7FF", textColor:"#231B33", mutedColor:"#685B79", borderColor:"#D8C9F5", buttonStyle:"soft", cardStyle:"soft", cardRadius:20, shadowLevel:"soft", density:"comfortable", accentSecondary:"#58C6C8" }
   }
 };
-const UI_CONTRACT_VERSION = 1;
+const UI_CONTRACT_VERSION = 2;
+const UI_NAVIGATION_IDS = Object.freeze(["today","calendar","vacation","overtime","payroll","tasks","important","settings"]);
 const UI_PLATFORM_DEFAULTS = Object.freeze({
   uiContract:UI_CONTRACT_VERSION,
   workspaceId:"shift-worker",
@@ -221,13 +222,17 @@ const UI_PLATFORM_DEFAULTS = Object.freeze({
   paletteId:"theme",
   decorationId:"none",
   accentSecondary:"#14CDB4",
-  todayWidgets:[]
+  todayWidgets:[],
+  navigationOrder:[...UI_NAVIGATION_IDS],
+  navigationVisible:["today","calendar","vacation","overtime","settings"],
+  calendarDensity:"comfortable",
+  calendarLayerStyle:"pills"
 });
-const UI_WORKSPACE_IDS = Object.freeze(["shift-worker","planner","minimal"]);
-const UI_LAYOUT_IDS = Object.freeze(["dashboard","compact","focus"]);
+const UI_WORKSPACE_IDS = Object.freeze(["shift-worker","planner","minimal","custom"]);
+const UI_LAYOUT_IDS = Object.freeze(["dashboard","compact","focus","sidebar","mobile-flow"]);
 const UI_THEME_IDS = Object.freeze(["default","custom","midnight","oled","forest","sunset","industrial","softPurple"]);
 const UI_PALETTE_IDS = Object.freeze(["theme","gold-teal","teal-gold","violet","ember","custom"]);
-const UI_DECORATION_IDS = Object.freeze(["none"]);
+const UI_DECORATION_IDS = Object.freeze(["none","grid"]);
 const UI_TODAY_WIDGET_IDS = Object.freeze(["shift","overtime","tasks","important"]);
 
 const DEFAULT_THEME_CONFIG = { ...THEME_PRESETS.default.themeConfig, ...UI_PLATFORM_DEFAULTS };
@@ -1131,6 +1136,23 @@ function normalizeThemeConfig(config = {}){
   out.accentSecondary = isHexColor(c.accentSecondary) ? String(c.accentSecondary).toUpperCase() : UI_PLATFORM_DEFAULTS.accentSecondary;
   const rawWidgets = Array.isArray(c.todayWidgets) ? c.todayWidgets.map(String) : [];
   out.todayWidgets = [...new Set(rawWidgets.filter(id => UI_TODAY_WIDGET_IDS.includes(id)))];
+  if (out.todayWidgets.length && !out.todayWidgets.includes("shift")) out.todayWidgets.unshift("shift");
+  const rawNavigationOrder = Array.isArray(c.navigationOrder) ? c.navigationOrder.map(String) : [];
+  out.navigationOrder = [...new Set([...rawNavigationOrder.filter(id => UI_NAVIGATION_IDS.includes(id)), ...UI_NAVIGATION_IDS])];
+  const rawNavigationVisible = Array.isArray(c.navigationVisible)
+    ? c.navigationVisible.map(String).filter(id => UI_NAVIGATION_IDS.includes(id))
+    : [...UI_PLATFORM_DEFAULTS.navigationVisible];
+  const visible = [...new Set(rawNavigationVisible)];
+  if (!visible.includes("today")) visible.unshift("today");
+  if (!visible.includes("settings")) visible.push("settings");
+  out.navigationVisible = out.navigationOrder.filter(id => visible.includes(id)).slice(0, 5);
+  if (!out.navigationVisible.includes("today")) out.navigationVisible.unshift("today");
+  if (!out.navigationVisible.includes("settings")) {
+    if (out.navigationVisible.length >= 5) out.navigationVisible.pop();
+    out.navigationVisible.push("settings");
+  }
+  out.calendarDensity = ["comfortable","compact"].includes(String(c.calendarDensity || "")) ? String(c.calendarDensity) : UI_PLATFORM_DEFAULTS.calendarDensity;
+  out.calendarLayerStyle = ["pills","dots"].includes(String(c.calendarLayerStyle || "")) ? String(c.calendarLayerStyle) : UI_PLATFORM_DEFAULTS.calendarLayerStyle;
   return out;
 }
 function normalizeAppearance(p = {}){
