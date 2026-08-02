@@ -6,6 +6,8 @@
 - Kept the planned shift as plan data while projecting full-day absence as the factual state and partial absence as a typed time strip.
 - Added type glyphs and status-aware calendar treatment so meaning is not communicated by color alone.
 - Kept existing direct overtime usages editable for compatibility; no API or database migration is required.
+- Refreshed composer balance data on every open so newly created overtime credits are immediately available to FIFO-backed time off.
+- Corrected the pre-push Maven ICS version assertion and the three bounded browser expectations without changing the public API or schema.
 - Regression baseline advances to 123 Java test classes, 616 `@Test` methods and 39 Playwright scenarios; Flyway remains V46.
 
 # v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix

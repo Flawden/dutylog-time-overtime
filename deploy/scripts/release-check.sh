@@ -2661,6 +2661,13 @@ contains src/main/resources/static/js/30-calendar.js "dataset.absenceStatus"
 contains src/main/resources/static/app.css ".absenceComposerContext"
 contains src/test/java/ru/daniil/shifts/web/UnifiedAbsenceComposerFrontendContractTest.java "oneComposerOwnsVacationTimeOffSickAndUnpaidEntryPoints"
 contains e2e/unified-absence-composer.spec.js "one absence composer routes balances"
+contains src/main/resources/static/js/39-vacation-planner.js "await loadVacationPlanner(true);"
+contains src/test/java/ru/daniil/shifts/web/CalendarSyncControllerTest.java "PRODID:-//DutyLog//Time and Overtime 27.30.0//RU"
+not_contains src/test/java/ru/daniil/shifts/web/CalendarSyncControllerTest.java "PRODID:-//DutyLog//Time and Overtime 27.29.3//RU"
+contains e2e/unified-absence-composer.spec.js "await page.locator('#pClose').click();"
+contains e2e/unified-absence-composer.spec.js "await expect(page.locator('#globalQuickAdd')).toBeVisible();"
+contains e2e/vacation-planner.spec.js ".toContainText('E2E отпуск');"
+not_contains e2e/vacation-planner.spec.js ".toHaveText('E2E отпуск');"
 
   # v27.29.3 Custom Workspace Today Widget Order Persistence Hotfix
 contains CHANGES.md "v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix"

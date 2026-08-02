@@ -199,7 +199,9 @@ async function openAbsenceComposer({ date = null, systemCode = null, source = "v
     setSave("err", t("модуль выключен"));
     return;
   }
-  await loadVacationPlanner(false);
+  // The composer must show the current allowance/FIFO balance. Credits, usages or
+  // absence edits may have changed since the planner was last rendered.
+  await loadVacationPlanner(true);
   absenceComposerSource = source;
   resetVacationEditor({ keepDates:true });
   const key = date || state.selected || todayKey();

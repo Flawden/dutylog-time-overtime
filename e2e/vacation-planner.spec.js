@@ -55,7 +55,7 @@ test('vacation planner previews allowance and composes absence without replacing
   await selectDate(page, start);
   await openDayModuleById(page, 'accVacation');
   await expect(page.locator('#vacationDayList .vacationDayItem', { hasText:'E2E отпуск' })).toBeVisible();
-  await expect(page.locator(`#grid [data-date="${start}"] .absenceFact`)).toHaveText('E2E отпуск');
+  await expect(page.locator(`#grid [data-date="${start}"] .absenceFact`)).toContainText('E2E отпуск');
   await expect(page.locator(`#grid [data-date="${start}"] .plannedShiftGhost`)).toContainText('По графику');
 
   await page.locator('#vacationDayList .vacationDayItem', { hasText:'E2E отпуск' }).click();

@@ -32,6 +32,7 @@ class UnifiedAbsenceComposerFrontendContractTest {
         assertTrue(vacation.contains("function openAbsenceComposer("));
         assertTrue(vacation.contains("systemCode = null"));
         assertTrue(vacation.contains("renderAbsenceComposerContext"));
+        assertTrue(vacation.contains("await loadVacationPlanner(true);"));
         assertTrue(overtime.contains("systemCode:\"TIME_OFF\""));
         assertTrue(overtime.contains("source:\"overtime\""));
     }

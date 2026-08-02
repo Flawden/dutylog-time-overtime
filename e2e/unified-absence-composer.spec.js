@@ -30,6 +30,8 @@ test('one absence composer routes balances and projects full and partial facts i
     if (!response.ok) throw new Error(await response.text());
   }, today);
 
+  await page.locator('#pClose').click();
+  await expect(page.locator('#globalQuickAdd')).toBeVisible();
   await page.locator('#globalQuickAdd').click();
   await page.locator('#quickActionUsage').click();
   await expect(page.locator('#absenceComposerModal')).toBeVisible();

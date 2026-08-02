@@ -41,6 +41,17 @@ Existing direct overtime usages remain editable through the legacy usage editor.
 
 No database migration is required. Flyway remains V46. Payroll, ledger posting, approval workflow, API payloads and the plan/fact persistence model remain unchanged.
 
+## Pre-push full-gate corrections
+
+A local Windows run before the first commit/push completed all 616 Maven tests and exposed one stale ICS version assertion, then ran all 39 Chromium scenarios and exposed three bounded browser contracts. The final v27.30.0 candidate therefore:
+
+- refreshes Vacation Planner data every time the composer opens, so newly earned or spent overtime is reflected immediately;
+- closes the selected-day panel before the global Quick Add route is exercised;
+- accepts the intentional type glyph in the existing vacation calendar assertion;
+- expects the current `27.30.0` ICS `PRODID`.
+
+No release number is advanced because these corrections were made before the first v27.30.0 commit and push.
+
 ## Regression contract
 
 - `UnifiedAbsenceComposerFrontendContractTest` protects one-form reuse, balance routing and calendar projection.
