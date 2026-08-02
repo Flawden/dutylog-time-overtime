@@ -1,3 +1,11 @@
+# v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix
+
+- Preserved the explicit Custom Workspace Today-card order across `/api/profile` sanitization and autosave responses.
+- Kept Shift mandatory without forcing it back to the first position when the user deliberately moved another card above it.
+- Added an HTTP persistence regression and a focused source contract for the server-side order boundary.
+- Kept the strict 38-scenario Playwright fixture, Workspace Studio UI, API shape, PostgreSQL and Flyway V46 unchanged.
+- Regression baseline advances to 122 Java test classes, 614 `@Test` methods and 38 Playwright scenarios.
+
 # v27.29.2 — Custom Workspace Today Widget Inheritance Hotfix
 
 - Fixed Custom Workspace creation to inherit the active preset's Today cards together with its navigation.

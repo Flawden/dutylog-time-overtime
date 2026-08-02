@@ -165,6 +165,29 @@ class ProfileControllerTest {
     }
 
     @Test
+    void customTodayWidgetOrderSurvivesServerSanitization() throws Exception {
+        String body = """
+                {
+                  "themeConfig":{
+                    "workspaceId":"custom",
+                    "todayWidgets":["tasks","shift","important"]
+                  }
+                }
+                """;
+
+        mvc.perform(put("/api/profile")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json").content(body))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.themeConfig.todayWidgets[0]").value("tasks"))
+                .andExpect(jsonPath("$.themeConfig.todayWidgets[1]").value("shift"))
+                .andExpect(jsonPath("$.themeConfig.todayWidgets[2]").value("important"));
+
+        AppUser stored = users.findByUsername(owner.getUsername()).orElseThrow();
+        assertTrue(stored.getThemeConfig().contains("\"todayWidgets\":[\"tasks\",\"shift\",\"important\"]"));
+    }
+
+    @Test
     void eitherLegacyTimezoneFieldUpdatesTheSingleCanonicalTimezone() throws Exception {
         mvc.perform(put("/api/profile")
                         .with(user(owner.getUsername()).roles("USER")).with(csrf())

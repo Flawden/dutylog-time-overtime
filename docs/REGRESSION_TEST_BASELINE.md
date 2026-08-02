@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.29.2.
+Status: v27.29.3.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.29.2 makes Custom Workspace inherit the active preset's Today cards together with its navigation and adds a focused clone-boundary regression guard. The current application baseline is 121 Java test classes / 612 `@Test` methods / 38 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.29.3 preserves the user-defined Custom Workspace Today-card order across profile sanitization and autosave while still restoring mandatory Shift when omitted. The current application baseline is 122 Java test classes / 614 `@Test` methods / 38 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -12,6 +12,15 @@ Historical foundation: v27.2.29 security baseline remains preserved by all later
 
 
 
+
+## v27.29.3 Custom Workspace Today Widget Order Persistence Hotfix extension
+
+- Playwright reached 37/38 and proved Tasks was visible but returned below Shift after the profile autosave response.
+- `ProfileController.safeTodayWidgets(...)` now preserves explicit allowed order and prepends Shift only when absent.
+- `ProfileControllerTest` covers real HTTP response and stored JSON ordering for `tasks, shift, important`.
+- `CustomWorkspaceTodayWidgetOrderPersistenceHotfixTest` protects the server-side order boundary and the browser DOM-order assertion.
+- Baseline advances to 122 Java test classes / 614 `@Test` methods / 38 Playwright scenarios.
+- API shape, PostgreSQL and Flyway V46 remain unchanged.
 
 ## v27.29.2 Custom Workspace Today Widget Inheritance Hotfix extension
 

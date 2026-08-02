@@ -298,9 +298,13 @@ public class ProfileController {
     private List<String> safeTodayWidgets(Object value) {
         List<String> selected = safeStringList(value, "shift", "overtime", "tasks", "important");
         if (selected.isEmpty()) return List.of();
-        LinkedHashSet<String> result = new LinkedHashSet<>();
-        result.add("shift");
-        result.addAll(selected);
+        LinkedHashSet<String> result = new LinkedHashSet<>(selected);
+        if (!result.contains("shift")) {
+            LinkedHashSet<String> withRequiredShift = new LinkedHashSet<>();
+            withRequiredShift.add("shift");
+            withRequiredShift.addAll(result);
+            result = withRequiredShift;
+        }
         return List.copyOf(result);
     }
 

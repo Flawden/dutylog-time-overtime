@@ -1,9 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.29.2 — Custom Workspace Today Widget Inheritance Hotfix**.
+Current release: **v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix**.
 
 
-## v27.29.2 — Custom Workspace Today Widget Inheritance Hotfix — current
+## v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix — current
+
+- [x] Reproduce the remaining Workspace Studio failure after profile autosave.
+- [x] Preserve an explicit allowed Today-card order in `safeTodayWidgets(...)`.
+- [x] Insert mandatory Shift only when the incoming selection omits it.
+- [x] Add HTTP persistence and focused source regression coverage.
+- [x] Keep the strict 38-scenario Playwright fixture unchanged.
+- [x] Advance baseline to 122 Java classes / 614 tests / 38 Playwright scenarios.
+- [x] Keep PostgreSQL and Flyway V46 unchanged.
+
+## v27.29.2 — Custom Workspace Today Widget Inheritance Hotfix — completed
 
 - [x] Preserve the active preset's Today card selection when creating Custom Workspace.
 - [x] Keep Shift mandatory and preserve the existing widget allowlist.
@@ -21,7 +31,9 @@ Current release: **v27.29.2 — Custom Workspace Today Widget Inheritance Hotfix
 - [x] Keep Workspace Studio runtime, themes, layouts, profile persistence, APIs, PostgreSQL and Flyway V46 unchanged.
 - [x] Advance baseline to 120 Java classes / 611 tests / 38 Playwright scenarios.
 
-Next product stage after green CI and staging acceptance: **v27.30.0 — One-Tap Calendar Connect**.
+Next product stage after green CI and staging acceptance: **v27.30.0 — Unified Absence Composer & Calendar Projection**.
+
+After that: **v27.31.0 — One-Tap Calendar Connect**.
 
 
 ## v27.29.0 — Workspace, Layout & Theme Studio — completed
@@ -38,7 +50,7 @@ Next product stage after green CI and staging acceptance: **v27.30.0 — One-Tap
 - [x] Keep Payroll, Unified Ledger, Vacation, Calendar APIs, PostgreSQL and Flyway V46 unchanged.
 - [x] Advance baseline to 119 Java classes / 610 tests / 38 Playwright scenarios.
 
-Stabilized by: **v27.29.1 — Theme Package Token Scope Contract Hotfix** and **v27.29.2 — Custom Workspace Today Widget Inheritance Hotfix**.
+Stabilized by: **v27.29.1 — Theme Package Token Scope Contract Hotfix**, **v27.29.2 — Custom Workspace Today Widget Inheritance Hotfix** and **v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix**.
 
 
 ## v27.28.3 — Payroll Snapshot Hash Schema Validation Hotfix — completed
@@ -307,9 +319,10 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 ### Следующие продуктовые циклы
 
 - `v27.29.0` — Workspace, Layout & Theme Studio;
-- `v27.30.0` — One-Tap Calendar Connect для Google / Apple / Outlook;
-- `v27.31.0` — архив «Все заметки» и визуальные коллизии задач;
-- `v27.32.0` — Telegram inline-действия и понятные пошаговые команды;
+- `v27.30.0` — Unified Absence Composer & Calendar Projection;
+- `v27.31.0` — One-Tap Calendar Connect для Google / Apple / Outlook;
+- `v27.32.0` — архив «Все заметки» и визуальные коллизии задач;
+- `v27.33.0` — Telegram inline-действия и понятные пошаговые команды;
 - затем — контекстные обучалки и отдельный финальный performance / production-readiness цикл.
 
 ## Этап 2 — нормальная API-архитектура
