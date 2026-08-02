@@ -265,7 +265,7 @@ function calendarExperienceRenderWeek(){
   for (const absence of facts.absences.slice(0, 3)) {
     const fact = absence.coverage === "PARTIAL" ? `${absence.startTime || "—"}–${absence.endTime || "—"}` : t("Полный день");
     const planned = absence.plannedShiftName ? `${t("По графику")}: ${absence.plannedShiftName}` : "";
-    rows.push({ icon:absence.coverage === "PARTIAL" ? "◴" : "●", title:typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отсутствие")), meta:[fact, planned].filter(Boolean).join(" · "), color:absence.typeColor, absence });
+    rows.push({ icon:typeof absenceGlyph === "function" ? absenceGlyph(absence) : (absence.coverage === "PARTIAL" ? "◴" : "●"), title:typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отсутствие")), meta:[fact, planned].filter(Boolean).join(" · "), color:absence.typeColor, absence });
   }
   if (Math.abs(facts.overtime) > .001) rows.push({ icon:"＋", title:t("Переработка"), meta:`${facts.overtime > 0 ? "+" : ""}${fmtHours(facts.overtime)} ${state.language === "en" ? "h" : "ч"}`, overtime:true });
   if (!rows.length) rows.push({ icon:"○", title:t("Планов на этот день нет"), meta:t("Можно спокойно оставить его свободным") });
@@ -324,7 +324,7 @@ function calendarExperienceTimelineEvents(key){
     const start = calendarExperienceTimeMinutes(absence.startTime);
     const end = calendarExperienceTimeMinutes(absence.endTime);
     if (start == null || end == null || end <= start) continue;
-    events.push({ type:"vacation", start, end, color:absence.typeColor, title:typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отгул")), meta:absence.plannedShiftName ? `${t("По графику")}: ${absence.plannedShiftName}` : t("Часть дня"), absence });
+    events.push({ type:"vacation", start, end, color:absence.typeColor, title:`${typeof absenceGlyph === "function" ? absenceGlyph(absence) + " " : ""}${typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отгул"))}`, meta:absence.plannedShiftName ? `${t("По графику")}: ${absence.plannedShiftName}` : t("Часть дня"), absence });
   }
   for (const important of facts.important.filter(item => item.allDay === false)) {
     const start = calendarExperienceTimeMinutes(important.startTime);
@@ -375,7 +375,7 @@ function calendarExperienceRenderAllDay(key){
   const items = [];
   if (facts.shift && !facts.segments.length && !facts.factualAbsence) items.push({ type:"shift", icon:"◷", text:shiftDisplayName(facts.shift), color:facts.shift.color });
   for (const item of facts.important.filter(entry => entry.allDay !== false)) items.push({ type:"important", icon:item.icon || "★", text:item.title || t("Важная дата"), color:item.color, important:item });
-  for (const absence of facts.absences.filter(item => item.coverage !== "PARTIAL")) items.push({ type:"vacation", icon:"●", text:`${typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отсутствие"))}${absence.plannedShiftName ? ` · ${t("По графику")}: ${absence.plannedShiftName}` : ""}`, color:absence.typeColor, absence });
+  for (const absence of facts.absences.filter(item => item.coverage !== "PARTIAL")) items.push({ type:"vacation", icon:typeof absenceGlyph === "function" ? absenceGlyph(absence) : "●", text:`${typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отсутствие"))}${absence.plannedShiftName ? ` · ${t("По графику")}: ${absence.plannedShiftName}` : ""}`, color:absence.typeColor, absence });
   for (const task of facts.tasks.filter(item => item.allDay !== false || !item.scheduledStartTime)) items.push({ type:"task", icon:"✓", text:task.text || t("Задача"), task });
   if (facts.notes.length) items.push({ type:"note", icon:"▤", text:`${state.language === "en" ? "Notes" : "Заметки"}: ${facts.notes.length}` });
   box.hidden = !items.length;

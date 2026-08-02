@@ -27,7 +27,7 @@ class UnifiedOvertimeEditorsFrontendContractTest {
     }
 
     @Test
-    void calendarAndLedgerOpenTheSameCreditAndUsageEditors() throws Exception {
+    void calendarAndLedgerRouteNewUsageThroughTheUnifiedAbsenceComposer() throws Exception {
         String html = resource("index.html");
         String js = resource("js/40-overtime.js");
 
@@ -39,6 +39,8 @@ class UnifiedOvertimeEditorsFrontendContractTest {
         assertTrue(js.contains("openOvertimeUsageModal(state.selected)"));
         assertTrue(js.contains("openOvertimeCreditModal(state.selected || todayKey())"));
         assertTrue(js.contains("openOvertimeUsageModal(state.selected || todayKey())"));
+        assertTrue(js.contains("openAbsenceComposer({ date:overtimeDefaultDate(date), systemCode:\"TIME_OFF\", source:\"overtime\" })"));
+        assertTrue(html.contains("id=\"absenceComposerModal\""));
     }
 
     @Test

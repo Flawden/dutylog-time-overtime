@@ -1,9 +1,24 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix**.
+Current release: **v27.30.0 — Unified Absence Composer & Calendar Projection**.
 
 
-## v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix — current
+
+## v27.30.0 — Unified Absence Composer & Calendar Projection — current
+
+- [x] Reuse one absence form across Vacation, Quick Add, Calendar and Overtime entry points.
+- [x] Route new overtime-backed time off through linked absence creation instead of detached raw usage.
+- [x] Show the selected absence type, compensation source, available balance and projected remainder.
+- [x] Require a user-facing reason while retaining API compatibility for historical records.
+- [x] Preserve the planned shift under a full-day factual absence.
+- [x] Render partial absence as a typed interval over the planned shift.
+- [x] Add type glyphs and status-aware calendar treatment without relying on color alone.
+- [x] Keep Payroll, Unified Ledger, approval workflow, PostgreSQL and Flyway V46 unchanged.
+- [x] Advance baseline to 123 Java classes / 616 tests / 39 Playwright scenarios.
+
+Next product stage after green CI and staging acceptance: **v27.31.0 — One-Tap Calendar Connect**.
+
+## v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix — completed
 
 - [x] Reproduce the remaining Workspace Studio failure after profile autosave.
 - [x] Preserve an explicit allowed Today-card order in `safeTodayWidgets(...)`.
@@ -30,10 +45,6 @@ Current release: **v27.29.3 — Custom Workspace Today Widget Order Persistence 
 - [x] Add a focused regression contract for Java-source escaping versus runtime JavaScript content.
 - [x] Keep Workspace Studio runtime, themes, layouts, profile persistence, APIs, PostgreSQL and Flyway V46 unchanged.
 - [x] Advance baseline to 120 Java classes / 611 tests / 38 Playwright scenarios.
-
-Next product stage after green CI and staging acceptance: **v27.30.0 — Unified Absence Composer & Calendar Projection**.
-
-After that: **v27.31.0 — One-Tap Calendar Connect**.
 
 
 ## v27.29.0 — Workspace, Layout & Theme Studio — completed

@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.29.3.
+Status: v27.30.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.29.3 preserves the user-defined Custom Workspace Today-card order across profile sanitization and autosave while still restoring mandatory Shift when omitted. The current application baseline is 122 Java test classes / 614 `@Test` methods / 38 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.30.0 unifies vacation, overtime-backed time off, sick leave, unpaid leave and custom absences in one composer and one calendar projection while preserving the planned shift. The current application baseline is 123 Java test classes / 616 `@Test` methods / 39 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -12,6 +12,17 @@ Historical foundation: v27.2.29 security baseline remains preserved by all later
 
 
 
+
+
+## v27.30.0 Unified Absence Composer & Calendar Projection extension
+
+- `UnifiedAbsenceComposerFrontendContractTest` protects one form, one modal mount, source routing and typed calendar projection.
+- `unified-absence-composer.spec.js` creates a partial overtime-backed absence and a full-day sick leave through real browser and API boundaries.
+- `overtime-editor-modals.spec.js` proves new usage entry points create a linked absence while old direct usages remain editable.
+- Vacation allowance and the canonical FIFO bank retain their existing validation authority.
+- Full-day facts preserve the underlying plan; partial facts remain time intervals over the plan.
+- Baseline advances to 123 Java test classes / 616 `@Test` methods / 39 Playwright scenarios.
+- PostgreSQL and Flyway remain unchanged at V46.
 
 ## v27.29.3 Custom Workspace Today Widget Order Persistence Hotfix extension
 

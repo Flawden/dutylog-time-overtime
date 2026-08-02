@@ -3309,3 +3309,26 @@ body.panel-open .globalQuickAdd { display:none !important; }
   .payrollAdjustmentForm #payrollAdjustmentNote { grid-column:auto; }
   .payrollBreakdownRow,.payrollAdjustmentItem,.payrollSnapshotItem { align-items:flex-start; }
 }
+
+
+/* v27.30.0 — Unified Absence Composer & Calendar Projection */
+.vacationHeroActions{display:flex;flex-direction:column;align-items:flex-end;gap:12px}
+.absenceComposerLead{margin:5px 0 0;color:var(--dim);font-size:.82rem;max-width:680px;line-height:1.45}
+.absenceComposerContext{display:grid;grid-template-columns:minmax(160px,1.3fr) repeat(3,minmax(125px,1fr));gap:8px;padding:10px;border:1px solid color-mix(in srgb,var(--absence-color,#4fa3a5) 45%,var(--line));border-radius:14px;background:color-mix(in srgb,var(--absence-color,#4fa3a5) 8%,var(--surface-2))}
+.absenceComposerContext>div{min-width:0;padding:9px 10px;border-radius:10px;background:color-mix(in srgb,var(--surface-1) 84%,transparent);display:flex;flex-direction:column;gap:4px}
+.absenceComposerContext small{color:var(--dim);font-size:.68rem;text-transform:uppercase;letter-spacing:.08em}
+.absenceComposerContext b{white-space:normal;overflow-wrap:anywhere}
+.absenceComposerIdentity{flex-direction:row!important;align-items:center}
+.absenceComposerIdentity>span{display:grid;place-items:center;flex:0 0 38px;height:38px;border-radius:12px;color:var(--absence-color,#4fa3a5);background:color-mix(in srgb,var(--absence-color,#4fa3a5) 15%,var(--surface-3));font-size:1.2rem;font-weight:900}
+.absenceComposerIdentity>div{display:flex;flex-direction:column;gap:4px;min-width:0}
+.absenceComposerContext.absence-vacation{--absence-color:#4FA3A5}.absenceComposerContext.absence-time_off{--absence-color:#4A90E2}.absenceComposerContext.absence-sick{--absence-color:#E0653A}.absenceComposerContext.absence-unpaid{--absence-color:#8B929E}.absenceComposerContext.absence-other{--absence-color:#9B7BE0}
+.absenceComposerPanel{width:min(980px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto}
+.absenceComposerPanel #absenceComposerCard{border:0;border-radius:0;background:transparent;box-shadow:none;padding:0}
+.absenceComposerModalHead{position:sticky;top:0;z-index:3;background:var(--surface-1);border-bottom:1px solid var(--line);margin:-1px -1px 0;padding:20px 22px}
+.absenceComposerPanel #absenceComposerModalMount{padding:18px 22px 22px}
+.absenceFact[data-absence-status="planned"],.partialAbsenceBar[data-absence-status="planned"]{border-style:dashed}
+.absenceFact.absence-sick,.partialAbsenceBar.absence-sick{font-weight:850}
+.absenceFact.absence-unpaid,.partialAbsenceBar.absence-unpaid{filter:saturate(.65)}
+.absenceFact.absence-time_off,.partialAbsenceBar.absence-time_off{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--absence-color) 80%,white)}
+@media(max-width:760px){.vacationHeroActions{align-items:stretch;width:100%}.absenceComposerContext{grid-template-columns:1fr 1fr}.absenceComposerIdentity{grid-column:1/-1}.absenceComposerPanel #absenceComposerModalMount{padding:14px}.absenceComposerModalHead{padding:16px}}
+@media(max-width:480px){.absenceComposerContext{grid-template-columns:1fr}.absenceComposerIdentity{grid-column:auto}}

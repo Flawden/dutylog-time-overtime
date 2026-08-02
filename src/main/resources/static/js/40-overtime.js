@@ -286,6 +286,13 @@ function closeOvertimeCreditModal(){
   renderLedgerTable();
 }
 function openOvertimeUsageModal(date = null){
+  if (!state.editingUsageId && moduleEnabled("vacation") && typeof openAbsenceComposer === "function") {
+    openAbsenceComposer({ date:overtimeDefaultDate(date), systemCode:"TIME_OFF", source:"overtime" }).catch(error => {
+      console.error(error);
+      setSave("err", error.message || t("Ошибка"));
+    });
+    return;
+  }
   resetOvertimeForms(overtimeDefaultDate(date));
   updateUsageBalancePreview();
   openAppModal("overtimeUsageModal", "usageHours");

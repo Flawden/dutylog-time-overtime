@@ -50,10 +50,11 @@ document.addEventListener("keydown", event => {
   else if (activeAppModalId === "shiftTypeModal" && typeof closeShiftTypeManager === "function") closeShiftTypeManager();
   else if (activeAppModalId === "overtimeCreditModal" && typeof closeOvertimeCreditModal === "function") closeOvertimeCreditModal();
   else if (activeAppModalId === "overtimeUsageModal" && typeof closeOvertimeUsageModal === "function") closeOvertimeUsageModal();
+  else if (activeAppModalId === "absenceComposerModal" && typeof closeAbsenceComposer === "function") closeAbsenceComposer();
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.29.3"
+const DUTYLOG_VERSION = "27.30.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){

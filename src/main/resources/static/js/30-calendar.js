@@ -260,7 +260,11 @@ function renderCalendar(){
       const actual = document.createElement("span");
       actual.className = "absenceFact";
       actual.style.color = factualColor;
-      actual.textContent = typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(factualAbsence) : (factualAbsence.title || factualAbsence.typeName || t("Отсутствие"));
+      const absenceTitle = typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(factualAbsence) : (factualAbsence.title || factualAbsence.typeName || t("Отсутствие"));
+      const absenceIcon = typeof absenceGlyph === "function" ? absenceGlyph(factualAbsence) : "●";
+      actual.textContent = `${absenceIcon} ${absenceTitle}`;
+      actual.dataset.absenceStatus = String(factualAbsence.status || "PLANNED").toLowerCase();
+      if (typeof absenceSystemClass === "function") actual.classList.add(absenceSystemClass(factualAbsence));
       cell.appendChild(actual);
       if (st) {
         const planned = document.createElement("span");
@@ -296,7 +300,10 @@ ${t("Исходная смена")}: ${displayDateTimeRange(occ.sourceStart, occ
       const partial = document.createElement("span");
       partial.className = "partialAbsenceBar";
       partial.style.setProperty("--absence-color", absence.typeColor || "var(--accent-secondary)");
-      partial.textContent = `${absence.startTime || "—"}–${absence.endTime || "—"} · ${typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отгул"))}`;
+      const icon = typeof absenceGlyph === "function" ? absenceGlyph(absence) : "◴";
+      partial.textContent = `${icon} ${absence.startTime || "—"}–${absence.endTime || "—"} · ${typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(absence) : (absence.title || absence.typeName || t("Отгул"))}`;
+      partial.dataset.absenceStatus = String(absence.status || "PLANNED").toLowerCase();
+      if (typeof absenceSystemClass === "function") partial.classList.add(absenceSystemClass(absence));
       cell.appendChild(partial);
     }
     const bal = showOvertime ? ledgerNetOf(k) : 0;

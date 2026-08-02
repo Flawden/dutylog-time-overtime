@@ -31,7 +31,7 @@ class MobileTasksInboxFrontendContractTest {
         assertTrue(tasks.contains("function openTaskCreate(options"));
         assertTrue(tasks.contains("function parseTaskTags(value)"));
         assertTrue(tasks.contains("\"Быстрое действие\":\"Quick action\""));
-        assertTrue(tasks.contains("\"Списать переработку\":\"Use overtime\""));
+        assertTrue(tasks.contains("function quickActionOvertime(kind)"));
     }
 
     @Test
@@ -48,7 +48,7 @@ class MobileTasksInboxFrontendContractTest {
         assertTrue(html.contains("id=\"quickActionNote\""));
         assertTrue(html.contains("id=\"quickActionImportant\""));
         assertTrue(html.contains("id=\"globalQuickAdd\""));
-        assertTrue(html.contains("Списать переработку"));
+        assertTrue(html.contains("Оформить отсутствие"));
         assertFalse(html.contains("id=\"quickCaptureModal\""));
         assertFalse(core.contains("quickCaptureModal"));
         assertTrue(data.contains("captureInbox"));

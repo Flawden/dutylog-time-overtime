@@ -44,7 +44,11 @@ Object.assign(I18N_EN, {
   "Черновик":"Draft", "Подано":"Submitted", "Отклонено":"Rejected",
   "Отменено":"Cancelled", "Завершено":"Completed", "Зарезервировано":"Reserved",
   "Проведено":"Posted", "Не резервирует баланс":"Does not reserve balance",
-  "Период закрыт":"Period closed", "Откройте период или добавьте корректировку":"Reopen the period or add an adjustment"
+  "Период закрыт":"Period closed", "Откройте период или добавьте корректировку":"Reopen the period or add an adjustment",
+  "Оформить отсутствие":"Create absence", "Единый конструктор":"Unified composer",
+  "Баланс не используется":"No balance is used", "Будет использовано":"Will be used",
+  "После оформления":"After saving", "Причина обязательна":"Reason is required",
+  "Доступно для использования":"Available to use", "Источник выбран автоматически":"Source selected automatically"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -57,6 +61,13 @@ function absenceTypeDisplayName(value){
   return ru ? t(ru) : fallback;
 }
 function absenceDisplayTitle(value){ return String(value?.title || "").trim() || absenceTypeDisplayName(value); }
+function absenceGlyph(value){
+  return ({ VACATION:"☀", TIME_OFF:"◷", SICK:"✚", UNPAID:"○", OTHER:"◆" })[String(value?.systemCode || "").toUpperCase()] || "●";
+}
+function absenceSystemClass(value){
+  const code = String(value?.systemCode || "OTHER").toLowerCase().replace(/[^a-z0-9_-]/g, "");
+  return `absence-${code || "other"}`;
+}
 function absencesOf(key){ return moduleEnabled("vacation") ? (state.absencesByDate?.[key] || []) : []; }
 function fullDayFactualAbsence(key){ return absencesOf(key).find(item => item.coverage === "FULL_DAY" && item.replacesShift) || null; }
 function partialAbsencesOf(key){ return absencesOf(key).filter(item => item.coverage === "PARTIAL"); }
@@ -94,6 +105,8 @@ function syncVacationCompensation({ preserve = false } = {}){
     option.hidden = !visible; option.disabled = !visible;
   }
   if (!preserve || !allowed.has(select.value)) select.value = defaultAbsenceCompensation(type);
+  select.disabled = allowed.size === 1;
+  renderAbsenceComposerContext();
 }
 function minutesLabel(value){
   const minutes = Math.max(0, Number(value || 0));
@@ -138,6 +151,76 @@ function setVacationMessage(text = "", error = false){
 function rebuildAbsenceIndex(occurrences = state.absenceOccurrences || []){
   state.absencesByDate = {};
   for (const occurrence of occurrences) addToDateMap(state.absencesByDate, occurrence);
+}
+
+let absenceComposerOrigin = null;
+let absenceComposerSource = "vacation";
+
+function renderAbsenceComposerContext(preview = state.vacationPreview){
+  const box = $("absenceComposerContext");
+  if (!box) return;
+  const type = selectedAbsenceType();
+  if (!type) { box.innerHTML = ""; return; }
+  const policy = $("vacationCompensation")?.value || defaultAbsenceCompensation(type);
+  const summary = state.vacationPlanner?.summary || {};
+  let available = t("Баланс не используется");
+  let after = t("Баланс не используется");
+  if (policy === "VACATION_ALLOWANCE") {
+    available = `${Number(summary.remainingDays || 0)} ${t("дней")}`;
+    after = preview ? `${Number(preview.remainingAfter || 0)} ${t("дней")}` : "—";
+  } else if (policy === "OVERTIME_BANK") {
+    available = minutesLabel(summary.timeOffRemainingMinutes || 0);
+    after = preview ? minutesLabel(preview.timeOffRemainingAfter || 0) : "—";
+  }
+  box.className = `absenceComposerContext vacationWide ${absenceSystemClass(type)}`;
+  box.innerHTML = `<div class="absenceComposerIdentity"><span>${esc(absenceGlyph(type))}</span><div><small>${esc(t("Тип"))}</small><b>${esc(absenceTypeDisplayName(type))}</b></div></div>
+    <div><small>${esc(t("Источник покрытия"))}</small><b>${esc(absenceCompensationLabel(policy))}</b></div>
+    <div><small>${esc(t("Доступно для использования"))}</small><b>${esc(available)}</b></div>
+    <div><small>${esc(t("После оформления"))}</small><b>${esc(after)}</b></div>`;
+}
+
+function moveAbsenceComposerToModal(){
+  const card = $("absenceComposerCard");
+  const mount = $("absenceComposerModalMount");
+  if (!card || !mount) return;
+  if (!absenceComposerOrigin) absenceComposerOrigin = { parent:card.parentNode, next:card.nextSibling };
+  mount.appendChild(card);
+  card.classList.add("inComposerModal");
+}
+function restoreAbsenceComposerHome(){
+  const card = $("absenceComposerCard");
+  if (!card || !absenceComposerOrigin?.parent) return;
+  const { parent, next } = absenceComposerOrigin;
+  if (next && next.parentNode === parent) parent.insertBefore(card, next); else parent.appendChild(card);
+  card.classList.remove("inComposerModal");
+}
+async function openAbsenceComposer({ date = null, systemCode = null, source = "vacation", reason = "" } = {}){
+  if (!moduleEnabled("vacation")) {
+    setSave("err", t("модуль выключен"));
+    return;
+  }
+  await loadVacationPlanner(false);
+  absenceComposerSource = source;
+  resetVacationEditor({ keepDates:true });
+  const key = date || state.selected || todayKey();
+  if ($("vacationStart")) $("vacationStart").value = key;
+  if ($("vacationEnd")) $("vacationEnd").value = key;
+  if (systemCode) {
+    const type = (state.vacationPlanner?.types || []).find(item => String(item.systemCode || "").toUpperCase() === String(systemCode).toUpperCase());
+    if (type && $("vacationType")) $("vacationType").value = String(type.id);
+  }
+  if (reason && $("vacationTitle")) $("vacationTitle").value = reason;
+  syncVacationCompensation();
+  syncVacationCoverage();
+  renderAbsenceComposerContext();
+  moveAbsenceComposerToModal();
+  openAppModal("absenceComposerModal", "vacationTitle");
+}
+function closeAbsenceComposer({ keepEditor = false } = {}){
+  closeAppModal("absenceComposerModal");
+  restoreAbsenceComposerHome();
+  if (!keepEditor) resetVacationEditor({ keepDates:true });
+  absenceComposerSource = "vacation";
 }
 
 async function loadVacationPlanner(force = false){
@@ -266,7 +349,7 @@ function syncVacationCoverage(){
 }
 function resetVacationEditor({ keepDates = false } = {}){
   state.editingAbsenceId = null; state.vacationPreview = null;
-  if ($("vacationEditorTitle")) $("vacationEditorTitle").textContent = t("Запланировать отсутствие");
+  if ($("vacationEditorTitle")) $("vacationEditorTitle").textContent = t("Оформить отсутствие");
   if ($("vacationEditorReset")) $("vacationEditorReset").hidden = true;
   if ($("vacationSaveBtn")) $("vacationSaveBtn").textContent = t("Сохранить период");
   if (!keepDates) {
@@ -282,7 +365,7 @@ function resetVacationEditor({ keepDates = false } = {}){
   if ($("vacationStatus")) $("vacationStatus").value = "PLANNED";
   syncVacationCompensation();
   if ($("vacationPreview")) { $("vacationPreview").hidden = true; $("vacationPreview").innerHTML = ""; }
-  syncVacationCoverage(); setVacationMessage("");
+  syncVacationCoverage(); renderAbsenceComposerContext(); setVacationMessage("");
 }
 
 function editAbsence(id){
@@ -304,7 +387,7 @@ function editAbsence(id){
   syncVacationCompensation({ preserve:true });
   if ($("vacationNote")) $("vacationNote").value = period.note || "";
   if ($("vacationPreview")) $("vacationPreview").hidden = true;
-  syncVacationCoverage(); location.hash = "#vacation";
+  syncVacationCoverage(); renderAbsenceComposerContext(); location.hash = "#vacation";
   requestAnimationFrame(() => $("vacationPeriodForm")?.scrollIntoView({ behavior:"smooth", block:"start" }));
 }
 function editAbsenceFromOccurrence(occurrence){ location.hash = "#vacation"; loadVacationPlanner(false).then(() => editAbsence(occurrence.periodId)).catch(console.error); }
@@ -325,6 +408,7 @@ function readVacationDraft(){
 function renderVacationPreview(preview){
   const box = $("vacationPreview"); if (!box) return;
   state.vacationPreview = preview;
+  renderAbsenceComposerContext(preview);
   const timePolicy = preview.compensationPolicy === "OVERTIME_BANK";
   const draftStatus = String($("vacationStatus")?.value || "PLANNED").toUpperCase();
   const blocked = draftStatus !== "DRAFT" && (preview.absenceConflictCount > 0 || preview.exceedsAllowance);
@@ -347,6 +431,7 @@ function renderVacationPreview(preview){
 
 async function previewVacationDraft(){
   const draft = readVacationDraft();
+  if (!draft.title) { setVacationMessage(t("Причина обязательна"), true); $("vacationTitle")?.focus(); return null; }
   if (!draft.typeId || !draft.startDate || !draft.endDate || (draft.coverage === "PARTIAL" && (!draft.startTime || !draft.endTime))) {
     setVacationMessage(draft.coverage === "PARTIAL" ? t("Выберите время частичного отсутствия") : t("Выберите тип и даты периода"), true); return null;
   }
@@ -362,7 +447,11 @@ async function saveVacationPeriod(event){
   const button = $("vacationSaveBtn"); if (button) button.disabled = true;
   try {
     if (state.editingAbsenceId) await api.updateAbsence(state.editingAbsenceId, draft); else await api.createAbsence(draft);
-    resetVacationEditor(); await loadVacationPlanner(true); await loadMonth({ fresh:true }); setVacationMessage(t("Период сохранён"));
+    const composerWasOpen = activeAppModalId === "absenceComposerModal";
+    if (composerWasOpen) closeAbsenceComposer({ keepEditor:true });
+    resetVacationEditor(); await loadVacationPlanner(true); await loadMonth({ fresh:true });
+    if (moduleEnabled("overtime")) { renderOvertimeControls(); await loadLedgerPage(true); }
+    setVacationMessage(t("Период сохранён"));
   } catch (error) {
     const message = error.code === "VACATION_LIMIT_EXCEEDED" ? t("Лимит отпуска превышен") : error.code === "TIME_OFF_LIMIT_EXCEEDED" || error.code === "OVERTIME_BALANCE_EXCEEDED" ? t("Недостаточно часов переработки") : error.code === "ABSENCE_OVERLAP" ? t("Пересечение с другим отсутствием") : error.code === "PERIOD_CLOSED" ? `${t("Период закрыт")}. ${t("Откройте период или добавьте корректировку")}` : (error.message || t("Ошибка сохранения"));
     setVacationMessage(message, true);
@@ -370,7 +459,7 @@ async function saveVacationPeriod(event){
 }
 async function deleteAbsence(id){
   if (!confirm(t("Удалить этот период отсутствия?"))) return;
-  try { await api.deleteAbsence(id); if (Number(state.editingAbsenceId) === Number(id)) resetVacationEditor(); await loadVacationPlanner(true); await loadMonth({ fresh:true }); setVacationMessage(t("Период удалён")); }
+  try { await api.deleteAbsence(id); if (Number(state.editingAbsenceId) === Number(id)) resetVacationEditor(); await loadVacationPlanner(true); await loadMonth({ fresh:true }); if (moduleEnabled("overtime")) { renderOvertimeControls(); await loadLedgerPage(true); } setVacationMessage(t("Период удалён")); }
   catch (error) { setVacationMessage(error.message, true); }
 }
 async function saveVacationSettings(event){
@@ -397,8 +486,7 @@ function applyVacationDuration(days){
   state.vacationPreview = null; if ($("vacationPreview")) $("vacationPreview").hidden = true;
 }
 function openVacationPlannerForDate(date){
-  const key = date || state.selected || todayKey(); location.hash = "#vacation";
-  loadVacationPlanner(false).then(() => { resetVacationEditor({ keepDates:true }); if ($("vacationStart")) $("vacationStart").value = key; if ($("vacationEnd")) $("vacationEnd").value = key; syncVacationCoverage(); requestAnimationFrame(() => $("vacationStart")?.focus()); }).catch(console.error);
+  openAbsenceComposer({ date:date || state.selected || todayKey(), source:"calendar" }).catch(console.error);
 }
 window.__dutylogVacationReady = Promise.resolve();
 function openVacationPlannerView(force = false){
@@ -417,10 +505,13 @@ $("vacationReload")?.addEventListener("click", () => loadVacationPlanner(true));
 $("vacationSettingsForm")?.addEventListener("submit", saveVacationSettings);
 $("vacationTypeForm")?.addEventListener("submit", createVacationType);
 $("vacationPlanSelected")?.addEventListener("click", () => openVacationPlannerForDate(state.selected));
+$("vacationComposerOpen")?.addEventListener("click", () => openAbsenceComposer({ date:state.selected || todayKey(), source:"vacation" }).catch(console.error));
+$("absenceComposerClose")?.addEventListener("click", () => closeAbsenceComposer());
+$("absenceComposerBackdrop")?.addEventListener("click", () => closeAbsenceComposer());
 $("vacationCoverage")?.addEventListener("change", () => { syncVacationCoverage(); state.vacationPreview = null; if ($("vacationPreview")) $("vacationPreview").hidden = true; });
 $("vacationStart")?.addEventListener("change", () => { if ($("vacationCoverage")?.value === "PARTIAL" && $("vacationEnd")) $("vacationEnd").value = $("vacationStart").value; });
 document.querySelectorAll("[data-vacation-days]").forEach(button => button.addEventListener("click", () => applyVacationDuration(button.dataset.vacationDays)));
-$("vacationType")?.addEventListener("change", () => { syncVacationCompensation(); state.vacationPreview = null; if ($("vacationPreview")) $("vacationPreview").hidden = true; });
-for (const id of ["vacationStart","vacationEnd","vacationStartTime","vacationEndTime","vacationCompensation"]) $(id)?.addEventListener("change", () => { state.vacationPreview = null; if ($("vacationPreview")) $("vacationPreview").hidden = true; });
+$("vacationType")?.addEventListener("change", () => { syncVacationCompensation(); state.vacationPreview = null; renderAbsenceComposerContext(); if ($("vacationPreview")) $("vacationPreview").hidden = true; });
+for (const id of ["vacationStart","vacationEnd","vacationStartTime","vacationEndTime","vacationCompensation"]) $(id)?.addEventListener("change", () => { state.vacationPreview = null; renderAbsenceComposerContext(); if ($("vacationPreview")) $("vacationPreview").hidden = true; });
 
 resetVacationEditor();

@@ -1865,9 +1865,16 @@ function quickActionImportant(){
 }
 function quickActionOvertime(kind){
   closeQuickActions();
+  if (kind === "usage") {
+    if (!moduleEnabled("vacation") || typeof openAbsenceComposer !== "function") return setSave("err", t("модуль выключен"));
+    openAbsenceComposer({ date:state.selected || todayKey(), source:"quick-add" }).catch(error => {
+      console.error(error);
+      setSave("err", error.message || t("Ошибка"));
+    });
+    return;
+  }
   if (!moduleEnabled("overtime")) return setSave("err", t("модуль выключен"));
-  if (kind === "usage") openOvertimeUsageModal(state.selected || todayKey());
-  else openOvertimeCreditModal(state.selected || todayKey());
+  openOvertimeCreditModal(state.selected || todayKey());
 }
 
 $("taskDetailsClose")?.addEventListener("click", closeTaskDetails);

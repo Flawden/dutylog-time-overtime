@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.29.3"></script>
-<link href="app.css?v=27.29.3" rel="stylesheet"/>
-<link href="design-system.css?v=27.29.3" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.29.3" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.29.3" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.29.3" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.29.3" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.29.3" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.29.3" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.29.3" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.29.3" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.29.3" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.30.0"></script>
+<link href="app.css?v=27.30.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.30.0" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.30.0" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.30.0" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.30.0" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.30.0" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.30.0" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.30.0" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.30.0" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.30.0" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.30.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -660,7 +660,10 @@
         <h2>Отпуск и отсутствия</h2>
         <p>Плановая смена сохраняется, а фактическое отсутствие получает источник покрытия: отпускной баланс, банк переработок, больничная политика или отсутствие без содержания.</p>
       </div>
-      <div class="vacationWorkYear" id="vacationWorkYear">—</div>
+      <div class="vacationHeroActions">
+        <div class="vacationWorkYear" id="vacationWorkYear">—</div>
+        <button class="primary" id="vacationComposerOpen" type="button">＋ Оформить отсутствие</button>
+      </div>
     </div>
     <div class="vacationSummaryGrid">
       <div><span>Доступно</span><b id="vacationAvailable">—</b><small>годовая норма + перенос</small></div>
@@ -671,9 +674,9 @@
   </section>
 
   <div class="vacationMainGrid">
-    <section class="card vacationPlannerCard">
+    <section class="card vacationPlannerCard" id="absenceComposerCard">
       <div class="vacationSectionHead">
-        <div><div class="eyebrow">Новый период</div><h3 id="vacationEditorTitle">Запланировать отсутствие</h3></div>
+        <div><div class="eyebrow">Единый конструктор</div><h3 id="vacationEditorTitle">Оформить отсутствие</h3><p class="absenceComposerLead">Выберите причину и формат. DutyLog сам подберёт источник покрытия и покажет, какой баланс будет использован.</p></div>
         <button id="vacationEditorReset" type="button" hidden>Отмена</button>
       </div>
       <form id="vacationPeriodForm" class="vacationForm">
@@ -703,9 +706,10 @@
             <option value="NONE">Без покрытия</option>
           </select>
         </label>
-        <label class="vacationWide">Название
-          <input id="vacationTitle" maxlength="120" placeholder="Например: основной отпуск"/>
+        <label class="vacationWide">Причина
+          <input id="vacationTitle" maxlength="120" placeholder="Например: основной отпуск, визит к врачу…" required/>
         </label>
+        <div class="absenceComposerContext vacationWide" id="absenceComposerContext" aria-live="polite"></div>
         <label>С
           <input id="vacationStart" type="date" required/>
         </label>
@@ -1363,7 +1367,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.29.3</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.30.0</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1597,6 +1601,21 @@
   </div>
 </div>
 
+<div class="appModal absenceComposerModal" id="absenceComposerModal" hidden>
+  <button class="appModalBackdrop" id="absenceComposerBackdrop" type="button" aria-label="Закрыть"></button>
+  <div class="appModalPanel appModalPanelWide absenceComposerPanel" role="dialog" aria-modal="true" aria-labelledby="vacationEditorTitle">
+    <div class="appModalHead absenceComposerModalHead">
+      <div>
+        <div class="eyebrow">Отсутствие</div>
+        <div class="appModalTitle">Оформить отсутствие</div>
+        <div class="appModalHint">Отпуск, отгул за переработку, больничный или отсутствие без содержания — в одной форме.</div>
+      </div>
+      <button class="appModalClose" id="absenceComposerClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div id="absenceComposerModalMount"></div>
+  </div>
+</div>
+
 <div class="appModal" id="overtimeUsageModal" hidden>
   <button class="appModalBackdrop" id="overtimeUsageBackdrop" type="button" aria-label="Закрыть"></button>
   <div class="appModalPanel" role="dialog" aria-modal="true" aria-labelledby="overtimeUsageTitle">
@@ -1801,7 +1820,7 @@
       <button id="quickActionNote" type="button"><b>▤</b><span>Заметка на сегодня<small>открыть или дописать</small></span></button>
       <button id="quickActionImportant" type="button"><b>★</b><span>Важный день<small>дата и повтор</small></span></button>
       <button id="quickActionCredit" type="button"><b>＋</b><span>Добавить переработку<small>начислить часы</small></span></button>
-      <button id="quickActionUsage" type="button"><b>−</b><span>Списать переработку<small>оформить отгул</small></span></button>
+      <button id="quickActionUsage" type="button"><b>☂</b><span>Оформить отсутствие<small>отпуск, отгул, больничный</small></span></button>
     </div>
   </div>
 </div>
@@ -1976,19 +1995,19 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.29.3"></script>
-<script src="js/12-ui-platform.js?v=27.29.3"></script>
-<script src="js/20-data.js?v=27.29.3"></script>
-<script src="js/30-calendar.js?v=27.29.3"></script>
-<script src="js/35-today.js?v=27.29.3"></script>
-<script src="js/37-calendar-experience.js?v=27.29.3"></script>
-<script src="js/38-schedule-layers.js?v=27.29.3"></script>
-<script src="js/39-vacation-planner.js?v=27.29.3"></script>
-<script src="js/40-overtime.js?v=27.29.3"></script>
-<script src="js/45-payroll.js?v=27.29.3"></script>
-<script src="js/50-tasks.js?v=27.29.3"></script>
-<script src="js/55-calendar-sync.js?v=27.29.3"></script>
-<script src="js/60-settings.js?v=27.29.3"></script>
-<script src="js/70-user-boot.js?v=27.29.3"></script>
+<script src="js/10-core.js?v=27.30.0"></script>
+<script src="js/12-ui-platform.js?v=27.30.0"></script>
+<script src="js/20-data.js?v=27.30.0"></script>
+<script src="js/30-calendar.js?v=27.30.0"></script>
+<script src="js/35-today.js?v=27.30.0"></script>
+<script src="js/37-calendar-experience.js?v=27.30.0"></script>
+<script src="js/38-schedule-layers.js?v=27.30.0"></script>
+<script src="js/39-vacation-planner.js?v=27.30.0"></script>
+<script src="js/40-overtime.js?v=27.30.0"></script>
+<script src="js/45-payroll.js?v=27.30.0"></script>
+<script src="js/50-tasks.js?v=27.30.0"></script>
+<script src="js/55-calendar-sync.js?v=27.30.0"></script>
+<script src="js/60-settings.js?v=27.30.0"></script>
+<script src="js/70-user-boot.js?v=27.30.0"></script>
 </body>
 </html>

@@ -1,3 +1,13 @@
+# v27.30.0 — Unified Absence Composer & Calendar Projection
+
+- Unified Vacation, overtime-backed time off, sick leave, unpaid leave and custom absence entry in one reusable composer.
+- Routed global quick-add and new overtime usage entry points through the canonical absence service and linked FIFO usage boundary.
+- Added dynamic source/balance context for vacation allowance, overtime bank, sick policy, unpaid leave and no-balance categories.
+- Kept the planned shift as plan data while projecting full-day absence as the factual state and partial absence as a typed time strip.
+- Added type glyphs and status-aware calendar treatment so meaning is not communicated by color alone.
+- Kept existing direct overtime usages editable for compatibility; no API or database migration is required.
+- Regression baseline advances to 123 Java test classes, 616 `@Test` methods and 39 Playwright scenarios; Flyway remains V46.
+
 # v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix
 
 - Preserved the explicit Custom Workspace Today-card order across `/api/profile` sanitization and autosave responses.

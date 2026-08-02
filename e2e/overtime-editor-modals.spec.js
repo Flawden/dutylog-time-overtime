@@ -37,15 +37,16 @@ test('overtime credit and usage editors work from calendar and ledger', async ({
   await expect(page.locator('#otBalance')).toContainText('+8');
 
   await page.locator('#dayAddUsage').click();
-  await expect(page.locator('#overtimeUsageModal')).toBeVisible();
-  await expect(page.locator('#usageDate')).toHaveValue(date);
-  await page.locator('#usageHours').fill('8');
-  await page.locator('#usageReason').fill('E2E modal time off');
-  await expect(page.locator('#usageBalanceAfter')).toContainText('0');
-  const usageCreated = waitForApi(page, 'POST', '/api/overtime/usages');
-  await page.locator('#usageAdd').click();
+  await expect(page.locator('#absenceComposerModal')).toBeVisible();
+  await expect(page.locator('#vacationType option:checked')).toContainText('Отгул');
+  await expect(page.locator('#vacationCompensation')).toHaveValue('OVERTIME_BANK');
+  await page.locator('#vacationStatus').selectOption('APPROVED');
+  await page.locator('#vacationTitle').fill('E2E modal time off');
+  await expect(page.locator('#absenceComposerContext')).toContainText('8 ч');
+  const usageCreated = waitForApi(page, 'POST', '/api/vacation-planner/absences', 201);
+  await page.locator('#vacationSaveBtn').click();
   await usageCreated;
-  await expect(page.locator('#overtimeUsageModal')).toBeHidden();
+  await expect(page.locator('#absenceComposerModal')).toBeHidden();
   await expect(page.locator('#otDayDetails')).toContainText('−8');
   await expect(page.locator('#otDayDetails')).toContainText('24:00');
   await expect(page.locator('#otDayDetails')).toContainText('00:00–01:00');
