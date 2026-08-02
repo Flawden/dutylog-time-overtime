@@ -1,3 +1,13 @@
+# v27.28.0 — Payroll Foundation
+
+- Added V45 owner-scoped payroll settings, append-only monetary adjustments and immutable versioned snapshots.
+- Added a posted-only canonical payroll source to `TimeCompensationService`; Payroll never reinterprets calendar tables independently.
+- Final calculation requires a closed period, healthy ledger and positive hourly rate.
+- Added hourly-rate calculation in minor units with `HALF_UP`, transparent time/money subtotals and SHA-256 calculation hashes.
+- Added `/api/v1/payroll` read/write endpoints, no-store period projections and module guards.
+- Added a dedicated responsive Payroll workspace, preview, adjustments and revision history.
+- Added service, static contract and Playwright coverage; Flyway advances to V45.
+
 # v27.27.2 — Ledger Browser State & Visibility Hotfix
 
 - Refreshed Vacation Planner on route entry so overtime credits created while the screen is hidden cannot leave a stale compensatory-time balance.

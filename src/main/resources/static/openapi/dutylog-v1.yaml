@@ -607,6 +607,53 @@ paths:
       responses:
         '201': { description: Append-only adjustment, content: { application/json: { schema: { $ref: '#/components/schemas/TimeLedgerEntry' } } } }
         '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/payroll/periods/{month}:
+    get:
+      operationId: payrollPeriod
+      description: Preview and immutable revision history for one payroll month. Final calculation requires a closed, healthy accounting period.
+      parameters:
+        - { in: path, name: month, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' } }
+      responses:
+        '200':
+          description: Payroll Foundation workspace payload with no-store caching
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PayrollPeriod' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/payroll/settings:
+    patch:
+      operationId: updatePayrollSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PayrollSettingsInput' }
+      responses:
+        '200': { description: Updated rate and currency, content: { application/json: { schema: { $ref: '#/components/schemas/PayrollSettings' } } } }
+        '400': { $ref: '#/components/responses/ApiError' }
+  /api/v1/payroll/adjustments:
+    post:
+      operationId: addPayrollAdjustment
+      description: Adds an append-only monetary addition or deduction to a closed month.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PayrollAdjustmentInput' }
+      responses:
+        '201': { description: Created monetary adjustment, content: { application/json: { schema: { $ref: '#/components/schemas/PayrollAdjustment' } } } }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/payroll/periods/{month}/calculate:
+    post:
+      operationId: calculatePayrollRevision
+      description: Freezes a new immutable payroll snapshot revision from the closed, healthy time ledger and current money adjustments.
+      parameters:
+        - { in: path, name: month, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' } }
+      responses:
+        '201': { description: Immutable payroll revision, content: { application/json: { schema: { $ref: '#/components/schemas/PayrollSnapshot' } } } }
+        '409': { $ref: '#/components/responses/ApiError' }
+
   /api/v1/actual-work:
     get:
       operationId: listActualWorkIntervals
@@ -1224,6 +1271,84 @@ components:
             workedMinutes: { type: integer, minimum: 1, maximum: 2880 }
             createdAt: { type: string, format: date-time, nullable: true }
             updatedAt: { type: string, format: date-time, nullable: true }
+    PayrollSettingsInput:
+      type: object
+      required: [currencyCode, hourlyRateMinor]
+      properties:
+        currencyCode: { type: string, pattern: '^[A-Za-z]{3}$', example: RUB }
+        hourlyRateMinor: { type: integer, format: int64, minimum: 0, maximum: 1000000000, description: Hourly rate in minor currency units }
+    PayrollSettings:
+      allOf:
+        - $ref: '#/components/schemas/PayrollSettingsInput'
+        - type: object
+          properties:
+            updatedAt: { type: string, format: date-time, nullable: true }
+    PayrollAdjustmentInput:
+      type: object
+      required: [month, adjustmentType, amountMinor, title]
+      properties:
+        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        adjustmentType: { type: string, enum: [ADDITION, DEDUCTION] }
+        amountMinor: { type: integer, format: int64, minimum: 1, maximum: 1000000000000 }
+        title: { type: string, maxLength: 120 }
+        note: { type: string, maxLength: 500, nullable: true }
+    PayrollAdjustment:
+      allOf:
+        - $ref: '#/components/schemas/PayrollAdjustmentInput'
+        - type: object
+          required: [id, createdAt]
+          properties:
+            id: { type: integer, format: int64 }
+            createdAt: { type: string, format: date-time }
+    PayrollPreview:
+      type: object
+      required: [month, currencyCode, hourlyRateMinor, plannedMinutes, workedMinutes, vacationMinutes, sickMinutes, overtimeCompensatedMinutes, unpaidMinutes, timeAdjustmentMinutes, paidAbsenceMinutes, payableMinutes, basePayMinor, additionsMinor, deductionsMinor, totalPayMinor]
+      properties:
+        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        currencyCode: { type: string }
+        hourlyRateMinor: { type: integer, format: int64 }
+        plannedMinutes: { type: integer, minimum: 0 }
+        workedMinutes: { type: integer, minimum: 0 }
+        vacationMinutes: { type: integer, minimum: 0 }
+        sickMinutes: { type: integer, minimum: 0 }
+        overtimeCompensatedMinutes: { type: integer, minimum: 0 }
+        unpaidMinutes: { type: integer, minimum: 0 }
+        timeAdjustmentMinutes: { type: integer }
+        paidAbsenceMinutes: { type: integer, minimum: 0 }
+        payableMinutes: { type: integer, minimum: 0 }
+        basePayMinor: { type: integer, format: int64 }
+        additionsMinor: { type: integer, format: int64 }
+        deductionsMinor: { type: integer, format: int64 }
+        totalPayMinor: { type: integer, format: int64 }
+    PayrollSnapshot:
+      allOf:
+        - $ref: '#/components/schemas/PayrollPreview'
+        - type: object
+          required: [id, revision, sourcePeriodClosedAt, sourceIntegrityCheckedAt, calculationHash, createdAt]
+          properties:
+            id: { type: integer, format: int64 }
+            revision: { type: integer, minimum: 1 }
+            sourcePeriodClosedAt: { type: string, format: date-time }
+            sourceIntegrityCheckedAt: { type: string, format: date-time }
+            calculationHash: { type: string, pattern: '^[0-9a-f]{64}$' }
+            createdAt: { type: string, format: date-time }
+            supersededById: { type: integer, format: int64, nullable: true }
+    PayrollPeriod:
+      type: object
+      required: [month, periodClosed, integrityHealthy, canCalculate, settings, preview, adjustments, snapshots]
+      properties:
+        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        periodClosed: { type: boolean }
+        integrityHealthy: { type: boolean }
+        canCalculate: { type: boolean }
+        blockingReason: { type: string, nullable: true, enum: [PERIOD_OPEN, LEDGER_INTEGRITY_FAILED, PAYROLL_RATE_REQUIRED] }
+        settings: { $ref: '#/components/schemas/PayrollSettings' }
+        preview: { $ref: '#/components/schemas/PayrollPreview' }
+        adjustments: { type: array, items: { $ref: '#/components/schemas/PayrollAdjustment' } }
+        latestSnapshot:
+          allOf: [{ $ref: '#/components/schemas/PayrollSnapshot' }]
+          nullable: true
+        snapshots: { type: array, items: { $ref: '#/components/schemas/PayrollSnapshot' } }
     VacationSettings:
       allOf:
         - $ref: '#/components/schemas/VacationSettingsInput'

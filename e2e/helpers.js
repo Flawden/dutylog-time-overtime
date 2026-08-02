@@ -88,6 +88,16 @@ async function waitForLedgerReady(page) {
   })), { timeout:30_000 }).toEqual({ loading:false, summary:true, integrity:true });
 }
 
+async function waitForPayrollReady(page) {
+  await page.evaluate(async () => {
+    await Promise.resolve(window.__dutylogPayrollReady);
+  });
+  await expect.poll(() => page.evaluate(() => ({
+    loading:Boolean(typeof state !== 'undefined' && state.payrollLoading),
+    period:Boolean(typeof state !== 'undefined' && state.payrollPeriod)
+  })), { timeout:30_000 }).toEqual({ loading:false, period:true });
+}
+
 async function openView(page, view) {
   const section = page.locator(`#view-${view}`);
   if (!(await section.isVisible())) {
@@ -103,6 +113,7 @@ async function openView(page, view) {
   }
   if (view === 'vacation') await waitForVacationReady(page);
   if (view === 'overtime') await waitForLedgerReady(page);
+  if (view === 'payroll') await waitForPayrollReady(page);
   return section;
 }
 
@@ -231,6 +242,7 @@ module.exports = {
   waitForAppIdle,
   waitForVacationReady,
   waitForLedgerReady,
+  waitForPayrollReady,
   openView,
   selectDate,
   waitForApi,

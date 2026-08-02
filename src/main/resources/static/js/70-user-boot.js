@@ -242,7 +242,7 @@ init().catch(err => {
 });
 
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */
-const VIEWS = window.DutyLogUI?.views?.() || { today:"view-today", calendar:"view-calendar", vacation:"view-vacation", overtime:"view-overtime", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
+const VIEWS = window.DutyLogUI?.views?.() || { today:"view-today", calendar:"view-calendar", vacation:"view-vacation", overtime:"view-overtime", payroll:"view-payroll", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
 window.__dutylogLedgerRouteReady = Promise.resolve();
 function applyRoute(){
   const defaultRoute = "#today";
@@ -252,6 +252,7 @@ function applyRoute(){
   if (active === "admin" && state.profile && !state.profile.admin) active = "calendar";
   if (active === "tasks" && !moduleEnabled("tasks")) active = "calendar";
   if (active === "overtime" && !moduleEnabled("overtime")) active = "calendar";
+  if (active === "payroll" && !moduleEnabled("payroll")) active = "calendar";
   if (active === "important" && !moduleEnabled("important_dates")) active = "calendar";
   if (active === "vacation" && !moduleEnabled("vacation")) active = "calendar";
   document.body.dataset.view = active;
@@ -290,6 +291,9 @@ function applyRoute(){
     // The vacation workflow can mutate linked overtime usages while this view
     // is hidden. Always enter Overtime through a fresh ledger projection.
     window.__dutylogLedgerRouteReady = Promise.resolve(loadLedgerPage(true));
+  }
+  if (active === "payroll" && typeof openPayrollView === "function") {
+    window.__dutylogPayrollReady = Promise.resolve(openPayrollView(true));
   }
   if (active === "admin") {
     if (typeof initAdminNavigation === "function") initAdminNavigation();

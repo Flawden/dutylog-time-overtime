@@ -1,9 +1,22 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**.
+Current release: **v27.28.0 — Payroll Foundation**.
 
 
-## v27.27.2 — Ledger Browser State & Visibility Hotfix — current
+
+## v27.28.0 — Payroll Foundation — current
+
+- [x] Add V45 payroll settings, append-only monetary adjustments and immutable versioned snapshots.
+- [x] Read canonical posted-only time from `TimeCompensationService` instead of reinterpreting calendar tables.
+- [x] Require a closed month, healthy ledger and positive hourly rate for final calculation.
+- [x] Store money in minor units and apply one `HALF_UP` rounding step.
+- [x] Expose transparent preview, additions, deductions, total and calculation hash.
+- [x] Add `/api/v1/payroll` and a responsive Payroll workspace.
+- [x] Advance Flyway to V45 and baseline to 116 Java classes / 603 tests / 37 Playwright scenarios.
+
+Next product stage: **v27.29.0 — Workspace, Layout & Theme Studio**.
+
+## v27.27.2 — Ledger Browser State & Visibility Hotfix — completed
 
 - [x] Refresh Vacation Planner on every route entry so shared overtime-bank totals cannot stay stale.
 - [x] Expose Vacation and timezone-save readiness without bypassing real application routes.
@@ -12,8 +25,6 @@ Current release: **v27.27.2 — Ledger Browser State & Visibility Hotfix**.
 - [x] Scope responsive Unified Ledger assertions to the visible desktop table.
 - [x] Keep API, OpenAPI, PostgreSQL and Flyway V44 unchanged.
 - [x] Baseline advances to 114 Java test classes / 600 tests / 36 Playwright scenarios.
-
-Next product stage: **v27.28.0 — Payroll Foundation**.
 
 ## v27.27.1 — Ledger Workflow Browser Contract Hotfix — completed
 
@@ -26,7 +37,7 @@ Next product stage: **v27.28.0 — Payroll Foundation**.
 - [x] Keep API, OpenAPI, PostgreSQL and Flyway V44 unchanged.
 - [x] Baseline advances to 113 Java test classes / 599 tests / 36 Playwright scenarios.
 
-Next product stage: **v27.28.0 — Payroll Foundation**.
+Next product stage: **v27.29.0 — Workspace, Layout & Theme Studio**.
 
 
 ## v27.27.0 — Ledger Integrity & Approval Workflow — completed
@@ -42,7 +53,7 @@ Next product stage: **v27.28.0 — Payroll Foundation**.
 - [x] Flyway V44 remains additive and does not alter `day_entries`.
 - [x] Baseline advances to 112 Java test classes / 598 tests / 36 Playwright scenarios.
 
-Next product stage: **v27.28.0 — Payroll Foundation**.
+Next product stage: **v27.29.0 — Workspace, Layout & Theme Studio**.
 
 
 ## v27.26.2 — Canonical Lineage Recovery — completed
@@ -54,7 +65,7 @@ Next product stage: **v27.28.0 — Payroll Foundation**.
 - [x] Add lineage integrity contracts that fail if V41–V43, plan/fact absences or source-linked overtime usages disappear.
 - [x] Baseline advances to 110 Java test classes / 592 tests / 35 Playwright scenarios.
 
-Next product stage: **v27.28.0 — Payroll Foundation**.
+Next product stage: **v27.29.0 — Workspace, Layout & Theme Studio**.
 
 ## v27.26.1 — Absence Request Constructor Compile Hotfix — completed
 

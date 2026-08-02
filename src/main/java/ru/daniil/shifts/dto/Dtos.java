@@ -2483,6 +2483,110 @@ public final class Dtos {
             @Size(max = 500, message = "Комментарий: максимум 500 символов") String note
     ) {}
 
+    /** Per-user money settings. All values are stored in minor currency units. */
+    public record PayrollSettingsDto(
+            String currencyCode,
+            long hourlyRateMinor,
+            String updatedAt
+    ) {}
+
+    public record PayrollSettingsUpdateRequest(
+            @NotBlank(message = "Код валюты обязателен")
+            @Pattern(regexp = "[A-Za-z]{3}", message = "Код валюты должен состоять из трёх букв")
+            String currencyCode,
+
+            @NotNull(message = "Почасовая ставка обязательна")
+            @Min(value = 0, message = "Ставка не может быть отрицательной")
+            @Max(value = 1000000000L, message = "Ставка слишком велика")
+            Long hourlyRateMinor
+    ) {}
+
+    /** Append-only manual money movement for one payroll month. */
+    public record PayrollAdjustmentRequest(
+            @NotBlank(message = "Месяц обязателен") String month,
+            @NotBlank(message = "Тип корректировки обязателен")
+            @Pattern(regexp = "(?i)ADDITION|DEDUCTION", message = "Тип должен быть ADDITION или DEDUCTION")
+            String adjustmentType,
+            @NotNull(message = "Сумма обязательна")
+            @Min(value = 1, message = "Сумма должна быть положительной")
+            @Max(value = 1000000000000L, message = "Сумма слишком велика")
+            Long amountMinor,
+            @NotBlank(message = "Название обязательно")
+            @Size(max = 120, message = "Название: максимум 120 символов") String title,
+            @Size(max = 500, message = "Комментарий: максимум 500 символов") String note
+    ) {}
+
+    public record PayrollAdjustmentDto(
+            Long id,
+            String month,
+            String adjustmentType,
+            long amountMinor,
+            String title,
+            String note,
+            String createdAt
+    ) {}
+
+    /** Transparent source-time and money projection before it is frozen into a revision. */
+    public record PayrollPreviewDto(
+            String month,
+            String currencyCode,
+            long hourlyRateMinor,
+            int plannedMinutes,
+            int workedMinutes,
+            int vacationMinutes,
+            int sickMinutes,
+            int overtimeCompensatedMinutes,
+            int unpaidMinutes,
+            int timeAdjustmentMinutes,
+            int paidAbsenceMinutes,
+            int payableMinutes,
+            long basePayMinor,
+            long additionsMinor,
+            long deductionsMinor,
+            long totalPayMinor
+    ) {}
+
+    /** Immutable versioned payroll snapshot of a closed accounting month. */
+    public record PayrollSnapshotDto(
+            Long id,
+            String month,
+            int revision,
+            String currencyCode,
+            long hourlyRateMinor,
+            int plannedMinutes,
+            int workedMinutes,
+            int vacationMinutes,
+            int sickMinutes,
+            int overtimeCompensatedMinutes,
+            int unpaidMinutes,
+            int timeAdjustmentMinutes,
+            int paidAbsenceMinutes,
+            int payableMinutes,
+            long basePayMinor,
+            long additionsMinor,
+            long deductionsMinor,
+            long totalPayMinor,
+            String sourcePeriodClosedAt,
+            String sourceIntegrityCheckedAt,
+            String calculationHash,
+            String createdAt,
+            Long supersededById
+    ) {}
+
+    /** One Payroll Foundation workspace payload; preview is available before final calculation. */
+    public record PayrollPeriodDto(
+            String month,
+            boolean periodClosed,
+            boolean integrityHealthy,
+            boolean canCalculate,
+            String blockingReason,
+            PayrollSettingsDto settings,
+            PayrollPreviewDto preview,
+            List<PayrollAdjustmentDto> adjustments,
+            PayrollSnapshotDto latestSnapshot,
+            List<PayrollSnapshotDto> snapshots
+    ) {}
+
     /** Private read-only iCalendar subscription state. Raw tokens are returned only on issue/rotation. */
     public record CalendarSyncStatusDto(
             boolean active,

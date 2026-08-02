@@ -139,6 +139,21 @@ public final class DutyLogModules {
                     75
             ),
             new ModuleContract(
+                    PAYROLL,
+                    ModuleCategory.TIME_ACCOUNTING,
+                    "Зарплата",
+                    "Payroll",
+                    "Расчёт закрытого периода по ставке, оплачиваемому времени и прозрачным корректировкам.",
+                    "Closed-period calculation from rate, payable time and transparent adjustments.",
+                    false,
+                    true,
+                    List.of(OVERTIME, VACATION),
+                    List.of("nav:payroll", "payroll:workspace", "overtime:payroll-bridge"),
+                    List.of("/api/payroll", "/api/v1/payroll"),
+                    List.of(),
+                    77
+            ),
+            new ModuleContract(
                     CALENDAR_SYNC,
                     ModuleCategory.INTEGRATION,
                     "Внешний календарь",

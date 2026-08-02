@@ -1,4 +1,17 @@
-# DutyLog API v27.27.2
+# DutyLog API v27.28.0
+
+
+## Payroll Foundation
+
+```http
+GET   /api/payroll/periods/{yyyy-MM}
+GET   /api/v1/payroll/periods/{yyyy-MM}
+PATCH /api/v1/payroll/settings
+POST  /api/v1/payroll/adjustments
+POST  /api/v1/payroll/periods/{yyyy-MM}/calculate
+```
+
+The period response is owner-scoped and `Cache-Control: no-store`. Preview can be read while a month is open, but calculation requires a closed accounting period, healthy ledger and positive hourly rate. Money uses integer minor currency units. Manual additions/deductions are append-only; every calculation creates a new immutable revision with a SHA-256 input hash and an optional supersession link from the previous revision.
 
 ## Ledger integrity, approval workflow and factual work
 

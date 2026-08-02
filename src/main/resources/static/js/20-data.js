@@ -96,6 +96,10 @@ const api = {
   async createActualWork(body) { return jfetch("/api/actual-work", { method:"POST", body }); },
   async updateActualWork(id, body) { return jfetch(`/api/actual-work/${id}`, { method:"PUT", body }); },
   async deleteActualWork(id) { return jfetch(`/api/actual-work/${id}`, { method:"DELETE" }); },
+  async payrollPeriod(month) { return jfetch(`/api/payroll/periods/${encodeURIComponent(month)}`); },
+  async updatePayrollSettings(body) { return jfetch("/api/payroll/settings", { method:"PATCH", body }); },
+  async addPayrollAdjustment(body) { return jfetch("/api/payroll/adjustments", { method:"POST", body }); },
+  async calculatePayroll(month) { return jfetch(`/api/payroll/periods/${encodeURIComponent(month)}/calculate`, { method:"POST" }); },
   async previewOvertimeCredit(b) { return jfetch("/api/overtime/preview", { method:"POST", body:b }); },
   async overtimeAccountPage(filters = {}) { const qs = new URLSearchParams(); for (const [k, v] of Object.entries(filters)) if (v !== undefined && v !== null && String(v).trim() !== "") qs.set(k, v); return jfetch(`/api/overtime/account-page?${qs.toString()}`); },
   async createOvertimeCredit(b) { return jfetch("/api/overtime/credits", { method:"POST", body:b }); },
@@ -125,7 +129,7 @@ const api = {
   async updateRegistrationSettings(enabled) { return jfetch("/api/admin/settings/registration", { method:"PATCH", body:{ enabled } }); },
 };
 
-const MODULE_KEYS = ["core","calendar","shifts","notes","tasks","overtime","important_dates","vacation","notifications","telegram","scenarios","admin"];
+const MODULE_KEYS = ["core","calendar","shifts","notes","tasks","overtime","important_dates","vacation","payroll","calendar_sync","notifications","telegram","scenarios","admin"];
 function setModuleList(list){
   state.modulesList = Array.isArray(list) ? list.filter(m => !m.hidden) : [];
   const map = { ...state.modules };
@@ -327,6 +331,9 @@ function applyModuleVisibility(){
   const toggle = (el, enabled) => { if (el) el.classList.toggle("moduleHidden", !enabled); };
   toggle(document.querySelector('#tabbar a[data-view="overtime"]'), moduleEnabled("overtime"));
   toggle($("view-overtime"), moduleEnabled("overtime"));
+  toggle(document.querySelector('#tabbar a[data-view="payroll"]'), moduleEnabled("payroll"));
+  toggle($("view-payroll"), moduleEnabled("payroll"));
+  toggle($("overtimePayrollBridge"), moduleEnabled("payroll"));
   toggle(document.querySelector('#tabbar a[data-view="tasks"]'), moduleEnabled("tasks"));
   toggle($("view-tasks"), moduleEnabled("tasks"));
   toggle($("globalQuickAdd"), moduleEnabled("tasks") || moduleEnabled("notes") || moduleEnabled("important_dates") || moduleEnabled("overtime"));
@@ -354,6 +361,7 @@ function applyModuleVisibility(){
   toggle($("telegramBox"), moduleEnabled("telegram"));
   if (location.hash === "#tasks" && !moduleEnabled("tasks")) location.hash = "#calendar";
   if (location.hash === "#overtime" && !moduleEnabled("overtime")) location.hash = "#calendar";
+  if (location.hash === "#payroll" && !moduleEnabled("payroll")) location.hash = "#calendar";
   if (location.hash === "#settings-notifications" && !moduleEnabled("notifications")) location.hash = "#settings-modules";
   if (location.hash === "#settings-calendar-sync" && !moduleEnabled("calendar_sync")) location.hash = "#settings-modules";
   if (location.hash === "#important" && !moduleEnabled("important_dates")) location.hash = "#calendar";
@@ -456,11 +464,11 @@ function renderModuleSettings(){
   }));
 }
 
-const ONBOARDING_OPTIONAL_MODULES = ["notes","tasks","overtime","important_dates","vacation","calendar_sync","notifications","telegram","scenarios"];
+const ONBOARDING_OPTIONAL_MODULES = ["notes","tasks","overtime","important_dates","vacation","payroll","calendar_sync","notifications","telegram","scenarios"];
 const ONBOARDING_PRESETS = {
-  basic: { notes:false, tasks:false, overtime:false, important_dates:false, vacation:false, calendar_sync:false, notifications:false, telegram:false, scenarios:false },
-  work: { notes:true, tasks:false, overtime:true, important_dates:true, vacation:true, calendar_sync:true, notifications:false, telegram:false, scenarios:true },
-  full: { notes:true, tasks:true, overtime:true, important_dates:true, vacation:true, calendar_sync:true, notifications:true, telegram:true, scenarios:true },
+  basic: { notes:false, tasks:false, overtime:false, important_dates:false, vacation:false, payroll:false, calendar_sync:false, notifications:false, telegram:false, scenarios:false },
+  work: { notes:true, tasks:false, overtime:true, important_dates:true, vacation:true, payroll:true, calendar_sync:true, notifications:false, telegram:false, scenarios:true },
+  full: { notes:true, tasks:true, overtime:true, important_dates:true, vacation:true, payroll:true, calendar_sync:true, notifications:true, telegram:true, scenarios:true },
 };
 function onboardingModules(){
   return (state.modulesList || [])
@@ -662,6 +670,7 @@ function offlineRequiredMessage(url){
   if (url.startsWith("/api/days/fill")) return t("Автозаполнение графика требует связи с сервером. Отдельную смену выбранного дня можно изменить оффлайн.");
   if (url.startsWith("/api/shift-types")) return t("Типы смен и их расписание меняются только при подключении к серверу.");
   if (url.startsWith("/api/quick-scenarios")) return t("Шаблоны переработок меняются только при подключении к серверу.");
+  if (url.startsWith("/api/payroll")) return t("Расчёт зарплаты и денежные операции требуют связи с сервером.");
   if (url.startsWith("/api/notifications")) return t("Настройки уведомлений требуют связи с сервером.");
   if (url.startsWith("/api/telegram")) return t("Telegram-интеграция настраивается только при подключении к серверу.");
   if (url.startsWith("/api/profile")) return t("Профиль и сессии меняются только при подключении к серверу.");

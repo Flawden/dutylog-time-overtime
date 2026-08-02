@@ -1,15 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.27.2.
+Status: v27.28.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.27.2 stabilizes Vacation/Settings readiness, expected-status console handling and responsive ledger selectors on top of the v27.27.1 browser workflow contract. The current application baseline is 114 Java test classes / 600 `@Test` methods / 36 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.28.0 adds the first closed-period money layer, canonical posted-only payroll source, append-only adjustments and immutable revisions. The current application baseline is 116 Java test classes / 603 `@Test` methods / 37 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+
+## v27.28.0 Payroll Foundation extension
+
+- `PayrollFoundationServiceTest` proves open-period blocking, closed healthy calculation, minor-unit arithmetic, append-only adjustments and snapshot supersession.
+- `PayrollFoundationContractTest` protects V45, canonical source boundaries, no-store API, module contract, UI and OpenAPI.
+- `payroll-foundation.spec.js` exercises an eight-hour source, closed month, rate, addition, calculation and rendered revision through real API/UI routes.
+- Baseline advances to 116 Java test classes / 603 `@Test` methods / 37 Playwright scenarios.
 
 ## v27.27.2 Ledger Browser State & Visibility Hotfix extension
 

@@ -1,6 +1,11 @@
 # Security review
 
-Status: v27.27.2.
+Status: v27.28.0.
+
+
+## Payroll Foundation boundaries
+
+Payroll settings, adjustments and snapshots are owner-scoped. Browser writes remain CSRF-protected and period reads use `Cache-Control: no-store`. Monetary values are integers in minor units; no floating-point persistence is used. Final calculation requires a locked closed period plus a healthy ledger. Snapshots are revisioned and not overwritten; the calculation hash contains canonical numeric inputs and adjustment identifiers, never passwords, session identifiers or calendar-feed tokens. The initial release contains no tax or jurisdiction-specific legal formulae.
 
 ## Approval and closed-period boundaries
 

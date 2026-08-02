@@ -1,6 +1,6 @@
 # Module contracts
 
-Status: v27.27.2.
+Status: v27.28.0.
 
 DutyLog uses a modular-monolith approach. A module is not a separate service yet; it is a bounded feature area with a stable key, API guards, UI slots and optional offline queue operation types.
 
@@ -33,6 +33,11 @@ Every module contract has:
 | `apiPrefixes` | Main backend API prefixes guarded by this module. |
 | `offlineQueueTypes` | Offline queue operation types owned by this module. |
 | `order` | Stable display order. |
+
+
+## Payroll module
+
+Stable key: `payroll`. Category: `TIME_ACCOUNTING`. It is enabled by default and depends on `overtime` and `vacation`, because a money calculation is valid only after plan/fact/compensation data exists. Its API prefixes are `/api/payroll` and `/api/v1/payroll`; its primary UI slot is `nav:payroll`. The module owns no offline mutation queue in v27.28.0.
 
 ## API
 

@@ -112,6 +112,7 @@
     calendar:Object.freeze({ id:"calendar", elementId:"view-calendar", module:"calendar" }),
     vacation:Object.freeze({ id:"vacation", elementId:"view-vacation", module:"vacation" }),
     overtime:Object.freeze({ id:"overtime", elementId:"view-overtime", module:"overtime" }),
+    payroll:Object.freeze({ id:"payroll", elementId:"view-payroll", module:"payroll" }),
     tasks:Object.freeze({ id:"tasks", elementId:"view-tasks", module:"tasks" }),
     important:Object.freeze({ id:"important", elementId:"view-important", module:"important_dates" }),
     settings:Object.freeze({ id:"settings", elementId:"view-settings", module:"core" }),
@@ -170,7 +171,7 @@
     root.dataset.uiDecoration = cfg.decorationId;
   }
 
-  const navigationUniverse = Object.freeze(["today","calendar","vacation","overtime","tasks","important","settings"]);
+  const navigationUniverse = Object.freeze(["today","calendar","vacation","overtime","payroll","tasks","important","settings"]);
 
   function applyNavigation(cfg){
     const workspace = workspaces[cfg.workspaceId] || workspaces["shift-worker"];

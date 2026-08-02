@@ -53,7 +53,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.27.2"
+const DUTYLOG_VERSION = "27.28.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -99,6 +99,8 @@ const state = {
   timeCompensation: null,
   ledgerIntegrity: null,
   actualWorkIntervals: [],
+  payrollPeriod: null,
+  payrollLoading: false,
   notificationSettings: null,
   reminders: [],
   notificationPreview: null,
@@ -120,7 +122,7 @@ const state = {
   onboardingDraft: null,
   modulesLoaded: false,
   modulesList: [],
-  modules: { core:true, calendar:true, shifts:true, notes:true, tasks:true, overtime:true, important_dates:true, vacation:true, calendar_sync:true, notifications:true, telegram:false, scenarios:true, admin:false },
+  modules: { core:true, calendar:true, shifts:true, notes:true, tasks:true, overtime:true, important_dates:true, vacation:true, payroll:true, calendar_sync:true, notifications:true, telegram:false, scenarios:true, admin:false },
   activeScenarioId: null,
   ledgerFilters: { from:"", to:"", status:"all", q:"", preset:"all" },
   ledgerPage: { items: [], page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false },

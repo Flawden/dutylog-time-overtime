@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.27.2.
+Status: v27.28.0.
 
 ## Local gate
 
@@ -16,11 +16,23 @@ docker build -t dutylog:release-check .
 bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ```
 
+
+## Payroll Foundation acceptance
+
+- confirm Flyway applies V45 exactly once and creates `payroll_settings`, `payroll_adjustments`, `payroll_snapshots`;
+- confirm an open month returns `PERIOD_NOT_CLOSED` on calculate;
+- close a healthy month, set a positive hourly rate and calculate revision 1;
+- add one addition and one deduction, calculate revision 2 and confirm revision 1 points to the replacement;
+- confirm base/total amounts and all stored financial values use minor units;
+- confirm `/api/v1/payroll/periods/{month}` returns `Cache-Control: no-store`;
+- confirm Payroll is unavailable when its module is disabled and automatically keeps Overtime/Vacation dependencies;
+- confirm 603 Java tests and 37 Playwright scenarios pass.
+
 ## Staging
 
 - push the exact candidate tree to `test`;
-- confirm the Maven gate executes all 600 tests with zero failures;
-- confirm all 36 Playwright scenarios pass, including serialized ledger refresh, workflow reservation/posting, closed-period protection and explicit factual work;
+- confirm the Maven gate executes all 603 tests with zero failures;
+- confirm all 37 Playwright scenarios pass, including serialized ledger refresh, workflow reservation/posting, closed-period protection and explicit factual work;
 - create an overtime credit while Vacation Planner is hidden, open Vacation and confirm the available compensatory-time balance refreshes without a page reload;
 - save a timezone and wait for the full calendar/tasks/ledger/notification refresh before reloading; confirm no `Failed to fetch` console error;
 - on desktop confirm linked usages are asserted in the visible table, then switch to mobile cards without duplicate-visibility ambiguity;
@@ -124,6 +136,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.27.2 -m "v27.27.2 — Ledger Integrity & Approval Workflow"
-git push origin v27.27.2
+git tag -a v27.28.0 -m "v27.28.0 — Payroll Foundation"
+git push origin v27.28.0
 ```
