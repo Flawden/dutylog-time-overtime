@@ -1,16 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.28.0.
+Status: v27.28.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.28.0 adds the first closed-period money layer, canonical posted-only payroll source, append-only adjustments and immutable revisions. The current application baseline is 116 Java test classes / 603 `@Test` methods / 37 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.28.1 repairs the Payroll module-registry static contract without changing runtime behavior. The current application baseline remains 116 Java test classes / 603 `@Test` methods / 37 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
 
+
+## v27.28.1 Payroll Module Registry Contract Hotfix extension
+
+- `PayrollFoundationContractTest` validates the stable key in `ModuleKeys` and the actual `DutyLogModules` registration shape.
+- The contract no longer requires the unrelated literal `ModuleService.PAYROLL` inside the canonical registry source.
+- Production Payroll runtime, API, OpenAPI, V45 and the browser scenario remain unchanged.
+- Baseline remains 116 Java test classes / 603 `@Test` methods / 37 Playwright scenarios.
 
 ## v27.28.0 Payroll Foundation extension
 

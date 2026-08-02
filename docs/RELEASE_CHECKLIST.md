@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.28.0.
+Status: v27.28.1.
 
 ## Local gate
 
@@ -16,6 +16,14 @@ docker build -t dutylog:release-check .
 bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ```
 
+
+## Payroll Module Registry Contract Hotfix acceptance
+
+- confirm `PayrollFoundationContractTest` reads the canonical key from `ModuleKeys.PAYROLL`;
+- confirm `DutyLogModules` registers `PAYROLL` in `TIME_ACCOUNTING`;
+- confirm the contract does not require the unrelated literal `ModuleService.PAYROLL`;
+- confirm production Payroll service, API, V45 and browser scenario remain unchanged;
+- confirm 603 Java tests and 37 Playwright scenarios pass.
 
 ## Payroll Foundation acceptance
 
@@ -136,6 +144,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.28.0 -m "v27.28.0 — Payroll Foundation"
-git push origin v27.28.0
+git tag -a v27.28.1 -m "v27.28.1 — Payroll Module Registry Contract Hotfix"
+git push origin v27.28.1
 ```

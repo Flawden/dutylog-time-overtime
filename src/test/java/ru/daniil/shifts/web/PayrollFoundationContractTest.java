@@ -19,6 +19,7 @@ class PayrollFoundationContractTest {
         String sourceProjection = source("src/main/java/ru/daniil/shifts/service/TimeCompensationService.java");
         String controller = source("src/main/java/ru/daniil/shifts/web/PayrollController.java");
         String modules = source("src/main/java/ru/daniil/shifts/module/DutyLogModules.java");
+        String moduleKeys = source("src/main/java/ru/daniil/shifts/module/ModuleKeys.java");
         String html = resource("/static/index.html");
         String javascript = resource("/static/js/45-payroll.js");
         String data = resource("/static/js/20-data.js");
@@ -43,7 +44,8 @@ class PayrollFoundationContractTest {
 
         assertTrue(controller.contains("@RequestMapping({\"/api/payroll\", \"/api/v1/payroll\"})"));
         assertTrue(controller.contains("CacheControl.noStore()"));
-        assertTrue(modules.contains("ModuleService.PAYROLL"));
+        assertTrue(moduleKeys.contains("public static final String PAYROLL = \"payroll\";"));
+        assertTrue(modules.contains("                    PAYROLL,\n                    ModuleCategory.TIME_ACCOUNTING,"));
         assertTrue(modules.contains("/api/v1/payroll"));
 
         assertTrue(html.contains("id=\"view-payroll\""));

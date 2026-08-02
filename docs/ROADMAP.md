@@ -1,10 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.28.0 — Payroll Foundation**.
+Current release: **v27.28.1 — Payroll Module Registry Contract Hotfix**.
 
 
 
-## v27.28.0 — Payroll Foundation — current
+## v27.28.1 — Payroll Module Registry Contract Hotfix — current
+
+- [x] Reproduce the Maven failure in `PayrollFoundationContractTest`.
+- [x] Replace the brittle `ModuleService.PAYROLL` source-string expectation with canonical `ModuleKeys.PAYROLL` and real registry-shape assertions.
+- [x] Keep production Payroll runtime, API, OpenAPI, PostgreSQL and Flyway V45 unchanged.
+- [x] Keep the baseline at 116 Java classes / 603 tests / 37 Playwright scenarios.
+
+Next product stage: **v27.29.0 — Workspace, Layout & Theme Studio**.
+
+## v27.28.0 — Payroll Foundation — completed
 
 - [x] Add V45 payroll settings, append-only monetary adjustments and immutable versioned snapshots.
 - [x] Read canonical posted-only time from `TimeCompensationService` instead of reinterpreting calendar tables.

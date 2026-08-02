@@ -1,3 +1,10 @@
+# v27.28.1 — Payroll Module Registry Contract Hotfix
+
+- Fixed the Payroll static contract to verify the canonical `ModuleKeys.PAYROLL` registration instead of requiring the unrelated literal `ModuleService.PAYROLL`.
+- Preserved `DutyLogModules` as the single registry with its existing static `ModuleKeys.*` import and `TIME_ACCOUNTING` Payroll contract.
+- Kept production runtime, API, OpenAPI, PostgreSQL and Flyway V45 unchanged.
+- Regression baseline remains 116 Java test classes, 603 `@Test` methods and 37 Playwright scenarios.
+
 # v27.28.0 — Payroll Foundation
 
 - Added V45 owner-scoped payroll settings, append-only monetary adjustments and immutable versioned snapshots.
