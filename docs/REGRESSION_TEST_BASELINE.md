@@ -22,6 +22,7 @@ Historical foundation: v27.2.29 security baseline remains preserved by all later
 - Vacation allowance and the canonical FIFO bank retain their existing validation authority.
 - Full-day facts preserve the underlying plan; partial facts remain time intervals over the plan.
 - Pre-push full gates additionally protect fresh composer balances, the visible Quick Add route and glyph-aware vacation projection.
+- IntelliJ all-tests order is protected by giving the dirtied Telegram detached-owner context a dedicated H2 database; closing it can no longer drop the shared `testdb` schema used by later controller tests.
 - Baseline advances to 123 Java test classes / 616 `@Test` methods / 39 Playwright scenarios.
 - PostgreSQL and Flyway remain unchanged at V46.
 

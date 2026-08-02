@@ -49,6 +49,7 @@ A local Windows run before the first commit/push completed all 616 Maven tests a
 - closes the selected-day panel before the global Quick Add route is exercised;
 - accepts the intentional type glyph in the existing vacation calendar assertion;
 - expects the current `27.30.0` ICS `PRODID`.
+- isolates the `@DirtiesContext` Telegram detached-owner integration test in its own named H2 database so `create-drop` cannot remove the shared `testdb` schema when IntelliJ executes classes in a different order.
 
 No release number is advanced because these corrections were made before the first v27.30.0 commit and push.
 

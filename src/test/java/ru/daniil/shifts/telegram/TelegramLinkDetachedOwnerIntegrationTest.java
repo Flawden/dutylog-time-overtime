@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
  * Reproduces the real Telegram polling boundary: the service transaction has
  * already ended before the command handler reads the linked account timezone.
  */
-@SpringBootTest
+@SpringBootTest(properties = "spring.datasource.url=jdbc:h2:mem:telegram_link_detached;DB_CLOSE_DELAY=-1")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class TelegramLinkDetachedOwnerIntegrationTest {
 

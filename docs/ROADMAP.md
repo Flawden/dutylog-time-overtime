@@ -14,6 +14,7 @@ Current release: **v27.30.0 — Unified Absence Composer & Calendar Projection**
 - [x] Render partial absence as a typed interval over the planned shift.
 - [x] Add type glyphs and status-aware calendar treatment without relying on color alone.
 - [x] Keep Payroll, Unified Ledger, approval workflow, PostgreSQL and Flyway V46 unchanged.
+- [x] Isolate the dirtied Telegram detached-owner integration context in its own H2 database so test order cannot drop the shared schema.
 - [x] Advance baseline to 123 Java classes / 616 tests / 39 Playwright scenarios.
 
 Next product stage after green CI and staging acceptance: **v27.31.0 — One-Tap Calendar Connect**.

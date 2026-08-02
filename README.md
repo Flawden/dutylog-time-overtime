@@ -6,6 +6,8 @@ Full-day absence becomes the factual state while preserving the planned shift un
 
 Flyway remains V46. Payroll, Unified Ledger posting, approval workflow and API payloads remain compatible.
 
+The dirtied Telegram detached-owner integration context now uses its own H2 database, so arbitrary IntelliJ test ordering cannot drop the shared `testdb` schema used by later controller tests.
+
 ## Previous stabilization: v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix
 
 `v27.29.3` fixes the remaining Workspace Studio browser failure after v27.29.2 made the inherited Today cards visible. The frontend already moved Tasks above Shift, but the profile sanitizer forced Shift back to index zero when autosave returned from `/api/profile`.

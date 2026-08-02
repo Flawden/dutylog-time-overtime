@@ -2668,6 +2668,8 @@ contains e2e/unified-absence-composer.spec.js "await page.locator('#pClose').cli
 contains e2e/unified-absence-composer.spec.js "await expect(page.locator('#globalQuickAdd')).toBeVisible();"
 contains e2e/vacation-planner.spec.js ".toContainText('E2E отпуск');"
 not_contains e2e/vacation-planner.spec.js ".toHaveText('E2E отпуск');"
+contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkDetachedOwnerIntegrationTest.java 'jdbc:h2:mem:telegram_link_detached;DB_CLOSE_DELAY=-1'
+not_contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkDetachedOwnerIntegrationTest.java '@SpringBootTest\n@DirtiesContext'
 
   # v27.29.3 Custom Workspace Today Widget Order Persistence Hotfix
 contains CHANGES.md "v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix"

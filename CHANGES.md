@@ -8,6 +8,7 @@
 - Kept existing direct overtime usages editable for compatibility; no API or database migration is required.
 - Refreshed composer balance data on every open so newly created overtime credits are immediately available to FIFO-backed time off.
 - Corrected the pre-push Maven ICS version assertion and the three bounded browser expectations without changing the public API or schema.
+- Isolated `TelegramLinkDetachedOwnerIntegrationTest` in a dedicated H2 database so its `@DirtiesContext` / `create-drop` shutdown cannot erase the shared test schema under IntelliJ's class order.
 - Regression baseline advances to 123 Java test classes, 616 `@Test` methods and 39 Playwright scenarios; Flyway remains V46.
 
 # v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix
