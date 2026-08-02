@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.29.1.
+Status: v27.29.2.
 
 ## Local gate
 
@@ -159,6 +159,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.29.1 -m "v27.29.1 — Workspace, Layout & Theme Studio"
-git push origin v27.29.1
+git tag -a v27.29.2 -m "v27.29.2 — Custom Workspace Today Widget Inheritance Hotfix"
+git push origin v27.29.2
 ```

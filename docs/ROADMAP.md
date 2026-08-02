@@ -1,9 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.29.1 — Theme Package Token Scope Contract Hotfix**.
+Current release: **v27.29.2 — Custom Workspace Today Widget Inheritance Hotfix**.
 
 
-## v27.29.1 — Theme Package Token Scope Contract Hotfix — current
+## v27.29.2 — Custom Workspace Today Widget Inheritance Hotfix — current
+
+- [x] Preserve the active preset's Today card selection when creating Custom Workspace.
+- [x] Keep Shift mandatory and preserve the existing widget allowlist.
+- [x] Verify Overtime and Tasks inheritance before later Studio edits.
+- [x] Keep the strict Playwright fixture unchanged.
+- [x] Advance baseline to 121 Java classes / 612 tests / 38 Playwright scenarios.
+- [x] Keep PostgreSQL and Flyway V46 unchanged.
+
+## v27.29.1 — Theme Package Token Scope Contract Hotfix — completed
 
 - [x] Reproduce the single Maven failure at `WorkspaceLayoutThemeStudioFrontendContractTest:74`.
 - [x] Confirm the runtime theme package metadata already contains the correct unescaped JavaScript template literal.
@@ -29,7 +38,7 @@ Next product stage after green CI and staging acceptance: **v27.30.0 — One-Tap
 - [x] Keep Payroll, Unified Ledger, Vacation, Calendar APIs, PostgreSQL and Flyway V46 unchanged.
 - [x] Advance baseline to 119 Java classes / 610 tests / 38 Playwright scenarios.
 
-Stabilized by: **v27.29.1 — Theme Package Token Scope Contract Hotfix**.
+Stabilized by: **v27.29.1 — Theme Package Token Scope Contract Hotfix** and **v27.29.2 — Custom Workspace Today Widget Inheritance Hotfix**.
 
 
 ## v27.28.3 — Payroll Snapshot Hash Schema Validation Hotfix — completed

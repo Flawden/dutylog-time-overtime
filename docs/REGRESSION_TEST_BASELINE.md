@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.29.1.
+Status: v27.29.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.29.1 aligns the Workspace Studio Java source contract with the already-correct JavaScript theme-token literal and adds a focused escaping regression guard. The current application baseline is 120 Java test classes / 611 `@Test` methods / 38 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.29.2 makes Custom Workspace inherit the active preset's Today cards together with its navigation and adds a focused clone-boundary regression guard. The current application baseline is 121 Java test classes / 612 `@Test` methods / 38 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -12,6 +12,14 @@ Historical foundation: v27.2.29 security baseline remains preserved by all later
 
 
 
+
+## v27.29.2 Custom Workspace Today Widget Inheritance Hotfix extension
+
+- Maven is green at 611 tests; Playwright reached 37/38 and isolated the remaining failure to `todayTasksCard` retaining `workspaceHidden` after Custom Workspace creation.
+- Custom Workspace now clones `todayWidgets` from the active preset together with navigation.
+- The existing browser scenario asserts inherited Overtime and Tasks selections before editing them.
+- Baseline advances to 121 Java test classes / 612 `@Test` methods / 38 Playwright scenarios.
+- Runtime API, PostgreSQL and Flyway V46 remain unchanged.
 
 ## v27.29.1 Theme Package Token Scope Contract Hotfix extension
 

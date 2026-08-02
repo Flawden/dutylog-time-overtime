@@ -1,3 +1,12 @@
+# v27.29.2 — Custom Workspace Today Widget Inheritance Hotfix
+
+- Fixed Custom Workspace creation to inherit the active preset's Today cards together with its navigation.
+- Preserved the required Shift card and the existing bounded widget allowlist.
+- Strengthened the Workspace Studio browser scenario at the inheritance boundary without weakening the strict fixture.
+- Added a focused regression contract for preset-to-custom Today widget cloning.
+- Kept API, OpenAPI, PostgreSQL, Payroll, Unified Ledger and Flyway V46 unchanged.
+- Regression baseline advances to 121 Java test classes, 612 `@Test` methods and 38 Playwright scenarios.
+
 # v27.29.1 — Theme Package Token Scope Contract Hotfix
 
 - Fixed the single false Maven assertion in `WorkspaceLayoutThemeStudioFrontendContractTest` by matching the actual JavaScript theme-token template literal instead of searching for Java-only escape backslashes.

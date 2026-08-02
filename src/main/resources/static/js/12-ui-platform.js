@@ -436,7 +436,8 @@
       persistStudioPatch({
         workspaceId:"custom",
         navigationOrder:completeOrder(workspace.navigation, navigationUniverse),
-        navigationVisible:[...workspace.navigation]
+        navigationVisible:[...workspace.navigation],
+        todayWidgets:[...workspace.todayWidgets]
       });
     });
 

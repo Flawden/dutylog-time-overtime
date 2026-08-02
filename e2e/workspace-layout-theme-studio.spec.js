@@ -32,6 +32,8 @@ test('Workspace Studio persists custom navigation, Today cards, layout and calen
   await page.locator('#workspaceCustomize').click();
   await expect(page.locator('#uiWorkspace')).toHaveValue('custom');
   await expect(page.locator('html')).toHaveAttribute('data-ui-workspace', 'custom');
+  await expect(studioRow(page, 'widget', 'overtime').locator('[data-studio-visible]')).toBeChecked();
+  await expect(studioRow(page, 'widget', 'tasks').locator('[data-studio-visible]')).toBeChecked();
 
   await studioRow(page, 'navigation', 'vacation').locator('[data-studio-visible]').uncheck();
   await studioRow(page, 'navigation', 'tasks').locator('[data-studio-visible]').check();
