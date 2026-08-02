@@ -1,6 +1,6 @@
 # Security review
 
-Status: v27.28.1.
+Status: v27.28.2.
 
 
 ## Payroll Foundation boundaries

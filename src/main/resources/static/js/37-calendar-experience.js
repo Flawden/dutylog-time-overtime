@@ -529,12 +529,16 @@ async function calendarExperienceNavigate(delta){
 }
 function calendarExperienceHeaderNavigate(delta){
   if (state.calendarExperience.mode === "month") return false;
-  calendarExperienceNavigate(delta).catch(error => { console.error(error); setSave("err", error.message); });
+  const operation = calendarExperienceNavigate(delta);
+  const ready = typeof trackCalendarNavigation === "function" ? trackCalendarNavigation(operation) : operation;
+  ready.catch(error => { console.error(error); setSave("err", error.message); });
   return true;
 }
 function calendarExperienceHeaderToday(){
   if (state.calendarExperience.mode === "month") return false;
-  calendarExperienceOpen(todayKey(), state.calendarExperience.mode).catch(error => { console.error(error); setSave("err", error.message); });
+  const operation = calendarExperienceOpen(todayKey(), state.calendarExperience.mode);
+  const ready = typeof trackCalendarNavigation === "function" ? trackCalendarNavigation(operation) : operation;
+  ready.catch(error => { console.error(error); setSave("err", error.message); });
   return true;
 }
 

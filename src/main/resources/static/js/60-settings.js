@@ -242,6 +242,12 @@ renderSwatches();
 updateShiftPlanHint();
 
 /* ─── Навигация по месяцам ──────────────────────────────────── */
+window.__dutylogCalendarNavigationReady = Promise.resolve();
+function trackCalendarNavigation(operation){
+  const ready = Promise.resolve(operation);
+  window.__dutylogCalendarNavigationReady = ready;
+  return ready;
+}
 async function goto(y, m){
   await flushPendingSave();
   const d = new Date(y, m, 1);
@@ -256,16 +262,16 @@ async function goto(y, m){
 }
 $("prev").addEventListener("click", () => {
   if (typeof calendarExperienceHeaderNavigate === "function" && calendarExperienceHeaderNavigate(-1)) return;
-  goto(state.y, state.m - 1);
+  trackCalendarNavigation(goto(state.y, state.m - 1));
 });
 $("next").addEventListener("click", () => {
   if (typeof calendarExperienceHeaderNavigate === "function" && calendarExperienceHeaderNavigate(1)) return;
-  goto(state.y, state.m + 1);
+  trackCalendarNavigation(goto(state.y, state.m + 1));
 });
 $("todayBtn").addEventListener("click", async () => {
   if (typeof calendarExperienceHeaderToday === "function" && calendarExperienceHeaderToday()) return;
   const t = new Date();
-  await goto(t.getFullYear(), t.getMonth());
+  await trackCalendarNavigation(goto(t.getFullYear(), t.getMonth()));
   selectDay(todayKey());
 });
 

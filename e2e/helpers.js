@@ -67,6 +67,14 @@ async function waitForAppIdle(page) {
   await page.waitForLoadState('networkidle');
 }
 
+async function waitForCalendarNavigationReady(page) {
+  await page.evaluate(async () => {
+    await Promise.resolve(window.__dutylogCalendarNavigationReady);
+    await Promise.resolve(window.__dutylogLedgerReady);
+  });
+  await waitForAppIdle(page);
+}
+
 async function waitForVacationReady(page) {
   await page.evaluate(async () => {
     await Promise.resolve(window.__dutylogVacationReady);
@@ -240,6 +248,7 @@ module.exports = {
   registerAndOnboard,
   currentLocalDateKey,
   waitForAppIdle,
+  waitForCalendarNavigationReady,
   waitForVacationReady,
   waitForLedgerReady,
   waitForPayrollReady,

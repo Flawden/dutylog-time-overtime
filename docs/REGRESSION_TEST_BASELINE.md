@@ -1,16 +1,25 @@
 # DutyLog regression test baseline
 
-Status: v27.28.1.
+Status: v27.28.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.28.1 repairs the Payroll module-registry static contract without changing runtime behavior. The current application baseline remains 116 Java test classes / 603 `@Test` methods / 37 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.28.2 makes calendar persistence wait for the complete navigation and ledger readiness lifecycle before full reload. The current application baseline is 117 Java test classes / 604 `@Test` methods / 37 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
 
+
+## v27.28.2 Calendar Persistence Reload Readiness Hotfix extension
+
+- `CalendarPersistenceReloadReadinessHotfixTest` protects the calendar-navigation promise, helper export and both reload guards.
+- `calendar-persistence.spec.js` waits for Month navigation, ledger projection and application idle before intentional reload.
+- Week and Day header navigation share the same readiness promise without changing their visible behavior.
+- The strict browser fixture remains unchanged and still rejects every unexpected console, page, HTTP and network failure.
+- Production Payroll runtime, API, OpenAPI and Flyway remain unchanged at V45.
+- Baseline advances to 117 Java test classes / 604 `@Test` methods / 37 Playwright scenarios.
 
 ## v27.28.1 Payroll Module Registry Contract Hotfix extension
 

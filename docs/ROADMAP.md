@@ -1,10 +1,21 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.28.1 — Payroll Module Registry Contract Hotfix**.
+Current release: **v27.28.2 — Calendar Persistence Reload Readiness Hotfix**.
 
 
 
-## v27.28.1 — Payroll Module Registry Contract Hotfix — current
+## v27.28.2 — Calendar Persistence Reload Readiness Hotfix — current
+
+- [x] Publish one calendar-navigation readiness promise for Month, Week and Day header routes.
+- [x] Wait for completed calendar and ledger projections before persistence tests perform a full reload.
+- [x] Guard both calendar-persistence reload paths with the existing application-idle contract.
+- [x] Keep the strict runtime fixture unchanged; do not suppress aborted reads globally.
+- [x] Keep production Payroll, API, OpenAPI, PostgreSQL and Flyway V45 unchanged.
+- [x] Baseline advances to 117 Java classes / 604 tests / 37 Playwright scenarios.
+
+Next product stage: **v27.29.0 — Workspace, Layout & Theme Studio**.
+
+## v27.28.1 — Payroll Module Registry Contract Hotfix — completed
 
 - [x] Reproduce the Maven failure in `PayrollFoundationContractTest`.
 - [x] Replace the brittle `ModuleService.PAYROLL` source-string expectation with canonical `ModuleKeys.PAYROLL` and real registry-shape assertions.

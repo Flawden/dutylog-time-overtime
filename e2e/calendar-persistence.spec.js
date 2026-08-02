@@ -4,6 +4,8 @@ const {
   currentLocalDateKey,
   selectDate,
   waitForApi,
+  waitForAppIdle,
+  waitForCalendarNavigationReady,
   openDayModule
 } = require('./helpers');
 
@@ -49,13 +51,16 @@ Calendar persistence check`;
   const nextMonth = page.waitForResponse(response => new URL(response.url()).pathname === '/api/calendar' && response.status() === 200);
   await page.locator('#next').click();
   await nextMonth;
+  await waitForCalendarNavigationReady(page);
   const previousMonth = page.waitForResponse(response => new URL(response.url()).pathname === '/api/calendar' && response.status() === 200);
   await page.locator('#prev').click();
   await previousMonth;
+  await waitForCalendarNavigationReady(page);
 
   await expect(page.locator(`#grid [data-date="${date}"] .dayEmoji`)).toHaveText('🧪');
   await expect(page.locator(`#grid [data-date="${date}"] .ear`)).toHaveCount(1);
 
+  await waitForAppIdle(page);
   const authoritativeReload = page.waitForResponse(response => new URL(response.url()).pathname === '/api/calendar' && response.status() === 200);
   await page.reload();
   await authoritativeReload;
@@ -100,6 +105,7 @@ test('a shift can be deleted and assigned again while a note save is pending', a
   await shiftDeleted;
   await expect(page.locator('#chips [data-shift-type-id][aria-pressed="true"]')).toHaveCount(0);
 
+  await waitForAppIdle(page);
   const reloadAfterDelete = page.waitForResponse(response => new URL(response.url()).pathname === '/api/calendar' && response.status() === 200);
   await page.reload();
   await reloadAfterDelete;

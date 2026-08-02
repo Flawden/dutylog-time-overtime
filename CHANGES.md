@@ -1,3 +1,12 @@
+# v27.28.2 — Calendar Persistence Reload Readiness Hotfix
+
+- Exposed one bounded calendar-navigation readiness promise for Month, Week and Day header navigation.
+- Made the persistence E2E wait for the complete calendar + ledger projection before intentionally reloading the page.
+- Added the same application-idle guard to the shift-delete reload path.
+- Preserved the strict browser fixture: no `Failed to fetch` console suppression or broad network-error allowlist was added.
+- Kept Payroll runtime, API, OpenAPI, PostgreSQL and Flyway V45 unchanged.
+- Regression baseline advances to 117 Java test classes, 604 `@Test` methods and 37 Playwright scenarios.
+
 # v27.28.1 — Payroll Module Registry Contract Hotfix
 
 - Fixed the Payroll static contract to verify the canonical `ModuleKeys.PAYROLL` registration instead of requiring the unrelated literal `ModuleService.PAYROLL`.

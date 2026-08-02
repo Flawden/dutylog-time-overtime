@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.28.1.
+Status: v27.28.2.
 
 ## Local gate
 
@@ -144,6 +144,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.28.1 -m "v27.28.1 — Payroll Module Registry Contract Hotfix"
-git push origin v27.28.1
+git tag -a v27.28.2 -m "v27.28.2 — Calendar Persistence Reload Readiness Hotfix"
+git push origin v27.28.2
 ```
