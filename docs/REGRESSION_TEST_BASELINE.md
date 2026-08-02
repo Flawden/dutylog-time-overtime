@@ -1,16 +1,24 @@
 # DutyLog regression test baseline
 
-Status: v27.28.2.
+Status: v27.28.3.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.28.2 makes calendar persistence wait for the complete navigation and ledger readiness lifecycle before full reload. The current application baseline is 117 Java test classes / 604 `@Test` methods / 37 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.28.3 aligns the PostgreSQL snapshot-hash type with the established JPA contract through forward-only V46. The current application baseline is 118 Java test classes / 605 `@Test` methods / 37 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
 
+
+## v27.28.3 Payroll Snapshot Hash Schema Validation Hotfix extension
+
+- `PayrollSnapshotHashSchemaValidationHotfixTest` pins the released V45 SHA-256, protects the new V46 conversion and keeps the JPA mapping at non-null `VARCHAR(64)` semantics.
+- V46 converts fixed-width values with `BTRIM(calculation_hash)` instead of modifying V45 or weakening Hibernate schema validation.
+- The existing `ck_payroll_snapshot_hash` constraint remains the authority for exactly 64 lowercase hexadecimal characters.
+- Payroll math, API, OpenAPI, UI, immutable revisions and all browser scenarios remain unchanged.
+- Flyway advances to V46; baseline advances to 118 Java test classes / 605 `@Test` methods / 37 Playwright scenarios.
 
 ## v27.28.2 Calendar Persistence Reload Readiness Hotfix extension
 

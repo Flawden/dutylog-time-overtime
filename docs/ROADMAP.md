@@ -1,10 +1,21 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.28.2 — Calendar Persistence Reload Readiness Hotfix**.
+Current release: **v27.28.3 — Payroll Snapshot Hash Schema Validation Hotfix**.
 
 
 
-## v27.28.2 — Calendar Persistence Reload Readiness Hotfix — current
+## v27.28.3 — Payroll Snapshot Hash Schema Validation Hotfix — current
+
+- [x] Keep released V45 immutable and preserve its Flyway checksum.
+- [x] Add forward-only V46 to convert `payroll_snapshots.calculation_hash` from `CHAR(64)` to `VARCHAR(64)` using `BTRIM(...)`.
+- [x] Preserve `NOT NULL` and the existing lowercase 64-character hexadecimal check constraint.
+- [x] Add a regression contract for the V45 checksum, V46 type alignment and the unchanged JPA `length = 64` mapping.
+- [x] Keep Payroll calculations, API, OpenAPI, UI and revision semantics unchanged.
+- [x] Advance Flyway to V46 and the baseline to 118 Java classes / 605 tests / 37 Playwright scenarios.
+
+Next product stage after a fully green clean-migration CI: **v27.29.0 — Workspace, Layout & Theme Studio**.
+
+## v27.28.2 — Calendar Persistence Reload Readiness Hotfix — completed
 
 - [x] Publish one calendar-navigation readiness promise for Month, Week and Day header routes.
 - [x] Wait for completed calendar and ledger projections before persistence tests perform a full reload.

@@ -1,3 +1,12 @@
+# v27.28.3 — Payroll Snapshot Hash Schema Validation Hotfix
+
+- Added forward-only Flyway V46 to align `payroll_snapshots.calculation_hash` with the existing JPA `VARCHAR(64)` contract.
+- Preserved the released V45 checksum and converted existing fixed-width values with `BTRIM(...)` during the type change.
+- Kept the `NOT NULL` invariant and the existing lowercase 64-character SHA-256 check constraint.
+- Added a regression contract that pins the immutable V45 hash and guards V46 plus the entity mapping.
+- Kept Payroll calculations, API, OpenAPI, UI, snapshot revision semantics and all 37 Playwright scenarios unchanged.
+- Regression baseline advances to 118 Java test classes, 605 `@Test` methods and 37 Playwright scenarios; Flyway advances to V46.
+
 # v27.28.2 — Calendar Persistence Reload Readiness Hotfix
 
 - Exposed one bounded calendar-navigation readiness promise for Month, Week and Day header navigation.
