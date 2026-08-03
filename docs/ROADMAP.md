@@ -1,8 +1,17 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.32.0 — Absence & Time Bank Experience**.
+Current release: **v27.32.1 — Time Bank Absence Navigation Hotfix**.
 
-## v27.32.0 — Absence & Time Bank Experience — current
+## v27.32.1 — Time Bank Absence Navigation Hotfix — current
+
+- [x] Reproduce the final v27.32.0 browser failure at the Bank Usage → Open absence boundary.
+- [x] Refresh a stale absence read model before opening its owner.
+- [x] Open the owning record in Unified Absence Composer instead of only routing to Vacation.
+- [x] Build the edit-aware FIFO preview without making the reservation compete with itself.
+- [x] Keep API, PostgreSQL, Payroll, ownership and Flyway V47 unchanged.
+- [x] Advance baseline to 130 Java classes / 635 tests / 42 Playwright scenarios.
+
+## v27.32.0 — Absence & Time Bank Experience — completed
 
 - [x] Make «Отпуск и отсутствия» the single event journal and mutation owner.
 - [x] Split «Переработки» into Overview, Credits, Bank Usage and FIFO Detail.
@@ -11,14 +20,26 @@ Current release: **v27.32.0 — Absence & Time Bank Experience**.
 - [x] Forecast oldest-first FIFO consumption and the next credit to be spent.
 - [x] Add filters, actionable empty states, contextual guides and the first guided browser journey.
 - [x] Keep API, PostgreSQL, Payroll, canonical ownership and Flyway V47 unchanged.
-- [x] Advance baseline to 129 Java classes / 633 tests / 42 Playwright scenarios.
+- [x] Stabilize cross-workspace editor navigation in v27.32.1.
 
-Next approved product stages:
+## Approved architecture transition — complete Vue migration before new features
 
-1. **v27.33.0 — One-Tap Calendar Connect**.
-2. **v27.34.0 — Notes Archive & Timeline Collisions**.
-3. **v27.35.0 — Telegram Task Actions & Guided Commands**.
-4. Feature freeze, Guided Onboarding & Product Education, release-readiness, RC and **DutyLog v1.0.0 Release**.
+1. **v27.33.0 — Vue Frontend Foundation & CI/CD**: Vue 3, TypeScript, Vite, Pinia, Router, Vitest, OpenAPI/API client, same-image production build and legacy bridge.
+2. **v27.34.0 — Vue App Shell & Design System**.
+3. **v27.35.0 — Vue Absence & Time Bank**.
+4. **v27.36.0 — Vue Calendar & Timeline**.
+5. **v27.37.0 — Vue Tasks, Notes & Important Days**.
+6. **v27.38.0 — Vue Settings, Workspace & Integrations**.
+7. **v27.39.0 — Vue Legacy Retirement & Parity**: remove numbered JavaScript, old routing/state/modal bridges and string-based legacy contracts.
+
+No new major product feature is added until the Vue migration is complete. DutyLog remains one repository, one Spring Boot application image/container and one deployment; PostgreSQL remains separate.
+
+After Vue parity:
+
+1. One-Tap Calendar Connect.
+2. Notes Archive & Timeline Collisions.
+3. Telegram Task Actions & Guided Commands.
+4. Feature freeze, Guided Onboarding & Product Education, full release-readiness, RC and **DutyLog v1.0.0 Release**.
 
 ## v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix — completed
 

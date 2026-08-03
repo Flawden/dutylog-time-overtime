@@ -1,11 +1,19 @@
 # Security review
 
-Status: v27.32.0.
+Status: v27.32.1.
 
 
 ## v27.32.0 absence/time-bank experience review
 
 This release changes presentation and browser navigation only. It does not add a mutation endpoint, weaken linked-usage ownership, expose raw calendar tokens or change database constraints. FIFO forecast is calculated from the authenticated account read model and never persists data. Cross-workspace links use already owner-scoped identifiers and open the existing guarded absence editor. Flyway remains V47.
+
+## v27.32.1 time-bank navigation review
+
+- The hotfix introduces no endpoint, permission or persistence change.
+- The linked usage still exposes only an owner-scoped `sourceAbsenceId`; the existing authenticated Vacation API refresh resolves the record.
+- FIFO preview remains read-only and edit-aware through `excludePeriodId`; final mutation authority stays in the backend absence service.
+- Same-origin session, CSRF, PostgreSQL and Flyway V47 boundaries are unchanged.
+
 
 ## v27.31.2 browser contract alignment review
 

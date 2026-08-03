@@ -1,6 +1,18 @@
 # Release checklist
 
-Status: v27.32.0.
+Status: v27.32.1.
+
+## v27.32.1 Time Bank Absence Navigation Hotfix acceptance
+
+- confirm Maven reports 635 tests with zero failures;
+- confirm Playwright reports 42 scenarios with zero failures;
+- create a future overtime-backed absence after initial application boot;
+- open Bank Usage and click `Открыть отсутствие`;
+- confirm `#absenceComposerModal` becomes visible and contains the owning title/status;
+- confirm the FIFO preview names the contributing credit and does not report a false shortage;
+- confirm inline editing in «Отпуск и отсутствия» still works;
+- confirm API/schema remain unchanged and Flyway stays V47.
+
 
 ## v27.32.0 Absence & Time Bank Experience acceptance
 
@@ -209,6 +221,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.32.0 -m "v27.32.0 — Absence & Time Bank Experience"
-git push origin v27.32.0
+git tag -a v27.32.1 -m "v27.32.1 — Time Bank Absence Navigation Hotfix"
+git push origin v27.32.1
 ```

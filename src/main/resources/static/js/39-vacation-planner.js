@@ -455,9 +455,9 @@ function resetVacationEditor({ keepDates = false } = {}){
   syncVacationCoverage(); renderAbsenceComposerContext(); setVacationMessage("");
 }
 
-function editAbsence(id){
+function editAbsence(id, { navigate = true, scroll = true } = {}){
   const period = (state.vacationPlanner?.absences || []).find(item => Number(item.id) === Number(id));
-  if (!period) { loadVacationPlanner(true).then(() => editAbsence(id)).catch(console.error); return; }
+  if (!period) { loadVacationPlanner(true).then(() => editAbsence(id, { navigate, scroll })).catch(console.error); return null; }
   state.editingAbsenceId = period.id; state.vacationPreview = null;
   if ($("vacationEditorTitle")) $("vacationEditorTitle").textContent = t("Редактировать отсутствие");
   if ($("vacationEditorReset")) $("vacationEditorReset").hidden = false;
@@ -479,8 +479,32 @@ function editAbsence(id){
   syncVacationCompensation({ preserve:true });
   if ($("vacationNote")) $("vacationNote").value = period.note || "";
   if ($("vacationPreview")) $("vacationPreview").hidden = true;
-  syncVacationCoverage(); renderAbsenceComposerContext(); location.hash = "#vacation";
-  requestAnimationFrame(() => $("vacationPeriodForm")?.scrollIntoView({ behavior:"smooth", block:"start" }));
+  syncVacationCoverage(); renderAbsenceComposerContext();
+  if (navigate) location.hash = "#vacation";
+  if (scroll) requestAnimationFrame(() => $("vacationPeriodForm")?.scrollIntoView({ behavior:"smooth", block:"start" }));
+  return period;
+}
+async function openAbsenceEditor(id, { source = "vacation" } = {}){
+  if (!moduleEnabled("vacation")) {
+    setSave("err", t("модуль выключен"));
+    return false;
+  }
+  let period = (state.vacationPlanner?.absences || []).find(item => Number(item.id) === Number(id));
+  if (!period) {
+    await loadVacationPlanner(true);
+    period = (state.vacationPlanner?.absences || []).find(item => Number(item.id) === Number(id));
+  }
+  if (!period) {
+    setSave("err", t("отсутствие не найдено"));
+    return false;
+  }
+  if (moduleEnabled("overtime") && typeof loadLedgerPage === "function") await loadLedgerPage(true);
+  absenceComposerSource = source;
+  editAbsence(period.id, { navigate:false, scroll:false });
+  moveAbsenceComposerToModal();
+  openAppModal("absenceComposerModal", "vacationTitle");
+  await previewVacationDraft();
+  return true;
 }
 function editAbsenceFromOccurrence(occurrence){ location.hash = "#vacation"; loadVacationPlanner(false).then(() => editAbsence(occurrence.periodId)).catch(console.error); }
 

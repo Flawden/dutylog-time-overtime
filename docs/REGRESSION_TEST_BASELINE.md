@@ -1,13 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.32.0.
+Status: v27.32.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.32.0 verifies the absence-owned event journal, the four-view time bank, posted/reserved separation, FIFO forecasting and cross-workspace navigation. The current application baseline is 129 Java test classes / 633 `@Test` methods / 42 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.32.1 verifies that cross-workspace bank navigation opens the owning absence in Unified Absence Composer and refreshes its edit-aware FIFO preview. The current application baseline is 130 Java test classes / 635 `@Test` methods / 42 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+
+## v27.32.1 Time Bank Absence Navigation Hotfix extension
+
+- `AbsenceTimeBankNavigationHotfixTest` protects the modal editor transition, stale-planner refresh and edit-aware FIFO preview.
+- `absence-time-bank-experience.spec.js` remains the real browser reproduction: Bank Usage → Open absence → visible Composer → populated record → FIFO source.
+- Maven baseline: 130 test classes / 635 test methods.
+- Browser baseline remains 42 scenarios.
+- Flyway remains V47.
 
 
 ## v27.32.0 Absence & Time Bank Experience extension

@@ -1,3 +1,12 @@
+# v27.32.1 — Time Bank Absence Navigation Hotfix
+
+- Fixed the real browser navigation defect where «Открыть отсутствие» routed to Vacation but left Unified Absence Composer hidden.
+- Added one canonical `openAbsenceEditor(...)` boundary that refreshes a missing absence, loads the current bank, opens the owning record in the modal and builds its FIFO preview.
+- Preserved inline editing inside the Absence workspace while making cross-workspace navigation modal and explicit.
+- Kept API, PostgreSQL, FIFO ownership, Payroll and Flyway V47 unchanged.
+- Documented the approved full Vue 3 + TypeScript + Vite migration before further product features.
+- Regression baseline advances to 130 Java test classes, 635 `@Test` methods and 42 Playwright scenarios.
+
 # v27.32.0 — Absence & Time Bank Experience
 
 - Made **Отпуск и отсутствия** the primary event journal while preserving Overtime as the canonical time-bank read model.

@@ -1271,9 +1271,7 @@ async function openAbsenceForUsage(usage){
   if (!usage?.sourceAbsenceId) return false;
   location.hash = "#vacation";
   try {
-    await loadVacationPlanner(false);
-    editAbsence(Number(usage.sourceAbsenceId));
-    return true;
+    return await openAbsenceEditor(Number(usage.sourceAbsenceId), { source:"time-bank" });
   } catch (error) {
     console.error(error);
     setSave("err", error.message || t("Ошибка"));

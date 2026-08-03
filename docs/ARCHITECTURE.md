@@ -1,5 +1,22 @@
 # DutyLog architecture
 
+## Approved frontend transition after v27.32.x
+
+DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains a separate container. The frontend will move completely from ordered vanilla JavaScript to **Vue 3 + TypeScript + Vite** before new product features continue.
+
+The migration is incremental, not a big-bang rewrite: frontend build/CI foundation → design system and app shell → domain-by-domain migration → deletion of the legacy numbered scripts and bridge. Production Vite is not a server: its build output is packaged into the Spring Boot JAR/image and served same-origin with the existing session and CSRF model.
+
+```text
+frontend/ (Vue 3 + TypeScript + Vite)
+        ↓ build
+Spring Boot static resources + API
+        ↓
+one DutyLog JAR / one dutylog-app image
+        ↓
+PostgreSQL container
+```
+
+
 ## Unified time and compensation ledger (v27.26.0)
 
 DutyLog separates three layers: planned schedule, factual state and compensation source. Existing overtime credits/usages/allocations are the canonical minute ledger. `OVERTIME_BANK` absences own one source-linked usage and cannot be independently mutated from the manual ledger. `TimeCompensationService` provides an owner-scoped monthly read model for Payroll Foundation; it contains time semantics only and intentionally no money formulas.
@@ -38,7 +55,8 @@ repo/      доступ к данным через Spring Data JPA
 model/     JPA-сущности и доменные enum
 telegram/  Telegram-команды, привязка аккаунта, доставка уведомлений
 config/    Security, Bearer auth, request diagnostics
-static/    PWA-интерфейс без отдельного frontend build step
+frontend/ Vue 3 + TypeScript + Vite sources during the approved migration
+static/    built frontend assets packaged into the Spring Boot application
 ```
 
 Контроллеры не должны содержать бизнес-логику. Их задача — принять запрос, определить текущего пользователя, вызвать сервис и вернуть DTO.

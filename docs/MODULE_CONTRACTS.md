@@ -1,6 +1,6 @@
 # Module contracts
 
-Status: v27.32.0.
+Status: v27.32.1.
 
 ## Absence and time-bank presentation ownership (v27.32.0)
 
@@ -25,6 +25,11 @@ src/main/java/ru/daniil/shifts/module/ModuleKeys.java
 ```
 
 Do not invent module keys inside controllers or frontend code. Add the key to the registry first.
+
+## Cross-workspace absence editor ownership (v27.32.1)
+
+A linked Overtime usage never owns an editor. Bank Usage may navigate to its `sourceAbsenceId`, but the transition must refresh the absence read model when stale, open Unified Absence Composer and build the edit-aware FIFO preview. Inline Absence editing remains supported; cross-workspace editing uses the same form through the modal mount.
+
 
 ## Browser ownership alignment (v27.31.2)
 

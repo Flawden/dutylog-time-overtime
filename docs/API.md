@@ -1,4 +1,6 @@
-# DutyLog API v27.32.0
+# DutyLog API v27.32.1
+
+`v27.32.1` changes no HTTP contract. It fixes the browser ownership transition from a linked bank usage to the owning absence editor; all requests continue to use the released v27.32.0 API surface.
 
 
 ## Absence and time-bank presentation contract
