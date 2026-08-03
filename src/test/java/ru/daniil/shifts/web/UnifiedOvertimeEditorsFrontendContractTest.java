@@ -53,7 +53,7 @@ class UnifiedOvertimeEditorsFrontendContractTest {
         assertTrue(html.contains("id=\"creditScenarioSelect\""));
         assertTrue(html.contains("id=\"legacyUsageMigrationList\""));
         assertTrue(html.contains("id=\"legacyUsageMigrationApply\""));
-        assertTrue(js.contains("function renderLegacyUsageMigrationPreview()"));
+        assertTrue(js.contains("function renderLegacyUsageMigrationPreview(preview)"));
         assertTrue(js.contains("api.previewLegacyOvertimeUsages"));
         assertTrue(js.contains("function renderQuickScenarios()"));
         assertTrue(css.contains("body.app-modal-open .tabbar"));

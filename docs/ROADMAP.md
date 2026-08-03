@@ -1,10 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.31.0 — Canonical Absence Ledger & Legacy Retirement**.
+Current release: **v27.31.1 — Canonical Absence Static Contract Alignment Hotfix**.
 
 
 
-## v27.31.0 — Canonical Absence Ledger & Legacy Retirement — current
+## v27.31.1 — Canonical Absence Static Contract Alignment Hotfix — current
+
+- [x] Align five historical static frontend assertions with canonical absence ownership.
+- [x] Preserve direct coverage serialization and imported `HOURS_ONLY`.
+- [x] Preserve absence-owned linked usages and the explicit legacy-promotion flow.
+- [x] Keep production runtime, API, PostgreSQL, FIFO, Payroll and V47 unchanged.
+- [x] Advance baseline to 127 Java classes / 626 tests / 41 Playwright scenarios.
+
+## v27.31.0 — Canonical Absence Ledger & Legacy Retirement — completed
 
 - [x] Keep Overtime credits, totals, FIFO queue, allocation details and exports as the canonical compensation read model.
 - [x] Make Unified Absence Composer the only user-facing creation/edit path for time off and every other absence type.

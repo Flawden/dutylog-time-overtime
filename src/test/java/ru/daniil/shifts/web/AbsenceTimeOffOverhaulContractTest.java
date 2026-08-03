@@ -26,7 +26,9 @@ class AbsenceTimeOffOverhaulContractTest {
     @Test
     void editorSendsCoverageAndTimesButNeverRewritesShiftType() throws IOException {
         String js = resource("/static/js/39-vacation-planner.js");
-        assertTrue(js.contains("coverage:partial ? \"PARTIAL\" : \"FULL_DAY\""));
+        assertTrue(js.contains("const coverage = $(\"vacationCoverage\")?.value || \"FULL_DAY\";"));
+        assertTrue(js.contains("coverage,"));
+        assertTrue(js.contains("coverage === \"HOURS_ONLY\""));
         assertTrue(js.contains("startTime:partial"));
         assertTrue(js.contains("endTime:partial"));
         assertTrue(js.contains("TIME_OFF_LIMIT_EXCEEDED"));

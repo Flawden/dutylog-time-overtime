@@ -1,7 +1,11 @@
 # Security review
 
-Status: v27.31.0.
+Status: v27.31.1.
 
+
+## v27.31.1 static contract alignment review
+
+This hotfix changes tests and release identity only. Authentication, authorization, ownership, CSRF, closed-period protection, FIFO allocation and database constraints are unchanged. The new guard explicitly prevents restoration of direct linked-usage mutation strings.
 
 ## v27.31.0 canonical ownership review
 

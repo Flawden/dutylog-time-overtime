@@ -39,7 +39,9 @@ class VacationPlannerFrontendContractTest {
                         && vacation.contains("renderVacationDay")
                         && vacation.contains("VACATION_LIMIT_EXCEEDED")
                         && vacation.contains("TIME_OFF_LIMIT_EXCEEDED")
-                        && vacation.contains("coverage:partial ? \"PARTIAL\" : \"FULL_DAY\"")
+                        && vacation.contains("const coverage = $(\"vacationCoverage\")?.value || \"FULL_DAY\";")
+                        && vacation.contains("coverage,")
+                        && vacation.contains("coverage === \"HOURS_ONLY\"")
                         && !vacation.contains("shiftTypeId:"),
                 "absence editor must never serialize a vacation as a shift type");
     }

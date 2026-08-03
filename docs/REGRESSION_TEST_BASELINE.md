@@ -1,15 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.31.0.
+Status: v27.31.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.31.0 retires detached overtime-usage writes, makes absences the canonical owner of time off and adds lossless legacy usage promotion with honest unknown-interval handling. The current application baseline is 126 Java test classes / 625 `@Test` methods / 41 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.31.1 aligns five historical static frontend contracts with the canonical absence ledger without changing production behavior. The current application baseline is 127 Java test classes / 626 `@Test` methods / 41 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.31.1 Canonical Absence Static Contract Alignment Hotfix extension
+
+- five stale source-string assertions now follow direct coverage serialization, `HOURS_ONLY`, explicit legacy-promotion functions and absence-owned linked usages;
+- one focused guard rejects both the stale ternary coverage writer and retired standalone linked-usage actions;
+- Maven baseline: 127 test classes / 626 test methods;
+- browser baseline remains 41 scenarios;
+- Flyway remains V47.
 
 ## v27.31.0 Canonical Absence Ledger & Legacy Retirement extension
 

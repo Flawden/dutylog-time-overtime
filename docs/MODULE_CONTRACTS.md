@@ -1,6 +1,6 @@
 # Module contracts
 
-Status: v27.31.0.
+Status: v27.31.1.
 
 DutyLog uses a modular-monolith approach. A module is not a separate service yet; it is a bounded feature area with a stable key, API guards, UI slots and optional offline queue operation types.
 
@@ -17,6 +17,10 @@ src/main/java/ru/daniil/shifts/module/ModuleKeys.java
 ```
 
 Do not invent module keys inside controllers or frontend code. Add the key to the registry first.
+
+## Static contract alignment (v27.31.1)
+
+No module ownership changes. Historical frontend contracts now describe the released boundary accurately: `vacation` owns absence drafts and linked time-off mutation, while `overtime` owns credits, FIFO and promotion of old manual usages.
 
 ## Canonical absence ownership (v27.31.0)
 

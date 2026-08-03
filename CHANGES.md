@@ -1,3 +1,13 @@
+# v27.31.1 — Canonical Absence Static Contract Alignment Hotfix
+
+- Aligned five historical Maven source contracts with the intentional v27.31.0 canonical absence frontend shape.
+- Kept direct coverage serialization so imported `HOURS_ONLY` rows remain truthful.
+- Updated legacy migration contracts to the actual `openLegacyUsageMigration(focusId)` and `renderLegacyUsageMigrationPreview(preview)` boundaries.
+- Removed stale expectations that linked time-off usages behave like editable legacy manual usages; transitional legacy deletion remains available until promotion.
+- Added a focused regression guard that requires canonical ownership strings and forbids retired legacy-write strings.
+- Production JavaScript, API, PostgreSQL, FIFO, Payroll and Flyway V47 are unchanged.
+- Regression baseline advances to 127 Java test classes, 626 `@Test` methods and 41 Playwright scenarios.
+
 # v27.31.0 — Canonical Absence Ledger & Legacy Retirement
 
 - Made Unified Absence Composer the only user-facing write path for vacation, overtime-backed time off, sick leave, unpaid leave and custom absences.

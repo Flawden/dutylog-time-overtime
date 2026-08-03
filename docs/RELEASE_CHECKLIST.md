@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.31.0.
+Status: v27.31.1.
 
 ## Local gate
 
@@ -51,6 +51,15 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - confirm Payroll is unavailable when its module is disabled and automatically keeps Overtime/Vacation dependencies;
 - confirm 603 Java tests and 37 Playwright scenarios pass.
 
+
+## v27.31.1 static contract alignment acceptance
+
+- confirm the five historical Maven contracts expect the canonical v27.31.0 frontend shape;
+- confirm direct coverage serialization still supports `HOURS_ONLY`;
+- confirm legacy usage promotion uses `openLegacyUsageMigration(focusId)` and an explicit preview argument;
+- confirm linked usages are managed by absences while transitional deletion remains limited to not-yet-promoted legacy manual usages;
+- confirm 626 Java tests and 41 Playwright scenarios pass;
+- confirm Flyway remains V47.
 
 ## v27.31.0 canonical absence ledger acceptance
 
@@ -178,6 +187,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.31.0 -m "v27.31.0 — Canonical Absence Ledger & Legacy Retirement"
-git push origin v27.31.0
+git tag -a v27.31.1 -m "v27.31.1 — Canonical Absence Static Contract Alignment Hotfix"
+git push origin v27.31.1
 ```
