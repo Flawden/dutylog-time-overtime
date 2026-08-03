@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.30.1.
+Status: v27.30.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.30.1 completes neutral absence access from global Quick Add and Today while preserving the contextual Overtime route. The current application baseline is 124 Java test classes / 619 `@Test` methods / 40 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.30.2 aligns the Today Dashboard source contract with the released Journal → Overtime route while preserving credit creation in its legitimate entry points. The current application baseline is 125 Java test classes / 620 `@Test` methods / 40 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -12,6 +12,15 @@ Historical foundation: v27.2.29 security baseline remains preserved by all later
 
 
 
+
+
+## v27.30.2 Today Overtime Journal Contract Hotfix extension
+
+- `TodayDashboardFrontendContractTest` now protects the released Journal route instead of requiring the removed direct credit-modal shortcut.
+- `TodayOvertimeJournalContractHotfixTest` confirms the Today card label and `#overtime` route while keeping `openOvertimeCreditModal` owned by `40-overtime.js`.
+- No production JavaScript, API, PostgreSQL or Flyway behavior changed.
+- Baseline advances to 125 Java test classes / 620 `@Test` methods / 40 Playwright scenarios.
+- Flyway remains V46.
 
 
 ## v27.30.1 Unified Absence Quick Access Integration extension

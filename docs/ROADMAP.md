@@ -1,10 +1,21 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.30.1 — Unified Absence Quick Access Integration**.
+Current release: **v27.30.2 — Today Overtime Journal Contract Hotfix**.
 
 
 
-## v27.30.1 — Unified Absence Quick Access Integration — current
+## v27.30.2 — Today Overtime Journal Contract Hotfix — current
+
+- [x] Reproduce the single Maven failure at `TodayDashboardFrontendContractTest:37`.
+- [x] Confirm the Today overtime action is a journal route, not a credit-creation shortcut.
+- [x] Update the stale dashboard contract without changing production JavaScript.
+- [x] Add focused coverage that keeps credit creation owned by the Overtime workspace.
+- [x] Keep API, PostgreSQL, Payroll, Unified Ledger and Flyway V46 unchanged.
+- [x] Advance baseline to 125 Java classes / 620 tests / 40 Playwright scenarios.
+
+Next product stage after green CI and staging acceptance: **v27.31.0 — One-Tap Calendar Connect**.
+
+## v27.30.1 — Unified Absence Quick Access Integration — completed
 
 - [x] Expose a neutral absence action in global Quick Add.
 - [x] Add a direct current-date absence action to Today.
@@ -15,7 +26,7 @@ Current release: **v27.30.1 — Unified Absence Quick Access Integration**.
 - [x] Keep API, PostgreSQL, Payroll, Unified Ledger and Flyway V46 unchanged.
 - [x] Advance baseline to 124 Java classes / 619 tests / 40 Playwright scenarios.
 
-Next product stage after green CI and staging acceptance: **v27.31.0 — One-Tap Calendar Connect**.
+Stabilized by: **v27.30.2 — Today Overtime Journal Contract Hotfix**.
 
 ## v27.30.0 — Unified Absence Composer & Calendar Projection — completed
 
@@ -30,7 +41,7 @@ Next product stage after green CI and staging acceptance: **v27.31.0 — One-Tap
 - [x] Isolate the dirtied Telegram detached-owner integration context in its own H2 database so test order cannot drop the shared schema.
 - [x] Advance baseline to 123 Java classes / 616 tests / 39 Playwright scenarios.
 
-Stabilized and completed by: **v27.30.1 — Unified Absence Quick Access Integration**.
+Stabilized and completed by: **v27.30.1 — Unified Absence Quick Access Integration** and **v27.30.2 — Today Overtime Journal Contract Hotfix**.
 
 ## v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix — completed
 

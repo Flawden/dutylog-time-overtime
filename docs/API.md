@@ -1,4 +1,4 @@
-# DutyLog API v27.30.1
+# DutyLog API v27.30.2
 
 
 ## Payroll Foundation

@@ -1,3 +1,12 @@
+# v27.30.2 — Today Overtime Journal Contract Hotfix
+
+- Fixed the single stale Maven assertion that still required the removed Today direct overtime-credit shortcut.
+- Confirmed the Today overtime card is a journal link and correctly routes to the Overtime workspace.
+- Kept credit creation available from global Quick Add and the Overtime workspace.
+- Added focused regression coverage for the Journal → Overtime boundary and ownership of the credit modal.
+- Kept production behavior, API, PostgreSQL, Payroll, Unified Ledger, absence projection and Flyway V46 unchanged.
+- Regression baseline advances to 125 Java test classes, 620 `@Test` methods and 40 Playwright scenarios.
+
 # v27.30.1 — Unified Absence Quick Access Integration
 
 - Added a direct neutral absence action to the Today dashboard for the current date.

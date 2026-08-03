@@ -34,7 +34,8 @@ class TodayDashboardFrontendContractTest {
         assertTrue(js.contains("activeTasksOf(key)"));
         assertTrue(js.contains("state.importantDays"));
         assertTrue(js.contains("openTaskDetails"));
-        assertTrue(js.contains("openOvertimeCreditModal"));
+        assertTrue(js.contains("$(\"todayOpenOvertime\")?.addEventListener(\"click\", () => { location.hash = \"#overtime\"; });"));
+        assertFalse(js.contains("todayOpenOvertime\")?.addEventListener(\"click\", () => openOvertimeCreditModal"));
         assertTrue(js.contains("addEventListener(\"click\", () => openQuickActions())"));
         assertFalse(js.contains("addEventListener(\"click\", openQuickActions)"));
         assertFalse(js.contains("/api/today"));
