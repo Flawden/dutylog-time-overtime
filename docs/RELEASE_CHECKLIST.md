@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.31.1.
+Status: v27.31.2.
 
 ## Local gate
 
@@ -17,6 +17,16 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ```
 
 
+
+## v27.31.2 browser contract alignment acceptance
+
+- confirm Maven reports 628 tests with zero failures;
+- confirm Playwright reports 41 scenarios with zero failures;
+- verify the intentional direct-usage retirement probe returns `409 DIRECT_USAGE_RETIRED` without appearing in `runtime-issues.txt`;
+- confirm the Overtime ledger renders absence-owned usages as `Управляется отсутствием` and exposes no `data-edit-usage` / `data-del-usage` controls for them;
+- edit the linked time off from Vacation/Absences and confirm the Composer opens the owning absence;
+- delete one of two linked absences and confirm both credits remain, the deleted usage disappears and the surviving linked usage remains visible;
+- confirm Flyway remains V47 and clean PostgreSQL startup passes.
 
 ## Workspace, Layout & Theme Studio acceptance
 
@@ -187,6 +197,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.31.1 -m "v27.31.1 — Canonical Absence Static Contract Alignment Hotfix"
-git push origin v27.31.1
+git tag -a v27.31.2 -m "v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix"
+git push origin v27.31.2
 ```

@@ -13,15 +13,12 @@ test('canonical absence ledger owns new time-off while overtime keeps FIFO stati
     method:'POST', body:{ date:new Date().toISOString().slice(0, 10), hours:8, reason:'Canonical source' }
   }));
 
-  const retired = await page.evaluate(async date => {
-    const token = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/)?.[1];
-    const response = await fetch('/api/overtime/usages', {
-      method:'POST',
-      headers:{ 'Content-Type':'application/json', 'X-XSRF-TOKEN':decodeURIComponent(token || '') },
-      body:JSON.stringify({ date, hours:4, reason:'must be rejected' })
-    });
-    return { status:response.status, body:await response.json() };
-  }, date);
+  const xsrf = (await page.context().cookies()).find(cookie => cookie.name === 'XSRF-TOKEN')?.value || '';
+  const retiredResponse = await page.context().request.post('/api/overtime/usages', {
+    headers:{ 'Content-Type':'application/json', 'X-XSRF-TOKEN':decodeURIComponent(xsrf) },
+    data:{ date, hours:4, reason:'must be rejected' }
+  });
+  const retired = { status:retiredResponse.status(), body:await retiredResponse.json() };
   expect(retired.status).toBe(409);
   expect(retired.body.code).toBe('DIRECT_USAGE_RETIRED');
 
@@ -55,9 +52,13 @@ test('canonical absence ledger owns new time-off while overtime keeps FIFO stati
   await openView(page, 'overtime');
   await page.locator('#ledgerAllTime').click();
   await waitForLedgerReady(page);
-  const edit = page.locator(`[data-edit-usage="${account.usages[0].id}"]`).first();
-  await expect(edit).toBeVisible();
-  await edit.click();
+  const linked = page.locator('.ledgerUsageItem', { hasText:'Canonical time off' }).first();
+  await expect(linked).toBeVisible();
+  await expect(linked.locator('.overtimeLinkedUsage')).toContainText(/Управляется отсутствием|Managed by absence/i);
+  await expect(page.locator(`[data-edit-usage="${account.usages[0].id}"]`)).toHaveCount(0);
+
+  await openView(page, 'vacation');
+  await page.locator(`[data-edit-absence="${absence.id}"]`).click();
   await expect(page).toHaveURL(/#vacation$/);
   await expect(page.locator('#vacationEditorTitle')).toContainText(/Редактировать|Edit/);
   await expect(page.locator('#vacationTitle')).toHaveValue('Canonical time off');

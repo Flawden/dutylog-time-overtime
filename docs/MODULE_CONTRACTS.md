@@ -1,6 +1,6 @@
 # Module contracts
 
-Status: v27.31.1.
+Status: v27.31.2.
 
 DutyLog uses a modular-monolith approach. A module is not a separate service yet; it is a bounded feature area with a stable key, API guards, UI slots and optional offline queue operation types.
 
@@ -17,6 +17,10 @@ src/main/java/ru/daniil/shifts/module/ModuleKeys.java
 ```
 
 Do not invent module keys inside controllers or frontend code. Add the key to the registry first.
+
+## Browser ownership alignment (v27.31.2)
+
+No module ownership changes. Browser regression flows now follow the released boundary: `overtime` renders linked usages as read-only FIFO projections, while `vacation` owns their edit and delete actions. Expected retirement conflicts are verified outside the page runtime monitor.
 
 ## Static contract alignment (v27.31.1)
 

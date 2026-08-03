@@ -130,6 +130,10 @@ test('deleting one canonical split time-off keeps every credit and the other abs
   expect(rebuilt.usages[0].allocations[0].creditId).toBe(firstCreditId);
 
   await expect(page.locator(`#ledgerRows [data-edit-usage="${firstUsageId}"]`)).toHaveCount(0);
-  await expect(page.locator(`#ledgerRows [data-edit-usage="${secondUsageId}"]`)).toHaveCount(1);
+  await expect(page.locator(`#ledgerRows [data-edit-usage="${secondUsageId}"]`)).toHaveCount(0);
+  await expect(page.locator('#ledgerRows .ledgerUsageItem', { hasText:'Split time-off' })).toHaveCount(0);
+  const surviving = page.locator('#ledgerRows .ledgerUsageItem', { hasText:'Surviving time-off' });
+  await expect(surviving).toHaveCount(1);
+  await expect(surviving.locator('.overtimeLinkedUsage')).toContainText(/Управляется отсутствием|Managed by absence/i);
   await expect(page.locator('#ledgerRows tr[data-credit-id]')).toHaveCount(2);
 });

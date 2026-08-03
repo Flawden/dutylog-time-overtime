@@ -1,7 +1,11 @@
 # Security review
 
-Status: v27.31.1.
+Status: v27.31.2.
 
+
+## v27.31.2 browser contract alignment review
+
+This hotfix changes browser tests and release identity only. The expected `409 DIRECT_USAGE_RETIRED` probe moves from page `fetch` to the authenticated Playwright API request context, avoiding false console/network alarms without weakening the strict page fixture. Linked usages remain immutable outside their owning absence; no authorization, CSRF, owner scope, FIFO or database constraint changes are introduced.
 
 ## v27.31.1 static contract alignment review
 

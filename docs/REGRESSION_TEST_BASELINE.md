@@ -1,15 +1,24 @@
 # DutyLog regression test baseline
 
-Status: v27.31.1.
+Status: v27.31.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.31.1 aligns five historical static frontend contracts with the canonical absence ledger without changing production behavior. The current application baseline is 127 Java test classes / 626 `@Test` methods / 41 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.31.2 aligns two browser scenarios with absence-owned linked usages and keeps intentional retirement probes outside the strict page runtime monitor. The current application baseline is 128 Java test classes / 628 `@Test` methods / 41 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+## v27.31.2 Canonical Absence Browser Contract Alignment Hotfix extension
+
+- `canonical-absence-ledger.spec.js` verifies `DIRECT_USAGE_RETIRED` through `page.context().request`, so an expected 409 does not pollute the page-level failure collector.
+- linked overtime usages are asserted as read-only `.overtimeLinkedUsage` projections; the owning absence is the only browser edit/delete route.
+- the split-allocation deletion scenario proves the deleted absence disappears, the surviving absence remains visible, both credits remain and FIFO allocations are rebuilt correctly.
+- `CanonicalAbsenceBrowserContractAlignmentHotfixTest` rejects restoration of stale `data-edit-usage` expectations.
+- Maven baseline: 128 test classes / 628 test methods.
+- Browser baseline remains 41 scenarios.
+- Flyway remains V47.
 
 ## v27.31.1 Canonical Absence Static Contract Alignment Hotfix extension
 

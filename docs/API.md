@@ -1,4 +1,4 @@
-# DutyLog API v27.31.1
+# DutyLog API v27.31.2
 
 
 

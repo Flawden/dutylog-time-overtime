@@ -1,3 +1,12 @@
+# v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix
+
+- Aligned two Playwright scenarios with absence-owned linked-usage behavior after the canonical retirement release.
+- Moved the intentional `409 DIRECT_USAGE_RETIRED` probe to Playwright `APIRequestContext`, outside the strict browser console/network failure monitor.
+- Replaced stale `data-edit-usage` expectations with read-only linked-usage assertions and editing/deletion through the owning absence.
+- Preserved the Overtime journal, FIFO allocations, credits and remaining-balance checks.
+- Added `CanonicalAbsenceBrowserContractAlignmentHotfixTest` to prevent restoration of standalone linked-usage browser controls.
+- Production runtime, API, PostgreSQL, Payroll and Flyway V47 are unchanged.
+
 # v27.31.1 — Canonical Absence Static Contract Alignment Hotfix
 
 - Aligned five historical Maven source contracts with the intentional v27.31.0 canonical absence frontend shape.

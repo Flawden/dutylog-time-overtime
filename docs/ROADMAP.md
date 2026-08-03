@@ -1,10 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.31.1 — Canonical Absence Static Contract Alignment Hotfix**.
+Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
 
 
 
-## v27.31.1 — Canonical Absence Static Contract Alignment Hotfix — current
+## v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix — current
+
+- [x] Keep intentional `409 DIRECT_USAGE_RETIRED` verification outside the browser runtime-failure collector.
+- [x] Treat absence-linked FIFO usages as read-only Overtime projections with no legacy edit/delete buttons.
+- [x] Edit and delete time off through the owning absence and Unified Absence Composer.
+- [x] Preserve credits, FIFO allocations and surviving linked usages after deleting one absence.
+- [x] Keep production runtime, API, PostgreSQL, Payroll and V47 unchanged.
+- [x] Advance baseline to 128 Java classes / 628 tests / 41 Playwright scenarios.
+
+## v27.31.1 — Canonical Absence Static Contract Alignment Hotfix — completed
 
 - [x] Align five historical static frontend assertions with canonical absence ownership.
 - [x] Preserve direct coverage serialization and imported `HOURS_ONLY`.
