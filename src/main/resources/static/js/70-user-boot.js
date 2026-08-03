@@ -300,6 +300,7 @@ function applyRoute(){
     renderDiagnosticsClient();
     if (state.profile?.admin) refreshAdminPanel();
   }
+  publishLegacyPlatformState();
 }
 window.addEventListener("hashchange", applyRoute);
 applyRoute();
@@ -400,6 +401,7 @@ function renderHeaderIdentity(p){
     nextAvatar.style.background = avatarColor(p.username);
     nextAvatar.title = t("Открыть профиль");
   }
+  publishLegacyPlatformState();
 }
 
 function maybeBirthdayBanner(p){

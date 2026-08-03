@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.2.30.
+Status: v27.34.0.
 
 DutyLog uses two long-lived deployment branches:
 
@@ -13,6 +13,26 @@ feature/* -> test -> staging
 `test` builds an immutable image, deploys it to staging and marks that exact Git tree as tested only after container health, loopback smoke and public HTTPS smoke checks pass. `main`/`master` never rebuilds the application: it resolves the matching `staging-tested-tree-*` image and deploys the same registry digest to production.
 
 Until the staging VPS is ready, leave the `staging` Environment variable `DUTYLOG_DEPLOY_ENABLED` unset or `false`. The workflow still runs Maven/JaCoCo, release checks, Playwright, image build and clean-PostgreSQL migration verification, then records an explicit successful skip. It does not create a promotion tag.
+
+
+## Vue app-shell build gate (v27.34.0)
+
+Every validation workflow now builds the browser application before Maven packages resources:
+
+```text
+frontend npm install
+→ vue-tsc
+→ Vitest
+→ Vite build
+→ Maven verify/test
+→ release-check
+→ Playwright
+→ Docker image
+```
+
+`frontend/dist/dutylog-vue-app-shell.{js,css}` is copied into the Spring Boot JAR under `static/vue`. The Dockerfile uses a Node build stage and a Maven build stage, but the runtime topology is unchanged: one non-root `dutylog-app` image/container plus PostgreSQL. Production still promotes the exact staging-tested image digest instead of rebuilding it.
+
+Direct frontend dependencies are exact-pinned in `frontend/package.json`; the immutable staging image digest remains the deployable supply-chain identity.
 
 ## Authenticated smoke test (v27.2.31)
 
@@ -115,7 +135,7 @@ DUTYLOG_BIND_PORT=18083
 
 `.github/workflows/deploy-staging.yml`:
 
-1. runs Maven `verify`, JaCoCo, release checks and five Playwright scenarios;
+1. runs the Vue frontend gate, Maven `verify`, JaCoCo, release checks and 44 Playwright scenarios;
 2. calculates the exact Git tree hash;
 3. builds one non-root `linux/amd64` image with OCI metadata, SBOM and provenance;
 4. pushes immutable tree/commit tags to GHCR;

@@ -1,14 +1,29 @@
 # DutyLog regression test baseline
 
-Status: v27.32.1.
+Status: v27.34.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.32.1 verifies that cross-workspace bank navigation opens the owning absence in Unified Absence Composer and refreshes its edit-aware FIFO preview. The current application baseline is 130 Java test classes / 635 `@Test` methods / 42 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.34.0 proves that Vue owns the visible application shell and shared design-system infrastructure while legacy product screens remain authoritative through an immutable read model and named capabilities. The current application baseline is 132 Java test classes / 645 `@Test` methods / 44 Chromium Playwright scenarios / 11 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
+## v27.34.0 Vue App Shell & Design System extension
+
+- `VueAppShellDesignSystemContractTest` protects shell ownership, immutable snapshots, named capabilities, responsive fallback and one-bundle packaging.
+- Vue owns brand/profile/navigation/network chrome, shared modal/toast hosts and typed UI primitives; legacy product screens remain authoritative.
+- Legacy route, workspace, network and safe profile changes publish frozen snapshots back into Pinia.
+- Playwright verifies Vue navigation changes the released hash route, the matching legacy workspace stays functional and direct hash changes resynchronize Vue active state.
+- Baseline advances to 132 Java test classes / 645 test methods / 44 Playwright scenarios / 11 Vitest cases; Flyway remains V47.
+
+## v27.33.0 Vue Frontend Foundation & CI/CD extension
+
+- Static contracts verify exact dependency pins, strict TypeScript, memory-history routing and the no-direct-DOM bridge rule.
+- Packaging contracts verify Vite output is copied into `static/vue` and the Docker runtime remains one Spring Boot app image.
+- Workflow contracts require the frontend gate before Maven in CI, staging and production validation.
+- Vitest covers CSRF/error transport and bridge fallback behavior.
+- Playwright waits for `window.__dutylogVueReady` and verifies the Vue runtime without replacing the legacy shell.
 
 ## v27.32.1 Time Bank Absence Navigation Hotfix extension
 

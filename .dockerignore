@@ -12,11 +12,11 @@ backups/
 *.dump.gz
 *.sql.gz
 node_modules/
+frontend/node_modules/
+frontend/dist/
 playwright-report/
 test-results/
 e2e/
 playwright.config.js
-package.json
-e2e/
-playwright.config.js
-package.json
+/package.json
+/package-lock.json

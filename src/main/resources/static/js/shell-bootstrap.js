@@ -71,3 +71,14 @@
     root.dataset.uiCalendarLayers = "pills";
   }
 })();
+
+// The promise exists before any deferred module executes, so browser tests and
+// future legacy features can await the Vue migration boundary without polling.
+window.__dutylogVueReady = new Promise(resolve => {
+  window.addEventListener("dutylog:vue-ready", event => {
+    if (String(event.detail?.architecture || "").startsWith("vue-shell")) {
+      document.documentElement.dataset.vueShell = "ready";
+    }
+    resolve(event.detail);
+  }, { once:true });
+});

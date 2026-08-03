@@ -1,7 +1,26 @@
 # Security review
 
-Status: v27.32.1.
+Status: v27.34.0.
 
+
+## v27.34.0 Vue app shell security review
+
+- Vue owns presentation chrome only; all product authorization, mutation and persisted truth remain on Spring Boot and the existing owner-scoped APIs.
+- The shell consumes a frozen read model containing route, allowed navigation, language, network state and safe profile display fields. Mutable `window.state` is never exposed.
+- Vue reaches legacy behavior only through named `navigate`, `openModal`, `logout` and `subscribe` capabilities; it does not query or mutate product DOM.
+- Same-origin assets, session cookies, CSRF headers and CSP remain unchanged. No CDN, new origin or frontend runtime server is introduced.
+- Legacy navigation hides only after a successful Vue readiness event, preserving a fail-safe route to the product if the new bundle cannot boot.
+- Vue modal focus handling, escape/overlay close behavior, visible focus and reduced-motion styles are covered by shared primitives.
+- Node/Vite remain build-stage tooling; production still contains one non-root Spring Boot JAR image plus PostgreSQL. Flyway remains V47.
+
+## v27.33.0 Vue foundation security review
+
+- Vue assets are served from the existing same origin and remain covered by `script-src 'self'`; no CDN, inline script or new external connection is introduced.
+- The typed client keeps `credentials: same-origin` and mirrors Spring's XSRF cookie/header contract for mutating requests.
+- Vue receives only explicit bridge capabilities and an immutable diagnostic snapshot; mutable legacy state is not exposed.
+- Memory-history routing prevents Vue from competing with the released hash router during migration.
+- Node, npm and Vite exist only in build stages. The production image still contains the non-root JRE and one JAR.
+- API authorization, session invalidation, owner scoping, PostgreSQL and Flyway V47 are unchanged.
 
 ## v27.32.0 absence/time-bank experience review
 

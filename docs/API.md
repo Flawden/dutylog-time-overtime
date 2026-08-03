@@ -1,7 +1,5 @@
-# DutyLog API v27.32.1
-
-`v27.32.1` changes no HTTP contract. It fixes the browser ownership transition from a linked bank usage to the owning absence editor; all requests continue to use the released v27.32.0 API surface.
-
+# DutyLog API v27.34.0
+`v27.34.0` changes no HTTP contract. Vue now owns the visible application shell and typed design-system infrastructure, while every product workspace and mutation remains on the released same-origin Spring Boot API. Endpoints, DTOs, CSRF/session rules and OpenAPI v1 remain unchanged.
 
 ## Absence and time-bank presentation contract
 

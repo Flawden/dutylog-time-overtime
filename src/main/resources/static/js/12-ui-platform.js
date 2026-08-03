@@ -272,6 +272,7 @@
     }
     tabbar.style.setProperty("--workspace-nav-count", String(Math.max(1, primary.length)));
     renderWorkspaceRoutes(cfg);
+    if (typeof publishLegacyPlatformState === "function") publishLegacyPlatformState();
   }
 
   function enabledForWidget(widget){

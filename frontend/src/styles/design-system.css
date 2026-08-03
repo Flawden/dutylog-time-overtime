@@ -1,0 +1,395 @@
+:root {
+  --vue-shell-max: 1240px;
+  --vue-shell-radius-sm: var(--radius-control, 10px);
+  --vue-shell-radius-md: var(--radius-card, 16px);
+  --vue-shell-surface: color-mix(in srgb, var(--panel, #101923) 92%, transparent);
+  --vue-shell-surface-raised: color-mix(in srgb, var(--panel2, #172331) 88%, var(--bg, #0b1118));
+  --vue-shell-border: color-mix(in srgb, var(--line, #263444) 82%, #728198 18%);
+  --vue-shell-border-soft: color-mix(in srgb, var(--line, #263444) 62%, transparent);
+  --vue-shell-highlight: color-mix(in srgb, var(--accent, #f5b841) 16%, transparent);
+  --vue-shell-shadow: 0 12px 38px rgba(0, 0, 0, .24);
+}
+
+.vue-app-shell {
+  width: min(calc(100% - 36px), var(--vue-shell-max));
+  margin: 18px auto 12px;
+  color: var(--text);
+  position: relative;
+  z-index: 72;
+}
+
+.vue-shell-header {
+  min-height: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px;
+  border: 1px solid var(--vue-shell-border);
+  border-radius: var(--vue-shell-radius-md);
+  background: linear-gradient(145deg, var(--vue-shell-surface), color-mix(in srgb, var(--panel2) 62%, transparent));
+  box-shadow: var(--vue-shell-shadow);
+  backdrop-filter: blur(18px) saturate(1.08);
+}
+
+.vue-shell-brand,
+.vue-shell-profile,
+.vue-shell-nav__item,
+.vue-shell-more-grid button {
+  font: inherit;
+}
+
+.vue-shell-brand {
+  min-width: 0;
+  border: 0;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--text);
+  background: transparent;
+  cursor: pointer;
+  text-align: left;
+}
+
+.vue-shell-brand__glyph {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 42%, var(--line));
+  border-radius: 13px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--accent) 18%, transparent), color-mix(in srgb, var(--panel2) 92%, #06101a));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), 0 0 28px color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.vue-shell-brand__glyph .ui-icon { width: 25px; height: 25px; }
+.vue-shell-brand__copy { display: grid; line-height: 1.05; }
+.vue-shell-brand__copy strong { font-size: 18px; letter-spacing: -.35px; }
+.vue-shell-brand__copy strong span { color: var(--accent); }
+.vue-shell-brand__copy small {
+  margin-top: 5px;
+  color: var(--mut);
+  font: 9px/1 ui-monospace, "Cascadia Mono", Consolas, monospace;
+  letter-spacing: 2.3px;
+  text-transform: uppercase;
+}
+
+.vue-shell-header__actions {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.vue-shell-profile {
+  min-width: 0;
+  min-height: 42px;
+  padding: 4px 10px 4px 5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--text);
+  border: 1px solid var(--vue-shell-border-soft);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--panel2) 74%, transparent);
+  cursor: pointer;
+}
+.vue-shell-profile > span {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #061015;
+  background: var(--accent);
+  font-size: 11px;
+  font-weight: 900;
+}
+.vue-shell-profile > b {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+}
+
+.vue-shell-nav {
+  display: grid;
+  grid-template-columns: repeat(var(--vue-shell-nav-count, 6), minmax(84px, 1fr));
+  gap: 7px;
+  margin-top: 10px;
+  padding: 7px;
+  border: 1px solid var(--vue-shell-border);
+  border-radius: var(--vue-shell-radius-md);
+  background: color-mix(in srgb, var(--panel) 90%, transparent);
+  box-shadow: var(--vue-shell-shadow);
+  backdrop-filter: blur(16px);
+}
+
+.vue-shell-nav__item {
+  min-width: 0;
+  min-height: 52px;
+  padding: 8px 9px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  color: var(--mut);
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 750;
+  transition: color .16s ease, background .16s ease, border-color .16s ease, transform .16s ease;
+}
+.vue-shell-nav__item:hover {
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel2) 68%, transparent);
+}
+.vue-shell-nav__item:focus-visible,
+.vue-shell-brand:focus-visible,
+.vue-shell-profile:focus-visible,
+.vue-shell-more-grid button:focus-visible,
+.ui-button:focus-visible,
+.ui-tabs__tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.vue-shell-nav__item.is-active {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+  background: linear-gradient(145deg, var(--vue-shell-highlight), color-mix(in srgb, var(--panel2) 70%, transparent));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 24px color-mix(in srgb, var(--accent) 12%, transparent);
+}
+.vue-shell-nav__item .ui-icon { flex: none; }
+.vue-shell-nav__item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.ui-icon {
+  width: 21px;
+  height: 21px;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ui-button {
+  min-height: 40px;
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid var(--vue-shell-border);
+  border-radius: var(--vue-shell-radius-sm);
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel2) 78%, transparent);
+  cursor: pointer;
+  font-weight: 760;
+  transition: background .15s ease, color .15s ease, border-color .15s ease, opacity .15s ease;
+}
+.ui-button--sm { min-height: 34px; padding: 6px 9px; }
+.ui-button--primary { color: #081016; background: var(--accent); border-color: color-mix(in srgb, var(--accent) 80%, #fff 12%); }
+.ui-button--ghost { background: transparent; border-color: transparent; }
+.ui-button--danger { color: #ffd9d9; background: color-mix(in srgb, #db4b4b 18%, var(--panel2)); border-color: color-mix(in srgb, #db4b4b 48%, var(--line)); }
+.ui-button:hover:not(:disabled) { border-color: color-mix(in srgb, var(--accent) 52%, var(--line)); }
+.ui-button:disabled { opacity: .46; cursor: not-allowed; }
+.ui-button .ui-icon { width: 19px; height: 19px; }
+
+.ui-badge {
+  min-height: 27px;
+  padding: 5px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--vue-shell-border-soft);
+  color: var(--mut);
+  background: color-mix(in srgb, var(--panel2) 70%, transparent);
+  font-size: 11px;
+  font-weight: 750;
+}
+.ui-badge--success { color: #8ee9ae; border-color: color-mix(in srgb, #4fd88a 38%, var(--line)); }
+.ui-badge--warning { color: #ffd278; border-color: color-mix(in srgb, #e9a83d 42%, var(--line)); }
+.ui-badge--danger { color: #ffaaaa; border-color: color-mix(in srgb, #db4b4b 42%, var(--line)); }
+.ui-badge--accent { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 38%, var(--line)); }
+.vue-shell-status-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 9px currentColor; }
+
+.ui-card {
+  border: 1px solid var(--vue-shell-border);
+  border-radius: var(--vue-shell-radius-md);
+  color: var(--text);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--panel) 94%, transparent), color-mix(in srgb, var(--panel2) 68%, transparent));
+}
+.ui-card--padded { padding: 14px; }
+
+.ui-tabs { display: flex; gap: 5px; padding: 4px; border: 1px solid var(--vue-shell-border); border-radius: 12px; background: color-mix(in srgb, var(--panel2) 72%, transparent); }
+.ui-tabs__tab { min-height: 36px; padding: 7px 12px; border: 0; border-radius: 9px; color: var(--mut); background: transparent; cursor: pointer; font-weight: 720; }
+.ui-tabs__tab.is-active { color: var(--accent); background: var(--vue-shell-highlight); }
+
+.ui-empty-state { padding: 30px 18px; display: grid; justify-items: center; gap: 8px; text-align: center; color: var(--mut); }
+.ui-empty-state__icon { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; color: var(--accent); background: var(--vue-shell-highlight); }
+.ui-empty-state h3, .ui-empty-state p { margin: 0; }
+.ui-empty-state h3 { color: var(--text); }
+.ui-empty-state__actions { margin-top: 8px; }
+
+body.vue-modal-open { overflow: hidden; }
+
+.ui-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  display: grid;
+  place-items: center;
+  background: rgba(2, 7, 12, .74);
+  backdrop-filter: blur(9px);
+}
+.ui-modal {
+  width: min(620px, 100%);
+  max-height: min(720px, calc(100dvh - 36px));
+  overflow: auto;
+  border: 1px solid var(--vue-shell-border);
+  border-radius: 22px;
+  color: var(--text);
+  background: linear-gradient(145deg, color-mix(in srgb, var(--panel) 98%, #0a1723), color-mix(in srgb, var(--panel2) 90%, #07101a));
+  box-shadow: 0 30px 90px rgba(0,0,0,.5);
+}
+.ui-modal__header { padding: 18px 18px 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--vue-shell-border-soft); }
+.ui-modal__header h2, .ui-modal__header p { margin: 0; }
+.ui-modal__header h2 { font-size: 21px; }
+.ui-modal__header p { margin-top: 5px; color: var(--mut); font-size: 13px; line-height: 1.45; }
+.ui-modal__body { padding: 16px 18px; display: grid; gap: 14px; }
+.ui-modal__footer { padding: 14px 18px 18px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--vue-shell-border-soft); }
+.ui-overlay-enter-active, .ui-overlay-leave-active { transition: opacity .16s ease; }
+.ui-overlay-enter-from, .ui-overlay-leave-to { opacity: 0; }
+
+.vue-shell-more-grid { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 8px; }
+.vue-shell-more-grid button {
+  min-height: 54px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text);
+  border: 1px solid var(--vue-shell-border-soft);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--panel2) 72%, transparent);
+  cursor: pointer;
+  text-align: left;
+  font-weight: 720;
+}
+.vue-shell-more-grid button:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.vue-shell-architecture-card { display: grid; gap: 5px; }
+.vue-shell-architecture-card small { color: var(--mut); }
+.vue-shell-architecture-card code { color: var(--accent); font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+
+.ui-toast-region {
+  position: fixed;
+  z-index: 1700;
+  right: 18px;
+  top: 18px;
+  width: min(360px, calc(100vw - 36px));
+  display: grid;
+  gap: 8px;
+  pointer-events: none;
+}
+.ui-toast {
+  min-height: 46px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  border: 1px solid var(--vue-shell-border);
+  border-radius: 13px;
+  color: var(--text);
+  background: color-mix(in srgb, var(--panel) 96%, transparent);
+  box-shadow: var(--vue-shell-shadow);
+  backdrop-filter: blur(16px);
+}
+.ui-toast .ui-icon { flex: none; color: var(--accent); }
+.ui-toast-enter-active, .ui-toast-leave-active { transition: transform .18s ease, opacity .18s ease; }
+.ui-toast-enter-from, .ui-toast-leave-to { transform: translateY(-8px); opacity: 0; }
+
+html[data-vue-shell="ready"] .nextTopbar,
+html[data-vue-shell="ready"] #tabbar {
+  display: none !important;
+}
+html[data-vue-shell="ready"] .wrap { padding-top: 0; }
+html[data-vue-shell="ready"] .head :is(#whoami, #headerAvatar, #adminOpen, #logout) { display: none !important; }
+html[data-vue-shell="ready"] body.app-modal-open .vue-shell-nav { visibility: hidden; pointer-events: none; }
+
+@media (min-width: 961px) {
+  html[data-ui-layout="sidebar"][data-vue-shell="ready"] .vue-app-shell {
+    width: 188px;
+    margin: 18px 0 0 max(18px, calc((100vw - 1500px) / 2 + 18px));
+    position: fixed;
+    inset: 0 auto auto 0;
+    z-index: 78;
+  }
+  html[data-ui-layout="sidebar"][data-vue-shell="ready"] .vue-shell-header {
+    min-height: auto;
+    padding: 10px;
+    display: grid;
+  }
+  html[data-ui-layout="sidebar"][data-vue-shell="ready"] .vue-shell-brand__copy small,
+  html[data-ui-layout="sidebar"][data-vue-shell="ready"] .vue-shell-header__actions .ui-badge,
+  html[data-ui-layout="sidebar"][data-vue-shell="ready"] .vue-shell-profile > b { display: none; }
+  html[data-ui-layout="sidebar"][data-vue-shell="ready"] .vue-shell-header__actions { justify-content: flex-start; }
+  html[data-ui-layout="sidebar"][data-vue-shell="ready"] .vue-shell-profile { width: 42px; padding: 4px; }
+  html[data-ui-layout="sidebar"][data-vue-shell="ready"] .vue-shell-nav {
+    max-height: calc(100dvh - 98px);
+    overflow: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  html[data-ui-layout="sidebar"][data-vue-shell="ready"] .vue-shell-nav__item { width: 100%; justify-content: flex-start; }
+}
+
+@media (max-width: 840px) {
+  .vue-app-shell { width: min(calc(100% - 20px), var(--vue-shell-max)); margin: 10px auto 8px; }
+  .vue-shell-header { min-height: 58px; padding: 8px 10px; }
+  .vue-shell-brand__glyph { width: 38px; height: 38px; }
+  .vue-shell-brand__copy small, .vue-shell-profile > b, .vue-shell-header__actions > .ui-badge:not(.ui-badge--warning) { display: none; }
+  .vue-shell-profile { min-height: 38px; padding: 3px; }
+  .vue-shell-profile > span { width: 31px; height: 31px; }
+  .vue-shell-nav {
+    position: fixed;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    z-index: 900;
+    margin: 0;
+    grid-template-columns: repeat(var(--vue-shell-nav-count, 5), minmax(0,1fr));
+    padding: 6px 5px calc(6px + env(safe-area-inset-bottom, 0px));
+  }
+  .vue-shell-nav__item { min-height: 55px; padding: 6px 4px; flex-direction: column; gap: 3px; font-size: 9px; }
+  .vue-shell-nav__item .ui-icon { width: 22px; height: 22px; }
+  html[data-vue-shell="ready"] .wrap { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+  html[data-vue-shell="ready"] body.app-modal-open .vue-shell-nav,
+  html[data-vue-shell="ready"] body.panel-open .vue-shell-nav { visibility: hidden; pointer-events: none; }
+}
+
+@media (max-width: 520px) {
+  .vue-shell-header__actions > .ui-badge { display: none; }
+  .vue-shell-more-grid { grid-template-columns: 1fr; }
+  .ui-modal-backdrop { padding-inline: 8px; place-items: end center; }
+  .ui-modal { width: 100%; max-height: calc(100dvh - 16px); border-radius: 22px 22px 12px 12px; }
+  .ui-modal__footer { display: grid; grid-template-columns: 1fr 1fr; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .vue-shell-nav__item,
+  .ui-button,
+  .ui-overlay-enter-active,
+  .ui-overlay-leave-active,
+  .ui-toast-enter-active,
+  .ui-toast-leave-active { transition: none !important; }
+}

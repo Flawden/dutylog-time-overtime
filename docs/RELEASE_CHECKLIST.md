@@ -1,6 +1,32 @@
 # Release checklist
 
-Status: v27.32.1.
+Status: v27.34.0.
+
+## v27.34.0 Vue App Shell & Design System acceptance
+
+- [ ] `bash deploy/scripts/frontend-gate.sh` passes with strict `vue-tsc`, 11 Vitest cases and the stable app-shell JS/CSS assets.
+- [ ] Vue owns the visible brand, profile entry, primary/secondary navigation, modal host and toast host.
+- [ ] Workspace Studio navigation order and enabled routes synchronize through the immutable legacy read model.
+- [ ] Legacy product screens, hash routing and mutation ownership remain functional behind named bridge capabilities.
+- [ ] The old topbar/tabbar hide only after `data-vue-shell="ready"`; a failed Vue boot leaves legacy navigation visible.
+- [ ] Desktop, Sidebar and mobile bottom-navigation layouts remain usable with keyboard focus and reduced motion.
+- [ ] All 645 JUnit tests and coverage gates pass.
+- [ ] All 44 Playwright scenarios pass with no browser/runtime errors.
+- [ ] Docker builds one application image and clean PostgreSQL migration smoke passes on Flyway V47.
+- [ ] Staging reports release version 27.34.0 and architecture `vue-shell-v1`.
+- [ ] `dutylog-app` and PostgreSQL remain the only DutyLog runtime containers.
+
+## v27.33.0 Vue Frontend Foundation & CI/CD acceptance
+
+- [ ] `bash deploy/scripts/frontend-gate.sh` passes.
+- [ ] Vue typecheck and five Vitest cases pass.
+- [ ] Vite emits the stable JS and CSS foundation assets.
+- [ ] Maven packages both files under `BOOT-INF/classes/static/vue`.
+- [ ] All 640 JUnit tests and coverage gates pass.
+- [ ] All 43 Playwright scenarios pass with no browser/runtime errors.
+- [ ] Docker builds one application image and clean PostgreSQL migration smoke passes on Flyway V47.
+- [ ] Staging reports release version 27.33.0 and the Vue readiness attributes.
+- [ ] `dutylog-app` and PostgreSQL remain the only DutyLog runtime containers.
 
 ## v27.32.1 Time Bank Absence Navigation Hotfix acceptance
 
@@ -29,6 +55,7 @@ Status: v27.32.1.
 ## Local gate
 
 ```bash
+bash deploy/scripts/frontend-gate.sh
 mvn -B --no-transfer-progress test
 bash deploy/scripts/release-check.sh
 ```
@@ -221,6 +248,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.32.1 -m "v27.32.1 — Time Bank Absence Navigation Hotfix"
-git push origin v27.32.1
+git tag -a v27.34.0 -m "v27.34.0 — Vue App Shell & Design System"
+git push origin v27.34.0
 ```

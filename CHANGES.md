@@ -1,3 +1,25 @@
+# v27.34.0 — Vue App Shell & Design System
+
+- Moved the visible DutyLog brand, profile entry, primary/secondary navigation and network state from numbered JavaScript into Vue 3 + TypeScript.
+- Added an immutable legacy shell read model for route, workspace navigation, enabled views, language, module readiness and safe profile display fields.
+- Added named bridge capabilities for navigation, modal opening, logout and state subscription without exposing mutable legacy state or product DOM.
+- Added typed shared `UiButton`, `UiBadge`, `UiCard`, `UiTabs`, `UiEmptyState`, `UiModal`, `ToastHost` and `AppIcon` primitives.
+- Added responsive desktop/sidebar/mobile shell chrome, bottom navigation, bottom-sheet behavior, visible focus and reduced-motion support.
+- Kept legacy product screens and hash routing authoritative; old chrome hides only after Vue readiness so failed boots retain a usable fallback.
+- Kept one Spring Boot JAR/image, one app container, the released API/PostgreSQL schema and Flyway V47.
+- Regression baseline advances to 132 Java test classes, 645 `@Test` methods, 44 Playwright scenarios and 11 Vitest cases.
+
+# v27.33.0 — Vue Frontend Foundation & CI/CD
+
+- Added the first production Vue 3 + TypeScript + Vite runtime inside the existing Spring Boot application and same-origin session boundary.
+- Introduced a strict `frontend/` migration boundary with Pinia, memory-history Vue Router, typed API/CSRF client, unit tests and an explicit legacy bridge.
+- Kept the released legacy shell fully functional while mounting a headless Vue foundation that can be awaited through `window.__dutylogVueReady`.
+- Added a Node build stage to the single DutyLog Docker image; Maven packages `frontend/dist` under `static/vue`, and the Docker context explicitly keeps `frontend/package.json`, so production still uses one app container plus PostgreSQL.
+- Extended CI, staging validation and production validation with frontend install, typecheck, Vitest and Vite build gates before Maven and Playwright.
+- Added source, packaging and browser regression contracts for the Vue boundary without changing the HTTP API, PostgreSQL schema or Flyway V47.
+- Established the migration rule: no new large feature is added to numbered legacy JavaScript; domains move completely to Vue and their old code is deleted after parity.
+- Regression baseline advances to 131 Java test classes, 640 `@Test` methods and 43 Playwright scenarios.
+
 # v27.32.1 — Time Bank Absence Navigation Hotfix
 
 - Fixed the real browser navigation defect where «Открыть отсутствие» routed to Vacation but left Unified Absence Composer hidden.

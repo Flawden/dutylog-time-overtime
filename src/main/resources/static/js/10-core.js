@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.32.1"
+const DUTYLOG_VERSION = "27.34.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -150,6 +150,79 @@ const state = {
     stale: false,
   },
 };
+
+// Explicit strangler-migration boundary. Vue owns the app shell from v27.34.0,
+// but product screens, persisted state and business operations remain legacy-owned
+// until their bounded migration release. Vue receives an immutable read model and
+// invokes only these named capabilities; it never reads `state` or the legacy DOM.
+const LEGACY_STATE_EVENT = "dutylog:legacy-state";
+const LEGACY_ROUTE_FALLBACK = ["today","calendar","vacation","overtime","payroll","tasks","important","settings"];
+
+function legacyProfileSnapshot(){
+  const profile = state.profile;
+  if (!profile) return null;
+  const shown = String(profile.displayName || profile.username || "DutyLog").trim() || "DutyLog";
+  const parts = shown.split(/\s+/).filter(Boolean);
+  const initials = (parts.length > 1 ? `${parts[0][0]}${parts[1][0]}` : shown.slice(0, 2)).toUpperCase();
+  return Object.freeze({ displayName:shown, initials, admin:!!profile.admin });
+}
+
+function legacyNavigationSnapshot(){
+  const anchors = [...document.querySelectorAll("#tabbar a[data-view]")];
+  if (!anchors.length) return { navigation:[...LEGACY_ROUTE_FALLBACK], availableViews:[...LEGACY_ROUTE_FALLBACK] };
+  const availableViews = anchors
+    .filter(anchor => !anchor.hidden && !anchor.classList.contains("moduleHidden"))
+    .map(anchor => String(anchor.dataset.view || "").trim())
+    .filter(Boolean);
+  const navigation = anchors
+    .filter(anchor => !anchor.hidden && !anchor.classList.contains("moduleHidden") && !anchor.classList.contains("workspaceHidden"))
+    .map(anchor => String(anchor.dataset.view || "").trim())
+    .filter(Boolean);
+  if (state.profile?.admin && !availableViews.includes("admin")) availableViews.push("admin");
+  return {
+    navigation:navigation.length ? navigation : availableViews,
+    availableViews:availableViews.length ? availableViews : [...LEGACY_ROUTE_FALLBACK]
+  };
+}
+
+function legacyPlatformSnapshot(){
+  const navigation = legacyNavigationSnapshot();
+  return Object.freeze({
+    version: DUTYLOG_VERSION,
+    language: state.language === "en" ? "en" : "ru",
+    route: String(window.location.hash || "#today").replace(/^#/, ""),
+    online: navigator.onLine,
+    modulesLoaded: !!state.modulesLoaded,
+    navigation:Object.freeze([...navigation.navigation]),
+    availableViews:Object.freeze([...navigation.availableViews]),
+    profile:legacyProfileSnapshot(),
+  });
+}
+
+function publishLegacyPlatformState(){
+  window.dispatchEvent(new CustomEvent(LEGACY_STATE_EVENT, { detail:legacyPlatformSnapshot() }));
+}
+
+window.DutyLogLegacyPlatform = Object.freeze({
+  version: DUTYLOG_VERSION,
+  snapshot:legacyPlatformSnapshot,
+  navigate(view){
+    const normalized = String(view || "").trim().replace(/^#/, "");
+    if (normalized) window.location.hash = `#${normalized}`;
+  },
+  openModal(id, focusId = null){
+    openAppModal(String(id || ""), focusId == null ? null : String(focusId));
+  },
+  logout(){
+    document.getElementById("logout")?.click();
+  },
+  subscribe(listener){
+    if (typeof listener !== "function") return () => {};
+    const handler = event => listener(event.detail);
+    window.addEventListener(LEGACY_STATE_EVENT, handler);
+    return () => window.removeEventListener(LEGACY_STATE_EVENT, handler);
+  },
+});
 
 const MONTHS_RU = ["Январь","Февраль","Март","Апрель","Май","Июнь","Июль","Август","Сентябрь","Октябрь","Ноябрь","Декабрь"];
 const MONTHS_GEN_RU = ["января","февраля","марта","апреля","мая","июня","июля","августа","сентября","октября","ноября","декабря"];
@@ -1038,6 +1111,7 @@ function applyLanguage(lang){
   translateStaticTree();
   applyLanguagePolish();
   window.DutyLogUI?.renderControls?.(state.preferences);
+  publishLegacyPlatformState();
 }
 function renderLanguageControls(){
   document.querySelectorAll('[data-language-choice]').forEach(btn => btn.classList.toggle('on', btn.dataset.languageChoice === state.language));

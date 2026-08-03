@@ -1,0 +1,9 @@
+#dutylog-vue-root {
+  display: block;
+}
+
+.vue-app-shell,
+.ui-modal,
+.ui-toast-region {
+  box-sizing: border-box;
+}

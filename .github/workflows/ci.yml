@@ -10,7 +10,7 @@ permissions:
 jobs:
   test-and-package:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -21,6 +21,19 @@ jobs:
           distribution: temurin
           java-version: '17'
           cache: maven
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            frontend/package.json
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Vue frontend typecheck, unit tests and build
+        run: bash ./deploy/scripts/frontend-gate.sh
 
       - name: Resolve project version
         id: version
@@ -40,13 +53,6 @@ jobs:
 
       - name: Release static checks
         run: bash ./deploy/scripts/release-check.sh
-
-      - name: Set up Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: npm
-          registry-url: 'https://registry.npmjs.org'
 
       - name: Install Playwright test runner
         run: bash ./deploy/scripts/npm-ci-with-retry.sh

@@ -1,8 +1,33 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.32.1 — Time Bank Absence Navigation Hotfix**.
+Current release: **v27.34.0 — Vue App Shell & Design System**.
 
-## v27.32.1 — Time Bank Absence Navigation Hotfix — current
+
+## v27.34.0 — Vue App Shell & Design System — current
+
+- [x] Move the visible brand, profile entry, primary/secondary navigation and network state into Vue.
+- [x] Publish route, workspace, module and safe profile changes through a frozen legacy read model.
+- [x] Add typed `UiButton`, `UiBadge`, `UiCard`, `UiTabs`, `UiEmptyState`, `UiModal`, `ToastHost` and `AppIcon` primitives.
+- [x] Add responsive desktop/sidebar/mobile shell behavior, visible focus and reduced motion.
+- [x] Hide legacy chrome only after Vue readiness so failed boots retain a usable fallback.
+- [x] Preserve legacy hash routing and product-screen ownership behind named capabilities.
+- [x] Add static, Vitest and Playwright shell parity coverage.
+- [ ] v27.35.0: migrate Absence Composer and Time Bank.
+- [ ] v27.36.0: migrate Calendar, Today and timeline.
+- [ ] v27.37.0: migrate Tasks, Notes and Important Days.
+- [ ] v27.38.0: migrate Settings, Workspace and integrations.
+- [ ] v27.39.0: retire bridge, numbered JavaScript and legacy routing after parity.
+
+## v27.33.0 — Vue Frontend Foundation & CI/CD — completed
+
+- [x] Add Vue 3, TypeScript, Vite, Pinia and Vue Router foundation.
+- [x] Keep Vue Router isolated in memory history while legacy hash routing remains authoritative.
+- [x] Add the typed API/CSRF client and explicit legacy bridge.
+- [x] Package Vite output inside the existing Spring Boot JAR and one app image.
+- [x] Add frontend typecheck, Vitest and Vite build to CI, staging and production validation.
+- [x] Add browser readiness and packaging contracts.
+
+## v27.32.1 — Time Bank Absence Navigation Hotfix — completed
 
 - [x] Reproduce the final v27.32.0 browser failure at the Bank Usage → Open absence boundary.
 - [x] Refresh a stale absence read model before opening its owner.
@@ -426,10 +451,10 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 - `v27.29.0` — Workspace, Layout & Theme Studio;
 - `v27.30.0` — Unified Absence Composer & Calendar Projection;
 - `v27.30.1` — Unified Absence Quick Access Integration;
-- `v27.32.0` — One-Tap Calendar Connect для Google / Apple / Outlook;
-- `v27.32.0` — архив «Все заметки» и визуальные коллизии задач;
-- `v27.33.0` — Telegram inline-действия и понятные пошаговые команды;
-- затем — контекстные обучалки и отдельный финальный performance / production-readiness цикл.
+- после полного Vue-перехода — One-Tap Calendar Connect для Google / Apple / Outlook;
+- затем — архив «Все заметки» и визуальные коллизии задач;
+- затем — Telegram inline-действия и понятные пошаговые команды;
+- затем — feature freeze, контекстное обучение и полный performance / production-readiness цикл.
 
 ## Этап 2 — нормальная API-архитектура
 

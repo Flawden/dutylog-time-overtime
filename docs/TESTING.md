@@ -1,5 +1,20 @@
 # DutyLog testing and JaCoCo coverage
 
+
+## Vue frontend release gate
+
+Before Maven, build the frontend assets that Maven packages into the application:
+
+```bash
+bash deploy/scripts/frontend-gate.sh
+mvn clean verify
+bash deploy/scripts/release-check.sh
+```
+
+The frontend gate performs exact-pinned dependency installation, strict `vue-tsc`, 11 Vitest cases and the Vite production build. A plain Maven run without `frontend/dist` is not the complete v27.34.0 release path. CI, staging and production validation execute this order automatically.
+
+The complete browser baseline is 44 Playwright scenarios. The v27.34.0 shell scenario verifies Vue-owned navigation chrome, bidirectional route synchronization and the safe legacy fallback; product workspaces remain legacy-owned during this migration step.
+
 ## Two different ways to run tests
 
 IntelliJ's green JUnit button and Maven's `verify` lifecycle are not the same operation.

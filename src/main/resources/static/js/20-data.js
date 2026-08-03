@@ -368,6 +368,7 @@ function applyModuleVisibility(){
   if (location.hash === "#vacation" && !moduleEnabled("vacation")) location.hash = "#calendar";
   renderModuleSettings();
   window.DutyLogUI?.apply?.(state.preferences, normalizeThemeConfig(state.preferences?.themeConfig));
+  publishLegacyPlatformState();
 }
 async function loadModules(){
   try {
@@ -1426,8 +1427,8 @@ function closeOfflineSyncDialog(){
   document.body.classList.remove("syncDialogOpen");
 }
 
-window.addEventListener("online", () => { state.offline.online = true; updateOfflineStatus(); dataLayer.syncQueue(); });
-window.addEventListener("offline", () => { state.offline.online = false; updateOfflineStatus(); });
+window.addEventListener("online", () => { state.offline.online = true; updateOfflineStatus(); publishLegacyPlatformState(); dataLayer.syncQueue(); });
+window.addEventListener("offline", () => { state.offline.online = false; updateOfflineStatus(); publishLegacyPlatformState(); });
 window.addEventListener("storage", e => {
   if (e.key === OFFLINE_SYNC_LOCK_KEY) updateOfflineStatus();
 });

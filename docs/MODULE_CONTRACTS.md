@@ -1,6 +1,24 @@
 # Module contracts
 
-Status: v27.32.1.
+Status: v27.34.0.
+
+
+## Vue app-shell ownership (v27.34.0)
+
+- Vue owns the application brand, profile entry, primary and secondary navigation, active-route presentation, network status and shared overlay hosts.
+- Legacy product screens remain authoritative for rendering, forms, API reads/mutations, offline synchronization and hash-route execution.
+- Workspace/module visibility is published as an immutable read model; Vue must not infer a second module registry.
+- Navigation, modal and logout behavior cross the boundary only through named bridge capabilities.
+- Shell ownership does not create a frontend service, product module or second mutation owner.
+- A failed Vue boot leaves the released legacy shell visible; hiding legacy chrome is gated by successful Vue readiness.
+
+## Frontend migration ownership (v27.33.0)
+
+- `frontend/` is an architectural boundary, not a new product module or service.
+- Backend module keys and guards remain canonical. Vue feature folders must reuse those keys rather than inventing browser-only domains.
+- The foundation owns no business mutation. It exposes transport, state, routing and bridge infrastructure only.
+- During migration, legacy workspaces remain authoritative and Vue Router uses memory history.
+- A migrated feature replaces its legacy implementation as one unit; duplicate mutation owners are forbidden.
 
 ## Absence and time-bank presentation ownership (v27.32.0)
 

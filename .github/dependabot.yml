@@ -31,3 +31,10 @@ updates:
       day: "monday"
     open-pull-requests-limit: 5
     labels: ["dependencies", "e2e"]
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels: ["dependencies", "frontend"]
