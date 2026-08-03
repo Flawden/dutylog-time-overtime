@@ -15,7 +15,7 @@ const emit = defineEmits<{ "update:modelValue": [value: T] }>();
       role="tab"
       type="button"
       :aria-selected="option.value === modelValue"
-      :disabled="option.disabled"
+      :disabled="option.disabled ?? false"
       @click="emit('update:modelValue', option.value)"
     >{{ option.label }}</button>
   </div>

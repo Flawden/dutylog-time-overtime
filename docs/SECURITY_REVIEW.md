@@ -1,7 +1,14 @@
 # Security review
 
-Status: v27.34.0.
+Status: v27.34.1.
 
+
+## v27.34.1 strict Vue type contract security review
+
+- Strict `exactOptionalPropertyTypes` remains enabled; no compiler check is weakened or bypassed.
+- The hotfix changes only native presentation attributes and a build-time Vite option.
+- No endpoint, session, CSRF, CSP, authorization, persistence or container boundary changes.
+- Stable shell CSS remains emitted locally and served same-origin; Flyway remains V47.
 
 ## v27.34.0 Vue app shell security review
 

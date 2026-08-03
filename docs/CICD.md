@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.34.0.
+Status: v27.34.1.
 
 DutyLog uses two long-lived deployment branches:
 
@@ -14,6 +14,10 @@ feature/* -> test -> staging
 
 Until the staging VPS is ready, leave the `staging` Environment variable `DUTYLOG_DEPLOY_ENABLED` unset or `false`. The workflow still runs Maven/JaCoCo, release checks, Playwright, image build and clean-PostgreSQL migration verification, then records an explicit successful skip. It does not create a promotion tag.
 
+
+## Strict Vue build compatibility hotfix (v27.34.1)
+
+The frontend gate remains first and strict. v27.34.1 fixes the concrete template and Vite type failures found by GitHub Actions; CI must still execute real `vue-tsc`, Vitest and Vite before Maven. No fallback build or skipped typecheck is permitted.
 
 ## Vue app-shell build gate (v27.34.0)
 

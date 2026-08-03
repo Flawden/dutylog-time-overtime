@@ -16,8 +16,8 @@ withDefaults(defineProps<{
   <button
     class="ui-button"
     :class="[`ui-button--${variant}`, `ui-button--${size}`]"
-    :type="type"
-    :disabled="disabled"
+    :type="type ?? 'button'"
+    :disabled="disabled ?? false"
   >
     <slot name="icon" />
     <span v-if="$slots.default" class="ui-button__label"><slot /></span>

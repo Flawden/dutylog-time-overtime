@@ -1,7 +1,14 @@
 # Module contracts
 
-Status: v27.34.0.
+Status: v27.34.1.
 
+
+## Strict Vue compiler compatibility (v27.34.1)
+
+- Native DOM attributes receive valid concrete values under `exactOptionalPropertyTypes`; explicit `undefined` is forbidden.
+- Vite configuration must use options supported by the pinned Vite 5 type surface.
+- Stable CSS naming remains a Rollup output responsibility and does not create a new runtime asset or service.
+- Product module ownership is unchanged from v27.34.0.
 
 ## Vue app-shell ownership (v27.34.0)
 

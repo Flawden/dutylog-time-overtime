@@ -31,7 +31,7 @@ function navigate(route: DutyLogRoute): void {
       class="vue-shell-nav__item"
       :class="{ 'is-active': activeRoute === item.route }"
       type="button"
-      :aria-current="activeRoute === item.route ? 'page' : undefined"
+      :aria-current="activeRoute === item.route ? 'page' : false"
       :data-route="item.route"
       @click="navigate(item.route)"
     >

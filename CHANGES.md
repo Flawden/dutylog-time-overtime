@@ -1,3 +1,12 @@
+# v27.34.1 — Vue Strict Type Contract Hotfix
+
+- Fixed strict `vue-tsc` failures caused by explicitly passing `undefined` into optional native button attributes under `exactOptionalPropertyTypes`.
+- Kept `exactOptionalPropertyTypes` enabled and normalized `aria-current`, `type` and `disabled` bindings to valid concrete values.
+- Removed the unsupported Vite 5 `LibraryOptions.cssFileName` field while preserving the stable CSS filename through Rollup asset output.
+- Added a regression contract that rejects the three undefined bindings and the unsupported Vite option.
+- Kept the Vue shell architecture, API, PostgreSQL schema, Docker topology and Flyway V47 unchanged.
+- Regression baseline advances to 133 Java test classes, 646 `@Test` methods, 44 Playwright scenarios and 11 Vitest cases.
+
 # v27.34.0 — Vue App Shell & Design System
 
 - Moved the visible DutyLog brand, profile entry, primary/secondary navigation and network state from numbered JavaScript into Vue 3 + TypeScript.

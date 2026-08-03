@@ -1,9 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.34.0 — Vue App Shell & Design System**.
+Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
 
 
-## v27.34.0 — Vue App Shell & Design System — current
+## v27.34.1 — Vue Strict Type Contract Hotfix — current
+
+- [x] Keep `exactOptionalPropertyTypes` enabled.
+- [x] Replace optional native `aria-current`, `type` and `disabled` bindings with concrete valid values.
+- [x] Remove unsupported Vite 5 `LibraryOptions.cssFileName`.
+- [x] Preserve the stable app-shell CSS name through Rollup `assetFileNames`.
+- [x] Add a static regression contract for all four compiler failures.
+- [x] Keep API, PostgreSQL, Flyway V47 and one-image deployment unchanged.
+- [ ] Require a green real `vue-tsc`, Vitest and Vite build before v27.35.0.
+
+## v27.34.0 — Vue App Shell & Design System — completed
 
 - [x] Move the visible brand, profile entry, primary/secondary navigation and network state into Vue.
 - [x] Publish route, workspace, module and safe profile changes through a frozen legacy read model.

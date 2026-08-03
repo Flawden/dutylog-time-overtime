@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from "node:url";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vitest/config";
 
-const releaseVersion = "27.34.0";
+const releaseVersion = "27.34.1";
 
 export default defineConfig({
   plugins: [vue()],
@@ -34,7 +34,6 @@ export default defineConfig({
       entry: fileURLToPath(new URL("./src/main.ts", import.meta.url)),
       formats: ["es"],
       fileName: () => "dutylog-vue-app-shell.js",
-      cssFileName: "dutylog-vue-app-shell",
     },
     rollupOptions: {
       output: {

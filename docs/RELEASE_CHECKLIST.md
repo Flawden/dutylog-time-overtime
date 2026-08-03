@@ -1,6 +1,16 @@
 # Release checklist
 
-Status: v27.34.0.
+Status: v27.34.1.
+
+## v27.34.1 Vue Strict Type Contract Hotfix acceptance
+
+- [ ] `bash deploy/scripts/frontend-gate.sh` passes with real `vue-tsc`, all 11 Vitest cases and Vite production build.
+- [ ] `exactOptionalPropertyTypes` remains enabled.
+- [ ] AppNavigation, UiButton and UiTabs emit no optional native attribute as explicit `undefined`.
+- [ ] Vite 5 accepts the library config and emits both stable app-shell assets.
+- [ ] All 646 JUnit tests and all 44 Playwright scenarios pass.
+- [ ] Staging reports release version 27.34.1 and architecture `vue-shell-v1`.
+- [ ] API, PostgreSQL, Flyway V47 and runtime container topology remain unchanged.
 
 ## v27.34.0 Vue App Shell & Design System acceptance
 
@@ -248,6 +258,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.34.0 -m "v27.34.0 — Vue App Shell & Design System"
-git push origin v27.34.0
+git tag -a v27.34.1 -m "v27.34.1 — Vue Strict Type Contract Hotfix"
+git push origin v27.34.1
 ```

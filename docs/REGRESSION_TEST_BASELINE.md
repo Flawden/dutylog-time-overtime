@@ -1,13 +1,20 @@
 # DutyLog regression test baseline
 
-Status: v27.34.0.
+Status: v27.34.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.34.0 proves that Vue owns the visible application shell and shared design-system infrastructure while legacy product screens remain authoritative through an immutable read model and named capabilities. The current application baseline is 132 Java test classes / 645 `@Test` methods / 44 Chromium Playwright scenarios / 11 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.34.1 stabilizes the strict Vue template and Vite 5 type contracts without weakening `exactOptionalPropertyTypes`. The current application baseline is 133 Java test classes / 646 `@Test` methods / 44 Chromium Playwright scenarios / 11 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.34.1 Vue Strict Type Contract Hotfix extension
+
+- `VueStrictOptionalTemplateContractHotfixTest` rejects explicit `undefined` native button bindings and the unsupported Vite `cssFileName` library option.
+- `aria-current` now uses the valid ARIA false state for inactive routes; optional button `type` and `disabled` values are normalized before reaching native attributes.
+- Rollup continues to emit `dutylog-vue-app-shell.css`; strict TypeScript and `exactOptionalPropertyTypes` remain enabled.
+- Baseline advances to 133 Java test classes / 646 test methods / 44 Playwright scenarios / 11 Vitest cases; Flyway remains V47.
 
 ## v27.34.0 Vue App Shell & Design System extension
 

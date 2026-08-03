@@ -15,17 +15,17 @@ test('Vue foundation boots the released app shell inside the same-origin Spring 
   });
 
   await expect(page.locator('#dutylog-vue-root')).toHaveAttribute('data-vue-ready', 'true');
-  await expect(page.locator('#dutylog-vue-root')).toHaveAttribute('data-vue-version', '27.34.0');
+  await expect(page.locator('#dutylog-vue-root')).toHaveAttribute('data-vue-version', '27.34.1');
   await expect(page.locator('#dutylog-vue-root')).toHaveAttribute('data-vue-architecture', 'vue-shell-v1');
   await expect(page.locator('#view-calendar')).toBeVisible();
   await expect(page.locator('[data-vue-app-shell]')).toBeVisible();
 
   expect(platform).toMatchObject({
-    version: '27.34.0',
+    version: '27.34.1',
     architecture: 'vue-shell-v1',
-    legacyVersion: '27.34.0',
+    legacyVersion: '27.34.1',
     snapshot: {
-      releaseVersion: '27.34.0',
+      releaseVersion: '27.34.1',
       architecture: 'vue-shell-v1',
       phase: 'ready',
       legacyConnected: true,

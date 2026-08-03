@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.34.0.
+Status: Vue app-shell ownership v1, DutyLog v27.34.1.
 
 ## Current ownership
 
@@ -29,7 +29,7 @@ frontend/src
 
 ## Routing and bridge
 
-Vue Router still uses memory history. The released hash route remains authoritative during v27.34.0. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
+Vue Router still uses memory history. The released hash route remains authoritative during v27.34.1. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
 
 Allowed transition capabilities are:
 
