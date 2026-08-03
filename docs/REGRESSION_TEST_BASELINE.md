@@ -1,14 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.31.2.
+Status: v27.32.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.31.2 aligns two browser scenarios with absence-owned linked usages and keeps intentional retirement probes outside the strict page runtime monitor. The current application baseline is 128 Java test classes / 628 `@Test` methods / 41 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.32.0 verifies the absence-owned event journal, the four-view time bank, posted/reserved separation, FIFO forecasting and cross-workspace navigation. The current application baseline is 129 Java test classes / 633 `@Test` methods / 42 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
+
+## v27.32.0 Absence & Time Bank Experience extension
+
+- `AbsenceTimeBankExperienceContractTest` protects the four bank views, posted/reserved/free metrics, ownership links, FIFO forecast and guide entry points.
+- `absence-time-bank-experience.spec.js` verifies a planned absence reservation, read-only bank usage, two-way navigation, inline composer forecast and future FIFO calculation.
+- historical Overtime browser tests explicitly select the Credits, Usage or FIFO view they exercise.
+- Maven baseline: 129 test classes / 633 test methods.
+- Browser baseline: 42 scenarios.
 
 ## v27.31.2 Canonical Absence Browser Contract Alignment Hotfix extension
 

@@ -1,3 +1,16 @@
+# v27.32.0 — Absence & Time Bank Experience
+
+- Made **Отпуск и отсутствия** the primary event journal while preserving Overtime as the canonical time-bank read model.
+- Split the time bank into Overview, Credits, Bank Usage and FIFO Detail views.
+- Separated posted usage from future reserved time and exposed the truly free balance.
+- Added absence-to-usage and usage-to-absence navigation without restoring linked-usage editing.
+- Added oldest-first FIFO forecasting, including what will be spent next, remaining balance and shortage.
+- Restored the edited absence's own allocations during preview so an existing reservation never competes with itself.
+- Added absence filters, actionable empty states, contextual guidance and the first repeatable product-learning journey.
+- Closed the release-check matcher coprocess explicitly so the historical gate exits after reporting its result.
+- Kept the API, PostgreSQL, Payroll, canonical ownership and Flyway V47 unchanged.
+- Regression baseline advances to 129 Java test classes, 633 `@Test` methods and 42 Playwright scenarios.
+
 # v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix
 
 - Aligned two Playwright scenarios with absence-owned linked-usage behavior after the canonical retirement release.

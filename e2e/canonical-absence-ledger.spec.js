@@ -50,11 +50,11 @@ test('canonical absence ledger owns new time-off while overtime keeps FIFO stati
   expect(account.usages[0].allocations.reduce((sum, row) => sum + row.minutes, 0)).toBe(240);
 
   await openView(page, 'overtime');
-  await page.locator('#ledgerAllTime').click();
+  await page.locator('#timeBankTabUsage').click();
   await waitForLedgerReady(page);
-  const linked = page.locator('.ledgerUsageItem', { hasText:'Canonical time off' }).first();
+  const linked = page.locator('#ledgerUsageList .timeBankUsageCard', { hasText:'Canonical time off' }).first();
   await expect(linked).toBeVisible();
-  await expect(linked.locator('.overtimeLinkedUsage')).toContainText(/Управляется отсутствием|Managed by absence/i);
+  await expect(linked).toContainText(/Управляется отсутствием|Managed by absence/i);
   await expect(page.locator(`[data-edit-usage="${account.usages[0].id}"]`)).toHaveCount(0);
 
   await openView(page, 'vacation');

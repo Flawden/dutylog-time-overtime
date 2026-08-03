@@ -58,6 +58,7 @@ test('overtime credit and usage editors work from calendar and ledger', async ({
   await page.locator('#creditCancel').click();
   await expect(page.locator('#overtimeCreditModal')).toBeHidden();
 
+  await page.locator('#timeBankTabCredits').click();
   const editCredit = page.locator('#ledgerRows [data-edit-credit]').first();
   await expect(editCredit).toBeVisible();
   await editCredit.click();
@@ -116,8 +117,9 @@ test('deleting one canonical split time-off keeps every credit and the other abs
   expect(account.usages.find(row => row.id === firstUsageId).allocations).toHaveLength(2);
 
   await page.locator('#tabbar a[data-view="overtime"]').click();
-  await page.locator('#ledgerAllTime').click();
-  await expect(page.locator('.allocationPartBadge')).toContainText(['часть 1/2', 'часть 2/2']);
+  await page.locator('#timeBankTabUsage').click();
+  await expect(page.locator('#ledgerUsageList .timeBankUsageCard')).toHaveCount(2);
+  await expect(page.locator(`#ledgerUsageList [data-usage-id="${firstUsageId}"] .timeBankAllocationRow`)).toHaveCount(2);
 
   await callApi(`/api/vacation-planner/absences/${firstAbsence.id}`, 'DELETE');
   await page.evaluate(() => loadLedgerPage(true));
@@ -129,11 +131,12 @@ test('deleting one canonical split time-off keeps every credit and the other abs
   expect(rebuilt.usages[0].allocations).toHaveLength(1);
   expect(rebuilt.usages[0].allocations[0].creditId).toBe(firstCreditId);
 
-  await expect(page.locator(`#ledgerRows [data-edit-usage="${firstUsageId}"]`)).toHaveCount(0);
-  await expect(page.locator(`#ledgerRows [data-edit-usage="${secondUsageId}"]`)).toHaveCount(0);
-  await expect(page.locator('#ledgerRows .ledgerUsageItem', { hasText:'Split time-off' })).toHaveCount(0);
-  const surviving = page.locator('#ledgerRows .ledgerUsageItem', { hasText:'Surviving time-off' });
+  await expect(page.locator(`[data-edit-usage="${firstUsageId}"]`)).toHaveCount(0);
+  await expect(page.locator(`[data-edit-usage="${secondUsageId}"]`)).toHaveCount(0);
+  await expect(page.locator('#ledgerUsageList .timeBankUsageCard', { hasText:'Split time-off' })).toHaveCount(0);
+  const surviving = page.locator('#ledgerUsageList .timeBankUsageCard', { hasText:'Surviving time-off' });
   await expect(surviving).toHaveCount(1);
-  await expect(surviving.locator('.overtimeLinkedUsage')).toContainText(/Управляется отсутствием|Managed by absence/i);
+  await expect(surviving).toContainText(/Управляется отсутствием|Managed by absence/i);
+  await page.locator('#timeBankTabCredits').click();
   await expect(page.locator('#ledgerRows tr[data-credit-id]')).toHaveCount(2);
 });

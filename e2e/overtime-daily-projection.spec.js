@@ -66,6 +66,7 @@ test('overtime and FIFO are redistributed by current timezone day without moving
 
   await page.locator('#tabbar a[data-view="overtime"]').click();
   await page.evaluate(() => loadLedgerPage(true));
+  await page.locator('#timeBankTabCredits').click();
   await expect(page.locator('#ledgerRows')).toContainText('итого за день');
   await expect(page.locator('#ledgerRows')).toContainText('+3 ч');
 

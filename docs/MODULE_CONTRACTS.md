@@ -1,6 +1,14 @@
 # Module contracts
 
-Status: v27.31.2.
+Status: v27.32.0.
+
+## Absence and time-bank presentation ownership (v27.32.0)
+
+- Vacation/Absence owns every user mutation of time off.
+- Overtime exposes credits and a read-only usage/FIFO projection.
+- `POSTED` and `RESERVED` are separate presentation groups; free balance is not recomputed by a second client-side ledger.
+- Cross-links focus the same source absence or linked usage; they do not clone records.
+- Product guides explain this boundary and may be replayed without changing domain state.
 
 DutyLog uses a modular-monolith approach. A module is not a separate service yet; it is a bounded feature area with a stable key, API guards, UI slots and optional offline queue operation types.
 

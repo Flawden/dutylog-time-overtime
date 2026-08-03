@@ -44,7 +44,8 @@ class LedgerBrowserStateVisibilityHotfixTest {
         assertTrue(overtime.contains("usageDate:`${prefix}-03`"));
         assertTrue(overtime.contains("data-series-key=\"${usageDate}\""));
 
-        assertTrue(unified.contains(".ledgerTableWrap .overtimeLinkedUsage"));
+        assertTrue(unified.contains("#ledgerUsageList .timeBankUsageCard"));
+        assertTrue(unified.contains("#timeBankTabUsage"));
         assertFalse(unified.contains("const linked = page.locator('.overtimeLinkedUsage'"));
     }
 

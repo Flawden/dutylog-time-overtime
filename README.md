@@ -1,4 +1,11 @@
-# v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix
+# v27.32.0 — Absence & Time Bank Experience
+
+DutyLog now presents one absence through the right lens in each workspace. **Отпуск и отсутствия** owns the event and every mutation. **Переработки** is the service-grade time bank: overview, earned credits, posted and reserved usage, FIFO allocations and a forecast of what will be consumed next.
+
+The release adds direct navigation between the event and its bank projection, distinguishes free balance from future reservations, and starts the product-education layer with contextual guides and actionable empty states. No API or schema change is required; Flyway remains V47.
+
+## Previous release: v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix
+
 
 GitHub Actions confirmed Maven 626/626, then found two stale Playwright expectations that still treated absence-owned FIFO usages as independently editable Overtime rows. v27.31.2 aligns the browser flows with the released ownership model: an intentional retired direct-usage probe runs through Playwright APIRequestContext, linked usages remain read-only in Overtime, and the owning absence is edited or deleted through Unified Absence Composer.
 
@@ -82,11 +89,11 @@ Runtime Payroll behavior, V45 and the 37-scenario product surface stay unchanged
 - Production Payroll logic, API, OpenAPI, PostgreSQL and Flyway V45 are unchanged.
 - Automated baseline remains 116 Java test classes / 603 `@Test` methods / 37 Playwright scenarios.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.28.0 — Payroll Foundation
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 DutyLog now has its first trusted money layer. A closed, integrity-checked month can be calculated from canonical Plan → Fact → Compensation data using one hourly rate, append-only additions/deductions and immutable versioned snapshots. Financial values are stored in minor units; the initial release deliberately excludes taxes and employer-specific coefficients.
 
@@ -108,7 +115,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Overtime month filters and responsive ledger selectors are deterministic at month boundaries.
 - Automated baseline: 114 Java test classes / 600 `@Test` methods / 36 Playwright scenarios.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.27.1 — Ledger Workflow Browser Contract Hotfix
 
@@ -119,7 +126,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - API, OpenAPI, database and Flyway remain at V44.
 - Automated baseline: 113 Java test classes / 599 `@Test` methods / 36 Playwright scenarios.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.27.0 — Ledger Integrity & Approval Workflow
 
@@ -133,7 +140,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 
 > Previous release: **v27.26.2 — Canonical Lineage Recovery**.
 >
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.26.2 — Canonical Lineage Recovery
 
@@ -146,7 +153,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 
 > Previous stable advanced release: **v27.26.1 — Absence Request Constructor Compile Hotfix**.
 >
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.26.1 — Absence Request Constructor Compile Hotfix
 
@@ -159,7 +166,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 
 > Previous product release: **v27.26.0 — Unified Time & Compensation Ledger**.
 >
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.25.2 — Absence Experience Frontend Contract Hotfix
 
@@ -168,7 +175,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Does not change production JavaScript, API, database schema or Flyway V42.
 - Automated baseline advances to 109 Java test classes / 581 `@Test` methods / 34 Playwright scenarios.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.25.1 — Absence Preview Lambda Compile Hotfix
 
@@ -177,7 +184,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Adds regression protection against capturing the incremented loop variable directly.
 - Keeps the v27.25.0 plan/fact model, API, Flyway V42 and 34 Playwright scenarios unchanged; Java baseline advances to 580 tests.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.25.0 — Absence & Time-Off Overhaul
 
@@ -187,7 +194,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Adds `VACATION_DAYS`, `TIME_OFF_HOURS` and `NONE` balance policies, plan/fact day details, monthly absence summaries and timed `.ics` projection.
 - Flyway advances to V42; automated baseline advances to 109 Java test classes / 579 `@Test` methods / 34 Playwright scenarios.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix
 
@@ -196,7 +203,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Keeps the blocking backdrop, contextual Today behavior, API and Flyway V41 unchanged.
 - Automated baseline remains 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.24.0 — Calendar Comfort & Correctness
 
@@ -207,7 +214,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Multiple schedule layers use compact accessible pills instead of verbose controls.
 - Flyway remains V41; automated baseline: 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.23.2 — Calendar Sync Runtime Boot Hotfix
 
@@ -232,7 +239,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Rotation immediately invalidates the old link; revocation removes access without deleting calendar data.
 - Flyway V41; automated baseline: 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.22.2 — Workspace Route E2E Navigation Hotfix
 
@@ -241,7 +248,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Module toggling is asserted on `#view-tasks`, independently from workspace placement.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
@@ -251,7 +258,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Module persistence derives its expected count from the canonical module registry instead of a hardcoded pre-vacation number.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.22.0 — Vacation Planner
 
@@ -261,7 +268,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Added owner-scoped absence types, calendar projections and a responsive unified-shell planner.
 - Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
@@ -270,7 +277,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
 - No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+> Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
 # DutyLog
 
@@ -754,7 +761,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Текущий релиз — **v27.31.2 Canonical Absence Browser Contract Alignment Hotfix**: все новые отсутствия создаются и редактируются через Unified Absence Composer, журнал переработок сохраняет начисления, FIFO, списания и остатки, а старые ручные usages получают безопасный путь переноса без потери allocations. Forward-only Flyway V47 расширяет только constraint формы отсутствия для честного `HOURS_ONLY`; V42–V46 не изменяются.
+Текущий релиз — **v27.32.0 Absence & Time Bank Experience**: события создаются и редактируются в «Отпуске и отсутствиях», а «Переработки» показывают обзор банка, начисления, проведённое и зарезервированное использование, FIFO и прогноз следующего списания. API и схема не меняются; Flyway остаётся V47.
 
 ## Служебный профиль администратора
 

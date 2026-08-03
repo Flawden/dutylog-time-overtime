@@ -1,6 +1,9 @@
-# DutyLog API v27.31.2
+# DutyLog API v27.32.0
 
 
+## Absence and time-bank presentation contract
+
+`/api/overtime/account` remains the canonical read source for earned credits, usages, allocation rows and free balance. The v27.32.0 frontend groups usages by `postingState` (`POSTED` versus `RESERVED`) and forecasts FIFO locally from current open credit remainders. No new mutation endpoint is introduced: absence-backed usage is still managed only through `/api/v1/vacation-planner/absences`.
 
 ## Canonical absence ledger and retired direct overtime usages
 

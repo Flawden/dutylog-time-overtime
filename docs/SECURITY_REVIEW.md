@@ -1,7 +1,11 @@
 # Security review
 
-Status: v27.31.2.
+Status: v27.32.0.
 
+
+## v27.32.0 absence/time-bank experience review
+
+This release changes presentation and browser navigation only. It does not add a mutation endpoint, weaken linked-usage ownership, expose raw calendar tokens or change database constraints. FIFO forecast is calculated from the authenticated account read model and never persists data. Cross-workspace links use already owner-scoped identifiers and open the existing guarded absence editor. Flyway remains V47.
 
 ## v27.31.2 browser contract alignment review
 

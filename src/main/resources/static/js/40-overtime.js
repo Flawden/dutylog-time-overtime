@@ -68,7 +68,14 @@ Object.assign(I18N_EN, {
   "Открыть период":"Reopen period", "Период закрыт":"Period closed", "Период открыт":"Period open",
   "Зарезервировано":"Reserved", "Проведено":"Posted", "Возвращено":"Reversed",
   "Фактически отмечено":"Explicit actual work", "Добавить факт":"Add actual work",
-  "Корректировка добавлена":"Adjustment added", "Фактический интервал добавлен":"Actual interval added"
+  "Корректировка добавлена":"Adjustment added", "Фактический интервал добавлен":"Actual interval added",
+  "Использование банка":"Bank usage", "История расходования":"Usage history",
+  "Проведено":"Posted", "Событий":"Events", "Свободно оформить":"Free to schedule",
+  "Открыть отсутствие":"Open absence", "Посмотреть списание":"View usage",
+  "Будет списано":"Will be used", "После этого останется":"Remaining after this",
+  "Недостаточно свободных часов":"Not enough free hours", "Расчёт будущего списания":"Future usage forecast",
+  "Как работает банк":"How the bank works", "Обзор":"Overview", "Начисления":"Credits",
+  "FIFO-детализация":"FIFO detail", "Оформить отгул":"Create time off"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -80,6 +87,125 @@ function usageManagedByAbsence(value){
 function usagePostingLabel(value){
   return String(value?.postingState || "POSTED").toUpperCase() === "RESERVED" ? t("Зарезервировано") : t("Проведено");
 }
+
+const TIME_BANK_VIEW_KEY = "dutylog.timeBank.view.v1";
+
+function timeBankUsageBuckets(){
+  const usages = state.overtimeAccount?.usages || [];
+  return usages.reduce((acc, usage) => {
+    const minutes = Math.max(0, Number(usage.minutes || Math.round(numOr0(usage.hours) * 60)) || 0);
+    if (String(usage.postingState || "POSTED").toUpperCase() === "RESERVED") acc.reservedMinutes += minutes;
+    else acc.postedMinutes += minutes;
+    return acc;
+  }, { postedMinutes:0, reservedMinutes:0 });
+}
+
+function timeBankOpenCredits(rows = ledgerSourceCredits()){
+  return uniqueSourceCredits(rows)
+    .filter(row => numOr0(row.remainingHours) > 0.0001)
+    .sort((a,b) => String(a.creditedStartInstant || a.startInstant || a.workedDate || "").localeCompare(String(b.creditedStartInstant || b.startInstant || b.workedDate || "")) || Number(a.id || 0) - Number(b.id || 0));
+}
+
+function timeBankForecast(requestedMinutes, { excludeAbsenceId = null } = {}){
+  const restoredByCredit = new Map();
+  if (excludeAbsenceId != null) {
+    const currentUsage = (state.overtimeAccount?.usages || []).find(usage => Number(usage.sourceAbsenceId) === Number(excludeAbsenceId));
+    for (const allocation of currentUsage?.allocations || []) {
+      const creditId = Number(allocation.creditId);
+      restoredByCredit.set(creditId, (restoredByCredit.get(creditId) || 0) + Math.max(0, Number(allocation.minutes || 0)));
+    }
+  }
+  const credits = uniqueSourceCredits(ledgerSourceCredits())
+    .map(credit => ({
+      ...credit,
+      forecastRemainingMinutes:Math.max(0, Math.round(numOr0(credit.remainingHours) * 60)) + (restoredByCredit.get(Number(credit.id)) || 0)
+    }))
+    .filter(credit => credit.forecastRemainingMinutes > 0)
+    .sort((a,b) => String(a.creditedStartInstant || a.startInstant || a.workedDate || "").localeCompare(String(b.creditedStartInstant || b.startInstant || b.workedDate || "")) || Number(a.id || 0) - Number(b.id || 0));
+  let remaining = Math.max(0, Math.round(Number(requestedMinutes) || 0));
+  const allocations = [];
+  for (const credit of credits) {
+    if (remaining <= 0) break;
+    const minutes = Math.min(credit.forecastRemainingMinutes, remaining);
+    allocations.push({ credit, minutes });
+    remaining -= minutes;
+  }
+  const availableMinutes = allocations.reduce((sum, item) => sum + item.minutes, 0);
+  const restoredMinutes = [...restoredByCredit.values()].reduce((sum, minutes) => sum + minutes, 0);
+  return { requestedMinutes:Math.max(0, Math.round(Number(requestedMinutes) || 0)), allocations, shortageMinutes:remaining, availableMinutes, restoredMinutes };
+}
+
+function renderFifoForecast(requestedMinutes = null){
+  const box = $("ledgerFifoForecast");
+  const input = $("fifoForecastHours");
+  if (!box) return;
+  const hours = requestedMinutes == null ? Number(input?.value || 8) : Number(requestedMinutes) / 60;
+  if (input && Number.isFinite(hours) && hours > 0) input.value = String(Math.round(hours * 100) / 100);
+  const forecast = timeBankForecast(Math.round(Math.max(0, Number(hours) || 0) * 60));
+  if (!forecast.requestedMinutes) {
+    box.innerHTML = `<div class="fifoForecastEmpty">${esc(state.language === "en" ? "Enter the time-off duration." : "Укажите длительность будущего отгула.")}</div>`;
+    return;
+  }
+  const allocationRows = forecast.allocations.map((item, index) => `<div class="fifoForecastRow ${index === 0 ? "next" : ""}">
+      <span>${index + 1}</span>
+      <div><b>${esc(vacationDateLabel(item.credit.workedDate))}</b><small>${esc(item.credit.reason || t("переработка"))}</small></div>
+      <strong>−${esc(minutesLabel(item.minutes))}</strong>
+    </div>`).join("");
+  const freeAfter = Math.max(0, Math.round(numOr0(state.overtimeAccount?.balanceHours) * 60) + forecast.restoredMinutes - forecast.requestedMinutes);
+  box.innerHTML = `<div class="fifoForecastHead"><div><small>${esc(t("Расчёт будущего списания"))}</small><b>${esc(t("Будет списано"))}: ${esc(minutesLabel(forecast.requestedMinutes - forecast.shortageMinutes))}</b></div><span>${esc(t("После этого останется"))}: <b>${esc(minutesLabel(freeAfter))}</b></span></div>
+    <div class="fifoForecastRows">${allocationRows || `<div class="fifoForecastEmpty">${esc(t("Свободных часов нет"))}</div>`}</div>
+    ${forecast.shortageMinutes ? `<div class="fifoForecastWarning">⛔ ${esc(t("Недостаточно свободных часов"))}: ${esc(minutesLabel(forecast.shortageMinutes))}</div>` : `<div class="fifoForecastOk">✓ FIFO-порядок рассчитан по текущим свободным остаткам</div>`}`;
+}
+
+function renderTimeBankUsageList(){
+  const list = $("ledgerUsageList");
+  const usages = [...(state.overtimeAccount?.usages || [])].sort((a,b) => String(b.usageDate || "").localeCompare(String(a.usageDate || "")) || Number(b.id || 0) - Number(a.id || 0));
+  const buckets = timeBankUsageBuckets();
+  if ($("ledgerUsagePosted")) $("ledgerUsagePosted").textContent = minutesLabel(buckets.postedMinutes);
+  if ($("ledgerUsageReserved")) $("ledgerUsageReserved").textContent = minutesLabel(buckets.reservedMinutes);
+  if ($("ledgerUsageCount")) $("ledgerUsageCount").textContent = String(usages.length);
+  if (!list) return;
+  if (!usages.length) {
+    list.innerHTML = emptyStateHtml({ icon:"☂", title:"Банк ещё не использовался", text:"Оформите отгул в разделе «Отсутствия». Здесь появится его банковская детализация.", variant:"board" });
+    return;
+  }
+  list.innerHTML = usages.map(usage => {
+    const managed = usageManagedByAbsence(usage);
+    const allocations = usage.allocations || [];
+    const allocationHtml = allocations.length ? allocations.map((item, index) => `<div class="timeBankAllocationRow">
+      <span>${index + 1}</span><div><b>${esc(vacationDateLabel(item.workedDate))}</b><small>${esc(item.reason || t("переработка"))}${item.timeRange ? ` · ${esc(item.timeRange)}` : ""}</small></div><strong>${esc(minutesLabel(item.minutes || Math.round(numOr0(item.hours) * 60)))}</strong>
+    </div>`).join("") : `<div class="timeBankAllocationEmpty">${esc(t("Подробности"))}: ${esc(t("Интервал не указан"))}</div>`;
+    const reserved = String(usage.postingState || "POSTED").toUpperCase() === "RESERVED";
+    return `<article class="timeBankUsageCard ${reserved ? "reserved" : "posted"}" data-usage-id="${usage.id}" ${usage.sourceAbsenceId ? `data-source-absence-id="${usage.sourceAbsenceId}"` : ""}>
+      <header><div><small>${esc(vacationDateLabel(usage.usageDate))}</small><h4>${esc(usage.reason || (managed ? t("Отгул") : t("Старое списание")))}</h4></div><strong>−${esc(minutesLabel(usage.minutes || Math.round(numOr0(usage.hours) * 60)))}</strong></header>
+      <div class="timeBankUsageMeta"><span class="absencePostingBadge">${esc(usagePostingLabel(usage))}</span><span>${managed ? `↔ ${esc(t("Управляется отсутствием"))}` : `⚠ ${esc(t("Старое списание"))}`}</span></div>
+      <details><summary>${esc(t("Подробности"))} FIFO <b>${allocations.length}</b></summary><div class="timeBankAllocationList">${allocationHtml}</div></details>
+      <footer>${managed ? `<button type="button" data-open-absence="${usage.id}">${esc(t("Открыть отсутствие"))} →</button>` : `<button type="button" data-edit-usage="${usage.id}">${esc(t("Перенести"))}</button>`}</footer>
+    </article>`;
+  }).join("");
+  bindLedgerActions(list);
+}
+
+function setTimeBankView(view = "overview", { persist = true } = {}){
+  const valid = new Set(["overview","credits","usage","fifo"]);
+  const next = valid.has(view) ? view : "overview";
+  state.timeBankView = next;
+  document.querySelectorAll("[data-time-bank-section]").forEach(section => {
+    section.hidden = section.dataset.timeBankSection !== next;
+  });
+  document.querySelectorAll("[data-time-bank-view]").forEach(button => {
+    const active = button.dataset.timeBankView === next;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-selected", String(active));
+    button.tabIndex = active ? 0 : -1;
+  });
+  if (persist) localStorage.setItem(TIME_BANK_VIEW_KEY, next);
+  if (next === "usage") renderTimeBankUsageList();
+  if (next === "fifo") { renderFifoQueue(ledgerSourceCredits()); renderFifoForecast(); }
+}
+
+function openTimeBankGuide(){ openAppModal("timeBankGuideModal", "timeBankGuideDone"); }
+function closeTimeBankGuide(){ closeAppModal("timeBankGuideModal"); }
 function ledgerMonthRange(monthValue = ""){
   const month = /^\d{4}-\d{2}$/.test(monthValue) ? monthValue : currentMonthRange().from.slice(0,7);
   const [year, rawMonth] = month.split("-").map(Number);
@@ -1393,9 +1519,7 @@ function renderFifoQueue(rows){
   const queue = $("ledgerFifoQueue");
   const oldest = $("ledgerOldestCredit");
   const hint = $("ledgerFifoHint");
-  const open = uniqueSourceCredits(rows)
-    .filter(row => numOr0(row.remainingHours) > 0.0001)
-    .sort((a,b) => String(a.creditedStartInstant || a.startInstant || a.workedDate || "").localeCompare(String(b.creditedStartInstant || b.startInstant || b.workedDate || "")) || Number(a.id || 0) - Number(b.id || 0));
+  const open = timeBankOpenCredits(rows);
   if (!open.length) {
     if (oldest) oldest.textContent = t("Нет открытых начислений");
     if (hint) hint.textContent = t("FIFO: сначала используется самый старый остаток");
@@ -1421,10 +1545,15 @@ function renderOvertimeOverview(){
   const earned = numOr0(acc.totalEarnedHours);
   const used = numOr0(acc.totalUsedHours);
   const balance = numOr0(acc.balanceHours);
+  const buckets = timeBankUsageBuckets();
+  const posted = buckets.postedMinutes / 60;
+  const reserved = buckets.reservedMinutes / 60;
   const ratio = earned > 0 ? Math.min(100, Math.max(0, used / earned * 100)) : 0;
   if ($("ledgerBalance")) $("ledgerBalance").textContent = `${balance > 0 ? "+" : ""}${fmtHours(balance)} ч`;
+  if ($("ledgerBalanceCaption")) $("ledgerBalanceCaption").textContent = reserved > 0 ? `${fmtHours(reserved)} ч уже зарезервировано будущими отгулами` : t("после проведённых и зарезервированных отгулов");
   if ($("ledgerEarned")) $("ledgerEarned").textContent = `+${fmtHours(earned)} ч`;
-  if ($("ledgerUsed")) $("ledgerUsed").textContent = `−${fmtHours(used)} ч`;
+  if ($("ledgerUsed")) $("ledgerUsed").textContent = `−${fmtHours(posted)} ч`;
+  if ($("ledgerReserved")) $("ledgerReserved").textContent = `−${fmtHours(reserved)} ч`;
   if ($("ledgerUsageRatio")) $("ledgerUsageRatio").textContent = `${Math.round(ratio)}%`;
   if ($("ledgerUsageRatioBar")) $("ledgerUsageRatioBar").style.width = `${ratio}%`;
   if ($("ledgerPeriodLabel")) $("ledgerPeriodLabel").textContent = ledgerPeriodText();
@@ -1432,6 +1561,8 @@ function renderOvertimeOverview(){
   const filteredUsages = ledgerFilteredUsages();
   renderLedgerChart(filteredCredits, filteredUsages);
   renderFifoQueue(ledgerSourceCredits());
+  renderTimeBankUsageList();
+  renderFifoForecast();
 }
 
 function bindLedgerActions(root){
@@ -1440,6 +1571,7 @@ function bindLedgerActions(root){
   root.querySelectorAll("[data-del-credit]").forEach(btn => btn.addEventListener("click", () => removeOvertimeCredit(Number(btn.dataset.delCredit))));
   root.querySelectorAll("[data-edit-usage]").forEach(btn => btn.addEventListener("click", () => startEditOvertimeUsage(Number(btn.dataset.editUsage))));
   root.querySelectorAll("[data-del-usage]").forEach(btn => btn.addEventListener("click", () => removeOvertimeUsage(Number(btn.dataset.delUsage))));
+  root.querySelectorAll("[data-open-absence]").forEach(btn => btn.addEventListener("click", () => openAbsenceForUsage(findUsageById(Number(btn.dataset.openAbsence)))));
 }
 
 function ledgerUsageItemsHtml(credit){
@@ -1455,7 +1587,7 @@ function ledgerUsageItemsHtml(credit){
     const partLabel = partCount > 1 ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.min(partIndex, partCount)}/${partCount}</span>` : "";
     return `<div class="overtimeCardUsage">
       <div><b>−${fmtHours(u.hours)} ч</b><span>${esc(u.usageDate)}${u.reason ? ` · ${esc(u.reason)}` : ""} ${partLabel}</span>${allocationDetailHtml(u)}</div>
-      ${usageManagedByAbsence(fullUsage) ? `<div class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}">↔ ${esc(t("Управляется отсутствием"))} · ${esc(usagePostingLabel(fullUsage))}</div>` : `<div class="overtimeCardUsageActions"><button type="button" data-edit-usage="${u.usageId}">${esc(t("Перенести"))}</button><button type="button" data-del-usage="${u.usageId}">${esc(t("удалить"))}</button></div>`}
+      ${usageManagedByAbsence(fullUsage) ? `<div class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}"><span>↔ ${esc(t("Управляется отсутствием"))} · ${esc(usagePostingLabel(fullUsage))}</span><button type="button" data-open-absence="${u.usageId}">${esc(t("Открыть отсутствие"))}</button></div>` : `<div class="overtimeCardUsageActions"><button type="button" data-edit-usage="${u.usageId}">${esc(t("Перенести"))}</button><button type="button" data-del-usage="${u.usageId}">${esc(t("удалить"))}</button></div>`}
     </div>`;
   }).join("");
 }
@@ -1616,7 +1748,7 @@ function renderLedgerTable(){
               ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.min(partIndex, partCount)}/${partCount}</span>`
               : "";
             const actions = usageManagedByAbsence(fullUsage)
-              ? `<span class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}">↔ ${esc(t("Управляется отсутствием"))} · ${esc(usagePostingLabel(fullUsage))}</span>`
+              ? `<span class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}"><span>↔ ${esc(t("Управляется отсутствием"))} · ${esc(usagePostingLabel(fullUsage))}</span><button type="button" data-open-absence="${u.usageId}">${esc(t("Открыть отсутствие"))}</button></span>`
               : `<span class="ledgerUsageActions" aria-label="${esc(t("Действия списания"))}"><button type="button" data-edit-usage="${u.usageId}" title="${esc(t("Перенести старое списание в отсутствия"))}">${esc(t("Перенести"))}</button><button type="button" data-del-usage="${u.usageId}" title="${esc(t("Удалить старое списание"))}">${esc(t("удалить"))}</button></span>`;
             return `<div class="ledgerUsageItem"><span class="ledgerUsageText"><span>${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""} ${partLabel}</span>${allocationDetailHtml(u)}</span>${actions}</div>`;
           }).join("")
@@ -1885,6 +2017,17 @@ async function applyLegacyUsageMigration(){
     setSave("err", error.message || t("Ошибка"));
   }
 }
+
+document.querySelectorAll("[data-time-bank-view]").forEach(button => button.addEventListener("click", () => setTimeBankView(button.dataset.timeBankView)));
+$("fifoForecastForm")?.addEventListener("submit", event => { event.preventDefault(); renderFifoForecast(); });
+$("fifoForecastHours")?.addEventListener("input", () => renderFifoForecast());
+$("ledgerUsageCreateAbsence")?.addEventListener("click", () => openOvertimeUsageModal(state.selected || todayKey()));
+$("timeBankGuideOpen")?.addEventListener("click", openTimeBankGuide);
+$("timeBankGuideClose")?.addEventListener("click", closeTimeBankGuide);
+$("timeBankGuideDone")?.addEventListener("click", closeTimeBankGuide);
+$("timeBankGuideBackdrop")?.addEventListener("click", closeTimeBankGuide);
+$("timeBankGuideOpenAbsences")?.addEventListener("click", () => { closeTimeBankGuide(); location.hash = "#vacation"; });
+setTimeBankView(localStorage.getItem(TIME_BANK_VIEW_KEY) || "overview", { persist:false });
 
 $("ledgerThisMonth").addEventListener("click", setLedgerThisMonth);
 $("ledgerThisYear").addEventListener("click", setLedgerThisYear);

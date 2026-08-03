@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.31.2"></script>
-<link href="app.css?v=27.31.2" rel="stylesheet"/>
-<link href="design-system.css?v=27.31.2" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.31.2" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.31.2" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.31.2" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.31.2" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.31.2" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.31.2" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.31.2" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.31.2" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.31.2" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.32.0"></script>
+<link href="app.css?v=27.32.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.32.0" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.32.0" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.32.0" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.32.0" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.32.0" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.32.0" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.32.0" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.32.0" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.32.0" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.32.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -78,7 +78,7 @@
 <nav class="tabbar" id="tabbar" aria-label="Основная навигация">
 <a data-view="today" href="#today"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="m3 11 9-7 9 7"/><path d="M5.5 9.5V20h13V9.5M9.5 20v-6h5v6"/></svg></span><span class="navLabel">Сегодня</span></a>
 <a data-view="calendar" href="#calendar"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5h16v14H4z"/><path d="M8 3v5M16 3v5M4 9.5h16"/></svg></span><span class="navLabel">Календарь</span></a>
-<a data-view="vacation" href="#vacation"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18h16"/><path d="M6 18c1-5 3-8 6-12 3 4 5 7 6 12"/><path d="M9 10h6M8 14h8"/></svg></span><span class="navLabel">Отпуск</span></a>
+<a data-view="vacation" href="#vacation"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 18h16"/><path d="M6 18c1-5 3-8 6-12 3 4 5 7 6 12"/><path d="M9 10h6M8 14h8"/></svg></span><span class="navLabel">Отсутствия</span></a>
 <a data-view="overtime" href="#overtime"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 7v5l3 2M7 4.5 5 2.8M17 4.5l2-1.7"/></svg></span><span class="navLabel">Переработки</span></a>
 <a data-view="payroll" href="#payroll"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 3h14v18H5z"/><path d="M8 7h8M8 11h8M8 15h3M14 15h2"/></svg></span><span class="navLabel">Зарплата</span></a>
 <a data-view="tasks" href="#tasks"><span class="navIcon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="m8 9 1.5 1.5L12 8M13.5 10H16M8 15h8"/></svg></span><span class="navLabel">Задачи</span></a>
@@ -359,31 +359,54 @@
 <div class="ledgerCard overtimeWorkspace" id="ledgerCard">
   <header class="overtimeHero" aria-labelledby="overtimeWorkspaceTitle">
     <div class="overtimeHeroIntro">
-      <div class="eyebrow">Учёт переработок</div>
-      <h2 id="overtimeWorkspaceTitle">Баланс времени</h2>
-      <p>Смены, отсутствия и переработки связаны одним журналом: отгул за ранее отработанное время автоматически списывает самый старый доступный остаток.</p>
-      <a class="overtimePayrollBridge" href="#payroll" id="overtimePayrollBridge">Перейти к расчёту зарплаты →</a>
+      <div class="eyebrow">Банк времени</div>
+      <h2 id="overtimeWorkspaceTitle">Переработки</h2>
+      <p>Здесь видно, сколько времени заработано, зарезервировано будущими отгулами и фактически использовано. Самими отгулами управляет раздел «Отсутствия».</p>
+      <div class="overtimeHeroLinks">
+        <a class="overtimePayrollBridge" href="#payroll" id="overtimePayrollBridge">Перейти к расчёту зарплаты →</a>
+        <button class="timeBankGuideLink" id="timeBankGuideOpen" type="button">? Как работает банк</button>
+      </div>
     </div>
     <div class="overtimeBalanceCard">
-      <span>Доступно сейчас</span>
+      <span>Свободно оформить</span>
       <strong id="ledgerBalance">0 ч</strong>
-      <small id="ledgerBalanceCaption">Общий остаток за всё время</small>
+      <small id="ledgerBalanceCaption">после проведённых и зарезервированных отгулов</small>
     </div>
   </header>
 
-  <div class="overtimeMetricGrid" aria-label="Сводка переработок">
+  <section class="timeBankOrientation" aria-label="Как устроен учёт времени">
+    <div><span>1</span><b>Начисление</b><small>добавляет заработанные часы</small></div>
+    <i aria-hidden="true">→</i>
+    <div><span>2</span><b>Отсутствие</b><small>резервирует или использует часы</small></div>
+    <i aria-hidden="true">→</i>
+    <div><span>3</span><b>FIFO</b><small>объясняет, из чего прошло списание</small></div>
+  </section>
+
+  <nav class="timeBankTabs" aria-label="Разделы банка времени" role="tablist">
+    <button id="timeBankTabOverview" type="button" data-time-bank-view="overview" role="tab" aria-controls="timeBankOverview" aria-selected="true">Обзор</button>
+    <button id="timeBankTabCredits" type="button" data-time-bank-view="credits" role="tab" aria-controls="timeBankCredits" aria-selected="false">Начисления</button>
+    <button id="timeBankTabUsage" type="button" data-time-bank-view="usage" role="tab" aria-controls="ledgerUsagePanel" aria-selected="false">Использование банка</button>
+    <button id="timeBankTabFifo" type="button" data-time-bank-view="fifo" role="tab" aria-controls="ledgerFifoPanel" aria-selected="false">FIFO-детализация</button>
+  </nav>
+
+  <div class="overtimeMetricGrid" id="timeBankOverview" data-time-bank-section="overview" role="tabpanel" aria-label="Сводка переработок">
     <article class="overtimeMetricCard earned">
       <span>Начислено</span>
       <b id="ledgerEarned">0 ч</b>
       <small>всего добавлено в баланс</small>
     </article>
     <article class="overtimeMetricCard used">
-      <span>Использовано</span>
+      <span>Проведено</span>
       <b id="ledgerUsed">0 ч</b>
-      <small>списано в отгулы</small>
+      <small>уже использовано отсутствиями</small>
+    </article>
+    <article class="overtimeMetricCard reserved">
+      <span>Зарезервировано</span>
+      <b id="ledgerReserved">0 ч</b>
+      <small>будущими отгулами</small>
     </article>
     <article class="overtimeMetricCard ratio">
-      <span>Доля использования</span>
+      <span>Банк задействован</span>
       <b id="ledgerUsageRatio">0%</b>
       <div class="overtimeRatioTrack" aria-hidden="true"><span id="ledgerUsageRatioBar"></span></div>
     </article>
@@ -394,7 +417,7 @@
     </article>
   </div>
 
-  <section class="timeCompensationCard" id="timeCompensationCard" aria-labelledby="timeCompensationTitle">
+  <section class="timeCompensationCard" id="timeCompensationCard" data-time-bank-section="overview" aria-labelledby="timeCompensationTitle">
     <div class="timeCompensationHead">
       <div><div class="eyebrow">План → факт → компенсация</div><h3 id="timeCompensationTitle">Единая сводка месяца</h3></div>
       <span id="timeCompensationRange">—</span>
@@ -412,7 +435,7 @@
     <div class="timeCompensationDays" id="timeCompDays"></div>
   </section>
 
-  <section class="ledgerIntegrityCard" id="ledgerIntegrityCard" aria-labelledby="ledgerIntegrityTitle">
+  <section class="ledgerIntegrityCard" id="ledgerIntegrityCard" data-time-bank-section="overview" aria-labelledby="ledgerIntegrityTitle">
     <div class="ledgerIntegrityHead">
       <div><div class="eyebrow">Workflow & integrity</div><h3 id="ledgerIntegrityTitle">Целостность и расчётный период</h3></div>
       <span class="ledgerIntegrityStatus" id="ledgerIntegrityStatus">Проверяю…</span>
@@ -452,12 +475,12 @@
 
   <div class="ledgerPrimaryActions">
     <button class="primary" id="ledgerAddCredit" type="button">+ Начислить</button>
-    <button id="ledgerAddUsage" type="button">＋ Оформить отгул</button>
+    <button id="ledgerAddUsage" type="button">☂ Использовать часы</button>
     <button id="ledgerMigrateUsages" type="button" hidden>↔ Перенести старые отгулы</button>
     <button id="ledgerMigrateLegacy" type="button">⚠ Привязать старые записи</button>
   </div>
 
-  <div class="ledgerPeriodBar" aria-label="Период журнала">
+  <div class="ledgerPeriodBar" data-time-bank-section="credits" id="timeBankCredits" role="tabpanel" aria-label="Период журнала" hidden>
     <div class="ledgerPeriodTabs" role="group" aria-label="Быстрый период">
       <button id="ledgerThisMonth" type="button" data-ledger-period="month" aria-pressed="false">Месяц</button>
       <button id="ledgerThisYear" type="button" data-ledger-period="year" aria-pressed="false">Год</button>
@@ -466,20 +489,19 @@
     <span class="ledgerPeriodLabel" id="ledgerPeriodLabel">Всё время</span>
   </div>
 
-  <section class="overtimeInsights" aria-labelledby="overtimeInsightsTitle">
+  <section class="overtimeInsights" data-time-bank-section="credits" aria-labelledby="overtimeInsightsTitle" hidden>
     <div class="overtimeInsightsHead">
       <div>
         <div class="eyebrow">Динамика</div>
-        <h3 id="overtimeInsightsTitle">Начисления и списания</h3>
+        <h3 id="overtimeInsightsTitle">Динамика начислений и использования</h3>
       </div>
       <span id="ledgerChartMode">по месяцам</span>
     </div>
     <div class="overtimeChart" id="ledgerChart" role="img" aria-label="График начислений и списаний"></div>
-    <div class="overtimeFifoQueue" id="ledgerFifoQueue"></div>
   </section>
 
-  <button class="mobileFilterToggle" id="ledgerFiltersToggle" type="button" aria-controls="ledgerFilters" aria-expanded="false"><span>Фильтры и экспорт</span><b aria-hidden="true">⌄</b></button>
-  <div class="ledgerFilters" id="ledgerFilters">
+  <button class="mobileFilterToggle" data-time-bank-section="credits" id="ledgerFiltersToggle" hidden type="button" aria-controls="ledgerFilters" aria-expanded="false"><span>Фильтры и экспорт</span><b aria-hidden="true">⌄</b></button>
+  <div class="ledgerFilters" data-time-bank-section="credits" id="ledgerFilters" hidden>
     <label class="mono">с <input id="ledgerFrom" type="date"/></label>
     <label class="mono">по <input id="ledgerTo" type="date"/></label>
     <select id="ledgerStatus" title="Статус начисления">
@@ -494,12 +516,12 @@
     <button id="ledgerClear" type="button">Сбросить</button>
   </div>
 
-  <div class="ledgerStats" id="ledgerStats"></div>
-  <div class="pagerRow" id="ledgerPager"></div>
+  <div class="ledgerStats" data-time-bank-section="credits" id="ledgerStats" hidden></div>
+  <div class="pagerRow" data-time-bank-section="credits" id="ledgerPager" hidden></div>
 
-  <div class="overtimeMobileList" id="ledgerCards" aria-live="polite"></div>
+  <div class="overtimeMobileList" data-time-bank-section="credits" id="ledgerCards" aria-live="polite" hidden></div>
 
-  <div class="ledgerTableWrap">
+  <div class="ledgerTableWrap" data-time-bank-section="credits" hidden>
     <table class="ledgerTable">
       <thead><tr>
         <th>День</th><th>Время</th><th>Начислено</th><th>Причина</th><th>Использовано</th><th>Куда списано</th><th>Остаток</th><th class="ledgerActionsHead">Действия</th>
@@ -507,7 +529,34 @@
       <tbody id="ledgerRows"></tbody>
     </table>
   </div>
-  <p class="overtimeTimezoneNote" id="ledgerTimezoneNote">Интервалы отображаются в выбранном часовом поясе. Абсолютная длительность и FIFO не меняются.</p>
+  <p class="overtimeTimezoneNote" data-time-bank-section="credits" id="ledgerTimezoneNote" hidden>Интервалы отображаются в выбранном часовом поясе. Абсолютная длительность и FIFO не меняются.</p>
+
+  <section class="timeBankSection overtimeUsagePanel" id="ledgerUsagePanel" data-time-bank-section="usage" role="tabpanel" hidden>
+    <div class="timeBankSectionHead">
+      <div><div class="eyebrow">История расходования</div><h3>Использование банка</h3><p>Это служебная детализация. Отгул создаётся и редактируется в «Отсутствиях», а здесь видно его влияние на баланс и FIFO.</p></div>
+      <button id="ledgerUsageCreateAbsence" type="button">☂ Оформить отгул</button>
+    </div>
+    <div class="timeBankUsageSummary" aria-label="Сводка использования банка">
+      <div><span>Проведено</span><b id="ledgerUsagePosted">0 ч</b></div>
+      <div><span>Зарезервировано</span><b id="ledgerUsageReserved">0 ч</b></div>
+      <div><span>Событий</span><b id="ledgerUsageCount">0</b></div>
+    </div>
+    <div class="timeBankUsageList" id="ledgerUsageList" aria-live="polite"></div>
+  </section>
+
+  <section class="timeBankSection ledgerFifoPanel" id="ledgerFifoPanel" data-time-bank-section="fifo" role="tabpanel" hidden>
+    <div class="timeBankSectionHead">
+      <div><div class="eyebrow">Прозрачное списание</div><h3>FIFO-детализация</h3><p>Самый старый свободный остаток используется первым. Резервы будущих отгулов уже учтены в доступном балансе.</p></div>
+    </div>
+    <div class="overtimeFifoQueue" id="ledgerFifoQueue"></div>
+    <form class="fifoForecastForm" id="fifoForecastForm">
+      <label>Проверить будущий отгул, часов
+        <input id="fifoForecastHours" type="number" min="0.25" max="744" step="0.25" value="8"/>
+      </label>
+      <button type="submit">Рассчитать списание</button>
+    </form>
+    <div class="fifoForecastResult" id="ledgerFifoForecast" aria-live="polite"></div>
+  </section>
 </div>
 </section>
 <section class="view payrollView" hidden id="view-payroll">
@@ -664,13 +713,14 @@
       <div class="vacationHeroActions">
         <div class="vacationWorkYear" id="vacationWorkYear">—</div>
         <button class="primary" id="vacationComposerOpen" type="button">＋ Оформить отсутствие</button>
+        <button id="absenceGuideOpen" type="button">? Как устроены отсутствия</button>
       </div>
     </div>
     <div class="vacationSummaryGrid">
       <div><span>Доступно</span><b id="vacationAvailable">—</b><small>годовая норма + перенос</small></div>
       <div><span>Запланировано</span><b id="vacationPlanned">—</b><small>в текущем рабочем году</small></div>
       <div><span>Осталось</span><b id="vacationRemaining">—</b><small id="vacationCountModeLabel">—</small></div>
-      <div><span>Отгулы</span><b id="timeOffRemaining">—</b><small id="timeOffBalanceLabel">баланс часов</small></div>
+      <div class="vacationTimeBankSummary"><span>Свободно часов</span><b id="timeOffRemaining">—</b><small id="timeOffBalanceLabel">банк переработок</small><button id="vacationOpenTimeBank" type="button">Детализация банка →</button></div>
     </div>
   </section>
 
@@ -711,6 +761,7 @@
           <input id="vacationTitle" maxlength="120" placeholder="Например: основной отпуск, визит к врачу…" required/>
         </label>
         <div class="absenceComposerContext vacationWide" id="absenceComposerContext" aria-live="polite"></div>
+        <div class="absenceFifoForecast vacationWide" id="absenceFifoForecast" hidden aria-live="polite"></div>
         <label>С
           <input id="vacationStart" type="date" required/>
         </label>
@@ -743,9 +794,16 @@
 
     <section class="card vacationListCard">
       <div class="vacationSectionHead">
-        <div><div class="eyebrow">План</div><h3>Периоды рабочего года</h3></div>
+        <div><div class="eyebrow">Главный журнал</div><h3>События отсутствий</h3><p>Создание, редактирование и отмена выполняются здесь. Банковская вкладка только объясняет движение часов.</p></div>
         <button id="vacationReload" type="button">Обновить</button>
       </div>
+      <div class="absenceListFilters" aria-label="Фильтры отсутствий">
+        <select id="absenceScope"><option value="upcoming">Предстоящие</option><option value="all">Все события</option><option value="history">История</option></select>
+        <select id="absenceTypeFilter"><option value="all">Все типы</option><option value="VACATION">Отпуск</option><option value="TIME_OFF">Отгулы</option><option value="SICK">Больничные</option><option value="UNPAID">Без содержания</option><option value="OTHER">Другие</option></select>
+        <select id="absenceStatusFilter"><option value="all">Все статусы</option><option value="active">Активные</option><option value="reserved">Резервируют баланс</option><option value="completed">Завершённые</option><option value="cancelled">Отменённые</option></select>
+        <input id="absenceSearch" type="search" placeholder="Поиск по причине и типу…"/>
+      </div>
+      <div class="absenceListStats" id="absenceListStats"></div>
       <div class="vacationPeriodList" id="vacationPeriodList"></div>
     </section>
   </div>
@@ -1368,7 +1426,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.31.2</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.32.0</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1445,6 +1503,23 @@
   <div class="noteFsBody">
     <textarea id="noteFsEdit" spellcheck="false" placeholder="# Заголовок&#10;**жирный**, *курсив*, `код`&#10;- [ ] задача&#10;> цитата&#10;```&#10;код блоком&#10;```"></textarea>
     <div class="noteFsPrev" id="noteFsPrev"></div>
+  </div>
+</div>
+
+
+<div class="appModal" id="timeBankGuideModal" hidden>
+  <button class="appModalBackdrop" id="timeBankGuideBackdrop" type="button" aria-label="Закрыть"></button>
+  <div class="appModalPanel productGuidePanel" role="dialog" aria-modal="true" aria-labelledby="timeBankGuideTitle">
+    <div class="appModalHead">
+      <div><div class="eyebrow">Мини-гайд</div><div class="appModalTitle" id="timeBankGuideTitle">Отсутствия и банк времени</div><div class="appModalHint">Одна запись — несколько понятных представлений.</div></div>
+      <button class="appModalClose" id="timeBankGuideClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div class="productGuideSteps">
+      <article><span>1</span><div><b>Оформите событие</b><p>Отпуск, отгул, больничный и отсутствие без содержания создаются в разделе «Отсутствия».</p></div></article>
+      <article><span>2</span><div><b>Выберите источник покрытия</b><p>Отгул резервирует или списывает банк переработок. Отпуск использует отпускной баланс. Остальные типы не смешиваются с FIFO.</p></div></article>
+      <article><span>3</span><div><b>Посмотрите детализацию</b><p>В «Переработках» видно, какие начисления использованы, что зарезервировано и какой остаток будет потрачен следующим.</p></div></article>
+    </div>
+    <div class="productGuideActions"><button id="timeBankGuideOpenAbsences" type="button">Открыть отсутствия</button><button class="primary" id="timeBankGuideDone" type="button">Понятно</button></div>
   </div>
 </div>
 
@@ -1982,19 +2057,19 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.31.2"></script>
-<script src="js/12-ui-platform.js?v=27.31.2"></script>
-<script src="js/20-data.js?v=27.31.2"></script>
-<script src="js/30-calendar.js?v=27.31.2"></script>
-<script src="js/35-today.js?v=27.31.2"></script>
-<script src="js/37-calendar-experience.js?v=27.31.2"></script>
-<script src="js/38-schedule-layers.js?v=27.31.2"></script>
-<script src="js/39-vacation-planner.js?v=27.31.2"></script>
-<script src="js/40-overtime.js?v=27.31.2"></script>
-<script src="js/45-payroll.js?v=27.31.2"></script>
-<script src="js/50-tasks.js?v=27.31.2"></script>
-<script src="js/55-calendar-sync.js?v=27.31.2"></script>
-<script src="js/60-settings.js?v=27.31.2"></script>
-<script src="js/70-user-boot.js?v=27.31.2"></script>
+<script src="js/10-core.js?v=27.32.0"></script>
+<script src="js/12-ui-platform.js?v=27.32.0"></script>
+<script src="js/20-data.js?v=27.32.0"></script>
+<script src="js/30-calendar.js?v=27.32.0"></script>
+<script src="js/35-today.js?v=27.32.0"></script>
+<script src="js/37-calendar-experience.js?v=27.32.0"></script>
+<script src="js/38-schedule-layers.js?v=27.32.0"></script>
+<script src="js/39-vacation-planner.js?v=27.32.0"></script>
+<script src="js/40-overtime.js?v=27.32.0"></script>
+<script src="js/45-payroll.js?v=27.32.0"></script>
+<script src="js/50-tasks.js?v=27.32.0"></script>
+<script src="js/55-calendar-sync.js?v=27.32.0"></script>
+<script src="js/60-settings.js?v=27.32.0"></script>
+<script src="js/70-user-boot.js?v=27.32.0"></script>
 </body>
 </html>

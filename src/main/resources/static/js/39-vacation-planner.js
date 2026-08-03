@@ -210,6 +210,7 @@ async function openAbsenceComposer({ date = null, systemCode = null, source = "v
   // The composer must show the current allowance/FIFO balance. Credits, usages or
   // absence edits may have changed since the planner was last rendered.
   await loadVacationPlanner(true);
+  if (moduleEnabled("overtime") && typeof loadLedgerPage === "function") await loadLedgerPage(true);
   absenceComposerSource = source;
   resetVacationEditor({ keepDates:true });
   const key = date || state.selected || todayKey();
@@ -306,12 +307,78 @@ function renderVacationTypeControls(){
   }));
 }
 
+
+function absenceStatusGroup(status){
+  const value = String(status || "PLANNED").toUpperCase();
+  if (["PLANNED","SUBMITTED"].includes(value)) return "reserved";
+  if (["APPROVED","COMPLETED"].includes(value)) return "completed";
+  if (["CANCELLED","REJECTED"].includes(value)) return "cancelled";
+  return "active";
+}
+function absenceMatchesFilters(period){
+  const filters = state.absenceFilters || { scope:"upcoming", type:"all", status:"all", q:"" };
+  const today = todayKey();
+  if (filters.scope === "upcoming" && String(period.endDate || "") < today) return false;
+  if (filters.scope === "history" && String(period.endDate || "") >= today) return false;
+  const code = String(period.systemCode || "OTHER").toUpperCase();
+  if (filters.type !== "all" && (filters.type === "OTHER" ? ["VACATION","TIME_OFF","SICK","UNPAID"].includes(code) : code !== filters.type)) return false;
+  const group = absenceStatusGroup(period.status);
+  if (filters.status === "active" && ["cancelled"].includes(group)) return false;
+  if (filters.status !== "all" && filters.status !== "active" && group !== filters.status) return false;
+  const query = String(filters.q || "").trim().toLowerCase();
+  return !query || `${period.title || ""} ${period.typeName || ""} ${period.note || ""} ${period.startDate || ""} ${period.endDate || ""}`.toLowerCase().includes(query);
+}
+function syncAbsenceFilterInputs(){
+  const filters = state.absenceFilters || {};
+  if ($("absenceScope")) $("absenceScope").value = filters.scope || "upcoming";
+  if ($("absenceTypeFilter")) $("absenceTypeFilter").value = filters.type || "all";
+  if ($("absenceStatusFilter")) $("absenceStatusFilter").value = filters.status || "all";
+  if ($("absenceSearch")) $("absenceSearch").value = filters.q || "";
+}
+function openTimeBankUsageForAbsence(absenceId){
+  const targetId = Number(absenceId) || null;
+  state.timeBankFocusAbsenceId = targetId;
+  location.hash = "#overtime";
+  if (typeof setTimeBankView === "function") setTimeBankView("usage");
+  Promise.resolve(window.__dutylogLedgerRouteReady)
+    .then(() => Promise.resolve(window.__dutylogLedgerReady))
+    .catch(() => null)
+    .then(() => {
+      if (typeof renderTimeBankUsageList === "function") renderTimeBankUsageList();
+      const card = document.querySelector(`[data-source-absence-id="${targetId}"]`);
+      card?.scrollIntoView({ behavior:"smooth", block:"center" });
+      card?.classList.add("focusPulse");
+      setTimeout(() => card?.classList.remove("focusPulse"), 1800);
+    });
+}
+function renderAbsenceFifoForecast(preview = state.vacationPreview){
+  const box = $("absenceFifoForecast");
+  if (!box) return;
+  const policy = $("vacationCompensation")?.value || preview?.compensationPolicy;
+  if (policy !== "OVERTIME_BANK" || !preview || typeof timeBankForecast !== "function") { box.hidden = true; box.innerHTML = ""; return; }
+  const forecast = timeBankForecast(Number(preview.durationMinutes || 0), { excludeAbsenceId:state.editingAbsenceId });
+  box.hidden = false;
+  const rows = forecast.allocations.map((item, index) => `<div><span>${index + 1}</span><b>${esc(vacationDateLabel(item.credit.workedDate))}</b><small>${esc(item.credit.reason || t("переработка"))}</small><strong>−${esc(minutesLabel(item.minutes))}</strong></div>`).join("");
+  box.innerHTML = `<header><div><small>${esc(t("FIFO-детализация"))}</small><b>${esc(t("Будет списано"))}: ${esc(minutesLabel(forecast.requestedMinutes - forecast.shortageMinutes))}</b></div><button type="button" data-open-time-bank>${esc(t("Детализация банка"))} →</button></header>
+    <section>${rows || `<p>${esc(t("Свободных часов нет"))}</p>`}</section>
+    ${forecast.shortageMinutes ? `<p class="errorText">⛔ ${esc(t("Недостаточно часов переработки"))}: ${esc(minutesLabel(forecast.shortageMinutes))}</p>` : `<p>✓ ${esc(t("Сначала используется самый старый свободный остаток"))}</p>`}`;
+  box.querySelector("[data-open-time-bank]")?.addEventListener("click", () => { closeAbsenceComposer({ keepEditor:true }); location.hash = "#overtime"; setTimeBankView("fifo"); renderFifoForecast(preview.durationMinutes); });
+}
+
 function renderVacationPeriods(){
   const list = $("vacationPeriodList");
   if (!list) return;
-  const periods = state.vacationPlanner?.absences || [];
+  syncAbsenceFilterInputs();
+  const allPeriods = state.vacationPlanner?.absences || [];
+  const periods = allPeriods.filter(absenceMatchesFilters).sort((a,b) => String(a.startDate || "").localeCompare(String(b.startDate || "")) || Number(a.id || 0) - Number(b.id || 0));
+  const timeOff = periods.filter(item => String(item.compensationPolicy || "") === "OVERTIME_BANK");
+  if ($("absenceListStats")) $("absenceListStats").innerHTML = `<span>${esc(t("Событий"))}: <b>${periods.length}</b></span><span>${esc(t("Отгулы"))}: <b>${timeOff.length}</b></span><span>${esc(t("Зарезервировано"))}: <b>${esc(minutesLabel(timeOff.filter(item => ["PLANNED","SUBMITTED"].includes(String(item.status || "").toUpperCase())).reduce((sum,item) => sum + Number(item.chargedMinutes || 0), 0)))}</b></span>`;
+  if (!allPeriods.length) {
+    list.innerHTML = emptyStateHtml({ icon:"☂", title:"Отсутствий пока нет", text:"Оформите отпуск, отгул, больничный или отсутствие без содержания. DutyLog сам свяжет событие с нужным балансом.", variant:"board" });
+    return;
+  }
   if (!periods.length) {
-    list.innerHTML = `<div class="vacationEmpty"><b>${esc(t("Периодов пока нет"))}</b><span>${esc(t("Выберите даты или используйте быстрый шаблон 14 / 28 / 35 дней."))}</span></div>`;
+    list.innerHTML = emptyStateHtml({ icon:"⌕", title:"Ничего не найдено", text:"Измените фильтры или очистите поиск.", variant:"compact" });
     return;
   }
   list.innerHTML = periods.map(period => {
@@ -321,6 +388,7 @@ function renderVacationPeriods(){
       : period.coverage === "HOURS_ONLY"
         ? `${esc(t("Объём часов"))} · ${esc(minutesLabel(period.chargedMinutes))} · ${esc(t("Интервал не указан"))}`
         : esc(t("Полный день"));
+    const bankLinked = String(period.compensationPolicy || "") === "OVERTIME_BANK";
     return `<article class="vacationPeriodCard" data-absence-id="${period.id}" style="--absence-color:${esc(period.typeColor)}">
       <div class="vacationPeriodColor"></div><div class="vacationPeriodMain">
         <div class="vacationPeriodTop"><b>${esc(absenceDisplayTitle(period))}</b><span data-absence-status="${esc(String(period.status || "PLANNED").toLowerCase())}">${esc(vacationStatusLabel(period.status))}</span></div>
@@ -328,13 +396,13 @@ function renderVacationPeriods(){
         <div class="vacationPeriodMeta"><span>${esc(absenceTypeDisplayName(period))}</span><span>${coverage}</span><span>${esc(absenceCompensationLabel(period.compensationPolicy))}${charged}</span><span>${esc(absencePostingLabel(period))}</span></div>
         ${period.shiftConflictCount ? `<div class="vacationPlanFactHint">✓ ${esc(t("Плановая смена сохранена"))} · ${period.shiftConflictCount}</div>` : ""}
         ${period.note ? `<p>${esc(period.note)}</p>` : ""}
-        <div class="vacationPeriodActions"><button type="button" data-edit-absence="${period.id}">${esc(t("Изменить"))}</button><button class="dangerGhost" type="button" data-delete-absence="${period.id}">${esc(t("Удалить"))}</button></div>
+        <div class="vacationPeriodActions"><button type="button" data-edit-absence="${period.id}">${esc(t("Изменить"))}</button>${bankLinked ? `<button type="button" data-bank-absence="${period.id}">${esc(t("Посмотреть списание"))}</button>` : ""}<button class="dangerGhost" type="button" data-delete-absence="${period.id}">${esc(t("Удалить"))}</button></div>
       </div></article>`;
   }).join("");
   list.querySelectorAll("[data-edit-absence]").forEach(button => button.addEventListener("click", () => editAbsence(Number(button.dataset.editAbsence))));
+  list.querySelectorAll("[data-bank-absence]").forEach(button => button.addEventListener("click", () => openTimeBankUsageForAbsence(Number(button.dataset.bankAbsence))));
   list.querySelectorAll("[data-delete-absence]").forEach(button => button.addEventListener("click", () => deleteAbsence(Number(button.dataset.deleteAbsence))));
 }
-
 function renderVacationPlanner(){
   if (!$("view-vacation")) return;
   renderVacationSummary(); renderVacationSettings(); renderVacationTypeControls(); renderVacationPeriods();
@@ -383,6 +451,7 @@ function resetVacationEditor({ keepDates = false } = {}){
   if ($("vacationStatus")) $("vacationStatus").value = "PLANNED";
   syncVacationCompensation();
   if ($("vacationPreview")) { $("vacationPreview").hidden = true; $("vacationPreview").innerHTML = ""; }
+  if ($("absenceFifoForecast")) { $("absenceFifoForecast").hidden = true; $("absenceFifoForecast").innerHTML = ""; }
   syncVacationCoverage(); renderAbsenceComposerContext(); setVacationMessage("");
 }
 
@@ -451,6 +520,7 @@ function renderVacationPreview(preview){
     <div class="vacationPreviewSource"><span>${esc(t("Статус"))}</span><b>${esc(vacationStatusLabel(draftStatus))} · ${esc(absencePostingLabel({ status:draftStatus }))}</b></div>
     ${warnings.length ? `<div class="vacationPreviewWarnings">${warnings.map(item => `<span>${esc(item)}</span>`).join("")}</div>` : `<div class="vacationPreviewOk">✓ ${esc(t("Предпросмотр готов"))}</div>`}
     <div class="vacationPreviewDays">${(preview.items || []).map(item => `<span class="${item.action === "CONFLICT" ? "conflict" : item.shiftConflict ? "shift" : item.counted ? "counted" : "free"}" title="${esc([item.date,item.plannedShiftName].filter(Boolean).join(" · "))}">${String(item.date).slice(8,10)}</span>`).join("")}</div>`;
+  renderAbsenceFifoForecast(preview);
   return !blocked;
 }
 
@@ -522,6 +592,18 @@ function openVacationPlannerView(force = false){
   ready.catch(console.error);
   return ready;
 }
+
+$("vacationOpenTimeBank")?.addEventListener("click", () => { location.hash = "#overtime"; if (typeof setTimeBankView === "function") setTimeBankView("overview"); });
+$("absenceGuideOpen")?.addEventListener("click", () => { if (typeof openTimeBankGuide === "function") openTimeBankGuide(); });
+for (const id of ["absenceScope","absenceTypeFilter","absenceStatusFilter"]) $(id)?.addEventListener("change", event => {
+  const key = id === "absenceScope" ? "scope" : id === "absenceTypeFilter" ? "type" : "status";
+  state.absenceFilters[key] = event.target.value;
+  renderVacationPeriods();
+});
+$("absenceSearch")?.addEventListener("input", event => {
+  clearTimeout(window.__absenceSearchTimer);
+  window.__absenceSearchTimer = setTimeout(() => { state.absenceFilters.q = event.target.value.trim(); renderVacationPeriods(); }, 180);
+});
 
 $("vacationPeriodForm")?.addEventListener("submit", saveVacationPeriod);
 $("vacationPreviewBtn")?.addEventListener("click", previewVacationDraft);

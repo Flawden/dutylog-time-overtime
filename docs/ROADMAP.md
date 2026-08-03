@@ -1,10 +1,26 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix**.
+Current release: **v27.32.0 — Absence & Time Bank Experience**.
 
+## v27.32.0 — Absence & Time Bank Experience — current
 
+- [x] Make «Отпуск и отсутствия» the single event journal and mutation owner.
+- [x] Split «Переработки» into Overview, Credits, Bank Usage and FIFO Detail.
+- [x] Show posted, reserved and truly free time separately.
+- [x] Link an absence to its usage detail and a usage back to its absence.
+- [x] Forecast oldest-first FIFO consumption and the next credit to be spent.
+- [x] Add filters, actionable empty states, contextual guides and the first guided browser journey.
+- [x] Keep API, PostgreSQL, Payroll, canonical ownership and Flyway V47 unchanged.
+- [x] Advance baseline to 129 Java classes / 633 tests / 42 Playwright scenarios.
 
-## v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix — current
+Next approved product stages:
+
+1. **v27.33.0 — One-Tap Calendar Connect**.
+2. **v27.34.0 — Notes Archive & Timeline Collisions**.
+3. **v27.35.0 — Telegram Task Actions & Guided Commands**.
+4. Feature freeze, Guided Onboarding & Product Education, release-readiness, RC and **DutyLog v1.0.0 Release**.
+
+## v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix — completed
 
 - [x] Keep intentional `409 DIRECT_USAGE_RETIRED` verification outside the browser runtime-failure collector.
 - [x] Treat absence-linked FIFO usages as read-only Overtime projections with no legacy edit/delete buttons.
@@ -34,7 +50,6 @@ Current release: **v27.31.2 — Canonical Absence Browser Contract Alignment Hot
 - [x] Keep Payroll, Unified Ledger, Calendar Sync and released migrations V42–V46 unchanged.
 - [x] Advance baseline to 126 Java classes / 625 tests / 41 Playwright scenarios.
 
-Next product stage after green CI and staging acceptance: **v27.32.0 — One-Tap Calendar Connect**.
 
 
 ## v27.30.2 — Today Overtime Journal Contract Hotfix — completed

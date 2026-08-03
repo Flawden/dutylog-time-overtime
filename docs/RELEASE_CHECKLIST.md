@@ -1,6 +1,18 @@
 # Release checklist
 
-Status: v27.31.2.
+Status: v27.32.0.
+
+## v27.32.0 Absence & Time Bank Experience acceptance
+
+- confirm Absences owns create/edit/delete while Overtime linked usages remain read-only;
+- confirm Overview separates posted, reserved and free hours;
+- confirm Credits preserves filters, chart, export and credit editor;
+- confirm Bank Usage links to the owning absence and exposes allocation details;
+- confirm FIFO Detail forecasts oldest-first consumption, remainder and shortage;
+- confirm future planned time off appears as reserved and reduces free balance;
+- confirm guide entry points, empty states and the replayable time-bank guide;
+- confirm 129 Java test classes / 633 test methods / 42 Playwright scenarios;
+- confirm Flyway remains V47.
 
 ## Local gate
 
@@ -197,6 +209,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.31.2 -m "v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix"
-git push origin v27.31.2
+git tag -a v27.32.0 -m "v27.32.0 — Absence & Time Bank Experience"
+git push origin v27.32.0
 ```

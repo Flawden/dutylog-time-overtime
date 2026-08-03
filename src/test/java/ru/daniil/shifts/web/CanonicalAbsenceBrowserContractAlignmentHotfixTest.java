@@ -28,8 +28,9 @@ class CanonicalAbsenceBrowserContractAlignmentHotfixTest {
         String canonical = read("e2e/canonical-absence-ledger.spec.js");
         String editors = read("e2e/overtime-editor-modals.spec.js");
 
-        assertTrue(canonical.contains(".ledgerUsageItem', { hasText:'Canonical time off'"));
-        assertTrue(canonical.contains(".overtimeLinkedUsage"));
+        assertTrue(canonical.contains("#ledgerUsageList .timeBankUsageCard', { hasText:'Canonical time off'"));
+        assertTrue(canonical.contains("#timeBankTabUsage"));
+        assertTrue(canonical.contains("Управляется отсутствием|Managed by absence"));
         assertTrue(canonical.contains("[data-edit-absence=\"${absence.id}\"]"));
         assertTrue(canonical.contains("[data-edit-usage=\"${account.usages[0].id}\"]`)).toHaveCount(0)"));
         assertFalse(canonical.contains("const edit = page.locator(`[data-edit-usage="));
@@ -37,7 +38,8 @@ class CanonicalAbsenceBrowserContractAlignmentHotfixTest {
         assertTrue(editors.contains("[data-edit-usage=\"${secondUsageId}\"]`)).toHaveCount(0)"));
         assertTrue(editors.contains("hasText:'Surviving time-off'"));
         assertTrue(editors.contains("hasText:'Split time-off' })).toHaveCount(0)"));
-        assertTrue(editors.contains("surviving.locator('.overtimeLinkedUsage')"));
+        assertTrue(editors.contains("#ledgerUsageList .timeBankUsageCard"));
+        assertTrue(editors.contains("await expect(surviving).toContainText(/Управляется отсутствием|Managed by absence/i)"));
         assertFalse(editors.contains("[data-edit-usage=\"${secondUsageId}\"]`)).toHaveCount(1)"));
     }
 
