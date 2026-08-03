@@ -1,18 +1,26 @@
 # DutyLog regression test baseline
 
-Status: v27.30.2.
+Status: v27.31.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.30.2 aligns the Today Dashboard source contract with the released Journal → Overtime route while preserving credit creation in its legitimate entry points. The current application baseline is 125 Java test classes / 620 `@Test` methods / 40 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.31.0 retires detached overtime-usage writes, makes absences the canonical owner of time off and adds lossless legacy usage promotion with honest unknown-interval handling. The current application baseline is 126 Java test classes / 625 `@Test` methods / 41 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
 
+## v27.31.0 Canonical Absence Ledger & Legacy Retirement extension
 
-
+- `CanonicalAbsenceLedgerLegacyRetirementContractTest` protects Composer-only creation, explicit legacy promotion, `HOURS_ONLY` truthfulness and the retained FIFO journal.
+- `OvertimeControllerTest` proves direct usage writes return retirement conflicts and migration preserves the existing usage ID, source ownership and allocation minutes.
+- `TelegramCommandServiceTest` confirms `/timeoff` creates a canonical absence instead of a detached usage.
+- `canonical-absence-ledger.spec.js` creates time off through Composer, verifies `ABSENCE` ownership/FIFO allocation and restores the bank when the absence changes to Unpaid.
+- Existing overtime browser scenarios now create canonical absences instead of raw usage rows.
+- `CanonicalAbsenceLedgerLegacyRetirementContractTest` also pins the immutable V42 checksum and protects the forward-only V47 `HOURS_ONLY` constraints.
+- Baseline advances to 126 Java test classes / 625 `@Test` methods / 41 Playwright scenarios.
+- Flyway advances to V47; V42–V46 remain immutable.
 
 ## v27.30.2 Today Overtime Journal Contract Hotfix extension
 

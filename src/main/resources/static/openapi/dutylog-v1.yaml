@@ -550,6 +550,62 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/OvertimeAccount' }
         '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/overtime/usages:
+    post:
+      operationId: retiredCreateManualOvertimeUsage
+      deprecated: true
+      description: Direct usage creation was retired in v27.31.0 and returns DIRECT_USAGE_RETIRED. Create a TIME_OFF absence with compensationPolicy OVERTIME_BANK instead; the FIFO usage is linked automatically.
+      responses:
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/overtime/usages/{id}:
+    patch:
+      operationId: retiredUpdateManualOvertimeUsage
+      deprecated: true
+      description: Legacy MANUAL usages return LEGACY_USAGE_MUST_BE_MIGRATED and must first be promoted into the canonical absence ledger, then edited through Vacation Planner.
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '404': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: deleteLegacyManualOvertimeUsage
+      description: Deletes only an unmigrated MANUAL usage. ABSENCE-owned usages are deleted together with their absence.
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200': { description: Rebuilt overtime account, content: { application/json: { schema: { $ref: '#/components/schemas/OvertimeAccount' } } } }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/overtime/legacy-usages/preview:
+    post:
+      operationId: previewLegacyOvertimeUsagePromotion
+      description: Classifies old MANUAL usages as FULL_DAY or HOURS_ONLY without changing their FIFO allocations.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LegacyOvertimeUsageMigrationRequest' }
+      responses:
+        '200':
+          description: Promotion preview
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegacyOvertimeUsageMigrationPreview' }
+  /api/v1/overtime/legacy-usages/migrate:
+    post:
+      operationId: promoteLegacyOvertimeUsages
+      description: Creates canonical TIME_OFF absences and attaches existing MANUAL usages in place, preserving allocation rows and FIFO history.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LegacyOvertimeUsageMigrationRequest' }
+      responses:
+        '200':
+          description: Promotion result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LegacyOvertimeUsageMigrationResult' }
+        '409': { $ref: '#/components/responses/ApiError' }
   /api/v1/time-compensation:
     get:
       operationId: timeCompensationSummary
@@ -1446,7 +1502,7 @@ components:
         countedDay: { type: boolean }
         shiftConflict: { type: boolean }
         balancePolicy: { type: string, enum: [VACATION_DAYS, TIME_OFF_HOURS, NONE] }
-        coverage: { type: string, enum: [FULL_DAY, PARTIAL] }
+        coverage: { type: string, enum: [FULL_DAY, PARTIAL, HOURS_ONLY], description: HOURS_ONLY marks a migrated quantity whose original clock interval is unknown. }
         startTime: { type: string, nullable: true }
         endTime: { type: string, nullable: true }
         chargedMinutes: { type: integer, minimum: 0 }
@@ -1465,7 +1521,7 @@ components:
         startDate: { type: string, format: date }
         endDate: { type: string, format: date }
         excludePeriodId: { type: integer, format: int64, nullable: true }
-        coverage: { type: string, enum: [FULL_DAY, PARTIAL], default: FULL_DAY }
+        coverage: { type: string, enum: [FULL_DAY, PARTIAL, HOURS_ONLY], default: FULL_DAY, description: HOURS_ONLY is accepted only while previewing an imported legacy absence with excludePeriodId. }
         startTime: { type: string, nullable: true }
         endTime: { type: string, nullable: true }
         compensationPolicy: { type: string, enum: [VACATION_ALLOWANCE, OVERTIME_BANK, SICK_PAY, UNPAID, NONE] }
@@ -2044,6 +2100,47 @@ components:
         migratedCount: { type: integer }
         skippedCount: { type: integer }
         account: { $ref: '#/components/schemas/OvertimeAccount' }
+    LegacyOvertimeUsageMigrationRequest:
+      type: object
+      properties:
+        usageIds:
+          type: array
+          items: { type: integer, format: int64 }
+          description: Empty or omitted means all currently owned MANUAL usages.
+    LegacyOvertimeUsageMigrationItem:
+      type: object
+      required: [usageId, usageDate, hours, minutes, inferredCoverage, plannedShiftPresent, plannedShiftMinutes, migratable]
+      properties:
+        usageId: { type: integer, format: int64 }
+        usageDate: { type: string, format: date }
+        hours: { type: number, format: double }
+        minutes: { type: integer, minimum: 1 }
+        reason: { type: string, nullable: true }
+        inferredCoverage: { type: string, enum: [FULL_DAY, HOURS_ONLY] }
+        plannedShiftPresent: { type: boolean }
+        plannedShiftMinutes: { type: integer, minimum: 0 }
+        migratable: { type: boolean }
+        blockedReason: { type: string, nullable: true }
+    LegacyOvertimeUsageMigrationPreview:
+      type: object
+      required: [totalCount, fullDayCount, hoursOnlyCount, blockedCount, usages]
+      properties:
+        totalCount: { type: integer, minimum: 0 }
+        fullDayCount: { type: integer, minimum: 0 }
+        hoursOnlyCount: { type: integer, minimum: 0 }
+        blockedCount: { type: integer, minimum: 0 }
+        usages:
+          type: array
+          items: { $ref: '#/components/schemas/LegacyOvertimeUsageMigrationItem' }
+    LegacyOvertimeUsageMigrationResult:
+      type: object
+      required: [migratedCount, skippedCount, absenceIds]
+      properties:
+        migratedCount: { type: integer, minimum: 0 }
+        skippedCount: { type: integer, minimum: 0 }
+        absenceIds:
+          type: array
+          items: { type: integer, format: int64 }
     MobileRegisterRequest:
       type: object
       required: [username, password]

@@ -64,6 +64,8 @@ class OvertimeNextFrontendContractTest {
         assertTrue(html.contains("id=\"ledgerAddUsage\""));
         assertTrue(js.contains("openOvertimeCreditModal"));
         assertTrue(js.contains("openOvertimeUsageModal"));
+        assertTrue(js.contains("openAbsenceComposer({ date:overtimeDefaultDate(date), systemCode:\"TIME_OFF\", source:\"overtime\" })"));
+        assertTrue(html.contains("id=\"ledgerMigrateUsages\""));
         assertTrue(js.contains("ledgerExportUrl"));
     }
 

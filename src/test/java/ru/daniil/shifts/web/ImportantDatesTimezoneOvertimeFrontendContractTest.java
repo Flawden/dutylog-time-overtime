@@ -48,13 +48,15 @@ class ImportantDatesTimezoneOvertimeFrontendContractTest {
         String css = resource("app.css");
 
         assertTrue(html.contains("id=\"overtimeCreditModal\""));
-        assertTrue(html.contains("id=\"overtimeUsageModal\""));
+        assertTrue(html.contains("id=\"legacyUsageMigrationModal\""));
+        assertTrue(html.contains("id=\"absenceComposerModal\""));
         assertFalse(html.contains("id=\"overtimeBackToLedger\""));
         assertFalse(js.contains("openOvertimeEditorForDate"));
         assertTrue(js.contains("openAppModal(\"overtimeCreditModal\""));
-        assertTrue(js.contains("openAppModal(\"overtimeUsageModal\""));
+        assertTrue(js.contains("openLegacyUsageMigrationModal"));
+        assertTrue(js.contains("openAbsenceComposer({ date:overtimeDefaultDate(date), systemCode:\"TIME_OFF\", source:\"overtime\" })"));
         assertTrue(js.contains("Number(state.editingCreditId) === Number(c.id)"));
-        assertTrue(js.contains("usageIds.includes(Number(state.editingUsageId))"));
+        assertTrue(js.contains("usageIds.includes(Number(state.legacyUsageMigrationFocusId))"));
         assertTrue(js.contains("tr.classList.toggle(\"ledgerEditingRow\", editingCredit || editingUsage)"));
         assertTrue(css.contains(".ledgerEditingRow"));
     }

@@ -20,9 +20,15 @@ test('Overtime Next keeps the professional desktop ledger and replaces it with d
       method:'POST',
       body:{ date:secondDate, hours:2, reason:'Overtime Next second credit' }
     });
-    await jfetch('/api/overtime/usages', {
+    const planner = await jfetch('/api/vacation-planner');
+    const type = planner.types.find(item => item.systemCode === 'TIME_OFF');
+    await jfetch('/api/vacation-planner/absences', {
       method:'POST',
-      body:{ date:usageDate, hours:4, reason:'Overtime Next FIFO usage' }
+      body:{
+        typeId:type.id, title:'Overtime Next FIFO usage', startDate:usageDate, endDate:usageDate,
+        status:'APPROVED', coverage:'PARTIAL', startTime:'09:00', endTime:'13:00',
+        compensationPolicy:'OVERTIME_BANK'
+      }
     });
   }, { firstDate, secondDate, usageDate });
 

@@ -49,12 +49,12 @@ document.addEventListener("keydown", event => {
   else if (activeAppModalId === "taskEditModal" && typeof closeTaskEditor === "function") closeTaskEditor();
   else if (activeAppModalId === "shiftTypeModal" && typeof closeShiftTypeManager === "function") closeShiftTypeManager();
   else if (activeAppModalId === "overtimeCreditModal" && typeof closeOvertimeCreditModal === "function") closeOvertimeCreditModal();
-  else if (activeAppModalId === "overtimeUsageModal" && typeof closeOvertimeUsageModal === "function") closeOvertimeUsageModal();
+  else if (activeAppModalId === "legacyUsageMigrationModal" && typeof closeLegacyUsageMigration === "function") closeLegacyUsageMigration();
   else if (activeAppModalId === "absenceComposerModal" && typeof closeAbsenceComposer === "function") closeAbsenceComposer();
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.30.2"
+const DUTYLOG_VERSION = "27.31.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -129,6 +129,8 @@ const state = {
   ledgerPage: { items: [], page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false },
   editingCreditId: null,
   editingUsageId: null,
+  legacyUsageMigrationPreview: null,
+  legacyUsageMigrationFocusId: null,
   selected: null,                 // ключ даты
   tab: "edit",
   activeNoteByDate: {},

@@ -29,6 +29,8 @@ public class VacationPlannerService {
     public static final String NO_BALANCE = "NONE";
     public static final String FULL_DAY = "FULL_DAY";
     public static final String PARTIAL = "PARTIAL";
+    /** Migrated legacy usage with a trusted minute total but no trustworthy wall-clock interval. */
+    public static final String HOURS_ONLY = "HOURS_ONLY";
     public static final String VACATION_ALLOWANCE = "VACATION_ALLOWANCE";
     public static final String OVERTIME_BANK = "OVERTIME_BANK";
     public static final String SICK_PAY = "SICK_PAY";
@@ -177,9 +179,38 @@ public class VacationPlannerService {
         VacationSettings settings = ensureSettings(user);
         ensureDefaultTypes(user);
         AbsenceType type = requireOwnedType(user, req.typeId());
-        AbsenceShape shape = parseShape(req.startDate(), req.endDate(), req.coverage(), req.startTime(), req.endTime());
+        if (HOURS_ONLY.equals(req.coverage()) && req.excludePeriodId() == null) {
+            throw ApiException.badRequest("HOURS_ONLY доступен только при редактировании импортированного отсутствия");
+        }
+        AbsencePeriod current = HOURS_ONLY.equals(req.coverage())
+                ? requireOwnedPeriod(user, req.excludePeriodId()) : null;
+        AbsenceShape shape = current == null
+                ? parseShape(req.startDate(), req.endDate(), req.coverage(), req.startTime(), req.endTime())
+                : parseHoursOnlyShape(current, req.startDate(), req.endDate());
         String compensationPolicy = resolveCompensationPolicy(type, req.compensationPolicy(), null);
-        return buildPreview(user, settings, type, shape, req.excludePeriodId(), compensationPolicy);
+        return buildPreview(user, settings, type, shape, req.excludePeriodId(), compensationPolicy,
+                current == null ? null : current.getChargedMinutes());
+    }
+
+    /** Canonical time-off entry point for non-web clients such as Telegram. */
+    @Transactional
+    public AbsencePeriodDto createTimeOff(AppUser user, LocalDate date, String coverage,
+                                          LocalTime startTime, LocalTime endTime, String reason) {
+        ensureDefaultTypes(user);
+        AbsenceType type = typeRepository.findByOwnerAndSystemCode(user, "TIME_OFF")
+                .orElseThrow(() -> new IllegalStateException("TIME_OFF absence type was not initialized"));
+        return createPeriod(user, new AbsencePeriodCreateRequest(
+                type.getId(),
+                normalizeOptional(reason) == null ? "Отгул" : normalizeOptional(reason),
+                date.toString(),
+                date.toString(),
+                "APPROVED",
+                "Создано через Telegram",
+                coverage,
+                startTime == null ? null : startTime.toString(),
+                endTime == null ? null : endTime.toString(),
+                OVERTIME_BANK
+        ));
     }
 
     @Transactional
@@ -228,13 +259,17 @@ public class VacationPlannerService {
                 : req.startTime() != null ? req.startTime() : timeString(period.getStartTime());
         String endTime = Boolean.TRUE.equals(req.clearTimes()) ? null
                 : req.endTime() != null ? req.endTime() : timeString(period.getEndTime());
-        AbsenceShape shape = parseShape(start, end, coverage, startTime, endTime);
+        AbsenceShape shape = HOURS_ONLY.equals(coverage)
+                ? parseHoursOnlyShape(period, start, end)
+                : parseShape(start, end, coverage, startTime, endTime);
         String status = req.status() == null ? period.getStatus() : normalizeStatus(req.status());
         ledgerIntegrityService.assertRangeOpen(user, shape.range().from(), shape.range().to());
         if (ledgerIntegrityService.consumesBalance(status)) validateNoOverlap(user, shape, id);
         String compensationPolicy = resolveCompensationPolicy(type, req.compensationPolicy(),
                 req.typeId() == null ? period.getCompensationPolicy() : null);
-        int chargedMinutes = calculateChargedMinutes(user, settings, type, shape, compensationPolicy);
+        int chargedMinutes = HOURS_ONLY.equals(shape.coverage())
+                ? period.getChargedMinutes()
+                : calculateChargedMinutes(user, settings, type, shape, compensationPolicy);
         if (ledgerIntegrityService.consumesBalance(status)) {
             validateBalances(user, settings, type, shape.range(), chargedMinutes, id, compensationPolicy);
         }
@@ -262,6 +297,92 @@ public class VacationPlannerService {
         ledgerIntegrityService.recordAbsenceTransition(user, period, ledgerIntegrityService.snapshot(period), "DELETE");
         overtimeService.deleteLinkedAbsenceUsage(user, period.getId());
         periodRepository.delete(period);
+    }
+
+    /** Preview promotion of legacy MANUAL overtime usages into canonical absence records. */
+    @Transactional
+    public LegacyOvertimeUsageMigrationPreviewDto previewLegacyUsageMigration(
+            AppUser user, LegacyOvertimeUsageMigrationRequest req) {
+        ensureDefaultTypes(user);
+        List<OvertimeUsage> rows = selectedLegacyUsages(user, req);
+        Map<LocalDate, ShiftPlan> plans = rows.isEmpty()
+                ? Map.of()
+                : shiftPlans(user, rows.get(0).getUsageDate(), rows.get(rows.size() - 1).getUsageDate());
+        List<LegacyOvertimeUsageMigrationItemDto> items = new ArrayList<>();
+        int fullDay = 0;
+        int hoursOnly = 0;
+        int blocked = 0;
+        for (OvertimeUsage usage : rows) {
+            ShiftPlan plan = plans.get(usage.getUsageDate());
+            String coverage = plan != null && plan.minutes() == usage.getRequestedMinutes()
+                    ? FULL_DAY : HOURS_ONLY;
+            String blockedReason = legacyUsageBlockedReason(user, usage);
+            boolean migratable = blockedReason == null;
+            if (FULL_DAY.equals(coverage)) fullDay++; else hoursOnly++;
+            if (!migratable) blocked++;
+            items.add(new LegacyOvertimeUsageMigrationItemDto(
+                    usage.getId(), usage.getUsageDate().toString(), usage.getHours(), usage.getRequestedMinutes(),
+                    usage.getReason(), coverage, plan != null, plan == null ? 0 : plan.minutes(),
+                    migratable, blockedReason));
+        }
+        return new LegacyOvertimeUsageMigrationPreviewDto(
+                items.size(), fullDay, hoursOnly, blocked, List.copyOf(items));
+    }
+
+    /**
+     * Promotes the selected MANUAL usages in place. Existing allocation rows remain untouched;
+     * only their usage obtains a canonical absence owner and an append-only audit entry.
+     */
+    @Transactional
+    public LegacyOvertimeUsageMigrationResultDto migrateLegacyUsages(
+            AppUser user, LegacyOvertimeUsageMigrationRequest req) {
+        lockSettings(user);
+        ensureDefaultTypes(user);
+        AbsenceType timeOff = typeRepository.findByOwnerAndSystemCode(user, "TIME_OFF")
+                .orElseThrow(() -> new IllegalStateException("TIME_OFF absence type was not initialized"));
+        LegacyOvertimeUsageMigrationPreviewDto preview = previewLegacyUsageMigration(user, req);
+        Map<Long, OvertimeUsage> byId = overtimeService.legacyManualUsages(user).stream()
+                .collect(java.util.stream.Collectors.toMap(OvertimeUsage::getId, item -> item));
+        List<Long> absenceIds = new ArrayList<>();
+        LocalDate today = userTimeService.today(user);
+
+        for (LegacyOvertimeUsageMigrationItemDto item : preview.usages()) {
+            if (!item.migratable()) continue;
+            OvertimeUsage usage = byId.get(item.usageId());
+            if (usage == null || usage.isAbsenceLinked()) continue;
+            ledgerIntegrityService.assertRangeOpen(user, usage.getUsageDate(), usage.getUsageDate());
+
+            AbsencePeriod period = new AbsencePeriod(user);
+            period.setType(timeOff);
+            period.setTitle(normalizeOptional(usage.getReason()) == null
+                    ? "Импортированный отгул" : normalizeOptional(usage.getReason()));
+            period.setStartDate(usage.getUsageDate());
+            period.setEndDate(usage.getUsageDate());
+            period.setCoverage(item.inferredCoverage());
+            period.setStartTime(null);
+            period.setEndTime(null);
+            period.setChargedMinutes(usage.getRequestedMinutes());
+            period.setCompensationPolicy(OVERTIME_BANK);
+            period.setCompensatedMinutes(usage.getRequestedMinutes());
+            period.setStatus(usage.isReserved() ? "PLANNED"
+                    : usage.getUsageDate().isAfter(today) ? "APPROVED" : "COMPLETED");
+            period.setNote(HOURS_ONLY.equals(item.inferredCoverage())
+                    ? "Импортировано из старого журнала переработок. Сохранён объём часов, но исходный временной интервал неизвестен; уточни его через редактор отсутствия."
+                    : "Импортировано из старого журнала переработок с сохранением исходного FIFO-распределения.");
+            period = periodRepository.saveAndFlush(period);
+
+            String postingState = ledgerIntegrityService.usagePostingState(period.getStatus());
+            overtimeService.attachManualUsageToAbsence(user, usage.getId(), period.getId(), postingState,
+                    "Отгул: " + displayTitle(period));
+            ledgerIntegrityService.recordAbsenceTransition(user, period, null, "MIGRATE_LEGACY_USAGE");
+            absenceIds.add(period.getId());
+        }
+
+        int requested = req == null || req.usageIds() == null || req.usageIds().isEmpty()
+                ? preview.totalCount()
+                : new LinkedHashSet<>(req.usageIds()).size();
+        return new LegacyOvertimeUsageMigrationResultDto(
+                absenceIds.size(), Math.max(0, requested - absenceIds.size()), List.copyOf(absenceIds));
     }
 
     @Transactional
@@ -338,7 +459,7 @@ public class VacationPlannerService {
 
     private AbsencePreviewDto buildPreview(AppUser user, VacationSettings settings, AbsenceType type,
                                             AbsenceShape shape, Long excludePeriodId,
-                                            String compensationPolicy) {
+                                            String compensationPolicy, Integer chargedOverride) {
         DateRange range = shape.range();
         List<AbsencePeriod> overlaps = overlappingPeriods(user, shape, excludePeriodId);
         Map<LocalDate, ShiftPlan> plans = shiftPlans(user, range.from(), range.to());
@@ -362,7 +483,9 @@ public class VacationPlannerService {
         }
 
         AllowanceProjection critical = mostConstrainedProjection(user, settings, type, range, excludePeriodId);
-        int charged = calculateChargedMinutes(user, settings, type, shape, compensationPolicy);
+        int charged = chargedOverride == null
+                ? calculateChargedMinutes(user, settings, type, shape, compensationPolicy)
+                : Math.max(0, chargedOverride);
         int timeOffAvailable = overtimeService.totalEarnedMinutes(user);
         int editableCapacity = overtimeService.availableMinutesForAbsence(user, excludePeriodId);
         int timeOffBefore = timeOffAvailable - editableCapacity;
@@ -502,7 +625,8 @@ public class VacationPlannerService {
     }
 
     private boolean overlaps(AbsencePeriod existing, AbsenceShape requested) {
-        if (FULL_DAY.equals(existing.getCoverage()) || FULL_DAY.equals(requested.coverage())) return true;
+        if (FULL_DAY.equals(existing.getCoverage()) || FULL_DAY.equals(requested.coverage())
+                || HOURS_ONLY.equals(existing.getCoverage()) || HOURS_ONLY.equals(requested.coverage())) return true;
         if (!existing.getStartDate().equals(requested.range().from())) return false;
         return requested.startTime().isBefore(existing.getEndTime()) && requested.endTime().isAfter(existing.getStartTime());
     }
@@ -612,6 +736,7 @@ public class VacationPlannerService {
             MutableTypeSummary summary = grouped.computeIfAbsent(item.typeId(), ignored ->
                     new MutableTypeSummary(item.typeId(), item.typeName(), item.typeColor(), item.systemCode(), item.balancePolicy()));
             if (FULL_DAY.equals(item.coverage())) summary.fullDays++;
+            else if (HOURS_ONLY.equals(item.coverage())) summary.partialMinutes += Math.max(0, item.chargedMinutes());
             else summary.partialMinutes += partialMinutes(item.startTime(), item.endTime());
         }
         Set<Long> chargedPeriods = new HashSet<>();
@@ -647,6 +772,44 @@ public class VacationPlannerService {
         period.setCoverage(shape.coverage());
         period.setStartTime(shape.startTime());
         period.setEndTime(shape.endTime());
+    }
+
+    private AbsenceShape parseHoursOnlyShape(AbsencePeriod current, String from, String to) {
+        if (current == null) {
+            throw ApiException.badRequest("HOURS_ONLY доступен только при редактировании импортированного отсутствия");
+        }
+        if (!HOURS_ONLY.equals(current.getCoverage())) {
+            throw ApiException.badRequest("HOURS_ONLY доступен только для импортированных старых списаний");
+        }
+        DateRange range = validateRange(
+                parseDate(from, "Дата начала должна быть в формате yyyy-MM-dd"),
+                parseDate(to, "Дата окончания должна быть в формате yyyy-MM-dd"));
+        if (!range.from().equals(range.to())) {
+            throw ApiException.badRequest("Импортированный объём часов должен относиться к одному дню");
+        }
+        return new AbsenceShape(range, HOURS_ONLY, null, null);
+    }
+
+    private List<OvertimeUsage> selectedLegacyUsages(AppUser user, LegacyOvertimeUsageMigrationRequest req) {
+        List<OvertimeUsage> all = overtimeService.legacyManualUsages(user);
+        if (req == null || req.usageIds() == null || req.usageIds().isEmpty()) return all;
+        Set<Long> selected = req.usageIds().stream().filter(Objects::nonNull)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+        return all.stream().filter(usage -> selected.contains(usage.getId())).toList();
+    }
+
+    private String legacyUsageBlockedReason(AppUser user, OvertimeUsage usage) {
+        if (usage.getRequestedMinutes() <= 0) return "Списание не содержит положительного объёма часов";
+        try {
+            ledgerIntegrityService.assertRangeOpen(user, usage.getUsageDate(), usage.getUsageDate());
+        } catch (ApiException ex) {
+            return ex.getMessage();
+        }
+        boolean activeAbsence = periodRepository
+                .findByOwnerAndEndDateGreaterThanEqualAndStartDateLessThanEqualOrderByStartDateAscIdAsc(
+                        user, usage.getUsageDate(), usage.getUsageDate())
+                .stream().anyMatch(period -> ledgerIntegrityService.consumesBalance(period.getStatus()));
+        return activeAbsence ? "На эту дату уже оформлено активное отсутствие" : null;
     }
 
     private int countIntersection(VacationSettings settings, LocalDate firstStart, LocalDate firstEnd,

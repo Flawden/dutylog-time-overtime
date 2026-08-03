@@ -1,6 +1,6 @@
 # Module contracts
 
-Status: v27.30.2.
+Status: v27.31.0.
 
 DutyLog uses a modular-monolith approach. A module is not a separate service yet; it is a bounded feature area with a stable key, API guards, UI slots and optional offline queue operation types.
 
@@ -17,6 +17,18 @@ src/main/java/ru/daniil/shifts/module/ModuleKeys.java
 ```
 
 Do not invent module keys inside controllers or frontend code. Add the key to the registry first.
+
+## Canonical absence ownership (v27.31.0)
+
+Schema boundary: V47 only widens the immutable V42 absence shape constraints for transition-only `HOURS_ONLY`; it does not change module ownership or rewrite rows.
+
+- `vacation` owns creation and editing of every absence, including overtime-backed time off.
+- `overtime` owns credits, FIFO allocation, balance and read-only linked compensation rows.
+- New direct MANUAL usage writes are retired.
+- Legacy usage promotion requires both `overtime` and `vacation` modules.
+- Changing an absence away from `OVERTIME_BANK` removes its linked usage and restores FIFO balance.
+- `HOURS_ONLY` is import-only and cannot be selected for a new absence.
+
 
 ## Contract fields
 

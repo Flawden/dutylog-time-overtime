@@ -66,7 +66,7 @@ test('overtime credit and usage editors work from calendar and ledger', async ({
   await expect(page).toHaveURL(/#overtime$/);
 });
 
-test('deleting one split time-off keeps every credit and the other usage', async ({ page }) => {
+test('deleting one canonical split time-off keeps every credit and the other absence usage', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'overtimeintegrity' });
   const base = await currentLocalDateKey(page);
   const plusDays = (key, days) => {
@@ -100,28 +100,27 @@ test('deleting one split time-off keeps every credit and the other usage', async
     date: dates[1], hours: 5, reason: 'Integrity source B'
   });
   const secondCreditId = account.credits.find(row => row.id !== firstCreditId).id;
-  account = await callApi('/api/overtime/usages', 'POST', {
-    date: dates[2], hours: 4, reason: 'Split time-off'
+  const planner = await callApi('/api/vacation-planner', 'GET');
+  const typeId = planner.types.find(item => item.systemCode === 'TIME_OFF').id;
+  const firstAbsence = await callApi('/api/vacation-planner/absences', 'POST', {
+    typeId, title:'Split time-off', startDate:dates[2], endDate:dates[2], status:'APPROVED',
+    coverage:'PARTIAL', startTime:'09:00', endTime:'13:00', compensationPolicy:'OVERTIME_BANK'
   });
-  const firstUsageId = account.usages[0].id;
-  account = await callApi('/api/overtime/usages', 'POST', {
-    date: dates[3], hours: 3, reason: 'Surviving time-off'
+  const secondAbsence = await callApi('/api/vacation-planner/absences', 'POST', {
+    typeId, title:'Surviving time-off', startDate:dates[3], endDate:dates[3], status:'APPROVED',
+    coverage:'PARTIAL', startTime:'09:00', endTime:'12:00', compensationPolicy:'OVERTIME_BANK'
   });
-  const secondUsageId = account.usages.find(row => row.id !== firstUsageId).id;
+  account = await callApi('/api/overtime/account', 'GET');
+  const firstUsageId = account.usages.find(row => row.sourceAbsenceId === firstAbsence.id).id;
+  const secondUsageId = account.usages.find(row => row.sourceAbsenceId === secondAbsence.id).id;
   expect(account.usages.find(row => row.id === firstUsageId).allocations).toHaveLength(2);
 
   await page.locator('#tabbar a[data-view="overtime"]').click();
   await page.locator('#ledgerAllTime').click();
   await expect(page.locator('.allocationPartBadge')).toContainText(['часть 1/2', 'часть 2/2']);
 
-  const deleted = waitForApi(page, 'DELETE', `/api/overtime/usages/${firstUsageId}`);
-  page.once('dialog', dialog => dialog.accept());
-  const firstUsageDesktopDelete = page
-    .locator(`#ledgerRows [data-del-usage="${firstUsageId}"]`)
-    .first();
-  await expect(firstUsageDesktopDelete).toBeVisible();
-  await firstUsageDesktopDelete.click();
-  await deleted;
+  await callApi(`/api/vacation-planner/absences/${firstAbsence.id}`, 'DELETE');
+  await page.evaluate(() => loadLedgerPage(true));
 
   const rebuilt = await callApi('/api/overtime/account', 'GET');
   expect(rebuilt.credits.map(row => row.id)).toEqual([firstCreditId, secondCreditId]);
@@ -130,7 +129,7 @@ test('deleting one split time-off keeps every credit and the other usage', async
   expect(rebuilt.usages[0].allocations).toHaveLength(1);
   expect(rebuilt.usages[0].allocations[0].creditId).toBe(firstCreditId);
 
-  await expect(page.locator(`#ledgerRows [data-del-usage="${firstUsageId}"]`)).toHaveCount(0);
-  await expect(page.locator(`#ledgerRows [data-del-usage="${secondUsageId}"]`)).toHaveCount(1);
+  await expect(page.locator(`#ledgerRows [data-edit-usage="${firstUsageId}"]`)).toHaveCount(0);
+  await expect(page.locator(`#ledgerRows [data-edit-usage="${secondUsageId}"]`)).toHaveCount(1);
   await expect(page.locator('#ledgerRows tr[data-credit-id]')).toHaveCount(2);
 });

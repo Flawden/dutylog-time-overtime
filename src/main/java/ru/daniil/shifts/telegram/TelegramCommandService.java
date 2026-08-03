@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.daniil.shifts.dto.Dtos.ImportantDayOccurrenceDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
-import ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest;
+import ru.daniil.shifts.dto.Dtos.AbsencePeriodDto;
 import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
 import ru.daniil.shifts.dto.Dtos.TaskUpdateRequest;
@@ -18,6 +18,7 @@ import ru.daniil.shifts.service.ImportantDayService;
 import ru.daniil.shifts.service.OvertimeService;
 import ru.daniil.shifts.service.TaskService;
 import ru.daniil.shifts.service.UserTimeService;
+import ru.daniil.shifts.service.VacationPlannerService;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.DateTimeException;
@@ -47,17 +48,20 @@ public class TelegramCommandService {
     private final TaskService taskService;
     private final ImportantDayService importantDayService;
     private final OvertimeService overtimeService;
+    private final VacationPlannerService vacationPlannerService;
     private final UserTimeService userTimeService;
 
     public TelegramCommandService(DayEntryRepository dayEntries,
                                   TaskService taskService,
                                   ImportantDayService importantDayService,
                                   OvertimeService overtimeService,
+                                  VacationPlannerService vacationPlannerService,
                                   UserTimeService userTimeService) {
         this.dayEntries = dayEntries;
         this.taskService = taskService;
         this.importantDayService = importantDayService;
         this.overtimeService = overtimeService;
+        this.vacationPlannerService = vacationPlannerService;
         this.userTimeService = userTimeService;
     }
 
@@ -96,7 +100,8 @@ public class TelegramCommandService {
                 "/done 12 — закрыть задачу #12",
                 "/ppr 17-08 причина — начислить переработку интервалом",
                 "/ppr 2 причина — начислить 2 часа вручную",
-                "/timeoff 8 причина — списать 8 часов отгула",
+                "/timeoff день причина — оформить полный отгул",
+                "/timeoff 10-14 причина — оформить частичный отгул",
                 "",
                 "Основные команды доступны кнопками под полем ввода Telegram.",
                 "Можно указывать дату первым аргументом: /task 2026-07-10 текст, /ppr 10.07 17-20 причина.",
@@ -208,22 +213,53 @@ public class TelegramCommandService {
 
     private String createTimeOffUsage(AppUser user, String args) {
         if (args == null || args.isBlank()) {
-            throw ApiException.badRequest("Формат: /timeoff 8 причина или /отгул завтра 8 причина");
+            throw ApiException.badRequest("Формат: /timeoff день причина или /отгул завтра 10-14 причина");
         }
         DateAndRest dated = takeDate(args, userTimeService.today(user));
         String rest = dated.rest().trim();
         String[] parts = rest.split("\\s+", 2);
         if (parts.length == 0 || parts[0].isBlank()) {
-            throw ApiException.badRequest("Укажи часы списания: /timeoff 8 отгул");
+            throw ApiException.badRequest("Укажи день или интервал: /timeoff день отгул");
         }
-        double hours = parseHours(parts[0], "Часы списания должны быть числом: /timeoff 8 причина");
-        String reason = parts.length > 1 && !parts[1].isBlank() ? parts[1].trim() : "Списано из Telegram";
-        OvertimeAccountDto account = overtimeService.createUsage(user, new OvertimeUsageCreateRequest(
-                dated.date().toString(),
-                hours,
-                reason
-        ));
-        return "Списал " + fmt(hours) + " ч на " + dated.date().format(RU_DATE) + ".\nОстаток: " + fmt(account.balanceHours()) + " ч";
+        String value = parts[0].trim().toLowerCase(Locale.ROOT);
+        String reason = parts.length > 1 && !parts[1].isBlank() ? parts[1].trim() : "Отгул из Telegram";
+        String coverage;
+        LocalTime startTime = null;
+        LocalTime endTime = null;
+
+        Matcher interval = INTERVAL.matcher(value);
+        if (interval.matches()) {
+            startTime = parseTime(interval.group(1));
+            endTime = parseTime(interval.group(2));
+            if (!endTime.isAfter(startTime)) {
+                throw ApiException.badRequest("Частичный отгул должен закончиться позже начала и находиться в одном дне");
+            }
+            coverage = VacationPlannerService.PARTIAL;
+        } else if (Set.of("день", "day", "full", "полный").contains(value)) {
+            coverage = VacationPlannerService.FULL_DAY;
+        } else if (HOURS.matcher(value.replace(',', '.')).matches()) {
+            int requestedMinutes = (int) Math.round(parseHours(value,
+                    "Укажи день или интервал: /timeoff день либо /timeoff 10-14") * 60.0);
+            DayEntry planned = dayEntries.findByOwnerAndDate(user, dated.date()).orElse(null);
+            int plannedMinutes = planned == null || planned.getShiftType() == null ? 0
+                    : planned.getShiftNetMinutes() > 0
+                    ? Math.toIntExact(planned.getShiftNetMinutes())
+                    : (int) Math.round(planned.getShiftType().effectivePlannedHours() * 60.0);
+            if (plannedMinutes <= 0 || plannedMinutes != requestedMinutes) {
+                throw ApiException.badRequest("Число часов больше не создаёт прямое списание. Укажи `день` или точный интервал, например /timeoff 10-14 причина");
+            }
+            coverage = VacationPlannerService.FULL_DAY;
+        } else {
+            throw ApiException.badRequest("Не понял формат. Используй /timeoff день причина или /timeoff 10-14 причина");
+        }
+
+        AbsencePeriodDto absence = vacationPlannerService.createTimeOff(
+                user, dated.date(), coverage, startTime, endTime, reason);
+        OvertimeAccountDto account = overtimeService.account(user);
+        String shape = VacationPlannerService.FULL_DAY.equals(absence.coverage())
+                ? "полный день" : absence.startTime() + "–" + absence.endTime();
+        return "Оформил отгул на " + dated.date().format(RU_DATE) + " (" + shape + ").\nОстаток: "
+                + fmt(account.balanceHours()) + " ч";
     }
 
     private ParsedOvertimeTail parseOvertimeTail(String tail) {

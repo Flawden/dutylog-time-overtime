@@ -36,10 +36,18 @@ test('overtime and FIFO are redistributed by current timezone day without moving
       reason:'Daily projection E2E'
     }
   }));
-  await page.evaluate(() => jfetch('/api/overtime/usages', {
-    method:'POST',
-    body:{ date:'2026-07-05', hours:3, reason:'Projection FIFO' }
-  }));
+  await page.evaluate(async () => {
+    const planner = await jfetch('/api/vacation-planner');
+    const type = planner.types.find(item => item.systemCode === 'TIME_OFF');
+    await jfetch('/api/vacation-planner/absences', {
+      method:'POST',
+      body:{
+        typeId:type.id, title:'Projection FIFO', startDate:'2026-07-05', endDate:'2026-07-05',
+        status:'APPROVED', coverage:'PARTIAL', startTime:'09:00', endTime:'12:00',
+        compensationPolicy:'OVERTIME_BANK'
+      }
+    });
+  });
 
   let data = await account(page);
   expect(sumForDate(data.credits, '2026-07-03', 'hours')).toBe(2);

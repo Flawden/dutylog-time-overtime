@@ -418,6 +418,39 @@ public class OvertimeService {
         return usages.findByOwnerAndSourceAbsenceId(user, absenceId).map(OvertimeUsage::getId).orElse(null);
     }
 
+    /** Legacy MANUAL usages are read-only inputs for the one-time absence migration. */
+    @Transactional(readOnly = true)
+    public List<OvertimeUsage> legacyManualUsages(AppUser user) {
+        return usages.findByOwnerOrderByUsageDateAscIdAsc(user).stream()
+                .filter(usage -> !usage.isAbsenceLinked())
+                .toList();
+    }
+
+    /** Resolves ownership before a retired direct edit so foreign IDs still fail closed. */
+    @Transactional(readOnly = true)
+    public boolean isAbsenceLinkedUsage(AppUser user, Long usageId) {
+        return requireOwnedUsage(user, usageId).isAbsenceLinked();
+    }
+
+    /** Promotes an existing MANUAL usage to an absence-owned usage without rebuilding FIFO. */
+    @Transactional
+    public OvertimeUsage attachManualUsageToAbsence(AppUser user, Long usageId, Long absenceId,
+                                                     String postingState, String reason) {
+        if (usageId == null || absenceId == null) {
+            throw ApiException.badRequest("Нужно выбрать старое списание и созданное отсутствие");
+        }
+        OvertimeUsage usage = requireOwnedUsage(user, usageId);
+        if (usage.isAbsenceLinked()) {
+            throw ApiException.conflict("LEGACY_USAGE_ALREADY_MIGRATED",
+                    "Списание уже связано с отсутствием");
+        }
+        usage.setSourceKind("ABSENCE");
+        usage.setSourceAbsenceId(absenceId);
+        usage.setPostingState(postingState);
+        if (reason != null && !reason.isBlank()) usage.setReason(normalize(reason));
+        return usages.saveAndFlush(usage);
+    }
+
     /**
      * Creates or atomically replaces the FIFO usage owned by one absence.
      * The absence remains the only editor for this usage; manual ledger endpoints

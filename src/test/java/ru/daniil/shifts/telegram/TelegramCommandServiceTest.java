@@ -9,7 +9,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import ru.daniil.shifts.dto.Dtos.ImportantDayOccurrenceDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeAccountDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeCreditCreateRequest;
-import ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest;
+import ru.daniil.shifts.dto.Dtos.AbsencePeriodDto;
 import ru.daniil.shifts.dto.Dtos.PageDto;
 import ru.daniil.shifts.dto.Dtos.TaskCreateRequest;
 import ru.daniil.shifts.dto.Dtos.TaskDto;
@@ -24,6 +24,7 @@ import ru.daniil.shifts.service.ImportantDayService;
 import ru.daniil.shifts.service.OvertimeService;
 import ru.daniil.shifts.service.TaskService;
 import ru.daniil.shifts.service.UserTimeService;
+import ru.daniil.shifts.service.VacationPlannerService;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.LocalDate;
@@ -44,6 +45,7 @@ class TelegramCommandServiceTest {
     @Mock TaskService taskService;
     @Mock ImportantDayService importantDayService;
     @Mock OvertimeService overtimeService;
+    @Mock VacationPlannerService vacationPlannerService;
     @Mock UserTimeService userTimeService;
 
     TelegramCommandService service;
@@ -53,7 +55,8 @@ class TelegramCommandServiceTest {
     void setUp() {
         user = new AppUser("telegram-command-owner", "{noop}x");
         lenient().when(userTimeService.today(user)).thenReturn(LocalDate.now());
-        service = new TelegramCommandService(dayEntries, taskService, importantDayService, overtimeService, userTimeService);
+        service = new TelegramCommandService(dayEntries, taskService, importantDayService,
+                overtimeService, vacationPlannerService, userTimeService);
     }
 
     @Test
@@ -173,20 +176,24 @@ class TelegramCommandServiceTest {
     }
 
     @Test
-    void timeOffParsesDateHoursAndDefaultReason() {
-        when(overtimeService.createUsage(eq(user), any(OvertimeUsageCreateRequest.class)))
-                .thenReturn(account(16, 8, 8));
+    void timeOffCreatesCanonicalAbsenceAndKeepsBalanceSummary() {
+        AbsencePeriodDto absence = new AbsencePeriodDto(1L, 2L, "Отгул", "#4F8FEA", "TIME_OFF", false,
+                "Поездка", LocalDate.now().plusDays(1).toString(), LocalDate.now().plusDays(1).toString(),
+                "APPROVED", null, 1, 0, 1, null, null, "TIME_OFF_HOURS",
+                VacationPlannerService.FULL_DAY, null, null, 480, true, "OVERTIME_BANK", 480, 3L);
+        when(vacationPlannerService.createTimeOff(eq(user), any(LocalDate.class), eq("FULL_DAY"), isNull(), isNull(), anyString()))
+                .thenReturn(absence);
+        when(overtimeService.account(user)).thenReturn(account(16, 8, 8));
 
-        String answer = service.handle(user, "/отгул завтра 8");
+        String answer = service.handle(user, "/отгул завтра день Поездка");
 
-        ArgumentCaptor<OvertimeUsageCreateRequest> request = ArgumentCaptor.forClass(OvertimeUsageCreateRequest.class);
-        verify(overtimeService).createUsage(eq(user), request.capture());
-        assertEquals(LocalDate.now().plusDays(1).toString(), request.getValue().date());
-        assertEquals(8.0, request.getValue().hours(), 0.0001);
-        assertEquals("Списано из Telegram", request.getValue().reason());
-        assertTrue(answer.contains("Списал 8 ч"));
+        verify(vacationPlannerService).createTimeOff(user, LocalDate.now().plusDays(1),
+                "FULL_DAY", null, null, "Поездка");
+        verify(overtimeService, never()).createUsage(eq(user), any());
+        assertTrue(answer.contains("Оформил отгул"));
+        assertTrue(answer.contains("Остаток: 8 ч"));
         assertBadRequest(() -> service.handle(user, "/timeoff"), "Формат");
-        assertBadRequest(() -> service.handle(user, "/timeoff zero"), "числом");
+        assertBadRequest(() -> service.handle(user, "/timeoff zero"), "Не понял формат");
     }
 
     @Test

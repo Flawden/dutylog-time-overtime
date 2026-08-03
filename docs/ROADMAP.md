@@ -1,10 +1,26 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.30.2 — Today Overtime Journal Contract Hotfix**.
+Current release: **v27.31.0 — Canonical Absence Ledger & Legacy Retirement**.
 
 
 
-## v27.30.2 — Today Overtime Journal Contract Hotfix — current
+## v27.31.0 — Canonical Absence Ledger & Legacy Retirement — current
+
+- [x] Keep Overtime credits, totals, FIFO queue, allocation details and exports as the canonical compensation read model.
+- [x] Make Unified Absence Composer the only user-facing creation/edit path for time off and every other absence type.
+- [x] Retire direct `POST /overtime/usages` and direct legacy usage editing with explicit conflict codes.
+- [x] Keep linked overtime usages internal to the owning absence and restore FIFO automatically when compensation changes.
+- [x] Add previewed one-time promotion of old MANUAL usages without changing usage IDs or rebuilding allocation rows.
+- [x] Introduce transition-only `HOURS_ONLY` coverage for known duration with unknown historical interval.
+- [x] Route Telegram `/timeoff` through the canonical absence service.
+- [x] Add forward-only Flyway V47 to extend the immutable V42 absence coverage/shape constraints for `HOURS_ONLY` without rewriting rows.
+- [x] Keep Payroll, Unified Ledger, Calendar Sync and released migrations V42–V46 unchanged.
+- [x] Advance baseline to 126 Java classes / 625 tests / 41 Playwright scenarios.
+
+Next product stage after green CI and staging acceptance: **v27.32.0 — One-Tap Calendar Connect**.
+
+
+## v27.30.2 — Today Overtime Journal Contract Hotfix — completed
 
 - [x] Reproduce the single Maven failure at `TodayDashboardFrontendContractTest:37`.
 - [x] Confirm the Today overtime action is a journal route, not a credit-creation shortcut.
@@ -13,7 +29,7 @@ Current release: **v27.30.2 — Today Overtime Journal Contract Hotfix**.
 - [x] Keep API, PostgreSQL, Payroll, Unified Ledger and Flyway V46 unchanged.
 - [x] Advance baseline to 125 Java classes / 620 tests / 40 Playwright scenarios.
 
-Next product stage after green CI and staging acceptance: **v27.31.0 — One-Tap Calendar Connect**.
+
 
 ## v27.30.1 — Unified Absence Quick Access Integration — completed
 
@@ -357,7 +373,7 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 - `v27.29.0` — Workspace, Layout & Theme Studio;
 - `v27.30.0` — Unified Absence Composer & Calendar Projection;
 - `v27.30.1` — Unified Absence Quick Access Integration;
-- `v27.31.0` — One-Tap Calendar Connect для Google / Apple / Outlook;
+- `v27.32.0` — One-Tap Calendar Connect для Google / Apple / Outlook;
 - `v27.32.0` — архив «Все заметки» и визуальные коллизии задач;
 - `v27.33.0` — Telegram inline-действия и понятные пошаговые команды;
 - затем — контекстные обучалки и отдельный финальный performance / production-readiness цикл.

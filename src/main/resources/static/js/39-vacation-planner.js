@@ -48,7 +48,9 @@ Object.assign(I18N_EN, {
   "Оформить отсутствие":"Create absence", "Единый конструктор":"Unified composer",
   "Баланс не используется":"No balance is used", "Будет использовано":"Will be used",
   "После оформления":"After saving", "Причина обязательна":"Reason is required",
-  "Доступно для использования":"Available to use", "Источник выбран автоматически":"Source selected automatically"
+  "Доступно для использования":"Available to use", "Источник выбран автоматически":"Source selected automatically",
+  "Объём часов":"Hours only", "Интервал не указан":"Time interval is unknown",
+  "Уточните интервал":"Specify the time interval", "Импортировано из старого журнала":"Imported from the legacy ledger"
 });
 Object.assign(I18N_RU, Object.fromEntries(Object.entries(I18N_EN).map(([ru,en]) => [en, ru])));
 
@@ -70,8 +72,11 @@ function absenceSystemClass(value){
 }
 function absencesOf(key){ return moduleEnabled("vacation") ? (state.absencesByDate?.[key] || []) : []; }
 function fullDayFactualAbsence(key){ return absencesOf(key).find(item => item.coverage === "FULL_DAY" && item.replacesShift) || null; }
-function partialAbsencesOf(key){ return absencesOf(key).filter(item => item.coverage === "PARTIAL"); }
-function absenceCoverageLabel(value){ return String(value || "FULL_DAY").toUpperCase() === "PARTIAL" ? t("Часть дня") : t("Полный день"); }
+function partialAbsencesOf(key){ return absencesOf(key).filter(item => ["PARTIAL","HOURS_ONLY"].includes(String(item.coverage || "").toUpperCase())); }
+function absenceCoverageLabel(value){
+  const coverage = String(value || "FULL_DAY").toUpperCase();
+  return coverage === "PARTIAL" ? t("Часть дня") : coverage === "HOURS_ONLY" ? t("Объём часов") : t("Полный день");
+}
 function absenceBalanceLabel(value){
   return ({ VACATION_DAYS:t("Дни отпуска"), TIME_OFF_HOURS:t("Часы отгулов"), NONE:t("Без списания") })[String(value || "NONE").toUpperCase()] || t("Без списания");
 }
@@ -114,7 +119,10 @@ function minutesLabel(value){
   return `${Number.isInteger(hours) ? hours : hours.toFixed(2).replace(/0+$/,"" ).replace(/\.$/,"")} ${state.language === "en" ? "h" : "ч"}`;
 }
 function absenceTimeLabel(value){
-  return value?.coverage === "PARTIAL" ? `${value.startTime || "—"}–${value.endTime || "—"}` : absenceCoverageLabel(value?.coverage);
+  const coverage = String(value?.coverage || "FULL_DAY").toUpperCase();
+  if (coverage === "PARTIAL") return `${value.startTime || "—"}–${value.endTime || "—"}`;
+  if (coverage === "HOURS_ONLY") return `${minutesLabel(value?.chargedMinutes)} · ${t("Интервал не указан")}`;
+  return absenceCoverageLabel(coverage);
 }
 function vacationIsoAddDays(value, amount){
   const [y,m,d] = String(value || "").split("-").map(Number);
@@ -308,7 +316,11 @@ function renderVacationPeriods(){
   }
   list.innerHTML = periods.map(period => {
     const charged = Number(period.chargedMinutes || 0) > 0 ? ` · ${esc(t("Списано"))}: ${esc(minutesLabel(period.chargedMinutes))}` : "";
-    const coverage = period.coverage === "PARTIAL" ? `${esc(t("Часть дня"))} · ${esc(period.startTime)}–${esc(period.endTime)}` : esc(t("Полный день"));
+    const coverage = period.coverage === "PARTIAL"
+      ? `${esc(t("Часть дня"))} · ${esc(period.startTime)}–${esc(period.endTime)}`
+      : period.coverage === "HOURS_ONLY"
+        ? `${esc(t("Объём часов"))} · ${esc(minutesLabel(period.chargedMinutes))} · ${esc(t("Интервал не указан"))}`
+        : esc(t("Полный день"));
     return `<article class="vacationPeriodCard" data-absence-id="${period.id}" style="--absence-color:${esc(period.typeColor)}">
       <div class="vacationPeriodColor"></div><div class="vacationPeriodMain">
         <div class="vacationPeriodTop"><b>${esc(absenceDisplayTitle(period))}</b><span data-absence-status="${esc(String(period.status || "PLANNED").toLowerCase())}">${esc(vacationStatusLabel(period.status))}</span></div>
@@ -333,21 +345,23 @@ function renderVacationDay(){
   if (!box || !state.selected) return;
   const items = absencesOf(state.selected);
   box.innerHTML = items.length ? items.map(item => `
-    <button class="vacationDayItem ${item.coverage === "PARTIAL" ? "partial" : "full"}" type="button" data-day-absence="${item.periodId}" style="--absence-color:${esc(item.typeColor || "#4FA3A5")}">
-      <span class="vacationDayIcon">${item.coverage === "PARTIAL" ? "◴" : "●"}</span>
+    <button class="vacationDayItem ${item.coverage === "FULL_DAY" ? "full" : "partial"}" type="button" data-day-absence="${item.periodId}" style="--absence-color:${esc(item.typeColor || "#4FA3A5")}">
+      <span class="vacationDayIcon">${item.coverage === "FULL_DAY" ? "●" : item.coverage === "HOURS_ONLY" ? "◷" : "◴"}</span>
       <span class="vacationDayPlanFact"><small>${esc(t("Фактически"))}</small><b>${esc(absenceDisplayTitle(item))}</b><em>${esc(absenceTimeLabel(item))} · ${esc(absenceCompensationLabel(item.compensationPolicy))}</em>${item.plannedShiftName ? `<small>${esc(t("По графику"))}: ${esc(item.plannedShiftName)}${item.plannedShiftMinutes ? ` · ${esc(minutesLabel(item.plannedShiftMinutes))}` : ""}</small>` : ""}</span><i>›</i>
     </button>`).join("") : `<div class="dayPanelHint">${esc(t("На этот день отсутствие не запланировано."))}</div>`;
   box.querySelectorAll("[data-day-absence]").forEach(button => button.addEventListener("click", () => editAbsence(Number(button.dataset.dayAbsence))));
 }
 
 function syncVacationCoverage(){
-  const partial = $("vacationCoverage")?.value === "PARTIAL";
+  const coverage = $("vacationCoverage")?.value || "FULL_DAY";
+  const partial = coverage === "PARTIAL";
+  const singleDay = partial || coverage === "HOURS_ONLY";
   if ($("vacationPartialTimes")) $("vacationPartialTimes").hidden = !partial;
   if ($("vacationEnd")) {
-    $("vacationEnd").disabled = partial;
-    if (partial) $("vacationEnd").value = $("vacationStart")?.value || $("vacationEnd").value;
+    $("vacationEnd").disabled = singleDay;
+    if (singleDay) $("vacationEnd").value = $("vacationStart")?.value || $("vacationEnd").value;
   }
-  document.querySelectorAll("[data-vacation-days]").forEach(button => { button.disabled = partial; });
+  document.querySelectorAll("[data-vacation-days]").forEach(button => { button.disabled = singleDay; });
 }
 function resetVacationEditor({ keepDates = false } = {}){
   state.editingAbsenceId = null; state.vacationPreview = null;
@@ -359,6 +373,8 @@ function resetVacationEditor({ keepDates = false } = {}){
     if ($("vacationStart")) $("vacationStart").value = date;
     if ($("vacationEnd")) $("vacationEnd").value = date;
   }
+  const hoursOnlyOption = $("vacationCoverageHoursOnly");
+  if (hoursOnlyOption) { hoursOnlyOption.hidden = true; hoursOnlyOption.disabled = true; }
   if ($("vacationCoverage")) $("vacationCoverage").value = "FULL_DAY";
   if ($("vacationStartTime")) $("vacationStartTime").value = "09:00";
   if ($("vacationEndTime")) $("vacationEndTime").value = "13:00";
@@ -381,6 +397,11 @@ function editAbsence(id){
   if ($("vacationTitle")) $("vacationTitle").value = period.title || "";
   if ($("vacationStart")) $("vacationStart").value = period.startDate;
   if ($("vacationEnd")) $("vacationEnd").value = period.endDate;
+  const hoursOnlyOption = $("vacationCoverageHoursOnly");
+  if (hoursOnlyOption) {
+    const imported = period.coverage === "HOURS_ONLY";
+    hoursOnlyOption.hidden = !imported; hoursOnlyOption.disabled = !imported;
+  }
   if ($("vacationCoverage")) $("vacationCoverage").value = period.coverage || "FULL_DAY";
   if ($("vacationStartTime")) $("vacationStartTime").value = period.startTime || "09:00";
   if ($("vacationEndTime")) $("vacationEndTime").value = period.endTime || "13:00";
@@ -395,13 +416,15 @@ function editAbsence(id){
 function editAbsenceFromOccurrence(occurrence){ location.hash = "#vacation"; loadVacationPlanner(false).then(() => editAbsence(occurrence.periodId)).catch(console.error); }
 
 function readVacationDraft(){
-  const partial = $("vacationCoverage")?.value === "PARTIAL";
+  const coverage = $("vacationCoverage")?.value || "FULL_DAY";
+  const partial = coverage === "PARTIAL";
+  const singleDay = partial || coverage === "HOURS_ONLY";
   const startDate = $("vacationStart")?.value || "";
   return {
     typeId:Number($("vacationType")?.value || 0), title:$("vacationTitle")?.value?.trim() || null,
-    startDate, endDate:partial ? startDate : ($("vacationEnd")?.value || ""),
+    startDate, endDate:singleDay ? startDate : ($("vacationEnd")?.value || ""),
     status:$("vacationStatus")?.value || "PLANNED", note:$("vacationNote")?.value?.trim() || null,
-    coverage:partial ? "PARTIAL" : "FULL_DAY",
+    coverage,
     startTime:partial ? ($("vacationStartTime")?.value || "") : null,
     endTime:partial ? ($("vacationEndTime")?.value || "") : null,
     compensationPolicy:$("vacationCompensation")?.value || defaultAbsenceCompensation(selectedAbsenceType())
@@ -422,7 +445,7 @@ function renderVacationPreview(preview){
   const before = timePolicy ? minutesLabel(preview.timeOffPlannedBefore) : preview.plannedBefore;
   const projected = timePolicy ? minutesLabel(preview.timeOffProjected) : preview.projectedPlanned;
   const remaining = timePolicy ? minutesLabel(preview.timeOffRemainingAfter) : preview.remainingAfter;
-  box.innerHTML = `<div class="vacationPreviewHead"><b>${esc(preview.typeName)}</b><span>${esc(absenceCoverageLabel(preview.coverage))}${preview.coverage === "PARTIAL" ? ` · ${esc(minutesLabel(preview.durationMinutes))}` : ` · ${preview.calendarDays} ${esc(t("календарных дней"))}`}</span></div>
+  box.innerHTML = `<div class="vacationPreviewHead"><b>${esc(preview.typeName)}</b><span>${esc(absenceCoverageLabel(preview.coverage))}${preview.coverage === "PARTIAL" || preview.coverage === "HOURS_ONLY" ? ` · ${esc(minutesLabel(preview.durationMinutes))}${preview.coverage === "HOURS_ONLY" ? ` · ${esc(t("Интервал не указан"))}` : ""}` : ` · ${preview.calendarDays} ${esc(t("календарных дней"))}`}</span></div>
     <div class="vacationPreviewBalance"><span>${esc(t("Запланировано"))}: <b>${esc(before)}</b></span><span>${esc(t("После сохранения"))}: <b>${esc(projected)}</b></span><span>${esc(t("Осталось"))}: <b>${esc(remaining)}</b></span></div>
     <div class="vacationPreviewSource"><span>${esc(t("Источник покрытия"))}</span><b>${esc(absenceCompensationLabel(preview.compensationPolicy))}</b></div>
     <div class="vacationPreviewSource"><span>${esc(t("Статус"))}</span><b>${esc(vacationStatusLabel(draftStatus))} · ${esc(absencePostingLabel({ status:draftStatus }))}</b></div>
@@ -481,7 +504,7 @@ async function createVacationType(event){
   } catch (error) { setVacationMessage(error.message, true); }
 }
 function applyVacationDuration(days){
-  if ($("vacationCoverage")?.value === "PARTIAL") return;
+  if (["PARTIAL","HOURS_ONLY"].includes($("vacationCoverage")?.value)) return;
   const start = $("vacationStart")?.value || state.selected || todayKey();
   if ($("vacationStart")) $("vacationStart").value = start;
   if ($("vacationEnd")) $("vacationEnd").value = vacationIsoAddDays(start, Number(days) - 1);
@@ -511,7 +534,7 @@ $("vacationComposerOpen")?.addEventListener("click", () => openAbsenceComposer({
 $("absenceComposerClose")?.addEventListener("click", () => closeAbsenceComposer());
 $("absenceComposerBackdrop")?.addEventListener("click", () => closeAbsenceComposer());
 $("vacationCoverage")?.addEventListener("change", () => { syncVacationCoverage(); state.vacationPreview = null; if ($("vacationPreview")) $("vacationPreview").hidden = true; });
-$("vacationStart")?.addEventListener("change", () => { if ($("vacationCoverage")?.value === "PARTIAL" && $("vacationEnd")) $("vacationEnd").value = $("vacationStart").value; });
+$("vacationStart")?.addEventListener("change", () => { if (["PARTIAL","HOURS_ONLY"].includes($("vacationCoverage")?.value) && $("vacationEnd")) $("vacationEnd").value = $("vacationStart").value; });
 document.querySelectorAll("[data-vacation-days]").forEach(button => button.addEventListener("click", () => applyVacationDuration(button.dataset.vacationDays)));
 $("vacationType")?.addEventListener("change", () => { syncVacationCompensation(); state.vacationPreview = null; renderAbsenceComposerContext(); if ($("vacationPreview")) $("vacationPreview").hidden = true; });
 for (const id of ["vacationStart","vacationEnd","vacationStartTime","vacationEndTime","vacationCompensation"]) $(id)?.addEventListener("change", () => { state.vacationPreview = null; renderAbsenceComposerContext(); if ($("vacationPreview")) $("vacationPreview").hidden = true; });

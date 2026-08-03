@@ -1,3 +1,16 @@
+# v27.31.0 — Canonical Absence Ledger & Legacy Retirement
+
+- Made Unified Absence Composer the only user-facing write path for vacation, overtime-backed time off, sick leave, unpaid leave and custom absences.
+- Retired new direct overtime usage creation and direct legacy usage editing with explicit `409` contracts.
+- Kept the Overtime workspace, credit creation, earned/used/remaining statistics, FIFO queue, allocations and exports.
+- Added previewed one-time promotion of old MANUAL usages into canonical TIME_OFF absences while preserving usage IDs and FIFO allocation rows.
+- Added transition-only `HOURS_ONLY` coverage so imported durations remain truthful when the historical start/end interval is unknown.
+- Routed Telegram `/timeoff` through the canonical absence service instead of creating a detached usage.
+- Added service, HTTP, static and Chromium regression coverage for direct-write retirement, legacy promotion, linked ownership and balance restoration.
+- Added forward-only Flyway V47 to extend the immutable V42 absence coverage/shape constraints for truthful `HOURS_ONLY` legacy rows without rewriting existing data.
+- Kept Payroll, Unified Ledger, Calendar Sync and all released migrations V42–V46 unchanged.
+- Regression baseline advances to 126 Java test classes, 625 `@Test` methods and 41 Playwright scenarios.
+
 # v27.30.2 — Today Overtime Journal Contract Hotfix
 
 - Fixed the single stale Maven assertion that still required the removed Today direct overtime-credit shortcut.

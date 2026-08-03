@@ -34,7 +34,8 @@ class UnifiedOvertimeEditorsFrontendContractTest {
         assertTrue(html.contains("id=\"ledgerAddCredit\""));
         assertTrue(html.contains("id=\"ledgerAddUsage\""));
         assertTrue(html.contains("id=\"overtimeCreditForm\""));
-        assertTrue(html.contains("id=\"overtimeUsageForm\""));
+        assertFalse(html.contains("id=\"overtimeUsageForm\""));
+        assertTrue(html.contains("id=\"legacyUsageMigrationModal\""));
         assertTrue(js.contains("openOvertimeCreditModal(state.selected)"));
         assertTrue(js.contains("openOvertimeUsageModal(state.selected)"));
         assertTrue(js.contains("openOvertimeCreditModal(state.selected || todayKey())"));
@@ -44,15 +45,16 @@ class UnifiedOvertimeEditorsFrontendContractTest {
     }
 
     @Test
-    void creditUsesScenarioDropdownAndUsageShowsLiveBalancePreview() throws Exception {
+    void creditUsesScenarioDropdownAndLegacyUsagesExposeMigrationPreview() throws Exception {
         String html = resource("index.html");
         String js = resource("js/40-overtime.js");
         String css = resource("app.css");
 
         assertTrue(html.contains("id=\"creditScenarioSelect\""));
-        assertTrue(html.contains("id=\"usageBalanceBefore\""));
-        assertTrue(html.contains("id=\"usageBalanceAfter\""));
-        assertTrue(js.contains("function updateUsageBalancePreview()"));
+        assertTrue(html.contains("id=\"legacyUsageMigrationList\""));
+        assertTrue(html.contains("id=\"legacyUsageMigrationApply\""));
+        assertTrue(js.contains("function renderLegacyUsageMigrationPreview()"));
+        assertTrue(js.contains("api.previewLegacyOvertimeUsages"));
         assertTrue(js.contains("function renderQuickScenarios()"));
         assertTrue(css.contains("body.app-modal-open .tabbar"));
     }

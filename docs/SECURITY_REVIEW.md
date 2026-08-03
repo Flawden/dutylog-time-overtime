@@ -1,6 +1,18 @@
 # Security review
 
-Status: v27.30.2.
+Status: v27.31.0.
+
+
+## v27.31.0 canonical ownership review
+
+Migration boundary: V47 changes only check constraints, preserves the V42 checksum, performs no data update and does not weaken owner/module/closed-period authorization.
+
+- Direct usage creation/edit endpoints fail closed with explicit `409` codes.
+- Legacy migration is owner-scoped and requires both Vacation and Overtime modules.
+- Closed accounting periods block promotion.
+- Migration reuses the owned usage row and its owned FIFO allocations; foreign IDs are never attached.
+- New absence create payloads cannot request transition-only `HOURS_ONLY`.
+- Linked usages remain immutable outside their owner absence.
 
 
 ## Payroll Foundation boundaries

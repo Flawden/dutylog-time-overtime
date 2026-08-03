@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.30.2"></script>
-<link href="app.css?v=27.30.2" rel="stylesheet"/>
-<link href="design-system.css?v=27.30.2" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.30.2" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.30.2" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.30.2" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.30.2" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.30.2" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.30.2" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.30.2" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.30.2" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.30.2" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.31.0"></script>
+<link href="app.css?v=27.31.0" rel="stylesheet"/>
+<link href="design-system.css?v=27.31.0" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.31.0" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.31.0" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.31.0" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.31.0" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.31.0" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.31.0" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.31.0" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.31.0" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.31.0" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -452,7 +452,8 @@
 
   <div class="ledgerPrimaryActions">
     <button class="primary" id="ledgerAddCredit" type="button">+ Начислить</button>
-    <button id="ledgerAddUsage" type="button">− Списать</button>
+    <button id="ledgerAddUsage" type="button">＋ Оформить отгул</button>
+    <button id="ledgerMigrateUsages" type="button" hidden>↔ Перенести старые отгулы</button>
     <button id="ledgerMigrateLegacy" type="button">⚠ Привязать старые записи</button>
   </div>
 
@@ -695,7 +696,7 @@
           </select>
         </label>
         <label>Формат
-          <select id="vacationCoverage"><option value="FULL_DAY">Полный день</option><option value="PARTIAL">Часть дня</option></select>
+          <select id="vacationCoverage"><option value="FULL_DAY">Полный день</option><option value="PARTIAL">Часть дня</option><option id="vacationCoverageHoursOnly" value="HOURS_ONLY" hidden disabled>Объём часов · интервал не указан</option></select>
         </label>
         <label>Чем покрыть
           <select id="vacationCompensation">
@@ -1367,7 +1368,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.30.2</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.31.0</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1616,41 +1617,27 @@
   </div>
 </div>
 
-<div class="appModal" id="overtimeUsageModal" hidden>
-  <button class="appModalBackdrop" id="overtimeUsageBackdrop" type="button" aria-label="Закрыть"></button>
-  <div class="appModalPanel" role="dialog" aria-modal="true" aria-labelledby="overtimeUsageTitle">
+<div class="appModal" id="legacyUsageMigrationModal" hidden>
+  <button class="appModalBackdrop" id="legacyUsageMigrationBackdrop" type="button" aria-label="Закрыть"></button>
+  <div class="appModalPanel legacyOvertimePanel" role="dialog" aria-modal="true" aria-labelledby="legacyUsageMigrationTitle">
     <div class="appModalHead">
       <div>
-        <div class="eyebrow">Списание</div>
-        <div class="appModalTitle" id="overtimeUsageTitle">Добавить списание</div>
-        <div class="appModalHint">Списание распределяется по FIFO: сначала используются самые старые остатки.</div>
+        <div class="eyebrow">Переход на единый журнал</div>
+        <div class="appModalTitle" id="legacyUsageMigrationTitle">Перенести старые отгулы</div>
+        <div class="appModalHint">DutyLog создаст отсутствия и привяжет к ним существующие FIFO-списания без потери распределения.</div>
       </div>
-      <button class="appModalClose" id="overtimeUsageClose" type="button" aria-label="Закрыть">×</button>
+      <button class="appModalClose" id="legacyUsageMigrationClose" type="button" aria-label="Закрыть">×</button>
     </div>
-    <form class="appModalForm overtimeModalForm" id="overtimeUsageForm">
-      <div class="appModalMessage appFieldWide" id="usageEditNotice" hidden></div>
-      <label class="appField">Дата отгула
-        <input id="usageDate" type="date" required/>
-      </label>
-      <label class="appField">Количество часов
-        <input id="usageHours" max="100" min="0" step="0.25" type="number" value="0" required/>
-      </label>
-      <label class="appField appFieldWide">Причина
-        <input id="usageReason" maxlength="300" placeholder="Отгул, визит к врачу…" type="text"/>
-      </label>
-      <div class="usageBalancePreview appFieldWide">
-        <span>Доступно до списания <b id="usageBalanceBefore">0 ч</b></span>
-        <span>Останется после списания <b id="usageBalanceAfter">0 ч</b></span>
-      </div>
-      <div class="overtimePresetRow appFieldWide">
-        <button id="usageByShift" type="button">списать по норме смены</button>
-      </div>
-      <div class="appModalActions appFieldWide">
-        <button class="dangerGhost" id="usageDelete" type="button" hidden>Удалить</button>
-        <button id="usageCancel" type="button">Отмена</button>
-        <button class="primary" id="usageAdd" type="submit">Списать</button>
-      </div>
-    </form>
+    <div class="legacyMigrationToolbar">
+      <button id="legacyUsageMigrationRefresh" type="button">Обновить предпросмотр</button>
+      <button id="legacyUsageMigrationSelectAll" type="button">Выбрать доступные</button>
+    </div>
+    <div class="legacyMigrationStatus" id="legacyUsageMigrationStatus" role="status" aria-live="polite"></div>
+    <div class="legacyMigrationList" id="legacyUsageMigrationList"></div>
+    <div class="appModalActions">
+      <button id="legacyUsageMigrationCancel" type="button">Отмена</button>
+      <button class="primary" id="legacyUsageMigrationApply" type="button">Перенести выбранные</button>
+    </div>
   </div>
 </div>
 
@@ -1995,19 +1982,19 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.30.2"></script>
-<script src="js/12-ui-platform.js?v=27.30.2"></script>
-<script src="js/20-data.js?v=27.30.2"></script>
-<script src="js/30-calendar.js?v=27.30.2"></script>
-<script src="js/35-today.js?v=27.30.2"></script>
-<script src="js/37-calendar-experience.js?v=27.30.2"></script>
-<script src="js/38-schedule-layers.js?v=27.30.2"></script>
-<script src="js/39-vacation-planner.js?v=27.30.2"></script>
-<script src="js/40-overtime.js?v=27.30.2"></script>
-<script src="js/45-payroll.js?v=27.30.2"></script>
-<script src="js/50-tasks.js?v=27.30.2"></script>
-<script src="js/55-calendar-sync.js?v=27.30.2"></script>
-<script src="js/60-settings.js?v=27.30.2"></script>
-<script src="js/70-user-boot.js?v=27.30.2"></script>
+<script src="js/10-core.js?v=27.31.0"></script>
+<script src="js/12-ui-platform.js?v=27.31.0"></script>
+<script src="js/20-data.js?v=27.31.0"></script>
+<script src="js/30-calendar.js?v=27.31.0"></script>
+<script src="js/35-today.js?v=27.31.0"></script>
+<script src="js/37-calendar-experience.js?v=27.31.0"></script>
+<script src="js/38-schedule-layers.js?v=27.31.0"></script>
+<script src="js/39-vacation-planner.js?v=27.31.0"></script>
+<script src="js/40-overtime.js?v=27.31.0"></script>
+<script src="js/45-payroll.js?v=27.31.0"></script>
+<script src="js/50-tasks.js?v=27.31.0"></script>
+<script src="js/55-calendar-sync.js?v=27.31.0"></script>
+<script src="js/60-settings.js?v=27.31.0"></script>
+<script src="js/70-user-boot.js?v=27.31.0"></script>
 </body>
 </html>

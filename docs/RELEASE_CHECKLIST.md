@@ -1,6 +1,6 @@
 # Release checklist
 
-Status: v27.30.2.
+Status: v27.31.0.
 
 ## Local gate
 
@@ -50,6 +50,25 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 - confirm `/api/v1/payroll/periods/{month}` returns `Cache-Control: no-store`;
 - confirm Payroll is unavailable when its module is disabled and automatically keeps Overtime/Vacation dependencies;
 - confirm 603 Java tests and 37 Playwright scenarios pass.
+
+
+## v27.31.0 canonical absence ledger acceptance
+
+- create an overtime credit and confirm the FIFO balance;
+- confirm `POST /api/v1/overtime/usages` returns `409 DIRECT_USAGE_RETIRED`;
+- create full-day and partial TIME_OFF only through Unified Absence Composer;
+- confirm the resulting usage has `sourceKind=ABSENCE`, the absence ID and read-only Overtime actions;
+- edit the absence duration and confirm the same linked usage is reallocated;
+- change the absence to Unpaid and confirm the linked usage disappears and FIFO balance returns;
+- preview legacy MANUAL usages and verify exact shift matches become `FULL_DAY`;
+- verify non-exact durations become `HOURS_ONLY` with “Интервал не указан”;
+- migrate a legacy usage and confirm its usage ID and allocation rows remain unchanged;
+- verify blocked closed-period/existing-absence rows are not migrated;
+- verify `/timeoff` creates a canonical absence;
+- confirm V42 checksum remains unchanged and V47 appears exactly once;
+- confirm clean PostgreSQL applies V47 and both absence constraints allow `HOURS_ONLY` only on a single date with no invented times;
+- confirm 625 Java tests and 41 Playwright scenarios pass;
+- confirm Flyway advances to V47.
 
 ## Staging
 
@@ -159,6 +178,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.30.2 -m "v27.30.2 — Unified Absence Composer & Calendar Projection"
-git push origin v27.30.2
+git tag -a v27.31.0 -m "v27.31.0 — Canonical Absence Ledger & Legacy Retirement"
+git push origin v27.31.0
 ```

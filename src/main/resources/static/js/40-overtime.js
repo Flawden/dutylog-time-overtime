@@ -8,6 +8,9 @@
 
 Object.assign(I18N_EN, {
   "Добавить переработку":"Add overtime", "Редактировать переработку":"Edit overtime",
+  "Оформить отгул":"Create time off", "Перенести старые отгулы":"Migrate legacy time off",
+  "Перенести":"Migrate", "Интервал не указан":"Interval not specified",
+  "Старое списание":"Legacy usage", "Открыть отсутствие":"Open absence",
   "Добавить списание":"Add time off", "Редактировать списание":"Edit time off",
   "+ Начислить":"+ Earn", "− Списать":"− Use", "+ Добавить переработку":"+ Add overtime",
   "− Добавить списание":"− Add time off", "Не выбран":"Not selected", "Сценарий":"Scenario",
@@ -214,7 +217,6 @@ function updateOvertimeBalanceLabel(){
   const bal = numOr0(acc.balanceHours);
   if ($("otBalance")) $("otBalance").textContent = `${t("доступно")} ${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
   if ($("ledgerBalance")) $("ledgerBalance").textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
-  updateUsageBalancePreview();
 }
 
 function renderOvertimeControls(){
@@ -225,6 +227,12 @@ function renderOvertimeControls(){
     const count = (state.overtimeAccount?.credits || []).filter(c => c.legacyTimezoneRequired).length;
     legacyButton.hidden = count === 0;
     legacyButton.textContent = `⚠ ${t("Привязать старые записи")}${count ? ` (${count})` : ""}`;
+  }
+  const legacyUsageButton = $("ledgerMigrateUsages");
+  if (legacyUsageButton) {
+    const count = (state.overtimeAccount?.usages || []).filter(item => !usageManagedByAbsence(item)).length;
+    legacyUsageButton.hidden = count === 0;
+    legacyUsageButton.textContent = `↔ ${t("Перенести старые отгулы")}${count ? ` (${count})` : ""}`;
   }
   renderOvertimeDayDetails();
   renderTimeCompensation();
@@ -260,15 +268,7 @@ function resetOvertimeForms(k = state.selected){
   if ($("creditAdd")) $("creditAdd").textContent = t("Начислить");
   if ($("overtimeCreditTitle")) $("overtimeCreditTitle").textContent = t("Добавить переработку");
 
-  if ($("usageDate")) $("usageDate").value = date;
-  if ($("usageHours")) $("usageHours").value = "0";
-  if ($("usageReason")) $("usageReason").value = "";
-  if ($("usageEditNotice")) { $("usageEditNotice").hidden = true; $("usageEditNotice").textContent = ""; }
-  if ($("usageDelete")) $("usageDelete").hidden = true;
-  if ($("usageAdd")) $("usageAdd").textContent = t("Списать");
-  if ($("overtimeUsageTitle")) $("overtimeUsageTitle").textContent = t("Добавить списание");
   renderQuickScenarios();
-  updateUsageBalancePreview();
 }
 
 function openOvertimeCreditModal(date = null){
@@ -286,37 +286,22 @@ function closeOvertimeCreditModal(){
   renderLedgerTable();
 }
 function openOvertimeUsageModal(date = null){
-  if (!state.editingUsageId && moduleEnabled("vacation") && typeof openAbsenceComposer === "function") {
+  if (moduleEnabled("vacation") && typeof openAbsenceComposer === "function") {
     openAbsenceComposer({ date:overtimeDefaultDate(date), systemCode:"TIME_OFF", source:"overtime" }).catch(error => {
       console.error(error);
       setSave("err", error.message || t("Ошибка"));
     });
     return;
   }
-  resetOvertimeForms(overtimeDefaultDate(date));
-  updateUsageBalancePreview();
-  openAppModal("overtimeUsageModal", "usageHours");
+  setSave("err", state.language === "en"
+    ? "Enable Vacation & Absences to create time off"
+    : "Включи модуль «Отпуск и отсутствия», чтобы оформить отгул");
 }
 function closeOvertimeUsageModal(){
-  const date = $("usageDate")?.value || state.selected || todayKey();
-  closeAppModal("overtimeUsageModal");
-  resetOvertimeForms(date);
-  renderLedgerTable();
+  if (activeAppModalId === "absenceComposerModal" && typeof closeAbsenceComposer === "function") closeAbsenceComposer();
 }
 function cancelCreditEdit(){ closeOvertimeCreditModal(); }
 function cancelUsageEdit(){ closeOvertimeUsageModal(); }
-
-function updateUsageBalancePreview(){
-  if (!$("usageBalanceBefore") || !$("usageBalanceAfter")) return;
-  const balance = numOr0(state.overtimeAccount?.balanceHours);
-  const original = state.editingUsageId ? numOr0(findUsageById(state.editingUsageId)?.hours) : 0;
-  const available = balance + original;
-  const requested = readHoursInput("usageHours");
-  const after = Number.isFinite(requested) ? available - requested : available;
-  $("usageBalanceBefore").textContent = `${fmtHours(available)} ч`;
-  $("usageBalanceAfter").textContent = `${fmtHours(after)} ч`;
-  $("usageBalanceAfter").classList.toggle("negative", after < -0.0001);
-}
 
 function readHoursInput(id){
   const el = $(id);
@@ -474,7 +459,7 @@ function renderOvertimeDayDetails(){
     const exactRows = (u.allocations || []).flatMap(a => safeAllocationRangeLabels(a));
     text.innerHTML = `<b>−${fmtHours(u.hours)} ч</b><span>${esc(u.reason || t("списание"))}</span>${exactRows.length ? `<small>${exactRows.map(esc).join("<br>")}</small>` : ""}`;
     const edit = document.createElement("button");
-    edit.type = "button"; edit.textContent = t("ред.");
+    edit.type = "button"; edit.textContent = usageManagedByAbsence(u) ? t("Открыть отсутствие") : t("Перенести");
     edit.addEventListener("click", () => startEditOvertimeUsage(u.id));
     row.append(text, edit); el.appendChild(row);
   }
@@ -1153,52 +1138,31 @@ function startEditOvertimeCredit(id){
 }
 
 async function addOvertimeUsage(){
-  const hours = readHoursInput("usageHours");
-  if (!Number.isFinite(hours) || hours <= 0) return setSave("err", t("укажи часы списания больше 0"));
-  const date = $("usageDate")?.value || state.selected;
-  if (!date) return setSave("err", t("укажи дату списания"));
-  setSave("saving");
+  openOvertimeUsageModal(state.selected || todayKey());
+}
+
+async function openAbsenceForUsage(usage){
+  if (!usage?.sourceAbsenceId) return false;
+  location.hash = "#vacation";
   try {
-    const payload = {
-      date,
-      hours,
-      reason: $("usageReason").value.trim() || null,
-    };
-    if (state.editingUsageId) {
-      state.overtimeAccount = await api.updateOvertimeUsage(state.editingUsageId, payload);
-    } else {
-      state.overtimeAccount = await api.createOvertimeUsage(payload);
-    }
-    closeAppModal("overtimeUsageModal");
-    resetOvertimeForms(date);
-    setSave("saved");
-    renderOvertimeControls();
-    renderCalendar();
-    await loadLedgerPage(true);
-  } catch (err) {
-    console.error(err);
-    setSave("err", err.message);
+    await loadVacationPlanner(false);
+    editAbsence(Number(usage.sourceAbsenceId));
+    return true;
+  } catch (error) {
+    console.error(error);
+    setSave("err", error.message || t("Ошибка"));
+    return false;
   }
 }
 
 function startEditOvertimeUsage(id){
-  const u = findUsageById(id);
-  if (!u) return setSave("err", t("списание не найдено"));
-  if (usageManagedByAbsence(u)) return setSave("err", t("Откройте отсутствие, чтобы изменить списание"));
-  resetOvertimeForms(u.usageDate);
-  state.editingCreditId = null;
-  state.editingUsageId = Number(id);
-  $("usageDate").value = u.usageDate;
-  $("usageHours").value = fmtHours(u.hours);
-  $("usageReason").value = u.reason || "";
-  $("usageAdd").textContent = t("Сохранить");
-  $("usageDelete").hidden = false;
-  $("usageEditNotice").hidden = false;
-  $("usageEditNotice").textContent = t("Редактируется существующее списание. FIFO-распределение будет рассчитано заново.");
-  $("overtimeUsageTitle").textContent = t("Редактировать списание");
-  updateUsageBalancePreview();
-  renderLedgerTable();
-  openAppModal("overtimeUsageModal", "usageHours");
+  const usage = findUsageById(id);
+  if (!usage) return setSave("err", t("списание не найдено"));
+  if (usageManagedByAbsence(usage)) {
+    openAbsenceForUsage(usage);
+    return;
+  }
+  openLegacyUsageMigration(Number(id));
 }
 
 async function removeOvertimeCredit(id){
@@ -1242,10 +1206,7 @@ ${partsText} will be removed. Overtime credits will remain and the minutes will 
   setSave("saving");
   try {
     state.overtimeAccount = await api.deleteOvertimeUsage(id);
-    if (state.editingUsageId === Number(id)) {
-      closeAppModal("overtimeUsageModal");
-      resetOvertimeForms(state.selected);
-    }
+    if (state.editingUsageId === Number(id)) resetOvertimeForms(state.selected);
     setSave("saved");
     renderOvertimeControls();
     renderCalendar();
@@ -1494,7 +1455,7 @@ function ledgerUsageItemsHtml(credit){
     const partLabel = partCount > 1 ? `<span class="allocationPartBadge">${state.language === "en" ? "part" : "часть"} ${Math.min(partIndex, partCount)}/${partCount}</span>` : "";
     return `<div class="overtimeCardUsage">
       <div><b>−${fmtHours(u.hours)} ч</b><span>${esc(u.usageDate)}${u.reason ? ` · ${esc(u.reason)}` : ""} ${partLabel}</span>${allocationDetailHtml(u)}</div>
-      ${usageManagedByAbsence(fullUsage) ? `<div class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}">↔ ${esc(t("Управляется отсутствием"))} · ${esc(usagePostingLabel(fullUsage))}</div>` : `<div class="overtimeCardUsageActions"><button type="button" data-edit-usage="${u.usageId}">${esc(t("ред."))}</button><button type="button" data-del-usage="${u.usageId}">${esc(t("удалить"))}</button></div>`}
+      ${usageManagedByAbsence(fullUsage) ? `<div class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}">↔ ${esc(t("Управляется отсутствием"))} · ${esc(usagePostingLabel(fullUsage))}</div>` : `<div class="overtimeCardUsageActions"><button type="button" data-edit-usage="${u.usageId}">${esc(t("Перенести"))}</button><button type="button" data-del-usage="${u.usageId}">${esc(t("удалить"))}</button></div>`}
     </div>`;
   }).join("");
 }
@@ -1656,7 +1617,7 @@ function renderLedgerTable(){
               : "";
             const actions = usageManagedByAbsence(fullUsage)
               ? `<span class="overtimeLinkedUsage" title="${esc(t("Откройте отсутствие, чтобы изменить списание"))}">↔ ${esc(t("Управляется отсутствием"))} · ${esc(usagePostingLabel(fullUsage))}</span>`
-              : `<span class="ledgerUsageActions" aria-label="${esc(t("Действия списания"))}"><button type="button" data-edit-usage="${u.usageId}" title="${esc(t("Редактировать весь отгул"))}">${esc(t("ред. отгул"))}</button><button type="button" data-del-usage="${u.usageId}" title="${esc(t("Удалить весь отгул"))}">${esc(t("удалить весь отгул"))}</button></span>`;
+              : `<span class="ledgerUsageActions" aria-label="${esc(t("Действия списания"))}"><button type="button" data-edit-usage="${u.usageId}" title="${esc(t("Перенести старое списание в отсутствия"))}">${esc(t("Перенести"))}</button><button type="button" data-del-usage="${u.usageId}" title="${esc(t("Удалить старое списание"))}">${esc(t("удалить"))}</button></span>`;
             return `<div class="ledgerUsageItem"><span class="ledgerUsageText"><span>${esc(u.usageDate)}: ${fmtHours(u.hours)} ${state.language === "en" ? "h" : "ч"}${u.reason ? " — " + esc(u.reason) : ""} ${partLabel}</span>${allocationDetailHtml(u)}</span>${actions}</div>`;
           }).join("")
         : `<span class="small">${esc(t("не списывалось"))}</span>`;
@@ -1843,6 +1804,88 @@ async function applyLegacyOvertimeMigration(){
   }
 }
 
+function legacyUsageMigrationSelectedIds(){
+  return [...document.querySelectorAll('[data-legacy-usage-id]:checked')]
+    .map(input => Number(input.dataset.legacyUsageId))
+    .filter(Number.isFinite);
+}
+
+function renderLegacyUsageMigrationPreview(preview){
+  state.legacyUsageMigrationPreview = preview || { usages:[], totalCount:0, blockedCount:0 };
+  const list = $("legacyUsageMigrationList");
+  const status = $("legacyUsageMigrationStatus");
+  if (!list || !status) return;
+  const rows = preview?.usages || [];
+  const ready = Math.max(0, Number(preview?.totalCount || 0) - Number(preview?.blockedCount || 0));
+  status.textContent = rows.length
+    ? `${ready} ${state.language === "en" ? "ready" : "готово к переносу"} · ${Number(preview.fullDayCount || 0)} ${state.language === "en" ? "full-day" : "полных дней"} · ${Number(preview.hoursOnlyCount || 0)} ${state.language === "en" ? "hours-only" : "без точного интервала"}${preview.blockedCount ? ` · ${preview.blockedCount} ${state.language === "en" ? "blocked" : "заблокировано"}` : ""}`
+    : (state.language === "en" ? "No legacy manual usages" : "Старых ручных списаний нет");
+  list.innerHTML = rows.map(row => {
+    const hoursOnly = row.inferredCoverage === "HOURS_ONLY";
+    const checked = row.migratable && (!state.legacyUsageMigrationFocusId || Number(row.usageId) === Number(state.legacyUsageMigrationFocusId));
+    const shape = hoursOnly
+      ? `${minutesLabel(row.minutes)} · ${t("Интервал не указан")}`
+      : `${t("Полный день")} · ${minutesLabel(row.minutes)}`;
+    const plan = row.plannedShiftPresent
+      ? `${state.language === "en" ? "planned shift" : "плановая смена"}: ${minutesLabel(row.plannedShiftMinutes)}`
+      : (state.language === "en" ? "no planned shift" : "плановой смены нет");
+    return `<label class="legacyMigrationItem ${row.migratable ? "" : "blocked"}">
+      <input type="checkbox" data-legacy-usage-id="${row.usageId}" ${checked ? "checked" : ""} ${row.migratable ? "" : "disabled"}/>
+      <span>
+        <b>${esc(vacationDateLabel(row.usageDate))} · −${esc(minutesLabel(row.minutes))}</b>
+        <span>${esc(row.reason || t("Старое списание"))}</span>
+        <small>${esc(shape)} · ${esc(plan)}</small>
+        ${row.migratable ? "" : `<small class="errorText">${esc(row.blockedReason || t("Ошибка"))}</small>`}
+      </span>
+    </label>`;
+  }).join("");
+  if ($("legacyUsageMigrationApply")) $("legacyUsageMigrationApply").disabled = ready < 1;
+}
+
+async function refreshLegacyUsageMigrationPreview(){
+  const status = $("legacyUsageMigrationStatus");
+  if (status) status.textContent = state.language === "en" ? "Loading…" : "Загрузка…";
+  try {
+    const usageIds = state.legacyUsageMigrationFocusId ? [Number(state.legacyUsageMigrationFocusId)] : [];
+    renderLegacyUsageMigrationPreview(await api.previewLegacyOvertimeUsages({ usageIds }));
+  } catch (error) {
+    console.error(error);
+    if (status) status.textContent = error.message || t("Ошибка");
+  }
+}
+
+async function openLegacyUsageMigration(focusId = null){
+  state.legacyUsageMigrationFocusId = focusId == null ? null : Number(focusId);
+  openAppModal("legacyUsageMigrationModal", "legacyUsageMigrationRefresh");
+  await refreshLegacyUsageMigrationPreview();
+}
+
+function closeLegacyUsageMigration(){
+  state.legacyUsageMigrationFocusId = null;
+  state.legacyUsageMigrationPreview = null;
+  closeAppModal("legacyUsageMigrationModal");
+}
+
+async function applyLegacyUsageMigration(){
+  const usageIds = legacyUsageMigrationSelectedIds();
+  if (!usageIds.length) return setSave("err", state.language === "en" ? "Select at least one usage" : "Выбери хотя бы одно старое списание");
+  if (!confirm(state.language === "en"
+      ? `Migrate ${usageIds.length} usages into canonical absences? FIFO allocation will be preserved.`
+      : `Перенести ${usageIds.length} списаний в единый список отсутствий? FIFO-распределение сохранится.`)) return;
+  setSave("saving");
+  try {
+    const result = await api.migrateLegacyOvertimeUsages({ usageIds });
+    closeLegacyUsageMigration();
+    await Promise.all([loadVacationPlanner(true), loadLedgerPage(true), loadMonth({ fresh:true })]);
+    renderOvertimeControls();
+    renderCalendar();
+    setSave("saved", `${state.language === "en" ? "Migrated" : "Перенесено"}: ${result.migratedCount}`);
+  } catch (error) {
+    console.error(error);
+    setSave("err", error.message || t("Ошибка"));
+  }
+}
+
 $("ledgerThisMonth").addEventListener("click", setLedgerThisMonth);
 $("ledgerThisYear").addEventListener("click", setLedgerThisYear);
 $("ledgerAllTime").addEventListener("click", setLedgerAllTime);
@@ -1858,6 +1901,7 @@ $("dayAddCredit")?.addEventListener("click", () => openOvertimeCreditModal(state
 $("dayAddUsage")?.addEventListener("click", () => openOvertimeUsageModal(state.selected));
 $("ledgerAddCredit")?.addEventListener("click", () => openOvertimeCreditModal(state.selected || todayKey()));
 $("ledgerAddUsage")?.addEventListener("click", () => openOvertimeUsageModal(state.selected || todayKey()));
+$("ledgerMigrateUsages")?.addEventListener("click", () => openLegacyUsageMigration());
 $("ledgerMigrateLegacy")?.addEventListener("click", openLegacyOvertimeMigration);
 $("legacyOvertimeClose")?.addEventListener("click", closeLegacyOvertimeMigration);
 $("legacyOvertimeCancel")?.addEventListener("click", closeLegacyOvertimeMigration);
@@ -1867,16 +1911,18 @@ $("legacyOvertimeTimezone")?.addEventListener("change", refreshLegacyMigrationPr
 $("legacyOvertimeSelectAll")?.addEventListener("click", () => document.querySelectorAll('[data-legacy-credit-id]:not(:disabled)').forEach(input => { input.checked = true; }));
 $("legacyOvertimeApply")?.addEventListener("click", applyLegacyOvertimeMigration);
 
+$("legacyUsageMigrationClose")?.addEventListener("click", closeLegacyUsageMigration);
+$("legacyUsageMigrationCancel")?.addEventListener("click", closeLegacyUsageMigration);
+$("legacyUsageMigrationBackdrop")?.addEventListener("click", closeLegacyUsageMigration);
+$("legacyUsageMigrationRefresh")?.addEventListener("click", refreshLegacyUsageMigrationPreview);
+$("legacyUsageMigrationSelectAll")?.addEventListener("click", () => document.querySelectorAll('[data-legacy-usage-id]:not(:disabled)').forEach(input => { input.checked = true; }));
+$("legacyUsageMigrationApply")?.addEventListener("click", applyLegacyUsageMigration);
+
 $("overtimeCreditForm")?.addEventListener("submit", event => { event.preventDefault(); addOvertimeCredit(); });
-$("overtimeUsageForm")?.addEventListener("submit", event => { event.preventDefault(); addOvertimeUsage(); });
 $("creditCancel")?.addEventListener("click", cancelCreditEdit);
-$("usageCancel")?.addEventListener("click", cancelUsageEdit);
 $("overtimeCreditClose")?.addEventListener("click", closeOvertimeCreditModal);
 $("overtimeCreditBackdrop")?.addEventListener("click", closeOvertimeCreditModal);
-$("overtimeUsageClose")?.addEventListener("click", closeOvertimeUsageModal);
-$("overtimeUsageBackdrop")?.addEventListener("click", closeOvertimeUsageModal);
 $("creditDelete")?.addEventListener("click", () => state.editingCreditId && removeOvertimeCredit(state.editingCreditId));
-$("usageDelete")?.addEventListener("click", () => state.editingUsageId && removeOvertimeUsage(state.editingUsageId));
 
 $("creditNightShiftPreset")?.addEventListener("click", setNightShiftPreset);
 $("creditNightPreset")?.addEventListener("click", setNightOvertimePreset);
@@ -1931,20 +1977,11 @@ $("creditTimeByShift")?.addEventListener("click", () => {
 for (const id of ["creditDate", "creditStart", "creditEnd", "creditBreak", "creditPlanned"]) {
   $(id)?.addEventListener("input", () => { updateOvertimeCalcPreview(); if (id === "creditDate") renderQuickScenarios(); });
 }
-$("usageHours")?.addEventListener("input", updateUsageBalancePreview);
-$("usageByShift")?.addEventListener("click", () => {
-  const date = $("usageDate")?.value || state.selected;
-  const st = date ? stOf(date) : null;
-  if (!st) return setSave("err", t("на выбранном дне нет смены"));
-  $("usageHours").value = fmtHours(shiftPlannedHours(st));
-  updateUsageBalancePreview();
-});
-for (const id of ["creditDate", "creditStart", "creditEnd", "creditBreak", "creditPlanned", "creditHours", "creditReason", "usageDate", "usageHours", "usageReason"]) {
+for (const id of ["creditDate", "creditStart", "creditEnd", "creditBreak", "creditPlanned", "creditHours", "creditReason"]) {
   $(id)?.addEventListener("keydown", event => {
     if (event.key !== "Enter" || event.shiftKey || event.target.tagName === "TEXTAREA") return;
     event.preventDefault();
-    if (id.startsWith("credit")) addOvertimeCredit();
-    else addOvertimeUsage();
+    addOvertimeCredit();
   });
 }
 

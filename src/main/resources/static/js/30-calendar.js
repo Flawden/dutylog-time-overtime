@@ -212,7 +212,7 @@ function renderCalendar(){
     const st = stOf(k);
     const dayAbsences = showVacation && typeof absencesOf === "function" ? absencesOf(k) : [];
     const factualAbsence = dayAbsences.find(item => item.coverage === "FULL_DAY" && item.replacesShift) || null;
-    const partialAbsences = dayAbsences.filter(item => item.coverage === "PARTIAL");
+    const partialAbsences = dayAbsences.filter(item => ["PARTIAL","HOURS_ONLY"].includes(item.coverage));
     const entry = state.days[k];
     const cell = document.createElement("button");
     cell.dataset.date = k;
@@ -413,7 +413,7 @@ function renderSummary(){
       if (occurrence.date < monthStart || occurrence.date > monthEnd) continue;
       const id = String(occurrence.typeId);
       const bucket = grouped.get(id) || { name:absenceTypeDisplayName(occurrence), color:occurrence.typeColor, fullDays:0, partialMinutes:0 };
-      if (occurrence.coverage === "PARTIAL") bucket.partialMinutes += Number(occurrence.chargedMinutes || 0);
+      if (["PARTIAL","HOURS_ONLY"].includes(occurrence.coverage)) bucket.partialMinutes += Number(occurrence.chargedMinutes || 0);
       else bucket.fullDays += 1;
       grouped.set(id, bucket);
     }
@@ -654,7 +654,9 @@ function updateAccSummaries(){
       const primary = absences.find(item => item.coverage === "FULL_DAY" && item.replacesShift) || absences[0];
       const actual = typeof absenceDisplayTitle === "function" ? absenceDisplayTitle(primary) : (primary.title || primary.typeName || t("Отсутствие"));
       const planned = primary.plannedShiftName ? ` · ${t("По графику")}: ${primary.plannedShiftName}` : "";
-      const partial = primary.coverage === "PARTIAL" ? ` ${primary.startTime || "—"}–${primary.endTime || "—"}` : "";
+      const partial = primary.coverage === "PARTIAL"
+        ? ` ${primary.startTime || "—"}–${primary.endTime || "—"}`
+        : primary.coverage === "HOURS_ONLY" ? ` ${minutesLabel(primary.chargedMinutes)} · ${t("Интервал не указан")}` : "";
       $("sumVacation").innerHTML = `<span style="color:${esc(primary.typeColor || "var(--accent-secondary)")}">● ${esc(actual)}${esc(partial)}</span>${esc(planned)}${absences.length > 1 ? ` · +${absences.length - 1}` : ""}`;
     }
   }

@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -53,66 +54,80 @@ class OvertimeControllerTest {
     }
 
     @Test
-    void creditAndUsageCrudKeepsFifoAcrossLegacyAndV1Aliases() throws Exception {
+    void canonicalAbsenceMigrationPreservesLegacyFifoAndRetiresDirectUsageWrites() throws Exception {
         setOvertimeEnabled(owner, true);
+        setVacationEnabled(owner, true);
 
         long oldCreditId = createCreditViaApi("/api/v1/overtime/credits", "2026-07-01", 2.0, "старое");
         long recentCreditId = createCreditViaApi("/api/overtime/credits", "2026-07-02", 3.0, "новое");
+        var legacy = overtimeService.createUsage(owner,
+                new ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest("2026-07-05", 4.0, "отгул"));
+        long usageId = legacy.usages().get(0).id();
+        assertEquals(2, legacy.usages().get(0).allocations().size());
 
-        String usageBody = mvc.perform(post("/api/v1/overtime/usages")
+        mvc.perform(post("/api/v1/overtime/usages")
                         .with(user(owner.getUsername()).roles("USER"))
                         .with(csrf())
                         .contentType("application/json")
-                        .content("{\"date\":\"2026-07-05\",\"hours\":4,\"reason\":\"отгул\"}"))
+                        .content("{\"date\":\"2026-07-06\",\"hours\":1,\"reason\":\"новое списание\"}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("DIRECT_USAGE_RETIRED"));
+
+        mvc.perform(patch("/api/overtime/usages/{id}", usageId)
+                        .with(user(owner.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"hours\":3}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("LEGACY_USAGE_MUST_BE_MIGRATED"));
+
+        String migrationBody = "{\"usageIds\":[" + usageId + "]}";
+        mvc.perform(post("/api/overtime/legacy-usages/preview")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json").content(migrationBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalCount").value(1))
+                .andExpect(jsonPath("$.hoursOnlyCount").value(1))
+                .andExpect(jsonPath("$.usages[0].usageId").value(usageId))
+                .andExpect(jsonPath("$.usages[0].migratable").value(true));
+
+        mvc.perform(post("/api/v1/overtime/legacy-usages/migrate")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json").content(migrationBody))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.migratedCount").value(1))
+                .andExpect(jsonPath("$.skippedCount").value(0))
+                .andExpect(jsonPath("$.absenceIds", hasSize(1)));
+
+        mvc.perform(get("/api/overtime/account")
+                        .with(user(owner.getUsername()).roles("USER")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalEarnedHours").value(5.0))
                 .andExpect(jsonPath("$.totalUsedHours").value(4.0))
                 .andExpect(jsonPath("$.balanceHours").value(1.0))
                 .andExpect(jsonPath("$.credits[0].id").value(oldCreditId))
                 .andExpect(jsonPath("$.credits[0].usedHours").value(2.0))
-                .andExpect(jsonPath("$.credits[0].remainingHours").value(0.0))
                 .andExpect(jsonPath("$.credits[1].id").value(recentCreditId))
                 .andExpect(jsonPath("$.credits[1].usedHours").value(2.0))
-                .andExpect(jsonPath("$.credits[1].remainingHours").value(1.0))
-                .andExpect(jsonPath("$.usages[0].allocations", hasSize(2)))
-                .andReturn().getResponse().getContentAsString();
-
-        long usageId = objectMapper.readTree(usageBody).path("usages").get(0).path("id").asLong();
+                .andExpect(jsonPath("$.usages[0].id").value(usageId))
+                .andExpect(jsonPath("$.usages[0].sourceKind").value("ABSENCE"))
+                .andExpect(jsonPath("$.usages[0].sourceAbsenceId").isNumber())
+                .andExpect(jsonPath("$.usages[0].editable").value(false))
+                .andExpect(jsonPath("$.usages[0].allocations", hasSize(2)));
 
         mvc.perform(patch("/api/overtime/usages/{id}", usageId)
                         .with(user(owner.getUsername()).roles("USER"))
                         .with(csrf())
                         .contentType("application/json")
-                        .content("{\"date\":\"2026-07-06\",\"hours\":3,\"reason\":\"короче\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalUsedHours").value(3.0))
-                .andExpect(jsonPath("$.balanceHours").value(2.0))
-                .andExpect(jsonPath("$.usages[0].usageDate").value("2026-07-06"))
-                .andExpect(jsonPath("$.usages[0].allocations", hasSize(2)));
+                        .content("{\"hours\":3}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("LINKED_USAGE_MANAGED_BY_ABSENCE"));
 
         mvc.perform(delete("/api/v1/overtime/usages/{id}", usageId)
                         .with(user(owner.getUsername()).roles("USER"))
                         .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalUsedHours").value(0.0))
-                .andExpect(jsonPath("$.balanceHours").value(5.0));
-
-        mvc.perform(patch("/api/v1/overtime/credits/{id}", recentCreditId)
-                        .with(user(owner.getUsername()).roles("USER"))
-                        .with(csrf())
-                        .contentType("application/json")
-                        .content("{\"date\":\"2026-07-03\",\"hours\":4,\"reason\":\"обновлено\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalEarnedHours").value(6.0))
-                .andExpect(jsonPath("$.credits[1].workedDate").value("2026-07-03"))
-                .andExpect(jsonPath("$.credits[1].reason").value("обновлено"));
-
-        mvc.perform(delete("/api/overtime/credits/{id}", oldCreditId)
-                        .with(user(owner.getUsername()).roles("USER"))
-                        .with(csrf()))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.credits", hasSize(1)))
-                .andExpect(jsonPath("$.balanceHours").value(4.0));
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("LINKED_USAGE_MANAGED_BY_ABSENCE"));
     }
 
     @Test
@@ -217,9 +232,9 @@ class OvertimeControllerTest {
                         .with(user(owner.getUsername()).roles("USER"))
                         .with(csrf())
                         .contentType("application/json")
-                        .content("{\"date\":\"2026-07-01\",\"hours\":101}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("VALIDATION_FAILED"));
+                        .content("{\"date\":\"2026-07-01\",\"hours\":1}"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("DIRECT_USAGE_RETIRED"));
 
         mvc.perform(get("/api/overtime/balance")
                         .with(user(owner.getUsername()).roles("USER"))
@@ -322,7 +337,8 @@ class OvertimeControllerTest {
                         .with(csrf())
                         .contentType("application/json")
                         .content("{\"hours\":0.5}"))
-                .andExpect(status().isNotFound());
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
 
         mvc.perform(delete("/api/v1/overtime/usages/{id}", foreignUsageId)
                         .with(user(owner.getUsername()).roles("USER"))
@@ -396,6 +412,15 @@ class OvertimeControllerTest {
 
     private OvertimeCreditCreateRequest manual(String date, double hours, String reason) {
         return new OvertimeCreditCreateRequest(date, null, null, null, null, null, hours, reason);
+    }
+
+    private void setVacationEnabled(AppUser account, boolean enabled) throws Exception {
+        mvc.perform(patch("/api/modules")
+                        .with(user(account.getUsername()).roles("USER"))
+                        .with(csrf())
+                        .contentType("application/json")
+                        .content("{\"enabled\":{\"vacation\":" + enabled + "}}"))
+                .andExpect(status().isOk());
     }
 
     private void setOvertimeEnabled(AppUser account, boolean enabled) throws Exception {

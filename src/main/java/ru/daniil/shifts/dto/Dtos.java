@@ -1992,6 +1992,39 @@ public final class Dtos {
             OvertimeAccountDto account
     ) {}
 
+    /** One legacy MANUAL overtime usage that can be promoted into the canonical absence ledger. */
+    public record LegacyOvertimeUsageMigrationItemDto(
+            Long usageId,
+            String usageDate,
+            double hours,
+            int minutes,
+            String reason,
+            String inferredCoverage,
+            boolean plannedShiftPresent,
+            int plannedShiftMinutes,
+            boolean migratable,
+            String blockedReason
+    ) {}
+
+    /** Empty usageIds means all currently migratable legacy usages. */
+    public record LegacyOvertimeUsageMigrationRequest(
+            List<Long> usageIds
+    ) {}
+
+    public record LegacyOvertimeUsageMigrationPreviewDto(
+            int totalCount,
+            int fullDayCount,
+            int hoursOnlyCount,
+            int blockedCount,
+            List<LegacyOvertimeUsageMigrationItemDto> usages
+    ) {}
+
+    public record LegacyOvertimeUsageMigrationResultDto(
+            int migratedCount,
+            int skippedCount,
+            List<Long> absenceIds
+    ) {}
+
     /** Полная бухгалтерия переработок: начисления, списания, остаток. */
     public record OvertimeAccountDto(
             double totalEarnedHours,
@@ -2224,7 +2257,7 @@ public final class Dtos {
             @Size(max = 1000, message = "Комментарий: максимум 1000 символов") String note,
             Boolean clearTitle,
             Boolean clearNote,
-            @Pattern(regexp = "FULL_DAY|PARTIAL", message = "coverage: FULL_DAY или PARTIAL") String coverage,
+            @Pattern(regexp = "FULL_DAY|PARTIAL|HOURS_ONLY", message = "coverage: FULL_DAY, PARTIAL или HOURS_ONLY") String coverage,
             String startTime,
             String endTime,
             Boolean clearTimes,
@@ -2241,7 +2274,7 @@ public final class Dtos {
             @NotBlank(message = "Дата начала обязательна") String startDate,
             @NotBlank(message = "Дата окончания обязательна") String endDate,
             Long excludePeriodId,
-            @Pattern(regexp = "FULL_DAY|PARTIAL", message = "coverage: FULL_DAY или PARTIAL") String coverage,
+            @Pattern(regexp = "FULL_DAY|PARTIAL|HOURS_ONLY", message = "coverage: FULL_DAY, PARTIAL или HOURS_ONLY") String coverage,
             String startTime,
             String endTime,
             @Pattern(regexp = "VACATION_ALLOWANCE|OVERTIME_BANK|SICK_PAY|UNPAID|NONE", message = "Некорректный источник компенсации") String compensationPolicy

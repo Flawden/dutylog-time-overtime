@@ -25,11 +25,16 @@ import ru.daniil.shifts.dto.Dtos.OvertimeLedgerItemDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeSummaryDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageUpdateRequest;
+import ru.daniil.shifts.dto.Dtos.LegacyOvertimeUsageMigrationPreviewDto;
+import ru.daniil.shifts.dto.Dtos.LegacyOvertimeUsageMigrationRequest;
+import ru.daniil.shifts.dto.Dtos.LegacyOvertimeUsageMigrationResultDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.ModuleService;
 import ru.daniil.shifts.service.DayEntryService;
 import ru.daniil.shifts.service.OvertimeService;
+import ru.daniil.shifts.service.VacationPlannerService;
+import ru.daniil.shifts.service.exception.ApiException;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -43,15 +48,18 @@ public class OvertimeController {
     private final ModuleService moduleService;
     private final DayEntryService dayEntryService;
     private final OvertimeService overtimeService;
+    private final VacationPlannerService vacationPlannerService;
 
     public OvertimeController(CurrentUserService currentUserService,
-                          ModuleService moduleService,
+                              ModuleService moduleService,
                               DayEntryService dayEntryService,
-                              OvertimeService overtimeService) {
+                              OvertimeService overtimeService,
+                              VacationPlannerService vacationPlannerService) {
         this.currentUserService = currentUserService;
         this.moduleService = moduleService;
         this.dayEntryService = dayEntryService;
         this.overtimeService = overtimeService;
+        this.vacationPlannerService = vacationPlannerService;
     }
 
     /** POST /api/overtime/preview — canonical preview in the user's IANA timezone. */
@@ -144,23 +152,52 @@ public class OvertimeController {
         return overtimeService.deleteCredit(current, id);
     }
 
-    /** POST /api/overtime/usages — списать часы в отгул, FIFO со старых начислений. */
+    /**
+     * Direct manual usage creation retired in v27.31.0. A time-off is now an absence
+     * and the FIFO usage is created by Vacation Planner as a linked implementation detail.
+     */
     @PostMapping("/usages")
     public OvertimeAccountDto createUsage(@Valid @RequestBody OvertimeUsageCreateRequest req,
                                           Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         moduleService.requireEnabled(current, ModuleService.OVERTIME);
-        return overtimeService.createUsage(current, req);
+        throw ApiException.conflict("DIRECT_USAGE_RETIRED",
+                "Новое списание оформляется как отсутствие через единый конструктор");
     }
 
-    /** PATCH /api/overtime/usages/{id} — изменить дату/часы/причину списания и пересобрать FIFO. */
+    /** Legacy MANUAL usages must be promoted before they can be edited. */
     @PatchMapping("/usages/{id}")
     public OvertimeAccountDto updateUsage(@PathVariable("id") long id,
                                           @Valid @RequestBody OvertimeUsageUpdateRequest req,
                                           Principal principal) {
         AppUser current = currentUserService.requireUser(principal);
         moduleService.requireEnabled(current, ModuleService.OVERTIME);
-        return overtimeService.updateUsage(current, id, req);
+        if (overtimeService.isAbsenceLinkedUsage(current, id)) {
+            throw ApiException.conflict("LINKED_USAGE_MANAGED_BY_ABSENCE",
+                    "Связанное списание изменяется только через отсутствие");
+        }
+        throw ApiException.conflict("LEGACY_USAGE_MUST_BE_MIGRATED",
+                "Старое списание сначала нужно перенести в список отсутствий");
+    }
+
+    /** Preview one-time promotion of old MANUAL usages into canonical absences. */
+    @PostMapping("/legacy-usages/preview")
+    public LegacyOvertimeUsageMigrationPreviewDto previewLegacyUsages(
+            @RequestBody(required = false) LegacyOvertimeUsageMigrationRequest req, Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
+        moduleService.requireEnabled(current, ModuleService.VACATION);
+        return vacationPlannerService.previewLegacyUsageMigration(current, req);
+    }
+
+    /** Promote selected MANUAL usages in place while preserving FIFO allocation rows. */
+    @PostMapping("/legacy-usages/migrate")
+    public LegacyOvertimeUsageMigrationResultDto migrateLegacyUsages(
+            @RequestBody(required = false) LegacyOvertimeUsageMigrationRequest req, Principal principal) {
+        AppUser current = currentUserService.requireUser(principal);
+        moduleService.requireEnabled(current, ModuleService.OVERTIME);
+        moduleService.requireEnabled(current, ModuleService.VACATION);
+        return vacationPlannerService.migrateLegacyUsages(current, req);
     }
 
     /** DELETE /api/overtime/usages/{id} — удалить списание и вернуть часы в остатки начислений. */

@@ -1,5 +1,19 @@
-# DutyLog API v27.30.2
+# DutyLog API v27.31.0
 
+
+
+## Canonical absence ledger and retired direct overtime usages
+
+Forward-only Flyway V47 extends only the immutable V42 `absence_periods` coverage/shape constraints so migrated `HOURS_ONLY` rows can preserve charged minutes without invented times.
+
+```http
+POST /api/v1/overtime/usages                 # 409 DIRECT_USAGE_RETIRED
+PATCH /api/v1/overtime/usages/{id}            # 409 LEGACY_USAGE_MUST_BE_MIGRATED
+POST /api/v1/overtime/legacy-usages/preview
+POST /api/v1/overtime/legacy-usages/migrate
+```
+
+Time off is created and edited through `/api/v1/vacation-planner/absences`. The absence owns any `OVERTIME_BANK` usage; direct usage mutation is retired. Legacy MANUAL usages can be previewed and promoted in place into TIME_OFF absences without rebuilding FIFO allocations. Imported rows whose duration is known but start/end time is not known use transition-only `HOURS_ONLY`; new absence create payloads still accept only `FULL_DAY|PARTIAL`.
 
 ## Payroll Foundation
 
