@@ -1796,7 +1796,9 @@ function hasQuickDraftAction(){
 }
 function firstQuickActionFocus(){
   if (hasQuickDraftAction()) return "quickActionText";
-  return "quickActionCredit";
+  if (moduleEnabled("overtime")) return "quickActionCredit";
+  if (moduleEnabled("vacation")) return "quickActionUsage";
+  return "quickActionsClose";
 }
 function openQuickActions(){
   const hasDraft = hasQuickDraftAction();

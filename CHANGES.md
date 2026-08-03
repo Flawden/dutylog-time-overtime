@@ -1,3 +1,14 @@
+# v27.30.1 — Unified Absence Quick Access Integration
+
+- Added a direct neutral absence action to the Today dashboard for the current date.
+- Kept the global plus action neutral and owned by Vacation/Absences rather than Overtime.
+- Preserved the contextual Overtime entry point with `TIME_OFF / OVERTIME_BANK` preselection.
+- Replaced the Today direct overtime-credit shortcut; overtime credit creation remains available from global Quick Add and the Overtime workspace.
+- Fixed Quick Add keyboard focus when Vacation is the only enabled mutation module.
+- Added focused frontend and browser coverage for global, Today and Overtime entry points.
+- Kept API, PostgreSQL, Payroll, Unified Ledger, calendar projection and Flyway V46 unchanged.
+- Regression baseline advances to 124 Java test classes, 619 `@Test` methods and 40 Playwright scenarios.
+
 # v27.30.0 — Unified Absence Composer & Calendar Projection
 
 - Unified Vacation, overtime-backed time off, sick leave, unpaid leave and custom absence entry in one reusable composer.

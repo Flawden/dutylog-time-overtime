@@ -8,18 +8,18 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.30.0"></script>
-<link href="app.css?v=27.30.0" rel="stylesheet"/>
-<link href="design-system.css?v=27.30.0" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.30.0" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.30.0" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.30.0" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.30.0" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.30.0" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.30.0" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.30.0" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.30.0" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.30.0" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.30.1"></script>
+<link href="app.css?v=27.30.1" rel="stylesheet"/>
+<link href="design-system.css?v=27.30.1" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.30.1" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.30.1" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.30.1" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.30.1" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.30.1" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.30.1" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.30.1" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.30.1" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.30.1" rel="stylesheet"/>
 </head>
 <body>
 <div class="appBoot" id="appBoot" role="status" aria-live="polite">
@@ -102,7 +102,7 @@
     <section class="todayQuickActions" aria-label="Быстрые действия">
       <button id="todayQuickTask" type="button"><span aria-hidden="true">✓</span><b>Новая задача</b><small>на сегодня</small></button>
       <button id="todayQuickNote" type="button"><span aria-hidden="true">▤</span><b>Новая заметка</b><small>в выбранный день</small></button>
-      <button id="todayQuickCredit" type="button"><span aria-hidden="true">＋</span><b>Переработка</b><small>начислить часы</small></button>
+      <button id="todayQuickAbsence" type="button"><span aria-hidden="true">☂</span><b>Оформить отсутствие</b><small>отпуск, отгул, больничный</small></button>
       <button id="todayQuickMore" type="button"><span aria-hidden="true">⋯</span><b>Быстро добавить</b><small>все действия</small></button>
     </section>
 
@@ -1367,7 +1367,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.30.0</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.30.1</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -1995,19 +1995,19 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.30.0"></script>
-<script src="js/12-ui-platform.js?v=27.30.0"></script>
-<script src="js/20-data.js?v=27.30.0"></script>
-<script src="js/30-calendar.js?v=27.30.0"></script>
-<script src="js/35-today.js?v=27.30.0"></script>
-<script src="js/37-calendar-experience.js?v=27.30.0"></script>
-<script src="js/38-schedule-layers.js?v=27.30.0"></script>
-<script src="js/39-vacation-planner.js?v=27.30.0"></script>
-<script src="js/40-overtime.js?v=27.30.0"></script>
-<script src="js/45-payroll.js?v=27.30.0"></script>
-<script src="js/50-tasks.js?v=27.30.0"></script>
-<script src="js/55-calendar-sync.js?v=27.30.0"></script>
-<script src="js/60-settings.js?v=27.30.0"></script>
-<script src="js/70-user-boot.js?v=27.30.0"></script>
+<script src="js/10-core.js?v=27.30.1"></script>
+<script src="js/12-ui-platform.js?v=27.30.1"></script>
+<script src="js/20-data.js?v=27.30.1"></script>
+<script src="js/30-calendar.js?v=27.30.1"></script>
+<script src="js/35-today.js?v=27.30.1"></script>
+<script src="js/37-calendar-experience.js?v=27.30.1"></script>
+<script src="js/38-schedule-layers.js?v=27.30.1"></script>
+<script src="js/39-vacation-planner.js?v=27.30.1"></script>
+<script src="js/40-overtime.js?v=27.30.1"></script>
+<script src="js/45-payroll.js?v=27.30.1"></script>
+<script src="js/50-tasks.js?v=27.30.1"></script>
+<script src="js/55-calendar-sync.js?v=27.30.1"></script>
+<script src="js/60-settings.js?v=27.30.1"></script>
+<script src="js/70-user-boot.js?v=27.30.1"></script>
 </body>
 </html>

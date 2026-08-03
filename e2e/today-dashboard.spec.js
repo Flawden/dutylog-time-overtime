@@ -34,3 +34,24 @@ test('Today Dashboard composes the day and opens existing feature flows', async 
   await expect(page.locator('#view-today')).toBeVisible();
   await expect(page.locator('#tabbar a[data-view="today"]')).toHaveAttribute('aria-current', 'page');
 });
+
+
+test('Today opens the neutral absence composer directly', async ({ page }) => {
+  await registerAndOnboard(page, { preset: 'full', prefix: 'today-absence' });
+
+  await expect(page.locator('#view-today')).toBeVisible();
+  await expect(page.locator('#todayQuickAbsence')).toBeVisible();
+  await expect(page.locator('#todayQuickAbsence')).toContainText('Оформить отсутствие');
+  await page.locator('#todayQuickAbsence').click();
+
+  await expect(page.locator('#absenceComposerModal')).toBeVisible();
+  const date = await page.locator('#vacationStart').inputValue();
+  expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+  await expect(page.locator('#vacationCompensation')).not.toHaveValue('OVERTIME_BANK');
+  await page.locator('#absenceComposerClose').click();
+  await expect(page.locator('#absenceComposerModal')).toBeHidden();
+
+  await page.locator('#todayQuickMore').click();
+  await expect(page.locator('#quickActionUsage')).toBeVisible();
+  await expect(page.locator('#quickActionUsage')).toContainText('Оформить отсутствие');
+});

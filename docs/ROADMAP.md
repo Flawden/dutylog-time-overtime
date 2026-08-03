@@ -1,10 +1,23 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.30.0 — Unified Absence Composer & Calendar Projection**.
+Current release: **v27.30.1 — Unified Absence Quick Access Integration**.
 
 
 
-## v27.30.0 — Unified Absence Composer & Calendar Projection — current
+## v27.30.1 — Unified Absence Quick Access Integration — current
+
+- [x] Expose a neutral absence action in global Quick Add.
+- [x] Add a direct current-date absence action to Today.
+- [x] Keep Overtime contextual with `TIME_OFF / OVERTIME_BANK` preselection.
+- [x] Keep overtime credit creation available from Quick Add and Overtime after replacing the Today shortcut.
+- [x] Fix keyboard focus when Vacation is the only enabled quick mutation module.
+- [x] Add focused Java and Playwright coverage.
+- [x] Keep API, PostgreSQL, Payroll, Unified Ledger and Flyway V46 unchanged.
+- [x] Advance baseline to 124 Java classes / 619 tests / 40 Playwright scenarios.
+
+Next product stage after green CI and staging acceptance: **v27.31.0 — One-Tap Calendar Connect**.
+
+## v27.30.0 — Unified Absence Composer & Calendar Projection — completed
 
 - [x] Reuse one absence form across Vacation, Quick Add, Calendar and Overtime entry points.
 - [x] Route new overtime-backed time off through linked absence creation instead of detached raw usage.
@@ -17,7 +30,7 @@ Current release: **v27.30.0 — Unified Absence Composer & Calendar Projection**
 - [x] Isolate the dirtied Telegram detached-owner integration context in its own H2 database so test order cannot drop the shared schema.
 - [x] Advance baseline to 123 Java classes / 616 tests / 39 Playwright scenarios.
 
-Next product stage after green CI and staging acceptance: **v27.31.0 — One-Tap Calendar Connect**.
+Stabilized and completed by: **v27.30.1 — Unified Absence Quick Access Integration**.
 
 ## v27.29.3 — Custom Workspace Today Widget Order Persistence Hotfix — completed
 
@@ -332,6 +345,7 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 - `v27.29.0` — Workspace, Layout & Theme Studio;
 - `v27.30.0` — Unified Absence Composer & Calendar Projection;
+- `v27.30.1` — Unified Absence Quick Access Integration;
 - `v27.31.0` — One-Tap Calendar Connect для Google / Apple / Outlook;
 - `v27.32.0` — архив «Все заметки» и визуальные коллизии задач;
 - `v27.33.0` — Telegram inline-действия и понятные пошаговые команды;

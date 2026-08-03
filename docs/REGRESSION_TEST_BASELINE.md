@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.30.0.
+Status: v27.30.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.30.0 unifies vacation, overtime-backed time off, sick leave, unpaid leave and custom absences in one composer and one calendar projection while preserving the planned shift. The current application baseline is 123 Java test classes / 616 `@Test` methods / 39 Chromium Playwright scenarios, plus the backup tooling shell self-test.
+Current extension: v27.30.1 completes neutral absence access from global Quick Add and Today while preserving the contextual Overtime route. The current application baseline is 124 Java test classes / 619 `@Test` methods / 40 Chromium Playwright scenarios, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -12,6 +12,16 @@ Historical foundation: v27.2.29 security baseline remains preserved by all later
 
 
 
+
+
+## v27.30.1 Unified Absence Quick Access Integration extension
+
+- `UnifiedAbsenceQuickAccessFrontendContractTest` protects neutral global access, direct Today access and contextual Overtime preselection.
+- `today-dashboard.spec.js` opens the current-date composer from Today and confirms the global plus absence action remains available.
+- Quick Add focus reaches the absence action when Vacation is enabled without Overtime or draft modules.
+- The Today direct overtime-credit shortcut is replaced by absence access; credit creation remains in Quick Add and Overtime.
+- Baseline advances to 124 Java test classes / 619 `@Test` methods / 40 Playwright scenarios.
+- API, PostgreSQL and Flyway remain unchanged at V46.
 
 
 ## v27.30.0 Unified Absence Composer & Calendar Projection extension

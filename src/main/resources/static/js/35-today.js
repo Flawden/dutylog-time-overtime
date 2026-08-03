@@ -15,8 +15,8 @@ Object.assign(I18N_EN, {
   "на сегодня":"for today",
   "Новая заметка":"New note",
   "в выбранный день":"for the selected day",
-  "Переработка":"Overtime",
-  "начислить часы":"add hours",
+  "Оформить отсутствие":"Create absence",
+  "отпуск, отгул, больничный":"vacation, time off, sick leave",
   "Быстро добавить":"Quick add",
   "все действия":"all actions",
   "Смена":"Shift",
@@ -351,7 +351,7 @@ function renderTodayDashboard(){
 
   $("todayQuickTask").hidden = !moduleEnabled("tasks");
   $("todayQuickNote").hidden = !moduleEnabled("notes");
-  $("todayQuickCredit").hidden = !moduleEnabled("overtime");
+  $("todayQuickAbsence").hidden = !moduleEnabled("vacation");
 
   if (document.body.dataset.view === "today") {
     $("monthName").textContent = t("Сегодня");
@@ -377,7 +377,13 @@ $("todayOpenOvertime")?.addEventListener("click", () => { location.hash = "#over
 $("todayOpenTasks")?.addEventListener("click", () => { location.hash = "#tasks"; });
 $("todayOpenImportant")?.addEventListener("click", () => { location.hash = "#important"; });
 $("todayQuickTask")?.addEventListener("click", () => openTaskCreate({ date:todayKey() }));
-$("todayQuickCredit")?.addEventListener("click", () => openOvertimeCreditModal(todayKey()));
+$("todayQuickAbsence")?.addEventListener("click", () => {
+  if (!moduleEnabled("vacation") || typeof openAbsenceComposer !== "function") return setSave("err", t("модуль выключен"));
+  openAbsenceComposer({ date:todayKey(), source:"today" }).catch(error => {
+    console.error(error);
+    setSave("err", error.message || t("Ошибка"));
+  });
+});
 $("todayQuickMore")?.addEventListener("click", () => openQuickActions());
 $("todayQuickNote")?.addEventListener("click", async () => {
   const date = todayKey();

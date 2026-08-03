@@ -3332,3 +3332,5 @@ body.panel-open .globalQuickAdd { display:none !important; }
 .absenceFact.absence-time_off,.partialAbsenceBar.absence-time_off{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--absence-color) 80%,white)}
 @media(max-width:760px){.vacationHeroActions{align-items:stretch;width:100%}.absenceComposerContext{grid-template-columns:1fr 1fr}.absenceComposerIdentity{grid-column:1/-1}.absenceComposerPanel #absenceComposerModalMount{padding:14px}.absenceComposerModalHead{padding:16px}}
 @media(max-width:480px){.absenceComposerContext{grid-template-columns:1fr}.absenceComposerIdentity{grid-column:auto}}
+
+/* v27.30.1 — Unified Absence Quick Access Integration: functional entry points only; no visual redesign. */
