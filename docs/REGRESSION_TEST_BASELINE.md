@@ -1,13 +1,20 @@
 # DutyLog regression test baseline
 
-Status: v27.34.1.
+Status: v27.34.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.34.1 stabilizes the strict Vue template and Vite 5 type contracts without weakening `exactOptionalPropertyTypes`. The current application baseline is 133 Java test classes / 646 `@Test` methods / 44 Chromium Playwright scenarios / 11 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.34.2 stabilizes the generated Vue browser bundle by replacing Node environment references and auditing the emitted JavaScript. The current application baseline is 134 Java test classes / 647 `@Test` methods / 44 Chromium Playwright scenarios / 11 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.34.2 Vue Browser Runtime Bundle Hotfix extension
+
+- `VueBrowserRuntimeBundleHotfixTest` requires the production environment replacement and the generated-bundle audit while preserving strict Playwright page-error collection.
+- `frontend/scripts/audit-browser-bundle.mjs` rejects residual `process.env`, CommonJS and Node path globals in `dutylog-vue-app-shell.js`.
+- `npm run build` includes the audit, so both CI and Docker validate the same browser artifact.
+- Baseline advances to 134 Java test classes / 647 test methods / 44 Playwright scenarios / 11 Vitest cases; Flyway remains V47.
 
 ## v27.34.1 Vue Strict Type Contract Hotfix extension
 

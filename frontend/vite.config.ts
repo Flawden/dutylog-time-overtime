@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from "node:url";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vitest/config";
 
-const releaseVersion = "27.34.1";
+const releaseVersion = "27.34.2";
 
 export default defineConfig({
   plugins: [vue()],
@@ -12,6 +12,7 @@ export default defineConfig({
     },
   },
   define: {
+    "process.env.NODE_ENV": JSON.stringify("production"),
     __DUTYLOG_RELEASE_VERSION__: JSON.stringify(releaseVersion),
     __DUTYLOG_FRONTEND_ARCHITECTURE__: JSON.stringify("vue-shell-v1"),
   },

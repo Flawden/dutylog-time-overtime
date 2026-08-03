@@ -1,7 +1,14 @@
 # Module contracts
 
-Status: v27.34.1.
+Status: v27.34.2.
 
+
+## Vue browser-runtime bundle safety (v27.34.2)
+
+- `process.env.NODE_ENV` is replaced by the literal production value in Vite library output.
+- `npm run build` audits the generated shell JavaScript for residual Node/CommonJS globals.
+- Docker and CI use the same audited build command.
+- Playwright page-error collection remains strict and is not filtered for Vue failures.
 
 ## Strict Vue compiler compatibility (v27.34.1)
 

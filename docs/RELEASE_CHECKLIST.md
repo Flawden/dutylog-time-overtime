@@ -1,6 +1,15 @@
 # Release checklist
 
-Status: v27.34.1.
+Status: v27.34.2.
+
+## v27.34.2 Vue Browser Runtime Bundle Hotfix acceptance
+
+- [ ] `vue-tsc`, 11 Vitest cases and Vite build pass.
+- [ ] Browser-bundle audit reports no `process.env`, CommonJS or Node path globals.
+- [ ] All 44 Playwright scenarios pass with the existing strict page-error collector.
+- [ ] Docker builds the same audited frontend bundle into one application image.
+- [ ] Maven reports 134 classes / 647 tests and Flyway remains V47.
+- [ ] Staging reports release version 27.34.2 and architecture `vue-shell-v1`.
 
 ## v27.34.1 Vue Strict Type Contract Hotfix acceptance
 
@@ -258,6 +267,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.34.1 -m "v27.34.1 — Vue Strict Type Contract Hotfix"
-git push origin v27.34.1
+git tag -a v27.34.2 -m "v27.34.2 — Vue Browser Runtime Bundle Hotfix"
+git push origin v27.34.2
 ```

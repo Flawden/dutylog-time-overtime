@@ -1,9 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 
-## v27.34.1 — Vue Strict Type Contract Hotfix — current
+## v27.34.2 — Vue Browser Runtime Bundle Hotfix — current
+
+- [x] Reproduce the Chromium-wide `pageerror: process is not defined` cascade.
+- [x] Replace `process.env.NODE_ENV` during Vite library build without adding a browser shim.
+- [x] Audit generated JavaScript for residual Node/CommonJS runtime globals.
+- [x] Run the audit through the same `npm run build` used by CI and Docker.
+- [x] Keep the strict Playwright runtime issue collector unchanged.
+- [x] Keep API, PostgreSQL, Flyway V47 and one-image deployment unchanged.
+- [ ] Require a fully green Chromium baseline before v27.35.0.
+
+## v27.34.1 — Vue Strict Type Contract Hotfix — completed
 
 - [x] Keep `exactOptionalPropertyTypes` enabled.
 - [x] Replace optional native `aria-current`, `type` and `disabled` bindings with concrete valid values.
@@ -11,7 +21,7 @@ Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
 - [x] Preserve the stable app-shell CSS name through Rollup `assetFileNames`.
 - [x] Add a static regression contract for all four compiler failures.
 - [x] Keep API, PostgreSQL, Flyway V47 and one-image deployment unchanged.
-- [ ] Require a green real `vue-tsc`, Vitest and Vite build before v27.35.0.
+- [x] Real `vue-tsc`, Vitest and Vite build pass before Chromium runtime validation.
 
 ## v27.34.0 — Vue App Shell & Design System — completed
 

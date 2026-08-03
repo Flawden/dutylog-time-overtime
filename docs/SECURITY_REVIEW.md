@@ -1,7 +1,14 @@
 # Security review
 
-Status: v27.34.1.
+Status: v27.34.2.
 
+
+## v27.34.2 Vue browser-runtime bundle security review
+
+- The fix uses compile-time replacement instead of exposing a mutable `process` shim in the browser.
+- The generated bundle is rejected if Node/CommonJS runtime globals remain.
+- Same-origin sessions, CSRF handling, bridge capabilities and CSP-relevant asset locations are unchanged.
+- Playwright still fails on every page error and console error; no security/runtime signal is suppressed.
 
 ## v27.34.1 strict Vue type contract security review
 

@@ -1,6 +1,6 @@
 {
   "name": "dutylog-vue-frontend",
-  "version": "27.34.1",
+  "version": "27.34.2",
   "private": true,
   "type": "module",
   "description": "Vue 3 + TypeScript app shell and design system for DutyLog",
@@ -12,8 +12,9 @@
     "dev": "vite --host 127.0.0.1 --port 5173",
     "typecheck": "vue-tsc --noEmit",
     "test:unit": "vitest run --environment node",
-    "build": "npm run typecheck && vite build",
-    "preview": "vite preview --host 127.0.0.1 --port 5173"
+    "build": "npm run typecheck && vite build && npm run audit:bundle",
+    "preview": "vite preview --host 127.0.0.1 --port 5173",
+    "audit:bundle": "node ./scripts/audit-browser-bundle.mjs"
   },
   "dependencies": {
     "pinia": "2.3.0",

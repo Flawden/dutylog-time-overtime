@@ -1,5 +1,5 @@
-# DutyLog API v27.34.1
-`v27.34.1` changes no HTTP contract. The hotfix only aligns strict Vue template bindings and Vite 5 build options;  Vue now owns the visible application shell and typed design-system infrastructure, while every product workspace and mutation remains on the released same-origin Spring Boot API. Endpoints, DTOs, CSRF/session rules and OpenAPI v1 remain unchanged.
+# DutyLog API v27.34.2
+`v27.34.2` changes no HTTP contract. The hotfix only removes a Node-only environment reference from the generated Vue browser bundle and adds a post-build artifact audit. Endpoints, DTOs, CSRF/session rules and OpenAPI v1 remain unchanged.
 
 ## Absence and time-bank presentation contract
 

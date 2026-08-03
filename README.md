@@ -1,8 +1,12 @@
-# v27.34.1 — Vue Strict Type Contract Hotfix
+# v27.34.2 — Vue Browser Runtime Bundle Hotfix
 
-GitHub Actions reached the real strict Vue compiler and found four release-blocking type errors: three optional native attributes were passed as `undefined` under `exactOptionalPropertyTypes`, and the Vite 5 library configuration used the unsupported `cssFileName` option. The hotfix keeps strict mode enabled, supplies concrete DOM attribute values and leaves the stable CSS filename under Rollup output control.
+GitHub Actions compiled the Vue shell successfully, then the real Chromium baseline exposed a browser-runtime defect: Vite library mode left `process.env.NODE_ENV` in the generated JavaScript. Browsers do not provide Node's global `process`, so the shell failed before readiness and the strict Playwright fixture reported the same page error across nearly every scenario.
 
-No product behavior, API, database migration or deployment topology changes. The Vue app shell from v27.34.0 remains the released feature surface.
+The hotfix replaces that environment expression at build time and audits the generated browser bundle for residual Node globals. Playwright error collection remains strict. Product behavior, API, database migration and deployment topology do not change; the Vue app shell from v27.34.0 remains the released feature surface.
+
+## Previous hotfix: v27.34.1 — Vue Strict Type Contract Hotfix
+
+The strict compiler hotfix preserved `exactOptionalPropertyTypes`, normalized optional native button attributes and removed the unsupported Vite 5 `cssFileName` library option. It passed the real TypeScript, Vitest and Vite build stages; v27.34.2 follows with the browser-runtime correction found by Chromium.
 
 ## Previous release: v27.34.0 — Vue App Shell & Design System
 
@@ -124,11 +128,11 @@ Runtime Payroll behavior, V45 and the 37-scenario product surface stay unchanged
 - Production Payroll logic, API, OpenAPI, PostgreSQL and Flyway V45 are unchanged.
 - Automated baseline remains 116 Java test classes / 603 `@Test` methods / 37 Playwright scenarios.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.28.0 — Payroll Foundation
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 DutyLog now has its first trusted money layer. A closed, integrity-checked month can be calculated from canonical Plan → Fact → Compensation data using one hourly rate, append-only additions/deductions and immutable versioned snapshots. Financial values are stored in minor units; the initial release deliberately excludes taxes and employer-specific coefficients.
 
@@ -150,7 +154,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Overtime month filters and responsive ledger selectors are deterministic at month boundaries.
 - Automated baseline: 114 Java test classes / 600 `@Test` methods / 36 Playwright scenarios.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.27.1 — Ledger Workflow Browser Contract Hotfix
 
@@ -161,7 +165,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - API, OpenAPI, database and Flyway remain at V44.
 - Automated baseline: 113 Java test classes / 599 `@Test` methods / 36 Playwright scenarios.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.27.0 — Ledger Integrity & Approval Workflow
 
@@ -175,7 +179,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 
 > Previous release: **v27.26.2 — Canonical Lineage Recovery**.
 >
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.26.2 — Canonical Lineage Recovery
 
@@ -188,7 +192,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 
 > Previous stable advanced release: **v27.26.1 — Absence Request Constructor Compile Hotfix**.
 >
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.26.1 — Absence Request Constructor Compile Hotfix
 
@@ -201,7 +205,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 
 > Previous product release: **v27.26.0 — Unified Time & Compensation Ledger**.
 >
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.25.2 — Absence Experience Frontend Contract Hotfix
 
@@ -210,7 +214,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Does not change production JavaScript, API, database schema or Flyway V42.
 - Automated baseline advances to 109 Java test classes / 581 `@Test` methods / 34 Playwright scenarios.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.25.1 — Absence Preview Lambda Compile Hotfix
 
@@ -219,7 +223,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Adds regression protection against capturing the incremented loop variable directly.
 - Keeps the v27.25.0 plan/fact model, API, Flyway V42 and 34 Playwright scenarios unchanged; Java baseline advances to 580 tests.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.25.0 — Absence & Time-Off Overhaul
 
@@ -229,7 +233,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Adds `VACATION_DAYS`, `TIME_OFF_HOURS` and `NONE` balance policies, plan/fact day details, monthly absence summaries and timed `.ics` projection.
 - Flyway advances to V42; automated baseline advances to 109 Java test classes / 579 `@Test` methods / 34 Playwright scenarios.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.24.1 — Calendar Comfort E2E Panel Contract Hotfix
 
@@ -238,7 +242,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Keeps the blocking backdrop, contextual Today behavior, API and Flyway V41 unchanged.
 - Automated baseline remains 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.24.0 — Calendar Comfort & Correctness
 
@@ -249,7 +253,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Multiple schedule layers use compact accessible pills instead of verbose controls.
 - Flyway remains V41; automated baseline: 108 Java test classes / 569 `@Test` methods / 33 Playwright scenarios.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.23.2 — Calendar Sync Runtime Boot Hotfix
 
@@ -274,7 +278,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Rotation immediately invalidates the old link; revocation removes access without deleting calendar data.
 - Flyway V41; automated baseline: 107 Java test classes / 563 `@Test` methods / 32 Playwright scenarios.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.22.2 — Workspace Route E2E Navigation Hotfix
 
@@ -283,7 +287,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Module toggling is asserted on `#view-tasks`, independently from workspace placement.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.22.1 — Vacation Planner Frontend Contract Hotfix
 
@@ -293,7 +297,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Module persistence derives its expected count from the canonical module registry instead of a hardcoded pre-vacation number.
 - Runtime behavior, API, Flyway V40 and the 103 / 544 / 31 regression baseline remain unchanged.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.22.0 — Vacation Planner
 
@@ -303,7 +307,7 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Added owner-scoped absence types, calendar projections and a responsive unified-shell planner.
 - Flyway advances to V40; regression baseline advances to 103 Java test classes, 544 `@Test` methods and 31 Playwright scenarios.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # v27.21.2 — Schedule Accordion E2E Selector Hotfix
 
@@ -312,11 +316,11 @@ This release stabilizes the remaining browser state boundaries after the v27.27.
 - Preserved strict locator behavior: duplicate module surfaces still fail unless the scenario names the intended accordion.
 - No production runtime, API, database or Flyway changes; the baseline remains 100 Java test classes, 525 `@Test` methods and 30 Playwright scenarios.
 
-> Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**.
+> Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 
 # DutyLog
 
-Current release: **v27.34.1 — Vue Strict Type Contract Hotfix**
+Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**
 
 DutyLog — приложение для учёта смен, переработок, отгулов, задач, важных событий, заметок и напоминаний. Оно объединяет календарь смен, журнал переработок, задачи дня, Markdown-заметки, Telegram-бота и PWA-интерфейс в одном Spring Boot backend.
 
@@ -796,7 +800,7 @@ DutyLog пока работает как закрытая beta на `https://sta
 - production workflow, rollback и отдельные environment-шаблоны сохраняются в репозитории, но будут активированы только на отдельном более мощном сервере и собственном домене;
 - YARUGA и её контейнеры не участвуют в DutyLog deployment.
 
-Текущий релиз — **v27.34.1 Vue Strict Type Contract Hotfix**: Vue теперь владеет видимой оболочкой DutyLog, основной навигацией, профилем, сетевым статусом, модальными окнами, уведомлениями и общими UI-примитивами. Продуктовые экраны пока остаются legacy-owned и подключены через неизменяемую read model и именованные capabilities. API и схема не меняются; Flyway остаётся V47.
+Текущий релиз — **v27.34.2 Vue Browser Runtime Bundle Hotfix**: Vue остаётся владельцем видимой оболочки DutyLog, а Vite library build теперь гарантированно заменяет Node-only `process.env.NODE_ENV` до публикации browser bundle. Каждый frontend build дополнительно проверяет готовый JavaScript на остаточные Node globals. Продуктовые экраны пока остаются legacy-owned; API и схема не меняются, Flyway остаётся V47.
 
 ## Служебный профиль администратора
 

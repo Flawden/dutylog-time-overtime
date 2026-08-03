@@ -1,3 +1,12 @@
+# v27.34.2 — Vue Browser Runtime Bundle Hotfix
+
+- Replaced the Vite library-mode `process.env.NODE_ENV` reference with the literal production value so the Vue shell can execute in browsers without a Node `process` global.
+- Added a post-build browser-bundle audit that rejects unreplaced `process.env`, CommonJS `require(...)` / `module.exports` and Node-only path globals.
+- Wired the audit into `npm run build`, so CI and the isolated Docker Node stage validate the same generated JavaScript before Maven and Playwright.
+- Kept Playwright page-error collection strict; the hotfix removes the runtime error instead of filtering it.
+- Kept strict TypeScript, dependencies, product behavior, API, PostgreSQL schema, Docker topology and Flyway V47 unchanged.
+- Regression baseline advances to 134 Java test classes, 647 `@Test` methods, 44 Playwright scenarios and 11 Vitest cases.
+
 # v27.34.1 — Vue Strict Type Contract Hotfix
 
 - Fixed strict `vue-tsc` failures caused by explicitly passing `undefined` into optional native button attributes under `exactOptionalPropertyTypes`.

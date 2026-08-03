@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.34.1.
+Status: v27.34.2.
 
 DutyLog uses two long-lived deployment branches:
 
@@ -14,6 +14,10 @@ feature/* -> test -> staging
 
 Until the staging VPS is ready, leave the `staging` Environment variable `DUTYLOG_DEPLOY_ENABLED` unset or `false`. The workflow still runs Maven/JaCoCo, release checks, Playwright, image build and clean-PostgreSQL migration verification, then records an explicit successful skip. It does not create a promotion tag.
 
+
+## Browser-runtime bundle gate (v27.34.2)
+
+Vite library mode must replace `process.env.NODE_ENV` with the literal production value. `npm run build` now executes `frontend/scripts/audit-browser-bundle.mjs` after Vite and rejects residual `process.env`, CommonJS `require(...)` / `module.exports`, `__dirname` or `__filename` in the generated browser JavaScript. Because Docker also runs `npm run build`, CI and the production image validate the same artifact. Playwright remains the final real-browser runtime gate.
 
 ## Strict Vue build compatibility hotfix (v27.34.1)
 
