@@ -1,3 +1,11 @@
+## v27.35.7 Docker frontend OpenAPI build-context review
+
+- Scope is Docker build context, test-only Java contracts, release identity and documentation.
+- The canonical OpenAPI document is copied read-only from the existing backend source path; no secret or runtime configuration enters the frontend stage.
+- Authentic lockfile, strict typecheck, drift checking and the non-root one-image runtime remain enforced.
+
+Status: v27.35.7.
+
 ## v27.35.6 historical static-contract alignment review
 
 - Scope is test-only Java source, release identity and documentation.

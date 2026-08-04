@@ -1,10 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.35.6 — Gate A Historical Static Contract Alignment Hotfix**.
+Current release: **v27.35.7 — Docker Frontend OpenAPI Build Context Hotfix**.
 
 
 
-## v27.35.6 — Gate A Historical Static Contract Alignment Hotfix — current
+## v27.35.7 — Docker Frontend OpenAPI Build Context Hotfix — current
+
+- Copy the canonical backend OpenAPI YAML into the Docker frontend stage.
+- Keep the OpenAPI drift gate active inside `npm run build`.
+- Preserve dependency-layer caching by copying the contract after `npm ci`.
+- Keep the single Spring Boot application image and separate PostgreSQL topology unchanged.
+- Accept Gate A only after Docker, clean PostgreSQL and staging validation are green.
+
+
+## v27.35.6 — Gate A Historical Static Contract Alignment Hotfix — stabilization predecessor
 
 - Align four historical test-only expectations with the final committed-lockfile delivery model.
 - Require semantic full-green acceptance wording rather than one brittle sentence.

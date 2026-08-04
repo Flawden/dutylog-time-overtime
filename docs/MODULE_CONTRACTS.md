@@ -1,10 +1,10 @@
 # Module contracts
 
-## v27.35.6 historical static-contract alignment
+## v27.35.7 historical static-contract alignment
 
 Four historical Gate A tests now describe the final promoted state: tracked authentic lockfile, semantic green-acceptance wording, recursive V1–V47 discovery and exact pinned Node image. This is test-only and changes no module registry or runtime ownership.
 
-Status: v27.35.6.
+Status: v27.35.7.
 
 ## Frontend gate static-contract Java escaping (v27.35.4)
 

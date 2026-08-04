@@ -1,3 +1,10 @@
+# v27.35.7 — Docker Frontend OpenAPI Build Context Hotfix
+
+- Copies the canonical backend OpenAPI YAML into the Docker frontend stage before the generated-contract drift check.
+- Preserves the committed authentic npm graph, strict typecheck, 16 Vitest cases, Vite build and one-image Spring Boot topology.
+- Adds binding regression guards for canonical source path, Docker ordering and absence of a frontend contract duplicate.
+- Changes no runtime behavior, API, OpenAPI content, schema, Flyway migration or domain ownership.
+
 # v27.35.6 — Gate A Historical Static Contract Alignment Hotfix
 
 - Aligns four stale test-only architecture contracts with the promoted committed-lockfile and pinned-delivery foundation.

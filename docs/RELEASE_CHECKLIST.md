@@ -1,6 +1,16 @@
 # Release checklist
 
-Status: v27.35.6.
+Status: v27.35.7.
+
+## v27.35.7 Docker Frontend OpenAPI Build Context Hotfix acceptance
+
+- [ ] Docker copies `src/main/resources/static/openapi/dutylog-v1.yaml` to the canonical `/src/...` path in the frontend stage.
+- [ ] OpenAPI copy occurs after dependency installation and before `npm run build`.
+- [ ] Authentic lockfile, `npm ci`, `vue-tsc`, 16 Vitest cases, OpenAPI drift and Vite bundle checks pass in Docker.
+- [ ] Maven packages the Vue bundle into the existing Spring Boot image.
+- [ ] Full Docker, clean PostgreSQL and staging validation are green.
+- [ ] No runtime, API, OpenAPI content, schema, migration or domain-ownership change.
+
 
 ## v27.35.6 Gate A Historical Static Contract Alignment Hotfix acceptance
 
@@ -341,6 +351,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.35.6 -m "v27.35.6 — Gate A Historical Static Contract Alignment Hotfix"
-git push origin v27.35.6
+git tag -a v27.35.7 -m "v27.35.7 — Docker Frontend OpenAPI Build Context Hotfix"
+git push origin v27.35.7
 ```

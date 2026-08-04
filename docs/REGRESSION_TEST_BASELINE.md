@@ -1,12 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.35.6.
+Status: v27.35.7.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.35.6 aligns four stale historical static-contract expectations after the frontend gate and Maven compilation succeeded. The application baseline remains 140 Java test classes / 673 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.35.7 supplies the canonical backend OpenAPI document to the Docker frontend build stage after full frontend and Maven validation succeeded. The application baseline is 141 Java test classes / 677 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
+
+
+## v27.35.7 Docker frontend OpenAPI build-context extension
+
+- Java test classes: 141.
+- `@Test` methods: 677.
+- Playwright scenarios: 44.
+- Vitest cases: 16.
+- Flyway remains V47.
+- Adds four static Docker/OpenAPI delivery contracts; runtime and dependency graph are unchanged.
 
 
 ## v27.35.6 Gate A historical static-contract alignment extension

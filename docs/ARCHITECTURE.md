@@ -1,8 +1,8 @@
 # DutyLog architecture
 
-## Active Vue frontend transition — v27.35.6 Gate A contract alignment
+## Active Vue frontend transition — v27.35.7 Gate A contract alignment
 
-DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains a separate container. `v27.35.6` preserves the authentic committed npm graph and all Gate A implementation; it aligns four historical test-only expectations with the final delivery and migration topology. Frontend API types and operation metadata remain generated from canonical backend OpenAPI and protected by a drift gate; shared HTTP requests carry bounded correlation IDs; Vue render, boot and unhandled-promise failures expose controlled recovery UI with route/release/request context.
+DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains a separate container. `v27.35.7` preserves the authentic committed npm graph and all Gate A implementation; it aligns four historical test-only expectations with the final delivery and migration topology. Frontend API types and operation metadata remain generated from canonical backend OpenAPI and protected by a drift gate; shared HTTP requests carry bounded correlation IDs; Vue render, boot and unhandled-promise failures expose controlled recovery UI with route/release/request context.
 
 Spring Boot remains the source of truth for business rules, permissions, FIFO, Payroll, closed periods and persistence. The strict TypeScript compiler, generated-browser audit and Playwright runtime collector remain enabled. Vite output is still packaged into the Spring Boot JAR/image; production remains one app container plus PostgreSQL.
 

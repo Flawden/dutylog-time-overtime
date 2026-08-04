@@ -14,6 +14,8 @@ RUN test "$(node --version)" = "v$(cat .node-version)" \
     && test -e node_modules/.bin/vite \
     && npm ls --all >/dev/null
 COPY frontend ./
+COPY src/main/resources/static/openapi/dutylog-v1.yaml \
+     /src/main/resources/static/openapi/dutylog-v1.yaml
 RUN node ./scripts/verify-authentic-lockfile.mjs \
     && npm run verify:delivery \
     && npm run typecheck \
@@ -38,7 +40,7 @@ RUN find src/main/resources/static -type f -name '*.js' -exec \
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-ARG DUTYLOG_BUILD_VERSION=27.35.6-local
+ARG DUTYLOG_BUILD_VERSION=27.35.7-local
 ARG DUTYLOG_BUILD_COMMIT=local
 ARG DUTYLOG_BUILD_TREE=local
 ARG DUTYLOG_BUILD_TIME=unknown

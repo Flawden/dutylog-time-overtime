@@ -1,8 +1,8 @@
 # DutyLog CI/CD
 
-Status: v27.35.6.
+Status: v27.35.7.
 
-## v27.35.6 historical static-contract alignment boundary
+## v27.35.7 historical static-contract alignment boundary
 
 The complete frontend gate remains unchanged and green. Maven now evaluates the promoted-lockfile, recursive migration-layout and exact pinned-image contracts without relying on stale bootstrap-era assumptions. No validation is skipped or weakened.
 
