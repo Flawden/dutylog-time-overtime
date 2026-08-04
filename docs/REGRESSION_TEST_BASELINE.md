@@ -1,12 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.35.5.
+Status: v27.35.6.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.35.5 fixes the effectively-final lambda capture in the test-only Gate A quality-register contract after the full frontend gate passed. The current application baseline remains 140 Java test classes / 673 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.35.6 aligns four stale historical static-contract expectations after the frontend gate and Maven compilation succeeded. The application baseline remains 140 Java test classes / 673 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
+
+
+## v27.35.6 Gate A historical static-contract alignment extension
+
+- Java test classes: 140.
+- `@Test` methods: 673.
+- Playwright scenarios: 44.
+- Vitest cases: 16.
+- Flyway remains V47.
+- Corrects four stale test-only expectations; runtime and dependency graph are unchanged.
 
 
 ## v27.35.5 Gate A quality-register lambda-capture compile extension

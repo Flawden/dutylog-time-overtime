@@ -1,3 +1,10 @@
+# v27.35.6 — Gate A Historical Static Contract Alignment Hotfix
+
+- Aligns four stale test-only architecture contracts with the promoted committed-lockfile and pinned-delivery foundation.
+- Requires tracked `frontend/package-lock.json`, semantic green-acceptance wording, recursive Flyway V1–V47 discovery and the exact pinned Node image.
+- Preserves the fully green frontend gate, authentic npm graph, production Java sources, API, OpenAPI, PostgreSQL, Flyway files and one-image topology.
+- Adds release guards for all four corrected expectations before the next domain migration.
+
 # v27.35.5 — Gate A Quality Register Lambda Capture Compile Hotfix
 
 - Fixes the Maven `testCompile` blocker in `VueDeliveryContractsDiagnosticsFoundationTest`: the loop counter is no longer captured directly by a lambda.

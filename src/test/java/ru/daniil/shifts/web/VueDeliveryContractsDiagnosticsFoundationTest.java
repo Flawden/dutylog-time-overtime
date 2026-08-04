@@ -117,13 +117,16 @@ class VueDeliveryContractsDiagnosticsFoundationTest {
             String row = register.lines().filter(line -> line.startsWith(rowPrefix)).findFirst().orElseThrow();
             assertTrue(row.endsWith("| DONE |"), row);
         }
-        assertTrue(register.contains("полного зелёного CI/staging `v27.35.5`"));
+        assertTrue(register.contains("полного зелёного CI/staging `v27.35.6`"));
     }
 
     @Test
     void releaseKeepsBackendAndDeploymentTopologyUnchanged() throws Exception {
-        try (var migrations = Files.list(Path.of("src/main/resources/db/migration"))) {
-            assertEquals(47, migrations.filter(Files::isRegularFile).count());
+        try (var migrations = Files.walk(Path.of("src/main/resources/db/migration"))) {
+            assertEquals(47, migrations
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().matches("V\\d+__.*\\.sql"))
+                    .count());
         }
         String release = read("docs/VUE_DELIVERY_CONTRACTS_DIAGNOSTICS_FOUNDATION_V27.35.0.md");
         assertTrue(release.contains("No product domain moves to Vue"));

@@ -1,6 +1,6 @@
-# DutyLog API v27.35.5
+# DutyLog API v27.35.6
 
-`v27.35.5` changes no backend request/response schema, endpoint, authorization rule or domain invariant. It fixes only an effectively-final lambda capture in a test-only Gate A quality-register contract.
+`v27.35.6` changes no backend request/response schema, endpoint, authorization rule or domain invariant. It aligns four stale test-only delivery contracts with the promoted authentic lockfile, recursive Flyway layout and exact pinned Node image.
 
 The v27.34.4 preview behavior remains released: non-persistent zero/negative draft calculations are representable, while create/update validation remains strict.
 

@@ -1,6 +1,16 @@
 # Release checklist
 
-Status: v27.35.5.
+Status: v27.35.6.
+
+## v27.35.6 Gate A Historical Static Contract Alignment Hotfix acceptance
+
+- [ ] All four corrected static-contract methods pass in the full Maven suite.
+- [ ] `frontend/package-lock.json` remains tracked and excluded from `.gitignore`.
+- [ ] Flyway discovery finds exactly V1–V47 recursively under `db/migration`.
+- [ ] Docker keeps `node:20.18.1-alpine3.20` and the one-image application topology.
+- [ ] Full Maven, Playwright, Docker, clean PostgreSQL and staging validation are green.
+- [ ] No runtime, API, OpenAPI, schema, migration or domain-ownership change.
+
 
 ## v27.35.5 Gate A Quality Register Lambda Capture Compile Hotfix acceptance
 
@@ -331,6 +341,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.35.5 -m "v27.35.5 — Gate A Quality Register Lambda Capture Compile Hotfix"
-git push origin v27.35.5
+git tag -a v27.35.6 -m "v27.35.6 — Gate A Historical Static Contract Alignment Hotfix"
+git push origin v27.35.6
 ```

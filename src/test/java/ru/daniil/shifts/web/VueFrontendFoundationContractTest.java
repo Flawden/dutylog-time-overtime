@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static architecture contract for v27.35.5 Vue App Shell & Design System continuation. */
+/** Static architecture contract for v27.35.6 Vue App Shell & Design System continuation. */
 class VueFrontendFoundationContractTest {
 
     @Test
@@ -56,7 +56,7 @@ class VueFrontendFoundationContractTest {
 
         assertTrue(pom.contains("<directory>frontend/dist</directory>"));
         assertTrue(pom.contains("<targetPath>static/vue</targetPath>"));
-        assertTrue(dockerfile.contains("FROM node:20-alpine AS frontend-build"));
+        assertTrue(dockerfile.contains("FROM node:20.18.1-alpine3.20 AS frontend-build"));
         assertTrue(dockerfile.contains("COPY --from=frontend-build /frontend/dist ./frontend/dist"));
         assertTrue(dockerfile.contains("FROM maven:3.9.9-eclipse-temurin-17 AS backend-build"));
         assertTrue(dockerfile.contains("COPY --from=backend-build --chown=dutylog:dutylog /app/target/dutylog-*.jar /app/dutylog.jar"));
@@ -90,14 +90,14 @@ class VueFrontendFoundationContractTest {
         String spec = read("e2e/vue-frontend-foundation.spec.js");
 
         assertTrue(html.contains("id=\"dutylog-vue-root\""));
-        assertTrue(html.contains("type=\"module\" src=\"/vue/dutylog-vue-app-shell.js?v=27.35.5\""));
+        assertTrue(html.contains("type=\"module\" src=\"/vue/dutylog-vue-app-shell.js?v=27.35.6\""));
         assertTrue(bootstrap.contains("window.__dutylogVueReady = new Promise"));
         assertTrue(main.contains("window.DutyLogVuePlatform = platform"));
         assertTrue(main.contains("host.dataset.vueReady = \"true\""));
         assertTrue(main.contains("Object.freeze"));
         assertTrue(spec.contains("window.__dutylogVueReady"));
         assertTrue(spec.contains("data-vue-ready"));
-        assertTrue(html.contains("js/70-user-boot.js?v=27.35.5"));
+        assertTrue(html.contains("js/70-user-boot.js?v=27.35.6"));
     }
 
     private static String read(String path) throws Exception {

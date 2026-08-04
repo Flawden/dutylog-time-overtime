@@ -16,7 +16,7 @@ class FrontendLockfileExecutableResolutionHotfixTest {
     void authenticFrontendLockfileIsNowTheTrackedReleaseSourceOfTruth() throws Exception {
         String ignore = read(".gitignore");
         String bootstrap = read("deploy/scripts/bootstrap-frontend-lockfile.sh");
-        assertTrue(ignore.contains("frontend/package-lock.json"));
+        assertFalse(ignore.contains("frontend/package-lock.json"));
         assertTrue(bootstrap.contains("rm -f \"$FRONTEND_DIR/package-lock.json\""));
     }
 

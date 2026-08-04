@@ -1,10 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.35.5 — Gate A Quality Register Lambda Capture Compile Hotfix**.
+Current release: **v27.35.6 — Gate A Historical Static Contract Alignment Hotfix**.
 
 
 
-## v27.35.5 — Gate A Quality Register Lambda Capture Compile Hotfix — current
+## v27.35.6 — Gate A Historical Static Contract Alignment Hotfix — current
+
+- Align four historical test-only expectations with the final committed-lockfile delivery model.
+- Require semantic full-green acceptance wording rather than one brittle sentence.
+- Discover all 47 Flyway migrations recursively under the PostgreSQL directory.
+- Require the exact pinned `node:20.18.1-alpine3.20` frontend build image.
+- Keep runtime, API, OpenAPI, PostgreSQL, Flyway content and domain ownership unchanged.
+
+
+## v27.35.5 — Gate A Quality Register Lambda Capture Compile Hotfix — stabilization predecessor
 
 - Fixes the remaining Maven `testCompile` blocker in `VueDeliveryContractsDiagnosticsFoundationTest`.
 - Captures an immutable `rowPrefix` instead of the mutable `for` loop counter.

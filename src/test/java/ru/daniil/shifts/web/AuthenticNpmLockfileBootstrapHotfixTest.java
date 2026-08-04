@@ -46,7 +46,8 @@ class AuthenticNpmLockfileBootstrapHotfixTest {
         String release = read("docs/AUTHENTIC_LOCKFILE_COMMIT_GENERATED_CLIENT_FIXTURE_HOTFIX_V27.35.3.md");
         assertTrue(register.contains("Q-01"));
         assertTrue(register.lines().anyMatch(line -> line.startsWith("| Q-01 ") && line.endsWith("| DONE |")));
-        assertTrue(release.contains("full green CI and staging"));
+        assertTrue(release.contains("passes full CI and staging"));
+        assertTrue(release.contains("only after full green"));
     }
 
     private static String read(String path) throws Exception {

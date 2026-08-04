@@ -1,10 +1,10 @@
-## v27.35.5 effectively-final test-contract review
+## v27.35.6 historical static-contract alignment review
 
-- Scope is test-only Java source and release identity.
+- Scope is test-only Java source, release identity and documentation.
 - No authentication, authorization, session, CSRF, token, secret, CSP or dependency behavior changes.
-- The Q-01–Q-05 gate assertions remain active.
+- The promoted lockfile, pinned image and Q-01–Q-05 gate assertions remain active.
 
-Status: v27.35.5.
+Status: v27.35.6.
 
 ## v27.35.4 Java escaping compile-hotfix review
 
