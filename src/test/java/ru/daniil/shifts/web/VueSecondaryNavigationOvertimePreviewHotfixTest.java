@@ -34,7 +34,7 @@ class VueSecondaryNavigationOvertimePreviewHotfixTest {
         assertTrue(service.contains("calculateCredit(user, req, null, false)"));
         assertTrue(service.contains("return calculateCredit(user, req, null, true)"));
         assertTrue(service.contains("creditedMinutes <= 0 && requirePositiveCalculatedHours"));
-        assertTrue(browser.contains("waitForApi(page, 'POST', '/api/overtime/preview', 200)"));
+        assertTrue(browser.contains("waitForApi(page, 'POST', '/api/v1/overtime/preview', 200)"));
         assertTrue(browser.contains("expect(zeroDraftBody.creditedMinutes).toBe(0)"));
     }
 

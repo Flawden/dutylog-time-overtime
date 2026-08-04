@@ -1,12 +1,24 @@
 # DutyLog regression test baseline
 
-Status: v27.35.7.
+Status: v27.36.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.35.7 supplies the canonical backend OpenAPI document to the Docker frontend build stage after full frontend and Maven validation succeeded. The application baseline is 141 Java test classes / 677 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.36.0 migrates Absence and Time Bank to one Vue runtime owner with generated API contracts and Q-06 concurrency protection. The application baseline is 142 Java test classes / 685 `@Test` methods / 45 Chromium Playwright scenarios / 26 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
+
+
+## v27.36.0 Vue Absence & Time Bank extension
+
+- Java test classes: 142.
+- `@Test` methods: 685.
+- Playwright scenarios: 45.
+- Vitest cases: 26.
+- Flyway remains V47.
+- Adds eight static architecture contracts, eight model/store Vitest cases and one browser migration scenario.
+- Protects one Vue runtime owner, typed generated operations, stale-read sequencing, duplicate-submit blocking, HTTP 409 refresh, responsive ledger parity and two-way absence/usage links.
+
 
 
 ## v27.35.7 Docker frontend OpenAPI build-context extension

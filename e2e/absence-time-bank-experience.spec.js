@@ -68,7 +68,7 @@ test('absence remains the event owner while the time bank explains reservations 
   await expect(absence).toContainText('Future reserved time off');
   await expect(absence.locator('[data-bank-absence]')).toBeVisible();
   await absence.locator('[data-bank-absence]').click();
-  await expect(page.locator('#view-overtime')).toBeVisible();
+  await expect(page.locator('[data-vue-domain-route="overtime"]')).toBeVisible();
   await expect(page.locator('#timeBankTabUsage')).toHaveClass(/active/);
   await expect(page.locator(`#ledgerUsageList [data-source-absence-id="${created.id}"]`)).toBeVisible();
 

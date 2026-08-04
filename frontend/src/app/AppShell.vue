@@ -12,6 +12,7 @@ import UiButton from "@/shared/ui/UiButton.vue";
 import UiCard from "@/shared/ui/UiCard.vue";
 import UiModal from "@/shared/overlays/UiModal.vue";
 import ToastHost from "@/shared/overlays/ToastHost.vue";
+import AbsenceTimeBankWorkspace from "@/features/absence-time-bank/components/AbsenceTimeBankWorkspace.vue";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
@@ -77,6 +78,8 @@ function logout(): void { props.bridge.logout(); }
     </header>
     <AppNavigation :bridge="bridge" />
   </div>
+
+  <AbsenceTimeBankWorkspace :bridge="bridge" />
 
   <UiModal
     :open="shell.moreOpen"

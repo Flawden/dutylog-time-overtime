@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.35.7
+release_foundation: v27.36.0
 created: 2026-08-04
 updated: 2026-08-04
 ---
@@ -27,7 +27,7 @@ updated: 2026-08-04
 | Q-03 | Vue error boundary, `unhandledrejection`, route/release/requestId diagnostics | `v27.35.0` | каждый Vue domain | controlled failure показывает recovery UI и correlation id | DONE |
 | Q-04 | Migration manifest и parity matrix | `v27.35.0` template | `v27.36.0–v27.40.0` | manifest в repository + release checklist | DONE |
 | Q-05 | ADR repository и обязательные решения | `v27.35.0` | архитектурные изменения | ADR accepted/superseded index | DONE |
-| Q-06 | Optimistic concurrency / stale-write / double-submit policy | baseline `v27.36.0` | все редактируемые домены | 409/idempotency E2E и documented UX | LOCKED |
+| Q-06 | Optimistic concurrency / stale-write / double-submit policy | baseline `v27.36.0` | все редактируемые домены | sequence-token stale-read guard, mutation lock, durable 409 refresh, Vitest + Playwright double-submit evidence | DONE |
 | Q-07 | PWA asset/version compatibility и upgrade E2E | baseline `v27.37.0` | каждый frontend release | previous cache → new release upgrade scenario | LOCKED |
 | Q-08 | Performance budgets и bundle diff | baseline `v27.37.0` | каждый frontend release; полный audit `v27.45.0` | CI report/thresholds | LOCKED |
 | Q-09 | Accessibility acceptance | design system уже ACTIVE | каждый domain; полный audit `v27.45.0` | keyboard/focus/ARIA/contrast evidence | ACTIVE |
@@ -61,7 +61,7 @@ updated: 2026-08-04
 
 ### Gate A — перед первой доменной миграцией
 
-Q-01–Q-05 реализованы. Gate A принимается для `v27.36.0` только после полного зелёного CI/staging `v27.35.7`; до этого доменная миграция не начинается.
+Q-01–Q-05 реализованы и приняты: полный CI, Docker image build, clean PostgreSQL smoke и staging `v27.35.7` зелёные. Gate A закрыт; `v27.36.0` является первой разрешённой доменной миграцией.
 
 ### Gate B — перед `v27.40.0`
 

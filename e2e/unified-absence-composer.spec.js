@@ -46,7 +46,7 @@ test('one absence composer routes balances and projects full and partial facts i
   await page.locator('#vacationStart').fill(today);
   await page.locator('#vacationStartTime').fill('09:00');
   await page.locator('#vacationEndTime').fill('13:00');
-  const timeOffCreated = waitForApi(page, 'POST', '/api/vacation-planner/absences', 201);
+  const timeOffCreated = waitForApi(page, 'POST', '/api/v1/vacation-planner/absences', 201);
   await page.locator('#vacationSaveBtn').click();
   await timeOffCreated;
   await expect(page.locator('#absenceComposerModal')).toBeHidden();
@@ -69,7 +69,7 @@ test('one absence composer routes balances and projects full and partial facts i
   await page.locator('#vacationTitle').fill('Больничный E2E');
   await page.locator('#vacationStart').fill(sickDay);
   await page.locator('#vacationEnd').fill(sickDay);
-  const sickCreated = waitForApi(page, 'POST', '/api/vacation-planner/absences', 201);
+  const sickCreated = waitForApi(page, 'POST', '/api/v1/vacation-planner/absences', 201);
   await page.locator('#vacationSaveBtn').click();
   await sickCreated;
   await expect(page.locator('#absenceComposerModal')).toBeHidden();

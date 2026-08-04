@@ -1,3 +1,16 @@
+# DutyLog security review
+
+Status: v27.36.0.
+
+## v27.36.0 Vue Absence & Time Bank review
+
+- Spring Boot remains the sole authority for authentication, ownership, absence overlap, compensation policy, FIFO reservation/posting/reversal, closed periods and ledger integrity.
+- The Vue feature uses only same-origin generated operations through the shared credentials/CSRF/request-ID transport; it does not read mutable `window.state`, store secrets or introduce a new origin.
+- Financial/time mutations are never queued offline. Duplicate clicks are blocked locally, stale reads are rejected by sequence token and HTTP `409` refreshes the authoritative server model before retry.
+- Legacy Absence/Time Bank route and modal owners are retired only after Vue readiness. Named Today/Calendar adapters expose commands, not mutable domain state.
+- The canonical OpenAPI document and generated TypeScript remain committed and drift-checked. Authentic lockfile, strict typecheck, bundle audit, strict Playwright error collection and the non-root one-image runtime remain enforced.
+- No database schema, Flyway migration, cookie, CSP, bearer-token, Telegram-secret or public-edge change is introduced.
+
 ## v27.35.7 Docker frontend OpenAPI build-context review
 
 - Scope is Docker build context, test-only Java contracts, release identity and documentation.

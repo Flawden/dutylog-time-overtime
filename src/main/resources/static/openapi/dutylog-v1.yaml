@@ -550,6 +550,39 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/OvertimeAccount' }
         '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/overtime/credits:
+    post:
+      operationId: createOvertimeCredit
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OvertimeCreditCreateRequest' }
+      responses:
+        '200': { description: Rebuilt overtime account, content: { application/json: { schema: { $ref: '#/components/schemas/OvertimeAccount' } } } }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/overtime/credits/{id}:
+    patch:
+      operationId: updateOvertimeCredit
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OvertimeCreditUpdateRequest' }
+      responses:
+        '200': { description: Rebuilt overtime account, content: { application/json: { schema: { $ref: '#/components/schemas/OvertimeAccount' } } } }
+        '404': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: deleteOvertimeCredit
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '200': { description: Rebuilt overtime account, content: { application/json: { schema: { $ref: '#/components/schemas/OvertimeAccount' } } } }
+        '404': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
   /api/v1/overtime/usages:
     post:
       operationId: retiredCreateManualOvertimeUsage
@@ -850,6 +883,47 @@ paths:
               schema:
                 type: array
                 items: { $ref: '#/components/schemas/QuickScenario' }
+    post:
+      operationId: createQuickScenario
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuickScenarioCreateRequest' }
+      responses:
+        '201':
+          description: Created reusable overtime scenario
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuickScenario' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+  /api/v1/quick-scenarios/{id}:
+    patch:
+      operationId: updateQuickScenario
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/QuickScenarioUpdateRequest' }
+      responses:
+        '200':
+          description: Updated reusable overtime scenario
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QuickScenario' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: deleteQuickScenario
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Scenario deleted }
+        '404': { $ref: '#/components/responses/ApiError' }
   /api/v1/export/notes:
     get:
       operationId: exportNotes
@@ -1463,8 +1537,21 @@ components:
         endTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', nullable: true }
         compensationPolicy: { type: string, enum: [VACATION_ALLOWANCE, OVERTIME_BANK, SICK_PAY, UNPAID, NONE], default: NONE }
     AbsencePeriodPatch:
-      allOf:
-        - $ref: '#/components/schemas/AbsencePeriodInput'
+      type: object
+      properties:
+        typeId: { type: integer, format: int64 }
+        title: { type: string, maxLength: 120, nullable: true }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        status: { type: string, enum: [DRAFT, PLANNED, SUBMITTED, APPROVED, REJECTED, CANCELLED, COMPLETED] }
+        note: { type: string, maxLength: 1000, nullable: true }
+        clearTitle: { type: boolean }
+        clearNote: { type: boolean }
+        coverage: { type: string, enum: [FULL_DAY, PARTIAL, HOURS_ONLY] }
+        startTime: { type: string, nullable: true }
+        endTime: { type: string, nullable: true }
+        clearTimes: { type: boolean }
+        compensationPolicy: { type: string, enum: [VACATION_ALLOWANCE, OVERTIME_BANK, SICK_PAY, UNPAID, NONE] }
     AbsencePeriod:
       allOf:
         - $ref: '#/components/schemas/AbsencePeriodInput'
@@ -1525,9 +1612,63 @@ components:
         startTime: { type: string, nullable: true }
         endTime: { type: string, nullable: true }
         compensationPolicy: { type: string, enum: [VACATION_ALLOWANCE, OVERTIME_BANK, SICK_PAY, UNPAID, NONE] }
+    AbsencePreviewItem:
+      type: object
+      required: [date, weekend, counted, shiftConflict, action, replacesShift]
+      properties:
+        date: { type: string, format: date }
+        weekend: { type: boolean }
+        counted: { type: boolean }
+        shiftConflict: { type: boolean }
+        existingAbsenceId: { type: integer, format: int64, nullable: true }
+        existingAbsenceTitle: { type: string, nullable: true }
+        action: { type: string }
+        plannedShiftName: { type: string, nullable: true }
+        plannedShiftColor: { type: string, nullable: true }
+        plannedShiftMinutes: { type: integer, minimum: 0 }
+        replacesShift: { type: boolean }
+    AbsenceTypeSummary:
+      type: object
+      properties:
+        typeId: { type: integer, format: int64 }
+        typeName: { type: string }
+        typeColor: { type: string }
+        systemCode: { type: string, nullable: true }
+        balancePolicy: { type: string, enum: [VACATION_DAYS, TIME_OFF_HOURS, NONE] }
+        fullDays: { type: integer, minimum: 0 }
+        partialMinutes: { type: integer, minimum: 0 }
+        chargedMinutes: { type: integer, minimum: 0 }
     AbsencePreview:
       type: object
-      additionalProperties: true
+      required: [typeId, typeName, startDate, endDate, calendarDays, countedDays, shiftConflictCount, absenceConflictCount, workYearStart, workYearEnd, availableDays, plannedBefore, projectedPlanned, remainingAfter, exceedsAllowance, exceededBy, items, balancePolicy, coverage, durationMinutes, timeOffAvailableMinutes, timeOffPlannedBefore, timeOffProjected, timeOffRemainingAfter, compensationPolicy]
+      properties:
+        typeId: { type: integer, format: int64 }
+        typeName: { type: string }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        calendarDays: { type: integer, minimum: 0 }
+        countedDays: { type: integer, minimum: 0 }
+        shiftConflictCount: { type: integer, minimum: 0 }
+        absenceConflictCount: { type: integer, minimum: 0 }
+        workYearStart: { type: string, format: date }
+        workYearEnd: { type: string, format: date }
+        availableDays: { type: integer }
+        plannedBefore: { type: integer }
+        projectedPlanned: { type: integer }
+        remainingAfter: { type: integer }
+        exceedsAllowance: { type: boolean }
+        exceededBy: { type: integer, minimum: 0 }
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/AbsencePreviewItem' }
+        balancePolicy: { type: string, enum: [VACATION_DAYS, TIME_OFF_HOURS, NONE] }
+        coverage: { type: string, enum: [FULL_DAY, PARTIAL, HOURS_ONLY] }
+        durationMinutes: { type: integer, minimum: 0 }
+        timeOffAvailableMinutes: { type: integer }
+        timeOffPlannedBefore: { type: integer }
+        timeOffProjected: { type: integer }
+        timeOffRemainingAfter: { type: integer }
+        compensationPolicy: { type: string, enum: [VACATION_ALLOWANCE, OVERTIME_BANK, SICK_PAY, UNPAID, NONE] }
     VacationPlanner:
       type: object
       required: [settings, summary, durationPresets, types, absences, occurrences, typeSummaries]
@@ -1540,17 +1681,7 @@ components:
         occurrences: { type: array, items: { $ref: '#/components/schemas/AbsenceOccurrence' } }
         typeSummaries:
           type: array
-          items:
-            type: object
-            properties:
-              typeId: { type: integer, format: int64 }
-              typeName: { type: string }
-              typeColor: { type: string }
-              systemCode: { type: string, nullable: true }
-              balancePolicy: { type: string, enum: [VACATION_DAYS, TIME_OFF_HOURS, NONE] }
-              fullDays: { type: integer, minimum: 0 }
-              partialMinutes: { type: integer, minimum: 0 }
-              chargedMinutes: { type: integer, minimum: 0 }
+          items: { $ref: '#/components/schemas/AbsenceTypeSummary' }
     ScheduleTemplateStep:
       type: object
       required: [position, shiftTypeId, shiftTypeName, shiftColor, dayOff]
@@ -1903,6 +2034,17 @@ components:
         endDateTime: { type: string, nullable: true, example: '2026-03-29T04:30' }
         breakMinutes: { type: integer, minimum: 0, maximum: 1440, nullable: true }
         plannedHours: { type: number, format: double, minimum: 0, nullable: true }
+    OvertimeCreditUpdateRequest:
+      type: object
+      properties:
+        date: { type: string, format: date, nullable: true }
+        timeRange: { type: string, nullable: true }
+        hours: { type: number, format: double, nullable: true }
+        reason: { type: string, nullable: true }
+        startDateTime: { type: string, nullable: true }
+        endDateTime: { type: string, nullable: true }
+        breakMinutes: { type: integer, minimum: 0, maximum: 1440, nullable: true }
+        plannedHours: { type: number, format: double, minimum: 0, nullable: true }
     OvertimeCreditPreview:
       type: object
       required: [calculated, elapsedMinutes, elapsedHours, breakMinutes, plannedMinutes, plannedHours, creditedMinutes, creditedHours]
@@ -1918,6 +2060,43 @@ components:
         sourceTimezone: { type: string, nullable: true, example: Europe/Berlin }
         startInstant: { type: string, format: date-time, nullable: true }
         endInstant: { type: string, format: date-time, nullable: true }
+    QuickScenarioCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        groupLabel: { type: string, maxLength: 40, nullable: true }
+        description: { type: string, maxLength: 300, nullable: true }
+        startMode: { type: string, enum: [SHIFT_START, SHIFT_END], default: SHIFT_END }
+        endMode: { type: string, enum: [SHIFT_END, ADD_MINUTES, FIXED_TIME], default: ADD_MINUTES }
+        endOffsetMinutes: { type: integer, minimum: 0, maximum: 4320, default: 120 }
+        endFixedTime: { type: string, nullable: true, pattern: '^([01]\d|2[0-3]):[0-5]\d$' }
+        endNextDay: { type: boolean, default: false }
+        endDayOffset: { type: integer, minimum: -2, maximum: 2, default: 0 }
+        breakMode: { type: string, enum: [ZERO, SHIFT, CUSTOM], default: ZERO }
+        customBreakMinutes: { type: integer, minimum: 0, maximum: 1440, default: 0 }
+        plannedMode: { type: string, enum: [ZERO, SHIFT, CUSTOM], default: ZERO }
+        customPlannedHours: { type: number, format: double, minimum: 0, maximum: 100, default: 0 }
+        reasonTemplate: { type: string, maxLength: 300, nullable: true }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000, default: 0 }
+    QuickScenarioUpdateRequest:
+      type: object
+      properties:
+        name: { type: string, minLength: 1, maxLength: 80 }
+        groupLabel: { type: string, maxLength: 40, nullable: true }
+        description: { type: string, maxLength: 300, nullable: true }
+        startMode: { type: string, enum: [SHIFT_START, SHIFT_END] }
+        endMode: { type: string, enum: [SHIFT_END, ADD_MINUTES, FIXED_TIME] }
+        endOffsetMinutes: { type: integer, minimum: 0, maximum: 4320 }
+        endFixedTime: { type: string, nullable: true, pattern: '^([01]\d|2[0-3]):[0-5]\d$' }
+        endNextDay: { type: boolean }
+        endDayOffset: { type: integer, minimum: -2, maximum: 2 }
+        breakMode: { type: string, enum: [ZERO, SHIFT, CUSTOM] }
+        customBreakMinutes: { type: integer, minimum: 0, maximum: 1440 }
+        plannedMode: { type: string, enum: [ZERO, SHIFT, CUSTOM] }
+        customPlannedHours: { type: number, format: double, minimum: 0, maximum: 100 }
+        reasonTemplate: { type: string, maxLength: 300, nullable: true }
+        sortOrder: { type: integer, minimum: 0, maximum: 10000 }
     QuickScenario:
       type: object
       required: [id, name, startMode, endMode, endOffsetMinutes, endNextDay, endDayOffset, breakMode, customBreakMinutes, plannedMode, customPlannedHours, sortOrder]

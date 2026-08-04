@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.35.7"
+const DUTYLOG_VERSION = "27.36.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -215,6 +215,13 @@ window.DutyLogLegacyPlatform = Object.freeze({
   },
   logout(){
     document.getElementById("logout")?.click();
+  },
+  retireDomainOwners(domain){
+    if (domain !== "absence-time-bank") return;
+    for (const id of ["view-vacation", "view-overtime", "absenceComposerModal", "overtimeCreditModal", "overtimeUsageModal"]) {
+      document.getElementById(id)?.remove();
+    }
+    document.documentElement.setAttribute("data-vue-absence-time-bank", "ready");
   },
   subscribe(listener){
     if (typeof listener !== "function") return () => {};

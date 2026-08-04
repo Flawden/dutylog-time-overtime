@@ -76,24 +76,15 @@ async function waitForCalendarNavigationReady(page) {
 }
 
 async function waitForVacationReady(page) {
-  await page.evaluate(async () => {
-    await Promise.resolve(window.__dutylogVacationReady);
-  });
-  await expect.poll(() => page.evaluate(() =>
-    Boolean(typeof state !== 'undefined' && state.vacationPlanner)
-  ), { timeout:30_000 }).toBe(true);
+  await waitForVueShell(page);
+  await expect.poll(() => page.evaluate(() => Boolean(window.DutyLogVueDomains?.absenceTimeBank?.ready())), { timeout:30_000 }).toBe(true);
+  await expect(page.locator('[data-vue-domain-route="vacation"]')).toBeVisible();
 }
 
 async function waitForLedgerReady(page) {
-  await page.evaluate(async () => {
-    await Promise.resolve(window.__dutylogLedgerRouteReady);
-    await Promise.resolve(window.__dutylogLedgerReady);
-  });
-  await expect.poll(() => page.evaluate(() => ({
-    loading:Boolean(typeof state !== 'undefined' && state.ui?.loadingLedger),
-    summary:Boolean(typeof state !== 'undefined' && state.timeCompensation),
-    integrity:Boolean(typeof state !== 'undefined' && state.ledgerIntegrity)
-  })), { timeout:30_000 }).toEqual({ loading:false, summary:true, integrity:true });
+  await waitForVueShell(page);
+  await expect.poll(() => page.evaluate(() => Boolean(window.DutyLogVueDomains?.absenceTimeBank?.ready())), { timeout:30_000 }).toBe(true);
+  await expect(page.locator('[data-vue-domain-route="overtime"]')).toBeVisible();
 }
 
 async function waitForPayrollReady(page) {
@@ -126,7 +117,10 @@ async function navigateWithShell(page, view) {
 }
 
 async function openView(page, view) {
-  const section = page.locator(`#view-${view}`);
+  const vueOwned = view === 'vacation' || view === 'overtime';
+  const section = vueOwned
+    ? page.locator(`[data-vue-domain-route="${view}"]`)
+    : page.locator(`#view-${view}`);
   if (!(await section.isVisible())) {
     await navigateWithShell(page, view);
     await expect(section).toBeVisible();

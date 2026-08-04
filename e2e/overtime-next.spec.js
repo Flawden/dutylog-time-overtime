@@ -34,8 +34,8 @@ test('Overtime Next keeps the professional desktop ledger and replaces it with d
 
   await openView(page, 'overtime');
   await waitForLedgerReady(page);
-  await expect.poll(() => page.evaluate(() => state.overtimeAccount?.usages?.length || 0)).toBe(1);
-  await expect.poll(() => page.evaluate(() => state.overtimeAccount?.usages?.[0]?.hours || 0)).toBe(4);
+  await expect.poll(() => page.evaluate(async () => (await jfetch('/api/overtime/account')).usages?.length || 0)).toBe(1);
+  await expect.poll(() => page.evaluate(async () => (await jfetch('/api/overtime/account')).usages?.[0]?.hours || 0)).toBe(4);
 
   await expect(page.locator('#ledgerBalance')).toContainText('+1');
   await expect(page.locator('#ledgerEarned')).toContainText('+5');

@@ -1,8 +1,8 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.35.7.
+Status: Vue app-shell ownership v1, DutyLog v27.36.0.
 
-## Delivery, generated API and diagnostics foundation (v27.35.7 contract alignment)
+## Delivery foundation and first migrated domain (v27.36.0)
 
 The frontend toolchain is exact-pinned (`Node 20.18.1`, `npm 10.8.2`) and installs from a committed npm lockfile through `npm ci`. The canonical backend OpenAPI YAML is deterministically transformed into reviewed TypeScript schema and operation types; `--check` fails when generated output drifts. New Vue API integrations use the generated operation contract over the shared same-origin CSRF/request-ID transport.
 
@@ -20,7 +20,9 @@ When the active route is outside primary navigation, the visible More control an
 
 **Vue owns the application shell**: brand, profile entry, primary/secondary navigation, active-route presentation, online state, shared modal/toast hosts and design-system primitives.
 
-**Legacy product screens remain authoritative** for Today, Calendar, Absences, Time Bank, Payroll, Tasks, Important Days, Settings and Admin. They still own domain rendering, forms, API reads/mutations, offline queue and hash-route execution until each bounded domain is migrated.
+**Vue also owns the bounded Absence & Time Bank domain**: absence journal, unified composer, credit/scenario editor, plan/fact/compensation explanation, responsive ledger, usages, reservations and FIFO forecast. The Vue feature uses generated operation contracts and never reproduces backend business authority.
+
+**Legacy product screens remain authoritative** for Today, Calendar, Payroll, Tasks, Important Days, Settings and Admin. Today and Calendar may invoke Absence/Time Bank only through named typed adapters; they no longer render or mutate the retired legacy domain owners.
 
 ```text
 frontend/src
@@ -35,7 +37,7 @@ frontend/src
 ## State ownership
 
 - Spring Boot owns business rules and persisted truth.
-- Legacy product read models remain authoritative until their domain migration.
+- Legacy product read models remain authoritative only for domains that have not migrated; Absence and Time Bank use the bounded Vue store over backend read models.
 - The shell receives only a frozen snapshot: route, allowed navigation, language, online/module readiness and safe profile display fields.
 - Pinia owns explicit shell UI state; it never mirrors one global mutable product state.
 - Local form drafts remain local to each future feature/composer.
@@ -43,7 +45,7 @@ frontend/src
 
 ## Routing and bridge
 
-Vue Router still uses memory history. The released hash route remains authoritative during v27.35.3. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
+Vue Router still uses memory history. The released hash route remains authoritative for application-level navigation during v27.36.0; the Absence and Time Bank route bodies are Vue-owned. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
 
 Allowed transition capabilities are:
 
@@ -55,7 +57,7 @@ openModal
 logout
 ```
 
-Vue must not read `window.state`, query `#tabbar`, mutate product DOM or create a second mutation owner. When Vue reaches full parity, one release will switch routing authority atomically; two production routers must not remain active.
+Vue must not read `window.state`, query `#tabbar` or create a second mutation owner. The Absence & Time Bank workspace atomically retires `#view-vacation`, `#view-overtime` and their legacy modal owners after Vue readiness; other domains retain their existing owners until their own bounded migration releases.
 
 ## Shared design system
 

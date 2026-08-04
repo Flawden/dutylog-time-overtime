@@ -22,7 +22,7 @@ test('overtime scenarios are created and edited inside the shared credit modal',
   await openDayModule(page, 'overtime');
   await page.locator('#dayAddCredit').click();
   await expect(page.locator('#overtimeCreditModal')).toBeVisible();
-  const zeroDraftPreview = waitForApi(page, 'POST', '/api/overtime/preview', 200);
+  const zeroDraftPreview = waitForApi(page, 'POST', '/api/v1/overtime/preview', 200);
   await page.locator('#creditTimeByShift').click();
   const zeroDraftBody = await (await zeroDraftPreview).json();
   expect(zeroDraftBody.creditedMinutes).toBe(0);
@@ -64,7 +64,7 @@ test('overtime scenarios are created and edited inside the shared credit modal',
 
   const name = `Saved scenario ${Date.now()}`;
   await page.locator('#scName').fill(name);
-  const created = waitForApi(page, 'POST', '/api/quick-scenarios', 201);
+  const created = waitForApi(page, 'POST', '/api/v1/quick-scenarios', 201);
   await page.locator('#scSave').click();
   const createdResponse = await created;
   const createdBody = await createdResponse.json();
@@ -82,7 +82,7 @@ test('overtime scenarios are created and edited inside the shared credit modal',
 
   const editedName = `${name} edited`;
   await page.locator('#scName').fill(editedName);
-  const updated = waitForApi(page, 'PATCH', `/api/quick-scenarios/${createdBody.id}`);
+  const updated = waitForApi(page, 'PATCH', `/api/v1/quick-scenarios/${createdBody.id}`);
   await page.locator('#scSave').click();
   await updated;
 

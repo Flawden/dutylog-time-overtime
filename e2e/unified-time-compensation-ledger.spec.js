@@ -30,6 +30,7 @@ test('absence compensation is linked to FIFO overtime and monthly plan-fact summ
   }, dates.timeOff);
 
   await openView(page, 'vacation');
+  await page.locator('#vacationComposerOpen').click();
   const timeOffValue = await page.locator('#vacationType option', { hasText:'Отгул' }).getAttribute('value');
   await page.locator('#vacationType').selectOption(timeOffValue);
   await page.locator('#vacationStatus').selectOption('APPROVED');
@@ -39,7 +40,7 @@ test('absence compensation is linked to FIFO overtime and monthly plan-fact summ
   await page.locator('#vacationStart').fill(dates.timeOff);
   await page.locator('#vacationStartTime').fill('09:00');
   await page.locator('#vacationEndTime').fill('13:00');
-  const timeOffCreated = page.waitForResponse(response => new URL(response.url()).pathname === '/api/vacation-planner/absences'
+  const timeOffCreated = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/vacation-planner/absences'
     && response.request().method() === 'POST' && response.status() === 201);
   await page.locator('#vacationSaveBtn').click();
   const timeOff = await (await timeOffCreated).json();
@@ -48,6 +49,7 @@ test('absence compensation is linked to FIFO overtime and monthly plan-fact summ
   expect(timeOff.compensatedMinutes).toBe(240);
   expect(timeOff.linkedOvertimeUsageId).toBeTruthy();
 
+  await page.locator('#vacationComposerOpen').click();
   const unpaidValue = await page.locator('#vacationType option', { hasText:'Без содержания' }).getAttribute('value');
   await page.locator('#vacationType').selectOption(unpaidValue);
   await page.locator('#vacationStatus').selectOption('APPROVED');
@@ -56,7 +58,7 @@ test('absence compensation is linked to FIFO overtime and monthly plan-fact summ
   await page.locator('#vacationTitle').fill('День без содержания');
   await page.locator('#vacationStart').fill(dates.unpaid);
   await page.locator('#vacationEnd').fill(dates.unpaid);
-  const unpaidCreated = page.waitForResponse(response => new URL(response.url()).pathname === '/api/vacation-planner/absences'
+  const unpaidCreated = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/vacation-planner/absences'
     && response.request().method() === 'POST' && response.status() === 201);
   await page.locator('#vacationSaveBtn').click();
   const unpaid = await (await unpaidCreated).json();
@@ -79,7 +81,7 @@ test('absence compensation is linked to FIFO overtime and monthly plan-fact summ
   await openView(page, 'vacation');
   await page.locator(`[data-edit-absence="${timeOff.id}"]`).click();
   page.once('dialog', dialog => dialog.accept());
-  const deleted = waitForApi(page, 'DELETE', `/api/vacation-planner/absences/${timeOff.id}`, 204);
+  const deleted = waitForApi(page, 'DELETE', `/api/v1/vacation-planner/absences/${timeOff.id}`, 204);
   await page.locator(`[data-delete-absence="${timeOff.id}"]`).click();
   await deleted;
 

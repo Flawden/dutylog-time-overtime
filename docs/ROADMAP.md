@@ -1,10 +1,21 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.35.7 — Docker Frontend OpenAPI Build Context Hotfix**.
+Current release: **v27.36.0 — Vue Absence & Time Bank**.
 
 
 
-## v27.35.7 — Docker Frontend OpenAPI Build Context Hotfix — current
+## v27.36.0 — Vue Absence & Time Bank — current
+
+- Migrate the unified Absence Composer and absence journal to Vue 3 with strict TypeScript.
+- Migrate Time Bank overview, credits, responsive ledger, usage ownership, FIFO queue/forecast, exact credit editor and scenario manager.
+- Keep Spring Boot authoritative for allowance, overlap, compensation, FIFO, ledger integrity, closed periods and ownership.
+- Close Q-06 with stale-read sequencing, duplicate-submit blocking and durable HTTP 409 refresh.
+- Retire the legacy Absence/Time Bank runtime owners while retaining only named typed Today/Calendar adapters.
+- Preserve one Spring Boot image/container, separate PostgreSQL, Flyway V47 and rollback without schema changes.
+
+
+
+## v27.35.7 — Docker Frontend OpenAPI Build Context Hotfix — completed
 
 - Copy the canonical backend OpenAPI YAML into the Docker frontend stage.
 - Keep the OpenAPI drift gate active inside `npm run build`.
@@ -42,7 +53,7 @@ Current release: **v27.35.7 — Docker Frontend OpenAPI Build Context Hotfix**.
 - [x] Restore committed-lockfile-only `npm ci` in CI, Docker and local frontend gate.
 - [x] Fix the generated-client Vitest fixture to return a fresh `Response` per request.
 - [x] Mark Q-01–Q-05 DONE in implementation.
-- [ ] Require full green CI/staging before accepting Gate A and starting v27.36.0.
+- [x] Full CI, Docker, clean PostgreSQL and staging are green; Gate A is accepted and v27.36.0 may proceed.
 
 ## v27.35.2 — Authentic npm Lockfile Bootstrap Hotfix — completed
 
@@ -123,7 +134,7 @@ Current release: **v27.35.7 — Docker Frontend OpenAPI Build Context Hotfix**.
 - [x] Preserve legacy hash routing and product-screen ownership behind named capabilities.
 - [x] Add static, Vitest and Playwright shell parity coverage.
 - [x] v27.35.0: close Vue delivery, generated-contract, diagnostics, manifest and ADR Gate A.
-- [ ] v27.36.0: migrate Absence Composer and Time Bank.
+- [x] v27.36.0: migrate Absence Composer and Time Bank.
 - [ ] v27.37.0: migrate Calendar, Today and timeline.
 - [ ] v27.38.0: migrate Tasks, Notes and Important Days.
 - [ ] v27.39.0: migrate Settings, Workspace and integrations.

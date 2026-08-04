@@ -108,7 +108,7 @@ class VueDeliveryContractsDiagnosticsFoundationTest {
     }
 
     @Test
-    void engineeringQualityRegisterMarksGateAWorkDonePendingGreenAcceptance() throws Exception {
+    void engineeringQualityRegisterMarksGateAWorkDoneAndAccepted() throws Exception {
         String register = read("docs/ENGINEERING_QUALITY_REGISTER.md");
         String q01 = register.lines().filter(line -> line.startsWith("| Q-01 ")).findFirst().orElseThrow();
         assertTrue(q01.endsWith("| DONE |"), q01);
@@ -117,7 +117,8 @@ class VueDeliveryContractsDiagnosticsFoundationTest {
             String row = register.lines().filter(line -> line.startsWith(rowPrefix)).findFirst().orElseThrow();
             assertTrue(row.endsWith("| DONE |"), row);
         }
-        assertTrue(register.contains("полного зелёного CI/staging `v27.35.7`"));
+        assertTrue(register.contains("staging `v27.35.7` зелёные"));
+        assertTrue(register.contains("Gate A закрыт"));
     }
 
     @Test

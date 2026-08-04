@@ -1,5 +1,16 @@
 # Module contracts
 
+## Vue Absence & Time Bank ownership (v27.36.0)
+
+- Vue is the sole runtime presentation/mutation owner for the `vacation` and `overtime` routes.
+- Spring Boot remains authoritative for allowance, overlap, compensation, exact credit calculation, ownership, FIFO reservation/posting/reversal, accounting periods and ledger integrity.
+- The feature consumes only operationId-based generated API calls; no raw `fetch`, `jfetch` or mutable legacy state is allowed.
+- Legacy Today/Calendar actions may cross the boundary only through typed `openAbsenceComposer`, `openAbsenceEditor`, `openCreditEditor`, `openTimeBankUsage` and `refresh` capabilities.
+- Legacy route roots and editor modals are retired when the Vue workspace mounts; named adapters remain until their caller domains migrate.
+- Q-06 blocks duplicate writes, rejects stale reads and refreshes the server model after HTTP 409.
+
+Status: v27.36.0.
+
 ## v27.35.7 historical static-contract alignment
 
 Four historical Gate A tests now describe the final promoted state: tracked authentic lockfile, semantic green-acceptance wording, recursive V1–V47 discovery and exact pinned Node image. This is test-only and changes no module registry or runtime ownership.

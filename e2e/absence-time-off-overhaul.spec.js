@@ -23,6 +23,7 @@ test('partial time off keeps the planned shift and spends the unified overtime b
   }, date);
 
   await openView(page, 'vacation');
+  await page.locator('#vacationComposerOpen').click();
   await expect(page.locator('#vacationType option')).toHaveCount(5);
   await expect(page.locator('#timeOffRemaining')).toContainText('8');
 
@@ -39,7 +40,7 @@ test('partial time off keeps the planned shift and spends the unified overtime b
   await page.locator('#vacationStartTime').fill('09:00');
   await page.locator('#vacationEndTime').fill('13:00');
 
-  const previewResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/vacation-planner/preview'
+  const previewResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/vacation-planner/preview'
     && response.request().method() === 'POST' && response.status() === 200);
   await page.locator('#vacationPreviewBtn').click();
   const preview = await (await previewResponse).json();
@@ -48,7 +49,7 @@ test('partial time off keeps the planned shift and spends the unified overtime b
   expect(preview.timeOffRemainingAfter).toBe(240);
   await expect(page.locator('#vacationPreview')).toContainText('4 ч');
 
-  const createdResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/vacation-planner/absences'
+  const createdResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/vacation-planner/absences'
     && response.request().method() === 'POST' && response.status() === 201);
   await page.locator('#vacationSaveBtn').click();
   const created = await (await createdResponse).json();
@@ -70,7 +71,7 @@ test('partial time off keeps the planned shift and spends the unified overtime b
   await expect(item).toContainText('По графику');
 
   page.once('dialog', dialog => dialog.accept());
-  const deleted = page.waitForResponse(response => new URL(response.url()).pathname === `/api/vacation-planner/absences/${created.id}`
+  const deleted = page.waitForResponse(response => new URL(response.url()).pathname === `/api/v1/vacation-planner/absences/${created.id}`
     && response.request().method() === 'DELETE' && response.status() === 204);
   await item.click();
   await page.locator(`[data-delete-absence="${created.id}"]`).click();

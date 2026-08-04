@@ -203,6 +203,10 @@ function restoreAbsenceComposerHome(){
   card.classList.remove("inComposerModal");
 }
 async function openAbsenceComposer({ date = null, systemCode = null, source = "vacation", reason = "" } = {}){
+  const vueDomain = window.DutyLogVueDomains?.absenceTimeBank;
+  if (vueDomain) {
+    return vueDomain.openAbsenceComposer({ date, systemCode, source, reason });
+  }
   if (!moduleEnabled("vacation")) {
     setSave("err", t("модуль выключен"));
     return;
@@ -336,6 +340,11 @@ function syncAbsenceFilterInputs(){
   if ($("absenceSearch")) $("absenceSearch").value = filters.q || "";
 }
 function openTimeBankUsageForAbsence(absenceId){
+  const vueDomain = window.DutyLogVueDomains?.absenceTimeBank;
+  if (vueDomain) {
+    location.hash = "#overtime";
+    return vueDomain.openTimeBankUsage(Number(absenceId) || null);
+  }
   const targetId = Number(absenceId) || null;
   state.timeBankFocusAbsenceId = targetId;
   location.hash = "#overtime";
@@ -485,6 +494,8 @@ function editAbsence(id, { navigate = true, scroll = true } = {}){
   return period;
 }
 async function openAbsenceEditor(id, { source = "vacation" } = {}){
+  const vueDomain = window.DutyLogVueDomains?.absenceTimeBank;
+  if (vueDomain) return vueDomain.openAbsenceEditor(Number(id));
   if (!moduleEnabled("vacation")) {
     setSave("err", t("модуль выключен"));
     return false;
@@ -609,6 +620,8 @@ function openVacationPlannerForDate(date){
 }
 window.__dutylogVacationReady = Promise.resolve();
 function openVacationPlannerView(force = false){
+  const vueDomain = window.DutyLogVueDomains?.absenceTimeBank;
+  if (vueDomain) return vueDomain.refresh();
   renderVacationPlanner();
   if (!force && state.vacationPlanner) return Promise.resolve(state.vacationPlanner);
   const ready = Promise.resolve(loadVacationPlanner(force));

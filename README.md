@@ -1,3 +1,12 @@
+# v27.36.0 — Vue Absence & Time Bank
+
+- Migrates the complete Absence and Time Bank domain to Vue 3 with strict TypeScript: unified absence composer, absence journal, responsive overtime ledger, plan/fact summary, integrity status, exact credit editor, reusable scenarios, usage ownership and FIFO forecast.
+- Keeps Spring Boot authoritative for allowance arithmetic, overlap validation, compensation, exact credited minutes, ownership, FIFO reservation/posting/reversal, accounting periods and ledger integrity.
+- Extends the generated OpenAPI contract with typed quick-scenario CRUD, named absence preview rows/type summaries and correct array/allOf generation; the committed client now covers 98 operations and 103 schemas without hand-written transport.
+- Adds Q-06 stale-read, duplicate-submit and HTTP 409 recovery guards, four Vitest model scenarios and six store/concurrency scenarios, and a Playwright migration scenario proving one runtime owner and one mutation under a native double click.
+- Retires the legacy Absence and Time Bank route/modal owners at runtime while preserving only named typed adapters required by still-legacy Today and Calendar actions.
+- Changes no PostgreSQL schema or Flyway migration; rollback is an application-image rollback to v27.35.7.
+
 # v27.35.7 — Docker Frontend OpenAPI Build Context Hotfix
 
 - Copies the canonical backend OpenAPI YAML into the Docker frontend stage before the generated-contract drift check.

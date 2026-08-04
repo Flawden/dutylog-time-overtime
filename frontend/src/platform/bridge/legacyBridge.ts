@@ -13,6 +13,7 @@ export interface LegacyBridge {
   navigate(view: string): void;
   openModal(id: string, focusId?: string | null): void;
   logout(): void;
+  retireDomainOwners(domain: "absence-time-bank"): void;
   subscribe(listener: (snapshot: DutyLogLegacySnapshot) => void): () => void;
 }
 
@@ -43,6 +44,9 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
     logout() {
       if (adapter()) adapter()?.logout();
       else emitFallback({ type: "logout" });
+    },
+    retireDomainOwners(domain) {
+      adapter()?.retireDomainOwners?.(domain);
     },
     subscribe(listener) {
       const direct = adapter()?.subscribe(listener);

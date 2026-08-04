@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static delivery contract for v27.35.7 Docker frontend OpenAPI build context. */
+/** Static delivery contract for v27.36.0 Docker frontend OpenAPI build context. */
 class DockerFrontendOpenApiBuildContextHotfixTest {
 
     private static final String OPENAPI_SOURCE =

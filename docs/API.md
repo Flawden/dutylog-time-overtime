@@ -1,12 +1,23 @@
-# DutyLog API v27.35.7
+# DutyLog API v27.36.0
 
-`v27.35.7` changes no backend request/response schema, endpoint, authorization rule or domain invariant. It aligns four stale test-only delivery contracts with the promoted authentic lockfile, recursive Flyway layout and exact pinned Node image.
+`v27.36.0` keeps every backend controller, authorization rule, persistence invariant and Flyway migration unchanged while completing the first bounded Vue domain migration. The canonical OpenAPI document is expanded only where already released backend operations lacked precise generated TypeScript contracts: quick-scenario CRUD plus named absence-preview and type-summary schemas.
+
+The generated browser contract now contains **98 operations and 103 schemas**. Array items and `allOf` inheritance are emitted accurately for overtime credits, usages, allocations and absence preview rows. Spring Boot remains the source of truth for validation, ownership, FIFO, closed periods and compensation state.
 
 The v27.34.4 preview behavior remains released: non-persistent zero/negative draft calculations are representable, while create/update validation remains strict.
 
 ## Absence and time-bank presentation contract
 
-`/api/overtime/account` remains the canonical read source for earned credits, usages, allocation rows and free balance. The v27.32.0 frontend groups usages by `postingState` (`POSTED` versus `RESERVED`) and forecasts FIFO locally from current open credit remainders. No new mutation endpoint is introduced: absence-backed usage is still managed only through `/api/v1/vacation-planner/absences`.
+`/api/v1/vacation-planner`, `/api/v1/overtime/account`, `/api/v1/time-compensation`, `/api/v1/ledger-integrity` and `/api/v1/actual-work` remain the canonical read sources for the migrated Vue workspace. Absence-backed usage is still managed only through `/api/v1/vacation-planner/absences`; Vue never creates a second FIFO or compensation authority. Client-side FIFO forecast is explanatory only and every mutation is revalidated by Spring Boot.
+
+Quick-scenario operations are now explicitly represented in the generated contract:
+
+```http
+GET    /api/v1/quick-scenarios
+POST   /api/v1/quick-scenarios
+PATCH  /api/v1/quick-scenarios/{id}
+DELETE /api/v1/quick-scenarios/{id}
+```
 
 ## Canonical absence ledger and retired direct overtime usages
 

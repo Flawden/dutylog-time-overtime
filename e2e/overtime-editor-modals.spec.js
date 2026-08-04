@@ -28,7 +28,7 @@ test('overtime credit and usage editors work from calendar and ledger', async ({
   await expect(page.locator('#creditBreak')).toHaveValue('0');
   await expect(page.locator('#creditPlanned')).toHaveValue('0');
   await page.locator('#creditReason').fill('E2E modal overtime');
-  const creditCreated = waitForApi(page, 'POST', '/api/overtime/credits');
+  const creditCreated = waitForApi(page, 'POST', '/api/v1/overtime/credits');
   await page.locator('#creditAdd').click();
   await creditCreated;
   await expect(page.locator('#overtimeCreditModal')).toBeHidden();
@@ -44,7 +44,7 @@ test('overtime credit and usage editors work from calendar and ledger', async ({
   await page.locator('#vacationStatus').selectOption('APPROVED');
   await page.locator('#vacationTitle').fill('E2E modal time off');
   await expect(page.locator('#absenceComposerContext')).toContainText('8 ч');
-  const usageCreated = waitForApi(page, 'POST', '/api/vacation-planner/absences', 201);
+  const usageCreated = waitForApi(page, 'POST', '/api/v1/vacation-planner/absences', 201);
   await page.locator('#vacationSaveBtn').click();
   await usageCreated;
   await expect(page.locator('#absenceComposerModal')).toBeHidden();
@@ -94,21 +94,21 @@ test('deleting one canonical split time-off keeps every credit and the other abs
     return text ? JSON.parse(text) : null;
   }, { path, method, body });
 
-  let account = await callApi('/api/overtime/credits', 'POST', {
+  let account = await callApi('/api/v1/overtime/credits', 'POST', {
     date: dates[0], hours: 3, reason: 'Integrity source A'
   });
   const firstCreditId = account.credits[0].id;
-  account = await callApi('/api/overtime/credits', 'POST', {
+  account = await callApi('/api/v1/overtime/credits', 'POST', {
     date: dates[1], hours: 5, reason: 'Integrity source B'
   });
   const secondCreditId = account.credits.find(row => row.id !== firstCreditId).id;
   const planner = await callApi('/api/vacation-planner', 'GET');
   const typeId = planner.types.find(item => item.systemCode === 'TIME_OFF').id;
-  const firstAbsence = await callApi('/api/vacation-planner/absences', 'POST', {
+  const firstAbsence = await callApi('/api/v1/vacation-planner/absences', 'POST', {
     typeId, title:'Split time-off', startDate:dates[2], endDate:dates[2], status:'APPROVED',
     coverage:'PARTIAL', startTime:'09:00', endTime:'13:00', compensationPolicy:'OVERTIME_BANK'
   });
-  const secondAbsence = await callApi('/api/vacation-planner/absences', 'POST', {
+  const secondAbsence = await callApi('/api/v1/vacation-planner/absences', 'POST', {
     typeId, title:'Surviving time-off', startDate:dates[3], endDate:dates[3], status:'APPROVED',
     coverage:'PARTIAL', startTime:'09:00', endTime:'12:00', compensationPolicy:'OVERTIME_BANK'
   });

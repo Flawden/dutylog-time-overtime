@@ -1,3 +1,5 @@
+import type { DutyLogAbsenceTimeBankDomain } from "@/features/absence-time-bank/types/domain";
+
 export {};
 
 declare global {
@@ -24,6 +26,7 @@ declare global {
     navigate(view: string): void;
     openModal(id: string, focusId?: string | null): void;
     logout(): void;
+    retireDomainOwners?(domain: "absence-time-bank"): void;
     subscribe(listener: (snapshot: DutyLogLegacySnapshot) => void): () => void;
   }
 
@@ -55,9 +58,14 @@ declare global {
     navigateLegacy(view: string): void;
   }
 
+  interface DutyLogVueDomains {
+    readonly absenceTimeBank?: DutyLogAbsenceTimeBankDomain;
+  }
+
   interface Window {
     DutyLogLegacyPlatform?: DutyLogLegacyPlatform;
     DutyLogVuePlatform?: DutyLogVuePlatform;
+    DutyLogVueDomains?: DutyLogVueDomains;
     __dutylogVueReady?: Promise<DutyLogVuePlatform>;
   }
 }

@@ -1,10 +1,12 @@
 # DutyLog CI/CD
 
-Status: v27.35.7.
+Status: v27.36.0.
 
-## v27.35.7 historical static-contract alignment boundary
+## v27.36.0 Vue Absence & Time Bank delivery boundary
 
-The complete frontend gate remains unchanged and green. Maven now evaluates the promoted-lockfile, recursive migration-layout and exact pinned-image contracts without relying on stale bootstrap-era assumptions. No validation is skipped or weakened.
+The first domain migration uses the same fail-closed Gate A pipeline: committed authentic lockfile, generated OpenAPI drift, strict TypeScript, Vitest, production bundle audit, Maven/JUnit, Playwright, Docker, clean PostgreSQL smoke and staging. The release adds no alternate frontend server and no runtime dependency installation.
+
+The domain-specific gates prove one Vue owner for both routes, typed generated operations, stale-read sequencing, duplicate-submit rejection, HTTP `409` recovery, responsive parity, accessibility and retirement of the legacy route/modal owners.
 
 ## v27.35.4 committed-lockfile and Maven test-compile boundary
 
@@ -18,10 +20,10 @@ exact Node 20.18.1 + npm 10.8.2
 → npm ls --all
 → generated OpenAPI drift check
 → vue-tsc
-→ 16 Vitest cases
+→ 26 Vitest cases
 → Vite production build + browser-bundle audit
 → Maven production compile + testCompile + tests
-→ release-check + 44 Playwright scenarios
+→ release-check + 45 Playwright scenarios
 → immutable image build / clean PostgreSQL smoke / deploy
 ```
 
@@ -155,7 +157,7 @@ DUTYLOG_BIND_PORT=18083
 
 `.github/workflows/deploy-staging.yml`:
 
-1. runs the Vue frontend gate, Maven `verify`, JaCoCo, release checks and 44 Playwright scenarios;
+1. runs the Vue frontend gate, Maven `verify`, JaCoCo, release checks and 45 Playwright scenarios;
 2. calculates the exact Git tree hash;
 3. builds one non-root `linux/amd64` image with OCI metadata, SBOM and provenance;
 4. pushes immutable tree/commit tags to GHCR;

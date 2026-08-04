@@ -398,6 +398,8 @@ function resetOvertimeForms(k = state.selected){
 }
 
 function openOvertimeCreditModal(date = null){
+  const vueDomain = window.DutyLogVueDomains?.absenceTimeBank;
+  if (vueDomain) return vueDomain.openCreditEditor(overtimeDefaultDate(date));
   resetOvertimeForms(overtimeDefaultDate(date));
   showCreditEditorView({ focus:false });
   renderQuickScenarios();
@@ -1268,6 +1270,8 @@ async function addOvertimeUsage(){
 }
 
 async function openAbsenceForUsage(usage){
+  const vueDomain = window.DutyLogVueDomains?.absenceTimeBank;
+  if (vueDomain && usage?.sourceAbsenceId) return vueDomain.openAbsenceEditor(Number(usage.sourceAbsenceId));
   if (!usage?.sourceAbsenceId) return false;
   location.hash = "#vacation";
   try {
@@ -1779,6 +1783,8 @@ function renderLedgerTable(){
 }
 
 async function loadLedgerPage(silent = true){
+  const vueDomain = window.DutyLogVueDomains?.absenceTimeBank;
+  if (vueDomain) return vueDomain.refresh();
   if (!moduleEnabled("overtime")) {
     state.ledgerPage = { items:[], page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false };
     renderLedgerTable();

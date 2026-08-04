@@ -1,15 +1,26 @@
 # Release checklist
 
-Status: v27.35.7.
+Status: v27.36.0.
+
+## v27.36.0 Vue Absence & Time Bank acceptance
+
+- [ ] Vue is the only runtime owner of `#vacation` and `#overtime`; legacy route roots and editor modals are absent after readiness.
+- [ ] Absence journal, full/partial composer, preview, balances and two-way Time Bank link preserve released behavior.
+- [ ] Time Bank overview, integrity, responsive credits/table/cards/chart, usage ownership, FIFO forecast, exact editor and scenarios preserve parity.
+- [ ] Generated OpenAPI contract reports 98 operations / 103 schemas with correct arrays/allOf and passes drift checking.
+- [ ] Q-06 stale-read, duplicate-submit and HTTP 409 recovery tests pass; one native double click produces one mutation.
+- [ ] `vue-tsc`, 26 Vitest cases, Vite build, 142 Java classes / 685 tests and 45 Playwright scenarios are green.
+- [ ] Docker image, clean PostgreSQL migration smoke and staging deployment are green.
+- [ ] Flyway remains V47; rollback to v27.35.7 requires no database rollback.
 
 ## v27.35.7 Docker Frontend OpenAPI Build Context Hotfix acceptance
 
-- [ ] Docker copies `src/main/resources/static/openapi/dutylog-v1.yaml` to the canonical `/src/...` path in the frontend stage.
-- [ ] OpenAPI copy occurs after dependency installation and before `npm run build`.
-- [ ] Authentic lockfile, `npm ci`, `vue-tsc`, 16 Vitest cases, OpenAPI drift and Vite bundle checks pass in Docker.
-- [ ] Maven packages the Vue bundle into the existing Spring Boot image.
-- [ ] Full Docker, clean PostgreSQL and staging validation are green.
-- [ ] No runtime, API, OpenAPI content, schema, migration or domain-ownership change.
+- [x] Docker copies `src/main/resources/static/openapi/dutylog-v1.yaml` to the canonical `/src/...` path in the frontend stage.
+- [x] OpenAPI copy occurs after dependency installation and before `npm run build`.
+- [x] Authentic lockfile, `npm ci`, `vue-tsc`, 16 Vitest cases, OpenAPI drift and Vite bundle checks pass in Docker.
+- [x] Maven packages the Vue bundle into the existing Spring Boot image.
+- [x] Full Docker, clean PostgreSQL and staging validation are green.
+- [x] No runtime, API, OpenAPI content, schema, migration or domain-ownership change.
 
 
 ## v27.35.6 Gate A Historical Static Contract Alignment Hotfix acceptance
@@ -351,6 +362,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.35.7 -m "v27.35.7 — Docker Frontend OpenAPI Build Context Hotfix"
-git push origin v27.35.7
+git tag -a v27.36.0 -m "v27.36.0 — Vue Absence & Time Bank"
+git push origin v27.36.0
 ```

@@ -26,13 +26,14 @@ test('vacation planner previews allowance and composes absence without replacing
 
   await openView(page, 'vacation');
   await expect(page.locator('#vacationAvailable')).toContainText('28');
+  await page.locator('#vacationComposerOpen').click();
   await expect(page.locator('#vacationType option')).toHaveCount(5);
   await page.locator('#vacationTitle').fill('E2E отпуск');
   await page.locator('#vacationStart').fill(start);
   await page.locator('[data-vacation-days="14"]').click();
   await expect(page.locator('#vacationEnd')).toHaveValue(end);
 
-  const previewResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/vacation-planner/preview'
+  const previewResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/vacation-planner/preview'
     && response.request().method() === 'POST' && response.status() === 200);
   await page.locator('#vacationPreviewBtn').click();
   const preview = await (await previewResponse).json();
@@ -42,7 +43,7 @@ test('vacation planner previews allowance and composes absence without replacing
   await expect(page.locator('#vacationPreview')).toBeVisible();
   await expect(page.locator('#vacationPreview')).toContainText('14');
 
-  const createdResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/vacation-planner/absences'
+  const createdResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/vacation-planner/absences'
     && response.request().method() === 'POST' && response.status() === 201);
   await page.locator('#vacationSaveBtn').click();
   const created = await (await createdResponse).json();
@@ -59,13 +60,13 @@ test('vacation planner previews allowance and composes absence without replacing
   await expect(page.locator(`#grid [data-date="${start}"] .plannedShiftGhost`)).toContainText('По графику');
 
   await page.locator('#vacationDayList .vacationDayItem', { hasText:'E2E отпуск' }).click();
-  await expect(page.locator('#view-vacation')).toBeVisible();
+  await expect(page.locator('[data-vue-domain-route="vacation"]')).toBeVisible();
   await expect(page.locator('#vacationEditorTitle')).toContainText('Редактировать');
   await expect(page.locator('#vacationStart')).toHaveValue(start);
   await expect(page.locator('#vacationEnd')).toHaveValue(end);
 
   page.once('dialog', dialog => dialog.accept());
-  const deletedResponse = page.waitForResponse(response => new URL(response.url()).pathname === `/api/vacation-planner/absences/${created.id}`
+  const deletedResponse = page.waitForResponse(response => new URL(response.url()).pathname === `/api/v1/vacation-planner/absences/${created.id}`
     && response.request().method() === 'DELETE' && response.status() === 204);
   await page.locator(`[data-delete-absence="${created.id}"]`).click();
   await deletedResponse;

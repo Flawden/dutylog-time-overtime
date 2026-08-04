@@ -67,6 +67,7 @@ async function boot(): Promise<void> {
     app.mount(host);
     await platformRouter.isReady();
     await nextTick();
+    bridge.retireDomainOwners("absence-time-bank");
 
     const store = usePlatformStore(pinia);
     store.markReady(bridge.connected());

@@ -2,11 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 7fb97f9bc762ad0de0ebf122ed8fdc139f1ba60371da2eef89088a4bb0880758
+ * SHA-256: def5804e9907899320351fd06cb534bf7a252364f524170f829b65227deef627
  * Generator: frontend/scripts/generate-openapi-contract.mjs
+ * Contract: 98 operations, 103 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "7fb97f9bc762ad0de0ebf122ed8fdc139f1ba60371da2eef89088a4bb0880758";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "def5804e9907899320351fd06cb534bf7a252364f524170f829b65227deef627";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -37,14 +38,14 @@ export namespace DutyLogApiSchemas {
   };
 
   export type AbsencePeriod = DutyLogApiSchemas.AbsencePeriodInput & {
-    id?: number;
-    typeName?: string;
-    typeColor?: string;
+    id: number;
+    typeName: string;
+    typeColor: string;
     systemCode?: string | null;
     countsAgainstAllowance?: boolean;
-    calendarDays?: number;
-    countedDays?: number;
-    shiftConflictCount?: number;
+    calendarDays: number;
+    countedDays: number;
+    shiftConflictCount: number;
     balancePolicy?: "VACATION_DAYS" | "TIME_OFF_HOURS" | "NONE";
     chargedMinutes?: number;
     replacesShift?: boolean;
@@ -66,9 +67,49 @@ export namespace DutyLogApiSchemas {
     compensationPolicy?: "VACATION_ALLOWANCE" | "OVERTIME_BANK" | "SICK_PAY" | "UNPAID" | "NONE";
   };
 
-  export type AbsencePeriodPatch = DutyLogApiSchemas.AbsencePeriodInput;
+  export type AbsencePeriodPatch = {
+    typeId?: number;
+    title?: string | null;
+    startDate?: string;
+    endDate?: string;
+    status?: "DRAFT" | "PLANNED" | "SUBMITTED" | "APPROVED" | "REJECTED" | "CANCELLED" | "COMPLETED";
+    note?: string | null;
+    clearTitle?: boolean;
+    clearNote?: boolean;
+    coverage?: "FULL_DAY" | "PARTIAL" | "HOURS_ONLY";
+    startTime?: string | null;
+    endTime?: string | null;
+    clearTimes?: boolean;
+    compensationPolicy?: "VACATION_ALLOWANCE" | "OVERTIME_BANK" | "SICK_PAY" | "UNPAID" | "NONE";
+  };
 
-  export type AbsencePreview = unknown;
+  export type AbsencePreview = {
+    typeId: number;
+    typeName: string;
+    startDate: string;
+    endDate: string;
+    calendarDays: number;
+    countedDays: number;
+    shiftConflictCount: number;
+    absenceConflictCount: number;
+    workYearStart: string;
+    workYearEnd: string;
+    availableDays: number;
+    plannedBefore: number;
+    projectedPlanned: number;
+    remainingAfter: number;
+    exceedsAllowance: boolean;
+    exceededBy: number;
+    items: Array<DutyLogApiSchemas.AbsencePreviewItem>;
+    balancePolicy: "VACATION_DAYS" | "TIME_OFF_HOURS" | "NONE";
+    coverage: "FULL_DAY" | "PARTIAL" | "HOURS_ONLY";
+    durationMinutes: number;
+    timeOffAvailableMinutes: number;
+    timeOffPlannedBefore: number;
+    timeOffProjected: number;
+    timeOffRemainingAfter: number;
+    compensationPolicy: "VACATION_ALLOWANCE" | "OVERTIME_BANK" | "SICK_PAY" | "UNPAID" | "NONE";
+  };
 
   export type AbsencePreviewInput = {
     typeId: number;
@@ -81,9 +122,23 @@ export namespace DutyLogApiSchemas {
     compensationPolicy?: "VACATION_ALLOWANCE" | "OVERTIME_BANK" | "SICK_PAY" | "UNPAID" | "NONE";
   };
 
+  export type AbsencePreviewItem = {
+    date: string;
+    weekend: boolean;
+    counted: boolean;
+    shiftConflict: boolean;
+    existingAbsenceId?: number | null;
+    existingAbsenceTitle?: string | null;
+    action: string;
+    plannedShiftName?: string | null;
+    plannedShiftColor?: string | null;
+    plannedShiftMinutes?: number;
+    replacesShift: boolean;
+  };
+
   export type AbsenceType = DutyLogApiSchemas.AbsenceTypeInput & {
-    id?: number;
-    systemPreset?: boolean;
+    id: number;
+    systemPreset: boolean;
     systemCode?: "VACATION" | "TIME_OFF" | "SICK" | "UNPAID" | "OTHER" | null;
   };
 
@@ -98,6 +153,17 @@ export namespace DutyLogApiSchemas {
 
   export type AbsenceTypePatch = DutyLogApiSchemas.AbsenceTypeInput;
 
+  export type AbsenceTypeSummary = {
+    typeId?: number;
+    typeName?: string;
+    typeColor?: string;
+    systemCode?: string | null;
+    balancePolicy?: "VACATION_DAYS" | "TIME_OFF_HOURS" | "NONE";
+    fullDays?: number;
+    partialMinutes?: number;
+    chargedMinutes?: number;
+  };
+
   export type AccountingPeriod = {
     month: string;
     status: "OPEN" | "CLOSED";
@@ -106,8 +172,8 @@ export namespace DutyLogApiSchemas {
   };
 
   export type ActualWorkInterval = DutyLogApiSchemas.ActualWorkIntervalInput & {
-    id?: number;
-    workedMinutes?: number;
+    id: number;
+    workedMinutes: number;
     createdAt?: string | null;
     updatedAt?: string | null;
   };
@@ -129,7 +195,7 @@ export namespace DutyLogApiSchemas {
     timestamp: string;
   };
 
-  export type CalendarLayer = DutyLogApiSchemas.CalendarLayerEntry & {
+  export type CalendarLayer = {
     id: number;
     name: string;
     color: string;
@@ -142,7 +208,7 @@ export namespace DutyLogApiSchemas {
     startDate: string;
     endDate?: string | null;
     readOnly: true;
-    entries: DutyLogApiSchemas.CalendarLayerEntry;
+    entries: Array<DutyLogApiSchemas.CalendarLayerEntry>;
   };
 
   export type CalendarLayerEntry = {
@@ -189,7 +255,7 @@ export namespace DutyLogApiSchemas {
   };
 
   export type CalendarSubscription = DutyLogApiSchemas.CalendarSyncStatus & {
-    subscriptionUrl?: string;
+    subscriptionUrl: string;
   };
 
   export type CalendarSyncStatus = {
@@ -202,11 +268,11 @@ export namespace DutyLogApiSchemas {
     entities: Array<"shifts" | "tasks" | "important_events" | "absences">;
   };
 
-  export type Day = DutyLogApiSchemas.DayNote & DutyLogApiSchemas.ShiftInterval & {
+  export type Day = {
     date: string;
     shiftTypeId?: number | null;
     note?: string | null;
-    notes?: DutyLogApiSchemas.DayNote;
+    notes?: Array<DutyLogApiSchemas.DayNote>;
     dayEmoji?: string | null;
     overtimeHours: number;
     timeOffHours: number;
@@ -246,9 +312,9 @@ export namespace DutyLogApiSchemas {
   };
 
   export type ImportantEvent = DutyLogApiSchemas.ImportantEventInput & {
-    id?: number;
-    startInstant?: string | null;
-    endInstant?: string | null;
+    id: number;
+    startInstant: string | null;
+    endInstant: string | null;
   };
 
   export type ImportantEventInput = {
@@ -269,7 +335,7 @@ export namespace DutyLogApiSchemas {
     reminders?: Array<number>;
   };
 
-  export type InboxConversion = DutyLogApiSchemas.InboxItem & DutyLogApiSchemas.Task & {
+  export type InboxConversion = {
     inboxItem: DutyLogApiSchemas.InboxItem;
     task: DutyLogApiSchemas.Task;
   };
@@ -289,7 +355,7 @@ export namespace DutyLogApiSchemas {
     resolvedAt?: string | null;
   };
 
-  export type InboxToTaskRequest = DutyLogApiSchemas.TaskSubtaskInput & {
+  export type InboxToTaskRequest = {
     date: string;
     description?: string | null;
     category?: string | null;
@@ -299,7 +365,7 @@ export namespace DutyLogApiSchemas {
     dueTime?: string | null;
     reminderEnabled?: boolean;
     reminderMinutesBefore?: number | null;
-    subtasks?: DutyLogApiSchemas.TaskSubtaskInput;
+    subtasks?: Array<DutyLogApiSchemas.TaskSubtaskInput>;
   };
 
   export type InboxUpdateRequest = {
@@ -313,7 +379,7 @@ export namespace DutyLogApiSchemas {
     reason?: string;
   };
 
-  export type LedgerIntegrity = DutyLogApiSchemas.LedgerIntegrityIssue & DutyLogApiSchemas.TimeLedgerEntry & DutyLogApiSchemas.AccountingPeriod & {
+  export type LedgerIntegrity = {
     from: string;
     to: string;
     healthy: boolean;
@@ -322,9 +388,9 @@ export namespace DutyLogApiSchemas {
     reversedMinutes: number;
     orphanUsageCount: number;
     allocationMismatchCount: number;
-    issues: DutyLogApiSchemas.LedgerIntegrityIssue;
-    entries: DutyLogApiSchemas.TimeLedgerEntry;
-    periods: DutyLogApiSchemas.AccountingPeriod;
+    issues: Array<DutyLogApiSchemas.LedgerIntegrityIssue>;
+    entries: Array<DutyLogApiSchemas.TimeLedgerEntry>;
+    periods: Array<DutyLogApiSchemas.AccountingPeriod>;
   };
 
   export type LedgerIntegrityIssue = {
@@ -353,12 +419,12 @@ export namespace DutyLogApiSchemas {
     creditedEnd?: string | null;
   };
 
-  export type LegacyOvertimeMigrationPreview = DutyLogApiSchemas.LegacyOvertimeCredit & {
+  export type LegacyOvertimeMigrationPreview = {
     sourceTimezone: string;
     requestedCount: number;
     migratableCount: number;
     blockedCount: number;
-    credits: DutyLogApiSchemas.LegacyOvertimeCredit;
+    credits: Array<DutyLogApiSchemas.LegacyOvertimeCredit>;
   };
 
   export type LegacyOvertimeMigrationRequest = {
@@ -366,7 +432,7 @@ export namespace DutyLogApiSchemas {
     sourceTimezone?: string;
   };
 
-  export type LegacyOvertimeMigrationResult = DutyLogApiSchemas.OvertimeAccount & {
+  export type LegacyOvertimeMigrationResult = {
     migratedCount: number;
     skippedCount: number;
     account: DutyLogApiSchemas.OvertimeAccount;
@@ -385,12 +451,12 @@ export namespace DutyLogApiSchemas {
     blockedReason?: string | null;
   };
 
-  export type LegacyOvertimeUsageMigrationPreview = DutyLogApiSchemas.LegacyOvertimeUsageMigrationItem & {
+  export type LegacyOvertimeUsageMigrationPreview = {
     totalCount: number;
     fullDayCount: number;
     hoursOnlyCount: number;
     blockedCount: number;
-    usages: DutyLogApiSchemas.LegacyOvertimeUsageMigrationItem;
+    usages: Array<DutyLogApiSchemas.LegacyOvertimeUsageMigrationItem>;
   };
 
   export type LegacyOvertimeUsageMigrationRequest = {
@@ -403,10 +469,10 @@ export namespace DutyLogApiSchemas {
     absenceIds: Array<number>;
   };
 
-  export type LegacyShiftMigrationPreview = DutyLogApiSchemas.LegacyShiftOccurrence & {
+  export type LegacyShiftMigrationPreview = {
     sourceTimezone: string;
     legacyCount: number;
-    occurrences: DutyLogApiSchemas.LegacyShiftOccurrence;
+    occurrences: Array<DutyLogApiSchemas.LegacyShiftOccurrence>;
   };
 
   export type LegacyShiftMigrationRequest = {
@@ -438,11 +504,11 @@ export namespace DutyLogApiSchemas {
     dueInstant: string;
   };
 
-  export type LegacyTaskDeadlineMigrationPreview = DutyLogApiSchemas.LegacyTaskDeadline & {
+  export type LegacyTaskDeadlineMigrationPreview = {
     sourceTimezone: string;
     targetTimezone: string;
     legacyCount: number;
-    tasks: DutyLogApiSchemas.LegacyTaskDeadline;
+    tasks: Array<DutyLogApiSchemas.LegacyTaskDeadline>;
   };
 
   export type LegacyTaskDeadlineMigrationRequest = {
@@ -450,7 +516,7 @@ export namespace DutyLogApiSchemas {
     taskIds: Array<number>;
   };
 
-  export type MobileBootstrap = DutyLogApiSchemas.MobileUser & {
+  export type MobileBootstrap = {
     apiVersion: "v1";
     serverTime: string;
     user: DutyLogApiSchemas.MobileUser;
@@ -492,7 +558,7 @@ export namespace DutyLogApiSchemas {
     active?: boolean;
   };
 
-  export type MobileSyncItemResult = DutyLogApiSchemas.Day & {
+  export type MobileSyncItemResult = {
     operationId: string;
     status: "APPLIED" | "ALREADY_APPLIED" | "CONFLICT" | "REJECTED";
     entityType: "day";
@@ -503,23 +569,23 @@ export namespace DutyLogApiSchemas {
     message?: string | null;
   };
 
-  export type MobileSyncOperation = DutyLogApiSchemas.MobileDayPatch & {
+  export type MobileSyncOperation = {
     operationId: string;
     baseVersion: number;
     day: DutyLogApiSchemas.MobileDayPatch;
   };
 
-  export type MobileSyncRequest = DutyLogApiSchemas.MobileSyncOperation & {
-    operations: DutyLogApiSchemas.MobileSyncOperation;
+  export type MobileSyncRequest = {
+    operations: Array<DutyLogApiSchemas.MobileSyncOperation>;
   };
 
-  export type MobileSyncResponse = DutyLogApiSchemas.MobileSyncItemResult & {
+  export type MobileSyncResponse = {
     apiVersion: "v1";
     serverTime: string;
-    items: DutyLogApiSchemas.MobileSyncItemResult;
+    items: Array<DutyLogApiSchemas.MobileSyncItemResult>;
   };
 
-  export type MobileTokenResponse = DutyLogApiSchemas.MobileUser & {
+  export type MobileTokenResponse = {
     tokenType: "Bearer";
     accessToken: string;
     accessExpiresAt: string;
@@ -534,12 +600,12 @@ export namespace DutyLogApiSchemas {
     displayTimezone?: string | null;
   };
 
-  export type OvertimeAccount = DutyLogApiSchemas.OvertimeCredit & DutyLogApiSchemas.OvertimeUsage & {
+  export type OvertimeAccount = {
     totalEarnedHours: number;
     totalUsedHours: number;
     balanceHours: number;
-    credits: DutyLogApiSchemas.OvertimeCredit;
-    usages: DutyLogApiSchemas.OvertimeUsage;
+    credits: Array<DutyLogApiSchemas.OvertimeCredit>;
+    usages: Array<DutyLogApiSchemas.OvertimeUsage>;
   };
 
   export type OvertimeAllocation = {
@@ -558,7 +624,7 @@ export namespace DutyLogApiSchemas {
     reconstructed: boolean;
   };
 
-  export type OvertimeCredit = DutyLogApiSchemas.OvertimeUsageRef & DutyLogApiSchemas.OvertimeDailyProjection & {
+  export type OvertimeCredit = {
     id: number;
     workedDate: string;
     timeRange?: string | null;
@@ -572,7 +638,7 @@ export namespace DutyLogApiSchemas {
     reason?: string | null;
     usedHours: number;
     remainingHours: number;
-    usages: DutyLogApiSchemas.OvertimeUsageRef;
+    usages: Array<DutyLogApiSchemas.OvertimeUsageRef>;
     startInstant?: string | null;
     endInstant?: string | null;
     creditedStartInstant?: string | null;
@@ -613,6 +679,17 @@ export namespace DutyLogApiSchemas {
     endInstant?: string | null;
   };
 
+  export type OvertimeCreditUpdateRequest = {
+    date?: string | null;
+    timeRange?: string | null;
+    hours?: number | null;
+    reason?: string | null;
+    startDateTime?: string | null;
+    endDateTime?: string | null;
+    breakMinutes?: number | null;
+    plannedHours?: number | null;
+  };
+
   export type OvertimeDailyProjection = {
     sourceWorkedDate: string;
     sourceTimeRange?: string | null;
@@ -629,7 +706,7 @@ export namespace DutyLogApiSchemas {
     exact: boolean;
   };
 
-  export type OvertimeUsage = DutyLogApiSchemas.OvertimeAllocation & {
+  export type OvertimeUsage = {
     id: number;
     usageDate: string;
     hours: number;
@@ -640,7 +717,7 @@ export namespace DutyLogApiSchemas {
     editable: boolean;
     postingState: "RESERVED" | "POSTED";
     reserved: boolean;
-    allocations: DutyLogApiSchemas.OvertimeAllocation;
+    allocations: Array<DutyLogApiSchemas.OvertimeAllocation>;
   };
 
   export type OvertimeUsageRef = {
@@ -661,8 +738,8 @@ export namespace DutyLogApiSchemas {
   };
 
   export type PayrollAdjustment = DutyLogApiSchemas.PayrollAdjustmentInput & {
-    id?: number;
-    createdAt?: string;
+    id: number;
+    createdAt: string;
   };
 
   export type PayrollAdjustmentInput = {
@@ -673,7 +750,7 @@ export namespace DutyLogApiSchemas {
     note?: string | null;
   };
 
-  export type PayrollPeriod = DutyLogApiSchemas.PayrollSettings & DutyLogApiSchemas.PayrollPreview & DutyLogApiSchemas.PayrollAdjustment & DutyLogApiSchemas.PayrollSnapshot & {
+  export type PayrollPeriod = {
     month: string;
     periodClosed: boolean;
     integrityHealthy: boolean;
@@ -681,9 +758,9 @@ export namespace DutyLogApiSchemas {
     blockingReason?: "PERIOD_OPEN" | "LEDGER_INTEGRITY_FAILED" | "PAYROLL_RATE_REQUIRED" | null;
     settings: DutyLogApiSchemas.PayrollSettings;
     preview: DutyLogApiSchemas.PayrollPreview;
-    adjustments: DutyLogApiSchemas.PayrollAdjustment;
+    adjustments: Array<DutyLogApiSchemas.PayrollAdjustment>;
     latestSnapshot?: DutyLogApiSchemas.PayrollSnapshot | null;
-    snapshots: DutyLogApiSchemas.PayrollSnapshot;
+    snapshots: Array<DutyLogApiSchemas.PayrollSnapshot>;
   };
 
   export type PayrollPreview = {
@@ -715,12 +792,12 @@ export namespace DutyLogApiSchemas {
   };
 
   export type PayrollSnapshot = DutyLogApiSchemas.PayrollPreview & {
-    id?: number;
-    revision?: number;
-    sourcePeriodClosedAt?: string;
-    sourceIntegrityCheckedAt?: string;
-    calculationHash?: string;
-    createdAt?: string;
+    id: number;
+    revision: number;
+    sourcePeriodClosedAt: string;
+    sourceIntegrityCheckedAt: string;
+    calculationHash: string;
+    createdAt: string;
     supersededById?: number | null;
   };
 
@@ -743,14 +820,50 @@ export namespace DutyLogApiSchemas {
     sortOrder: number;
   };
 
-  export type ScheduleTemplate = DutyLogApiSchemas.ScheduleTemplateStep & {
+  export type QuickScenarioCreateRequest = {
+    name: string;
+    groupLabel?: string | null;
+    description?: string | null;
+    startMode?: "SHIFT_START" | "SHIFT_END";
+    endMode?: "SHIFT_END" | "ADD_MINUTES" | "FIXED_TIME";
+    endOffsetMinutes?: number;
+    endFixedTime?: string | null;
+    endNextDay?: boolean;
+    endDayOffset?: number;
+    breakMode?: "ZERO" | "SHIFT" | "CUSTOM";
+    customBreakMinutes?: number;
+    plannedMode?: "ZERO" | "SHIFT" | "CUSTOM";
+    customPlannedHours?: number;
+    reasonTemplate?: string | null;
+    sortOrder?: number;
+  };
+
+  export type QuickScenarioUpdateRequest = {
+    name?: string;
+    groupLabel?: string | null;
+    description?: string | null;
+    startMode?: "SHIFT_START" | "SHIFT_END";
+    endMode?: "SHIFT_END" | "ADD_MINUTES" | "FIXED_TIME";
+    endOffsetMinutes?: number;
+    endFixedTime?: string | null;
+    endNextDay?: boolean;
+    endDayOffset?: number;
+    breakMode?: "ZERO" | "SHIFT" | "CUSTOM";
+    customBreakMinutes?: number;
+    plannedMode?: "ZERO" | "SHIFT" | "CUSTOM";
+    customPlannedHours?: number;
+    reasonTemplate?: string | null;
+    sortOrder?: number;
+  };
+
+  export type ScheduleTemplate = {
     id: number;
     name: string;
     description?: string | null;
     alignmentMode: "CYCLE_START" | "WEEKDAY";
     systemPreset: boolean;
     sortOrder: number;
-    steps: DutyLogApiSchemas.ScheduleTemplateStep;
+    steps: Array<DutyLogApiSchemas.ScheduleTemplateStep>;
     createdAt?: string;
     updatedAt?: string;
   };
@@ -762,7 +875,7 @@ export namespace DutyLogApiSchemas {
     overwriteExistingShift?: boolean;
   };
 
-  export type ScheduleTemplateApplyResult = DutyLogApiSchemas.Day & {
+  export type ScheduleTemplateApplyResult = {
     templateId?: number;
     from?: string;
     to?: string;
@@ -770,7 +883,7 @@ export namespace DutyLogApiSchemas {
     unchangedCount?: number;
     skippedCount?: number;
     conflictCount?: number;
-    days?: DutyLogApiSchemas.Day;
+    days?: Array<DutyLogApiSchemas.Day>;
   };
 
   export type ScheduleTemplateInput = {
@@ -789,7 +902,7 @@ export namespace DutyLogApiSchemas {
     sortOrder?: number;
   };
 
-  export type ScheduleTemplatePreview = DutyLogApiSchemas.ScheduleTemplatePreviewItem & {
+  export type ScheduleTemplatePreview = {
     templateId?: number;
     templateName?: string;
     from?: string;
@@ -801,7 +914,7 @@ export namespace DutyLogApiSchemas {
     unchangedCount?: number;
     skippedCount?: number;
     conflictCount?: number;
-    items?: DutyLogApiSchemas.ScheduleTemplatePreviewItem;
+    items?: Array<DutyLogApiSchemas.ScheduleTemplatePreviewItem>;
   };
 
   export type ScheduleTemplatePreviewItem = {
@@ -859,7 +972,7 @@ export namespace DutyLogApiSchemas {
     legacyLocal: boolean;
   };
 
-  export type Task = DutyLogApiSchemas.TaskSubtask & {
+  export type Task = {
     id: number;
     date: string;
     text: string;
@@ -877,10 +990,10 @@ export namespace DutyLogApiSchemas {
     reminderEnabled: boolean;
     reminderMinutesBefore?: number | null;
     overdue: boolean;
-    subtasks: DutyLogApiSchemas.TaskSubtask;
+    subtasks: Array<DutyLogApiSchemas.TaskSubtask>;
   };
 
-  export type TaskCreateRequest = DutyLogApiSchemas.TaskSubtaskInput & {
+  export type TaskCreateRequest = {
     date: string;
     text: string;
     description?: string | null;
@@ -891,7 +1004,7 @@ export namespace DutyLogApiSchemas {
     dueTime?: string | null;
     reminderEnabled?: boolean;
     reminderMinutesBefore?: number | null;
-    subtasks?: DutyLogApiSchemas.TaskSubtaskInput;
+    subtasks?: Array<DutyLogApiSchemas.TaskSubtaskInput>;
   };
 
   export type TaskMetadata = {
@@ -933,7 +1046,7 @@ export namespace DutyLogApiSchemas {
     actualWorkIntervalIds?: Array<number>;
   };
 
-  export type TimeCompensationSummary = DutyLogApiSchemas.TimeCompensationDay & {
+  export type TimeCompensationSummary = {
     from: string;
     to: string;
     plannedMinutes: number;
@@ -950,7 +1063,7 @@ export namespace DutyLogApiSchemas {
     overtimePostedMinutes?: number;
     integrityHealthy?: boolean;
     periodClosed?: boolean;
-    days: DutyLogApiSchemas.TimeCompensationDay;
+    days: Array<DutyLogApiSchemas.TimeCompensationDay>;
   };
 
   export type TimeContext = {
@@ -979,16 +1092,14 @@ export namespace DutyLogApiSchemas {
     createdAt: string;
   };
 
-  export type VacationPlanner = DutyLogApiSchemas.VacationSettings & DutyLogApiSchemas.VacationSummary & DutyLogApiSchemas.AbsenceType & DutyLogApiSchemas.AbsencePeriod & DutyLogApiSchemas.AbsenceOccurrence & {
+  export type VacationPlanner = {
     settings: DutyLogApiSchemas.VacationSettings;
     summary: DutyLogApiSchemas.VacationSummary;
     durationPresets: Array<14 | 28 | 35>;
-    types: DutyLogApiSchemas.AbsenceType;
-    absences: DutyLogApiSchemas.AbsencePeriod;
-    occurrences: DutyLogApiSchemas.AbsenceOccurrence;
-    typeSummaries: Array<unknown>;
-    type?: Record<string, unknown>;
-    properties?: unknown;
+    types: Array<DutyLogApiSchemas.AbsenceType>;
+    absences: Array<DutyLogApiSchemas.AbsencePeriod>;
+    occurrences: Array<DutyLogApiSchemas.AbsenceOccurrence>;
+    typeSummaries: Array<DutyLogApiSchemas.AbsenceTypeSummary>;
   };
 
   export type VacationSettings = DutyLogApiSchemas.VacationSettingsInput & {
@@ -1035,6 +1146,8 @@ export const dutyLogOperations = {
   "createCalendarLayer": { method: "POST", path: "/api/v1/calendar-layers" },
   "createDayNote": { method: "POST", path: "/api/v1/notes" },
   "createImportantDay": { method: "POST", path: "/api/v1/important-days" },
+  "createOvertimeCredit": { method: "POST", path: "/api/v1/overtime/credits" },
+  "createQuickScenario": { method: "POST", path: "/api/v1/quick-scenarios" },
   "createScheduleTemplate": { method: "POST", path: "/api/v1/schedule-templates" },
   "createTask": { method: "POST", path: "/api/v1/tasks" },
   "deleteAbsencePeriod": { method: "DELETE", path: "/api/v1/vacation-planner/absences/{id}" },
@@ -1044,6 +1157,8 @@ export const dutyLogOperations = {
   "deleteDayNote": { method: "DELETE", path: "/api/v1/notes/{id}" },
   "deleteInboxItem": { method: "DELETE", path: "/api/v1/inbox/{id}" },
   "deleteLegacyManualOvertimeUsage": { method: "DELETE", path: "/api/v1/overtime/usages/{id}" },
+  "deleteOvertimeCredit": { method: "DELETE", path: "/api/v1/overtime/credits/{id}" },
+  "deleteQuickScenario": { method: "DELETE", path: "/api/v1/quick-scenarios/{id}" },
   "deleteScheduleTemplate": { method: "DELETE", path: "/api/v1/schedule-templates/{id}" },
   "deleteTask": { method: "DELETE", path: "/api/v1/tasks/{taskId}" },
   "exportCalendarRange": { method: "GET", path: "/api/v1/calendar-sync/export" },
@@ -1107,7 +1222,9 @@ export const dutyLogOperations = {
   "updateDayNote": { method: "PATCH", path: "/api/v1/notes/{id}" },
   "updateInboxItem": { method: "PATCH", path: "/api/v1/inbox/{id}" },
   "updateModules": { method: "PATCH", path: "/api/v1/modules" },
+  "updateOvertimeCredit": { method: "PATCH", path: "/api/v1/overtime/credits/{id}" },
   "updatePayrollSettings": { method: "PATCH", path: "/api/v1/payroll/settings" },
+  "updateQuickScenario": { method: "PATCH", path: "/api/v1/quick-scenarios/{id}" },
   "updateScheduleTemplate": { method: "PATCH", path: "/api/v1/schedule-templates/{id}" },
   "updateSubtask": { method: "PATCH", path: "/api/v1/tasks/{taskId}/subtasks/{subtaskId}" },
   "updateTask": { method: "PATCH", path: "/api/v1/tasks/{taskId}" },
@@ -1174,6 +1291,14 @@ export interface DutyLogOperationTypes {
     requestBody: DutyLogApiSchemas.ImportantEventInput;
     response: DutyLogApiSchemas.ImportantEvent;
   };
+  "createOvertimeCredit": {
+    requestBody: DutyLogApiSchemas.OvertimeCreditCreateRequest;
+    response: unknown;
+  };
+  "createQuickScenario": {
+    requestBody: DutyLogApiSchemas.QuickScenarioCreateRequest;
+    response: DutyLogApiSchemas.QuickScenario;
+  };
   "createScheduleTemplate": {
     requestBody: DutyLogApiSchemas.ScheduleTemplateInput;
     response: DutyLogApiSchemas.ScheduleTemplate;
@@ -1209,6 +1334,14 @@ export interface DutyLogOperationTypes {
   "deleteLegacyManualOvertimeUsage": {
     requestBody: undefined;
     response: unknown;
+  };
+  "deleteOvertimeCredit": {
+    requestBody: undefined;
+    response: unknown;
+  };
+  "deleteQuickScenario": {
+    requestBody: undefined;
+    response: undefined;
   };
   "deleteScheduleTemplate": {
     requestBody: undefined;
@@ -1466,9 +1599,17 @@ export interface DutyLogOperationTypes {
     requestBody: undefined;
     response: unknown;
   };
+  "updateOvertimeCredit": {
+    requestBody: DutyLogApiSchemas.OvertimeCreditUpdateRequest;
+    response: unknown;
+  };
   "updatePayrollSettings": {
     requestBody: DutyLogApiSchemas.PayrollSettingsInput;
     response: unknown;
+  };
+  "updateQuickScenario": {
+    requestBody: DutyLogApiSchemas.QuickScenarioUpdateRequest;
+    response: DutyLogApiSchemas.QuickScenario;
   };
   "updateScheduleTemplate": {
     requestBody: DutyLogApiSchemas.ScheduleTemplatePatch;

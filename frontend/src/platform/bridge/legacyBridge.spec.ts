@@ -7,7 +7,7 @@ function fakeWindow(): Window {
 
 function snapshot(route = "calendar"): DutyLogLegacySnapshot {
   return {
-    version: "27.35.7",
+    version: "27.36.0",
     language: "ru",
     route,
     online: true,
@@ -24,13 +24,15 @@ describe("legacy bridge", () => {
     const navigate = vi.fn();
     const openModal = vi.fn();
     const logout = vi.fn();
+    const retireDomainOwners = vi.fn();
     const subscribe = vi.fn(() => vi.fn());
     target.DutyLogLegacyPlatform = {
-      version: "27.35.7",
+      version: "27.36.0",
       snapshot: () => snapshot(),
       navigate,
       openModal,
       logout,
+      retireDomainOwners,
       subscribe,
     };
 
@@ -38,6 +40,7 @@ describe("legacy bridge", () => {
     bridge.navigate("#overtime");
     bridge.openModal("absenceComposerModal", "vacationStart");
     bridge.logout();
+    bridge.retireDomainOwners("absence-time-bank");
     const listener = vi.fn();
     bridge.subscribe(listener);
 
@@ -46,6 +49,7 @@ describe("legacy bridge", () => {
     expect(navigate).toHaveBeenCalledWith("overtime");
     expect(openModal).toHaveBeenCalledWith("absenceComposerModal", "vacationStart");
     expect(logout).toHaveBeenCalledOnce();
+    expect(retireDomainOwners).toHaveBeenCalledWith("absence-time-bank");
     expect(subscribe).toHaveBeenCalledWith(listener);
   });
 

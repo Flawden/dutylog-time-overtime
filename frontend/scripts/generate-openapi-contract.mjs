@@ -90,38 +90,37 @@ function propertyType(block) {
   const inline = first.includes(":") ? first.slice(first.indexOf(":") + 1).trim() : "";
   const map = inlineMap(inline);
   const joined = block.map(line => line.trim()).join("\n");
-  const ref = refName(map.get("$ref")) ?? refName(joined);
   const nullable = map.get("nullable") === "true" || /(?:^|\n)nullable:\s*true(?:$|\n)/.test(joined);
   let type;
 
   const inlineEnum = enumType(map.get("enum"));
   const blockEnumMatch = joined.match(/(?:^|\n)enum:\s*(\[[^\n]+\])/);
   const blockEnum = enumType(blockEnumMatch?.[1]);
+  const inlineType = unquote(map.get("type"));
+  const blockType = joined.match(/(?:^|\n)type:\s*([^\n]+)/)?.[1]?.trim();
+  const rawType = inlineType || blockType || "unknown";
+
   if (inlineEnum || blockEnum) {
     type = inlineEnum ?? blockEnum;
-  } else if (ref) {
-    type = `DutyLogApiSchemas.${ref}`;
+  } else if (rawType === "array") {
+    // A $ref nested below items describes the array element, not the
+    // property itself. Resolve array shape before considering direct refs.
+    const itemInline = map.get("items");
+    const itemMap = inlineMap(itemInline ?? "");
+    const itemRef = refName(itemMap.get("$ref")) ?? refName(joined.match(/items:[\s\S]*/)?.[0]);
+    const itemEnum = enumType(itemMap.get("enum")) ?? enumType(joined.match(/items:\s*\{[^}]*enum:\s*(\[[^\]]+\])/)?.[1]);
+    const itemType = itemRef ? `DutyLogApiSchemas.${itemRef}` : itemEnum ?? scalarType(itemMap.get("type") ?? joined.match(/items:\s*\{[^}]*type:\s*([^,}]+)/)?.[1]);
+    type = `Array<${itemType}>`;
+  } else if (rawType === "object") {
+    const additionalRef = refName(map.get("additionalProperties")) ?? refName(joined.match(/additionalProperties:[\s\S]*/)?.[0]);
+    const additionalInline = inlineMap(map.get("additionalProperties") ?? "");
+    const additionalType = additionalRef
+      ? `DutyLogApiSchemas.${additionalRef}`
+      : scalarType(additionalInline.get("type") ?? joined.match(/additionalProperties:\s*\{[^}]*type:\s*([^,}]+)/)?.[1]);
+    type = `Record<string, ${additionalType}>`;
   } else {
-    const inlineType = unquote(map.get("type"));
-    const blockType = joined.match(/(?:^|\n)type:\s*([^\n]+)/)?.[1]?.trim();
-    const rawType = inlineType || blockType || "unknown";
-    if (rawType === "array") {
-      const itemInline = map.get("items");
-      const itemMap = inlineMap(itemInline ?? "");
-      const itemRef = refName(itemMap.get("$ref")) ?? refName(joined.match(/items:[\s\S]*/)?.[0]);
-      const itemEnum = enumType(itemMap.get("enum")) ?? enumType(joined.match(/items:\s*\{[^}]*enum:\s*(\[[^\]]+\])/)?.[1]);
-      const itemType = itemRef ? `DutyLogApiSchemas.${itemRef}` : itemEnum ?? scalarType(itemMap.get("type") ?? joined.match(/items:\s*\{[^}]*type:\s*([^,}]+)/)?.[1]);
-      type = `Array<${itemType}>`;
-    } else if (rawType === "object") {
-      const additionalRef = refName(map.get("additionalProperties")) ?? refName(joined.match(/additionalProperties:[\s\S]*/)?.[0]);
-      const additionalInline = inlineMap(map.get("additionalProperties") ?? "");
-      const additionalType = additionalRef
-        ? `DutyLogApiSchemas.${additionalRef}`
-        : scalarType(additionalInline.get("type") ?? joined.match(/additionalProperties:\s*\{[^}]*type:\s*([^,}]+)/)?.[1]);
-      type = `Record<string, ${additionalType}>`;
-    } else {
-      type = scalarType(rawType);
-    }
+    const directRef = refName(map.get("$ref")) ?? (rawType === "unknown" ? refName(joined) : null);
+    type = directRef ? `DutyLogApiSchemas.${directRef}` : scalarType(rawType);
   }
   return nullable ? `${type} | null` : type;
 }
@@ -145,12 +144,23 @@ function schemaBlocks() {
 }
 
 function renderSchema(name, block) {
-  const requiredLine = block.find(line => /^      required:\s*\[/.test(line));
+  const requiredLine = block.find(line => /^      required:\s*\[/.test(line) || /^          required:\s*\[/.test(line));
   const required = new Set(requiredLine ? splitInline(requiredLine.slice(requiredLine.indexOf("[") + 1, requiredLine.lastIndexOf("]"))).map(unquote) : []);
-  const allOfRefs = [...new Set(block.map(refName).filter(Boolean))];
+  const allOfStart = block.findIndex(line => line === "      allOf:");
+  const allOfRefs = [];
+  if (allOfStart >= 0) {
+    for (let index = allOfStart + 1; index < block.length; index += 1) {
+      const line = block[index];
+      if (line.trim() && lineIndent(line) <= 6) break;
+      const match = line.match(/^        - \$ref:\s*(.+)$/);
+      const ref = match ? refName(match[1]) : null;
+      if (ref && !allOfRefs.includes(ref)) allOfRefs.push(ref);
+    }
+  }
   const propertyStart = block.findIndex(line => line === "      properties:" || /^          properties:$/.test(line));
   const properties = [];
   if (propertyStart >= 0) {
+    const baseIndent = lineIndent(block[propertyStart]);
     let current = null;
     let currentLines = [];
     const flush = () => {
@@ -160,14 +170,14 @@ function renderSchema(name, block) {
     };
     for (let index = propertyStart + 1; index < block.length; index += 1) {
       const line = block[index];
-      const match = line.match(/^        ([A-Za-z0-9_-]+):(?:\s*(.*))?$/) ?? line.match(/^            ([A-Za-z0-9_-]+):(?:\s*(.*))?$/);
-      if (match) {
+      const indent = lineIndent(line);
+      if (line.trim() && indent <= baseIndent) break;
+      const match = line.match(/^\s+([A-Za-z0-9_-]+):(?:\s*(.*))?$/);
+      if (match && indent === baseIndent + 2) {
         flush();
         current = match[1];
         currentLines = [`${current}: ${match[2] ?? ""}`];
       } else if (current) {
-        const indent = line.match(/^ */)?.[0].length ?? 0;
-        if (indent <= 6 || /^      [A-Za-z]/.test(line)) break;
         currentLines.push(line);
       }
     }
@@ -357,6 +367,7 @@ const generated = `/* eslint-disable */
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
  * SHA-256: ${sha256}
  * Generator: frontend/scripts/generate-openapi-contract.mjs
+ * Contract: ${operations.length} operations, ${schemas.length} schemas
  */
 
 export const DUTYLOG_OPENAPI_SOURCE_SHA256 = ${JSON.stringify(sha256)};

@@ -48,11 +48,12 @@ class AuthenticLockfileCommitGeneratedClientFixtureHotfixTest {
     }
 
     @Test
-    void gateAImplementationIsCompleteButRequiresGreenAcceptance() throws Exception {
+    void gateAImplementationIsCompleteAndGreenAcceptanceIsRecorded() throws Exception {
         String register = read("docs/ENGINEERING_QUALITY_REGISTER.md");
         String q01 = register.lines().filter(line -> line.startsWith("| Q-01 ")).findFirst().orElseThrow();
         assertTrue(q01.endsWith("| DONE |"), q01);
-        assertTrue(register.contains("полного зелёного CI/staging `v27.35.7`"));
+        assertTrue(register.contains("staging `v27.35.7` зелёные"));
+        assertTrue(register.contains("Gate A закрыт"));
     }
 
     private static String read(String path) throws Exception {

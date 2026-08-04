@@ -34,7 +34,7 @@ test('canonical absence ledger owns new time-off while overtime keeps FIFO stati
   await page.locator('#vacationEndTime').fill('13:00');
   await page.locator('#vacationStatus').selectOption('APPROVED');
   await page.locator('#vacationTitle').fill('Canonical time off');
-  const created = waitForApi(page, 'POST', '/api/vacation-planner/absences', 201);
+  const created = waitForApi(page, 'POST', '/api/v1/vacation-planner/absences', 201);
   await page.locator('#vacationSaveBtn').click();
   const absence = await (await created).json();
   await expect(page.locator('#absenceComposerModal')).toBeHidden();
