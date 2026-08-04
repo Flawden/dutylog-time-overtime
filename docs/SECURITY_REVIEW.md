@@ -1,7 +1,14 @@
 # Security review
 
-Status: v27.34.3.
+Status: v27.34.4.
 
+
+## v27.34.4 secondary navigation and draft-preview review
+
+- No new capability, endpoint, role or mutable bridge state is introduced.
+- Zero/negative values are accepted only as non-persistent preview output; create/update invariants remain fail-closed.
+- `aria-current` and active CSS expose presentation state only and do not widen module authorization.
+- Strict browser error/request collection remains enabled.
 
 ## v27.34.3 Vue shell E2E navigation compatibility review
 

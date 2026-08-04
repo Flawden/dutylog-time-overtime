@@ -1,5 +1,5 @@
-# DutyLog API v27.34.3
-`v27.34.3` changes no HTTP contract. The hotfix aligns browser navigation tests and stable Vue shell hooks with the released shell ownership boundary. Endpoints, DTOs, CSRF/session rules and OpenAPI v1 remain unchanged.
+# DutyLog API v27.34.4
+`v27.34.4` changes no request or response schema. The preview endpoint now treats non-positive calculated intervals as valid non-persistent draft results, while create/update validation remains strict. Vue secondary-navigation state is presentation-only; CSRF/session rules and OpenAPI v1 remain unchanged.
 
 ## Absence and time-bank presentation contract
 

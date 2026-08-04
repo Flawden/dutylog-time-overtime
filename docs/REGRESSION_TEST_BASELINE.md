@@ -1,13 +1,21 @@
 # DutyLog regression test baseline
 
-Status: v27.34.3.
+Status: v27.34.4.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.34.3 aligns the historical browser suite with Vue-owned shell navigation and current release identity. The current application baseline is 135 Java test classes / 648 `@Test` methods / 44 Chromium Playwright scenarios / 11 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.34.4 separates non-persistent overtime draft calculation from strict writes and completes active-route semantics for Vue secondary navigation. The current application baseline is 136 Java test classes / 652 `@Test` methods / 44 Chromium Playwright scenarios / 11 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.34.4 Vue Secondary Navigation & Overtime Preview Contract Hotfix extension
+
+- `VueSecondaryNavigationOvertimePreviewHotfixTest` protects both confirmed Chromium root causes.
+- `OvertimeServiceTest` proves a zero-hour calculated draft previews successfully while persistence remains rejected.
+- `OvertimeControllerTest` proves both legacy and `/api/v1` preview aliases return HTTP `200` with zero credited minutes.
+- `vue-app-shell.spec.js` verifies active state through More and the secondary Tasks item.
+- `overtime-scenario-manager.spec.js` requires the zero-hour shift draft preview to succeed before editing the interval.
 
 ## v27.34.3 Vue Shell E2E Navigation Compatibility Hotfix extension
 

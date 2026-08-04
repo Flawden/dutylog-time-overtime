@@ -273,7 +273,7 @@ public class OvertimeService {
         if (req == null) {
             throw ApiException.badRequest("Некорректный JSON в запросе");
         }
-        CalculatedCredit calculated = calculateCredit(user, req);
+        CalculatedCredit calculated = calculateCredit(user, req, null, false);
         if (!calculated.calculated()) {
             int creditedMinutes = minutesFromHours(calculated.hours());
             return new OvertimeCreditPreviewDto(
@@ -302,7 +302,7 @@ public class OvertimeService {
                 plannedMinutes,
                 calculated.plannedHours(),
                 creditedMinutes,
-                hoursFromMinutes(creditedMinutes),
+                signedHoursFromMinutes(creditedMinutes),
                 calculated.sourceTimezone(),
                 calculated.startInstant().toString(),
                 calculated.endInstant().toString()
@@ -1529,12 +1529,19 @@ public class OvertimeService {
     }
 
     private CalculatedCredit calculateCredit(AppUser user, OvertimeCreditCreateRequest req) {
-        return calculateCredit(user, req, null);
+        return calculateCredit(user, req, null, true);
     }
 
     private CalculatedCredit calculateCredit(AppUser user,
                                              OvertimeCreditCreateRequest req,
                                              String preferredSourceTimezone) {
+        return calculateCredit(user, req, preferredSourceTimezone, true);
+    }
+
+    private CalculatedCredit calculateCredit(AppUser user,
+                                             OvertimeCreditCreateRequest req,
+                                             String preferredSourceTimezone,
+                                             boolean requirePositiveCalculatedHours) {
         boolean hasStart = hasText(req.startDateTime());
         boolean hasEnd = hasText(req.endDateTime());
         if (hasStart || hasEnd) {
@@ -1557,10 +1564,12 @@ public class OvertimeService {
             double plannedHours = sanitizePlannedHours(req.plannedHours());
             long plannedMinutes = Math.round(plannedHours * 60.0);
             long creditedMinutes = totalMinutes - breakMinutes - plannedMinutes;
-            if (creditedMinutes <= 0) {
+            if (creditedMinutes <= 0 && requirePositiveCalculatedHours) {
                 throw ApiException.badRequest("После вычета обеда и плановых часов переработка получилась 0 или меньше");
             }
-            double hours = requirePositiveHours(creditedMinutes / 60.0, "Переработка должна быть больше 0");
+            double hours = requirePositiveCalculatedHours
+                    ? requirePositiveHours(creditedMinutes / 60.0, "Переработка должна быть больше 0")
+                    : signedHoursFromMinutes(Math.toIntExact(creditedMinutes));
             String timeRange = hasText(req.timeRange()) ? req.timeRange().trim() : formatTimeRange(start, end);
             return new CalculatedCredit(
                     timeRange,
@@ -1762,6 +1771,10 @@ public class OvertimeService {
 
     private double hoursFromMinutes(int minutes) {
         return round2(Math.max(0, minutes) / 60.0);
+    }
+
+    private double signedHoursFromMinutes(int minutes) {
+        return round2(minutes / 60.0);
     }
 
     private boolean hasText(String value) {

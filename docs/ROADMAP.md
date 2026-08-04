@@ -1,9 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.34.3 — Vue Shell E2E Navigation Compatibility Hotfix**.
+Current release: **v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix**.
 
 
-## v27.34.3 — Vue Shell E2E Navigation Compatibility Hotfix — current
+## v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix — current
+
+- [x] Return a successful canonical preview for zero/negative intermediate calculated drafts.
+- [x] Keep create/update validation strict for non-positive overtime credits.
+- [x] Publish active state for secondary routes on the visible More control and matching modal item.
+- [x] Align the two remaining Chromium scenarios with those public contracts.
+- [x] Keep strict TypeScript, strict Playwright collection, API shape, PostgreSQL, Flyway V47 and one-image deployment unchanged.
+- [ ] Confirm full GitHub Actions validation, image build, clean PostgreSQL smoke and staging deployment.
+
+## v27.34.3 — Vue Shell E2E Navigation Compatibility Hotfix — completed
 
 - [x] Move historical E2E navigation from hidden legacy chrome to the public Vue/legacy bridge.
 - [x] Add stable Vue shell hooks for visible brand, profile, more-menu and logout interactions.

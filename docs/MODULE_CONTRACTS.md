@@ -1,11 +1,15 @@
 # Module contracts
 
+## Vue secondary navigation and overtime draft preview (v27.34.4)
+
+Secondary Vue routes remain reachable through the public shell boundary and now expose active state on the visible More control and modal item. Canonical overtime preview may represent zero or negative intermediate calculations, but persistence remains protected by the existing positive-credit invariant.
+
 ## Vue shell E2E ownership compatibility (v27.34.3)
 
 Vue remains the visible shell owner. Browser tests navigate through `DutyLogVuePlatform.navigateLegacy(...)` / `DutyLogLegacyPlatform.navigate(...)` and visible Vue hooks rather than clicking hidden legacy chrome. Product-screen module ownership and backend contracts are unchanged.
 
 
-Status: v27.34.3.
+Status: v27.34.4.
 
 
 ## Vue browser-runtime bundle safety (v27.34.2)

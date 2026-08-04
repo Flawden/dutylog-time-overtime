@@ -155,6 +155,27 @@ class OvertimeControllerTest {
     }
 
     @Test
+    void previewReturnsOkForAZeroCalculatedDraftThroughLegacyAndV1Aliases() throws Exception {
+        setOvertimeEnabled(owner, true);
+        String body = """
+                {"date":"2026-07-25","startDateTime":"2026-07-25T08:00","endDateTime":"2026-07-25T20:00","breakMinutes":0,"plannedHours":12}
+                """;
+
+        for (String path : new String[]{"/api/overtime/preview", "/api/v1/overtime/preview"}) {
+            mvc.perform(post(path)
+                            .with(user(owner.getUsername()).roles("USER"))
+                            .with(csrf())
+                            .contentType("application/json")
+                            .content(body))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.calculated").value(true))
+                    .andExpect(jsonPath("$.elapsedMinutes").value(720))
+                    .andExpect(jsonPath("$.creditedMinutes").value(0))
+                    .andExpect(jsonPath("$.creditedHours").value(0.0));
+        }
+    }
+
+    @Test
     void accountPageFiltersAndExportsMatchTheVisibleLedger() throws Exception {
         setOvertimeEnabled(owner, true);
         overtimeService.createCredit(owner, manual("2026-07-01", 2.0, "старое"));

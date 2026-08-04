@@ -1,6 +1,6 @@
 # Supply-chain maintenance
 
-Status: v27.34.3.
+Status: v27.34.4.
 
 Dependabot checks five maintained surfaces weekly:
 
@@ -14,7 +14,7 @@ CI must remain green before merging an update. Review release notes and run the 
 
 ## Vue frontend dependency policy
 
-The v27.34.3 frontend keeps the v27.34.0 dependency set and exact direct pins. Validation runs `vue-tsc`, 11 Vitest cases, Vite and a generated-browser-bundle audit before Maven; Docker repeats the same audited `npm run build` in an isolated Node stage. The deployable supply-chain identity remains the immutable staging-tested application image digest promoted to production.
+The v27.34.4 frontend keeps the v27.34.0 dependency set and exact direct pins. Validation runs `vue-tsc`, 11 Vitest cases, Vite and a generated-browser-bundle audit before Maven; Docker repeats the same audited `npm run build` in an isolated Node stage. The deployable supply-chain identity remains the immutable staging-tested application image digest promoted to production.
 
 A future dependency update must update the exact pin, pass all frontend/backend/browser gates and produce a new staging-tested digest. Do not weaken the same-origin CSP or add CDN runtime dependencies to avoid a build failure.
 

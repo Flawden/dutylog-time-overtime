@@ -1,4 +1,10 @@
-# v27.34.3 — Vue Shell E2E Navigation Compatibility Hotfix
+# v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix
+
+The v27.34.3 Chromium gate passed 42 of 44 scenarios and isolated two final compatibility defects. Canonical overtime preview no longer converts a valid zero-hour draft into HTTP `400`, while persistence still rejects non-positive credits. Vue secondary routes now publish their active state through the visible **More / Ещё** control and the matching item inside the modal.
+
+Strict TypeScript, the strict Playwright runtime collector, API shape, PostgreSQL, Flyway V47 and one-image deployment remain unchanged. The complete explanation and acceptance contract are in `docs/VUE_SECONDARY_NAVIGATION_OVERTIME_PREVIEW_HOTFIX_V27.34.4.md`.
+
+## Previous hotfix: v27.34.3 — Vue Shell E2E Navigation Compatibility Hotfix
 
 The Vue shell now boots correctly, so the remaining red Chromium baseline revealed stale test ownership: historical scenarios were still trying to click the hidden legacy topbar, tabbar, brand and logout controls. This hotfix moves shared E2E navigation to the released public shell bridge and updates shell-specific scenarios to interact with visible Vue controls.
 

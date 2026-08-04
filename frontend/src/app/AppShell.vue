@@ -15,7 +15,7 @@ import ToastHost from "@/shared/overlays/ToastHost.vue";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
-const { language, online, modulesLoaded, displayName, initials, secondaryNavigation, availableNavigation } = storeToRefs(shell);
+const { activeRoute, language, online, modulesLoaded, displayName, initials, secondaryNavigation, availableNavigation } = storeToRefs(shell);
 
 const text = computed(() => language.value === "en" ? {
   product: "Time & Overtime",
@@ -86,7 +86,15 @@ function logout(): void { props.bridge.logout(); }
     @close="shell.closeMore()"
   >
     <div class="vue-shell-more-grid" :aria-label="text.allSections">
-      <button v-for="item in secondaryItems" :key="item.route" type="button" :data-route="item.route" @click="navigate(item.route)">
+      <button
+        v-for="item in secondaryItems"
+        :key="item.route"
+        type="button"
+        :class="{ 'is-active': activeRoute === item.route }"
+        :aria-current="activeRoute === item.route ? 'page' : false"
+        :data-route="item.route"
+        @click="navigate(item.route)"
+      >
         <AppIcon :name="item.icon" />
         <span>{{ item.labels[language] }}</span>
       </button>

@@ -22,7 +22,11 @@ test('overtime scenarios are created and edited inside the shared credit modal',
   await openDayModule(page, 'overtime');
   await page.locator('#dayAddCredit').click();
   await expect(page.locator('#overtimeCreditModal')).toBeVisible();
+  const zeroDraftPreview = waitForApi(page, 'POST', '/api/overtime/preview', 200);
   await page.locator('#creditTimeByShift').click();
+  const zeroDraftBody = await (await zeroDraftPreview).json();
+  expect(zeroDraftBody.creditedMinutes).toBe(0);
+  expect(zeroDraftBody.creditedHours).toBe(0);
   await expect(page.locator('#creditStart')).not.toHaveValue('');
   await expect(page.locator('#creditEnd')).not.toHaveValue('');
 

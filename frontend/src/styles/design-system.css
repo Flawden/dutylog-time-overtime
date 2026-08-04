@@ -287,6 +287,11 @@ body.vue-modal-open { overflow: hidden; }
   font-weight: 720;
 }
 .vue-shell-more-grid button:hover { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.vue-shell-more-grid button.is-active {
+  color: var(--accent);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+  background: var(--vue-shell-highlight);
+}
 .vue-shell-architecture-card { display: grid; gap: 5px; }
 .vue-shell-architecture-card small { color: var(--mut); }
 .vue-shell-architecture-card code { color: var(--accent); font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; }

@@ -1,6 +1,16 @@
 # Release checklist
 
-Status: v27.34.3.
+Status: v27.34.4.
+
+## v27.34.4 Vue Secondary Navigation & Overtime Preview Contract Hotfix acceptance
+
+- [ ] `vue-tsc`, 11 Vitest cases, Vite build and browser-bundle audit pass.
+- [ ] Focused service and MockMvc tests prove zero draft preview succeeds and persistence stays strict.
+- [ ] `VueSecondaryNavigationOvertimePreviewHotfixTest` passes.
+- [ ] All 44 Playwright scenarios pass with the strict runtime collector unchanged.
+- [ ] Tasks active state is visible through More and the secondary modal item.
+- [ ] API shape/PostgreSQL remain unchanged and Flyway remains V47.
+- [ ] Docker image build, clean PostgreSQL migration smoke and staging deploy pass in GitHub Actions.
 
 ## v27.34.3 Vue Shell E2E Navigation Compatibility Hotfix acceptance
 
@@ -276,6 +286,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.34.3 -m "v27.34.2 — Vue Browser Runtime Bundle Hotfix"
-git push origin v27.34.2
+git tag -a v27.34.4 -m "v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix"
+git push origin v27.34.4
 ```

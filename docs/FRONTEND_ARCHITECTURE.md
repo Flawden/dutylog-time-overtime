@@ -1,10 +1,14 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.34.3.
+Status: Vue app-shell ownership v1, DutyLog v27.34.4.
 
 ## Browser-safe library output (v27.34.3)
 
 The Vue shell is built in Vite library mode but consumed directly by browsers from Spring Boot static resources. The build therefore replaces `process.env.NODE_ENV` at compile time and audits the emitted `dutylog-vue-app-shell.js` for Node-only runtime globals. No `process` shim is exposed to the browser and the legacy bridge boundary is unchanged.
+
+## Secondary navigation active-route contract (v27.34.4)
+
+When the active route is outside primary navigation, the visible More control carries the active state and `aria-current="page"`. The matching item inside the More modal carries the same semantic state. This keeps responsive/workspace navigation truthful without forcing every enabled module into the primary bar.
 
 ## Current ownership
 
@@ -33,7 +37,7 @@ frontend/src
 
 ## Routing and bridge
 
-Vue Router still uses memory history. The released hash route remains authoritative during v27.34.3. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
+Vue Router still uses memory history. The released hash route remains authoritative during v27.34.4. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
 
 Allowed transition capabilities are:
 

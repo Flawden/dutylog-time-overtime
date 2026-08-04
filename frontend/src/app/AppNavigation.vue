@@ -11,6 +11,7 @@ const shell = useShellStore();
 const { activeRoute, language, primaryNavigation, secondaryNavigation } = storeToRefs(shell);
 
 const items = computed(() => primaryNavigation.value.map(navigationItem).filter((item): item is NonNullable<typeof item> => item !== null));
+const secondaryActive = computed(() => secondaryNavigation.value.includes(activeRoute.value));
 const moreLabel = computed(() => language.value === "en" ? "More sections" : "Другие разделы");
 
 function navigate(route: DutyLogRoute): void {
@@ -41,9 +42,11 @@ function navigate(route: DutyLogRoute): void {
     <button
       v-if="secondaryNavigation.length"
       class="vue-shell-nav__item vue-shell-nav__more"
+      :class="{ 'is-active': secondaryActive }"
       type="button"
       data-vue-shell-more
       :aria-label="moreLabel"
+      :aria-current="secondaryActive ? 'page' : false"
       @click="shell.openMore()"
     >
       <AppIcon name="menu"/><span>{{ language === 'en' ? 'More' : 'Ещё' }}</span>

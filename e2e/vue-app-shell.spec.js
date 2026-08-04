@@ -18,11 +18,14 @@ test('Vue app shell owns navigation chrome while legacy product screens retain b
   await expect(calendar).toHaveAttribute('aria-current', 'page');
 
   await openView(page, 'tasks');
-  await expect(page.locator('[data-vue-shell-navigation] [data-route="tasks"]')).toHaveAttribute('aria-current', 'page');
+  const more = page.locator('[data-vue-shell-more]');
+  await expect(more).toHaveAttribute('aria-current', 'page');
+  await more.click();
+  await expect(page.locator('.vue-shell-more-grid [data-route="tasks"]')).toHaveAttribute('aria-current', 'page');
 
   const diagnostics = await page.evaluate(() => window.DutyLogVuePlatform?.snapshot());
   expect(diagnostics).toMatchObject({
-    releaseVersion: '27.34.3',
+    releaseVersion: '27.34.4',
     architecture: 'vue-shell-v1',
     phase: 'ready',
     legacyConnected: true,

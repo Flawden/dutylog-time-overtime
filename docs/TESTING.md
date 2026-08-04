@@ -11,9 +11,9 @@ mvn clean verify
 bash deploy/scripts/release-check.sh
 ```
 
-The frontend gate performs exact-pinned dependency installation, strict `vue-tsc`, 11 Vitest cases, the Vite production build and the browser-bundle audit. A plain Maven run without `frontend/dist` is not the complete v27.34.3 release path. CI, staging and production validation execute this order automatically.
+The frontend gate performs exact-pinned dependency installation, strict `vue-tsc`, 11 Vitest cases, the Vite production build and the browser-bundle audit. A plain Maven run without `frontend/dist` is not the complete v27.34.4 release path. CI, staging and production validation execute this order automatically.
 
-The complete browser baseline is 44 Playwright scenarios. The v27.34.3 hotfix keeps the v27.34.0 shell scenario and the strict global page-error fixture unchanged while adding a generated-bundle audit before browser execution; product workspaces remain legacy-owned during this migration step.
+The complete browser baseline is 44 Playwright scenarios. The v27.34.4 hotfix keeps the strict global page-error/request fixture unchanged and adds focused coverage for zero-hour draft preview plus secondary-route active state; product workspaces remain legacy-owned during this migration step.
 
 ## Two different ways to run tests
 

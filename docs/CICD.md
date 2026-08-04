@@ -1,6 +1,10 @@
 # DutyLog CI/CD
 
-Status: v27.34.3.
+Status: v27.34.4.
+
+## v27.34.4 validation boundary
+
+The validation job must prove both hotfix contracts before image build: zero-hour calculated drafts return HTTP `200` without weakening create/update validation, and secondary Vue routes expose active state through visible shell controls. The strict Playwright runtime collector remains unchanged. A failed validation job intentionally skips image build and deployment.
 
 DutyLog uses two long-lived deployment branches:
 

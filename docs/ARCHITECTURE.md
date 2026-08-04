@@ -1,8 +1,8 @@
 # DutyLog architecture
 
-## Active Vue frontend transition — v27.34.3 browser-runtime stabilization
+## Active Vue frontend transition — v27.34.4 contract stabilization
 
-DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains a separate container. The frontend migration from ordered vanilla JavaScript to **Vue 3 + TypeScript + Vite** is active. v27.33.0 introduced the production foundation; v27.34.0 moved the visible application shell and shared design-system infrastructure to Vue; v27.34.1 stabilized strict template/Vite typing. v27.34.3 keeps the same ownership boundary and makes the generated library bundle browser-safe by replacing Node environment references and auditing the final JavaScript artifact. New product features remain paused until complete Vue parity.
+DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains a separate container. The frontend migration from ordered vanilla JavaScript to **Vue 3 + TypeScript + Vite** is active. v27.33.0 introduced the production foundation; v27.34.0 moved the visible application shell and shared design-system infrastructure to Vue; v27.34.1–v27.34.3 stabilized strict typing, browser-safe output and E2E navigation ownership. v27.34.4 keeps the same boundary while separating non-persistent overtime draft calculation from strict writes and completing active-route presentation for secondary Vue navigation. New product features remain paused until complete Vue parity.
 
 The migration is incremental, not a big-bang rewrite: the released foundation and CI boundary → design system and app shell → domain-by-domain migration → deletion of the legacy numbered scripts and bridge. Production Vite is not a server: its build output is packaged into the Spring Boot JAR/image and served same-origin with the existing session and CSRF model.
 

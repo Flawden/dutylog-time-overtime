@@ -239,6 +239,27 @@ class OvertimeServiceTest {
     }
 
     @Test
+    void canonicalPreviewAllowsZeroDraftButPersistenceStillRejectsIt() {
+        OvertimeCreditCreateRequest zeroDraft = interval(
+                "2026-07-25", "2026-07-25T08:00", "2026-07-25T20:00", 0, 12.0);
+
+        var preview = overtime.previewCredit(user, zeroDraft);
+        assertEquals(720, preview.elapsedMinutes());
+        assertEquals(0, preview.creditedMinutes());
+        assertEquals(0.0, preview.creditedHours(), 0.001);
+
+        var error = assertThrows(ApiException.class, () -> overtime.createCredit(user, zeroDraft));
+        assertTrue(error.getMessage().contains("0 или меньше"));
+
+        OvertimeCreditCreateRequest negativeDraft = interval(
+                "2026-07-25", "2026-07-25T08:00", "2026-07-25T12:00", 0, 5.0);
+        var negativePreview = overtime.previewCredit(user, negativeDraft);
+        assertEquals(-60, negativePreview.creditedMinutes());
+        assertEquals(-1.0, negativePreview.creditedHours(), 0.001);
+        assertThrows(ApiException.class, () -> overtime.createCredit(user, negativeDraft));
+    }
+
+    @Test
     void canonicalPreviewUsesProfileTimezoneForDstGapAndOverlap() {
         user.setWorkTimezone("Europe/Berlin");
         users.save(user);

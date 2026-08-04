@@ -1,3 +1,13 @@
+# v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix
+
+- Split canonical overtime draft preview from strict persistence validation: calculated previews may return zero or negative credited minutes, while create/update still reject non-positive credits.
+- Added service and MockMvc regressions proving that a full shift minus its plan returns HTTP `200` with `0` credited minutes but cannot be persisted.
+- Added active-state and `aria-current` propagation for Vue secondary routes through the visible More control and the matching modal item.
+- Updated the Vue shell E2E to follow the released secondary-navigation surface instead of assuming Tasks belongs to primary navigation.
+- Updated the Overtime scenario E2E to require the zero-hour draft preview to succeed before extending the interval by two hours.
+- Kept strict TypeScript, strict browser runtime collection, API shape, PostgreSQL, Docker topology and Flyway V47 unchanged.
+- Regression baseline advances to 136 Java test classes, 652 `@Test` methods, 44 Playwright scenarios and 11 Vitest cases.
+
 # v27.34.3 — Vue Shell E2E Navigation Compatibility Hotfix
 
 - Migrated historical Playwright navigation from hidden legacy chrome to the released Vue/legacy public navigation bridge.
