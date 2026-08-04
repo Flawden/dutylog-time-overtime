@@ -9,29 +9,28 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Regression contracts for v27.35.1 frontend lockfile executable resolution. */
+/** Regression contracts preserving the v27.35.1 launcher lesson during the v27.35.2 bootstrap. */
 class FrontendLockfileExecutableResolutionHotfixTest {
 
     @Test
-    void lockfileCarriesTheThreeCliBinMappingsUsedByNpmScripts() throws Exception {
-        String lock = read("frontend/package-lock.json");
-        assertTrue(lock.contains("\"vue-tsc\": \"bin/vue-tsc.js\""));
-        assertTrue(lock.contains("\"vitest\": \"vitest.mjs\""));
-        assertTrue(lock.contains("\"vite\": \"bin/vite.js\""));
-        assertTrue(lock.contains("https://registry.npmjs.org/vue-tsc/-/vue-tsc-2.2.0.tgz"));
+    void syntheticFrontendLockfileIsNotTheTrackedReleaseSourceOfTruth() throws Exception {
+        String ignore = read(".gitignore");
+        String bootstrap = read("deploy/scripts/bootstrap-frontend-lockfile.sh");
+        assertTrue(ignore.contains("frontend/package-lock.json"));
+        assertTrue(bootstrap.contains("rm -f \"$FRONTEND_DIR/package-lock.json\""));
     }
 
     @Test
-    void deliveryVerifierRejectsMissingLockMetadataOrInstalledLaunchers() throws Exception {
-        String verifier = read("frontend/scripts/verify-delivery-foundation.mjs");
-        assertTrue(verifier.contains("executableContracts"));
-        assertTrue(verifier.contains("entry.bin?.[command]"));
-        assertTrue(verifier.contains("node_modules/.bin/${command}"));
-        assertTrue(verifier.contains("npm ci did not create the local"));
+    void generatedLockfileMustCarryAuthenticRegistryIntegrityAndGraphMetadata() throws Exception {
+        String verifier = read("frontend/scripts/verify-authentic-lockfile.mjs");
+        assertTrue(verifier.contains("registryEntries.length < 70"));
+        assertTrue(verifier.contains("integrityEntries.length < 70"));
+        assertTrue(verifier.contains("graphEntries.length < 20"));
+        assertTrue(verifier.contains("node_modules/@vue/language-core"));
     }
 
     @Test
-    void ciAndDockerFailBeforeTypecheckWhenLocalExecutablesAreMissing() throws Exception {
+    void ciAndDockerStillFailWhenLocalExecutablesAreMissing() throws Exception {
         String gate = read("deploy/scripts/frontend-gate.sh");
         String docker = read("Dockerfile");
         assertTrue(gate.contains("for command in vue-tsc vitest vite"));
@@ -41,13 +40,15 @@ class FrontendLockfileExecutableResolutionHotfixTest {
     }
 
     @Test
-    void hotfixDoesNotFallbackToNpxOrMutableInstall() throws Exception {
+    void bootstrapDoesNotFallbackToNpxOrGlobalCompilers() throws Exception {
         String gate = read("deploy/scripts/frontend-gate.sh");
+        String bootstrap = read("deploy/scripts/bootstrap-frontend-lockfile.sh");
         String docker = read("Dockerfile");
         assertFalse(gate.contains("npx "));
+        assertFalse(bootstrap.contains("npx "));
         assertFalse(docker.contains("npx "));
-        assertFalse(gate.contains("npm install"));
-        assertFalse(docker.contains("npm install"));
+        assertTrue(bootstrap.contains("npm --prefix \"$FRONTEND_DIR\" install --package-lock-only"));
+        assertTrue(gate.contains("npm --prefix \"$FRONTEND_DIR\" ci"));
     }
 
     private static String read(String path) throws Exception {

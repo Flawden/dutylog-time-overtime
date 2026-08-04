@@ -1,13 +1,20 @@
 # DutyLog regression test baseline
 
-Status: v27.35.1.
+Status: v27.35.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.35.1 restores deterministic local CLI resolution after `npm ci` and blocks missing `vue-tsc`, `vitest` or `vite` launchers before compilation. The current application baseline is 138 Java test classes / 665 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.35.2 removes the synthetic flat frontend lockfile, bootstraps an authentic npm dependency graph, uploads it for promotion and keeps Gate A blocked until v27.35.3 commits the exact artifact. The current application baseline is 139 Java test classes / 669 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.35.2 Authentic npm Lockfile Bootstrap extension
+
+- `AuthenticNpmLockfileBootstrapHotfixTest` protects exact-toolchain generation, authentic graph checks, CI artifact upload and the Docker bootstrap boundary.
+- `FrontendLockfileExecutableResolutionHotfixTest` now rejects shipping the synthetic lockfile while retaining launcher and no-`npx` guards.
+- `VueDeliveryContractsDiagnosticsFoundationTest` keeps Q-01 active and Gate A blocked until the exact generated artifact is committed.
+- Baseline advances to 139 Java test classes / 669 test methods / 44 Playwright scenarios / 16 Vitest cases; Flyway remains V47.
 
 ## v27.35.1 Frontend Lockfile Executable Resolution extension
 

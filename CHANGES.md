@@ -1,3 +1,14 @@
+# v27.35.2 — Authentic npm Lockfile Bootstrap Hotfix
+
+- Removed the synthetic frontend lockfile after GitHub Actions proved that its flat dependency table could launch `vue-tsc` but produced an internally incompatible Volar graph.
+- Added exact-toolchain lockfile bootstrap with Node `20.18.1` and npm `10.8.2`: `npm install --package-lock-only --ignore-scripts`, authenticity verification, then `npm ci`.
+- Added structural lockfile guards for registry tarballs, SHA-512 integrity, dependency/peer edges and the complete Vue/Volar/TypeScript chain.
+- Added `if: always()` GitHub Actions artifacts for the generated lockfile and SHA-256 manifest so the exact CI graph can be promoted in `v27.35.3`.
+- Applied the same bootstrap → verify → `npm ci` sequence in the Docker Node stage.
+- Reopened Q-01 and Gate A honestly; no product-domain Vue migration may begin until the generated lockfile is committed and passes clean-checkout CI without regeneration.
+- Kept API, OpenAPI operations, PostgreSQL, Flyway V47, FIFO, Payroll, strict TypeScript and one-image deployment unchanged.
+- Regression baseline advances to 139 Java test classes, 669 `@Test` methods, 44 Playwright scenarios and 16 Vitest cases.
+
 # v27.35.1 — Frontend Lockfile Executable Resolution Hotfix
 
 - Corrected the frontend lockfile metadata that left `vue-tsc`, `vitest` and `vite` package directories installed without local `node_modules/.bin` launchers.

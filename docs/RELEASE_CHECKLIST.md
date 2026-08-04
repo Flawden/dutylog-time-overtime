@@ -1,15 +1,17 @@
 # Release checklist
 
-Status: v27.35.1.
+Status: v27.35.2.
 
-## v27.35.1 Frontend Lockfile Executable Resolution Hotfix acceptance
+## v27.35.2 Authentic npm Lockfile Bootstrap Hotfix acceptance
 
-- [ ] `npm ci` creates local `node_modules/.bin/vue-tsc`, `vitest` and `vite` launchers.
-- [ ] The lockfile records the expected npm tarball and `bin` mapping for each build CLI.
-- [ ] `npm ls --all` passes before typecheck in CI and Docker.
-- [ ] `verify:delivery`, generated OpenAPI drift check, `vue-tsc`, 16 Vitest cases and Vite build pass.
-- [ ] No `npx`, global compiler or mutable `npm install` fallback is present.
-- [ ] Maven reports 138 Java test classes / 665 `@Test` methods and all 44 Playwright scenarios pass.
+- [ ] Pinned Node `20.18.1` and npm `10.8.2` generate `frontend/package-lock.json` through `npm install --package-lock-only --ignore-scripts`.
+- [ ] Authenticity verification confirms npm registry tarballs, SHA-512 integrity and dependency/peer edges before `npm ci`.
+- [ ] `npm ci` creates local `vue-tsc`, `vitest` and `vite` launchers; `npm ls --all` passes.
+- [ ] `vue-tsc`, 16 Vitest cases, Vite build and browser-bundle audit pass without internal Volar crashes.
+- [ ] CI uploads `frontend/package-lock.json` and `generated-lockfile-manifest.txt` with `if: always()`.
+- [ ] Docker uses the same bootstrap → verify → `npm ci` sequence.
+- [ ] Maven reports 139 Java test classes / 669 `@Test` methods and all 44 Playwright scenarios pass.
+- [ ] Q-01 remains `ACTIVE`; Gate A remains blocked until v27.35.3 commits the exact CI artifact.
 - [ ] No backend API shape, PostgreSQL schema, Flyway V47, domain ownership or one-image topology change.
 
 ## v27.35.0 Vue Delivery, Contracts & Diagnostics Foundation acceptance
@@ -21,7 +23,7 @@ Status: v27.35.1.
 - [ ] Vue render/boot and unhandled-promise failures show recovery UI with release/route/request ID.
 - [ ] Unexpected errors remain visible to strict Playwright page-error/request collectors.
 - [ ] Migration manifest/parity template exists and ADR-001–ADR-005 are accepted/indexed.
-- [ ] Engineering Quality Register Q-02–Q-05 are DONE; Q-01 completes through v27.35.1.
+- [ ] Engineering Quality Register Q-02–Q-05 are DONE; Q-01 remains ACTIVE through the v27.35.2 bootstrap and completes only after v27.35.3 commits the generated artifact.
 - [ ] No backend API shape, PostgreSQL schema, Flyway V47, domain ownership or one-image topology change.
 
 ## v27.34.4 Vue Secondary Navigation & Overtime Preview Contract Hotfix acceptance
@@ -304,6 +306,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.35.1 -m "v27.35.1 — Vue Delivery, Contracts & Diagnostics Foundation"
-git push origin v27.35.1
+git tag -a v27.35.2 -m "v27.35.2 — Vue Delivery, Contracts & Diagnostics Foundation"
+git push origin v27.35.2
 ```

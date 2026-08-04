@@ -1,9 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.35.1 — Frontend Lockfile Executable Resolution Hotfix**.
+Current release: **v27.35.2 — Authentic npm Lockfile Bootstrap Hotfix**.
 
 
-## v27.35.1 — Frontend Lockfile Executable Resolution Hotfix — current
+## v27.35.2 — Authentic npm Lockfile Bootstrap Hotfix — current
+
+- [x] Remove the synthetic flat frontend lockfile that produced an internally incompatible Vue/Volar graph.
+- [x] Generate a real lockfile with pinned Node `20.18.1` and npm `10.8.2` before `npm ci`.
+- [x] Reject generated graphs without registry tarballs, SHA-512 integrity and dependency/peer edges.
+- [x] Upload the exact generated lockfile and SHA-256 manifest from CI/staging/production validation even when later steps fail.
+- [x] Use the same bootstrap and authenticity verifier in the Docker Node stage.
+- [x] Keep Q-01 `ACTIVE` and Gate A blocked until `v27.35.3` commits the exact CI artifact.
+- [ ] `v27.35.3` — commit the CI-generated authentic lockfile and restore lockfile-only `npm ci`.
+
+## v27.35.1 — Frontend Lockfile Executable Resolution Hotfix — superseded by authentic graph bootstrap
 
 - [x] Restore npm `bin` metadata for `vue-tsc`, `vitest`, `vite` and TypeScript.
 - [x] Fail CI/Docker immediately when `node_modules/.bin` launchers are absent after `npm ci`.
@@ -19,7 +29,7 @@ Current release: **v27.35.1 — Frontend Lockfile Executable Resolution Hotfix**
 - [x] Add an operationId-based typed API client over the shared same-origin/CSRF transport.
 - [x] Add route/release/requestId diagnostics, Vue error boundary and `unhandledrejection` recovery.
 - [x] Add migration manifest/parity template and ADR-001–ADR-005.
-- [x] Establish Q-02–Q-05 and the Q-01 foundation; executable closure moves to v27.35.1.
+- [x] Establish Q-02–Q-05 and the Q-01 foundation; authentic lockfile closure moves to v27.35.3 after the v27.35.2 bootstrap artifact.
 - [x] Keep API behavior, PostgreSQL, Flyway V47, FIFO, Payroll and one-image deployment unchanged.
 - [ ] Confirm full GitHub Actions validation, image build, clean PostgreSQL smoke and staging deployment.
 

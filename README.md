@@ -1,3 +1,9 @@
+# v27.35.2 — Authentic npm Lockfile Bootstrap Hotfix
+
+GitHub Actions confirmed real progress: `vue-tsc` now launches, but the hand-built lockfile produced an incomplete Volar dependency graph and crashed inside `computedSfc` before checking DutyLog source. v27.35.2 removes the synthetic lockfile, regenerates an authentic npm graph with the exact pinned toolchain, verifies registry/integrity/dependency edges, then runs `npm ci`, `vue-tsc`, Vitest and Vite.
+
+Every validation workflow uploads the generated `frontend/package-lock.json` and its SHA-256 manifest even when a later frontend step fails. Gate A is deliberately still blocked; the exact CI artifact must be committed in v27.35.3 before `v27.36.0 — Vue Absence & Time Bank` begins. Full details are in `docs/AUTHENTIC_NPM_LOCKFILE_BOOTSTRAP_HOTFIX_V27.35.2.md`.
+
 # v27.35.1 — Frontend Lockfile Executable Resolution Hotfix
 
 GitHub Actions accepted the pinned Node/npm toolchain and generated OpenAPI drift gate, then proved that the first frontend lockfile lacked npm `bin` metadata for the local `vue-tsc`, `vitest` and `vite` launchers. This hotfix restores those mappings and makes CI/Docker stop immediately when an executable or installed dependency is missing.

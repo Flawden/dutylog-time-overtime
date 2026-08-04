@@ -48,13 +48,22 @@ jobs:
         with:
           node-version-file: 'frontend/.node-version'
           cache: npm
-          cache-dependency-path: |
-            package-lock.json
-            frontend/package-lock.json
+          cache-dependency-path: package-lock.json
           registry-url: 'https://registry.npmjs.org'
 
       - name: Vue frontend typecheck, unit tests and build
         run: bash ./deploy/scripts/frontend-gate.sh
+
+      - name: Upload generated authentic frontend lockfile
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-lockfile-${{ github.job }}-${{ github.run_id }}
+          path: |
+            frontend/package-lock.json
+            frontend/generated-lockfile-manifest.txt
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Resolve project version
         id: version

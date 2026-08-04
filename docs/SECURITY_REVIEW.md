@@ -1,13 +1,14 @@
-## v27.35.1 lockfile executable-resolution review
+## v27.35.2 authentic-lockfile bootstrap review
 
-- Exact Node/npm and lockfile-only installation reduce dependency drift; CI/Docker use the same `npm ci` boundary.
+- Exact Node/npm and exact direct pins constrain the bootstrap; CI/Docker generate and verify an authentic graph before the same `npm ci` boundary.
+- The generated lockfile artifact is uploaded with SHA-256 and contains registry tarballs plus integrity metadata; Gate A remains blocked until that exact artifact is committed.
 - OpenAPI generation consumes the committed same-repository contract and writes reviewed source; no runtime generation or remote schema fetch occurs.
 - Request IDs are bounded before storage/display and never include session, CSRF or payload data.
 - Recovery UI exposes release, public route and correlation ID only; stack traces, response bodies, cookies and tokens are not rendered.
 - Global Vue and promise handlers do not suppress `console.error` or browser `unhandledrejection`; strict Playwright collection remains fail-closed.
 - Same-origin session and CSRF behavior, CSP, cookies, bearer calendar URLs and Telegram secrets are unchanged.
 
-Status: v27.35.1.
+Status: v27.35.2.
 
 ## v27.34.4 secondary navigation and draft-preview review
 

@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.35.1
+release_foundation: v27.35.2
 created: 2026-08-04
 updated: 2026-08-04
 ---
@@ -22,7 +22,7 @@ updated: 2026-08-04
 
 | ID | Работа | Первая привязка | Повторяющийся gate / финальный срок | Доказательство | Статус |
 |---|---|---|---|---|---|
-| Q-01 | Frontend lockfile, `npm ci`, pinned Node/npm | `v27.35.0`, executable fix `v27.35.1` | каждый CI/Docker build | clean checkout создаёт pinned dependency tree и локальные `vue-tsc`/`vitest`/`vite` launchers | DONE |
+| Q-01 | Frontend lockfile, `npm ci`, pinned Node/npm | `v27.35.0`; bootstrap correction `v27.35.2` | каждый CI/Docker build | exact CI-generated lockfile committed in `v27.35.3`; clean checkout runs `npm ci` without regeneration | ACTIVE |
 | Q-02 | OpenAPI-generated TypeScript types/client и drift gate | `v27.35.0` | каждый API change | CI падает при неперегенерированном contract | DONE |
 | Q-03 | Vue error boundary, `unhandledrejection`, route/release/requestId diagnostics | `v27.35.0` | каждый Vue domain | controlled failure показывает recovery UI и correlation id | DONE |
 | Q-04 | Migration manifest и parity matrix | `v27.35.0` template | `v27.36.0–v27.40.0` | manifest в repository + release checklist | DONE |
@@ -61,7 +61,7 @@ updated: 2026-08-04
 
 ### Gate A — перед первой доменной миграцией
 
-Q-02–Q-05 закрыты в `v27.35.0`; Q-01 окончательно закрывается `v27.35.1` после чистого CI/staging. Gate A открывается для `v27.36.0` только после этого зелёного прогона.
+Q-02–Q-05 закрыты в `v27.35.0`. Q-01 снова `ACTIVE`: `v27.35.2` генерирует и публикует authentic npm lockfile, а `v27.35.3` должен закоммитить именно этот artifact и доказать clean-checkout `npm ci` без regeneration. Gate A остаётся закрыт для `v27.36.0` до этого зелёного прогона.
 
 ### Gate B — перед `v27.40.0`
 

@@ -23,3 +23,7 @@ __pycache__/
 
 frontend/node_modules/
 frontend/dist/
+
+# v27.35.2 CI bootstrap outputs; the exact generated lockfile is promoted in v27.35.3.
+frontend/package-lock.json
+frontend/generated-lockfile-manifest.txt

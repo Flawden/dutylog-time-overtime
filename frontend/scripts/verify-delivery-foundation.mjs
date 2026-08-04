@@ -4,6 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const packageJson = JSON.parse(readFileSync(`${root}/package.json`, "utf8"));
+execFileSync(process.execPath, [`${root}/scripts/verify-authentic-lockfile.mjs`], { stdio: "inherit" });
 const lock = JSON.parse(readFileSync(`${root}/package-lock.json`, "utf8"));
 const npmrc = readFileSync(`${root}/.npmrc`, "utf8");
 const expectedNode = readFileSync(`${root}/.node-version`, "utf8").trim();
@@ -75,4 +76,4 @@ for (const [command, contract] of Object.entries(executableContracts)) {
 }
 
 if (process.exitCode) process.exit(process.exitCode);
-console.log(`Vue delivery foundation verified with Node ${actualNode}, npm ${actualNpm}, lockfile v${lock.lockfileVersion} and local CLI launchers.`);
+console.log(`Vue delivery bootstrap verified with Node ${actualNode}, npm ${actualNpm}, authentic lockfile v${lock.lockfileVersion} and local CLI launchers.`);
