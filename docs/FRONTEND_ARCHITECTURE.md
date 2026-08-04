@@ -1,8 +1,8 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.35.2.
+Status: Vue app-shell ownership v1, DutyLog v27.35.3.
 
-## Delivery, generated API and diagnostics foundation (v27.35.2 bootstrap)
+## Delivery, generated API and diagnostics foundation (v27.35.3 bootstrap)
 
 The frontend toolchain is exact-pinned (`Node 20.18.1`, `npm 10.8.2`) and installs from a committed npm lockfile through `npm ci`. The canonical backend OpenAPI YAML is deterministically transformed into reviewed TypeScript schema and operation types; `--check` fails when generated output drifts. New Vue API integrations use the generated operation contract over the shared same-origin CSRF/request-ID transport.
 
@@ -43,7 +43,7 @@ frontend/src
 
 ## Routing and bridge
 
-Vue Router still uses memory history. The released hash route remains authoritative during v27.35.2. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
+Vue Router still uses memory history. The released hash route remains authoritative during v27.35.3. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
 
 Allowed transition capabilities are:
 

@@ -1,14 +1,12 @@
-# Multi-stage build: bootstrap an authentic npm graph, compile Vue, package it into Spring Boot,
-# then run one non-root app image. v27.35.2 is a temporary bootstrap release: the generated
-# lockfile is promoted into source in v27.35.3 before Gate A closes.
+# Multi-stage build: install the committed authentic npm graph, compile Vue,
+# package it into Spring Boot, then run one non-root app image.
 FROM node:20.18.1-alpine3.20 AS frontend-build
 WORKDIR /frontend
-COPY frontend/package.json frontend/.npmrc frontend/.node-version frontend/.npm-version ./
+COPY frontend/package.json frontend/package-lock.json frontend/generated-lockfile-manifest.txt \
+     frontend/.npmrc frontend/.node-version frontend/.npm-version ./
 COPY frontend/scripts ./scripts
 RUN test "$(node --version)" = "v$(cat .node-version)" \
     && test "$(npm --version)" = "$(cat .npm-version)" \
-    && rm -f package-lock.json \
-    && npm install --package-lock-only --ignore-scripts --no-audit --no-fund --prefer-online \
     && node ./scripts/verify-authentic-lockfile.mjs \
     && npm ci --no-audit --no-fund --prefer-online \
     && test -e node_modules/.bin/vue-tsc \
@@ -40,7 +38,7 @@ RUN find src/main/resources/static -type f -name '*.js' -exec \
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-ARG DUTYLOG_BUILD_VERSION=27.35.2-local
+ARG DUTYLOG_BUILD_VERSION=27.35.3-local
 ARG DUTYLOG_BUILD_COMMIT=local
 ARG DUTYLOG_BUILD_TREE=local
 ARG DUTYLOG_BUILD_TIME=unknown

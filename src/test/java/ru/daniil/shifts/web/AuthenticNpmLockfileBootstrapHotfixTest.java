@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Binding contracts for v27.35.2 authentic npm lockfile bootstrap. */
+/** Historical contracts preserving the v27.35.2 bootstrap and v27.35.3 promotion boundary. */
 class AuthenticNpmLockfileBootstrapHotfixTest {
 
     @Test
@@ -22,33 +22,31 @@ class AuthenticNpmLockfileBootstrapHotfixTest {
     }
 
     @Test
-    void ciAlwaysPublishesTheGeneratedLockfileForPromotion() throws Exception {
+    void ordinaryCiNoLongerPublishesABootstrapArtifactAfterPromotion() throws Exception {
         String workflows = read(".github/workflows/ci.yml")
                 + read(".github/workflows/deploy-staging.yml")
                 + read(".github/workflows/deploy-production.yml");
-        assertTrue(workflows.contains("Upload generated authentic frontend lockfile"));
-        assertTrue(workflows.contains("if: always()"));
-        assertTrue(workflows.contains("frontend/generated-lockfile-manifest.txt"));
-        assertTrue(workflows.contains("retention-days: 14"));
+        assertFalse(workflows.contains("Upload generated authentic frontend lockfile"));
+        assertTrue(workflows.contains("cache-dependency-path: frontend/package-lock.json"));
     }
 
     @Test
-    void dockerUsesTheSameBootstrapThenNpmCiBoundary() throws Exception {
+    void dockerUsesThePromotedCommittedGraphAndNpmCiBoundary() throws Exception {
         String docker = read("Dockerfile");
-        assertTrue(docker.contains("npm install --package-lock-only --ignore-scripts"));
+        assertTrue(docker.contains("COPY frontend/package.json frontend/package-lock.json"));
+        assertFalse(docker.contains("npm install --package-lock-only"));
         assertTrue(docker.contains("node ./scripts/verify-authentic-lockfile.mjs"));
         assertTrue(docker.contains("npm ci --no-audit --no-fund"));
-        assertTrue(docker.contains("commit the generated"));
+        assertTrue(docker.contains("npm ci --no-audit --no-fund"));
     }
 
     @Test
-    void gateAIsNotClaimedCompleteUntilTheExactArtifactIsCommitted() throws Exception {
+    void gateARecordsThePromotedArtifactAndStillRequiresGreenAcceptance() throws Exception {
         String register = read("docs/ENGINEERING_QUALITY_REGISTER.md");
-        String release = read("docs/AUTHENTIC_NPM_LOCKFILE_BOOTSTRAP_HOTFIX_V27.35.2.md");
+        String release = read("docs/AUTHENTIC_LOCKFILE_COMMIT_GENERATED_CLIENT_FIXTURE_HOTFIX_V27.35.3.md");
         assertTrue(register.contains("Q-01"));
-        assertTrue(register.contains("| ACTIVE |"));
-        assertTrue(release.contains("Gate A remains blocked"));
-        assertFalse(release.contains("Gate A is complete"));
+        assertTrue(register.lines().anyMatch(line -> line.startsWith("| Q-01 ") && line.endsWith("| DONE |")));
+        assertTrue(release.contains("full green CI and staging"));
     }
 
     private static String read(String path) throws Exception {

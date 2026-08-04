@@ -1,3 +1,12 @@
+## Vue committed npm graph and generated-client fixture (v27.35.3)
+
+- The authentic GitHub Actions dependency graph is committed and is the only normal input to `npm ci` in CI, Docker and local delivery gates.
+- Lockfile generation remains explicit maintenance tooling and is not part of ordinary builds.
+- Generated-client tests create a fresh `Response` for each request; production transport semantics are unchanged.
+- Q-01–Q-05 are implemented; full green CI/staging is still required before v27.36.0.
+
+Status: v27.35.3.
+
 ## Vue delivery, generated API and authentic lockfile bootstrap (v27.35.2)
 
 - v27.35.2 temporarily bootstraps an authentic npm graph with exact-pinned Node/npm and direct dependencies, verifies it, then runs `npm ci`; the exact artifact must be committed in v27.35.3.

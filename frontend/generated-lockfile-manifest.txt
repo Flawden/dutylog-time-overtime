@@ -1,0 +1,10 @@
+release=27.35.3
+node=20.18.1
+npm=10.8.2
+lockfileVersion=3
+packages=134
+sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
+committedLockfileSha256=1a690f77cd58a194232de0153b1a38698344adbf646562066e32d2c857e3e312
+source=github-actions-run-30906521813
+graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
+nextAction=clean-checkout-npm-ci-and-full-ci-staging-acceptance

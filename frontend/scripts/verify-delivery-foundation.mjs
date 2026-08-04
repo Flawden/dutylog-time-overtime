@@ -76,4 +76,4 @@ for (const [command, contract] of Object.entries(executableContracts)) {
 }
 
 if (process.exitCode) process.exit(process.exitCode);
-console.log(`Vue delivery bootstrap verified with Node ${actualNode}, npm ${actualNpm}, authentic lockfile v${lock.lockfileVersion} and local CLI launchers.`);
+console.log(`Vue committed-lockfile delivery verified with Node ${actualNode}, npm ${actualNpm}, authentic lockfile v${lock.lockfileVersion} and local CLI launchers.`);

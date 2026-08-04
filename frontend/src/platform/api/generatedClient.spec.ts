@@ -9,8 +9,10 @@ function jsonResponse(body: unknown, requestId = "request-typed-1"): Response {
 }
 
 describe("generated DutyLog API client", () => {
-  it("resolves operationId, path parameters and query parameters", async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse({ id: 7, text: "Typed" }));
+  it("resolves two sequential operations with independent response bodies", async () => {
+    const fetchImpl = vi.fn().mockImplementation(async () =>
+      jsonResponse({ id: 7, text: "Typed" }),
+    );
     const client = createGeneratedDutyLogApiClient({
       fetchImpl: fetchImpl as typeof fetch,
       requestIdFactory: () => "client-generated-1",

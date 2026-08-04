@@ -16,32 +16,34 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class VueDeliveryContractsDiagnosticsFoundationTest {
 
     @Test
-    void frontendDeliveryPinsExactToolchainWhileAuthenticLockfileIsBootstrapped() throws Exception {
+    void frontendDeliveryPinsExactToolchainAndCommittedAuthenticLockfile() throws Exception {
         String pkg = read("frontend/package.json");
         String npmrc = read("frontend/.npmrc");
-        String bootstrap = read("deploy/scripts/bootstrap-frontend-lockfile.sh");
+        String lock = read("frontend/package-lock.json");
         assertTrue(pkg.contains("\"packageManager\": \"npm@10.8.2\""));
         assertTrue(pkg.contains("\"node\": \"20.18.1\""));
         assertTrue(npmrc.contains("package-lock=true"));
         assertTrue(npmrc.contains("engine-strict=true"));
-        assertTrue(bootstrap.contains("install --package-lock-only"));
-        assertTrue(read(".gitignore").contains("frontend/package-lock.json"));
+        assertTrue(lock.contains("https://registry.npmjs.org/"));
+        assertFalse(read(".gitignore").contains("frontend/package-lock.json"));
     }
 
     @Test
-    void ciDockerAndLocalGateGenerateAuthenticGraphThenUseNpmCi() throws Exception {
+    void ciDockerAndLocalGateUseTheCommittedAuthenticGraphWithNpmCi() throws Exception {
         String gate = read("deploy/scripts/frontend-gate.sh");
         String docker = read("Dockerfile");
         String workflows = read(".github/workflows/ci.yml")
                 + read(".github/workflows/deploy-staging.yml")
                 + read(".github/workflows/deploy-production.yml");
-        assertTrue(gate.contains("bootstrap-frontend-lockfile.sh"));
+        assertFalse(gate.contains("bootstrap-frontend-lockfile.sh"));
         assertTrue(gate.contains("npm --prefix \"$FRONTEND_DIR\" ci"));
-        assertTrue(docker.contains("npm install --package-lock-only"));
+        assertTrue(docker.contains("COPY frontend/package.json frontend/package-lock.json"));
+        assertFalse(docker.contains("npm install --package-lock-only"));
         assertTrue(docker.contains("npm ci --no-audit --no-fund"));
         assertTrue(docker.contains("node:20.18.1-alpine3.20"));
         assertTrue(workflows.contains("node-version-file: 'frontend/.node-version'"));
-        assertTrue(workflows.contains("Upload generated authentic frontend lockfile"));
+        assertTrue(workflows.contains("cache-dependency-path: frontend/package-lock.json"));
+        assertFalse(workflows.contains("Upload generated authentic frontend lockfile"));
         assertFalse(gate.contains("package-lock=false"));
         assertFalse(docker.contains("npx "));
     }
@@ -106,15 +108,15 @@ class VueDeliveryContractsDiagnosticsFoundationTest {
     }
 
     @Test
-    void engineeringQualityRegisterKeepsGateABlockedUntilGeneratedLockfileIsCommitted() throws Exception {
+    void engineeringQualityRegisterMarksGateAWorkDonePendingGreenAcceptance() throws Exception {
         String register = read("docs/ENGINEERING_QUALITY_REGISTER.md");
         String q01 = register.lines().filter(line -> line.startsWith("| Q-01 ")).findFirst().orElseThrow();
-        assertTrue(q01.endsWith("| ACTIVE |"), q01);
+        assertTrue(q01.endsWith("| DONE |"), q01);
         for (int number = 2; number <= 5; number++) {
             String row = register.lines().filter(line -> line.startsWith("| Q-0" + number + " ")).findFirst().orElseThrow();
             assertTrue(row.endsWith("| DONE |"), row);
         }
-        assertTrue(register.contains("Gate A остаётся закрыт для `v27.36.0`"));
+        assertTrue(register.contains("полного зелёного CI/staging `v27.35.3`"));
     }
 
     @Test

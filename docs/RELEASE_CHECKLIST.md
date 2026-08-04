@@ -1,6 +1,15 @@
 # Release checklist
 
-Status: v27.35.2.
+Status: v27.35.3.
+
+## v27.35.3 Authentic Lockfile Commit & Generated Client Fixture Hotfix acceptance
+
+- [ ] `frontend/package-lock.json` is tracked and matches the promoted CI graph except the root release version.
+- [ ] Clean checkout runs `npm ci` without generating or mutating the graph.
+- [ ] `vue-tsc`, all 16 Vitest cases and Vite build pass.
+- [ ] Generated-client sequential requests use independent `Response` objects.
+- [ ] CI, Docker and staging use the committed graph and do not upload bootstrap artifacts.
+- [ ] Q-01–Q-05 are DONE; v27.36.0 starts only after this release is fully green.
 
 ## v27.35.2 Authentic npm Lockfile Bootstrap Hotfix acceptance
 
@@ -23,7 +32,7 @@ Status: v27.35.2.
 - [ ] Vue render/boot and unhandled-promise failures show recovery UI with release/route/request ID.
 - [ ] Unexpected errors remain visible to strict Playwright page-error/request collectors.
 - [ ] Migration manifest/parity template exists and ADR-001–ADR-005 are accepted/indexed.
-- [ ] Engineering Quality Register Q-02–Q-05 are DONE; Q-01 remains ACTIVE through the v27.35.2 bootstrap and completes only after v27.35.3 commits the generated artifact.
+- [ ] Engineering Quality Register Q-01–Q-05 are DONE in source; Gate A is accepted only after full green v27.35.3 CI/staging.
 - [ ] No backend API shape, PostgreSQL schema, Flyway V47, domain ownership or one-image topology change.
 
 ## v27.34.4 Vue Secondary Navigation & Overtime Preview Contract Hotfix acceptance
@@ -306,6 +315,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.35.2 -m "v27.35.2 — Vue Delivery, Contracts & Diagnostics Foundation"
-git push origin v27.35.2
+git tag -a v27.35.3 -m "v27.35.3 — Authentic Lockfile Commit & Generated Client Fixture Hotfix"
+git push origin v27.35.3
 ```

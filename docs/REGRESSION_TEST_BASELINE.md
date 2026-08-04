@@ -1,13 +1,19 @@
 # DutyLog regression test baseline
 
-Status: v27.35.2.
+Status: v27.35.3.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.35.2 removes the synthetic flat frontend lockfile, bootstraps an authentic npm dependency graph, uploads it for promotion and keeps Gate A blocked until v27.35.3 commits the exact artifact. The current application baseline is 139 Java test classes / 669 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.35.3 commits the authentic CI-generated frontend graph, restores clean-checkout `npm ci`, and fixes the generated-client fixture that reused a consumed `Response`. The current application baseline is 140 Java test classes / 673 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.35.3 Authentic lockfile commit and generated-client fixture extension
+
+- `AuthenticLockfileCommitGeneratedClientFixtureHotfixTest` protects committed graph provenance, clean-checkout CI/Docker behavior, Q-01 completion and the fresh-response fixture.
+- `generatedClient.spec.ts` keeps the two sequential typed operations but returns a new `Response` for every mocked fetch.
+- Gate A remains acceptance-blocked only by the full CI/staging result of this release.
 
 ## v27.35.2 Authentic npm Lockfile Bootstrap extension
 

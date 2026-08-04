@@ -1,9 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.35.2 — Authentic npm Lockfile Bootstrap Hotfix**.
+Current release: **v27.35.3 — Authentic Lockfile Commit & Generated Client Fixture Hotfix**.
 
 
-## v27.35.2 — Authentic npm Lockfile Bootstrap Hotfix — current
+
+## v27.35.3 — Authentic Lockfile Commit & Generated Client Fixture Hotfix — current
+
+- [x] Commit the authentic CI-generated npm graph with provenance.
+- [x] Restore committed-lockfile-only `npm ci` in CI, Docker and local frontend gate.
+- [x] Fix the generated-client Vitest fixture to return a fresh `Response` per request.
+- [x] Mark Q-01–Q-05 DONE in implementation.
+- [ ] Require full green CI/staging before accepting Gate A and starting v27.36.0.
+
+## v27.35.2 — Authentic npm Lockfile Bootstrap Hotfix — completed
 
 - [x] Remove the synthetic flat frontend lockfile that produced an internally incompatible Vue/Volar graph.
 - [x] Generate a real lockfile with pinned Node `20.18.1` and npm `10.8.2` before `npm ci`.
@@ -11,7 +20,7 @@ Current release: **v27.35.2 — Authentic npm Lockfile Bootstrap Hotfix**.
 - [x] Upload the exact generated lockfile and SHA-256 manifest from CI/staging/production validation even when later steps fail.
 - [x] Use the same bootstrap and authenticity verifier in the Docker Node stage.
 - [x] Keep Q-01 `ACTIVE` and Gate A blocked until `v27.35.3` commits the exact CI artifact.
-- [ ] `v27.35.3` — commit the CI-generated authentic lockfile and restore lockfile-only `npm ci`.
+- [x] `v27.35.3` commits the CI-generated authentic lockfile and restores lockfile-only `npm ci`.
 
 ## v27.35.1 — Frontend Lockfile Executable Resolution Hotfix — superseded by authentic graph bootstrap
 

@@ -51,14 +51,14 @@ node "$FRONTEND_DIR/scripts/verify-authentic-lockfile.mjs"
 LOCK_SHA="$(sha256sum "$FRONTEND_DIR/package-lock.json" | awk '{print $1}')"
 PACKAGE_COUNT="$(node -e 'const l=require(process.argv[1]); console.log(Object.keys(l.packages ?? {}).length - 1)' "$FRONTEND_DIR/package-lock.json")"
 cat > "$FRONTEND_DIR/generated-lockfile-manifest.txt" <<MANIFEST
-release=27.35.2
+release=27.35.3
 node=$ACTUAL_NODE
 npm=$ACTUAL_NPM
 lockfileVersion=3
 packages=$PACKAGE_COUNT
 sha256=$LOCK_SHA
 source=npm-install-package-lock-only
-nextAction=commit-this-exact-lockfile-in-v27.35.3
+nextAction=review-lockfile-diff-and-commit-in-a-dedicated-dependency-change
 MANIFEST
 
-echo "Authentic npm lockfile generated: $PACKAGE_COUNT packages, SHA-256 $LOCK_SHA"
+echo "Authentic npm lockfile maintenance artifact generated: $PACKAGE_COUNT packages, SHA-256 $LOCK_SHA"

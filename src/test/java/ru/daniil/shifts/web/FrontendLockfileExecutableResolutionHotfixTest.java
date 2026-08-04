@@ -9,11 +9,11 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Regression contracts preserving the v27.35.1 launcher lesson during the v27.35.2 bootstrap. */
+/** Regression contracts preserving launcher and graph lessons after v27.35.3 promotion. */
 class FrontendLockfileExecutableResolutionHotfixTest {
 
     @Test
-    void syntheticFrontendLockfileIsNotTheTrackedReleaseSourceOfTruth() throws Exception {
+    void authenticFrontendLockfileIsNowTheTrackedReleaseSourceOfTruth() throws Exception {
         String ignore = read(".gitignore");
         String bootstrap = read("deploy/scripts/bootstrap-frontend-lockfile.sh");
         assertTrue(ignore.contains("frontend/package-lock.json"));
@@ -40,7 +40,7 @@ class FrontendLockfileExecutableResolutionHotfixTest {
     }
 
     @Test
-    void bootstrapDoesNotFallbackToNpxOrGlobalCompilers() throws Exception {
+    void deliveryAndMaintenanceToolingDoNotFallbackToNpxOrGlobalCompilers() throws Exception {
         String gate = read("deploy/scripts/frontend-gate.sh");
         String bootstrap = read("deploy/scripts/bootstrap-frontend-lockfile.sh");
         String docker = read("Dockerfile");

@@ -1,3 +1,11 @@
+## v27.35.3 committed-lockfile and fixture review
+
+- The dependency graph is source-controlled with npm registry `resolved` URLs and SHA-512 integrity. Normal builds cannot silently regenerate resolution.
+- CI and Docker use the same committed-lockfile `npm ci` boundary and fail on drift.
+- The test-only fresh-`Response` change does not alter production request handling, credentials, CSRF or diagnostics.
+
+Status: v27.35.3.
+
 ## v27.35.2 authentic-lockfile bootstrap review
 
 - Exact Node/npm and exact direct pins constrain the bootstrap; CI/Docker generate and verify an authentic graph before the same `npm ci` boundary.
