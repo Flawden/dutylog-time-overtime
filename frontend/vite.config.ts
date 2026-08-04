@@ -2,7 +2,7 @@ import { fileURLToPath, URL } from "node:url";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vitest/config";
 
-const releaseVersion = "27.35.4";
+const releaseVersion = "27.35.5";
 
 export default defineConfig({
   plugins: [vue()],

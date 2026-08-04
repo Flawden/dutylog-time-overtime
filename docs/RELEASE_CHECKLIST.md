@@ -1,6 +1,14 @@
 # Release checklist
 
-Status: v27.35.4.
+Status: v27.35.5.
+
+## v27.35.5 Gate A Quality Register Lambda Capture Compile Hotfix acceptance
+
+- [ ] `frontend-gate.sh` passes unchanged with committed authentic lockfile.
+- [ ] Maven `testCompile` compiles `VueDeliveryContractsDiagnosticsFoundationTest`.
+- [ ] Q-02–Q-05 assertions use immutable `rowPrefix`.
+- [ ] Full Maven verify, Playwright, Docker, clean PostgreSQL and staging are green.
+- [ ] No API, OpenAPI, schema, Flyway or runtime behavior change.
 
 ## v27.35.4 Frontend Gate Static Contract Java Escaping Hotfix acceptance
 
@@ -323,6 +331,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.35.4 -m "v27.35.4 — Frontend Gate Static Contract Java Escaping Hotfix"
-git push origin v27.35.4
+git tag -a v27.35.5 -m "v27.35.5 — Gate A Quality Register Lambda Capture Compile Hotfix"
+git push origin v27.35.5
 ```

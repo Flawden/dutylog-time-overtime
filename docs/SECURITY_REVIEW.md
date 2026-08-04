@@ -1,3 +1,11 @@
+## v27.35.5 effectively-final test-contract review
+
+- Scope is test-only Java source and release identity.
+- No authentication, authorization, session, CSRF, token, secret, CSP or dependency behavior changes.
+- The Q-01–Q-05 gate assertions remain active.
+
+Status: v27.35.5.
+
 ## v27.35.4 Java escaping compile-hotfix review
 
 - The change is test-only Java source and release metadata; no runtime request, authentication, authorization, session, CSRF or secret handling changes.

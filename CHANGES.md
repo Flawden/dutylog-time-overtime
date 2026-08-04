@@ -1,3 +1,10 @@
+# v27.35.5 — Gate A Quality Register Lambda Capture Compile Hotfix
+
+- Fixes the Maven `testCompile` blocker in `VueDeliveryContractsDiagnosticsFoundationTest`: the loop counter is no longer captured directly by a lambda.
+- Introduces an immutable `rowPrefix` per iteration, preserving the Q-02–Q-05 Engineering Quality Register assertions without weakening them.
+- Adds a release guard for the effectively-final capture pattern and for the forbidden direct loop-counter capture.
+- Keeps the fully green frontend gate from `v27.35.4`, authentic committed npm graph, API, OpenAPI, PostgreSQL, Flyway V47, runtime code and one-image topology unchanged.
+
 # v27.35.4 — Frontend Gate Static Contract Java Escaping Hotfix
 
 - Fixes the only Maven `testCompile` blocker in `AuthenticLockfileCommitGeneratedClientFixtureHotfixTest`: the expected shell command now escapes the embedded Java string quotes correctly.

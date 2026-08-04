@@ -113,10 +113,11 @@ class VueDeliveryContractsDiagnosticsFoundationTest {
         String q01 = register.lines().filter(line -> line.startsWith("| Q-01 ")).findFirst().orElseThrow();
         assertTrue(q01.endsWith("| DONE |"), q01);
         for (int number = 2; number <= 5; number++) {
-            String row = register.lines().filter(line -> line.startsWith("| Q-0" + number + " ")).findFirst().orElseThrow();
+            String rowPrefix = "| Q-0" + number + " ";
+            String row = register.lines().filter(line -> line.startsWith(rowPrefix)).findFirst().orElseThrow();
             assertTrue(row.endsWith("| DONE |"), row);
         }
-        assertTrue(register.contains("полного зелёного CI/staging `v27.35.4`"));
+        assertTrue(register.contains("полного зелёного CI/staging `v27.35.5`"));
     }
 
     @Test

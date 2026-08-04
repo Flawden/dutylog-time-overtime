@@ -1,6 +1,10 @@
 # DutyLog CI/CD
 
-Status: v27.35.4.
+Status: v27.35.5.
+
+## v27.35.5 effectively-final Maven test-compile boundary
+
+The complete frontend gate remains unchanged and green. Maven now compiles the Gate A quality-register contract because the stream lambda captures an immutable per-iteration `rowPrefix`, not the mutable loop counter. No validation is skipped or weakened.
 
 ## v27.35.4 committed-lockfile and Maven test-compile boundary
 

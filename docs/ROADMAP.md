@@ -1,10 +1,17 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.35.4 — Frontend Gate Static Contract Java Escaping Hotfix**.
+Current release: **v27.35.5 — Gate A Quality Register Lambda Capture Compile Hotfix**.
 
 
 
-## v27.35.4 — Frontend Gate Static Contract Java Escaping Hotfix — current
+## v27.35.5 — Gate A Quality Register Lambda Capture Compile Hotfix — current
+
+- Fixes the remaining Maven `testCompile` blocker in `VueDeliveryContractsDiagnosticsFoundationTest`.
+- Captures an immutable `rowPrefix` instead of the mutable `for` loop counter.
+- Preserves all Q-01–Q-05 assertions, authentic lockfile delivery and strict frontend gates.
+- Changes no production runtime, API, PostgreSQL or Flyway state.
+
+## v27.35.4 — Frontend Gate Static Contract Java Escaping Hotfix
 
 - [x] Correct the malformed Java string in the committed-lockfile static contract.
 - [x] Preserve the exact authentic npm graph and successful frontend gate.

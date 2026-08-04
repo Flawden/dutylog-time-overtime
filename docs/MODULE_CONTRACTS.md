@@ -1,3 +1,11 @@
+# Module contracts
+
+## v27.35.5 test-contract compile boundary
+
+The Gate A quality-register static contract retains Q-01–Q-05 validation and uses an effectively-final `rowPrefix` for stream filtering. This is test-only and changes no module registry or runtime ownership.
+
+Status: v27.35.5.
+
 ## Frontend gate static-contract Java escaping (v27.35.4)
 
 - The committed authentic npm graph and frontend runtime are unchanged.
