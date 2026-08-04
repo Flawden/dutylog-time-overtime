@@ -31,7 +31,7 @@ class AuthenticLockfileCommitGeneratedClientFixtureHotfixTest {
         String workflows = read(".github/workflows/ci.yml")
                 + read(".github/workflows/deploy-staging.yml")
                 + read(".github/workflows/deploy-production.yml");
-        assertTrue(gate.contains("npm --prefix "$FRONTEND_DIR" ci"));
+        assertTrue(gate.contains("npm --prefix \"$FRONTEND_DIR\" ci"));
         assertFalse(gate.contains("bootstrap-frontend-lockfile.sh"));
         assertTrue(docker.contains("COPY frontend/package.json frontend/package-lock.json"));
         assertFalse(docker.contains("npm install --package-lock-only"));
@@ -52,7 +52,7 @@ class AuthenticLockfileCommitGeneratedClientFixtureHotfixTest {
         String register = read("docs/ENGINEERING_QUALITY_REGISTER.md");
         String q01 = register.lines().filter(line -> line.startsWith("| Q-01 ")).findFirst().orElseThrow();
         assertTrue(q01.endsWith("| DONE |"), q01);
-        assertTrue(register.contains("полного зелёного CI/staging `v27.35.3`"));
+        assertTrue(register.contains("полного зелёного CI/staging `v27.35.4`"));
     }
 
     private static String read(String path) throws Exception {

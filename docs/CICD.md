@@ -1,41 +1,27 @@
 # DutyLog CI/CD
 
-Status: v27.35.3.
+Status: v27.35.4.
 
-## v27.35.3 authentic-lockfile bootstrap boundary
+## v27.35.4 committed-lockfile and Maven test-compile boundary
 
-Validation is fail-closed before Maven, image build and deployment:
+Validation remains fail-closed before image build and deployment:
 
 ```text
 exact Node 20.18.1 + npm 10.8.2
-→ npm install --package-lock-only --ignore-scripts
-→ authentic graph verification + artifact manifest
-→ npm ci from the generated frontend/package-lock.json
+→ verify committed authentic frontend/package-lock.json
+→ npm ci
 → local vue-tsc / vitest / vite launcher checks
 → npm ls --all
-→ delivery/toolchain contract
 → generated OpenAPI drift check
 → vue-tsc
 → 16 Vitest cases
 → Vite production build + browser-bundle audit
-→ Maven / release-check / 44 Playwright scenarios
+→ Maven production compile + testCompile + tests
+→ release-check + 44 Playwright scenarios
 → immutable image build / clean PostgreSQL smoke / deploy
 ```
 
-GitHub Actions, the Docker Node stage and local `frontend-gate.sh` first generate and verify an authentic npm graph with the exact toolchain, then run `npm ci`. v27.35.3 uploads the generated lockfile and manifest with `if: always()` and still fails immediately when required launchers or `npm ls --all` are invalid. Any lockfile, generated-contract, type, unit, bundle or browser failure intentionally skips image build and deployment.
-
-DutyLog uses two long-lived deployment branches:
-
-```text
-feature/* -> test -> staging
-                  |
-                  +-> main/master -> production
-```
-
-`test` builds an immutable image, deploys it to staging and marks that exact Git tree as tested only after container health, loopback smoke and public HTTPS smoke checks pass. `main`/`master` never rebuilds the application: it resolves the matching `staging-tested-tree-*` image and deploys the same registry digest to production.
-
-Until the staging VPS is ready, leave the `staging` Environment variable `DUTYLOG_DEPLOY_ENABLED` unset or `false`. The workflow still runs Maven/JaCoCo, release checks, Playwright, image build and clean-PostgreSQL migration verification, then records an explicit successful skip. It does not create a promotion tag.
-
+GitHub Actions already proved the full frontend boundary in v27.35.3. v27.35.4 corrects one malformed Java string in a test-only static contract so Maven can proceed past `testCompile`; no delivery gate is skipped or weakened.
 
 ## Browser-runtime bundle gate (v27.34.3)
 

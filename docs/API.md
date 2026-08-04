@@ -1,6 +1,6 @@
-# DutyLog API v27.35.3
+# DutyLog API v27.35.4
 
-`v27.35.3` changes no backend request/response schema, endpoint, authorization rule or domain invariant. It retains the v27.35.0 generated TypeScript contract, typed operation client and bounded request diagnostics, and corrects only npm lockfile executable metadata for the local frontend toolchain.
+`v27.35.4` changes no backend request/response schema, endpoint, authorization rule or domain invariant. It retains the committed authentic npm graph, generated TypeScript contract, typed operation client and bounded request diagnostics, and fixes only Java escaping in a test-only static delivery contract.
 
 The v27.34.4 preview behavior remains released: non-persistent zero/negative draft calculations are representable, while create/update validation remains strict.
 

@@ -116,7 +116,7 @@ class VueDeliveryContractsDiagnosticsFoundationTest {
             String row = register.lines().filter(line -> line.startsWith("| Q-0" + number + " ")).findFirst().orElseThrow();
             assertTrue(row.endsWith("| DONE |"), row);
         }
-        assertTrue(register.contains("полного зелёного CI/staging `v27.35.3`"));
+        assertTrue(register.contains("полного зелёного CI/staging `v27.35.4`"));
     }
 
     @Test

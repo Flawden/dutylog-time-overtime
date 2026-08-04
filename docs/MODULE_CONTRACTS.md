@@ -1,3 +1,11 @@
+## Frontend gate static-contract Java escaping (v27.35.4)
+
+- The committed authentic npm graph and frontend runtime are unchanged.
+- The test-only assertion for `npm --prefix "$FRONTEND_DIR" ci` uses valid escaped Java quotes.
+- Maven `testCompile` is the acceptance boundary; Gate A remains blocked until the complete CI/staging chain is green.
+
+Status: v27.35.4.
+
 ## Vue committed npm graph and generated-client fixture (v27.35.3)
 
 - The authentic GitHub Actions dependency graph is committed and is the only normal input to `npm ci` in CI, Docker and local delivery gates.

@@ -1,6 +1,14 @@
 # Release checklist
 
-Status: v27.35.3.
+Status: v27.35.4.
+
+## v27.35.4 Frontend Gate Static Contract Java Escaping Hotfix acceptance
+
+- [ ] The corrected assertion compiles with escaped quotes around `$FRONTEND_DIR`.
+- [ ] Committed authentic lockfile verification, `npm ci`, `vue-tsc`, 16 Vitest cases and Vite remain green.
+- [ ] Maven compiles 161 production sources and 140 test sources, then executes the full suite.
+- [ ] All 44 Playwright scenarios, image build, clean PostgreSQL smoke and staging deployment pass.
+- [ ] No API, OpenAPI, PostgreSQL, Flyway V47, domain ownership or runtime behavior changes.
 
 ## v27.35.3 Authentic Lockfile Commit & Generated Client Fixture Hotfix acceptance
 
@@ -315,6 +323,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.35.3 -m "v27.35.3 — Authentic Lockfile Commit & Generated Client Fixture Hotfix"
-git push origin v27.35.3
+git tag -a v27.35.4 -m "v27.35.4 — Frontend Gate Static Contract Java Escaping Hotfix"
+git push origin v27.35.4
 ```

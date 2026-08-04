@@ -1,3 +1,11 @@
+## v27.35.4 Java escaping compile-hotfix review
+
+- The change is test-only Java source and release metadata; no runtime request, authentication, authorization, session, CSRF or secret handling changes.
+- The authentic npm graph and generated API contract remain immutable.
+- Strict frontend, Maven and browser gates remain fail-closed.
+
+Status: v27.35.4.
+
 ## v27.35.3 committed-lockfile and fixture review
 
 - The dependency graph is source-controlled with npm registry `resolved` URLs and SHA-512 integrity. Normal builds cannot silently regenerate resolution.

@@ -1,13 +1,19 @@
 # DutyLog regression test baseline
 
-Status: v27.35.3.
+Status: v27.35.4.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.35.3 commits the authentic CI-generated frontend graph, restores clean-checkout `npm ci`, and fixes the generated-client fixture that reused a consumed `Response`. The current application baseline is 140 Java test classes / 673 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.35.4 fixes the malformed Java escaping in the test-only committed-lockfile delivery contract after the full frontend gate passed. The current application baseline remains 140 Java test classes / 673 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.35.4 Frontend gate static-contract Java escaping extension
+
+- `AuthenticLockfileCommitGeneratedClientFixtureHotfixTest` now contains a valid Java string for the quoted `$FRONTEND_DIR` shell command.
+- `release-check.sh` protects the exact escaped source contract before Maven.
+- Production sources, frontend graph, API, Flyway and test-count baselines are unchanged.
 
 ## v27.35.3 Authentic lockfile commit and generated-client fixture extension
 

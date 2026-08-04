@@ -1,10 +1,17 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.35.3 — Authentic Lockfile Commit & Generated Client Fixture Hotfix**.
+Current release: **v27.35.4 — Frontend Gate Static Contract Java Escaping Hotfix**.
 
 
 
-## v27.35.3 — Authentic Lockfile Commit & Generated Client Fixture Hotfix — current
+## v27.35.4 — Frontend Gate Static Contract Java Escaping Hotfix — current
+
+- [x] Correct the malformed Java string in the committed-lockfile static contract.
+- [x] Preserve the exact authentic npm graph and successful frontend gate.
+- [x] Add a static release guard for the escaped assertion.
+- [ ] Require full green Maven, Playwright, image, clean PostgreSQL and staging validation before Gate A acceptance.
+
+## v27.35.3 — Authentic Lockfile Commit & Generated Client Fixture Hotfix — stabilization predecessor
 
 - [x] Commit the authentic CI-generated npm graph with provenance.
 - [x] Restore committed-lockfile-only `npm ci` in CI, Docker and local frontend gate.

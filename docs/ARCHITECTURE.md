@@ -1,8 +1,8 @@
 # DutyLog architecture
 
-## Active Vue frontend transition — v27.35.3 Gate A bootstrap stabilization
+## Active Vue frontend transition — v27.35.4 Gate A compile stabilization
 
-DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains a separate container. `v27.35.3` does not close Vue migration Gate A: it replaces the synthetic lockfile with exact-toolchain generation and artifact capture, while `v27.35.3` must commit the exact generated graph; frontend API types and operation metadata are generated from the canonical backend OpenAPI document and protected by a drift gate; shared HTTP requests carry bounded correlation IDs; Vue render, boot and unhandled-promise failures expose controlled recovery UI with route/release/request context.
+DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains a separate container. `v27.35.4` preserves the authentic committed npm graph and all Gate A implementation; it fixes only Java escaping in a test-only static contract that blocked Maven `testCompile`. Frontend API types and operation metadata remain generated from canonical backend OpenAPI and protected by a drift gate; shared HTTP requests carry bounded correlation IDs; Vue render, boot and unhandled-promise failures expose controlled recovery UI with route/release/request context.
 
 Spring Boot remains the source of truth for business rules, permissions, FIFO, Payroll, closed periods and persistence. The strict TypeScript compiler, generated-browser audit and Playwright runtime collector remain enabled. Vite output is still packaged into the Spring Boot JAR/image; production remains one app container plus PostgreSQL.
 
@@ -10,7 +10,7 @@ Spring Boot remains the source of truth for business rules, permissions, FIFO, P
 canonical OpenAPI YAML
         ↓ deterministic generation + drift check
 Vue TypeScript contract / typed client
-        ↓ authentic lockfile bootstrap → npm ci → strict frontend gate
+        ↓ committed authentic lockfile → npm ci → strict frontend gate
 Spring Boot static resources + API
         ↓
 one DutyLog JAR / one dutylog-app image
