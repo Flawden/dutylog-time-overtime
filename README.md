@@ -1,8 +1,12 @@
-# v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation
+# v27.35.1 — Frontend Lockfile Executable Resolution Hotfix
 
-The green v27.34.4 stabilization baseline is now protected by Gate A. Frontend dependencies are reproducible through a committed lockfile and `npm ci`; Node/npm are pinned; the canonical OpenAPI contract generates reviewed TypeScript schema/operation types with drift detection; shared requests carry correlation IDs; and Vue failures render controlled recovery UI while remaining visible to strict browser collectors.
+GitHub Actions accepted the pinned Node/npm toolchain and generated OpenAPI drift gate, then proved that the first frontend lockfile lacked npm `bin` metadata for the local `vue-tsc`, `vitest` and `vite` launchers. This hotfix restores those mappings and makes CI/Docker stop immediately when an executable or installed dependency is missing.
 
-No product domain moves in this release. Spring Boot remains the business source of truth, PostgreSQL/Flyway V47 and domain APIs are unchanged, and production still ships one Spring Boot + Vue application image/container. The complete release contract is in `docs/VUE_DELIVERY_CONTRACTS_DIAGNOSTICS_FOUNDATION_V27.35.0.md`.
+The gate remains lockfile-only: no `npx`, global compiler or mutable install fallback is permitted. Product behavior, API, PostgreSQL, Flyway V47, FIFO, Payroll and one-image deployment remain unchanged. The complete correction is in `docs/FRONTEND_LOCKFILE_EXECUTABLE_RESOLUTION_HOTFIX_V27.35.1.md`.
+
+## Previous release: v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation
+
+DutyLog established Gate A with exact Node/npm pins, `npm ci`, generated OpenAPI contracts, typed transport, diagnostics, recovery UI, migration manifests and ADR-001–ADR-005. v27.35.1 corrects the executable-resolution defect found by its first clean GitHub Actions run.
 
 ## Previous hotfix: v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix
 

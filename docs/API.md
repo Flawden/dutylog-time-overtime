@@ -1,6 +1,6 @@
-# DutyLog API v27.35.0
+# DutyLog API v27.35.1
 
-`v27.35.0` changes no backend request/response schema, endpoint, authorization rule or domain invariant. The canonical backend document remains `src/main/resources/static/openapi/dutylog-v1.yaml`; the release adds deterministic generated TypeScript schema/operation types and a typed frontend operation client with a drift gate. Shared browser requests add or preserve a bounded `X-Request-Id` correlation header and record response correlation metadata without exposing payloads or credentials.
+`v27.35.1` changes no backend request/response schema, endpoint, authorization rule or domain invariant. It retains the v27.35.0 generated TypeScript contract, typed operation client and bounded request diagnostics, and corrects only npm lockfile executable metadata for the local frontend toolchain.
 
 The v27.34.4 preview behavior remains released: non-persistent zero/negative draft calculations are representable, while create/update validation remains strict.
 

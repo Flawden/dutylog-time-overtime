@@ -11,9 +11,9 @@ mvn clean verify
 bash deploy/scripts/release-check.sh
 ```
 
-The frontend gate enforces exact Node/npm versions, lockfile-only `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 16 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.35.0 release path. CI, Docker and staging use the same frontend boundary.
+The frontend gate enforces exact Node/npm versions, lockfile-only `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 16 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.35.1 release path. CI, Docker and staging use the same frontend boundary.
 
-The complete browser baseline remains 44 Playwright scenarios. v27.35.0 adds controlled recovery and correlation coverage while keeping the strict global page-error/request fixture unchanged; product workspaces remain legacy-owned until their bounded migration releases.
+The complete browser baseline remains 44 Playwright scenarios. v27.35.1 adds controlled recovery and correlation coverage while keeping the strict global page-error/request fixture unchanged; product workspaces remain legacy-owned until their bounded migration releases.
 
 ## Two different ways to run tests
 

@@ -1,3 +1,13 @@
+# v27.35.1 — Frontend Lockfile Executable Resolution Hotfix
+
+- Corrected the frontend lockfile metadata that left `vue-tsc`, `vitest` and `vite` package directories installed without local `node_modules/.bin` launchers.
+- Pinned the released npm tarball and `bin` mapping for the three build CLIs and TypeScript.
+- Added immediate post-`npm ci` executable checks and `npm ls --all` to both the shared frontend gate and Docker Node stage.
+- Strengthened `verify:delivery` so malformed CLI metadata or missing installed launchers fail before typecheck.
+- Kept `npm ci`, exact Node/npm pins, OpenAPI drift protection, strict TypeScript and the no-`npx`/no-global-tool boundary.
+- Kept product behavior, API, PostgreSQL, Flyway V47, FIFO, Payroll and one-image deployment unchanged.
+- Regression baseline advances to 138 Java test classes, 665 `@Test` methods, 44 Playwright scenarios and 16 Vitest cases.
+
 # v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation
 
 - Added a committed frontend lockfile and replaced mutable frontend installs with `npm ci` in local gates, GitHub Actions and the Docker Node stage.

@@ -1,6 +1,6 @@
 # Supply-chain maintenance
 
-Status: v27.35.0.
+Status: v27.35.1.
 
 Dependabot checks five maintained surfaces weekly:
 
@@ -14,7 +14,7 @@ CI must remain green before merging an update. Review release notes and run the 
 
 ## Vue frontend dependency policy
 
-The v27.35.0 frontend uses a committed lockfile, exact Node `20.18.1`, exact npm `10.8.2`, exact direct dependency pins and `npm ci` in CI, Docker and the local frontend gate. Validation includes the deterministic OpenAPI drift check, `vue-tsc`, 16 Vitest cases, Vite and the generated-browser-bundle audit before Maven. `npm ls --all` records the installed dependency tree.
+The v27.35.1 frontend uses a committed lockfile, exact Node `20.18.1`, exact npm `10.8.2`, exact direct dependency pins and `npm ci` in CI, Docker and the local frontend gate. The lockfile carries explicit npm tarball and `bin` metadata for `vue-tsc`, `vitest`, `vite` and TypeScript. Validation checks the resulting local launchers, runs `npm ls --all`, then executes the deterministic OpenAPI drift check, `vue-tsc`, 16 Vitest cases, Vite and the generated-browser-bundle audit before Maven.
 
 Dependency updates must be isolated, update both manifest and lockfile, include vulnerability/release-note review and pass the complete frontend/backend/browser gates. Runtime CDN dependencies and relaxed same-origin CSP are forbidden shortcuts. The deployable supply-chain identity remains the immutable staging-tested application image digest.
 

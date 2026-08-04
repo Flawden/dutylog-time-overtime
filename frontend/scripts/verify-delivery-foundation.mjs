@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { accessSync, constants, existsSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
@@ -11,9 +11,32 @@ const expectedNpm = readFileSync(`${root}/.npm-version`, "utf8").trim();
 const actualNode = process.version.replace(/^v/, "");
 const actualNpm = execFileSync("npm", ["--version"], { encoding: "utf8" }).trim();
 
+const executableContracts = {
+  "vue-tsc": { packageName: "vue-tsc", bin: "bin/vue-tsc.js" },
+  vitest: { packageName: "vitest", bin: "vitest.mjs" },
+  vite: { packageName: "vite", bin: "bin/vite.js" },
+};
+
 function fail(message) {
   console.error(`Vue delivery foundation violation: ${message}`);
   process.exitCode = 1;
+}
+
+function launcherExists(command) {
+  const candidates = [
+    `${root}/node_modules/.bin/${command}`,
+    `${root}/node_modules/.bin/${command}.cmd`,
+    `${root}/node_modules/.bin/${command}.ps1`,
+  ];
+  return candidates.some((candidate) => {
+    if (!existsSync(candidate)) return false;
+    try {
+      accessSync(candidate, constants.R_OK);
+      return true;
+    } catch {
+      return false;
+    }
+  });
 }
 
 if (actualNode !== expectedNode) fail(`Node ${actualNode} is running; ${expectedNode} is required.`);
@@ -34,5 +57,22 @@ for (const section of ["dependencies", "devDependencies"]) {
   }
 }
 
+for (const [command, contract] of Object.entries(executableContracts)) {
+  const entry = lock.packages?.[`node_modules/${contract.packageName}`];
+  if (!entry) {
+    fail(`package-lock.json is missing node_modules/${contract.packageName}.`);
+    continue;
+  }
+  if (entry.bin?.[command] !== contract.bin) {
+    fail(`package-lock.json must map ${command} to ${contract.bin}; found ${entry.bin?.[command] ?? "missing"}.`);
+  }
+  if (!entry.resolved?.startsWith("https://registry.npmjs.org/")) {
+    fail(`package-lock.json must pin the npm registry tarball for ${contract.packageName}.`);
+  }
+  if (existsSync(`${root}/node_modules`) && !launcherExists(command)) {
+    fail(`npm ci did not create the local ${command} launcher in node_modules/.bin.`);
+  }
+}
+
 if (process.exitCode) process.exit(process.exitCode);
-console.log(`Vue delivery foundation verified with Node ${actualNode}, npm ${actualNpm} and lockfile v${lock.lockfileVersion}.`);
+console.log(`Vue delivery foundation verified with Node ${actualNode}, npm ${actualNpm}, lockfile v${lock.lockfileVersion} and local CLI launchers.`);

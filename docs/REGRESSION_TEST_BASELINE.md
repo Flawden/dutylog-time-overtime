@@ -1,13 +1,17 @@
 # DutyLog regression test baseline
 
-Status: v27.35.0.
+Status: v27.35.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.35.0 closes Vue Gate A with reproducible `npm ci` delivery, generated OpenAPI TypeScript contracts, correlated recovery diagnostics, migration manifests and ADR foundation. The current application baseline is 137 Java test classes / 661 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.35.1 restores deterministic local CLI resolution after `npm ci` and blocks missing `vue-tsc`, `vitest` or `vite` launchers before compilation. The current application baseline is 138 Java test classes / 665 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.35.1 Frontend Lockfile Executable Resolution extension
+
+The hotfix adds explicit npm `bin` metadata and post-install executable/dependency-tree gates while retaining the v27.35.0 generated-contract and diagnostics foundation.
 
 ## v27.35.0 Vue Delivery, Contracts & Diagnostics Foundation extension
 

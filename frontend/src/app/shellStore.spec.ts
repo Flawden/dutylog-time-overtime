@@ -6,7 +6,7 @@ beforeEach(() => setActivePinia(createPinia()));
 
 function snapshot(overrides: Partial<DutyLogLegacySnapshot> = {}): DutyLogLegacySnapshot {
   return {
-    version: "27.35.0",
+    version: "27.35.1",
     language: "ru",
     route: "calendar",
     online: true,

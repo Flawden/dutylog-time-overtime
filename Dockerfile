@@ -4,9 +4,14 @@ WORKDIR /frontend
 COPY frontend/package.json frontend/package-lock.json frontend/.npmrc frontend/.node-version frontend/.npm-version ./
 RUN test "$(node --version)" = "v$(cat .node-version)" \
     && test "$(npm --version)" = "$(cat .npm-version)" \
-    && npm ci --no-audit --no-fund --prefer-online
+    && npm ci --no-audit --no-fund --prefer-online \
+    && test -e node_modules/.bin/vue-tsc \
+    && test -e node_modules/.bin/vitest \
+    && test -e node_modules/.bin/vite \
+    && npm ls --all >/dev/null
 COPY frontend ./
-RUN npm run typecheck \
+RUN npm run verify:delivery \
+    && npm run typecheck \
     && npm run test:unit \
     && npm run build \
     && test -s dist/dutylog-vue-app-shell.js \
@@ -28,7 +33,7 @@ RUN find src/main/resources/static -type f -name '*.js' -exec \
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-ARG DUTYLOG_BUILD_VERSION=27.35.0-local
+ARG DUTYLOG_BUILD_VERSION=27.35.1-local
 ARG DUTYLOG_BUILD_COMMIT=local
 ARG DUTYLOG_BUILD_TREE=local
 ARG DUTYLOG_BUILD_TIME=unknown

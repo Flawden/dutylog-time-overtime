@@ -1,6 +1,16 @@
 # Release checklist
 
-Status: v27.35.0.
+Status: v27.35.1.
+
+## v27.35.1 Frontend Lockfile Executable Resolution Hotfix acceptance
+
+- [ ] `npm ci` creates local `node_modules/.bin/vue-tsc`, `vitest` and `vite` launchers.
+- [ ] The lockfile records the expected npm tarball and `bin` mapping for each build CLI.
+- [ ] `npm ls --all` passes before typecheck in CI and Docker.
+- [ ] `verify:delivery`, generated OpenAPI drift check, `vue-tsc`, 16 Vitest cases and Vite build pass.
+- [ ] No `npx`, global compiler or mutable `npm install` fallback is present.
+- [ ] Maven reports 138 Java test classes / 665 `@Test` methods and all 44 Playwright scenarios pass.
+- [ ] No backend API shape, PostgreSQL schema, Flyway V47, domain ownership or one-image topology change.
 
 ## v27.35.0 Vue Delivery, Contracts & Diagnostics Foundation acceptance
 
@@ -11,8 +21,7 @@ Status: v27.35.0.
 - [ ] Vue render/boot and unhandled-promise failures show recovery UI with release/route/request ID.
 - [ ] Unexpected errors remain visible to strict Playwright page-error/request collectors.
 - [ ] Migration manifest/parity template exists and ADR-001–ADR-005 are accepted/indexed.
-- [ ] Engineering Quality Register marks Q-01–Q-05 DONE and Gate A open for v27.36.0.
-- [ ] 137 Java test classes / 661 `@Test` methods / 44 Playwright scenarios / 16 Vitest cases are registered.
+- [ ] Engineering Quality Register Q-02–Q-05 are DONE; Q-01 completes through v27.35.1.
 - [ ] No backend API shape, PostgreSQL schema, Flyway V47, domain ownership or one-image topology change.
 
 ## v27.34.4 Vue Secondary Navigation & Overtime Preview Contract Hotfix acceptance
@@ -295,6 +304,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.35.0 -m "v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation"
-git push origin v27.35.0
+git tag -a v27.35.1 -m "v27.35.1 — Vue Delivery, Contracts & Diagnostics Foundation"
+git push origin v27.35.1
 ```

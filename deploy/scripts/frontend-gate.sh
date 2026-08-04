@@ -44,13 +44,19 @@ for attempt in $(seq 1 "$ATTEMPTS"); do
   sleep "$DELAY_SECONDS"
 done
 
+for command in vue-tsc vitest vite; do
+  if [[ ! -e "$FRONTEND_DIR/node_modules/.bin/$command" ]]; then
+    echo "Vue frontend local executable is missing after npm ci: node_modules/.bin/$command" >&2
+    exit 1
+  fi
+done
+
+npm --prefix "$FRONTEND_DIR" ls --all >/dev/null
 npm --prefix "$FRONTEND_DIR" run verify:delivery
 npm --prefix "$FRONTEND_DIR" run contract:check
 npm --prefix "$FRONTEND_DIR" run typecheck
 npm --prefix "$FRONTEND_DIR" run test:unit
 npm --prefix "$FRONTEND_DIR" run build
-npm --prefix "$FRONTEND_DIR" ls --all >/dev/null
-
 git -C "$PROJECT_ROOT" diff --exit-code -- frontend/package.json frontend/package-lock.json frontend/src/generated/dutylog-api.ts
 
 test -s "$FRONTEND_DIR/dist/dutylog-vue-app-shell.js"

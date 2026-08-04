@@ -1,4 +1,4 @@
-## v27.35.0 delivery, contract and diagnostics review
+## v27.35.1 lockfile executable-resolution review
 
 - Exact Node/npm and lockfile-only installation reduce dependency drift; CI/Docker use the same `npm ci` boundary.
 - OpenAPI generation consumes the committed same-repository contract and writes reviewed source; no runtime generation or remote schema fetch occurs.
@@ -7,7 +7,7 @@
 - Global Vue and promise handlers do not suppress `console.error` or browser `unhandledrejection`; strict Playwright collection remains fail-closed.
 - Same-origin session and CSRF behavior, CSP, cookies, bearer calendar URLs and Telegram secrets are unchanged.
 
-Status: v27.35.0.
+Status: v27.35.1.
 
 ## v27.34.4 secondary navigation and draft-preview review
 

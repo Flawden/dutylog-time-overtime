@@ -1,14 +1,16 @@
 # DutyLog CI/CD
 
-Status: v27.35.0.
+Status: v27.35.1.
 
-## v27.35.0 validation boundary
+## v27.35.1 executable-resolution validation boundary
 
 Validation is fail-closed before Maven, image build and deployment:
 
 ```text
 exact Node 20.18.1 + npm 10.8.2
 → npm ci from frontend/package-lock.json
+→ local vue-tsc / vitest / vite launcher checks
+→ npm ls --all
 → delivery/toolchain contract
 → generated OpenAPI drift check
 → vue-tsc
@@ -18,7 +20,7 @@ exact Node 20.18.1 + npm 10.8.2
 → immutable image build / clean PostgreSQL smoke / deploy
 ```
 
-The same `npm ci` boundary is used by GitHub Actions, the Docker Node stage and local `frontend-gate.sh`. Any lockfile, generated-contract, type, unit, bundle or browser failure intentionally skips image build and deployment.
+The same `npm ci` boundary is used by GitHub Actions, the Docker Node stage and local `frontend-gate.sh`. v27.35.1 additionally fails immediately when npm does not create the three required local CLI launchers or when `npm ls --all` reports an invalid installed tree. Any lockfile, generated-contract, type, unit, bundle or browser failure intentionally skips image build and deployment.
 
 DutyLog uses two long-lived deployment branches:
 

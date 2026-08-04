@@ -1,9 +1,17 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation**.
+Current release: **v27.35.1 — Frontend Lockfile Executable Resolution Hotfix**.
 
 
-## v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation — current
+## v27.35.1 — Frontend Lockfile Executable Resolution Hotfix — current
+
+- [x] Restore npm `bin` metadata for `vue-tsc`, `vitest`, `vite` and TypeScript.
+- [x] Fail CI/Docker immediately when `node_modules/.bin` launchers are absent after `npm ci`.
+- [x] Run `npm ls --all` before compilation and reject `npx`/global fallbacks.
+- [x] Keep API, PostgreSQL, Flyway V47 and product ownership unchanged.
+- [ ] Confirm the complete clean frontend/Maven/Chromium/Docker/staging chain in GitHub Actions.
+
+## v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation — stabilization baseline
 
 - [x] Commit `frontend/package-lock.json` and require `npm ci` in local, CI and Docker builds.
 - [x] Pin Node 20.18.1, npm 10.8.2 and exact frontend dependencies.
@@ -11,7 +19,7 @@ Current release: **v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation
 - [x] Add an operationId-based typed API client over the shared same-origin/CSRF transport.
 - [x] Add route/release/requestId diagnostics, Vue error boundary and `unhandledrejection` recovery.
 - [x] Add migration manifest/parity template and ADR-001–ADR-005.
-- [x] Mark Engineering Quality Register Q-01–Q-05 DONE and open Gate A for v27.36.0.
+- [x] Establish Q-02–Q-05 and the Q-01 foundation; executable closure moves to v27.35.1.
 - [x] Keep API behavior, PostgreSQL, Flyway V47, FIFO, Payroll and one-image deployment unchanged.
 - [ ] Confirm full GitHub Actions validation, image build, clean PostgreSQL smoke and staging deployment.
 

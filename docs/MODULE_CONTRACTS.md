@@ -1,4 +1,4 @@
-## Vue delivery, generated API and diagnostics (v27.35.0)
+## Vue delivery, generated API and executable resolution (v27.35.1)
 
 - Frontend dependency installation is lockfile-only through `npm ci`; Node/npm and direct dependencies are exact-pinned.
 - `src/main/resources/static/openapi/dutylog-v1.yaml` is the canonical frontend contract source. Generated TypeScript schemas/operations and the typed client are drift-checked in every frontend build.
@@ -6,7 +6,7 @@
 - Vue render/boot/unhandled-promise failures render recovery UI without suppressing strict browser errors.
 - Migration manifest/parity templates and ADR-001–ADR-005 close Gate A; no product domain changes owner.
 
-Status: v27.35.0.
+Status: v27.35.1.
 
 # Module contracts
 
