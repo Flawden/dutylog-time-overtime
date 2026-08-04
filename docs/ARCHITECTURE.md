@@ -1,21 +1,22 @@
 # DutyLog architecture
 
-## Active Vue frontend transition — v27.34.4 contract stabilization
+## Active Vue frontend transition — v27.35.0 Gate A foundation
 
-DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains a separate container. The frontend migration from ordered vanilla JavaScript to **Vue 3 + TypeScript + Vite** is active. v27.33.0 introduced the production foundation; v27.34.0 moved the visible application shell and shared design-system infrastructure to Vue; v27.34.1–v27.34.3 stabilized strict typing, browser-safe output and E2E navigation ownership. v27.34.4 keeps the same boundary while separating non-persistent overtime draft calculation from strict writes and completing active-route presentation for secondary Vue navigation. New product features remain paused until complete Vue parity.
+DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains a separate container. `v27.35.0` closes Vue migration Gate A without moving a product domain: clean frontend delivery is locked by a committed npm lockfile, exact Node/npm versions and `npm ci`; frontend API types and operation metadata are generated from the canonical backend OpenAPI document and protected by a drift gate; shared HTTP requests carry bounded correlation IDs; Vue render, boot and unhandled-promise failures expose controlled recovery UI with route/release/request context.
 
-The migration is incremental, not a big-bang rewrite: the released foundation and CI boundary → design system and app shell → domain-by-domain migration → deletion of the legacy numbered scripts and bridge. Production Vite is not a server: its build output is packaged into the Spring Boot JAR/image and served same-origin with the existing session and CSRF model.
+Spring Boot remains the source of truth for business rules, permissions, FIFO, Payroll, closed periods and persistence. The strict TypeScript compiler, generated-browser audit and Playwright runtime collector remain enabled. Vite output is still packaged into the Spring Boot JAR/image; production remains one app container plus PostgreSQL.
 
 ```text
-frontend/ (Vue 3 + TypeScript + Vite)
-        ↓ build
+canonical OpenAPI YAML
+        ↓ deterministic generation + drift check
+Vue TypeScript contract / typed client
+        ↓ npm ci + strict frontend gate
 Spring Boot static resources + API
         ↓
 one DutyLog JAR / one dutylog-app image
         ↓
 PostgreSQL container
 ```
-
 
 ## Unified time and compensation ledger (v27.26.0)
 

@@ -1,16 +1,25 @@
 # Release checklist
 
-Status: v27.34.4.
+Status: v27.35.0.
+
+## v27.35.0 Vue Delivery, Contracts & Diagnostics Foundation acceptance
+
+- [ ] `frontend/package-lock.json` is committed and `npm ci` is the only CI/Docker install path.
+- [ ] Node `20.18.1`, npm `10.8.2` and direct dependencies are exact-pinned.
+- [ ] `generate-openapi-contract.mjs --check` passes and generated TypeScript matches canonical OpenAPI SHA-256.
+- [ ] Generated operation types are consumed through the typed same-origin client.
+- [ ] Vue render/boot and unhandled-promise failures show recovery UI with release/route/request ID.
+- [ ] Unexpected errors remain visible to strict Playwright page-error/request collectors.
+- [ ] Migration manifest/parity template exists and ADR-001–ADR-005 are accepted/indexed.
+- [ ] Engineering Quality Register marks Q-01–Q-05 DONE and Gate A open for v27.36.0.
+- [ ] 137 Java test classes / 661 `@Test` methods / 44 Playwright scenarios / 16 Vitest cases are registered.
+- [ ] No backend API shape, PostgreSQL schema, Flyway V47, domain ownership or one-image topology change.
 
 ## v27.34.4 Vue Secondary Navigation & Overtime Preview Contract Hotfix acceptance
 
-- [ ] `vue-tsc`, 11 Vitest cases, Vite build and browser-bundle audit pass.
-- [ ] Focused service and MockMvc tests prove zero draft preview succeeds and persistence stays strict.
-- [ ] `VueSecondaryNavigationOvertimePreviewHotfixTest` passes.
-- [ ] All 44 Playwright scenarios pass with the strict runtime collector unchanged.
-- [ ] Tasks active state is visible through More and the secondary modal item.
-- [ ] API shape/PostgreSQL remain unchanged and Flyway remains V47.
-- [ ] Docker image build, clean PostgreSQL migration smoke and staging deploy pass in GitHub Actions.
+- [x] Non-persistent zero/negative preview calculation is representable without weakening create/update writes.
+- [x] Secondary Vue navigation exposes semantic active state.
+- [x] Full 44-scenario Chromium baseline and staging deployment are green.
 
 ## v27.34.3 Vue Shell E2E Navigation Compatibility Hotfix acceptance
 
@@ -286,6 +295,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.34.4 -m "v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix"
-git push origin v27.34.4
+git tag -a v27.35.0 -m "v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation"
+git push origin v27.35.0
 ```

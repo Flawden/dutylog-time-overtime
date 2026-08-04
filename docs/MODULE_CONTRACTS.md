@@ -1,16 +1,26 @@
+## Vue delivery, generated API and diagnostics (v27.35.0)
+
+- Frontend dependency installation is lockfile-only through `npm ci`; Node/npm and direct dependencies are exact-pinned.
+- `src/main/resources/static/openapi/dutylog-v1.yaml` is the canonical frontend contract source. Generated TypeScript schemas/operations and the typed client are drift-checked in every frontend build.
+- Shared requests publish a bounded correlation ID and diagnostics expose only release, public route and request metadata.
+- Vue render/boot/unhandled-promise failures render recovery UI without suppressing strict browser errors.
+- Migration manifest/parity templates and ADR-001–ADR-005 close Gate A; no product domain changes owner.
+
+Status: v27.35.0.
+
 # Module contracts
 
 ## Vue secondary navigation and overtime draft preview (v27.34.4)
 
-Secondary Vue routes remain reachable through the public shell boundary and now expose active state on the visible More control and modal item. Canonical overtime preview may represent zero or negative intermediate calculations, but persistence remains protected by the existing positive-credit invariant.
-
-## Vue shell E2E ownership compatibility (v27.34.3)
-
-Vue remains the visible shell owner. Browser tests navigate through `DutyLogVuePlatform.navigateLegacy(...)` / `DutyLogLegacyPlatform.navigate(...)` and visible Vue hooks rather than clicking hidden legacy chrome. Product-screen module ownership and backend contracts are unchanged.
-
+- Non-persistent overtime preview may represent zero/negative intermediate calculations; create/update remain strict.
+- A secondary active route marks the visible More control and its modal item with `aria-current="page"`.
+- No API shape, schema, Flyway or domain ownership change.
 
 Status: v27.34.4.
 
+## Vue shell E2E ownership compatibility (v27.34.3)
+
+Vue remains the visible shell owner. Browser tests navigate through public shell capabilities and visible Vue hooks rather than hidden legacy chrome.
 
 ## Vue browser-runtime bundle safety (v27.34.2)
 

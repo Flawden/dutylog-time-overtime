@@ -1,13 +1,20 @@
 # DutyLog regression test baseline
 
-Status: v27.34.4.
+Status: v27.35.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.34.4 separates non-persistent overtime draft calculation from strict writes and completes active-route semantics for Vue secondary navigation. The current application baseline is 136 Java test classes / 652 `@Test` methods / 44 Chromium Playwright scenarios / 11 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.35.0 closes Vue Gate A with reproducible `npm ci` delivery, generated OpenAPI TypeScript contracts, correlated recovery diagnostics, migration manifests and ADR foundation. The current application baseline is 137 Java test classes / 661 `@Test` methods / 44 Chromium Playwright scenarios / 16 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.35.0 Vue Delivery, Contracts & Diagnostics Foundation extension
+
+- `VueDeliveryContractsDiagnosticsFoundationTest` protects lockfile/toolchain, `npm ci`, generated-contract drift, diagnostics, migration template, ADRs and Gate A completion.
+- Frontend cases cover generated operation routing, path/query interpolation, requestId correlation, network failures and controlled recovery diagnostics.
+- Existing Vue foundation browser coverage now proves the safe diagnostics snapshot and controlled recovery UI without weakening strict runtime collection.
+- Baseline advances to 137 Java test classes / 661 test methods / 44 Playwright scenarios / 16 Vitest cases; Flyway remains V47.
 
 ## v27.34.4 Vue Secondary Navigation & Overtime Preview Contract Hotfix extension
 

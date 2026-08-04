@@ -1,16 +1,28 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix**.
+Current release: **v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation**.
 
 
-## v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix — current
+## v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation — current
+
+- [x] Commit `frontend/package-lock.json` and require `npm ci` in local, CI and Docker builds.
+- [x] Pin Node 20.18.1, npm 10.8.2 and exact frontend dependencies.
+- [x] Generate TypeScript schema/operation contracts from canonical OpenAPI and block drift.
+- [x] Add an operationId-based typed API client over the shared same-origin/CSRF transport.
+- [x] Add route/release/requestId diagnostics, Vue error boundary and `unhandledrejection` recovery.
+- [x] Add migration manifest/parity template and ADR-001–ADR-005.
+- [x] Mark Engineering Quality Register Q-01–Q-05 DONE and open Gate A for v27.36.0.
+- [x] Keep API behavior, PostgreSQL, Flyway V47, FIFO, Payroll and one-image deployment unchanged.
+- [ ] Confirm full GitHub Actions validation, image build, clean PostgreSQL smoke and staging deployment.
+
+## v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix — completed
 
 - [x] Return a successful canonical preview for zero/negative intermediate calculated drafts.
 - [x] Keep create/update validation strict for non-positive overtime credits.
 - [x] Publish active state for secondary routes on the visible More control and matching modal item.
 - [x] Align the two remaining Chromium scenarios with those public contracts.
 - [x] Keep strict TypeScript, strict Playwright collection, API shape, PostgreSQL, Flyway V47 and one-image deployment unchanged.
-- [ ] Confirm full GitHub Actions validation, image build, clean PostgreSQL smoke and staging deployment.
+- [x] GitHub Actions validation, image build, clean PostgreSQL smoke and staging deployment are green.
 
 ## v27.34.3 — Vue Shell E2E Navigation Compatibility Hotfix — completed
 
@@ -20,7 +32,7 @@ Current release: **v27.34.4 — Vue Secondary Navigation & Overtime Preview Cont
 - [x] Declare optional module presets explicitly in module-dependent shell scenarios.
 - [x] Align Calendar Sync ICS release identity.
 - [x] Keep API, PostgreSQL, Flyway V47 and one-image deployment unchanged.
-- [ ] Require a fully green 44-scenario Chromium baseline before v27.35.0.
+- [x] Full 44-scenario Chromium baseline is green in v27.34.4.
 
 ## v27.34.2 — Vue Browser Runtime Bundle Hotfix — completed
 
@@ -51,11 +63,12 @@ Current release: **v27.34.4 — Vue Secondary Navigation & Overtime Preview Cont
 - [x] Hide legacy chrome only after Vue readiness so failed boots retain a usable fallback.
 - [x] Preserve legacy hash routing and product-screen ownership behind named capabilities.
 - [x] Add static, Vitest and Playwright shell parity coverage.
-- [ ] v27.35.0: migrate Absence Composer and Time Bank.
-- [ ] v27.36.0: migrate Calendar, Today and timeline.
-- [ ] v27.37.0: migrate Tasks, Notes and Important Days.
-- [ ] v27.38.0: migrate Settings, Workspace and integrations.
-- [ ] v27.39.0: retire bridge, numbered JavaScript and legacy routing after parity.
+- [x] v27.35.0: close Vue delivery, generated-contract, diagnostics, manifest and ADR Gate A.
+- [ ] v27.36.0: migrate Absence Composer and Time Bank.
+- [ ] v27.37.0: migrate Calendar, Today and timeline.
+- [ ] v27.38.0: migrate Tasks, Notes and Important Days.
+- [ ] v27.39.0: migrate Settings, Workspace and integrations.
+- [ ] v27.40.0: retire bridge, numbered JavaScript and legacy routing after parity.
 
 ## v27.33.0 — Vue Frontend Foundation & CI/CD — completed
 
@@ -88,13 +101,14 @@ Current release: **v27.34.4 — Vue Secondary Navigation & Overtime Preview Cont
 
 ## Approved architecture transition — complete Vue migration before new features
 
-1. **v27.33.0 — Vue Frontend Foundation & CI/CD**: Vue 3, TypeScript, Vite, Pinia, Router, Vitest, OpenAPI/API client, same-image production build and legacy bridge.
-2. **v27.34.0 — Vue App Shell & Design System**.
-3. **v27.35.0 — Vue Absence & Time Bank**.
-4. **v27.36.0 — Vue Calendar & Timeline**.
-5. **v27.37.0 — Vue Tasks, Notes & Important Days**.
-6. **v27.38.0 — Vue Settings, Workspace & Integrations**.
-7. **v27.39.0 — Vue Legacy Retirement & Parity**: remove numbered JavaScript, old routing/state/modal bridges and string-based legacy contracts.
+1. **v27.33.0 — Vue Frontend Foundation & CI/CD**: Vue 3, TypeScript, Vite, Pinia, Router, Vitest, same-image production build and legacy bridge.
+2. **v27.34.0 — Vue App Shell & Design System** plus v27.34.1–v27.34.4 stabilization.
+3. **v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation**: reproducible delivery, generated OpenAPI contract, diagnostics, manifest and ADR Gate A.
+4. **v27.36.0 — Vue Absence & Time Bank**.
+5. **v27.37.0 — Vue Calendar & Timeline**.
+6. **v27.38.0 — Vue Tasks, Notes & Important Days**.
+7. **v27.39.0 — Vue Settings, Workspace & Integrations**.
+8. **v27.40.0 — Vue Legacy Retirement & Parity**: remove numbered JavaScript, old routing/state/modal bridges and string-based legacy contracts.
 
 No new major product feature is added until the Vue migration is complete. DutyLog remains one repository, one Spring Boot application image/container and one deployment; PostgreSQL remains separate.
 

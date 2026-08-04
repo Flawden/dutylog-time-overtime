@@ -1,8 +1,10 @@
 # Multi-stage build: compile Vue, package it into Spring Boot, then run one non-root app image.
-FROM node:20-alpine AS frontend-build
+FROM node:20.18.1-alpine3.20 AS frontend-build
 WORKDIR /frontend
-COPY frontend/package.json frontend/.npmrc ./
-RUN npm install --no-audit --no-fund --package-lock=false --prefer-online
+COPY frontend/package.json frontend/package-lock.json frontend/.npmrc frontend/.node-version frontend/.npm-version ./
+RUN test "$(node --version)" = "v$(cat .node-version)" \
+    && test "$(npm --version)" = "$(cat .npm-version)" \
+    && npm ci --no-audit --no-fund --prefer-online
 COPY frontend ./
 RUN npm run typecheck \
     && npm run test:unit \
@@ -26,7 +28,7 @@ RUN find src/main/resources/static -type f -name '*.js' -exec \
 
 FROM eclipse-temurin:17-jre
 WORKDIR /app
-ARG DUTYLOG_BUILD_VERSION=27.34.4-local
+ARG DUTYLOG_BUILD_VERSION=27.35.0-local
 ARG DUTYLOG_BUILD_COMMIT=local
 ARG DUTYLOG_BUILD_TREE=local
 ARG DUTYLOG_BUILD_TIME=unknown

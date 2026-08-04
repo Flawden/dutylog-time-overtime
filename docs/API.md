@@ -1,5 +1,8 @@
-# DutyLog API v27.34.4
-`v27.34.4` changes no request or response schema. The preview endpoint now treats non-positive calculated intervals as valid non-persistent draft results, while create/update validation remains strict. Vue secondary-navigation state is presentation-only; CSRF/session rules and OpenAPI v1 remain unchanged.
+# DutyLog API v27.35.0
+
+`v27.35.0` changes no backend request/response schema, endpoint, authorization rule or domain invariant. The canonical backend document remains `src/main/resources/static/openapi/dutylog-v1.yaml`; the release adds deterministic generated TypeScript schema/operation types and a typed frontend operation client with a drift gate. Shared browser requests add or preserve a bounded `X-Request-Id` correlation header and record response correlation metadata without exposing payloads or credentials.
+
+The v27.34.4 preview behavior remains released: non-persistent zero/negative draft calculations are representable, while create/update validation remains strict.
 
 ## Absence and time-bank presentation contract
 

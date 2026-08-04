@@ -398,3 +398,32 @@ html[data-vue-shell="ready"] body.app-modal-open .vue-shell-nav { visibility: hi
   .ui-toast-enter-active,
   .ui-toast-leave-active { transition: none !important; }
 }
+
+/* v27.35.0 controlled frontend recovery */
+.vue-recovery {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: grid;
+  place-items: center;
+  padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  background: color-mix(in srgb, var(--color-background, #07101c) 92%, transparent);
+  backdrop-filter: blur(16px);
+}
+.vue-recovery__card {
+  width: min(100%, 560px);
+  padding: clamp(24px, 5vw, 40px);
+  border: 1px solid var(--color-border, rgba(255, 255, 255, .16));
+  border-radius: var(--radius-card, 24px);
+  background: var(--color-surface-elevated, #101c2b);
+  box-shadow: var(--shadow-card, 0 24px 80px rgba(0, 0, 0, .38));
+}
+.vue-recovery__eyebrow { margin: 0 0 8px; color: var(--color-warning, #f0b85a); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.vue-recovery h1 { margin: 0; font-size: clamp(1.55rem, 4vw, 2.15rem); }
+.vue-recovery p { color: var(--color-text-secondary, #9caec3); line-height: 1.55; }
+.vue-recovery dl { display: grid; gap: 8px; margin: 24px 0; }
+.vue-recovery dl div { display: grid; grid-template-columns: minmax(92px, auto) 1fr; gap: 12px; }
+.vue-recovery dt { color: var(--color-text-secondary, #9caec3); }
+.vue-recovery dd { min-width: 0; margin: 0; overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+.vue-recovery__actions { display: flex; flex-wrap: wrap; gap: 12px; }
+@media (prefers-reduced-motion: reduce) { .vue-recovery { backdrop-filter: none; } }

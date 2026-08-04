@@ -1,18 +1,22 @@
 {
   "name": "dutylog-vue-frontend",
-  "version": "27.34.4",
+  "version": "27.35.0",
   "private": true,
   "type": "module",
-  "description": "Vue 3 + TypeScript app shell and design system for DutyLog",
+  "description": "Vue 3 + strict TypeScript frontend for DutyLog",
+  "packageManager": "npm@10.8.2",
   "engines": {
-    "node": ">=20.0.0",
-    "npm": ">=10.0.0"
+    "node": "20.18.1",
+    "npm": "10.8.2"
   },
   "scripts": {
     "dev": "vite --host 127.0.0.1 --port 5173",
+    "contract:generate": "node ./scripts/generate-openapi-contract.mjs",
+    "contract:check": "node ./scripts/generate-openapi-contract.mjs --check",
+    "verify:delivery": "node ./scripts/verify-delivery-foundation.mjs",
     "typecheck": "vue-tsc --noEmit",
     "test:unit": "vitest run --environment node",
-    "build": "npm run typecheck && vite build && npm run audit:bundle",
+    "build": "npm run verify:delivery && npm run contract:check && npm run typecheck && vite build && npm run audit:bundle",
     "preview": "vite preview --host 127.0.0.1 --port 5173",
     "audit:bundle": "node ./scripts/audit-browser-bundle.mjs"
   },

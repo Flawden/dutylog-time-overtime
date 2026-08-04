@@ -1,8 +1,12 @@
-# v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix
+# v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation
 
-The v27.34.3 Chromium gate passed 42 of 44 scenarios and isolated two final compatibility defects. Canonical overtime preview no longer converts a valid zero-hour draft into HTTP `400`, while persistence still rejects non-positive credits. Vue secondary routes now publish their active state through the visible **More / Ещё** control and the matching item inside the modal.
+The green v27.34.4 stabilization baseline is now protected by Gate A. Frontend dependencies are reproducible through a committed lockfile and `npm ci`; Node/npm are pinned; the canonical OpenAPI contract generates reviewed TypeScript schema/operation types with drift detection; shared requests carry correlation IDs; and Vue failures render controlled recovery UI while remaining visible to strict browser collectors.
 
-Strict TypeScript, the strict Playwright runtime collector, API shape, PostgreSQL, Flyway V47 and one-image deployment remain unchanged. The complete explanation and acceptance contract are in `docs/VUE_SECONDARY_NAVIGATION_OVERTIME_PREVIEW_HOTFIX_V27.34.4.md`.
+No product domain moves in this release. Spring Boot remains the business source of truth, PostgreSQL/Flyway V47 and domain APIs are unchanged, and production still ships one Spring Boot + Vue application image/container. The complete release contract is in `docs/VUE_DELIVERY_CONTRACTS_DIAGNOSTICS_FOUNDATION_V27.35.0.md`.
+
+## Previous hotfix: v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix
+
+The green stabilization hotfix separated non-persistent overtime draft preview from strict create/update validation and completed semantic active-route state for secondary Vue navigation. It changed no database schema, Flyway migration, domain ownership or deployment topology.
 
 ## Previous hotfix: v27.34.3 — Vue Shell E2E Navigation Compatibility Hotfix
 

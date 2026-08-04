@@ -38,6 +38,20 @@ declare global {
       legacyConnected: boolean;
       shellReady: boolean;
     }>;
+    diagnostics(): Readonly<{
+      releaseVersion: string;
+      route: string;
+      requestId: string | null;
+      lastRequest: Readonly<{ method: string; url: string; status: number; requestId: string }> | null;
+      fatal: Readonly<{
+        source: "vue" | "promise" | "boot" | "network";
+        message: string;
+        route: string;
+        releaseVersion: string;
+        requestId: string | null;
+        occurredAt: string;
+      }> | null;
+    }>;
     navigateLegacy(view: string): void;
   }
 

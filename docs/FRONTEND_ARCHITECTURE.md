@@ -1,14 +1,20 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.34.4.
+Status: Vue app-shell ownership v1, DutyLog v27.35.0.
+
+## Delivery, generated API and diagnostics foundation (v27.35.0)
+
+The frontend toolchain is exact-pinned (`Node 20.18.1`, `npm 10.8.2`) and installs from a committed npm lockfile through `npm ci`. The canonical backend OpenAPI YAML is deterministically transformed into reviewed TypeScript schema and operation types; `--check` fails when generated output drifts. New Vue API integrations use the generated operation contract over the shared same-origin CSRF/request-ID transport.
+
+The application records only bounded diagnostic metadata: release, public route, request ID, request method/path/status and failure source. Vue render failures, boot failures and unhandled promise rejections display controlled recovery UI. Unexpected errors are still reported to `console.error` and are not suppressed from the strict Playwright collector.
 
 ## Browser-safe library output (v27.34.3)
 
-The Vue shell is built in Vite library mode but consumed directly by browsers from Spring Boot static resources. The build therefore replaces `process.env.NODE_ENV` at compile time and audits the emitted `dutylog-vue-app-shell.js` for Node-only runtime globals. No `process` shim is exposed to the browser and the legacy bridge boundary is unchanged.
+The Vue shell is built in Vite library mode but consumed directly by browsers from Spring Boot static resources. The build replaces `process.env.NODE_ENV` at compile time and audits the emitted JavaScript for Node-only runtime globals. No `process` shim is exposed to the browser.
 
 ## Secondary navigation active-route contract (v27.34.4)
 
-When the active route is outside primary navigation, the visible More control carries the active state and `aria-current="page"`. The matching item inside the More modal carries the same semantic state. This keeps responsive/workspace navigation truthful without forcing every enabled module into the primary bar.
+When the active route is outside primary navigation, the visible More control and the matching modal item carry `aria-current="page"`.
 
 ## Current ownership
 
@@ -37,7 +43,7 @@ frontend/src
 
 ## Routing and bridge
 
-Vue Router still uses memory history. The released hash route remains authoritative during v27.34.4. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
+Vue Router still uses memory history. The released hash route remains authoritative during v27.35.0. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
 
 Allowed transition capabilities are:
 

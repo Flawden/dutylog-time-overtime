@@ -1,14 +1,19 @@
-# Security review
+## v27.35.0 delivery, contract and diagnostics review
 
-Status: v27.34.4.
+- Exact Node/npm and lockfile-only installation reduce dependency drift; CI/Docker use the same `npm ci` boundary.
+- OpenAPI generation consumes the committed same-repository contract and writes reviewed source; no runtime generation or remote schema fetch occurs.
+- Request IDs are bounded before storage/display and never include session, CSRF or payload data.
+- Recovery UI exposes release, public route and correlation ID only; stack traces, response bodies, cookies and tokens are not rendered.
+- Global Vue and promise handlers do not suppress `console.error` or browser `unhandledrejection`; strict Playwright collection remains fail-closed.
+- Same-origin session and CSRF behavior, CSP, cookies, bearer calendar URLs and Telegram secrets are unchanged.
 
+Status: v27.35.0.
 
 ## v27.34.4 secondary navigation and draft-preview review
 
-- No new capability, endpoint, role or mutable bridge state is introduced.
-- Zero/negative values are accepted only as non-persistent preview output; create/update invariants remain fail-closed.
-- `aria-current` and active CSS expose presentation state only and do not widen module authorization.
-- Strict browser error/request collection remains enabled.
+- Preview accepts a non-persistent calculated draft but create/update keep the positive-credit invariant.
+- Secondary active state is presentation-only and exposes no new capability or mutable legacy state.
+- API authorization, sessions, CSRF, PostgreSQL and Flyway V47 are unchanged.
 
 ## v27.34.3 Vue shell E2E navigation compatibility review
 

@@ -1,10 +1,24 @@
 # DutyLog CI/CD
 
-Status: v27.34.4.
+Status: v27.35.0.
 
-## v27.34.4 validation boundary
+## v27.35.0 validation boundary
 
-The validation job must prove both hotfix contracts before image build: zero-hour calculated drafts return HTTP `200` without weakening create/update validation, and secondary Vue routes expose active state through visible shell controls. The strict Playwright runtime collector remains unchanged. A failed validation job intentionally skips image build and deployment.
+Validation is fail-closed before Maven, image build and deployment:
+
+```text
+exact Node 20.18.1 + npm 10.8.2
+→ npm ci from frontend/package-lock.json
+→ delivery/toolchain contract
+→ generated OpenAPI drift check
+→ vue-tsc
+→ 16 Vitest cases
+→ Vite production build + browser-bundle audit
+→ Maven / release-check / 44 Playwright scenarios
+→ immutable image build / clean PostgreSQL smoke / deploy
+```
+
+The same `npm ci` boundary is used by GitHub Actions, the Docker Node stage and local `frontend-gate.sh`. Any lockfile, generated-contract, type, unit, bundle or browser failure intentionally skips image build and deployment.
 
 DutyLog uses two long-lived deployment branches:
 

@@ -1,3 +1,15 @@
+# v27.35.0 — Vue Delivery, Contracts & Diagnostics Foundation
+
+- Added a committed frontend lockfile and replaced mutable frontend installs with `npm ci` in local gates, GitHub Actions and the Docker Node stage.
+- Pinned Node `20.18.1`, npm `10.8.2` and exact dependency versions across package metadata, CI and Docker.
+- Added deterministic OpenAPI-to-TypeScript schema and operation generation, a committed generated contract, drift gate and operationId-based typed client.
+- Added correlated `X-Request-Id`, route and release diagnostics to the shared frontend transport and API errors; query strings are discarded and diagnostic values are bounded.
+- Added Vue descendant/global error capture, unhandled rejection diagnostics and controlled recovery UI without hiding failures from strict Playwright collection.
+- Added the domain migration manifest/parity template, ADR repository with ADR-001–ADR-005, dependency/vulnerability policy and repository copies of the binding migration standard and quality register.
+- Closed Engineering Quality Register Q-01–Q-05 and Gate A before `v27.36.0 — Vue Absence & Time Bank`.
+- Kept domain ownership, API behavior, PostgreSQL, Flyway V47, FIFO, Payroll and one-image deployment unchanged.
+- Regression baseline advances to 137 Java test classes, 661 `@Test` methods, 44 Playwright scenarios and 16 Vitest cases.
+
 # v27.34.4 — Vue Secondary Navigation & Overtime Preview Contract Hotfix
 
 - Split canonical overtime draft preview from strict persistence validation: calculated previews may return zero or negative credited minutes, while create/update still reject non-positive credits.
