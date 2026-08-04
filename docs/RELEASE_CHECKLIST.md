@@ -1,6 +1,15 @@
 # Release checklist
 
-Status: v27.34.2.
+Status: v27.34.3.
+
+## v27.34.3 Vue Shell E2E Navigation Compatibility Hotfix acceptance
+
+- [ ] `vue-tsc`, 11 Vitest cases, Vite build and browser-bundle audit pass.
+- [ ] Maven reports 135 classes / 648 tests.
+- [ ] All 44 Playwright scenarios pass without clicking hidden legacy chrome.
+- [ ] Vue shell brand, More menu and logout hooks remain visible and keyboard-operable.
+- [ ] Calendar Sync emits `PRODID` version 27.34.3.
+- [ ] API/schema remain unchanged and Flyway remains V47.
 
 ## v27.34.2 Vue Browser Runtime Bundle Hotfix acceptance
 
@@ -267,6 +276,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.34.2 -m "v27.34.2 — Vue Browser Runtime Bundle Hotfix"
+git tag -a v27.34.3 -m "v27.34.2 — Vue Browser Runtime Bundle Hotfix"
 git push origin v27.34.2
 ```

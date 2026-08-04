@@ -1,8 +1,8 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, waitForApi } = require('./helpers');
+const { registerAndOnboard, waitForApi, openView } = require('./helpers');
 
 async function setTimezone(page, zone) {
-  await page.locator('#tabbar a[data-view="settings"]').click();
+  await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption(zone);
   const saved = waitForApi(page, 'PUT', '/api/profile');
@@ -64,7 +64,7 @@ test('overtime and FIFO are redistributed by current timezone day without moving
   expect(data.usages[0].allocations.reduce((sum, row) => sum + row.minutes, 0)).toBe(180);
   expect(data.balanceHours).toBe(1);
 
-  await page.locator('#tabbar a[data-view="overtime"]').click();
+  await openView(page, 'overtime');
   await page.evaluate(() => loadLedgerPage(true));
   await page.locator('#timeBankTabCredits').click();
   await expect(page.locator('#ledgerRows')).toContainText('итого за день');

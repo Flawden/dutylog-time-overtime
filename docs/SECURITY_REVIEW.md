@@ -1,7 +1,14 @@
 # Security review
 
-Status: v27.34.2.
+Status: v27.34.3.
 
+
+## v27.34.3 Vue shell E2E navigation compatibility review
+
+- The hotfix exposes only stable DOM test hooks and reuses already released named navigation/logout capabilities.
+- Mutable legacy state is not exposed and no authorization path is moved into Vue.
+- Hidden legacy controls are not restored or force-clicked.
+- Session, CSRF, owner scope, CSP, API, PostgreSQL and Flyway V47 remain unchanged.
 
 ## v27.34.2 Vue browser-runtime bundle security review
 

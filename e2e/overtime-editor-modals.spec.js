@@ -4,7 +4,8 @@ const {
   currentLocalDateKey,
   selectDate,
   waitForApi,
-  openDayModule
+  openDayModule,
+  openView
 } = require('./helpers');
 
 test('overtime credit and usage editors work from calendar and ledger', async ({ page }) => {
@@ -51,7 +52,7 @@ test('overtime credit and usage editors work from calendar and ledger', async ({
   await expect(page.locator('#otDayDetails')).toContainText('24:00');
   await expect(page.locator('#otDayDetails')).toContainText('00:00–01:00');
 
-  await page.locator('#tabbar a[data-view="overtime"]').click();
+  await openView(page, 'overtime');
   await expect(page.locator('#ledgerAddCredit')).toBeVisible();
   await page.locator('#ledgerAddCredit').click();
   await expect(page.locator('#overtimeCreditModal')).toBeVisible();
@@ -116,7 +117,7 @@ test('deleting one canonical split time-off keeps every credit and the other abs
   const secondUsageId = account.usages.find(row => row.sourceAbsenceId === secondAbsence.id).id;
   expect(account.usages.find(row => row.id === firstUsageId).allocations).toHaveLength(2);
 
-  await page.locator('#tabbar a[data-view="overtime"]').click();
+  await openView(page, 'overtime');
   await page.locator('#timeBankTabUsage').click();
   await expect(page.locator('#ledgerUsageList .timeBankUsageCard')).toHaveCount(2);
   await expect(page.locator(`#ledgerUsageList [data-usage-id="${firstUsageId}"] .timeBankAllocationRow`)).toHaveCount(2);

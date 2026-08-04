@@ -1,9 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
+Current release: **v27.34.3 — Vue Shell E2E Navigation Compatibility Hotfix**.
 
 
-## v27.34.2 — Vue Browser Runtime Bundle Hotfix — current
+## v27.34.3 — Vue Shell E2E Navigation Compatibility Hotfix — current
+
+- [x] Move historical E2E navigation from hidden legacy chrome to the public Vue/legacy bridge.
+- [x] Add stable Vue shell hooks for visible brand, profile, more-menu and logout interactions.
+- [x] Align shell/mobile/workspace tests with Vue ownership without restoring the old tabbar.
+- [x] Declare optional module presets explicitly in module-dependent shell scenarios.
+- [x] Align Calendar Sync ICS release identity.
+- [x] Keep API, PostgreSQL, Flyway V47 and one-image deployment unchanged.
+- [ ] Require a fully green 44-scenario Chromium baseline before v27.35.0.
+
+## v27.34.2 — Vue Browser Runtime Bundle Hotfix — completed
 
 - [x] Reproduce the Chromium-wide `pageerror: process is not defined` cascade.
 - [x] Replace `process.env.NODE_ENV` during Vite library build without adding a browser shim.
@@ -11,7 +21,7 @@ Current release: **v27.34.2 — Vue Browser Runtime Bundle Hotfix**.
 - [x] Run the audit through the same `npm run build` used by CI and Docker.
 - [x] Keep the strict Playwright runtime issue collector unchanged.
 - [x] Keep API, PostgreSQL, Flyway V47 and one-image deployment unchanged.
-- [ ] Require a fully green Chromium baseline before v27.35.0.
+- [x] Browser runtime no longer fails on a Node `process` global; E2E ownership alignment continues in v27.34.3.
 
 ## v27.34.1 — Vue Strict Type Contract Hotfix — completed
 

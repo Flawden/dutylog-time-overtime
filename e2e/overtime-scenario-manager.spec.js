@@ -4,7 +4,8 @@ const {
   currentLocalDateKey,
   selectDate,
   waitForApi,
-  openDayModule
+  openDayModule,
+  openView
 } = require('./helpers');
 
 test('overtime scenarios are created and edited inside the shared credit modal', async ({ page }) => {
@@ -88,7 +89,7 @@ test('overtime scenarios are created and edited inside the shared credit modal',
   await expect(page.locator('#creditScenarioSelect')).toContainText(editedName);
 
   await page.locator('#creditCancel').click();
-  await page.locator('#tabbar a[data-view="settings"]').click();
+  await openView(page, 'settings');
   await expect(page.locator('[data-settings-jump="scenarios"]')).toHaveCount(0);
   await expect(page.locator('#quickScenarioSettingsCard')).toHaveCount(0);
 });

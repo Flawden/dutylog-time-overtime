@@ -1,3 +1,13 @@
+# v27.34.3 — Vue Shell E2E Navigation Compatibility Hotfix
+
+- Migrated historical Playwright navigation from hidden legacy chrome to the released Vue/legacy public navigation bridge.
+- Added stable Vue shell test hooks for brand, profile, more menu, logout and close actions without exposing mutable legacy state.
+- Updated shell, mobile, onboarding, settings, timezone, tasks and overtime scenarios to assert visible Vue chrome while preserving legacy product-screen ownership.
+- Declared full onboarding explicitly where a scenario requires optional modules instead of assuming the default Work preset enables Tasks.
+- Updated Calendar Sync ICS identity coverage from stale `27.33.0` to the current release.
+- Kept strict browser error collection, API, PostgreSQL schema, Docker topology and Flyway V47 unchanged.
+- Regression baseline advances to 135 Java test classes, 648 `@Test` methods, 44 Playwright scenarios and 11 Vitest cases.
+
 # v27.34.2 — Vue Browser Runtime Bundle Hotfix
 
 - Replaced the Vite library-mode `process.env.NODE_ENV` reference with the literal production value so the Vue shell can execute in browsers without a Node `process` global.

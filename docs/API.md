@@ -1,5 +1,5 @@
-# DutyLog API v27.34.2
-`v27.34.2` changes no HTTP contract. The hotfix only removes a Node-only environment reference from the generated Vue browser bundle and adds a post-build artifact audit. Endpoints, DTOs, CSRF/session rules and OpenAPI v1 remain unchanged.
+# DutyLog API v27.34.3
+`v27.34.3` changes no HTTP contract. The hotfix aligns browser navigation tests and stable Vue shell hooks with the released shell ownership boundary. Endpoints, DTOs, CSRF/session rules and OpenAPI v1 remain unchanged.
 
 ## Absence and time-bank presentation contract
 

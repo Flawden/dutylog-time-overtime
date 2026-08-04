@@ -13,7 +13,7 @@ test('task data survives disabling and re-enabling the Tasks module', async ({ p
   await toggleModule(page, 'tasks', true);
   await expect(page.locator('#view-tasks')).not.toHaveClass(/moduleHidden/);
 
-  await page.locator('#tabbar a[data-view="calendar"]').click();
+  await openView(page, 'calendar');
   const date = await currentLocalDateKey(page);
   await selectDate(page, date);
   const tasksSection = page.locator('#accTasks');
@@ -48,7 +48,7 @@ test('task data survives disabling and re-enabling the Tasks module', async ({ p
   await toggleModule(page, 'tasks', true);
   await expect(page.locator('#view-tasks')).not.toHaveClass(/moduleHidden/);
 
-  await page.locator('#tabbar a[data-view="calendar"]').click();
+  await openView(page, 'calendar');
   await selectDate(page, date);
   const reopenedTasks = page.locator('#accTasks');
   if (!(await reopenedTasks.evaluate(element => element.open))) {
@@ -91,7 +91,7 @@ test('task subtasks keep order, update progress and require explicit parent comp
   await registerAndOnboard(page, { preset: 'basic', prefix: 'subtasks' });
   await toggleModule(page, 'tasks', true);
 
-  await page.locator('#tabbar a[data-view="calendar"]').click();
+  await openView(page, 'calendar');
   const date = await currentLocalDateKey(page);
   await selectDate(page, date);
   const tasksSection = page.locator('#accTasks');
@@ -141,7 +141,7 @@ test('task polish validates deadlines, persists subtask dates and keeps complete
   await registerAndOnboard(page, { preset: 'basic', prefix: 'task-polish' });
   await toggleModule(page, 'tasks', true);
 
-  await page.locator('#tabbar a[data-view="calendar"]').click();
+  await openView(page, 'calendar');
   const date = await currentLocalDateKey(page);
   await selectDate(page, date);
   const tasksSection = page.locator('#accTasks');

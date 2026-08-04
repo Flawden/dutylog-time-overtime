@@ -106,17 +106,29 @@ async function waitForPayrollReady(page) {
   })), { timeout:30_000 }).toEqual({ loading:false, period:true });
 }
 
+async function waitForVueShell(page) {
+  await page.evaluate(async () => {
+    await Promise.resolve(window.__dutylogVueReady);
+  });
+  await expect(page.locator('[data-vue-app-shell]')).toBeVisible();
+}
+
+async function navigateWithShell(page, view) {
+  await waitForVueShell(page);
+  await page.evaluate(target => {
+    const platform = window.DutyLogVuePlatform;
+    if (platform?.navigateLegacy) {
+      platform.navigateLegacy(target);
+      return;
+    }
+    window.DutyLogLegacyPlatform?.navigate(target);
+  }, view);
+}
+
 async function openView(page, view) {
   const section = page.locator(`#view-${view}`);
   if (!(await section.isVisible())) {
-    const tab = page.locator(`#tabbar a[data-view="${view}"]`);
-    if (await tab.isVisible()) {
-      await tab.click();
-    } else {
-      await page.evaluate(target => {
-        window.location.hash = `#${target}`;
-      }, view);
-    }
+    await navigateWithShell(page, view);
     await expect(section).toBeVisible();
   }
   if (view === 'vacation') await waitForVacationReady(page);
@@ -226,7 +238,7 @@ async function openDayModuleById(page, id) {
 }
 
 async function toggleModule(page, key, enabled) {
-  await page.locator('#tabbar a[data-view="settings"]').click();
+  await openView(page, 'settings');
   await page.locator('[data-settings-jump="modules"]').click();
   await expect(page.locator('#modulesCard')).toHaveClass(/is-open/);
   await expect(page.locator('#moduleSettingsGrid')).toBeVisible();
@@ -252,6 +264,8 @@ module.exports = {
   waitForVacationReady,
   waitForLedgerReady,
   waitForPayrollReady,
+  waitForVueShell,
+  navigateWithShell,
   openView,
   selectDate,
   waitForApi,

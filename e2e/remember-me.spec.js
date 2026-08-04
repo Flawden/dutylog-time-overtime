@@ -34,9 +34,10 @@ test('remember-me restores a fresh browser session and logout revokes the old co
   expect(bootstrapStatuses).toEqual([200, 200, 200, 200]);
   await restoredContext.close();
 
+  await page.locator('[data-vue-shell-more]').click();
   await Promise.all([
     page.waitForURL(/login\.html/),
-    page.locator('#logout').click()
+    page.locator('[data-vue-shell-logout]').click()
   ]);
 
   const revokedContext = await browser.newContext({

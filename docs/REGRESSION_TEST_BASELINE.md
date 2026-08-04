@@ -1,13 +1,21 @@
 # DutyLog regression test baseline
 
-Status: v27.34.2.
+Status: v27.34.3.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.34.2 stabilizes the generated Vue browser bundle by replacing Node environment references and auditing the emitted JavaScript. The current application baseline is 134 Java test classes / 647 `@Test` methods / 44 Chromium Playwright scenarios / 11 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.34.3 aligns the historical browser suite with Vue-owned shell navigation and current release identity. The current application baseline is 135 Java test classes / 648 `@Test` methods / 44 Chromium Playwright scenarios / 11 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.34.3 Vue Shell E2E Navigation Compatibility Hotfix extension
+
+- `VueShellE2eNavigationCompatibilityHotfixTest` rejects direct hidden-legacy chrome clicks in released E2E scenarios and requires the shared public navigation bridge.
+- Stable Vue shell hooks cover brand, profile, more menu, logout and close actions.
+- Shell-specific scenarios assert Vue chrome while legacy product screens remain authoritative.
+- Calendar Sync expects the current ICS release identity.
+- Baseline advances to 135 Java test classes / 648 test methods / 44 Playwright scenarios / 11 Vitest cases; Flyway remains V47.
 
 ## v27.34.2 Vue Browser Runtime Bundle Hotfix extension
 

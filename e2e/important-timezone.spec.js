@@ -39,7 +39,7 @@ test('important dates stay floating while canonical timezone survives reload', a
   await expect(page.locator('#importantDetailsModal')).toBeHidden();
   await expect(page.locator('#importantBoardList .importantBoardRow', { hasText: updatedTitle })).toBeVisible();
 
-  await page.locator('#tabbar a[data-view="settings"]').click();
+  await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await expect(page.locator('#timeSettingsCard')).toHaveClass(/is-open/);
   await expect(page.locator('#workRegionName')).toHaveCount(0);
@@ -62,7 +62,7 @@ test('important dates stay floating while canonical timezone survives reload', a
 
   await page.reload();
   await expect(page.locator('#whoami')).not.toBeEmpty();
-  await page.locator('#tabbar a[data-view="settings"]').click();
+  await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await expect(page.locator('#workTimezone')).toHaveValue('Europe/Chisinau');
   await expect(page.locator('#displayTimezone')).toHaveValue('Europe/Chisinau');
@@ -73,7 +73,7 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await registerAndOnboard(page, { preset: 'full', prefix: 'shift-zone' });
 
   // First establish the zone in which the real shift is assigned.
-  await page.locator('#tabbar a[data-view="settings"]').click();
+  await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
   let profileSaved = waitForApi(page, 'PUT', '/api/profile');
@@ -121,7 +121,7 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await saved;
 
   // Moving the account must not reinterpret 08:30 as 08:30 in the new zone.
-  await page.locator('#tabbar a[data-view="settings"]').click();
+  await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('Europe/Kyiv');
   profileSaved = waitForApi(page, 'PUT', '/api/profile');
@@ -176,7 +176,7 @@ test('a timezone projection can move a late shift to the next calendar date', as
     };
   });
 
-  await page.locator('#tabbar a[data-view="settings"]').click();
+  await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('UTC');
   let profileSaved = waitForApi(page, 'PUT', '/api/profile');
@@ -197,7 +197,7 @@ test('a timezone projection can move a late shift to the next calendar date', as
     method:'PUT', body:{ shiftTypeId:id, note:null, dayEmoji:null, overtimeHours:0, timeOffHours:0 }
   }), { id:lateShift.id, source:dates.source });
 
-  await page.locator('#tabbar a[data-view="settings"]').click();
+  await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   // Moving from UTC to fixed UTC+5 sends the whole interval to the next local calendar date.
   await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');

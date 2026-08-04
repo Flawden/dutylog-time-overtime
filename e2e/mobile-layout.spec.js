@@ -17,10 +17,10 @@ test('calendar, filters and selected-day panel remain usable on a phone viewport
   await selectDate(page, date);
   await expect(page.locator('#panel')).toBeVisible();
   await expect(page.locator('#chips [data-shift-type-id]').first()).toBeVisible();
-  await expect(page.locator('#tabbar')).toBeHidden();
+  await expect(page.locator('[data-vue-shell-navigation]')).toBeHidden();
   await page.locator('#pClose').click();
   await expect(page.locator('#panel')).toBeHidden();
-  await expect(page.locator('#tabbar')).toBeVisible();
+  await expect(page.locator('[data-vue-shell-navigation]')).toBeVisible();
 
   await openView(page, 'tasks');
   await expect(page.locator('#view-tasks')).toBeVisible();

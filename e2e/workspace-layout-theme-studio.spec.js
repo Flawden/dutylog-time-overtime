@@ -1,9 +1,8 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, waitForAppIdle } = require('./helpers');
+const { registerAndOnboard, waitForAppIdle, openView } = require('./helpers');
 
 async function openAppearance(page) {
-  await page.locator('#tabbar a[data-view="settings"]').click();
-  await expect(page.locator('#view-settings')).toBeVisible();
+  await openView(page, 'settings');
   const card = page.locator('#appearanceCard');
   if (!(await card.getAttribute('class') || '').includes('is-open')) {
     await card.locator('.settingsHead').click();
@@ -49,11 +48,11 @@ test('Workspace Studio persists custom navigation, Today cards, layout and calen
   await expect(page.locator('html')).toHaveAttribute('data-ui-decoration', 'grid');
   await expect(page.locator('html')).toHaveAttribute('data-ui-calendar-density', 'compact');
   await expect(page.locator('html')).toHaveAttribute('data-ui-calendar-layers', 'dots');
-  await expect(page.locator('#tabbar a[data-view="tasks"]')).toBeVisible();
-  await expect(page.locator('#tabbar a[data-view="vacation"]')).toBeHidden();
-  await expect(page.locator('#tabbar a:visible')).toHaveCount(5);
+  await expect(page.locator('[data-vue-shell-navigation] [data-route="tasks"]')).toBeVisible();
+  await expect(page.locator('[data-vue-shell-navigation] [data-route="vacation"]')).toHaveCount(0);
+  await expect(page.locator('[data-vue-shell-navigation] [data-route]')).toHaveCount(5);
 
-  await page.locator('#tabbar a[data-view="today"]').click();
+  await openView(page, 'today');
   await expect(page.locator('#view-today')).toBeVisible();
   await expect(page.locator('#todayOvertimeCard')).toBeHidden();
   await expect(page.locator('#todayTasksCard')).toBeVisible();
@@ -74,8 +73,8 @@ test('Workspace Studio persists custom navigation, Today cards, layout and calen
   await expect(page.locator('html')).toHaveAttribute('data-ui-decoration', 'grid');
   await expect(page.locator('html')).toHaveAttribute('data-ui-calendar-density', 'compact');
   await expect(page.locator('html')).toHaveAttribute('data-ui-calendar-layers', 'dots');
-  await expect(page.locator('#tabbar a[data-view="tasks"]')).toBeVisible();
-  await expect(page.locator('#tabbar a[data-view="vacation"]')).toBeHidden();
+  await expect(page.locator('[data-vue-shell-navigation] [data-route="tasks"]')).toBeVisible();
+  await expect(page.locator('[data-vue-shell-navigation] [data-route="vacation"]')).toHaveCount(0);
   await expect(page.locator('#todayOvertimeCard')).toBeHidden();
 
   await openAppearance(page);

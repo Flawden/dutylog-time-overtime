@@ -1,5 +1,5 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, waitForApi } = require('./helpers');
+const { registerAndOnboard, waitForApi, openView } = require('./helpers');
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -7,7 +7,7 @@ test('Today Dashboard composes the day and opens existing feature flows', async 
   await registerAndOnboard(page, { preset: 'full', prefix: 'today' });
 
   await expect(page.locator('#view-today')).toBeVisible();
-  await expect(page.locator('#tabbar a[data-view="today"]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('[data-vue-shell-navigation] [data-route="today"]')).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('#todayDateStrip .todayDateChip')).toHaveCount(7);
   await expect(page.locator('#todayShiftCard')).toBeVisible();
   await expect(page.locator('#todayOvertimeBalance')).toBeVisible();
@@ -30,9 +30,9 @@ test('Today Dashboard composes the day and opens existing feature flows', async 
   await expect(page.locator('[data-calendar-mode="day"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#calendarDayTitle')).not.toHaveText('—');
 
-  await page.locator('.brandLockup').click();
+  await page.locator('[data-vue-shell-brand]').click();
   await expect(page.locator('#view-today')).toBeVisible();
-  await expect(page.locator('#tabbar a[data-view="today"]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('[data-vue-shell-navigation] [data-route="today"]')).toHaveAttribute('aria-current', 'page');
 });
 
 

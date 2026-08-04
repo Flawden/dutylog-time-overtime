@@ -1,9 +1,8 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard } = require('./helpers');
+const { registerAndOnboard, openView } = require('./helpers');
 
 async function openAppearance(page) {
-  await page.locator('#tabbar a[data-view="settings"]').click();
-  await expect(page.locator('#view-settings')).toBeVisible();
+  await openView(page, 'settings');
   const card = page.locator('#appearanceCard');
   if (!(await card.getAttribute('class') || '').includes('is-open')) {
     await card.locator('.settingsHead').click();

@@ -1,8 +1,8 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard } = require('./helpers');
+const { registerAndOnboard, openView } = require('./helpers');
 
 test('Vue app shell owns navigation chrome while legacy product screens retain behavior', async ({ page }) => {
-  await registerAndOnboard(page, { prefix: 'vueappshell' });
+  await registerAndOnboard(page, { preset: 'full', prefix: 'vueappshell' });
   await page.evaluate(() => window.__dutylogVueReady);
 
   const shell = page.locator('[data-vue-app-shell]');
@@ -17,13 +17,12 @@ test('Vue app shell owns navigation chrome while legacy product screens retain b
   await expect(page.locator('#view-calendar')).toBeVisible();
   await expect(calendar).toHaveAttribute('aria-current', 'page');
 
-  await page.evaluate(() => { window.location.hash = '#tasks'; });
-  await expect(page.locator('#view-tasks')).toBeVisible();
+  await openView(page, 'tasks');
   await expect(page.locator('[data-vue-shell-navigation] [data-route="tasks"]')).toHaveAttribute('aria-current', 'page');
 
   const diagnostics = await page.evaluate(() => window.DutyLogVuePlatform?.snapshot());
   expect(diagnostics).toMatchObject({
-    releaseVersion: '27.34.2',
+    releaseVersion: '27.34.3',
     architecture: 'vue-shell-v1',
     phase: 'ready',
     legacyConnected: true,

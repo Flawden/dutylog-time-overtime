@@ -42,6 +42,7 @@ function navigate(route: DutyLogRoute): void {
       v-if="secondaryNavigation.length"
       class="vue-shell-nav__item vue-shell-nav__more"
       type="button"
+      data-vue-shell-more
       :aria-label="moreLabel"
       @click="shell.openMore()"
     >

@@ -1,5 +1,5 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, waitForAppIdle } = require('./helpers');
+const { registerAndOnboard, waitForAppIdle, openView } = require('./helpers');
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -10,20 +10,20 @@ test('UI Core workspace persists in the single DutyLog shell after Classic sunse
   await expect(page.locator('html')).toHaveAttribute('data-ui-contract', '2');
   await expect(page.locator('html')).toHaveAttribute('data-ui-workspace', 'shift-worker');
   await expect(page.locator('html')).toHaveAttribute('data-ui-layout', 'dashboard');
-  await expect(page.locator('#nextTopbar')).toBeVisible();
-  await expect(page.locator('#tabbar a:visible .navIcon')).toHaveCount(5);
-  await expect(page.locator('#tabbar a[data-view="today"]')).toHaveAttribute('aria-current', 'page');
+  await expect(page.locator('[data-vue-app-shell]')).toBeVisible();
+  await expect(page.locator('#nextTopbar')).toBeHidden();
+  await expect(page.locator('#tabbar')).toBeHidden();
+  await expect(page.locator('[data-vue-shell-navigation] [data-route="today"]')).toHaveAttribute('aria-current', 'page');
 
   const before = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
     content: document.documentElement.scrollWidth,
-    navPosition: getComputedStyle(document.querySelector('#tabbar')).position,
+    navPosition: getComputedStyle(document.querySelector('[data-vue-shell-navigation]')).position,
   }));
   expect(before.content).toBeLessThanOrEqual(before.viewport + 1);
   expect(before.navPosition).toBe('fixed');
 
-  await page.locator('#tabbar a[data-view="settings"]').click();
-  await expect(page.locator('#view-settings')).toBeVisible();
+  await openView(page, 'settings');
   const appearanceCard = page.locator('#appearanceCard');
   await appearanceCard.locator('.settingsHead').click();
   await expect(page.locator('#uiPlatformStatus')).toContainText('UI Core v2');
@@ -32,7 +32,7 @@ test('UI Core workspace persists in the single DutyLog shell after Classic sunse
 
   await page.locator('#uiWorkspace').selectOption('planner');
   await expect(page.locator('html')).toHaveAttribute('data-ui-workspace', 'planner');
-  await expect(page.locator('#tabbar a:visible').nth(1)).toHaveAttribute('data-view', 'tasks');
+  await expect(page.locator('[data-vue-shell-navigation] [data-route]').nth(1)).toHaveAttribute('data-route', 'tasks');
 
   await page.locator('#uiLayout').selectOption('compact');
   await expect(page.locator('html')).toHaveAttribute('data-ui-layout', 'compact');
@@ -65,7 +65,8 @@ test('UI Core workspace persists in the single DutyLog shell after Classic sunse
   await page.reload();
   await waitForAppIdle(page);
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'next');
-  await expect(page.locator('#nextTopbar')).toBeVisible();
-  await expect(page.locator('#tabbar a[data-view="today"]')).toBeVisible();
+  await expect(page.locator('[data-vue-app-shell]')).toBeVisible();
+  await expect(page.locator('#nextTopbar')).toBeHidden();
+  await expect(page.locator('[data-vue-shell-navigation] [data-route="today"]')).toBeVisible();
   await expect(page.locator('[data-shell-choice]')).toHaveCount(0);
 });

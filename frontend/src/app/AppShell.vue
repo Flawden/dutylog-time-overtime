@@ -60,7 +60,7 @@ function logout(): void { props.bridge.logout(); }
 <template>
   <div class="vue-app-shell" data-vue-app-shell>
     <header class="vue-shell-header">
-      <button class="vue-shell-brand" type="button" @click="navigate('today')" aria-label="DutyLog — сегодня">
+      <button class="vue-shell-brand" type="button" data-vue-shell-brand @click="navigate('today')" aria-label="DutyLog — сегодня">
         <span class="vue-shell-brand__glyph" aria-hidden="true"><AppIcon name="check" /></span>
         <span class="vue-shell-brand__copy"><strong>Duty<span>Log</span></strong><small>{{ text.product }}</small></span>
       </button>
@@ -70,7 +70,7 @@ function logout(): void { props.bridge.logout(); }
           {{ online ? text.online : text.offline }}
         </UiBadge>
         <UiBadge v-if="!modulesLoaded" tone="neutral">{{ text.loading }}</UiBadge>
-        <button class="vue-shell-profile" type="button" :title="text.profile" :aria-label="text.profile" @click="openProfile">
+        <button class="vue-shell-profile" type="button" data-vue-shell-profile :title="text.profile" :aria-label="text.profile" @click="openProfile">
           <span>{{ initials }}</span><b>{{ displayName }}</b>
         </button>
       </div>
@@ -86,7 +86,7 @@ function logout(): void { props.bridge.logout(); }
     @close="shell.closeMore()"
   >
     <div class="vue-shell-more-grid" :aria-label="text.allSections">
-      <button v-for="item in secondaryItems" :key="item.route" type="button" @click="navigate(item.route)">
+      <button v-for="item in secondaryItems" :key="item.route" type="button" :data-route="item.route" @click="navigate(item.route)">
         <AppIcon :name="item.icon" />
         <span>{{ item.labels[language] }}</span>
       </button>
@@ -97,8 +97,8 @@ function logout(): void { props.bridge.logout(); }
       <code>DutyLog {{ RELEASE_VERSION }}</code>
     </UiCard>
     <template #footer>
-      <UiButton variant="danger" @click="logout">{{ text.logout }}</UiButton>
-      <UiButton variant="secondary" @click="shell.closeMore()">{{ text.close }}</UiButton>
+      <UiButton variant="danger" data-vue-shell-logout @click="logout">{{ text.logout }}</UiButton>
+      <UiButton variant="secondary" data-vue-shell-close @click="shell.closeMore()">{{ text.close }}</UiButton>
     </template>
   </UiModal>
 

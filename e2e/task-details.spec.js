@@ -52,7 +52,7 @@ test('task details separate reading from editing and persist a long description'
 test('timed task deadline and reminder keep one instant across timezone changes', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'task-zone' });
 
-  await page.locator('#tabbar a[data-view="settings"]').click();
+  await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
   let profileSaved = waitForApi(page, 'PUT', '/api/profile');

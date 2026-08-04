@@ -1,6 +1,11 @@
 # Module contracts
 
-Status: v27.34.2.
+## Vue shell E2E ownership compatibility (v27.34.3)
+
+Vue remains the visible shell owner. Browser tests navigate through `DutyLogVuePlatform.navigateLegacy(...)` / `DutyLogLegacyPlatform.navigate(...)` and visible Vue hooks rather than clicking hidden legacy chrome. Product-screen module ownership and backend contracts are unchanged.
+
+
+Status: v27.34.3.
 
 
 ## Vue browser-runtime bundle safety (v27.34.2)

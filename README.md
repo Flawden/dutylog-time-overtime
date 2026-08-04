@@ -1,4 +1,14 @@
-# v27.34.2 — Vue Browser Runtime Bundle Hotfix
+# v27.34.3 — Vue Shell E2E Navigation Compatibility Hotfix
+
+The Vue shell now boots correctly, so the remaining red Chromium baseline revealed stale test ownership: historical scenarios were still trying to click the hidden legacy topbar, tabbar, brand and logout controls. This hotfix moves shared E2E navigation to the released public shell bridge and updates shell-specific scenarios to interact with visible Vue controls.
+
+No legacy chrome is restored. Vue remains the visible shell owner, while existing product screens and business mutations remain legacy-owned until their bounded migration releases. Calendar Sync release identity coverage is also aligned with `27.34.3`.
+
+## Previous hotfix: v27.34.2 — Vue Browser Runtime Bundle Hotfix
+
+The browser-runtime hotfix removed the Node-only `process.env.NODE_ENV` reference and added a generated-bundle audit. v27.34.3 stabilizes the now-running shell against the historical E2E suite.
+
+## Historical release: v27.34.2 — Vue Browser Runtime Bundle Hotfix
 
 GitHub Actions compiled the Vue shell successfully, then the real Chromium baseline exposed a browser-runtime defect: Vite library mode left `process.env.NODE_ENV` in the generated JavaScript. Browsers do not provide Node's global `process`, so the shell failed before readiness and the strict Playwright fixture reported the same page error across nearly every scenario.
 
