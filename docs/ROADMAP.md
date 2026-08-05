@@ -1,10 +1,17 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.36.0 — Vue Absence & Time Bank**.
+Current release: **v27.36.1 — Vue Browser Timer Handle Type Hotfix**.
 
 
 
-## v27.36.0 — Vue Absence & Time Bank — current
+## v27.36.1 — Vue Browser Timer Handle Type Hotfix — current
+
+- Make both migrated preview debounces select the browser timer overload explicitly.
+- Keep strict TypeScript and Node/Vitest typings enabled without casts or compiler relaxation.
+- Preserve 260 ms / 280 ms timing, cancellation, Q-06 behavior and Vue domain ownership.
+- Change no API, OpenAPI, npm graph, PostgreSQL schema or Flyway migration.
+
+## v27.36.0 — Vue Absence & Time Bank — completed domain predecessor
 
 - Migrate the unified Absence Composer and absence journal to Vue 3 with strict TypeScript.
 - Migrate Time Bank overview, credits, responsive ledger, usage ownership, FIFO queue/forecast, exact credit editor and scenario manager.

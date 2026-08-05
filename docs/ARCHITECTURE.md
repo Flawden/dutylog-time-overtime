@@ -1,8 +1,8 @@
 # DutyLog architecture
 
-## Active Vue frontend transition — v27.36.0 Absence & Time Bank
+## Active Vue frontend transition — v27.36.1 Absence & Time Bank
 
-DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains a separate container. `v27.36.0` is the first bounded product-domain migration after Gate A: Vue becomes the only runtime presentation owner for Absence and Time Bank while the ordered legacy screens and modal owners are retired at workspace mount.
+DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains a separate container. `v27.36.1` preserves the first bounded product-domain migration introduced in `v27.36.0`: Vue remains the only runtime presentation owner for Absence and Time Bank while the ordered legacy screens and modal owners are retired at workspace mount. The hotfix only makes browser timer overload selection explicit for strict TypeScript.
 
 Spring Boot remains the source of truth for business rules, permissions, ownership, FIFO reservation/posting/reversal, compensation, closed periods, Payroll and persistence. Vue consumes generated operation contracts through the shared same-origin transport, keeps form and read-model state inside the bounded feature store, rejects stale refresh responses and blocks duplicate mutations. The strict TypeScript compiler, authentic committed lockfile, generated-contract drift gate, bundle audit and Playwright runtime collector remain enabled. Vite output is still packaged into the Spring Boot JAR/image; production remains one app container plus PostgreSQL.
 

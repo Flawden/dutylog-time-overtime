@@ -1,6 +1,6 @@
-# DutyLog API v27.36.0
+# DutyLog API v27.36.1
 
-`v27.36.0` keeps every backend controller, authorization rule, persistence invariant and Flyway migration unchanged while completing the first bounded Vue domain migration. The canonical OpenAPI document is expanded only where already released backend operations lacked precise generated TypeScript contracts: quick-scenario CRUD plus named absence-preview and type-summary schemas.
+`v27.36.1` changes no backend controller, authorization rule, persistence invariant, OpenAPI shape or Flyway migration. It is a browser-timer typing hotfix for the `v27.36.0` Absence & Time Bank migration; the canonical generated contract remains 98 operations and 103 schemas.
 
 The generated browser contract now contains **98 operations and 103 schemas**. Array items and `allOf` inheritance are emitted accurately for overtime credits, usages, allocations and absence preview rows. Spring Boot remains the source of truth for validation, ownership, FIFO, closed periods and compensation state.
 

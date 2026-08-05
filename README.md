@@ -1,3 +1,10 @@
+# v27.36.1 — Vue Browser Timer Handle Type Hotfix
+
+- Uses explicit browser `window.setTimeout` / `window.clearTimeout` handles in the Absence Composer and credit editor debounce flows.
+- Resolves strict `vue-tsc` DOM/Node timer overload ambiguity without weakening TypeScript or changing debounce behavior.
+- Adds static regression contracts for both components and preserves the v27.36.0 Absence & Time Bank migration unchanged.
+- Changes no backend API, OpenAPI contract, npm dependency graph, database schema, Flyway migration or domain ownership.
+
 # v27.36.0 — Vue Absence & Time Bank
 
 - Migrates the complete Absence and Time Bank domain to Vue 3 with strict TypeScript: unified absence composer, absence journal, responsive overtime ledger, plan/fact summary, integrity status, exact credit editor, reusable scenarios, usage ownership and FIFO forecast.

@@ -1,6 +1,10 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.36.0.
+Status: Vue app-shell ownership v1, DutyLog v27.36.1.
+
+## Browser timer typing hotfix (v27.36.1)
+
+Absence and credit preview debounces explicitly call the browser `window` timer APIs. This keeps the numeric DOM handle contract stable when strict compilation also sees Node/Vitest timer declarations; debounce timing, cancellation and store behavior are unchanged.
 
 ## Delivery foundation and first migrated domain (v27.36.0)
 

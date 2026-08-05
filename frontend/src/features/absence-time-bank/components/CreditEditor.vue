@@ -31,12 +31,12 @@ watch(() => [
   if (!creditModalOpen.value || scenarioManagerMode.value !== "closed") return;
   store.updateCreditHoursFromDraft();
   if (!creditDraft.value.startDateTime || !creditDraft.value.endDateTime) return;
-  if (previewTimer !== null) globalThis.clearTimeout(previewTimer);
-  previewTimer = globalThis.setTimeout(() => { void store.previewCredit(); }, 280);
+  if (previewTimer !== null) window.clearTimeout(previewTimer);
+  previewTimer = window.setTimeout(() => { void store.previewCredit(); }, 280);
 });
 
 onBeforeUnmount(() => {
-  if (previewTimer !== null) globalThis.clearTimeout(previewTimer);
+  if (previewTimer !== null) window.clearTimeout(previewTimer);
 });
 
 async function scenarioSelected(event: Event): Promise<void> {

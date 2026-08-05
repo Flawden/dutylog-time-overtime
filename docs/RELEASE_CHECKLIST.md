@@ -1,6 +1,14 @@
 # Release checklist
 
-Status: v27.36.0.
+Status: v27.36.1.
+
+## v27.36.1 Vue Browser Timer Handle Type Hotfix acceptance
+
+- [ ] `vue-tsc --noEmit` accepts `AbsenceComposer.vue` and `CreditEditor.vue` under exact CI Node/npm and Node/Vitest typings.
+- [ ] Both debounce paths use `window.setTimeout` and `window.clearTimeout` with numeric nullable handles.
+- [ ] Preview delays remain 260 ms and 280 ms; replacement and unmount still cancel pending timers.
+- [ ] All 26 Vitest cases, Maven/JUnit, 45 Playwright scenarios, Docker, clean PostgreSQL and staging are green.
+- [ ] No backend API, OpenAPI, dependency graph, schema, Flyway or domain-ownership change.
 
 ## v27.36.0 Vue Absence & Time Bank acceptance
 
@@ -362,6 +370,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.36.0 -m "v27.36.0 — Vue Absence & Time Bank"
-git push origin v27.36.0
+git tag -a v27.36.1 -m "v27.36.1 — Vue Browser Timer Handle Type Hotfix"
+git push origin v27.36.1
 ```

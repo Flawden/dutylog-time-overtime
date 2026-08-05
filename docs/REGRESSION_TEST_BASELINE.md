@@ -1,13 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.36.0.
+Status: v27.36.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.36.0 migrates Absence and Time Bank to one Vue runtime owner with generated API contracts and Q-06 concurrency protection. The application baseline is 142 Java test classes / 685 `@Test` methods / 45 Chromium Playwright scenarios / 26 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.36.1 binds browser timer handles explicitly in both migrated preview editors while preserving the v27.36.0 domain behavior. The application baseline is 143 Java test classes / 689 `@Test` methods / 45 Chromium Playwright scenarios / 26 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.36.1 Vue Browser Timer Handle Type extension
+
+- Java test classes: 143.
+- `@Test` methods: 689.
+- Playwright scenarios: 45.
+- Vitest cases: 26.
+- Flyway remains V47.
+- Adds four static contracts proving browser-specific timer scheduling/cancellation in both migrated editors.
+- Changes no runtime delay, API, OpenAPI, dependency graph, schema or domain ownership.
 
 ## v27.36.0 Vue Absence & Time Bank extension
 

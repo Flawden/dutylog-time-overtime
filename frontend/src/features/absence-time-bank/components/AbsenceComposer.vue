@@ -42,12 +42,12 @@ watch(() => [
 ], () => {
   if (!absenceModalOpen.value) return;
   if (absenceDraft.value.coverage === "PARTIAL") store.syncAbsenceCoverage();
-  if (previewTimer !== null) globalThis.clearTimeout(previewTimer);
-  previewTimer = globalThis.setTimeout(() => { void store.previewAbsence(); }, 260);
+  if (previewTimer !== null) window.clearTimeout(previewTimer);
+  previewTimer = window.setTimeout(() => { void store.previewAbsence(); }, 260);
 });
 
 onBeforeUnmount(() => {
-  if (previewTimer !== null) globalThis.clearTimeout(previewTimer);
+  if (previewTimer !== null) window.clearTimeout(previewTimer);
 });
 
 function typeChanged(): void {
