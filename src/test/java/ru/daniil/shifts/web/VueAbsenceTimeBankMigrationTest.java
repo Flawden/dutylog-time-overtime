@@ -85,9 +85,10 @@ class VueAbsenceTimeBankMigrationTest {
     void storeBlocksDuplicateMutationsAndRejectsStaleRefreshResults() throws Exception {
         String store = read(FEATURE.resolve("stores/absenceTimeBankStore.ts"));
 
-        assertTrue(store.contains("let refreshSequence = 0"));
-        assertTrue(store.contains("const sequence = ++refreshSequence"));
-        assertTrue(store.contains("if (sequence !== refreshSequence) return"));
+        assertTrue(store.contains("let readSequence = 0"));
+        assertTrue(store.contains("const sequence = ++readSequence"));
+        assertTrue(store.contains("if (sequence !== readSequence) return"));
+        assertFalse(store.contains("refreshSequence"));
         assertTrue(store.contains("if (this.mutationPending) return"));
         assertTrue(store.contains("error.status === 409"));
         assertTrue(store.contains("await this.refresh()"));

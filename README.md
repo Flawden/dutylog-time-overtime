@@ -1,3 +1,11 @@
+# v27.36.8 — Vue Read Sequencing Static Contract Alignment Hotfix
+
+- Aligns three stale Java implementation-string contracts with the accepted shared `readSequence` runtime introduced in v27.36.7.
+- Updates the historical browser-parity and migration guards to require the winning shared read before projection publication.
+- Updates the Single-Pass regression guard to the canonical account-snapshot Vitest scenario name.
+- Adds a compile-gated regression class that forbids `refreshSequence` from returning to the migrated domain contracts.
+- Changes no Vue runtime behavior, backend API, OpenAPI, PostgreSQL schema, Flyway migration, CI routing or Playwright expectation.
+
 # v27.36.7 — Time Bank Period Toggle Snapshot Stability Hotfix
 
 - Stops month/year toggles from reloading and replacing the canonical overtime account snapshot.

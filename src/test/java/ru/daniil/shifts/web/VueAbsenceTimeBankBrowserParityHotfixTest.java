@@ -27,7 +27,8 @@ class VueAbsenceTimeBankBrowserParityHotfixTest {
         String store = compact(read("frontend/src/features/absence-time-bank/stores/absenceTimeBankStore.ts"));
 
         assertTrue(bridge.contains("dutylog:absence-time-bank-projection"));
-        assertTrue(store.contains("if (sequence !== refreshSequence) return;"));
+        assertTrue(store.contains("if (sequence !== readSequence) return;"));
+        assertFalse(store.contains("refreshSequence"));
         assertTrue(store.contains("publishAbsenceTimeBankProjection(window, { planner: this.planner, account: this.account, referenceDate, });"));
     }
 

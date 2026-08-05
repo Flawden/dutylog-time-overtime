@@ -1,8 +1,8 @@
 # DutyLog architecture
 
-## Active Vue frontend transition — v27.36.7 usage-date chart parity
+## Active Vue frontend transition — v27.36.8 static contract alignment
 
-DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains separate. `v27.36.7` keeps Vue as the sole Absence/Time Bank UI owner and corrects only chart projection semantics: earned series use credit work dates, while used series use actual usage-event dates. The one-way projection bridge, authoritative refresh sequencing and single-pass CI routing remain unchanged.
+DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains separate. `v27.36.8` changes no production architecture: Vue remains the sole Absence/Time Bank UI owner, full and period-only reads keep the shared `readSequence`, and only historical Java static assertions are aligned with that accepted runtime.
 
 ## v27.36.4 browser-parity predecessor
 

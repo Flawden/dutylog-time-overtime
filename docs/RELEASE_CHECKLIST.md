@@ -1,6 +1,14 @@
 # Release checklist
 
-Status: v27.36.7.
+Status: v27.36.8.
+
+## v27.36.8 Vue Read Sequencing Static Contract Alignment Hotfix acceptance
+
+- [ ] Exact frontend gate passes on pinned Node/npm.
+- [ ] Maven verify executes all 727 tests with zero failures and JaCoCo remains green.
+- [ ] All 45 Chromium scenarios pass, including the usage-date column after year/month toggles.
+- [ ] Push to `test` remains single-pass through staging validation.
+- [ ] Immutable image passes clean PostgreSQL smoke and deploys.
 
 ## v27.36.7 Time Bank Period Toggle Snapshot Stability Hotfix acceptance
 
@@ -425,6 +433,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.36.7 -m "v27.36.7 — Time Bank Period Toggle Snapshot Stability Hotfix"
-git push origin v27.36.7
+git tag -a v27.36.8 -m "v27.36.8 — Vue Read Sequencing Static Contract Alignment Hotfix"
+git push origin v27.36.8
 ```

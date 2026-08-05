@@ -223,3 +223,12 @@ The exact v27.36.6 run remained at 44/45 because a month/year toggle reloaded th
 - changes no domain owner, backend endpoint, OpenAPI schema, PostgreSQL schema or Flyway migration.
 
 Acceptance remains conditional on exact Node 20, Maven, 45-scenario Chromium, immutable-image and clean-PostgreSQL staging.
+
+## Read-sequencing static contract alignment follow-up — v27.36.8
+
+The v27.36.7 Maven verify exposed three historical implementation-string assertions that still referenced `refreshSequence` or the superseded period-toggle Vitest title. v27.36.8 aligns those tests with the already accepted shared `readSequence` runtime, adds a dedicated compile-gated regression guard and changes no production domain behavior.
+
+- Full and period-only reads still share one latest-read-wins sequence.
+- Projection publication still occurs only after the winning full read.
+- Canonical overtime-account identity remains stable during period toggles.
+- Exact 45/45 Chromium, immutable-image and staging acceptance remain mandatory.

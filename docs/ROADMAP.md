@@ -1,10 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.36.7 — Time Bank Period Toggle Snapshot Stability Hotfix**.
+Current release: **v27.36.8 — Vue Read Sequencing Static Contract Alignment Hotfix**.
 
 
 
-## v27.36.7 — Time Bank Period Toggle Snapshot Stability Hotfix — current
+## v27.36.8 — Vue Read Sequencing Static Contract Alignment Hotfix — current
+
+- Align the three Maven-failing historical static contracts with the accepted shared `readSequence` runtime.
+- Preserve period-only loading, canonical account identity and latest-read-wins semantics unchanged.
+- Keep the strict 45-scenario Chromium expectation and single-pass staging validation unchanged.
+- Accept v27.36.x only after the complete green deployment path.
+
+
+## v27.36.7 — Time Bank Period Toggle Snapshot Stability Hotfix — completed implementation predecessor
 
 - Keep the canonical credits/usages account snapshot stable across month/year presentation toggles.
 - Reload only period-dependent compensation, integrity and actual-work projections.

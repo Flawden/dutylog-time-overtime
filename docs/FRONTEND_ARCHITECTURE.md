@@ -1,10 +1,10 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.36.7.
+Status: Vue app-shell ownership v1, DutyLog v27.36.8.
 
-## Absence/Time Bank usage-date chart parity (v27.36.7)
+## Absence/Time Bank read-sequencing contract alignment (v27.36.8)
 
-The Time Bank chart consumes two independent dated series from the authoritative account read model. Earned values use `credit.workedDate`; used values use `usage.usageDate`; aggregate `credit.usedHours` is not replayed as a dated event. The v27.36.5 fresh-composer and optimistic-period behavior remains unchanged.
+The production store remains unchanged: full and period-only reads share `readSequence`, and only the winning full read publishes the canonical projection. v27.36.8 aligns historical Java assertions with that runtime. The Time Bank chart still keeps earned `credit.workedDate` and used `usage.usageDate` as independent dated series.
 
 ## Absence/Time Bank browser parity (v27.36.4)
 

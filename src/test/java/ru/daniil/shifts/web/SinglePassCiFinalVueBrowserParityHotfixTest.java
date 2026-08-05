@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static delivery and browser-parity contract for v27.36.7. */
+/** Static delivery and browser-parity contract aligned through v27.36.8. */
 class SinglePassCiFinalVueBrowserParityHotfixTest {
 
     @Test
@@ -47,7 +47,7 @@ class SinglePassCiFinalVueBrowserParityHotfixTest {
     void vitestLocksOptimisticPeriodAndFreshComposerAccountBehavior() throws IOException {
         String spec = read("frontend/src/features/absence-time-bank/stores/absenceTimeBankStore.spec.ts");
 
-        assertTrue(spec.contains("switches the ledger period immediately while the refreshed model is loading"));
+        assertTrue(spec.contains("switches the ledger period immediately without replacing the canonical account snapshot"));
         assertTrue(spec.contains("refreshes a previously loaded account before opening the absence composer"));
         assertTrue(spec.contains("expect(load).toHaveBeenNthCalledWith(2, \"2026-08-06\", \"year\")"));
         assertTrue(spec.contains("expect(store.account?.balanceHours).toBe(8)"));
