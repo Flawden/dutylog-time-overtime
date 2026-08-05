@@ -1,6 +1,10 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.36.4.
+Status: Vue app-shell ownership v1, DutyLog v27.36.5.
+
+## Absence/Time Bank final browser parity (v27.36.5)
+
+The composer uses a fresh authoritative load boundary before deriving balance/type context, and the period selector owns its ARIA state immediately while the newest sequenced refresh replaces chart data.
 
 ## Absence/Time Bank browser parity (v27.36.4)
 

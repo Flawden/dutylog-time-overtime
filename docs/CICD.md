@@ -1,6 +1,13 @@
 # DutyLog CI/CD
 
-Status: v27.36.4.
+Status: v27.36.5.
+
+## v27.36.5 Single-pass push validation boundary
+
+- Pull requests, tag pushes and branch pushes outside `test` run the full `CI / test-and-package` path.
+- Pushes to `test` run the full `Deploy staging / validate` path exactly once, then build, verify and deploy the immutable image.
+- Frontend gate, Maven verify, static release checks, Chromium, image verification and clean PostgreSQL smoke remain blocking.
+- Artifact publication remains diagnostic and non-blocking.
 
 ## v27.36.4 Browser parity delivery boundary
 

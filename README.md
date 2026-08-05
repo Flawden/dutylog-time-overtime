@@ -1,3 +1,12 @@
+# v27.36.5 — Single-Pass CI & Final Vue Browser Parity Hotfix
+
+- Closes the final two deterministic Chromium gaps from v27.36.4: the Time Bank period selector now exposes explicit ARIA boolean tokens immediately, and the Absence Composer refreshes authoritative balance/type context before opening.
+- Makes month/year ownership optimistic while preserving server refresh sequencing, so accessibility state no longer waits on the full multi-read-model request.
+- Adds Vitest coverage for optimistic period selection and stale-loaded-account refresh before composer launch.
+- Routes push validation through a single owner: ordinary CI skips only pushes to `test`, while `Deploy staging` keeps the complete Vue, Maven, static, Chromium, immutable-image and clean-PostgreSQL path.
+- Keeps pull-request and non-staging branch CI fully independent; no test, coverage threshold, browser assertion or deployment smoke is removed.
+- Changes no Spring Boot business rule, OpenAPI shape, npm dependency graph, PostgreSQL schema or Flyway migration.
+
 # v27.36.4 — Vue Absence & Time Bank Browser Parity Hotfix
 
 - Completes browser parity for the first Vue domain after the 45-scenario Chromium run reached the migrated Absence and Time Bank runtime and exposed eight deterministic ownership/projection gaps.

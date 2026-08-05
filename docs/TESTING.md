@@ -11,7 +11,7 @@ mvn clean verify
 bash deploy/scripts/release-check.sh
 ```
 
-The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 27 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.36.4 release path. CI, Docker and staging use the same frontend boundary.
+The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 29 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.36.5 release path. CI, Docker and staging use the same frontend boundary.
 
 GitHub artifact persistence is diagnostic only. CI uploads compact JaCoCo XML/CSV for three days and uploads Playwright HTML/results only after failure; quota or upload errors cannot block later static checks, image build or migration smoke. Test execution itself remains fail-closed.
 

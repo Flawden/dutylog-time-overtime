@@ -1,6 +1,14 @@
 # Release checklist
 
-Status: v27.36.4.
+Status: v27.36.5.
+
+## v27.36.5 Single-Pass CI & Final Vue Browser Parity Hotfix acceptance
+
+- [ ] `frontend-gate.sh` passes on exact Node/npm.
+- [ ] Maven verify and JaCoCo thresholds pass.
+- [ ] All 45 Chromium scenarios pass.
+- [ ] Push to `test` starts staging validation but not duplicate ordinary CI.
+- [ ] Immutable image passes clean PostgreSQL smoke and deploys.
 
 ## v27.36.4 Vue Absence & Time Bank Browser Parity Hotfix acceptance
 
@@ -400,6 +408,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.36.4 -m "v27.36.4 — Vue Absence & Time Bank Browser Parity Hotfix"
-git push origin v27.36.4
+git tag -a v27.36.5 -m "v27.36.5 — Single-Pass CI & Final Vue Browser Parity Hotfix"
+git push origin v27.36.5
 ```

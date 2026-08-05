@@ -142,6 +142,7 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
     },
     async setRangeMode(mode: LedgerRangeMode): Promise<void> {
       if (this.rangeMode === mode && this.loaded) return;
+      this.rangeMode = mode;
       await this.refresh(todayIso(), mode);
     },
     openGuide(): void { this.guideOpen = true; },
@@ -153,8 +154,8 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
     },
     clearUsageFocus(): void { this.focusAbsenceUsageId = null; },
     async openAbsenceComposer(options: AbsenceComposerOpenOptions = {}): Promise<void> {
-      await this.ensureLoaded();
       const date = options.date || todayIso();
+      await this.refresh(date, this.rangeMode);
       const draft = newAbsenceDraft(date);
       const types = this.planner?.types ?? [];
       const requested = String(options.systemCode ?? "").toUpperCase();

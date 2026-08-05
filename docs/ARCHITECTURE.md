@@ -1,6 +1,10 @@
 # DutyLog architecture
 
-## Active Vue frontend transition — v27.36.4 browser parity
+## Active Vue frontend transition — v27.36.5 final browser parity
+
+DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains separate. `v27.36.5` keeps Vue as the sole Absence/Time Bank UI owner, refreshes authoritative balance/type context before opening the composer, and exposes period-selector ownership before the associated read-model refresh completes. The one-way projection bridge from v27.36.4 remains unchanged.
+
+## v27.36.4 browser-parity predecessor
 
 DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains separate. `v27.36.4` keeps Vue as the sole Absence/Time Bank UI owner and adds a one-way typed projection event for the still-legacy Calendar, Today and selected-day views. The event carries authoritative read-model snapshots only after the winning refresh sequence; it never restores legacy Vacation/Overtime page renderers.
 

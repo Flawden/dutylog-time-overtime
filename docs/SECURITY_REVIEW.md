@@ -1,6 +1,10 @@
 # DutyLog security review
 
-Status: v27.36.4.
+Status: v27.36.5.
+
+## v27.36.5 final parity and CI routing review
+
+No authorization, CSRF, session, ownership, secret, image-signing or database boundary changes. CI routing changes only event ownership; the staging workflow retains the full blocking validation and immutable digest deployment path.
 
 ## v27.36.4 Vue Absence & Time Bank browser-parity review
 

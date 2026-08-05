@@ -1,10 +1,16 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.36.4 — Vue Absence & Time Bank Browser Parity Hotfix**.
+Current release: **v27.36.5 — Single-Pass CI & Final Vue Browser Parity Hotfix**.
 
 
 
-## v27.36.4 — Vue Absence & Time Bank Browser Parity Hotfix — current
+## v27.36.5 — Single-Pass CI & Final Vue Browser Parity Hotfix — current
+
+- Close the final two deterministic Chromium failures without weakening selectors, retries or page-error collection.
+- Make `test` push validation single-pass while keeping all quality gates and immutable-image verification.
+- Accept the v27.36.0 domain migration only after the exact Node/Maven/Chromium/staging path is green.
+
+## v27.36.4 — Vue Absence & Time Bank Browser Parity Hotfix — completed browser-parity predecessor
 
 - [x] Retire the duplicate legacy Time Bank guide modal and backdrop.
 - [x] Publish winning Vue planner/account refreshes to remaining Calendar, Today and selected-day projections.

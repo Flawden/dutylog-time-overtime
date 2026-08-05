@@ -186,3 +186,14 @@ The first complete Chromium run after migration reached all 45 scenarios and exp
 - selected-day absence actions delegate to the Vue editor.
 
 Full acceptance remains conditional on green exact CI, Chromium, Docker, clean PostgreSQL and staging.
+
+## Final Chromium parity follow-up — v27.36.5
+
+The v27.36.4 run passed 43/45 scenarios and isolated two remaining deterministic gaps. v27.36.5:
+
+- publishes explicit `true`/`false` ARIA tokens for month/year ownership immediately;
+- refreshes planner/account context before composer draft derivation;
+- preserves stale-refresh sequence ownership and the v27.36.4 projection bridge;
+- removes duplicate push validation without removing any blocking test or deployment smoke.
+
+Acceptance remains conditional on the exact Node 20, Maven, 45-scenario Chromium, immutable-image and clean-PostgreSQL staging path.

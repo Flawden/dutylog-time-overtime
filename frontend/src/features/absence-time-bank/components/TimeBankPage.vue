@@ -199,8 +199,8 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
       <header class="domain-panel__header">
         <div><p class="domain-eyebrow">Источники и динамика</p><h2>Начисления переработки</h2></div>
         <div class="domain-period-switch" aria-label="Период графика">
-          <button id="ledgerThisMonth" type="button" :aria-pressed="rangeMode === 'month'" @click="selectPeriod('month')">Месяц</button>
-          <button id="ledgerThisYear" type="button" :aria-pressed="rangeMode === 'year'" @click="selectPeriod('year')">Год</button>
+          <button id="ledgerThisMonth" type="button" :aria-pressed="rangeMode === 'month' ? 'true' : 'false'" @click="selectPeriod('month')">Месяц</button>
+          <button id="ledgerThisYear" type="button" :aria-pressed="rangeMode === 'year' ? 'true' : 'false'" @click="selectPeriod('year')">Год</button>
         </div>
       </header>
 

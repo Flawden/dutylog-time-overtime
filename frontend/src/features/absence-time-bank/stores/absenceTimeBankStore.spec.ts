@@ -11,13 +11,13 @@ function deferred<T>() {
   return { promise, resolve, reject };
 }
 
-function loaded(label: string) {
+function loaded(label: string, balanceHours = 8) {
   return {
     planner: {
       settings: {}, summary: { timeOffRemainingMinutes: 480 }, durationPresets: [7, 14],
       types: [{ id: 1, name: label, systemCode: "TIME_OFF" }], absences: [], occurrences: [], typeSummaries: [],
     },
-    account: { totalEarnedHours: 8, totalUsedHours: 0, balanceHours: 8, credits: [], usages: [] },
+    account: { totalEarnedHours: balanceHours, totalUsedHours: 0, balanceHours, credits: [], usages: [] },
     compensation: null,
     integrity: { from: "2026-01-01", to: "2026-12-31", healthy: true, reservedMinutes: 0, postedMinutes: 0, reversedMinutes: 0, orphanUsageCount: 0, allocationMismatchCount: 0, issues: [], entries: [], periods: [] },
     actualWork: [], scenarios: [], range: { from: "2026-01-01", to: "2026-12-31" },
@@ -150,6 +150,44 @@ describe("absence and time-bank store concurrency", () => {
     await newestRequest;
     expect(store.creditPreviewLoading).toBe(false);
     expect(store.creditDraft.hours).toBe(2.5);
+    restore();
+  });
+
+  it("switches the ledger period immediately while the refreshed model is loading", async () => {
+    const pending = deferred<ReturnType<typeof loaded>>();
+    const load = vi.fn().mockReturnValue(pending.promise);
+    const api = mockApi({ load });
+    const restore = installAbsenceTimeBankApiForTests(api);
+    const store = useAbsenceTimeBankStore();
+    store.loaded = true;
+    store.rangeMode = "year";
+
+    const request = store.setRangeMode("month");
+    expect(store.rangeMode).toBe("month");
+
+    pending.resolve(loaded("Monthly"));
+    await request;
+    expect(store.rangeMode).toBe("month");
+    restore();
+  });
+
+  it("refreshes a previously loaded account before opening the absence composer", async () => {
+    const load = vi.fn()
+      .mockResolvedValueOnce(loaded("Initial", 0))
+      .mockResolvedValueOnce(loaded("Fresh", 8));
+    const api = mockApi({ load });
+    const restore = installAbsenceTimeBankApiForTests(api);
+    const store = useAbsenceTimeBankStore();
+
+    await store.refresh("2026-08-05", "year");
+    expect(store.account?.balanceHours).toBe(0);
+
+    await store.openAbsenceComposer({ date: "2026-08-06", systemCode: "TIME_OFF" });
+
+    expect(load).toHaveBeenNthCalledWith(2, "2026-08-06", "year");
+    expect(store.account?.balanceHours).toBe(8);
+    expect(store.absenceModalOpen).toBe(true);
+    expect(store.absenceDraft.typeId).toBe(1);
     restore();
   });
 
