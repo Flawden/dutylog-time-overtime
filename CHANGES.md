@@ -1,3 +1,11 @@
+# v27.36.6 — Time Bank Usage-Date Chart Parity Hotfix
+
+- Closes the final deterministic Chromium parity failure from v27.36.5: Time Bank chart usage bars are now bucketed by the actual `usageDate`, while earned bars remain bucketed by credit `workedDate`.
+- Stops reusing aggregate `credit.usedHours` as a dated usage event, preventing double counting and restoring the missing standalone usage-day column.
+- Adds daily and yearly Vitest coverage for `2026-08-01 +3`, `2026-08-02 +2`, `2026-08-03 −4`, including the folded `2026-08 +5/−4` result.
+- Adds a compile-gated Java source contract preserving the strict Chromium locator and the separation between earned-source dates and usage-event dates.
+- Preserves the v27.36.5 single-pass CI routing and changes no Spring Boot business rule, OpenAPI shape, npm dependency graph, PostgreSQL schema or Flyway migration.
+
 # v27.36.5 — Single-Pass CI & Final Vue Browser Parity Hotfix
 
 - Closes the final two deterministic Chromium gaps from v27.36.4: the Time Bank period selector now exposes explicit ARIA boolean tokens immediately, and the Absence Composer refreshes authoritative balance/type context before opening.

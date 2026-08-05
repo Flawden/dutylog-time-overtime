@@ -1,6 +1,6 @@
-# DutyLog API v27.36.5
+# DutyLog API v27.36.6
 
-`v27.36.5` changes no backend controller, authorization rule, persistence invariant, OpenAPI shape or Flyway migration. It closes the final browser-state freshness and ARIA parity gaps and removes duplicate push validation while preserving the canonical generated contract at 98 operations and 103 schemas.
+`v27.36.6` changes no backend controller, authorization rule, persistence invariant, OpenAPI shape or Flyway migration. It fixes only Time Bank chart presentation: earned hours stay on credit work dates, while used hours are grouped by the actual usage event date. The canonical generated contract remains 98 operations and 103 schemas.
 
 The generated browser contract now contains **98 operations and 103 schemas**. Array items and `allOf` inheritance are emitted accurately for overtime credits, usages, allocations and absence preview rows. Spring Boot remains the source of truth for validation, ownership, FIFO, closed periods and compensation state.
 

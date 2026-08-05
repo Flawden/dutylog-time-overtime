@@ -1,10 +1,10 @@
 # DutyLog security review
 
-Status: v27.36.5.
+Status: v27.36.6.
 
-## v27.36.5 final parity and CI routing review
+## v27.36.6 usage-date chart parity review
 
-No authorization, CSRF, session, ownership, secret, image-signing or database boundary changes. CI routing changes only event ownership; the staging workflow retains the full blocking validation and immutable digest deployment path.
+No authorization, CSRF, session, ownership, secret, image-signing, API or database boundary changes. The release only changes client-side chart grouping over already owner-scoped account read models; CI routing remains the v27.36.5 single-pass boundary with full blocking staging validation.
 
 ## v27.36.4 Vue Absence & Time Bank browser-parity review
 

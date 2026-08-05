@@ -197,3 +197,16 @@ The v27.36.4 run passed 43/45 scenarios and isolated two remaining deterministic
 - removes duplicate push validation without removing any blocking test or deployment smoke.
 
 Acceptance remains conditional on the exact Node 20, Maven, 45-scenario Chromium, immutable-image and clean-PostgreSQL staging path.
+
+
+## Usage-date chart parity follow-up — v27.36.6
+
+The exact v27.36.5 run passed 44/45 scenarios and isolated the final deterministic gap in Time Bank chart bucketing. v27.36.6:
+
+- keeps earned values on credit `workedDate`;
+- moves used values to actual `usage.usageDate`;
+- excludes aggregate `credit.usedHours` from dated chart events;
+- preserves day buckets in month mode and folds both event kinds into `YYYY-MM` in year mode;
+- changes no domain owner, backend endpoint, OpenAPI schema, PostgreSQL schema or Flyway migration.
+
+Acceptance remains conditional on the exact Node 20, Maven, 45-scenario Chromium, immutable-image and clean-PostgreSQL staging path.

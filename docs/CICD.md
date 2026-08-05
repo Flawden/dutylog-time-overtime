@@ -1,11 +1,11 @@
 # DutyLog CI/CD
 
-Status: v27.36.5.
+Status: v27.36.6.
 
-## v27.36.5 Single-pass push validation boundary
+## v27.36.6 usage-date parity on the existing single-pass boundary
 
-- Pull requests, tag pushes and branch pushes outside `test` run the full `CI / test-and-package` path.
-- Pushes to `test` run the full `Deploy staging / validate` path exactly once, then build, verify and deploy the immutable image.
+- The v27.36.5 single-pass routing remains unchanged: pull requests, tag pushes and branch pushes outside `test` run the full `CI / test-and-package` path.
+- Pushes to `test` run the full `Deploy staging / validate` path exactly once, then build, verify and deploy the immutable image; v27.36.6 adds no second workflow or bypass.
 - Frontend gate, Maven verify, static release checks, Chromium, image verification and clean PostgreSQL smoke remain blocking.
 - Artifact publication remains diagnostic and non-blocking.
 

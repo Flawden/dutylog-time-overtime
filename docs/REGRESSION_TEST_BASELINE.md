@@ -1,13 +1,20 @@
 # DutyLog regression test baseline
 
-Status: v27.36.5.
+Status: v27.36.6.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.36.5 closes the final two deterministic browser-parity gaps and removes duplicate push validation without removing any gate. The application baseline advances to 146 Java test classes / 710 `@Test` methods / 45 Chromium Playwright scenarios / 29 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.36.6 closes the remaining usage-date chart parity gap after the exact v27.36.5 run reached 44/45 Chromium. The application baseline advances to 147 Java test classes / 715 `@Test` methods / 45 Chromium Playwright scenarios / 31 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.36.6 Time Bank Usage-Date Chart Parity extension
+
+- Earned chart buckets use credit work dates; used chart buckets use actual usage dates.
+- Two Vitest cases bind daily usage-day ownership and yearly month folding.
+- Five compile-gated Java source contracts prevent `credit.usedHours` double counting and preserve the strict Chromium locator.
+- Baseline: 147 Java classes / 715 `@Test` methods / 45 Playwright scenarios / 31 Vitest cases / Flyway V47.
 
 ## v27.36.5 Single-Pass CI & Final Vue Browser Parity extension
 

@@ -82,17 +82,48 @@ describe("absence and time-bank domain model", () => {
     expect(result.shortageMinutes).toBe(0);
   });
 
-  it("deduplicates split daily projections but keeps chart totals by visible day", () => {
+  it("deduplicates split daily projections while keeping earned chart totals by visible day", () => {
     const split = account({
       credits: [
         credit({ id: 5, workedDate: "2026-08-03", hours: 1, usedHours: 1, remainingHours: 0, projection: { ...credit({}).projection!, partIndex: 1, partCount: 2, dayEarnedHours: 1, dayUsedHours: 1, dayRemainingHours: 0 } }),
         credit({ id: 5, workedDate: "2026-08-04", hours: 3, usedHours: 2, remainingHours: 1, projection: { ...credit({}).projection!, partIndex: 2, partCount: 2, dayEarnedHours: 3, dayUsedHours: 2, dayRemainingHours: 1 } }),
       ],
+      usages: [],
     });
     expect(uniqueSourceCredits(split.credits)).toHaveLength(1);
     expect(ledgerChartColumns(split, "month")).toEqual([
-      expect.objectContaining({ key: "2026-08-03", earnedHours: 1, usedHours: 1 }),
-      expect.objectContaining({ key: "2026-08-04", earnedHours: 3, usedHours: 2 }),
+      expect.objectContaining({ key: "2026-08-03", earnedHours: 1, usedHours: 0 }),
+      expect.objectContaining({ key: "2026-08-04", earnedHours: 3, usedHours: 0 }),
+    ]);
+  });
+
+  it("plots time-bank usage on the actual usage date without double-counting credit usedHours", () => {
+    const data = account({
+      credits: [
+        credit({ id: 1, workedDate: "2026-08-01", hours: 3, usedHours: 3, remainingHours: 0 }),
+        credit({ id: 2, workedDate: "2026-08-02", hours: 2, usedHours: 1, remainingHours: 1 }),
+      ],
+      usages: [usage({ usageDate: "2026-08-03", hours: 4, minutes: 240 })],
+    });
+
+    expect(ledgerChartColumns(data, "month")).toEqual([
+      expect.objectContaining({ key: "2026-08-01", earnedHours: 3, usedHours: 0 }),
+      expect.objectContaining({ key: "2026-08-02", earnedHours: 2, usedHours: 0 }),
+      expect.objectContaining({ key: "2026-08-03", earnedHours: 0, usedHours: 4, title: "2026-08-03: +0 ч · −4 ч" }),
+    ]);
+  });
+
+  it("folds earned work dates and actual usage dates into the same yearly month bucket", () => {
+    const data = account({
+      credits: [
+        credit({ id: 1, workedDate: "2026-08-01", hours: 3 }),
+        credit({ id: 2, workedDate: "2026-08-02", hours: 2 }),
+      ],
+      usages: [usage({ usageDate: "2026-08-03", hours: 4, minutes: 240 })],
+    });
+
+    expect(ledgerChartColumns(data, "year")).toEqual([
+      expect.objectContaining({ key: "2026-08", earnedHours: 5, usedHours: 4, title: "2026-08: +5 ч · −4 ч" }),
     ]);
   });
 

@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.36.5
+release_foundation: v27.36.6
 created: 2026-08-04
 updated: 2026-08-05
 ---
@@ -57,11 +57,12 @@ updated: 2026-08-05
 | ADR-009 | Vue Router final URL strategy and legacy hash retirement | `v27.40.0` |
 | ADR-010 | Expand/contract database migration and rollback compatibility | до `v27.45.0` |
 
-## Final browser parity and single-pass validation note — v27.36.5
+## Usage-date chart parity note — v27.36.6
 
-- The remaining Chromium failures are represented by explicit ARIA-token and stale-account-refresh contracts.
-- `test` push validation has one owner (`Deploy staging`); PR and non-staging CI remain independent.
-- No blocking gate is downgraded or deleted.
+- The exact v27.36.5 run reached 44/45 Chromium and isolated one chart projection mismatch.
+- Earned values remain grouped by credit work date; used values are grouped by actual usage date.
+- Aggregate `credit.usedHours` is forbidden inside dated chart aggregation to prevent double counting.
+- `test` push validation keeps one owner (`Deploy staging`); no blocking gate is downgraded or deleted.
 
 ## Browser parity note — v27.36.4
 

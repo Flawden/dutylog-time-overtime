@@ -1,10 +1,16 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.36.5 — Single-Pass CI & Final Vue Browser Parity Hotfix**.
+Current release: **v27.36.6 — Time Bank Usage-Date Chart Parity Hotfix**.
 
 
 
-## v27.36.5 — Single-Pass CI & Final Vue Browser Parity Hotfix — current
+## v27.36.6 — Time Bank Usage-Date Chart Parity Hotfix — current
+
+- Close the final 44/45 Chromium gap by plotting usage on `usageDate` instead of source-credit dates.
+- Keep earned and used chart series independent and forbid `credit.usedHours` double counting.
+- Accept the v27.36.0 domain migration only after exact 45/45 Chromium, immutable-image and staging success.
+
+## v27.36.5 — Single-Pass CI & Final Vue Browser Parity Hotfix — completed predecessor
 
 - Close the final two deterministic Chromium failures without weakening selectors, retries or page-error collection.
 - Make `test` push validation single-pass while keeping all quality gates and immutable-image verification.

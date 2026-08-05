@@ -436,13 +436,20 @@ function periodKey(date: string, mode: LedgerRangeMode): string {
 
 export function ledgerChartColumns(account: OvertimeAccountReadModel, mode: LedgerRangeMode): LedgerChartColumn[] {
   const rows = new Map<string, { earnedHours: number; usedHours: number }>();
-  for (const credit of account.credits) {
-    const key = periodKey(credit.workedDate, mode);
+  const rowFor = (date: string) => {
+    const key = periodKey(date, mode);
     const current = rows.get(key) ?? { earnedHours: 0, usedHours: 0 };
-    current.earnedHours += Number(credit.hours ?? 0);
-    current.usedHours += Number(credit.usedHours ?? 0);
     rows.set(key, current);
+    return current;
+  };
+
+  for (const credit of account.credits) {
+    rowFor(credit.workedDate).earnedHours += Number(credit.hours ?? 0);
   }
+  for (const usage of account.usages) {
+    rowFor(usage.usageDate).usedHours += Number(usage.hours ?? 0);
+  }
+
   return [...rows.entries()].sort(([left], [right]) => left.localeCompare(right)).map(([key, value]) => ({
     key,
     earnedHours: Math.round(value.earnedHours * 100) / 100,
