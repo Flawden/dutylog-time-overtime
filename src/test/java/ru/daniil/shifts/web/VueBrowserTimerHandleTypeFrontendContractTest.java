@@ -9,8 +9,8 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static regression contract for v27.36.1 browser timer handle typing. */
-class VueBrowserTimerHandleTypeHotfixTest {
+/** Static regression contract for v27.36.2 browser timer handle typing and compile coverage. */
+class VueBrowserTimerHandleTypeFrontendContractTest {
 
     private static String source(String relativePath) throws IOException {
         return Files.readString(Path.of(relativePath));
@@ -42,15 +42,18 @@ class VueBrowserTimerHandleTypeHotfixTest {
         assertTrue(credit.indexOf("window.clearTimeout(previewTimer)") < credit.indexOf("window.setTimeout"));
     }
 
+    private static String compact(String value) {
+        return value.replaceAll("\\s+", " ").trim();
+    }
+
     @Test
     void bothEditorsCancelPendingWorkDuringUnmount() throws IOException {
-        String absence = source("frontend/src/features/absence-time-bank/components/AbsenceComposer.vue");
-        String credit = source("frontend/src/features/absence-time-bank/components/CreditEditor.vue");
-        assertTrue(absence.contains("onBeforeUnmount(() => {
-  if (previewTimer !== null) window.clearTimeout(previewTimer);
-});"));
-        assertTrue(credit.contains("onBeforeUnmount(() => {
-  if (previewTimer !== null) window.clearTimeout(previewTimer);
-});"));
+        String absence = compact(source("frontend/src/features/absence-time-bank/components/AbsenceComposer.vue"));
+        String credit = compact(source("frontend/src/features/absence-time-bank/components/CreditEditor.vue"));
+        String cleanup = "onBeforeUnmount(() => { "
+                + "if (previewTimer !== null) window.clearTimeout(previewTimer); "
+                + "});";
+        assertTrue(absence.contains(cleanup));
+        assertTrue(credit.contains(cleanup));
     }
 }

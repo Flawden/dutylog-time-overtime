@@ -1,10 +1,10 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.36.1.
+Status: Vue app-shell ownership v1, DutyLog v27.36.2.
 
-## Browser timer typing hotfix (v27.36.1)
+## Timer regression compile-coverage hotfix (v27.36.2)
 
-Absence and credit preview debounces explicitly call the browser `window` timer APIs. This keeps the numeric DOM handle contract stable when strict compilation also sees Node/Vitest timer declarations; debounce timing, cancellation and store behavior are unchanged.
+The browser timer implementation from v27.36.1 remains unchanged. The timer regression contract is now Java 17-valid, uses whitespace-normalized source matching and is named for the local frontend-contract compiler; source-only hotfix tests are also compiled before Maven.
 
 ## Delivery foundation and first migrated domain (v27.36.0)
 

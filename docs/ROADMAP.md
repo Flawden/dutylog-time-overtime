@@ -1,10 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.36.1 — Vue Browser Timer Handle Type Hotfix**.
+Current release: **v27.36.2 — Vue Timer Static Contract Compile Coverage Hotfix**.
 
 
 
-## v27.36.1 — Vue Browser Timer Handle Type Hotfix — current
+## v27.36.2 — Vue Timer Static Contract Compile Coverage Hotfix — current
+
+- Repair the Java 17 multiline-string syntax failure in the browser timer regression contract.
+- Promote the timer regression to the `*FrontendContractTest.java` compile-gated naming convention.
+- Compile all source-only `*HotfixTest.java` files alongside frontend contracts before Maven.
+- Preserve the v27.36.1 browser timer implementation and the v27.36.0 Absence & Time Bank ownership unchanged.
+- Change no API, OpenAPI, npm graph, PostgreSQL schema or Flyway migration.
+
+## v27.36.1 — Vue Browser Timer Handle Type Hotfix — completed stabilization predecessor
 
 - Make both migrated preview debounces select the browser timer overload explicitly.
 - Keep strict TypeScript and Node/Vitest typings enabled without casts or compiler relaxation.

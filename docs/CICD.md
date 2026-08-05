@@ -1,10 +1,10 @@
 # DutyLog CI/CD
 
-Status: v27.36.1.
+Status: v27.36.2.
 
-## v27.36.1 Vue Browser Timer Handle Type delivery boundary
+## v27.36.2 Vue Timer Static Contract Compile Coverage delivery boundary
 
-Strict `vue-tsc` remains blocking. The Absence Composer and credit editor use explicit `window.setTimeout` / `window.clearTimeout` APIs so DOM timer handles stay numeric even with Node/Vitest typings loaded. No compiler option, dependency or gate is relaxed.
+The source-only Java compile gate now includes both `*FrontendContractTest.java` and `*HotfixTest.java`. The timer regression contract uses whitespace-normalized matching and Java 17-valid string literals; strict `vue-tsc`, Maven and all downstream gates remain blocking.
 
 ## v27.36.0 Vue Absence & Time Bank delivery boundary
 

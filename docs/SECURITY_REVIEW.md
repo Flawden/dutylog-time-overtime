@@ -1,12 +1,12 @@
 # DutyLog security review
 
-Status: v27.36.1.
+Status: v27.36.2.
 
-## v27.36.1 Vue browser timer handle review
+## v27.36.2 Vue timer static-contract compile-coverage review
 
-- Scope is two browser-only debounce call sites, static regression contracts, release identity and documentation.
+- Scope is one source-only Java regression test, local compile-gate coverage, release identity and documentation.
 - No authentication, authorization, CSRF, session, secret, request, persistence or dependency behavior changes.
-- Strict TypeScript remains fail-closed; no cast, `skipLibCheck` change or global timer shim is introduced.
+- Strict TypeScript and the v27.36.1 browser timer implementation remain fail-closed; no cast, compiler relaxation or runtime change is introduced.
 
 ## v27.36.0 Vue Absence & Time Bank review
 

@@ -1,6 +1,15 @@
 # Release checklist
 
-Status: v27.36.1.
+Status: v27.36.2.
+
+## v27.36.2 Vue Timer Static Contract Compile Coverage Hotfix acceptance
+
+- [ ] Java 17 compiles `VueBrowserTimerHandleTypeFrontendContractTest` before Maven.
+- [ ] The test normalizes whitespace instead of embedding an illegal multiline ordinary string literal.
+- [ ] `release-check.sh` compiles both `*FrontendContractTest.java` and source-only `*HotfixTest.java`.
+- [ ] The v27.36.1 `window.setTimeout` / `window.clearTimeout` behavior remains unchanged.
+- [ ] Full Maven/JUnit, 45 Playwright scenarios, Docker, clean PostgreSQL and staging are green.
+- [ ] No backend API, OpenAPI, npm graph, schema, Flyway or domain-ownership change.
 
 ## v27.36.1 Vue Browser Timer Handle Type Hotfix acceptance
 
@@ -370,6 +379,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.36.1 -m "v27.36.1 — Vue Browser Timer Handle Type Hotfix"
-git push origin v27.36.1
+git tag -a v27.36.2 -m "v27.36.2 — Vue Timer Static Contract Compile Coverage Hotfix"
+git push origin v27.36.2
 ```

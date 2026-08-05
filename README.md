@@ -1,3 +1,10 @@
+# v27.36.2 — Vue Timer Static Contract Compile Coverage Hotfix
+
+- Fixes the Java 17 `testCompile` failure in the timer regression contract by replacing an illegal multiline string literal with whitespace-normalized source matching.
+- Renames the timer test to `VueBrowserTimerHandleTypeFrontendContractTest` so the established static-contract compiler always includes it.
+- Broadens the local Java syntax gate to compile both `*FrontendContractTest.java` and source-only `*HotfixTest.java` files, closing the coverage gap that allowed the malformed test to reach CI.
+- Preserves the v27.36.1 browser timer implementation, Absence/Time Bank runtime, generated OpenAPI contract, npm graph, backend API, PostgreSQL schema and Flyway V47 unchanged.
+
 # v27.36.1 — Vue Browser Timer Handle Type Hotfix
 
 - Uses explicit browser `window.setTimeout` / `window.clearTimeout` handles in the Absence Composer and credit editor debounce flows.

@@ -1,13 +1,24 @@
 # DutyLog regression test baseline
 
-Status: v27.36.1.
+Status: v27.36.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.36.1 binds browser timer handles explicitly in both migrated preview editors while preserving the v27.36.0 domain behavior. The application baseline is 143 Java test classes / 689 `@Test` methods / 45 Chromium Playwright scenarios / 26 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.36.2 repairs and compile-gates the browser timer regression contract while preserving the v27.36.1 timer implementation and v27.36.0 domain behavior. The application baseline remains 143 Java test classes / 689 `@Test` methods / 45 Chromium Playwright scenarios / 26 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.36.2 Vue Timer Static Contract Compile Coverage extension
+
+- Java test classes: 143.
+- `@Test` methods: 689.
+- Playwright scenarios: 45.
+- Vitest cases: 26.
+- Flyway remains V47.
+- Repairs one malformed Java source assertion without changing its behavior.
+- Extends the local source-only compiler from `*FrontendContractTest.java` to both frontend contracts and `*HotfixTest.java`.
+- Changes no runtime, API, OpenAPI, dependency graph, schema or domain ownership.
 
 ## v27.36.1 Vue Browser Timer Handle Type extension
 
