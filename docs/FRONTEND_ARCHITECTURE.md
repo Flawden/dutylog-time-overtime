@@ -1,6 +1,10 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.36.2.
+Status: Vue app-shell ownership v1, DutyLog v27.36.3.
+
+## CI artifact quota resilience (v27.36.3)
+
+Frontend and browser report uploads are now best-effort diagnostics. JaCoCo is reduced to XML/CSV; Playwright reports are retained only for failed runs. Quota exhaustion cannot bypass or replace the strict frontend, Maven, Playwright, Docker, migration-smoke or staging gates.
 
 ## Timer regression compile-coverage hotfix (v27.36.2)
 

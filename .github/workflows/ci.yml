@@ -44,11 +44,15 @@ jobs:
 
       - name: Upload JaCoCo report
         if: always()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: jacoco-report
-          path: target/site/jacoco
+          name: jacoco-report-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            target/site/jacoco/jacoco.xml
+            target/site/jacoco/jacoco.csv
           if-no-files-found: warn
+          retention-days: 3
 
       - name: Release static checks
         run: bash ./deploy/scripts/release-check.sh
@@ -63,14 +67,16 @@ jobs:
         run: npm run test:e2e
 
       - name: Upload Playwright report
-        if: always()
+        if: failure()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-report
+          name: playwright-report-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             playwright-report
             test-results
-          if-no-files-found: warn
+          if-no-files-found: ignore
+          retention-days: 3
 
       - name: Build deployment image
         run: |

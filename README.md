@@ -1,3 +1,10 @@
+# v27.36.3 — CI Artifact Quota Resilience Hotfix
+
+- Makes JaCoCo and Playwright artifact publication non-blocking so a GitHub storage-quota exhaustion cannot stop static checks, image build, clean PostgreSQL smoke or deployment.
+- Uploads only `jacoco.xml` and `jacoco.csv`, keeps reports for three days and uses run/attempt-qualified artifact names.
+- Uploads Playwright reports only after a failure, with three-day retention and missing-file tolerance in both CI and staging validation.
+- Preserves the fully compiled v27.36.2 Vue Absence & Time Bank runtime, Maven/JUnit behavior, OpenAPI contract, npm graph, PostgreSQL schema and Flyway V47 unchanged.
+
 # v27.36.2 — Vue Timer Static Contract Compile Coverage Hotfix
 
 - Fixes the Java 17 `testCompile` failure in the timer regression contract by replacing an illegal multiline string literal with whitespace-normalized source matching.

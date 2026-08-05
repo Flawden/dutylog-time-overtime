@@ -1,6 +1,6 @@
-# DutyLog API v27.36.2
+# DutyLog API v27.36.3
 
-`v27.36.2` changes no backend controller, authorization rule, persistence invariant, OpenAPI shape or Flyway migration. It is a test-compile coverage hotfix for the browser-timer regression introduced in `v27.36.1`; the `v27.36.0` Absence & Time Bank runtime remains unchanged; the canonical generated contract remains 98 operations and 103 schemas.
+`v27.36.3` changes no backend controller, authorization rule, persistence invariant, OpenAPI shape or Flyway migration. It hardens GitHub Actions artifact publication against storage-quota exhaustion while preserving the `v27.36.0` Absence & Time Bank runtime and the canonical generated contract at 98 operations and 103 schemas.
 
 The generated browser contract now contains **98 operations and 103 schemas**. Array items and `allOf` inheritance are emitted accurately for overtime credits, usages, allocations and absence preview rows. Spring Boot remains the source of truth for validation, ownership, FIFO, closed periods and compensation state.
 

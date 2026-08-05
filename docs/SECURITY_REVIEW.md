@@ -1,6 +1,13 @@
 # DutyLog security review
 
-Status: v27.36.2.
+Status: v27.36.3.
+
+## v27.36.3 CI artifact quota resilience review
+
+- Scope is GitHub Actions report publication, static workflow contracts, release identity and documentation.
+- Artifact upload failures are tolerated only after the blocking build/test command has completed; frontend, Maven, Playwright, image and migration-smoke failures remain fatal.
+- No credential, token, permission, deployment environment, runtime request, authentication, authorization, session, CSRF or persistence behavior changes.
+- Short retention and compact JaCoCo payloads reduce storage exposure; run/attempt-qualified names prevent rerun collisions.
 
 ## v27.36.2 Vue timer static-contract compile-coverage review
 

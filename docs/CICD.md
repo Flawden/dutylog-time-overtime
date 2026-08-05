@@ -1,6 +1,12 @@
 # DutyLog CI/CD
 
-Status: v27.36.2.
+Status: v27.36.3.
+
+## v27.36.3 CI Artifact Quota Resilience delivery boundary
+
+Validation artifacts are diagnostic outputs, not release authority. JaCoCo publication is limited to `jacoco.xml` and `jacoco.csv`; Playwright HTML/results are uploaded only after a failure. Both upload steps are short-lived, run/attempt-qualified and `continue-on-error`, so exhausted GitHub artifact storage cannot skip release checks, immutable image build, clean PostgreSQL smoke or staging deployment.
+
+The actual quality gates remain blocking: frontend typecheck/tests/build, Maven verify, release static checks, Playwright execution, Docker build, migration smoke and deployment. Only report persistence is best-effort.
 
 ## v27.36.2 Vue Timer Static Contract Compile Coverage delivery boundary
 

@@ -1,10 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.36.2 — Vue Timer Static Contract Compile Coverage Hotfix**.
+Current release: **v27.36.3 — CI Artifact Quota Resilience Hotfix**.
 
 
 
-## v27.36.2 — Vue Timer Static Contract Compile Coverage Hotfix — current
+## v27.36.3 — CI Artifact Quota Resilience Hotfix — current
+
+- Keep report persistence diagnostic and non-blocking when GitHub artifact storage is exhausted.
+- Upload only compact JaCoCo XML/CSV with three-day retention and unique run/attempt names.
+- Upload Playwright reports only for failed CI/staging runs with missing-file tolerance.
+- Preserve all blocking frontend, Maven, Playwright, Docker, migration-smoke and deployment gates.
+- Change no runtime, API, OpenAPI, npm graph, PostgreSQL schema or Flyway migration.
+
+## v27.36.2 — Vue Timer Static Contract Compile Coverage Hotfix — completed stabilization predecessor
 
 - Repair the Java 17 multiline-string syntax failure in the browser timer regression contract.
 - Promote the timer regression to the `*FrontendContractTest.java` compile-gated naming convention.

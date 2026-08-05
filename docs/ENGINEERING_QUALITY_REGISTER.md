@@ -1,9 +1,9 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.36.2
+release_foundation: v27.36.3
 created: 2026-08-04
-updated: 2026-08-04
+updated: 2026-08-05
 ---
 
 # DutyLog — Engineering Quality Register
@@ -56,6 +56,10 @@ updated: 2026-08-04
 | ADR-008 | Production source maps and frontend diagnostics | `v27.39.0` |
 | ADR-009 | Vue Router final URL strategy and legacy hash retirement | `v27.40.0` |
 | ADR-010 | Expand/contract database migration and rollback compatibility | до `v27.45.0` |
+
+## Delivery reliability note — v27.36.3
+
+GitHub Actions artifact uploads are best-effort diagnostics: compact JaCoCo XML/CSV and failure-only Playwright reports use short retention and cannot block the release chain. Build, test, browser, image, migration-smoke and deployment gates remain mandatory and fail-closed.
 
 ## Milestone gates
 

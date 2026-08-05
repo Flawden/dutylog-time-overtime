@@ -63,14 +63,16 @@ jobs:
         run: npm run test:e2e
 
       - name: Upload Playwright report
-        if: always()
+        if: failure()
+        continue-on-error: true
         uses: actions/upload-artifact@v4
         with:
-          name: staging-playwright-report
+          name: staging-playwright-report-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             playwright-report
             test-results
-          if-no-files-found: warn
+          if-no-files-found: ignore
+          retention-days: 3
 
   build-image:
     needs: validate

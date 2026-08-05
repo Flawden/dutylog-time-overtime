@@ -1,6 +1,15 @@
 # Release checklist
 
-Status: v27.36.2.
+Status: v27.36.3.
+
+## v27.36.3 CI Artifact Quota Resilience Hotfix acceptance
+
+- [ ] JaCoCo upload contains only `jacoco.xml` and `jacoco.csv`, uses three-day retention and cannot fail the job.
+- [ ] CI and staging Playwright artifacts upload only after a failure, tolerate missing files and cannot fail the job.
+- [ ] Artifact names include both `github.run_id` and `github.run_attempt`.
+- [ ] Release static checks, Docker image build and clean PostgreSQL smoke still execute after an artifact upload error.
+- [ ] Full frontend, Maven/JUnit, 45 Playwright scenarios, Docker, clean PostgreSQL and staging are green.
+- [ ] No runtime, API, OpenAPI, npm graph, schema, Flyway or domain-ownership change.
 
 ## v27.36.2 Vue Timer Static Contract Compile Coverage Hotfix acceptance
 
@@ -379,6 +388,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.36.2 -m "v27.36.2 — Vue Timer Static Contract Compile Coverage Hotfix"
-git push origin v27.36.2
+git tag -a v27.36.3 -m "v27.36.3 — CI Artifact Quota Resilience Hotfix"
+git push origin v27.36.3
 ```

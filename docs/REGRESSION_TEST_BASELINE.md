@@ -1,13 +1,23 @@
 # DutyLog regression test baseline
 
-Status: v27.36.2.
+Status: v27.36.3.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.36.2 repairs and compile-gates the browser timer regression contract while preserving the v27.36.1 timer implementation and v27.36.0 domain behavior. The application baseline remains 143 Java test classes / 689 `@Test` methods / 45 Chromium Playwright scenarios / 26 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.36.3 makes report persistence quota-resilient while preserving every blocking quality gate and the v27.36.0 domain behavior. The application baseline advances to 144 Java test classes / 694 `@Test` methods / 45 Chromium Playwright scenarios / 26 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.36.3 CI Artifact Quota Resilience extension
+
+- Java test classes: 144.
+- `@Test` methods: 694.
+- Playwright scenarios: 45.
+- Vitest cases: 26.
+- Flyway remains V47.
+- Adds five static workflow contracts for compact/non-blocking JaCoCo and failure-only Playwright artifacts.
+- Changes no runtime, API, OpenAPI, dependency graph, schema or domain ownership.
 
 ## v27.36.2 Vue Timer Static Contract Compile Coverage extension
 
