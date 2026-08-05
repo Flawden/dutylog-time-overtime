@@ -1,8 +1,8 @@
 # DutyLog security review
 
-Status: v27.36.6.
+Status: v27.36.7.
 
-## v27.36.6 usage-date chart parity review
+## v27.36.7 usage-date chart parity review
 
 No authorization, CSRF, session, ownership, secret, image-signing, API or database boundary changes. The release only changes client-side chart grouping over already owner-scoped account read models; CI routing remains the v27.36.5 single-pass boundary with full blocking staging validation.
 

@@ -1,12 +1,20 @@
 # DutyLog regression test baseline
 
-Status: v27.36.6.
+Status: v27.36.7.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.36.6 closes the remaining usage-date chart parity gap after the exact v27.36.5 run reached 44/45 Chromium. The application baseline advances to 147 Java test classes / 715 `@Test` methods / 45 Chromium Playwright scenarios / 31 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.36.7 keeps the canonical overtime account stable during period toggles after the exact v27.36.6 run remained at 44/45 Chromium. The application baseline advances to 148 Java test classes / 721 `@Test` methods / 45 Chromium Playwright scenarios / 33 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
+
+
+## v27.36.7 Time Bank Period Toggle Snapshot Stability extension
+
+- Month/year toggles use a period-only loader and do not replace credits, usages or balance.
+- Three store Vitest cases bind account identity, toggle-race ownership and full-refresh supersession.
+- Six compile-gated Java contracts preserve the partial-load boundary and strict Chromium locator.
+- Baseline: 148 Java classes / 721 `@Test` methods / 45 Playwright scenarios / 33 Vitest cases / Flyway V47.
 
 
 ## v27.36.6 Time Bank Usage-Date Chart Parity extension

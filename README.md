@@ -1,3 +1,11 @@
+# v27.36.7 — Time Bank Period Toggle Snapshot Stability Hotfix
+
+- Stops month/year toggles from reloading and replacing the canonical overtime account snapshot.
+- Adds a period-only loader for compensation, integrity and actual-work ranges while preserving credits, usages and balance in memory.
+- Uses one shared read sequence so fast toggles and later full refreshes cannot let stale responses win.
+- Adds store/Vitest coverage for account identity stability, month/year races and full-refresh supersession.
+- Preserves the strict 45-scenario Chromium contract, single-pass staging validation, backend API, OpenAPI, PostgreSQL schema and Flyway V47.
+
 # v27.36.6 — Time Bank Usage-Date Chart Parity Hotfix
 
 - Closes the final deterministic Chromium parity failure from v27.36.5: Time Bank chart usage bars are now bucketed by the actual `usageDate`, while earned bars remain bucketed by credit `workedDate`.

@@ -24,9 +24,19 @@ function loaded(label: string, balanceHours = 8) {
   } as unknown as Awaited<ReturnType<AbsenceTimeBankApi["load"]>>;
 }
 
+function periodLoaded(label: string) {
+  return {
+    compensation: { label },
+    integrity: { from: "2026-08-01", to: "2026-08-31", healthy: true, reservedMinutes: 0, postedMinutes: 0, reversedMinutes: 0, orphanUsageCount: 0, allocationMismatchCount: 0, issues: [], entries: [], periods: [] },
+    actualWork: [],
+    range: { from: "2026-08-01", to: "2026-08-31" },
+  } as unknown as Awaited<ReturnType<AbsenceTimeBankApi["loadPeriod"]>>;
+}
+
 function mockApi(overrides: Partial<AbsenceTimeBankApi> = {}): AbsenceTimeBankApi {
   return {
     load: vi.fn().mockResolvedValue(loaded("Time off")),
+    loadPeriod: vi.fn().mockResolvedValue(periodLoaded("Month")),
     previewAbsence: vi.fn().mockResolvedValue({ durationMinutes: 240 }),
     createAbsence: vi.fn().mockResolvedValue({ id: 1 }),
     updateAbsence: vi.fn().mockResolvedValue({ id: 1 }),
@@ -153,21 +163,75 @@ describe("absence and time-bank store concurrency", () => {
     restore();
   });
 
-  it("switches the ledger period immediately while the refreshed model is loading", async () => {
-    const pending = deferred<ReturnType<typeof loaded>>();
-    const load = vi.fn().mockReturnValue(pending.promise);
-    const api = mockApi({ load });
+  it("switches the ledger period immediately without replacing the canonical account snapshot", async () => {
+    const pending = deferred<ReturnType<typeof periodLoaded>>();
+    const load = vi.fn().mockResolvedValue(loaded("Initial"));
+    const loadPeriod = vi.fn().mockReturnValue(pending.promise);
+    const api = mockApi({ load, loadPeriod });
     const restore = installAbsenceTimeBankApiForTests(api);
     const store = useAbsenceTimeBankStore();
-    store.loaded = true;
-    store.rangeMode = "year";
+    await store.refresh("2026-08-05", "year");
+    const account = store.account;
 
     const request = store.setRangeMode("month");
     expect(store.rangeMode).toBe("month");
+    expect(store.account).toBe(account);
+    expect(load).toHaveBeenCalledTimes(1);
+    expect(loadPeriod).toHaveBeenCalledWith("month");
 
-    pending.resolve(loaded("Monthly"));
+    pending.resolve(periodLoaded("Monthly"));
     await request;
     expect(store.rangeMode).toBe("month");
+    expect(store.account).toBe(account);
+    expect(load).toHaveBeenCalledTimes(1);
+    restore();
+  });
+
+  it("keeps the newest period response when month and year toggles race", async () => {
+    const month = deferred<ReturnType<typeof periodLoaded>>();
+    const year = deferred<ReturnType<typeof periodLoaded>>();
+    const loadPeriod = vi.fn().mockReturnValueOnce(month.promise).mockReturnValueOnce(year.promise);
+    const api = mockApi({ loadPeriod });
+    const restore = installAbsenceTimeBankApiForTests(api);
+    const store = useAbsenceTimeBankStore();
+    await store.refresh("2026-08-05", "year");
+    const account = store.account;
+
+    const monthRequest = store.setRangeMode("month");
+    const yearRequest = store.setRangeMode("year");
+    year.resolve({
+      ...periodLoaded("Year"),
+      range: { from: "2026-01-01", to: "2026-12-31" },
+    });
+    await yearRequest;
+    month.resolve(periodLoaded("Month"));
+    await monthRequest;
+
+    expect(store.rangeMode).toBe("year");
+    expect(store.range).toEqual({ from: "2026-01-01", to: "2026-12-31" });
+    expect(store.account).toBe(account);
+    restore();
+  });
+
+  it("lets a later full refresh supersede an in-flight period-only request", async () => {
+    const period = deferred<ReturnType<typeof periodLoaded>>();
+    const load = vi.fn()
+      .mockResolvedValueOnce(loaded("Initial", 1))
+      .mockResolvedValueOnce(loaded("Fresh", 12));
+    const api = mockApi({ load, loadPeriod: vi.fn().mockReturnValue(period.promise) });
+    const restore = installAbsenceTimeBankApiForTests(api);
+    const store = useAbsenceTimeBankStore();
+    await store.refresh("2026-08-05", "year");
+
+    const periodRequest = store.setRangeMode("month");
+    const fullRefresh = store.refresh("2026-08-06", "year");
+    await fullRefresh;
+    period.resolve(periodLoaded("Stale month"));
+    await periodRequest;
+
+    expect(store.rangeMode).toBe("year");
+    expect(store.account?.balanceHours).toBe(12);
+    expect(store.planner?.types[0]?.name).toBe("Fresh");
     restore();
   });
 

@@ -210,3 +210,16 @@ The exact v27.36.5 run passed 44/45 scenarios and isolated the final determinist
 - changes no domain owner, backend endpoint, OpenAPI schema, PostgreSQL schema or Flyway migration.
 
 Acceptance remains conditional on the exact Node 20, Maven, 45-scenario Chromium, immutable-image and clean-PostgreSQL staging path.
+
+
+## Period-toggle snapshot stability follow-up — v27.36.7
+
+The exact v27.36.6 run remained at 44/45 because a month/year toggle reloaded the whole workspace and replaced the canonical overtime account. v27.36.7:
+
+- introduces a period-only loader for compensation, integrity and actual-work projections;
+- preserves credits, usages, balance, planner and scenarios during presentation-only toggles;
+- shares one latest-read-wins sequence between full and period-only reads;
+- keeps explicit refresh and mutation refreshes authoritative;
+- changes no domain owner, backend endpoint, OpenAPI schema, PostgreSQL schema or Flyway migration.
+
+Acceptance remains conditional on exact Node 20, Maven, 45-scenario Chromium, immutable-image and clean-PostgreSQL staging.

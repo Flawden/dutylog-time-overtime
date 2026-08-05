@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.36.6
+release_foundation: v27.36.7
 created: 2026-08-04
 updated: 2026-08-05
 ---
@@ -56,6 +56,14 @@ updated: 2026-08-05
 | ADR-008 | Production source maps and frontend diagnostics | `v27.39.0` |
 | ADR-009 | Vue Router final URL strategy and legacy hash retirement | `v27.40.0` |
 | ADR-010 | Expand/contract database migration and rollback compatibility | до `v27.45.0` |
+
+## Period-toggle snapshot stability note — v27.36.7
+
+- Presentation-only month/year toggles never replace the canonical overtime account.
+- Period-dependent summaries load separately and remain fail-closed.
+- Full refreshes and rapid toggles share one latest-read-wins sequence.
+- Acceptance remains blocked on exact 45/45 Chromium, immutable image and staging.
+
 
 ## Usage-date chart parity note — v27.36.6
 

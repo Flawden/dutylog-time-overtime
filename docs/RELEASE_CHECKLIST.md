@@ -1,14 +1,23 @@
 # Release checklist
 
-Status: v27.36.6.
+Status: v27.36.7.
 
-## v27.36.6 Time Bank Usage-Date Chart Parity Hotfix acceptance
+## v27.36.7 Time Bank Period Toggle Snapshot Stability Hotfix acceptance
 
 - [ ] `frontend-gate.sh` passes on exact Node/npm.
 - [ ] Maven verify and JaCoCo thresholds pass.
-- [ ] All 45 Chromium scenarios pass, including the standalone usage-date chart column.
+- [ ] All 45 Chromium scenarios pass, including the usage-date column after year/month toggles.
+- [ ] Month/year toggles do not issue another overtime-account request or replace the canonical account snapshot.
 - [ ] Push to `test` remains single-pass through staging validation.
 - [ ] Immutable image passes clean PostgreSQL smoke and deploys.
+
+## v27.36.6 Time Bank Usage-Date Chart Parity Hotfix acceptance
+
+- [x] Earned chart buckets use credit work dates.
+- [x] Used chart buckets use actual usage dates.
+- [x] `credit.usedHours` is excluded from dated chart aggregation.
+- [x] Daily and yearly model contracts pass.
+- [ ] Exact 45/45 Chromium acceptance was not reached because the period toggle replaced the canonical account snapshot.
 
 ## v27.36.5 Single-Pass CI & Final Vue Browser Parity Hotfix acceptance
 
@@ -416,6 +425,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.36.6 -m "v27.36.6 — Time Bank Usage-Date Chart Parity Hotfix"
-git push origin v27.36.6
+git tag -a v27.36.7 -m "v27.36.7 — Time Bank Period Toggle Snapshot Stability Hotfix"
+git push origin v27.36.7
 ```

@@ -29,33 +29,44 @@ async function optional<T>(request: Promise<T | null>, fallback: T): Promise<T> 
 }
 
 export function createAbsenceTimeBankApi(client: DutyLogGeneratedApiClient = createGeneratedDutyLogApiClient()) {
+  async function loadPeriod(rangeMode: LedgerRangeMode = "month") {
+    const range = dateRange(rangeMode);
+    const compensationRequest = client.request("timeCompensationSummary", { query: range });
+    const integrityRequest = client.request("inspectLedgerIntegrity", { query: range });
+    const actualWorkRequest = optional(client.request("listActualWorkIntervals", { query: range }), []);
+    const [compensation, integrity, actualWork] = await Promise.all([
+      compensationRequest,
+      integrityRequest,
+      actualWorkRequest,
+    ]);
+    return {
+      compensation,
+      integrity: asLedgerIntegrity(integrity, range),
+      actualWork: asActualWorkIntervals(actualWork),
+      range,
+    };
+  }
+
   return Object.freeze({
     async load(referenceDate?: string, rangeMode: LedgerRangeMode = "month") {
-      const range = dateRange(rangeMode);
       const plannerRequest = client.request("getVacationPlanner", { query: { referenceDate } });
       const accountRequest = client.request("overtimeAccount");
-      const compensationRequest = client.request("timeCompensationSummary", { query: range });
-      const integrityRequest = client.request("inspectLedgerIntegrity", { query: range });
-      const actualWorkRequest = optional(client.request("listActualWorkIntervals", { query: range }), []);
+      const periodRequest = loadPeriod(rangeMode);
       const scenarioRequest = optional(client.request("quickScenarios"), []);
-      const [planner, account, compensation, integrity, actualWork, scenarios] = await Promise.all([
+      const [planner, account, period, scenarios] = await Promise.all([
         plannerRequest,
         accountRequest,
-        compensationRequest,
-        integrityRequest,
-        actualWorkRequest,
+        periodRequest,
         scenarioRequest,
       ]);
       return {
         planner: asVacationPlanner(planner),
         account: asOvertimeAccount(account),
-        compensation,
-        integrity: asLedgerIntegrity(integrity, range),
-        actualWork: asActualWorkIntervals(actualWork),
+        ...period,
         scenarios: asQuickScenarios(scenarios),
-        range,
       };
     },
+    loadPeriod,
     previewAbsence(body: AbsencePreviewInput, signal?: AbortSignal) {
       return client.request("previewAbsence", { body, ...(signal ? { signal } : {}) });
     },

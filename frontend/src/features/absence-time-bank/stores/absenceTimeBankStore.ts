@@ -40,7 +40,7 @@ import {
 let api: AbsenceTimeBankApi = createAbsenceTimeBankApi();
 let previewController: AbortController | null = null;
 let creditPreviewController: AbortController | null = null;
-let refreshSequence = 0;
+let readSequence = 0;
 
 export function installAbsenceTimeBankApiForTests(next: AbsenceTimeBankApi): () => void {
   const previous = api;
@@ -109,12 +109,12 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
   actions: {
     async refresh(referenceDate: string = todayIso(), rangeMode?: LedgerRangeMode): Promise<void> {
       const resolvedRangeMode = rangeMode ?? this.rangeMode;
-      const sequence = ++refreshSequence;
+      const sequence = ++readSequence;
       this.loading = true;
       this.error = "";
       try {
         const result = await api.load(referenceDate, resolvedRangeMode);
-        if (sequence !== refreshSequence) return;
+        if (sequence !== readSequence) return;
         this.planner = result.planner;
         this.account = result.account;
         this.compensation = result.compensation;
@@ -132,9 +132,9 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
           });
         }
       } catch (error) {
-        if (sequence === refreshSequence) this.error = this.errorMessage(error);
+        if (sequence === readSequence) this.error = this.errorMessage(error);
       } finally {
-        if (sequence === refreshSequence) this.loading = false;
+        if (sequence === readSequence) this.loading = false;
       }
     },
     async ensureLoaded(): Promise<void> {
@@ -143,7 +143,26 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
     async setRangeMode(mode: LedgerRangeMode): Promise<void> {
       if (this.rangeMode === mode && this.loaded) return;
       this.rangeMode = mode;
-      await this.refresh(todayIso(), mode);
+      if (!this.loaded) {
+        await this.refresh(todayIso(), mode);
+        return;
+      }
+
+      const sequence = ++readSequence;
+      this.loading = true;
+      this.error = "";
+      try {
+        const result = await api.loadPeriod(mode);
+        if (sequence !== readSequence || this.rangeMode !== mode) return;
+        this.compensation = result.compensation;
+        this.integrity = result.integrity;
+        this.actualWork = result.actualWork;
+        this.range = result.range;
+      } catch (error) {
+        if (sequence === readSequence) this.error = this.errorMessage(error);
+      } finally {
+        if (sequence === readSequence) this.loading = false;
+      }
     },
     openGuide(): void { this.guideOpen = true; },
     closeGuide(): void { this.guideOpen = false; },
