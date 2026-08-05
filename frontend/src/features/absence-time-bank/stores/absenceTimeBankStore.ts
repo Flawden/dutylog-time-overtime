@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import { DutyLogApiError } from "@/platform/api/httpClient";
 import { useShellStore } from "@/app/shellStore";
+import { publishAbsenceTimeBankProjection } from "@/platform/bridge/legacyBridge";
 import { createAbsenceTimeBankApi, type AbsenceTimeBankApi } from "../api/absenceTimeBankApi";
 import type {
   AbsenceComposerOpenOptions,
@@ -123,6 +124,13 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
         this.range = result.range;
         this.rangeMode = resolvedRangeMode;
         this.loaded = true;
+        if (typeof window !== "undefined") {
+          publishAbsenceTimeBankProjection(window, {
+            planner: this.planner,
+            account: this.account,
+            referenceDate,
+          });
+        }
       } catch (error) {
         if (sequence === refreshSequence) this.error = this.errorMessage(error);
       } finally {

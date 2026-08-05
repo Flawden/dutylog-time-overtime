@@ -1,6 +1,10 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.36.3.
+Status: Vue app-shell ownership v1, DutyLog v27.36.4.
+
+## Absence/Time Bank browser parity (v27.36.4)
+
+Vue emits `dutylog:absence-time-bank-projection` after a winning authoritative refresh. The legacy adapter consumes only planner/account read projections for Calendar, Today and selected-day panels; retired Vacation/Overtime route renderers are not called. Modal launches from Today/Calendar preserve route context, while explicit domain launches still navigate.
 
 ## CI artifact quota resilience (v27.36.3)
 

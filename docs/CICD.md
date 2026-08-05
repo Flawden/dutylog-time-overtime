@@ -1,6 +1,12 @@
 # DutyLog CI/CD
 
-Status: v27.36.3.
+Status: v27.36.4.
+
+## v27.36.4 Browser parity delivery boundary
+
+- The 45-scenario Playwright gate remains blocking and strict.
+- Projection synchronization, unique DOM ownership and route preservation are covered by Vitest/source-only Java contracts before Chromium.
+- No artifact-upload exception can bypass frontend, Maven, browser, image or clean-migration gates.
 
 ## v27.36.3 CI Artifact Quota Resilience delivery boundary
 

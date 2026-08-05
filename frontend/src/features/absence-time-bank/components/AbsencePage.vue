@@ -81,7 +81,7 @@ async function openTimeBank(period: AbsencePeriod | null = null): Promise<void> 
           <div class="absence-row__actions">
             <UiButton v-if="period.linkedOvertimeUsageId" size="sm" :data-bank-absence="period.id" @click="openTimeBank(period)">Посмотреть списание</UiButton>
             <UiButton size="sm" :data-edit-absence="period.id" @click="store.openAbsenceEditor(Number(period.id))">Изменить</UiButton>
-            <UiButton size="sm" variant="danger" :data-delete-absence="period.id" @click="store.deleteAbsence(Number(period.id))">Удалить</UiButton>
+            <UiButton size="sm" variant="danger" :data-delete-absence-row="period.id" @click="store.deleteAbsence(Number(period.id))">Удалить</UiButton>
           </div>
         </article>
       </div>

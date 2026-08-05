@@ -1,10 +1,20 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.36.3 — CI Artifact Quota Resilience Hotfix**.
+Current release: **v27.36.4 — Vue Absence & Time Bank Browser Parity Hotfix**.
 
 
 
-## v27.36.3 — CI Artifact Quota Resilience Hotfix — current
+## v27.36.4 — Vue Absence & Time Bank Browser Parity Hotfix — current
+
+- [x] Retire the duplicate legacy Time Bank guide modal and backdrop.
+- [x] Publish winning Vue planner/account refreshes to remaining Calendar, Today and selected-day projections.
+- [x] Preserve Today/Calendar routes for modal-only composer launches.
+- [x] Own edit deletion inside the visible Vue modal.
+- [x] Restore Time Bank overview ratio/FIFO insight parity.
+- [x] Delegate selected-day absence editing through the public Vue domain adapter.
+- [x] Add Vitest and source-only Java guards without weakening Playwright.
+
+## v27.36.3 — CI Artifact Quota Resilience Hotfix — completed stabilization predecessor
 
 - Keep report persistence diagnostic and non-blocking when GitHub artifact storage is exhausted.
 - Upload only compact JaCoCo XML/CSV with three-day retention and unique run/attempt names.

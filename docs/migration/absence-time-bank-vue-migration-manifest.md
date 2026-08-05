@@ -5,7 +5,7 @@ owner: "DutyLog"
 target_release: "v27.36.0"
 legacy_removal_release: "v27.36.0"
 created: "2026-08-04"
-updated: "2026-08-04"
+updated: "2026-08-05"
 ---
 
 # Absence & Time Bank Vue migration manifest
@@ -173,3 +173,16 @@ PWA impact: versioned Vue assets only; no offline mutation queue.
 Rollback impact: image rollback only; no schema/data migration.
 Known limitations: physical deletion of dead ordered-script blocks waits for final legacy retirement after their remaining callers migrate.
 ```
+
+## Browser parity follow-up — v27.36.4
+
+The first complete Chromium run after migration reached all 45 scenarios and exposed eight deterministic presentation-parity gaps. v27.36.4 closes them without changing the migration owner or backend contract:
+
+- retired legacy guide DOM is physically removed;
+- Vue publishes winning planner/account refreshes to remaining legacy projections;
+- Today/Calendar modal launches preserve route context;
+- edit deletion is owned by the visible Vue modal;
+- Time Bank overview exposes ratio and next FIFO source;
+- selected-day absence actions delegate to the Vue editor.
+
+Full acceptance remains conditional on green exact CI, Chromium, Docker, clean PostgreSQL and staging.

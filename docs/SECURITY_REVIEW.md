@@ -1,6 +1,13 @@
 # DutyLog security review
 
-Status: v27.36.3.
+Status: v27.36.4.
+
+## v27.36.4 Vue Absence & Time Bank browser-parity review
+
+- The new bridge event carries owner-scoped read models already returned to the authenticated browser; it adds no endpoint, origin, credential, token or persistence path.
+- Vue remains the only mutable domain presentation owner. Legacy receives a one-way projection and cannot write domain state through the event.
+- Route preservation and modal deletion do not alter authorization, CSRF, session, ownership, closed-period or FIFO enforcement.
+- No OpenAPI, PostgreSQL, Flyway, CSP, cookie or secret-handling change is introduced.
 
 ## v27.36.3 CI artifact quota resilience review
 

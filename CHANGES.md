@@ -1,3 +1,12 @@
+# v27.36.4 — Vue Absence & Time Bank Browser Parity Hotfix
+
+- Completes browser parity for the first Vue domain after the 45-scenario Chromium run reached the migrated Absence and Time Bank runtime and exposed eight deterministic ownership/projection gaps.
+- Removes the retired legacy Time Bank guide modal, preserves Today/Calendar routes for modal launches and moves absence deletion into the visible Vue edit modal.
+- Publishes a typed post-refresh projection event so the still-legacy Calendar, Today and selected-day panels update after Vue absence/credit mutations without restoring legacy route ownership.
+- Exposes usage ratio and oldest FIFO credit on the Time Bank overview, keeps period insights on Credits and delegates selected-day absence editing to the Vue domain owner.
+- Adds Vitest and Java static contracts for projection publication, route preservation, unique global IDs, visible modal deletion and one-way Vue-to-legacy projection synchronization.
+- Changes no Spring Boot business rules, OpenAPI shape, npm dependency graph, PostgreSQL schema or Flyway migration.
+
 # v27.36.3 — CI Artifact Quota Resilience Hotfix
 
 - Makes JaCoCo and Playwright artifact publication non-blocking so a GitHub storage-quota exhaustion cannot stop static checks, image build, clean PostgreSQL smoke or deployment.

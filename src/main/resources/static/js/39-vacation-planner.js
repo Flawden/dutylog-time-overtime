@@ -426,7 +426,9 @@ function renderVacationDay(){
       <span class="vacationDayIcon">${item.coverage === "FULL_DAY" ? "●" : item.coverage === "HOURS_ONLY" ? "◷" : "◴"}</span>
       <span class="vacationDayPlanFact"><small>${esc(t("Фактически"))}</small><b>${esc(absenceDisplayTitle(item))}</b><em>${esc(absenceTimeLabel(item))} · ${esc(absenceCompensationLabel(item.compensationPolicy))}</em>${item.plannedShiftName ? `<small>${esc(t("По графику"))}: ${esc(item.plannedShiftName)}${item.plannedShiftMinutes ? ` · ${esc(minutesLabel(item.plannedShiftMinutes))}` : ""}</small>` : ""}</span><i>›</i>
     </button>`).join("") : `<div class="dayPanelHint">${esc(t("На этот день отсутствие не запланировано."))}</div>`;
-  box.querySelectorAll("[data-day-absence]").forEach(button => button.addEventListener("click", () => editAbsence(Number(button.dataset.dayAbsence))));
+  box.querySelectorAll("[data-day-absence]").forEach(button => button.addEventListener("click", () => {
+    openAbsenceEditor(Number(button.dataset.dayAbsence), { source:"calendar" }).catch(console.error);
+  }));
 }
 
 function syncVacationCoverage(){
@@ -517,7 +519,9 @@ async function openAbsenceEditor(id, { source = "vacation" } = {}){
   await previewVacationDraft();
   return true;
 }
-function editAbsenceFromOccurrence(occurrence){ location.hash = "#vacation"; loadVacationPlanner(false).then(() => editAbsence(occurrence.periodId)).catch(console.error); }
+function editAbsenceFromOccurrence(occurrence){
+  openAbsenceEditor(Number(occurrence?.periodId), { source:"calendar" }).catch(console.error);
+}
 
 function readVacationDraft(){
   const coverage = $("vacationCoverage")?.value || "FULL_DAY";

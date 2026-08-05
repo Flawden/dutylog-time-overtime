@@ -1,5 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
-import { createLegacyBridge, LEGACY_COMMAND_EVENT, LEGACY_STATE_EVENT } from "./legacyBridge";
+import {
+  ABSENCE_TIME_BANK_PROJECTION_EVENT,
+  createLegacyBridge,
+  LEGACY_COMMAND_EVENT,
+  LEGACY_STATE_EVENT,
+  publishAbsenceTimeBankProjection,
+} from "./legacyBridge";
 
 function fakeWindow(): Window {
   return new EventTarget() as unknown as Window;
@@ -7,7 +13,7 @@ function fakeWindow(): Window {
 
 function snapshot(route = "calendar"): DutyLogLegacySnapshot {
   return {
-    version: "27.36.3",
+    version: "27.36.4",
     language: "ru",
     route,
     online: true,
@@ -27,7 +33,7 @@ describe("legacy bridge", () => {
     const retireDomainOwners = vi.fn();
     const subscribe = vi.fn(() => vi.fn());
     target.DutyLogLegacyPlatform = {
-      version: "27.36.3",
+      version: "27.36.4",
       snapshot: () => snapshot(),
       navigate,
       openModal,
@@ -69,6 +75,28 @@ describe("legacy bridge", () => {
       { type: "open-modal", id: "taskEditModal", focusId: null },
       { type: "logout" },
     ]);
+  });
+
+
+  it("publishes immutable Absence and Time Bank projections to the remaining legacy surfaces", () => {
+    const target = fakeWindow();
+    const listener = vi.fn();
+    const planner = Object.freeze({ occurrences: Object.freeze([{ id: 14 }]) });
+    const account = Object.freeze({ availableMinutes: 420 });
+
+    target.addEventListener(ABSENCE_TIME_BANK_PROJECTION_EVENT, listener);
+    publishAbsenceTimeBankProjection(target, {
+      planner,
+      account,
+      referenceDate: "2026-08-05",
+    });
+
+    expect(listener).toHaveBeenCalledOnce();
+    expect((listener.mock.calls[0]?.[0] as CustomEvent).detail).toEqual({
+      planner,
+      account,
+      referenceDate: "2026-08-05",
+    });
   });
 
   it("subscribes to immutable legacy state events before the adapter is ready", () => {

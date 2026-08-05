@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.36.3"
+const DUTYLOG_VERSION = "27.36.4"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -203,6 +203,31 @@ function publishLegacyPlatformState(){
   window.dispatchEvent(new CustomEvent(LEGACY_STATE_EVENT, { detail:legacyPlatformSnapshot() }));
 }
 
+const ABSENCE_TIME_BANK_PROJECTION_EVENT = "dutylog:absence-time-bank-projection";
+function synchronizeLegacyAbsenceTimeBankProjection(snapshot){
+  const planner = snapshot?.planner;
+  const account = snapshot?.account;
+  if (planner && typeof planner === "object") {
+    state.vacationPlanner = planner;
+    state.absenceOccurrences = Array.isArray(planner.occurrences) ? planner.occurrences : [];
+    if (typeof rebuildAbsenceIndex === "function") rebuildAbsenceIndex(state.absenceOccurrences);
+  }
+  if (account && typeof account === "object") state.overtimeAccount = account;
+
+  // Refresh only legacy projection surfaces that still own Calendar, Today and
+  // the selected-day panel. Never render the retired Vacation/Overtime pages
+  // into Vue-owned DOM IDs.
+  if (typeof renderVacationDay === "function") renderVacationDay();
+  if (typeof renderOvertimeDayDetails === "function") renderOvertimeDayDetails();
+  if (typeof updateOvertimeBalanceLabel === "function") updateOvertimeBalanceLabel();
+  if (typeof renderCalendar === "function") renderCalendar();
+  if (typeof updateAccSummaries === "function") updateAccSummaries();
+  if (typeof renderTodayDashboard === "function" && document.body.dataset.view === "today") renderTodayDashboard();
+}
+window.addEventListener(ABSENCE_TIME_BANK_PROJECTION_EVENT, event => {
+  synchronizeLegacyAbsenceTimeBankProjection(event.detail);
+});
+
 window.DutyLogLegacyPlatform = Object.freeze({
   version: DUTYLOG_VERSION,
   snapshot:legacyPlatformSnapshot,
@@ -218,7 +243,11 @@ window.DutyLogLegacyPlatform = Object.freeze({
   },
   retireDomainOwners(domain){
     if (domain !== "absence-time-bank") return;
-    for (const id of ["view-vacation", "view-overtime", "absenceComposerModal", "overtimeCreditModal", "overtimeUsageModal"]) {
+    for (const id of [
+      "view-vacation", "view-overtime",
+      "absenceComposerModal", "overtimeCreditModal", "overtimeUsageModal",
+      "timeBankGuideModal", "timeBankGuideBackdrop",
+    ]) {
       document.getElementById(id)?.remove();
     }
     document.documentElement.setAttribute("data-vue-absence-time-bank", "ready");

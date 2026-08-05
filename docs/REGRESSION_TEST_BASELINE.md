@@ -1,13 +1,20 @@
 # DutyLog regression test baseline
 
-Status: v27.36.3.
+Status: v27.36.4.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.36.3 makes report persistence quota-resilient while preserving every blocking quality gate and the v27.36.0 domain behavior. The application baseline advances to 144 Java test classes / 694 `@Test` methods / 45 Chromium Playwright scenarios / 26 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.36.4 closes the eight deterministic browser-parity gaps exposed by the first complete Absence/Time Bank Chromium run. The application baseline advances to 145 Java test classes / 702 `@Test` methods / 45 Chromium Playwright scenarios / 27 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+## v27.36.4 Vue Absence & Time Bank Browser Parity extension
+
+- One Vitest case proves the typed projection event payload.
+- Eight source-only Java tests bind unique modal ownership, winning-refresh publication, restricted legacy projection rendering, route preservation, visible edit deletion, overview insights and selected-day Vue delegation.
+- Existing 45 Playwright scenarios remain strict; no retry, timeout, locator or page-error policy is weakened.
+- Baseline: 145 Java classes / 702 `@Test` methods / 45 Playwright scenarios / 27 Vitest cases / Flyway V47.
 
 ## v27.36.3 CI Artifact Quota Resilience extension
 

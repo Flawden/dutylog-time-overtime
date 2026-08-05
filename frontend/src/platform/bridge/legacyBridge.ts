@@ -1,6 +1,13 @@
 export const VUE_READY_EVENT = "dutylog:vue-ready";
 export const LEGACY_COMMAND_EVENT = "dutylog:legacy-command";
 export const LEGACY_STATE_EVENT = "dutylog:legacy-state";
+export const ABSENCE_TIME_BANK_PROJECTION_EVENT = "dutylog:absence-time-bank-projection";
+
+export interface AbsenceTimeBankProjectionSnapshot {
+  planner: unknown;
+  account: unknown;
+  referenceDate: string;
+}
 
 export type LegacyCommand =
   | { type: "navigate"; view: string }
@@ -60,4 +67,14 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
 
 export function announceVueReady(target: Window, platform: DutyLogVuePlatform): void {
   target.dispatchEvent(new CustomEvent<DutyLogVuePlatform>(VUE_READY_EVENT, { detail: platform }));
+}
+
+export function publishAbsenceTimeBankProjection(
+  target: Window,
+  snapshot: AbsenceTimeBankProjectionSnapshot,
+): void {
+  target.dispatchEvent(new CustomEvent<AbsenceTimeBankProjectionSnapshot>(
+    ABSENCE_TIME_BANK_PROJECTION_EVENT,
+    { detail: snapshot },
+  ));
 }

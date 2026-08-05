@@ -107,6 +107,8 @@ html[data-vue-absence-time-bank="ready"] :is(#view-vacation, #view-overtime) { d
 .actual-work-item { padding: 8px; display: grid; gap: 3px; border-radius: 9px; background: color-mix(in srgb, var(--panel) 76%, transparent); }
 .actual-work-item span { color: var(--mut); font-size: 12px; }
 .ledger-insights { margin-bottom: 12px; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; }
+.ledger-insights--summary { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.ledger-insights--period { grid-template-columns: minmax(0,1fr); }
 .ledger-insights > div { padding: 11px; display: grid; gap: 4px; border: 1px solid var(--vue-shell-border-soft); border-radius: 12px; background: color-mix(in srgb, var(--panel2) 62%, transparent); }
 .ledger-insights small, .ledger-insights span { color: var(--mut); }
 .ledger-insights strong { font-size: 1.22rem; }

@@ -149,6 +149,13 @@ function typeChanged(): void {
     </div>
     <template #footer>
       <UiButton id="absenceComposerClose" variant="ghost" :disabled="mutationPending" @click="store.closeAbsenceComposer()">Отмена</UiButton>
+      <UiButton
+        v-if="editing && absenceDraft.id"
+        variant="danger"
+        :disabled="mutationPending"
+        :data-delete-absence="absenceDraft.id"
+        @click="store.deleteAbsence(Number(absenceDraft.id))"
+      >Удалить</UiButton>
       <UiButton id="vacationPreviewBtn" variant="secondary" :disabled="previewLoading || mutationPending" @click="store.previewAbsence()">Проверить</UiButton>
       <UiButton id="vacationSaveBtn" variant="primary" :disabled="mutationPending" @click="store.saveAbsence()">
         {{ mutationPending ? 'Сохраняем…' : 'Сохранить' }}

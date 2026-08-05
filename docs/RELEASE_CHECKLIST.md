@@ -1,6 +1,18 @@
 # Release checklist
 
-Status: v27.36.3.
+Status: v27.36.4.
+
+## v27.36.4 Vue Absence & Time Bank Browser Parity Hotfix acceptance
+
+- [x] Duplicate legacy `#timeBankGuideModal` and backdrop are removed after Vue ownership.
+- [x] Winning Vue refresh publishes planner/account/reference-date projection.
+- [x] Calendar, Today and selected-day panels refresh without legacy route renderers.
+- [x] Today/Calendar composer launches preserve the originating route.
+- [x] Edit deletion is inside the visible Vue modal.
+- [x] Usage ratio and oldest FIFO credit are present on Time Bank Overview.
+- [x] Selected-day absence actions delegate to the Vue editor.
+- [x] Static contracts compile through the source-only local Java gate.
+- [ ] Exact Node/npm frontend gate, Maven verify, Chromium, Docker, clean PostgreSQL and staging are green in GitHub Actions.
 
 ## v27.36.3 CI Artifact Quota Resilience Hotfix acceptance
 
@@ -388,6 +400,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.36.3 -m "v27.36.3 — CI Artifact Quota Resilience Hotfix"
-git push origin v27.36.3
+git tag -a v27.36.4 -m "v27.36.4 — Vue Absence & Time Bank Browser Parity Hotfix"
+git push origin v27.36.4
 ```

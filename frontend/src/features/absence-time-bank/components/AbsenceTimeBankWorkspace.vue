@@ -28,7 +28,8 @@ onMounted(() => {
     ready: () => store.loaded,
     refresh: () => store.refresh(),
     openAbsenceComposer: async (options?: AbsenceComposerOpenOptions) => {
-      props.bridge.navigate("vacation");
+      if (options?.source === "vacation") props.bridge.navigate("vacation");
+      if (options?.source === "time-bank") props.bridge.navigate("overtime");
       await store.openAbsenceComposer(options);
     },
     openAbsenceEditor: async (id: number) => {
@@ -36,7 +37,6 @@ onMounted(() => {
       await store.openAbsenceEditor(id);
     },
     openCreditEditor: async (date?: string | null) => {
-      props.bridge.navigate("overtime");
       await store.openCreditEditor(date);
     },
     openTimeBankUsage: async (absenceId?: number | null) => {

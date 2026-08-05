@@ -146,6 +146,11 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
       >{{ tab.label }}</button>
     </nav>
 
+    <div class="ledger-insights ledger-insights--summary" data-time-bank-insights>
+      <div><small>Доля использования</small><strong id="ledgerUsageRatio">{{ ratio }}%</strong><span class="ledger-progress"><i :style="{ width: `${Math.min(100, ratio)}%` }"></i></span></div>
+      <div><small>Следующим спишется</small><strong id="ledgerOldestCredit">{{ formatMinutes(oldestRemaining) }}</strong><span>{{ fifoCredits[0]?.reason || 'Нет открытых начислений' }}</span></div>
+    </div>
+
     <section v-if="timeBankTab === 'overview'" class="domain-panel" data-time-bank-section="overview">
       <header class="domain-panel__header">
         <div><p class="domain-eyebrow">Plan → fact → compensation</p><h2>Сводка периода</h2></div>
@@ -199,9 +204,7 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
         </div>
       </header>
 
-      <div class="ledger-insights">
-        <div><small>Доля использования</small><strong id="ledgerUsageRatio">{{ ratio }}%</strong><span class="ledger-progress"><i :style="{ width: `${Math.min(100, ratio)}%` }"></i></span></div>
-        <div><small>Следующим спишется</small><strong id="ledgerOldestCredit">{{ formatMinutes(oldestRemaining) }}</strong><span>{{ fifoCredits[0]?.reason || 'Нет открытых начислений' }}</span></div>
+      <div class="ledger-insights ledger-insights--period">
         <div><small>Период</small><strong id="ledgerPeriodLabel">{{ periodLabel }}</strong><span>{{ rangeMode === 'year' ? 'по месяцам' : 'по дням' }}</span></div>
       </div>
 

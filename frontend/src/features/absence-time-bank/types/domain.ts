@@ -150,7 +150,7 @@ export interface LedgerChartColumn {
 export interface AbsenceComposerOpenOptions {
   date?: string | null;
   systemCode?: string | null;
-  source?: "vacation" | "calendar" | "today" | "time-bank";
+  source?: "vacation" | "calendar" | "today" | "time-bank" | "overtime" | "quick-add";
   reason?: string | null;
 }
 

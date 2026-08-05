@@ -1,6 +1,10 @@
 # DutyLog architecture
 
-## Active Vue frontend transition — v27.36.3 Absence & Time Bank
+## Active Vue frontend transition — v27.36.4 browser parity
+
+DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains separate. `v27.36.4` keeps Vue as the sole Absence/Time Bank UI owner and adds a one-way typed projection event for the still-legacy Calendar, Today and selected-day views. The event carries authoritative read-model snapshots only after the winning refresh sequence; it never restores legacy Vacation/Overtime page renderers.
+
+## v27.36.3 artifact-quota stabilization predecessor
 
 DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains a separate container. `v27.36.3` preserves the first bounded product-domain migration introduced in `v27.36.0`: Vue remains the only runtime presentation owner for Absence and Time Bank while the ordered legacy screens and modal owners are retired at workspace mount. The hotfix changes only GitHub Actions report-publication policy; browser runtime, domain ownership and deployment topology remain unchanged.
 
