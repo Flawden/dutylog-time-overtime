@@ -2,11 +2,18 @@ export const VUE_READY_EVENT = "dutylog:vue-ready";
 export const LEGACY_COMMAND_EVENT = "dutylog:legacy-command";
 export const LEGACY_STATE_EVENT = "dutylog:legacy-state";
 export const ABSENCE_TIME_BANK_PROJECTION_EVENT = "dutylog:absence-time-bank-projection";
+export const CALENDAR_TIMELINE_PROJECTION_EVENT = "dutylog:calendar-timeline-projection";
 
 export interface AbsenceTimeBankProjectionSnapshot {
   planner: unknown;
   account: unknown;
   referenceDate: string;
+}
+
+export interface CalendarTimelineProjectionSnapshot {
+  bundle: unknown;
+  focusDate: string;
+  mode: "month" | "week" | "day";
 }
 
 export type LegacyCommand =
@@ -20,7 +27,14 @@ export interface LegacyBridge {
   navigate(view: string): void;
   openModal(id: string, focusId?: string | null): void;
   logout(): void;
-  retireDomainOwners(domain: "absence-time-bank"): void;
+  retireDomainOwners(domain: "absence-time-bank" | "calendar-timeline"): void;
+  attachCalendarEditor(hostId: string): void;
+  openCalendarDay(date: string): void;
+  closeCalendarDay(): void;
+  openTaskCreate(date: string): void;
+  openTaskDetails(id: number): void;
+  openQuickActions(date: string): void;
+  openImportantDetails(id: number): void;
   subscribe(listener: (snapshot: DutyLogLegacySnapshot) => void): () => void;
 }
 
@@ -55,6 +69,13 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
     retireDomainOwners(domain) {
       adapter()?.retireDomainOwners?.(domain);
     },
+    attachCalendarEditor(hostId: string) { adapter()?.attachCalendarEditor?.(hostId); },
+    openCalendarDay(date: string) { adapter()?.openCalendarDay?.(date); },
+    closeCalendarDay() { adapter()?.closeCalendarDay?.(); },
+    openTaskCreate(date: string) { adapter()?.openTaskCreate?.(date); },
+    openTaskDetails(id: number) { adapter()?.openTaskDetails?.(id); },
+    openQuickActions(date: string) { adapter()?.openQuickActions?.(date); },
+    openImportantDetails(id: number) { adapter()?.openImportantDetails?.(id); },
     subscribe(listener) {
       const direct = adapter()?.subscribe(listener);
       if (direct) return direct;
@@ -75,6 +96,16 @@ export function publishAbsenceTimeBankProjection(
 ): void {
   target.dispatchEvent(new CustomEvent<AbsenceTimeBankProjectionSnapshot>(
     ABSENCE_TIME_BANK_PROJECTION_EVENT,
+    { detail: snapshot },
+  ));
+}
+
+export function publishCalendarTimelineProjection(
+  target: Window,
+  snapshot: CalendarTimelineProjectionSnapshot,
+): void {
+  target.dispatchEvent(new CustomEvent<CalendarTimelineProjectionSnapshot>(
+    CALENDAR_TIMELINE_PROJECTION_EVENT,
     { detail: snapshot },
   ));
 }

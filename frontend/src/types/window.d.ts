@@ -1,4 +1,5 @@
 import type { DutyLogAbsenceTimeBankDomain } from "@/features/absence-time-bank/types/domain";
+import type { DutyLogCalendarTimelineDomain } from "@/features/calendar-timeline/types/domain";
 
 export {};
 
@@ -26,7 +27,14 @@ declare global {
     navigate(view: string): void;
     openModal(id: string, focusId?: string | null): void;
     logout(): void;
-    retireDomainOwners?(domain: "absence-time-bank"): void;
+    retireDomainOwners?(domain: "absence-time-bank" | "calendar-timeline"): void;
+    attachCalendarEditor?(hostId: string): void;
+    openCalendarDay?(date: string): void;
+    closeCalendarDay?(): void;
+    openTaskCreate?(date: string): void;
+    openTaskDetails?(id: number): void;
+    openQuickActions?(date: string): void;
+    openImportantDetails?(id: number): void;
     subscribe(listener: (snapshot: DutyLogLegacySnapshot) => void): () => void;
   }
 
@@ -60,6 +68,7 @@ declare global {
 
   interface DutyLogVueDomains {
     readonly absenceTimeBank?: DutyLogAbsenceTimeBankDomain;
+    readonly calendarTimeline?: DutyLogCalendarTimelineDomain;
   }
 
   interface Window {

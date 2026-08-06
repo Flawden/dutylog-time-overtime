@@ -75,6 +75,12 @@ async function waitForCalendarNavigationReady(page) {
   await waitForAppIdle(page);
 }
 
+async function waitForCalendarTimelineReady(page, route) {
+  await waitForVueShell(page);
+  await expect.poll(() => page.evaluate(() => Boolean(window.DutyLogVueDomains?.calendarTimeline?.ready())), { timeout:30_000 }).toBe(true);
+  await expect(page.locator(`[data-vue-domain-route="${route}"]`)).toBeVisible();
+}
+
 async function waitForVacationReady(page) {
   await waitForVueShell(page);
   await expect.poll(() => page.evaluate(() => Boolean(window.DutyLogVueDomains?.absenceTimeBank?.ready())), { timeout:30_000 }).toBe(true);
@@ -117,7 +123,7 @@ async function navigateWithShell(page, view) {
 }
 
 async function openView(page, view) {
-  const vueOwned = view === 'vacation' || view === 'overtime';
+  const vueOwned = ['today', 'calendar', 'vacation', 'overtime'].includes(view);
   const section = vueOwned
     ? page.locator(`[data-vue-domain-route="${view}"]`)
     : page.locator(`#view-${view}`);
@@ -125,6 +131,7 @@ async function openView(page, view) {
     await navigateWithShell(page, view);
     await expect(section).toBeVisible();
   }
+  if (view === 'today' || view === 'calendar') await waitForCalendarTimelineReady(page, view);
   if (view === 'vacation') await waitForVacationReady(page);
   if (view === 'overtime') await waitForLedgerReady(page);
   if (view === 'payroll') await waitForPayrollReady(page);
@@ -255,6 +262,7 @@ module.exports = {
   currentLocalDateKey,
   waitForAppIdle,
   waitForCalendarNavigationReady,
+  waitForCalendarTimelineReady,
   waitForVacationReady,
   waitForLedgerReady,
   waitForPayrollReady,

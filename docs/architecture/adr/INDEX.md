@@ -7,3 +7,4 @@
 | [ADR-003](ADR-003-spring-boot-business-source-of-truth.md) | Spring Boot owns business invariants | accepted | v27.35.0 |
 | [ADR-004](ADR-004-incremental-strangler-and-bridge-rules.md) | Incremental strangler migration with bounded bridges | accepted | v27.35.0 |
 | [ADR-005](ADR-005-openapi-generated-frontend-contract.md) | Frontend API types are generated from canonical OpenAPI | accepted | v27.35.0 |
+| [ADR-006](ADR-006-pwa-asset-version-upgrade-strategy.md) | Version/build-scoped PWA caches and network-first upgrades | accepted | v27.37.0 |

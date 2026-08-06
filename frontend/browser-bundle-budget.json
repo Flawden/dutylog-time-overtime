@@ -1,0 +1,7 @@
+{
+  "release": "27.37.0",
+  "entry": "dist/dutylog-vue-app-shell.js",
+  "maxBytes": 800000,
+  "maxGzipBytes": 250000,
+  "policy": "Fail the frontend build when the audited browser bundle exceeds either locked ceiling. Tighten only after a green exact-toolchain build records a lower baseline."
+}

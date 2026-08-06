@@ -1,3 +1,12 @@
+# v27.37.0 — Vue Calendar & Timeline
+
+- Migrates Today plus Calendar Month, Week and Day read surfaces to Vue 3 with strict TypeScript and one canonical generated-API range store.
+- Adds focused-date navigation, persisted mode/focus, stale-read protection, hourly timeline composition and optimistic calendar-layer visibility with rollback.
+- Retires legacy Today/Calendar read owners while preserving the mature selected-day mutation editor as one named compatibility island.
+- Adds 10 Vitest cases, two strict Chromium scenarios, 11 compile-gated Java migration contracts and explicit single-owner browser acceptance.
+- Establishes the v27.37.0 quality baselines: accepted PWA cache-upgrade ADR/E2E and fail-closed raw/gzip browser-bundle budgets.
+- Keeps Spring Boot authoritative; OpenAPI remains 98 operations / 103 schemas, PostgreSQL and Flyway remain unchanged at V47.
+
 # v27.36.8 — Vue Read Sequencing Static Contract Alignment Hotfix
 
 - Aligns three stale Java implementation-string contracts with the accepted shared `readSequence` runtime introduced in v27.36.7.

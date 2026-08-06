@@ -1,6 +1,6 @@
-# DutyLog API v27.36.8
+# DutyLog API v27.37.0
 
-`v27.36.8` changes no backend controller, authorization rule, persistence invariant, OpenAPI shape or Flyway migration. It aligns only Java static contracts with the accepted shared Vue `readSequence`; the canonical generated contract remains 98 operations and 103 schemas.
+`v27.37.0` changes no backend controller, authorization rule, persistence invariant, OpenAPI shape or Flyway migration. The Vue Calendar & Timeline feature consumes the existing generated operations `calendarRange`, `getTimeContext` and `updateCalendarLayer`; the canonical generated contract remains 98 operations and 103 schemas.
 
 The generated browser contract now contains **98 operations and 103 schemas**. Array items and `allOf` inheritance are emitted accurately for overtime credits, usages, allocations and absence preview rows. Spring Boot remains the source of truth for validation, ownership, FIFO, closed periods and compensation state.
 

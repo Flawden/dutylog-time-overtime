@@ -338,6 +338,7 @@ function renderTodayUpcoming(key){
 }
 
 function renderTodayDashboard(){
+  if (typeof requestVueCalendarTimelineRefresh === "function" && requestVueCalendarTimelineRefresh()) return;
   if (!$("view-today")) return;
   const key = todayKey();
   const { year } = todayDashboardDateParts(key);

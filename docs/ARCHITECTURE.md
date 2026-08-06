@@ -1,8 +1,16 @@
 # DutyLog architecture
 
-## Active Vue frontend transition — v27.36.8 static contract alignment
+## Active Vue frontend transition — v27.37.0 Calendar & Timeline
 
-DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains separate. `v27.36.8` changes no production architecture: Vue remains the sole Absence/Time Bank UI owner, full and period-only reads keep the shared `readSequence`, and only historical Java static assertions are aligned with that accepted runtime.
+DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains separate. `v27.37.0` gives Vue sole ownership of Today and the Calendar Month, Week and Day read surfaces through one generated-API range store. Spring Boot remains authoritative for shifts, tasks, important events, absences, reminders, calendar layers and every mutation.
+
+The mature selected-day editor is preserved as one explicitly mounted compatibility island inside the Vue Calendar workspace. Legacy Today and Calendar read roots are retired after Vue readiness; their historical render entry points only request a Vue refresh and cannot become a second read owner. A typed projection event updates the remaining legacy editor island without exposing mutable Vue state.
+
+The release also establishes two recurring frontend quality boundaries: an accepted PWA previous-cache upgrade strategy/E2E and fail-closed raw/gzip browser-bundle budgets. Vite output is still packaged into the Spring Boot JAR/image; production remains one app container plus PostgreSQL.
+
+## v27.36.8 read-sequencing static-contract predecessor
+
+`v27.36.8` changed no production architecture. It aligned historical Java static assertions with the shared Absence/Time Bank `readSequence` runtime accepted in `v27.36.7`.
 
 ## v27.36.4 browser-parity predecessor
 

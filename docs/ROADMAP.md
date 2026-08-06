@@ -1,15 +1,25 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.36.8 — Vue Read Sequencing Static Contract Alignment Hotfix**.
+Current release: **v27.37.0 — Vue Calendar & Timeline**.
 
 
 
-## v27.36.8 — Vue Read Sequencing Static Contract Alignment Hotfix — current
+
+## v27.37.0 — Vue Calendar & Timeline — current
+
+- Vue owns Today plus Calendar Month, Week and Day read surfaces through one generated-API range store.
+- Preserve focused-date navigation, versioned mode/focus persistence, stale-read protection and read-only layer composition.
+- Keep Spring Boot authoritative for shifts, tasks, events, absences, reminders, balances, layers and every write.
+- Keep the mature selected-day editor as one named compatibility island during the remaining v27.37.x parity passes.
+- Establish Q-07 PWA previous-cache upgrade acceptance and Q-08 raw/gzip browser-bundle budgets as recurring frontend gates.
+- Accept only after 47/47 Chromium, exact-toolchain Vue/Vitest, Maven/JaCoCo, immutable image, clean PostgreSQL and staging are green.
+
+## v27.36.8 — Vue Read Sequencing Static Contract Alignment Hotfix — completed and green
 
 - Align the three Maven-failing historical static contracts with the accepted shared `readSequence` runtime.
 - Preserve period-only loading, canonical account identity and latest-read-wins semantics unchanged.
 - Keep the strict 45-scenario Chromium expectation and single-pass staging validation unchanged.
-- Accept v27.36.x only after the complete green deployment path.
+- Accepted: the complete single-pass frontend, Maven, Chromium, immutable-image, PostgreSQL and staging path is green.
 
 
 ## v27.36.7 — Time Bank Period Toggle Snapshot Stability Hotfix — completed implementation predecessor
@@ -196,7 +206,7 @@ Current release: **v27.36.8 — Vue Read Sequencing Static Contract Alignment Ho
 - [x] Add static, Vitest and Playwright shell parity coverage.
 - [x] v27.35.0: close Vue delivery, generated-contract, diagnostics, manifest and ADR Gate A.
 - [x] v27.36.0: migrate Absence Composer and Time Bank.
-- [ ] v27.37.0: migrate Calendar, Today and timeline.
+- [x] v27.37.0: migrate Calendar, Today and timeline read surfaces; selected-day editor remains a bounded compatibility island.
 - [ ] v27.38.0: migrate Tasks, Notes and Important Days.
 - [ ] v27.39.0: migrate Settings, Workspace and integrations.
 - [ ] v27.40.0: retire bridge, numbered JavaScript and legacy routing after parity.

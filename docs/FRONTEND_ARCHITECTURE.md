@@ -1,10 +1,14 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.36.8.
+Status: Vue app-shell ownership v1, DutyLog v27.37.0.
 
-## Absence/Time Bank read-sequencing contract alignment (v27.36.8)
+## Vue Calendar & Timeline ownership (v27.37.0)
 
-The production store remains unchanged: full and period-only reads share `readSequence`, and only the winning full read publishes the canonical projection. v27.36.8 aligns historical Java assertions with that runtime. The Time Bank chart still keeps earned `credit.workedDate` and used `usage.usageDate` as independent dated series.
+Vue now owns Today and the Calendar Month, Week and Day read surfaces through one bounded `calendar-timeline` feature. Its generated-API store owns focus date, view mode, stale-read sequencing, authoritative work-date loading and optimistic calendar-layer visibility with rollback. The Day view composes shifts, partial absences, timed tasks, important events, reminders and calendar-layer occurrences into one hourly timeline without reproducing backend business rules.
+
+The legacy Today and Calendar read roots are retired after Vue readiness. The mature selected-day mutation editor remains as one named compatibility island mounted beneath `#calendarLegacyPanelHost`; it is reached only through explicit bridge commands. Historical legacy render functions yield to a queued Vue refresh instead of re-rendering competing read surfaces.
+
+`v27.36.8` remains the historical read-sequencing contract-alignment predecessor: Absence/Time Bank full and period-only reads share `readSequence`, and only the winning full read publishes the canonical projection.
 
 ## Absence/Time Bank browser parity (v27.36.4)
 
@@ -38,7 +42,9 @@ When the active route is outside primary navigation, the visible More control an
 
 **Vue also owns the bounded Absence & Time Bank domain**: absence journal, unified composer, credit/scenario editor, plan/fact/compensation explanation, responsive ledger, usages, reservations and FIFO forecast. The Vue feature uses generated operation contracts and never reproduces backend business authority.
 
-**Legacy product screens remain authoritative** for Today, Calendar, Payroll, Tasks, Important Days, Settings and Admin. Today and Calendar may invoke Absence/Time Bank only through named typed adapters; they no longer render or mutate the retired legacy domain owners.
+**Vue also owns the bounded Calendar & Timeline domain**: Today, Calendar Month/Week/Day, focused-date navigation, hourly timeline composition and calendar-layer visibility. The generated-API store treats Spring Boot read models as authoritative and keeps only view state and optimistic presentation state locally.
+
+**Legacy product screens remain authoritative** for Payroll, Tasks, Important Days, Settings and Admin. The selected-day editor is the only legacy Calendar compatibility island and may mutate calendar state only through its released backend paths; successful legacy mutations request one Vue refresh.
 
 ```text
 frontend/src
@@ -53,15 +59,16 @@ frontend/src
 ## State ownership
 
 - Spring Boot owns business rules and persisted truth.
-- Legacy product read models remain authoritative only for domains that have not migrated; Absence and Time Bank use the bounded Vue store over backend read models.
+- Legacy product read models remain authoritative only for domains that have not migrated; Absence/Time Bank and Calendar/Timeline use bounded Vue stores over backend read models.
+- The Calendar/Timeline store owns only focused date, view mode, loading/error state and the current authoritative range snapshot; it never calculates canonical shifts, absences, task ownership or recurrence rules.
 - The shell receives only a frozen snapshot: route, allowed navigation, language, online/module readiness and safe profile display fields.
-- Pinia owns explicit shell UI state; it never mirrors one global mutable product state.
-- Local form drafts remain local to each future feature/composer.
+- Pinia owns explicit shell and migrated-domain UI state; it never mirrors one global mutable product state.
+- Local form drafts remain local to each migrated composer or the temporary selected-day editor island.
 - Offline queue and synchronization remain a separate infrastructure boundary.
 
 ## Routing and bridge
 
-Vue Router still uses memory history. The released hash route remains authoritative for application-level navigation during v27.36.0; the Absence and Time Bank route bodies are Vue-owned. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
+Vue Router still uses memory history. The released hash route remains authoritative for application-level navigation in `v27.37.0`; the Absence/Time Bank and Today/Calendar route bodies are Vue-owned. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
 
 Allowed transition capabilities are:
 
@@ -71,9 +78,16 @@ subscribe
 navigate
 openModal
 logout
+attachCalendarEditor
+openCalendarDay
+closeCalendarDay
+openTaskCreate
+openTaskDetails
+openQuickActions
+openImportantDetails
 ```
 
-Vue must not read `window.state`, query `#tabbar` or create a second mutation owner. The Absence & Time Bank workspace atomically retires `#view-vacation`, `#view-overtime` and their legacy modal owners after Vue readiness; other domains retain their existing owners until their own bounded migration releases.
+Vue must not read `window.state`, query `#tabbar` or create a second mutation owner. The Absence & Time Bank workspace retires its route/modal owners after Vue readiness. The Calendar & Timeline workspace retires legacy Today/Calendar read roots, mounts only the selected-day editor island and converts historical render calls into queued Vue refresh requests. Other domains retain their existing owners until their bounded migration releases.
 
 ## Shared design system
 

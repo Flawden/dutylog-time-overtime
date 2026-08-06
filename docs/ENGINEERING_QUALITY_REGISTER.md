@@ -1,9 +1,9 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.36.8
+release_foundation: v27.37.0
 created: 2026-08-04
-updated: 2026-08-05
+updated: 2026-08-06
 ---
 
 # DutyLog — Engineering Quality Register
@@ -28,8 +28,8 @@ updated: 2026-08-05
 | Q-04 | Migration manifest и parity matrix | `v27.35.0` template | `v27.36.0–v27.40.0` | manifest в repository + release checklist | DONE |
 | Q-05 | ADR repository и обязательные решения | `v27.35.0` | архитектурные изменения | ADR accepted/superseded index | DONE |
 | Q-06 | Optimistic concurrency / stale-write / double-submit policy | baseline `v27.36.0` | все редактируемые домены | sequence-token stale-read guard, mutation lock, durable 409 refresh, Vitest + Playwright double-submit evidence | DONE |
-| Q-07 | PWA asset/version compatibility и upgrade E2E | baseline `v27.37.0` | каждый frontend release | previous cache → new release upgrade scenario | LOCKED |
-| Q-08 | Performance budgets и bundle diff | baseline `v27.37.0` | каждый frontend release; полный audit `v27.45.0` | CI report/thresholds | LOCKED |
+| Q-07 | PWA asset/version compatibility и upgrade E2E | baseline `v27.37.0` | каждый frontend release | ADR-006 + previous cache → current cache Chromium scenario | ACTIVE |
+| Q-08 | Performance budgets и bundle diff | baseline `v27.37.0` | каждый frontend release; полный audit `v27.45.0` | fail-closed raw/gzip budget in Vite audit | ACTIVE |
 | Q-09 | Accessibility acceptance | design system уже ACTIVE | каждый domain; полный audit `v27.45.0` | keyboard/focus/ARIA/contrast evidence | ACTIVE |
 | Q-10 | Offline queue и reconnect correctness | `v27.38.0` | каждый offline-capable domain | offline/reconnect E2E | LOCKED |
 | Q-11 | Integration secrets, CSP, cookies, source-map policy | `v27.39.0` | security audit `v27.45.0` | security checklist + headers/config evidence | LOCKED |
@@ -56,6 +56,15 @@ updated: 2026-08-05
 | ADR-008 | Production source maps and frontend diagnostics | `v27.39.0` |
 | ADR-009 | Vue Router final URL strategy and legacy hash retirement | `v27.40.0` |
 | ADR-010 | Expand/contract database migration and rollback compatibility | до `v27.45.0` |
+
+
+## Calendar & Timeline migration note — v27.37.0
+
+- Vue owns Today plus Month, Week and Day read surfaces; Spring Boot remains the business and write owner.
+- One named legacy selected-day editor island is retained and explicitly scheduled for v27.37.x retirement work.
+- Q-07 starts with accepted ADR-006 and a Chromium previous-cache activation scenario.
+- Q-08 starts with versioned raw/gzip browser-bundle ceilings enforced by the existing build audit.
+- Acceptance remains blocked on exact 43 Vitest / 738 Maven / 47 Chromium, immutable-image and staging evidence.
 
 ## Read-sequencing static contract alignment note — v27.36.8
 

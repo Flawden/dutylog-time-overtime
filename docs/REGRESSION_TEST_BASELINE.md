@@ -1,13 +1,22 @@
 # DutyLog regression test baseline
 
-Status: v27.36.8.
+Status: v27.37.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.36.8 aligns the three Maven-failing historical static contracts with the accepted v27.36.7 shared-read runtime. The application baseline advances to 149 Java test classes / 727 `@Test` methods / 45 Chromium Playwright scenarios / 33 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.37.0 migrates Today and Calendar Month/Week/Day read surfaces to Vue, adds PWA upgrade and bundle-budget gates, and advances the application baseline to 150 Java test classes / 738 `@Test` methods / 47 Chromium Playwright scenarios / 43 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+
+
+## v27.37.0 Vue Calendar & Timeline extension
+
+- `VueCalendarTimelineMigrationFrontendContractTest` binds generated API use, one Vue owner, stale-read protection, month/week/day composition, named editor bridge, PWA upgrade and bundle budgets.
+- Nine Vitest cases cover date math, range normalization, selected-day composition, stale responses, range reuse and layer rollback.
+- `vue-calendar-timeline-migration.spec.js` proves one Today/Calendar owner, Month/Week/Day parity and one selected-day editor island.
+- `pwa-upgrade.spec.js` creates a synthetic v27.36.8 cache and proves v27.37.0 activation removes it before claiming the shell.
+- Baseline: 150 Java classes / 738 `@Test` methods / 47 Playwright scenarios / 43 Vitest cases / Flyway V47.
 
 ## v27.36.8 Vue Read Sequencing Static Contract Alignment extension
 

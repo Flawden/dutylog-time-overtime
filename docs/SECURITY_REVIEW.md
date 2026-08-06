@@ -1,10 +1,16 @@
 # DutyLog security review
 
-Status: v27.36.8.
+Status: v27.37.0.
 
-## v27.36.8 static contract alignment review
+## v27.37.0 Vue Calendar & Timeline review
 
-No authorization, CSRF, session, ownership, secret, image-signing, API or database boundary changes. The release changes only Java static assertions and release identity; CI routing remains the v27.36.5 single-pass boundary with full blocking staging validation.
+- The migrated feature uses only existing same-origin generated operations through the shared credentials/CSRF/request-ID transport; it adds no endpoint, origin, token or persistence authority.
+- Spring Boot remains the sole authority for ownership, recurrence, shift/task/event/absence validation, calendar layers and every mutation.
+- Vue receives owner-scoped read models and keeps only focused date, view mode and bounded presentation state. It does not cache API responses in the service worker or persist sensitive payloads.
+- The selected-day editor remains one named compatibility island. Its host and bridge expose commands, not mutable global state, and successful legacy mutations request one Vue refresh.
+- The PWA worker deletes only previous `dutylog-shell-*` caches, uses network-first HTML/JS/CSS and never caches API, authentication or user-data responses.
+- Bundle budgets, strict Playwright page-error collection, one-image deployment, session/CSRF boundaries and the v27.36.5 single-pass staging path remain fail-closed.
+- OpenAPI, PostgreSQL, Flyway V47, CSP, cookies, secrets and image-signing boundaries are unchanged.
 
 ## v27.36.4 Vue Absence & Time Bank browser-parity review
 

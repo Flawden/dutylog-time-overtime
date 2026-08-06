@@ -1,6 +1,17 @@
 # Release checklist
 
-Status: v27.36.8.
+Status: v27.37.0.
+
+
+## v27.37.0 Vue Calendar & Timeline acceptance
+
+- [ ] Exact Node 20.18.1 / npm 10.8.2 gate passes `npm ci`, `vue-tsc`, all 43 Vitest cases, Vite and raw/gzip bundle budgets.
+- [ ] Maven verify executes all 738 tests with zero failures and JaCoCo remains above the locked thresholds.
+- [ ] Vue is the only runtime owner of Today and Calendar Month/Week/Day read surfaces; duplicate route IDs are absent.
+- [ ] The selected-day editor is attached exactly once under `#calendarLegacyPanelHost` and all writes remain Spring Boot owned.
+- [ ] All 47 Chromium scenarios pass, including calendar ownership and previous-cache PWA upgrade.
+- [ ] Immutable image, clean PostgreSQL V1–V47 smoke and staging deployment are green.
+- [ ] OpenAPI remains 98 operations / 103 schemas and no database migration is introduced.
 
 ## v27.36.8 Vue Read Sequencing Static Contract Alignment Hotfix acceptance
 
@@ -433,6 +444,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.36.8 -m "v27.36.8 — Vue Read Sequencing Static Contract Alignment Hotfix"
-git push origin v27.36.8
+git tag -a v27.37.0 -m "v27.37.0 — Vue Calendar & Timeline"
+git push origin v27.37.0
 ```

@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.36.8"
+const DUTYLOG_VERSION = "27.37.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -228,6 +228,32 @@ window.addEventListener(ABSENCE_TIME_BANK_PROJECTION_EVENT, event => {
   synchronizeLegacyAbsenceTimeBankProjection(event.detail);
 });
 
+const CALENDAR_TIMELINE_PROJECTION_EVENT = "dutylog:calendar-timeline-projection";
+function synchronizeLegacyCalendarTimelineProjection(snapshot){
+  const bundle = snapshot?.bundle;
+  if (bundle && typeof bundle === "object" && typeof applyCalendarBundle === "function") {
+    applyCalendarBundle(bundle);
+  }
+  if (typeof snapshot?.focusDate === "string") state.selected = snapshot.focusDate;
+  if (snapshot?.mode && state.calendarExperience) state.calendarExperience.mode = snapshot.mode;
+}
+window.addEventListener(CALENDAR_TIMELINE_PROJECTION_EVENT, event => {
+  synchronizeLegacyCalendarTimelineProjection(event.detail);
+});
+
+let vueCalendarTimelineRefreshQueued = false;
+let vueCalendarTimelineRefreshSuppressed = false;
+function requestVueCalendarTimelineRefresh(){
+  if (document.documentElement.dataset.vueCalendarTimeline !== "ready") return false;
+  if (vueCalendarTimelineRefreshSuppressed || vueCalendarTimelineRefreshQueued) return true;
+  vueCalendarTimelineRefreshQueued = true;
+  Promise.resolve().then(() => {
+    vueCalendarTimelineRefreshQueued = false;
+    return window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
+  }).catch(error => console.error("[DutyLog] Vue calendar refresh failed", error));
+  return true;
+}
+
 window.DutyLogLegacyPlatform = Object.freeze({
   version: DUTYLOG_VERSION,
   snapshot:legacyPlatformSnapshot,
@@ -242,15 +268,65 @@ window.DutyLogLegacyPlatform = Object.freeze({
     document.getElementById("logout")?.click();
   },
   retireDomainOwners(domain){
-    if (domain !== "absence-time-bank") return;
-    for (const id of [
-      "view-vacation", "view-overtime",
-      "absenceComposerModal", "overtimeCreditModal", "overtimeUsageModal",
-      "timeBankGuideModal", "timeBankGuideBackdrop",
-    ]) {
-      document.getElementById(id)?.remove();
+    if (domain === "absence-time-bank") {
+      for (const id of [
+        "view-vacation", "view-overtime",
+        "absenceComposerModal", "overtimeCreditModal", "overtimeUsageModal",
+        "timeBankGuideModal", "timeBankGuideBackdrop",
+      ]) document.getElementById(id)?.remove();
+      document.documentElement.setAttribute("data-vue-absence-time-bank", "ready");
+      return;
     }
-    document.documentElement.setAttribute("data-vue-absence-time-bank", "ready");
+    if (domain !== "calendar-timeline") return;
+    const legacyCalendar = [...document.querySelectorAll("section.view#view-calendar")]
+      .find(node => !node.hasAttribute("data-vue-domain-owner"));
+    const legacyToday = [...document.querySelectorAll("section.view#view-today")]
+      .find(node => !node.hasAttribute("data-vue-domain-owner"));
+    const panel = legacyCalendar?.querySelector("#panel");
+    if (panel) {
+      panel.hidden = true;
+      panel.remove();
+      document.body.appendChild(panel);
+    }
+    legacyCalendar?.remove();
+    legacyToday?.remove();
+    for (const id of ["prev", "next", "todayBtn"]) document.getElementById(id)?.remove();
+    const legacyMonthName = document.getElementById("monthName");
+    const legacyYearName = document.getElementById("yearName");
+    if (legacyMonthName) legacyMonthName.id = "legacyMonthName";
+    if (legacyYearName) legacyYearName.id = "legacyYearName";
+    document.documentElement.setAttribute("data-vue-calendar-timeline", "ready");
+  },
+  attachCalendarEditor(hostId){
+    const host = document.getElementById(String(hostId || ""));
+    const panel = document.getElementById("panel");
+    if (host && panel && panel.parentElement !== host) host.appendChild(panel);
+  },
+  openCalendarDay(date){
+    const key = String(date || "").slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return;
+    vueCalendarTimelineRefreshSuppressed = true;
+    try { if (typeof selectDay === "function") selectDay(key); }
+    finally { vueCalendarTimelineRefreshSuppressed = false; }
+  },
+  closeCalendarDay(){
+    vueCalendarTimelineRefreshSuppressed = true;
+    try { if (typeof selectDay === "function") selectDay(null); }
+    finally { vueCalendarTimelineRefreshSuppressed = false; }
+  },
+  openTaskCreate(date){
+    if (typeof openTaskCreate === "function") openTaskCreate({ date:String(date || "").slice(0, 10) });
+  },
+  openTaskDetails(id){
+    if (typeof openTaskDetails === "function") openTaskDetails(Number(id));
+  },
+  openQuickActions(date){
+    const key = String(date || "").slice(0, 10);
+    if (/^\d{4}-\d{2}-\d{2}$/.test(key)) state.selected = key;
+    if (typeof openQuickActions === "function") openQuickActions();
+  },
+  openImportantDetails(id){
+    if (typeof openImportantDetails === "function") openImportantDetails(Number(id));
   },
   subscribe(listener){
     if (typeof listener !== "function") return () => {};

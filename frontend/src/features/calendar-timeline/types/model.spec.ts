@@ -1,0 +1,60 @@
+import { describe, expect, it } from "vitest";
+import {
+  addDays,
+  calendarLoadRange,
+  dayFacts,
+  monthGridDates,
+  navigateDate,
+  normalizeCalendarBundle,
+  weekDates,
+} from "./model";
+
+describe("calendar and timeline model", () => {
+  it("loads a complete Monday-to-Sunday grid around the focused month", () => {
+    expect(calendarLoadRange("2026-08-15")).toEqual({ from: "2026-07-27", to: "2026-09-06" });
+    expect(monthGridDates("2026-08-15")).toHaveLength(42);
+  });
+
+  it("navigates month, week and day without losing a valid date", () => {
+    expect(navigateDate("2026-01-31", "month", 1)).toBe("2026-02-28");
+    expect(navigateDate("2026-08-05", "week", 1)).toBe("2026-08-12");
+    expect(navigateDate("2026-08-05", "day", -1)).toBe("2026-08-04");
+  });
+
+  it("builds a stable Monday week", () => {
+    expect(weekDates("2026-08-05")).toEqual([
+      "2026-08-03", "2026-08-04", "2026-08-05", "2026-08-06", "2026-08-07", "2026-08-08", "2026-08-09",
+    ]);
+    expect(addDays("2026-12-31", 1)).toBe("2027-01-01");
+  });
+
+  it("normalizes optional calendar collections and canonical overtime balance", () => {
+    const bundle = normalizeCalendarBundle({
+      from: "2026-08-01", to: "2026-08-31",
+      overtimeAccount: { totalEarnedHours: 8, totalUsedHours: 3, balanceHours: 5 },
+    }, "2026-08-01", "2026-08-31");
+    expect(bundle.days).toEqual([]);
+    expect(bundle.calendarLayers).toEqual([]);
+    expect(bundle.overtimeAccount).toMatchObject({ totalEarnedHours: 8, totalUsedHours: 3, balanceHours: 5, credits: [], usages: [] });
+  });
+
+  it("composes one selected-day read model from shifts, tasks, events, absences and layers", () => {
+    const bundle = normalizeCalendarBundle({
+      from: "2026-07-27", to: "2026-09-06",
+      shiftTypes: [{ id: 1, name: "День", color: "#ffaa00" }],
+      days: [{ date: "2026-08-05", shiftTypeId: 1, overtimeHours: 0, timeOffHours: 0, overtimeBalanceHours: 0, version: 1 }],
+      tasks: [{ id: 2, date: "2026-08-05", text: "Task", done: false, tags: [], priority: "NORMAL", deadlineAbsolute: false, reminderEnabled: false, overdue: false, subtasks: [] }],
+      importantDays: [{ id: 3, date: "2026-08-05", title: "Event" }],
+      absences: [{ periodId: 4, typeId: 1, typeName: "Отгул", typeColor: "#00aaee", date: "2026-08-05", startDate: "2026-08-05", endDate: "2026-08-05", status: "PLANNED", countedDay: true, shiftConflict: false }],
+      reminders: [{ id: "r1", type: "TASK", sourceDate: "2026-08-05", title: "Reminder" }],
+      calendarLayers: [{ id: 9, name: "Напарник", color: "#445566", visible: true, entries: [{ date: "2026-08-05", shiftTypeName: "Ночь" }] }],
+    }, "2026-07-27", "2026-09-06");
+    const facts = dayFacts(bundle, "2026-08-05");
+    expect(facts.shift?.name).toBe("День");
+    expect(facts.tasks[0]?.text).toBe("Task");
+    expect(facts.important[0]?.title).toBe("Event");
+    expect(facts.absences[0]?.typeName).toBe("Отгул");
+    expect(facts.reminders[0]?.title).toBe("Reminder");
+    expect(facts.layers[0]?.layer.name).toBe("Напарник");
+  });
+});

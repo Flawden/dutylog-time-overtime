@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Compile-gated alignment contract for v27.36.8. */
+/** Compile-gated alignment contract for v27.37.0. */
 class VueReadSequencingStaticContractAlignmentHotfixTest {
 
     @Test

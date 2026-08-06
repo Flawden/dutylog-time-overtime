@@ -1,6 +1,6 @@
 {
   "name": "dutylog-browser-e2e",
-  "version": "27.36.8",
+  "version": "27.37.0",
   "private": true,
   "description": "Playwright browser regression suite for DutyLog",
   "scripts": {

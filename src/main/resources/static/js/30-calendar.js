@@ -167,6 +167,7 @@ function updateCalendarLoadingSurface(loading, refreshing = false){
 }
 
 function renderCalendar(){
+  if (typeof requestVueCalendarTimelineRefresh === "function" && requestVueCalendarTimelineRefresh()) return;
   $("monthName").textContent = monthName(state.m);
   $("yearName").textContent = state.y;
 
