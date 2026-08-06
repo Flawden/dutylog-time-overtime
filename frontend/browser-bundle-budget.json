@@ -1,5 +1,5 @@
 {
-  "release": "27.37.0",
+  "release": "27.37.1",
   "entry": "dist/dutylog-vue-app-shell.js",
   "maxBytes": 800000,
   "maxGzipBytes": 250000,

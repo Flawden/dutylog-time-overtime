@@ -1,6 +1,10 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.37.0.
+Status: Vue app-shell ownership v1, DutyLog v27.37.1.
+
+## Vue Calendar & Timeline strict type boundary (v27.37.1)
+
+The public `DutyLogCalendarTimelineDomain.openDate` callback explicitly carries `string` and optional `CalendarMode` parameters. Pinia actions accept optional modes and resolve `mode ?? this.mode` inside the typed action body; no default parameter initializer references `this`. Runtime ownership and generated API behavior remain identical to v27.37.0.
 
 ## Vue Calendar & Timeline ownership (v27.37.0)
 
@@ -68,7 +72,7 @@ frontend/src
 
 ## Routing and bridge
 
-Vue Router still uses memory history. The released hash route remains authoritative for application-level navigation in `v27.37.0`; the Absence/Time Bank and Today/Calendar route bodies are Vue-owned. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
+Vue Router still uses memory history. The released hash route remains authoritative for application-level navigation in `v27.37.1`; the Absence/Time Bank and Today/Calendar route bodies are Vue-owned. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
 
 Allowed transition capabilities are:
 

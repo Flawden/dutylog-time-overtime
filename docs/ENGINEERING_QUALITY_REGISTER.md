@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.37.0
+release_foundation: v27.37.1
 created: 2026-08-04
 updated: 2026-08-06
 ---
@@ -57,6 +57,11 @@ updated: 2026-08-06
 | ADR-009 | Vue Router final URL strategy and legacy hash retirement | `v27.40.0` |
 | ADR-010 | Expand/contract database migration and rollback compatibility | до `v27.45.0` |
 
+
+
+## Calendar & Timeline strict typecheck note — v27.37.1
+
+The first exact Node/npm frontend gate exposed four strict compiler errors at newly introduced bridge/action boundaries. v27.37.1 adds explicit callback parameter types and resolves Pinia action defaults inside method bodies without weakening `strict`, `noImplicitAny`, the generated API boundary, or runtime ownership.
 
 ## Calendar & Timeline migration note — v27.37.0
 

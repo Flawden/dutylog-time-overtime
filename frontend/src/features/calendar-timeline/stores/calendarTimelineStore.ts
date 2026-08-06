@@ -73,11 +73,12 @@ export const useCalendarTimelineStore = defineStore("dutylog-calendar-timeline",
         if (sequence === readSequence) this.loading = false;
       }
     },
-    async openDate(date: string, mode: CalendarMode = this.mode): Promise<void> {
+    async openDate(date: string, mode?: CalendarMode): Promise<void> {
+      const resolvedMode = mode ?? this.mode;
       const next = validDate(date, this.workDate);
       const currentRange = this.range;
       this.focusDate = next;
-      this.mode = mode;
+      this.mode = resolvedMode;
       this.persist();
       if (!this.loaded || next < currentRange.from || next > currentRange.to) await this.refresh();
     },
@@ -89,7 +90,9 @@ export const useCalendarTimelineStore = defineStore("dutylog-calendar-timeline",
       const next = navigateDate(this.focusDate, this.mode, delta);
       await this.openDate(next, this.mode);
     },
-    async goToday(mode: CalendarMode = this.mode): Promise<void> { await this.openDate(this.workDate || todayIso(), mode); },
+    async goToday(mode?: CalendarMode): Promise<void> {
+      await this.openDate(this.workDate || todayIso(), mode ?? this.mode);
+    },
     async toggleLayer(id: number, visible: boolean): Promise<void> {
       const layer = this.bundle?.calendarLayers.find(item => Number(item.id) === Number(id));
       if (layer) layer.visible = visible;

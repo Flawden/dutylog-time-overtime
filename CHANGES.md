@@ -1,3 +1,11 @@
+# v27.37.1 — Vue Calendar & Timeline Strict Typecheck Hotfix
+
+- Fixes the four strict `vue-tsc` failures found by the first v27.37.0 frontend gate.
+- Adds explicit `string` / `CalendarMode` types to the public Calendar/Timeline bridge callback.
+- Moves Pinia action defaults that referenced `this` into typed action bodies, preserving the same runtime behavior without implicit-`any` context.
+- Adds four compile-gated Java source contracts and keeps strict TypeScript enabled.
+- Changes no API, OpenAPI contract, business rule, PostgreSQL schema, Flyway migration, npm graph, route ownership or browser expectation.
+
 # v27.37.0 — Vue Calendar & Timeline
 
 - Migrates Today plus Calendar Month, Week and Day read surfaces to Vue 3 with strict TypeScript and one canonical generated-API range store.

@@ -1,14 +1,21 @@
 # DutyLog regression test baseline
 
-Status: v27.37.0.
+Status: v27.37.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.37.0 migrates Today and Calendar Month/Week/Day read surfaces to Vue, adds PWA upgrade and bundle-budget gates, and advances the application baseline to 150 Java test classes / 738 `@Test` methods / 47 Chromium Playwright scenarios / 43 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.37.1 aligns the new Calendar/Timeline bridge and Pinia action boundaries with strict TypeScript and advances the application baseline to 151 Java test classes / 742 `@Test` methods / 47 Chromium Playwright scenarios / 43 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
+
+
+## v27.37.1 Vue Calendar & Timeline Strict Typecheck Hotfix extension
+
+- Four new compile-gated Java contracts preserve explicit bridge parameter types, typed optional Pinia modes, in-body `this` resolution and strict compiler configuration.
+- The exact frontend gate remains blocking; no `vue-tsc` option, browser assertion or runtime contract is weakened.
+- Playwright remains 47 scenarios and Vitest remains 43 cases.
 
 ## v27.37.0 Vue Calendar & Timeline extension
 

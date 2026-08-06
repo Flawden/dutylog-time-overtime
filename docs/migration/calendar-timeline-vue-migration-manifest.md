@@ -3,6 +3,7 @@
 ```yaml
 domain: calendar-timeline
 target_release: "v27.37.0"
+follow_up_release: "v27.37.1"
 status: acceptance-pending
 frontend_owner: Vue 3 + TypeScript
 business_owner: Spring Boot
@@ -36,3 +37,7 @@ Legacy mutation paths request one queued Vue refresh. Bridge-owned selected-day 
 - PWA activation removes only previous DutyLog shell caches.
 - Browser bundle raw/gzip ceilings fail the frontend build when exceeded.
 - Existing browser expectations remain strict; no selectors, retries or page-error policies are weakened.
+
+## v27.37.1 strict typecheck follow-up
+
+The exact frontend gate exposed implicit-`any` callback parameters and `this` in Pinia default parameter initializers. The follow-up explicitly types the public bridge callback and resolves optional action modes inside action bodies. Ownership, read models, compatibility island, API and browser acceptance remain unchanged.

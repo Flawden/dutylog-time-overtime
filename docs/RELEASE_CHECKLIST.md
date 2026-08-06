@@ -1,7 +1,16 @@
 # Release checklist
 
-Status: v27.37.0.
+Status: v27.37.1.
 
+
+
+## v27.37.1 Vue Calendar & Timeline Strict Typecheck Hotfix acceptance
+
+- [ ] Exact Node 20.18.1 / npm 10.8.2 frontend gate passes `vue-tsc --noEmit`.
+- [ ] CalendarTimelineWorkspace bridge callback has explicit `string` and optional `CalendarMode` parameters.
+- [ ] Pinia `openDate` and `goToday` actions contain no default parameter initializer that references `this`.
+- [ ] Maven/JUnit baseline is 151 classes / 742 `@Test`; Playwright remains 47 and Vitest remains 43.
+- [ ] OpenAPI remains 98 operations / 103 schemas and Flyway remains V47.
 
 ## v27.37.0 Vue Calendar & Timeline acceptance
 
@@ -444,6 +453,6 @@ bash deploy/scripts/migration-smoke-test.sh dutylog:release-check
 ## Tag
 
 ```bash
-git tag -a v27.37.0 -m "v27.37.0 — Vue Calendar & Timeline"
-git push origin v27.37.0
+git tag -a v27.37.1 -m "v27.37.1 — Vue Calendar & Timeline Strict Typecheck Hotfix"
+git push origin v27.37.1
 ```

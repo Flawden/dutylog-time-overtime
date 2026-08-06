@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static regression contract for v27.37.0 browser timer handle typing and compile coverage. */
+/** Static regression contract for v27.37.1 browser timer handle typing and compile coverage. */
 class VueBrowserTimerHandleTypeFrontendContractTest {
 
     private static String source(String relativePath) throws IOException {

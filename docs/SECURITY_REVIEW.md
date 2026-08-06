@@ -1,6 +1,10 @@
 # DutyLog security review
 
-Status: v27.37.0.
+Status: v27.37.1.
+
+## v27.37.1 strict typecheck hotfix review
+
+No security boundary changes. The release adds compile-time annotations only, keeps generated API transport, authentication, CSRF, session, ownership and legacy-island boundaries unchanged, and does not add a dependency or endpoint.
 
 ## v27.37.0 Vue Calendar & Timeline review
 

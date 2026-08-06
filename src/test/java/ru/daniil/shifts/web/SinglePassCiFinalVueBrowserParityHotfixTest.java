@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static delivery and browser-parity contract aligned through v27.37.0. */
+/** Static delivery and browser-parity contract aligned through v27.37.1. */
 class SinglePassCiFinalVueBrowserParityHotfixTest {
 
     @Test

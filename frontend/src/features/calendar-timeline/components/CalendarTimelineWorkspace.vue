@@ -4,7 +4,7 @@ import { storeToRefs } from "pinia";
 import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
 import { useCalendarTimelineStore } from "../stores/calendarTimelineStore";
-import type { DutyLogCalendarTimelineDomain } from "../types/domain";
+import type { CalendarMode, DutyLogCalendarTimelineDomain } from "../types/domain";
 import CalendarPage from "./CalendarPage.vue";
 import TodayPage from "./TodayPage.vue";
 import "../calendar-timeline.css";
@@ -29,7 +29,7 @@ onMounted(() => {
   const domain: DutyLogCalendarTimelineDomain = Object.freeze({
     ready: () => store.loaded,
     refresh: () => store.refresh(),
-    openDate: async (date, mode) => { props.bridge.navigate("calendar"); await store.openDate(date, mode ?? store.mode); },
+    openDate: async (date: string, mode?: CalendarMode) => { props.bridge.navigate("calendar"); await store.openDate(date, mode); },
     snapshot: () => store.bundle ? Object.freeze({ focusDate: store.focusDate, mode: store.mode, from: store.bundle.from, to: store.bundle.to }) : null,
   });
   window.DutyLogVueDomains = Object.freeze({ ...(window.DutyLogVueDomains ?? {}), calendarTimeline: domain });

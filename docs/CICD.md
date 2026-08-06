@@ -1,11 +1,11 @@
 # DutyLog CI/CD
 
-Status: v27.37.0.
+Status: v27.37.1.
 
-## v27.37.0 Calendar/Timeline delivery boundary
+## v27.37.1 Calendar/Timeline strict typecheck delivery boundary
 
 - The v27.36.5 single-pass routing remains unchanged: pull requests, tag pushes and branch pushes outside `test` run the full `CI / test-and-package` path.
-- Pushes to `test` run the full `Deploy staging / validate` path exactly once, then build, verify and deploy the immutable image; v27.37.0 adds no second workflow or bypass.
+- Pushes to `test` run the full `Deploy staging / validate` path exactly once, then build, verify and deploy the immutable image; v27.37.1 adds no second workflow or bypass and must pass the same strict `vue-tsc` gate.
 - The frontend gate now includes 43 Vitest cases, the production Vite build, forbidden-runtime audit and fail-closed raw/gzip browser-bundle budgets.
 - Chromium now runs 47 scenarios, including one-owner Calendar/Timeline acceptance and previous-service-worker-cache upgrade behavior.
 - Maven verify, static release checks, immutable image verification and clean PostgreSQL smoke remain blocking. Artifact publication remains diagnostic and non-blocking.

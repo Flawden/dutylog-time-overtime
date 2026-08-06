@@ -1,11 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.37.0 — Vue Calendar & Timeline**.
+Current release: **v27.37.1 — Vue Calendar & Timeline Strict Typecheck Hotfix**.
 
 
 
 
-## v27.37.0 — Vue Calendar & Timeline — current
+## v27.37.1 — Vue Calendar & Timeline Strict Typecheck Hotfix — current
+
+- [x] Type the public Calendar/Timeline bridge callback explicitly.
+- [x] Resolve Pinia action mode defaults inside typed action bodies.
+- [x] Preserve strict TypeScript, generated API ownership and all v27.37.0 runtime behavior.
+- [ ] Accept through exact frontend gate, Maven, Chromium, immutable image and staging.
+
+## v27.37.0 — Vue Calendar & Timeline — completed
 
 - Vue owns Today plus Calendar Month, Week and Day read surfaces through one generated-API range store.
 - Preserve focused-date navigation, versioned mode/focus persistence, stale-read protection and read-only layer composition.
