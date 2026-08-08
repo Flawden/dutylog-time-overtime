@@ -9,7 +9,7 @@ Status: v27.37.1.
 - [ ] Exact Node 20.18.1 / npm 10.8.2 frontend gate passes `vue-tsc --noEmit`.
 - [ ] CalendarTimelineWorkspace bridge callback has explicit `string` and optional `CalendarMode` parameters.
 - [ ] Pinia `openDate` and `goToday` actions contain no default parameter initializer that references `this`.
-- [ ] Maven/JUnit baseline is 151 classes / 742 `@Test`; Playwright remains 47 and Vitest remains 43.
+- [ ] Maven/JUnit baseline is 151 classes / 743 `@Test` after the self-hosted runner routing amendment; Playwright remains 47 and Vitest remains 43.
 - [ ] OpenAPI remains 98 operations / 103 schemas and Flyway remains V47.
 
 ## v27.37.0 Vue Calendar & Timeline acceptance

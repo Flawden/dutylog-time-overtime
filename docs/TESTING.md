@@ -15,7 +15,7 @@ The frontend gate enforces exact Node/npm versions, authentic committed-lockfile
 
 GitHub artifact persistence is diagnostic only. CI uploads compact JaCoCo XML/CSV for three days and uploads Playwright HTML/results only after failure; quota or upload errors cannot block later static checks, image build or migration smoke. Test execution itself remains fail-closed.
 
-The complete browser baseline is 47 Playwright scenarios. `v27.37.0` added strict Calendar/Timeline single-owner acceptance plus a previous-cache PWA upgrade scenario; `v27.37.1` adds four compile-gated strict-TypeScript source contracts. The feature baseline is 43 Vitest cases and 742 JUnit `@Test` methods across 151 Java test classes. Payroll, Tasks, Important Days, Settings and Admin remain legacy-owned until their bounded releases; the selected-day editor is the only Calendar compatibility island.
+The complete browser baseline is 47 Playwright scenarios. `v27.37.0` added strict Calendar/Timeline single-owner acceptance plus a previous-cache PWA upgrade scenario; `v27.37.1` adds four compile-gated strict-TypeScript source contracts. The self-hosted runner routing amendment adds one CI-routing regression contract, so the feature baseline is 43 Vitest cases and 743 JUnit `@Test` methods across 151 Java test classes. Payroll, Tasks, Important Days, Settings and Admin remain legacy-owned until their bounded releases; the selected-day editor is the only Calendar compatibility island.
 
 ## Two different ways to run tests
 
