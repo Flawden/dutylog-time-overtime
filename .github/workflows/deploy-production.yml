@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   validate:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 35
     outputs:
       image_name: ${{ steps.meta.outputs.image_name }}
@@ -78,7 +78,7 @@ jobs:
 
   deploy:
     needs: validate
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 20
     environment: production
     steps:

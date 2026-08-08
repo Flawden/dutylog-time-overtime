@@ -71,6 +71,21 @@ class SinglePassCiFinalVueBrowserParityHotfixTest {
     }
 
     @Test
+    void allLinuxActionsJobsRouteToTheRegisteredSelfHostedRunner() throws IOException {
+        String ci = read(".github/workflows/ci.yml");
+        String staging = read(".github/workflows/deploy-staging.yml");
+        String production = read(".github/workflows/deploy-production.yml");
+
+        assertTrue(ci.contains("runs-on: self-hosted"));
+        assertTrue(staging.contains("runs-on: self-hosted"));
+        assertTrue(production.contains("runs-on: self-hosted"));
+
+        assertFalse(ci.contains("runs-on: ubuntu-latest"));
+        assertFalse(staging.contains("runs-on: ubuntu-latest"));
+        assertFalse(production.contains("runs-on: ubuntu-latest"));
+    }
+
+    @Test
     void stagingValidationStillRunsEveryBlockingQualityGate() throws IOException {
         String staging = read(".github/workflows/deploy-staging.yml");
 

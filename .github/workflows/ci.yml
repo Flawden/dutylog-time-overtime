@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   test-and-package:
-    runs-on: ubuntu-latest
+    runs-on: self-hosted
     timeout-minutes: 40
     steps:
       - name: Checkout
