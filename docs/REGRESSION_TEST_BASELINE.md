@@ -20,7 +20,7 @@ Historical foundation: v27.2.29 security baseline remains preserved by all later
 ## v27.37.1 Vue Calendar & Timeline Strict Typecheck Hotfix extension
 
 - Four new compile-gated Java contracts preserve explicit bridge parameter types, typed optional Pinia modes, in-body `this` resolution and strict compiler configuration.
-- The self-hosted runner routing amendment adds one regression contract that requires all Linux Actions jobs to remain on `self-hosted` and forbids `ubuntu-latest`.
+- The GitHub-hosted runner routing amendment keeps one regression contract that requires all Linux Actions jobs to remain on `ubuntu-latest` and forbids `self-hosted`.
 - The exact frontend gate remains blocking; no `vue-tsc` option, browser assertion or runtime contract is weakened.
 - Playwright remains 47 scenarios and Vitest remains 43 cases.
 
