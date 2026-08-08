@@ -1,15 +1,21 @@
 # DutyLog regression test baseline
 
-Status: v27.37.1.
+Status: v27.37.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.37.1 aligns the new Calendar/Timeline bridge and Pinia action boundaries with strict TypeScript. The self-hosted runner routing amendment adds one CI-routing regression contract, advancing the application baseline to 151 Java test classes / 743 `@Test` methods / 47 Chromium Playwright scenarios / 43 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.37.2 makes legacy route chrome synchronization null-safe after Vue Calendar/Timeline owner retirement. The regression is folded into the existing Calendar migration contract, so the self-hosted application baseline remains 151 Java test classes / 743 `@Test` methods / 47 Chromium Playwright scenarios / 43 Vitest cases, plus the backup tooling shell self-test.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
 
 
+
+## v27.37.2 Vue Calendar Boot Routing Null-Safety Hotfix extension
+
+- `applyRoute()` must not dereference the retired legacy Calendar navigation controls.
+- The existing Calendar/Timeline migration contract requires one null-safe selector collection and forbids the three historical direct `.style.visibility` dereferences.
+- No new JUnit/Vitest/Playwright case is added; exact counts remain 151 / 743 / 47 / 43.
 
 ## v27.37.1 Vue Calendar & Timeline Strict Typecheck Hotfix extension
 

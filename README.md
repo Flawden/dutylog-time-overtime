@@ -1,3 +1,11 @@
+# v27.37.2 — Vue Calendar Boot Routing Null-Safety Hotfix
+
+- Fixes the shared fresh-user Playwright timeout cascade after the Calendar/Timeline Vue owner retires legacy month-navigation controls.
+- Makes legacy `applyRoute()` update `#prev`, `#todayBtn` and `#next` only when those controls still exist, preventing a `null.style` exception during `loadProfile()`.
+- Restores the first-run onboarding path so `#firstRunOnboarding` can become visible and the existing onboarding helper can continue to module/profile persistence.
+- Extends the existing Calendar/Timeline migration source contract without adding a new JUnit or Playwright scenario, so the 151 classes / 743 `@Test` / 47 Playwright / 43 Vitest baseline is unchanged.
+- Changes no API, OpenAPI shape, business rule, PostgreSQL schema, Flyway migration, npm graph, Calendar ownership boundary, retry policy or browser timeout.
+
 # v27.37.1 — Vue Calendar & Timeline Strict Typecheck Hotfix
 
 - Fixes the four strict `vue-tsc` failures found by the first v27.37.0 frontend gate.

@@ -1,6 +1,10 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.37.1.
+Status: Vue app-shell ownership v1, DutyLog v27.37.2.
+
+## Vue Calendar boot-routing null-safety boundary (v27.37.2)
+
+Vue still owns Today/Calendar read surfaces and retires the legacy Calendar navigation controls. Legacy hash routing remains temporarily authoritative for application-level navigation, so its chrome synchronization must treat those retired controls as optional. `applyRoute()` now updates the legacy month navigation only through a null-safe existing-node collection; this preserves first-run profile/onboarding boot without reintroducing a second Calendar owner.
 
 ## Vue Calendar & Timeline strict type boundary (v27.37.1)
 
@@ -72,7 +76,7 @@ frontend/src
 
 ## Routing and bridge
 
-Vue Router still uses memory history. The released hash route remains authoritative for application-level navigation in `v27.37.1`; the Absence/Time Bank and Today/Calendar route bodies are Vue-owned. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
+Vue Router still uses memory history. The released hash route remains authoritative for application-level navigation in `v27.37.2`; the Absence/Time Bank and Today/Calendar route bodies are Vue-owned. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
 
 Allowed transition capabilities are:
 

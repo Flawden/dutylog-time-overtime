@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.37.1
+release_foundation: v27.37.2
 created: 2026-08-04
 updated: 2026-08-06
 ---
@@ -58,6 +58,10 @@ updated: 2026-08-06
 | ADR-010 | Expand/contract database migration and rollback compatibility | до `v27.45.0` |
 
 
+
+## Calendar boot-routing null-safety note — v27.37.2
+
+The full self-hosted Chromium run exposed a common fresh-user timeout pattern: registration and backend bootstrap completed, but no onboarding mutation followed. Vue Calendar retirement had already removed legacy `#prev`, `#todayBtn` and `#next`; the subsequent legacy `applyRoute()` dereferenced the missing controls during `loadProfile()`, aborting the call before `maybeShowOnboarding()`. The route synchronizer now updates only controls that still exist. No domain owner, API, persistence rule, retry or timeout changes.
 
 ## Calendar & Timeline strict typecheck note — v27.37.1
 

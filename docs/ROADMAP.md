@@ -1,11 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.37.1 — Vue Calendar & Timeline Strict Typecheck Hotfix**.
+Current release: **v27.37.2 — Vue Calendar Boot Routing Null-Safety Hotfix**.
 
 
 
 
-## v27.37.1 — Vue Calendar & Timeline Strict Typecheck Hotfix — current
+## v27.37.2 — Vue Calendar Boot Routing Null-Safety Hotfix — current
+
+- [x] Reproduce the common ~30-second fresh-user browser timeout pattern from the self-hosted staging run.
+- [x] Trace the boot path to `loadProfile() -> applyRoute()` after Vue Calendar owner retirement.
+- [x] Make retired legacy Calendar header controls optional instead of dereferencing `null.style`.
+- [x] Preserve strict browser assertions, retry policy, job timeout, domain ownership and backend contracts.
+- [ ] Accept only after the exact 47/47 Chromium, immutable-image and staging path is green.
+
+## v27.37.1 — Vue Calendar & Timeline Strict Typecheck Hotfix — predecessor
 
 - [x] Type the public Calendar/Timeline bridge callback explicitly.
 - [x] Resolve Pinia action mode defaults inside typed action bodies.

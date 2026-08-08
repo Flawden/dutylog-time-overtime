@@ -82,6 +82,7 @@ class VueCalendarTimelineMigrationFrontendContractTest {
     void legacyPlatformRetiresReadSurfacesButPreservesTheDayEditorIsland() throws Exception {
         String bridge = read("frontend/src/platform/bridge/legacyBridge.ts");
         String legacy = read("src/main/resources/static/js/10-core.js");
+        String boot = read("src/main/resources/static/js/70-user-boot.js");
 
         assertTrue(bridge.contains("CALENDAR_TIMELINE_PROJECTION_EVENT"));
         assertTrue(bridge.contains("attachCalendarEditor"));
@@ -91,6 +92,10 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(legacy.contains("document.body.appendChild(panel)"));
         assertTrue(legacy.contains("openCalendarDay(date)"));
         assertTrue(legacy.contains("data-vue-calendar-timeline"));
+        assertTrue(boot.contains("document.querySelectorAll(\".nav #prev, .nav #todayBtn, .nav #next\")"));
+        assertFalse(boot.contains("document.querySelector(\".nav #prev\").style.visibility"));
+        assertFalse(boot.contains("document.querySelector(\".nav #todayBtn\").style.visibility"));
+        assertFalse(boot.contains("document.querySelector(\".nav #next\").style.visibility"));
     }
 
     @Test
@@ -136,10 +141,10 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         String worker = read("src/main/resources/static/service-worker.js");
 
         assertTrue(pwa.contains("dutylog-shell-v27.36.8-synthetic-previous"));
-        assertTrue(pwa.contains("dutylog-shell-v27.37.1-"));
+        assertTrue(pwa.contains("dutylog-shell-v27.37.2-"));
         assertTrue(audit.contains("gzipSync"));
         assertTrue(audit.contains("budget.maxBytes"));
-        assertTrue(budget.contains("\"release\": \"27.37.1\""));
+        assertTrue(budget.contains("\"release\": \"27.37.2\""));
         assertTrue(adr.contains("Status: accepted"));
         assertTrue(adr.contains("network-first"));
         assertTrue(worker.contains("k.startsWith(\"dutylog-shell-\")"));

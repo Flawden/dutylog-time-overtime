@@ -3,7 +3,7 @@
 ```yaml
 domain: calendar-timeline
 target_release: "v27.37.0"
-follow_up_release: "v27.37.1"
+follow_up_release: "v27.37.2"
 status: acceptance-pending
 frontend_owner: Vue 3 + TypeScript
 business_owner: Spring Boot
@@ -37,6 +37,10 @@ Legacy mutation paths request one queued Vue refresh. Bridge-owned selected-day 
 - PWA activation removes only previous DutyLog shell caches.
 - Browser bundle raw/gzip ceilings fail the frontend build when exceeded.
 - Existing browser expectations remain strict; no selectors, retries or page-error policies are weakened.
+
+## v27.37.2 boot-routing null-safety follow-up
+
+The Calendar Vue owner still retires the old month-navigation controls. The remaining legacy hash router must therefore treat those controls as optional while it continues to publish route state during the migration. `applyRoute()` now synchronizes visibility only for controls that still exist, preventing profile boot from aborting before first-run onboarding. Ownership, range state, selected-day compatibility island, API and persistence remain unchanged.
 
 ## v27.37.1 strict typecheck follow-up
 

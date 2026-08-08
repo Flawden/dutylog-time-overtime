@@ -1,8 +1,23 @@
 # Release checklist
 
-Status: v27.37.1.
+Status: v27.37.2.
 
 
+
+## v27.37.2 Vue Calendar Boot Routing Null-Safety Hotfix acceptance
+
+- [x] Root cause narrowed to legacy `applyRoute()` dereferencing Calendar navigation controls already retired by the Vue Calendar owner.
+- [x] Route chrome synchronization is null-safe and does not restore legacy controls.
+- [x] Existing Calendar migration regression contract forbids the three direct `null.style` dereference shapes.
+- [x] Java/Playwright/Vitest baseline counts remain 151 classes / 743 `@Test` / 47 Chromium / 43 Vitest.
+- [ ] Exact frontend gate, Maven verify, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deploy must be green before acceptance.
+
+Tag after full acceptance:
+
+```bash
+git tag -a v27.37.2 -m "v27.37.2 — Vue Calendar Boot Routing Null-Safety Hotfix"
+git push origin v27.37.2
+```
 
 ## v27.37.1 Vue Calendar & Timeline Strict Typecheck Hotfix acceptance
 

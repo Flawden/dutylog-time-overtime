@@ -1,6 +1,6 @@
-# DutyLog API v27.37.1
+# DutyLog API v27.37.2
 
-`v27.37.1` is a frontend strict-TypeScript hotfix only. It changes no backend controller, authorization rule, persistence invariant, OpenAPI shape or Flyway migration. The Vue Calendar & Timeline feature continues to consume the existing generated operations `calendarRange`, `getTimeContext` and `updateCalendarLayer`; the canonical generated contract remains 98 operations and 103 schemas.
+`v27.37.2` is a frontend boot-routing hotfix only. It changes no backend controller, authorization rule, persistence invariant, OpenAPI shape or Flyway migration. The fix is limited to null-safe legacy route chrome synchronization after Vue Calendar/Timeline owner retirement; the canonical generated contract remains 98 operations and 103 schemas.
 
 The generated browser contract now contains **98 operations and 103 schemas**. Array items and `allOf` inheritance are emitted accurately for overtime credits, usages, allocations and absence preview rows. Spring Boot remains the source of truth for validation, ownership, FIFO, closed periods and compensation state.
 
