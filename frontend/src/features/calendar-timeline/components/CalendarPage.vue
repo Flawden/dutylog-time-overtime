@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onMounted } from "vue";
+import { computed, nextTick, onBeforeUnmount, onMounted } from "vue";
 import { storeToRefs } from "pinia";
 import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
@@ -142,6 +142,9 @@ async function openDetails(): Promise<void> {
 onMounted(() => {
   props.bridge.attachCalendarEditor("calendarLegacyPanelHost");
   if (mode.value === "month" && focusDate.value) props.bridge.openCalendarDay(focusDate.value);
+});
+onBeforeUnmount(() => {
+  props.bridge.parkCalendarEditor();
 });
 </script>
 

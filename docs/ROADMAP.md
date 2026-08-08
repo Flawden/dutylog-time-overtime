@@ -1,11 +1,17 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.37.4 — PWA Bundle Budget Release Contract Alignment Hotfix**.
+Current release: **v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hotfix**.
 
 
 
 
-## v27.37.4 — PWA Bundle Budget Release Contract Alignment Hotfix — current
+## v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hotfix — current
+- [x] Use the complete v27.37.4 Chromium result (28 passed / 19 failed) to separate the fixed onboarding blocker from remaining route/editor regressions.
+- [x] Trace repeated `renderChips()` / `null.innerHTML` failures to the selected-day panel being appended under a conditionally-mounted CalendarPage host and destroyed when that host unmounts.
+- [x] Park the selected-day editor on `document.body` before CalendarPage unmount and reattach it on Calendar mount, keeping the island mandatory rather than masking missing descendants with optional chaining.
+- [x] Preserve strict browser diagnostics and leave independent mode/timezone projection failures for evidence-driven follow-up.
+- [ ] Accept only after exact frontend gate, Maven/JUnit, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deployment are green.
+## v27.37.4 — PWA Bundle Budget Release Contract Alignment Hotfix — predecessor
 - [x] Use the v27.37.3 Maven failure to isolate the only failing JUnit assertion after 742 green tests.
 - [x] Remove the stale hardcoded bundle-budget release literal from the Calendar/Timeline migration contract.
 - [x] Derive the PWA current-shell and browser-bundle-budget release assertions from the canonical Maven project version.

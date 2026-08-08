@@ -15,18 +15,18 @@ test('Vue foundation boots the released app shell inside the same-origin Spring 
   });
 
   await expect(page.locator('#dutylog-vue-root')).toHaveAttribute('data-vue-ready', 'true');
-  await expect(page.locator('#dutylog-vue-root')).toHaveAttribute('data-vue-version', '27.37.4');
+  await expect(page.locator('#dutylog-vue-root')).toHaveAttribute('data-vue-version', '27.37.5');
   await expect(page.locator('#dutylog-vue-root')).toHaveAttribute('data-vue-architecture', 'vue-shell-v1');
   await openView(page, 'calendar');
   await expect(page.locator('#view-calendar')).toBeVisible();
   await expect(page.locator('[data-vue-app-shell]')).toBeVisible();
 
   expect(platform).toMatchObject({
-    version: '27.37.4',
+    version: '27.37.5',
     architecture: 'vue-shell-v1',
-    legacyVersion: '27.37.4',
+    legacyVersion: '27.37.5',
     snapshot: {
-      releaseVersion: '27.37.4',
+      releaseVersion: '27.37.5',
       architecture: 'vue-shell-v1',
       phase: 'ready',
       legacyConnected: true,
@@ -35,7 +35,7 @@ test('Vue foundation boots the released app shell inside the same-origin Spring 
   });
 
   const diagnostics = await page.evaluate(() => window.DutyLogVuePlatform?.diagnostics());
-  expect(diagnostics).toMatchObject({ releaseVersion: '27.37.4', route: 'calendar', fatal: null });
+  expect(diagnostics).toMatchObject({ releaseVersion: '27.37.5', route: 'calendar', fatal: null });
 
   await page.evaluate(() => {
     const controlled = Object.assign(new Error('controlled recovery probe'), { requestId: 'e2e-recovery-35' });

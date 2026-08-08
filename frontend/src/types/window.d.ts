@@ -29,6 +29,7 @@ declare global {
     logout(): void;
     retireDomainOwners?(domain: "absence-time-bank" | "calendar-timeline"): void;
     attachCalendarEditor?(hostId: string): void;
+    parkCalendarEditor?(): void;
     openCalendarDay?(date: string): void;
     closeCalendarDay?(): void;
     openTaskCreate?(date: string): void;

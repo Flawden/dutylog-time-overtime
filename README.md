@@ -1,3 +1,11 @@
+# v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hotfix
+
+- Uses the completed v27.37.4 Chromium run (28 passed / 19 failed) to isolate the next shared Calendar migration lifecycle defect instead of treating the 19 failures as independent domain regressions.
+- Preserves the selected-day `#panel` compatibility island across Vue Calendar route unmounts: CalendarPage now parks the island on `document.body` in `onBeforeUnmount()` and reattaches it to `#calendarLegacyPanelHost` when Calendar mounts again.
+- Fixes the root cause behind repeated `renderChips() -> #chips.innerHTML` and related `null.hidden` browser exceptions after leaving Calendar for Settings/Tasks/other routes, without making mandatory selected-day descendants optional.
+- Extends existing Java and Vitest contracts only; baseline remains 151 Java test classes / 743 `@Test` / 47 Chromium Playwright scenarios / 43 Vitest cases / Flyway V47.
+- Makes no backend business-rule, API/OpenAPI, PostgreSQL/Flyway, timeout, retry or assertion weakening change. Independent Calendar mode/projection regressions remain intentionally outside this hotfix.
+
 # v27.37.4 — PWA Bundle Budget Release Contract Alignment Hotfix
 
 - Aligns the Calendar/Timeline PWA bundle-budget regression contract with the canonical Maven project version instead of a stale hardcoded `27.37.1` literal that blocked `mvn verify` after 742 otherwise-green JUnit tests.

@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.37.4"
+const DUTYLOG_VERSION = "27.37.5"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -301,6 +301,12 @@ window.DutyLogLegacyPlatform = Object.freeze({
     const host = document.getElementById(String(hostId || ""));
     const panel = document.getElementById("panel");
     if (host && panel && panel.parentElement !== host) host.appendChild(panel);
+  },
+  parkCalendarEditor(){
+    const panel = document.getElementById("panel");
+    if (!panel) return;
+    panel.hidden = true;
+    if (panel.parentElement !== document.body) document.body.appendChild(panel);
   },
   openCalendarDay(date){
     const key = String(date || "").slice(0, 10);

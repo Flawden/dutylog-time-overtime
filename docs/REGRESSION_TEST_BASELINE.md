@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.37.4.
+Status: v27.37.5.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.37.4 adds no test method or scenario; it aligns the existing Calendar/Timeline PWA bundle-budget contract with the canonical Maven project version so release bumps cannot leave a stale hardcoded budget or current-shell assertion. The application baseline remains 151 Java test classes / 743 `@Test` methods / 47 Chromium Playwright scenarios / 43 Vitest cases, plus the existing CI-routing and backup-tooling contracts.
+Current extension: v27.37.5 adds no test method or scenario; it extends the existing Calendar/Timeline and legacy-bridge contracts so the selected-day `#panel` is parked before CalendarPage unmount and reattached on return instead of being destroyed with `#calendarLegacyPanelHost`. The application baseline remains 151 Java test classes / 743 `@Test` methods / 47 Chromium Playwright scenarios / 43 Vitest cases, plus the existing CI-routing and backup-tooling contracts.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 

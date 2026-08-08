@@ -29,6 +29,7 @@ export interface LegacyBridge {
   logout(): void;
   retireDomainOwners(domain: "absence-time-bank" | "calendar-timeline"): void;
   attachCalendarEditor(hostId: string): void;
+  parkCalendarEditor(): void;
   openCalendarDay(date: string): void;
   closeCalendarDay(): void;
   openTaskCreate(date: string): void;
@@ -70,6 +71,7 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
       adapter()?.retireDomainOwners?.(domain);
     },
     attachCalendarEditor(hostId: string) { adapter()?.attachCalendarEditor?.(hostId); },
+    parkCalendarEditor() { adapter()?.parkCalendarEditor?.(); },
     openCalendarDay(date: string) { adapter()?.openCalendarDay?.(date); },
     closeCalendarDay() { adapter()?.closeCalendarDay?.(); },
     openTaskCreate(date: string) { adapter()?.openTaskCreate?.(date); },

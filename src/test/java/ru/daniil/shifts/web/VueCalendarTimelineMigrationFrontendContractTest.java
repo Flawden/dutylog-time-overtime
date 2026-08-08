@@ -81,15 +81,20 @@ class VueCalendarTimelineMigrationFrontendContractTest {
     @Test
     void legacyPlatformRetiresReadSurfacesButPreservesTheDayEditorIsland() throws Exception {
         String bridge = read("frontend/src/platform/bridge/legacyBridge.ts");
+        String page = read(FEATURE.resolve("components/CalendarPage.vue"));
         String legacy = read("src/main/resources/static/js/10-core.js");
         String boot = read("src/main/resources/static/js/70-user-boot.js");
         String calendar = read("src/main/resources/static/js/30-calendar.js");
 
         assertTrue(bridge.contains("CALENDAR_TIMELINE_PROJECTION_EVENT"));
         assertTrue(bridge.contains("attachCalendarEditor"));
+        assertTrue(bridge.contains("parkCalendarEditor"));
+        assertTrue(page.contains("onBeforeUnmount"));
+        assertTrue(page.contains("props.bridge.parkCalendarEditor()"));
         assertTrue(legacy.contains("calendar-timeline"));
         assertTrue(legacy.contains("attachCalendarEditor(hostId)"));
-        assertTrue(legacy.contains("document.getElementById(String(hostId"));
+        assertTrue(legacy.contains("parkCalendarEditor()"));
+        assertTrue(legacy.contains("panel.parentElement !== document.body"));
         assertTrue(legacy.contains("document.body.appendChild(panel)"));
         assertTrue(legacy.contains("openCalendarDay(date)"));
         assertTrue(legacy.contains("data-vue-calendar-timeline"));

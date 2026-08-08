@@ -13,7 +13,7 @@ function fakeWindow(): Window {
 
 function snapshot(route = "calendar"): DutyLogLegacySnapshot {
   return {
-    version: "27.37.4",
+    version: "27.37.5",
     language: "ru",
     route,
     online: true,
@@ -31,14 +31,18 @@ describe("legacy bridge", () => {
     const openModal = vi.fn();
     const logout = vi.fn();
     const retireDomainOwners = vi.fn();
+    const attachCalendarEditor = vi.fn();
+    const parkCalendarEditor = vi.fn();
     const subscribe = vi.fn(() => vi.fn());
     target.DutyLogLegacyPlatform = {
-      version: "27.37.4",
+      version: "27.37.5",
       snapshot: () => snapshot(),
       navigate,
       openModal,
       logout,
       retireDomainOwners,
+      attachCalendarEditor,
+      parkCalendarEditor,
       subscribe,
     };
 
@@ -47,6 +51,8 @@ describe("legacy bridge", () => {
     bridge.openModal("absenceComposerModal", "vacationStart");
     bridge.logout();
     bridge.retireDomainOwners("absence-time-bank");
+    bridge.attachCalendarEditor("calendarLegacyPanelHost");
+    bridge.parkCalendarEditor();
     const listener = vi.fn();
     bridge.subscribe(listener);
 
@@ -56,6 +62,8 @@ describe("legacy bridge", () => {
     expect(openModal).toHaveBeenCalledWith("absenceComposerModal", "vacationStart");
     expect(logout).toHaveBeenCalledOnce();
     expect(retireDomainOwners).toHaveBeenCalledWith("absence-time-bank");
+    expect(attachCalendarEditor).toHaveBeenCalledWith("calendarLegacyPanelHost");
+    expect(parkCalendarEditor).toHaveBeenCalledOnce();
     expect(subscribe).toHaveBeenCalledWith(listener);
   });
 

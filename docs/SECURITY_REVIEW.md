@@ -1,6 +1,6 @@
 # DutyLog security review
 
-Status: v27.37.4.
+Status: v27.37.5.
 
 ## v27.37.1 strict typecheck hotfix review
 
