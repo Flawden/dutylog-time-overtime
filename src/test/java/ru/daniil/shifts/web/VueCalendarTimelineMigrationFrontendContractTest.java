@@ -145,10 +145,12 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         String worker = read("src/main/resources/static/service-worker.js");
 
         assertTrue(pwa.contains("dutylog-shell-v27.36.8-synthetic-previous"));
-        assertTrue(pwa.contains("dutylog-shell-v27.37.3-"));
+        String releaseVersion = projectVersion();
+
+        assertTrue(pwa.contains("dutylog-shell-v" + releaseVersion + "-"));
         assertTrue(audit.contains("gzipSync"));
         assertTrue(audit.contains("budget.maxBytes"));
-        assertTrue(budget.contains("\"release\": \"27.37.1\""));
+        assertTrue(budget.contains("\"release\": \"" + releaseVersion + "\""));
         assertTrue(adr.contains("Status: accepted"));
         assertTrue(adr.contains("network-first"));
         assertTrue(worker.contains("k.startsWith(\"dutylog-shell-\")"));
@@ -173,6 +175,18 @@ class VueCalendarTimelineMigrationFrontendContractTest {
             }
         }
         return result.toString();
+    }
+
+
+    private static String projectVersion() throws Exception {
+        String pom = read("pom.xml");
+        var matcher = java.util.regex.Pattern.compile(
+                "<artifactId>dutylog</artifactId>\\s*<version>([^<]+)</version>"
+        ).matcher(pom);
+        if (!matcher.find()) {
+            throw new IllegalStateException("DutyLog project version not found in pom.xml");
+        }
+        return matcher.group(1).trim();
     }
 
     private static String read(String path) throws Exception { return read(Path.of(path)); }

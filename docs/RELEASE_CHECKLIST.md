@@ -1,9 +1,22 @@
 # Release checklist
 
-Status: v27.37.3.
+Status: v27.37.4.
 
 
 
+## v27.37.4 PWA Bundle Budget Release Contract Alignment Hotfix acceptance
+- [x] v27.37.3 Maven/JUnit evidence isolates one failure in `pwaUpgradeAndBundleBudgetsBecomeRecurringFrontendGates` after 742 green tests.
+- [x] The stale hardcoded `27.37.1` bundle-budget assertion is removed.
+- [x] Current PWA cache and bundle-budget release assertions derive from the canonical DutyLog version in `pom.xml`.
+- [x] v27.37.3 `#layout` null-safety runtime fix remains intact and strict `#panel` compatibility-island ownership remains enforced.
+- [x] Baselines remain 151 classes / 743 `@Test` / 47 Chromium / 43 Vitest; OpenAPI remains 98 operations / 103 schemas and Flyway remains V47.
+- [ ] Exact frontend gate, Maven verify, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deploy must be green before acceptance.
+Tag after full acceptance:
+
+```bash
+git tag -a v27.37.4 -m "v27.37.4 — PWA Bundle Budget Release Contract Alignment Hotfix"
+git push origin v27.37.4
+```
 ## v27.37.3 Vue Calendar Selected-Day Island Routing Hotfix acceptance
 - [x] Chromium trace proves `selectDay(null) -> $("layout").classList` is the remaining shared fresh-user boot exception after v27.37.2.
 - [x] Retired legacy `#layout` access is null-safe; the preserved selected-day `#panel` remains a strict required compatibility island.

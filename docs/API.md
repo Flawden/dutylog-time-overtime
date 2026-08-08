@@ -1,4 +1,4 @@
-# DutyLog API v27.37.3
+# DutyLog API v27.37.4
 
 `v27.37.1` is a frontend strict-TypeScript hotfix only. It changes no backend controller, authorization rule, persistence invariant, OpenAPI shape or Flyway migration. The Vue Calendar & Timeline feature continues to consume the existing generated operations `calendarRange`, `getTimeContext` and `updateCalendarLayer`; the canonical generated contract remains 98 operations and 103 schemas.
 

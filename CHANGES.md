@@ -1,3 +1,11 @@
+# v27.37.4 — PWA Bundle Budget Release Contract Alignment Hotfix
+
+- Aligns the Calendar/Timeline PWA bundle-budget regression contract with the canonical Maven project version instead of a stale hardcoded `27.37.1` literal that blocked `mvn verify` after 742 otherwise-green JUnit tests.
+- Makes both the current PWA shell-cache assertion and `frontend/browser-bundle-budget.json` release assertion derive from `pom.xml`, preventing the same stale-version failure on future release bumps.
+- Preserves the v27.37.3 selected-day island runtime hotfix unchanged; this release changes no business logic, API/OpenAPI contract, PostgreSQL schema, Flyway migration, timeout, retry policy or browser acceptance strictness.
+- Adds no JUnit, Playwright or Vitest case; the baseline remains 151 Java test classes / 743 `@Test` / 47 Chromium Playwright scenarios / 43 Vitest cases / Flyway V47.
+- Acceptance remains pending until exact frontend gate, Maven/JUnit, all 47 Chromium scenarios, immutable image smoke and staging deployment are green.
+
 # v27.37.3 — Vue Calendar Selected-Day Island Routing Hotfix
 
 - Fixes the second shared fresh-user boot failure revealed by the v27.37.2 Chromium trace: `selectDay(null)` still dereferenced the retired legacy Calendar `#layout` during `loadProfile() -> applyRoute()`.

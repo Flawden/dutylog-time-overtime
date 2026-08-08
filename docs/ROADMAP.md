@@ -1,11 +1,17 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.37.3 — Vue Calendar Selected-Day Island Routing Hotfix**.
+Current release: **v27.37.4 — PWA Bundle Budget Release Contract Alignment Hotfix**.
 
 
 
 
-## v27.37.3 — Vue Calendar Selected-Day Island Routing Hotfix — current
+## v27.37.4 — PWA Bundle Budget Release Contract Alignment Hotfix — current
+- [x] Use the v27.37.3 Maven failure to isolate the only failing JUnit assertion after 742 green tests.
+- [x] Remove the stale hardcoded bundle-budget release literal from the Calendar/Timeline migration contract.
+- [x] Derive the PWA current-shell and browser-bundle-budget release assertions from the canonical Maven project version.
+- [x] Preserve the v27.37.3 selected-day island runtime fix and all strict frontend/browser gates.
+- [ ] Accept only after exact frontend gate, Maven/JUnit, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deployment are green.
+## v27.37.3 — Vue Calendar Selected-Day Island Routing Hotfix — predecessor
 - [x] Recover the first real Playwright trace from the persistent runner worktree after the 45-minute run timeout.
 - [x] Trace the shared fresh-user failure to `selectDay(null)` dereferencing the retired legacy Calendar `#layout`.
 - [x] Make only `#layout` optional while keeping the selected-day `#panel` compatibility island mandatory.
