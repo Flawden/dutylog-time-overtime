@@ -14,7 +14,7 @@ The self-hosted staging run reached the real Chromium suite and many unrelated f
 document.querySelector(...).style.visibility
 ```
 
-After Vue ownership retirement, each query returns `null`. The resulting exception occurs inside `loadProfile()` before `maybeShowOnboarding()`. `loadProfile()` catches the exception, so the overall application continues loading and backend traffic looks healthy, while every fresh-user E2E waits for `#firstRunOnboarding` until its 30-second timeout.
+After Vue ownership retirement, each query returns `null`, producing the literal `null.style` failure mode. The resulting exception occurs inside `loadProfile()` before `maybeShowOnboarding()`. `loadProfile()` catches the exception, so the overall application continues loading and backend traffic looks healthy, while every fresh-user E2E waits for `#firstRunOnboarding` until its 30-second timeout.
 
 ## Fix
 
