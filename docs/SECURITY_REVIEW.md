@@ -1,10 +1,6 @@
 # DutyLog security review
 
-Status: v27.37.2.
-
-## v27.37.2 boot-routing null-safety review
-
-The change is frontend control-flow only: it replaces unconditional legacy DOM dereferences with updates over existing controls. It adds no origin, credential, authorization, API, storage, service-worker permission or secret-handling capability. Browser error collection remains strict.
+Status: v27.37.3.
 
 ## v27.37.1 strict typecheck hotfix review
 

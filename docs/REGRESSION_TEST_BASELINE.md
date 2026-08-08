@@ -4,7 +4,7 @@ Status: v27.37.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.37.2 makes legacy route chrome synchronization null-safe after Vue Calendar/Timeline owner retirement. The regression is folded into the existing Calendar migration contract, so the self-hosted application baseline remains 151 Java test classes / 743 `@Test` methods / 47 Chromium Playwright scenarios / 43 Vitest cases, plus the backup tooling shell self-test.
+Current extension: v27.37.3 adds no test method or scenario; it extends the existing Calendar/Timeline migration contract so the retired `#layout` is optional while the preserved selected-day `#panel` remains mandatory. The application baseline remains 151 Java test classes / 743 `@Test` methods / 47 Chromium Playwright scenarios / 43 Vitest cases, plus the existing CI-routing and backup-tooling contracts.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 

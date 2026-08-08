@@ -1,11 +1,17 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.37.2 — Vue Calendar Boot Routing Null-Safety Hotfix**.
+Current release: **v27.37.3 — Vue Calendar Selected-Day Island Routing Hotfix**.
 
 
 
 
-## v27.37.2 — Vue Calendar Boot Routing Null-Safety Hotfix — current
+## v27.37.3 — Vue Calendar Selected-Day Island Routing Hotfix — current
+- [x] Recover the first real Playwright trace from the persistent runner worktree after the 45-minute run timeout.
+- [x] Trace the shared fresh-user failure to `selectDay(null)` dereferencing the retired legacy Calendar `#layout`.
+- [x] Make only `#layout` optional while keeping the selected-day `#panel` compatibility island mandatory.
+- [x] Preserve strict Playwright assertions, retry policy, job timeout, Vue ownership, generated API and backend contracts.
+- [ ] Accept only after exact frontend gate, Maven/JUnit, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deployment are green.
+## v27.37.2 — Vue Calendar Boot Routing Null-Safety Hotfix — predecessor
 
 - [x] Reproduce the common ~30-second fresh-user browser timeout pattern from the self-hosted staging run.
 - [x] Trace the boot path to `loadProfile() -> applyRoute()` after Vue Calendar owner retirement.

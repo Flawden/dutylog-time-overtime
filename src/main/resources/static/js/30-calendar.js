@@ -460,7 +460,7 @@ function renderSummary(){
 /* ─── Панель дня ────────────────────────────────────────────── */
 function selectDay(k){
   state.selected = k;
-  $("layout").classList.toggle("with-panel", !!k);
+  $("layout")?.classList.toggle("with-panel", !!k);
   document.body.classList.toggle("panel-open", !!k);
   $("panel").hidden = !k;
   if (k) {

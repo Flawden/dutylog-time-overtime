@@ -3,7 +3,7 @@
 ```yaml
 domain: calendar-timeline
 target_release: "v27.37.0"
-follow_up_release: "v27.37.2"
+follow_up_release: "v27.37.3"
 status: acceptance-pending
 frontend_owner: Vue 3 + TypeScript
 business_owner: Spring Boot

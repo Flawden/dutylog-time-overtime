@@ -267,9 +267,7 @@ function applyRoute(){
     if (selected) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
   });
-  // Calendar/Timeline Vue ownership retires these legacy controls before the
-  // legacy profile boot can re-apply the current route. Update only controls
-  // that still exist so first-run onboarding cannot be aborted by null.style.
+  // месячная навигация в шапке осмысленна только в календаре
   document.querySelectorAll(".nav #prev, .nav #todayBtn, .nav #next").forEach(control => {
     control.style.visibility = active === "calendar" ? "visible" : "hidden";
   });

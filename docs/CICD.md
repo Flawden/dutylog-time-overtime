@@ -1,12 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.37.2.
-
-## v27.37.2 Calendar boot-routing null-safety delivery boundary
-
-- The full staging validate path remains mandatory: exact frontend gate, Maven, 47 Chromium scenarios, immutable image, migration smoke and deploy.
-- The hotfix changes no retries, Playwright timeout, job timeout, runner routing or artifact policy.
-- A source regression contract proves legacy routing no longer dereferences Calendar controls after Vue owner retirement.
+Status: v27.37.3.
 
 ## v27.37.1 Calendar/Timeline strict typecheck delivery boundary
 

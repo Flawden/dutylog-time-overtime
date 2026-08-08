@@ -1,8 +1,8 @@
 # DutyLog architecture
 
-## Active Vue frontend transition — v27.37.2 Calendar boot-routing null-safety hotfix
+## Active Vue frontend transition — v27.37.1 Calendar & Timeline strict typecheck hotfix
 
-DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains separate. `v27.37.0` gave Vue sole ownership of Today and the Calendar Month, Week and Day read surfaces through one generated-API range store; `v27.37.1` repaired strict TypeScript annotations. `v27.37.2` keeps that ownership unchanged and makes the remaining legacy route-chrome synchronizer null-safe after Vue retires the old Calendar navigation controls. Spring Boot remains authoritative for shifts, tasks, important events, absences, reminders, calendar layers and every mutation.
+DutyLog remains one modular monolith, one repository, one release version and one production application image/container. PostgreSQL remains separate. `v27.37.0` gave Vue sole ownership of Today and the Calendar Month, Week and Day read surfaces through one generated-API range store. Spring Boot remains authoritative for shifts, tasks, important events, absences, reminders, calendar layers and every mutation. `v27.37.1` changes only compile-time TypeScript annotations at the public bridge and Pinia action boundaries.
 
 The mature selected-day editor is preserved as one explicitly mounted compatibility island inside the Vue Calendar workspace. Legacy Today and Calendar read roots are retired after Vue readiness; their historical render entry points only request a Vue refresh and cannot become a second read owner. A typed projection event updates the remaining legacy editor island without exposing mutable Vue state.
 

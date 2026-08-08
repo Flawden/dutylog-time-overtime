@@ -1,3 +1,11 @@
+# v27.37.3 — Vue Calendar Selected-Day Island Routing Hotfix
+
+- Fixes the second shared fresh-user boot failure revealed by the v27.37.2 Chromium trace: `selectDay(null)` still dereferenced the retired legacy Calendar `#layout` during `loadProfile() -> applyRoute()`.
+- Treats only the retired `#layout` wrapper as optional while keeping the preserved selected-day editor `#panel` strict, matching the bounded compatibility-island architecture.
+- Lets boot reach `maybeShowOnboarding()` instead of throwing before `#firstRunOnboarding` becomes visible, removing the common ~30-second timeout cause shared by unrelated browser scenarios.
+- Extends the existing Calendar/Timeline migration source contract without adding a new JUnit, Playwright or Vitest case; the baseline remains 151 classes / 743 `@Test` / 47 Playwright / 43 Vitest.
+- Changes no API, OpenAPI shape, business rule, PostgreSQL schema, Flyway migration, npm graph, retry policy, browser timeout or CI runner routing.
+
 # v27.37.2 — Vue Calendar Boot Routing Null-Safety Hotfix
 
 - Fixes the shared fresh-user Playwright timeout cascade after the Calendar/Timeline Vue owner retires legacy month-navigation controls.
