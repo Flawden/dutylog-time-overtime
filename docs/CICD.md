@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.38.5.
+Status: v27.38.6.
 
 ## v27.38.0 Tasks, Notes & Important Days delivery boundary
 
@@ -249,6 +249,6 @@ Rollback changes the application image only. Flyway migrations are forward-only.
 
 Deployment smoke checks capture HTTP responses before searching them. Do not use `curl ... | grep -q` or `echo "$BODY" | grep -q` in scripts that enable `set -o pipefail`: an early match can close the pipe and turn a successful check into SIGPIPE exit 141.
 
-## v27.38.5 browser fail-fast ordering
+## v27.38.6 browser fail-fast ordering
 
 After the exact frontend gate, Maven and Playwright installation, CI/staging run `npm run test:e2e:canary` before `npm run test:e2e`. The canary catches common boot/readiness regressions in one scenario; it never replaces or weakens the mandatory full Chromium suite. Root Playwright preflight also refuses to run when the Vue production assets were not built.

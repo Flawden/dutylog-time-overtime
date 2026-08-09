@@ -1,13 +1,17 @@
 import { defineStore } from "pinia";
 import { calendarTimelineApi } from "../api/calendarTimelineApi";
 import type { CalendarMode, CalendarRangeBundle, CalendarTimelineProjectionSnapshot } from "../types/domain";
-import { calendarLoadRange, navigateDate, todayIso, validDate } from "../types/model";
+import { calendarLoadRange, navigateDate, normalizeCalendarBundle, todayIso, validDate } from "../types/model";
 import { publishCalendarTimelineProjection } from "@/platform/bridge/legacyBridge";
 
 const MODE_KEY = "dutylog.calendar.mode.v2";
 const FOCUS_KEY = "dutylog.calendar.focus.v2";
 let readSequence = 0;
 let activeApi = calendarTimelineApi;
+
+type CalendarTimelineOfflineSnapshot = Readonly<{ bundle: unknown; savedAt: string | null }>;
+type CalendarTimelineOfflineSource = (focusDate: string) => Promise<CalendarTimelineOfflineSnapshot | null>;
+let activeOfflineSource: CalendarTimelineOfflineSource | null = null;
 
 function storageGet(key: string): string | null {
   try { return typeof localStorage === "undefined" ? null : localStorage.getItem(key); } catch { return null; }
@@ -20,6 +24,31 @@ export function installCalendarTimelineApiForTests(api: typeof calendarTimelineA
   const previous = activeApi;
   activeApi = api;
   return () => { activeApi = previous; };
+}
+
+export function installCalendarTimelineOfflineSource(source: CalendarTimelineOfflineSource): () => void {
+  const previous = activeOfflineSource;
+  activeOfflineSource = source;
+  return () => { if (activeOfflineSource === source) activeOfflineSource = previous; };
+}
+
+function canUseOfflineFallback(error: unknown): boolean {
+  if (typeof navigator !== "undefined" && navigator.onLine === false) return true;
+  if (error instanceof TypeError) return true;
+  const message = error instanceof Error ? error.message.toLowerCase() : String(error ?? "").toLowerCase();
+  return message.includes("network") || message.includes("failed to fetch") || message.includes("load failed") || message.includes("offline") || message.includes("нет связи");
+}
+
+async function loadOfflineCalendar(focusDate: string): Promise<CalendarRangeBundle | null> {
+  if (!activeOfflineSource) return null;
+  try {
+    const snapshot = await activeOfflineSource(focusDate);
+    if (!snapshot?.bundle) return null;
+    const range = calendarLoadRange(focusDate);
+    return normalizeCalendarBundle(snapshot.bundle, range.from, range.to);
+  } catch {
+    return null;
+  }
 }
 
 function initialMode(): CalendarMode {
@@ -68,6 +97,20 @@ export const useCalendarTimelineStore = defineStore("dutylog-calendar-timeline",
         if (typeof window !== "undefined") publishCalendarTimelineProjection(window, snapshot);
       } catch (error) {
         if (sequence !== readSequence) return;
+        const fallbackFocus = preferWorkDate ? this.workDate : this.focusDate;
+        const offlineBundle = canUseOfflineFallback(error) ? await loadOfflineCalendar(fallbackFocus) : null;
+        if (sequence !== readSequence) return;
+        if (offlineBundle) {
+          this.bundle = offlineBundle;
+          if (preferWorkDate) {
+            this.focusDate = fallbackFocus;
+            this.persist();
+          }
+          this.loaded = true;
+          const snapshot: CalendarTimelineProjectionSnapshot = { bundle: offlineBundle, focusDate: this.focusDate, mode: this.mode };
+          if (typeof window !== "undefined") publishCalendarTimelineProjection(window, snapshot);
+          return;
+        }
         this.error = error instanceof Error ? error.message : "Не удалось загрузить календарь";
       } finally {
         if (sequence === readSequence) this.loading = false;

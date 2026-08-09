@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import type { CalendarTimelineApi } from "../api/calendarTimelineApi";
 import { normalizeCalendarBundle } from "../types/model";
-import { installCalendarTimelineApiForTests, useCalendarTimelineStore } from "./calendarTimelineStore";
+import { installCalendarTimelineApiForTests, installCalendarTimelineOfflineSource, useCalendarTimelineStore } from "./calendarTimelineStore";
 
 function deferred<T>() {
   let resolve!: (value: T) => void;
@@ -74,7 +74,7 @@ describe("calendar and timeline store", () => {
   });
 
 
-  it("loads the work-date range for Today instead of a persisted historical focus", async () => {
+  it("loads the work-date range for Today and falls back to the installed offline snapshot", async () => {
     const load = vi.fn().mockResolvedValue(loaded("Today", "2026-08-05"));
     const restore = installCalendarTimelineApiForTests(mockApi({ load }));
     const store = useCalendarTimelineStore();
@@ -84,6 +84,17 @@ describe("calendar and timeline store", () => {
     expect(load).toHaveBeenCalledWith("2025-01-15", true);
     expect(store.focusDate).toBe("2026-08-05");
     restore();
+
+    const restoreOfflineApi = installCalendarTimelineApiForTests(mockApi({ load: vi.fn().mockRejectedValue(new TypeError("Failed to fetch")) }));
+    const restoreOfflineSource = installCalendarTimelineOfflineSource(vi.fn().mockResolvedValue({ bundle: loaded("Cached", "2026-08-05").bundle, savedAt: "2026-08-09T12:00:00Z" }));
+    store.$reset();
+    store.focusDate = "2026-08-05";
+    await store.refresh();
+    expect(store.loaded).toBe(true);
+    expect(store.bundle?.tasks[0]?.text).toBe("Cached");
+    expect(store.error).toBe("");
+    restoreOfflineSource();
+    restoreOfflineApi();
   });
 
   it("optimistically toggles a calendar layer and rolls back a failed mutation", async () => {

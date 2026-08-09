@@ -1,12 +1,12 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.5 — Windows Frontend Gate & Calendar Contract Alignment Hotfix**.
+Current release: **v27.38.6 — Vue Calendar Offline Source Typecheck Hotfix**.
 
 
 
 
 
-## v27.38.5 — Windows Frontend Gate & Calendar Contract Alignment Hotfix — current
+## v27.38.6 — Vue Calendar Offline Source Typecheck Hotfix — current
 - [x] Use the first v27.38.4 local Windows evidence instead of running expensive E2E blindly: native frontend gate fails inside `npm.ps1`; Maven reaches 751 tests with exactly two static Calendar contract failures.
 - [x] Resolve `npm.cmd` explicitly under PowerShell strict mode so the Windows gate reaches the pinned Node/npm validation and frontend pipeline.
 - [x] Align schedule-layer Vue-yield and cross-midnight Calendar unit source contracts with the actual implementation without changing runtime semantics.

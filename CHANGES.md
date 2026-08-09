@@ -1,3 +1,10 @@
+# v27.38.6 — Vue Calendar Offline Source Typecheck Hotfix
+
+- Restores the Calendar offline-source contract that v27.38.4 wired into `CalendarTimelineWorkspace.vue` but did not actually export from `calendarTimelineStore.ts`; this was the direct cause of TS2305 in the exact CI frontend gate.
+- Adds the typed `CalendarTimelineOfflineSource` installer and uses the existing legacy `dataLayer` snapshot only as a network/offline fallback; HTTP/business failures still surface instead of being silently hidden by stale cache.
+- Explicitly types the workspace `focusDate` callback and extends existing Calendar store/static regression coverage without increasing the 49-case Vitest or 751-test Java baselines.
+- Full Chromium acceptance remains pending; do not start E2E until exact Node 20.18.1/npm 10.8.2 frontend gate and Maven are green.
+
 # v27.38.5 — Windows Frontend Gate & Calendar Contract Alignment Hotfix
 
 - Fixes the first native Windows frontend-gate defect exposed by v27.38.4: PowerShell `Set-StrictMode` was invoking `C:\Program Files\nodejs\npm.ps1`, whose `$MyInvocation.Statement` access fails before the pinned Node/npm checks can run. The Windows gate now resolves and invokes `npm.cmd` explicitly for version, install, graph and script execution.

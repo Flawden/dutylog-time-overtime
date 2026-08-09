@@ -1,9 +1,8 @@
-# v27.38.5 — Windows Frontend Gate & Calendar Contract Alignment Hotfix
+# v27.38.6 — Vue Calendar Offline Source Typecheck Hotfix
 
-- Fixes native Windows frontend-gate execution by resolving `npm.cmd` explicitly under PowerShell strict mode instead of invoking `npm.ps1`.
-- Aligns the two v27.38.4 Maven-failing Calendar source contracts with the actual Vue ownership guard and semantic cross-midnight coverage.
-- Changes no production business rule, API/OpenAPI shape, PostgreSQL schema, Flyway migration, browser timeout, retry policy or E2E assertion.
-- Baseline remains 152 Java classes / 751 tests / 47 Playwright / 49 Vitest / Flyway V47; acceptance still requires exact frontend, Maven, canary/full Chromium, image, PostgreSQL smoke and staging.
+- Restores the typed Calendar offline-source installer required by the v27.38.4 ownership/offline bridge and fixes the exact CI `vue-tsc` TS2305/TS7006 failure.
+- Reuses the existing IndexedDB `dataLayer` snapshot only for genuine offline/network fallback; generated OpenAPI remains authoritative online.
+- Keeps fail-fast E2E preflight/canary and all existing strict TypeScript, Vitest, JUnit and Playwright gates intact.
 
 # v27.38.3 — Vue Productivity Strict Typecheck Hotfix
 

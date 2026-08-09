@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.38.5
+release_foundation: v27.38.6
 created: 2026-08-04
 updated: 2026-08-09
 ---
@@ -60,9 +60,9 @@ updated: 2026-08-09
 
 
 
-## Vue Productivity ownership/browser parity note — v27.38.5
+## Vue Productivity ownership/browser parity note — v27.38.6
 
-- v27.38.3 reached exact frontend and Maven gates but browser execution still exposed ownership/readiness and Calendar parity defects; v27.38.5 consolidates them before another full-suite acceptance attempt.
+- v27.38.3 reached exact frontend and Maven gates but browser execution still exposed ownership/readiness and Calendar parity defects; v27.38.6 consolidates them before another full-suite acceptance attempt.
 - Q-10 remains one-queue: offline Productivity/Calendar reads reuse the existing dataLayer snapshot/queue and reload authoritative generated-API state after reconnect.
 - Q-12 remains fail-closed: Vue domain commands are installed before legacy retirement markers become ready, while legacy renderers stop mutating Vue-owned Calendar/Productivity surfaces.
 - Browser delivery now fails fast when `frontend/dist` is missing and runs a boot canary before the mandatory 47-scenario suite; no timeout, retry or assertion has been weakened.

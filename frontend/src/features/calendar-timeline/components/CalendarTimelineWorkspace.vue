@@ -24,7 +24,7 @@ const domain: DutyLogCalendarTimelineDomain = Object.freeze({
 
 onBeforeMount(() => {
   previousDomain = window.DutyLogVueDomains?.calendarTimeline;
-  restoreOfflineSource = installCalendarTimelineOfflineSource(async focusDate => props.bridge.offlineCalendarSnapshot(focusDate));
+  restoreOfflineSource = installCalendarTimelineOfflineSource(async (focusDate: string) => props.bridge.offlineCalendarSnapshot(focusDate));
   window.DutyLogVueDomains = Object.freeze({ ...(window.DutyLogVueDomains ?? {}), calendarTimeline: domain });
   props.bridge.retireDomainOwners("calendar-timeline");
 });

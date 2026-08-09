@@ -52,6 +52,8 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(store.contains("const sequence = ++readSequence"));
         assertTrue(store.contains("if (sequence !== readSequence) return"));
         assertTrue(store.contains("dutylog.calendar.mode.v2"));
+        assertTrue(store.contains("export function installCalendarTimelineOfflineSource"));
+        assertTrue(store.contains("canUseOfflineFallback(error) ? await loadOfflineCalendar(fallbackFocus) : null"));
         assertTrue(store.contains("dutylog.calendar.focus.v2"));
         assertTrue(store.contains("publishCalendarTimelineProjection"));
     }
