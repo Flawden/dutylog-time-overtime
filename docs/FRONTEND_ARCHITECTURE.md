@@ -1,6 +1,15 @@
 # Frontend architecture
 
-Status: Vue app-shell ownership v1, DutyLog v27.37.1.
+Status: Vue app-shell plus Absence/Time Bank, Calendar/Timeline and Productivity ownership, DutyLog v27.38.0.
+
+
+## Vue Tasks, Notes & Important Days ownership (v27.38.0)
+
+Vue now owns the bounded `productivity` domain: Tasks board/Inbox presentation, Task details/editor, selected-day Tasks, multiple daily Notes, Important Days board/details/editor and selected-day Important Dates. The feature uses the generated OpenAPI client for online reads/writes and independent read-sequence guards for latest-read-wins behavior. Spring Boot remains authoritative for scheduling/deadline validation, subtask completion, note order/persistence, Inbox conversion, recurrence/timezone projection and every persisted business rule.
+
+Q-10 offline/reconnect reuses the existing legacy `dataLayer` queue and cached calendar snapshot through typed bridge operations. Vue does not create a second offline store. Note edits, task completion and Inbox capture may queue offline; selected-day productivity can read the cached snapshot; reconnect flushes the existing queue and reloads authoritative state. New-note creation remains disabled offline until create-identity semantics are owned by the queue.
+
+The old Tasks/Important route roots and productivity modals are retired after Vue ownership is ready. Cross-domain Today/Calendar launches call `DutyLogVueDomains.productivity` by name rather than invoking hidden legacy DOM owners.
 
 ## Vue Calendar & Timeline strict type boundary (v27.37.1)
 
@@ -48,7 +57,9 @@ When the active route is outside primary navigation, the visible More control an
 
 **Vue also owns the bounded Calendar & Timeline domain**: Today, Calendar Month/Week/Day, focused-date navigation, hourly timeline composition and calendar-layer visibility. The generated-API store treats Spring Boot read models as authoritative and keeps only view state and optimistic presentation state locally.
 
-**Legacy product screens remain authoritative** for Payroll, Tasks, Important Days, Settings and Admin. The selected-day editor is the only legacy Calendar compatibility island and may mutate calendar state only through its released backend paths; successful legacy mutations request one Vue refresh.
+**Vue also owns the bounded Productivity domain**: Tasks/Inbox presentation, Task details/editor, selected-day Tasks, multiple daily Notes and Important Days. The existing dataLayer remains the only offline queue/snapshot infrastructure and is reached through typed bridge operations.
+
+**Legacy product screens remain authoritative** for Payroll, Settings and Admin. The selected-day Calendar shell remains a temporary compatibility host for still-legacy shift/schedule/overtime controls; its Tasks/Notes/Important bodies are Vue-owned.
 
 ```text
 frontend/src
@@ -63,16 +74,16 @@ frontend/src
 ## State ownership
 
 - Spring Boot owns business rules and persisted truth.
-- Legacy product read models remain authoritative only for domains that have not migrated; Absence/Time Bank and Calendar/Timeline use bounded Vue stores over backend read models.
+- Legacy product read models remain authoritative only for domains that have not migrated; Absence/Time Bank, Calendar/Timeline and Productivity use bounded Vue stores over backend read models.
 - The Calendar/Timeline store owns only focused date, view mode, loading/error state and the current authoritative range snapshot; it never calculates canonical shifts, absences, task ownership or recurrence rules.
 - The shell receives only a frozen snapshot: route, allowed navigation, language, online/module readiness and safe profile display fields.
 - Pinia owns explicit shell and migrated-domain UI state; it never mirrors one global mutable product state.
 - Local form drafts remain local to each migrated composer or the temporary selected-day editor island.
-- Offline queue and synchronization remain a separate infrastructure boundary.
+- Offline queue and synchronization remain a separate infrastructure boundary; Productivity reuses that queue through named bridge operations and never creates a second mutable offline owner.
 
 ## Routing and bridge
 
-Vue Router still uses memory history. The released hash route remains authoritative for application-level navigation in `v27.37.1`; the Absence/Time Bank and Today/Calendar route bodies are Vue-owned. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
+Vue Router still uses memory history. The released hash route remains authoritative for application-level navigation in `v27.38.0`; the Absence/Time Bank and Today/Calendar route bodies are Vue-owned. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
 
 Allowed transition capabilities are:
 
@@ -89,9 +100,14 @@ openTaskCreate
 openTaskDetails
 openQuickActions
 openImportantDetails
+offlineUpdateNote
+offlineSetTaskDone
+offlineCaptureInbox
+offlineSelectedDay
+offlineSync
 ```
 
-Vue must not read `window.state`, query `#tabbar` or create a second mutation owner. The Absence & Time Bank workspace retires its route/modal owners after Vue readiness. The Calendar & Timeline workspace retires legacy Today/Calendar read roots, mounts only the selected-day editor island and converts historical render calls into queued Vue refresh requests. Other domains retain their existing owners until their bounded migration releases.
+Vue must not read `window.state`, query `#tabbar` or create a second mutation owner. The Absence & Time Bank workspace retires its route/modal owners after Vue readiness. The Calendar & Timeline workspace retires legacy Today/Calendar read roots, mounts only the selected-day editor island and converts historical render calls into queued Vue refresh requests. The Productivity workspace retires legacy Tasks/Important route roots and selected-day Tasks/Notes/Important bodies, while preserving named bridge adapters for offline infrastructure and historical entry points. Payroll, Settings and Admin retain their existing owners until their bounded migration releases.
 
 ## Shared design system
 

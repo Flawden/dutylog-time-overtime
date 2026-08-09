@@ -29,7 +29,7 @@ test('task data survives disabling and re-enabling the Tasks module', async ({ p
   await page.locator('#taskEditAdvanced').evaluate(element => { element.open = true; });
   await page.locator('#taskEditCategory').fill('E2E');
   await page.locator('#taskEditTags').fill('Browser, Regression, browser');
-  const taskCreated = waitForApi(page, 'POST', '/api/tasks');
+  const taskCreated = waitForApi(page, 'POST', '/api/v1/tasks');
   await page.locator('#taskEditSave').click();
   await taskCreated;
   await expect(page.locator('#taskEditModal')).toBeHidden();
@@ -81,7 +81,7 @@ test('quick capture survives the fast Inbox flow and converts into a task', asyn
   await inboxRow.getByRole('button', { name: 'В задачу' }).click();
   await expect(page.locator('#taskEditModal')).toBeVisible();
   await expect(page.locator('#taskEditText')).toHaveValue(thought);
-  const converted = page.waitForResponse(response => response.request().method() === 'POST' && /\/api\/inbox\/\d+\/task$/.test(new URL(response.url()).pathname) && response.status() === 200);
+  const converted = page.waitForResponse(response => response.request().method() === 'POST' && /\/api\/v1\/inbox\/\d+\/task$/.test(new URL(response.url()).pathname) && response.status() === 200);
   await page.locator('#taskEditSave').click();
   await converted;
   await expect(page.locator('#taskBoardList .taskBoardItem', { hasText: thought })).toBeVisible();
@@ -108,7 +108,7 @@ test('task subtasks keep order, update progress and require explicit parent comp
   await page.locator('#taskEditSubtaskAdd').click();
   await page.locator('#taskEditSubtaskList .taskSubtaskEditorRow').nth(1).locator('input[type="text"]').fill('Проверить staging');
 
-  const created = waitForApi(page, 'POST', '/api/tasks');
+  const created = waitForApi(page, 'POST', '/api/v1/tasks');
   await page.locator('#taskEditSave').click();
   await created;
 
@@ -122,14 +122,14 @@ test('task subtasks keep order, update progress and require explicit parent comp
   const taskId = await task.getAttribute('data-task-id');
   const firstCheckbox = task.locator('.taskSubtaskInlineRow').nth(0).locator('input[type="checkbox"]');
   const childUpdated = page.waitForResponse(response => response.request().method() === 'PATCH'
-    && new RegExp(`/api/tasks/${taskId}/subtasks/\\d+$`).test(new URL(response.url()).pathname)
+    && new RegExp(`/api/v1/tasks/${taskId}/subtasks/\\d+$`).test(new URL(response.url()).pathname)
     && response.status() === 200);
   await firstCheckbox.check();
   await childUpdated;
   await expect(task.locator('.taskSubtaskProgress')).toContainText('1/2');
 
   page.once('dialog', dialog => dialog.accept());
-  const parentUpdated = waitForApi(page, 'PATCH', `/api/tasks/${taskId}`);
+  const parentUpdated = waitForApi(page, 'PATCH', `/api/v1/tasks/${taskId}`);
   await task.locator(':scope > input[type="checkbox"]').check();
   await parentUpdated;
   await expect(task).toHaveClass(/done/);
@@ -171,7 +171,7 @@ test('task polish validates deadlines, persists subtask dates and keeps complete
   const subtaskRow = page.locator('#taskEditSubtaskList .taskSubtaskEditorRow').first();
   await subtaskRow.locator('input[type="text"]').fill('Проверить срок');
   await subtaskRow.locator('input[type="date"]').fill(date);
-  const created = waitForApi(page, 'POST', '/api/tasks');
+  const created = waitForApi(page, 'POST', '/api/v1/tasks');
   await page.locator('#taskEditSave').click();
   await created;
 
@@ -184,13 +184,13 @@ test('task polish validates deadlines, persists subtask dates and keeps complete
   const openText = `Still open ${Date.now()}`;
   await page.locator('#taskCreateForDay').click();
   await page.locator('#taskEditText').fill(openText);
-  const openCreated = waitForApi(page, 'POST', '/api/tasks');
+  const openCreated = waitForApi(page, 'POST', '/api/v1/tasks');
   await page.locator('#taskEditSave').click();
   await openCreated;
 
   page.once('dialog', dialog => dialog.accept());
   const completedId = await completedTask.getAttribute('data-task-id');
-  const parentUpdated = waitForApi(page, 'PATCH', `/api/tasks/${completedId}`);
+  const parentUpdated = waitForApi(page, 'PATCH', `/api/v1/tasks/${completedId}`);
   await completedTask.locator(':scope > input[type="checkbox"]').check();
   await parentUpdated;
 

@@ -4,7 +4,8 @@
 domain: calendar-timeline
 target_release: "v27.37.0"
 follow_up_release: "v27.37.5"
-status: acceptance-pending
+acceptance: "47/47 Chromium and full deployment path green"
+status: accepted-green
 frontend_owner: Vue 3 + TypeScript
 business_owner: Spring Boot
 transport: generated OpenAPI client

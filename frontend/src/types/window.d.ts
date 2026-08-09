@@ -1,5 +1,6 @@
 import type { DutyLogAbsenceTimeBankDomain } from "@/features/absence-time-bank/types/domain";
 import type { DutyLogCalendarTimelineDomain } from "@/features/calendar-timeline/types/domain";
+import type { DutyLogProductivityDomain } from "@/features/productivity/types/domain";
 
 export {};
 
@@ -16,6 +17,7 @@ declare global {
     route: string;
     online: boolean;
     modulesLoaded: boolean;
+    modules?: Readonly<Record<string, boolean>>;
     navigation: readonly string[];
     availableViews: readonly string[];
     profile: DutyLogLegacyProfileSnapshot | null;
@@ -27,7 +29,7 @@ declare global {
     navigate(view: string): void;
     openModal(id: string, focusId?: string | null): void;
     logout(): void;
-    retireDomainOwners?(domain: "absence-time-bank" | "calendar-timeline"): void;
+    retireDomainOwners?(domain: "absence-time-bank" | "calendar-timeline" | "productivity"): void;
     attachCalendarEditor?(hostId: string): void;
     parkCalendarEditor?(): void;
     openCalendarDay?(date: string): void;
@@ -36,6 +38,12 @@ declare global {
     openTaskDetails?(id: number): void;
     openQuickActions?(date: string): void;
     openImportantDetails?(id: number): void;
+    offlineUpdateNote?(id: number, patch: Record<string, unknown>, date: string): Promise<{ queued: boolean; note: unknown | null }>;
+    offlineSetTaskDone?(id: number, done: boolean): Promise<{ queued: boolean; task?: unknown }>;
+    offlineCaptureInbox?(text: string): Promise<{ queued: boolean; item: unknown }>;
+    offlineSync?(): Promise<void>;
+    offlinePending?(): number;
+    offlineSelectedDay?(date: string): Promise<{ tasks: unknown[]; notes: unknown[]; important: unknown[] }>;
     subscribe(listener: (snapshot: DutyLogLegacySnapshot) => void): () => void;
   }
 
@@ -70,6 +78,7 @@ declare global {
   interface DutyLogVueDomains {
     readonly absenceTimeBank?: DutyLogAbsenceTimeBankDomain;
     readonly calendarTimeline?: DutyLogCalendarTimelineDomain;
+    readonly productivity?: DutyLogProductivityDomain;
   }
 
   interface Window {

@@ -18,7 +18,7 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   await page.locator('#taskCreateForDay').click();
   await expect(page.locator('#taskEditModal')).toBeVisible();
   await page.locator('#taskEditText').fill(original);
-  const created = waitForApi(page, 'POST', '/api/tasks');
+  const created = waitForApi(page, 'POST', '/api/v1/tasks');
   await page.locator('#taskEditSave').click();
   await created;
   await expect(page.locator('#taskEditModal')).toBeHidden();
@@ -46,7 +46,7 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   expect(await page.locator('#taskEditDueTime').evaluate(input => input.checkValidity())).toBe(true);
   await page.locator('#taskEditReminderEnabled').check();
   await page.locator('#taskEditReminderBefore').fill('3');
-  const updated = waitForApi(page, 'PATCH', `/api/tasks/${taskId}`);
+  const updated = waitForApi(page, 'PATCH', `/api/v1/tasks/${taskId}`);
   await page.locator('#taskEditSave').click();
   await updated;
   await expect(page.locator('#taskEditModal')).toBeHidden();

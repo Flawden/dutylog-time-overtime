@@ -11,7 +11,7 @@ function waitForNotePatch(page) {
   return page.waitForResponse(response => {
     const url = new URL(response.url());
     return response.request().method() === 'PATCH'
-      && /^\/api\/notes\/\d+$/.test(url.pathname)
+      && /^\/api\/v1\/notes\/\d+$/.test(url.pathname)
       && response.status() === 200;
   });
 }
@@ -23,7 +23,7 @@ test('multiple notes on one day remain independent across pin, reorder, reload a
   await selectDate(page, date);
   await openDayModule(page, 'notes');
 
-  const firstCreated = waitForApi(page, 'POST', '/api/notes', 201);
+  const firstCreated = waitForApi(page, 'POST', '/api/v1/notes', 201);
   await page.locator('#noteAdd').click();
   await firstCreated;
 
@@ -33,7 +33,7 @@ test('multiple notes on one day remain independent across pin, reorder, reload a
   await page.locator('#noteEdit').fill('alpha body');
   await firstSaved;
 
-  const secondCreated = waitForApi(page, 'POST', '/api/notes', 201);
+  const secondCreated = waitForApi(page, 'POST', '/api/v1/notes', 201);
   await page.locator('#noteAdd').click();
   await secondCreated;
   const secondSaved = waitForNotePatch(page);
@@ -77,7 +77,7 @@ test('multiple notes on one day remain independent across pin, reorder, reload a
   const moved = page.waitForResponse(response => {
     const url = new URL(response.url());
     return response.request().method() === 'POST'
-      && /^\/api\/notes\/\d+\/move$/.test(url.pathname)
+      && /^\/api\/v1\/notes\/\d+\/move$/.test(url.pathname)
       && response.status() === 200;
   });
   await page.locator('#noteMoveUp').click();
@@ -104,7 +104,7 @@ test('multiple notes on one day remain independent across pin, reorder, reload a
   const deleted = page.waitForResponse(response => {
     const url = new URL(response.url());
     return response.request().method() === 'DELETE'
-      && /^\/api\/notes\/\d+$/.test(url.pathname)
+      && /^\/api\/v1\/notes\/\d+$/.test(url.pathname)
       && response.status() === 204;
   });
   await page.locator('#noteDelete').click();

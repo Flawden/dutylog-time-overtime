@@ -32,7 +32,7 @@ Calendar persistence check`;
   // Multiple Daily Notes keeps the editor hidden until a concrete note exists.
   // Create it through the dedicated notes API, then wait for the debounced PATCH
   // instead of the removed legacy PUT /api/days/{date} note contract.
-  const noteCreated = waitForApi(page, 'POST', '/api/notes', 201);
+  const noteCreated = waitForApi(page, 'POST', '/api/v1/notes', 201);
   await page.locator('#noteAdd').click();
   await noteCreated;
 
@@ -85,7 +85,7 @@ test('a shift can be deleted and assigned again while a note save is pending', a
   await expect(shift).toHaveAttribute('aria-pressed', 'true');
 
   await openDayModule(page, 'notes');
-  const noteCreated = waitForApi(page, 'POST', '/api/notes', 201);
+  const noteCreated = waitForApi(page, 'POST', '/api/v1/notes', 201);
   await page.locator('#noteAdd').click();
   await noteCreated;
   const note = `pending note ${Date.now()}`;

@@ -18,7 +18,7 @@ test('Today Dashboard composes the day and opens existing feature flows', async 
   const date = await page.locator('#taskEditDate').inputValue();
   expect(date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   await page.locator('#taskEditText').fill('Проверить Today Dashboard');
-  const created = waitForApi(page, 'POST', '/api/tasks');
+  const created = waitForApi(page, 'POST', '/api/v1/tasks');
   await page.locator('#taskEditSave').click();
   await created;
   await expect(page.locator('#taskEditModal')).toBeHidden();

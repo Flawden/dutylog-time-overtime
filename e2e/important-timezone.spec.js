@@ -15,7 +15,7 @@ test('important dates stay floating while canonical timezone survives reload', a
   await page.locator('#importantEditStartDate').fill(date);
   await page.locator('#importantEditRepeat').selectOption('YEARLY');
 
-  const created = waitForApi(page, 'POST', '/api/important-days');
+  const created = waitForApi(page, 'POST', '/api/v1/important-days');
   await page.locator('#importantEditSave').click();
   await created;
   await expect(page.locator('#importantEditModal')).toBeHidden();

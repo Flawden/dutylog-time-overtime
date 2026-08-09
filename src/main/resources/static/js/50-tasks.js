@@ -255,6 +255,7 @@ function closeImportantEventModals(){
 function importantById(id){ return normalizeImportantEvent((state.importantDays || []).find(x => Number(x.id) === Number(id))); }
 
 function openImportantDetails(id){
+  if (document.documentElement.dataset.vueProductivity === "ready") { void window.DutyLogVueDomains?.productivity?.openImportantDetails?.(Number(id)); return; }
   const item = importantById(id);
   if (!item?.id) return setSave("err", t("Важный день не найден"));
   closeImportantEventModals();
@@ -283,6 +284,11 @@ function syncImportantEditorFields(){
   if (type === "EVENT" && !$("importantEditEndDate").value) $("importantEditEndDate").value = $("importantEditStartDate").value;
 }
 function openImportantEditor(id = null, contextDate = null){
+  if (document.documentElement.dataset.vueProductivity === "ready") {
+    if (id != null) void window.DutyLogVueDomains?.productivity?.openImportantEdit?.(Number(id));
+    else void window.DutyLogVueDomains?.productivity?.openImportantCreate?.(String(contextDate || state.selected || todayKey()).slice(0, 10));
+    return;
+  }
   const item = id == null ? null : importantById(id);
   closeImportantEventModals();
   state.editingImportantDayId = item?.id ? Number(item.id) : null;
@@ -319,6 +325,7 @@ async function openImportantCalendarDay(date){
 }
 
 function renderImportantBoard(){
+  if (document.documentElement.dataset.vueProductivity === "ready") return;
   const box = $("importantBoardList");
   if (!box) return;
   const items = importantBoardItems();
@@ -404,6 +411,7 @@ function syncImportantSelectedDate(key = state.selected){
 }
 
 function renderImportantDays(){
+  if (document.documentElement.dataset.vueProductivity === "ready") return;
   if (!moduleEnabled("important_dates")) { updateAccSummaries(); return; }
   const box = $("importantList");
   if (!box || !state.selected) return;
@@ -866,6 +874,7 @@ function resetTaskEditorFields({ date = null, text = "", inboxId = null } = {}){
   renderTaskMetadataSuggestions();
 }
 function openTaskCreate(options = {}){
+  if (document.documentElement.dataset.vueProductivity === "ready") { void window.DutyLogVueDomains?.productivity?.openTaskCreate?.(String(options?.date || state.selected || "").slice(0,10)); return; }
   if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
   resetTaskEditorFields(options);
   openAppModal("taskEditModal", "taskEditText");
@@ -1011,6 +1020,7 @@ function renderTaskDetails(task){
   $("taskDetailsToggle").textContent = task.done ? t("Вернуть в открытые") : t("Выполнить");
 }
 async function openTaskDetails(taskOrId){
+  if (document.documentElement.dataset.vueProductivity === "ready") { const id = Number(taskOrId?.id ?? taskOrId); if (Number.isFinite(id)) await window.DutyLogVueDomains?.productivity?.openTaskDetails?.(id); return; }
   if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
   const id = Number(typeof taskOrId === "object" ? taskOrId?.id : taskOrId);
   let task = typeof taskOrId === "object" ? taskOrId : taskById(id);
@@ -1390,6 +1400,7 @@ function buildTaskMeta(task){
   return meta;
 }
 function renderTasks(){
+  if (document.documentElement.dataset.vueProductivity === "ready") return;
   if (!moduleEnabled("tasks")) { updateAccSummaries(); return; }
   const box = $("taskList");
   if (!box || !state.selected) return;
@@ -1462,6 +1473,7 @@ function queuedInboxView(queue){
     }));
 }
 async function loadInbox(silent = true){
+  if (document.documentElement.dataset.vueProductivity === "ready") return;
   if (!moduleEnabled("tasks")) {
     state.inbox.items = [];
     renderInbox();
@@ -1656,6 +1668,7 @@ function syncTaskBoardFiltersToInputs(){
   if ($("taskBoardTo")) $("taskBoardTo").value = filters.to || "";
 }
 async function loadTaskBoard(silent = true){
+  if (document.documentElement.dataset.vueProductivity === "ready") return;
   if (!moduleEnabled("tasks")) {
     state.taskBoard.items = [];
     state.taskBoard.page = { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false };
@@ -2239,6 +2252,7 @@ async function persistNotesSnapshot(date){
 }
 
 function renderDayNotes(){
+  if (document.documentElement.dataset.vueProductivity === "ready") return;
   const date = state.selected;
   const list = $("noteList");
   const pane = $("noteEditorPane");

@@ -29,7 +29,7 @@ test('Notes and Important Events Next combine searchable notes with read-first t
   await page.locator('#importantEditCategory').fill('DutyLog');
   await page.locator('input[name="importantReminder"][value="30"]').check();
 
-  const createdResponse = waitForApi(page, 'POST', '/api/important-days');
+  const createdResponse = waitForApi(page, 'POST', '/api/v1/important-days');
   await page.locator('#importantEditSave').click();
   const created = await (await createdResponse).json();
   expect(created.eventType).toBe('EVENT');
@@ -60,7 +60,7 @@ test('Notes and Important Events Next combine searchable notes with read-first t
 
   await openSelectedDayDetails(page);
   await openDayModule(page, 'notes');
-  const createdNote = waitForApi(page, 'POST', '/api/notes', 201);
+  const createdNote = waitForApi(page, 'POST', '/api/v1/notes', 201);
   await page.locator('#noteAdd').click();
   await createdNote;
   const patch = page.waitForResponse(response => /^\/api\/notes\/\d+$/.test(new URL(response.url()).pathname)

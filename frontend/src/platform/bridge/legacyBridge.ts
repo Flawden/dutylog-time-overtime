@@ -27,7 +27,7 @@ export interface LegacyBridge {
   navigate(view: string): void;
   openModal(id: string, focusId?: string | null): void;
   logout(): void;
-  retireDomainOwners(domain: "absence-time-bank" | "calendar-timeline"): void;
+  retireDomainOwners(domain: "absence-time-bank" | "calendar-timeline" | "productivity"): void;
   attachCalendarEditor(hostId: string): void;
   parkCalendarEditor(): void;
   openCalendarDay(date: string): void;
@@ -36,6 +36,12 @@ export interface LegacyBridge {
   openTaskDetails(id: number): void;
   openQuickActions(date: string): void;
   openImportantDetails(id: number): void;
+  offlineUpdateNote(id: number, patch: Record<string, unknown>, date: string): Promise<{ queued: boolean; note: unknown | null }>;
+  offlineSetTaskDone(id: number, done: boolean): Promise<{ queued: boolean; task?: unknown }>;
+  offlineCaptureInbox(text: string): Promise<{ queued: boolean; item: unknown }>;
+  offlineSync(): Promise<void>;
+  offlinePending(): number;
+  offlineSelectedDay(date: string): Promise<{ tasks: unknown[]; notes: unknown[]; important: unknown[] }>;
   subscribe(listener: (snapshot: DutyLogLegacySnapshot) => void): () => void;
 }
 
@@ -78,6 +84,20 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
     openTaskDetails(id: number) { adapter()?.openTaskDetails?.(id); },
     openQuickActions(date: string) { adapter()?.openQuickActions?.(date); },
     openImportantDetails(id: number) { adapter()?.openImportantDetails?.(id); },
+    async offlineUpdateNote(id: number, patch: Record<string, unknown>, date: string) {
+      return (await adapter()?.offlineUpdateNote?.(id, patch, date)) ?? { queued: false, note: null };
+    },
+    async offlineSetTaskDone(id: number, done: boolean) {
+      return (await adapter()?.offlineSetTaskDone?.(id, done)) ?? { queued: false };
+    },
+    async offlineCaptureInbox(text: string) {
+      return (await adapter()?.offlineCaptureInbox?.(text)) ?? { queued: false, item: null };
+    },
+    async offlineSync() { await adapter()?.offlineSync?.(); },
+    offlinePending() { return Number(adapter()?.offlinePending?.() ?? 0); },
+    async offlineSelectedDay(date: string) {
+      return (await adapter()?.offlineSelectedDay?.(date)) ?? { tasks: [], notes: [], important: [] };
+    },
     subscribe(listener) {
       const direct = adapter()?.subscribe(listener);
       if (direct) return direct;

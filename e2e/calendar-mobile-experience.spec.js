@@ -18,7 +18,7 @@ test('calendar switches month week and hourly day while preserving the focused d
   const importantTitle = `Calendar all-day ${Date.now()}`;
   await page.locator('#impTitle').fill(importantTitle);
   await page.locator('#impRepeat').selectOption('NONE');
-  const importantCreated = waitForApi(page, 'POST', '/api/important-days');
+  const importantCreated = waitForApi(page, 'POST', '/api/v1/important-days');
   await page.locator('#impAdd').click();
   await importantCreated;
   await page.locator('#pClose').click();

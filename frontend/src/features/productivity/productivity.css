@@ -1,0 +1,26 @@
+/* v27.38.0 — Vue Tasks, Notes & Important Days. Existing design tokens stay canonical. */
+.vue-productivity-selected { min-width:0; }
+.vue-owned-modal { z-index:10050; }
+.vue-domain-view[data-vue-domain-owner="productivity"] { min-width:0; }
+.vue-domain-view .small { color:var(--dim); font-size:12px; }
+.taskItemBody, .taskBoardBody, .importantBoardRow { text-align:left; }
+.taskInlineSubtasks { grid-column:2 / -1; margin-top:6px; display:grid; gap:4px; }
+.taskInlineSubtask { display:flex; gap:8px; align-items:center; font-size:12px; color:var(--dim); }
+.taskInlineSubtask.done span { text-decoration:line-through; opacity:.7; }
+.taskSubtaskProgress { display:inline-flex; align-items:center; justify-content:center; min-width:34px; padding:2px 7px; border-radius:999px; background:var(--panel2); color:var(--dim); font-size:11px; }
+.taskDetailsFacts { display:flex; flex-wrap:wrap; gap:8px; }
+.taskDetailsFacts > span { padding:5px 8px; border:1px solid var(--border); border-radius:8px; color:var(--dim); font-size:12px; }
+.taskDetailsChecklistRow { display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center; padding:7px 0; }
+.taskDetailsChecklistRow.done span { text-decoration:line-through; opacity:.7; }
+.inboxItem { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
+.inboxItem > div { display:flex; gap:6px; flex:0 0 auto; }
+.noteSearchResult { width:100%; display:flex; justify-content:space-between; gap:10px; text-align:left; }
+.notePreviewText { white-space:pre-wrap; min-height:180px; padding:12px; }
+.importantBoardRow { width:100%; }
+.importantBoardRow .importantBoardIcon { font-size:20px; }
+.importantItem { display:grid; grid-template-columns:auto 1fr auto; gap:8px; align-items:center; width:100%; text-align:left; }
+.importantDot { width:8px; height:8px; border-radius:999px; }
+@media (max-width:700px) {
+  .appModalPanel.taskEditorPanel, .vue-owned-modal .appModalPanel { max-height:92dvh; overflow:auto; }
+  .taskDetailsFacts { display:grid; }
+}

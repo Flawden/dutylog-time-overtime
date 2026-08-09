@@ -1,15 +1,26 @@
 # DutyLog regression test baseline
 
-Status: v27.37.5.
+Status: v27.38.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.37.5 adds no test method or scenario; it extends the existing Calendar/Timeline and legacy-bridge contracts so the selected-day `#panel` is parked before CalendarPage unmount and reattached on return instead of being destroyed with `#calendarLegacyPanelHost`. The application baseline remains 151 Java test classes / 743 `@Test` methods / 47 Chromium Playwright scenarios / 43 Vitest cases, plus the existing CI-routing and backup-tooling contracts.
+Current extension: v27.38.0 migrates Tasks, Notes & Important Days into one Vue productivity owner while preserving Spring Boot authority and the existing offline dataLayer as the only queue/cache owner. The application baseline is 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI is 101 operations / 106 schemas and Flyway remains V47.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
+## v27.38.0 Vue Tasks, Notes & Important Days migration extension
 
+- Baseline advances to 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases / Flyway V47.
+- Existing 47 browser journeys remain strict; only intentional UI transport expectations move from compatibility `/api/*` aliases to generated `/api/v1/*` operations.
+- Adds six pure productivity-model Vitest cases for tags, schedule duration, task drafts/subtasks, ordering and Important Event serialization.
+- Adds eight source/architecture Java contracts for Vue ownership, generated transport, concurrency, selected-day parity, Tasks/Inbox, Important Days, offline/reconnect and legacy retirement.
+- OpenAPI advances from 98 operations / 103 schemas to 101 operations / 106 schemas; PostgreSQL and Flyway remain unchanged at V47.
 
+## v27.37.5 Vue Calendar Selected-Day Island Lifecycle Hotfix extension
+
+- Parks the selected-day `#panel` compatibility island before CalendarPage unmount and reattaches the same DOM island on return.
+- Adds no test method or scenario; accepted baseline remained 151 Java test classes / 743 `@Test` methods / 47 Chromium Playwright scenarios / 43 Vitest cases.
+- Full v27.37.5 CI/CD acceptance completed green before v27.38.0 began.
 
 ## v27.37.2 Vue Calendar Boot Routing Null-Safety Hotfix extension
 

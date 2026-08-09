@@ -21,7 +21,7 @@ test('installed web shell preserves and synchronizes an existing note edited off
     await selectDate(page, date);
 
     await openDayModule(page, 'notes');
-    const noteCreated = waitForApi(page, 'POST', '/api/notes', 201);
+    const noteCreated = waitForApi(page, 'POST', '/api/v1/notes', 201);
     await page.locator('#noteAdd').click();
     await noteCreated;
     const note = `Offline snapshot ${Date.now()}`;

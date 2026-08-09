@@ -1,6 +1,14 @@
 # DutyLog security review
 
-Status: v27.37.5.
+Status: v27.38.0.
+
+## v27.38.0 Vue Tasks, Notes & Important Days review
+
+- The migrated feature uses existing same-origin authenticated generated transport; no new origin, token, cookie, public endpoint or secret is introduced.
+- Spring Boot keeps authorization, ownership and validation authority for tasks, notes, Important Events and Inbox conversion.
+- Q-10 reuses the existing dataLayer offline queue/cache through typed bridge calls; it does not add a second persistence engine, service-worker API cache or offline authorization path.
+- Offline-capable mutations are limited to behavior already supported by the existing queue. Reconnect flushes queued work and then refreshes authoritative server state.
+- OpenAPI expands to 101 operations / 106 schemas, but PostgreSQL remains V47 and no CSP/session/CSRF/bearer/Telegram-secret boundary changes.
 
 ## v27.37.1 strict typecheck hotfix review
 

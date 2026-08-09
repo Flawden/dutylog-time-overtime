@@ -1,16 +1,26 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hotfix**.
+Current release: **v27.38.0 — Vue Tasks, Notes & Important Days**.
 
 
 
 
-## v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hotfix — current
+
+## v27.38.0 — Vue Tasks, Notes & Important Days — current
+- [x] Move Tasks board/Inbox, Task details/editor, selected-day Tasks, multiple daily Notes and Important Days into one bounded Vue productivity owner.
+- [x] Keep Spring Boot authoritative for task/deadline/schedule validation, note persistence/order, Inbox conversion, recurrence/timezone projection and all business rules.
+- [x] Expand the generated OpenAPI contract to 101 operations / 106 schemas so migrated productivity writes and reads use typed `/api/v1/*` operations.
+- [x] Activate Q-10 offline/reconnect for bounded productivity mutations by reusing the existing dataLayer queue/snapshot through named bridge capabilities; do not create a second queue.
+- [x] Retire legacy productivity read/modal owners while preserving released public browser selectors and named cross-domain entry points from Today/Calendar.
+- [x] Add latest-read-wins, double-submit, 409 refresh, model Vitest coverage and Java ownership contracts without weakening the existing 47 Chromium scenarios.
+- [ ] Accept only after exact frontend gate, 152-class / 751-test Maven/JUnit, 47/47 Chromium, immutable image, clean PostgreSQL V47 smoke and staging deployment are green.
+
+## v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hotfix — completed and green
 - [x] Use the complete v27.37.4 Chromium result (28 passed / 19 failed) to separate the fixed onboarding blocker from remaining route/editor regressions.
 - [x] Trace repeated `renderChips()` / `null.innerHTML` failures to the selected-day panel being appended under a conditionally-mounted CalendarPage host and destroyed when that host unmounts.
 - [x] Park the selected-day editor on `document.body` before CalendarPage unmount and reattach it on Calendar mount, keeping the island mandatory rather than masking missing descendants with optional chaining.
 - [x] Preserve strict browser diagnostics and leave independent mode/timezone projection failures for evidence-driven follow-up.
-- [ ] Accept only after exact frontend gate, Maven/JUnit, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deployment are green.
+- [x] Accepted: exact frontend gate, Maven/JUnit, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deployment are green.
 ## v27.37.4 — PWA Bundle Budget Release Contract Alignment Hotfix — predecessor
 - [x] Use the v27.37.3 Maven failure to isolate the only failing JUnit assertion after 742 green tests.
 - [x] Remove the stale hardcoded bundle-budget release literal from the Calendar/Timeline migration contract.

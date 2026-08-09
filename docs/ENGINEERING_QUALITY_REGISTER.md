@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.37.5
+release_foundation: v27.38.0
 created: 2026-08-04
 updated: 2026-08-08
 ---
@@ -31,7 +31,7 @@ updated: 2026-08-08
 | Q-07 | PWA asset/version compatibility и upgrade E2E | baseline `v27.37.0` | каждый frontend release | ADR-006 + previous cache → current cache Chromium scenario | ACTIVE |
 | Q-08 | Performance budgets и bundle diff | baseline `v27.37.0` | каждый frontend release; полный audit `v27.45.0` | fail-closed raw/gzip budget in Vite audit | ACTIVE |
 | Q-09 | Accessibility acceptance | design system уже ACTIVE | каждый domain; полный audit `v27.45.0` | keyboard/focus/ARIA/contrast evidence | ACTIVE |
-| Q-10 | Offline queue и reconnect correctness | `v27.38.0` | каждый offline-capable domain | offline/reconnect E2E | LOCKED |
+| Q-10 | Offline queue и reconnect correctness | `v27.38.0` | каждый offline-capable domain | existing dataLayer queue/cache reused through typed Vue bridge; offline/reconnect E2E | ACTIVE |
 | Q-11 | Integration secrets, CSP, cookies, source-map policy | `v27.39.0` | security audit `v27.45.0` | security checklist + headers/config evidence | LOCKED |
 | Q-12 | Legacy owner/bridge retirement guards | каждый domain | финал `v27.40.0` | deleted files + negative release contracts | ACTIVE |
 | Q-13 | Real backup restore rehearsal on clean PostgreSQL | preparation before freeze | mandatory `v27.45.0`; recurring after release | restore report + smoke evidence | BEFORE_RC |
@@ -58,6 +58,15 @@ updated: 2026-08-08
 | ADR-010 | Expand/contract database migration and rollback compatibility | до `v27.45.0` |
 
 
+
+
+## Tasks, Notes & Important Days migration note — v27.38.0
+
+- Vue owns Tasks, Notes, Important Days and Inbox presentation while Spring Boot remains the business/source-of-truth owner.
+- Q-10 is ACTIVE: the migrated feature reuses the existing dataLayer queue/cache for offline note edits, task completion and Inbox capture instead of creating a second queue.
+- Independent latest-read-wins sequences, duplicate-submit guards and HTTP 409 refresh remain fail-closed.
+- OpenAPI advances to 101 operations / 106 schemas; PostgreSQL and Flyway remain unchanged at V47.
+- Acceptance requires exact 49 Vitest / 751 Maven / 47 Chromium plus immutable-image, clean-PostgreSQL and staging evidence.
 
 ## Calendar & Timeline strict typecheck note — v27.37.1
 

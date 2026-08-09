@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.37.5"
+const DUTYLOG_VERSION = "27.38.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -193,6 +193,7 @@ function legacyPlatformSnapshot(){
     route: String(window.location.hash || "#today").replace(/^#/, ""),
     online: navigator.onLine,
     modulesLoaded: !!state.modulesLoaded,
+    modules:Object.freeze({ ...(state.modules || {}) }),
     navigation:Object.freeze([...navigation.navigation]),
     availableViews:Object.freeze([...navigation.availableViews]),
     profile:legacyProfileSnapshot(),
@@ -277,6 +278,31 @@ window.DutyLogLegacyPlatform = Object.freeze({
       document.documentElement.setAttribute("data-vue-absence-time-bank", "ready");
       return;
     }
+    if (domain === "productivity") {
+      for (const id of [
+        "view-tasks", "view-important",
+        "taskDetailsModal", "taskEditModal",
+        "importantDetailsModal", "importantEditModal",
+        "noteFullscreen",
+      ]) document.getElementById(id)?.remove();
+      const mounts = [
+        ["accTasks", "vueSelectedDayTasksMount"],
+        ["accNote", "vueSelectedDayNotesMount"],
+        ["accImp", "vueSelectedDayImportantMount"],
+      ];
+      for (const [sectionId, mountId] of mounts) {
+        const section = document.getElementById(sectionId);
+        const body = section?.querySelector(":scope > .accB");
+        if (!body) continue;
+        body.replaceChildren();
+        const mount = document.createElement("div");
+        mount.id = mountId;
+        mount.setAttribute("data-vue-productivity-mount", "");
+        body.appendChild(mount);
+      }
+      document.documentElement.setAttribute("data-vue-productivity", "ready");
+      return;
+    }
     if (domain !== "calendar-timeline") return;
     const legacyCalendar = [...document.querySelectorAll("section.view#view-calendar")]
       .find(node => !node.hasAttribute("data-vue-domain-owner"));
@@ -333,6 +359,33 @@ window.DutyLogLegacyPlatform = Object.freeze({
   },
   openImportantDetails(id){
     if (typeof openImportantDetails === "function") openImportantDetails(Number(id));
+  },
+  async offlineUpdateNote(id, patch, date){
+    if (typeof dataLayer === "undefined") throw new Error("Offline data layer is not ready");
+    return dataLayer.updateDayNote(Number(id), patch || {}, String(date || "").slice(0, 10));
+  },
+  async offlineSetTaskDone(id, done){
+    if (typeof dataLayer === "undefined") throw new Error("Offline data layer is not ready");
+    return dataLayer.setTaskDone(Number(id), !!done);
+  },
+  async offlineCaptureInbox(text){
+    if (typeof dataLayer === "undefined") throw new Error("Offline data layer is not ready");
+    return dataLayer.captureInbox(String(text || ""));
+  },
+  async offlineSync(){
+    if (typeof dataLayer !== "undefined") await dataLayer.syncQueue();
+  },
+  offlinePending(){ return Number(state.offline?.pending || 0); },
+  async offlineSelectedDay(date){
+    const key = String(date || "").slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key) || typeof dataLayer === "undefined") return { tasks:[], notes:[], important:[] };
+    const snap = await dataLayer.readSnapshot();
+    const bundle = snap?.bundle || {};
+    const day = (Array.isArray(bundle.days) ? bundle.days : []).find(item => item?.date === key) || null;
+    const notes = Array.isArray(day?.notes) ? day.notes : [];
+    const tasks = (Array.isArray(bundle.tasks) ? bundle.tasks : []).filter(item => String(item?.date || item?.scheduledStartDate || "").slice(0, 10) === key);
+    const important = (Array.isArray(bundle.importantDays) ? bundle.importantDays : []).filter(item => String(item?.date || item?.startDate || "").slice(0, 10) === key);
+    return { tasks:structuredClone(tasks), notes:structuredClone(notes), important:structuredClone(important) };
   },
   subscribe(listener){
     if (typeof listener !== "function") return () => {};

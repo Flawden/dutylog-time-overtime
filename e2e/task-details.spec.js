@@ -23,12 +23,12 @@ test('task details separate reading from editing and persist a long description'
   await page.locator('#taskEditSubtasks').evaluate(element => { element.open = true; });
   await page.locator('#taskEditSubtaskAdd').click();
   await page.locator('#taskEditSubtaskList .taskSubtaskEditorRow').first().locator('input[type="text"]').fill('Проверить детали');
-  const created = waitForApi(page, 'POST', '/api/tasks');
+  const created = waitForApi(page, 'POST', '/api/v1/tasks');
   await page.locator('#taskEditSave').click();
   const task = await (await created).json();
 
   const row = page.locator(`#taskList [data-task-id="${task.id}"]`);
-  const detailsLoaded = waitForApi(page, 'GET', `/api/tasks/${task.id}`);
+  const detailsLoaded = waitForApi(page, 'GET', `/api/v1/tasks/${task.id}`);
   await row.locator('.taskItemBody').click();
   await detailsLoaded;
   await expect(page.locator('#taskDetailsModal')).toBeVisible();
@@ -41,7 +41,7 @@ test('task details separate reading from editing and persist a long description'
   await expect(page.locator('#taskEditModal')).toBeVisible();
   await expect(page.locator('#taskEditDescription')).toHaveValue(description);
   await page.locator('#taskEditDescription').fill(`${description}\nОбновлено`);
-  const updated = waitForApi(page, 'PATCH', `/api/tasks/${task.id}`);
+  const updated = waitForApi(page, 'PATCH', `/api/v1/tasks/${task.id}`);
   await page.locator('#taskEditSave').click();
   await updated;
 

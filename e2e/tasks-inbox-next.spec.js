@@ -29,7 +29,7 @@ test('Tasks & Inbox Next keeps planning, deadline, project and capture as separa
   await page.locator('#taskEditDueDate').fill(date);
   await page.locator('#taskEditDueTime').fill('20:00');
 
-  const createdResponse = waitForApi(page, 'POST', '/api/tasks');
+  const createdResponse = waitForApi(page, 'POST', '/api/v1/tasks');
   await page.locator('#taskEditSave').click();
   const created = await (await createdResponse).json();
   expect(created.allDay).toBe(false);

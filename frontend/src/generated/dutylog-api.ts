@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: def5804e9907899320351fd06cb534bf7a252364f524170f829b65227deef627
+ * SHA-256: c48bfab2bcafc242e81149378f58a0e697870ade9b4653b3d3ada78f6be2a5fa
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 98 operations, 103 schemas
+ * Contract: 101 operations, 106 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "def5804e9907899320351fd06cb534bf7a252364f524170f829b65227deef627";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "c48bfab2bcafc242e81149378f58a0e697870ade9b4653b3d3ada78f6be2a5fa";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -333,6 +333,29 @@ export namespace DutyLogApiSchemas {
     color?: string;
     repeatMode?: "NONE" | "MONTHLY" | "YEARLY";
     reminders?: Array<number>;
+  };
+
+  export type ImportantEventOccurrence = {
+    id: number;
+    date: string;
+    title: string;
+    repeatMode: "NONE" | "MONTHLY" | "YEARLY";
+    color: string;
+    eventType: "IMPORTANT_DATE" | "EVENT" | "PERIOD";
+    startDate: string;
+    endDate?: string | null;
+    allDay: boolean;
+    startTime?: string | null;
+    endTime?: string | null;
+    startInstant?: string | null;
+    endInstant?: string | null;
+    sourceTimezone?: string | null;
+    displayTimezone?: string | null;
+    place?: string | null;
+    description?: string | null;
+    icon?: string | null;
+    category?: string | null;
+    reminders: Array<number>;
   };
 
   export type InboxConversion = {
@@ -991,12 +1014,26 @@ export namespace DutyLogApiSchemas {
     reminderMinutesBefore?: number | null;
     overdue: boolean;
     subtasks: Array<DutyLogApiSchemas.TaskSubtask>;
+    project?: string | null;
+    allDay: boolean;
+    scheduledStartDate?: string | null;
+    scheduledStartTime?: string | null;
+    scheduledEndDate?: string | null;
+    scheduledEndTime?: string | null;
+    scheduledDurationMinutes?: number | null;
+    scheduleAbsolute: boolean;
+    scheduledSourceTimezone?: string | null;
+    scheduledSourceStartDate?: string | null;
+    scheduledSourceStartTime?: string | null;
+    scheduledSourceEndDate?: string | null;
+    scheduledSourceEndTime?: string | null;
   };
 
   export type TaskCreateRequest = {
     date: string;
     text: string;
     description?: string | null;
+    project?: string | null;
     category?: string | null;
     tags?: Array<string>;
     priority?: "LOW" | "NORMAL" | "HIGH" | "URGENT";
@@ -1005,11 +1042,28 @@ export namespace DutyLogApiSchemas {
     reminderEnabled?: boolean;
     reminderMinutesBefore?: number | null;
     subtasks?: Array<DutyLogApiSchemas.TaskSubtaskInput>;
+    allDay?: boolean;
+    scheduledStartDate?: string | null;
+    scheduledStartTime?: string | null;
+    scheduledEndDate?: string | null;
+    scheduledEndTime?: string | null;
+    scheduledDurationMinutes?: number | null;
   };
 
   export type TaskMetadata = {
     categories: Array<string>;
     tags: Array<string>;
+    projects: Array<string>;
+  };
+
+  export type TaskPage = {
+    items: Array<DutyLogApiSchemas.Task>;
+    page: number;
+    size: number;
+    total: number;
+    totalPages: number;
+    hasPrevious: boolean;
+    hasNext: boolean;
   };
 
   export type TaskSubtask = {
@@ -1026,6 +1080,29 @@ export namespace DutyLogApiSchemas {
     done?: boolean;
     sortOrder?: number;
     dueDate?: string | null;
+  };
+
+  export type TaskUpdateRequest = {
+    text?: string;
+    done?: boolean;
+    date?: string;
+    description?: string | null;
+    project?: string | null;
+    category?: string | null;
+    tags?: Array<string>;
+    priority?: "LOW" | "NORMAL" | "HIGH" | "URGENT";
+    dueDate?: string | null;
+    dueTime?: string | null;
+    reminderEnabled?: boolean;
+    reminderMinutesBefore?: number | null;
+    subtasks?: Array<DutyLogApiSchemas.TaskSubtaskInput>;
+    completeSubtasks?: boolean;
+    allDay?: boolean;
+    scheduledStartDate?: string | null;
+    scheduledStartTime?: string | null;
+    scheduledEndDate?: string | null;
+    scheduledEndTime?: string | null;
+    scheduledDurationMinutes?: number | null;
   };
 
   export type TimeCompensationDay = {
@@ -1155,6 +1232,7 @@ export const dutyLogOperations = {
   "deleteActualWorkInterval": { method: "DELETE", path: "/api/v1/actual-work/{id}" },
   "deleteCalendarLayer": { method: "DELETE", path: "/api/v1/calendar-layers/{id}" },
   "deleteDayNote": { method: "DELETE", path: "/api/v1/notes/{id}" },
+  "deleteImportantDay": { method: "DELETE", path: "/api/v1/important-days/{id}" },
   "deleteInboxItem": { method: "DELETE", path: "/api/v1/inbox/{id}" },
   "deleteLegacyManualOvertimeUsage": { method: "DELETE", path: "/api/v1/overtime/usages/{id}" },
   "deleteOvertimeCredit": { method: "DELETE", path: "/api/v1/overtime/credits/{id}" },
@@ -1213,6 +1291,7 @@ export const dutyLogOperations = {
   "rotateCalendarSubscription": { method: "POST", path: "/api/v1/calendar-sync/subscription" },
   "searchDayNotes": { method: "GET", path: "/api/v1/notes/search" },
   "syncMobileQueue": { method: "POST", path: "/api/v1/mobile/sync" },
+  "taskBoard": { method: "GET", path: "/api/v1/tasks/board" },
   "taskMetadata": { method: "GET", path: "/api/v1/tasks/metadata" },
   "timeCompensationSummary": { method: "GET", path: "/api/v1/time-compensation" },
   "updateAbsencePeriod": { method: "PATCH", path: "/api/v1/vacation-planner/absences/{id}" },
@@ -1220,6 +1299,7 @@ export const dutyLogOperations = {
   "updateActualWorkInterval": { method: "PUT", path: "/api/v1/actual-work/{id}" },
   "updateCalendarLayer": { method: "PATCH", path: "/api/v1/calendar-layers/{id}" },
   "updateDayNote": { method: "PATCH", path: "/api/v1/notes/{id}" },
+  "updateImportantDay": { method: "PATCH", path: "/api/v1/important-days/{id}" },
   "updateInboxItem": { method: "PATCH", path: "/api/v1/inbox/{id}" },
   "updateModules": { method: "PATCH", path: "/api/v1/modules" },
   "updateOvertimeCredit": { method: "PATCH", path: "/api/v1/overtime/credits/{id}" },
@@ -1327,6 +1407,10 @@ export interface DutyLogOperationTypes {
     requestBody: undefined;
     response: undefined;
   };
+  "deleteImportantDay": {
+    requestBody: undefined;
+    response: undefined;
+  };
   "deleteInboxItem": {
     requestBody: undefined;
     response: undefined;
@@ -1401,7 +1485,7 @@ export interface DutyLogOperationTypes {
   };
   "listImportantDayOccurrences": {
     requestBody: undefined;
-    response: unknown;
+    response: Array<DutyLogApiSchemas.ImportantEventOccurrence>;
   };
   "listImportantDays": {
     requestBody: undefined;
@@ -1563,6 +1647,10 @@ export interface DutyLogOperationTypes {
     requestBody: DutyLogApiSchemas.MobileSyncRequest;
     response: DutyLogApiSchemas.MobileSyncResponse;
   };
+  "taskBoard": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.TaskPage;
+  };
   "taskMetadata": {
     requestBody: undefined;
     response: DutyLogApiSchemas.TaskMetadata;
@@ -1590,6 +1678,10 @@ export interface DutyLogOperationTypes {
   "updateDayNote": {
     requestBody: DutyLogApiSchemas.DayNoteUpdateRequest;
     response: DutyLogApiSchemas.DayNote;
+  };
+  "updateImportantDay": {
+    requestBody: DutyLogApiSchemas.ImportantEventInput;
+    response: DutyLogApiSchemas.ImportantEvent;
   };
   "updateInboxItem": {
     requestBody: DutyLogApiSchemas.InboxUpdateRequest;
@@ -1622,8 +1714,8 @@ export interface DutyLogOperationTypes {
     response: DutyLogApiSchemas.Task;
   };
   "updateTask": {
-    requestBody: undefined;
-    response: unknown;
+    requestBody: DutyLogApiSchemas.TaskUpdateRequest;
+    response: DutyLogApiSchemas.Task;
   };
   "updateVacationSettings": {
     requestBody: DutyLogApiSchemas.VacationSettingsInput;

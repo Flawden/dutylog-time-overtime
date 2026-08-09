@@ -1,8 +1,24 @@
 # Release checklist
 
-Status: v27.37.5.
+Status: v27.38.0.
 
+## v27.38.0 — Vue Tasks, Notes & Important Days acceptance
 
+- [x] One Vue productivity owner replaces legacy Tasks/Important route roots, productivity modals and selected-day Tasks/Notes/Important bodies.
+- [x] Spring Boot remains authoritative; generated OpenAPI contract is 101 operations / 106 schemas and generated TypeScript drift check passes.
+- [x] Q-10 reuses the existing dataLayer offline queue/snapshot through typed bridge methods; no second offline queue is introduced.
+- [x] Baselines advance to 152 Java test classes / 751 `@Test` / 47 Chromium / 49 Vitest; Flyway remains V47.
+- [ ] Exact Node 20.18.1 / npm 10.8.2 frontend gate passes `npm ci`, strict `vue-tsc`, all 49 Vitest cases, Vite and raw/gzip budgets.
+- [ ] Maven/JaCoCo passes all 751 JUnit tests.
+- [ ] All 47 Chromium scenarios pass with strict runtime/page-error collection.
+- [ ] Immutable image, clean PostgreSQL V1–V47 smoke and staging deployment are green.
+
+Tag only after all acceptance items are green:
+
+```bash
+git tag -a v27.38.0 -m "v27.38.0 — Vue Tasks, Notes & Important Days"
+git push origin v27.38.0
+```
 
 ## v27.37.5 Vue Calendar Selected-Day Island Lifecycle Hotfix acceptance
 - [x] v27.37.4 Playwright completes all 47 scenarios in ~18 minutes: 28 pass and 19 fail, proving the fresh-user onboarding blocker is closed.
@@ -10,7 +26,7 @@ Status: v27.37.5.
 - [x] CalendarPage parks the mandatory selected-day editor before Vue removes `#calendarLegacyPanelHost`; Calendar mount reattaches the same DOM island.
 - [x] Existing Java/Vitest contracts enforce the park/reattach lifecycle with no baseline count increase.
 - [x] Baselines remain 151 classes / 743 `@Test` / 47 Chromium / 43 Vitest; OpenAPI remains 98 operations / 103 schemas and Flyway remains V47.
-- [ ] Exact frontend gate, Maven verify, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deploy must be green before acceptance.
+- [x] Exact frontend gate, Maven verify, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deploy are green; v27.37.5 is accepted.
 Tag after full acceptance:
 
 ```bash

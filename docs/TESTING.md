@@ -11,11 +11,11 @@ mvn clean verify
 bash deploy/scripts/release-check.sh
 ```
 
-The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 43 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.37.1 release path. CI, Docker and staging use the same frontend boundary.
+The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 49 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.38.0 release path. CI, Docker and staging use the same frontend boundary.
 
 GitHub artifact persistence is diagnostic only. CI uploads compact JaCoCo XML/CSV for three days and uploads Playwright HTML/results only after failure; quota or upload errors cannot block later static checks, image build or migration smoke. Test execution itself remains fail-closed.
 
-The complete browser baseline is 47 Playwright scenarios. `v27.37.0` added strict Calendar/Timeline single-owner acceptance plus a previous-cache PWA upgrade scenario; `v27.37.1` adds four compile-gated strict-TypeScript source contracts. The self-hosted runner routing amendment adds one CI-routing regression contract, so the feature baseline is 43 Vitest cases and 743 JUnit `@Test` methods across 151 Java test classes. Payroll, Tasks, Important Days, Settings and Admin remain legacy-owned until their bounded releases; the selected-day editor is the only Calendar compatibility island.
+The complete browser baseline remains 47 Playwright scenarios. `v27.38.0` migrates Tasks, Notes & Important Days without adding browser scenarios: existing user journeys are updated only where Vue intentionally sends the same operation through generated `/api/v1/*`. Six productivity model Vitest cases and eight Java migration contracts advance the feature baseline to 49 Vitest cases and 751 JUnit `@Test` methods across 152 Java test classes. OpenAPI advances to 101 operations / 106 schemas. Payroll, Settings and Admin remain legacy-owned; the selected-day Calendar host now contains Vue-owned Tasks/Notes/Important bodies alongside the remaining bounded legacy controls.
 
 ## Two different ways to run tests
 

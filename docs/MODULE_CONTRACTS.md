@@ -1,5 +1,14 @@
 # Module contracts
 
+## Vue Tasks, Notes & Important Days ownership (v27.38.0)
+
+- Vue is the sole runtime presentation owner for Tasks, Notes, Important Days and Inbox, including selected-day bodies and productivity editor modals.
+- Spring Boot remains authoritative for persisted task/note/event state, ownership, validation, scheduling and Inbox conversion.
+- Online Vue reads/writes use generated operationId-based `/api/v1/*` transport. Compatibility aliases remain only where the pre-existing offline dataLayer owns queue/cache behavior.
+- Q-10 introduces no second queue: note edits, normal task completion and Inbox capture delegate to the existing dataLayer queue; reconnect flushes it and then reloads authoritative generated-API state.
+- Independent read sequences prevent stale board/selected-day/important/inbox/search responses from winning; mutation locks and HTTP 409 refresh remain fail-closed.
+- Legacy productivity route roots/modals yield only after the Vue owner is ready.
+
 ## Vue Absence & Time Bank ownership (v27.36.0)
 
 - Vue is the sole runtime presentation/mutation owner for the `vacation` and `overtime` routes.
@@ -9,7 +18,7 @@
 - Legacy route roots and editor modals are retired when the Vue workspace mounts; named adapters remain until their caller domains migrate.
 - Q-06 blocks duplicate writes, rejects stale reads and refreshes the server model after HTTP 409.
 
-Status: v27.37.5.
+Status: v27.38.0.
 
 ## v27.35.7 historical static-contract alignment
 

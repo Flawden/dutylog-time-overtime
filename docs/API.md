@@ -1,10 +1,14 @@
-# DutyLog API v27.37.5
+# DutyLog API v27.38.0
 
-`v27.37.1` is a frontend strict-TypeScript hotfix only. It changes no backend controller, authorization rule, persistence invariant, OpenAPI shape or Flyway migration. The Vue Calendar & Timeline feature continues to consume the existing generated operations `calendarRange`, `getTimeContext` and `updateCalendarLayer`; the canonical generated contract remains 98 operations and 103 schemas.
+`v27.38.0` expands the canonical generated browser contract for the Vue Tasks, Notes & Important Days migration. Spring Boot remains authoritative for validation, ownership, task state, scheduling, notes, Important Events and Inbox conversion; Vue uses operationId-based generated transport and does not become a second business-rule owner.
 
-The generated browser contract now contains **98 operations and 103 schemas**. Array items and `allOf` inheritance are emitted accurately for overtime credits, usages, allocations and absence preview rows. Spring Boot remains the source of truth for validation, ownership, FIFO, closed periods and compensation state.
+The generated browser contract contains **101 operations and 106 schemas**. New/expanded typed coverage includes task-board reads, task update payloads, Important Event update/delete operations, typed important occurrences, task schedule/project fields and project metadata. Compatibility `/api/*` aliases remain available for bounded legacy/offline dataLayer paths, while migrated online UI operations use generated `/api/v1/*`.
 
-The v27.34.4 preview behavior remains released: non-persistent zero/negative draft calculations are representable, while create/update validation remains strict.
+No PostgreSQL schema or Flyway migration is introduced; Flyway remains V47. The v27.34.4 preview behavior remains released: non-persistent zero/negative overtime draft calculations are representable, while create/update validation remains strict.
+
+## Productivity presentation contract
+
+Canonical generated operations now cover the Vue productivity owner for Tasks, Notes, Important Days and Inbox. The frontend may keep filters, drafts, modal state and stale-read sequence tokens, but Spring Boot owns all persisted domain state. Q-10 deliberately reuses the existing dataLayer offline queue/cache for the already-supported offline note edit, task-completion and Inbox-capture mutations; no parallel queue or offline business authority is introduced.
 
 ## Absence and time-bank presentation contract
 

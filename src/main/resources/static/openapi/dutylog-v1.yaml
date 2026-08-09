@@ -321,9 +321,13 @@ paths:
   /api/v1/tasks:
     get:
       operationId: listTasks
+      parameters:
+        - { in: query, name: date, required: false, schema: { type: string, format: date } }
+        - { in: query, name: from, required: false, schema: { type: string, format: date } }
+        - { in: query, name: to, required: false, schema: { type: string, format: date } }
       responses:
         '200':
-          description: Tasks
+          description: Tasks for one day or an inclusive range
           content:
             application/json:
               schema: { type: array, items: { $ref: '#/components/schemas/Task' } }
@@ -340,6 +344,27 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/Task' }
+  /api/v1/tasks/board:
+    get:
+      operationId: taskBoard
+      parameters:
+        - { in: query, name: status, required: false, schema: { type: string, enum: [open, overdue, done, all], default: open } }
+        - { in: query, name: category, required: false, schema: { type: string } }
+        - { in: query, name: project, required: false, schema: { type: string } }
+        - { in: query, name: priority, required: false, schema: { type: string, enum: [LOW, NORMAL, HIGH, URGENT] } }
+        - { in: query, name: q, required: false, schema: { type: string } }
+        - { in: query, name: from, required: false, schema: { type: string, format: date } }
+        - { in: query, name: to, required: false, schema: { type: string, format: date } }
+        - { in: query, name: scheduledFrom, required: false, schema: { type: string, format: date } }
+        - { in: query, name: scheduledTo, required: false, schema: { type: string, format: date } }
+        - { in: query, name: page, required: false, schema: { type: integer, minimum: 0, default: 0 } }
+        - { in: query, name: size, required: false, schema: { type: integer, minimum: 1, maximum: 200, default: 50 } }
+      responses:
+        '200':
+          description: Filtered task board page
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TaskPage' }
   /api/v1/tasks/{taskId}:
     get:
       operationId: getTaskDetails
@@ -361,8 +386,17 @@ paths:
           name: taskId
           required: true
           schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskUpdateRequest' }
       responses:
-        '200': { description: Updated task }
+        '200':
+          description: Updated task
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Task' }
     delete:
       operationId: deleteTask
       parameters:
@@ -531,6 +565,28 @@ paths:
           content:
             application/json:
               schema: { $ref: '#/components/schemas/ImportantEvent' }
+  /api/v1/important-days/{id}:
+    patch:
+      operationId: updateImportantDay
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ImportantEventInput' }
+      responses:
+        '200':
+          description: Updated important event
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ImportantEvent' }
+    delete:
+      operationId: deleteImportantDay
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Deleted }
   /api/v1/important-days/occurrences:
     get:
       operationId: listImportantDayOccurrences
@@ -538,7 +594,11 @@ paths:
         - { in: query, name: from, required: true, schema: { type: string, format: date } }
         - { in: query, name: to, required: true, schema: { type: string, format: date } }
       responses:
-        '200': { description: Projected occurrences }
+        '200':
+          description: Projected occurrences
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ImportantEventOccurrence' } }
   /api/v1/overtime/account:
     get:
       operationId: overtimeAccount
@@ -1870,7 +1930,7 @@ components:
         sameTimezone: { type: boolean, enum: [true] }
     Task:
       type: object
-      required: [id, date, text, done, tags, priority, reminderEnabled, overdue, subtasks, deadlineAbsolute]
+      required: [id, date, text, done, tags, priority, reminderEnabled, overdue, subtasks, deadlineAbsolute, allDay, scheduleAbsolute]
       properties:
         id: { type: integer, format: int64 }
         date: { type: string, format: date }
@@ -1896,6 +1956,19 @@ components:
           type: array
           maxItems: 50
           items: { $ref: '#/components/schemas/TaskSubtask' }
+        project: { type: string, maxLength: 80, nullable: true }
+        allDay: { type: boolean }
+        scheduledStartDate: { type: string, format: date, nullable: true }
+        scheduledStartTime: { type: string, nullable: true }
+        scheduledEndDate: { type: string, format: date, nullable: true }
+        scheduledEndTime: { type: string, nullable: true }
+        scheduledDurationMinutes: { type: integer, format: int64, minimum: 1, maximum: 10080, nullable: true }
+        scheduleAbsolute: { type: boolean }
+        scheduledSourceTimezone: { type: string, nullable: true }
+        scheduledSourceStartDate: { type: string, format: date, nullable: true }
+        scheduledSourceStartTime: { type: string, nullable: true }
+        scheduledSourceEndDate: { type: string, format: date, nullable: true }
+        scheduledSourceEndTime: { type: string, nullable: true }
     TaskSubtask:
       type: object
       required: [id, text, done, sortOrder]
@@ -1921,6 +1994,7 @@ components:
         date: { type: string, format: date }
         text: { type: string, maxLength: 500 }
         description: { type: string, maxLength: 4000, nullable: true }
+        project: { type: string, maxLength: 80, nullable: true }
         category: { type: string, maxLength: 80, nullable: true }
         tags:
           type: array
@@ -1935,12 +2009,59 @@ components:
           type: array
           maxItems: 50
           items: { $ref: '#/components/schemas/TaskSubtaskInput' }
+        allDay: { type: boolean, default: true }
+        scheduledStartDate: { type: string, format: date, nullable: true }
+        scheduledStartTime: { type: string, nullable: true }
+        scheduledEndDate: { type: string, format: date, nullable: true }
+        scheduledEndTime: { type: string, nullable: true }
+        scheduledDurationMinutes: { type: integer, minimum: 1, maximum: 10080, nullable: true }
+    TaskUpdateRequest:
+      type: object
+      properties:
+        text: { type: string, maxLength: 500 }
+        done: { type: boolean }
+        date: { type: string, format: date }
+        description: { type: string, maxLength: 4000, nullable: true }
+        project: { type: string, maxLength: 80, nullable: true }
+        category: { type: string, maxLength: 80, nullable: true }
+        tags:
+          type: array
+          maxItems: 10
+          items: { type: string, maxLength: 40 }
+        priority: { type: string, enum: [LOW, NORMAL, HIGH, URGENT] }
+        dueDate: { type: string, format: date, nullable: true }
+        dueTime: { type: string, nullable: true }
+        reminderEnabled: { type: boolean }
+        reminderMinutesBefore: { type: integer, minimum: 0, maximum: 10080, nullable: true }
+        subtasks:
+          type: array
+          maxItems: 50
+          items: { $ref: '#/components/schemas/TaskSubtaskInput' }
+        completeSubtasks: { type: boolean }
+        allDay: { type: boolean }
+        scheduledStartDate: { type: string, format: date, nullable: true }
+        scheduledStartTime: { type: string, nullable: true }
+        scheduledEndDate: { type: string, format: date, nullable: true }
+        scheduledEndTime: { type: string, nullable: true }
+        scheduledDurationMinutes: { type: integer, minimum: 1, maximum: 10080, nullable: true }
     TaskMetadata:
       type: object
-      required: [categories, tags]
+      required: [categories, tags, projects]
       properties:
         categories: { type: array, items: { type: string } }
         tags: { type: array, items: { type: string } }
+        projects: { type: array, items: { type: string } }
+    TaskPage:
+      type: object
+      required: [items, page, size, total, totalPages, hasPrevious, hasNext]
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/Task' } }
+        page: { type: integer, minimum: 0 }
+        size: { type: integer, minimum: 1 }
+        total: { type: integer, format: int64, minimum: 0 }
+        totalPages: { type: integer, minimum: 0 }
+        hasPrevious: { type: boolean }
+        hasNext: { type: boolean }
     LegacyTaskDeadline:
       type: object
       required: [taskId, text, sourceDate, sourceTime, sourceTimezone, projectedDate, projectedTime, targetTimezone, dueInstant]
@@ -2460,6 +2581,30 @@ components:
             id: { type: integer, format: int64 }
             startInstant: { type: string, format: date-time, nullable: true }
             endInstant: { type: string, format: date-time, nullable: true }
+    ImportantEventOccurrence:
+      type: object
+      required: [id, date, title, repeatMode, color, eventType, startDate, allDay, reminders]
+      properties:
+        id: { type: integer, format: int64 }
+        date: { type: string, format: date }
+        title: { type: string }
+        repeatMode: { type: string, enum: [NONE, MONTHLY, YEARLY] }
+        color: { type: string }
+        eventType: { type: string, enum: [IMPORTANT_DATE, EVENT, PERIOD] }
+        startDate: { type: string, format: date }
+        endDate: { type: string, format: date, nullable: true }
+        allDay: { type: boolean }
+        startTime: { type: string, nullable: true }
+        endTime: { type: string, nullable: true }
+        startInstant: { type: string, format: date-time, nullable: true }
+        endInstant: { type: string, format: date-time, nullable: true }
+        sourceTimezone: { type: string, nullable: true }
+        displayTimezone: { type: string, nullable: true }
+        place: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        icon: { type: string, nullable: true }
+        category: { type: string, nullable: true }
+        reminders: { type: array, items: { type: integer } }
     DayNote:
       type: object
       required: [id, date, content, pinned, sortOrder, version]

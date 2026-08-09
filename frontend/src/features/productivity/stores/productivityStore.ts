@@ -1,0 +1,506 @@
+import { defineStore } from "pinia";
+import { DutyLogApiError } from "@/platform/api/httpClient";
+import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
+import { useShellStore } from "@/app/shellStore";
+import { createProductivityApi, type ProductivityApi } from "../api/productivityApi";
+import type {
+  DayNote,
+  ImportantDraft,
+  ImportantEvent,
+  ImportantEventOccurrence,
+  InboxItem,
+  Task,
+  TaskDraft,
+  TaskMetadata,
+  TaskPage,
+} from "../types/domain";
+import {
+  addMinutes,
+  emptyImportantDraft,
+  emptyTaskDraft,
+  importantInput,
+  importantToDraft,
+  normalizeTags,
+  sortDayTasks,
+  taskDraftSubtasks,
+  taskToDraft,
+  todayIso,
+  validDate,
+} from "../types/model";
+
+let api: ProductivityApi = createProductivityApi();
+let bridge: LegacyBridge | null = null;
+let boardReadSequence = 0;
+let selectedReadSequence = 0;
+let importantReadSequence = 0;
+let inboxReadSequence = 0;
+let searchReadSequence = 0;
+
+const emptyMetadata = (): TaskMetadata => ({ categories: [], tags: [], projects: [] });
+const emptyPage = (): TaskPage => ({ items: [], page: 0, size: 50, total: 0, totalPages: 0, hasPrevious: false, hasNext: false });
+
+export function installProductivityRuntime(nextApi: ProductivityApi, nextBridge: LegacyBridge): () => void {
+  const previousApi = api;
+  const previousBridge = bridge;
+  api = nextApi;
+  bridge = nextBridge;
+  return () => { api = previousApi; bridge = previousBridge; };
+}
+
+export function installProductivityBridge(nextBridge: LegacyBridge): () => void {
+  const previous = bridge;
+  bridge = nextBridge;
+  return () => { bridge = previous; };
+}
+
+function errorMessage(error: unknown): string {
+  if (error instanceof DutyLogApiError) return error.code ? `${error.message} (${error.code})` : error.message;
+  return error instanceof Error ? error.message : "Не удалось выполнить запрос";
+}
+
+function taskPayload(draft: TaskDraft) {
+  const timed = !draft.allDay;
+  const reminderMinutes = Number(draft.reminderMinutesBefore);
+  const duration = Number(draft.scheduledDurationMinutes);
+  return {
+    date: validDate(draft.date),
+    text: draft.text.trim(),
+    description: draft.description.trim() || null,
+    project: draft.project.trim() || null,
+    category: draft.category.trim() || null,
+    tags: normalizeTags(draft.tags),
+    priority: draft.priority,
+    dueDate: draft.dueDate || null,
+    dueTime: draft.dueDate && draft.dueTime ? draft.dueTime : null,
+    reminderEnabled: draft.reminderEnabled,
+    reminderMinutesBefore: draft.reminderEnabled && Number.isFinite(reminderMinutes) ? Math.max(0, Math.round(reminderMinutes)) : null,
+    subtasks: taskDraftSubtasks(draft),
+    allDay: draft.allDay,
+    scheduledStartDate: validDate(draft.date),
+    scheduledStartTime: timed ? draft.scheduledStartTime || null : null,
+    scheduledEndDate: timed ? validDate(draft.scheduledEndDate, draft.date) : null,
+    scheduledEndTime: timed ? draft.scheduledEndTime || null : null,
+    scheduledDurationMinutes: timed && Number.isFinite(duration) && duration > 0 ? Math.round(duration) : null,
+  } as const;
+}
+
+function taskEndKey(draft: TaskDraft): string | null {
+  if (draft.allDay || !draft.scheduledStartTime) return null;
+  const endDate = validDate(draft.scheduledEndDate, draft.date);
+  const endTime = draft.scheduledEndTime || (draft.scheduledDurationMinutes ? addMinutes(draft.scheduledStartTime, Number(draft.scheduledDurationMinutes)) : "");
+  if (!endTime) return null;
+  return `${endDate}T${endTime}`;
+}
+
+function deadlineKey(draft: TaskDraft): string | null {
+  if (!draft.dueDate) return null;
+  return `${draft.dueDate}T${draft.dueTime || "23:59"}`;
+}
+
+async function refreshCalendarIfMounted(): Promise<void> {
+  try { await window.DutyLogVueDomains?.calendarTimeline?.refresh(); } catch { /* page keeps its authoritative domain state */ }
+}
+
+export const useProductivityStore = defineStore("dutylog-productivity", {
+  state: () => ({
+    selectedDate: todayIso(),
+    selectedTasks: [] as Task[],
+    selectedNotes: [] as DayNote[],
+    selectedImportant: [] as ImportantEventOccurrence[],
+    board: emptyPage() as TaskPage,
+    metadata: emptyMetadata() as TaskMetadata,
+    boardStatus: "open" as "open" | "overdue" | "done" | "all",
+    boardCategory: "",
+    boardProject: "",
+    boardPriority: "" as "" | "LOW" | "NORMAL" | "HIGH" | "URGENT",
+    boardSearch: "",
+    boardFrom: "",
+    boardTo: "",
+    boardPage: 0,
+    boardSize: 50,
+    importantDays: [] as ImportantEvent[],
+    importantScope: "all" as "all" | "upcoming" | "past" | "recurring",
+    importantSearch: "",
+    inbox: [] as InboxItem[],
+    inboxShowArchived: false,
+    inboxSearch: "",
+    noteSearch: "",
+    noteSearchResults: [] as DayNote[],
+    selectedNoteId: null as number | null,
+    workTimezone: "UTC",
+    loading: false,
+    boardLoading: false,
+    selectedLoading: false,
+    mutationPending: false,
+    loaded: false,
+    error: "",
+    conflict: "",
+    queuedMutations: 0,
+    taskEditorOpen: false,
+    taskDetailsOpen: false,
+    taskDraft: emptyTaskDraft() as TaskDraft,
+    taskDetails: null as Task | null,
+    importantEditorOpen: false,
+    importantDetailsOpen: false,
+    importantDraft: emptyImportantDraft() as ImportantDraft,
+    importantDetails: null as ImportantEvent | null,
+  }),
+  getters: {
+    currentNote(state): DayNote | null {
+      return state.selectedNotes.find(note => Number(note.id) === Number(state.selectedNoteId)) ?? state.selectedNotes[0] ?? null;
+    },
+    filteredImportantDays(state): ImportantEvent[] {
+      const query = state.importantSearch.trim().toLocaleLowerCase("ru-RU");
+      const today = todayIso();
+      return state.importantDays.filter(item => {
+        if (state.importantScope === "recurring" && item.repeatMode === "NONE") return false;
+        if (state.importantScope === "upcoming" && item.date < today && item.repeatMode === "NONE") return false;
+        if (state.importantScope === "past" && (item.date >= today || item.repeatMode !== "NONE")) return false;
+        if (!query) return true;
+        return `${item.title} ${item.date} ${item.place ?? ""} ${item.category ?? ""}`.toLocaleLowerCase("ru-RU").includes(query);
+      });
+    },
+    visibleInbox(state): InboxItem[] {
+      const q = state.inboxSearch.trim().toLocaleLowerCase("ru-RU");
+      return state.inbox.filter(item => !q || item.text.toLocaleLowerCase("ru-RU").includes(q));
+    },
+  },
+  actions: {
+    synchronizeQueuedCount(): void { this.queuedMutations = bridge?.offlinePending() ?? 0; },
+    async ensureLoaded(date = this.selectedDate): Promise<void> {
+      if (!this.loaded) await this.refreshAll(date);
+    },
+    async refreshAll(date = this.selectedDate): Promise<void> {
+      this.loading = true;
+      this.error = "";
+      try {
+        const context = await api.timeContext();
+        this.workTimezone = context?.workTimezone || this.workTimezone;
+        await Promise.all([this.loadSelectedDate(date), this.loadBoard(), this.loadImportantDays(), this.loadInbox()]);
+        this.loaded = true;
+        this.synchronizeQueuedCount();
+      } catch (error) {
+        this.error = errorMessage(error);
+      } finally { this.loading = false; }
+    },
+    async loadSelectedDate(date: string): Promise<void> {
+      const safeDate = validDate(date, this.selectedDate || todayIso());
+      const sequence = ++selectedReadSequence;
+      this.selectedDate = safeDate;
+      this.selectedLoading = true;
+      try {
+        let tasks: Task[];
+        let notes: DayNote[];
+        let occurrences: ImportantEventOccurrence[];
+        if (typeof navigator !== "undefined" && !navigator.onLine && bridge) {
+          const cached = await bridge.offlineSelectedDay(safeDate);
+          tasks = cached.tasks as Task[];
+          notes = cached.notes as DayNote[];
+          occurrences = cached.important as ImportantEventOccurrence[];
+        } else {
+          [tasks, notes, occurrences] = await Promise.all([
+            api.tasksForDate(safeDate),
+            api.notesForDate(safeDate),
+            api.importantOccurrences(safeDate, safeDate),
+          ]);
+        }
+        if (sequence !== selectedReadSequence) return;
+        this.selectedTasks = sortDayTasks(tasks);
+        this.selectedNotes = [...notes].sort((a, b) => Number(b.pinned) - Number(a.pinned) || a.sortOrder - b.sortOrder || a.id - b.id);
+        this.selectedImportant = occurrences;
+        if (!this.selectedNotes.some(note => note.id === this.selectedNoteId)) this.selectedNoteId = this.selectedNotes[0]?.id ?? null;
+      } catch (error) {
+        if (sequence === selectedReadSequence) this.error = errorMessage(error);
+      } finally { if (sequence === selectedReadSequence) this.selectedLoading = false; }
+    },
+    async loadBoard(): Promise<void> {
+      const sequence = ++boardReadSequence;
+      this.boardLoading = true;
+      try {
+        const query: Record<string, string | number | undefined> = {
+          status: this.boardStatus,
+          category: this.boardCategory || undefined,
+          project: this.boardProject || undefined,
+          priority: this.boardPriority || undefined,
+          q: this.boardSearch.trim() || undefined,
+          from: this.boardFrom || undefined,
+          to: this.boardTo || undefined,
+          page: this.boardPage,
+          size: this.boardSize,
+        };
+        const [page, metadata] = await Promise.all([api.taskBoard(query), api.taskMetadata()]);
+        if (sequence !== boardReadSequence) return;
+        this.board = page ?? emptyPage();
+        this.metadata = metadata ?? emptyMetadata();
+      } catch (error) {
+        if (sequence === boardReadSequence) this.error = errorMessage(error);
+      } finally { if (sequence === boardReadSequence) this.boardLoading = false; }
+    },
+    async loadImportantDays(): Promise<void> {
+      const sequence = ++importantReadSequence;
+      try {
+        const rows = await api.importantDays();
+        if (sequence === importantReadSequence) this.importantDays = rows;
+      } catch (error) { if (sequence === importantReadSequence) this.error = errorMessage(error); }
+    },
+    async loadInbox(): Promise<void> {
+      const sequence = ++inboxReadSequence;
+      try {
+        const rows = await api.inbox(this.inboxShowArchived ? "all" : "open");
+        if (sequence === inboxReadSequence) this.inbox = rows;
+      } catch (error) { if (sequence === inboxReadSequence) this.error = errorMessage(error); }
+    },
+    async setBoardFilters(): Promise<void> { this.boardPage = 0; await this.loadBoard(); },
+    async searchNotesNow(): Promise<void> {
+      const q = this.noteSearch.trim();
+      const sequence = ++searchReadSequence;
+      if (!q) { this.noteSearchResults = []; return; }
+      try {
+        const rows = await api.searchNotes(q);
+        if (sequence === searchReadSequence) this.noteSearchResults = rows;
+      } catch (error) { if (sequence === searchReadSequence) this.error = errorMessage(error); }
+    },
+    async openTaskCreate(date = this.selectedDate, text = "", sourceInboxId: number | null = null): Promise<void> {
+      await this.ensureLoaded(date);
+      this.taskDraft = emptyTaskDraft(date);
+      this.taskDraft.text = text;
+      this.taskDraft.sourceInboxId = sourceInboxId;
+      this.taskEditorOpen = true;
+      this.taskDetailsOpen = false;
+      this.error = "";
+      this.conflict = "";
+    },
+    async openTaskDetails(id: number): Promise<void> {
+      this.error = "";
+      const row = await api.task(id);
+      if (!row) { this.error = "Задача не найдена"; return; }
+      this.taskDetails = row;
+      this.taskDetailsOpen = true;
+      this.taskEditorOpen = false;
+    },
+    editTaskDetails(): void {
+      if (!this.taskDetails) return;
+      this.taskDraft = taskToDraft(this.taskDetails);
+      this.taskDetailsOpen = false;
+      this.taskEditorOpen = true;
+    },
+    updateTaskDuration(minutes: number): void {
+      if (!Number.isFinite(minutes) || minutes <= 0) return;
+      this.taskDraft.scheduledDurationMinutes = String(Math.round(minutes));
+      this.taskDraft.scheduledEndDate = this.taskDraft.date;
+      this.taskDraft.scheduledEndTime = addMinutes(this.taskDraft.scheduledStartTime, minutes);
+    },
+    validateTaskDraft(): string {
+      if (!this.taskDraft.text.trim()) return "Текст задачи не должен быть пустым.";
+      if (!this.taskDraft.allDay && (!this.taskDraft.scheduledStartTime || !this.taskDraft.scheduledEndTime)) return "Укажите начало и окончание запланированного интервала.";
+      const end = taskEndKey(this.taskDraft);
+      const deadline = deadlineKey(this.taskDraft);
+      if (this.taskDraft.dueDate && this.taskDraft.dueDate < this.taskDraft.date) return "Дедлайн не может быть раньше окончания запланированного интервала.";
+      if (end && deadline && deadline < end) return "Дедлайн не может быть раньше окончания запланированного интервала.";
+      return "";
+    },
+    async saveTask(): Promise<void> {
+      if (this.mutationPending) return;
+      const validation = this.validateTaskDraft();
+      if (validation) { this.error = validation; return; }
+      this.mutationPending = true;
+      this.error = "";
+      this.conflict = "";
+      const draft = structuredClone(this.taskDraft);
+      try {
+        const payload = taskPayload(draft);
+        let saved: Task | null;
+        if (draft.id) {
+          saved = await api.updateTask(draft.id, payload);
+        } else if (draft.sourceInboxId) {
+          const conversion = await api.convertInbox(draft.sourceInboxId, {
+            date: draft.date,
+            description: payload.description,
+            category: payload.category,
+            tags: payload.tags,
+            priority: payload.priority,
+            dueDate: payload.dueDate,
+            dueTime: payload.dueTime,
+            reminderEnabled: payload.reminderEnabled,
+            reminderMinutesBefore: payload.reminderMinutesBefore,
+            subtasks: payload.subtasks,
+          });
+          saved = conversion?.task ?? null;
+        } else {
+          saved = await api.createTask(payload);
+        }
+        this.taskEditorOpen = false;
+        if (saved) this.taskDetails = saved;
+        await Promise.all([this.loadSelectedDate(draft.date), this.loadBoard(), this.loadInbox()]);
+        await refreshCalendarIfMounted();
+        useShellStore().announce("Задача сохранена", "success");
+      } catch (error) { await this.handleMutationError(error); }
+      finally { this.mutationPending = false; }
+    },
+    async toggleTask(task: Task, done: boolean): Promise<void> {
+      const pendingChildren = done && (task.subtasks ?? []).some(item => !item.done);
+      if (pendingChildren && !globalThis.confirm("Завершить задачу вместе с незавершёнными подзадачами?")) return;
+      this.error = "";
+      try {
+        if (pendingChildren) {
+          await api.updateTask(task.id, { done: true, completeSubtasks: true });
+          await Promise.all([this.loadSelectedDate(this.selectedDate), this.loadBoard()]);
+        } else {
+          if (!bridge) throw new Error("Offline bridge is not ready");
+          const result = await bridge.offlineSetTaskDone(task.id, done);
+          if (result.queued) {
+            const apply = (row: Task) => row.id === task.id ? { ...row, done } : row;
+            this.selectedTasks = this.selectedTasks.map(apply);
+            this.board.items = this.board.items.map(apply);
+            if (this.taskDetails?.id === task.id) this.taskDetails = { ...this.taskDetails, done };
+            useShellStore().announce("Изменение сохранено оффлайн", "warning");
+          } else {
+            await Promise.all([this.loadSelectedDate(this.selectedDate), this.loadBoard()]);
+          }
+        }
+        this.synchronizeQueuedCount();
+        await refreshCalendarIfMounted();
+      } catch (error) { this.error = errorMessage(error); }
+    },
+    async toggleSubtask(taskId: number, subtaskId: number, done: boolean): Promise<void> {
+      if (this.mutationPending) return;
+      this.mutationPending = true;
+      try {
+        const updated = await api.updateSubtask(taskId, subtaskId, done);
+        if (updated) this.taskDetails = updated;
+        await Promise.all([this.loadSelectedDate(this.selectedDate), this.loadBoard()]);
+      } catch (error) { this.error = errorMessage(error); }
+      finally { this.mutationPending = false; }
+    },
+    async deleteTask(id: number): Promise<void> {
+      if (this.mutationPending || !globalThis.confirm("Удалить задачу?")) return;
+      this.mutationPending = true;
+      try {
+        await api.deleteTask(id);
+        this.taskDetailsOpen = false;
+        this.taskEditorOpen = false;
+        await Promise.all([this.loadSelectedDate(this.selectedDate), this.loadBoard()]);
+        await refreshCalendarIfMounted();
+      } catch (error) { await this.handleMutationError(error); }
+      finally { this.mutationPending = false; }
+    },
+    addSubtaskDraft(): void {
+      this.taskDraft.subtasks.push({ text: "", done: false, sortOrder: this.taskDraft.subtasks.length, dueDate: "" });
+    },
+    moveSubtaskDraft(index: number, delta: number): void {
+      const next = index + delta;
+      if (index < 0 || next < 0 || index >= this.taskDraft.subtasks.length || next >= this.taskDraft.subtasks.length) return;
+      const rows = [...this.taskDraft.subtasks];
+      [rows[index], rows[next]] = [rows[next]!, rows[index]!];
+      this.taskDraft.subtasks = rows;
+    },
+    removeSubtaskDraft(index: number): void { this.taskDraft.subtasks.splice(index, 1); },
+    async createNote(): Promise<void> {
+      if (this.mutationPending) return;
+      this.mutationPending = true;
+      try {
+        const note = await api.createNote(this.selectedDate);
+        await this.loadSelectedDate(this.selectedDate);
+        if (note) this.selectedNoteId = note.id;
+        await refreshCalendarIfMounted();
+      } catch (error) { this.error = errorMessage(error); }
+      finally { this.mutationPending = false; }
+    },
+    selectNote(id: number): void { this.selectedNoteId = id; },
+    async updateNote(id: number, patch: { title?: string | null; content?: string | null; pinned?: boolean }): Promise<void> {
+      const row = this.selectedNotes.find(note => note.id === id);
+      if (!row || !bridge) return;
+      const sortNotes = (notes: DayNote[]) => [...notes].sort((a, b) => Number(b.pinned) - Number(a.pinned) || a.sortOrder - b.sortOrder || a.id - b.id);
+      const optimistic = { ...row, ...patch };
+      this.selectedNotes = sortNotes(this.selectedNotes.map(note => note.id === id ? optimistic : note));
+      try {
+        const result = await bridge.offlineUpdateNote(id, patch, row.date);
+        if (result.queued) useShellStore().announce("Заметка сохранена оффлайн", "warning");
+        else if (result.note) this.selectedNotes = sortNotes(this.selectedNotes.map(note => note.id === id ? result.note as DayNote : note));
+        this.synchronizeQueuedCount();
+        await refreshCalendarIfMounted();
+      } catch (error) { this.error = errorMessage(error); await this.loadSelectedDate(row.date); }
+    },
+    async moveNote(id: number, direction: "UP" | "DOWN"): Promise<void> {
+      try { this.selectedNotes = (await api.moveNote(id, direction)) ?? this.selectedNotes; await refreshCalendarIfMounted(); }
+      catch (error) { this.error = errorMessage(error); }
+    },
+    async deleteNote(id: number): Promise<void> {
+      if (!globalThis.confirm("Удалить заметку?")) return;
+      try { await api.deleteNote(id); await this.loadSelectedDate(this.selectedDate); await refreshCalendarIfMounted(); }
+      catch (error) { this.error = errorMessage(error); }
+    },
+    async openImportantCreate(date = this.selectedDate): Promise<void> {
+      await this.ensureLoaded(date);
+      this.importantDraft = emptyImportantDraft(date, this.workTimezone);
+      this.importantEditorOpen = true;
+      this.importantDetailsOpen = false;
+      this.error = "";
+    },
+    async openImportantDetails(id: number): Promise<void> {
+      await this.ensureLoaded();
+      const item = this.importantDays.find(row => row.id === id) ?? null;
+      if (!item) { await this.loadImportantDays(); }
+      this.importantDetails = this.importantDays.find(row => row.id === id) ?? null;
+      if (!this.importantDetails) { this.error = "Событие не найдено"; return; }
+      this.importantDetailsOpen = true;
+      this.importantEditorOpen = false;
+    },
+    async openImportantEdit(id: number): Promise<void> {
+      await this.openImportantDetails(id);
+      if (this.importantDetails) this.editImportantDetails();
+    },
+    editImportantDetails(): void {
+      if (!this.importantDetails) return;
+      this.importantDraft = importantToDraft(this.importantDetails, this.workTimezone);
+      this.importantDetailsOpen = false;
+      this.importantEditorOpen = true;
+    },
+    async saveImportant(): Promise<void> {
+      if (this.mutationPending) return;
+      if (!this.importantDraft.title.trim()) { this.error = "Название обязательно"; return; }
+      this.mutationPending = true;
+      this.error = "";
+      const draft = structuredClone(this.importantDraft);
+      try {
+        const body = importantInput(draft);
+        if (draft.id) await api.updateImportant(draft.id, body); else await api.createImportant(body);
+        this.importantEditorOpen = false;
+        await Promise.all([this.loadImportantDays(), this.loadSelectedDate(draft.date)]);
+        await refreshCalendarIfMounted();
+        useShellStore().announce("Важное событие сохранено", "success");
+      } catch (error) { await this.handleMutationError(error); }
+      finally { this.mutationPending = false; }
+    },
+    async deleteImportant(id: number): Promise<void> {
+      if (!globalThis.confirm("Удалить событие?")) return;
+      try { await api.deleteImportant(id); this.importantDetailsOpen = false; await Promise.all([this.loadImportantDays(), this.loadSelectedDate(this.selectedDate)]); await refreshCalendarIfMounted(); }
+      catch (error) { this.error = errorMessage(error); }
+    },
+    async captureInbox(text: string): Promise<void> {
+      if (!bridge || !text.trim()) return;
+      try {
+        const result = await bridge.offlineCaptureInbox(text.trim());
+        if (!result.queued) await this.loadInbox();
+        else useShellStore().announce("Запись добавлена в офлайн-очередь", "warning");
+        this.synchronizeQueuedCount();
+      } catch (error) { this.error = errorMessage(error); }
+    },
+    async convertInboxToTask(item: InboxItem): Promise<void> { await this.openTaskCreate(this.selectedDate, item.text, item.id); },
+    async deleteInbox(id: number): Promise<void> { try { await api.deleteInbox(id); await this.loadInbox(); } catch (error) { this.error = errorMessage(error); } },
+    async flushOfflineQueue(): Promise<void> {
+      if (!bridge) return;
+      await bridge.offlineSync();
+      this.synchronizeQueuedCount();
+      await this.refreshAll(this.selectedDate);
+    },
+    async handleMutationError(error: unknown): Promise<void> {
+      if (error instanceof DutyLogApiError && error.status === 409) {
+        this.conflict = "Данные изменились на сервере. DutyLog обновил экран — проверьте изменения и повторите действие.";
+        await this.refreshAll(this.selectedDate);
+        return;
+      }
+      this.error = errorMessage(error);
+    },
+  },
+});
