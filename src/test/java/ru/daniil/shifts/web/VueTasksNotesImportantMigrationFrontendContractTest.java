@@ -60,6 +60,11 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(store.contains("bridge.offlineUpdateNote"));
         assertTrue(store.contains("bridge.offlineSetTaskDone"));
         assertTrue(store.contains("bridge.offlineCaptureInbox"));
+        assertTrue(store.contains("async ensureLoaded(date?: string)"));
+        assertTrue(store.contains("const targetDate = date ?? this.selectedDate"));
+        assertFalse(store.contains("date = this.selectedDate"));
+        assertTrue(store.contains("const optimistic: DayNote"));
+        assertTrue(store.contains("content: patch.content ?? row.content"));
     }
 
     @Test
@@ -75,6 +80,7 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(notes.contains("id=\"noteList\""));
         assertTrue(notes.contains("id=\"noteEdit\""));
         assertTrue(notes.contains("dayNoteCardPin"));
+        assertTrue(notes.contains("ReturnType<typeof globalThis.setTimeout>"));
         assertTrue(important.contains("id=\"impDate\""));
         assertTrue(important.contains("id=\"impTitle\""));
         assertTrue(important.contains("id=\"impAdd\""));

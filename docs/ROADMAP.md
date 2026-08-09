@@ -1,12 +1,22 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.2 — Vue Productivity Manifest Contract Alignment Hotfix**.
+Current release: **v27.38.3 — Vue Productivity Strict Typecheck Hotfix**.
 
 
 
 
 
-## v27.38.2 — Vue Productivity Manifest Contract Alignment Hotfix — current
+## v27.38.3 — Vue Productivity Strict Typecheck Hotfix — current
+- [x] Use the first exact v27.38.2 frontend gate: lockfile/delivery/OpenAPI pass, strict `vue-tsc` reports nine errors.
+- [x] Keep Today template expressions inside the Vue public instance by routing cross-domain calls through typed setup functions.
+- [x] Reuse the generated Task schema instead of weakening required `allDay`; keep strict `exactOptionalPropertyTypes` for notes.
+- [x] Remove Pinia `this` references from default parameter initializers and use an environment-safe autosave timer type.
+- [ ] Exact frontend gate must pass 49 Vitest + production build + bundle audit.
+- [ ] Maven/JUnit must pass 751/751.
+- [ ] Local/CI `npm run test:e2e` must reach 47/47 Chromium before acceptance.
+- [ ] Immutable image, clean PostgreSQL smoke and staging deployment remain blocking acceptance gates.
+
+## v27.38.2 — Vue Productivity Manifest Contract Alignment Hotfix
 - [x] Use the complete v27.38.1 local Maven result: 751 tests executed, one failure, zero errors.
 - [x] Isolate the sole failure to case-sensitive documentation matching: `Offline/reconnect boundary` versus lowercase `offline/reconnect`.
 - [x] Keep the contract semantic with `Locale.ROOT` lowercase matching instead of changing runtime code or weakening the offline/reconnect boundary.

@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.38.2.
+Status: v27.38.3.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.38.2 finishes the v27.38.x Maven static-contract alignment by making the migration-manifest offline/reconnect assertion casing-stable, while Tasks, Notes & Important Days remain under one Vue productivity owner, Spring Boot stays authoritative and the existing offline dataLayer remains the only queue/cache owner. The application baseline is 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI is 101 operations / 106 schemas and Flyway remains V47.
+Current extension: v27.38.3 closes the nine strict TypeScript errors exposed by the first exact v27.38.2 frontend gate without weakening `strict`, `noImplicitAny` or `exactOptionalPropertyTypes`. Today cross-domain commands are typed setup functions, Calendar tasks reuse the generated Task schema, Pinia selected-date defaults resolve inside action bodies, and optimistic note state preserves the non-null response contract. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 

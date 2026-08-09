@@ -167,16 +167,18 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
   },
   actions: {
     synchronizeQueuedCount(): void { this.queuedMutations = bridge?.offlinePending() ?? 0; },
-    async ensureLoaded(date = this.selectedDate): Promise<void> {
-      if (!this.loaded) await this.refreshAll(date);
+    async ensureLoaded(date?: string): Promise<void> {
+      const targetDate = date ?? this.selectedDate;
+      if (!this.loaded) await this.refreshAll(targetDate);
     },
-    async refreshAll(date = this.selectedDate): Promise<void> {
+    async refreshAll(date?: string): Promise<void> {
+      const targetDate = date ?? this.selectedDate;
       this.loading = true;
       this.error = "";
       try {
         const context = await api.timeContext();
         this.workTimezone = context?.workTimezone || this.workTimezone;
-        await Promise.all([this.loadSelectedDate(date), this.loadBoard(), this.loadImportantDays(), this.loadInbox()]);
+        await Promise.all([this.loadSelectedDate(targetDate), this.loadBoard(), this.loadImportantDays(), this.loadInbox()]);
         this.loaded = true;
         this.synchronizeQueuedCount();
       } catch (error) {
@@ -260,9 +262,10 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
         if (sequence === searchReadSequence) this.noteSearchResults = rows;
       } catch (error) { if (sequence === searchReadSequence) this.error = errorMessage(error); }
     },
-    async openTaskCreate(date = this.selectedDate, text = "", sourceInboxId: number | null = null): Promise<void> {
-      await this.ensureLoaded(date);
-      this.taskDraft = emptyTaskDraft(date);
+    async openTaskCreate(date?: string, text = "", sourceInboxId: number | null = null): Promise<void> {
+      const targetDate = date ?? this.selectedDate;
+      await this.ensureLoaded(targetDate);
+      this.taskDraft = emptyTaskDraft(targetDate);
       this.taskDraft.text = text;
       this.taskDraft.sourceInboxId = sourceInboxId;
       this.taskEditorOpen = true;
@@ -411,7 +414,12 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       const row = this.selectedNotes.find(note => note.id === id);
       if (!row || !bridge) return;
       const sortNotes = (notes: DayNote[]) => [...notes].sort((a, b) => Number(b.pinned) - Number(a.pinned) || a.sortOrder - b.sortOrder || a.id - b.id);
-      const optimistic = { ...row, ...patch };
+      const optimistic: DayNote = {
+        ...row,
+        title: patch.title !== undefined ? patch.title : (row.title ?? null),
+        content: patch.content ?? row.content,
+        pinned: patch.pinned ?? row.pinned,
+      };
       this.selectedNotes = sortNotes(this.selectedNotes.map(note => note.id === id ? optimistic : note));
       try {
         const result = await bridge.offlineUpdateNote(id, patch, row.date);
@@ -430,9 +438,10 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       try { await api.deleteNote(id); await this.loadSelectedDate(this.selectedDate); await refreshCalendarIfMounted(); }
       catch (error) { this.error = errorMessage(error); }
     },
-    async openImportantCreate(date = this.selectedDate): Promise<void> {
-      await this.ensureLoaded(date);
-      this.importantDraft = emptyImportantDraft(date, this.workTimezone);
+    async openImportantCreate(date?: string): Promise<void> {
+      const targetDate = date ?? this.selectedDate;
+      await this.ensureLoaded(targetDate);
+      this.importantDraft = emptyImportantDraft(targetDate, this.workTimezone);
       this.importantEditorOpen = true;
       this.importantDetailsOpen = false;
       this.error = "";

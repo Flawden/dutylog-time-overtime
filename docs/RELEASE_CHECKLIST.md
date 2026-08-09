@@ -1,6 +1,24 @@
 # Release checklist
 
-Status: v27.38.2.
+Status: v27.38.3.
+
+## v27.38.3 — Vue Productivity Strict Typecheck Hotfix acceptance
+
+- [x] v27.38.2 exact frontend gate passes authentic lockfile, delivery foundation and OpenAPI drift before failing strict TypeScript.
+- [x] The nine compiler errors are fixed without weakening `strict`, `noImplicitAny` or `exactOptionalPropertyTypes`.
+- [x] Today cross-domain commands are setup functions, CalendarTask reuses generated Task, note timer uses the actual timeout return type, Pinia defaults no longer reference `this`, and optimistic note content stays non-null.
+- [x] Baselines remain 152 classes / 751 `@Test` / 47 Chromium / 49 Vitest; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
+- [ ] Exact frontend gate must be green.
+- [ ] Maven verify must be 751/751.
+- [ ] `npm run test:e2e` must be 47/47 Chromium.
+- [ ] Immutable image, clean PostgreSQL smoke and staging deploy must be green before acceptance.
+
+Tag only after all acceptance items are green:
+
+```bash
+git tag -a v27.38.3 -m "v27.38.3 — Vue Productivity Strict Typecheck Hotfix"
+git push origin v27.38.3
+```
 
 ## v27.38.2 — Vue Productivity Manifest Contract Alignment Hotfix acceptance
 

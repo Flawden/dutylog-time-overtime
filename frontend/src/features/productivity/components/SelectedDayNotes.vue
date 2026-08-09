@@ -11,7 +11,7 @@ const { selectedNotes, currentNote, noteSearch, noteSearchResults } = storeToRef
 const title = ref("");
 const content = ref("");
 const preview = ref(false);
-let timer: number | null = null;
+let timer: ReturnType<typeof globalThis.setTimeout> | null = null;
 let syncing = false;
 
 watch(currentNote, note => {

@@ -11,13 +11,7 @@ export interface CalendarShiftType {
   plannedHours?: number;
 }
 
-export interface CalendarTask extends DutyLogApiSchemas.Task {
-  scheduledStartDate?: string | null;
-  scheduledStartTime?: string | null;
-  scheduledEndDate?: string | null;
-  scheduledEndTime?: string | null;
-  allDay?: boolean;
-}
+export type CalendarTask = DutyLogApiSchemas.Task;
 
 export interface CalendarImportantOccurrence {
   id: number;

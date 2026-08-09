@@ -38,6 +38,9 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertFalse(sources.contains("window.state"));
         assertFalse(sources.contains("jfetch("));
         assertFalse(sources.contains("document.querySelector"));
+        String domain = read(FEATURE.resolve("types/domain.ts"));
+        assertTrue(domain.contains("export type CalendarTask = DutyLogApiSchemas.Task;"));
+        assertFalse(domain.contains("interface CalendarTask extends"));
     }
 
     @Test
@@ -74,7 +77,10 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(page.contains("id=\"todayQuickTask\""));
         assertTrue(page.contains("openAbsenceComposer"));
         assertTrue(page.contains("openTaskCreate"));
+        assertTrue(page.contains("function openTaskDetails(id: number)"));
+        assertTrue(page.contains("function openImportantDetails(id: number)"));
         assertTrue(page.contains("openQuickActions"));
+        assertFalse(page.contains("@click=\"window.DutyLogVueDomains"));
         assertFalse(page.contains("openModal("));
     }
 

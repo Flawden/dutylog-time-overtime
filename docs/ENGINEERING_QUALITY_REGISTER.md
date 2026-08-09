@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.38.2
+release_foundation: v27.38.3
 created: 2026-08-04
 updated: 2026-08-08
 ---
@@ -59,6 +59,13 @@ updated: 2026-08-08
 
 
 
+
+## Vue Productivity strict typecheck note — v27.38.3
+
+- The first exact v27.38.2 frontend gate passed authentic lockfile, delivery and OpenAPI drift checks before strict TypeScript found nine migration-boundary errors.
+- v27.38.3 preserves strict typing: generated Task owns required task shape, Pinia actions resolve `this`-dependent defaults inside action bodies, and nullable note patch input is normalized before optimistic response-state projection.
+- Today cross-domain commands no longer reference global `window` from template instance scope; selected-note autosave uses the environment-specific timeout return type.
+- Acceptance remains fail-closed on exact frontend, Maven, 47/47 Chromium via `npm run test:e2e`, image, PostgreSQL and staging gates.
 
 ## Vue Productivity static contract alignment note — v27.38.2
 

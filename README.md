@@ -1,3 +1,12 @@
+# v27.38.3 — Vue Productivity Strict Typecheck Hotfix
+
+- Fixes the nine strict `vue-tsc` errors exposed by the first exact v27.38.2 frontend gate after lockfile, delivery and OpenAPI drift checks passed.
+- Moves Today cross-domain `window.DutyLogVueDomains` calls out of the Vue template into typed setup functions, reuses the generated `Task` schema for Calendar tasks, and makes the note autosave timer environment-safe.
+- Removes four Pinia action parameter initializers that referenced `this` and normalizes optimistic DayNote content so nullable update input cannot violate the non-null response model under `exactOptionalPropertyTypes`.
+- Extends existing Java source contracts without adding a test method; baseline remains 152 Java test classes / 751 `@Test` methods / 47 Playwright scenarios / 49 Vitest cases / Flyway V47.
+- Changes no PostgreSQL schema, Flyway migration, OpenAPI shape (101 operations / 106 schemas), backend business rule, browser timeout, retry policy or Playwright assertion.
+- Acceptance remains pending until the exact frontend gate is green, followed by Maven/JUnit, `npm run test:e2e`, immutable image, clean PostgreSQL smoke and staging deployment.
+
 # v27.38.2 — Vue Productivity Manifest Contract Alignment Hotfix
 
 - Fixes the last Maven-failing static contract exposed after v27.38.1 reduced the suite from three failures to one: the migration manifest heading is `Offline/reconnect boundary`, while the Java source contract used case-sensitive `String.contains("offline/reconnect")`.
