@@ -1,12 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.0 — Vue Tasks, Notes & Important Days**.
+Current release: **v27.38.1 — Vue Productivity Static Contract Alignment Hotfix**.
 
 
 
 
 
-## v27.38.0 — Vue Tasks, Notes & Important Days — current
+## v27.38.1 — Vue Productivity Static Contract Alignment Hotfix — current
+- [x] Align the historical Absence/Time Bank generated-contract source test with the generated-file invariant instead of stale global 98/103 totals.
+- [x] Align Task modal duration coverage with the Vue `v-for`/`:data-task-duration` implementation while preserving the 45-minute public option.
+- [x] Align productivity legacy-owner retirement with the canonical `data-vue-productivity` readiness marker and dataset check.
+- [x] Preserve v27.38.0 runtime/API/offline semantics and all 152 / 751 / 47 / 49 / V47 baselines.
+- [ ] Accept only after exact frontend gate, Maven/JUnit, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deployment are green.
+
+## v27.38.0 — Vue Tasks, Notes & Important Days — implementation predecessor
 - [x] Move Tasks board/Inbox, Task details/editor, selected-day Tasks, multiple daily Notes and Important Days into one bounded Vue productivity owner.
 - [x] Keep Spring Boot authoritative for task/deadline/schedule validation, note persistence/order, Inbox conversion, recurrence/timezone projection and all business rules.
 - [x] Expand the generated OpenAPI contract to 101 operations / 106 schemas so migrated productivity writes and reads use typed `/api/v1/*` operations.
@@ -15,12 +22,12 @@ Current release: **v27.38.0 — Vue Tasks, Notes & Important Days**.
 - [x] Add latest-read-wins, double-submit, 409 refresh, model Vitest coverage and Java ownership contracts without weakening the existing 47 Chromium scenarios.
 - [ ] Accept only after exact frontend gate, 152-class / 751-test Maven/JUnit, 47/47 Chromium, immutable image, clean PostgreSQL V47 smoke and staging deployment are green.
 
-## v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hotfix — completed and green
+## v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hotfix — browser-incomplete predecessor
 - [x] Use the complete v27.37.4 Chromium result (28 passed / 19 failed) to separate the fixed onboarding blocker from remaining route/editor regressions.
 - [x] Trace repeated `renderChips()` / `null.innerHTML` failures to the selected-day panel being appended under a conditionally-mounted CalendarPage host and destroyed when that host unmounts.
 - [x] Park the selected-day editor on `document.body` before CalendarPage unmount and reattach it on Calendar mount, keeping the island mandatory rather than masking missing descendants with optional chaining.
 - [x] Preserve strict browser diagnostics and leave independent mode/timezone projection failures for evidence-driven follow-up.
-- [x] Accepted: exact frontend gate, Maven/JUnit, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deployment are green.
+- [ ] Browser acceptance stopped at 31/47 Chromium; v27.38.x inherits the remaining parity work and must reach 47/47 before domain acceptance.
 ## v27.37.4 — PWA Bundle Budget Release Contract Alignment Hotfix — predecessor
 - [x] Use the v27.37.3 Maven failure to isolate the only failing JUnit assertion after 742 green tests.
 - [x] Remove the stale hardcoded bundle-budget release literal from the Calendar/Timeline migration contract.

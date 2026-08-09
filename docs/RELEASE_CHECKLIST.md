@@ -1,6 +1,16 @@
 # Release checklist
 
-Status: v27.38.0.
+Status: v27.38.1.
+
+## v27.38.1 — Vue Productivity Static Contract Alignment Hotfix acceptance
+
+- [x] Three local Maven failures are isolated to static source-contract expectations; production runtime was not reached by the failing gate.
+- [x] Historical domain contracts no longer own unrelated global OpenAPI totals.
+- [x] Task-duration and productivity-readiness assertions follow the released Vue implementation without weakening the public 45-minute option or owner-retirement boundary.
+- [ ] Exact frontend gate is green.
+- [ ] Maven/JUnit is 751/751.
+- [ ] Chromium is 47/47.
+- [ ] Immutable image, clean PostgreSQL smoke and staging deployment are green.
 
 ## v27.38.0 — Vue Tasks, Notes & Important Days acceptance
 
@@ -26,7 +36,7 @@ git push origin v27.38.0
 - [x] CalendarPage parks the mandatory selected-day editor before Vue removes `#calendarLegacyPanelHost`; Calendar mount reattaches the same DOM island.
 - [x] Existing Java/Vitest contracts enforce the park/reattach lifecycle with no baseline count increase.
 - [x] Baselines remain 151 classes / 743 `@Test` / 47 Chromium / 43 Vitest; OpenAPI remains 98 operations / 103 schemas and Flyway remains V47.
-- [x] Exact frontend gate, Maven verify, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deploy are green; v27.37.5 is accepted.
+- [ ] v27.37.5 browser acceptance completed at 31/47 Chromium; it is not an accepted green baseline. Remaining parity failures are carried into v27.38.x and stay blocking.
 Tag after full acceptance:
 
 ```bash

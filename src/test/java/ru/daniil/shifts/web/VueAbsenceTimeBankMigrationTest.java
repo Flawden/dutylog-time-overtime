@@ -73,8 +73,8 @@ class VueAbsenceTimeBankMigrationTest {
             assertTrue(openApi.contains("operationId: " + operation), operation);
             assertTrue(generated.contains("\"" + operation + "\""), operation);
         }
-        assertTrue(generated.contains("98 operations"));
-        assertTrue(generated.contains("103 schemas"));
+        assertTrue(generated.contains("GENERATED FILE — DO NOT EDIT."));
+        assertTrue(generated.contains("DUTYLOG_OPENAPI_SOURCE_SHA256"));
         assertTrue(generated.contains("credits: Array<DutyLogApiSchemas.OvertimeCredit>"));
         assertTrue(generated.contains("allocations: Array<DutyLogApiSchemas.OvertimeAllocation>"));
         assertTrue(generated.contains("items: Array<DutyLogApiSchemas.AbsencePreviewItem>"));

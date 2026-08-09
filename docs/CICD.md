@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.38.0.
+Status: v27.38.1.
 
 ## v27.38.0 Tasks, Notes & Important Days delivery boundary
 

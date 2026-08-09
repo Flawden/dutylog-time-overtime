@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.38.0
+release_foundation: v27.38.1
 created: 2026-08-04
 updated: 2026-08-08
 ---
@@ -59,6 +59,13 @@ updated: 2026-08-08
 
 
 
+
+## Vue Productivity static contract alignment note — v27.38.1
+
+- The first v27.38.0 Maven run reached all 751 JUnit methods and isolated exactly three source-contract mismatches.
+- Historical Absence/Time Bank coverage no longer hardcodes global generated-contract totals that belong to the drift gate.
+- Productivity duration/readiness assertions now follow Vue's dynamic binding and canonical dataset marker without changing runtime ownership.
+- Acceptance remains fail-closed on exact frontend, Maven, Chromium, image, PostgreSQL and staging gates.
 
 ## Tasks, Notes & Important Days migration note — v27.38.0
 

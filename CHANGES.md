@@ -1,3 +1,11 @@
+# v27.38.1 — Vue Productivity Static Contract Alignment Hotfix
+
+- Aligns three Maven-failing static contracts exposed by the first v27.38.0 local `mvn verify`: the historical Absence/Time Bank contract no longer owns global OpenAPI operation/schema totals, the Task duration contract follows Vue's dynamic `v-for` binding, and legacy-owner retirement checks the canonical `data-vue-productivity` readiness marker through the actual DOM dataset path.
+- Preserves the v27.38.0 Vue Tasks, Notes & Important Days runtime, generated OpenAPI contract (101 operations / 106 schemas), offline/reconnect queue ownership and all backend business rules unchanged.
+- Adds no test method or browser scenario; baseline remains 152 Java test classes / 751 `@Test` methods / 47 Playwright scenarios / 49 Vitest cases / Flyway V47.
+- Changes no PostgreSQL schema, Flyway migration, API semantics, timeout, retry policy or Playwright assertion.
+- Acceptance remains pending until the exact frontend gate, Maven/JUnit, all 47 Chromium scenarios, immutable image, clean PostgreSQL smoke and staging deployment are green.
+
 # v27.38.0 — Vue Tasks, Notes & Important Days
 
 - Migrates Tasks, Inbox, multiple daily Notes and Important Days into one bounded Vue productivity owner, including selected-day bodies and editor/detail modals, while keeping Spring Boot authoritative for all persisted business rules.
@@ -5,7 +13,7 @@
 - Activates Q-10 offline/reconnect by reusing the existing dataLayer queue/snapshot through typed bridge capabilities for note edits, task completion and Inbox capture; no second offline queue or browser-side business authority is introduced.
 - Adds independent latest-read-wins sequencing, duplicate-submit guards, HTTP 409 refresh, task/deadline parity, Important Event floating/timed semantics and legacy productivity owner retirement while preserving released public selectors.
 - Advances the baseline to 152 Java test classes / 751 `@Test` methods / 47 strict Chromium Playwright scenarios / 49 Vitest cases; PostgreSQL and Flyway remain unchanged at V47.
-- Rollback is application-image-only to accepted v27.37.5 because this release adds no database migration.
+- Rollback remains application-image-only because this release adds no database migration; v27.37.5 was a browser-incomplete predecessor (31/47 Chromium), so v27.38.x must absorb and close the remaining parity failures before acceptance.
 
 # v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hotfix
 

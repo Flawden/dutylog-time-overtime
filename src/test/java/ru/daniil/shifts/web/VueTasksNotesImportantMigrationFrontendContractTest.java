@@ -91,7 +91,8 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(page.contains("id=\"taskInboxCard\""));
         assertTrue(modal.contains("id=\"taskDetailsModal\""));
         assertTrue(modal.contains("id=\"taskEditModal\""));
-        assertTrue(modal.contains("data-task-duration=\"45\""));
+        assertTrue(modal.contains("v-for=\"minutes in [15,30,45,60,90,120]\""));
+        assertTrue(modal.contains(":data-task-duration=\"minutes\""));
         assertTrue(store.contains("completeSubtasks: true"));
         assertFalse(store.contains("FIFO"));
     }
@@ -137,9 +138,10 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(core.contains("vueSelectedDayTasksMount"));
         assertTrue(core.contains("vueSelectedDayNotesMount"));
         assertTrue(core.contains("vueSelectedDayImportantMount"));
-        assertTrue(tasks.contains("data-vue-productivity"));
-        assertTrue(tasks.contains("productivity.openTaskCreate"));
-        assertTrue(tasks.contains("productivity.openImportantCreate"));
+        assertTrue(core.contains("setAttribute(\"data-vue-productivity\", \"ready\")"));
+        assertTrue(tasks.contains("document.documentElement.dataset.vueProductivity === \"ready\""));
+        assertTrue(tasks.contains("productivity?.openTaskCreate"));
+        assertTrue(tasks.contains("productivity?.openImportantCreate"));
         assertTrue(manifest.contains("target_release: \"v27.38.0\""));
         assertTrue(manifest.contains("Spring Boot remains the source of truth"));
         assertTrue(manifest.contains("offline/reconnect"));

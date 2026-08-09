@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.38.0.
+Status: v27.38.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.38.0 migrates Tasks, Notes & Important Days into one Vue productivity owner while preserving Spring Boot authority and the existing offline dataLayer as the only queue/cache owner. The application baseline is 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI is 101 operations / 106 schemas and Flyway remains V47.
+Current extension: v27.38.1 aligns the v27.38.0 migration static contracts while Tasks, Notes & Important Days remain under one Vue productivity owner, preserving Spring Boot authority and the existing offline dataLayer as the only queue/cache owner. The application baseline is 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI is 101 operations / 106 schemas and Flyway remains V47.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
@@ -20,7 +20,7 @@ Historical foundation: v27.2.29 security baseline remains preserved by all later
 
 - Parks the selected-day `#panel` compatibility island before CalendarPage unmount and reattaches the same DOM island on return.
 - Adds no test method or scenario; accepted baseline remained 151 Java test classes / 743 `@Test` methods / 47 Chromium Playwright scenarios / 43 Vitest cases.
-- Full v27.37.5 CI/CD acceptance completed green before v27.38.0 began.
+- v27.37.5 was not browser-accepted: the full Playwright run completed at 31/47, so v27.38.x inherits those remaining parity failures and must close them before acceptance.
 
 ## v27.37.2 Vue Calendar Boot Routing Null-Safety Hotfix extension
 
