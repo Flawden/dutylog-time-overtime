@@ -1,10 +1,13 @@
 {
   "name": "dutylog-browser-e2e",
-  "version": "27.38.3",
+  "version": "27.38.5",
   "private": true,
   "description": "Playwright browser regression suite for DutyLog",
   "scripts": {
+    "pretest:e2e": "node ./e2e/preflight.mjs",
     "test:e2e": "playwright test",
+    "pretest:e2e:canary": "node ./e2e/preflight.mjs",
+    "test:e2e:canary": "playwright test e2e/auth-onboarding.spec.js",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:report": "playwright show-report"

@@ -31,6 +31,7 @@ export interface LegacyBridge {
   attachCalendarEditor(hostId: string): void;
   parkCalendarEditor(): void;
   openCalendarDay(date: string): void;
+  openCalendarSection(section: "tasks" | "notes" | "important"): void;
   closeCalendarDay(): void;
   openTaskCreate(date: string): void;
   openTaskDetails(id: number): void;
@@ -42,6 +43,7 @@ export interface LegacyBridge {
   offlineSync(): Promise<void>;
   offlinePending(): number;
   offlineSelectedDay(date: string): Promise<{ tasks: unknown[]; notes: unknown[]; important: unknown[] }>;
+  offlineCalendarSnapshot(focusDate: string): Promise<{ bundle: unknown; savedAt: string | null } | null>;
   subscribe(listener: (snapshot: DutyLogLegacySnapshot) => void): () => void;
 }
 
@@ -79,6 +81,7 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
     attachCalendarEditor(hostId: string) { adapter()?.attachCalendarEditor?.(hostId); },
     parkCalendarEditor() { adapter()?.parkCalendarEditor?.(); },
     openCalendarDay(date: string) { adapter()?.openCalendarDay?.(date); },
+    openCalendarSection(section) { adapter()?.openCalendarSection?.(section); },
     closeCalendarDay() { adapter()?.closeCalendarDay?.(); },
     openTaskCreate(date: string) { adapter()?.openTaskCreate?.(date); },
     openTaskDetails(id: number) { adapter()?.openTaskDetails?.(id); },
@@ -97,6 +100,9 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
     offlinePending() { return Number(adapter()?.offlinePending?.() ?? 0); },
     async offlineSelectedDay(date: string) {
       return (await adapter()?.offlineSelectedDay?.(date)) ?? { tasks: [], notes: [], important: [] };
+    },
+    async offlineCalendarSnapshot(focusDate: string) {
+      return (await adapter()?.offlineCalendarSnapshot?.(focusDate)) ?? null;
     },
     subscribe(listener) {
       const direct = adapter()?.subscribe(listener);

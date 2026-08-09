@@ -131,12 +131,29 @@ export function dayOf(bundle: CalendarRangeBundle | null, date: string): DutyLog
   return bundle?.days.find(item => item.date === date) ?? null;
 }
 
+function dateSpanContains(date: string, startDate: string, endDate: string, endTime?: string | null): boolean {
+  if (!startDate || date < startDate || date > endDate) return false;
+  if (date === endDate && endDate > startDate && String(endTime ?? "").slice(0, 5) === "00:00") return false;
+  return true;
+}
+
 export function occurrencesOf(bundle: CalendarRangeBundle | null, date: string): DutyLogApiSchemas.ShiftOccurrence[] {
-  return (bundle?.shiftOccurrences ?? []).filter(item => item.displayStart?.slice(0, 10) === date || item.displayEnd?.slice(0, 10) === date || item.sourceDate === date);
+  return (bundle?.shiftOccurrences ?? []).filter(item => {
+    const startDate = String(item.displayStart ?? "").slice(0, 10);
+    const endDate = String(item.displayEnd ?? item.displayStart ?? "").slice(0, 10);
+    return dateSpanContains(date, startDate, endDate, timePart(item.displayEnd));
+  });
 }
 
 export function tasksOf(bundle: CalendarRangeBundle | null, date: string): CalendarTask[] {
-  return (bundle?.tasks ?? []).filter(item => (item.scheduledStartDate || item.dueDate || item.date) === date);
+  return (bundle?.tasks ?? []).filter(item => {
+    const startDate = item.scheduledStartDate || item.date;
+    if (item.allDay === false && item.scheduledStartTime) {
+      const endDate = item.scheduledEndDate || startDate;
+      return dateSpanContains(date, startDate, endDate, item.scheduledEndTime);
+    }
+    return (item.scheduledStartDate || item.dueDate || item.date) === date;
+  });
 }
 
 export function importantOf(bundle: CalendarRangeBundle | null, date: string): CalendarImportantOccurrence[] {
@@ -174,11 +191,14 @@ export interface CalendarDayFacts {
 
 export function dayFacts(bundle: CalendarRangeBundle | null, date: string): CalendarDayFacts {
   const day = dayOf(bundle, date);
+  const occurrences = occurrencesOf(bundle, date);
+  const projectedShift = occurrences.map(item => shiftType(bundle, item.shiftTypeId)).find(Boolean) ?? null;
+  const shift = projectedShift ?? ((bundle?.shiftOccurrences.length ?? 0) === 0 ? shiftType(bundle, day?.shiftTypeId) : null);
   return {
     date,
     day,
-    shift: shiftType(bundle, day?.shiftTypeId),
-    occurrences: occurrencesOf(bundle, date),
+    shift,
+    occurrences,
     tasks: tasksOf(bundle, date),
     important: importantOf(bundle, date),
     absences: absencesOf(bundle, date),

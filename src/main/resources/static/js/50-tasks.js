@@ -874,7 +874,14 @@ function resetTaskEditorFields({ date = null, text = "", inboxId = null } = {}){
   renderTaskMetadataSuggestions();
 }
 function openTaskCreate(options = {}){
-  if (document.documentElement.dataset.vueProductivity === "ready") { void window.DutyLogVueDomains?.productivity?.openTaskCreate?.(String(options?.date || state.selected || "").slice(0,10)); return; }
+  if (document.documentElement.dataset.vueProductivity === "ready") {
+    void window.DutyLogVueDomains?.productivity?.openTaskCreate?.(
+      String(options?.date || state.selected || todayKey()).slice(0,10),
+      String(options?.text || ""),
+      options?.inboxId == null ? null : Number(options.inboxId)
+    );
+    return;
+  }
   if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
   resetTaskEditorFields(options);
   openAppModal("taskEditModal", "taskEditText");
@@ -1842,8 +1849,12 @@ async function quickActionNote(){
   if (!moduleEnabled("notes")) return setSave("err", t("модуль выключен"));
   const text = quickActionDraftText();
   const date = state.selected || todayKey();
-  const [year, month] = date.split("-").map(Number);
   closeQuickActions();
+  if (document.documentElement.dataset.vueProductivity === "ready") {
+    await window.DutyLogVueDomains?.productivity?.openNoteCreate?.(date, text);
+    return;
+  }
+  const [year, month] = date.split("-").map(Number);
   await goto(year, month - 1);
   location.hash = "#calendar";
   selectDay(date);
@@ -1872,6 +1883,10 @@ function quickActionImportant(){
   const date = state.selected || todayKey();
   closeQuickActions();
   location.hash = "#important";
+  if (document.documentElement.dataset.vueProductivity === "ready") {
+    void window.DutyLogVueDomains?.productivity?.openImportantCreate?.(date, text);
+    return;
+  }
   setTimeout(() => {
     openImportantEditor(null, date);
     if (text) $("importantEditName").value = text;
@@ -2474,6 +2489,7 @@ $("noteSearch")?.addEventListener("keydown", e => { if (e.key === "Escape") { e.
 
 function setTab(tabName){
   state.tab = tabName;
+  if (document.documentElement.dataset.vueProductivity === "ready") return;
   $("tabEdit").classList.toggle("on", tabName === "edit");
   $("tabPrev").classList.toggle("on", tabName === "preview");
   $("noteEdit").hidden = tabName !== "edit";

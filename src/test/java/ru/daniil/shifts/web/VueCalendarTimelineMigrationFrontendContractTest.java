@@ -24,6 +24,7 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(workspace.contains("activeRoute === 'calendar'"));
         assertTrue(workspace.contains("retireDomainOwners(\"calendar-timeline\")"));
         assertTrue(workspace.contains("DutyLogVueDomains"));
+        assertTrue(workspace.indexOf("DutyLogVueDomains") < workspace.indexOf("retireDomainOwners(\"calendar-timeline\")"));
     }
 
     @Test
@@ -66,6 +67,9 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(page.contains("id=\"calendarDayExperience\""));
         assertTrue(page.contains("id=\"calendarTimelineCanvas\""));
         assertTrue(page.contains("class=\"calendarLayerToggle\""));
+        assertTrue(page.contains("class=\"absenceFact\""));
+        assertTrue(page.contains("class=\"partialAbsenceBar\""));
+        assertTrue(page.contains("props.bridge.closeCalendarDay()"));
     }
 
     @Test
@@ -117,9 +121,13 @@ class VueCalendarTimelineMigrationFrontendContractTest {
     void legacyRenderersYieldAfterVueOwnershipIsReady() throws Exception {
         String calendar = read("src/main/resources/static/js/30-calendar.js");
         String today = read("src/main/resources/static/js/35-today.js");
+        String experience = read("src/main/resources/static/js/37-calendar-experience.js");
+        String layers = read("src/main/resources/static/js/38-schedule-layers.js");
 
         assertTrue(calendar.contains("requestVueCalendarTimelineRefresh()"));
         assertTrue(today.contains("requestVueCalendarTimelineRefresh()"));
+        assertTrue(experience.contains("document.documentElement.dataset.vueCalendarTimeline === \"ready\""));
+        assertTrue(layers.contains("if (document.documentElement.dataset.vueCalendarTimeline === \"ready\") return;"));
         assertTrue(read("src/main/resources/static/js/10-core.js").contains("vueCalendarTimelineRefreshQueued"));
     }
 
@@ -130,6 +138,9 @@ class VueCalendarTimelineMigrationFrontendContractTest {
 
         assertTrue(model.contains("complete Monday-to-Sunday grid"));
         assertTrue(model.contains("composes one selected-day read model"));
+        assertTrue(model.contains("scheduledEndDate: \"2026-08-05\""));
+        assertTrue(model.contains("dayFacts(crossMidnight, \"2026-08-05\").tasks"));
+        assertTrue(read(FEATURE.resolve("types/model.ts")).contains("dateSpanContains"));
         assertTrue(store.contains("stale month response"));
         assertTrue(store.contains("without reloading the canonical range"));
         assertTrue(store.contains("loads the work-date range for Today"));

@@ -388,6 +388,10 @@ $("todayQuickAbsence")?.addEventListener("click", () => {
 $("todayQuickMore")?.addEventListener("click", () => openQuickActions());
 $("todayQuickNote")?.addEventListener("click", async () => {
   const date = todayKey();
+  if (document.documentElement.dataset.vueProductivity === "ready") {
+    await window.DutyLogVueDomains?.productivity?.openNoteCreate?.(date, "");
+    return;
+  }
   await openTodayCalendarDate(date, "panel");
   $("accNote").open = true;
   await createDayNote("");

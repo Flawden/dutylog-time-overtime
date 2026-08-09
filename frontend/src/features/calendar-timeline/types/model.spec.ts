@@ -56,5 +56,45 @@ describe("calendar and timeline model", () => {
     expect(facts.absences[0]?.typeName).toBe("Отгул");
     expect(facts.reminders[0]?.title).toBe("Reminder");
     expect(facts.layers[0]?.layer.name).toBe("Напарник");
+
+    const projected = normalizeCalendarBundle({
+      from: "2026-07-27", to: "2026-09-06",
+      shiftTypes: [{ id: 7, name: "Поздняя", color: "#7b8ce0", startTime: "04:00", endTime: "12:00" }],
+      days: [{ date: "2026-08-03", shiftTypeId: 7, overtimeHours: 0, timeOffHours: 0, overtimeBalanceHours: 0, version: 1 }],
+      shiftOccurrences: [{
+        dayEntryId: 17, sourceDate: "2026-08-03", shiftTypeId: 7,
+        startInstant: "2026-08-03T23:00:00Z", endInstant: "2026-08-04T07:00:00Z",
+        sourceStart: "2026-08-03T23:00", sourceEnd: "2026-08-04T07:00",
+        displayStart: "2026-08-04T04:00", displayEnd: "2026-08-04T12:00",
+        sourceTimezone: "UTC", displayTimezone: "Asia/Yekaterinburg",
+        breakMinutes: 0, elapsedMinutes: 480, netMinutes: 480, legacyLocal: false,
+      }],
+    }, "2026-07-27", "2026-09-06");
+    expect(dayFacts(projected, "2026-08-04").shift?.name).toBe("Поздняя");
+    expect(dayFacts(projected, "2026-08-04").occurrences).toHaveLength(1);
+    expect(dayFacts(projected, "2026-08-03").shift).toBeNull();
+
+    const crossMidnight = normalizeCalendarBundle({
+      from: "2026-07-27", to: "2026-09-06",
+      shiftTypes: [{ id: 8, name: "До полуночи", color: "#445566" }],
+      shiftOccurrences: [{
+        dayEntryId: 18, sourceDate: "2026-08-04", shiftTypeId: 8,
+        startInstant: "2026-08-04T16:00:00Z", endInstant: "2026-08-05T00:00:00Z",
+        sourceStart: "2026-08-04T16:00", sourceEnd: "2026-08-05T00:00",
+        displayStart: "2026-08-04T16:00", displayEnd: "2026-08-05T00:00",
+        sourceTimezone: "UTC", displayTimezone: "UTC",
+        breakMinutes: 0, elapsedMinutes: 480, netMinutes: 480, legacyLocal: false,
+      }],
+      tasks: [{
+        id: 19, date: "2026-08-04", text: "Ночная задача", done: false, tags: [], priority: "NORMAL",
+        deadlineAbsolute: false, reminderEnabled: false, overdue: false, subtasks: [], allDay: false,
+        scheduledStartDate: "2026-08-04", scheduledStartTime: "23:45",
+        scheduledEndDate: "2026-08-05", scheduledEndTime: "00:15", scheduleAbsolute: false,
+      }],
+    }, "2026-07-27", "2026-09-06");
+    expect(dayFacts(crossMidnight, "2026-08-04").occurrences).toHaveLength(1);
+    expect(dayFacts(crossMidnight, "2026-08-05").occurrences).toHaveLength(0);
+    expect(dayFacts(crossMidnight, "2026-08-04").tasks[0]?.text).toBe("Ночная задача");
+    expect(dayFacts(crossMidnight, "2026-08-05").tasks[0]?.text).toBe("Ночная задача");
   });
 });

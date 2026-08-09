@@ -28,25 +28,54 @@ const tasksEnabled = computed(() => modules.value.tasks !== false);
 const notesEnabled = computed(() => modules.value.notes !== false);
 const importantEnabled = computed(() => modules.value.important_dates !== false);
 
+const domain: DutyLogProductivityDomain = Object.freeze({
+  ready: () => store.loaded,
+  refresh: async () => { await store.refreshAll(focusDate.value); },
+  openTaskCreate: async (date?: string, text = "", sourceInboxId: number | null = null) => {
+    await store.openTaskCreate(date || focusDate.value, text, sourceInboxId);
+  },
+  openTaskDetails: async (id: number) => { await store.openTaskDetails(id); },
+  openNoteCreate: async (date?: string, content = "") => {
+    const targetDate = date || focusDate.value;
+    await calendar.openDate(targetDate, "month");
+    props.bridge.navigate("calendar");
+    props.bridge.openCalendarDay(targetDate);
+    props.bridge.openCalendarSection("notes");
+    await store.createNote(targetDate, content);
+  },
+  openImportantCreate: async (date?: string, title = "") => {
+    await store.openImportantCreate(date || focusDate.value, title);
+  },
+  openImportantEdit: async (id: number) => { await store.openImportantEdit(id); },
+  openImportantDetails: async (id: number) => { await store.openImportantDetails(id); },
+  snapshot: () => Object.freeze({
+    selectedDate: store.selectedDate,
+    boardTotal: Number(store.board.total || 0),
+    selectedTasks: store.selectedTasks.length,
+    selectedNotes: store.selectedNotes.length,
+    selectedImportant: store.selectedImportant.length,
+    queuedMutations: store.queuedMutations,
+  }),
+});
+
 onBeforeMount(() => {
-  props.bridge.retireDomainOwners("productivity");
+  previousDomain = window.DutyLogVueDomains?.productivity;
   restoreBridge = installProductivityBridge(props.bridge);
+  window.DutyLogVueDomains = Object.freeze({ ...(window.DutyLogVueDomains ?? {}), productivity: domain });
+  props.bridge.retireDomainOwners("productivity");
 });
 
 async function synchronizeRoute(route: string): Promise<void> {
   if (route === "tasks" && tasksEnabled.value) {
     await Promise.all([store.loadBoard(), store.loadInbox()]);
-    store.loaded = true;
   } else if (route === "important" && importantEnabled.value) {
     await store.loadImportantDays();
-    store.loaded = true;
   }
 }
 
 async function synchronizeSelectedDate(date: string): Promise<void> {
   if (!tasksEnabled.value && !notesEnabled.value && !importantEnabled.value) return;
   await store.loadSelectedDate(date);
-  store.loaded = true;
 }
 
 async function reconnect(): Promise<void> {
@@ -55,44 +84,14 @@ async function reconnect(): Promise<void> {
 }
 
 onMounted(() => {
-  previousDomain = window.DutyLogVueDomains?.productivity;
-  const domain: DutyLogProductivityDomain = Object.freeze({
-    ready: () => store.loaded,
-    refresh: async () => {
-      await Promise.all([
-        synchronizeSelectedDate(focusDate.value),
-        tasksEnabled.value ? store.loadBoard() : Promise.resolve(),
-        importantEnabled.value ? store.loadImportantDays() : Promise.resolve(),
-        tasksEnabled.value ? store.loadInbox() : Promise.resolve(),
-      ]);
-    },
-    openTaskCreate: async (date?: string) => {
-      await store.openTaskCreate(date || focusDate.value);
-    },
-    openTaskDetails: async (id: number) => { await store.openTaskDetails(id); },
-    openImportantCreate: async (date?: string) => {
-      await store.openImportantCreate(date || focusDate.value);
-    },
-    openImportantEdit: async (id: number) => { await store.openImportantEdit(id); },
-    openImportantDetails: async (id: number) => { await store.openImportantDetails(id); },
-    snapshot: () => Object.freeze({
-      selectedDate: store.selectedDate,
-      boardTotal: Number(store.board.total || 0),
-      selectedTasks: store.selectedTasks.length,
-      selectedNotes: store.selectedNotes.length,
-      selectedImportant: store.selectedImportant.length,
-      queuedMutations: store.queuedMutations,
-    }),
-  });
-  window.DutyLogVueDomains = Object.freeze({ ...(window.DutyLogVueDomains ?? {}), productivity: domain });
-  void synchronizeSelectedDate(focusDate.value);
+  void store.refreshAll(focusDate.value);
   void synchronizeRoute(activeRoute.value);
   window.addEventListener("online", reconnect);
 });
 
 watch(activeRoute, route => { void synchronizeRoute(route); });
 watch(focusDate, date => { void synchronizeSelectedDate(date); });
-watch(modules, () => { void synchronizeSelectedDate(focusDate.value); void synchronizeRoute(activeRoute.value); }, { deep: true });
+watch(modules, () => { void store.refreshAll(focusDate.value); void synchronizeRoute(activeRoute.value); }, { deep: true });
 
 onBeforeUnmount(() => {
   window.removeEventListener("online", reconnect);

@@ -32,9 +32,13 @@ class FrontendLockfileExecutableResolutionHotfixTest {
     @Test
     void ciAndDockerStillFailWhenLocalExecutablesAreMissing() throws Exception {
         String gate = read("deploy/scripts/frontend-gate.sh");
+        String windowsGate = read("deploy/scripts/frontend-gate.ps1");
         String docker = read("Dockerfile");
         assertTrue(gate.contains("for command in vue-tsc vitest vite"));
         assertTrue(gate.contains("local executable is missing after npm ci"));
+        assertTrue(windowsGate.contains("Get-Command npm.cmd -ErrorAction Stop"));
+        assertTrue(windowsGate.contains("& $NpmCommand --prefix $FrontendDir ci"));
+        assertFalse(windowsGate.contains("& npm --prefix $FrontendDir"));
         assertTrue(docker.contains("test -e node_modules/.bin/vue-tsc"));
         assertTrue(docker.contains("npm ls --all"));
     }

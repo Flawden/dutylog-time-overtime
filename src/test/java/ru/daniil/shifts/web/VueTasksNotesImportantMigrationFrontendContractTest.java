@@ -28,6 +28,7 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(workspace.contains("vueSelectedDayNotesMount"));
         assertTrue(workspace.contains("vueSelectedDayImportantMount"));
         assertTrue(workspace.contains("DutyLogVueDomains"));
+        assertTrue(workspace.indexOf("DutyLogVueDomains") < workspace.indexOf("retireDomainOwners(\"productivity\")"));
     }
 
     @Test
@@ -65,6 +66,10 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertFalse(store.contains("date = this.selectedDate"));
         assertTrue(store.contains("const optimistic: DayNote"));
         assertTrue(store.contains("content: patch.content ?? row.content"));
+        assertTrue(store.contains("this.workTimezone = context?.workTimezone"));
+        assertTrue(store.contains("this.workDate = validDate(context?.workDate"));
+        assertTrue(store.contains("this.loaded = selectedOk && boardOk && importantOk && inboxOk"));
+        assertTrue(store.contains("addMinutesToDateTime"));
     }
 
     @Test
@@ -81,6 +86,7 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(notes.contains("id=\"noteEdit\""));
         assertTrue(notes.contains("dayNoteCardPin"));
         assertTrue(notes.contains("ReturnType<typeof globalThis.setTimeout>"));
+        assertTrue(notes.contains("await calendar.openDate(date, \"month\")"));
         assertTrue(important.contains("id=\"impDate\""));
         assertTrue(important.contains("id=\"impTitle\""));
         assertTrue(important.contains("id=\"impAdd\""));
@@ -149,6 +155,9 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(tasks.contains("document.documentElement.dataset.vueProductivity === \"ready\""));
         assertTrue(tasks.contains("productivity?.openTaskCreate"));
         assertTrue(tasks.contains("productivity?.openImportantCreate"));
+        assertTrue(tasks.contains("if (document.documentElement.dataset.vueProductivity === \"ready\") return;"));
+        assertTrue(core.contains("openCalendarSection(section)"));
+        assertTrue(read(FEATURE.resolve("components/ProductivityWorkspace.vue")).contains("props.bridge.openCalendarSection(\"notes\")"));
         assertTrue(manifest.contains("target_release: \"v27.38.0\""));
         assertTrue(manifest.contains("Spring Boot remains the source of truth"));
         assertTrue(manifest.toLowerCase(Locale.ROOT).contains("offline/reconnect"));

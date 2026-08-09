@@ -23,7 +23,7 @@ export function createProductivityApi(client: DutyLogGeneratedApiClient = create
       return client.request("updateSubtask", { path: { taskId, subtaskId }, body: { done } });
     },
     async notesForDate(date: string) { return (await client.request("listDayNotes", { query: { date } })) ?? []; },
-    async createNote(date: string) { return client.request("createDayNote", { body: { date, title: null, content: "", pinned: false } }); },
+    async createNote(date: string, content = "") { return client.request("createDayNote", { body: { date, title: null, content, pinned: false } }); },
     async updateNote(id: number, body: DayNoteUpdateRequest) { return client.request("updateDayNote", { path: { id }, body }); },
     async deleteNote(id: number) { await client.request("deleteDayNote", { path: { id } }); },
     async moveNote(id: number, direction: "UP" | "DOWN") { return client.request("moveDayNote", { path: { id }, body: { direction } }); },

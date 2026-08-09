@@ -96,11 +96,23 @@ export function taskDraftSubtasks(draft: TaskDraft): TaskSubtaskInput[] {
     .filter(item => item.text.length > 0);
 }
 
-export function addMinutes(time: string, minutes: number): string {
+export function addMinutesToDateTime(date: string, time: string, minutes: number): { date: string; time: string } {
+  const safeDate = validDate(date);
   const match = /^(\d{2}):(\d{2})$/.exec(time);
-  if (!match) return time;
-  const total = (Number(match[1]) * 60 + Number(match[2]) + Math.max(0, minutes)) % (24 * 60);
-  return `${String(Math.floor(total / 60)).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+  if (!match || !Number.isFinite(minutes)) return { date: safeDate, time };
+  const total = Number(match[1]) * 60 + Number(match[2]) + Math.max(0, Math.round(minutes));
+  const dayOffset = Math.floor(total / (24 * 60));
+  const minuteOfDay = total % (24 * 60);
+  const [year, month, day] = safeDate.split("-").map(Number);
+  const next = new Date(Date.UTC(year!, month! - 1, day! + dayOffset));
+  return {
+    date: `${next.getUTCFullYear()}-${String(next.getUTCMonth() + 1).padStart(2, "0")}-${String(next.getUTCDate()).padStart(2, "0")}`,
+    time: `${String(Math.floor(minuteOfDay / 60)).padStart(2, "0")}:${String(minuteOfDay % 60).padStart(2, "0")}`,
+  };
+}
+
+export function addMinutes(time: string, minutes: number): string {
+  return addMinutesToDateTime("2000-01-01", time, minutes).time;
 }
 
 export function taskScheduleLabel(task: Task): string {

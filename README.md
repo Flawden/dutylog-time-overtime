@@ -1,3 +1,10 @@
+# v27.38.5 — Windows Frontend Gate & Calendar Contract Alignment Hotfix
+
+- Fixes native Windows frontend-gate execution by resolving `npm.cmd` explicitly under PowerShell strict mode instead of invoking `npm.ps1`.
+- Aligns the two v27.38.4 Maven-failing Calendar source contracts with the actual Vue ownership guard and semantic cross-midnight coverage.
+- Changes no production business rule, API/OpenAPI shape, PostgreSQL schema, Flyway migration, browser timeout, retry policy or E2E assertion.
+- Baseline remains 152 Java classes / 751 tests / 47 Playwright / 49 Vitest / Flyway V47; acceptance still requires exact frontend, Maven, canary/full Chromium, image, PostgreSQL smoke and staging.
+
 # v27.38.3 — Vue Productivity Strict Typecheck Hotfix
 
 - Fixes the nine strict `vue-tsc` errors exposed by the first exact v27.38.2 frontend gate after lockfile, delivery and OpenAPI drift checks passed.

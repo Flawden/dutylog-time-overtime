@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { ImportantDraft, Task } from "./domain";
 import {
   addMinutes,
+  addMinutesToDateTime,
   importantInput,
   normalizeTags,
   sortDayTasks,
@@ -35,6 +36,7 @@ describe("productivity domain model", () => {
   it("derives an end time from an exact task duration", () => {
     expect(addMinutes("17:41", 45)).toBe("18:26");
     expect(addMinutes("23:45", 30)).toBe("00:15");
+    expect(addMinutesToDateTime("2026-08-09", "23:45", 30)).toEqual({ date: "2026-08-10", time: "00:15" });
   });
 
   it("preserves project, schedule, deadline and subtask dates when a task becomes an editor draft", () => {

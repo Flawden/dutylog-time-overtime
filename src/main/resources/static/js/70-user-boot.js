@@ -353,7 +353,8 @@ $("noteFsEdit").addEventListener("keydown", e => {
 $("noteExpand").addEventListener("click", openNoteFullscreen);
 $("noteFsClose").addEventListener("click", closeNoteFullscreen);
 document.addEventListener("keydown", e => {
-  if (e.key === "Escape" && !$("noteFullscreen").hidden) closeNoteFullscreen();
+  const fullscreen = $("noteFullscreen");
+  if (e.key === "Escape" && fullscreen && !fullscreen.hidden) closeNoteFullscreen();
 });
 $("noteFsTab").addEventListener("click", () => {
   const fs = $("noteFullscreen");

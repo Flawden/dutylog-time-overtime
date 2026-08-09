@@ -36,7 +36,7 @@ const monthSummary = computed(() => ({
 
 const allDayItems = computed(() => [
   ...focusFacts.value.important.filter(item => item.allDay !== false).map(item => ({ key: `important-${item.id}`, type: "important", title: item.title, color: item.color })),
-  ...focusFacts.value.absences.map(item => ({ key: `absence-${item.periodId}`, type: "absence", title: item.title || item.typeName, color: item.typeColor })),
+  ...focusFacts.value.absences.filter(item => item.coverage !== "PARTIAL" && item.coverage !== "HOURS_ONLY").map(item => ({ key: `absence-${item.periodId}`, type: "vacation", title: item.title || item.typeName, color: item.typeColor })),
   ...focusFacts.value.tasks.filter(item => item.allDay !== false && !item.scheduledStartTime).map(item => ({ key: `task-${item.id}`, type: "task", title: item.text, color: null })),
   ...(focusFacts.value.day?.notes?.length || focusFacts.value.day?.note ? [{ key: "notes", type: "note", title: `Заметки: ${focusFacts.value.day?.notes?.length || 1}`, color: null }] : []),
 ]);
@@ -47,6 +47,7 @@ const timelineEvents = computed(() => {
   const segment = (startDate: string, startTime: string | null | undefined, endDate: string, endTime: string | null | undefined): { start: number; end: number } | null => {
     const date = focusDate.value;
     if (date < startDate || date > endDate) return null;
+    if (date === endDate && endDate > startDate && minutesOf(endTime, 0) === 0) return null;
     const start = date === startDate ? minutesOf(startTime, 0) : 0;
     let end = date === endDate ? minutesOf(endTime, Math.min(1440, start + 60)) : 1440;
     if (end <= start) end = Math.min(1440, start + 60);
@@ -96,6 +97,24 @@ const timelineEvents = computed(() => {
 });
 
 function cellFacts(date: string) { return dayFacts(bundle.value, date); }
+function factualAbsence(date: string) { return cellFacts(date).absences.find(item => item.coverage === "FULL_DAY" && item.replacesShift) ?? null; }
+function partialAbsences(date: string) { return cellFacts(date).absences.filter(item => item.coverage === "PARTIAL" || item.coverage === "HOURS_ONLY"); }
+function secondaryAbsences(date: string) {
+  const factual = factualAbsence(date);
+  return cellFacts(date).absences.filter(item => item !== factual && item.coverage !== "PARTIAL" && item.coverage !== "HOURS_ONLY");
+}
+function absenceTitle(item: { title?: string | null; typeName: string } | null | undefined): string { return String(item?.title ?? "").trim() || item?.typeName || (language.value === "en" ? "Absence" : "Отсутствие"); }
+function absenceGlyph(item: { systemCode?: string | null } | null | undefined): string {
+  return ({ VACATION:"☀", TIME_OFF:"◷", SICK:"✚", UNPAID:"○", OTHER:"◆" } as Record<string,string>)[String(item?.systemCode ?? "").toUpperCase()] ?? "●";
+}
+function absenceSystemClass(item: { systemCode?: string | null } | null | undefined): string {
+  const code = String(item?.systemCode ?? "OTHER").toLowerCase().replace(/[^a-z0-9_-]/g, "");
+  return `absence-${code || "other"}`;
+}
+function shiftRange(date: string): string {
+  const occurrence = cellFacts(date).occurrences[0];
+  return occurrence ? `${timePart(occurrence.displayStart)}–${timePart(occurrence.displayEnd)}` : "";
+}
 function inFocusMonth(date: string): boolean { return date.startsWith(focusMonth.value); }
 function dayNumber(date: string): string { return String(Number(date.slice(8, 10))); }
 function weekday(date: string): string { return dateLabel(date, language.value, { weekday: "short" }); }
@@ -129,6 +148,19 @@ async function chooseDate(date: string): Promise<void> {
 }
 
 async function chooseWeekDate(date: string): Promise<void> { await store.openDate(date, "week"); }
+async function navigate(delta: number): Promise<void> {
+  props.bridge.closeCalendarDay();
+  await store.navigate(delta);
+}
+async function goToday(): Promise<void> {
+  await store.goToday(mode.value);
+  if (mode.value === "month") {
+    await nextTick();
+    props.bridge.openCalendarDay(store.focusDate);
+  } else {
+    props.bridge.closeCalendarDay();
+  }
+}
 async function setMode(nextMode: CalendarMode): Promise<void> {
   await store.setMode(nextMode);
   if (nextMode !== "month") props.bridge.closeCalendarDay();
@@ -141,7 +173,6 @@ async function openDetails(): Promise<void> {
 
 onMounted(() => {
   props.bridge.attachCalendarEditor("calendarLegacyPanelHost");
-  if (mode.value === "month" && focusDate.value) props.bridge.openCalendarDay(focusDate.value);
 });
 onBeforeUnmount(() => {
   props.bridge.parkCalendarEditor();
@@ -153,9 +184,9 @@ onBeforeUnmount(() => {
     <header class="vue-calendar-toolbar">
       <div class="vue-calendar-title"><small>Vue Calendar · canonical server range</small><h1><span id="monthName">{{ monthTitle }}</span> <span id="yearName">{{ yearTitle }}</span></h1></div>
       <div class="vue-calendar-nav">
-        <button id="prev" type="button" aria-label="Предыдущий период" @click="store.navigate(-1)">←</button>
-        <button id="todayBtn" type="button" :hidden="focusDate === workDate" @click="store.goToday(mode)">Сегодня</button>
-        <button id="next" type="button" aria-label="Следующий период" @click="store.navigate(1)">→</button>
+        <button id="prev" type="button" aria-label="Предыдущий период" @click="navigate(-1)">←</button>
+        <button id="todayBtn" type="button" :hidden="focusDate === workDate" @click="goToday">Сегодня</button>
+        <button id="next" type="button" aria-label="Следующий период" @click="navigate(1)">→</button>
       </div>
     </header>
 
@@ -194,7 +225,43 @@ onBeforeUnmount(() => {
         <div class="card vue-calendar-month-card">
           <div class="wd"><div v-for="label in (language === 'en' ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'])" :key="label">{{ label }}</div></div>
           <div id="grid" class="grid" :aria-busy="loading ? 'true' : 'false'">
-            <button v-for="date in gridDates" :key="date" type="button" class="cell" :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasVacation: cellFacts(date).absences.length }" :data-date="date" @click="chooseDate(date)"><span class="num">{{ dayNumber(date) }}</span><span v-if="cellFacts(date).day?.dayEmoji" class="dayEmoji">{{ cellFacts(date).day?.dayEmoji }}</span><span v-if="cellFacts(date).shift" class="shift" :style="{ color: cellFacts(date).shift?.color }">{{ cellFacts(date).shift?.name }}</span><span v-if="cellFacts(date).day?.notes?.length || cellFacts(date).day?.note" class="ear"></span><span v-if="(cellFacts(date).day?.notes?.length ?? 0) > 1" class="noteCountBadge">{{ cellFacts(date).day?.notes?.length }}</span><span v-for="absence in cellFacts(date).absences.slice(0,1)" :key="absence.periodId" class="vacationMark" :style="{ background: absence.typeColor }">●</span><span v-for="item in cellFacts(date).important.slice(0,1)" :key="item.id" class="importantMark">★</span><span v-if="cellFacts(date).tasks.some(task => !task.done)" class="taskMark">!</span><span v-for="item in cellFacts(date).layers.slice(0,2)" :key="`${item.layer.id}-${item.entry.sourceDate}`" class="calendarLayerChip" :style="{ '--layer-color': item.layer.color }">{{ item.layer.name }}</span></button>
+            <button
+              v-for="date in gridDates"
+              :key="date"
+              type="button"
+              class="cell"
+              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)) }"
+              :style="factualAbsence(date) ? { '--absence-color': factualAbsence(date)?.typeColor } : undefined"
+              :data-date="date"
+              @click="chooseDate(date)"
+            >
+              <span class="num">{{ dayNumber(date) }}</span>
+              <span v-if="cellFacts(date).day?.dayEmoji" class="dayEmoji">{{ cellFacts(date).day?.dayEmoji }}</span>
+              <template v-if="factualAbsence(date)">
+                <span
+                  class="absenceFact"
+                  :class="absenceSystemClass(factualAbsence(date))"
+                  :style="{ color: factualAbsence(date)?.typeColor, '--absence-color': factualAbsence(date)?.typeColor }"
+                  :data-absence-status="String(factualAbsence(date)?.status ?? 'PLANNED').toLowerCase()"
+                >{{ absenceGlyph(factualAbsence(date)) }} {{ absenceTitle(factualAbsence(date)) }}</span>
+                <span v-if="cellFacts(date).shift" class="plannedShiftGhost">{{ language === 'en' ? 'Planned' : 'По графику' }}: {{ cellFacts(date).shift?.name }}</span>
+              </template>
+              <span v-else-if="cellFacts(date).shift" class="shift" :style="{ color: cellFacts(date).shift?.color }">{{ cellFacts(date).shift?.name }}<small v-if="shiftRange(date)" class="shiftClock">{{ shiftRange(date) }}</small></span>
+              <span
+                v-for="absence in partialAbsences(date).slice(0,2)"
+                :key="`partial-${absence.periodId}`"
+                class="partialAbsenceBar"
+                :class="absenceSystemClass(absence)"
+                :style="{ '--absence-color': absence.typeColor }"
+                :data-absence-status="String(absence.status ?? 'PLANNED').toLowerCase()"
+              >{{ absenceGlyph(absence) }} {{ absence.startTime || '—' }}–{{ absence.endTime || '—' }} · {{ absenceTitle(absence) }}</span>
+              <span v-if="cellFacts(date).day?.notes?.length || cellFacts(date).day?.note" class="ear"></span>
+              <span v-if="(cellFacts(date).day?.notes?.length ?? 0) > 1" class="noteCountBadge">{{ cellFacts(date).day?.notes?.length }}</span>
+              <span v-if="secondaryAbsences(date).length" class="vacationMark" :style="{ background: secondaryAbsences(date)[0]?.typeColor }">●</span>
+              <span v-for="item in cellFacts(date).important.slice(0,1)" :key="item.id" class="importantMark">★</span>
+              <span v-if="cellFacts(date).tasks.some(task => !task.done)" class="taskMark">!</span>
+              <span v-for="item in cellFacts(date).layers.slice(0,2)" :key="`${item.layer.id}-${item.entry.sourceDate}`" class="calendarLayerChip" :style="{ '--layer-color': item.layer.color }">{{ item.layer.name }}</span>
+            </button>
           </div>
           <div id="summary" class="sum"><span class="lbl">Итого:</span><span>{{ monthSummary.shifts }} смен</span><span>{{ monthSummary.tasks }} задач</span><span>{{ monthSummary.absences }} отсутствий</span><span class="over">баланс {{ bundle?.overtimeAccount.balanceHours ?? 0 }} ч</span></div>
         </div>

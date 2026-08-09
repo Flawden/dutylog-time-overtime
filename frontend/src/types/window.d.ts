@@ -33,6 +33,7 @@ declare global {
     attachCalendarEditor?(hostId: string): void;
     parkCalendarEditor?(): void;
     openCalendarDay?(date: string): void;
+    openCalendarSection?(section: "tasks" | "notes" | "important"): void;
     closeCalendarDay?(): void;
     openTaskCreate?(date: string): void;
     openTaskDetails?(id: number): void;
@@ -44,6 +45,7 @@ declare global {
     offlineSync?(): Promise<void>;
     offlinePending?(): number;
     offlineSelectedDay?(date: string): Promise<{ tasks: unknown[]; notes: unknown[]; important: unknown[] }>;
+    offlineCalendarSnapshot?(focusDate: string): Promise<{ bundle: unknown; savedAt: string | null } | null>;
     subscribe(listener: (snapshot: DutyLogLegacySnapshot) => void): () => void;
   }
 

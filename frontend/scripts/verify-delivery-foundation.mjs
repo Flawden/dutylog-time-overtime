@@ -10,7 +10,11 @@ const npmrc = readFileSync(`${root}/.npmrc`, "utf8");
 const expectedNode = readFileSync(`${root}/.node-version`, "utf8").trim();
 const expectedNpm = readFileSync(`${root}/.npm-version`, "utf8").trim();
 const actualNode = process.version.replace(/^v/, "");
-const actualNpm = execFileSync("npm", ["--version"], { encoding: "utf8" }).trim();
+const npmExecPath = String(process.env.npm_execpath ?? "").trim();
+const actualNpm = (npmExecPath
+  ? execFileSync(process.execPath, [npmExecPath, "--version"], { encoding: "utf8" })
+  : execFileSync(process.platform === "win32" ? "npm.cmd" : "npm", ["--version"], { encoding: "utf8" })
+).trim();
 
 const executableContracts = {
   "vue-tsc": { packageName: "vue-tsc", bin: "bin/vue-tsc.js" },

@@ -2,10 +2,12 @@
 import { computed, onBeforeUnmount, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useProductivityStore } from "../stores/productivityStore";
+import { useCalendarTimelineStore } from "@/features/calendar-timeline/stores/calendarTimelineStore";
 import { useShellStore } from "@/app/shellStore";
 import { noteLabel } from "../types/model";
 
 const store = useProductivityStore();
+const calendar = useCalendarTimelineStore();
 const shell = useShellStore();
 const { selectedNotes, currentNote, noteSearch, noteSearchResults } = storeToRefs(store);
 const title = ref("");
@@ -35,6 +37,11 @@ onBeforeUnmount(() => {
   if (timer != null) globalThis.clearTimeout(timer);
   if (currentNote.value) void store.updateNote(currentNote.value.id, { title: title.value.trim() || null, content: content.value });
 });
+async function openSearchResult(date: string, id: number): Promise<void> {
+  await calendar.openDate(date, "month");
+  await store.loadSelectedDate(date);
+  store.selectNote(id);
+}
 const summary = computed(() => selectedNotes.value.length ? String(selectedNotes.value.length) : "");
 </script>
 
@@ -48,7 +55,7 @@ const summary = computed(() => selectedNotes.value.length ? String(selectedNotes
       <span class="dayPanelHint" id="noteOfflineHint">Несколько независимых заметок на один день. Изменения текста можно сохранить оффлайн.</span>
     </div>
     <div class="noteSearchResults" id="noteSearchResults" :hidden="!noteSearch.trim()">
-      <button v-for="note in noteSearchResults" :key="note.id" class="noteSearchResult" type="button" @click="store.loadSelectedDate(note.date).then(() => store.selectNote(note.id))">
+      <button v-for="note in noteSearchResults" :key="note.id" class="noteSearchResult" type="button" @click="openSearchResult(note.date, note.id)">
         <b>{{ noteLabel(note) }}</b><small>{{ note.date }}</small>
       </button>
       <div v-if="noteSearch.trim() && !noteSearchResults.length" class="emptyLine">Ничего не найдено.</div>

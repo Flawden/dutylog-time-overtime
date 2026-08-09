@@ -85,9 +85,10 @@ export interface ProductivitySnapshot {
 export interface DutyLogProductivityDomain {
   ready(): boolean;
   refresh(): Promise<void>;
-  openTaskCreate(date?: string): Promise<void>;
+  openTaskCreate(date?: string, text?: string, sourceInboxId?: number | null): Promise<void>;
   openTaskDetails(id: number): Promise<void>;
-  openImportantCreate(date?: string): Promise<void>;
+  openNoteCreate(date?: string, content?: string): Promise<void>;
+  openImportantCreate(date?: string, title?: string): Promise<void>;
   openImportantEdit(id: number): Promise<void>;
   openImportantDetails(id: number): Promise<void>;
   snapshot(): Readonly<ProductivitySnapshot>;

@@ -25,7 +25,7 @@ function openTaskDetails(id: number): void { void window.DutyLogVueDomains?.prod
 function openImportantDetails(id: number): void { void window.DutyLogVueDomains?.productivity?.openImportantDetails(id); }
 async function openAbsence(): Promise<void> { await window.DutyLogVueDomains?.absenceTimeBank?.openAbsenceComposer({ date: workDate.value, source: "today" }); }
 function openMore(): void { props.bridge.openQuickActions(workDate.value); }
-async function openNote(): Promise<void> { props.bridge.navigate("calendar"); await store.openDate(workDate.value, "month"); props.bridge.openCalendarDay(workDate.value); }
+async function openNote(): Promise<void> { await window.DutyLogVueDomains?.productivity?.openNoteCreate(workDate.value); }
 </script>
 
 <template>

@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.38.3"
+const DUTYLOG_VERSION = "27.38.5"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -341,6 +341,11 @@ window.DutyLogLegacyPlatform = Object.freeze({
     try { if (typeof selectDay === "function") selectDay(key); }
     finally { vueCalendarTimelineRefreshSuppressed = false; }
   },
+  openCalendarSection(section){
+    const id = ({ tasks:"accTasks", notes:"accNote", important:"accImp" })[String(section || "")];
+    const element = id ? document.getElementById(id) : null;
+    if (element && "open" in element) element.open = true;
+  },
   closeCalendarDay(){
     vueCalendarTimelineRefreshSuppressed = true;
     try { if (typeof selectDay === "function") selectDay(null); }
@@ -386,6 +391,15 @@ window.DutyLogLegacyPlatform = Object.freeze({
     const tasks = (Array.isArray(bundle.tasks) ? bundle.tasks : []).filter(item => String(item?.date || item?.scheduledStartDate || "").slice(0, 10) === key);
     const important = (Array.isArray(bundle.importantDays) ? bundle.importantDays : []).filter(item => String(item?.date || item?.startDate || "").slice(0, 10) === key);
     return { tasks:structuredClone(tasks), notes:structuredClone(notes), important:structuredClone(important) };
+  },
+  async offlineCalendarSnapshot(focusDate){
+    const key = String(focusDate || "").slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key) || typeof dataLayer === "undefined") return null;
+    const snap = await dataLayer.readSnapshot();
+    if (!snap?.bundle) return null;
+    const [year, month] = key.split("-").map(Number);
+    if (Number(snap.y) !== year || Number(snap.m) !== month - 1) return null;
+    return { bundle:structuredClone(snap.bundle), savedAt:snap.savedAt || null };
   },
   subscribe(listener){
     if (typeof listener !== "function") return () => {};

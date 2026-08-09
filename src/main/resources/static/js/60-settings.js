@@ -253,7 +253,7 @@ async function goto(y, m){
   const d = new Date(y, m, 1);
   state.y = d.getFullYear(); state.m = d.getMonth();
   state.selected = null;
-  $("panel").hidden = true; $("layout").classList.remove("with-panel");
+  $("panel").hidden = true; $("layout")?.classList.remove("with-panel");
   await loadMonth();
   if (moduleEnabled("overtime")) await loadLedgerPage(true);
   if (moduleEnabled("tasks")) await loadTaskBoard(true);

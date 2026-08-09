@@ -11,7 +11,7 @@ mvn clean verify
 bash deploy/scripts/release-check.sh
 ```
 
-The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 49 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.38.3 release path. CI, Docker and staging use the same frontend boundary.
+The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 49 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.38.5 release path. CI, Docker and staging use the same frontend boundary.
 
 GitHub artifact persistence is diagnostic only. CI uploads compact JaCoCo XML/CSV for three days and uploads Playwright HTML/results only after failure; quota or upload errors cannot block later static checks, image build or migration smoke. Test execution itself remains fail-closed.
 
@@ -112,3 +112,16 @@ npm run test:e2e
 ```
 
 Playwright starts the isolated `e2e` Spring profile on port 4173. The profile uses only an in-memory H2 database. Reports and failure traces are stored under `playwright-report/` and `test-results/`. See [`PLAYWRIGHT_E2E.md`](PLAYWRIGHT_E2E.md).
+
+## Browser preflight and fail-fast canary (v27.38.5)
+
+Build the Vue bundle before Playwright. The root `pretest:e2e` hook fails immediately when `frontend/dist/dutylog-vue-app-shell.js` or `.css` is missing instead of spending a full browser timeout on 404s. On Windows, use the exact pinned frontend gate before Maven/browser tests:
+
+```powershell
+.\deploy\scripts\frontend-gate.ps1
+mvn -B --no-transfer-progress verify
+npm run test:e2e:canary
+npm run test:e2e
+```
+
+The canary is only fail-fast ordering; the complete 47-scenario suite remains mandatory for release acceptance.

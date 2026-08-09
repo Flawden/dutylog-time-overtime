@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.38.3.
+Status: v27.38.5.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.38.3 closes the nine strict TypeScript errors exposed by the first exact v27.38.2 frontend gate without weakening `strict`, `noImplicitAny` or `exactOptionalPropertyTypes`. Today cross-domain commands are typed setup functions, Calendar tasks reuse the generated Task schema, Pinia selected-date defaults resolve inside action bodies, and optimistic note state preserves the non-null response contract. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
+Current extension: v27.38.5 consolidates the browser-parity defects exposed after v27.38.3 reached the exact frontend/Maven gates: domain readiness is ordered before legacy retirement, retired renderers yield to Vue, Calendar projection preserves absence and timezone placement, timed task duration carries across midnight, offline Calendar reuses the existing dataLayer snapshot, and Playwright now has a dist preflight plus boot canary. No browser assertion, retry or timeout is weakened. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 

@@ -2,12 +2,20 @@
 import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useProductivityStore } from "../stores/productivityStore";
+import { useCalendarTimelineStore } from "@/features/calendar-timeline/stores/calendarTimelineStore";
 const store = useProductivityStore();
+const calendar = useCalendarTimelineStore();
 const { selectedDate, selectedImportant } = storeToRefs(store);
 const title = ref("");
 const repeat = ref<"NONE" | "MONTHLY" | "YEARLY">("YEARLY");
 const color = ref("#F5B841");
 const summary = computed(() => selectedImportant.value.length ? String(selectedImportant.value.length) : "");
+async function chooseDate(date: string): Promise<void> {
+  await calendar.openDate(date, "month");
+  await store.loadSelectedDate(calendar.focusDate);
+}
+async function useSelectedDate(): Promise<void> { await chooseDate(calendar.focusDate); }
+async function useToday(): Promise<void> { await chooseDate(calendar.workDate); }
 async function add(): Promise<void> {
   await store.openImportantCreate(selectedDate.value);
   store.importantDraft.title = title.value;
@@ -26,9 +34,9 @@ async function add(): Promise<void> {
       </button>
     </div>
     <div class="row">
-      <label>Дата <input id="impDate" v-model="selectedDate" type="date" @change="store.loadSelectedDate(selectedDate)" /></label>
-      <button id="impDateSelected" type="button">выбранный день</button>
-      <button id="impDateToday" type="button" @click="store.loadSelectedDate(new Date().toISOString().slice(0,10))">сегодня</button>
+      <label>Дата <input id="impDate" :value="selectedDate" type="date" @change="chooseDate(($event.target as HTMLInputElement).value)" /></label>
+      <button id="impDateSelected" type="button" @click="useSelectedDate">выбранный день</button>
+      <button id="impDateToday" type="button" @click="useToday">сегодня</button>
     </div>
     <div class="row">
       <input id="impTitle" v-model="title" placeholder="Например: день рождения Макса" type="text" />

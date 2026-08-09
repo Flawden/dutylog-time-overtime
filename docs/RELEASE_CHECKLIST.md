@@ -1,6 +1,22 @@
 # Release checklist
 
-Status: v27.38.3.
+Status: v27.38.5.
+
+## v27.38.5 — Windows Frontend Gate & Calendar Contract Alignment Hotfix acceptance
+
+- [ ] `./deploy/scripts/frontend-gate.ps1` passes on Windows with exact Node 20.18.1 / npm 10.8.2, or the Linux exact frontend gate passes in CI.
+- [ ] `mvn -B --no-transfer-progress verify` reports 751/751 JUnit tests with JaCoCo gates met.
+- [ ] `npm run test:e2e:canary` passes before any expensive full browser run.
+- [ ] Targeted Calendar/Productivity/PWA canaries pass without browser console/page errors.
+- [ ] `npm run test:e2e` reaches 47/47 Chromium with strict page-error collection unchanged.
+- [ ] Immutable image build and clean PostgreSQL smoke pass.
+- [ ] Staging deploy/smoke passes before the release is accepted or tagged.
+
+After all blocking gates are green:
+```bash
+git tag -a v27.38.5 -m "v27.38.5 — Windows Frontend Gate & Calendar Contract Alignment Hotfix"
+git push origin v27.38.5
+```
 
 ## v27.38.3 — Vue Productivity Strict Typecheck Hotfix acceptance
 

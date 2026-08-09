@@ -6,7 +6,7 @@ import { useProductivityStore } from "../stores/productivityStore";
 import { importantScheduleLabel } from "../types/model";
 const shell = useShellStore();
 const store = useProductivityStore();
-const { filteredImportantDays, importantScope, importantSearch } = storeToRefs(store);
+const { filteredImportantDays, importantScope, importantSearch, workDate } = storeToRefs(store);
 const filtersExpanded = ref(false);
 async function edit(itemId: number): Promise<void> {
   await store.openImportantEdit(itemId);
@@ -20,7 +20,7 @@ async function edit(itemId: number): Promise<void> {
       <button class="mobileFilterToggle" id="importantBoardFiltersToggle" type="button" aria-controls="importantBoardFilters" :aria-expanded="filtersExpanded ? 'true' : 'false'" @click="filtersExpanded = !filtersExpanded"><span>Фильтры</span><b>⌄</b></button>
       <div class="importantBoardFilters" id="importantBoardFilters">
         <select id="importantBoardScope" v-model="importantScope" title="Период"><option value="all">все даты</option><option value="upcoming">ближайшие</option><option value="past">прошедшие</option><option value="recurring">повторяющиеся</option></select>
-        <input id="importantBoardSearch" v-model="importantSearch" placeholder="поиск: название или дата…" type="text"/><button id="importantBoardToday" type="button" @click="store.openImportantCreate(new Date().toISOString().slice(0,10))">сегодня</button><button id="importantBoardClear" type="button" @click="importantScope='all'; importantSearch=''">сброс</button>
+        <input id="importantBoardSearch" v-model="importantSearch" placeholder="поиск: название или дата…" type="text"/><button id="importantBoardToday" type="button" @click="store.openImportantCreate(workDate)">сегодня</button><button id="importantBoardClear" type="button" @click="importantScope='all'; importantSearch=''">сброс</button>
       </div>
       <div class="importantBoardList" id="importantBoardList">
         <div v-for="item in filteredImportantDays" :key="item.id" class="importantBoardRow" :data-important-id="item.id" role="button" tabindex="0" @click="store.openImportantDetails(item.id)" @keydown.enter.prevent="store.openImportantDetails(item.id)">

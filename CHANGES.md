@@ -1,3 +1,21 @@
+# v27.38.5 — Windows Frontend Gate & Calendar Contract Alignment Hotfix
+
+- Fixes the first native Windows frontend-gate defect exposed by v27.38.4: PowerShell `Set-StrictMode` was invoking `C:\Program Files\nodejs\npm.ps1`, whose `$MyInvocation.Statement` access fails before the pinned Node/npm checks can run. The Windows gate now resolves and invokes `npm.cmd` explicitly for version, install, graph and script execution.
+- Aligns the two remaining Maven failures from the v27.38.4 local run without changing Calendar runtime behavior: the schedule-layer source contract now matches the real `if (... === "ready") return` Vue-ownership guard, and cross-midnight unit coverage is asserted through scheduled end-date/day-span behavior instead of a fragile mixed-script task-label literal.
+- Extends the existing frontend executable-resolution contract to lock `npm.cmd` usage and reject regression back to bare `npm` invocation under the Windows gate. No new JUnit/Playwright/Vitest case is added.
+- Keeps the baseline at 152 Java test classes / 751 `@Test` methods / 47 Playwright scenarios / 49 Vitest cases / Flyway V47; OpenAPI remains 101 operations / 106 schemas and PostgreSQL is unchanged.
+- Acceptance remains pending until the exact Windows/Linux frontend gate, Maven 751/751, boot canary, targeted browser canaries, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deployment are green.
+
+# v27.38.4 — Vue Productivity Ownership & Boot Browser Parity Hotfix
+
+- Consolidates the browser-parity defects found by the v27.38.3 source audit instead of paying another full-suite timeout for one-line ownership fixes: Vue domain commands are installed before legacy owner retirement, and retired Productivity/Calendar renderers yield without dereferencing removed DOM.
+- Restores selected-day/calendar parity after the Vue migration: Notes quick-create navigates to the canonical Calendar date and opens the Notes section, Calendar navigation closes the blocking mobile panel before period changes, legacy Calendar experience/layer wrappers stop mutating Vue-owned mode/layer markup, and full/partial absence facts are rendered from the backend range projection.
+- Fixes canonical date/time presentation edges: timezone-projected shifts render only on their display date, midnight-exclusive shift endings do not create a phantom next-day segment, timed tasks carry their end date across midnight, and Productivity uses backend `workDate`/`workTimezone` before reporting readiness.
+- Hardens offline/PWA/browser delivery: Calendar can consume the existing dataLayer snapshot while offline, the PWA previous-cache fixture is seeded before current service-worker registration, native Windows gets an exact pinned frontend gate, and Playwright refuses to start when the Vue dist assets are missing.
+- Adds a fast `auth-onboarding` Playwright boot canary before the full browser suite in CI/staging. Full 47-scenario Chromium remains mandatory; retries, assertions, page-error collection, timeout policy and backend business authority are unchanged.
+- Keeps the baseline at 152 Java test classes / 751 `@Test` methods / 47 Playwright scenarios / 49 Vitest cases / Flyway V47. OpenAPI remains 101 operations / 106 schemas and there is no PostgreSQL migration.
+- Acceptance remains pending until exact Node 20.18.1/npm 10.8.2 frontend gate, Maven 751/751, browser canaries, 47/47 Chromium, immutable image, clean PostgreSQL smoke and staging deployment are green.
+
 # v27.38.3 — Vue Productivity Strict Typecheck Hotfix
 
 - Fixes the nine strict `vue-tsc` errors exposed by the first exact v27.38.2 frontend gate after lockfile, delivery and OpenAPI drift checks passed.

@@ -214,6 +214,7 @@ calendarExperienceRenderWeek = function calendarExperienceRenderWeekWithLayers()
 const scheduleLayersBaseRenderCalendar = renderCalendar;
 renderCalendar = function renderCalendarWithScheduleLayers(){
   scheduleLayersBaseRenderCalendar();
+  if (document.documentElement.dataset.vueCalendarTimeline === "ready") return;
   renderCalendarLayerBar();
   if (state.calendarExperience?.mode === "month") renderCalendarLayerMonthChips();
 };

@@ -106,7 +106,7 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await expect(page.locator('#defDayEnd')).toHaveValue('17:00');
 
   await openView(page, 'calendar');
-  const firstDay = page.locator('#grid .cell:not(.empty)').first();
+  const firstDay = page.locator('#grid .cell:not(.outside)').first();
   const shiftDate = await firstDay.getAttribute('data-date');
   expect(shiftDate).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   await selectDate(page, shiftDate);

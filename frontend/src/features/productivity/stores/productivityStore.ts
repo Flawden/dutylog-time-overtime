@@ -16,6 +16,7 @@ import type {
 } from "../types/domain";
 import {
   addMinutes,
+  addMinutesToDateTime,
   emptyImportantDraft,
   emptyTaskDraft,
   importantInput,
@@ -128,6 +129,7 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
     noteSearchResults: [] as DayNote[],
     selectedNoteId: null as number | null,
     workTimezone: "UTC",
+    workDate: todayIso(),
     loading: false,
     boardLoading: false,
     selectedLoading: false,
@@ -151,7 +153,7 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
     },
     filteredImportantDays(state): ImportantEvent[] {
       const query = state.importantSearch.trim().toLocaleLowerCase("ru-RU");
-      const today = todayIso();
+      const today = validDate(state.workDate);
       return state.importantDays.filter(item => {
         if (state.importantScope === "recurring" && item.repeatMode === "NONE") return false;
         if (state.importantScope === "upcoming" && item.date < today && item.repeatMode === "NONE") return false;
@@ -175,47 +177,64 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       const targetDate = date ?? this.selectedDate;
       this.loading = true;
       this.error = "";
+      this.loaded = false;
       try {
         const context = await api.timeContext();
         this.workTimezone = context?.workTimezone || this.workTimezone;
-        await Promise.all([this.loadSelectedDate(targetDate), this.loadBoard(), this.loadImportantDays(), this.loadInbox()]);
-        this.loaded = true;
+        this.workDate = validDate(context?.workDate, this.workDate);
+        const modules = useShellStore().modules;
+        const tasksEnabled = modules.tasks !== false;
+        const importantEnabled = modules.important_dates !== false;
+        const [selectedOk, boardOk, importantOk, inboxOk] = await Promise.all([
+          this.loadSelectedDate(targetDate),
+          tasksEnabled ? this.loadBoard() : Promise.resolve(true),
+          importantEnabled ? this.loadImportantDays() : Promise.resolve(true),
+          tasksEnabled ? this.loadInbox() : Promise.resolve(true),
+        ]);
+        this.loaded = selectedOk && boardOk && importantOk && inboxOk;
         this.synchronizeQueuedCount();
       } catch (error) {
+        this.loaded = false;
         this.error = errorMessage(error);
       } finally { this.loading = false; }
     },
-    async loadSelectedDate(date: string): Promise<void> {
-      const safeDate = validDate(date, this.selectedDate || todayIso());
+    async loadSelectedDate(date: string): Promise<boolean> {
+      const safeDate = validDate(date, this.selectedDate || this.workDate || todayIso());
       const sequence = ++selectedReadSequence;
       this.selectedDate = safeDate;
       this.selectedLoading = true;
       try {
-        let tasks: Task[];
-        let notes: DayNote[];
-        let occurrences: ImportantEventOccurrence[];
+        const modules = useShellStore().modules;
+        const tasksEnabled = modules.tasks !== false;
+        const notesEnabled = modules.notes !== false;
+        const importantEnabled = modules.important_dates !== false;
+        let tasks: Task[] = [];
+        let notes: DayNote[] = [];
+        let occurrences: ImportantEventOccurrence[] = [];
         if (typeof navigator !== "undefined" && !navigator.onLine && bridge) {
           const cached = await bridge.offlineSelectedDay(safeDate);
-          tasks = cached.tasks as Task[];
-          notes = cached.notes as DayNote[];
-          occurrences = cached.important as ImportantEventOccurrence[];
+          tasks = tasksEnabled ? cached.tasks as Task[] : [];
+          notes = notesEnabled ? cached.notes as DayNote[] : [];
+          occurrences = importantEnabled ? cached.important as ImportantEventOccurrence[] : [];
         } else {
           [tasks, notes, occurrences] = await Promise.all([
-            api.tasksForDate(safeDate),
-            api.notesForDate(safeDate),
-            api.importantOccurrences(safeDate, safeDate),
+            tasksEnabled ? api.tasksForDate(safeDate) : Promise.resolve([]),
+            notesEnabled ? api.notesForDate(safeDate) : Promise.resolve([]),
+            importantEnabled ? api.importantOccurrences(safeDate, safeDate) : Promise.resolve([]),
           ]);
         }
-        if (sequence !== selectedReadSequence) return;
+        if (sequence !== selectedReadSequence) return false;
         this.selectedTasks = sortDayTasks(tasks);
         this.selectedNotes = [...notes].sort((a, b) => Number(b.pinned) - Number(a.pinned) || a.sortOrder - b.sortOrder || a.id - b.id);
         this.selectedImportant = occurrences;
         if (!this.selectedNotes.some(note => note.id === this.selectedNoteId)) this.selectedNoteId = this.selectedNotes[0]?.id ?? null;
+        return true;
       } catch (error) {
         if (sequence === selectedReadSequence) this.error = errorMessage(error);
+        return false;
       } finally { if (sequence === selectedReadSequence) this.selectedLoading = false; }
     },
-    async loadBoard(): Promise<void> {
+    async loadBoard(): Promise<boolean> {
       const sequence = ++boardReadSequence;
       this.boardLoading = true;
       try {
@@ -231,26 +250,32 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
           size: this.boardSize,
         };
         const [page, metadata] = await Promise.all([api.taskBoard(query), api.taskMetadata()]);
-        if (sequence !== boardReadSequence) return;
+        if (sequence !== boardReadSequence) return false;
         this.board = page ?? emptyPage();
         this.metadata = metadata ?? emptyMetadata();
+        return true;
       } catch (error) {
         if (sequence === boardReadSequence) this.error = errorMessage(error);
+        return false;
       } finally { if (sequence === boardReadSequence) this.boardLoading = false; }
     },
-    async loadImportantDays(): Promise<void> {
+    async loadImportantDays(): Promise<boolean> {
       const sequence = ++importantReadSequence;
       try {
         const rows = await api.importantDays();
-        if (sequence === importantReadSequence) this.importantDays = rows;
-      } catch (error) { if (sequence === importantReadSequence) this.error = errorMessage(error); }
+        if (sequence !== importantReadSequence) return false;
+        this.importantDays = rows;
+        return true;
+      } catch (error) { if (sequence === importantReadSequence) this.error = errorMessage(error); return false; }
     },
-    async loadInbox(): Promise<void> {
+    async loadInbox(): Promise<boolean> {
       const sequence = ++inboxReadSequence;
       try {
         const rows = await api.inbox(this.inboxShowArchived ? "all" : "open");
-        if (sequence === inboxReadSequence) this.inbox = rows;
-      } catch (error) { if (sequence === inboxReadSequence) this.error = errorMessage(error); }
+        if (sequence !== inboxReadSequence) return false;
+        this.inbox = rows;
+        return true;
+      } catch (error) { if (sequence === inboxReadSequence) this.error = errorMessage(error); return false; }
     },
     async setBoardFilters(): Promise<void> { this.boardPage = 0; await this.loadBoard(); },
     async searchNotesNow(): Promise<void> {
@@ -290,8 +315,9 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
     updateTaskDuration(minutes: number): void {
       if (!Number.isFinite(minutes) || minutes <= 0) return;
       this.taskDraft.scheduledDurationMinutes = String(Math.round(minutes));
-      this.taskDraft.scheduledEndDate = this.taskDraft.date;
-      this.taskDraft.scheduledEndTime = addMinutes(this.taskDraft.scheduledStartTime, minutes);
+      const end = addMinutesToDateTime(this.taskDraft.date, this.taskDraft.scheduledStartTime, minutes);
+      this.taskDraft.scheduledEndDate = end.date;
+      this.taskDraft.scheduledEndTime = end.time;
     },
     validateTaskDraft(): string {
       if (!this.taskDraft.text.trim()) return "Текст задачи не должен быть пустым.";
@@ -398,12 +424,14 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       this.taskDraft.subtasks = rows;
     },
     removeSubtaskDraft(index: number): void { this.taskDraft.subtasks.splice(index, 1); },
-    async createNote(): Promise<void> {
+    async createNote(date?: string, content = ""): Promise<void> {
       if (this.mutationPending) return;
+      const targetDate = validDate(date, this.selectedDate || this.workDate);
       this.mutationPending = true;
       try {
-        const note = await api.createNote(this.selectedDate);
-        await this.loadSelectedDate(this.selectedDate);
+        if (targetDate !== this.selectedDate) await this.loadSelectedDate(targetDate);
+        const note = await api.createNote(targetDate, content);
+        await this.loadSelectedDate(targetDate);
         if (note) this.selectedNoteId = note.id;
         await refreshCalendarIfMounted();
       } catch (error) { this.error = errorMessage(error); }
@@ -438,10 +466,11 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       try { await api.deleteNote(id); await this.loadSelectedDate(this.selectedDate); await refreshCalendarIfMounted(); }
       catch (error) { this.error = errorMessage(error); }
     },
-    async openImportantCreate(date?: string): Promise<void> {
+    async openImportantCreate(date?: string, title = ""): Promise<void> {
       const targetDate = date ?? this.selectedDate;
       await this.ensureLoaded(targetDate);
       this.importantDraft = emptyImportantDraft(targetDate, this.workTimezone);
+      this.importantDraft.title = title;
       this.importantEditorOpen = true;
       this.importantDetailsOpen = false;
       this.error = "";
