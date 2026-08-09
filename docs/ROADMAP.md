@@ -1,12 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.1 — Vue Productivity Static Contract Alignment Hotfix**.
+Current release: **v27.38.2 — Vue Productivity Manifest Contract Alignment Hotfix**.
 
 
 
 
 
-## v27.38.1 — Vue Productivity Static Contract Alignment Hotfix — current
+## v27.38.2 — Vue Productivity Manifest Contract Alignment Hotfix — current
+- [x] Use the complete v27.38.1 local Maven result: 751 tests executed, one failure, zero errors.
+- [x] Isolate the sole failure to case-sensitive documentation matching: `Offline/reconnect boundary` versus lowercase `offline/reconnect`.
+- [x] Keep the contract semantic with `Locale.ROOT` lowercase matching instead of changing runtime code or weakening the offline/reconnect boundary.
+- [x] Preserve v27.38.0 runtime/API/offline semantics and all 152 / 751 / 47 / 49 / V47 baselines.
+- [ ] Accept only after exact frontend gate, Maven/JUnit 751/751, Chromium 47/47, immutable image, clean PostgreSQL smoke and staging deployment are green.
+
+## v27.38.1 — Vue Productivity Static Contract Alignment Hotfix — static-contract predecessor
 - [x] Align the historical Absence/Time Bank generated-contract source test with the generated-file invariant instead of stale global 98/103 totals.
 - [x] Align Task modal duration coverage with the Vue `v-for`/`:data-task-duration` implementation while preserving the 45-minute public option.
 - [x] Align productivity legacy-owner retirement with the canonical `data-vue-productivity` readiness marker and dataset check.

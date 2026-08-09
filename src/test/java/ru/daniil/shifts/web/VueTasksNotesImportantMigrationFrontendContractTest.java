@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Locale;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -144,7 +145,7 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(tasks.contains("productivity?.openImportantCreate"));
         assertTrue(manifest.contains("target_release: \"v27.38.0\""));
         assertTrue(manifest.contains("Spring Boot remains the source of truth"));
-        assertTrue(manifest.contains("offline/reconnect"));
+        assertTrue(manifest.toLowerCase(Locale.ROOT).contains("offline/reconnect"));
     }
 
     private static String featureSources() throws Exception {

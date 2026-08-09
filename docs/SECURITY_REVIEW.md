@@ -1,6 +1,6 @@
 # DutyLog security review
 
-Status: v27.38.1.
+Status: v27.38.2.
 
 ## v27.38.0 Vue Tasks, Notes & Important Days review
 

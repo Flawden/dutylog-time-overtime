@@ -1,3 +1,11 @@
+# v27.38.2 — Vue Productivity Manifest Contract Alignment Hotfix
+
+- Fixes the last Maven-failing static contract exposed after v27.38.1 reduced the suite from three failures to one: the migration manifest heading is `Offline/reconnect boundary`, while the Java source contract used case-sensitive `String.contains("offline/reconnect")`.
+- Makes the documentation contract semantic and casing-stable via `manifest.toLowerCase(Locale.ROOT).contains("offline/reconnect")`; the manifest wording, Vue productivity runtime, generated OpenAPI contract and offline queue ownership remain unchanged.
+- Adds no test method or browser scenario; baseline remains 152 Java test classes / 751 `@Test` methods / 47 Playwright scenarios / 49 Vitest cases / Flyway V47.
+- Changes no PostgreSQL schema, Flyway migration, API semantics, browser timeout, retry policy or Playwright assertion.
+- Acceptance remains pending until Maven/JUnit reaches 751/751 and the exact frontend, Chromium, image, PostgreSQL and staging gates are green.
+
 # v27.38.1 — Vue Productivity Static Contract Alignment Hotfix
 
 - Aligns three Maven-failing static contracts exposed by the first v27.38.0 local `mvn verify`: the historical Absence/Time Bank contract no longer owns global OpenAPI operation/schema totals, the Task duration contract follows Vue's dynamic `v-for` binding, and legacy-owner retirement checks the canonical `data-vue-productivity` readiness marker through the actual DOM dataset path.

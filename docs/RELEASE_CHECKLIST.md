@@ -1,6 +1,16 @@
 # Release checklist
 
-Status: v27.38.1.
+Status: v27.38.2.
+
+## v27.38.2 — Vue Productivity Manifest Contract Alignment Hotfix acceptance
+
+- [x] v27.38.1 local Maven executes all 751 tests with exactly one failure and zero errors.
+- [x] The remaining failure is a case-sensitive documentation-source assertion, not production runtime behavior.
+- [x] Offline/reconnect documentation is checked semantically with `Locale.ROOT` lowercase matching; runtime and public browser contracts are unchanged.
+- [ ] Exact frontend gate is green.
+- [ ] Maven/JUnit is 751/751.
+- [ ] Chromium is 47/47.
+- [ ] Immutable image, clean PostgreSQL smoke and staging deployment are green.
 
 ## v27.38.1 — Vue Productivity Static Contract Alignment Hotfix acceptance
 
