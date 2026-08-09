@@ -1,6 +1,6 @@
 # Supply-chain maintenance
 
-Status: v27.38.6.
+Status: v27.38.7.
 
 Dependabot checks five maintained surfaces weekly:
 

@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.38.6
+release_foundation: v27.38.7
 created: 2026-08-04
 updated: 2026-08-09
 ---
@@ -60,13 +60,13 @@ updated: 2026-08-09
 
 
 
-## Vue Productivity ownership/browser parity note — v27.38.6
+## Vue Productivity ownership/browser parity note — v27.38.7
 
-- v27.38.3 reached exact frontend and Maven gates but browser execution still exposed ownership/readiness and Calendar parity defects; v27.38.6 consolidates them before another full-suite acceptance attempt.
-- Q-10 remains one-queue: offline Productivity/Calendar reads reuse the existing dataLayer snapshot/queue and reload authoritative generated-API state after reconnect.
-- Q-12 remains fail-closed: Vue domain commands are installed before legacy retirement markers become ready, while legacy renderers stop mutating Vue-owned Calendar/Productivity surfaces.
-- Browser delivery now fails fast when `frontend/dist` is missing and runs a boot canary before the mandatory 47-scenario suite; no timeout, retry or assertion has been weakened.
-- PostgreSQL/Flyway remain unchanged at V47; acceptance still requires exact frontend, 751/751 Maven, 47/47 Chromium, image, clean PostgreSQL and staging evidence.
+- The v27.38.6 fail-fast canary proved the Vue bundle and boot path are now present, then exposed a module-readiness race: optional Productivity reads were issued before module/onboarding authority settled and were rejected by the backend after the Minimum preset disabled those modules.
+- Q-12 stays fail-closed: Vue now waits for `modulesLoaded && onboardingCompleted` instead of weakening `MODULE_DISABLED` backend guards or browser error assertions.
+- Repeated legacy-state publications keep an identical shell module map by reference, preventing the same Productivity refresh from being restarted by unrelated profile/route/language publications.
+- Q-10 remains one-queue and backend-authoritative; PostgreSQL/Flyway stay at V47 and OpenAPI stays 101 / 106.
+- Acceptance still requires exact frontend, 751/751 Maven, the boot canary, 47/47 Chromium, image, clean PostgreSQL and staging evidence.
 
 ## Vue Productivity strict typecheck note — v27.38.3
 

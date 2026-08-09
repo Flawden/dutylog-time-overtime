@@ -1,19 +1,19 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.6 — Vue Calendar Offline Source Typecheck Hotfix**.
+Current release: **v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix**.
 
 
 
 
 
-## v27.38.6 — Vue Calendar Offline Source Typecheck Hotfix — current
-- [x] Use the first v27.38.4 local Windows evidence instead of running expensive E2E blindly: native frontend gate fails inside `npm.ps1`; Maven reaches 751 tests with exactly two static Calendar contract failures.
-- [x] Resolve `npm.cmd` explicitly under PowerShell strict mode so the Windows gate reaches the pinned Node/npm validation and frontend pipeline.
-- [x] Align schedule-layer Vue-yield and cross-midnight Calendar unit source contracts with the actual implementation without changing runtime semantics.
-- [x] Preserve 152 / 751 / 47 / 49 / V47 and OpenAPI 101 / 106; no database migration or browser assertion weakening.
-- [ ] Exact frontend gate must pass 49 Vitest + production build + bundle audit.
-- [ ] Maven/JUnit must pass 751/751.
-- [ ] Browser boot canary and targeted canaries must pass before the mandatory 47/47 Chromium suite.
+## v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix — current
+- [x] Use the v27.38.6 canary failure: Vue dist preflight succeeds and Spring starts, but the single onboarding scenario reports repeated module-disabled 403s instead of spending another hour on the full suite.
+- [x] Gate Vue Productivity reads on both `modulesLoaded` and `onboardingCompleted`; unknown/first-run module state is no longer interpreted as permission to read optional APIs.
+- [x] Preserve shell module-map identity when a legacy-state publication carries the same values, preventing duplicate refresh waves and request amplification.
+- [x] Keep backend `MODULE_DISABLED` enforcement and strict Playwright HTTP/console assertions unchanged; no 403 allowlist is introduced.
+- [x] Preserve 152 / 751 / 47 / 49 / V47 and OpenAPI 101 / 106; no database migration.
+- [ ] Exact frontend gate and Maven 751/751 must pass.
+- [ ] `npm run test:e2e:canary` must pass before targeted browser checks and mandatory 47/47 Chromium.
 - [ ] Immutable image, clean PostgreSQL smoke and staging deployment remain blocking acceptance gates.
 
 ## v27.38.3 — Vue Productivity Strict Typecheck Hotfix — browser-incomplete predecessor

@@ -6,14 +6,14 @@ beforeEach(() => setActivePinia(createPinia()));
 
 function snapshot(overrides: Partial<DutyLogLegacySnapshot> = {}): DutyLogLegacySnapshot {
   return {
-    version: "27.38.6",
+    version: "27.38.7",
     language: "ru",
     route: "calendar",
     online: true,
     modulesLoaded: true,
     navigation: ["today", "calendar", "settings"],
     availableViews: ["today", "calendar", "tasks", "settings"],
-    profile: { displayName: "Даниил Т.", initials: "ДТ", admin: false },
+    profile: { displayName: "Даниил Т.", initials: "ДТ", admin: false, onboardingCompleted: true },
     ...overrides,
   };
 }
@@ -28,11 +28,19 @@ describe("shell store", () => {
     expect(store.primaryNavigation).toEqual(["today", "calendar", "settings"]);
     expect(store.secondaryNavigation).toEqual(["tasks"]);
     expect(store.initials).toBe("ДТ");
+    expect(store.onboardingCompleted).toBe(true);
+
+    store.synchronize(snapshot({ modules: { tasks: false, notes: true } }));
+    const stableModules = store.modules;
+    store.synchronize(snapshot({ modules: { tasks: false, notes: true } }));
+    expect(store.modules).toBe(stableModules);
+    store.synchronize(snapshot({ modules: { tasks: true, notes: true } }));
+    expect(store.modules).not.toBe(stableModules);
   });
 
   it("adds the admin route only for an administrator", () => {
     const store = useShellStore();
-    store.synchronize(snapshot({ profile: { displayName: "Admin", initials: "AD", admin: true } }));
+    store.synchronize(snapshot({ profile: { displayName: "Admin", initials: "AD", admin: true, onboardingCompleted: true } }));
     expect(store.availableNavigation).toContain("admin");
   });
 

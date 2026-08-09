@@ -1,8 +1,9 @@
-# v27.38.6 — Vue Calendar Offline Source Typecheck Hotfix
+# v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix
 
-- Restores the typed Calendar offline-source installer required by the v27.38.4 ownership/offline bridge and fixes the exact CI `vue-tsc` TS2305/TS7006 failure.
-- Reuses the existing IndexedDB `dataLayer` snapshot only for genuine offline/network fallback; generated OpenAPI remains authoritative online.
-- Keeps fail-fast E2E preflight/canary and all existing strict TypeScript, Vitest, JUnit and Playwright gates intact.
+- Stops Vue Productivity from reading Tasks/Notes/Important APIs before the authoritative module snapshot and onboarding state are ready; disabled modules no longer generate `403 MODULE_DISABLED` storms during first-run or reload.
+- Keeps identical legacy module snapshots referentially stable so unrelated legacy-state publications do not restart the same Productivity reads repeatedly.
+- Preserves strict browser error collection: the fix removes invalid requests rather than teaching Playwright to ignore 403s. Backend module guards, OpenAPI, PostgreSQL/Flyway and the 152 / 751 / 47 / 49 baselines are unchanged.
+- Full acceptance remains fail-closed on exact frontend, Maven, the boot canary, targeted browser checks and mandatory 47/47 Chromium.
 
 # v27.38.3 — Vue Productivity Strict Typecheck Hotfix
 

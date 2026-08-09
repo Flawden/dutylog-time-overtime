@@ -9,6 +9,7 @@ declare global {
     displayName: string;
     initials: string;
     admin: boolean;
+    onboardingCompleted: boolean;
   }
 
   interface DutyLogLegacySnapshot {

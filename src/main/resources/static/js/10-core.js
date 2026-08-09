@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.38.6"
+const DUTYLOG_VERSION = "27.38.7"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -164,7 +164,7 @@ function legacyProfileSnapshot(){
   const shown = String(profile.displayName || profile.username || "DutyLog").trim() || "DutyLog";
   const parts = shown.split(/\s+/).filter(Boolean);
   const initials = (parts.length > 1 ? `${parts[0][0]}${parts[1][0]}` : shown.slice(0, 2)).toUpperCase();
-  return Object.freeze({ displayName:shown, initials, admin:!!profile.admin });
+  return Object.freeze({ displayName:shown, initials, admin:!!profile.admin, onboardingCompleted:profile.onboardingCompleted === true });
 }
 
 function legacyNavigationSnapshot(){

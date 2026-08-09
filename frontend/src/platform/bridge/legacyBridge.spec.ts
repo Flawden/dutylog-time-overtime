@@ -13,14 +13,14 @@ function fakeWindow(): Window {
 
 function snapshot(route = "calendar"): DutyLogLegacySnapshot {
   return {
-    version: "27.38.6",
+    version: "27.38.7",
     language: "ru",
     route,
     online: true,
     modulesLoaded: true,
     navigation: ["today", "calendar", "settings"],
     availableViews: ["today", "calendar", "tasks", "settings"],
-    profile: { displayName: "Даниил", initials: "Д", admin: false },
+    profile: { displayName: "Даниил", initials: "Д", admin: false, onboardingCompleted: true },
   };
 }
 
@@ -35,7 +35,7 @@ describe("legacy bridge", () => {
     const parkCalendarEditor = vi.fn();
     const subscribe = vi.fn(() => vi.fn());
     target.DutyLogLegacyPlatform = {
-      version: "27.38.6",
+      version: "27.38.7",
       snapshot: () => snapshot(),
       navigate,
       openModal,

@@ -18,7 +18,9 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
     @Test
     void appShellInstallsOneVueProductivityOwnerForTasksImportantAndSelectedDayModules() throws Exception {
         String shell = read("frontend/src/app/AppShell.vue");
+        String shellStore = read("frontend/src/app/shellStore.ts");
         String workspace = read(FEATURE.resolve("components/ProductivityWorkspace.vue"));
+        String core = read("src/main/resources/static/js/10-core.js");
 
         assertTrue(shell.contains("ProductivityWorkspace"));
         assertTrue(workspace.contains("retireDomainOwners(\"productivity\")"));
@@ -29,6 +31,12 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(workspace.contains("vueSelectedDayImportantMount"));
         assertTrue(workspace.contains("DutyLogVueDomains"));
         assertTrue(workspace.indexOf("DutyLogVueDomains") < workspace.indexOf("retireDomainOwners(\"productivity\")"));
+        assertTrue(workspace.contains("modulesLoaded, onboardingCompleted"));
+        assertTrue(workspace.contains("const productivityReadable = computed(() => modulesLoaded.value && onboardingCompleted.value)"));
+        assertTrue(workspace.contains("watch([modulesLoaded, onboardingCompleted, modules]"));
+        assertTrue(shellStore.contains("function booleanMapEquals"));
+        assertTrue(shellStore.contains("!booleanMapEquals(this.modules, snapshot.modules)"));
+        assertTrue(core.contains("onboardingCompleted:profile.onboardingCompleted === true"));
     }
 
     @Test

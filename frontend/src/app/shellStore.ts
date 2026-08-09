@@ -5,6 +5,13 @@ interface ShellToast { id: number; message: string; tone: "success" | "info" | "
 
 const FALLBACK_NAVIGATION: readonly DutyLogRoute[] = Object.freeze(["today", "calendar", "vacation", "overtime", "tasks", "settings"]);
 
+function booleanMapEquals(current: Readonly<Record<string, boolean>>, next: Readonly<Record<string, boolean>>): boolean {
+  const currentEntries = Object.entries(current);
+  const nextEntries = Object.entries(next);
+  if (currentEntries.length !== nextEntries.length) return false;
+  return nextEntries.every(([key, value]) => current[key] === value);
+}
+
 function validRoutes(routes: readonly string[] | undefined): DutyLogRoute[] {
   const result = (routes ?? []).map(navigationItem).filter((item): item is NonNullable<typeof item> => item !== null).map(item => item.route);
   return result.length ? [...new Set(result)] : [...FALLBACK_NAVIGATION];
@@ -17,6 +24,7 @@ export const useShellStore = defineStore("dutylog-shell", {
     language: "ru" as "ru" | "en",
     online: true,
     modulesLoaded: false,
+    onboardingCompleted: false,
     modules: {} as Record<string, boolean>,
     primaryNavigation: [...FALLBACK_NAVIGATION] as DutyLogRoute[],
     availableNavigation: [...FALLBACK_NAVIGATION] as DutyLogRoute[],
@@ -40,7 +48,8 @@ export const useShellStore = defineStore("dutylog-shell", {
       this.language = snapshot.language;
       this.online = snapshot.online;
       this.modulesLoaded = snapshot.modulesLoaded;
-      if (snapshot.modules) this.modules = { ...snapshot.modules };
+      this.onboardingCompleted = snapshot.profile?.onboardingCompleted === true;
+      if (snapshot.modules && !booleanMapEquals(this.modules, snapshot.modules)) this.modules = { ...snapshot.modules };
       this.primaryNavigation = validRoutes(snapshot.navigation);
       this.availableNavigation = validRoutes(snapshot.availableViews);
       this.displayName = snapshot.profile?.displayName || "DutyLog";

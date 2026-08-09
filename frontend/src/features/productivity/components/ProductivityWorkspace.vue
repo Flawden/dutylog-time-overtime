@@ -19,17 +19,18 @@ const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
 const calendar = useCalendarTimelineStore();
 const store = useProductivityStore();
-const { activeRoute, modules } = storeToRefs(shell);
+const { activeRoute, modules, modulesLoaded, onboardingCompleted } = storeToRefs(shell);
 const { focusDate } = storeToRefs(calendar);
 let previousDomain: DutyLogProductivityDomain | undefined;
 let restoreBridge: (() => void) | null = null;
 
-const tasksEnabled = computed(() => modules.value.tasks !== false);
-const notesEnabled = computed(() => modules.value.notes !== false);
-const importantEnabled = computed(() => modules.value.important_dates !== false);
+const productivityReadable = computed(() => modulesLoaded.value && onboardingCompleted.value);
+const tasksEnabled = computed(() => productivityReadable.value && modules.value.tasks !== false);
+const notesEnabled = computed(() => productivityReadable.value && modules.value.notes !== false);
+const importantEnabled = computed(() => productivityReadable.value && modules.value.important_dates !== false);
 
 const domain: DutyLogProductivityDomain = Object.freeze({
-  ready: () => store.loaded,
+  ready: () => productivityReadable.value && store.loaded,
   refresh: async () => { await store.refreshAll(focusDate.value); },
   openTaskCreate: async (date?: string, text = "", sourceInboxId: number | null = null) => {
     await store.openTaskCreate(date || focusDate.value, text, sourceInboxId);
@@ -66,6 +67,7 @@ onBeforeMount(() => {
 });
 
 async function synchronizeRoute(route: string): Promise<void> {
+  if (!productivityReadable.value) return;
   if (route === "tasks" && tasksEnabled.value) {
     await Promise.all([store.loadBoard(), store.loadInbox()]);
   } else if (route === "important" && importantEnabled.value) {
@@ -74,8 +76,17 @@ async function synchronizeRoute(route: string): Promise<void> {
 }
 
 async function synchronizeSelectedDate(date: string): Promise<void> {
+  if (!productivityReadable.value) return;
   if (!tasksEnabled.value && !notesEnabled.value && !importantEnabled.value) return;
   await store.loadSelectedDate(date);
+}
+
+async function synchronizeProductivity(): Promise<void> {
+  if (!productivityReadable.value) {
+    store.loaded = false;
+    return;
+  }
+  await store.refreshAll(focusDate.value);
 }
 
 async function reconnect(): Promise<void> {
@@ -84,14 +95,13 @@ async function reconnect(): Promise<void> {
 }
 
 onMounted(() => {
-  void store.refreshAll(focusDate.value);
-  void synchronizeRoute(activeRoute.value);
+  void synchronizeProductivity();
   window.addEventListener("online", reconnect);
 });
 
 watch(activeRoute, route => { void synchronizeRoute(route); });
 watch(focusDate, date => { void synchronizeSelectedDate(date); });
-watch(modules, () => { void store.refreshAll(focusDate.value); void synchronizeRoute(activeRoute.value); }, { deep: true });
+watch([modulesLoaded, onboardingCompleted, modules], () => { void synchronizeProductivity(); }, { deep: true });
 
 onBeforeUnmount(() => {
   window.removeEventListener("online", reconnect);

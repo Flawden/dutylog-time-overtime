@@ -1,3 +1,11 @@
+# v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix
+
+- Uses the first real v27.38.6 boot-canary evidence instead of running the remaining 47-scenario suite: Vue dist preflight and Spring boot succeed, but the canary records 58 runtime issues from repeated `403 MODULE_DISABLED` reads after the Minimum onboarding preset disables Tasks, Notes and Important Days.
+- Fixes the boot race at its ownership boundary: Vue Productivity does not read optional module APIs until both the legacy module snapshot is loaded and first-run onboarding is completed. A reload with disabled modules therefore starts from the authoritative module map instead of optimistically treating unknown modules as enabled.
+- Stabilizes the shell module snapshot identity so repeated legacy-state publications with the same module values no longer retrigger Productivity refresh waves. This removes the request storm that amplified the module-disable race without weakening the browser fixture or allowing expected 403s through the test harness.
+- Keeps backend module guards, generated OpenAPI transport, retries, Playwright console/HTTP failure collection and the fail-fast canary unchanged. No PostgreSQL/Flyway/OpenAPI shape change.
+- Baseline remains 152 Java test classes / 751 `@Test` methods / 47 Playwright scenarios / 49 Vitest cases / Flyway V47. Acceptance remains pending on exact frontend, Maven, the one-scenario boot canary, targeted browser checks, 47/47 Chromium, image, PostgreSQL smoke and staging.
+
 # v27.38.6 — Vue Calendar Offline Source Typecheck Hotfix
 
 - Restores the Calendar offline-source contract that v27.38.4 wired into `CalendarTimelineWorkspace.vue` but did not actually export from `calendarTimelineStore.ts`; this was the direct cause of TS2305 in the exact CI frontend gate.

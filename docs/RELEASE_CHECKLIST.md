@@ -1,8 +1,8 @@
 # Release checklist
 
-Status: v27.38.6.
+Status: v27.38.7.
 
-## v27.38.6 — Vue Calendar Offline Source Typecheck Hotfix acceptance
+## v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix acceptance
 
 - [ ] `./deploy/scripts/frontend-gate.ps1` passes on Windows with exact Node 20.18.1 / npm 10.8.2, or the Linux exact frontend gate passes in CI.
 - [ ] `mvn -B --no-transfer-progress verify` reports 751/751 JUnit tests with JaCoCo gates met.
@@ -14,8 +14,8 @@ Status: v27.38.6.
 
 After all blocking gates are green:
 ```bash
-git tag -a v27.38.6 -m "v27.38.6 — Vue Calendar Offline Source Typecheck Hotfix"
-git push origin v27.38.6
+git tag -a v27.38.7 -m "v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix"
+git push origin v27.38.7
 ```
 
 ## v27.38.3 — Vue Productivity Strict Typecheck Hotfix acceptance
