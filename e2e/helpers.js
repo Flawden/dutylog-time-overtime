@@ -167,12 +167,10 @@ async function selectDate(page, date) {
 
   const selected = await cell.evaluate(element => element.classList.contains('sel'));
   if (selected && !(await panel.isVisible())) {
-    // Recover an inconsistent selected/hidden state without letting the next
-    // click merely toggle the requested day off.
+    // Vue Calendar keeps the focused date selected. Clicking an already-focused
+    // day is idempotent and reopens the selected-day compatibility island.
     await cell.click();
-    await expect(cell).not.toHaveClass(/sel/);
-  }
-  if (!(await cell.evaluate(element => element.classList.contains('sel')))) {
+  } else if (!selected) {
     await cell.click();
   }
 

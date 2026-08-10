@@ -78,6 +78,10 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(store.contains("this.workDate = validDate(context?.workDate"));
         assertTrue(store.contains("this.loaded = selectedOk && boardOk && importantOk && inboxOk"));
         assertTrue(store.contains("addMinutesToDateTime"));
+        assertTrue(store.contains("taskDraftSnapshot(this.taskDraft)"));
+        assertTrue(store.contains("importantDraftSnapshot(this.importantDraft)"));
+        assertFalse(store.contains("structuredClone(this.taskDraft)"));
+        assertFalse(store.contains("structuredClone(this.importantDraft)"));
     }
 
     @Test
@@ -110,6 +114,8 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(page.contains("data-vue-domain-owner=\"productivity\""));
         assertTrue(page.contains("id=\"taskBoardFilters\""));
         assertTrue(page.contains("id=\"taskInboxCard\""));
+        assertTrue(page.contains("deadlineLabel(task)"));
+        assertTrue(page.contains("task.dueTime"));
         assertTrue(modal.contains("id=\"taskDetailsModal\""));
         assertTrue(modal.contains("id=\"taskEditModal\""));
         assertTrue(modal.contains("v-for=\"minutes in [15,30,45,60,90,120]\""));

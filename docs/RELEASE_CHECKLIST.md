@@ -1,6 +1,23 @@
 # Release checklist
 
-Status: v27.38.7.
+Status: v27.38.8.
+
+## v27.38.8 — Vue Shared Browser Parity Hotfix acceptance
+
+- [x] v27.38.7 full Chromium evidence is classified into four shared root causes; no timeout/retry/error allowlist is used as a fix.
+- [x] Existing source contracts guard Vue focused-date helper semantics, Proxy-safe Productivity snapshots, deadline-time board presentation and first-claim PWA stability without adding test methods.
+- [ ] Exact Node 20.18.1 / npm 10.8.2 frontend gate passes, including 49 Vitest and production bundle audit.
+- [ ] `mvn -B --no-transfer-progress verify` reports 751/751 with JaCoCo gates met.
+- [ ] `npm run test:e2e:canary` passes.
+- [ ] `npm run test:e2e` reports 47/47 Chromium.
+- [ ] Immutable image, clean PostgreSQL V47 smoke and staging deployment are green.
+
+Tag only after all acceptance items are green:
+
+```bash
+git tag -a v27.38.8 -m "v27.38.8 — Vue Shared Browser Parity Hotfix"
+git push origin v27.38.8
+```
 
 ## v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix acceptance
 

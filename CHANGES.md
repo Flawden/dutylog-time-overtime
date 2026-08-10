@@ -1,3 +1,13 @@
+# v27.38.8 — Vue Shared Browser Parity Hotfix
+
+- Uses the complete v27.38.7 Chromium result (22 passed / 25 failed) to collapse the failures into four shared browser-parity root causes instead of weakening 25 scenarios independently.
+- Aligns the shared `selectDate()` helper with Vue Calendar focus semantics: an already-focused day stays selected and one idempotent click reopens the selected-day compatibility island instead of expecting legacy toggle-off behavior.
+- Replaces `structuredClone()` on reactive Pinia Task/Important drafts with explicit plain snapshots, so browser mutations reach generated `/api/v1/*` writes and `mutationPending` is always released by the existing `finally`.
+- Adds deadline date/time to Task Board metadata, preserving the backend-projected `dueTime` that timezone browser acceptance expects.
+- Prevents a first service-worker claim from reloading first-run onboarding; controller changes from an already-controlled page still perform the existing one-shot upgrade reload.
+- Extends existing Java source contracts only; baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases / Flyway V47. OpenAPI remains 101 operations / 106 schemas / `c48bfab2bcaf`.
+- Changes no backend business rule, API/OpenAPI shape, PostgreSQL schema, Flyway migration, browser timeout, retry policy or runtime-error allowlist. Acceptance remains blocked on exact frontend, Maven 751/751, canary, 47/47 Chromium, immutable image, clean PostgreSQL and staging.
+
 # v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix
 
 - Uses the first real v27.38.6 boot-canary evidence instead of running the remaining 47-scenario suite: Vue dist preflight and Spring boot succeed, but the canary records 58 runtime issues from repeated `403 MODULE_DISABLED` reads after the Minimum onboarding preset disables Tasks, Notes and Important Days.

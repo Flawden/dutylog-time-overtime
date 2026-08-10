@@ -145,7 +145,9 @@ $("logout").addEventListener("click", async () => {
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     let reloading = false;
+    let hasController = Boolean(navigator.serviceWorker.controller);
     navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!hasController) { hasController = true; return; }
       if (reloading) return;
       const reloadKey = `dutylog-sw-reload-${DUTYLOG_VERSION}`;
       if (sessionStorage.getItem(reloadKey) === "1") return;

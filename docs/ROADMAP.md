@@ -1,12 +1,23 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix**.
+Current release: **v27.38.8 — Vue Shared Browser Parity Hotfix**.
 
 
 
 
 
-## v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix — current
+## v27.38.8 — Vue Shared Browser Parity Hotfix — current
+- [x] Use the complete v27.38.7 Chromium result: 22 passed / 25 failed, with onboarding canary green and no previous module-disabled boot storm.
+- [x] Align shared `selectDate()` with idempotent Vue focused-date semantics instead of legacy toggle-off behavior.
+- [x] Snapshot reactive Productivity drafts into plain Task/Important data before generated API writes.
+- [x] Show backend-projected Task deadline date/time in board metadata.
+- [x] Keep first service-worker claim from interrupting first-run onboarding while preserving reload on updates of an already-controlled page.
+- [x] Preserve 152 / 751 / 47 / 49 / V47 and OpenAPI 101 / 106; no database migration or timeout/assertion weakening.
+- [ ] Exact frontend gate and Maven 751/751 must pass.
+- [ ] `npm run test:e2e:canary` then mandatory 47/47 Chromium must pass.
+- [ ] Immutable image, clean PostgreSQL smoke and staging deployment remain blocking acceptance gates.
+
+## v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix — browser-parity predecessor
 - [x] Use the v27.38.6 canary failure: Vue dist preflight succeeds and Spring starts, but the single onboarding scenario reports repeated module-disabled 403s instead of spending another hour on the full suite.
 - [x] Gate Vue Productivity reads on both `modulesLoaded` and `onboardingCompleted`; unknown/first-run module state is no longer interpreted as permission to read optional APIs.
 - [x] Preserve shell module-map identity when a legacy-state publication carries the same values, preventing duplicate refresh waves and request amplification.

@@ -59,6 +59,20 @@ function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "Не удалось выполнить запрос";
 }
 
+function taskDraftSnapshot(draft: TaskDraft): TaskDraft {
+  return {
+    ...draft,
+    subtasks: draft.subtasks.map(item => ({ ...item })),
+  };
+}
+
+function importantDraftSnapshot(draft: ImportantDraft): ImportantDraft {
+  return {
+    ...draft,
+    reminders: [...draft.reminders],
+  };
+}
+
 function taskPayload(draft: TaskDraft) {
   const timed = !draft.allDay;
   const reminderMinutes = Number(draft.reminderMinutesBefore);
@@ -335,7 +349,7 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       this.mutationPending = true;
       this.error = "";
       this.conflict = "";
-      const draft = structuredClone(this.taskDraft);
+      const draft = taskDraftSnapshot(this.taskDraft);
       try {
         const payload = taskPayload(draft);
         let saved: Task | null;
@@ -499,7 +513,7 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       if (!this.importantDraft.title.trim()) { this.error = "Название обязательно"; return; }
       this.mutationPending = true;
       this.error = "";
-      const draft = structuredClone(this.importantDraft);
+      const draft = importantDraftSnapshot(this.importantDraft);
       try {
         const body = importantInput(draft);
         if (draft.id) await api.updateImportant(draft.id, body); else await api.createImportant(body);

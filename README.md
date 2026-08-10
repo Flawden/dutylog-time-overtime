@@ -1,3 +1,10 @@
+# v27.38.8 — Vue Shared Browser Parity Hotfix
+
+- Fixes the four shared browser-parity defects exposed after v27.38.7 made the onboarding canary green: stale Calendar toggle semantics, reactive Proxy cloning before Productivity writes, missing board deadline time, and first service-worker claim reload during onboarding.
+- Keeps Vue Calendar focused-date ownership idempotent, generated Productivity writes strict, backend-projected deadlines visible, and PWA upgrade reloads limited to pages that were already controlled at load.
+- Preserves strict Playwright error collection and the 152 / 751 / 47 / 49 / V47 baseline; OpenAPI stays 101 / 106.
+- Full acceptance remains fail-closed on exact frontend, Maven, canary, mandatory 47/47 Chromium, immutable image, clean PostgreSQL and staging.
+
 # v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix
 
 - Stops Vue Productivity from reading Tasks/Notes/Important APIs before the authoritative module snapshot and onboarding state are ready; disabled modules no longer generate `403 MODULE_DISABLED` storms during first-run or reload.

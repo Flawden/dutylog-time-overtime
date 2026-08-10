@@ -152,12 +152,15 @@ class VueCalendarTimelineMigrationFrontendContractTest {
     @Test
     void browserAcceptanceKeepsOneVueOwnerAndTheSelectedDayEditorIsland() throws Exception {
         String browser = read("e2e/vue-calendar-timeline-migration.spec.js");
+        String helpers = read("e2e/helpers.js");
 
         assertTrue(browser.contains("data-vue-domain-owner=\"calendar-timeline\""));
         assertTrue(browser.contains("#calendarWeekStrip [data-date]"));
         assertTrue(browser.contains("#calendarTimelineHours span"));
         assertTrue(browser.contains("#calendarLegacyPanelHost > #panel"));
         assertTrue(browser.contains("toHaveCount(1)"));
+        assertTrue(helpers.contains("Clicking an already-focused"));
+        assertFalse(helpers.contains("not.toHaveClass(/sel/)"));
     }
 
     @Test
@@ -167,6 +170,7 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         String budget = read("frontend/browser-bundle-budget.json");
         String adr = read("docs/architecture/adr/ADR-006-pwa-asset-version-upgrade-strategy.md");
         String worker = read("src/main/resources/static/service-worker.js");
+        String boot = read("src/main/resources/static/js/70-user-boot.js");
 
         assertTrue(pwa.contains("dutylog-shell-v27.36.8-synthetic-previous"));
         String releaseVersion = projectVersion();
@@ -179,6 +183,8 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(adr.contains("network-first"));
         assertTrue(worker.contains("k.startsWith(\"dutylog-shell-\")"));
         assertTrue(worker.contains("k !== CACHE_NAME"));
+        assertTrue(boot.contains("let hasController = Boolean(navigator.serviceWorker.controller)"));
+        assertTrue(boot.contains("if (!hasController) { hasController = true; return; }"));
     }
 
     @Test

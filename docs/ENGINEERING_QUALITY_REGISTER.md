@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.38.7
+release_foundation: v27.38.8
 created: 2026-08-04
 updated: 2026-08-09
 ---
@@ -59,6 +59,15 @@ updated: 2026-08-09
 
 
 
+
+## Shared browser parity note — v27.38.8
+
+- The complete v27.38.7 browser run reached 22/47 and reduced the remaining migration noise to four root causes rather than 25 independent failures.
+- Q-12: the shared browser helper now follows Vue Calendar focused-date semantics without restoring legacy toggle ownership.
+- Q-06/Q-10: Productivity mutations snapshot reactive drafts into plain data before generated API writes; no duplicate queue or transport is introduced.
+- Q-07: first service-worker claim no longer reloads onboarding, while updates of an already-controlled page keep the one-shot reload contract.
+- Task Board exposes backend-projected deadline date/time; Spring Boot remains authoritative for deadline timezone semantics.
+- Acceptance remains blocked on exact frontend, 751/751 Maven, canary, 47/47 Chromium, image, clean PostgreSQL and staging.
 
 ## Vue Productivity ownership/browser parity note — v27.38.7
 

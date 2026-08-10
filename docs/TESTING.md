@@ -11,7 +11,7 @@ mvn clean verify
 bash deploy/scripts/release-check.sh
 ```
 
-The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 49 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.38.7 release path. CI, Docker and staging use the same frontend boundary.
+The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 49 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.38.8 release path. CI, Docker and staging use the same frontend boundary.
 
 GitHub artifact persistence is diagnostic only. CI uploads compact JaCoCo XML/CSV for three days and uploads Playwright HTML/results only after failure; quota or upload errors cannot block later static checks, image build or migration smoke. Test execution itself remains fail-closed.
 
@@ -112,6 +112,10 @@ npm run test:e2e
 ```
 
 Playwright starts the isolated `e2e` Spring profile on port 4173. The profile uses only an in-memory H2 database. Reports and failure traces are stored under `playwright-report/` and `test-results/`. See [`PLAYWRIGHT_E2E.md`](PLAYWRIGHT_E2E.md).
+
+## Shared browser parity follow-up (v27.38.8)
+
+The v27.38.7 full run ended at 22 passed / 25 failed. Treat the failures as four shared contracts: selected Calendar focus is idempotent, Pinia drafts must be converted to plain snapshots before browser cloning/transport, Task Board must expose projected deadline time, and first service-worker control must not reload onboarding. Run the fail-fast canary first, then the complete 47-scenario suite; do not raise timeouts or suppress browser/network errors.
 
 ## Browser preflight and fail-fast canary (v27.38.7)
 

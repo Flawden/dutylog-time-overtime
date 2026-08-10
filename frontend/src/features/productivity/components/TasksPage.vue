@@ -12,6 +12,10 @@ const filtersExpanded = ref(false);
 async function saveCapture(): Promise<void> { const text = capture.value.trim(); if (!text) return; capture.value = ""; await store.captureInbox(text); }
 async function filters(): Promise<void> { await store.setBoardFilters(); }
 function progress(task: typeof board.value.items[number]): string { const total = task.subtasks?.length ?? 0; return total ? `${task.subtasks.filter(item => item.done).length}/${total}` : ""; }
+function deadlineLabel(task: typeof board.value.items[number]): string {
+  if (!task.dueDate) return "";
+  return `до ${task.dueDate}${task.dueTime ? ` ${task.dueTime}` : ""}`;
+}
 </script>
 <template>
   <section class="view vue-domain-view" id="view-tasks" data-vue-domain-owner="productivity" data-vue-domain-route="tasks" :class="{ moduleHidden: shell.modules.tasks === false }">
@@ -39,7 +43,7 @@ function progress(task: typeof board.value.items[number]): string { const total 
       <div class="taskBoardList" id="taskBoardList" :aria-busy="boardLoading">
         <article v-for="task in board.items" :key="task.id" class="taskBoardItem" :class="{ done: task.done, overdue: task.overdue }" :data-task-id="task.id">
           <input type="checkbox" :checked="task.done" @change="store.toggleTask(task, ($event.target as HTMLInputElement).checked)"/>
-          <button class="taskBoardBody" type="button" @click="store.openTaskDetails(task.id)"><b>{{ task.text }}</b><small>{{ [task.project, task.category, taskScheduleLabel(task)].filter(Boolean).join(' · ') }}</small><span v-if="progress(task)" class="taskSubtaskProgress">{{ progress(task) }}</span></button>
+          <button class="taskBoardBody" type="button" @click="store.openTaskDetails(task.id)"><b>{{ task.text }}</b><small>{{ [task.project, task.category, taskScheduleLabel(task), deadlineLabel(task)].filter(Boolean).join(' · ') }}</small><span v-if="progress(task)" class="taskSubtaskProgress">{{ progress(task) }}</span></button>
         </article><div v-if="!boardLoading && !board.items.length" class="emptyLine">Задач по фильтру нет.</div>
       </div>
     </div>
