@@ -112,6 +112,20 @@ function deadlineKey(draft: TaskDraft): string | null {
   return `${draft.dueDate}T${draft.dueTime || "23:59"}`;
 }
 
+function taskDisplayDate(task: Task): string {
+  return validDate(task.scheduledStartDate ?? task.date);
+}
+
+function defaultBoardAccepts(task: Task, state: {
+  boardStatus: string; boardCategory: string; boardProject: string; boardPriority: string;
+  boardSearch: string; boardFrom: string; boardTo: string;
+}): boolean {
+  return state.boardStatus === "open"
+    && !state.boardCategory && !state.boardProject && !state.boardPriority
+    && !state.boardSearch.trim() && !state.boardFrom && !state.boardTo
+    && !task.done;
+}
+
 async function refreshCalendarIfMounted(): Promise<void> {
   try { await window.DutyLogVueDomains?.calendarTimeline?.refresh(); } catch { /* page keeps its authoritative domain state */ }
 }
@@ -375,6 +389,25 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
         this.taskEditorOpen = false;
         if (saved) this.taskDetails = saved;
         await Promise.all([this.loadSelectedDate(draft.date), this.loadBoard(), this.loadInbox()]);
+        if (saved) {
+          // The mutation response is already backend-authoritative. Re-publish it after
+          // concurrent read sequencing so a superseded refresh cannot blank the task
+          // between save and the next domain projection.
+          if (taskDisplayDate(saved) === this.selectedDate) {
+            this.selectedTasks = sortDayTasks([
+              ...this.selectedTasks.filter(task => task.id !== saved.id),
+              saved,
+            ]);
+          } else {
+            this.selectedTasks = this.selectedTasks.filter(task => task.id !== saved.id);
+          }
+          const boardIndex = this.board.items.findIndex(task => task.id === saved.id);
+          if (boardIndex >= 0 || defaultBoardAccepts(saved, this)) {
+            const items = this.board.items.filter(task => task.id !== saved.id);
+            items.push(saved);
+            this.board = { ...this.board, items: sortDayTasks(items), total: Math.max(this.board.total, items.length) };
+          }
+        }
         await refreshCalendarIfMounted();
         useShellStore().announce("Задача сохранена", "success");
       } catch (error) { await this.handleMutationError(error); }

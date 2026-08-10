@@ -1,3 +1,10 @@
+# v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix
+
+- Reduces the remaining v27.38.8 browser-parity set by aligning generated Vue endpoint expectations, offline Productivity readiness, PWA first-install sequencing and Task read-model publication.
+- Keeps the legacy note alias only where the existing offline adapter owns the mutation, preserves strict browser/runtime error collection and does not change backend business authority.
+- Preserves the 152 / 751 / 47 / 49 / V47 baseline and OpenAPI 101 / 106.
+- Full acceptance remains fail-closed on exact frontend, Maven, canary, mandatory 47/47 Chromium, immutable image, clean PostgreSQL and staging.
+
 # v27.38.8 — Vue Shared Browser Parity Hotfix
 
 - Fixes the four shared browser-parity defects exposed after v27.38.7 made the onboarding canary green: stale Calendar toggle semantics, reactive Proxy cloning before Productivity writes, missing board deadline time, and first service-worker claim reload during onboarding.

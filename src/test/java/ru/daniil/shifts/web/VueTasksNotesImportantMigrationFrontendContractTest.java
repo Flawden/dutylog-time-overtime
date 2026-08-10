@@ -32,7 +32,7 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(workspace.contains("DutyLogVueDomains"));
         assertTrue(workspace.indexOf("DutyLogVueDomains") < workspace.indexOf("retireDomainOwners(\"productivity\")"));
         assertTrue(workspace.contains("modulesLoaded, onboardingCompleted"));
-        assertTrue(workspace.contains("const productivityReadable = computed(() => modulesLoaded.value && onboardingCompleted.value)"));
+        assertTrue(workspace.contains("const productivityReadable = computed(() => modulesLoaded.value && (onboardingCompleted.value || !online.value))"));
         assertTrue(workspace.contains("watch([modulesLoaded, onboardingCompleted, modules]"));
         assertTrue(shellStore.contains("function booleanMapEquals"));
         assertTrue(shellStore.contains("!booleanMapEquals(this.modules, snapshot.modules)"));
@@ -82,6 +82,8 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(store.contains("importantDraftSnapshot(this.importantDraft)"));
         assertFalse(store.contains("structuredClone(this.taskDraft)"));
         assertFalse(store.contains("structuredClone(this.importantDraft)"));
+        assertTrue(store.contains("defaultBoardAccepts(saved, this)"));
+        assertTrue(store.contains("taskDisplayDate(saved) === this.selectedDate"));
     }
 
     @Test

@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.38.8.
+Status: v27.38.9.
 
 ## v27.38.0 Tasks, Notes & Important Days delivery boundary
 
@@ -249,7 +249,7 @@ Rollback changes the application image only. Flyway migrations are forward-only.
 
 Deployment smoke checks capture HTTP responses before searching them. Do not use `curl ... | grep -q` or `echo "$BODY" | grep -q` in scripts that enable `set -o pipefail`: an early match can close the pipe and turn a successful check into SIGPIPE exit 141.
 
-## v27.38.8 shared browser parity follow-up
+## v27.38.9 shared browser parity follow-up
 
 The v27.38.7 full Chromium run reached 22/47 and proved the boot canary is useful. The 25 failures collapse into four shared contracts: Vue-focused Calendar selection, plain Productivity mutation snapshots, Task Board deadline presentation, and service-worker first-claim onboarding stability. CI/staging keep the exact frontend gate and `npm run test:e2e:canary` before mandatory `npm run test:e2e`; no timeout, retry or HTTP-error policy is relaxed.
 

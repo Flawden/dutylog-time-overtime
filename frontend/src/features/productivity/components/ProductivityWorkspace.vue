@@ -19,12 +19,14 @@ const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
 const calendar = useCalendarTimelineStore();
 const store = useProductivityStore();
-const { activeRoute, modules, modulesLoaded, onboardingCompleted } = storeToRefs(shell);
+const { activeRoute, modules, modulesLoaded, onboardingCompleted, online } = storeToRefs(shell);
 const { focusDate } = storeToRefs(calendar);
 let previousDomain: DutyLogProductivityDomain | undefined;
 let restoreBridge: (() => void) | null = null;
 
-const productivityReadable = computed(() => modulesLoaded.value && onboardingCompleted.value);
+// Online boot waits for the authoritative first-run profile. Offline reloads may
+// render the authenticated dataLayer snapshot once its cached module map is restored.
+const productivityReadable = computed(() => modulesLoaded.value && (onboardingCompleted.value || !online.value));
 const tasksEnabled = computed(() => productivityReadable.value && modules.value.tasks !== false);
 const notesEnabled = computed(() => productivityReadable.value && modules.value.notes !== false);
 const importantEnabled = computed(() => productivityReadable.value && modules.value.important_dates !== false);

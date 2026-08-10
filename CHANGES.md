@@ -1,3 +1,14 @@
+# v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix
+
+- Uses the completed v27.38.8 Chromium run (37 passed / 10 failed) to isolate the remaining failures into stale E2E ownership contracts, Productivity read-model publication, offline cached-module readiness and first-install PWA registration sequencing.
+- Aligns Calendar, Important Days and Calendar Layers browser waits with their Vue generated `/api/v1/*` owners while preserving the bounded legacy `/api/notes/{id}` path used by the existing offline note adapter.
+- Keeps cached Productivity readable during an authenticated offline reload once the cached module map is restored, without reopening the online pre-onboarding `MODULE_DISABLED` race fixed in v27.38.7.
+- Starts first-install service-worker registration from the authenticated application instead of the login page, preventing the install/claim lifecycle from racing first-run onboarding while preserving update checks for established app sessions.
+- Re-publishes the backend-authoritative Task mutation DTO into the current selected-day/default-board read models after concurrent refresh sequencing, preventing a successful save from transiently blanking the task surface.
+- Aligns the Task Details E2E with the intentionally collapsed Advanced editor section instead of forcing hidden form controls.
+- Extends existing Java/static contracts only; baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases / Flyway V47. OpenAPI remains 101 operations / 106 schemas / `c48bfab2bcaf`.
+- Changes no backend business rule, API/OpenAPI shape, PostgreSQL schema, Flyway migration, browser timeout, retry policy or runtime-error allowlist. Acceptance remains blocked on exact frontend, Maven 751/751, canary, 47/47 Chromium, immutable image, clean PostgreSQL and staging.
+
 # v27.38.8 — Vue Shared Browser Parity Hotfix
 
 - Uses the complete v27.38.7 Chromium result (22 passed / 25 failed) to collapse the failures into four shared browser-parity root causes instead of weakening 25 scenarios independently.

@@ -48,11 +48,11 @@ Calendar persistence check`;
   await expect(page.locator(`#grid [data-date="${date}"] .dayEmoji`)).toHaveText('🧪');
   await expect(page.locator(`#grid [data-date="${date}"] .ear`)).toHaveCount(1);
 
-  const nextMonth = page.waitForResponse(response => new URL(response.url()).pathname === '/api/calendar' && response.status() === 200);
+  const nextMonth = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/calendar' && response.status() === 200);
   await page.locator('#next').click();
   await nextMonth;
   await waitForCalendarNavigationReady(page);
-  const previousMonth = page.waitForResponse(response => new URL(response.url()).pathname === '/api/calendar' && response.status() === 200);
+  const previousMonth = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/calendar' && response.status() === 200);
   await page.locator('#prev').click();
   await previousMonth;
   await waitForCalendarNavigationReady(page);

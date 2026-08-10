@@ -1,6 +1,16 @@
 # Release checklist
 
-Status: v27.38.8.
+Status: v27.38.9.
+
+## v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix acceptance
+
+- [ ] Exact Node 20.18.1 / npm 10.8.2 frontend gate is green.
+- [ ] Maven verify is green with 751/751 JUnit tests.
+- [ ] `npm run test:e2e:canary` is green.
+- [ ] Full Chromium Playwright is green: 47/47.
+- [ ] Immutable image smoke is green.
+- [ ] Clean PostgreSQL V47 smoke is green.
+- [ ] Staging deployment and smoke are green.
 
 ## v27.38.8 — Vue Shared Browser Parity Hotfix acceptance
 

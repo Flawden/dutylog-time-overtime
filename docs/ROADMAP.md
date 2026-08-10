@@ -1,12 +1,12 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.8 — Vue Shared Browser Parity Hotfix**.
+Current release: **v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix**.
 
 
 
 
 
-## v27.38.8 — Vue Shared Browser Parity Hotfix — current
+## v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix — current
 - [x] Use the complete v27.38.7 Chromium result: 22 passed / 25 failed, with onboarding canary green and no previous module-disabled boot storm.
 - [x] Align shared `selectDate()` with idempotent Vue focused-date semantics instead of legacy toggle-off behavior.
 - [x] Snapshot reactive Productivity drafts into plain Task/Important data before generated API writes.

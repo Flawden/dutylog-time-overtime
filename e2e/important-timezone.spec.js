@@ -31,7 +31,7 @@ test('important dates stay floating while canonical timezone survives reload', a
   await page.locator('#importantEditName').fill(updatedTitle);
   const updated = page.waitForResponse(response => {
     const url = new URL(response.url());
-    return response.request().method() === 'PATCH' && /^\/api\/important-days\/\d+$/.test(url.pathname) && response.status() === 200;
+    return response.request().method() === 'PATCH' && /^\/api\/v1\/important-days\/\d+$/.test(url.pathname) && response.status() === 200;
   });
   await page.locator('#importantEditSave').click();
   await updated;

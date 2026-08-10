@@ -73,7 +73,7 @@ test('schedule templates preview safely and read-only layers compose across cale
   await page.locator('[data-calendar-mode="day"]').click();
   await expect(page.locator('#calendarTimelineCanvas .calendarTimelineEvent.layer', { hasText:'Напарник' })).toBeVisible();
 
-  const hiddenResponse = page.waitForResponse(response => new URL(response.url()).pathname === `/api/calendar-layers/${layer.id}`
+  const hiddenResponse = page.waitForResponse(response => new URL(response.url()).pathname === `/api/v1/calendar-layers/${layer.id}`
     && response.request().method() === 'PATCH' && response.status() === 200);
   await toggle.click();
   await hiddenResponse;

@@ -39,6 +39,7 @@ test('task details separate reading from editing and persist a long description'
 
   await page.locator('#taskDetailsEdit').click();
   await expect(page.locator('#taskEditModal')).toBeVisible();
+  await page.locator('#taskEditAdvanced').evaluate(element => { element.open = true; });
   await expect(page.locator('#taskEditDescription')).toHaveValue(description);
   await page.locator('#taskEditDescription').fill(`${description}\nОбновлено`);
   const updated = waitForApi(page, 'PATCH', `/api/v1/tasks/${task.id}`);

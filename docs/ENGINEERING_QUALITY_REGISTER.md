@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.38.8
+release_foundation: v27.38.9
 created: 2026-08-04
 updated: 2026-08-09
 ---
@@ -60,7 +60,7 @@ updated: 2026-08-09
 
 
 
-## Shared browser parity note — v27.38.8
+## Shared browser parity note — v27.38.9
 
 - The complete v27.38.7 browser run reached 22/47 and reduced the remaining migration noise to four root causes rather than 25 independent failures.
 - Q-12: the shared browser helper now follows Vue Calendar focused-date semantics without restoring legacy toggle ownership.

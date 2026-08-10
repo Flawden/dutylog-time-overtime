@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.38.8.
+Status: v27.38.9.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.38.8 uses the completed v27.38.7 Chromium evidence (22 passed / 25 failed) to fix four shared parity contracts: idempotent Vue Calendar date focus in the shared E2E helper, Proxy-safe Productivity draft snapshots, Task Board deadline date/time presentation, and first service-worker claim stability during onboarding. No browser assertion, retry or timeout is weakened. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
+Current extension: v27.38.9 uses the completed v27.38.7 Chromium evidence (22 passed / 25 failed) to fix four shared parity contracts: idempotent Vue Calendar date focus in the shared E2E helper, Proxy-safe Productivity draft snapshots, Task Board deadline date/time presentation, and first service-worker claim stability during onboarding. No browser assertion, retry or timeout is weakened. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 
