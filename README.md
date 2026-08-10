@@ -1,9 +1,15 @@
+# v27.38.10 — Vue Offline, Task Publication & PWA Browser Parity Hotfix
+
+- Uses the v27.38.9 full-browser result (40 passed / 6 failed / 1 flaky) to fix three shared roots instead of weakening individual scenarios: offline selected-day hydration, Task mutation publication across refresh sequencing, and service-worker registration during first-run onboarding.
+- Preserves the existing offline dataLayer boundary: Note PATCH stays on `/api/notes/{id}`, generated Note DELETE stays on `/api/v1/notes/{id}`, and no second cache/queue is introduced.
+- Preserves the 152 / 751 / 47 / 49 / V47 baseline and OpenAPI 101 / 106.
+- Full acceptance remains fail-closed on exact frontend, Maven, canary, clean mandatory 47/47 Chromium, immutable image, clean PostgreSQL and staging.
+
 # v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix
 
-- Reduces the remaining v27.38.8 browser-parity set by aligning generated Vue endpoint expectations, offline Productivity readiness, PWA first-install sequencing and Task read-model publication.
-- Keeps the legacy note alias only where the existing offline adapter owns the mutation, preserves strict browser/runtime error collection and does not change backend business authority.
-- Preserves the 152 / 751 / 47 / 49 / V47 baseline and OpenAPI 101 / 106.
-- Full acceptance remains fail-closed on exact frontend, Maven, canary, mandatory 47/47 Chromium, immutable image, clean PostgreSQL and staging.
+- Reduced the v27.38.8 browser-parity set by aligning generated Vue endpoint expectations, offline Productivity readiness, PWA first-install sequencing and Task read-model publication.
+- Kept the legacy note alias where the existing offline adapter owns update mutations and preserved strict browser/runtime error collection.
+- Full Chromium reached 40 passed / 6 failed / 1 flaky; v27.38.10 inherits the remaining parity work.
 
 # v27.38.8 — Vue Shared Browser Parity Hotfix
 

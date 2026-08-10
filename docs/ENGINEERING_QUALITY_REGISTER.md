@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.38.9
+release_foundation: v27.38.10
 created: 2026-08-04
 updated: 2026-08-09
 ---
@@ -59,6 +59,12 @@ updated: 2026-08-09
 
 
 
+
+## Browser parity continuation — v27.38.10
+
+- v27.38.9 reached 40 passed / 6 failed / 1 flaky after frontend, Maven, release-check and boot canary were green.
+- v27.38.10 keeps strict acceptance and fixes offline selected-day hydration, Task mutation publication sequencing, post-onboarding PWA registration and the Note DELETE E2E ownership typo.
+- No quality gate, timeout, retry, runtime-error collector, backend business rule, database schema or OpenAPI shape is weakened.
 
 ## Shared browser parity note — v27.38.9
 

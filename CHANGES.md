@@ -1,3 +1,14 @@
+# v27.38.10 — Vue Offline, Task Publication & PWA Browser Parity Hotfix
+
+- Uses the completed v27.38.9 Chromium run (40 passed / 6 failed / 1 flaky) after frontend, Maven, release-check and the boot canary were green, so this hotfix stays scoped to browser parity.
+- Makes the existing selected-day IndexedDB snapshot the offline Productivity authority: authenticated offline reload no longer blocks Notes/Tasks/Important hydration on online-only time-context, board, Inbox or full Important-list reads.
+- Publishes the backend-authoritative Task mutation DTO immediately before concurrent projection refreshes and again after they settle; selected-day rows, the default board and Task metadata therefore cannot transiently lose a successful create/update. Board order remains backend-owned by replacing in place and only appending a missing saved row.
+- Defers first service-worker registration until onboarding is authoritative. Existing users register after authenticated init; fresh users register only after `finishOnboarding()`, while the existing first-claim/no-reload and controlled-page upgrade behavior remains intact.
+- Corrects the v27.38.9 Notes browser ownership typo: PATCH remains on the bounded offline-adapter `/api/notes/{id}` path, while DELETE again waits for generated `/api/v1/notes/{id}`.
+- Extends static contracts for offline read boundaries, Task mutation publication and post-onboarding PWA registration. No browser assertion, retry, timeout or runtime-error allowlist is weakened.
+- Baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases / Flyway V47. OpenAPI remains 101 operations / 106 schemas / `c48bfab2bcaf`; PostgreSQL schema and backend business rules are unchanged.
+- Acceptance remains fail-closed on exact frontend, Maven 751/751, canary, clean 47/47 Chromium with no flaky scenario, immutable image, clean PostgreSQL and staging.
+
 # v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix
 
 - Uses the completed v27.38.8 Chromium run (37 passed / 10 failed) to isolate the remaining failures into stale E2E ownership contracts, Productivity read-model publication, offline cached-module readiness and first-install PWA registration sequencing.

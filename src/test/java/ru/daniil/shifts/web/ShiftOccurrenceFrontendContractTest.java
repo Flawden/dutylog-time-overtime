@@ -39,6 +39,11 @@ class ShiftOccurrenceFrontendContractTest {
         assertTrue(worker.contains("SKIP_WAITING"));
         assertTrue(boot.contains("registration.update()"));
         assertTrue(boot.contains("controllerchange"));
+        assertTrue(boot.contains("window.DutyLogPwaRuntime = Object.freeze"));
+        assertTrue(boot.contains("state.profile?.onboardingCompleted === true"));
+        assertTrue(boot.contains("void registerDutyLogServiceWorker()"));
+        assertTrue(Files.readString(STATIC.resolve("js/20-data.js")).contains("window.DutyLogPwaRuntime?.register?.()"));
+        assertTrue(!Files.readString(STATIC.resolve("js/login.js")).contains("serviceWorker.register"));
     }
 
     @Test

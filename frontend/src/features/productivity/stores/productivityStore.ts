@@ -207,18 +207,24 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       this.error = "";
       this.loaded = false;
       try {
-        const context = await api.timeContext();
-        this.workTimezone = context?.workTimezone || this.workTimezone;
-        this.workDate = validDate(context?.workDate, this.workDate);
+        const offline = typeof navigator !== "undefined" && !navigator.onLine && bridge !== null;
+        if (!offline) {
+          const context = await api.timeContext();
+          this.workTimezone = context?.workTimezone || this.workTimezone;
+          this.workDate = validDate(context?.workDate, this.workDate);
+        }
         const modules = useShellStore().modules;
         const tasksEnabled = modules.tasks !== false;
         const importantEnabled = modules.important_dates !== false;
         const [selectedOk, boardOk, importantOk, inboxOk] = await Promise.all([
           this.loadSelectedDate(targetDate),
-          tasksEnabled ? this.loadBoard() : Promise.resolve(true),
-          importantEnabled ? this.loadImportantDays() : Promise.resolve(true),
-          tasksEnabled ? this.loadInbox() : Promise.resolve(true),
+          tasksEnabled && !offline ? this.loadBoard() : Promise.resolve(true),
+          importantEnabled && !offline ? this.loadImportantDays() : Promise.resolve(true),
+          tasksEnabled && !offline ? this.loadInbox() : Promise.resolve(true),
         ]);
+        // The selected-day IndexedDB snapshot is the offline authority. Board,
+        // Inbox and full Important lists are server-owned and deliberately stay
+        // untouched until connectivity returns.
         this.loaded = selectedOk && boardOk && importantOk && inboxOk;
         this.synchronizeQueuedCount();
       } catch (error) {
@@ -356,6 +362,37 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       if (end && deadline && deadline < end) return "Дедлайн не может быть раньше окончания запланированного интервала.";
       return "";
     },
+    publishSavedTask(saved: Task): void {
+      if (taskDisplayDate(saved) === this.selectedDate) {
+        this.selectedTasks = sortDayTasks([
+          ...this.selectedTasks.filter(task => task.id !== saved.id),
+          saved,
+        ]);
+      } else {
+        this.selectedTasks = this.selectedTasks.filter(task => task.id !== saved.id);
+      }
+
+      const boardIndex = this.board.items.findIndex(task => task.id === saved.id);
+      if (boardIndex >= 0) {
+        const items = [...this.board.items];
+        items[boardIndex] = saved;
+        this.board = { ...this.board, items };
+      } else if (defaultBoardAccepts(saved, this)) {
+        const items = [...this.board.items, saved];
+        this.board = { ...this.board, items, total: Math.max(this.board.total, items.length) };
+      }
+
+      const categories = saved.category
+        ? [...new Set([...this.metadata.categories, saved.category])].sort((a, b) => a.localeCompare(b, "ru"))
+        : this.metadata.categories;
+      const projects = saved.project
+        ? [...new Set([...this.metadata.projects, saved.project])].sort((a, b) => a.localeCompare(b, "ru"))
+        : this.metadata.projects;
+      const tags = saved.tags?.length
+        ? [...new Set([...this.metadata.tags, ...saved.tags])].sort((a, b) => a.localeCompare(b, "ru"))
+        : this.metadata.tags;
+      this.metadata = { ...this.metadata, categories, projects, tags };
+    },
     async saveTask(): Promise<void> {
       if (this.mutationPending) return;
       const validation = this.validateTaskDraft();
@@ -387,26 +424,18 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
           saved = await api.createTask(payload);
         }
         this.taskEditorOpen = false;
-        if (saved) this.taskDetails = saved;
+        if (saved) {
+          this.taskDetails = saved;
+          // The mutation DTO is already backend-authoritative. Publish it before
+          // follow-up reads so the UI never disappears while board/day projections
+          // and metadata are being refreshed.
+          this.publishSavedTask(saved);
+        }
         await Promise.all([this.loadSelectedDate(draft.date), this.loadBoard(), this.loadInbox()]);
         if (saved) {
-          // The mutation response is already backend-authoritative. Re-publish it after
-          // concurrent read sequencing so a superseded refresh cannot blank the task
-          // between save and the next domain projection.
-          if (taskDisplayDate(saved) === this.selectedDate) {
-            this.selectedTasks = sortDayTasks([
-              ...this.selectedTasks.filter(task => task.id !== saved.id),
-              saved,
-            ]);
-          } else {
-            this.selectedTasks = this.selectedTasks.filter(task => task.id !== saved.id);
-          }
-          const boardIndex = this.board.items.findIndex(task => task.id === saved.id);
-          if (boardIndex >= 0 || defaultBoardAccepts(saved, this)) {
-            const items = this.board.items.filter(task => task.id !== saved.id);
-            items.push(saved);
-            this.board = { ...this.board, items: sortDayTasks(items), total: Math.max(this.board.total, items.length) };
-          }
+          // A concurrent route/date watcher may supersede one of the reads above.
+          // Re-publish the same authoritative DTO once more after sequencing settles.
+          this.publishSavedTask(saved);
         }
         await refreshCalendarIfMounted();
         useShellStore().announce("Задача сохранена", "success");

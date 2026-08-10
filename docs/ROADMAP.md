@@ -1,21 +1,27 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix**.
+Current release: **v27.38.10 — Vue Offline, Task Publication & PWA Browser Parity Hotfix**.
 
 
 
 
 
-## v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix — current
-- [x] Use the complete v27.38.7 Chromium result: 22 passed / 25 failed, with onboarding canary green and no previous module-disabled boot storm.
-- [x] Align shared `selectDate()` with idempotent Vue focused-date semantics instead of legacy toggle-off behavior.
-- [x] Snapshot reactive Productivity drafts into plain Task/Important data before generated API writes.
-- [x] Show backend-projected Task deadline date/time in board metadata.
-- [x] Keep first service-worker claim from interrupting first-run onboarding while preserving reload on updates of an already-controlled page.
+## v27.38.10 — Vue Offline, Task Publication & PWA Browser Parity Hotfix — current
+- [x] Use the completed v27.38.9 evidence: exact frontend, Maven, release-check and boot canary green; full Chromium 40 passed / 6 failed / 1 flaky.
+- [x] Hydrate selected-day Productivity from the existing IndexedDB/dataLayer snapshot while offline without blocking on online-only time-context, Board, Inbox or full Important reads.
+- [x] Publish backend-authoritative Task mutation DTOs before and after concurrent projection refreshes while preserving backend Board order and business authority.
+- [x] Start service-worker installation only after first-run onboarding becomes authoritative; preserve idempotent registration and established-page upgrade behavior.
+- [x] Restore generated `/api/v1/notes/{id}` ownership for Note DELETE while preserving the bounded legacy offline-adapter PATCH.
 - [x] Preserve 152 / 751 / 47 / 49 / V47 and OpenAPI 101 / 106; no database migration or timeout/assertion weakening.
 - [ ] Exact frontend gate and Maven 751/751 must pass.
-- [ ] `npm run test:e2e:canary` then mandatory 47/47 Chromium must pass.
+- [ ] `npm run test:e2e:canary` then clean mandatory 47/47 Chromium must pass with no flaky scenario.
 - [ ] Immutable image, clean PostgreSQL smoke and staging deployment remain blocking acceptance gates.
+
+## v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix — browser-incomplete predecessor
+- [x] Align stale Calendar/Important/Layer browser waits with generated Vue endpoint ownership and align Task Details with its intentionally collapsed Advanced section.
+- [x] Make cached Productivity mountable during authenticated offline reload, move service-worker registration out of login, and add Task mutation re-publication after refresh.
+- [x] Complete exact frontend, Maven, release-check and auth/onboarding canary gates.
+- [ ] Full Chromium stopped at 40 passed / 6 failed / 1 flaky; v27.38.10 inherits the remaining browser parity work.
 
 ## v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix — browser-parity predecessor
 - [x] Use the v27.38.6 canary failure: Vue dist preflight succeeds and Spring starts, but the single onboarding scenario reports repeated module-disabled 403s instead of spending another hour on the full suite.
@@ -343,10 +349,17 @@ No new major product feature is added until the Vue migration is complete. DutyL
 
 After Vue parity:
 
-1. One-Tap Calendar Connect.
-2. Notes Archive & Timeline Collisions.
-3. Telegram Task Actions & Guided Commands.
-4. Feature freeze, Guided Onboarding & Product Education, full release-readiness, RC and **DutyLog v1.0.0 Release**.
+1. **v27.41.0 — Payroll Calculation Engine**: safe user-defined formula DSL, typed input/computed variables, dependency graph/cycle validation, period context and DutyLog work-time facts. `hourlyRate` is a configurable variable/formula, not a hardcoded fixed-price field.
+2. **v27.42.0 — Payroll Formula Studio & Templates**: visual formula editor, available-variable browser, preview/explanation trace, cloneable templates and a complex real-world shift-pay example with salary-derived monthly hourly rate, night/harmful/premium/regional components.
+3. **v27.43.0 — Payroll History & Reconciliation**: immutable monthly calculation snapshots, payslip actuals, calculated-vs-actual reconciliation and explicit manual/unknown adjustments.
+4. **v27.44.0 — One-Tap Calendar Connect**.
+5. **v27.45.0 — Notes Archive & Timeline Collisions**.
+6. **v27.46.0 — Telegram Task Actions & Guided Commands**.
+7. **v27.47.0 — Guided Onboarding & Product Education**.
+8. **FEATURE FREEZE** after the planned v1.0 product scope above is complete.
+9. **v27.48.0 — Operational Readiness, Security & Recovery**.
+10. **v27.49.0 — Release Candidate**.
+11. **DutyLog v1.0.0 — Public Release**.
 
 ## v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix — completed
 

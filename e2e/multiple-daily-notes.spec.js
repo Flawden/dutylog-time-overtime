@@ -104,7 +104,7 @@ test('multiple notes on one day remain independent across pin, reorder, reload a
   const deleted = page.waitForResponse(response => {
     const url = new URL(response.url());
     return response.request().method() === 'DELETE'
-      && /^\/api\/notes\/\d+$/.test(url.pathname)
+      && /^\/api\/v1\/notes\/\d+$/.test(url.pathname)
       && response.status() === 204;
   });
   await page.locator('#noteDelete').click();

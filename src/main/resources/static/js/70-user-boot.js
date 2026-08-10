@@ -142,8 +142,11 @@ $("logout").addEventListener("click", async () => {
   window.location.href = "/login.html";
 });
 
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", async () => {
+let dutyLogServiceWorkerRegistrationPromise = null;
+async function registerDutyLogServiceWorker(){
+  if (!("serviceWorker" in navigator)) return null;
+  if (dutyLogServiceWorkerRegistrationPromise) return dutyLogServiceWorkerRegistrationPromise;
+  dutyLogServiceWorkerRegistrationPromise = (async () => {
     let reloading = false;
     let hasController = Boolean(navigator.serviceWorker.controller);
     navigator.serviceWorker.addEventListener("controllerchange", () => {
@@ -154,7 +157,7 @@ if ("serviceWorker" in navigator) {
       sessionStorage.setItem(reloadKey, "1");
       reloading = true;
       window.location.reload();
-    });
+    }, { once:false });
     try {
       const registration = await navigator.serviceWorker.register("/service-worker.js", { updateViaCache: "none" });
       registration.waiting?.postMessage({ type:"SKIP_WAITING" });
@@ -167,9 +170,15 @@ if ("serviceWorker" in navigator) {
         });
       });
       await registration.update();
-    } catch (_) { /* offline startup keeps the currently controlled shell */ }
-  });
+      return registration;
+    } catch (_) {
+      dutyLogServiceWorkerRegistrationPromise = null;
+      return null; /* offline startup keeps the currently controlled shell */
+    }
+  })();
+  return dutyLogServiceWorkerRegistrationPromise;
 }
+window.DutyLogPwaRuntime = Object.freeze({ register:registerDutyLogServiceWorker });
 
 let bootFailsafeTimer = null;
 function armBootFailsafe(){
@@ -236,6 +245,10 @@ async function init(){
   setAppBooting(false);
   startBrowserNotificationScheduler();
   dataLayer.syncQueue();
+  // Existing users may register/update the worker after authenticated boot.
+  // First-run users wait until finishOnboarding() has persisted their profile,
+  // so an initial claim can never race the onboarding controls.
+  if (state.profile?.onboardingCompleted === true) void registerDutyLogServiceWorker();
 }
 init().catch(err => {
   console.error(err);

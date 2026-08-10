@@ -82,8 +82,15 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(store.contains("importantDraftSnapshot(this.importantDraft)"));
         assertFalse(store.contains("structuredClone(this.taskDraft)"));
         assertFalse(store.contains("structuredClone(this.importantDraft)"));
+        assertTrue(store.contains("const offline = typeof navigator !== \"undefined\" && !navigator.onLine && bridge !== null"));
+        assertTrue(store.contains("tasksEnabled && !offline ? this.loadBoard() : Promise.resolve(true)"));
+        assertTrue(store.contains("importantEnabled && !offline ? this.loadImportantDays() : Promise.resolve(true)"));
+        assertTrue(store.contains("tasksEnabled && !offline ? this.loadInbox() : Promise.resolve(true)"));
+        assertTrue(store.contains("publishSavedTask(saved: Task)"));
         assertTrue(store.contains("defaultBoardAccepts(saved, this)"));
         assertTrue(store.contains("taskDisplayDate(saved) === this.selectedDate"));
+        assertTrue(store.contains("items[boardIndex] = saved"));
+        assertTrue(count(store, "this.publishSavedTask(saved)") >= 2);
     }
 
     @Test
@@ -177,6 +184,16 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(manifest.contains("target_release: \"v27.38.0\""));
         assertTrue(manifest.contains("Spring Boot remains the source of truth"));
         assertTrue(manifest.toLowerCase(Locale.ROOT).contains("offline/reconnect"));
+    }
+
+    private static int count(String value, String needle) {
+        int count = 0;
+        int index = 0;
+        while ((index = value.indexOf(needle, index)) >= 0) {
+            count++;
+            index += needle.length();
+        }
+        return count;
     }
 
     private static String featureSources() throws Exception {

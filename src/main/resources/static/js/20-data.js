@@ -597,6 +597,9 @@ async function finishOnboarding({ skip = false } = {}){
     hideOnboarding();
     applyModuleVisibility();
     renderCalendar();
+    // PWA ownership begins only after first-run state is authoritative. This
+    // prevents install/claim from touching the page while onboarding is active.
+    void window.DutyLogPwaRuntime?.register?.();
     setProfileMsg(msgId, "");
   } catch (err) {
     setProfileMsg(msgId, err.message || t("ошибка"));

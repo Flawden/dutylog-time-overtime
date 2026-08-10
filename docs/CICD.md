@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.38.9.
+Status: v27.38.10.
 
 ## v27.38.0 Tasks, Notes & Important Days delivery boundary
 
@@ -248,6 +248,10 @@ Rollback changes the application image only. Flyway migrations are forward-only.
 ## Pipefail-safe smoke response checks (v27.2.32)
 
 Deployment smoke checks capture HTTP responses before searching them. Do not use `curl ... | grep -q` or `echo "$BODY" | grep -q` in scripts that enable `set -o pipefail`: an early match can close the pipe and turn a successful check into SIGPIPE exit 141.
+
+## v27.38.10 browser parity continuation
+
+The v27.38.9 staging validation reached 40 passed / 6 failed / 1 flaky with frontend, Maven, release-check and the auth/onboarding boot canary already green. v27.38.10 therefore changes no gate ordering or timeout/retry/error policy. CI/staging still run the exact frontend gate, Maven and boot canary before mandatory full Chromium, and release acceptance still requires a clean 47/47 browser result before immutable-image/PostgreSQL/staging promotion.
 
 ## v27.38.9 shared browser parity follow-up
 

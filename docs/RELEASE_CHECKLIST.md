@@ -1,6 +1,19 @@
 # Release checklist
 
-Status: v27.38.9.
+Status: v27.38.10.
+
+## v27.38.10 — Vue Offline, Task Publication & PWA Browser Parity Hotfix acceptance
+
+- [x] v27.38.9 evidence is classified as 40 passed / 6 failed / 1 flaky after exact frontend, Maven, release-check and boot canary were green.
+- [x] Notes browser ownership distinguishes legacy offline-adapter PATCH from generated DELETE; no endpoint alias is broadened.
+- [x] Offline Productivity hydration skips online-only context/full-list reads and reuses the existing selected-day IndexedDB snapshot.
+- [x] Backend-authoritative Task mutation DTOs are published before and after refresh sequencing without introducing frontend business authority or re-sorting the backend-owned board.
+- [x] Service-worker registration is deferred until onboarding completion and remains idempotent.
+- [ ] Exact Node 20.18.1 / npm 10.8.2 frontend gate is green.
+- [ ] Maven verify is green with 751/751 JUnit tests.
+- [ ] `npm run test:e2e:canary` is green.
+- [ ] Full Chromium Playwright is clean: 47/47, no flaky scenario.
+- [ ] Immutable image smoke, clean PostgreSQL V47 smoke and staging deployment are green.
 
 ## v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix acceptance
 
