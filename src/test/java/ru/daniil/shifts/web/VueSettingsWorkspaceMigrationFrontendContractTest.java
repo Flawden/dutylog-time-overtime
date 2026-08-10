@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Binding source contracts for v27.39.1 Vue Settings, Workspace & Integrations strict-type follow-up. */
+/** Binding source contracts for v27.39.2 Vue Settings, Workspace & Integrations contract-alignment follow-up. */
 class VueSettingsWorkspaceMigrationFrontendContractTest {
 
     private static final Path FEATURE = Path.of("frontend/src/features/settings-workspace");
@@ -26,7 +26,7 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         assertTrue(workspace.contains("id=\"settingsLegacyHost\""));
         assertTrue(core.contains("attachLegacySettingsCards"));
         assertTrue(core.contains("settingsLegacyParking"));
-        assertTrue(core.contains("root.dataset.vueSettingsWorkspace = \"ready\""));
+        assertTrue(core.contains("document.documentElement.setAttribute(\"data-vue-settings-workspace\", \"ready\")"));
         assertTrue(core.contains("view-settings"));
     }
 

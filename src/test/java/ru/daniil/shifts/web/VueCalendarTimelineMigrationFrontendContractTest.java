@@ -172,7 +172,7 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         String worker = read("src/main/resources/static/service-worker.js");
         String boot = read("src/main/resources/static/js/70-user-boot.js");
 
-        assertTrue(pwa.contains("dutylog-shell-v27.36.8-synthetic-previous"));
+        assertTrue(pwa.contains("dutylog-shell-v27.38.15-synthetic-previous"));
         String releaseVersion = projectVersion();
 
         assertTrue(pwa.contains("dutylog-shell-v" + releaseVersion + "-"));

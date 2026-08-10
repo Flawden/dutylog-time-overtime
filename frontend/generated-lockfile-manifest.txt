@@ -1,10 +1,10 @@
-release=27.39.1
+release=27.39.2
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=c51cdc502e20b4280e5deb43d505d90ff02c16d2ed45a080c1886868aedb892a
+committedLockfileSha256=e911b8757085a2e2b6c77af729172c3bda76316a73f1da4326bc44ba6ee8f64c
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=exact-settings-workspace-strict-typecheck-acceptance-for-v27.39.1
+nextAction=exact-settings-workspace-maven-contract-alignment-acceptance-for-v27.39.2

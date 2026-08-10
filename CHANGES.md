@@ -1,3 +1,12 @@
+# v27.39.2 — Vue Settings Maven Contract Alignment Hotfix
+
+- Uses the local v27.39.1 Maven `verify` failure as source of truth: 758 tests ran, 756 passed, and only two source/static contracts were stale after the Settings migration and strict-TypeScript hotfix.
+- Aligns the recurring PWA migration contract with the current synthetic predecessor cache (`v27.38.15`) already enforced by the Playwright scenario and release-check, instead of the obsolete `v27.36.8` fixture.
+- Aligns the Settings ownership contract with the actual retirement boundary in `10-core.js`, which publishes readiness through `document.documentElement.setAttribute("data-vue-settings-workspace", "ready")`; runtime ownership code is unchanged.
+- Changes no Vue runtime behavior, HTTP/OpenAPI contract, backend business rule, PostgreSQL/Flyway schema, Playwright retry/timeout policy or TypeScript strictness.
+- Baseline remains 153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases / Flyway V47; OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`.
+- Acceptance still requires the exact frontend gate, Maven 758/758, canary, clean 48/48 Chromium with zero flaky retries, immutable image, clean PostgreSQL and staging.
+
 # v27.39.1 — Vue Settings Strict Typecheck Hotfix
 
 - Uses the first v27.39.0 staging frontend-gate failure as the source of truth: authentic lockfile and OpenAPI drift checks pass, then strict `vue-tsc --noEmit` stops before Maven/Chromium on `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess` violations in the new Settings/Workspace templates and model.

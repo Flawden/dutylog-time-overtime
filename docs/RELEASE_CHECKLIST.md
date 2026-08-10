@@ -1,7 +1,16 @@
 # Release checklist
 
-Status: v27.39.1.
+Status: v27.39.2.
 
+
+## v27.39.2 — Vue Settings Maven Contract Alignment Hotfix acceptance
+
+- [x] Two failing local Maven source contracts aligned to current PWA and Settings ownership sources.
+- [x] No runtime/API/Flyway/browser-policy changes.
+- [ ] Exact frontend gate green.
+- [ ] Maven verify 758/758 green.
+- [ ] Canary green, Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image, PostgreSQL smoke and staging green.
 
 ## v27.39.1 — Vue Settings Strict Typecheck Hotfix acceptance
 

@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.39.1.
+Status: v27.39.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.39.1 adds one strict-template regression contract on top of the v27.39.0 Settings migration baseline. The acceptance surface is **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases**. OpenAPI remains **118 operations / 120 schemas**; Flyway remains V47. The exact frontend/Maven/Chromium/image/PostgreSQL/staging gates remain blocking acceptance.
+Current extension: v27.39.2 aligns two stale source/static assertions exposed by the local v27.39.1 Maven gate without adding or removing tests. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases**. OpenAPI remains **118 operations / 120 schemas**; Flyway remains V47. The exact frontend/Maven/Chromium/image/PostgreSQL/staging gates remain blocking acceptance.
 
 `v27.39.0` introduced one Vue Settings ownership Chromium scenario, three Settings/Workspace model Vitest cases and six source/architecture JUnit contracts, reaching 757 `@Test` methods. `v27.39.1` adds one narrow strict-template regression method, so the JUnit baseline is now 758 without changing the 153-class / 48-Playwright / 52-Vitest surface.
 

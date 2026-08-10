@@ -1,12 +1,17 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.39.1 — Vue Settings Strict Typecheck Hotfix**.
+Current release: **v27.39.2 — Vue Settings Maven Contract Alignment Hotfix**.
 
 
 
 
 
-## v27.39.1 — Vue Settings Strict Typecheck Hotfix — current
+## v27.39.2 — Vue Settings Maven Contract Alignment Hotfix — current
+- [x] Align the two stale Maven source contracts exposed after v27.39.1 fixed strict Vue typechecking.
+- [x] Keep runtime, API/OpenAPI, Flyway and browser behavior unchanged.
+- [ ] Exact frontend, Maven 758/758, canary, clean 48/48 Chromium, image/PostgreSQL smoke and staging remain blocking acceptance gates.
+
+## v27.39.1 — Vue Settings Strict Typecheck Hotfix — predecessor
 - [x] Keep v27.39.0 feature scope unchanged and fix only the first exact frontend-gate strict-TypeScript failures.
 - [x] Preserve `exactOptionalPropertyTypes` / `noUncheckedIndexedAccess`; narrow optional DOM/catalog/array values instead of weakening strictness.
 - [ ] Exact frontend, Maven 758/758, canary, clean 48/48 Chromium, image/PostgreSQL smoke and staging remain blocking acceptance gates.

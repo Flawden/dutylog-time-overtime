@@ -1,3 +1,7 @@
+# DutyLog v27.39.2 — Vue Settings Maven Contract Alignment Hotfix
+
+The v27.39.0 Settings feature and v27.39.1 strict-TypeScript runtime fixes remain unchanged. v27.39.2 is a source-contract-only follow-up to the local Maven gate: it updates two stale Java assertions to the already-current PWA predecessor fixture and Settings readiness publication form. Runtime/OpenAPI/Flyway scope is unchanged; acceptance remains 48 Playwright / 52 Vitest / 758 JUnit / V47.
+
 # DutyLog v27.39.1 — Vue Settings Strict Typecheck Hotfix
 
 The v27.39.0 feature implementation remains intact. v27.39.1 is a narrow fail-closed strict-TypeScript follow-up for the first staging frontend-gate failure: Vue Settings/Workspace template bindings no longer leak optional `undefined` values into DOM attributes, catalog entries are checked before use, and Workspace Studio array movement is explicitly narrowed for `noUncheckedIndexedAccess`. OpenAPI remains 118 operations / 120 schemas and the runtime acceptance baseline remains 48 Playwright / 52 Vitest / 758 JUnit / Flyway V47.
