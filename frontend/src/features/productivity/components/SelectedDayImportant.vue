@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import { storeToRefs } from "pinia";
 import { useProductivityStore } from "../stores/productivityStore";
 import { useCalendarTimelineStore } from "@/features/calendar-timeline/stores/calendarTimelineStore";
@@ -9,7 +9,6 @@ const { selectedDate, selectedImportant } = storeToRefs(store);
 const title = ref("");
 const repeat = ref<"NONE" | "MONTHLY" | "YEARLY">("YEARLY");
 const color = ref("#F5B841");
-const summary = computed(() => selectedImportant.value.length ? String(selectedImportant.value.length) : "");
 async function chooseDate(date: string): Promise<void> {
   await calendar.openDate(date, "month");
   await store.loadSelectedDate(calendar.focusDate);
@@ -26,7 +25,6 @@ async function add(): Promise<void> {
 }
 </script>
 <template>
-  <Teleport to="#sumImp"><span>{{ summary }}</span></Teleport>
   <div class="dayForm vue-productivity-selected" data-vue-selected-important>
     <div class="importantList" id="importantList">
       <button v-for="item in selectedImportant" :key="`${item.id}-${item.date}`" type="button" class="importantItem" :data-important-id="item.id" @click="store.openImportantDetails(item.id)">

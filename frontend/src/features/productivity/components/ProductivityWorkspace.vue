@@ -30,6 +30,10 @@ const productivityReadable = computed(() => modulesLoaded.value && (onboardingCo
 const tasksEnabled = computed(() => productivityReadable.value && modules.value.tasks !== false);
 const notesEnabled = computed(() => productivityReadable.value && modules.value.notes !== false);
 const importantEnabled = computed(() => productivityReadable.value && modules.value.important_dates !== false);
+const hiddenModuleSummary = computed(() => shell.language === "en" ? "Hidden by module" : "Скрыто модулем");
+const tasksSummary = computed(() => !productivityReadable.value ? "" : (tasksEnabled.value ? (store.selectedTasks.length ? String(store.selectedTasks.length) : "") : hiddenModuleSummary.value));
+const notesSummary = computed(() => !productivityReadable.value ? "" : (notesEnabled.value ? (store.selectedNotes.length ? String(store.selectedNotes.length) : "") : hiddenModuleSummary.value));
+const importantSummary = computed(() => !productivityReadable.value ? "" : (importantEnabled.value ? (store.selectedImportant.length ? String(store.selectedImportant.length) : "") : hiddenModuleSummary.value));
 
 const domain: DutyLogProductivityDomain = Object.freeze({
   ready: () => productivityReadable.value && store.loaded,
@@ -115,6 +119,10 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
+  <Teleport to="#sumTasks"><span data-vue-productivity-summary="tasks">{{ tasksSummary }}</span></Teleport>
+  <Teleport to="#sumNote"><span data-vue-productivity-summary="notes">{{ notesSummary }}</span></Teleport>
+  <Teleport to="#sumImp"><span data-vue-productivity-summary="important">{{ importantSummary }}</span></Teleport>
+
   <TasksPage v-show="activeRoute === 'tasks'" />
   <ImportantPage v-show="activeRoute === 'important'" />
 

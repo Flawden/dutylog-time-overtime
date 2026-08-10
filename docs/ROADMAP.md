@@ -1,12 +1,23 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.11 — Vue Read-Your-Write & PWA Activation Browser Parity Hotfix**.
+Current release: **v27.38.12 — Vue Productivity Summary Ownership & PWA E2E Parity Hotfix**.
 
 
 
 
 
-## v27.38.11 — Vue Read-Your-Write & PWA Activation Browser Parity Hotfix — current
+## v27.38.12 — Vue Productivity Summary Ownership & PWA E2E Parity Hotfix — current
+- [x] Use the complete v27.38.11 Playwright report/trace artifact: 42 passed / 5 failed, no flaky retry, with screenshots and network evidence for all five failures.
+- [x] Prove the three Task failures are frontend recovery crashes, not missing backend projections: POST/PATCH returns 200 and the immediately following generated Task reads already contain the committed row.
+- [x] Give `#sumTasks`, `#sumNote` and `#sumImp` one Vue owner after Productivity retirement; legacy `updateAccSummaries()` must not replace Vue Teleport children.
+- [x] Keep disabled-module summaries stable from the always-mounted `ProductivityWorkspace` owner.
+- [x] Align PWA upgrade E2E with the canonical onboarding preset key `basic` instead of the stale, nonexistent `minimum` selector.
+- [x] Preserve 152 / 751 / 47 / 49 / V47 and OpenAPI 101 / 106; no timeout, retry, assertion, backend rule or database weakening.
+- [ ] Exact frontend gate and Maven 751/751 must pass.
+- [ ] `npm run test:e2e:canary` then clean mandatory 47/47 Chromium must pass with no flaky scenario.
+- [ ] Immutable image, clean PostgreSQL smoke and staging deployment remain blocking acceptance gates.
+
+## v27.38.11 — Vue Read-Your-Write & PWA Activation Browser Parity Hotfix — browser-incomplete predecessor
 - [x] Use the completed v27.38.10 evidence: 42 passed / 5 failed with no flaky retry; all earlier mandatory gates reached browser E2E.
 - [x] Carry committed Task DTOs as a short-lived read-your-write overlay through accepted selected-day and Board refreshes instead of re-publishing only before/after the refresh window.
 - [x] Align the multiple-notes reload wait with generated `/api/v1/calendar` ownership while preserving the bounded Note PATCH adapter and generated DELETE.

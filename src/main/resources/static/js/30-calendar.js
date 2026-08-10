@@ -623,6 +623,7 @@ const ACC_STORE = "acc-open-v1";
 function updateAccSummaries(){
   const k = state.selected;
   if (!k) return;
+  const vueOwnsProductivitySummaries = document.documentElement.dataset.vueProductivity === "ready";
 
   // Смена
   const st = stOf(k);
@@ -663,7 +664,7 @@ function updateAccSummaries(){
   }
 
   // Важные дни
-  if ($("sumImp")) {
+  if ($("sumImp") && !vueOwnsProductivitySummaries) {
     const imp = moduleEnabled("important_dates") ? importantOf(k) : [];
     $("sumImp").innerHTML = !moduleEnabled("important_dates")
       ? esc(t("Скрыто модулем"))
@@ -671,7 +672,7 @@ function updateAccSummaries(){
   }
 
   // Задачи: сделано/всего
-  if ($("sumTasks")) {
+  if ($("sumTasks") && !vueOwnsProductivitySummaries) {
     const all = moduleEnabled("tasks") ? tasksOf(k) : [];
     const undone = moduleEnabled("tasks") ? activeTasksOf(k).length : 0;
     const overdue = moduleEnabled("tasks") ? overdueTasksOf(k).length : 0;
@@ -683,13 +684,17 @@ function updateAccSummaries(){
   const emoji = (state.days[k]?.dayEmoji || "").trim();
   if ($("sumEmoji")) $("sumEmoji").textContent = emoji || "—";
 
-  // Заметки: количество и название активной/первой
-  const notes = moduleEnabled("notes") ? notesOfDay(k) : [];
-  const first = notes[0] || null;
-  const firstLine = String(first?.title || first?.content || state.days[k]?.note || "").trim().split("\n")[0].replace(/^#+\s*/, "");
-  if ($("sumNote")) $("sumNote").textContent = !moduleEnabled("notes") ? t("Скрыто модулем") : (notes.length
-    ? `${notes.length} · ${firstLine.length > 26 ? firstLine.slice(0, 26) + "…" : (firstLine || t("Без названия"))}`
-    : "—");
+  // Заметки: количество и название активной/первой. После retirement
+  // Productivity summary targets принадлежат Vue Teleport и legacy не имеет права
+  // заменять их textContent — это удаляет Vue-owned nodes из DOM.
+  if (!vueOwnsProductivitySummaries) {
+    const notes = moduleEnabled("notes") ? notesOfDay(k) : [];
+    const first = notes[0] || null;
+    const firstLine = String(first?.title || first?.content || state.days[k]?.note || "").trim().split("\n")[0].replace(/^#+\s*/, "");
+    if ($("sumNote")) $("sumNote").textContent = !moduleEnabled("notes") ? t("Скрыто модулем") : (notes.length
+      ? `${notes.length} · ${firstLine.length > 26 ? firstLine.slice(0, 26) + "…" : (firstLine || t("Без названия"))}`
+      : "—");
+  }
 }
 
 $("tplPreset").addEventListener("change", () => { renderSchedulePreview(null); renderScheduleControls(); });

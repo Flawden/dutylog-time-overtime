@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.38.11.
+Status: v27.38.12.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.38.11 uses the completed v27.38.10 Chromium evidence (42 passed / 5 failed, no flaky retry) to close three remaining shared browser-parity roots: committed Task mutation DTOs must survive every accepted projection read until read-your-write refresh sequencing settles; multiple-note reload waits must target the generated `/api/v1/calendar` owner; and first service-worker registration must not trigger a redundant explicit update check on top of the installation already started by `register()`. No browser assertion, retry or timeout is weakened. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
+Current extension: v27.38.12 uses the complete v27.38.11 Playwright report/trace artifact (42 passed / 5 failed, no flaky retry) to close two evidence-backed browser roots. First, legacy `updateAccSummaries()` was still mutating `#sumTasks`, `#sumNote` and `#sumImp` after Vue Productivity retirement; those nodes are Vue Teleport targets, so legacy `textContent`/`innerHTML` writes deleted Vue-owned children and could drive Task renders into the AppErrorBoundary even though the generated POST/PATCH and immediate Task projections were all HTTP 200 and already contained the committed row. Second, `pwa-upgrade.spec.js` used a stale `minimum` preset key while the released onboarding DOM exposes the visible «Минимум» preset as `basic`. No browser assertion, retry or timeout is weakened. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 

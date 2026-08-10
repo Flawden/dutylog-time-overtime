@@ -399,7 +399,7 @@ html[data-vue-shell="ready"] body.app-modal-open .vue-shell-nav { visibility: hi
   .ui-toast-leave-active { transition: none !important; }
 }
 
-/* v27.38.11 controlled frontend recovery */
+/* v27.38.12 controlled frontend recovery */
 .vue-recovery {
   position: fixed;
   inset: 0;

@@ -1,6 +1,19 @@
 # Release checklist
 
-Status: v27.38.11.
+Status: v27.38.12.
+
+## v27.38.12 — Vue Productivity Summary Ownership & PWA E2E Parity Hotfix acceptance
+
+- [x] v27.38.11 Playwright report/trace artifact is inspected for all five failures; screenshots, network records and exact locator failures are available.
+- [x] Legacy selected-day summary writes yield after `data-vue-productivity=ready`; Vue owns `#sumTasks`, `#sumNote` and `#sumImp` continuously, including disabled-module labels.
+- [x] Task create/update evidence confirms generated mutation + projection reads are 200 and already contain the saved DTO; no timeout or projection-error allowlist is added.
+- [x] PWA upgrade E2E uses canonical onboarding preset key `basic`; stale `minimum` is forbidden.
+- [x] No backend business authority, OpenAPI shape, Flyway schema, browser timeout, retry or assertion is weakened.
+- [ ] Exact Node 20.18.1 / npm 10.8.2 frontend gate is green.
+- [ ] Maven verify is green with 751/751 JUnit tests.
+- [ ] `npm run test:e2e:canary` is green.
+- [ ] Full Chromium Playwright is clean: 47/47, no flaky scenario.
+- [ ] Immutable image smoke, clean PostgreSQL V47 smoke and staging deployment are green.
 
 ## v27.38.11 — Vue Read-Your-Write & PWA Activation Browser Parity Hotfix acceptance
 

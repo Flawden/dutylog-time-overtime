@@ -171,7 +171,9 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
     @Test
     void legacyOwnersYieldAndMigrationDocumentationLocksTheBoundary() throws Exception {
         String core = read("src/main/resources/static/js/10-core.js");
+        String calendar = read("src/main/resources/static/js/30-calendar.js");
         String tasks = read("src/main/resources/static/js/50-tasks.js");
+        String workspace = read(FEATURE.resolve("components/ProductivityWorkspace.vue"));
         String manifest = read("docs/migration/tasks-notes-important-vue-migration-manifest.md");
 
         assertTrue(core.contains("domain === \"productivity\""));
@@ -184,7 +186,14 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(tasks.contains("productivity?.openImportantCreate"));
         assertTrue(tasks.contains("if (document.documentElement.dataset.vueProductivity === \"ready\") return;"));
         assertTrue(core.contains("openCalendarSection(section)"));
-        assertTrue(read(FEATURE.resolve("components/ProductivityWorkspace.vue")).contains("props.bridge.openCalendarSection(\"notes\")"));
+        assertTrue(workspace.contains("props.bridge.openCalendarSection(\"notes\")"));
+        assertTrue(calendar.contains("const vueOwnsProductivitySummaries = document.documentElement.dataset.vueProductivity === \"ready\""));
+        assertTrue(calendar.contains("if ($(\"sumTasks\") && !vueOwnsProductivitySummaries)"));
+        assertTrue(calendar.contains("if ($(\"sumImp\") && !vueOwnsProductivitySummaries)"));
+        assertTrue(calendar.contains("if (!vueOwnsProductivitySummaries)"));
+        assertTrue(workspace.contains("data-vue-productivity-summary=\"tasks\""));
+        assertTrue(workspace.contains("data-vue-productivity-summary=\"notes\""));
+        assertTrue(workspace.contains("data-vue-productivity-summary=\"important\""));
         assertTrue(manifest.contains("target_release: \"v27.38.0\""));
         assertTrue(manifest.contains("Spring Boot remains the source of truth"));
         assertTrue(manifest.toLowerCase(Locale.ROOT).contains("offline/reconnect"));

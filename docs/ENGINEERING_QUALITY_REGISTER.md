@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.38.11
+release_foundation: v27.38.12
 created: 2026-08-04
 updated: 2026-08-09
 ---
@@ -59,6 +59,13 @@ updated: 2026-08-09
 
 
 
+
+## Browser parity continuation — v27.38.12
+
+- Full v27.38.11 Playwright traces prove the remaining Task failures are Vue recovery crashes after successful 200 mutations/projections, not backend projection loss.
+- Q-06/Q-12: legacy selected-day summary rendering now yields `#sumTasks/#sumNote/#sumImp` to the always-mounted Vue Productivity owner, eliminating cross-owner DOM mutation.
+- Q-07: the PWA upgrade scenario uses canonical onboarding preset key `basic`; no service-worker timeout or claim behavior is weakened.
+- No quality gate, timeout, retry, runtime-error collector, backend business rule, database schema or OpenAPI shape is weakened.
 
 ## Browser parity continuation — v27.38.11
 

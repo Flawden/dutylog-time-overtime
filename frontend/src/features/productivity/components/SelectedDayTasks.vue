@@ -23,7 +23,6 @@ function progress(task: typeof selectedTasks.value[number]): string {
 </script>
 
 <template>
-  <Teleport to="#sumTasks"><span>{{ selectedTasks.length ? selectedTasks.length : "" }}</span></Teleport>
   <div class="dayForm vue-productivity-selected" data-vue-selected-tasks>
     <div class="taskDayToolbar">
       <button class="primary taskCreateButton" id="taskCreateForDay" type="button" @click="store.openTaskCreate()">＋ Добавить задачу</button>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from "vue";
+import { onBeforeUnmount, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useProductivityStore } from "../stores/productivityStore";
 import { useCalendarTimelineStore } from "@/features/calendar-timeline/stores/calendarTimelineStore";
@@ -42,11 +42,9 @@ async function openSearchResult(date: string, id: number): Promise<void> {
   await store.loadSelectedDate(date);
   store.selectNote(id);
 }
-const summary = computed(() => selectedNotes.value.length ? String(selectedNotes.value.length) : "");
 </script>
 
 <template>
-  <Teleport to="#sumNote"><span>{{ summary }}</span></Teleport>
   <div class="dayNotesModule vue-productivity-selected" data-vue-selected-notes>
     <div class="dayNotesToolbar">
       <button class="primary" id="noteAdd" type="button" :disabled="!shell.online" @click="store.createNote()">＋ Новая заметка</button>

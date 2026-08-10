@@ -1,3 +1,14 @@
+# v27.38.12 — Vue Productivity Summary Ownership & PWA E2E Parity Hotfix
+
+- Uses the full Playwright HTML/trace artifact from v27.38.11 (42 passed / 5 failed, no flaky retry) instead of inferring causes from the truncated Actions tail.
+- Fixes the shared Task/Notes browser root at the DOM-ownership boundary: legacy `updateAccSummaries()` no longer mutates `#sumTasks`, `#sumNote` or `#sumImp` after Vue Productivity retirement. Those nodes are Vue Teleport targets, and legacy `textContent`/`innerHTML` writes were deleting Vue-owned children; Task create/update then entered the AppErrorBoundary recovery screen even though POST/PATCH and the following generated Task projections were all HTTP 200 and already contained the committed DTO.
+- Moves all three Productivity accordion summaries to one always-mounted `ProductivityWorkspace` owner, including explicit disabled-module labels, so summary ownership remains stable while modules toggle.
+- Aligns `pwa-upgrade.spec.js` with the released onboarding contract: the visible «Минимум» preset is keyed as `basic`; the stale `minimum` helper argument never matched a DOM element and was not a service-worker lifecycle defect.
+- Keeps the v27.38.11 read-your-write protection as additional mutation robustness, but no longer treats projection lag as the cause of the five remaining failures; the captured network trace proves the post-mutation Task reads already contain the saved rows.
+- Changes no backend business rule, generated OpenAPI shape, PostgreSQL schema, Flyway migration, Playwright timeout/retry policy or runtime-error allowlist.
+- Baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases / Flyway V47. OpenAPI remains 101 operations / 106 schemas / `c48bfab2bcaf`.
+- Acceptance still requires exact frontend, Maven 751/751, boot canary, clean 47/47 Chromium with no flaky scenario, immutable image, clean PostgreSQL and staging.
+
 # v27.38.11 — Vue Read-Your-Write & PWA Activation Browser Parity Hotfix
 
 The v27.38.10 staging run reached **42/47 Chromium with no flaky scenario**. v27.38.11 closes three remaining shared parity roots without weakening browser policy: Task mutations now retain a backend-authoritative read-your-write overlay across accepted projection refreshes, the multiple-notes reload waits for the generated `/api/v1/calendar` owner, and first PWA registration no longer forces a redundant explicit update check during initial install.

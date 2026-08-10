@@ -56,6 +56,8 @@ class MultipleDailyNotesFrontendContractTest {
         String migration = read("src/main/resources/db/migration/postgresql/V36__multiple_daily_notes.sql");
         String openapi = read("src/main/resources/static/openapi/dutylog-v1.yaml");
         String e2e = read("e2e/multiple-daily-notes.spec.js");
+        String workspace = read("frontend/src/features/productivity/components/ProductivityWorkspace.vue");
+        String calendar = read("src/main/resources/static/js/30-calendar.js");
         assertTrue(migration.contains("CREATE TABLE day_notes"));
         assertTrue(migration.contains("INSERT INTO day_notes"));
         assertTrue(openapi.contains("/api/v1/notes:"));
@@ -64,6 +66,8 @@ class MultipleDailyNotesFrontendContractTest {
         assertTrue(e2e.contains("'/api/v1/calendar'"));
         assertFalse(e2e.contains("pathname === '/api/calendar'"));
         assertTrue(e2e.contains("noteCountBadge"));
+        assertTrue(workspace.contains("data-vue-productivity-summary=\"notes\""));
+        assertTrue(calendar.contains("vueOwnsProductivitySummaries"));
     }
 
     private static String read(String path) throws Exception {

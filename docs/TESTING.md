@@ -11,7 +11,7 @@ mvn clean verify
 bash deploy/scripts/release-check.sh
 ```
 
-The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 49 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.38.11 release path. CI, Docker and staging use the same frontend boundary.
+The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 49 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.38.12 release path. CI, Docker and staging use the same frontend boundary.
 
 GitHub artifact persistence is diagnostic only. CI uploads compact JaCoCo XML/CSV for three days and uploads Playwright HTML/results only after failure; quota or upload errors cannot block later static checks, image build or migration smoke. Test execution itself remains fail-closed.
 
@@ -112,6 +112,10 @@ npm run test:e2e
 ```
 
 Playwright starts the isolated `e2e` Spring profile on port 4173. The profile uses only an in-memory H2 database. Reports and failure traces are stored under `playwright-report/` and `test-results/`. See [`PLAYWRIGHT_E2E.md`](PLAYWRIGHT_E2E.md).
+
+## Browser parity continuation (v27.38.12)
+
+The complete v27.38.11 Playwright artifact still reports 42 passed / 5 failed, but it exposes the missing evidence: the three Task failures enter the Vue recovery boundary after successful generated Task mutations, while the following selected-day/Board reads already contain the committed row. The shared frontend root is legacy `updateAccSummaries()` replacing Vue Teleport children in `#sumTasks/#sumNote/#sumImp`; the Notes failure shows the same ownership collision as a stale `—` summary while two Vue notes are visibly rendered. The PWA failure is a stale E2E preset key (`minimum`) rather than a service-worker lifecycle failure; use canonical `basic`. Acceptance still requires clean 47/47 with no retry-only pass.
 
 ## Browser parity continuation (v27.38.11)
 
