@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.38.13.
+Status: v27.38.14.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.38.13 uses the complete v27.38.12 Playwright report/trace artifact (44 passed / 3 failed) to isolate the last Task-only browser crash family. The generated mutation succeeds, then Vue reports runtime error 15 and repeated null `parentNode` failures. The trace simultaneously shows `data-vue-productivity=ready` while Vue-owned `#taskBoardCategory` has been rewritten with the legacy `value="all"` option, proving that Task metadata/Board/Inbox work started before retirement can finish afterward and mutate Vue-managed DOM. v27.38.13 therefore guards the legacy renderers themselves and re-checks ownership after asynchronous reads; it does not weaken browser diagnostics, retries or timeouts. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
+Current extension: v27.38.14 uses the complete v27.38.13 Playwright report/trace artifact: 47 scenarios executed, 46 passed on final result, while the one true failure (`task-modules`) records 18 runtime issues from eight generated Task/Inbox/Board/metadata reads returning guarded HTTP 403 after the Tasks module is disabled. The same report also preserves an `editor-modals` first-attempt artifact where every product assertion passes but a calendar read is aborted by the explicit `page.reload()`, and legacy `loadMonth()` logs the expected navigation lifecycle `TypeError: Failed to fetch`, making the scenario flaky. v27.38.14 therefore makes module disablement an immediate runtime request boundary before persistence while enablement waits for server confirmation, adds bridge-backed module guards at Vue Productivity read entry points, and suppresses only pagehide-driven fetch abort logging while retaining real network errors. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 

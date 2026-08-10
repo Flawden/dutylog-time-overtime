@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.13 — Vue Productivity Legacy Renderer Retirement Barrier Hotfix**.
+Current release: **v27.38.14 — Module Toggle Runtime Gate & Page Lifecycle Browser Parity Hotfix**.
 
 
 
@@ -381,17 +381,18 @@ No new major product feature is added until the Vue migration is complete. DutyL
 
 After Vue parity:
 
-1. **v27.41.0 — Payroll Calculation Engine**: safe user-defined formula DSL, typed input/computed variables, dependency graph/cycle validation, period context and DutyLog work-time facts. `hourlyRate` is a configurable variable/formula, not a hardcoded fixed-price field.
-2. **v27.42.0 — Payroll Formula Studio & Templates**: visual formula editor, available-variable browser, preview/explanation trace, cloneable templates and a complex real-world shift-pay example with salary-derived monthly hourly rate, night/harmful/premium/regional components.
-3. **v27.43.0 — Payroll History & Reconciliation**: immutable monthly calculation snapshots, payslip actuals, calculated-vs-actual reconciliation and explicit manual/unknown adjustments.
-4. **v27.44.0 — One-Tap Calendar Connect**.
-5. **v27.45.0 — Notes Archive & Timeline Collisions**.
-6. **v27.46.0 — Telegram Task Actions & Guided Commands**.
-7. **v27.47.0 — Guided Onboarding & Product Education**.
-8. **FEATURE FREEZE** after the planned v1.0 product scope above is complete.
-9. **v27.48.0 — Operational Readiness, Security & Recovery**.
-10. **v27.49.0 — Release Candidate**.
-11. **DutyLog v1.0.0 — Public Release**.
+1. **v27.41.0 — Vacation Entitlement & Accrual Engine**: working-year boundaries, configurable annual entitlement, earned-vs-available balance, used/planned/advanced leave, service-time rules, multiple leave types, carry-over, date-based forecast and employer-balance reconciliation. Vacation entitlement days remain separate from monetary vacation-pay calculation.
+2. **v27.42.0 — Payroll Calculation Engine**: safe user-defined formula DSL, typed input/computed variables, dependency graph/cycle validation, period context and DutyLog work-time facts. `hourlyRate` is a configurable variable/formula, not a hardcoded fixed-price field.
+3. **v27.43.0 — Payroll Formula Studio & Templates**: visual formula editor, available-variable browser, preview/explanation trace, cloneable templates and a complex real-world shift-pay example with salary-derived monthly hourly rate, night/harmful/premium/regional components.
+4. **v27.44.0 — Payroll History & Reconciliation**: immutable monthly calculation snapshots, payslip actuals, calculated-vs-actual reconciliation and explicit manual/unknown adjustments.
+5. **v27.45.0 — One-Tap Calendar Connect**.
+6. **v27.46.0 — Notes Archive & Timeline Collisions**.
+7. **v27.47.0 — Telegram Task Actions & Guided Commands**.
+8. **v27.48.0 — Guided Onboarding & Product Education**.
+9. **FEATURE FREEZE** after the planned v1.0 product scope above is complete.
+10. **v27.49.0 — Operational Readiness, Security & Recovery**.
+11. **v27.50.0 — Release Candidate**.
+12. **DutyLog v1.0.0 — Public Release**.
 
 ## v27.31.2 — Canonical Absence Browser Contract Alignment Hotfix — completed
 

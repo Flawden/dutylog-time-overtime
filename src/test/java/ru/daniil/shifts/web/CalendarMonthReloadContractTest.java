@@ -38,6 +38,10 @@ class CalendarMonthReloadContractTest {
 
         assertTrue(bootJs.contains("calendarLoadGeneration"),
                 "переключение месяцев должно иметь generation guard от поздних ответов");
+        assertTrue(bootJs.contains("window.addEventListener(\"pagehide\"")
+                        && bootJs.contains("function expectedPageLifecycleFetchAbort(error)")
+                        && bootJs.contains("if (expectedPageLifecycleFetchAbort(err)) return;"),
+                "reload/navigation должен отличать ожидаемый lifecycle fetch-abort от реальной сетевой ошибки");
         assertTrue(bootJs.contains("state.y !== requestedYear") && bootJs.contains("state.m !== requestedMonth"),
                 "ответ другого месяца не должен применяться к текущей сетке");
         assertTrue(bootJs.contains("applyCalendarBundle(bundle);")

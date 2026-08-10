@@ -70,7 +70,7 @@ class CalendarSyncControllerTest {
                 .andExpect(header().string(HttpHeaders.CONTENT_TYPE, containsString("text/calendar")))
                 .andExpect(header().string(HttpHeaders.CONTENT_DISPOSITION, containsString("inline")))
                 .andExpect(content().string(containsString("BEGIN:VCALENDAR\r\n")))
-                .andExpect(content().string(containsString("PRODID:-//DutyLog//Time and Overtime 27.38.13//RU")));
+                .andExpect(content().string(containsString("PRODID:-//DutyLog//Time and Overtime 27.38.14//RU")));
 
         mvc.perform(get("/api/calendar-sync/status")
                         .with(user(owner.getUsername()).roles("USER")))

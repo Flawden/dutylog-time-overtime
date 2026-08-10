@@ -383,6 +383,13 @@ async function loadModules(){
 async function saveModuleEnabled(key, enabled){
   const msg = $("modulesMsg");
   if (msg) setProfileMsg("modulesMsg", t("сохраняю…"), true);
+  const previousList = (state.modulesList || []).map(item => ({ ...item }));
+  const optimisticList = previousList.map(item => item.key === key ? { ...item, enabled:!!enabled } : item);
+  // Disabling is an immediate runtime request boundary: publish "off" before
+  // the guarded PATCH so readers stop before the backend closes the endpoints.
+  // Enabling is intentionally not optimistic: keep reads gated until the backend
+  // confirms the module is available again.
+  if (!enabled) setModuleList(optimisticList);
   try {
     const list = await api.updateModules({ [key]: !!enabled });
     setModuleList(list);
@@ -390,6 +397,7 @@ async function saveModuleEnabled(key, enabled){
     await refreshModuleAwareData();
     if (msg) { setProfileMsg("modulesMsg", t("модули сохранены"), true); setTimeout(() => setProfileMsg("modulesMsg", ""), 1800); }
   } catch (err) {
+    setModuleList(previousList);
     console.error(err);
     if (msg) setProfileMsg("modulesMsg", err.message || t("ошибка"));
   }

@@ -58,6 +58,7 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
     @Test
     void storeProtectsConcurrentReadsDoubleSubmitConflictRefreshAndOfflineSafeMutations() throws Exception {
         String store = read(FEATURE.resolve("stores/productivityStore.ts"));
+        String data = read("src/main/resources/static/js/20-data.js");
 
         assertTrue(store.contains("let boardReadSequence = 0"));
         assertTrue(store.contains("let selectedReadSequence = 0"));
@@ -86,6 +87,15 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(store.contains("tasksEnabled && !offline ? this.loadBoard() : Promise.resolve(true)"));
         assertTrue(store.contains("importantEnabled && !offline ? this.loadImportantDays() : Promise.resolve(true)"));
         assertTrue(store.contains("tasksEnabled && !offline ? this.loadInbox() : Promise.resolve(true)"));
+        assertTrue(store.contains("function runtimeModuleEnabled(key: string): boolean"));
+        assertTrue(store.contains("const snapshot = bridge?.snapshot()"));
+        assertTrue(count(store, "!runtimeModuleEnabled(\"tasks\")") >= 2);
+        assertTrue(store.contains("!runtimeModuleEnabled(\"important_dates\")"));
+        assertTrue(store.contains("!runtimeModuleEnabled(\"notes\")"));
+        int optimisticModuleGate = data.indexOf("if (!enabled) setModuleList(optimisticList)");
+        int modulePatch = data.indexOf("api.updateModules({ [key]: !!enabled })", optimisticModuleGate);
+        assertTrue(optimisticModuleGate >= 0 && modulePatch > optimisticModuleGate);
+        assertTrue(data.contains("setModuleList(previousList)"));
         assertTrue(store.contains("const taskReadYourWrite = new Map<number, Task>()"));
         assertTrue(store.contains("taskReadYourWrite.set(saved.id, saved)"));
         assertTrue(store.contains("for (const saved of taskReadYourWrite.values())"));

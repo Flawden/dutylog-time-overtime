@@ -1,6 +1,17 @@
 # Release checklist
 
-Status: v27.38.13.
+Status: v27.38.14.
+
+
+## v27.38.14 — Module Toggle Runtime Gate & Page Lifecycle Browser Parity Hotfix acceptance
+
+- [x] Use the complete v27.38.13 Playwright report instead of the Actions tail: 47 scenarios ran, `task-modules` is the only final failure, and `editor-modals` retains a first-attempt lifecycle-fetch artifact.
+- [x] Treat module disable as an immediate runtime read boundary before the guarded `/api/modules` PATCH completes, keep enablement gated until server confirmation, and roll back on persistence failure.
+- [x] Gate Vue Productivity selected-day, Board, Inbox, Important and Note-search reads against the latest bridge module snapshot as well as Pinia shell state.
+- [x] Keep `403 MODULE_DISABLED` strict: do not allowlist or downgrade it in Playwright diagnostics.
+- [x] Treat only `pagehide`/navigation-driven `AbortError` or `Failed to fetch` from the in-flight calendar load as expected lifecycle cancellation; preserve logging for real network errors.
+- [x] Keep API/OpenAPI, backend business rules, PostgreSQL, Flyway V47, browser timeouts/retries and runtime-error collector unchanged.
+- [ ] Accept v27.38.x only after exact frontend, Maven 751/751, boot canary, **47/47 Chromium with zero flaky retries**, immutable image, clean PostgreSQL and staging deployment are green.
 
 ## v27.38.13 — Vue Productivity Legacy Renderer Retirement Barrier Hotfix acceptance
 

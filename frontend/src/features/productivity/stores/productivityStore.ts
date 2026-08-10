@@ -55,6 +55,17 @@ export function installProductivityBridge(nextBridge: LegacyBridge): () => void 
   return () => { bridge = previous; };
 }
 
+
+function runtimeModuleEnabled(key: string): boolean {
+  const snapshot = bridge?.snapshot();
+  if (snapshot?.modulesLoaded && snapshot.modules && Object.prototype.hasOwnProperty.call(snapshot.modules, key)) {
+    return snapshot.modules[key] !== false;
+  }
+  const shell = useShellStore();
+  if (!shell.modulesLoaded) return true;
+  return shell.modules[key] !== false;
+}
+
 function errorMessage(error: unknown): string {
   if (error instanceof DutyLogApiError) return error.code ? `${error.message} (${error.code})` : error.message;
   return error instanceof Error ? error.message : "Не удалось выполнить запрос";
@@ -214,9 +225,8 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
           this.workTimezone = context?.workTimezone || this.workTimezone;
           this.workDate = validDate(context?.workDate, this.workDate);
         }
-        const modules = useShellStore().modules;
-        const tasksEnabled = modules.tasks !== false;
-        const importantEnabled = modules.important_dates !== false;
+        const tasksEnabled = runtimeModuleEnabled("tasks");
+        const importantEnabled = runtimeModuleEnabled("important_dates");
         const [selectedOk, boardOk, importantOk, inboxOk] = await Promise.all([
           this.loadSelectedDate(targetDate),
           tasksEnabled && !offline ? this.loadBoard() : Promise.resolve(true),
@@ -239,10 +249,9 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       this.selectedDate = safeDate;
       this.selectedLoading = true;
       try {
-        const modules = useShellStore().modules;
-        const tasksEnabled = modules.tasks !== false;
-        const notesEnabled = modules.notes !== false;
-        const importantEnabled = modules.important_dates !== false;
+        const tasksEnabled = runtimeModuleEnabled("tasks");
+        const notesEnabled = runtimeModuleEnabled("notes");
+        const importantEnabled = runtimeModuleEnabled("important_dates");
         let tasks: Task[] = [];
         let notes: DayNote[] = [];
         let occurrences: ImportantEventOccurrence[] = [];
@@ -282,6 +291,10 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
     },
     async loadBoard(): Promise<boolean> {
       const sequence = ++boardReadSequence;
+      if (!runtimeModuleEnabled("tasks")) {
+        this.boardLoading = false;
+        return true;
+      }
       this.boardLoading = true;
       try {
         const query: Record<string, string | number | undefined> = {
@@ -310,6 +323,7 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
     },
     async loadImportantDays(): Promise<boolean> {
       const sequence = ++importantReadSequence;
+      if (!runtimeModuleEnabled("important_dates")) return true;
       try {
         const rows = await api.importantDays();
         if (sequence !== importantReadSequence) return false;
@@ -319,6 +333,7 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
     },
     async loadInbox(): Promise<boolean> {
       const sequence = ++inboxReadSequence;
+      if (!runtimeModuleEnabled("tasks")) return true;
       try {
         const rows = await api.inbox(this.inboxShowArchived ? "all" : "open");
         if (sequence !== inboxReadSequence) return false;
@@ -328,6 +343,7 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
     },
     async setBoardFilters(): Promise<void> { this.boardPage = 0; await this.loadBoard(); },
     async searchNotesNow(): Promise<void> {
+      if (!runtimeModuleEnabled("notes")) { this.noteSearchResults = []; return; }
       const q = this.noteSearch.trim();
       const sequence = ++searchReadSequence;
       if (!q) { this.noteSearchResults = []; return; }

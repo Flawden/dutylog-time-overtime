@@ -57,6 +57,16 @@ function applyCalendarBundle(bundle){
   if (moduleEnabled("overtime") && bundle.overtimeAccount) state.overtimeAccount = bundle.overtimeAccount;
 }
 
+let dutyLogPageLifecycleEnding = false;
+window.addEventListener("pagehide", () => { dutyLogPageLifecycleEnding = true; });
+window.addEventListener("pageshow", () => { dutyLogPageLifecycleEnding = false; });
+function expectedPageLifecycleFetchAbort(error){
+  if (!dutyLogPageLifecycleEnding) return false;
+  const name = String(error?.name || "");
+  const message = String(error?.message || error || "");
+  return name === "AbortError" || /Failed to fetch/i.test(message);
+}
+
 let calendarLoadGeneration = 0;
 function recordCalendarLoadMetric({ year, month, startedAt, result = null, error = null }){
   const finishedAt = performance.now();
@@ -107,11 +117,12 @@ async function loadMonth(opts = {}){
     if (generation !== calendarLoadGeneration) return;
     setSave(res?.fromCache ? "" : "");
   } catch (err) {
+    if (expectedPageLifecycleFetchAbort(err)) return;
     loadError = err;
     console.error(err);
     setSave("err", err.message);
   } finally {
-    if (generation === calendarLoadGeneration) {
+    if (!dutyLogPageLifecycleEnding && generation === calendarLoadGeneration) {
       const wasStillLoading = state.ui.loadingCalendar;
       state.ui.loadingCalendar = false;
       // Network errors without a usable snapshot must also remove the skeleton.

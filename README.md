@@ -1,3 +1,14 @@
+# v27.38.14 — Module Toggle Runtime Gate & Page Lifecycle Browser Parity Hotfix
+
+- Uses the complete v27.38.13 Playwright report: the final result is 46/47 with `task-modules` as the only true failure, while `editor-modals` carries a first-attempt lifecycle-fetch artifact and therefore still violates the zero-flaky acceptance rule.
+- Fixes the remaining Tasks module-disable browser failure without weakening diagnostics: module disable intent is published to runtime state before the guarded `/api/modules` persistence request, while enablement waits for server confirmation, so Vue stops issuing Task reads while the backend transitions the module to disabled; persistence failure restores the prior module snapshot.
+- Adds bridge-backed `runtimeModuleEnabled()` guards to Vue Productivity read entry points, preventing selected-day, Board, Inbox, Important and Note-search requests from running against a module that the authoritative legacy runtime has already disabled even if a Pinia watcher is one tick behind.
+- Fixes the `editor-modals` retry-only failure at page lifecycle boundaries: explicit `page.reload()` aborts two in-flight calendar reads, and legacy `loadMonth()` no longer reports that expected `pagehide` cancellation as a browser console error. Real network errors continue to be logged and fail Playwright.
+- Records the approved post-parity Vacation Entitlement Engine before Payroll and shifts the remaining pre-freeze roadmap accordingly.
+- Changes no API/OpenAPI contract, backend business rule, PostgreSQL schema, Flyway migration, Playwright timeout/retry policy or runtime-error allowlist.
+- Baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases / Flyway V47. OpenAPI remains 101 operations / 106 schemas / `c48bfab2bcaf`.
+- Acceptance still requires exact frontend, Maven 751/751, boot canary, clean 47/47 Chromium with zero flaky retries, immutable image, clean PostgreSQL and staging.
+
 # v27.38.13 — Vue Productivity Legacy Renderer Retirement Barrier Hotfix
 
 - Uses the complete v27.38.12 Playwright HTML/trace artifact (44 passed / 3 failed) and keeps the release scoped to the last Task-only browser crash family. The v27.38.12 Notes summary ownership and PWA preset fixes are confirmed green.
