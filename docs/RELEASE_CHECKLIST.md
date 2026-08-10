@@ -1,7 +1,16 @@
 # Release checklist
 
-Status: v27.38.14.
+Status: v27.38.15.
 
+
+## v27.38.15 — Module Cache Authority Browser Parity Hotfix acceptance
+
+- [x] Use the complete v27.38.14 Playwright report: all 47 scenarios ran, 46 passed, `task-modules` is the only final failure on both attempts, and the prior `editor-modals` lifecycle flaky is gone.
+- [x] Treat the already-loaded global module map as authoritative over month-scoped IndexedDB calendar snapshots so cached pre-toggle `tasks=true` cannot rebound after the backend is disabled.
+- [x] Reload the calendar with `fresh:true` after a successful module mutation so the settings transaction bypasses the pre-mutation month snapshot.
+- [x] Keep backend `MODULE_DISABLED` guards and strict Playwright HTTP/console collection unchanged; remove the invalid request window instead of allowlisting 403.
+- [x] Extend existing static contracts only; add no JUnit/Vitest/Playwright case and change no API/OpenAPI, PostgreSQL/Flyway, timeout or retry contract.
+- [ ] Accept v27.38.x only after exact frontend, Maven 751/751, boot canary, **47/47 Chromium with zero flaky retries**, immutable image, clean PostgreSQL and staging deployment are green.
 
 ## v27.38.14 — Module Toggle Runtime Gate & Page Lifecycle Browser Parity Hotfix acceptance
 

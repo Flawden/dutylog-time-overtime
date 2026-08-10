@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.38.14.
+Status: v27.38.15.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.38.14 uses the complete v27.38.13 Playwright report/trace artifact: 47 scenarios executed, 46 passed on final result, while the one true failure (`task-modules`) records 18 runtime issues from eight generated Task/Inbox/Board/metadata reads returning guarded HTTP 403 after the Tasks module is disabled. The same report also preserves an `editor-modals` first-attempt artifact where every product assertion passes but a calendar read is aborted by the explicit `page.reload()`, and legacy `loadMonth()` logs the expected navigation lifecycle `TypeError: Failed to fetch`, making the scenario flaky. v27.38.14 therefore makes module disablement an immediate runtime request boundary before persistence while enablement waits for server confirmation, adds bridge-backed module guards at Vue Productivity read entry points, and suppresses only pagehide-driven fetch abort logging while retaining real network errors. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
+Current extension: v27.38.15 uses the complete v27.38.14 Playwright report: all 47 scenarios ran, 46 passed, and `task-modules` remains the only failure on both attempts. v27.38.14 removed the earlier page-lifecycle flaky and reduced the disabled-Tasks runtime storm to one four-request wave, but the trace shows that wave immediately after the successful `tasks=false` module mutation. The surviving race is owned by the legacy month cache: `saveModuleEnabled()` refreshes the month, `dataLayer.loadCalendar()` may first apply an IndexedDB calendar snapshot captured while Tasks was still enabled, and `applyCalendarBundle()` previously allowed that month-scoped cache to roll the global module map back to `tasks=true` for one render turn while the backend was already disabled. v27.38.15 makes the already-loaded runtime module map authoritative over cached month bundles and makes the post-module-mutation month reload fresh/server-first. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 

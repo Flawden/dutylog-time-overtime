@@ -1,3 +1,13 @@
+# v27.38.15 — Module Cache Authority Browser Parity Hotfix
+
+- Uses the complete v27.38.14 Playwright report: 47 scenarios ran, 46 passed, and `task-modules` is the only failure on both attempts. The earlier `editor-modals` page-lifecycle flaky is gone.
+- Proves the surviving 403 window is a calendar-cache authority bug, not a missing Vue read guard: Tasks are optimistically disabled before `/api/modules`, the backend accepts the disable, then `saveModuleEnabled()` calls `loadMonth()`, whose fast IndexedDB calendar snapshot can still carry the pre-toggle `tasks=true` module map and temporarily reopen generated Task reads while the backend correctly returns `MODULE_DISABLED`.
+- Makes the already-loaded global module map authoritative over month-scoped cached calendar bundles. Cached month data may still paint immediately, but it cannot roll module enablement backward once runtime modules are loaded.
+- Makes the post-module-mutation month refresh explicitly `fresh:true`, so the settings transaction does not consume a pre-mutation IndexedDB snapshot before the authoritative server bundle arrives.
+- Extends the existing calendar reload static contract to bind both invariants without adding tests, weakening 403 diagnostics, changing browser timeouts/retries, or altering backend module guards.
+- Changes no API/OpenAPI contract, backend business rule, PostgreSQL schema or Flyway migration. Baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases / Flyway V47; OpenAPI remains 101 operations / 106 schemas / `c48bfab2bcaf`.
+- Acceptance still requires exact frontend, Maven 751/751, boot canary, clean 47/47 Chromium with zero flaky retries, immutable image, clean PostgreSQL and staging.
+
 # v27.38.14 — Module Toggle Runtime Gate & Page Lifecycle Browser Parity Hotfix
 
 - Uses the complete v27.38.13 Playwright report: the final result is 46/47 with `task-modules` as the only true failure, while `editor-modals` carries a first-attempt lifecycle-fetch artifact and therefore still violates the zero-flaky acceptance rule.

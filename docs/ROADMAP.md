@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.14 — Module Toggle Runtime Gate & Page Lifecycle Browser Parity Hotfix**.
+Current release: **v27.38.15 — Module Cache Authority Browser Parity Hotfix**.
 
 
 

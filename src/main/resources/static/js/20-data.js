@@ -393,7 +393,10 @@ async function saveModuleEnabled(key, enabled){
   try {
     const list = await api.updateModules({ [key]: !!enabled });
     setModuleList(list);
-    await loadMonth();
+    // A module mutation is authoritative configuration state. Do not repaint the
+    // calendar through a pre-mutation IndexedDB snapshot before the fresh server
+    // bundle arrives, otherwise cached module flags can briefly reopen guarded APIs.
+    await loadMonth({ fresh:true });
     await refreshModuleAwareData();
     if (msg) { setProfileMsg("modulesMsg", t("модули сохранены"), true); setTimeout(() => setProfileMsg("modulesMsg", ""), 1800); }
   } catch (err) {
@@ -1141,8 +1144,14 @@ const dataLayer = {
     if (snapshotMatchesMonth) {
       hadCache = true;
       state.offline.lastSyncAt = snap.savedAt || null;
-      if (Array.isArray(snap.modules) && !Array.isArray(snap.bundle.modules)) snap.bundle.modules = snap.modules;
-      applyBundle(snap.bundle, true);
+      // Calendar snapshots are month-scoped caches, while module enablement is a
+      // global runtime setting. Once the current module map is loaded, a cached
+      // month must never roll that map backward (for example immediately after
+      // disabling Tasks while the backend has already closed its API).
+      const cachedBundle = { ...snap.bundle };
+      if (state.modulesLoaded) cachedBundle.modules = (state.modulesList || []).map(item => ({ ...item }));
+      else if (Array.isArray(snap.modules) && !Array.isArray(cachedBundle.modules)) cachedBundle.modules = snap.modules;
+      applyBundle(cachedBundle, true);
       updateOfflineStatus();
       // Быстрый локальный рендер, пока сеть отвечает.
       renderNotifications();

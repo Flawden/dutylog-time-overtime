@@ -51,6 +51,15 @@ class CalendarMonthReloadContractTest {
 
         assertTrue(dataJs.contains("snap.y === y") && dataJs.contains("snap.m === m"),
                 "IndexedDB snapshot можно применять только к тому месяцу, для которого он сохранён");
+        assertTrue(dataJs.contains("const cachedBundle = { ...snap.bundle }")
+                        && dataJs.contains("if (state.modulesLoaded) cachedBundle.modules = (state.modulesList || []).map(item => ({ ...item }))")
+                        && dataJs.contains("applyBundle(cachedBundle, true)"),
+                "month cache не должен откатывать уже загруженную глобальную карту модулей");
+        int saveModule = dataJs.indexOf("async function saveModuleEnabled(key, enabled)");
+        int modulePatch = dataJs.indexOf("api.updateModules({ [key]: !!enabled })", saveModule);
+        int freshAfterModulePatch = dataJs.indexOf("await loadMonth({ fresh:true })", modulePatch);
+        assertTrue(saveModule >= 0 && modulePatch > saveModule && freshAfterModulePatch > modulePatch,
+                "после authoritative module PATCH календарь должен обходить pre-mutation IndexedDB snapshot");
         assertTrue(dataJs.contains("date: day.date ?? null"),
                 "module-aware sanitizer обязан сохранять date, иначе все дни схлопываются в state.days[undefined]");
         assertTrue(dataJs.contains("version: Number.isFinite(Number(day.version))")
