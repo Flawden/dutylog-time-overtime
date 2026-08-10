@@ -304,6 +304,7 @@
   }
 
   function renderWorkspaceRoutes(cfg){
+    if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
     const box = $("workspaceRouteLinks");
     if (!box) return;
     const workspace = workspaceDefinition(cfg);
@@ -343,6 +344,7 @@
   }
 
   function renderPaletteState(prefs = state.preferences){
+    if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
     const cfg = configFrom(prefs);
     const status = $("uiPaletteState");
     if (!status) return;
@@ -417,6 +419,7 @@
   }
 
   function renderStudio(cfg){
+    if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
     const nav = $("workspaceNavigationList");
     const cards = $("todayWidgetList");
     if (nav) nav.innerHTML = navigationRows(cfg);
@@ -499,6 +502,7 @@
   }
 
   function renderControls(prefs = state.preferences){
+    if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
     const cfg = configFrom(prefs);
     populateSelect("uiWorkspace", workspaces);
     populateSelect("uiLayout", layouts);

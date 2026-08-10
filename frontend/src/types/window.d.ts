@@ -30,7 +30,16 @@ declare global {
     navigate(view: string): void;
     openModal(id: string, focusId?: string | null): void;
     logout(): void;
-    retireDomainOwners?(domain: "absence-time-bank" | "calendar-timeline" | "productivity"): void;
+    retireDomainOwners?(domain: "absence-time-bank" | "calendar-timeline" | "productivity" | "settings-workspace"): void;
+    attachSettingsLegacy?(hostId: string): void;
+    openSettingsLegacySection?(section: "time" | "schedule" | "notifications" | "all" | "none"): void;
+    settingsAppearanceSnapshot?(): Record<string, unknown> | null;
+    previewAppearance?(appearance: Record<string, unknown>): Record<string, unknown> | null;
+    synchronizeProfile?(profile: Record<string, unknown>): void;
+    previewLanguage?(language: "ru" | "en"): void;
+    previewModuleEnabled?(key: string, enabled: boolean): void;
+    commitModuleList?(modules: readonly Record<string, unknown>[]): Promise<void>;
+    restoreModuleList?(modules: readonly Record<string, unknown>[]): void;
     attachCalendarEditor?(hostId: string): void;
     parkCalendarEditor?(): void;
     openCalendarDay?(date: string): void;

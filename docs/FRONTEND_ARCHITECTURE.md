@@ -1,7 +1,15 @@
 # Frontend architecture
 
-Status: Vue app-shell plus Absence/Time Bank, Calendar/Timeline and Productivity ownership, DutyLog v27.38.15.
+Status: Vue app-shell plus Absence/Time Bank, Calendar/Timeline, Productivity and Settings/Workspace/Integrations ownership, DutyLog v27.39.0.
 
+
+## Vue Settings, Workspace & Integrations ownership (v27.39.0)
+
+Vue owns Settings section navigation plus Profile, Language, Modules, Calendar Sync and Appearance/Workspace Studio. Online writes use the generated OpenAPI client; Spring Boot remains authoritative for profile validation, module dependencies/locks, sessions and integration secrets. Telegram is exposed through a canonical `/api/v1/telegram` alias for the migrated UI.
+
+Three explicit compatibility islands remain under `#settingsLegacyHost`: Time, Schedule and Notifications. Their DOM/event owners are parked before the old `#view-settings` root is retired and reattached into Vue; migrated legacy renderers yield once `data-vue-settings-workspace=ready`. v27.40.0 owns final island/numbered-JavaScript retirement.
+
+Appearance keeps UI Contract v2 and delegates only root visual application/current global shell synchronization through a typed bridge. It does not add a second workspace/theme model. ADR-008 disables public production source maps by default and keeps controlled frontend diagnostics secret-free.
 
 ## Vue Tasks, Notes & Important Days ownership (v27.38.0)
 

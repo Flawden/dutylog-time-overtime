@@ -9,3 +9,7 @@ Vue descendant errors are captured by `AppErrorBoundary`. Global Vue errors and 
 The `unhandledrejection` listener deliberately does not call `preventDefault`. Unexpected failures therefore remain visible to strict Playwright runtime collection instead of being hidden for a green build.
 
 `window.DutyLogVuePlatform.diagnostics()` exposes an immutable safe snapshot for support and tests.
+
+## v27.39.0 production source-map policy
+
+ADR-008 makes production source maps fail-closed. A normal Vite build uses `sourcemap: false`; an operator must explicitly set `DUTYLOG_FRONTEND_SOURCEMAPS=true` to produce hidden maps for controlled diagnostics. Runtime HTML and the service worker do not reference `.map` assets, and the safe diagnostics snapshot remains intentionally limited to release/route/request metadata. Integration bearer URLs, Telegram link codes, cookies, CSRF values, response bodies and stack traces are not part of that snapshot.

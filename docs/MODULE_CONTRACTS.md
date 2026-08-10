@@ -1,5 +1,13 @@
 # Module contracts
 
+## Vue Settings, Workspace & Integrations ownership (v27.39.0)
+
+- Vue owns module-toggle presentation and sends mutations through generated `PATCH /api/v1/modules`.
+- Disable closes the runtime module boundary before the backend mutation; enable reopens only after backend confirmation. Failed mutations restore the prior snapshot.
+- The already-loaded global module map outranks cached month snapshots; a successful mutation forces a fresh calendar read before module-aware refresh.
+- Profile, Calendar Sync and Telegram presentation use generated `/api/v1/*` operations; integration secret values never become module-registry state.
+- Time, Schedule and Notifications are named compatibility islands until v27.40.0 and may not mutate the Vue-owned Settings cards.
+
 ## Vue Tasks, Notes & Important Days ownership (v27.38.0)
 
 - Vue is the sole runtime presentation owner for Tasks, Notes, Important Days and Inbox, including selected-day bodies and productivity editor modals.
@@ -18,7 +26,7 @@
 - Legacy route roots and editor modals are retired when the Vue workspace mounts; named adapters remain until their caller domains migrate.
 - Q-06 blocks duplicate writes, rejects stale reads and refreshes the server model after HTTP 409.
 
-Status: v27.38.15.
+Status: v27.39.0.
 
 ## v27.35.7 historical static-contract alignment
 

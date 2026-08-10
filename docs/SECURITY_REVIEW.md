@@ -1,6 +1,14 @@
 # DutyLog security review
 
-Status: v27.38.15.
+Status: v27.39.0.
+
+## v27.39.0 Settings, Workspace & Integrations review
+
+- Migrated settings remain same-origin/session-authenticated and use generated `/api/v1/*` transport; no third-party browser credential is introduced.
+- Calendar subscription URLs are bearer secrets: only the server stores the token hash, while the raw issued URL is kept in volatile Vue state long enough to copy and is not persisted to localStorage or diagnostics.
+- Telegram link codes/status/settings use canonical `/api/v1/telegram` aliases; the migration does not expose the bot token to the browser.
+- Existing CSP, CSRF and cookie/session boundaries remain unchanged. Backend module guards remain fail-closed.
+- ADR-008 changes Vite production source maps from public-by-default to disabled-by-default; explicitly requested maps are hidden diagnostic artifacts and are not linked from runtime assets.
 
 ## v27.38.0 Vue Tasks, Notes & Important Days review
 

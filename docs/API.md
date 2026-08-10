@@ -1,10 +1,6 @@
-# DutyLog API v27.38.15
+# DutyLog API v27.39.0
 
-`v27.38.0` expands the canonical generated browser contract for the Vue Tasks, Notes & Important Days migration. Spring Boot remains authoritative for validation, ownership, task state, scheduling, notes, Important Events and Inbox conversion; Vue uses operationId-based generated transport and does not become a second business-rule owner.
-
-The generated browser contract contains **101 operations and 106 schemas**. New/expanded typed coverage includes task-board reads, task update payloads, Important Event update/delete operations, typed important occurrences, task schedule/project fields and project metadata. Compatibility `/api/*` aliases remain available for bounded legacy/offline dataLayer paths, while migrated online UI operations use generated `/api/v1/*`.
-
-No PostgreSQL schema or Flyway migration is introduced; Flyway remains V47. The v27.34.4 preview behavior remains released: non-persistent zero/negative overtime draft calculations are representable, while create/update validation remains strict.
+`v27.39.0` expands the canonical browser contract for Vue Settings, Workspace & Integrations. The generated client now contains **118 operations and 120 schemas**. Typed coverage is added for Profile update/password/sessions, Modules, Shift Types, Notification Settings and Telegram status/link/settings. Migrated Settings online writes use generated `/api/v1/*` operations; Spring Boot remains authoritative for validation, module dependency rules, sessions and integration secrets. Telegram keeps its compatibility `/api/telegram` alias and adds canonical `/api/v1/telegram` routing. Flyway remains V47.
 
 ## Productivity presentation contract
 

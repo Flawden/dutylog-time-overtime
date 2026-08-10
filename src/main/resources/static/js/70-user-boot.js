@@ -681,6 +681,7 @@ function telegramName(status){
   return status?.botUsername ? "@" + status.botUsername : t("бот");
 }
 function renderTelegramPanel(){
+  if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
   const box = $("telegramBox");
   if (!box) return;
   const s = state.telegramStatus;
@@ -718,6 +719,7 @@ function renderTelegramPanel(){
   }
 }
 async function loadTelegramStatus(){
+  if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
   // moduleEnabled() is intentionally optimistic before module metadata loads so the
   // shell does not flicker. API calls must be stricter or a disabled integration can
   // emit a noisy 403 during boot.

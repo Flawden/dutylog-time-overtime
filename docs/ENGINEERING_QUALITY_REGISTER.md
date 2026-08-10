@@ -1,9 +1,9 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.38.15
+release_foundation: v27.39.0
 created: 2026-08-04
-updated: 2026-08-09
+updated: 2026-08-10
 ---
 
 # DutyLog — Engineering Quality Register
@@ -29,16 +29,16 @@ updated: 2026-08-09
 | Q-05 | ADR repository и обязательные решения | `v27.35.0` | архитектурные изменения | ADR accepted/superseded index | DONE |
 | Q-06 | Optimistic concurrency / stale-write / double-submit policy | baseline `v27.36.0` | все редактируемые домены | sequence-token stale-read guard, mutation lock, durable 409 refresh, Vitest + Playwright double-submit evidence | DONE |
 | Q-07 | PWA asset/version compatibility и upgrade E2E | baseline `v27.37.0` | каждый frontend release | ADR-006 + previous cache → current cache Chromium scenario | ACTIVE |
-| Q-08 | Performance budgets и bundle diff | baseline `v27.37.0` | каждый frontend release; полный audit `v27.45.0` | fail-closed raw/gzip budget in Vite audit | ACTIVE |
-| Q-09 | Accessibility acceptance | design system уже ACTIVE | каждый domain; полный audit `v27.45.0` | keyboard/focus/ARIA/contrast evidence | ACTIVE |
+| Q-08 | Performance budgets и bundle diff | baseline `v27.37.0` | каждый frontend release; полный audit `v27.49.0` | fail-closed raw/gzip budget in Vite audit | ACTIVE |
+| Q-09 | Accessibility acceptance | design system уже ACTIVE | каждый domain; полный audit `v27.49.0` | keyboard/focus/ARIA/contrast evidence | ACTIVE |
 | Q-10 | Offline queue и reconnect correctness | `v27.38.0` | каждый offline-capable domain | existing dataLayer queue/cache reused through typed Vue bridge; offline/reconnect E2E | ACTIVE |
-| Q-11 | Integration secrets, CSP, cookies, source-map policy | `v27.39.0` | security audit `v27.45.0` | security checklist + headers/config evidence | LOCKED |
+| Q-11 | Integration secrets, CSP, cookies, source-map policy | `v27.39.0` | security audit `v27.49.0` | ADR-008 + generated integration boundaries + headers/config evidence | ACTIVE |
 | Q-12 | Legacy owner/bridge retirement guards | каждый domain | финал `v27.40.0` | deleted files + negative release contracts | ACTIVE |
-| Q-13 | Real backup restore rehearsal on clean PostgreSQL | preparation before freeze | mandatory `v27.45.0`; recurring after release | restore report + smoke evidence | BEFORE_RC |
-| Q-14 | Upgrade and rollback compatibility with data written by new version | baseline each schema/domain change | full rehearsal `v27.45.0` | previous/new image matrix | ACTIVE |
-| Q-15 | Dependency vulnerability review and update policy | `v27.35.0` policy | recurring; blocking audit `v27.45.0` | Dependabot/npm/Maven audit record | LOCKED |
+| Q-13 | Real backup restore rehearsal on clean PostgreSQL | preparation before freeze | mandatory `v27.49.0`; recurring after release | restore report + smoke evidence | BEFORE_RC |
+| Q-14 | Upgrade and rollback compatibility with data written by new version | baseline each schema/domain change | full rehearsal `v27.49.0` | previous/new image matrix | ACTIVE |
+| Q-15 | Dependency vulnerability review and update policy | `v27.35.0` policy | recurring; blocking audit `v27.49.0` | Dependabot/npm/Maven audit record | LOCKED |
 | Q-16 | Pilot-user feedback and long-running stability | after `v27.44.0` | `v27.46.0` | pilot log, unresolved P0/P1 = 0 | BEFORE_RC |
-| Q-17 | Production runbook, incident response and operator checklist | draft `v27.45.0` | final `v27.46.0` | versioned runbook | BEFORE_RC |
+| Q-17 | Production runbook, incident response and operator checklist | draft `v27.49.0` | final `v27.50.0` | versioned runbook | BEFORE_RC |
 
 ## ADR backlog
 
@@ -59,6 +59,14 @@ updated: 2026-08-09
 
 
 
+
+## Settings, Workspace & Integrations migration note — v27.39.0
+
+- Vue owns Settings navigation plus Profile, Language, Modules, Calendar Sync and Appearance/Workspace Studio.
+- Time, Schedule and Notifications remain explicit bounded compatibility islands inside `#settingsLegacyHost`; v27.40.0 owns their final retirement.
+- Settings writes use the generated `/api/v1/*` client. Telegram receives a canonical `/api/v1/telegram` alias; calendar bearer URLs are held only in volatile Vue state after issue/rotation and are never written to localStorage or diagnostics.
+- Q-11 becomes ACTIVE: ADR-008 disables public production source maps by default and permits only explicit hidden diagnostic maps. Existing CSP/cookie/backend module guards remain unchanged.
+- OpenAPI advances to 118 operations / 120 schemas; Flyway remains V47.
 
 ## Browser parity continuation — v27.38.13
 
@@ -170,7 +178,7 @@ Q-01–Q-05 реализованы и приняты: полный CI, Docker im
 - временные bridges имеют нулевой остаток или отдельное блокирующее решение;
 - PWA/performance/accessibility gates действуют в CI.
 
-### Gate C — feature freeze после `v27.43.0`
+### Gate C — feature freeze после `v27.48.0`
 
 - новые product features запрещены;
 - допускаются onboarding, reliability, security, performance, accessibility и defect fixes.

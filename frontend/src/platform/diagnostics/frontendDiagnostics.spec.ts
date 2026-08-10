@@ -26,7 +26,7 @@ describe("frontend diagnostics", () => {
       route: "vacation",
       requestId: `server-req-42${"x".repeat(83)}`,
     });
-    expect(failure.releaseVersion).toBe("27.38.15");
+    expect(failure.releaseVersion).toBe("27.39.0");
     expect(diagnosticsSnapshot().lastRequest?.url).toBe("/api/v1/vacation-planner");
     expect(diagnosticsSnapshot().requestId).toHaveLength(96);
   });

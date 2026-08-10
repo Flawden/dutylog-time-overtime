@@ -283,7 +283,7 @@ public class CalendarIcsService {
         Instant generatedAt = userTimeService.nowInstant();
         StringBuilder out = new StringBuilder(4096 + events.size() * 240);
         line(out, "BEGIN:VCALENDAR");
-        line(out, "PRODID:-//DutyLog//Time and Overtime 27.38.15//RU");
+        line(out, "PRODID:-//DutyLog//Time and Overtime 27.39.0//RU");
         line(out, "VERSION:2.0");
         line(out, "CALSCALE:GREGORIAN");
         line(out, "METHOD:PUBLISH");

@@ -1227,6 +1227,14 @@ function openSettingsSection(section, scroll = true, focusId = null){
 }
 
 function renderSettingsPanels(){
+  if (document.documentElement.dataset.vueSettingsWorkspace === "ready") {
+    renderTimeSettings();
+    renderNotifications();
+    if (typeof renderScheduleLayerSettings === "function") renderScheduleLayerSettings();
+    refreshLegacyShiftIndicator().catch(() => {});
+    refreshLegacyTaskDeadlineIndicator().catch(() => {});
+    return;
+  }
   initSettingsAccordion();
   renderAppearanceControls();
   renderTimeSettings();

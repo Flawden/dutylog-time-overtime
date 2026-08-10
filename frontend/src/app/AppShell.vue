@@ -15,6 +15,8 @@ import ToastHost from "@/shared/overlays/ToastHost.vue";
 import AbsenceTimeBankWorkspace from "@/features/absence-time-bank/components/AbsenceTimeBankWorkspace.vue";
 import CalendarTimelineWorkspace from "@/features/calendar-timeline/components/CalendarTimelineWorkspace.vue";
 import ProductivityWorkspace from "@/features/productivity/components/ProductivityWorkspace.vue";
+import SettingsWorkspace from "@/features/settings-workspace/components/SettingsWorkspace.vue";
+import "@/features/settings-workspace/settings-workspace.css";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
@@ -84,6 +86,7 @@ function logout(): void { props.bridge.logout(); }
   <CalendarTimelineWorkspace :bridge="bridge" />
   <AbsenceTimeBankWorkspace :bridge="bridge" />
   <ProductivityWorkspace :bridge="bridge" />
+  <SettingsWorkspace :bridge="bridge" />
 
   <UiModal
     :open="shell.moreOpen"

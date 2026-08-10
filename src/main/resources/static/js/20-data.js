@@ -352,13 +352,17 @@ function applyModuleVisibility(){
   toggle($("view-vacation"), moduleEnabled("vacation"));
   setDayPanelSectionVisibility();
   document.querySelectorAll('.scenarioFeature').forEach(el => toggle(el, moduleEnabled("scenarios") && moduleEnabled("overtime")));
-  toggle($("calendarSyncCard"), moduleEnabled("calendar_sync"));
-  toggle(document.querySelector('[data-settings-jump="calendar-sync"]'), moduleEnabled("calendar_sync"));
+  if (document.documentElement.dataset.vueSettingsWorkspace !== "ready") {
+    toggle($("calendarSyncCard"), moduleEnabled("calendar_sync"));
+    toggle(document.querySelector('[data-settings-jump="calendar-sync"]'), moduleEnabled("calendar_sync"));
+  }
   toggle($("importantDetailsExportIcs"), moduleEnabled("calendar_sync") && moduleEnabled("important_dates"));
-  toggle($("notifyCard"), moduleEnabled("notifications"));
-  toggle(document.querySelector('[data-settings-jump="notifications"]'), moduleEnabled("notifications"));
-  toggle($("telegramProfileTitle"), moduleEnabled("telegram"));
-  toggle($("telegramBox"), moduleEnabled("telegram"));
+  if (document.documentElement.dataset.vueSettingsWorkspace !== "ready") {
+    toggle($("notifyCard"), moduleEnabled("notifications"));
+    toggle(document.querySelector('[data-settings-jump="notifications"]'), moduleEnabled("notifications"));
+    toggle($("telegramProfileTitle"), moduleEnabled("telegram"));
+    toggle($("telegramBox"), moduleEnabled("telegram"));
+  }
   if (location.hash === "#tasks" && !moduleEnabled("tasks")) location.hash = "#calendar";
   if (location.hash === "#overtime" && !moduleEnabled("overtime")) location.hash = "#calendar";
   if (location.hash === "#payroll" && !moduleEnabled("payroll")) location.hash = "#calendar";
@@ -424,6 +428,7 @@ async function refreshModuleAwareData(){
   if (state.selected) renderSelectedDayModules();
 }
 function renderModuleSettings(){
+  if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
   const grid = $("moduleSettingsGrid");
   if (!grid) return;
   const list = (state.modulesList || [])

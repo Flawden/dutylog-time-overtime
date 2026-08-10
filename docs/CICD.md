@@ -1,6 +1,13 @@
 # DutyLog CI/CD
 
-Status: v27.38.15.
+Status: v27.39.0.
+
+## v27.39.0 Settings, Workspace & Integrations delivery boundary
+
+- Exact Node `20.18.1` / npm `10.8.2`, authentic `npm ci`, generated OpenAPI drift, strict `vue-tsc`, **52 Vitest cases**, Vite and bundle budgets remain blocking before Maven.
+- Maven baseline advances to **757 `@Test` methods across 153 Java test classes**; Chromium advances to **48 strict scenarios**.
+- Normal production Vite builds publish no source maps; hidden maps are opt-in only through `DUTYLOG_FRONTEND_SOURCEMAPS=true` and remain diagnostic artifacts rather than public static assets.
+- Pushes to `test` remain single-pass GitHub-hosted `ubuntu-latest`: validate → immutable image → clean PostgreSQL V1–V47 smoke → staging deploy.
 
 ## v27.38.0 Tasks, Notes & Important Days delivery boundary
 

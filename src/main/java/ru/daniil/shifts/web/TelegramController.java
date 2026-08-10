@@ -17,7 +17,7 @@ import java.security.Principal;
  * Сам bot polling живёт в TelegramBotService и работает только если задан токен.
  */
 @RestController
-@RequestMapping("/api/telegram")
+@RequestMapping({"/api/telegram", "/api/v1/telegram"})
 public class TelegramController {
     private final CurrentUserService currentUserService;
     private final ModuleService moduleService;

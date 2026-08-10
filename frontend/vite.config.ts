@@ -2,7 +2,8 @@ import { fileURLToPath, URL } from "node:url";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vitest/config";
 
-const releaseVersion = "27.38.15";
+const releaseVersion = "27.39.0";
+const productionSourceMaps = process.env.DUTYLOG_FRONTEND_SOURCEMAPS === "true" ? "hidden" : false;
 
 export default defineConfig({
   plugins: [vue()],
@@ -29,7 +30,7 @@ export default defineConfig({
   build: {
     outDir: "dist",
     emptyOutDir: true,
-    sourcemap: true,
+    sourcemap: productionSourceMaps,
     cssCodeSplit: false,
     lib: {
       entry: fileURLToPath(new URL("./src/main.ts", import.meta.url)),

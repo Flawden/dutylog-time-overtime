@@ -1,12 +1,26 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.15 — Module Cache Authority Browser Parity Hotfix**.
+Current release: **v27.39.0 — Vue Settings, Workspace & Integrations**.
 
 
 
 
 
-## v27.38.13 — Vue Productivity Legacy Renderer Retirement Barrier Hotfix — current
+## v27.39.0 — Vue Settings, Workspace & Integrations — current
+- [x] Move Profile, Language, Modules, Calendar Sync and Appearance/Workspace Studio into one Vue Settings owner.
+- [x] Preserve Time, Schedule and Notifications as named compatibility islands only; v27.40.0 owns their final retirement.
+- [x] Expand generated OpenAPI to 118 operations / 120 schemas and move migrated Settings writes to `/api/v1/*`.
+- [x] Activate Q-11/ADR-008 source-map and integration-secret policy without weakening CSP/cookies/module guards.
+- [x] Preserve v27.38.15 module-cache authority and transactional toggle sequencing.
+- [ ] Exact frontend 52-case gate, Maven 757/757, Chromium 48/48 with zero flaky, immutable image, PostgreSQL V47 smoke and staging must all pass before acceptance.
+
+## v27.38.15 — Module Cache Authority Browser Parity Hotfix — completed and green
+- [x] Accepted complete GitHub-hosted staging workflow after the long v27.37/v27.38 browser-parity recovery sequence.
+- [x] 47/47 Chromium reached green with module runtime authority outranking stale month cache and no flaky acceptance.
+- [x] v27.39.0 starts only from this green tree; inherited Calendar/Productivity parity work is no longer deferred.
+
+
+## v27.38.13 — Vue Productivity Legacy Renderer Retirement Barrier Hotfix — browser-incomplete predecessor
 - [x] Use the complete v27.38.12 Playwright report/trace artifact: 44 passed / 3 failed; both v27.38.12 Notes/PWA fixes are confirmed green and only the Task crash family remains.
 - [x] Prove Task persistence succeeds before the crash and capture Vue runtime error 15 plus repeated null `parentNode` failures in the remaining traces.
 - [x] Prove a post-retirement legacy renderer is mutating Vue DOM: while `data-vue-productivity=ready`, trace markup for Vue-owned `#taskBoardCategory` contains the legacy `value="all"` option instead of Vue's canonical empty-value option.
@@ -334,7 +348,7 @@ Current release: **v27.38.15 — Module Cache Authority Browser Parity Hotfix**.
 - [x] v27.36.0: migrate Absence Composer and Time Bank.
 - [x] v27.37.0: migrate Calendar, Today and timeline read surfaces; selected-day editor remains a bounded compatibility island.
 - [ ] v27.38.0: migrate Tasks, Notes and Important Days.
-- [ ] v27.39.0: migrate Settings, Workspace and integrations.
+- [x] v27.39.0: migrate Settings, Workspace and integrations (implementation prepared; acceptance gates pending).
 - [ ] v27.40.0: retire bridge, numbered JavaScript and legacy routing after parity.
 
 ## v27.33.0 — Vue Frontend Foundation & CI/CD — completed

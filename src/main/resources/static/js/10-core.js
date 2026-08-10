@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.38.15"
+const DUTYLOG_VERSION = "27.39.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -255,6 +255,60 @@ function requestVueCalendarTimelineRefresh(){
   return true;
 }
 
+let parkedSettingsLegacyCards = null;
+function parkLegacySettingsCards(){
+  if (parkedSettingsLegacyCards) return parkedSettingsLegacyCards;
+  const view = document.getElementById("view-settings");
+  if (!view) return [];
+  let parking = document.getElementById("settingsLegacyParking");
+  if (!parking) {
+    parking = document.createElement("div");
+    parking.id = "settingsLegacyParking";
+    parking.hidden = true;
+    document.body.appendChild(parking);
+  }
+  const cards = ["timeSettingsCard", "scheduleSettingsCard", "notifyCard"]
+    .map(id => document.getElementById(id))
+    .filter(Boolean);
+  for (const card of cards) parking.appendChild(card);
+  parkedSettingsLegacyCards = cards;
+  return cards;
+}
+function attachLegacySettingsCards(hostId){
+  const host = document.getElementById(String(hostId || ""));
+  if (!host) return;
+  const cards = parkedSettingsLegacyCards || parkLegacySettingsCards();
+  for (const card of cards) host.appendChild(card);
+  const parking = document.getElementById("settingsLegacyParking");
+  parking?.remove();
+}
+function openLegacySettingsCard(section){
+  const wanted = String(section || "");
+  const ids = { time:"timeSettingsCard", schedule:"scheduleSettingsCard", notifications:"notifyCard" };
+  for (const [key, id] of Object.entries(ids)) {
+    const card = document.getElementById(id);
+    if (!card) continue;
+    const open = wanted === "all" || key === wanted;
+    card.classList.toggle("is-open", open);
+    card.classList.toggle("is-collapsed", !open);
+    const toggle = card.querySelector(":scope > .settingsHead .settingsToggle, :scope > .notifyHead .settingsToggle");
+    if (toggle) {
+      toggle.textContent = open ? t("свернуть") : t("открыть");
+      toggle.setAttribute("aria-expanded", String(open));
+    }
+  }
+  try { localStorage.setItem("dutylog.settings.openSection", wanted); } catch (_) {}
+  if (wanted === "time" && typeof renderTimeSettings === "function") renderTimeSettings();
+  if (wanted === "schedule" && typeof renderScheduleLayerSettings === "function") renderScheduleLayerSettings();
+  if (wanted === "notifications" && typeof renderNotifications === "function") renderNotifications();
+}
+function cloneForVue(value){
+  if (value == null) return value;
+  try { return structuredClone(value); } catch (_) {
+    try { return JSON.parse(JSON.stringify(value)); } catch (_) { return null; }
+  }
+}
+
 window.DutyLogLegacyPlatform = Object.freeze({
   version: DUTYLOG_VERSION,
   snapshot:legacyPlatformSnapshot,
@@ -268,6 +322,39 @@ window.DutyLogLegacyPlatform = Object.freeze({
   logout(){
     document.getElementById("logout")?.click();
   },
+  attachSettingsLegacy(hostId){ attachLegacySettingsCards(hostId); },
+  openSettingsLegacySection(section){ openLegacySettingsCard(section); },
+  settingsAppearanceSnapshot(){ return cloneForVue(normalizeAppearance(state.preferences)); },
+  previewAppearance(appearance){
+    state.preferences = storeLocalAppearance(normalizeAppearance(appearance || {}));
+    applyAppearance(state.preferences);
+    publishLegacyPlatformState();
+    return cloneForVue(state.preferences);
+  },
+  synchronizeProfile(profile){
+    if (!profile || typeof profile !== "object") return;
+    state.profile = { ...(state.profile || {}), ...profile };
+    state.preferences = storeLocalAppearance(normalizeAppearance({
+      themePreference:profile.themePreference,
+      accentColor:profile.accentColor,
+      themePreset:profile.themePreset,
+      themeConfig:profile.themeConfig
+    }));
+    applyAppearance(state.preferences);
+    if (profile.languagePreference) applyLanguage(profile.languagePreference);
+    publishLegacyPlatformState();
+  },
+  previewLanguage(language){ applyLanguage(language); publishLegacyPlatformState(); },
+  previewModuleEnabled(key, enabled){
+    const current = (state.modulesList || []).map(item => ({ ...item }));
+    setModuleList(current.map(item => item.key === key ? { ...item, enabled:!!enabled } : item));
+  },
+  async commitModuleList(modules){
+    setModuleList(Array.isArray(modules) ? modules : []);
+    if (typeof loadMonth === "function") await loadMonth({ fresh:true });
+    if (typeof refreshModuleAwareData === "function") await refreshModuleAwareData();
+  },
+  restoreModuleList(modules){ setModuleList(Array.isArray(modules) ? modules : []); },
   retireDomainOwners(domain){
     if (domain === "absence-time-bank") {
       for (const id of [
@@ -276,6 +363,13 @@ window.DutyLogLegacyPlatform = Object.freeze({
         "timeBankGuideModal", "timeBankGuideBackdrop",
       ]) document.getElementById(id)?.remove();
       document.documentElement.setAttribute("data-vue-absence-time-bank", "ready");
+      return;
+    }
+    if (domain === "settings-workspace") {
+      if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
+      parkLegacySettingsCards();
+      document.getElementById("view-settings")?.remove();
+      document.documentElement.setAttribute("data-vue-settings-workspace", "ready");
       return;
     }
     if (domain === "productivity") {
@@ -1588,6 +1682,7 @@ function setThemeBuilderControls(prefs){
   window.DutyLogUI?.renderControls?.(prefs);
 }
 function renderAppearanceControls(){
+  if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
   const byId = id => document.getElementById(id);
   if (!byId('appearanceTheme')) return;
   const prefs = normalizeAppearance(state.preferences);

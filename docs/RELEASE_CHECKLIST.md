@@ -1,7 +1,20 @@
 # Release checklist
 
-Status: v27.38.15.
+Status: v27.39.0.
 
+
+## v27.39.0 — Vue Settings, Workspace & Integrations acceptance
+
+- [x] Install one Vue Settings owner for Profile, Language, Modules, Calendar Sync and Appearance/Workspace Studio.
+- [x] Park Time, Schedule and Notifications as explicit compatibility islands under `#settingsLegacyHost`; do not clone their mature mutation behavior.
+- [x] Expand generated OpenAPI to 118 operations / 120 schemas and route migrated Settings writes through canonical `/api/v1/*` operations.
+- [x] Preserve the accepted v27.38.15 module disable/enable authority transaction and fresh post-toggle calendar reload.
+- [x] Activate Q-11/ADR-008: production source maps are disabled by default; optional diagnostic maps are hidden and integration bearer values remain out of local persistence/diagnostics.
+- [x] Add model/source/browser contracts without weakening retries, timeouts, HTTP/runtime collection or backend module guards.
+- [ ] Exact frontend gate must pass 52 Vitest + strict typecheck + production build/budget on Node 20.18.1/npm 10.8.2.
+- [ ] Maven/JUnit must pass 757/757 across 153 test classes on Java 17.
+- [ ] `npm run test:e2e:canary` then mandatory 48/48 Chromium must pass with zero flaky scenarios.
+- [ ] Immutable image, clean PostgreSQL V47 smoke and staging deployment remain blocking acceptance gates.
 
 ## v27.38.15 — Module Cache Authority Browser Parity Hotfix acceptance
 

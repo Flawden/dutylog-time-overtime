@@ -12,7 +12,7 @@ test('private calendar feed exports .ics, rotates safely and revokes the old sec
   const issuedResponse = page.waitForResponse(response => {
     const url = new URL(response.url());
     return response.request().method() === 'POST'
-      && url.pathname === '/api/calendar-sync/subscription'
+      && url.pathname === '/api/v1/calendar-sync/subscription'
       && response.status() === 200;
   });
   await page.locator('#calendarSyncIssue').click();
@@ -28,7 +28,7 @@ test('private calendar feed exports .ics, rotates safely and revokes the old sec
   expect(feed.headers()['content-type']).toContain('text/calendar');
   const feedBody = await feed.text();
   expect(feedBody).toContain('BEGIN:VCALENDAR\r\n');
-  expect(feedBody).toContain('PRODID:-//DutyLog//Time and Overtime 27.38.15//RU');
+  expect(feedBody).toContain('PRODID:-//DutyLog//Time and Overtime 27.39.0//RU');
   expect(feedBody).toContain('END:VCALENDAR\r\n');
 
   const [download] = await Promise.all([
@@ -42,7 +42,7 @@ test('private calendar feed exports .ics, rotates safely and revokes the old sec
   const rotatedResponse = page.waitForResponse(response => {
     const url = new URL(response.url());
     return response.request().method() === 'POST'
-      && url.pathname === '/api/calendar-sync/subscription'
+      && url.pathname === '/api/v1/calendar-sync/subscription'
       && response.status() === 200;
   });
   await page.locator('#calendarSyncIssue').click();
@@ -56,7 +56,7 @@ test('private calendar feed exports .ics, rotates safely and revokes the old sec
   const revokedResponse = page.waitForResponse(response => {
     const url = new URL(response.url());
     return response.request().method() === 'DELETE'
-      && url.pathname === '/api/calendar-sync/subscription'
+      && url.pathname === '/api/v1/calendar-sync/subscription'
       && response.status() === 204;
   });
   await page.locator('#calendarSyncRevoke').click();

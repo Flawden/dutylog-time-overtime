@@ -44,6 +44,7 @@ function initCalendarSyncRange(){
 }
 
 function renderCalendarSync(){
+  if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
   const data = state.calendarSync;
   const status = $("calendarSyncStatus");
   const summary = $("calendarSyncSummary");
@@ -65,6 +66,7 @@ function renderCalendarSync(){
 }
 
 async function loadCalendarSyncStatus(force = false){
+  if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
   if (!moduleEnabled("calendar_sync")) return;
   if (state.calendarSync && !force) return renderCalendarSync();
   try {

@@ -8,3 +8,4 @@
 | [ADR-004](ADR-004-incremental-strangler-and-bridge-rules.md) | Incremental strangler migration with bounded bridges | accepted | v27.35.0 |
 | [ADR-005](ADR-005-openapi-generated-frontend-contract.md) | Frontend API types are generated from canonical OpenAPI | accepted | v27.35.0 |
 | [ADR-006](ADR-006-pwa-asset-version-upgrade-strategy.md) | Version/build-scoped PWA caches and network-first upgrades | accepted | v27.37.0 |
+| [ADR-008](ADR-008-production-source-maps-and-frontend-diagnostics.md) | Production source maps are opt-in hidden artifacts; safe runtime diagnostics remain public | accepted | v27.39.0 |

@@ -1,3 +1,7 @@
+# DutyLog v27.39.0 — Vue Settings, Workspace & Integrations
+
+The accepted v27.38.15 green baseline advances into the Settings migration. Vue now owns Profile, Language, Modules, Calendar Sync and Appearance/Workspace Studio through generated API contracts, while Time, Schedule and Notifications remain explicit compatibility islands until v27.40.0. OpenAPI expands to 118 operations / 120 schemas, Q-11/ADR-008 disables public production source maps by default, and the release keeps the accepted module-cache authority rules intact. See `docs/VUE_SETTINGS_WORKSPACE_INTEGRATIONS_V27.39.0.md` for the migration boundary and acceptance requirements.
+
 # v27.38.15 — Module Cache Authority Browser Parity Hotfix
 
 - Uses the complete v27.38.14 Playwright report: 47 scenarios ran, 46 passed, and `task-modules` is the only failure on both attempts. The earlier `editor-modals` page-lifecycle flaky is gone.

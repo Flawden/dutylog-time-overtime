@@ -179,11 +179,27 @@ paths:
     get:
       operationId: listModules
       responses:
-        '200': { description: User module contracts and enabled state }
+        '200':
+          description: User module contracts and enabled state
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Module' } }
+        '401': { $ref: '#/components/responses/ApiError' }
     patch:
       operationId: updateModules
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ModuleSettingsUpdateRequest' }
       responses:
-        '200': { description: Updated module state }
+        '200':
+          description: Updated module state
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/Module' } }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
   /api/v1/calendar:
     get:
       operationId: calendarRange
@@ -914,10 +930,114 @@ paths:
               schema: { $ref: '#/components/schemas/LegacyOvertimeMigrationResult' }
         '400': { $ref: '#/components/responses/ApiError' }
   /api/v1/shift-types:
-    get: { operationId: listShiftTypes, responses: { '200': { description: Shift types } } }
+    get:
+      operationId: listShiftTypes
+      responses:
+        '200':
+          description: Shift types
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/ShiftType' } }
+        '401': { $ref: '#/components/responses/ApiError' }
+    post:
+      operationId: createShiftType
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ShiftTypeCreateRequest' }
+      responses:
+        '201':
+          description: Created shift type
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShiftType' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/shift-types/{id}:
+    patch:
+      operationId: updateShiftType
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ShiftTypeUpdateRequest' }
+      responses:
+        '200':
+          description: Updated shift type
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ShiftType' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: deleteShiftType
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Shift type deleted }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
   /api/v1/profile:
-    get: { operationId: getProfile, responses: { '200': { description: Profile } } }
-    put: { operationId: updateProfile, responses: { '200': { description: Updated profile } } }
+    get:
+      operationId: getProfile
+      responses:
+        '200':
+          description: Profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '401': { $ref: '#/components/responses/ApiError' }
+    put:
+      operationId: updateProfile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProfileUpdateRequest' }
+      responses:
+        '200':
+          description: Updated profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/profile/password:
+    post:
+      operationId: changeProfilePassword
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PasswordChangeRequest' }
+      responses:
+        '204': { description: Password changed and mobile sessions revoked }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/profile/sessions:
+    get:
+      operationId: listProfileSessions
+      responses:
+        '200':
+          description: Active and revoked mobile sessions
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/MobileSession' } }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/profile/sessions/{id}:
+    delete:
+      operationId: revokeProfileSession
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Session revoked }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
   /api/v1/time/context:
     get:
       operationId: getTimeContext
@@ -930,8 +1050,104 @@ paths:
               schema: { $ref: '#/components/schemas/TimeContext' }
         '401': { $ref: '#/components/responses/ApiError' }
   /api/v1/notifications/settings:
-    get: { operationId: notificationSettings, responses: { '200': { description: Notification settings } } }
-    patch: { operationId: updateNotificationSettings, responses: { '200': { description: Updated notification settings } } }
+    get:
+      operationId: getNotificationSettings
+      responses:
+        '200':
+          description: Notification settings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationSettings' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+    patch:
+      operationId: updateNotificationSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NotificationSettingsUpdateRequest' }
+      responses:
+        '200':
+          description: Updated notification settings
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/NotificationSettings' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+  /api/v1/notifications/upcoming:
+    get:
+      operationId: listUpcomingNotifications
+      parameters:
+        - { in: query, name: from, required: true, schema: { type: string, format: date } }
+        - { in: query, name: to, required: true, schema: { type: string, format: date } }
+        - { in: query, name: includePast, required: false, schema: { type: boolean, default: true } }
+      responses:
+        '200':
+          description: Upcoming reminders
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/NotificationReminder' } }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+  /api/v1/notifications/tomorrow:
+    get:
+      operationId: listTomorrowNotifications
+      responses:
+        '200':
+          description: Tomorrow reminders
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: '#/components/schemas/NotificationReminder' } }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+  /api/v1/telegram/status:
+    get:
+      operationId: getTelegramStatus
+      responses:
+        '200':
+          description: Browser-safe Telegram link status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TelegramStatus' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+  /api/v1/telegram/link-code:
+    post:
+      operationId: createTelegramLinkCode
+      responses:
+        '200':
+          description: One-time Telegram linking code
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TelegramCode' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+  /api/v1/telegram/settings:
+    patch:
+      operationId: updateTelegramSettings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TelegramSettingsRequest' }
+      responses:
+        '200':
+          description: Updated Telegram status
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TelegramStatus' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+  /api/v1/telegram/link:
+    delete:
+      operationId: unlinkTelegram
+      responses:
+        '204': { description: Telegram link removed }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
   /api/v1/quick-scenarios:
     get:
       operationId: quickScenarios
@@ -2657,6 +2873,177 @@ components:
         shiftInterval:
           allOf: [{ $ref: '#/components/schemas/ShiftInterval' }]
           nullable: true
+    Module:
+      type: object
+      required: [key, titleRu, titleEn, descriptionRu, descriptionEn, enabled, locked, defaultEnabled, dependencies, hidden, category, order, uiSlots, apiPrefixes, offlineQueueTypes]
+      properties:
+        key: { type: string }
+        titleRu: { type: string }
+        titleEn: { type: string }
+        descriptionRu: { type: string }
+        descriptionEn: { type: string }
+        enabled: { type: boolean }
+        locked: { type: boolean }
+        defaultEnabled: { type: boolean }
+        dependencies: { type: array, items: { type: string } }
+        hidden: { type: boolean }
+        category: { type: string }
+        order: { type: integer }
+        uiSlots: { type: array, items: { type: string } }
+        apiPrefixes: { type: array, items: { type: string } }
+        offlineQueueTypes: { type: array, items: { type: string } }
+    ModuleSettingsUpdateRequest:
+      type: object
+      required: [enabled]
+      properties:
+        enabled: { type: object, additionalProperties: { type: boolean } }
+    Profile:
+      type: object
+      required: [username, admin, role, accountTier, themePreference, accentColor, themePreset, themeConfig, languagePreference, workTimezone, displayTimezone, onboardingCompleted]
+      properties:
+        username: { type: string }
+        displayName: { type: string, nullable: true }
+        birthday: { type: string, format: date, nullable: true }
+        admin: { type: boolean }
+        role: { type: string }
+        accountTier: { type: string }
+        themePreference: { type: string, enum: [system, light, dark] }
+        accentColor: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+        themePreset: { type: string }
+        themeConfig: { type: object, additionalProperties: true }
+        languagePreference: { type: string, enum: [ru, en] }
+        workTimezone: { type: string }
+        displayTimezone: { type: string }
+        onboardingCompleted: { type: boolean }
+    ProfileUpdateRequest:
+      type: object
+      properties:
+        displayName: { type: string, maxLength: 60, nullable: true }
+        birthday: { type: string, format: date, nullable: true }
+        themePreference: { type: string, enum: [system, light, dark] }
+        accentColor: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+        themePreset: { type: string, maxLength: 40 }
+        themeConfig: { type: object, additionalProperties: true }
+        languagePreference: { type: string, enum: [ru, en] }
+        workTimezone: { type: string, maxLength: 80 }
+        displayTimezone: { type: string, maxLength: 80 }
+        onboardingCompleted: { type: boolean }
+    PasswordChangeRequest:
+      type: object
+      required: [currentPassword, newPassword]
+      properties:
+        currentPassword: { type: string }
+        newPassword: { type: string }
+    ShiftType:
+      type: object
+      required: [id, name, hours, color, builtin, breakMinutes, plannedHours, notificationsEnabled]
+      properties:
+        id: { type: integer, format: int64 }
+        name: { type: string }
+        hours: { type: number }
+        color: { type: string }
+        builtin: { type: boolean }
+        startTime: { type: string, nullable: true }
+        endTime: { type: string, nullable: true }
+        breakMinutes: { type: integer }
+        plannedHours: { type: number }
+        notificationsEnabled: { type: boolean }
+        notificationMinutesBefore: { type: integer, nullable: true }
+    ShiftTypeCreateRequest:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, maxLength: 60 }
+        hours: { type: number, minimum: 0, maximum: 24 }
+        color: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+        startTime: { type: string, nullable: true }
+        endTime: { type: string, nullable: true }
+        breakMinutes: { type: integer, minimum: 0, maximum: 1440 }
+        plannedHours: { type: number, minimum: 0, maximum: 24 }
+        notificationsEnabled: { type: boolean }
+        notificationMinutesBefore: { type: integer, minimum: -1, maximum: 1440, nullable: true }
+    ShiftTypeUpdateRequest:
+      type: object
+      properties:
+        name: { type: string, maxLength: 60 }
+        hours: { type: number, minimum: 0, maximum: 24 }
+        color: { type: string, pattern: '^#[0-9a-fA-F]{6}$' }
+        startTime: { type: string, nullable: true }
+        endTime: { type: string, nullable: true }
+        breakMinutes: { type: integer, minimum: 0, maximum: 1440 }
+        plannedHours: { type: number, minimum: 0, maximum: 24 }
+        notificationsEnabled: { type: boolean }
+        notificationMinutesBefore: { type: integer, minimum: -1, maximum: 1440, nullable: true }
+    NotificationSettings:
+      type: object
+      required: [browserNotificationsEnabled, shiftRemindersEnabled, shiftReminderMinutesBefore, tomorrowDigestEnabled, tomorrowDigestTime, taskRemindersEnabled, taskReminderTime, importantDayRemindersEnabled, importantDayDaysBefore, importantDayReminderTime, updatedAt]
+      properties:
+        browserNotificationsEnabled: { type: boolean }
+        shiftRemindersEnabled: { type: boolean }
+        shiftReminderMinutesBefore: { type: integer }
+        tomorrowDigestEnabled: { type: boolean }
+        tomorrowDigestTime: { type: string }
+        taskRemindersEnabled: { type: boolean }
+        taskReminderTime: { type: string }
+        importantDayRemindersEnabled: { type: boolean }
+        importantDayDaysBefore: { type: integer }
+        importantDayReminderTime: { type: string }
+        updatedAt: { type: string, format: date-time }
+    NotificationSettingsUpdateRequest:
+      type: object
+      properties:
+        browserNotificationsEnabled: { type: boolean }
+        shiftRemindersEnabled: { type: boolean }
+        shiftReminderMinutesBefore: { type: integer, minimum: 0, maximum: 1440 }
+        tomorrowDigestEnabled: { type: boolean }
+        tomorrowDigestTime: { type: string }
+        taskRemindersEnabled: { type: boolean }
+        taskReminderTime: { type: string }
+        importantDayRemindersEnabled: { type: boolean }
+        importantDayDaysBefore: { type: integer, minimum: 0, maximum: 366 }
+        importantDayReminderTime: { type: string }
+    NotificationReminder:
+      type: object
+      required: [id, type, sourceDate, remindAt, title, priority]
+      properties:
+        id: { type: string }
+        type: { type: string }
+        sourceDate: { type: string, format: date }
+        remindAt: { type: string }
+        title: { type: string }
+        details: { type: string, nullable: true }
+        priority: { type: integer }
+        remindAtInstant: { type: string, format: date-time, nullable: true }
+        workTimezone: { type: string, nullable: true }
+        displayAt: { type: string, nullable: true }
+        displayTimezone: { type: string, nullable: true }
+    TelegramStatus:
+      type: object
+      required: [configured, pollingEnabled, linked, enabled, notificationsEnabled]
+      properties:
+        configured: { type: boolean }
+        pollingEnabled: { type: boolean }
+        linked: { type: boolean }
+        enabled: { type: boolean }
+        notificationsEnabled: { type: boolean }
+        botUsername: { type: string, nullable: true }
+        chatId: { type: string, nullable: true }
+        username: { type: string, nullable: true }
+        linkedAt: { type: string, format: date-time, nullable: true }
+        pendingCode: { type: string, nullable: true }
+        pendingCodeExpiresAt: { type: string, format: date-time, nullable: true }
+    TelegramCode:
+      type: object
+      required: [code, expiresAt, startCommand]
+      properties:
+        code: { type: string }
+        expiresAt: { type: string, format: date-time }
+        startCommand: { type: string }
+        deepLink: { type: string, nullable: true }
+    TelegramSettingsRequest:
+      type: object
+      properties:
+        notificationsEnabled: { type: boolean }
     MobileBootstrap:
       type: object
       required: [apiVersion, serverTime, user, calendar]

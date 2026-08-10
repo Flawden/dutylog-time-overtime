@@ -1,3 +1,15 @@
+# v27.39.0 — Vue Settings, Workspace & Integrations
+
+- Starts from the accepted green v27.38.15 staging baseline and opens the next planned migration milestone instead of carrying browser-parity debt forward.
+- Installs one Vue Settings owner for section navigation, Profile, Language, Modules, Calendar Sync, Appearance/Workspace Studio and Telegram profile integration.
+- Keeps Time, Schedule and Notifications as three named compatibility islands under `#settingsLegacyHost`; v27.40.0 owns their final retirement.
+- Expands the generated OpenAPI browser contract from 101 operations / 106 schemas to **118 operations / 120 schemas** (`91b48b10fa56`) and moves migrated Settings writes to canonical generated `/api/v1/*` operations. Telegram keeps its compatibility alias and adds canonical `/api/v1/telegram` routing.
+- Preserves the v27.38.15 module-toggle authority transaction: disable closes runtime before PATCH, enable waits for backend confirmation, failure restores prior state, and commit forces a fresh calendar/module-aware refresh.
+- Moves UI Contract v2 workspace/layout/theme/palette/studio presentation into strict Vue models without duplicating backend business rules or the released root-theme application contract.
+- Activates Q-11 and accepts ADR-008: normal production builds emit no public source maps; explicitly requested diagnostic maps are hidden. Calendar bearer URLs and Telegram link values remain outside local persistence/diagnostics.
+- Adds one Chromium ownership journey, three Settings model Vitest cases and six source/architecture JUnit contracts. Target baseline is **153 Java test classes / 757 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases / Flyway V47**.
+- Acceptance remains fail-closed on exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 757/757, canary, clean 48/48 Chromium with zero flaky, immutable image, clean PostgreSQL V47 smoke and staging deployment.
+
 # v27.38.15 — Module Cache Authority Browser Parity Hotfix
 
 - Uses the complete v27.38.14 Playwright report: 47 scenarios ran, 46 passed, and `task-modules` is the only failure on both attempts. The earlier `editor-modals` page-lifecycle flaky is gone.

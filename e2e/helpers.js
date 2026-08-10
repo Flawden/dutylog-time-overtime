@@ -247,7 +247,7 @@ async function toggleModule(page, key, enabled) {
     /модули сохранены|modules saved/i,
     { timeout: 15_000 }
   );
-  const response = waitForApi(page, 'PATCH', '/api/modules');
+  const response = waitForApi(page, 'PATCH', '/api/v1/modules');
   if (enabled) await toggle.check(); else await toggle.uncheck();
   await response;
   await savedMessage;

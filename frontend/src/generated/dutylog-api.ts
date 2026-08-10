@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: c48bfab2bcafc242e81149378f58a0e697870ade9b4653b3d3ada78f6be2a5fa
+ * SHA-256: 91b48b10fa56d3bd92f7d3f3c1dfc9a8d27d05641b3bf48f1dcd7445ab9c71c5
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 101 operations, 106 schemas
+ * Contract: 118 operations, 120 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "c48bfab2bcafc242e81149378f58a0e697870ade9b4653b3d3ada78f6be2a5fa";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "91b48b10fa56d3bd92f7d3f3c1dfc9a8d27d05641b3bf48f1dcd7445ab9c71c5";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -623,6 +623,69 @@ export namespace DutyLogApiSchemas {
     displayTimezone?: string | null;
   };
 
+  export type Module = {
+    key: string;
+    titleRu: string;
+    titleEn: string;
+    descriptionRu: string;
+    descriptionEn: string;
+    enabled: boolean;
+    locked: boolean;
+    defaultEnabled: boolean;
+    dependencies: Array<string>;
+    hidden: boolean;
+    category: string;
+    order: number;
+    uiSlots: Array<string>;
+    apiPrefixes: Array<string>;
+    offlineQueueTypes: Array<string>;
+  };
+
+  export type ModuleSettingsUpdateRequest = {
+    enabled: Record<string, boolean>;
+  };
+
+  export type NotificationReminder = {
+    id: string;
+    type: string;
+    sourceDate: string;
+    remindAt: string;
+    title: string;
+    details?: string | null;
+    priority: number;
+    remindAtInstant?: string | null;
+    workTimezone?: string | null;
+    displayAt?: string | null;
+    displayTimezone?: string | null;
+  };
+
+  export type NotificationSettings = {
+    browserNotificationsEnabled: boolean;
+    shiftRemindersEnabled: boolean;
+    shiftReminderMinutesBefore: number;
+    tomorrowDigestEnabled: boolean;
+    tomorrowDigestTime: string;
+    taskRemindersEnabled: boolean;
+    taskReminderTime: string;
+    importantDayRemindersEnabled: boolean;
+    importantDayDaysBefore: number;
+    importantDayReminderTime: string;
+    updatedAt: string;
+  };
+
+  export type NotificationSettingsUpdateRequest = {
+    browserNotificationsEnabled?: boolean;
+    shiftRemindersEnabled?: boolean;
+    shiftReminderMinutesBefore?: number;
+    tomorrowDigestEnabled?: boolean;
+    tomorrowDigestTime?: string;
+    taskRemindersEnabled?: boolean;
+    taskReminderTime?: string;
+    importantDayRemindersEnabled?: boolean;
+    importantDayDaysBefore?: number;
+    importantDayReminderTime?: string;
+  };
+
   export type OvertimeAccount = {
     totalEarnedHours: number;
     totalUsedHours: number;
@@ -760,6 +823,11 @@ export namespace DutyLogApiSchemas {
     reconstructed: boolean;
   };
 
+  export type PasswordChangeRequest = {
+    currentPassword: string;
+    newPassword: string;
+  };
+
   export type PayrollAdjustment = DutyLogApiSchemas.PayrollAdjustmentInput & {
     id: number;
     createdAt: string;
@@ -822,6 +890,36 @@ export namespace DutyLogApiSchemas {
     calculationHash: string;
     createdAt: string;
     supersededById?: number | null;
+  };
+
+  export type Profile = {
+    username: string;
+    displayName?: string | null;
+    birthday?: string | null;
+    admin: boolean;
+    role: string;
+    accountTier: string;
+    themePreference: "system" | "light" | "dark";
+    accentColor: string;
+    themePreset: string;
+    themeConfig: Record<string, unknown>;
+    languagePreference: "ru" | "en";
+    workTimezone: string;
+    displayTimezone: string;
+    onboardingCompleted: boolean;
+  };
+
+  export type ProfileUpdateRequest = {
+    displayName?: string | null;
+    birthday?: string | null;
+    themePreference?: "system" | "light" | "dark";
+    accentColor?: string;
+    themePreset?: string;
+    themeConfig?: Record<string, unknown>;
+    languagePreference?: "ru" | "en";
+    workTimezone?: string;
+    displayTimezone?: string;
+    onboardingCompleted?: boolean;
   };
 
   export type QuickScenario = {
@@ -995,6 +1093,44 @@ export namespace DutyLogApiSchemas {
     legacyLocal: boolean;
   };
 
+  export type ShiftType = {
+    id: number;
+    name: string;
+    hours: number;
+    color: string;
+    builtin: boolean;
+    startTime?: string | null;
+    endTime?: string | null;
+    breakMinutes: number;
+    plannedHours: number;
+    notificationsEnabled: boolean;
+    notificationMinutesBefore?: number | null;
+  };
+
+  export type ShiftTypeCreateRequest = {
+    name: string;
+    hours?: number;
+    color?: string;
+    startTime?: string | null;
+    endTime?: string | null;
+    breakMinutes?: number;
+    plannedHours?: number;
+    notificationsEnabled?: boolean;
+    notificationMinutesBefore?: number | null;
+  };
+
+  export type ShiftTypeUpdateRequest = {
+    name?: string;
+    hours?: number;
+    color?: string;
+    startTime?: string | null;
+    endTime?: string | null;
+    breakMinutes?: number;
+    plannedHours?: number;
+    notificationsEnabled?: boolean;
+    notificationMinutesBefore?: number | null;
+  };
+
   export type Task = {
     id: number;
     date: string;
@@ -1103,6 +1239,31 @@ export namespace DutyLogApiSchemas {
     scheduledEndDate?: string | null;
     scheduledEndTime?: string | null;
     scheduledDurationMinutes?: number | null;
+  };
+
+  export type TelegramCode = {
+    code: string;
+    expiresAt: string;
+    startCommand: string;
+    deepLink?: string | null;
+  };
+
+  export type TelegramSettingsRequest = {
+    notificationsEnabled?: boolean;
+  };
+
+  export type TelegramStatus = {
+    configured: boolean;
+    pollingEnabled: boolean;
+    linked: boolean;
+    enabled: boolean;
+    notificationsEnabled: boolean;
+    botUsername?: string | null;
+    chatId?: string | null;
+    username?: string | null;
+    linkedAt?: string | null;
+    pendingCode?: string | null;
+    pendingCodeExpiresAt?: string | null;
   };
 
   export type TimeCompensationDay = {
@@ -1215,6 +1376,7 @@ export const dutyLogOperations = {
   "calculatePayrollRevision": { method: "POST", path: "/api/v1/payroll/periods/{month}/calculate" },
   "calendarRange": { method: "GET", path: "/api/v1/calendar" },
   "captureInboxItem": { method: "POST", path: "/api/v1/inbox" },
+  "changeProfilePassword": { method: "POST", path: "/api/v1/profile/password" },
   "closeAccountingPeriod": { method: "POST", path: "/api/v1/ledger-integrity/periods/{month}/close" },
   "convertInboxItemToTask": { method: "POST", path: "/api/v1/inbox/{id}/task" },
   "createAbsencePeriod": { method: "POST", path: "/api/v1/vacation-planner/absences" },
@@ -1226,7 +1388,9 @@ export const dutyLogOperations = {
   "createOvertimeCredit": { method: "POST", path: "/api/v1/overtime/credits" },
   "createQuickScenario": { method: "POST", path: "/api/v1/quick-scenarios" },
   "createScheduleTemplate": { method: "POST", path: "/api/v1/schedule-templates" },
+  "createShiftType": { method: "POST", path: "/api/v1/shift-types" },
   "createTask": { method: "POST", path: "/api/v1/tasks" },
+  "createTelegramLinkCode": { method: "POST", path: "/api/v1/telegram/link-code" },
   "deleteAbsencePeriod": { method: "DELETE", path: "/api/v1/vacation-planner/absences/{id}" },
   "deleteAbsenceType": { method: "DELETE", path: "/api/v1/vacation-planner/types/{id}" },
   "deleteActualWorkInterval": { method: "DELETE", path: "/api/v1/actual-work/{id}" },
@@ -1238,12 +1402,16 @@ export const dutyLogOperations = {
   "deleteOvertimeCredit": { method: "DELETE", path: "/api/v1/overtime/credits/{id}" },
   "deleteQuickScenario": { method: "DELETE", path: "/api/v1/quick-scenarios/{id}" },
   "deleteScheduleTemplate": { method: "DELETE", path: "/api/v1/schedule-templates/{id}" },
+  "deleteShiftType": { method: "DELETE", path: "/api/v1/shift-types/{id}" },
   "deleteTask": { method: "DELETE", path: "/api/v1/tasks/{taskId}" },
   "exportCalendarRange": { method: "GET", path: "/api/v1/calendar-sync/export" },
   "exportImportantEventIcs": { method: "GET", path: "/api/v1/calendar-sync/events/{id}.ics" },
   "exportNotes": { method: "GET", path: "/api/v1/export/notes" },
   "getCalendarSyncStatus": { method: "GET", path: "/api/v1/calendar-sync/status" },
+  "getNotificationSettings": { method: "GET", path: "/api/v1/notifications/settings" },
+  "getProfile": { method: "GET", path: "/api/v1/profile" },
   "getTaskDetails": { method: "GET", path: "/api/v1/tasks/{taskId}" },
+  "getTelegramStatus": { method: "GET", path: "/api/v1/telegram/status" },
   "getTimeContext": { method: "GET", path: "/api/v1/time/context" },
   "getVacationPlanner": { method: "GET", path: "/api/v1/vacation-planner" },
   "inspectLedgerIntegrity": { method: "GET", path: "/api/v1/ledger-integrity" },
@@ -1256,8 +1424,12 @@ export const dutyLogOperations = {
   "listInbox": { method: "GET", path: "/api/v1/inbox" },
   "listMobileSessions": { method: "GET", path: "/api/v1/mobile/auth/sessions" },
   "listModules": { method: "GET", path: "/api/v1/modules" },
+  "listProfileSessions": { method: "GET", path: "/api/v1/profile/sessions" },
   "listScheduleTemplates": { method: "GET", path: "/api/v1/schedule-templates" },
+  "listShiftTypes": { method: "GET", path: "/api/v1/shift-types" },
   "listTasks": { method: "GET", path: "/api/v1/tasks" },
+  "listTomorrowNotifications": { method: "GET", path: "/api/v1/notifications/tomorrow" },
+  "listUpcomingNotifications": { method: "GET", path: "/api/v1/notifications/upcoming" },
   "loginMobile": { method: "POST", path: "/api/v1/mobile/auth/login" },
   "logoutMobile": { method: "POST", path: "/api/v1/mobile/auth/logout" },
   "migrateLegacyOvertimeCredits": { method: "POST", path: "/api/v1/overtime/legacy-credits/migrate" },
@@ -1288,12 +1460,14 @@ export const dutyLogOperations = {
   "retiredUpdateManualOvertimeUsage": { method: "PATCH", path: "/api/v1/overtime/usages/{id}" },
   "revokeCalendarSubscription": { method: "DELETE", path: "/api/v1/calendar-sync/subscription" },
   "revokeMobileSession": { method: "DELETE", path: "/api/v1/mobile/auth/sessions/{id}" },
+  "revokeProfileSession": { method: "DELETE", path: "/api/v1/profile/sessions/{id}" },
   "rotateCalendarSubscription": { method: "POST", path: "/api/v1/calendar-sync/subscription" },
   "searchDayNotes": { method: "GET", path: "/api/v1/notes/search" },
   "syncMobileQueue": { method: "POST", path: "/api/v1/mobile/sync" },
   "taskBoard": { method: "GET", path: "/api/v1/tasks/board" },
   "taskMetadata": { method: "GET", path: "/api/v1/tasks/metadata" },
   "timeCompensationSummary": { method: "GET", path: "/api/v1/time-compensation" },
+  "unlinkTelegram": { method: "DELETE", path: "/api/v1/telegram/link" },
   "updateAbsencePeriod": { method: "PATCH", path: "/api/v1/vacation-planner/absences/{id}" },
   "updateAbsenceType": { method: "PATCH", path: "/api/v1/vacation-planner/types/{id}" },
   "updateActualWorkInterval": { method: "PUT", path: "/api/v1/actual-work/{id}" },
@@ -1302,12 +1476,16 @@ export const dutyLogOperations = {
   "updateImportantDay": { method: "PATCH", path: "/api/v1/important-days/{id}" },
   "updateInboxItem": { method: "PATCH", path: "/api/v1/inbox/{id}" },
   "updateModules": { method: "PATCH", path: "/api/v1/modules" },
+  "updateNotificationSettings": { method: "PATCH", path: "/api/v1/notifications/settings" },
   "updateOvertimeCredit": { method: "PATCH", path: "/api/v1/overtime/credits/{id}" },
   "updatePayrollSettings": { method: "PATCH", path: "/api/v1/payroll/settings" },
+  "updateProfile": { method: "PUT", path: "/api/v1/profile" },
   "updateQuickScenario": { method: "PATCH", path: "/api/v1/quick-scenarios/{id}" },
   "updateScheduleTemplate": { method: "PATCH", path: "/api/v1/schedule-templates/{id}" },
+  "updateShiftType": { method: "PATCH", path: "/api/v1/shift-types/{id}" },
   "updateSubtask": { method: "PATCH", path: "/api/v1/tasks/{taskId}/subtasks/{subtaskId}" },
   "updateTask": { method: "PATCH", path: "/api/v1/tasks/{taskId}" },
+  "updateTelegramSettings": { method: "PATCH", path: "/api/v1/telegram/settings" },
   "updateVacationSettings": { method: "PATCH", path: "/api/v1/vacation-planner/settings" },
   "upsertDay": { method: "PUT", path: "/api/v1/days/{date}" },
 } as const;
@@ -1338,6 +1516,10 @@ export interface DutyLogOperationTypes {
   "captureInboxItem": {
     requestBody: DutyLogApiSchemas.InboxCreateRequest;
     response: DutyLogApiSchemas.InboxItem;
+  };
+  "changeProfilePassword": {
+    requestBody: DutyLogApiSchemas.PasswordChangeRequest;
+    response: undefined;
   };
   "closeAccountingPeriod": {
     requestBody: undefined;
@@ -1383,9 +1565,17 @@ export interface DutyLogOperationTypes {
     requestBody: DutyLogApiSchemas.ScheduleTemplateInput;
     response: DutyLogApiSchemas.ScheduleTemplate;
   };
+  "createShiftType": {
+    requestBody: DutyLogApiSchemas.ShiftTypeCreateRequest;
+    response: DutyLogApiSchemas.ShiftType;
+  };
   "createTask": {
     requestBody: DutyLogApiSchemas.TaskCreateRequest;
     response: DutyLogApiSchemas.Task;
+  };
+  "createTelegramLinkCode": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.TelegramCode;
   };
   "deleteAbsencePeriod": {
     requestBody: undefined;
@@ -1431,6 +1621,10 @@ export interface DutyLogOperationTypes {
     requestBody: undefined;
     response: undefined;
   };
+  "deleteShiftType": {
+    requestBody: undefined;
+    response: undefined;
+  };
   "deleteTask": {
     requestBody: undefined;
     response: undefined;
@@ -1451,9 +1645,21 @@ export interface DutyLogOperationTypes {
     requestBody: undefined;
     response: DutyLogApiSchemas.CalendarSyncStatus;
   };
+  "getNotificationSettings": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.NotificationSettings;
+  };
+  "getProfile": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.Profile;
+  };
   "getTaskDetails": {
     requestBody: undefined;
     response: DutyLogApiSchemas.Task;
+  };
+  "getTelegramStatus": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.TelegramStatus;
   };
   "getTimeContext": {
     requestBody: undefined;
@@ -1501,15 +1707,31 @@ export interface DutyLogOperationTypes {
   };
   "listModules": {
     requestBody: undefined;
-    response: unknown;
+    response: Array<DutyLogApiSchemas.Module>;
+  };
+  "listProfileSessions": {
+    requestBody: undefined;
+    response: Array<DutyLogApiSchemas.MobileSession>;
   };
   "listScheduleTemplates": {
     requestBody: undefined;
     response: Array<DutyLogApiSchemas.ScheduleTemplate>;
   };
+  "listShiftTypes": {
+    requestBody: undefined;
+    response: Array<DutyLogApiSchemas.ShiftType>;
+  };
   "listTasks": {
     requestBody: undefined;
     response: Array<DutyLogApiSchemas.Task>;
+  };
+  "listTomorrowNotifications": {
+    requestBody: undefined;
+    response: Array<DutyLogApiSchemas.NotificationReminder>;
+  };
+  "listUpcomingNotifications": {
+    requestBody: undefined;
+    response: Array<DutyLogApiSchemas.NotificationReminder>;
   };
   "loginMobile": {
     requestBody: DutyLogApiSchemas.MobileLoginRequest;
@@ -1635,6 +1857,10 @@ export interface DutyLogOperationTypes {
     requestBody: undefined;
     response: undefined;
   };
+  "revokeProfileSession": {
+    requestBody: undefined;
+    response: undefined;
+  };
   "rotateCalendarSubscription": {
     requestBody: undefined;
     response: DutyLogApiSchemas.CalendarSubscription;
@@ -1658,6 +1884,10 @@ export interface DutyLogOperationTypes {
   "timeCompensationSummary": {
     requestBody: undefined;
     response: DutyLogApiSchemas.TimeCompensationSummary;
+  };
+  "unlinkTelegram": {
+    requestBody: undefined;
+    response: undefined;
   };
   "updateAbsencePeriod": {
     requestBody: DutyLogApiSchemas.AbsencePeriodPatch;
@@ -1688,8 +1918,12 @@ export interface DutyLogOperationTypes {
     response: unknown;
   };
   "updateModules": {
-    requestBody: undefined;
-    response: unknown;
+    requestBody: DutyLogApiSchemas.ModuleSettingsUpdateRequest;
+    response: Array<DutyLogApiSchemas.Module>;
+  };
+  "updateNotificationSettings": {
+    requestBody: DutyLogApiSchemas.NotificationSettingsUpdateRequest;
+    response: DutyLogApiSchemas.NotificationSettings;
   };
   "updateOvertimeCredit": {
     requestBody: DutyLogApiSchemas.OvertimeCreditUpdateRequest;
@@ -1699,6 +1933,10 @@ export interface DutyLogOperationTypes {
     requestBody: DutyLogApiSchemas.PayrollSettingsInput;
     response: unknown;
   };
+  "updateProfile": {
+    requestBody: DutyLogApiSchemas.ProfileUpdateRequest;
+    response: DutyLogApiSchemas.Profile;
+  };
   "updateQuickScenario": {
     requestBody: DutyLogApiSchemas.QuickScenarioUpdateRequest;
     response: DutyLogApiSchemas.QuickScenario;
@@ -1706,6 +1944,10 @@ export interface DutyLogOperationTypes {
   "updateScheduleTemplate": {
     requestBody: DutyLogApiSchemas.ScheduleTemplatePatch;
     response: unknown;
+  };
+  "updateShiftType": {
+    requestBody: DutyLogApiSchemas.ShiftTypeUpdateRequest;
+    response: DutyLogApiSchemas.ShiftType;
   };
   "updateSubtask": {
     requestBody: {
@@ -1716,6 +1958,10 @@ export interface DutyLogOperationTypes {
   "updateTask": {
     requestBody: DutyLogApiSchemas.TaskUpdateRequest;
     response: DutyLogApiSchemas.Task;
+  };
+  "updateTelegramSettings": {
+    requestBody: DutyLogApiSchemas.TelegramSettingsRequest;
+    response: DutyLogApiSchemas.TelegramStatus;
   };
   "updateVacationSettings": {
     requestBody: DutyLogApiSchemas.VacationSettingsInput;
