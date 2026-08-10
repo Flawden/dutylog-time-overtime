@@ -1,14 +1,14 @@
 # Release checklist
 
-Status: v27.38.10.
+Status: v27.38.11.
 
-## v27.38.10 — Vue Offline, Task Publication & PWA Browser Parity Hotfix acceptance
+## v27.38.11 — Vue Read-Your-Write & PWA Activation Browser Parity Hotfix acceptance
 
-- [x] v27.38.9 evidence is classified as 40 passed / 6 failed / 1 flaky after exact frontend, Maven, release-check and boot canary were green.
-- [x] Notes browser ownership distinguishes legacy offline-adapter PATCH from generated DELETE; no endpoint alias is broadened.
-- [x] Offline Productivity hydration skips online-only context/full-list reads and reuses the existing selected-day IndexedDB snapshot.
-- [x] Backend-authoritative Task mutation DTOs are published before and after refresh sequencing without introducing frontend business authority or re-sorting the backend-owned board.
-- [x] Service-worker registration is deferred until onboarding completion and remains idempotent.
+- [x] v27.38.10 evidence is classified as 42 passed / 5 failed with no flaky retry; earlier mandatory gates reached Browser E2E.
+- [x] Committed Task DTOs remain staged across accepted selected-day/Board projection reads and are removed from the overlay only after the refresh window settles.
+- [x] Multiple Notes reload waits for `/api/v1/calendar`; bounded offline-adapter PATCH and generated Note DELETE ownership remain distinct.
+- [x] First PWA registration relies on `register()` installation and explicit `registration.update()` runs only for an existing registration.
+- [x] No browser timeout, retry, assertion, backend business authority, OpenAPI shape or Flyway schema is weakened.
 - [ ] Exact Node 20.18.1 / npm 10.8.2 frontend gate is green.
 - [ ] Maven verify is green with 751/751 JUnit tests.
 - [ ] `npm run test:e2e:canary` is green.

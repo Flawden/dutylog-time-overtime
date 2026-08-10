@@ -84,7 +84,7 @@ test('multiple notes on one day remain independent across pin, reorder, reload a
   await moved;
   await expect(page.locator('#noteList .dayNoteCard').first()).toContainText('Вторая заметка');
 
-  const authoritativeReload = page.waitForResponse(response => new URL(response.url()).pathname === '/api/calendar' && response.status() === 200);
+  const authoritativeReload = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/calendar' && response.status() === 200);
   await page.reload();
   await authoritativeReload;
   await expect(page.locator('#appBoot')).toBeHidden({ timeout: 30_000 });

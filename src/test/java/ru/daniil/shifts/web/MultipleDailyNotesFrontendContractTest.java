@@ -6,6 +6,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Static contract protecting the independent-note UI and its offline boundary. */
@@ -60,6 +61,8 @@ class MultipleDailyNotesFrontendContractTest {
         assertTrue(openapi.contains("/api/v1/notes:"));
         assertTrue(openapi.contains("DayNote:"));
         assertTrue(e2e.contains("multiple notes on one day remain independent"));
+        assertTrue(e2e.contains("'/api/v1/calendar'"));
+        assertFalse(e2e.contains("pathname === '/api/calendar'"));
         assertTrue(e2e.contains("noteCountBadge"));
     }
 

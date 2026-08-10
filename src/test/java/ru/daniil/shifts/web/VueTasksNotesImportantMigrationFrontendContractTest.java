@@ -86,11 +86,15 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(store.contains("tasksEnabled && !offline ? this.loadBoard() : Promise.resolve(true)"));
         assertTrue(store.contains("importantEnabled && !offline ? this.loadImportantDays() : Promise.resolve(true)"));
         assertTrue(store.contains("tasksEnabled && !offline ? this.loadInbox() : Promise.resolve(true)"));
+        assertTrue(store.contains("const taskReadYourWrite = new Map<number, Task>()"));
+        assertTrue(store.contains("taskReadYourWrite.set(saved.id, saved)"));
+        assertTrue(store.contains("for (const saved of taskReadYourWrite.values())"));
         assertTrue(store.contains("publishSavedTask(saved: Task)"));
         assertTrue(store.contains("defaultBoardAccepts(saved, this)"));
         assertTrue(store.contains("taskDisplayDate(saved) === this.selectedDate"));
         assertTrue(store.contains("items[boardIndex] = saved"));
-        assertTrue(count(store, "this.publishSavedTask(saved)") >= 2);
+        assertTrue(store.contains("taskReadYourWrite.delete(saved.id)"));
+        assertTrue(count(store, "this.publishSavedTask(saved)") >= 3);
     }
 
     @Test

@@ -11,7 +11,7 @@ mvn clean verify
 bash deploy/scripts/release-check.sh
 ```
 
-The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 49 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.38.10 release path. CI, Docker and staging use the same frontend boundary.
+The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 49 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.38.11 release path. CI, Docker and staging use the same frontend boundary.
 
 GitHub artifact persistence is diagnostic only. CI uploads compact JaCoCo XML/CSV for three days and uploads Playwright HTML/results only after failure; quota or upload errors cannot block later static checks, image build or migration smoke. Test execution itself remains fail-closed.
 
@@ -113,9 +113,9 @@ npm run test:e2e
 
 Playwright starts the isolated `e2e` Spring profile on port 4173. The profile uses only an in-memory H2 database. Reports and failure traces are stored under `playwright-report/` and `test-results/`. See [`PLAYWRIGHT_E2E.md`](PLAYWRIGHT_E2E.md).
 
-## Browser parity continuation (v27.38.10)
+## Browser parity continuation (v27.38.11)
 
-The v27.38.9 full run reached 40 passed / 6 failed / 1 flaky after the exact frontend gate, Maven, release-check and boot canary were green. v27.38.10 keeps the suite strict and fixes the remaining shared ownership/lifecycle roots: offline selected-day Productivity hydration bypasses online-only reads, Task mutation DTOs are published across concurrent refresh sequencing, service-worker installation starts only after onboarding is authoritative, and Note DELETE remains generated `/api/v1` while offline-adapter PATCH remains compatibility `/api`. Acceptance requires a clean 47/47 run; a retry-only pass still needs diagnosis.
+The v27.38.10 full run reached 42 passed / 5 failed with no flaky retry. v27.38.11 keeps the suite strict and fixes three remaining shared ownership/lifecycle roots: a staged backend-authoritative Task DTO is merged into every accepted projection read until save sequencing settles, the multiple-notes reload waits for generated `/api/v1/calendar`, and first service-worker registration no longer adds a redundant explicit update check to the installation already started by `register()`. Acceptance requires a clean 47/47 run; a retry-only pass still needs diagnosis.
 
 ## Shared browser parity follow-up (v27.38.9)
 

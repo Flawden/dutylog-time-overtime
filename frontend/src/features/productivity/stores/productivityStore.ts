@@ -36,6 +36,7 @@ let selectedReadSequence = 0;
 let importantReadSequence = 0;
 let inboxReadSequence = 0;
 let searchReadSequence = 0;
+const taskReadYourWrite = new Map<number, Task>();
 
 const emptyMetadata = (): TaskMetadata => ({ categories: [], tags: [], projects: [] });
 const emptyPage = (): TaskPage => ({ items: [], page: 0, size: 50, total: 0, totalPages: 0, hasPrevious: false, hasNext: false });
@@ -259,6 +260,17 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
         }
         if (sequence !== selectedReadSequence) return false;
         this.selectedTasks = sortDayTasks(tasks);
+        // A committed mutation DTO stays authoritative while follow-up projections
+        // settle. Merge staged writes into each accepted day read so a slower or
+        // older projection cannot make a just-saved task disappear from the UI.
+        for (const saved of taskReadYourWrite.values()) {
+          if (taskDisplayDate(saved) === safeDate) {
+            this.selectedTasks = sortDayTasks([
+              ...this.selectedTasks.filter(task => task.id !== saved.id),
+              saved,
+            ]);
+          }
+        }
         this.selectedNotes = [...notes].sort((a, b) => Number(b.pinned) - Number(a.pinned) || a.sortOrder - b.sortOrder || a.id - b.id);
         this.selectedImportant = occurrences;
         if (!this.selectedNotes.some(note => note.id === this.selectedNoteId)) this.selectedNoteId = this.selectedNotes[0]?.id ?? null;
@@ -287,6 +299,9 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
         if (sequence !== boardReadSequence) return false;
         this.board = page ?? emptyPage();
         this.metadata = metadata ?? emptyMetadata();
+        // Preserve read-your-write semantics throughout the projection refresh,
+        // not only before/after Promise.all in saveTask().
+        for (const saved of taskReadYourWrite.values()) this.publishSavedTask(saved);
         return true;
       } catch (error) {
         if (sequence === boardReadSequence) this.error = errorMessage(error);
@@ -426,16 +441,16 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
         this.taskEditorOpen = false;
         if (saved) {
           this.taskDetails = saved;
-          // The mutation DTO is already backend-authoritative. Publish it before
-          // follow-up reads so the UI never disappears while board/day projections
-          // and metadata are being refreshed.
+          // Stage the committed backend DTO across every follow-up projection read.
+          // loadSelectedDate/loadBoard merge this overlay before assigning UI state,
+          // closing the read-your-write gap that could blank a freshly saved task.
+          taskReadYourWrite.set(saved.id, saved);
           this.publishSavedTask(saved);
         }
         await Promise.all([this.loadSelectedDate(draft.date), this.loadBoard(), this.loadInbox()]);
         if (saved) {
-          // A concurrent route/date watcher may supersede one of the reads above.
-          // Re-publish the same authoritative DTO once more after sequencing settles.
           this.publishSavedTask(saved);
+          taskReadYourWrite.delete(saved.id);
         }
         await refreshCalendarIfMounted();
         useShellStore().announce("Задача сохранена", "success");

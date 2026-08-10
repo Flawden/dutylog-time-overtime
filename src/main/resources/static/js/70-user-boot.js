@@ -159,6 +159,7 @@ async function registerDutyLogServiceWorker(){
       window.location.reload();
     }, { once:false });
     try {
+      const existingRegistration = await navigator.serviceWorker.getRegistration("/");
       const registration = await navigator.serviceWorker.register("/service-worker.js", { updateViaCache: "none" });
       registration.waiting?.postMessage({ type:"SKIP_WAITING" });
       registration.addEventListener("updatefound", () => {
@@ -169,7 +170,10 @@ async function registerDutyLogServiceWorker(){
           }
         });
       });
-      await registration.update();
+      // register() already starts the install lifecycle for a first registration.
+      // Force an update check only when a registration existed before this call;
+      // doing both on first onboarding can create a duplicate install/claim race.
+      if (existingRegistration) await registration.update();
       return registration;
     } catch (_) {
       dutyLogServiceWorkerRegistrationPromise = null;

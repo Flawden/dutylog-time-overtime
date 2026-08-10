@@ -1,12 +1,22 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.10 — Vue Offline, Task Publication & PWA Browser Parity Hotfix**.
+Current release: **v27.38.11 — Vue Read-Your-Write & PWA Activation Browser Parity Hotfix**.
 
 
 
 
 
-## v27.38.10 — Vue Offline, Task Publication & PWA Browser Parity Hotfix — current
+## v27.38.11 — Vue Read-Your-Write & PWA Activation Browser Parity Hotfix — current
+- [x] Use the completed v27.38.10 evidence: 42 passed / 5 failed with no flaky retry; all earlier mandatory gates reached browser E2E.
+- [x] Carry committed Task DTOs as a short-lived read-your-write overlay through accepted selected-day and Board refreshes instead of re-publishing only before/after the refresh window.
+- [x] Align the multiple-notes reload wait with generated `/api/v1/calendar` ownership while preserving the bounded Note PATCH adapter and generated DELETE.
+- [x] Let first `serviceWorker.register()` own installation and reserve explicit `registration.update()` for an existing registration, removing the duplicate first-install lifecycle.
+- [x] Preserve 152 / 751 / 47 / 49 / V47 and OpenAPI 101 / 106; no timeout, retry, assertion, backend rule or database weakening.
+- [ ] Exact frontend gate and Maven 751/751 must pass.
+- [ ] `npm run test:e2e:canary` then clean mandatory 47/47 Chromium must pass with no flaky scenario.
+- [ ] Immutable image, clean PostgreSQL smoke and staging deployment remain blocking acceptance gates.
+
+## v27.38.10 — Vue Offline, Task Publication & PWA Browser Parity Hotfix — browser-incomplete predecessor
 - [x] Use the completed v27.38.9 evidence: exact frontend, Maven, release-check and boot canary green; full Chromium 40 passed / 6 failed / 1 flaky.
 - [x] Hydrate selected-day Productivity from the existing IndexedDB/dataLayer snapshot while offline without blocking on online-only time-context, Board, Inbox or full Important reads.
 - [x] Publish backend-authoritative Task mutation DTOs before and after concurrent projection refreshes while preserving backend Board order and business authority.

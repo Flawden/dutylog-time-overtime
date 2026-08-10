@@ -1,3 +1,9 @@
+# v27.38.11 — Vue Read-Your-Write & PWA Activation Browser Parity Hotfix
+
+The v27.38.10 staging run reached **42/47 Chromium with no flaky scenario**. v27.38.11 closes three remaining shared parity roots without weakening browser policy: Task mutations now retain a backend-authoritative read-your-write overlay across accepted projection refreshes, the multiple-notes reload waits for the generated `/api/v1/calendar` owner, and first PWA registration no longer forces a redundant explicit update check during initial install.
+
+Release acceptance still requires exact frontend, Maven 751/751, canary, clean 47/47 Chromium, immutable image, clean PostgreSQL V47 smoke and staging.
+
 # v27.38.10 — Vue Offline, Task Publication & PWA Browser Parity Hotfix
 
 - Uses the v27.38.9 full-browser result (40 passed / 6 failed / 1 flaky) to fix three shared roots instead of weakening individual scenarios: offline selected-day hydration, Task mutation publication across refresh sequencing, and service-worker registration during first-run onboarding.

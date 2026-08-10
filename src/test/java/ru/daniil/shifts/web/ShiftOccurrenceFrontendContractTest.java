@@ -37,7 +37,8 @@ class ShiftOccurrenceFrontendContractTest {
         assertTrue(settings.contains("await loadMonth({ fresh:true })"));
         assertTrue(worker.contains(".then(() => self.clients.claim())"));
         assertTrue(worker.contains("SKIP_WAITING"));
-        assertTrue(boot.contains("registration.update()"));
+        assertTrue(boot.contains("navigator.serviceWorker.getRegistration(\"/\")"));
+        assertTrue(boot.contains("if (existingRegistration) await registration.update()"));
         assertTrue(boot.contains("controllerchange"));
         assertTrue(boot.contains("window.DutyLogPwaRuntime = Object.freeze"));
         assertTrue(boot.contains("state.profile?.onboardingCompleted === true"));

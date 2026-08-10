@@ -1,3 +1,14 @@
+# v27.38.11 — Vue Read-Your-Write & PWA Activation Browser Parity Hotfix
+
+- Uses the completed v27.38.10 Chromium run (42 passed / 5 failed, no flaky retry) and keeps the fix scoped to the remaining browser-parity tail.
+- Adds a short-lived backend-authoritative Task read-your-write overlay. Accepted selected-day and Board projection reads merge staged mutation DTOs before replacing Vue state, so a successful create/update cannot disappear while concurrent refreshes settle.
+- Keeps Board ordering and admission backend-owned: existing rows are replaced in place, and only the already-defined default open/unfiltered Board may temporarily append a missing committed row.
+- Aligns the multiple-daily-notes reload wait with the generated Vue Calendar owner at `/api/v1/calendar`; Note PATCH remains on the bounded offline adapter and DELETE remains generated `/api/v1/notes/{id}`.
+- Removes a duplicate first-install service-worker update check: `register()` owns initial installation, while explicit `registration.update()` runs only for an already-existing registration. This preserves controlled-page upgrades without racing first onboarding claim.
+- Extends existing source/static contracts only. No browser assertion, retry, timeout, API/OpenAPI shape, backend business rule, database schema or Flyway migration is weakened or changed.
+- Baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases / Flyway V47. OpenAPI remains 101 operations / 106 schemas / `c48bfab2bcaf`.
+- Acceptance remains fail-closed on exact frontend, Maven 751/751, boot canary, clean 47/47 Chromium with no flaky scenario, immutable image, clean PostgreSQL and staging.
+
 # v27.38.10 — Vue Offline, Task Publication & PWA Browser Parity Hotfix
 
 - Uses the completed v27.38.9 Chromium run (40 passed / 6 failed / 1 flaky) after frontend, Maven, release-check and the boot canary were green, so this hotfix stays scoped to browser parity.

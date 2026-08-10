@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.38.10.
+Status: v27.38.11.
 
 ## v27.38.0 Tasks, Notes & Important Days delivery boundary
 
@@ -249,9 +249,9 @@ Rollback changes the application image only. Flyway migrations are forward-only.
 
 Deployment smoke checks capture HTTP responses before searching them. Do not use `curl ... | grep -q` or `echo "$BODY" | grep -q` in scripts that enable `set -o pipefail`: an early match can close the pipe and turn a successful check into SIGPIPE exit 141.
 
-## v27.38.10 browser parity continuation
+## v27.38.11 browser parity continuation
 
-The v27.38.9 staging validation reached 40 passed / 6 failed / 1 flaky with frontend, Maven, release-check and the auth/onboarding boot canary already green. v27.38.10 therefore changes no gate ordering or timeout/retry/error policy. CI/staging still run the exact frontend gate, Maven and boot canary before mandatory full Chromium, and release acceptance still requires a clean 47/47 browser result before immutable-image/PostgreSQL/staging promotion.
+The v27.38.10 staging validation reached 42 passed / 5 failed with no flaky retry. v27.38.11 changes no gate ordering or timeout/retry/error policy: it closes Task read-your-write projection sequencing, a stale multiple-notes Calendar wait, and duplicate first-install PWA update lifecycle. CI/staging still run the exact frontend gate, Maven and boot canary before mandatory full Chromium, and release acceptance still requires a clean 47/47 browser result before immutable-image/PostgreSQL/staging promotion.
 
 ## v27.38.9 shared browser parity follow-up
 
