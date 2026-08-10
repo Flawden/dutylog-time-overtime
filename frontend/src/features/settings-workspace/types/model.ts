@@ -293,7 +293,11 @@ export function moveStudioItem(currentValue: AppearancePreferences, kind: "navig
   const source = kind === "navigation" ? completeOrder(current.themeConfig.navigationOrder, NAVIGATION_UNIVERSE) : completeOrder(current.themeConfig.todayWidgets, WIDGET_UNIVERSE);
   const from = source.indexOf(id); const to = from + direction;
   if (from < 0 || to < 0 || to >= source.length) return current;
-  [source[from], source[to]] = [source[to], source[from]];
+  const fromValue = source[from];
+  const toValue = source[to];
+  if (fromValue === undefined || toValue === undefined) return current;
+  source[from] = toValue;
+  source[to] = fromValue;
   return normalizeAppearance({ ...current, themeConfig: { ...current.themeConfig, ...(kind === "navigation" ? { navigationOrder: source } : { todayWidgets: source }) } });
 }
 

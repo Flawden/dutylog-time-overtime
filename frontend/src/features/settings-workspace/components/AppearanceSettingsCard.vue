@@ -95,6 +95,16 @@ function toggleStudio(kind: "navigation" | "widget", id: string, checked: boolea
   studioMessage.value = ""; publish(result.appearance);
 }
 function moveStudio(kind: "navigation" | "widget", id: string, direction: -1 | 1): void { publish(moveStudioItem(appearance.value, kind, id, direction)); }
+function screenEntry(id: string) {
+  const entry = screens[id];
+  if (!entry) throw new Error(`Unknown workspace navigation screen: ${id}`);
+  return entry;
+}
+function widgetEntry(id: string) {
+  const entry = widgets[id];
+  if (!entry) throw new Error(`Unknown Today widget: ${id}`);
+  return entry;
+}
 function restoreThemePalette(): void { publish(applyPalette(appearance.value, "theme"), 0); }
 function resetAppearance(): void { publish(normalizeAppearance({}), 0); }
 </script>
@@ -160,13 +170,13 @@ function resetAppearance(): void { publish(normalizeAppearance({}), 0); }
         <div class="workspaceStudioGrid">
           <section><div class="workspaceStudioTitle" id="workspaceNavigationTitle">{{ text.navigation }}</div><div class="workspaceStudioList" id="workspaceNavigationList">
             <div v-for="(id,index) in navOrder" :key="id" class="workspaceStudioRow" data-studio-kind="navigation" :data-studio-id="id">
-              <label><input type="checkbox" data-studio-visible :checked="visibleNavigation.has(id)" :disabled="config.workspaceId !== 'custom' || screens[id]?.required" @change="toggleStudio('navigation', id, ($event.target as HTMLInputElement).checked)"/><span>{{ label(screens[id], lang) }}</span></label>
+              <label><input type="checkbox" data-studio-visible :checked="visibleNavigation.has(id)" :disabled="config.workspaceId !== 'custom' || screenEntry(id).required === true" @change="toggleStudio('navigation', id, ($event.target as HTMLInputElement).checked)"/><span>{{ label(screenEntry(id), lang) }}</span></label>
               <div class="workspaceStudioMove"><button type="button" class="buttonIcon" data-studio-move="-1" :disabled="config.workspaceId !== 'custom' || index === 0" @click="moveStudio('navigation', id, -1)">↑</button><button type="button" class="buttonIcon" data-studio-move="1" :disabled="config.workspaceId !== 'custom' || index === navOrder.length - 1" @click="moveStudio('navigation', id, 1)">↓</button></div>
             </div>
           </div></section>
           <section><div class="workspaceStudioTitle" id="todayWidgetTitle">{{ text.widgets }}</div><div class="workspaceStudioList" id="todayWidgetList">
             <div v-for="(id,index) in widgetOrder" :key="id" class="workspaceStudioRow" data-studio-kind="widget" :data-studio-id="id">
-              <label><input type="checkbox" data-studio-visible :checked="visibleWidgets.has(id)" :disabled="widgets[id]?.required" @change="toggleStudio('widget', id, ($event.target as HTMLInputElement).checked)"/><span>{{ label(widgets[id], lang) }}</span></label>
+              <label><input type="checkbox" data-studio-visible :checked="visibleWidgets.has(id)" :disabled="widgetEntry(id).required === true" @change="toggleStudio('widget', id, ($event.target as HTMLInputElement).checked)"/><span>{{ label(widgetEntry(id), lang) }}</span></label>
               <div class="workspaceStudioMove"><button type="button" class="buttonIcon" data-studio-move="-1" :disabled="index === 0" @click="moveStudio('widget', id, -1)">↑</button><button type="button" class="buttonIcon" data-studio-move="1" :disabled="index === widgetOrder.length - 1" @click="moveStudio('widget', id, 1)">↓</button></div>
             </div>
           </div></section>

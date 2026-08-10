@@ -1,3 +1,13 @@
+# v27.39.1 — Vue Settings Strict Typecheck Hotfix
+
+- Uses the first v27.39.0 staging frontend-gate failure as the source of truth: authentic lockfile and OpenAPI drift checks pass, then strict `vue-tsc --noEmit` stops before Maven/Chromium on `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess` violations in the new Settings/Workspace templates and model.
+- Keeps strict TypeScript enabled. Optional DOM attributes are now omitted or normalized to concrete booleans instead of binding `undefined`; catalog lookups are narrowed through checked helpers before labels/required flags are consumed.
+- Gives mobile sessions a deterministic defined Vue key even when the generated optional `id` is absent, and normalizes Telegram checkbox state to a concrete boolean.
+- Replaces the bounds-checked array destructuring swap in Workspace Studio with explicit narrowed values so `noUncheckedIndexedAccess` can prove both elements exist.
+- Extends the existing Settings migration source contract to bind the strict-template invariants without changing API/OpenAPI, backend business rules, PostgreSQL/Flyway, browser retries/timeouts or feature scope.
+- Baseline remains 153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases / Flyway V47. OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`.
+- Acceptance still requires the exact Node 20.18.1/npm 10.8.2 frontend gate to pass, followed by Maven 758/758, canary, clean 48/48 Chromium with zero flaky retries, immutable image, clean PostgreSQL and staging.
+
 # v27.39.0 — Vue Settings, Workspace & Integrations
 
 - Starts from the accepted green v27.38.15 staging baseline and opens the next planned migration milestone instead of carrying browser-parity debt forward.

@@ -21,7 +21,7 @@ const emit = defineEmits<{ open: [section: string] }>();
         <div class="settingsTitle">{{ title }}</div>
         <div class="settingsHint">{{ hint }}</div>
       </div>
-      <slot name="status"><div v-if="status" class="status" :id="statusId">{{ status }}</div></slot>
+      <slot name="status"><div v-if="status && statusId" class="status" :id="statusId">{{ status }}</div><div v-else-if="status" class="status">{{ status }}</div></slot>
     </div>
     <div class="settingsCollapsedNote">{{ hint }}</div>
     <slot />

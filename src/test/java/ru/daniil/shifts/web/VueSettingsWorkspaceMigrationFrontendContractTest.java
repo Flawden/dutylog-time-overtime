@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Binding source contracts for v27.39.0 Vue Settings, Workspace & Integrations. */
+/** Binding source contracts for v27.39.1 Vue Settings, Workspace & Integrations strict-type follow-up. */
 class VueSettingsWorkspaceMigrationFrontendContractTest {
 
     private static final Path FEATURE = Path.of("frontend/src/features/settings-workspace");
@@ -77,6 +77,23 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         assertTrue(appearance.contains("data-studio-kind=\"navigation\""));
         assertTrue(store.contains("scheduleAppearanceSave"));
         assertTrue(store.contains("api.updateProfile"));
+    }
+
+    @Test
+    void strictTemplateBindingsDoNotLeakUndefinedIntoVueDomAttributesOrCatalogEntries() throws Exception {
+        String appearance = read(FEATURE.resolve("components/AppearanceSettingsCard.vue"));
+        String card = read(FEATURE.resolve("components/SettingsCard.vue"));
+        String workspace = read(FEATURE.resolve("components/SettingsWorkspace.vue"));
+        String model = read(FEATURE.resolve("types/model.ts"));
+
+        assertTrue(appearance.contains("screenEntry(id).required === true"));
+        assertTrue(appearance.contains("widgetEntry(id).required === true"));
+        assertTrue(appearance.contains("label(screenEntry(id), lang)"));
+        assertTrue(appearance.contains("label(widgetEntry(id), lang)"));
+        assertTrue(card.contains("v-if=\"status && statusId\""));
+        assertTrue(workspace.contains(":key=\"session.id ?? sessionIndex\""));
+        assertTrue(workspace.contains(":checked=\"telegram?.notificationsEnabled === true\""));
+        assertTrue(model.contains("if (fromValue === undefined || toValue === undefined) return current;"));
     }
 
     @Test

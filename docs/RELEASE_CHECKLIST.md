@@ -1,7 +1,18 @@
 # Release checklist
 
-Status: v27.39.0.
+Status: v27.39.1.
 
+
+## v27.39.1 — Vue Settings Strict Typecheck Hotfix acceptance
+
+- [x] Classify the first v27.39.0 staging failure at the first blocking gate: lockfile/OpenAPI pass; strict `vue-tsc` fails before Maven/Chromium.
+- [x] Preserve `strict`, `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess`; do not weaken compiler configuration.
+- [x] Remove optional-undefined DOM bindings and narrow string-indexed catalog/array reads before use.
+- [x] Extend the Settings migration source contract without changing API/OpenAPI, backend rules, Flyway, retries or timeouts.
+- [ ] Exact frontend gate must pass 52 Vitest + strict typecheck + production build/budget on Node 20.18.1/npm 10.8.2.
+- [ ] Maven/JUnit must pass 758/758 across 153 test classes on Java 17.
+- [ ] `npm run test:e2e:canary` then mandatory 48/48 Chromium must pass with zero flaky scenarios.
+- [ ] Immutable image, clean PostgreSQL V47 smoke and staging deployment remain blocking acceptance gates.
 
 ## v27.39.0 — Vue Settings, Workspace & Integrations acceptance
 

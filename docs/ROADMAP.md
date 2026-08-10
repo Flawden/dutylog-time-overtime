@@ -1,12 +1,17 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.39.0 — Vue Settings, Workspace & Integrations**.
+Current release: **v27.39.1 — Vue Settings Strict Typecheck Hotfix**.
 
 
 
 
 
-## v27.39.0 — Vue Settings, Workspace & Integrations — current
+## v27.39.1 — Vue Settings Strict Typecheck Hotfix — current
+- [x] Keep v27.39.0 feature scope unchanged and fix only the first exact frontend-gate strict-TypeScript failures.
+- [x] Preserve `exactOptionalPropertyTypes` / `noUncheckedIndexedAccess`; narrow optional DOM/catalog/array values instead of weakening strictness.
+- [ ] Exact frontend, Maven 758/758, canary, clean 48/48 Chromium, image/PostgreSQL smoke and staging remain blocking acceptance gates.
+
+## v27.39.0 — Vue Settings, Workspace & Integrations — feature predecessor
 - [x] Move Profile, Language, Modules, Calendar Sync and Appearance/Workspace Studio into one Vue Settings owner.
 - [x] Preserve Time, Schedule and Notifications as named compatibility islands only; v27.40.0 owns their final retirement.
 - [x] Expand generated OpenAPI to 118 operations / 120 schemas and move migrated Settings writes to `/api/v1/*`.

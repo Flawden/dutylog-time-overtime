@@ -1,4 +1,6 @@
-# DutyLog API v27.39.0
+# DutyLog API v27.39.1
+
+`v27.39.1` is a strict-TypeScript-only follow-up to the v27.39.0 Settings migration. It changes no HTTP/OpenAPI contract; the generated client remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 
 `v27.39.0` expands the canonical browser contract for Vue Settings, Workspace & Integrations. The generated client now contains **118 operations and 120 schemas**. Typed coverage is added for Profile update/password/sessions, Modules, Shift Types, Notification Settings and Telegram status/link/settings. Migrated Settings online writes use generated `/api/v1/*` operations; Spring Boot remains authoritative for validation, module dependency rules, sessions and integration secrets. Telegram keeps its compatibility `/api/telegram` alias and adds canonical `/api/v1/telegram` routing. Flyway remains V47.
 
