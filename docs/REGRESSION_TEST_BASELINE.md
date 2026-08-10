@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.38.12.
+Status: v27.38.13.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.38.12 uses the complete v27.38.11 Playwright report/trace artifact (42 passed / 5 failed, no flaky retry) to close two evidence-backed browser roots. First, legacy `updateAccSummaries()` was still mutating `#sumTasks`, `#sumNote` and `#sumImp` after Vue Productivity retirement; those nodes are Vue Teleport targets, so legacy `textContent`/`innerHTML` writes deleted Vue-owned children and could drive Task renders into the AppErrorBoundary even though the generated POST/PATCH and immediate Task projections were all HTTP 200 and already contained the committed row. Second, `pwa-upgrade.spec.js` used a stale `minimum` preset key while the released onboarding DOM exposes the visible «Минимум» preset as `basic`. No browser assertion, retry or timeout is weakened. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
+Current extension: v27.38.13 uses the complete v27.38.12 Playwright report/trace artifact (44 passed / 3 failed) to isolate the last Task-only browser crash family. The generated mutation succeeds, then Vue reports runtime error 15 and repeated null `parentNode` failures. The trace simultaneously shows `data-vue-productivity=ready` while Vue-owned `#taskBoardCategory` has been rewritten with the legacy `value="all"` option, proving that Task metadata/Board/Inbox work started before retirement can finish afterward and mutate Vue-managed DOM. v27.38.13 therefore guards the legacy renderers themselves and re-checks ownership after asynchronous reads; it does not weaken browser diagnostics, retries or timeouts. The application baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases; OpenAPI remains 101 operations / 106 schemas and Flyway remains V47.
 
 Historical foundation: v27.2.29 security baseline remains preserved by all later releases.
 

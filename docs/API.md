@@ -1,4 +1,4 @@
-# DutyLog API v27.38.12
+# DutyLog API v27.38.13
 
 `v27.38.0` expands the canonical generated browser contract for the Vue Tasks, Notes & Important Days migration. Spring Boot remains authoritative for validation, ownership, task state, scheduling, notes, Important Events and Inbox conversion; Vue uses operationId-based generated transport and does not become a second business-rule owner.
 

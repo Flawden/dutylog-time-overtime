@@ -1,6 +1,19 @@
 # Release checklist
 
-Status: v27.38.12.
+Status: v27.38.13.
+
+## v27.38.13 — Vue Productivity Legacy Renderer Retirement Barrier Hotfix acceptance
+
+- [x] v27.38.12 full Playwright report is classified as 44 passed / 3 failed; Notes and PWA fixes are confirmed green and only Task scenarios remain.
+- [x] Remaining traces prove successful generated Task persistence followed by Vue runtime error 15 / null `parentNode` recovery, not missing backend rows.
+- [x] Trace DOM proves legacy Task UI mutation after Vue retirement: `data-vue-productivity=ready` coexists with the legacy `value="all"` Board category option.
+- [x] Legacy Task metadata/editor/selected-day/Inbox/Board renderers fail closed once Vue owns Productivity, including post-await barriers for in-flight metadata/Inbox/Board reads.
+- [x] No browser timeout, retry, runtime-error allowlist, backend business authority, OpenAPI shape or Flyway schema is weakened.
+- [ ] Exact Node 20.18.1 / npm 10.8.2 frontend gate is green.
+- [ ] Maven verify is green with 751/751 JUnit tests.
+- [ ] `npm run test:e2e:canary` is green.
+- [ ] Full Chromium Playwright is clean: 47/47, no flaky scenario.
+- [ ] Immutable image smoke, clean PostgreSQL V47 smoke and staging deployment are green.
 
 ## v27.38.12 — Vue Productivity Summary Ownership & PWA E2E Parity Hotfix acceptance
 

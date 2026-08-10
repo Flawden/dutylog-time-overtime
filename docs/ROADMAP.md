@@ -1,12 +1,23 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.38.12 — Vue Productivity Summary Ownership & PWA E2E Parity Hotfix**.
+Current release: **v27.38.13 — Vue Productivity Legacy Renderer Retirement Barrier Hotfix**.
 
 
 
 
 
-## v27.38.12 — Vue Productivity Summary Ownership & PWA E2E Parity Hotfix — current
+## v27.38.13 — Vue Productivity Legacy Renderer Retirement Barrier Hotfix — current
+- [x] Use the complete v27.38.12 Playwright report/trace artifact: 44 passed / 3 failed; both v27.38.12 Notes/PWA fixes are confirmed green and only the Task crash family remains.
+- [x] Prove Task persistence succeeds before the crash and capture Vue runtime error 15 plus repeated null `parentNode` failures in the remaining traces.
+- [x] Prove a post-retirement legacy renderer is mutating Vue DOM: while `data-vue-productivity=ready`, trace markup for Vue-owned `#taskBoardCategory` contains the legacy `value="all"` option instead of Vue's canonical empty-value option.
+- [x] Put the retirement check on every legacy Task UI writer that owns metadata suggestions, editor helpers, selected-day filters, Inbox or Board DOM; do not rely only on loader-start guards.
+- [x] Re-check ownership after async Task metadata/Inbox/Board awaits so pre-retirement requests cannot complete into post-retirement Vue DOM.
+- [x] Preserve 152 / 751 / 47 / 49 / V47 and OpenAPI 101 / 106; no timeout, retry, assertion, backend rule or database weakening.
+- [ ] Exact frontend gate and Maven 751/751 must pass.
+- [ ] `npm run test:e2e:canary` then clean mandatory 47/47 Chromium must pass with no flaky scenario.
+- [ ] Immutable image, clean PostgreSQL smoke and staging deployment remain blocking acceptance gates.
+
+## v27.38.12 — Vue Productivity Summary Ownership & PWA E2E Parity Hotfix — browser-incomplete predecessor
 - [x] Use the complete v27.38.11 Playwright report/trace artifact: 42 passed / 5 failed, no flaky retry, with screenshots and network evidence for all five failures.
 - [x] Prove the three Task failures are frontend recovery crashes, not missing backend projections: POST/PATCH returns 200 and the immediately following generated Task reads already contain the committed row.
 - [x] Give `#sumTasks`, `#sumNote` and `#sumImp` one Vue owner after Productivity retirement; legacy `updateAccSummaries()` must not replace Vue Teleport children.

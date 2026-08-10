@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.38.12
+release_foundation: v27.38.13
 created: 2026-08-04
 updated: 2026-08-09
 ---
@@ -60,7 +60,7 @@ updated: 2026-08-09
 
 
 
-## Browser parity continuation — v27.38.12
+## Browser parity continuation — v27.38.13
 
 - Full v27.38.11 Playwright traces prove the remaining Task failures are Vue recovery crashes after successful 200 mutations/projections, not backend projection loss.
 - Q-06/Q-12: legacy selected-day summary rendering now yields `#sumTasks/#sumNote/#sumImp` to the always-mounted Vue Productivity owner, eliminating cross-owner DOM mutation.

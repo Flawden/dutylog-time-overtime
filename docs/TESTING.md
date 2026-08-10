@@ -11,7 +11,7 @@ mvn clean verify
 bash deploy/scripts/release-check.sh
 ```
 
-The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 49 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.38.12 release path. CI, Docker and staging use the same frontend boundary.
+The frontend gate enforces exact Node/npm versions, authentic committed-lockfile verification followed by `npm ci`, delivery/toolchain verification, generated OpenAPI drift detection, strict `vue-tsc`, 49 Vitest cases, the Vite production build and browser-bundle audit. A plain Maven run without generated Vue assets is not the complete v27.38.13 release path. CI, Docker and staging use the same frontend boundary.
 
 GitHub artifact persistence is diagnostic only. CI uploads compact JaCoCo XML/CSV for three days and uploads Playwright HTML/results only after failure; quota or upload errors cannot block later static checks, image build or migration smoke. Test execution itself remains fail-closed.
 
@@ -112,6 +112,10 @@ npm run test:e2e
 ```
 
 Playwright starts the isolated `e2e` Spring profile on port 4173. The profile uses only an in-memory H2 database. Reports and failure traces are stored under `playwright-report/` and `test-results/`. See [`PLAYWRIGHT_E2E.md`](PLAYWRIGHT_E2E.md).
+
+## Browser parity continuation (v27.38.13)
+
+The complete v27.38.12 Playwright artifact advances to 44 passed / 3 failed and confirms both v27.38.12 fixes: multiple daily notes and PWA upgrade are green. The remaining three Task scenarios persist data successfully, then Vue enters recovery with runtime error 15 and repeated null `parentNode` failures. Trace DOM provides the ownership fingerprint: after `data-vue-productivity=ready`, Vue-owned `#taskBoardCategory` contains the legacy `value="all"` option. Guard legacy Task renderers at write time and re-check ownership after async reads so a request started before retirement cannot complete into Vue-managed DOM. Acceptance still requires a clean 47/47 run; do not increase timeouts, retries or error allowlists.
 
 ## Browser parity continuation (v27.38.12)
 

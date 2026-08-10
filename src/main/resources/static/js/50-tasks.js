@@ -502,7 +502,11 @@ function parseTaskTags(value){
   }
   return unique;
 }
+function vueOwnsProductivityUi(){
+  return document.documentElement.dataset.vueProductivity === "ready";
+}
 function taskEditorMessage(text = "", tone = ""){
+  if (vueOwnsProductivityUi()) return;
   const box = $("taskEditMessage");
   if (!box) return;
   box.textContent = text;
@@ -515,6 +519,7 @@ function quickActionMessage(text = "", tone = ""){
   box.className = "appModalMessage" + (tone ? ` ${tone}` : "");
 }
 function renderTaskMetadataSuggestions(){
+  if (vueOwnsProductivityUi()) return;
   const categories = allTaskCategories();
   const categoryList = $("taskCategorySuggestions");
   if (categoryList) categoryList.innerHTML = categories.map(value => `<option value="${esc(value)}"></option>`).join("");
@@ -542,6 +547,7 @@ function renderTaskMetadataSuggestions(){
   }
 }
 async function loadTaskMetadata(silent = true){
+  if (vueOwnsProductivityUi()) return;
   if (!moduleEnabled("tasks")) {
     state.taskMetadata = { categories:[], tags:[], projects:[] };
     renderTaskMetadataSuggestions();
@@ -549,6 +555,7 @@ async function loadTaskMetadata(silent = true){
   }
   try {
     const metadata = await api.taskMetadata();
+    if (vueOwnsProductivityUi()) return;
     state.taskMetadata = {
       categories:Array.isArray(metadata?.categories) ? metadata.categories : [],
       tags:Array.isArray(metadata?.tags) ? metadata.tags : [],
@@ -564,6 +571,7 @@ async function loadTaskMetadata(silent = true){
   }
 }
 function updateTaskReminderControls(){
+  if (vueOwnsProductivityUi()) return;
   const enabled = !!$("taskEditReminderEnabled")?.checked;
   const available = state.modulesLoaded && moduleEnabled("notifications");
   if ($("taskEditReminderEnabled")) {
@@ -609,6 +617,7 @@ function taskCompletionDivider(){
   return divider;
 }
 function updateTaskEditorSubtaskSummary(){
+  if (vueOwnsProductivityUi()) return;
   const rows = [...($("taskEditSubtaskList")?.querySelectorAll(".taskSubtaskEditorRow") || [])];
   const done = rows.filter(row => row.querySelector('input[type="checkbox"]')?.checked).length;
   if ($("taskEditSubtaskSummary")) {
@@ -617,6 +626,7 @@ function updateTaskEditorSubtaskSummary(){
   if ($("taskEditSubtaskAdd")) $("taskEditSubtaskAdd").disabled = rows.length >= 50;
 }
 function addTaskSubtaskEditorRow(item = {}, { focus = false, after = null } = {}){
+  if (vueOwnsProductivityUi()) return null;
   const list = $("taskEditSubtaskList");
   if (!list) return null;
   if (list.children.length >= 50) {
@@ -698,6 +708,7 @@ function addTaskSubtaskEditorRow(item = {}, { focus = false, after = null } = {}
   return row;
 }
 function renderTaskEditorSubtasks(items = []){
+  if (vueOwnsProductivityUi()) return;
   const list = $("taskEditSubtaskList");
   if (!list) return;
   list.innerHTML = "";
@@ -785,6 +796,7 @@ function taskScheduleDuration(startDate, startTime, endDate, endTime){
   return Math.round((end.getTime() - start.getTime()) / 60000);
 }
 function setTaskPlanningError(message = ""){
+  if (vueOwnsProductivityUi()) return;
   const box = $("taskPlanningError");
   if (box) box.textContent = message ? t(message) : "";
 }
@@ -792,6 +804,7 @@ function taskPlanningDisplay(date, time){
   return date ? `${taskDetailsDate(date)}${time ? ` · ${time}` : ""}` : "";
 }
 function updateTaskPlanningControls({ source = "end" } = {}){
+  if (vueOwnsProductivityUi()) return;
   const allDay = !!$("taskEditAllDay")?.checked;
   $("taskPlanningEditor")?.classList.toggle("allDay", allDay);
   for (const field of document.querySelectorAll("#taskPlanningEditor .taskTimedField")) field.hidden = allDay;
@@ -842,6 +855,7 @@ function validateTaskPlanning(){
 }
 
 function resetTaskEditorFields({ date = null, text = "", inboxId = null } = {}){
+  if (vueOwnsProductivityUi()) return;
   state.editingTaskId = null;
   state.editingTaskMode = "create";
   state.editingTaskInboxId = inboxId == null ? null : Number(inboxId);
@@ -874,7 +888,7 @@ function resetTaskEditorFields({ date = null, text = "", inboxId = null } = {}){
   renderTaskMetadataSuggestions();
 }
 function openTaskCreate(options = {}){
-  if (document.documentElement.dataset.vueProductivity === "ready") {
+  if (vueOwnsProductivityUi()) {
     void window.DutyLogVueDomains?.productivity?.openTaskCreate?.(
       String(options?.date || state.selected || todayKey()).slice(0,10),
       String(options?.text || ""),
@@ -887,6 +901,7 @@ function openTaskCreate(options = {}){
   openAppModal("taskEditModal", "taskEditText");
 }
 function closeTaskEditor(){
+  if (vueOwnsProductivityUi()) return;
   state.editingTaskId = null;
   state.editingTaskMode = "create";
   state.editingTaskInboxId = null;
@@ -898,6 +913,7 @@ function taskById(id){
   return all.find(item => Number(item.id) === Number(id)) || null;
 }
 function editTask(task){
+  if (vueOwnsProductivityUi()) return;
   if (!task) return;
   state.editingTaskId = Number(task.id);
   state.editingTaskMode = "edit";
@@ -948,6 +964,7 @@ function taskDetailsDate(value){
   return value ? String(value).split("-").reverse().join(".") : "";
 }
 function renderTaskDetails(task){
+  if (vueOwnsProductivityUi()) return;
   if (!task) return;
   state.taskDetailsId = Number(task.id);
   $("taskDetailsTitle").textContent = task.text || t("Задача");
@@ -1027,7 +1044,7 @@ function renderTaskDetails(task){
   $("taskDetailsToggle").textContent = task.done ? t("Вернуть в открытые") : t("Выполнить");
 }
 async function openTaskDetails(taskOrId){
-  if (document.documentElement.dataset.vueProductivity === "ready") { const id = Number(taskOrId?.id ?? taskOrId); if (Number.isFinite(id)) await window.DutyLogVueDomains?.productivity?.openTaskDetails?.(id); return; }
+  if (vueOwnsProductivityUi()) { const id = Number(taskOrId?.id ?? taskOrId); if (Number.isFinite(id)) await window.DutyLogVueDomains?.productivity?.openTaskDetails?.(id); return; }
   if (!moduleEnabled("tasks")) return setSave("err", t("модуль выключен"));
   const id = Number(typeof taskOrId === "object" ? taskOrId?.id : taskOrId);
   let task = typeof taskOrId === "object" ? taskOrId : taskById(id);
@@ -1045,6 +1062,7 @@ async function openTaskDetails(taskOrId){
   }
 }
 function refreshOpenTaskDetails(task){
+  if (vueOwnsProductivityUi()) return;
   if (!task || Number(state.taskDetailsId) !== Number(task.id)) return;
   if ($("taskDetailsModal")?.hidden) return;
   renderTaskDetails(task);
@@ -1302,6 +1320,7 @@ async function removeTask(id){
 }
 
 function renderTaskCategoryFilter(){
+  if (vueOwnsProductivityUi()) return;
   const sel = $("taskCategoryFilter");
   if (!sel) return;
   const current = sel.value || state.taskFilters.category || "all";
@@ -1407,7 +1426,7 @@ function buildTaskMeta(task){
   return meta;
 }
 function renderTasks(){
-  if (document.documentElement.dataset.vueProductivity === "ready") return;
+  if (vueOwnsProductivityUi()) return;
   if (!moduleEnabled("tasks")) { updateAccSummaries(); return; }
   const box = $("taskList");
   if (!box || !state.selected) return;
@@ -1480,7 +1499,7 @@ function queuedInboxView(queue){
     }));
 }
 async function loadInbox(silent = true){
-  if (document.documentElement.dataset.vueProductivity === "ready") return;
+  if (vueOwnsProductivityUi()) return;
   if (!moduleEnabled("tasks")) {
     state.inbox.items = [];
     renderInbox();
@@ -1490,9 +1509,11 @@ async function loadInbox(silent = true){
   if (!silent) renderInbox();
   try {
     const queued = queuedInboxView(await dataLayer.getQueueItems());
+    if (vueOwnsProductivityUi()) return;
     let remote = (state.inbox.items || []).filter(item => !item.localOnly);
     if (navigator.onLine) {
       remote = await api.inbox(state.inbox.includeArchived ? "all" : "open");
+      if (vueOwnsProductivityUi()) return;
     }
     const queuedIds = new Set(queued.map(item => item.clientOperationId).filter(Boolean));
     remote = remote.filter(item => !queuedIds.has(item.clientOperationId));
@@ -1509,6 +1530,7 @@ function inboxTimeLabel(value){
   return formatAbsoluteInstant(value);
 }
 function renderInbox(){
+  if (vueOwnsProductivityUi()) return;
   const list = $("inboxList");
   if (!list) return;
   const allItems = state.inbox.items || [];
@@ -1640,6 +1662,7 @@ async function removeInboxItem(item){
 
 /* ─── Общий экран задач ─────────────────────────────────────── */
 function renderTaskBoardCategoryFilter(){
+  if (vueOwnsProductivityUi()) return;
   const select = $("taskBoardCategory");
   if (!select) return;
   const current = select.value || state.taskBoard.filters.category || "all";
@@ -1654,6 +1677,7 @@ function renderTaskBoardCategoryFilter(){
   state.taskBoard.filters.category = select.value;
 }
 function renderTaskBoardProjectFilter(){
+  if (vueOwnsProductivityUi()) return;
   const select = $("taskBoardProject");
   if (!select) return;
   const current = select.value || state.taskBoard.filters.project || "all";
@@ -1666,6 +1690,7 @@ function renderTaskBoardProjectFilter(){
   state.taskBoard.filters.project = select.value;
 }
 function syncTaskBoardFiltersToInputs(){
+  if (vueOwnsProductivityUi()) return;
   const filters = state.taskBoard.filters;
   if ($("taskBoardStatusFilter")) $("taskBoardStatusFilter").value = filters.status || "open";
   if ($("taskBoardProject")) $("taskBoardProject").value = filters.project || "all";
@@ -1675,7 +1700,7 @@ function syncTaskBoardFiltersToInputs(){
   if ($("taskBoardTo")) $("taskBoardTo").value = filters.to || "";
 }
 async function loadTaskBoard(silent = true){
-  if (document.documentElement.dataset.vueProductivity === "ready") return;
+  if (vueOwnsProductivityUi()) return;
   if (!moduleEnabled("tasks")) {
     state.taskBoard.items = [];
     state.taskBoard.page = { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false };
@@ -1699,6 +1724,7 @@ async function loadTaskBoard(silent = true){
       size:page.size || 50,
     };
     const response = normalizePageResponse(await api.taskBoard(query), page.size || 50);
+    if (vueOwnsProductivityUi()) return;
     state.taskBoard.items = response.items;
     state.taskBoard.page = response;
   } catch (err) {
@@ -1716,6 +1742,7 @@ function taskBoardDateLabel(task){
   return taskPlannedLabel(task, { includeDate:true });
 }
 function renderTaskBoard(){
+  if (vueOwnsProductivityUi()) return;
   const list = $("taskBoardList");
   if (!list) return;
   syncTaskBoardFiltersToInputs();

@@ -185,6 +185,15 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(tasks.contains("productivity?.openTaskCreate"));
         assertTrue(tasks.contains("productivity?.openImportantCreate"));
         assertTrue(tasks.contains("if (document.documentElement.dataset.vueProductivity === \"ready\") return;"));
+        assertTrue(tasks.contains("function vueOwnsProductivityUi()"));
+        assertTrue(tasks.contains("function renderTaskMetadataSuggestions"));
+        assertTrue(tasks.contains("const metadata = await api.taskMetadata();\n    if (vueOwnsProductivityUi()) return;"));
+        assertTrue(tasks.contains("function renderInbox"));
+        assertTrue(tasks.contains("function renderTaskBoardCategoryFilter"));
+        assertTrue(tasks.contains("function renderTaskBoardProjectFilter"));
+        assertTrue(tasks.contains("function syncTaskBoardFiltersToInputs"));
+        assertTrue(tasks.contains("function renderTaskBoard"));
+        assertTrue(count(tasks, "if (vueOwnsProductivityUi()) return;") >= 14);
         assertTrue(core.contains("openCalendarSection(section)"));
         assertTrue(workspace.contains("props.bridge.openCalendarSection(\"notes\")"));
         assertTrue(calendar.contains("const vueOwnsProductivitySummaries = document.documentElement.dataset.vueProductivity === \"ready\""));

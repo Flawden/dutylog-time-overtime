@@ -1,3 +1,14 @@
+# v27.38.13 — Vue Productivity Legacy Renderer Retirement Barrier Hotfix
+
+- Uses the complete v27.38.12 Playwright HTML/trace artifact (44 passed / 3 failed) and keeps the release scoped to the last Task-only browser crash family. The v27.38.12 Notes summary ownership and PWA preset fixes are confirmed green.
+- Proves the remaining Task failures are not backend persistence failures: generated Task mutations return 200, while Vue then raises runtime error 15 / null `parentNode` failures and enters the AppErrorBoundary recovery screen.
+- Identifies the surviving ownership violation directly in the trace DOM: `data-vue-productivity=ready` is already authoritative, but `#taskBoardCategory` contains the legacy `<option value="all">` markup instead of the Vue-owned empty-value option. Legacy async Task metadata/board/inbox work can therefore finish after retirement and replace Vue-managed children.
+- Adds a shared `vueOwnsProductivityUi()` retirement barrier to legacy Task metadata, editor, selected-day, Inbox and Board renderers. Renderer-level guards are deliberate: a loader that started before Vue retirement can still resolve afterward, so start-only guards are insufficient.
+- Adds post-await ownership barriers to legacy Task metadata, Inbox and Board loaders so in-flight responses cannot publish legacy UI state after Vue takes ownership.
+- Changes no Task API/OpenAPI contract, backend business rule, PostgreSQL schema, Flyway migration, browser timeout/retry policy or runtime-error allowlist.
+- Baseline remains 152 Java test classes / 751 `@Test` methods / 47 Chromium Playwright scenarios / 49 Vitest cases / Flyway V47. OpenAPI remains 101 operations / 106 schemas / `c48bfab2bcaf`.
+- Acceptance still requires exact frontend, Maven 751/751, boot canary, clean 47/47 Chromium with no flaky scenario, immutable image, clean PostgreSQL and staging.
+
 # v27.38.12 — Vue Productivity Summary Ownership & PWA E2E Parity Hotfix
 
 - Uses the full Playwright HTML/trace artifact from v27.38.11 (42 passed / 5 failed, no flaky retry) instead of inferring causes from the truncated Actions tail.

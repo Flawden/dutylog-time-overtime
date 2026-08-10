@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.38.12.
+Status: v27.38.13.
 
 ## v27.38.0 Tasks, Notes & Important Days delivery boundary
 
@@ -249,9 +249,9 @@ Rollback changes the application image only. Flyway migrations are forward-only.
 
 Deployment smoke checks capture HTTP responses before searching them. Do not use `curl ... | grep -q` or `echo "$BODY" | grep -q` in scripts that enable `set -o pipefail`: an early match can close the pipe and turn a successful check into SIGPIPE exit 141.
 
-## v27.38.12 browser parity continuation
+## v27.38.13 browser parity continuation
 
-The v27.38.11 full report remains 42 passed / 5 failed with no flaky retry, but the uploaded Playwright traces now prove the remaining shared roots. v27.38.12 changes no gate ordering or timeout/retry/error policy: Vue exclusively owns the Productivity accordion summary Teleport targets after retirement, and `pwa-upgrade.spec.js` uses the released `basic` onboarding preset key. CI/staging still run exact frontend, Maven and boot canary before mandatory full Chromium; image/PostgreSQL/staging promotion stays blocked until clean 47/47.
+The v27.38.11 full report remains 42 passed / 5 failed with no flaky retry, but the uploaded Playwright traces now prove the remaining shared roots. v27.38.13 changes no gate ordering or timeout/retry/error policy: Vue exclusively owns the Productivity accordion summary Teleport targets after retirement, and `pwa-upgrade.spec.js` uses the released `basic` onboarding preset key. CI/staging still run exact frontend, Maven and boot canary before mandatory full Chromium; image/PostgreSQL/staging promotion stays blocked until clean 47/47.
 
 ## v27.38.11 browser parity continuation
 
