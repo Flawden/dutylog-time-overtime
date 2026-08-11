@@ -1,6 +1,6 @@
 # DutyLog security review
 
-Status: v27.40.9.
+Status: v27.40.10.
 
 ## v27.39.0 Settings, Workspace & Integrations review
 

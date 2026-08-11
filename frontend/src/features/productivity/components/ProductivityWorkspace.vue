@@ -13,6 +13,7 @@ import TasksPage from "./TasksPage.vue";
 import ImportantPage from "./ImportantPage.vue";
 import TaskModalLayer from "./TaskModalLayer.vue";
 import ImportantModalLayer from "./ImportantModalLayer.vue";
+import QuickActionsModal from "./QuickActionsModal.vue";
 import "../productivity.css";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
@@ -38,6 +39,7 @@ const importantSummary = computed(() => !productivityReadable.value ? "" : (impo
 const domain: DutyLogProductivityDomain = Object.freeze({
   ready: () => productivityReadable.value && store.loaded,
   refresh: async () => { await store.refreshAll(focusDate.value); },
+  openQuickActions: (date?: string) => { store.openQuickActions(date || focusDate.value); },
   openTaskCreate: async (date?: string, text = "", sourceInboxId: number | null = null) => {
     await store.openTaskCreate(date || focusDate.value, text, sourceInboxId);
   },
@@ -135,4 +137,5 @@ onBeforeUnmount(() => {
 
   <TaskModalLayer />
   <ImportantModalLayer />
+  <QuickActionsModal :bridge="bridge" />
 </template>

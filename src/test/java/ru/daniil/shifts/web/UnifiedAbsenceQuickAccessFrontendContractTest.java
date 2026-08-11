@@ -20,13 +20,16 @@ class UnifiedAbsenceQuickAccessFrontendContractTest {
         String html = resource("index.html");
         String data = resource("js/20-data.js");
         String tasks = resource("js/50-tasks.js");
+        String quickActions = Files.readString(Path.of("frontend/src/features/productivity/components/QuickActionsModal.vue"), StandardCharsets.UTF_8);
 
         assertTrue(html.contains("id=\"quickActionUsage\"")
                 && html.contains("Оформить отсутствие")
                 && html.contains("отпуск, отгул, больничный"));
         assertTrue(data.contains("toggle($(\"quickActionUsage\"), moduleEnabled(\"vacation\"))"));
-        assertTrue(tasks.contains("openAbsenceComposer({ date:state.selected || todayKey(), source:\"quick-add\" })"));
-        assertFalse(tasks.contains("source:\"quick-add\", systemCode:\"TIME_OFF\""));
+        assertTrue(quickActions.contains("id=\"quickActionUsage\"")
+                && quickActions.contains("openAbsenceComposer({ date, source: \"quick-add\" })"));
+        assertTrue(tasks.contains("DutyLogVueDomains?.productivity?.openQuickActions?.(state.selected || todayKey())"));
+        assertFalse(quickActions.contains("systemCode: \"TIME_OFF\""));
     }
 
     @Test

@@ -339,15 +339,17 @@ function applyModuleVisibility(){
   toggle(document.querySelector('#tabbar a[data-view="tasks"]'), moduleEnabled("tasks"));
   toggle($("view-tasks"), moduleEnabled("tasks"));
   toggle($("globalQuickAdd"), moduleEnabled("tasks") || moduleEnabled("notes") || moduleEnabled("important_dates") || moduleEnabled("overtime") || moduleEnabled("vacation"));
-  const hasDraftAction = moduleEnabled("tasks") || moduleEnabled("notes") || moduleEnabled("important_dates");
-  toggle($("quickActionCapture"), hasDraftAction);
-  toggle($("quickActionInbox"), moduleEnabled("tasks"));
-  toggle($("quickActionDivider"), hasDraftAction);
-  toggle($("quickActionTask"), moduleEnabled("tasks"));
-  toggle($("quickActionNote"), moduleEnabled("notes"));
-  toggle($("quickActionImportant"), moduleEnabled("important_dates"));
-  toggle($("quickActionCredit"), moduleEnabled("overtime"));
-  toggle($("quickActionUsage"), moduleEnabled("vacation"));
+  if (document.documentElement.dataset.vueProductivity !== "ready") {
+    const hasDraftAction = moduleEnabled("tasks") || moduleEnabled("notes") || moduleEnabled("important_dates");
+    toggle($("quickActionCapture"), hasDraftAction);
+    toggle($("quickActionInbox"), moduleEnabled("tasks"));
+    toggle($("quickActionDivider"), hasDraftAction);
+    toggle($("quickActionTask"), moduleEnabled("tasks"));
+    toggle($("quickActionNote"), moduleEnabled("notes"));
+    toggle($("quickActionImportant"), moduleEnabled("important_dates"));
+    toggle($("quickActionCredit"), moduleEnabled("overtime"));
+    toggle($("quickActionUsage"), moduleEnabled("vacation"));
+  }
   toggle(document.querySelector('#tabbar a[data-view="important"]'), moduleEnabled("important_dates"));
   toggle($("view-important"), moduleEnabled("important_dates"));
   toggle(document.querySelector('#tabbar a[data-view="vacation"]'), moduleEnabled("vacation"));

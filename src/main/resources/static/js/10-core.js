@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.40.9"
+const DUTYLOG_VERSION = "27.40.10"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -352,7 +352,7 @@ window.DutyLogLegacyPlatform = Object.freeze({
         "view-tasks", "view-important",
         "taskDetailsModal", "taskEditModal",
         "importantDetailsModal", "importantEditModal",
-        "noteFullscreen",
+        "quickActionsModal", "noteFullscreen",
       ]) document.getElementById(id)?.remove();
       // Selected-day productivity mounts are now rendered by the Vue Calendar
       // panel itself. Productivity owns their content, never legacy panel DOM.
@@ -398,11 +398,6 @@ window.DutyLogLegacyPlatform = Object.freeze({
   },
   openTaskDetails(id){
     if (typeof openTaskDetails === "function") openTaskDetails(Number(id));
-  },
-  openQuickActions(date){
-    const key = String(date || "").slice(0, 10);
-    if (/^\d{4}-\d{2}-\d{2}$/.test(key)) state.selected = key;
-    if (typeof openQuickActions === "function") openQuickActions();
   },
   openImportantDetails(id){
     if (typeof openImportantDetails === "function") openImportantDetails(Number(id));

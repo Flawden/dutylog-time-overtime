@@ -1,19 +1,31 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**.
+Current release: **v27.40.10 — Vue Quick Actions Modal Retirement**.
 
 
-## v27.40.9 — Vue Shell Navigation Model Retirement — current
-- [x] Start only from the proven-green v27.40.8 staging baseline.
-- [x] Remove hidden legacy `#tabbar` anchors/classes from the shell navigation read model; navigation must come from persisted workspace configuration and authoritative module state.
-- [x] Preserve custom workspace order/visibility, module filtering, mandatory Today/Settings routes and the five-item primary navigation cap.
-- [x] Distinguish the Settings destination (`Настройки` / `Settings`) from the overflow action (`Ещё` / `More`).
-- [x] Keep the existing hash router only as a compatibility boundary for Payroll/Admin and remaining legacy route-entry hooks; do not add a second router or offline owner.
+## v27.40.10 — Vue Quick Actions Modal Retirement — current
+- [x] Start only from the proven-green v27.40.9 staging baseline.
+- [x] Replace the live legacy `quickActionsModal` with `QuickActionsModal.vue` while preserving pre-Vue recovery fallback and stable E2E IDs.
+- [x] Move Inbox, Task, Note, Important, Overtime Credit and Absence quick actions to Vue-owned domains without changing business/API semantics.
+- [x] Remove `openQuickActions` from `LegacyBridge`; Today uses the Vue Productivity domain and legacy `globalQuickAdd` delegates to it after Vue readiness.
+- [x] Keep `dataLayer` as the sole offline mutation/reconnect owner; no second queue, online listener or direct duplicate Inbox writer.
+- [x] Keep Payroll/Admin hash routing and Shift Type Manager as explicit later-retirement boundaries.
 - [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
 - [ ] Maven 758/758.
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
 
+
+## v27.40.9 — Vue Shell Navigation Model Retirement — accepted predecessor
+- [x] Start only from the proven-green v27.40.8 staging baseline.
+- [x] Remove hidden legacy `#tabbar` anchors/classes from the shell navigation read model; navigation comes from persisted workspace configuration and authoritative module state.
+- [x] Preserve custom workspace order/visibility, module filtering, mandatory Today/Settings routes and the five-item primary navigation cap.
+- [x] Distinguish the Settings destination (`Настройки` / `Settings`) from the overflow action (`Ещё` / `More`).
+- [x] Keep the existing hash router only as a compatibility boundary for Payroll/Admin and remaining legacy route-entry hooks; do not add a second router or offline owner.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 758/758.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image/PostgreSQL V47 staging acceptance.
 
 ## v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix — accepted predecessor
 - [x] Use the exact v27.40.7 local Maven evidence: 758 tests executed, 1 failure, 0 errors, 0 skipped.

@@ -42,7 +42,6 @@ declare global {
     openShiftTypeManager?(): void;
     openTaskCreate?(date: string): void;
     openTaskDetails?(id: number): void;
-    openQuickActions?(date: string): void;
     openImportantDetails?(id: number): void;
     offlineUpdateNote?(id: number, patch: Record<string, unknown>, date: string): Promise<{ queued: boolean; note: unknown | null }>;
     offlineSetTaskDone?(id: number, done: boolean): Promise<{ queued: boolean; task?: unknown }>;

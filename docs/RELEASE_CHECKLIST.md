@@ -1,6 +1,20 @@
 # Release checklist
 
-Status: v27.40.9.
+Status: v27.40.10.
+
+
+## v27.40.10 — Vue Quick Actions Modal Retirement acceptance
+
+- [x] Start from the proven-green v27.40.9 baseline.
+- [x] Require one live Vue `#quickActionsModal` after Productivity readiness while retaining only pre-Vue fallback markup.
+- [x] Preserve `quickActionText`, Inbox, Task, Note, Important, Overtime Credit and Absence selectors/flows under Vue ownership.
+- [x] Remove `openQuickActions` from the generic legacy bridge and route Today/global fallback entry through `DutyLogVueDomains.productivity`.
+- [x] Keep Inbox quick capture on the existing `dataLayer` offline adapter and preserve the single reconnect owner.
+- [x] Keep Payroll/Admin routing and Shift Type Manager for later v27.40.x retirement.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 758/758.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image and PostgreSQL V47 staging acceptance.
 
 
 ## v27.40.9 — Vue Shell Navigation Model Retirement acceptance
@@ -10,11 +24,10 @@ Status: v27.40.9.
 - [x] Require available routes to follow authoritative module state, while Today/Settings remain mandatory and primary navigation remains capped at five.
 - [x] Require distinct Settings (`Настройки` / `Settings`) and overflow (`Ещё` / `More`) labels.
 - [x] Keep Payroll/Admin hash routing and the existing single `dataLayer` offline owner as explicit later-retirement boundaries.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 758/758.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image and PostgreSQL V47 staging acceptance.
-
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 758/758.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image and PostgreSQL V47 staging acceptance.
 
 ## v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix acceptance
 

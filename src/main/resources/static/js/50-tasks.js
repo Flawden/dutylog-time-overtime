@@ -1848,6 +1848,10 @@ function firstQuickActionFocus(){
   return "quickActionsClose";
 }
 function openQuickActions(){
+  if (vueOwnsProductivityUi()) {
+    window.DutyLogVueDomains?.productivity?.openQuickActions?.(state.selected || todayKey());
+    return;
+  }
   const hasDraft = hasQuickDraftAction();
   const canInbox = moduleEnabled("tasks");
   quickActionMessage();

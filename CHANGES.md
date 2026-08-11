@@ -1,3 +1,12 @@
+# v27.40.10 — Vue Quick Actions Modal Retirement
+
+- Starts from the proven-green v27.40.9 staging baseline.
+- Retires the live legacy `quickActionsModal` owner after Vue Productivity readiness while preserving the existing recovery/fallback markup before Vue mounts.
+- Moves Inbox capture, Task, Note, Important Day, Overtime Credit and Absence quick actions into `QuickActionsModal.vue` with the same stable browser IDs and module visibility semantics.
+- Removes `openQuickActions` from the generic legacy bridge; Today opens the Vue Productivity domain directly, while the legacy `globalQuickAdd` fallback delegates to that domain once Vue is ready.
+- Keeps the existing legacy `dataLayer` as the sole offline mutation/reconnect owner: Inbox quick capture still uses the established offline adapter and no second queue or online listener is introduced.
+- Keeps Payroll/Admin hash routing and the Shift Type Manager modal adapter as later v27.40.x retirement boundaries.
+
 # v27.40.9 — Vue Shell Navigation Model Retirement
 
 - Starts only from the proven-green v27.40.8 staging baseline.

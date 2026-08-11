@@ -40,7 +40,6 @@ export interface LegacyBridge {
   openShiftTypeManager(): void;
   openTaskCreate(date: string): void;
   openTaskDetails(id: number): void;
-  openQuickActions(date: string): void;
   openImportantDetails(id: number): void;
   offlineUpdateNote(id: number, patch: Record<string, unknown>, date: string): Promise<{ queued: boolean; note: unknown | null }>;
   offlineSetTaskDone(id: number, done: boolean): Promise<{ queued: boolean; task?: unknown }>;
@@ -96,7 +95,6 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
     openShiftTypeManager() { adapter()?.openShiftTypeManager?.(); },
     openTaskCreate(date: string) { adapter()?.openTaskCreate?.(date); },
     openTaskDetails(id: number) { adapter()?.openTaskDetails?.(id); },
-    openQuickActions(date: string) { adapter()?.openQuickActions?.(date); },
     openImportantDetails(id: number) { adapter()?.openImportantDetails?.(id); },
     async offlineUpdateNote(id: number, patch: Record<string, unknown>, date: string) {
       return (await adapter()?.offlineUpdateNote?.(id, patch, date)) ?? { queued: false, note: null };

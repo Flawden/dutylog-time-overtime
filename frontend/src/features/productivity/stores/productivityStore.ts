@@ -186,6 +186,9 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
     importantDetailsOpen: false,
     importantDraft: emptyImportantDraft() as ImportantDraft,
     importantDetails: null as ImportantEvent | null,
+    quickActionsOpen: false,
+    quickActionText: "",
+    quickActionDate: todayIso(),
   }),
   getters: {
     currentNote(state): DayNote | null {
@@ -351,6 +354,17 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
         const rows = await api.searchNotes(q);
         if (sequence === searchReadSequence) this.noteSearchResults = rows;
       } catch (error) { if (sequence === searchReadSequence) this.error = errorMessage(error); }
+    },
+    openQuickActions(date?: string): void {
+      this.quickActionDate = validDate(date, this.selectedDate || this.workDate || todayIso());
+      this.quickActionText = "";
+      this.error = "";
+      this.quickActionsOpen = true;
+    },
+    closeQuickActions(): void {
+      this.quickActionsOpen = false;
+      this.quickActionText = "";
+      this.error = "";
     },
     async openTaskCreate(date?: string, text = "", sourceInboxId: number | null = null): Promise<void> {
       const targetDate = date ?? this.selectedDate;
@@ -622,14 +636,15 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       try { await api.deleteImportant(id); this.importantDetailsOpen = false; await Promise.all([this.loadImportantDays(), this.loadSelectedDate(this.selectedDate)]); await refreshCalendarIfMounted(); }
       catch (error) { this.error = errorMessage(error); }
     },
-    async captureInbox(text: string): Promise<void> {
-      if (!bridge || !text.trim()) return;
+    async captureInbox(text: string): Promise<boolean> {
+      if (!bridge || !text.trim()) return false;
       try {
         const result = await bridge.offlineCaptureInbox(text.trim());
         if (!result.queued) await this.loadInbox();
         else useShellStore().announce("Запись добавлена в офлайн-очередь", "warning");
         this.synchronizeQueuedCount();
-      } catch (error) { this.error = errorMessage(error); }
+        return true;
+      } catch (error) { this.error = errorMessage(error); return false; }
     },
     async convertInboxToTask(item: InboxItem): Promise<void> { await this.openTaskCreate(this.selectedDate, item.text, item.id); },
     async deleteInbox(id: number): Promise<void> { try { await api.deleteInbox(id); await this.loadInbox(); } catch (error) { this.error = errorMessage(error); } },

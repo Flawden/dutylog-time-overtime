@@ -1,3 +1,7 @@
+# DutyLog v27.40.10 — Vue Quick Actions Modal Retirement
+
+Starting from the proven-green v27.40.9 baseline, v27.40.10 removes the live legacy Quick Actions modal from the migrated Productivity/Today path. `QuickActionsModal.vue` now owns Inbox capture, Task, Note, Important Day, Overtime Credit and Absence actions while retaining the existing E2E selectors and module semantics. The old HTML modal remains only as pre-Vue recovery fallback and is removed from live DOM when Productivity becomes Vue-owned; `openQuickActions` is no longer part of the generic legacy bridge. The existing `dataLayer` remains the sole offline queue/sync owner, and Payroll/Admin routing plus Shift Type Manager remain explicit later-retirement boundaries.
+
 # DutyLog v27.40.9 — Vue Shell Navigation Model Retirement
 
 Starting from the proven-green v27.40.8 baseline, v27.40.9 removes the hidden legacy `#tabbar` DOM from the Vue shell navigation model. Primary navigation now follows persisted workspace preferences directly and available sections follow the authoritative module state; the fallback tabbar may still exist for recovery, but its CSS classes are no longer application state. The Settings destination is labelled `Настройки` / `Settings`, while the overflow control remains `Ещё` / `More`. Payroll/Admin hash routing and the single legacy `dataLayer` offline owner remain compatibility boundaries for later v27.40.x retirement cuts.

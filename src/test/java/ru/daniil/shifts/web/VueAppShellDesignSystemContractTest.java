@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static architecture contract for v27.40.9 Vue App Shell navigation-model retirement. */
+/** Static architecture contract for v27.40.10 Vue App Shell navigation-model retirement. */
 class VueAppShellDesignSystemContractTest {
 
     @Test
@@ -99,7 +99,7 @@ class VueAppShellDesignSystemContractTest {
         assertTrue(vite.contains("dutylog-vue-app-shell.js"));
         assertTrue(docker.contains("dist/dutylog-vue-app-shell.js"));
         assertTrue(gate.contains("dist/dutylog-vue-app-shell.css"));
-        assertTrue(html.contains("/vue/dutylog-vue-app-shell.js?v=27.40.9"));
+        assertTrue(html.contains("/vue/dutylog-vue-app-shell.js?v=27.40.10"));
         assertTrue(e2e.contains("Vue app shell owns navigation chrome"));
         assertTrue(e2e.contains("#tabbar"));
         assertTrue(e2e.contains("data-route=\"calendar\""));

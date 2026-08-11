@@ -85,6 +85,7 @@ export interface ProductivitySnapshot {
 export interface DutyLogProductivityDomain {
   ready(): boolean;
   refresh(): Promise<void>;
+  openQuickActions(date?: string): void;
   openTaskCreate(date?: string, text?: string, sourceInboxId?: number | null): Promise<void>;
   openTaskDetails(id: number): Promise<void>;
   openNoteCreate(date?: string, content?: string): Promise<void>;

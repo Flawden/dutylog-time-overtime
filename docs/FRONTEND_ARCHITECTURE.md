@@ -1,13 +1,13 @@
 # Frontend architecture
 
-Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.9.
+Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.10.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
 
 Vue owns Settings section navigation plus Profile, Language, Modules, Calendar Sync and Appearance/Workspace Studio. Online writes use the generated OpenAPI client; Spring Boot remains authoritative for profile validation, module dependencies/locks, sessions and integration secrets. Telegram is exposed through a canonical `/api/v1/telegram` alias for the migrated UI.
 
-Time, Schedule/Calendar Layers and Notifications are now native Vue Settings components. `#settingsLegacyHost`, `#settingsLegacyParking` and their attach/open bridge methods are retired; legacy Settings renderers yield after `data-vue-settings-workspace=ready`. v27.40.x still owns selected-day Calendar, legacy router/state/modal, offline dataLayer, Payroll/Admin and remaining numbered-JavaScript UI retirement.
+Time, Schedule/Calendar Layers and Notifications are now native Vue Settings components. `#settingsLegacyHost`, `#settingsLegacyParking` and their attach/open bridge methods are retired; legacy Settings renderers yield after `data-vue-settings-workspace=ready`. v27.40.x still owns legacy router/state/modal adapters, offline dataLayer, Payroll/Admin and remaining numbered-JavaScript UI retirement.
 
 Appearance keeps UI Contract v2 and delegates only root visual application/current global shell synchronization through a typed bridge. It does not add a second workspace/theme model. ADR-008 disables public production source maps by default and keeps controlled frontend diagnostics secret-free.
 
@@ -17,7 +17,7 @@ Vue now owns the bounded `productivity` domain: Tasks board/Inbox presentation, 
 
 Q-10 offline/reconnect reuses the existing legacy `dataLayer` queue and cached calendar snapshot through typed bridge operations. Vue does not create a second offline store. Note edits, task completion and Inbox capture may queue offline; selected-day productivity can read the cached snapshot; reconnect flushes the existing queue and reloads authoritative state. New-note creation remains disabled offline until create-identity semantics are owned by the queue.
 
-The old Tasks/Important route roots and productivity modals are retired after Vue ownership is ready. Cross-domain Today/Calendar launches call `DutyLogVueDomains.productivity` by name rather than invoking hidden legacy DOM owners.
+The old Tasks/Important route roots and productivity modals are retired after Vue ownership is ready. As of v27.40.10 this includes the live Quick Actions modal: Inbox, Task, Note, Important, Overtime Credit and Absence quick-add flows are Vue-owned, while the old HTML modal exists only before Vue readiness as recovery fallback. Cross-domain Today/Calendar launches call `DutyLogVueDomains.productivity` by name rather than invoking hidden legacy DOM owners.
 
 ## Vue Calendar & Timeline strict type boundary (v27.37.1)
 
@@ -65,7 +65,7 @@ When the active route is outside primary navigation, the visible More control an
 
 **Vue also owns the bounded Calendar & Timeline domain**: Today, Calendar Month/Week/Day, focused-date navigation, hourly timeline composition, calendar-layer visibility and the selected-day panel. The generated-API store treats Spring Boot read models as authoritative and keeps only view/panel state and optimistic presentation state locally.
 
-**Vue also owns the bounded Productivity domain**: Tasks/Inbox presentation, Task details/editor, selected-day Tasks, multiple daily Notes and Important Days. The existing dataLayer remains the only offline queue/snapshot infrastructure and is reached through typed bridge operations.
+**Vue also owns the bounded Productivity domain**: Tasks/Inbox presentation, Task details/editor, selected-day Tasks, multiple daily Notes, Important Days and the global Quick Actions modal. The existing dataLayer remains the only offline queue/snapshot infrastructure and is reached through typed bridge operations.
 
 **Legacy product screens remain authoritative** for Payroll and Admin plus still-unretired shell/modal boundaries. Settings and the Calendar selected-day UI are Vue-owned. The existing legacy `dataLayer` remains a deliberately retained non-DOM offline mutation/sync adapter until its separate infrastructure retirement.
 
@@ -105,7 +105,6 @@ writeCalendarDay
 openShiftTypeManager
 openTaskCreate
 openTaskDetails
-openQuickActions
 openImportantDetails
 offlineUpdateNote
 offlineSetTaskDone
@@ -114,7 +113,7 @@ offlineSelectedDay
 offlineSync
 ```
 
-Vue must not read `window.state`, query `#tabbar` or create a second mutation owner. The Absence & Time Bank workspace retires its route/modal owners after Vue readiness. The Calendar & Timeline workspace retires legacy Today/Calendar roots including the old selected-day panel. Vue owns selected-day DOM; only a narrow `writeCalendarDay` adapter remains for the existing single offline dataLayer writer, and legacy selected-day renderers yield after Vue readiness. The Productivity workspace retires legacy Tasks/Important route roots and selected-day Tasks/Notes/Important bodies, while preserving named bridge adapters for offline infrastructure and historical entry points. Payroll, Settings and Admin retain their existing owners until their bounded migration releases.
+Vue must not read `window.state`, query `#tabbar` or create a second mutation owner. The Absence & Time Bank workspace retires its route/modal owners after Vue readiness. The Calendar & Timeline workspace retires legacy Today/Calendar roots including the old selected-day panel. Vue owns selected-day DOM; only a narrow `writeCalendarDay` adapter remains for the existing single offline dataLayer writer, and legacy selected-day renderers yield after Vue readiness. The Productivity workspace retires legacy Tasks/Important route roots, selected-day Tasks/Notes/Important bodies and the live Quick Actions modal, while preserving named bridge adapters only for offline infrastructure and still-unretired historical entry points. Payroll, Settings and Admin retain their existing owners until their bounded migration releases.
 
 ## Shared design system
 
@@ -122,7 +121,7 @@ The first reusable primitives are `UiButton`, `UiBadge`, `UiCard`, `UiTabs`, `Ui
 
 ## Safe fallback
 
-Legacy topbar/tabbar stay in the document during the transition. They hide only after the Vue platform publishes successful readiness and sets `html[data-vue-shell="ready"]`. A failed Vue boot therefore leaves the released navigation usable. From v27.40.9 the hidden legacy `#tabbar` is recovery-only UI: its anchors, order and CSS visibility classes are not read back as Vue shell state. The shell read model derives workspace navigation from persisted appearance configuration and module availability from the runtime module map.
+Legacy topbar/tabbar stay in the document during the transition. They hide only after the Vue platform publishes successful readiness and sets `html[data-vue-shell="ready"]`. A failed Vue boot therefore leaves the released navigation usable. From v27.40.10 the hidden legacy `#tabbar` is recovery-only UI: its anchors, order and CSS visibility classes are not read back as Vue shell state. The shell read model derives workspace navigation from persisted appearance configuration and module availability from the runtime module map.
 
 ## API client
 

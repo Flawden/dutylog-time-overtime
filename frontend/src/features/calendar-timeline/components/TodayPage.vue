@@ -24,7 +24,7 @@ function openTask(): void { void window.DutyLogVueDomains?.productivity?.openTas
 function openTaskDetails(id: number): void { void window.DutyLogVueDomains?.productivity?.openTaskDetails(id); }
 function openImportantDetails(id: number): void { void window.DutyLogVueDomains?.productivity?.openImportantDetails(id); }
 async function openAbsence(): Promise<void> { await window.DutyLogVueDomains?.absenceTimeBank?.openAbsenceComposer({ date: workDate.value, source: "today" }); }
-function openMore(): void { props.bridge.openQuickActions(workDate.value); }
+function openMore(): void { window.DutyLogVueDomains?.productivity?.openQuickActions(workDate.value); }
 async function openNote(): Promise<void> { await window.DutyLogVueDomains?.productivity?.openNoteCreate(workDate.value); }
 </script>
 

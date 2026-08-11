@@ -40,6 +40,9 @@ class MobileTasksInboxFrontendContractTest {
         String core = read("src/main/resources/static/js/10-core.js");
         String data = read("src/main/resources/static/js/20-data.js");
         String tasks = read("src/main/resources/static/js/50-tasks.js");
+        String quickActions = read("frontend/src/features/productivity/components/QuickActionsModal.vue");
+        String domain = read("frontend/src/features/productivity/types/domain.ts");
+        String bridge = read("frontend/src/platform/bridge/legacyBridge.ts");
         String modules = read("src/main/java/ru/daniil/shifts/module/DutyLogModules.java");
 
         assertTrue(html.contains("class=\"taskInboxTray\" id=\"taskInboxCard\""));
@@ -59,6 +62,13 @@ class MobileTasksInboxFrontendContractTest {
         assertTrue(tasks.contains("async function saveQuickActionInbox()"));
         assertTrue(tasks.contains("async function quickActionNote()"));
         assertTrue(tasks.contains("function quickActionImportant()"));
+        assertTrue(tasks.contains("DutyLogVueDomains?.productivity?.openQuickActions?.(state.selected || todayKey())"));
+        assertTrue(quickActions.contains("id=\"quickActionsModal\"")
+                && quickActions.contains("id=\"quickActionInbox\"")
+                && quickActions.contains("id=\"quickActionNote\"")
+                && quickActions.contains("id=\"quickActionImportant\""));
+        assertTrue(domain.contains("openQuickActions(date?: string): void;"));
+        assertFalse(bridge.contains("openQuickActions(date: string)"));
         assertTrue(tasks.contains("inboxId:item.id"));
         assertTrue(modules.contains("inbox.capture"));
         assertTrue(modules.contains("/api/inbox"));
