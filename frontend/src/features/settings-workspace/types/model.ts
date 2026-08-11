@@ -290,7 +290,12 @@ export function setWorkspace(currentValue: AppearancePreferences, workspaceId: W
 
 export function moveStudioItem(currentValue: AppearancePreferences, kind: "navigation" | "widget", id: string, direction: -1 | 1): AppearancePreferences {
   const current = normalizeAppearance(currentValue);
-  const source = kind === "navigation" ? completeOrder(current.themeConfig.navigationOrder, NAVIGATION_UNIVERSE) : completeOrder(current.themeConfig.todayWidgets, WIDGET_UNIVERSE);
+  const visibleWidgets = kind === "widget"
+    ? new Set(current.themeConfig.todayWidgets.length ? current.themeConfig.todayWidgets : workspaceDefinition(current.themeConfig).todayWidgets)
+    : null;
+  const source = kind === "navigation"
+    ? completeOrder(current.themeConfig.navigationOrder, NAVIGATION_UNIVERSE)
+    : completeOrder(current.themeConfig.todayWidgets, WIDGET_UNIVERSE);
   const from = source.indexOf(id); const to = from + direction;
   if (from < 0 || to < 0 || to >= source.length) return current;
   const fromValue = source[from];
@@ -298,7 +303,14 @@ export function moveStudioItem(currentValue: AppearancePreferences, kind: "navig
   if (fromValue === undefined || toValue === undefined) return current;
   source[from] = toValue;
   source[to] = fromValue;
-  return normalizeAppearance({ ...current, themeConfig: { ...current.themeConfig, ...(kind === "navigation" ? { navigationOrder: source } : { todayWidgets: source }) } });
+  if (kind === "navigation") {
+    return normalizeAppearance({ ...current, themeConfig: { ...current.themeConfig, navigationOrder: source } });
+  }
+  // todayWidgets carries both order and visibility. completeOrder() appends hidden
+  // universe members for Studio controls, so filter them back out after moving
+  // a visible row or a hidden card would be silently re-enabled.
+  const orderedVisibleWidgets = source.filter(item => visibleWidgets?.has(item));
+  return normalizeAppearance({ ...current, themeConfig: { ...current.themeConfig, todayWidgets: orderedVisibleWidgets } });
 }
 
 export function toggleStudioItem(currentValue: AppearancePreferences, kind: "navigation" | "widget", id: string, enabled: boolean): { appearance: AppearancePreferences; rejected: boolean } {

@@ -1,6 +1,6 @@
-# DutyLog API v27.39.4
+# DutyLog API v27.39.5
 
-`v27.39.4` is a browser-parity contract hotfix. It changes no HTTP/OpenAPI or backend business contract: Settings E2E navigation now targets the Vue-owned Settings workspace instead of the retired `#view-settings` node, and the partial-time-off E2E correlates the preview response to the exact submitted draft so background auto-preview responses cannot be mistaken for the explicit check. OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`; Flyway remains V47.
+`v27.39.5` changes no HTTP/OpenAPI or backend business contract. It is a browser/state-ownership hotfix for idempotent module-toggle E2E behavior, Vue-owned Settings section persistence and Today-widget visibility preservation during Studio reordering. OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`; Flyway remains V47.
 
 `v27.39.3` is a frontend diagnostics release-version source hotfix. It changes no HTTP/OpenAPI contract; the generated client remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47. The frontend build now derives its diagnostics release version from the committed frontend package metadata instead of a separate hard-coded Vite literal.
 

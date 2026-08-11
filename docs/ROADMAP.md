@@ -1,12 +1,21 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix**.
+Current release: **v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix**.
 
 
 
 
 
-## v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix — current
+
+## v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix — current
+- [x] Use the complete v27.39.4 Playwright report: 48 scenarios, 42 passed / 6 failed, zero skipped.
+- [x] Treat four Task failures as one idempotency bug in the shared module helper: an already-enabled checkbox must not wait for a PATCH that a no-op `check()` cannot emit.
+- [x] Keep Vue Settings as the sole owner of `dutylog.settings.openSection`; hiding parked legacy compatibility cards must not overwrite `appearance` with `none`.
+- [x] Preserve Today-widget visibility while reordering: moving a visible widget must not reintroduce a previously hidden widget through `completeOrder()`.
+- [x] Keep retries, timeouts, HTTP/runtime collectors, backend rules, OpenAPI 118/120 and Flyway V47 unchanged.
+- [ ] Exact frontend, Maven 758/758, canary, clean 48/48 Chromium with zero flaky retries, image/PostgreSQL smoke and staging remain blocking acceptance gates.
+
+## v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix — predecessor
 - [x] Use the complete v27.39.3 Playwright report: 48 scenarios, 31 passed / 17 failed, with screenshots/traces for every failure.
 - [x] Treat the 16 Settings-dependent failures as one stale E2E ownership selector: the legacy `#view-settings` is intentionally retired while `[data-vue-settings-workspace-view]` is visibly mounted.
 - [x] Route `openView(page, 'settings')` to the Vue Settings owner and wait for `data-vue-settings-workspace=ready`; do not restore the retired legacy container.

@@ -35,6 +35,9 @@ class WorkspaceLayoutThemeStudioFrontendContractTest {
         assertTrue(studio.contains("navigationVisible"));
         assertTrue(studio.contains("todayWidgets"));
         assertTrue(studio.contains("selected.add(\"shift\")"));
+        String vueModel = read("frontend/src/features/settings-workspace/types/model.ts");
+        assertTrue(vueModel.contains("const orderedVisibleWidgets = source.filter"));
+        assertTrue(vueModel.contains("visibleWidgets?.has(item)"));
         assertTrue(studio.contains("ordered.length > 5"));
         assertFalse(studio.contains("jfetch("));
         assertFalse(studio.contains("fetch("));

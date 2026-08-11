@@ -1,3 +1,13 @@
+# v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix
+
+- Uses the complete v27.39.4 Playwright artifact as source of truth: 48 scenarios ran, 42 passed and 6 failed.
+- Makes the shared E2E module toggle idempotent: when a module already matches the requested state, the helper asserts the state and does not wait for a PATCH or saved-message that a no-op Playwright `check()`/`uncheck()` will not emit.
+- Removes persisted Settings ownership from the legacy-card visibility bridge so `openSettingsLegacySection("none")` cannot overwrite Vue's `dutylog.settings.openSection=appearance`.
+- Fixes Workspace Studio widget movement so `completeOrder()` may build the control universe without silently re-enabling Today widgets that the user intentionally hid.
+- Extends existing Vitest/JUnit source contracts without increasing test counts or weakening browser retries, timeouts, HTTP/runtime collectors, backend rules, OpenAPI or Flyway.
+- Baseline remains 153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases / Flyway V47; OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`.
+- Acceptance still requires exact frontend, Maven 758/758, canary, clean 48/48 Chromium with zero flaky retries, immutable image, PostgreSQL smoke and staging.
+
 # v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix
 
 - Uses the complete v27.39.3 Playwright artifact as source of truth: 48 scenarios ran, 31 passed and 17 failed; 16 failures share the same retired `#view-settings` selector and one partial-time-off assertion captured an earlier auto-preview response.

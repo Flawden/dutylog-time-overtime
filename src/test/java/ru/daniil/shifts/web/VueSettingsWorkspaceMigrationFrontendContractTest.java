@@ -28,6 +28,7 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         assertTrue(core.contains("settingsLegacyParking"));
         assertTrue(core.contains("document.documentElement.setAttribute(\"data-vue-settings-workspace\", \"ready\")"));
         assertTrue(core.contains("view-settings"));
+        assertFalse(core.contains("localStorage.setItem(\"dutylog.settings.openSection\", wanted)"));
     }
 
     @Test
@@ -119,6 +120,8 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         String migration = read("e2e/vue-settings-workspace.spec.js");
 
         assertTrue(helper.contains("waitForApi(page, 'PATCH', '/api/v1/modules')"));
+        assertTrue(helper.contains("const alreadyEnabled = await toggle.isChecked()"));
+        assertTrue(helper.contains("if (alreadyEnabled === enabled)"));
         assertTrue(helper.contains("settings: '[data-vue-settings-workspace-view]'"));
         assertTrue(helper.contains("if (view === 'settings') await waitForSettingsWorkspaceReady(page)"));
         assertTrue(calendarSync.contains("url.pathname === '/api/v1/calendar-sync/subscription'"));

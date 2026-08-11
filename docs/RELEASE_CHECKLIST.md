@@ -1,6 +1,18 @@
 # Release checklist
 
-Status: v27.39.4.
+Status: v27.39.5.
+
+
+## v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix acceptance
+
+- [x] Playwright report classified as 42 pass / 6 fail with three root causes.
+- [x] Module-toggle helper is idempotent when the requested state is already active.
+- [x] Legacy Settings visibility bridge cannot overwrite the Vue-owned open-section persistence key.
+- [x] Today widget reordering preserves hidden-widget visibility.
+- [ ] Exact frontend gate.
+- [ ] Maven 758/758.
+- [ ] Canary and Chromium 48/48, zero flaky retries.
+- [ ] Immutable image, PostgreSQL smoke and staging deploy.
 
 
 ## v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix acceptance

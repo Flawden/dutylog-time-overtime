@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.39.4"
+const DUTYLOG_VERSION = "27.39.5"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -297,7 +297,9 @@ function openLegacySettingsCard(section){
       toggle.setAttribute("aria-expanded", String(open));
     }
   }
-  try { localStorage.setItem("dutylog.settings.openSection", wanted); } catch (_) {}
+  // Vue Settings owns dutylog.settings.openSection. This compatibility bridge
+  // only controls the three parked legacy cards and must not overwrite the
+  // Vue-owned section (for example appearance -> "none" just to hide islands).
   if (wanted === "time" && typeof renderTimeSettings === "function") renderTimeSettings();
   if (wanted === "schedule" && typeof renderScheduleLayerSettings === "function") renderScheduleLayerSettings();
   if (wanted === "notifications" && typeof renderNotifications === "function") renderNotifications();

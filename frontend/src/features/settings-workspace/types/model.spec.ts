@@ -22,10 +22,16 @@ describe("settings workspace appearance model", () => {
     expect(restored.themeConfig.accentSecondary).toBe("#A7C957");
   });
 
-  it("moves custom workspace rows without dropping the universe", () => {
+  it("moves custom workspace rows without dropping navigation or resurrecting hidden Today widgets", () => {
     const custom = customizeWorkspace(normalizeAppearance(DEFAULT_APPEARANCE));
     const moved = moveStudioItem(custom, "navigation", "settings", -1);
     expect(moved.themeConfig.navigationOrder).toContain("settings");
     expect(new Set(moved.themeConfig.navigationOrder).size).toBe(moved.themeConfig.navigationOrder.length);
+
+    const withoutOvertime = toggleStudioItem(custom, "widget", "overtime", false).appearance;
+    expect(withoutOvertime.themeConfig.todayWidgets).not.toContain("overtime");
+    const reordered = moveStudioItem(withoutOvertime, "widget", "tasks", -1);
+    expect(reordered.themeConfig.todayWidgets).not.toContain("overtime");
+    expect(reordered.themeConfig.todayWidgets.indexOf("tasks")).toBeLessThan(reordered.themeConfig.todayWidgets.indexOf("shift"));
   });
 });

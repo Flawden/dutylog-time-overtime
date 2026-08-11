@@ -1,3 +1,7 @@
+# DutyLog v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix
+
+v27.39.5 consumes the complete v27.39.4 Playwright report: 42/48 scenarios passed and the six failures reduce to three concrete ownership/contract defects. Four Task cases were an idempotent-helper wait on an already-enabled module, the Settings shell let a legacy visibility bridge overwrite Vue's persisted open section, and Workspace Studio re-enabled a hidden Today card while moving another card. The hotfix fixes those causes without weakening browser policy; acceptance remains 48 Playwright / 52 Vitest / 758 JUnit / V47.
+
 # DutyLog v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix
 
 The v27.39.0 Settings migration and v27.39.1–v27.39.3 compile/contract/version fixes remain intact. v27.39.4 consumes the complete 189 MB Playwright artifact: sixteen failures are one stale E2E selector for the intentionally retired `#view-settings`, while the only independent failure is an absence-preview response race. Browser helpers now target the Vue Settings owner, and the time-off scenario waits for the exact 09:00–13:00 preview request without weakening the 240-minute assertion. Runtime/API/Flyway scope is unchanged; acceptance remains 48 Playwright / 52 Vitest / 758 JUnit / V47.
