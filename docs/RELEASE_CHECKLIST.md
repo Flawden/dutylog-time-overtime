@@ -1,7 +1,18 @@
 # Release checklist
 
-Status: v27.40.4.
+Status: v27.40.5.
 
+
+## v27.40.5 — Selected-Day Strict Type Contract Alignment Hotfix acceptance
+
+- [x] Preserve the v27.40.4 Vue selected-day product code and single `dataLayer` offline writer.
+- [x] Require `CalendarDaySection`, `CalendarMode` and `DutyLogCalendarTimelineDomain` in the Calendar workspace strict-source contract.
+- [x] Require the explicit `openDay(date: string, section?: CalendarDaySection | null)` callback signature.
+- [x] Keep strict TypeScript, OpenAPI 118/120 and Flyway V47 unchanged.
+- [ ] Run exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Run Maven 758/758.
+- [ ] Run Playwright canary and full 48/48 with 0 flaky.
+- [ ] Accept immutable staging image and PostgreSQL migration smoke.
 
 ## v27.40.4 — Vue Calendar Selected-Day Panel Retirement acceptance
 

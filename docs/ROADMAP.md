@@ -1,13 +1,23 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.4 — Vue Calendar Selected-Day Panel Retirement**.
+Current release: **v27.40.5 — Selected-Day Strict Type Contract Alignment Hotfix**.
 
 
 
 
 
 
-## v27.40.4 — Vue Calendar Selected-Day Panel Retirement — current
+## v27.40.5 — Selected-Day Strict Type Contract Alignment Hotfix — current
+- [x] Start from the exact v27.40.4 tree `37c6a0ba489a0a52c7c37b1f57b2f7c24c45de42`.
+- [x] Keep the native Vue selected-day ownership from v27.40.4 unchanged.
+- [x] Align the historical strict-source JUnit contract with the explicit `CalendarDaySection` import and typed `openDay` callback.
+- [x] Do not weaken TypeScript strictness, runtime collectors, retries/timeouts, offline ownership, OpenAPI 118/120 or Flyway V47.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 758/758.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.4 — Vue Calendar Selected-Day Panel Retirement — predecessor cut
 - [x] Start from the accepted v27.40.3 baseline.
 - [x] Replace the live `#calendarLegacyPanelHost -> #panel` compatibility island with native `SelectedDayPanel.vue` ownership while retaining stable selected-day selectors and behavior.
 - [x] Remove Calendar selected-day attach/park/open/close bridge methods; Calendar Pinia now owns panel open state and requested section.

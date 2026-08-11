@@ -18,8 +18,9 @@ class VueCalendarTimelineStrictTypecheckHotfixTest {
     void workspaceBridgeCallbackCarriesExplicitGeneratedDomainTypes() throws Exception {
         String workspace = read(FEATURE.resolve("components/CalendarTimelineWorkspace.vue"));
 
-        assertTrue(workspace.contains("import type { CalendarMode, DutyLogCalendarTimelineDomain }"));
+        assertTrue(workspace.contains("import type { CalendarDaySection, CalendarMode, DutyLogCalendarTimelineDomain }"));
         assertTrue(workspace.contains("openDate: async (date: string, mode?: CalendarMode)"));
+        assertTrue(workspace.contains("openDay: async (date: string, section?: CalendarDaySection | null)"));
         assertTrue(workspace.contains("await store.openDate(date, mode)"));
         assertFalse(workspace.contains("openDate: async (date, mode)"));
     }

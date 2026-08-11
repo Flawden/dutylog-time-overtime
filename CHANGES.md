@@ -1,3 +1,9 @@
+# v27.40.5 — Selected-Day Strict Type Contract Alignment Hotfix
+
+- Aligns `VueCalendarTimelineStrictTypecheckHotfixTest` with the v27.40.4 native selected-day domain by requiring the explicit `CalendarDaySection` import instead of the retired two-type import literal.
+- Strengthens the same source contract to assert the typed `openDay(date: string, section?: CalendarDaySection | null)` bridge callback; strict compiler settings and product/runtime behavior are unchanged.
+- No HTTP/OpenAPI, Flyway, business-rule, retry, timeout, offline-ownership or browser-collector changes.
+
 # v27.40.4 — Vue Calendar Selected-Day Panel Retirement
 
 - Retires the last live Calendar selected-day DOM compatibility island: Vue now owns `#panel` directly through `SelectedDayPanel.vue`; `#calendarLegacyPanelHost` and the attach/park/open/close selected-day bridge lifecycle are removed.

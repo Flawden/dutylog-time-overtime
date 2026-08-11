@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue app-shell plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.4.
+Status: Vue app-shell plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.5.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)

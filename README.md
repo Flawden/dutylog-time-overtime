@@ -1,3 +1,7 @@
+# DutyLog v27.40.5 — Selected-Day Strict Type Contract Alignment Hotfix
+
+v27.40.4 correctly introduced the explicit `CalendarDaySection` type into `CalendarTimelineWorkspace.vue`, but the historical v27.37.1 Maven source contract still required the older two-type import literal. v27.40.5 aligns that contract with the real native selected-day domain and adds an explicit `openDay(..., section?: CalendarDaySection | null)` assertion. Product behavior, strict TypeScript, OpenAPI 118/120, Flyway V47 and the 153 / 758 / 48 / 52 acceptance surface are unchanged.
+
 # DutyLog v27.40.4 — Vue Calendar Selected-Day Panel Retirement
 
 v27.40.4 retires the last live Calendar selected-day DOM compatibility island. The Calendar page now renders a native Vue `SelectedDayPanel` while preserving the stable selected-day contracts for shifts, markers, schedule templates, overtime, absences, Tasks, Notes and Important Days. Offline day writes still flow through the single existing `dataLayer` owner; OpenAPI 118/120, Flyway V47 and the 153 / 758 / 48 / 52 acceptance surface remain unchanged.
