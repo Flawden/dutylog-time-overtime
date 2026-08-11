@@ -1,7 +1,18 @@
 # Release checklist
 
-Status: v27.40.2.
+Status: v27.40.3.
 
+
+## v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix acceptance
+
+- [x] Classify the full v27.40.2 report: 48 scenarios, 32 clean passed / 10 flaky / 6 final failed, with the recurring 500 reduced to lazy notification-settings first-read concurrency.
+- [x] Guard only the missing-row notification-settings path with a pessimistic owner lock, double-check after lock acquisition and `saveAndFlush`; ordinary reads remain lock-free.
+- [x] Restore curated timezone aliases such as `Europe/Kyiv` in native Vue Time Settings and keep exact timezone-save UI copy assertions.
+- [x] Keep OpenAPI 118/120, Flyway V47, business semantics, retries/timeouts and strict browser failure collection unchanged.
+- [ ] Exact frontend gate must pass with 52/52 Vitest.
+- [ ] Maven Java 17 must pass 758/758.
+- [ ] Canary and full Chromium must pass 48/48 with zero flaky retries.
+- [ ] Immutable image, PostgreSQL V47 smoke and staging deployment must pass.
 
 ## v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix acceptance
 

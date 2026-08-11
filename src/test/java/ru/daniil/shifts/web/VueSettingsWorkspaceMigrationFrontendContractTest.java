@@ -63,6 +63,16 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         assertTrue(store.contains("const sourceTimezone = this.profile?.workTimezone || timeContext?.workTimezone || \"UTC\""));
         assertTrue(store.contains("api.legacyShiftPreview(sourceTimezone)"));
         assertTrue(store.contains("api.legacyTaskDeadlinePreview(sourceTimezone)"));
+        String time = read(FEATURE.resolve("components/TimeSettingsCard.vue"));
+        assertTrue(time.contains("TIMEZONE_FALLBACKS"));
+        assertTrue(time.contains("\"Europe/Kyiv\""));
+        String userRepository = read("src/main/java/ru/daniil/shifts/repo/UserRepository.java");
+        String notifications = read("src/main/java/ru/daniil/shifts/service/NotificationService.java");
+        assertTrue(userRepository.contains("LockModeType.PESSIMISTIC_WRITE"));
+        assertTrue(userRepository.contains("findForUpdateById"));
+        assertTrue(notifications.contains("userRepository.findForUpdateById(user.getId())"));
+        assertTrue(notifications.contains("settingsRepo.findByOwner(lockedOwner)"));
+        assertTrue(notifications.contains("settingsRepo.saveAndFlush(new NotificationSettings(lockedOwner))"));
         assertFalse(source.contains("jfetch("));
         assertFalse(source.contains("fetch("));
     }

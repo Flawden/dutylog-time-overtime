@@ -20,6 +20,17 @@ const nightEnd = ref("08:00");
 const nightBreak = ref(60);
 const nightPlan = ref(11);
 
+// Preserve the curated legacy list even when the browser exposes a narrower or
+// differently canonicalized Intl.supportedValuesOf("timeZone") result (for
+// example Chromium builds that omit the Europe/Kyiv alias).
+const TIMEZONE_FALLBACKS = [
+  "UTC", "Europe/Chisinau", "Europe/Moscow", "Europe/Berlin", "Europe/Kyiv",
+  "Asia/Yekaterinburg", "Asia/Omsk", "Asia/Novosibirsk", "Asia/Irkutsk",
+  "Asia/Vladivostok", "Asia/Krasnoyarsk", "Asia/Kamchatka",
+  "America/New_York", "America/Chicago", "America/Denver", "America/Los_Angeles",
+  "Asia/Tbilisi", "Asia/Yerevan", "Asia/Almaty", "Asia/Dubai", "Asia/Tokyo",
+] as const;
+
 const language = computed(() => settings.language);
 const text = computed(() => language.value === "en" ? {
   eyebrow: "Time", title: "Timezone and time format", hint: "One IANA timezone is used for calendar, shifts, reminders and absolute intervals.", timezone: "Timezone", format: "Time format", current: "Current time", saveTimezone: "Save timezone", detect: "Detect automatically", shifts: "Shift templates", shiftsHint: "Built-in day and night shift defaults.", day: "Day", night: "Night", start: "Start", end: "End", break: "Break, min", plan: "Plan, h", saveShifts: "Save shift templates", legacyShifts: "Attach legacy shifts", legacyTasks: "Attach legacy task deadlines", migrationConfirm: "Interpret legacy local time in the selected timezone? This writes absolute instants.", saved: "saved",
@@ -34,7 +45,7 @@ const timeZones = computed(() => {
     supported = intl.supportedValuesOf?.("timeZone") ?? [];
   } catch { supported = []; }
   const current = workTimezone.value || profile.value?.workTimezone || "UTC";
-  return [...new Set(["UTC", current, ...supported])].sort((a, b) => a.localeCompare(b));
+  return [...new Set([current, ...TIMEZONE_FALLBACKS, ...supported])].sort((a, b) => a.localeCompare(b));
 });
 const nowLabel = computed(() => {
   const zone = workTimezone.value || "UTC";

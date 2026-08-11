@@ -14,6 +14,7 @@ import ru.daniil.shifts.model.ShiftType;
 import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.repo.DayTaskRepository;
 import ru.daniil.shifts.repo.NotificationSettingsRepository;
+import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.Instant;
@@ -38,6 +39,7 @@ import java.util.Objects;
 @Service
 public class NotificationService {
     private final NotificationSettingsRepository settingsRepo;
+    private final UserRepository userRepository;
     private final DayEntryRepository dayEntryRepository;
     private final DayTaskRepository taskRepository;
     private final ImportantDayService importantDayService;
@@ -45,12 +47,14 @@ public class NotificationService {
     private final UserTimeService userTimeService;
 
     public NotificationService(NotificationSettingsRepository settingsRepo,
+                               UserRepository userRepository,
                                DayEntryRepository dayEntryRepository,
                                DayTaskRepository taskRepository,
                                ImportantDayService importantDayService,
                                DayEntryService dayEntryService,
                                UserTimeService userTimeService) {
         this.settingsRepo = settingsRepo;
+        this.userRepository = userRepository;
         this.dayEntryRepository = dayEntryRepository;
         this.taskRepository = taskRepository;
         this.importantDayService = importantDayService;
@@ -60,7 +64,17 @@ public class NotificationService {
 
     @Transactional
     public NotificationSettings settingsEntity(AppUser user) {
-        return settingsRepo.findByOwner(user).orElseGet(() -> settingsRepo.save(new NotificationSettings(user)));
+        var existing = settingsRepo.findByOwner(user);
+        if (existing.isPresent()) return existing.get();
+
+        // Calendar bootstrap and Vue Settings can ask for notification settings at the
+        // same time for a brand-new user. Serialize only the missing-row path on the
+        // stable owner row, then re-check after acquiring the lock so lazy creation is
+        // idempotent across concurrent requests and application instances.
+        AppUser lockedOwner = userRepository.findForUpdateById(user.getId())
+                .orElseThrow(() -> ApiException.notFound("Пользователь не найден"));
+        return settingsRepo.findByOwner(lockedOwner)
+                .orElseGet(() -> settingsRepo.saveAndFlush(new NotificationSettings(lockedOwner)));
     }
 
     @Transactional

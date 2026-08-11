@@ -1,3 +1,7 @@
+# DutyLog v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix
+
+The complete v27.40.2 Playwright artifact reduces 16 scenarios with failed attempts to one dominant first-read concurrency race plus two deterministic timezone parity mismatches. v27.40.3 serializes lazy `NotificationSettings` creation on the owner row, restores the legacy curated timezone aliases (including `Europe/Kyiv`) in native Vue Settings, and binds the exact Vue timezone-save success copy without weakening runtime collectors, retries, OpenAPI 118/120, Flyway V47 or the 153 / 758 / 48 / 52 acceptance surface.
+
 # DutyLog v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix
 
 v27.40.1 reaches the strict Playwright canary and fails only because the newly native Settings bootstrap creates one first-user schedule preset race and omits the required `sourceTimezone` query on two generated migration-preview GETs. v27.40.2 serializes the two shared-preset list reads and supplies the authoritative work timezone to both preview operations without weakening HTTP/runtime collection, retries, backend rules, OpenAPI 118/120, Flyway V47 or the 153 / 758 / 48 / 52 regression surface.

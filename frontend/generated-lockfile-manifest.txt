@@ -1,10 +1,10 @@
-release=27.40.2
+release=27.40.3
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=ae44fcb2960286604c9100893d00c790bb811f90275fc166690343497d78a1c8
+committedLockfileSha256=088ee9d975b0993b244b32ffd86a1707fde3a1d2dd7c1b62675967696e3f3535
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=exact-vue-settings-bootstrap-serialization-migration-preview-query-acceptance-for-v27.40.2
+nextAction=exact-notification-settings-first-read-timezone-parity-acceptance-for-v27.40.3

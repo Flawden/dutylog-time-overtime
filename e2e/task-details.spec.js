@@ -59,7 +59,7 @@ test('timed task deadline and reminder keep one instant across timezone changes'
   let profileSaved = waitForApi(page, 'PUT', '/api/v1/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
-  await expect(page.locator('#timeSettingsStatus')).toContainText(/сохранено|saved/i);
+  await expect(page.locator('#timeSettingsStatus')).toHaveText('Часовой пояс сохранён');
 
   const sourceDeadline = await page.evaluate(() => {
     const instant = new Date(Date.now() - 10 * 60_000);
@@ -106,7 +106,7 @@ test('timed task deadline and reminder keep one instant across timezone changes'
   profileSaved = waitForApi(page, 'PUT', '/api/v1/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
-  await expect(page.locator('#timeSettingsStatus')).toContainText(/сохранено|saved/i);
+  await expect(page.locator('#timeSettingsStatus')).toHaveText('Часовой пояс сохранён');
 
   const expected = await page.evaluate(instantValue => {
     const parts = Object.fromEntries(new Intl.DateTimeFormat('en-CA', {

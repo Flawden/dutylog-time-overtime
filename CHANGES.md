@@ -1,3 +1,12 @@
+# v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix
+
+- Uses the complete 189 MB v27.40.2 Playwright report as source of truth: 48 scenarios produced 32 clean passes, 10 retry-only flaky scenarios and 6 final failures.
+- Collapses the dominant browser noise to one backend first-read race: Vue Settings and Calendar bootstrap can concurrently lazily create the same `notification_settings` row for a fresh user, so one request intermittently hits the unique `user_id` constraint and returns 500. The missing-row path now double-checks under a pessimistic lock on the stable owner row and flushes the single creation before releasing that lock.
+- Restores the curated legacy timezone fallback list in native Vue Time Settings so aliases such as `Europe/Kyiv` remain selectable even when a Chromium/ICU build omits or differently canonicalizes them in `Intl.supportedValuesOf("timeZone")`.
+- Aligns the two timezone browser assertions with the exact native Vue success copy `Часовой пояс сохранён`; the assertion is made more precise rather than weakened.
+- Changes no HTTP/OpenAPI operation or schema, Flyway migration, business rule, browser retry/timeout or strict HTTP/runtime collector. Baseline remains 153 Java test classes / 758 `@Test` methods / 48 Chromium scenarios / 52 Vitest cases / Flyway V47; OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`.
+- Acceptance still requires exact frontend, Maven 758/758, clean canary, clean Chromium 48/48 with zero flaky retries, immutable image, PostgreSQL V47 smoke and staging.
+
 # v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix
 
 - Uses the complete v27.40.1 canary Playwright artifact as source of truth: the canary is the only executed browser scenario and fails on both attempts with strict runtime HTTP collection.

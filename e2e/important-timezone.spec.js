@@ -58,7 +58,7 @@ test('important dates stay floating while canonical timezone survives reload', a
   await waitForAppIdle(page);
   await expect(timezone).toHaveValue('Europe/Chisinau');
   await expect(displayTimezone).toHaveValue('Europe/Chisinau');
-  await expect(page.locator('#timeSettingsStatus')).toContainText(/сохранено|saved/i);
+  await expect(page.locator('#timeSettingsStatus')).toHaveText('Часовой пояс сохранён');
 
   await page.reload();
   await expect(page.locator('#whoami')).not.toBeEmpty();

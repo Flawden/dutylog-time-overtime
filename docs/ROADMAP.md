@@ -1,13 +1,22 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix**.
+Current release: **v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix**.
 
 
 
 
 
 
-## v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix — current
+## v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix — current
+- [x] Use the complete v27.40.2 Playwright artifact: 48 scenarios, 32 clean passes / 10 flaky / 6 final failures.
+- [x] Serialize the missing `NotificationSettings` first-read path with an owner-row pessimistic lock and a post-lock double-check so Calendar and Vue Settings bootstrap cannot race the unique user row.
+- [x] Restore the curated legacy timezone fallback list in Vue Time Settings, including `Europe/Kyiv`, independently of browser ICU canonicalization.
+- [x] Make timezone-save E2E copy assertions exact for the native Vue message `Часовой пояс сохранён`.
+- [x] Keep HTTP/OpenAPI 118/120, Flyway V47, business rules, retries/timeouts and strict runtime collectors unchanged.
+- [ ] Exact frontend, Maven 758/758, clean canary, Chromium 48/48 with zero flaky retries, immutable image, PostgreSQL V47 smoke and staging remain blocking acceptance gates.
+- [ ] Continue selected-day/router/modal/offline/Payroll/Admin retirement only from a green v27.40.x tree.
+
+## v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix — predecessor
 - [x] Use the complete v27.40.1 canary artifact: one browser scenario executed and failed on both attempts under the strict runtime/HTTP collector.
 - [x] Serialize Schedule Templates before Calendar Layers so the two Settings reads cannot concurrently seed the same built-in presets on a fresh user.
 - [x] Pass required `sourceTimezone` on both generated legacy migration-preview GETs and reuse the selected timezone after migration.
