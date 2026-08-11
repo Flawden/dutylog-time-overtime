@@ -1,3 +1,7 @@
+# DutyLog v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix
+
+The v27.40.6 staging browser report reached the full 48-scenario suite and exposed four deterministic selected-day parity failures plus one retry-only offline-note failure. v27.40.7 ports the lost shift/timezone and cross-midnight overtime rendering semantics into the native Vue panel, updates one desktop notes-layout assertion that was specific to the retired narrow rail, and closes the reconnect race where `SelectedDayNotes` could submit the same queued note beside `dataLayer.syncQueue()`. The Vue selected-day owner remains in place, the existing dataLayer remains the only offline queue/sync owner, and no retry, timeout, strictness, OpenAPI or Flyway relaxation is introduced.
+
 # DutyLog v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix
 
 The exact Node 20.18.1/npm 10.8.2 frontend gate for v27.40.5 exposed one strict-template error in `SelectedDayPanel.vue`: the generated schedule-preview schema allows `date?: string`, while Vue keys cannot receive `undefined` with `exactOptionalPropertyTypes`. v27.40.6 keeps the date key when available and provides a defined `preview-N` fallback when it is absent. Strict TypeScript, the v27.40.4 selected-day ownership cut, OpenAPI 118/120, Flyway V47 and the 153 / 758 / 48 / 52 acceptance surface remain unchanged.

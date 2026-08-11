@@ -67,13 +67,54 @@ watch([focusDate, selectedEmoji], () => { emojiCustom.value = selectedEmoji.valu
 const panelWeekday = computed(() => dateLabel(focusDate.value, language.value, { weekday: "long" }));
 const panelDate = computed(() => dateLabel(focusDate.value, language.value, { day: "numeric", month: "long", year: "numeric" }));
 const shiftSummary = computed(() => activeShift.value ? `${activeShift.value.name}${activeShift.value.plannedHours ? ` · ${activeShift.value.plannedHours}ч` : ""}` : (language.value === "en" ? "not set" : "не отмечена"));
+function shortDate(date: string): string {
+  const parts = date.split("-");
+  return parts.length === 3 ? `${parts[2]}.${parts[1]}` : date;
+}
+function dateTimeRange(start: string | null | undefined, end: string | null | undefined): string {
+  const startText = String(start ?? "");
+  const endText = String(end ?? "");
+  const startDate = startText.slice(0, 10);
+  const endDate = endText.slice(0, 10);
+  const startTime = timePart(startText);
+  const endTime = timePart(endText);
+  if (!startTime || !endTime) return "";
+  return startDate && endDate && startDate !== endDate
+    ? `${shortDate(startDate)} ${startTime}–${shortDate(endDate)} ${endTime}`
+    : `${startTime}–${endTime}`;
+}
+function projectedDayRange(occurrence: DutyLogApiSchemas.ShiftOccurrence, date: string): string {
+  const startDate = occurrence.displayStart.slice(0, 10);
+  const endDate = occurrence.displayEnd.slice(0, 10);
+  const startTime = startDate < date ? "00:00" : timePart(occurrence.displayStart);
+  const endTime = endDate > date ? "24:00" : timePart(occurrence.displayEnd);
+  return `${startTime}–${endTime}`;
+}
+function durationLabel(minutes: number | null | undefined): string {
+  const safe = Math.max(0, Number(minutes ?? 0));
+  if (!safe) return language.value === "en" ? "0m" : "0м";
+  const hours = Math.floor(safe / 60);
+  const minutesLeft = safe % 60;
+  const hourLabel = hours ? `${hours}${language.value === "en" ? "h" : "ч"}` : "";
+  const minuteLabel = minutesLeft ? `${minutesLeft}${language.value === "en" ? "m" : "м"}` : "";
+  return [hourLabel, minuteLabel].filter(Boolean).join(" ");
+}
 const shiftProjection = computed(() => {
   const occurrence = selectedOccurrence.value;
-  if (!occurrence) return "";
-  const range = `${timePart(occurrence.displayStart)}–${timePart(occurrence.displayEnd)}`;
-  return occurrence.sourceDate !== focusDate.value
-    ? `${language.value === "en" ? "Continues from" : "Продолжение смены от"} ${occurrence.sourceDate} · ${range}`
-    : `${range} · ${occurrence.displayTimezone}`;
+  if (!occurrence) return null;
+  const workLabel = language.value === "en" ? "Shift work time" : "Рабочее время смены";
+  const breakLabel = language.value === "en" ? "Shift break" : "Обед в смене";
+  const duration = `${workLabel}: ${durationLabel(occurrence.netMinutes)}${occurrence.breakMinutes > 0 ? ` · ${breakLabel}: ${durationLabel(occurrence.breakMinutes)}` : ""}`;
+  return {
+    currentRange: projectedDayRange(occurrence, focusDate.value),
+    currentTimezone: occurrence.displayTimezone,
+    sourceRange: dateTimeRange(occurrence.sourceStart, occurrence.sourceEnd),
+    sourceTimezone: occurrence.sourceTimezone,
+    moved: occurrence.sourceDate !== focusDate.value,
+    sourceDate: occurrence.sourceDate,
+    legacyLocal: occurrence.legacyLocal,
+    duration,
+  };
 });
 
 async function refreshAfterDayWrite(message: string, queued: boolean): Promise<void> {
@@ -181,7 +222,29 @@ const overtimeSummary = computed(() => {
 });
 function formatHours(value: number | null | undefined): string { return Number(value || 0).toFixed(2).replace(/\.00$/, "").replace(/(\.\d)0$/, "$1"); }
 function formatSignedHours(value: number | null | undefined): string { const number = Number(value || 0); return `${number > 0 ? "+" : ""}${formatHours(number)} ч`; }
-function creditRange(credit: DutyLogApiSchemas.OvertimeCredit): string { return credit.displayStart && credit.displayEnd ? `${credit.displayStart.slice(11,16)}–${credit.displayEnd.slice(11,16)}` : (credit.timeRange || ""); }
+function creditRange(credit: DutyLogApiSchemas.OvertimeCredit): string {
+  return credit.displayStart && credit.displayEnd ? dateTimeRange(credit.displayStart, credit.displayEnd) : (credit.timeRange || "");
+}
+function allocationRangeLabels(allocation: DutyLogApiSchemas.OvertimeAllocation): string[] {
+  if (!allocation.exact || !allocation.displayStart || !allocation.displayEnd) return [];
+  const start = allocation.displayStart.slice(0, 16);
+  const end = allocation.displayEnd.slice(0, 16);
+  const startDate = start.slice(0, 10);
+  const endDate = end.slice(0, 10);
+  const startTime = start.slice(11, 16);
+  const endTime = end.slice(11, 16);
+  if (!startDate || !endDate || startDate === endDate) return [dateTimeRange(start, end)];
+
+  const labels = [`${shortDate(startDate)} ${startTime}–24:00`];
+  const cursor = new Date(`${startDate}T00:00:00Z`);
+  cursor.setUTCDate(cursor.getUTCDate() + 1);
+  while (cursor.toISOString().slice(0, 10) < endDate) {
+    labels.push(`${shortDate(cursor.toISOString().slice(0, 10))} 00:00–24:00`);
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  if (endTime !== "00:00") labels.push(`${shortDate(endDate)} 00:00–${endTime}`);
+  return labels;
+}
 async function addCredit(): Promise<void> { await window.DutyLogVueDomains?.absenceTimeBank?.openCreditEditor(focusDate.value); }
 async function editCredit(id: number): Promise<void> { await window.DutyLogVueDomains?.absenceTimeBank?.editCredit(id); }
 async function addUsage(): Promise<void> { await window.DutyLogVueDomains?.absenceTimeBank?.openAbsenceComposer({ date: focusDate.value, systemCode: "TIME_OFF", source: "calendar" }); }
@@ -223,7 +286,23 @@ onBeforeUnmount(() => { document.body.classList.remove("panel-open"); });
           <button v-for="shift in bundle?.shiftTypes ?? []" :key="shift.id" type="button" class="chip" :class="{ on: Number(activeShiftId) === Number(shift.id) }" :data-shift-type-id="shift.id" :aria-pressed="Number(activeShiftId) === Number(shift.id) ? 'true' : 'false'" :style="{ borderColor: shift.color, color: Number(activeShiftId) === Number(shift.id) ? '#14171C' : shift.color, background: Number(activeShiftId) === Number(shift.id) ? shift.color : `color-mix(in srgb, ${shift.color} 12%, transparent)` }" @click="toggleShift(shift.id)">{{ shift.name }} <span v-if="shift.plannedHours" class="h">·{{ formatHours(shift.plannedHours) }}ч</span></button>
           <button type="button" class="chip plus" title="Создать или настроить смену" @click="bridge.openShiftTypeManager()">+</button>
         </div>
-        <div id="shiftProjection" class="shiftProjection" :hidden="!shiftProjection">{{ shiftProjection }}</div>
+        <div id="shiftProjection" class="shiftProjection" :hidden="!shiftProjection">
+          <template v-if="shiftProjection">
+            <div class="shiftProjectionRow primary">
+              <span>{{ language === "en" ? "Current display" : "Текущее отображение" }}</span>
+              <strong>{{ shiftProjection.currentRange }}</strong>
+              <code>{{ shiftProjection.currentTimezone }}</code>
+            </div>
+            <div class="shiftProjectionRow">
+              <span>{{ language === "en" ? "Source shift" : "Исходная смена" }}</span>
+              <strong>{{ shiftProjection.sourceRange }}</strong>
+              <code>{{ shiftProjection.sourceTimezone }}</code>
+            </div>
+            <div v-if="shiftProjection.moved" class="shiftProjectionHint">{{ language === "en" ? "Shift is assigned to source date" : "Смена назначена на исходную дату" }}: {{ shiftProjection.sourceDate }}</div>
+            <div v-if="shiftProjection.legacyLocal" class="shiftProjectionHint warn">⚠ {{ language === "en" ? "Legacy shift has no source timezone yet" : "Старая смена ещё не привязана к часовому поясу" }}</div>
+            <div class="shiftProjectionHint">{{ shiftProjection.duration }}</div>
+          </template>
+        </div>
       </div>
     </details>
 
@@ -250,7 +329,7 @@ onBeforeUnmount(() => { document.body.classList.remove("panel-open"); });
     <details id="accOt" class="acc dayPanelModule" :class="{ moduleHidden: !moduleEnabled('overtime') }" data-day-module="overtime" :open="isOpen('accOt')" @toggle="toggleSection('accOt', $event)">
       <summary><span class="accT">Переработка</span><span id="sumOt" class="accS">{{ overtimeSummary }}</span></summary>
       <div class="accB"><div class="overtimeDayCompact"><div class="overtimeDayActions"><button id="dayAddCredit" class="primary" type="button" @click="addCredit">+ Начислить</button><button id="dayAddUsage" type="button" @click="addUsage">− Списать</button><span id="otBalance" class="bal">доступно {{ formatSignedHours(bundle?.overtimeAccount.balanceHours) }}</span></div>
-        <div id="otDayDetails" class="overtimeDayEntries"><div v-if="!dayCredits.length && !dayUsages.length" class="emptyLine">На этот день в журнале переработок записей нет. Начисления не сгорают при переходе между месяцами.</div><div v-for="credit in dayCredits" :key="`credit-${credit.id}`" class="overtimeDayEntry credit"><div><b>+{{ formatHours(credit.hours) }} ч</b><span>{{ creditRange(credit) }}<template v-if="credit.reason"> · {{ credit.reason }}</template></span><small>остаток: {{ formatHours(credit.remainingHours) }} ч</small></div><button type="button" @click="editCredit(credit.id)">ред.</button></div><div v-for="usage in dayUsages" :key="`usage-${usage.id}`" class="overtimeDayEntry usage"><div><b>−{{ formatHours(usage.hours) }} ч</b><span>{{ usage.reason || 'списание' }}</span><small v-for="allocation in usage.allocations" :key="`${usage.id}-${allocation.creditId}`">{{ allocation.displayStart?.slice(11,16) || '' }}<template v-if="allocation.displayEnd">–{{ allocation.displayEnd.slice(11,16) }}</template></small></div><button type="button" @click="openUsage(usage)">{{ usage.sourceAbsenceId ? 'Открыть отсутствие' : 'Открыть банк' }}</button></div></div>
+        <div id="otDayDetails" class="overtimeDayEntries"><div v-if="!dayCredits.length && !dayUsages.length" class="emptyLine">На этот день в журнале переработок записей нет. Начисления не сгорают при переходе между месяцами.</div><div v-for="credit in dayCredits" :key="`credit-${credit.id}`" class="overtimeDayEntry credit"><div><b>+{{ formatHours(credit.hours) }} ч</b><span>{{ creditRange(credit) }}<template v-if="credit.reason"> · {{ credit.reason }}</template></span><small>остаток: {{ formatHours(credit.remainingHours) }} ч</small></div><button type="button" @click="editCredit(credit.id)">ред.</button></div><div v-for="usage in dayUsages" :key="`usage-${usage.id}`" class="overtimeDayEntry usage"><div><b>−{{ formatHours(usage.hours) }} ч</b><span>{{ usage.reason || 'списание' }}</span><small v-for="allocation in usage.allocations" :key="`${usage.id}-${allocation.creditId}`"><template v-for="label in allocationRangeLabels(allocation)" :key="label"><span class="allocationRange">{{ label }}</span></template></small></div><button type="button" @click="openUsage(usage)">{{ usage.sourceAbsenceId ? 'Открыть отсутствие' : 'Открыть банк' }}</button></div></div>
       </div></div>
     </details>
 

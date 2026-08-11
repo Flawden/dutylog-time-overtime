@@ -1,6 +1,6 @@
-# DutyLog API v27.40.6
+# DutyLog API v27.40.7
 
-`v27.40.6` changes no HTTP/OpenAPI shape. It aligns the strict Calendar/Timeline source contract with the now-explicit `CalendarDaySection` type used by the native Vue selected-day domain; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
+`v27.40.7` changes no HTTP/OpenAPI shape. It aligns the strict Calendar/Timeline source contract with the now-explicit `CalendarDaySection` type used by the native Vue selected-day domain; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 
 `v27.40.4` changes no HTTP/OpenAPI shape. Calendar selected-day schedule preview/apply now uses the already-generated `/api/v1/schedule-templates/*` operations, while shift/marker offline writes remain behind the existing dataLayer adapter. OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 

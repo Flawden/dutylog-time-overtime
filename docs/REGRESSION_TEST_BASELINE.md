@@ -1,10 +1,12 @@
 # DutyLog regression test baseline
 
-Status: v27.40.6.
+Status: v27.40.7.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.6 fixes the exact frontend-gate TS2379 exposed in the native selected-day schedule preview: generated `ScheduleTemplatePreviewItem.date` is optional, so `SelectedDayPanel.vue` now guarantees a defined Vue key with `item.date ?? `preview-${index}`` while keeping `exactOptionalPropertyTypes` unchanged. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+Current extension: v27.40.7 uses the complete v27.40.6 Playwright report (**43 clean / 1 retry-only flaky / 4 final failed**) to restore selected-day shift/timezone projection parity, exact cross-midnight overtime-allocation labels, and reconnect note-write ownership. The one multiple-notes failure is classified as a stale narrow-rail geometry assertion because the v27.40.4 native selected-day workspace intentionally became wide at the fixed 1440px desktop viewport; the replacement assertion requires side-by-side non-overlap and bounded width. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+
+Historical v27.40.6 extension: the exact frontend-gate TS2379 in the native selected-day schedule preview was fixed by guaranteeing a defined Vue key with `item.date ?? `preview-${index}`` while keeping `exactOptionalPropertyTypes` unchanged.
 
 Historical v27.40.5 extension: the Calendar/Timeline strict-source contract was aligned with the native selected-day domain introduced in v27.40.4 by requiring `CalendarDaySection` and the typed `openDay` callback.
 

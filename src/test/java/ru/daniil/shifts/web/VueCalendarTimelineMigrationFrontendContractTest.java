@@ -116,6 +116,10 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(panel.contains("id=\"accVacation\""));
         assertTrue(panel.contains("id=\"dayAddCredit\""));
         assertTrue(panel.contains("props.bridge.writeCalendarDay"));
+        assertTrue(panel.contains("sourceRange: dateTimeRange(occurrence.sourceStart, occurrence.sourceEnd)"));
+        assertTrue(panel.contains("Рабочее время смены"));
+        assertTrue(panel.contains("allocationRangeLabels(allocation)"));
+        assertTrue(panel.contains("24:00"));
         assertTrue(legacy.contains("calendar-timeline"));
         assertTrue(legacy.contains("async writeCalendarDay(date, patch)"));
         assertTrue(legacy.contains("dataLayer.putDay(key, next)"));

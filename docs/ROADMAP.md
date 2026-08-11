@@ -1,13 +1,21 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix**.
+Current release: **v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix**.
 
 
+## v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix — current
+- [x] Use the complete v27.40.6 Playwright artifact: 48 scenarios, 43 clean passes, one retry-only PWA offline-note flaky and four final failures.
+- [x] Restore the native selected-day shift projection contract: display interval/timezone, source interval/timezone, moved source date, net work duration and break.
+- [x] Restore exact cross-midnight overtime allocation labels including `24:00` and next-day `00:00–…`.
+- [x] Replace the stale 1440px notes assertion from the retired narrow rail with an explicit side-by-side non-overlap/bounds contract for the wide Vue panel.
+- [x] Stop plain `SelectedDayNotes` unmounts from resubmitting an already queued note during offline→online readability transitions; only a still-pending debounce draft may flush on unmount.
+- [x] Keep `dataLayer.syncQueue()` as the sole reconnect queue owner; no Vue online flush, retry/timeout relaxation, OpenAPI/Flyway or business-rule change.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 758/758.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
 
-
-
-
-## v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix — current
+## v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix — predecessor hotfix
 - [x] Start from the exact v27.40.5 tree and keep its source-contract alignment unchanged.
 - [x] Use the exact frontend-gate evidence: Node 20.18.1/npm 10.8.2 reaches `vue-tsc` and fails only with TS2379 at the schedule-preview row key in `SelectedDayPanel.vue`.
 - [x] Keep `exactOptionalPropertyTypes`; use `item.date` when present and a defined `preview-${index}` fallback when the generated optional date is absent.

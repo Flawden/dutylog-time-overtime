@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.40.6
+release_foundation: v27.40.7
 created: 2026-08-04
 updated: 2026-08-10
 ---

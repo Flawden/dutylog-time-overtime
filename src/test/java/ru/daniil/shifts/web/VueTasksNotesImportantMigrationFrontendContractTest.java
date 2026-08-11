@@ -180,6 +180,8 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertFalse(workspace.contains("window.addEventListener(\"online\", reconnect)"));
         assertFalse(workspace.contains("store.flushOfflineQueue()"));
         assertTrue(notes.contains(":disabled=\"!shell.online\""));
+        assertTrue(notes.contains("if (timer != null && currentNote.value)"));
+        assertTrue(notes.contains("must not resubmit the already queued/current note beside dataLayer.syncQueue()"));
     }
 
     @Test

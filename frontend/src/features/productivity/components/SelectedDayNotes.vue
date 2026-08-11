@@ -34,8 +34,14 @@ function scheduleSave(): void {
 }
 watch([title, content], scheduleSave);
 onBeforeUnmount(() => {
-  if (timer != null) globalThis.clearTimeout(timer);
-  if (currentNote.value) void store.updateNote(currentNote.value.id, { title: title.value.trim() || null, content: content.value });
+  // Only flush a draft that is still inside the debounce window. A plain
+  // unmount (including the brief offline→online readability transition) must
+  // not resubmit the already queued/current note beside dataLayer.syncQueue().
+  if (timer != null && currentNote.value) {
+    globalThis.clearTimeout(timer);
+    timer = null;
+    void store.updateNote(currentNote.value.id, { title: title.value.trim() || null, content: content.value });
+  }
 });
 async function openSearchResult(date: string, id: number): Promise<void> {
   await calendar.openDate(date, "month");

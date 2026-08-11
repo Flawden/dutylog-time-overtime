@@ -1,6 +1,19 @@
 # Release checklist
 
-Status: v27.40.6.
+Status: v27.40.7.
+
+
+## v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix acceptance
+
+- [x] Classify the complete v27.40.6 Chromium report as 43 clean / 1 retry-only flaky / 4 final failed.
+- [x] Preserve the v27.40.4 native selected-day owner while restoring the legacy-equivalent shift projection and exact overtime allocation display semantics.
+- [x] Keep the intentional wide desktop selected-day workspace and assert side-by-side notes geometry without overlap or horizontal overflow.
+- [x] Prevent `SelectedDayNotes` from issuing an unmount save unless a debounce draft is pending, so reconnect cannot race the queued `dataLayer` PATCH with a second direct PATCH.
+- [x] Keep the legacy `dataLayer` as the single offline mutation/reconnect owner and preserve strict browser failure collection.
+- [ ] Run exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Run Maven 758/758.
+- [ ] Run Playwright canary and full 48/48 with 0 flaky.
+- [ ] Accept immutable staging image and PostgreSQL migration smoke.
 
 
 ## v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix acceptance

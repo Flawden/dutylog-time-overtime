@@ -1,6 +1,6 @@
 const RAW_BUILD_ID = "__DUTYLOG_BUILD_ID__";
 const BUILD_ID = RAW_BUILD_ID.startsWith("__") ? "local" : RAW_BUILD_ID;
-const CACHE_NAME = `dutylog-shell-v27.40.6-${BUILD_ID}`; // unique per immutable image build
+const CACHE_NAME = `dutylog-shell-v27.40.7-${BUILD_ID}`; // unique per immutable image build
 
 const SHELL = [
   "/manifest.json",

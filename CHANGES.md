@@ -1,3 +1,12 @@
+# v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix
+
+- Classifies the v27.40.6 full Playwright report as 48 scenarios: 43 clean passed, one retry-only PWA offline-note flaky, and four final failures.
+- Restores native Vue selected-day shift projection parity with the retired legacy renderer: current projected interval/timezone, source interval/timezone, source-date movement hint, net work time and break are visible again.
+- Restores cross-midnight overtime-allocation labels with explicit `24:00` / next-day `00:00–…` boundaries instead of collapsing exact allocations to raw start/end clock fragments.
+- Aligns the multiple-notes desktop layout assertion with the intentional wide native Vue selected-day workspace: at 1440px the note list and editor are side-by-side and must not overlap or overflow; the old stacked assertion belonged to the retired narrow rail.
+- Prevents a reconnect duplicate note PATCH by flushing `SelectedDayNotes` on unmount only when a debounce timer is actually pending. A plain offline→online readability unmount no longer resubmits the already queued note beside the single-owner `dataLayer.syncQueue()`.
+- Keeps retries/timeouts, strict runtime collectors, `exactOptionalPropertyTypes`, OpenAPI 118/120, Flyway V47 and the single legacy `dataLayer` offline queue owner unchanged.
+
 # v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix
 
 - Fixes exact `vue-tsc` TS2379 in `SelectedDayPanel.vue`: generated `ScheduleTemplatePreviewItem.date` is optional, so the preview row no longer passes `string | undefined` directly as a Vue `key` under `exactOptionalPropertyTypes`.

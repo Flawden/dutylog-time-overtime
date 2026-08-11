@@ -54,13 +54,18 @@ test('multiple notes on one day remain independent across pin, reorder, reload a
       scrollWidth: document.documentElement.scrollWidth,
       moduleRight: module.right,
       listBottom: list.bottom,
+      listRight: list.right,
       editorTop: editor.top,
+      editorLeft: editor.left,
       editorRight: editor.right,
       editorWidth: editor.width
     };
   });
   expect(noteLayout.scrollWidth).toBeLessThanOrEqual(noteLayout.viewport + 1);
-  expect(noteLayout.editorTop).toBeGreaterThanOrEqual(noteLayout.listBottom - 1);
+  // v27.40.x retires the narrow legacy selected-day rail. At this fixed
+  // desktop viewport the native Vue panel intentionally uses the available
+  // width and keeps the note list beside the editor instead of below it.
+  expect(noteLayout.editorLeft).toBeGreaterThanOrEqual(noteLayout.listRight - 1);
   expect(noteLayout.editorRight).toBeLessThanOrEqual(noteLayout.moduleRight + 1);
   expect(noteLayout.editorWidth).toBeGreaterThan(250);
 
