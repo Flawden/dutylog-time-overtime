@@ -1,7 +1,5 @@
 .vueSettingsWorkspace{display:block;max-width:none}
 .vueSettingsWorkspace[style*="display: none"]{display:none!important}
-.vueSettingsLegacyHost{display:contents}
-html[data-vue-settings-workspace="ready"] #settingsLegacyParking{display:none!important}
 .vueSettingsWorkspace .moduleCard{cursor:pointer}
 .vueSettingsWorkspace .moduleCard input{flex:0 0 auto}
 .vueSettingsWorkspace .languageChoice.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}

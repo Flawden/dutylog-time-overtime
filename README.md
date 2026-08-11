@@ -1,6 +1,6 @@
-# DutyLog v27.39.6 — Module Runtime Synchronization & Offline Reconnect Ownership Hotfix
+# DutyLog v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover
 
-v27.39.6 consumes the complete v27.39.5 Playwright report: 44/48 scenarios pass and all four final failures share one stale module-enablement split between Vue Settings and the authoritative shell/backend state after onboarding. The same artifact contains one retry-only PWA offline failure where reconnect submits the identical queued note PATCH twice. This hotfix synchronizes Settings from the live shell module map and restores the existing legacy dataLayer as the single reconnect queue owner, with Vue refreshing after a completion event. Browser policy remains strict; acceptance is still 48/48 with zero flaky retries, 52 Vitest, 758 JUnit and Flyway V47.
+v27.39.6 is the accepted green staging baseline. v27.40.0 starts the final Vue-retirement family by deleting the Settings compatibility host/parking bridge and moving Time, Schedule/Calendar Layers and Notifications into native Vue Settings backed by generated `/api/v1/*` operations. The milestone remains fail-closed: this cut does **not** claim full numbered-JavaScript retirement while selected-day Calendar, legacy routing/modal adapters, offline `dataLayer`, Payroll and Admin still have explicit compatibility ownership. Acceptance remains 48/48 Chromium with zero flaky retries, 52 Vitest, 758 JUnit, Flyway V47 and the immutable staging pipeline.
 
 # DutyLog v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix
 

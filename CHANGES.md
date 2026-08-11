@@ -1,3 +1,13 @@
+# v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover
+
+- Starts from the accepted green v27.39.6 staging workflow and opens the v27.40.x legacy-retirement milestone without carrying Settings compatibility islands forward.
+- Replaces Time/Timezone, Schedule Templates/Calendar Layers and Notifications with native Vue Settings components using generated `/api/v1/*` operations.
+- Removes `#settingsLegacyHost`, `#settingsLegacyParking`, `attachSettingsLegacy` and `openSettingsLegacySection`; legacy Settings renderers yield after Vue readiness instead of mutating stable IDs owned by Vue.
+- Keeps the canonical timezone synchronized into the temporary legacy time-state adapter while still-unretired Calendar/Overtime consumers exist; this is compatibility state, not DOM ownership.
+- Aligns existing E2E transport waits with the generated Settings owner while preserving every business assertion and strict retry/runtime/HTTP policy.
+- Does not falsely declare complete legacy removal: selected-day Calendar, legacy routing/modal adapters, offline `dataLayer`, Payroll/Admin and remaining numbered-JS responsibilities are explicit v27.40.x closure blockers.
+- OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`; Flyway remains V47; locked acceptance baseline remains 153 Java test classes / 758 `@Test` methods / 48 Playwright scenarios / 52 Vitest cases.
+
 # v27.39.6 — Module Runtime Synchronization & Offline Reconnect Ownership Hotfix
 
 - Uses the complete v27.39.5 Playwright artifact as source of truth: 48 scenarios ran, 44 passed and 4 failed; the four final failures are all Task-module journeys. One additional `pwa-offline` first attempt is flaky even though its retry passes, so acceptance is still blocked.

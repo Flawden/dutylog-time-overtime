@@ -26,6 +26,15 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
     calendarSync: null as DutyLogApiSchemas.CalendarSyncStatus | null,
     calendarSyncIssuedUrl: "",
     telegram: null as DutyLogApiSchemas.TelegramStatus | null,
+    timeContext: null as DutyLogApiSchemas.TimeContext | null,
+    shiftTypes: [] as DutyLogApiSchemas.ShiftType[],
+    legacyShiftPreview: null as DutyLogApiSchemas.LegacyShiftMigrationPreview | null,
+    legacyTaskDeadlinePreview: null as DutyLogApiSchemas.LegacyTaskDeadlineMigrationPreview | null,
+    notificationSettings: null as DutyLogApiSchemas.NotificationSettings | null,
+    notificationPreview: [] as DutyLogApiSchemas.NotificationReminder[],
+    notificationPreviewMode: "month" as "month" | "tomorrow",
+    scheduleTemplates: [] as DutyLogApiSchemas.ScheduleTemplate[],
+    calendarLayers: [] as DutyLogApiSchemas.CalendarLayer[],
     appearance: normalizeAppearance(DEFAULT_APPEARANCE) as AppearancePreferences,
     profileMessage: "",
     profileMessageOk: false,
@@ -39,6 +48,12 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
     appearanceMessage: "",
     appearanceMessageOk: false,
     telegramMessage: "",
+    timeMessage: "",
+    timeMessageOk: false,
+    notificationMessage: "",
+    notificationMessageOk: false,
+    scheduleMessage: "",
+    scheduleMessageOk: false,
     error: "",
   }),
   getters: {
@@ -78,7 +93,7 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
           themePreset: profile.themePreset,
           themeConfig: profile.themeConfig,
         });
-        await Promise.all([this.loadSessions(api), this.refreshIntegrations(api)]);
+        await Promise.all([this.loadSessions(api), this.refreshIntegrations(api), this.loadRetiredIslandData(api)]);
         this.loaded = true;
       } catch (error) {
         this.error = errorMessage(error);
@@ -93,8 +108,125 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
       else { this.calendarSync = null; this.calendarSyncIssuedUrl = ""; }
       if (this.moduleEnabled("telegram")) jobs.push(this.loadTelegram(api));
       else this.telegram = null;
+      if (this.moduleEnabled("notifications")) {
+        jobs.push((async () => {
+          this.notificationSettings = await api.notificationSettings();
+          await this.loadMonthNotifications(api);
+        })());
+      } else {
+        this.notificationSettings = null;
+        this.notificationPreview = [];
+        this.notificationPreviewMode = "month";
+      }
       await Promise.all(jobs);
     },
+    async loadRetiredIslandData(api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      const [timeContext, shiftTypes, scheduleTemplates, calendarLayers] = await Promise.all([
+        api.timeContext(), api.shiftTypes(), api.scheduleTemplates(), api.calendarLayers(),
+      ]);
+      this.timeContext = timeContext;
+      this.shiftTypes = shiftTypes;
+      this.scheduleTemplates = scheduleTemplates;
+      this.calendarLayers = calendarLayers;
+      const migrations = await Promise.allSettled([api.legacyShiftPreview(), api.legacyTaskDeadlinePreview()]);
+      this.legacyShiftPreview = migrations[0].status === "fulfilled" ? migrations[0].value : null;
+      this.legacyTaskDeadlinePreview = migrations[1].status === "fulfilled" ? migrations[1].value : null;
+    },
+    async saveTimezone(timezone: string, bridge: LegacyBridge, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      this.timeMessage = this.language === "en" ? "Saving…" : "сохраняю…";
+      this.timeMessageOk = true;
+      try {
+        const updated = await api.updateProfile({ workTimezone: timezone, displayTimezone: timezone });
+        if (!updated) throw new Error("Profile update returned no data");
+        this.profile = updated;
+        bridge.synchronizeProfile(plainRecord(updated));
+        [this.timeContext, this.shiftTypes] = await Promise.all([api.timeContext(), api.shiftTypes()]);
+        this.timeMessage = this.language === "en" ? "Timezone saved" : "Часовой пояс сохранён";
+        this.timeMessageOk = true;
+        await window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
+        await window.DutyLogVueDomains?.productivity?.refresh?.();
+      } catch (error) { this.timeMessage = errorMessage(error); this.timeMessageOk = false; throw error; }
+    },
+    async saveBuiltInShiftDefaults(payload: {
+      dayStart: string; dayEnd: string; dayBreakMinutes: number; dayPlannedHours: number;
+      nightStart: string; nightEnd: string; nightBreakMinutes: number; nightPlannedHours: number;
+    }, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      this.timeMessage = this.language === "en" ? "Saving shift templates…" : "сохраняю шаблоны смен…";
+      this.timeMessageOk = true;
+      const day = this.shiftTypes.find(item => item.builtin && item.name === "Дневная") ?? this.shiftTypes.find(item => item.builtin && /day/i.test(item.name));
+      const night = this.shiftTypes.find(item => item.builtin && item.name === "Ночная") ?? this.shiftTypes.find(item => item.builtin && /night/i.test(item.name));
+      try {
+        const jobs: Promise<unknown>[] = [];
+        if (day) jobs.push(api.updateShiftType(day.id, { startTime: payload.dayStart, endTime: payload.dayEnd, breakMinutes: payload.dayBreakMinutes, plannedHours: payload.dayPlannedHours, hours: payload.dayPlannedHours }));
+        if (night) jobs.push(api.updateShiftType(night.id, { startTime: payload.nightStart, endTime: payload.nightEnd, breakMinutes: payload.nightBreakMinutes, plannedHours: payload.nightPlannedHours, hours: payload.nightPlannedHours }));
+        if (!jobs.length) throw new Error(this.language === "en" ? "Built-in shift types were not found" : "Встроенные смены не найдены");
+        await Promise.all(jobs);
+        this.shiftTypes = await api.shiftTypes();
+        this.timeMessage = this.language === "en" ? "Shift templates saved" : "Параметры смен сохранены";
+        await window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
+      } catch (error) { this.timeMessage = errorMessage(error); this.timeMessageOk = false; throw error; }
+    },
+    async migrateLegacyShifts(sourceTimezone: string, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      const ids = (this.legacyShiftPreview?.occurrences ?? []).map(item => item.dayEntryId).filter((id): id is number => typeof id === "number");
+      if (!ids.length) return;
+      await api.migrateLegacyShifts({ sourceTimezone, dayEntryIds: ids });
+      this.legacyShiftPreview = await api.legacyShiftPreview();
+      await window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
+    },
+    async migrateLegacyTaskDeadlines(sourceTimezone: string, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      const ids = (this.legacyTaskDeadlinePreview?.tasks ?? []).map(item => item.taskId).filter((id): id is number => typeof id === "number");
+      if (!ids.length) return;
+      await api.migrateLegacyTaskDeadlines({ sourceTimezone, taskIds: ids });
+      this.legacyTaskDeadlinePreview = await api.legacyTaskDeadlinePreview();
+      await window.DutyLogVueDomains?.productivity?.refresh?.();
+    },
+    async saveNotificationSettings(body: DutyLogApiSchemas.NotificationSettingsUpdateRequest, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      this.notificationMessage = this.language === "en" ? "Saving…" : "сохраняю…";
+      this.notificationMessageOk = true;
+      try {
+        this.notificationSettings = await api.updateNotificationSettings(body);
+        await this.loadMonthNotifications(api);
+        this.notificationMessage = this.language === "en" ? "Notification settings saved" : "Настройки уведомлений сохранены";
+        this.notificationMessageOk = true;
+        await window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
+      } catch (error) { this.notificationMessage = errorMessage(error); this.notificationMessageOk = false; throw error; }
+    },
+    async loadMonthNotifications(api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      const now = new Date();
+      const from = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-01`;
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      const to = `${end.getFullYear()}-${String(end.getMonth() + 1).padStart(2, "0")}-${String(end.getDate()).padStart(2, "0")}`;
+      this.notificationPreview = await api.upcomingNotifications(from, to);
+      this.notificationPreviewMode = "month";
+    },
+    async loadTomorrowNotifications(api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      this.notificationPreview = await api.tomorrowNotifications();
+      this.notificationPreviewMode = "tomorrow";
+    },
+    async refreshScheduleData(api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      [this.scheduleTemplates, this.calendarLayers, this.shiftTypes] = await Promise.all([api.scheduleTemplates(), api.calendarLayers(), api.shiftTypes()]);
+    },
+    async saveScheduleTemplate(id: number | null, body: DutyLogApiSchemas.ScheduleTemplateInput, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      this.scheduleMessage = this.language === "en" ? "Saving schedule…" : "сохраняю график…"; this.scheduleMessageOk = true;
+      try {
+        if (id == null) await api.createScheduleTemplate(body);
+        else await api.updateScheduleTemplate(id, body);
+        await this.refreshScheduleData(api);
+        this.scheduleMessage = this.language === "en" ? "Schedule saved" : "Шаблон сохранён";
+      } catch (error) { this.scheduleMessage = errorMessage(error); this.scheduleMessageOk = false; throw error; }
+    },
+    async deleteScheduleTemplate(id: number, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> { await api.deleteScheduleTemplate(id); await this.refreshScheduleData(api); },
+    async saveCalendarLayer(id: number | null, body: DutyLogApiSchemas.CalendarLayerInput, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      this.scheduleMessage = this.language === "en" ? "Saving layer…" : "сохраняю слой…"; this.scheduleMessageOk = true;
+      try {
+        if (id == null) await api.createCalendarLayer(body);
+        else await api.updateCalendarLayer(id, body);
+        await this.refreshScheduleData(api);
+        this.scheduleMessage = this.language === "en" ? "Layer saved" : "Слой сохранён";
+        await window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
+      } catch (error) { this.scheduleMessage = errorMessage(error); this.scheduleMessageOk = false; throw error; }
+    },
+    async deleteCalendarLayer(id: number, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> { await api.deleteCalendarLayer(id); await this.refreshScheduleData(api); await window.DutyLogVueDomains?.calendarTimeline?.refresh?.(); },
     async saveProfile(displayName: string, birthday: string, bridge: LegacyBridge, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
       this.profileMessage = this.language === "en" ? "Saving…" : "сохраняю…";
       this.profileMessageOk = true;

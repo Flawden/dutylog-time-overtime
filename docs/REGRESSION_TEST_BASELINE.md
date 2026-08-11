@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.39.6.
+Status: v27.40.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.39.6 uses the complete v27.39.5 Playwright artifact: 48 scenarios ran, 44 passed and 4 failed, with all four final failures in Task-module journeys. The traces show Vue Settings rendering stale pre-onboarding module metadata (`tasks=true`) while the authoritative shell/backend state is `tasks=false`, so the idempotent helper correctly performs no PATCH and the Task route remains hidden. The same artifact also contains one `pwa-offline` first-attempt flaky: reconnect sends the identical queued note PATCH twice, one request succeeds and one returns 500, leaving the queue pending until retry. v27.39.6 synchronizes Vue Settings enablement from the live shell module map and restores one reconnect queue owner by making legacy `dataLayer` publish completion for Vue refresh. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases**. OpenAPI remains **118 operations / 120 schemas**; Flyway remains V47.
+Current extension: v27.40.0 starts from the accepted green v27.39.6 staging workflow. It keeps the acceptance surface at **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases**, retires the Time/Schedule/Notifications Settings DOM compatibility islands and aligns those existing journeys with generated `/api/v1/*` ownership. No retry, timeout, console/pageerror or HTTP-failure policy is weakened. OpenAPI remains **118 operations / 120 schemas**; Flyway remains V47.
 
 `v27.39.0` introduced one Vue Settings ownership Chromium scenario, three Settings/Workspace model Vitest cases and six source/architecture JUnit contracts, reaching 757 `@Test` methods. `v27.39.1` adds one narrow strict-template regression method, so the JUnit baseline is now 758 without changing the 153-class / 48-Playwright / 52-Vitest surface.
 

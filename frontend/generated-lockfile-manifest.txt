@@ -1,10 +1,10 @@
-release=27.39.6
+release=27.40.0
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=81669622b71400961e79ad7a33624654b1433efe090af5adeae677a4f8a953fc
+committedLockfileSha256=791659344bc8bdaf1e7d55dea270b67cfe0568929171a60b8b4addbc70c391e0
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=exact-module-runtime-sync-offline-reconnect-ownership-acceptance-for-v27.39.6
+nextAction=exact-vue-settings-island-retirement-parity-acceptance-for-v27.40.0

@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeMount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeMount, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
 import { useSettingsWorkspaceStore } from "../stores/settingsWorkspaceStore";
 import SettingsCard from "./SettingsCard.vue";
 import AppearanceSettingsCard from "./AppearanceSettingsCard.vue";
+import TimeSettingsCard from "./TimeSettingsCard.vue";
+import ScheduleSettingsCard from "./ScheduleSettingsCard.vue";
+import NotificationSettingsCard from "./NotificationSettingsCard.vue";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
@@ -15,7 +18,6 @@ const { profile, sessions, modules, calendarSync, telegram } = storeToRefs(setti
 
 type Section = "profile" | "language" | "modules" | "calendar-sync" | "appearance" | "time" | "schedule" | "notifications";
 const SECTIONS: readonly Section[] = ["profile", "language", "modules", "calendar-sync", "appearance", "time", "schedule", "notifications"];
-const LEGACY_SECTIONS = new Set<Section>(["time", "schedule", "notifications"]);
 const activeSection = ref<Section>("profile");
 const expandMode = ref<"single" | "all" | "none">("single");
 const displayName = ref("");
@@ -65,12 +67,10 @@ function open(section: Section, navigate = true): void {
   expandMode.value = "single";
   activeSection.value = section;
   try { localStorage.setItem("dutylog.settings.openSection", section); } catch (_) {}
-  if (LEGACY_SECTIONS.has(section)) props.bridge.openSettingsLegacySection(section as "time" | "schedule" | "notifications");
-  else props.bridge.openSettingsLegacySection("none");
   if (navigate && rawRoute.value !== `settings-${section}`) props.bridge.navigate(`settings-${section}`);
 }
-function expandAll(): void { expandMode.value = "all"; try { localStorage.setItem("dutylog.settings.openSection", "all"); } catch (_) {} props.bridge.openSettingsLegacySection("all"); }
-function collapseAll(): void { expandMode.value = "none"; try { localStorage.setItem("dutylog.settings.openSection", "none"); } catch (_) {} props.bridge.openSettingsLegacySection("none"); }
+function expandAll(): void { expandMode.value = "all"; try { localStorage.setItem("dutylog.settings.openSection", "all"); } catch (_) {} }
+function collapseAll(): void { expandMode.value = "none"; try { localStorage.setItem("dutylog.settings.openSection", "none"); } catch (_) {} }
 function moduleTitle(module: (typeof moduleRows.value)[number]): string { return language.value === "en" ? module.titleEn || module.titleRu || module.key : module.titleRu || module.titleEn || module.key; }
 function moduleDescription(module: (typeof moduleRows.value)[number]): string { return language.value === "en" ? module.descriptionEn || module.descriptionRu || "" : module.descriptionRu || module.descriptionEn || ""; }
 function dependencyNames(keys: string[]): string {
@@ -105,7 +105,6 @@ function isoDay(date: Date): string { return `${date.getFullYear()}-${String(dat
 onBeforeMount(() => props.bridge.retireDomainOwners("settings-workspace"));
 onMounted(async () => {
   const now = new Date(); const from = new Date(now); from.setDate(from.getDate() - 30); const to = new Date(now); to.setDate(to.getDate() + 335); exportFrom.value = isoDay(from); exportTo.value = isoDay(to);
-  await nextTick(); props.bridge.attachSettingsLegacy("settingsLegacyHost");
   try { await settings.bootstrap(props.bridge); } catch (_) {}
   // Settings metadata may bootstrap before first-run onboarding commits its
   // module preset. The shell snapshot is the current runtime authority, so
@@ -168,7 +167,9 @@ watch([calendarEnabled, notificationsEnabled], () => { if (!isSectionVisible(act
 
         <AppearanceSettingsCard :bridge="bridge" :active="isOpen('appearance')" @open="open('appearance')" />
 
-        <div id="settingsLegacyHost" class="vueSettingsLegacyHost" data-vue-settings-legacy-islands></div>
+        <TimeSettingsCard :bridge="bridge" :active="isOpen('time')" @open="open('time')" />
+        <ScheduleSettingsCard :active="isOpen('schedule')" @open="open('schedule')" />
+        <NotificationSettingsCard v-if="notificationsEnabled" :active="isOpen('notifications')" @open="open('notifications')" />
       </div>
     </div>
   </section>

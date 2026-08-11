@@ -51,7 +51,7 @@ test('important dates stay floating while canonical timezone survives reload', a
   await timezone.selectOption('Europe/Chisinau');
   await expect(page.locator('#timeSettingsStatus')).toContainText(/не сохранено|not saved/i);
   await expect(page.locator('#timeNowBox')).toContainText('Europe/Chisinau');
-  const profileSaved = waitForApi(page, 'PUT', '/api/profile');
+  const profileSaved = waitForApi(page, 'PUT', '/api/v1/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
@@ -76,7 +76,7 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
-  let profileSaved = waitForApi(page, 'PUT', '/api/profile');
+  let profileSaved = waitForApi(page, 'PUT', '/api/v1/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
@@ -91,7 +91,7 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
     const handler = response => {
       const url = new URL(response.url());
       if (response.request().method() === 'PATCH'
-          && /^\/api\/shift-types\/\d+$/.test(url.pathname)
+          && /^\/api\/v1\/shift-types\/\d+$/.test(url.pathname)
           && response.status() === 200
           && ++count === 2) {
         page.off('response', handler);
@@ -124,12 +124,11 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('Europe/Kyiv');
-  profileSaved = waitForApi(page, 'PUT', '/api/profile');
+  profileSaved = waitForApi(page, 'PUT', '/api/v1/profile');
   const calendarRefreshed = page.waitForResponse(response => {
     const url = new URL(response.url());
     return response.request().method() === 'GET'
-      && url.pathname === '/api/calendar'
-      && url.searchParams.has('_')
+      && url.pathname === '/api/v1/calendar'
       && response.status() === 200;
   });
   await page.locator('#timeSaveTimezone').click();
@@ -144,7 +143,7 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await page.locator('[data-settings-jump="notifications"]').click();
   await page.locator('#notifShift').check();
   await page.locator('#notifShiftBefore').fill('30');
-  const notificationsSaved = waitForApi(page, 'PATCH', '/api/notifications/settings');
+  const notificationsSaved = waitForApi(page, 'PATCH', '/api/v1/notifications/settings');
   await page.locator('#notifSave').click();
   await notificationsSaved;
   await expect(page.locator('#notifyList')).toContainText('Начало 06:30 Europe/Kyiv');
@@ -179,7 +178,7 @@ test('a timezone projection can move a late shift to the next calendar date', as
   await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('UTC');
-  let profileSaved = waitForApi(page, 'PUT', '/api/profile');
+  let profileSaved = waitForApi(page, 'PUT', '/api/v1/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
@@ -201,7 +200,7 @@ test('a timezone projection can move a late shift to the next calendar date', as
   await page.locator('[data-settings-jump="time"]').click();
   // Moving from UTC to fixed UTC+5 sends the whole interval to the next local calendar date.
   await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
-  profileSaved = waitForApi(page, 'PUT', '/api/profile');
+  profileSaved = waitForApi(page, 'PUT', '/api/v1/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));

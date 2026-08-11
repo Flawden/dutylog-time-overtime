@@ -56,7 +56,7 @@ test('schedule templates preview safely and read-only layers compose across cale
   await page.locator('#calendarLayerStart').fill(date);
   await page.locator('#calendarLayerEnd').fill(endDate);
 
-  const layerCreated = waitForApi(page, 'POST', '/api/calendar-layers', 201);
+  const layerCreated = waitForApi(page, 'POST', '/api/v1/calendar-layers', 201);
   await page.locator('#calendarLayerForm button[type="submit"]').click();
   const layer = await (await layerCreated).json();
   expect(layer.readOnly).toBe(true);

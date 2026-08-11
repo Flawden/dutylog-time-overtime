@@ -31,8 +31,6 @@ declare global {
     openModal(id: string, focusId?: string | null): void;
     logout(): void;
     retireDomainOwners?(domain: "absence-time-bank" | "calendar-timeline" | "productivity" | "settings-workspace"): void;
-    attachSettingsLegacy?(hostId: string): void;
-    openSettingsLegacySection?(section: "time" | "schedule" | "notifications" | "all" | "none"): void;
     settingsAppearanceSnapshot?(): Record<string, unknown> | null;
     previewAppearance?(appearance: Record<string, unknown>): Record<string, unknown> | null;
     synchronizeProfile?(profile: Record<string, unknown>): void;

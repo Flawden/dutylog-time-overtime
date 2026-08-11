@@ -317,6 +317,7 @@ function renderCalendarLayerList(){
   if (!state.calendarLayers?.length) list.innerHTML = `<div class="scheduleEmpty">${esc(t("Добавьте первый слой близкого человека."))}</div>`;
 }
 function renderScheduleLayerSettings(){
+  if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
   populateScheduleSelects();
   renderScheduleTemplateList();
   renderCalendarLayerList();

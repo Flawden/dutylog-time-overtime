@@ -1,18 +1,31 @@
 # Release checklist
 
-Status: v27.39.6.
+Status: v27.40.0.
 
 
-## v27.39.6 — Module Runtime Synchronization & Offline Reconnect Ownership Hotfix acceptance
+## v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover acceptance
+
+- [x] Start from the accepted green v27.39.6 staging baseline.
+- [x] Remove the Settings compatibility host/parking DOM and its bridge methods.
+- [x] Make Time, Schedule/Calendar Layers and Notifications native Vue Settings surfaces using generated `/api/v1/*` operations.
+- [x] Bind static ownership contracts so legacy Settings renderers cannot write once Vue is ready.
+- [x] Preserve strict E2E assertions and move only transport waits that now belong to the generated owner.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate must pass with 52/52 Vitest.
+- [ ] Maven Java 17 must pass 758/758.
+- [ ] Canary and full Chromium must pass 48/48 with zero flaky retries.
+- [ ] Immutable image build, clean PostgreSQL V47 migration/smoke and staging deployment must pass.
+- [ ] v27.40.x is not closed until selected-day Calendar, router/state/modal, offline dataLayer coupling, Payroll/Admin and numbered-JS UI blockers are retired.
+
+## v27.39.6 — Module Runtime Synchronization & Offline Reconnect Ownership Hotfix — accepted green
 
 - [x] Classify the complete v27.39.5 browser artifact as 44/48 final with four Task-module failures plus one retry-only PWA offline flaky.
 - [x] Synchronize Vue Settings module enablement from the authoritative shell snapshot after onboarding/external module changes; do not make the idempotent E2E helper force unnecessary PATCHes.
 - [x] Preserve the legacy `dataLayer` as the sole offline queue/reconnect owner and publish one completion event for Vue Productivity refresh.
 - [x] Keep strict business assertions, browser retries/timeouts, HTTP/runtime collection, backend rules, OpenAPI and Flyway unchanged.
-- [ ] Exact frontend gate.
-- [ ] Maven 758/758.
-- [ ] Canary and Chromium 48/48, zero flaky retries.
-- [ ] Immutable image, PostgreSQL smoke and staging deploy.
+- [x] Exact frontend gate.
+- [x] Maven 758/758.
+- [x] Canary and Chromium 48/48, zero flaky retries.
+- [x] Immutable image, PostgreSQL smoke and staging deploy.
 
 
 ## v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix acceptance

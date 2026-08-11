@@ -431,6 +431,7 @@ function readShiftDefaultsDraft(){
 }
 
 function renderTimeSettings({ preserveShiftDefaults = timeSettingsDefaultsDirty() } = {}){
+  if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
   if (!$("timeSettingsCard")) return;
   if (!state.timeSettings) state.timeSettings = loadTimeSettings();
   const preservedDefaults = preserveShiftDefaults ? readShiftDefaultsDraft() : null;
@@ -1227,14 +1228,7 @@ function openSettingsSection(section, scroll = true, focusId = null){
 }
 
 function renderSettingsPanels(){
-  if (document.documentElement.dataset.vueSettingsWorkspace === "ready") {
-    renderTimeSettings();
-    renderNotifications();
-    if (typeof renderScheduleLayerSettings === "function") renderScheduleLayerSettings();
-    refreshLegacyShiftIndicator().catch(() => {});
-    refreshLegacyTaskDeadlineIndicator().catch(() => {});
-    return;
-  }
+  if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
   initSettingsAccordion();
   renderAppearanceControls();
   renderTimeSettings();
@@ -1418,6 +1412,7 @@ function renderNotifyStatus(count){
   box.innerHTML = `<span class="statusChip statusChipPrimary notifyCountChip"><b>${Number(count) || 0}</b> ${esc(t("шт"))}</span><span class="statusChip ${toneClass}"><b>${esc(permission.label)}:</b> ${esc(permission.value)}</span>`;
 }
 function renderNotifications(){
+  if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
   if (!moduleEnabled("notifications")) return;
   const s = state.notificationSettings;
   if (!$("notifyCard") || !s) return;

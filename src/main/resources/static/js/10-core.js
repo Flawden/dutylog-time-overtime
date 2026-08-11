@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.39.6"
+const DUTYLOG_VERSION = "27.40.0"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -255,55 +255,6 @@ function requestVueCalendarTimelineRefresh(){
   return true;
 }
 
-let parkedSettingsLegacyCards = null;
-function parkLegacySettingsCards(){
-  if (parkedSettingsLegacyCards) return parkedSettingsLegacyCards;
-  const view = document.getElementById("view-settings");
-  if (!view) return [];
-  let parking = document.getElementById("settingsLegacyParking");
-  if (!parking) {
-    parking = document.createElement("div");
-    parking.id = "settingsLegacyParking";
-    parking.hidden = true;
-    document.body.appendChild(parking);
-  }
-  const cards = ["timeSettingsCard", "scheduleSettingsCard", "notifyCard"]
-    .map(id => document.getElementById(id))
-    .filter(Boolean);
-  for (const card of cards) parking.appendChild(card);
-  parkedSettingsLegacyCards = cards;
-  return cards;
-}
-function attachLegacySettingsCards(hostId){
-  const host = document.getElementById(String(hostId || ""));
-  if (!host) return;
-  const cards = parkedSettingsLegacyCards || parkLegacySettingsCards();
-  for (const card of cards) host.appendChild(card);
-  const parking = document.getElementById("settingsLegacyParking");
-  parking?.remove();
-}
-function openLegacySettingsCard(section){
-  const wanted = String(section || "");
-  const ids = { time:"timeSettingsCard", schedule:"scheduleSettingsCard", notifications:"notifyCard" };
-  for (const [key, id] of Object.entries(ids)) {
-    const card = document.getElementById(id);
-    if (!card) continue;
-    const open = wanted === "all" || key === wanted;
-    card.classList.toggle("is-open", open);
-    card.classList.toggle("is-collapsed", !open);
-    const toggle = card.querySelector(":scope > .settingsHead .settingsToggle, :scope > .notifyHead .settingsToggle");
-    if (toggle) {
-      toggle.textContent = open ? t("свернуть") : t("открыть");
-      toggle.setAttribute("aria-expanded", String(open));
-    }
-  }
-  // Vue Settings owns dutylog.settings.openSection. This compatibility bridge
-  // only controls the three parked legacy cards and must not overwrite the
-  // Vue-owned section (for example appearance -> "none" just to hide islands).
-  if (wanted === "time" && typeof renderTimeSettings === "function") renderTimeSettings();
-  if (wanted === "schedule" && typeof renderScheduleLayerSettings === "function") renderScheduleLayerSettings();
-  if (wanted === "notifications" && typeof renderNotifications === "function") renderNotifications();
-}
 function cloneForVue(value){
   if (value == null) return value;
   try { return structuredClone(value); } catch (_) {
@@ -324,8 +275,6 @@ window.DutyLogLegacyPlatform = Object.freeze({
   logout(){
     document.getElementById("logout")?.click();
   },
-  attachSettingsLegacy(hostId){ attachLegacySettingsCards(hostId); },
-  openSettingsLegacySection(section){ openLegacySettingsCard(section); },
   settingsAppearanceSnapshot(){ return cloneForVue(normalizeAppearance(state.preferences)); },
   previewAppearance(appearance){
     state.preferences = storeLocalAppearance(normalizeAppearance(appearance || {}));
@@ -336,6 +285,9 @@ window.DutyLogLegacyPlatform = Object.freeze({
   synchronizeProfile(profile){
     if (!profile || typeof profile !== "object") return;
     state.profile = { ...(state.profile || {}), ...profile };
+    if (typeof profile.workTimezone === "string" && profile.workTimezone) {
+      storeTimeSettings({ ...loadTimeSettings(), workTimezone:profile.workTimezone, displayTimezone:profile.workTimezone });
+    }
     state.preferences = storeLocalAppearance(normalizeAppearance({
       themePreference:profile.themePreference,
       accentColor:profile.accentColor,
@@ -369,7 +321,6 @@ window.DutyLogLegacyPlatform = Object.freeze({
     }
     if (domain === "settings-workspace") {
       if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
-      parkLegacySettingsCards();
       document.getElementById("view-settings")?.remove();
       document.documentElement.setAttribute("data-vue-settings-workspace", "ready");
       return;

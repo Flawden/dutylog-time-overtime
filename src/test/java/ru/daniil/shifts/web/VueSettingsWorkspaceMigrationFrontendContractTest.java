@@ -9,13 +9,13 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Binding source contracts for the v27.39.x Vue Settings, Workspace & Integrations migration. */
+/** Binding source contracts for the v27.40.x Vue Settings legacy-retirement cutover. */
 class VueSettingsWorkspaceMigrationFrontendContractTest {
 
     private static final Path FEATURE = Path.of("frontend/src/features/settings-workspace");
 
     @Test
-    void appShellInstallsOneVueSettingsOwnerAndKeepsOnlyNamedCompatibilityIslands() throws Exception {
+    void appShellInstallsOneVueSettingsOwnerAndRetiresNamedCompatibilityIslands() throws Exception {
         String shell = read("frontend/src/app/AppShell.vue");
         String workspace = read(FEATURE.resolve("components/SettingsWorkspace.vue"));
         String core = read("src/main/resources/static/js/10-core.js");
@@ -23,9 +23,13 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         assertTrue(shell.contains("SettingsWorkspace"));
         assertTrue(workspace.contains("retireDomainOwners(\"settings-workspace\")"));
         assertTrue(workspace.contains("data-vue-domain-owner=\"settings-workspace\""));
-        assertTrue(workspace.contains("id=\"settingsLegacyHost\""));
-        assertTrue(core.contains("attachLegacySettingsCards"));
-        assertTrue(core.contains("settingsLegacyParking"));
+        assertTrue(workspace.contains("TimeSettingsCard"));
+        assertTrue(workspace.contains("ScheduleSettingsCard"));
+        assertTrue(workspace.contains("NotificationSettingsCard"));
+        assertFalse(workspace.contains("settingsLegacyHost"));
+        assertFalse(core.contains("attachLegacySettingsCards"));
+        assertFalse(core.contains("settingsLegacyParking"));
+        assertFalse(core.contains("openLegacySettingsCard"));
         assertTrue(core.contains("document.documentElement.setAttribute(\"data-vue-settings-workspace\", \"ready\")"));
         assertTrue(core.contains("view-settings"));
         assertFalse(core.contains("localStorage.setItem(\"dutylog.settings.openSection\", wanted)"));
@@ -42,6 +46,10 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         assertTrue(api.contains("client.request(\"updateModules\""));
         assertTrue(api.contains("client.request(\"rotateCalendarSubscription\""));
         assertTrue(api.contains("client.request(\"getTelegramStatus\""));
+        assertTrue(api.contains("client.request(\"getTimeContext\""));
+        assertTrue(api.contains("client.request(\"getNotificationSettings\""));
+        assertTrue(api.contains("client.request(\"listScheduleTemplates\""));
+        assertTrue(api.contains("client.request(\"listCalendarLayers\""));
         assertTrue(generated.contains("\"updateModules\": { method: \"PATCH\", path: \"/api/v1/modules\" }"));
         assertTrue(generated.contains("\"rotateCalendarSubscription\": { method: \"POST\", path: \"/api/v1/calendar-sync/subscription\" }"));
         assertFalse(source.contains("jfetch("));
@@ -131,7 +139,8 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         assertTrue(helper.contains("if (view === 'settings') await waitForSettingsWorkspaceReady(page)"));
         assertTrue(calendarSync.contains("url.pathname === '/api/v1/calendar-sync/subscription'"));
         assertTrue(migration.contains("data-vue-settings-workspace"));
-        assertTrue(migration.contains("#settingsLegacyHost #timeSettingsCard"));
+        assertTrue(migration.contains("page.locator('#settingsLegacyHost').toHaveCount(0)"));
+        assertTrue(migration.contains("data-vue-settings-native-section"));
         assertTrue(migration.contains("waitForApi(page, 'PUT', '/api/v1/profile')"));
         assertFalse(migration.contains("waitForTimeout"));
     }

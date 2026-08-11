@@ -1,7 +1,7 @@
 ---
 title: "DutyLog — Engineering Quality Register"
 status: active
-release_foundation: v27.39.6
+release_foundation: v27.40.0
 created: 2026-08-04
 updated: 2026-08-10
 ---
@@ -63,7 +63,7 @@ updated: 2026-08-10
 ## Settings, Workspace & Integrations migration note — v27.39.0
 
 - Vue owns Settings navigation plus Profile, Language, Modules, Calendar Sync and Appearance/Workspace Studio.
-- Time, Schedule and Notifications remain explicit bounded compatibility islands inside `#settingsLegacyHost`; v27.40.0 owns their final retirement.
+- Time, Schedule and Notifications are native Vue Settings surfaces in v27.40.0; the Settings legacy host/parking bridge is retired. Remaining v27.40.x blockers are selected-day Calendar, routing/modal adapters, offline dataLayer coupling, Payroll/Admin and numbered-JS UI ownership.
 - Settings writes use the generated `/api/v1/*` client. Telegram receives a canonical `/api/v1/telegram` alias; calendar bearer URLs are held only in volatile Vue state after issue/rotation and are never written to localStorage or diagnostics.
 - Q-11 becomes ACTIVE: ADR-008 disables public production source maps by default and permits only explicit hidden diagnostic maps. Existing CSP/cookie/backend module guards remain unchanged.
 - OpenAPI advances to 118 operations / 120 schemas; Flyway remains V47.

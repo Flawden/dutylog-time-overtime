@@ -1,19 +1,26 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.39.6 — Module Runtime Synchronization & Offline Reconnect Ownership Hotfix**.
+Current release: **v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover**.
 
 
 
 
 
 
-## v27.39.6 — Module Runtime Synchronization & Offline Reconnect Ownership Hotfix — current
-- [x] Use the complete v27.39.5 Playwright report: 48 scenarios, 44 passed / 4 failed, plus one first-attempt `pwa-offline` flaky that passed retry.
-- [x] Treat all four final Task failures as one real Settings/runtime synchronization defect: a pre-onboarding Vue module catalog must not stay checked after the authoritative shell/backend preset disables Tasks.
-- [x] Merge shell module enablement into Vue Settings after bootstrap and on subsequent legacy-state publications without replacing module catalog metadata.
-- [x] Keep the existing legacy `dataLayer` as the single reconnect queue owner; Vue Productivity refreshes only after `dutylog:offline-sync-complete` instead of issuing a second online flush.
-- [x] Keep retries, timeouts, HTTP/runtime collectors, backend rules, OpenAPI 118/120 and Flyway V47 unchanged.
-- [ ] Exact frontend, Maven 758/758, canary, clean 48/48 Chromium with zero flaky retries, image/PostgreSQL smoke and staging remain blocking acceptance gates.
+## v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover — current
+- [x] Start only from the accepted green v27.39.6 staging workflow.
+- [x] Retire `#settingsLegacyHost` / `#settingsLegacyParking` and remove the Settings attach/open compatibility bridge methods.
+- [x] Move Time/Timezone, Schedule Templates/Calendar Layers and Notifications into native Vue Settings using generated `/api/v1/*` operations.
+- [x] Make legacy Time/Schedule/Notification renderers yield after Vue Settings readiness so stable DOM IDs have one owner.
+- [x] Preserve temporary timezone synchronization into the legacy non-DOM time adapter while Calendar/Overtime compatibility consumers remain.
+- [ ] Retire the selected-day Calendar compatibility host, legacy router/state/modal adapters, offline `dataLayer` DOM coupling, Payroll/Admin UI ownership and remaining numbered-JS UI responsibilities before closing v27.40.x.
+- [ ] Exact frontend, Maven 758/758, canary, clean 48/48 Chromium with zero flaky retries, immutable image, PostgreSQL V47 smoke and staging remain blocking acceptance gates.
+
+## v27.39.6 — Module Runtime Synchronization & Offline Reconnect Ownership Hotfix — completed and green
+- [x] Accepted the complete GitHub-hosted staging workflow after v27.39.5 browser evidence isolated module-state synchronization and reconnect queue ownership.
+- [x] Vue Settings now follows authoritative shell/backend module enablement after onboarding.
+- [x] Legacy `dataLayer` is the single reconnect queue owner and Vue refreshes only after `dutylog:offline-sync-complete`.
+- [x] Full staging acceptance is green; v27.40.0 starts only from this accepted tree.
 
 ## v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix — predecessor
 - [x] Use the complete v27.39.4 Playwright report: 48 scenarios, 42 passed / 6 failed, zero skipped.
