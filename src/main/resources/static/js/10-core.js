@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.40.10"
+const DUTYLOG_VERSION = "27.40.11"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -344,6 +344,7 @@ window.DutyLogLegacyPlatform = Object.freeze({
     if (domain === "settings-workspace") {
       if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
       document.getElementById("view-settings")?.remove();
+      document.getElementById("shiftTypeModal")?.remove();
       document.documentElement.setAttribute("data-vue-settings-workspace", "ready");
       return;
     }
@@ -388,10 +389,6 @@ window.DutyLogLegacyPlatform = Object.freeze({
     else if (!result?.queued && state.days) delete state.days[key];
     else if (result?.queued && state.days) state.days[key] = normalizeDay(next);
     return { queued:!!result?.queued, day:cloneForVue(saved || (result?.queued ? normalizeDay(next) : null)) };
-  },
-  openShiftTypeManager(){
-    if (typeof window.openShiftTypeManager === "function") window.openShiftTypeManager();
-    else if (typeof openShiftTypeManager === "function") openShiftTypeManager();
   },
   openTaskCreate(date){
     if (typeof openTaskCreate === "function") openTaskCreate({ date:String(date || "").slice(0, 10) });

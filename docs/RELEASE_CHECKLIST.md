@@ -1,9 +1,24 @@
 # Release checklist
 
-Status: v27.40.10.
+Status: v27.40.11.
 
 
-## v27.40.10 — Vue Quick Actions Modal Retirement acceptance
+## v27.40.11 — Vue Shift Type Manager Modal Retirement acceptance
+
+- [x] Start from the proven-green v27.40.10 baseline.
+- [x] Require one live Vue `#shiftTypeModal` after Settings readiness while retaining source markup only for pre-Vue recovery.
+- [x] Preserve `shiftTypeForm`, `customList`, `nsName`, time/break/plan, notification and color selectors/flows under Vue ownership.
+- [x] Remove `openShiftTypeManager` from the generic legacy bridge and route Calendar `+` through `DutyLogVueDomains.settingsWorkspace`.
+- [x] Use generated Shift Type create/update/delete operations and refresh the Vue Calendar read model after successful mutations.
+- [x] Keep Shift Type mutations server-authoritative and leave `dataLayer` as the sole offline mutation/reconnect owner.
+- [x] Keep Payroll/Admin routing and remaining historical numbered-JS entry points for later v27.40.x retirement.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 758/758.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image and PostgreSQL V47 staging acceptance.
+
+
+## v27.40.10 — Vue Quick Actions Modal Retirement acceptance — accepted predecessor
 
 - [x] Start from the proven-green v27.40.9 baseline.
 - [x] Require one live Vue `#quickActionsModal` after Productivity readiness while retaining only pre-Vue fallback markup.
@@ -11,10 +26,10 @@ Status: v27.40.10.
 - [x] Remove `openQuickActions` from the generic legacy bridge and route Today/global fallback entry through `DutyLogVueDomains.productivity`.
 - [x] Keep Inbox quick capture on the existing `dataLayer` offline adapter and preserve the single reconnect owner.
 - [x] Keep Payroll/Admin routing and Shift Type Manager for later v27.40.x retirement.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 758/758.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image and PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 758/758.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image and PostgreSQL V47 staging acceptance.
 
 
 ## v27.40.9 — Vue Shell Navigation Model Retirement acceptance

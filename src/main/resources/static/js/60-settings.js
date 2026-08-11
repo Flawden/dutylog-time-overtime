@@ -43,6 +43,11 @@ function resetShiftTypeForm(){
   renderCustomList();
 }
 function openShiftTypeManager(editId = null){
+  const vueManager = window.DutyLogVueDomains?.settingsWorkspace;
+  if (document.documentElement.dataset.vueSettingsWorkspace === "ready" && vueManager?.openShiftTypeManager) {
+    vueManager.openShiftTypeManager(editId == null ? null : Number(editId));
+    return;
+  }
   renderCustomList();
   if (editId != null) editShiftType(editId);
   else resetShiftTypeForm();

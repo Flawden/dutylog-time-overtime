@@ -83,17 +83,27 @@ class TaskAndShiftEditorsFrontendContractTest {
     @Test
     void shiftTypeManagerLivesBehindCalendarPlusInsteadOfSettingsCard() throws Exception {
         String html = read("src/main/resources/static/index.html");
-        String tasks = read("src/main/resources/static/js/50-tasks.js");
-        String settings = read("src/main/resources/static/js/60-settings.js");
+        String modal = read("frontend/src/features/settings-workspace/components/ShiftTypeManagerModal.vue");
+        String settingsWorkspace = read("frontend/src/features/settings-workspace/components/SettingsWorkspace.vue");
+        String selectedDay = read("frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue");
+        String bridge = read("frontend/src/platform/bridge/legacyBridge.ts");
+        String api = read("frontend/src/features/settings-workspace/api/settingsWorkspaceApi.ts");
+        String core = read("src/main/resources/static/js/10-core.js");
+        String legacySettings = read("src/main/resources/static/js/60-settings.js");
 
-        assertTrue(html.contains("id=\"shiftTypeModal\""));
-        assertTrue(html.contains("id=\"shiftTypeForm\""));
-        assertTrue(html.contains("id=\"customList\""));
+        assertTrue(html.contains("id=\"shiftTypeModal\"")); // recovery fallback before Vue readiness
+        assertTrue(modal.contains("id=\"shiftTypeModal\""));
+        assertTrue(modal.contains("id=\"shiftTypeForm\""));
+        assertTrue(modal.contains("id=\"customList\""));
+        assertTrue(settingsWorkspace.contains("settingsWorkspace: domain"));
+        assertTrue(selectedDay.contains("DutyLogVueDomains?.settingsWorkspace?.openShiftTypeManager()"));
+        assertFalse(bridge.contains("openShiftTypeManager"));
+        assertTrue(api.contains("client.request(\"createShiftType\""));
+        assertTrue(api.contains("client.request(\"updateShiftType\""));
+        assertTrue(api.contains("client.request(\"deleteShiftType\""));
+        assertTrue(core.contains("document.getElementById(\"shiftTypeModal\")?.remove()"));
+        assertTrue(legacySettings.contains("vueManager.openShiftTypeManager"));
         assertFalse(html.contains("id=\"shiftSettingsCard\""));
         assertFalse(html.contains("data-settings-jump=\"shifts\""));
-        assertTrue(tasks.contains("openShiftTypeManager()"));
-        assertTrue(settings.contains("async function saveShiftTypeForm()"));
-        assertFalse(settings.contains("prompt(t(\"Название смены\")"));
-        assertFalse(settings.contains("prompt(t(\"Короткие часы для календаря\")"));
     }
 }

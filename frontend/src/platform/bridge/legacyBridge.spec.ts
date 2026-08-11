@@ -13,7 +13,7 @@ function fakeWindow(): Window {
 
 function snapshot(route = "calendar"): DutyLogLegacySnapshot {
   return {
-    version: "27.40.10",
+    version: "27.40.11",
     language: "ru",
     route,
     online: true,
@@ -32,17 +32,15 @@ describe("legacy bridge", () => {
     const logout = vi.fn();
     const retireDomainOwners = vi.fn();
     const writeCalendarDay = vi.fn(async () => ({ queued: true, day: { date: "2026-08-11", shiftTypeId: 2 } }));
-    const openShiftTypeManager = vi.fn();
     const subscribe = vi.fn(() => vi.fn());
     target.DutyLogLegacyPlatform = {
-      version: "27.40.10",
+      version: "27.40.11",
       snapshot: () => snapshot(),
       navigate,
       openModal,
       logout,
       retireDomainOwners,
       writeCalendarDay,
-      openShiftTypeManager,
       subscribe,
     };
 
@@ -52,7 +50,6 @@ describe("legacy bridge", () => {
     bridge.logout();
     bridge.retireDomainOwners("absence-time-bank");
     const written = await bridge.writeCalendarDay("2026-08-11", { shiftTypeId: 2 });
-    bridge.openShiftTypeManager();
     const listener = vi.fn();
     bridge.subscribe(listener);
 
@@ -64,7 +61,6 @@ describe("legacy bridge", () => {
     expect(retireDomainOwners).toHaveBeenCalledWith("absence-time-bank");
     expect(writeCalendarDay).toHaveBeenCalledWith("2026-08-11", { shiftTypeId: 2 });
     expect(written).toEqual({ queued: true, day: { date: "2026-08-11", shiftTypeId: 2 } });
-    expect(openShiftTypeManager).toHaveBeenCalledOnce();
     expect(subscribe).toHaveBeenCalledWith(listener);
   });
 

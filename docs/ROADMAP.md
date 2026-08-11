@@ -1,19 +1,33 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.10 — Vue Quick Actions Modal Retirement**.
+Current release: **v27.40.11 — Vue Shift Type Manager Modal Retirement**.
 
 
-## v27.40.10 — Vue Quick Actions Modal Retirement — current
+## v27.40.11 — Vue Shift Type Manager Modal Retirement — current
+- [x] Start only from the proven-green v27.40.10 staging baseline.
+- [x] Replace the live legacy `shiftTypeModal` with `ShiftTypeManagerModal.vue` while preserving stable editor IDs and pre-Vue recovery fallback.
+- [x] Route Calendar `+` through `DutyLogVueDomains.settingsWorkspace` and remove `openShiftTypeManager` from `LegacyBridge` / `DutyLogLegacyPlatform`.
+- [x] Move Shift Type create/update/delete to the generated `/api/v1/shift-types` client and refresh Vue Calendar read models after mutations.
+- [x] Preserve built-in shift restrictions, cross-midnight norm calculation, break/planned-hour validation, notification settings and custom color behavior.
+- [x] Keep `dataLayer` as the sole offline mutation/reconnect owner; Shift Type CRUD remains online/server-authoritative.
+- [x] Keep Payroll/Admin hash routing and remaining historical numbered-JS entry points as explicit later-retirement boundaries.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 758/758.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+
+## v27.40.10 — Vue Quick Actions Modal Retirement — accepted predecessor
 - [x] Start only from the proven-green v27.40.9 staging baseline.
 - [x] Replace the live legacy `quickActionsModal` with `QuickActionsModal.vue` while preserving pre-Vue recovery fallback and stable E2E IDs.
 - [x] Move Inbox, Task, Note, Important, Overtime Credit and Absence quick actions to Vue-owned domains without changing business/API semantics.
 - [x] Remove `openQuickActions` from `LegacyBridge`; Today uses the Vue Productivity domain and legacy `globalQuickAdd` delegates to it after Vue readiness.
 - [x] Keep `dataLayer` as the sole offline mutation/reconnect owner; no second queue, online listener or direct duplicate Inbox writer.
 - [x] Keep Payroll/Admin hash routing and Shift Type Manager as explicit later-retirement boundaries.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 758/758.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 758/758.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image/PostgreSQL V47 staging acceptance.
 
 
 ## v27.40.9 — Vue Shell Navigation Model Retirement — accepted predecessor

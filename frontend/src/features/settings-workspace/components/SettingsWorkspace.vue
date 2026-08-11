@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeMount, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
@@ -9,6 +9,8 @@ import AppearanceSettingsCard from "./AppearanceSettingsCard.vue";
 import TimeSettingsCard from "./TimeSettingsCard.vue";
 import ScheduleSettingsCard from "./ScheduleSettingsCard.vue";
 import NotificationSettingsCard from "./NotificationSettingsCard.vue";
+import ShiftTypeManagerModal from "./ShiftTypeManagerModal.vue";
+import type { DutyLogSettingsWorkspaceDomain } from "../types/domain";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
@@ -28,6 +30,7 @@ const pwRepeat = ref("");
 const telegramCode = ref<{ code: string; expiresAt: string; startCommand: string; deepLink?: string | null } | null>(null);
 const exportFrom = ref("");
 const exportTo = ref("");
+let previousDomain: DutyLogSettingsWorkspaceDomain | undefined;
 
 const language = computed(() => settings.language);
 const text = computed(() => language.value === "en" ? {
@@ -102,7 +105,19 @@ function downloadCalendar(): void {
 }
 function isoDay(date: Date): string { return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`; }
 
-onBeforeMount(() => props.bridge.retireDomainOwners("settings-workspace"));
+const domain: DutyLogSettingsWorkspaceDomain = Object.freeze({
+  ready: () => settings.loaded,
+  openShiftTypeManager: (editId?: number | null) => { settings.openShiftTypeManager(editId ?? null); if (!settings.shiftTypes.length) void settings.refreshShiftTypes(); },
+  closeShiftTypeManager: () => settings.closeShiftTypeManager(),
+  refreshShiftTypes: () => settings.refreshShiftTypes(),
+  snapshot: () => Object.freeze({ shiftTypes: settings.shiftTypes.length, editingId: settings.shiftTypeEditingId, managerOpen: settings.shiftTypeManagerOpen }),
+});
+
+onBeforeMount(() => {
+  previousDomain = window.DutyLogVueDomains?.settingsWorkspace;
+  window.DutyLogVueDomains = Object.freeze({ ...(window.DutyLogVueDomains ?? {}), settingsWorkspace: domain });
+  props.bridge.retireDomainOwners("settings-workspace");
+});
 onMounted(async () => {
   const now = new Date(); const from = new Date(now); from.setDate(from.getDate() - 30); const to = new Date(now); to.setDate(to.getDate() + 335); exportFrom.value = isoDay(from); exportTo.value = isoDay(to);
   try { await settings.bootstrap(props.bridge); } catch (_) {}
@@ -119,6 +134,11 @@ watch(profile, value => { if (!value) return; displayName.value = value.displayN
 watch(shellModules, value => { settings.synchronizeModuleEnabledMap(value); }, { deep: true });
 watch(rawRoute, route => { const section = sectionFromRoute(route); if (section) open(section, false); });
 watch([calendarEnabled, notificationsEnabled], () => { if (!isSectionVisible(activeSection.value)) open("modules"); });
+onBeforeUnmount(() => {
+  settings.closeShiftTypeManager();
+  if (previousDomain) window.DutyLogVueDomains = Object.freeze({ ...(window.DutyLogVueDomains ?? {}), settingsWorkspace: previousDomain });
+  else if (window.DutyLogVueDomains) { const { settingsWorkspace: _removed, ...rest } = window.DutyLogVueDomains; window.DutyLogVueDomains = Object.freeze(rest); }
+});
 </script>
 
 <template>
@@ -173,4 +193,5 @@ watch([calendarEnabled, notificationsEnabled], () => { if (!isSectionVisible(act
       </div>
     </div>
   </section>
+  <ShiftTypeManagerModal />
 </template>

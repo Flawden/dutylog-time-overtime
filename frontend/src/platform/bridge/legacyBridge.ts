@@ -37,7 +37,6 @@ export interface LegacyBridge {
   commitModuleList(modules: readonly Record<string, unknown>[]): Promise<void>;
   restoreModuleList(modules: readonly Record<string, unknown>[]): void;
   writeCalendarDay(date: string, patch: Record<string, unknown>): Promise<{ queued: boolean; day: unknown | null }>;
-  openShiftTypeManager(): void;
   openTaskCreate(date: string): void;
   openTaskDetails(id: number): void;
   openImportantDetails(id: number): void;
@@ -92,7 +91,6 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
     async writeCalendarDay(date: string, patch: Record<string, unknown>) {
       return (await adapter()?.writeCalendarDay?.(date, patch)) ?? { queued: false, day: null };
     },
-    openShiftTypeManager() { adapter()?.openShiftTypeManager?.(); },
     openTaskCreate(date: string) { adapter()?.openTaskCreate?.(date); },
     openTaskDetails(id: number) { adapter()?.openTaskDetails?.(id); },
     openImportantDetails(id: number) { adapter()?.openImportantDetails?.(id); },

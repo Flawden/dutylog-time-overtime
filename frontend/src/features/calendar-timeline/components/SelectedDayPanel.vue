@@ -245,6 +245,7 @@ function allocationRangeLabels(allocation: DutyLogApiSchemas.OvertimeAllocation)
   if (endTime !== "00:00") labels.push(`${shortDate(endDate)} 00:00–${endTime}`);
   return labels;
 }
+function openShiftTypeManager(): void { window.DutyLogVueDomains?.settingsWorkspace?.openShiftTypeManager(); }
 async function addCredit(): Promise<void> { await window.DutyLogVueDomains?.absenceTimeBank?.openCreditEditor(focusDate.value); }
 async function editCredit(id: number): Promise<void> { await window.DutyLogVueDomains?.absenceTimeBank?.editCredit(id); }
 async function addUsage(): Promise<void> { await window.DutyLogVueDomains?.absenceTimeBank?.openAbsenceComposer({ date: focusDate.value, systemCode: "TIME_OFF", source: "calendar" }); }
@@ -284,7 +285,7 @@ onBeforeUnmount(() => { document.body.classList.remove("panel-open"); });
       <div class="accB">
         <div id="chips" class="chips">
           <button v-for="shift in bundle?.shiftTypes ?? []" :key="shift.id" type="button" class="chip" :class="{ on: Number(activeShiftId) === Number(shift.id) }" :data-shift-type-id="shift.id" :aria-pressed="Number(activeShiftId) === Number(shift.id) ? 'true' : 'false'" :style="{ borderColor: shift.color, color: Number(activeShiftId) === Number(shift.id) ? '#14171C' : shift.color, background: Number(activeShiftId) === Number(shift.id) ? shift.color : `color-mix(in srgb, ${shift.color} 12%, transparent)` }" @click="toggleShift(shift.id)">{{ shift.name }} <span v-if="shift.plannedHours" class="h">·{{ formatHours(shift.plannedHours) }}ч</span></button>
-          <button type="button" class="chip plus" title="Создать или настроить смену" @click="bridge.openShiftTypeManager()">+</button>
+          <button type="button" class="chip plus" title="Создать или настроить смену" @click="openShiftTypeManager">+</button>
         </div>
         <div id="shiftProjection" class="shiftProjection" :hidden="!shiftProjection">
           <template v-if="shiftProjection">

@@ -1,10 +1,10 @@
-release=27.40.10
+release=27.40.11
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=2b17c42553bb2f16a054f18f2367b96e7960ba8fcfca836dabb1538d1bbbc448
+committedLockfileSha256=5b2452536d8e3f02f971137824ba8469d9d8b0606f02156dd3c157ef841b1297
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=vue-quick-actions-modal-retirement-acceptance-for-v27.40.10
+nextAction=vue-shift-type-manager-modal-retirement-acceptance-for-v27.40.11

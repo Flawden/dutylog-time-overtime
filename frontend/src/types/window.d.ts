@@ -1,6 +1,7 @@
 import type { DutyLogAbsenceTimeBankDomain } from "@/features/absence-time-bank/types/domain";
 import type { DutyLogCalendarTimelineDomain } from "@/features/calendar-timeline/types/domain";
 import type { DutyLogProductivityDomain } from "@/features/productivity/types/domain";
+import type { DutyLogSettingsWorkspaceDomain } from "@/features/settings-workspace/types/domain";
 
 export {};
 
@@ -39,7 +40,6 @@ declare global {
     commitModuleList?(modules: readonly Record<string, unknown>[]): Promise<void>;
     restoreModuleList?(modules: readonly Record<string, unknown>[]): void;
     writeCalendarDay?(date: string, patch: Record<string, unknown>): Promise<{ queued: boolean; day: unknown | null }>;
-    openShiftTypeManager?(): void;
     openTaskCreate?(date: string): void;
     openTaskDetails?(id: number): void;
     openImportantDetails?(id: number): void;
@@ -85,6 +85,7 @@ declare global {
     readonly absenceTimeBank?: DutyLogAbsenceTimeBankDomain;
     readonly calendarTimeline?: DutyLogCalendarTimelineDomain;
     readonly productivity?: DutyLogProductivityDomain;
+    readonly settingsWorkspace?: DutyLogSettingsWorkspaceDomain;
   }
 
   interface Window {

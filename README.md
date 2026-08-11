@@ -1,3 +1,7 @@
+# DutyLog v27.40.11 — Vue Shift Type Manager Modal Retirement
+
+v27.40.10 is the accepted green staging baseline. v27.40.11 retires the live legacy Shift Type Manager modal: Calendar now opens a Vue-owned editor through the Settings domain, Shift Type CRUD uses generated OpenAPI operations, and the generic legacy bridge loses its `openShiftTypeManager` adapter. The legacy source modal remains only for pre-Vue recovery and is removed at Vue Settings readiness. Payroll/Admin routing and historical numbered-JavaScript recovery entry points remain explicit later-retirement boundaries.
+
 # DutyLog v27.40.10 — Vue Quick Actions Modal Retirement
 
 Starting from the proven-green v27.40.9 baseline, v27.40.10 removes the live legacy Quick Actions modal from the migrated Productivity/Today path. `QuickActionsModal.vue` now owns Inbox capture, Task, Note, Important Day, Overtime Credit and Absence actions while retaining the existing E2E selectors and module semantics. The old HTML modal remains only as pre-Vue recovery fallback and is removed from live DOM when Productivity becomes Vue-owned; `openQuickActions` is no longer part of the generic legacy bridge. The existing `dataLayer` remains the sole offline queue/sync owner, and Payroll/Admin routing plus Shift Type Manager remain explicit later-retirement boundaries.

@@ -28,6 +28,9 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
     telegram: null as DutyLogApiSchemas.TelegramStatus | null,
     timeContext: null as DutyLogApiSchemas.TimeContext | null,
     shiftTypes: [] as DutyLogApiSchemas.ShiftType[],
+    shiftTypeManagerOpen: false,
+    shiftTypeEditingId: null as number | null,
+    shiftTypeMutationPending: false,
     legacyShiftPreview: null as DutyLogApiSchemas.LegacyShiftMigrationPreview | null,
     legacyTaskDeadlinePreview: null as DutyLogApiSchemas.LegacyTaskDeadlineMigrationPreview | null,
     notificationSettings: null as DutyLogApiSchemas.NotificationSettings | null,
@@ -153,6 +156,41 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
         await window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
         await window.DutyLogVueDomains?.productivity?.refresh?.();
       } catch (error) { this.timeMessage = errorMessage(error); this.timeMessageOk = false; throw error; }
+    },
+    openShiftTypeManager(editId: number | null = null): void {
+      this.shiftTypeEditingId = editId == null ? null : Number(editId);
+      this.shiftTypeManagerOpen = true;
+    },
+    closeShiftTypeManager(): void {
+      this.shiftTypeManagerOpen = false;
+      this.shiftTypeEditingId = null;
+    },
+    async refreshShiftTypes(api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      this.shiftTypes = await api.shiftTypes();
+    },
+    async createShiftType(body: DutyLogApiSchemas.ShiftTypeCreateRequest, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      this.shiftTypeMutationPending = true;
+      try {
+        await api.createShiftType(body);
+        await this.refreshShiftTypes(api);
+        await window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
+      } finally { this.shiftTypeMutationPending = false; }
+    },
+    async updateManagedShiftType(id: number, body: DutyLogApiSchemas.ShiftTypeUpdateRequest, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      this.shiftTypeMutationPending = true;
+      try {
+        await api.updateShiftType(id, body);
+        await this.refreshShiftTypes(api);
+        await window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
+      } finally { this.shiftTypeMutationPending = false; }
+    },
+    async deleteManagedShiftType(id: number, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      this.shiftTypeMutationPending = true;
+      try {
+        await api.deleteShiftType(id);
+        await this.refreshShiftTypes(api);
+        await window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
+      } finally { this.shiftTypeMutationPending = false; }
     },
     async saveBuiltInShiftDefaults(payload: {
       dayStart: string; dayEnd: string; dayBreakMinutes: number; dayPlannedHours: number;

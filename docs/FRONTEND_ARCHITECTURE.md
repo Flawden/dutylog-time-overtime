@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.10.
+Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.11.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
@@ -17,7 +17,7 @@ Vue now owns the bounded `productivity` domain: Tasks board/Inbox presentation, 
 
 Q-10 offline/reconnect reuses the existing legacy `dataLayer` queue and cached calendar snapshot through typed bridge operations. Vue does not create a second offline store. Note edits, task completion and Inbox capture may queue offline; selected-day productivity can read the cached snapshot; reconnect flushes the existing queue and reloads authoritative state. New-note creation remains disabled offline until create-identity semantics are owned by the queue.
 
-The old Tasks/Important route roots and productivity modals are retired after Vue ownership is ready. As of v27.40.10 this includes the live Quick Actions modal: Inbox, Task, Note, Important, Overtime Credit and Absence quick-add flows are Vue-owned, while the old HTML modal exists only before Vue readiness as recovery fallback. Cross-domain Today/Calendar launches call `DutyLogVueDomains.productivity` by name rather than invoking hidden legacy DOM owners.
+The old Tasks/Important route roots and productivity modals are retired after Vue ownership is ready. As of v27.40.11 this includes the live Quick Actions modal: Inbox, Task, Note, Important, Overtime Credit and Absence quick-add flows are Vue-owned, while the old HTML modal exists only before Vue readiness as recovery fallback. Cross-domain Today/Calendar launches call `DutyLogVueDomains.productivity` by name rather than invoking hidden legacy DOM owners.
 
 ## Vue Calendar & Timeline strict type boundary (v27.37.1)
 
@@ -121,7 +121,7 @@ The first reusable primitives are `UiButton`, `UiBadge`, `UiCard`, `UiTabs`, `Ui
 
 ## Safe fallback
 
-Legacy topbar/tabbar stay in the document during the transition. They hide only after the Vue platform publishes successful readiness and sets `html[data-vue-shell="ready"]`. A failed Vue boot therefore leaves the released navigation usable. From v27.40.10 the hidden legacy `#tabbar` is recovery-only UI: its anchors, order and CSS visibility classes are not read back as Vue shell state. The shell read model derives workspace navigation from persisted appearance configuration and module availability from the runtime module map.
+Legacy topbar/tabbar stay in the document during the transition. They hide only after the Vue platform publishes successful readiness and sets `html[data-vue-shell="ready"]`. A failed Vue boot therefore leaves the released navigation usable. From v27.40.11 the hidden legacy `#tabbar` is recovery-only UI: its anchors, order and CSS visibility classes are not read back as Vue shell state. The shell read model derives workspace navigation from persisted appearance configuration and module availability from the runtime module map.
 
 ## API client
 

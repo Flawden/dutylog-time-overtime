@@ -71,7 +71,7 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   await page.locator('#nsStart').fill('09:00');
   await page.locator('#nsEnd').fill('18:00');
   await page.locator('#nsBreak').fill('60');
-  const shiftCreated = waitForApi(page, 'POST', '/api/shift-types', 201);
+  const shiftCreated = waitForApi(page, 'POST', '/api/v1/shift-types', 201);
   await page.locator('#shiftTypeSave').click();
   const shift = await (await shiftCreated).json();
   const shiftRow = page.locator('#customList > div', { hasText: shiftName });
@@ -79,7 +79,7 @@ test('task and shift type editors use complete modal forms', async ({ page }) =>
   await shiftRow.getByRole('button', { name: /настроить|configure/i }).click();
   await expect(page.locator('#nsName')).toHaveValue(shiftName);
   await page.locator('#nsEnd').fill('19:00');
-  const shiftUpdated = waitForApi(page, 'PATCH', `/api/shift-types/${shift.id}`);
+  const shiftUpdated = waitForApi(page, 'PATCH', `/api/v1/shift-types/${shift.id}`);
   await page.locator('#shiftTypeSave').click();
   await shiftUpdated;
   await expect(page.locator('#customList > div', { hasText: shiftName })).toContainText('19:00');

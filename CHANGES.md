@@ -1,3 +1,12 @@
+# v27.40.11 — Vue Shift Type Manager Modal Retirement
+
+- Starts from the proven-green v27.40.10 staging baseline.
+- Replaces the live legacy Shift Type Manager with `ShiftTypeManagerModal.vue`, preserving the established editor IDs and pre-Vue recovery fallback.
+- Removes `openShiftTypeManager` from the generic legacy bridge; Calendar opens the manager through `DutyLogVueDomains.settingsWorkspace`.
+- Moves Shift Type create/update/delete to generated `/api/v1/shift-types` operations and refreshes the Vue Calendar read model after mutations.
+- Preserves built-in restrictions, cross-midnight norm calculation, break/planned-hour validation, notifications and color editing.
+- Keeps `dataLayer` as the single offline mutation/reconnect owner; OpenAPI 118/120 and Flyway V47 remain unchanged.
+
 # v27.40.10 — Vue Quick Actions Modal Retirement
 
 - Starts from the proven-green v27.40.9 staging baseline.
