@@ -11,6 +11,9 @@ test('Vue app shell owns navigation chrome while legacy product screens retain b
   await expect(page.locator('#tabbar')).toBeHidden();
   await expect(page.locator('.nextTopbar')).toBeHidden();
 
+  const settings = page.locator('[data-vue-shell-navigation] [data-route="settings"]');
+  await expect(settings).toContainText('Настройки');
+
   const calendar = page.locator('[data-vue-shell-navigation] [data-route="calendar"]');
   await calendar.click();
   await expect(page).toHaveURL(/#calendar$/);
@@ -19,13 +22,14 @@ test('Vue app shell owns navigation chrome while legacy product screens retain b
 
   await openView(page, 'tasks');
   const more = page.locator('[data-vue-shell-more]');
+  await expect(more).toContainText('Ещё');
   await expect(more).toHaveAttribute('aria-current', 'page');
   await more.click();
   await expect(page.locator('.vue-shell-more-grid [data-route="tasks"]')).toHaveAttribute('aria-current', 'page');
 
   const diagnostics = await page.evaluate(() => window.DutyLogVuePlatform?.snapshot());
   expect(diagnostics).toMatchObject({
-    releaseVersion: '27.40.8',
+    releaseVersion: '27.40.9',
     architecture: 'vue-shell-v1',
     phase: 'ready',
     legacyConnected: true,

@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.40.8.
+Status: v27.40.9.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.8 aligns the sole failing v27.40.7 Maven source contract with the actual reconnect guard: 758 tests ran, 1 formatting-sensitive static assertion failed, and product runtime code remains unchanged. The contract now scopes structural checks to the `SelectedDayNotes` `onBeforeUnmount` block instead of requiring one uninterrupted comment sentence. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+Current extension: v27.40.9 retires hidden legacy `#tabbar` DOM ownership from the Vue shell navigation model. Workspace order/visibility is derived from persisted appearance configuration, route availability is derived from authoritative module state, Settings and overflow labels are distinct, and Payroll/Admin hash routing remains an explicit compatibility boundary. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
 
 Historical v27.40.7 extension: v27.40.7 uses the complete v27.40.6 Playwright report (**43 clean / 1 retry-only flaky / 4 final failed**) to restore selected-day shift/timezone projection parity, exact cross-midnight overtime-allocation labels, and reconnect note-write ownership. The one multiple-notes failure is classified as a stale narrow-rail geometry assertion because the v27.40.4 native selected-day workspace intentionally became wide at the fixed 1440px desktop viewport; the replacement assertion requires side-by-side non-overlap and bounded width. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
 

@@ -10,5 +10,6 @@ describe("app shell navigation", () => {
   it("falls unknown routes back to Today", () => {
     expect(normalizeSection("unknown")).toBe("today");
     expect(navigationItem("overtime")?.labels.ru).toBe("Переработки");
+    expect(navigationItem("settings")?.labels).toEqual({ ru: "Настройки", en: "Settings" });
   });
 });

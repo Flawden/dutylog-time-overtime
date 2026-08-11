@@ -1,3 +1,11 @@
+# v27.40.9 — Vue Shell Navigation Model Retirement
+
+- Starts only from the proven-green v27.40.8 staging baseline.
+- Retires the hidden legacy `#tabbar` DOM as the Vue shell navigation source of truth: the immutable shell read model now derives primary navigation from persisted workspace appearance settings and available routes from the authoritative module map.
+- Preserves workspace ordering/visibility, module filtering, mandatory Today/Settings entries and the five-item primary-navigation cap without reading `moduleHidden` / `workspaceHidden` CSS classes.
+- Separates the Settings destination label (`Настройки` / `Settings`) from the real overflow action (`Ещё` / `More`) so the shell no longer exposes two unrelated controls with the same name.
+- Keeps the existing hash router as a bounded compatibility adapter for legacy Payroll/Admin and remaining route-entry hooks; this cut does not create a second router, mutation owner or offline queue.
+
 # v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix
 
 - Uses the v27.40.7 local Maven result as source of truth: **758 tests / 1 failure / 0 errors**, with the sole failure at `VueTasksNotesImportantMigrationFrontendContractTest.offlineReconnectUsesExistingDataLayerQueueAndCachedSelectedDayWithoutInventingASecondStore`.

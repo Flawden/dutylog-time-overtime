@@ -1,6 +1,6 @@
-# DutyLog API v27.40.8
+# DutyLog API v27.40.9
 
-`v27.40.8` changes no HTTP/OpenAPI shape. It aligns one Maven source contract with the already-correct `SelectedDayNotes` reconnect guard; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
+`v27.40.9` changes no HTTP/OpenAPI shape. It retires hidden legacy navigation DOM as shell state and keeps routing/module/workspace changes entirely in the frontend compatibility layer; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 
 `v27.40.7` changes no HTTP/OpenAPI shape. It aligns the strict Calendar/Timeline source contract with the now-explicit `CalendarDaySection` type used by the native Vue selected-day domain; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 

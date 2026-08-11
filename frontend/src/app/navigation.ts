@@ -23,7 +23,7 @@ export const NAVIGATION_ITEMS: readonly NavigationItem[] = Object.freeze([
   { route: "payroll", icon: "payroll", labels: { ru: "Зарплата", en: "Payroll" } },
   { route: "tasks", icon: "tasks", labels: { ru: "Задачи", en: "Tasks" } },
   { route: "important", icon: "important", labels: { ru: "Даты", en: "Dates" } },
-  { route: "settings", icon: "settings", labels: { ru: "Ещё", en: "More" } },
+  { route: "settings", icon: "settings", labels: { ru: "Настройки", en: "Settings" } },
   { route: "admin", icon: "admin", labels: { ru: "Система", en: "System" } },
 ]);
 

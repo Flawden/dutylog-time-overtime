@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue app-shell plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.8.
+Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.9.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
@@ -122,7 +122,7 @@ The first reusable primitives are `UiButton`, `UiBadge`, `UiCard`, `UiTabs`, `Ui
 
 ## Safe fallback
 
-Legacy topbar/tabbar stay in the document during the transition. They hide only after the Vue platform publishes successful readiness and sets `html[data-vue-shell="ready"]`. A failed Vue boot therefore leaves the released navigation usable.
+Legacy topbar/tabbar stay in the document during the transition. They hide only after the Vue platform publishes successful readiness and sets `html[data-vue-shell="ready"]`. A failed Vue boot therefore leaves the released navigation usable. From v27.40.9 the hidden legacy `#tabbar` is recovery-only UI: its anchors, order and CSS visibility classes are not read back as Vue shell state. The shell read model derives workspace navigation from persisted appearance configuration and module availability from the runtime module map.
 
 ## API client
 

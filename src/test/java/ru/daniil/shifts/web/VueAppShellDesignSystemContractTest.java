@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static architecture contract for v27.40.8 Vue App Shell & Design System. */
+/** Static architecture contract for v27.40.9 Vue App Shell navigation-model retirement. */
 class VueAppShellDesignSystemContractTest {
 
     @Test
@@ -41,6 +41,9 @@ class VueAppShellDesignSystemContractTest {
         assertTrue(core.contains("function legacyPlatformSnapshot()"));
         assertTrue(core.contains("navigation:Object.freeze"));
         assertTrue(core.contains("availableViews:Object.freeze"));
+        assertTrue(core.contains("window.DutyLogUI?.workspaceDefinition?.(config)"));
+        assertTrue(core.contains("LEGACY_ROUTE_MODULES"));
+        assertFalse(core.contains("document.querySelectorAll(\"#tabbar a[data-view]\")"));
         assertTrue(core.contains("profile:legacyProfileSnapshot()"));
         assertTrue(core.contains("function publishLegacyPlatformState()"));
         assertTrue(core.contains("subscribe(listener)"));
@@ -74,6 +77,8 @@ class VueAppShellDesignSystemContractTest {
         String architecture = read("docs/FRONTEND_ARCHITECTURE.md");
 
         assertTrue(frontendSources.contains("bridge.navigate("));
+        assertTrue(read("frontend/src/app/navigation.ts").contains("ru: \"Настройки\", en: \"Settings\""));
+        assertTrue(read("frontend/src/app/AppNavigation.vue").contains("language === 'en' ? 'More' : 'Ещё'"));
         assertTrue(frontendSources.contains("bridge.logout()"));
         assertFalse(frontendSources.contains("document.querySelector("));
         assertFalse(frontendSources.contains("window.state"));
@@ -94,7 +99,7 @@ class VueAppShellDesignSystemContractTest {
         assertTrue(vite.contains("dutylog-vue-app-shell.js"));
         assertTrue(docker.contains("dist/dutylog-vue-app-shell.js"));
         assertTrue(gate.contains("dist/dutylog-vue-app-shell.css"));
-        assertTrue(html.contains("/vue/dutylog-vue-app-shell.js?v=27.40.8"));
+        assertTrue(html.contains("/vue/dutylog-vue-app-shell.js?v=27.40.9"));
         assertTrue(e2e.contains("Vue app shell owns navigation chrome"));
         assertTrue(e2e.contains("#tabbar"));
         assertTrue(e2e.contains("data-route=\"calendar\""));

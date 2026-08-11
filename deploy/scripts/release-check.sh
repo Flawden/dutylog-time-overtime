@@ -9,7 +9,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.40.8}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.40.9}"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -242,8 +242,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.40.8"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.40.8."
+contains docs/API.md "# DutyLog API v27.40.9"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.40.9."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
@@ -355,7 +355,7 @@ contains e2e/design-system-shell.spec.js 'UI Core workspace persists in the sing
 contains CHANGES.md "v27.18.0 — Overtime Next"
 contains README.md "v27.18.0 — Overtime Next"
 contains docs/OVERTIME_NEXT_V27.18.0.md "Overtime Next"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
 contains src/main/resources/static/index.html 'id="overtimeWorkspaceTitle"'
 contains src/main/resources/static/index.html 'id="ledgerThisYear"'
 contains src/main/resources/static/index.html 'id="ledgerChart"'
@@ -403,7 +403,7 @@ contains e2e/important-timezone.spec.js 'await selectDate(page, shiftDate);'
 contains CHANGES.md "v27.18.3 — UI Settings & Button Variants Quality Hotfix"
 contains README.md "v27.18.3 — UI Settings & Button Variants Quality Hotfix"
 contains docs/UI_SETTINGS_BUTTON_VARIANTS_QUALITY_HOTFIX_V27.18.3.md "UI Settings & Button Variants Quality Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
 contains src/main/resources/static/index.html 'id="uiPaletteState"'
 contains src/main/resources/static/index.html 'id="paletteThemeReset"'
 contains src/main/resources/static/index.html 'id="buttonVariantPreview"'
@@ -421,7 +421,7 @@ contains src/test/java/ru/daniil/shifts/web/UiCoreWorkspaceFrontendContractTest.
 contains CHANGES.md "v27.19.0 — Tasks & Inbox Next"
 contains README.md "v27.19.0 — Tasks & Inbox Next"
 contains docs/TASKS_INBOX_NEXT_V27.19.0.md "Tasks & Inbox Next"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
 contains src/main/resources/db/migration/postgresql/V37__task_planning_intervals_and_projects.sql "scheduled_start_instant"
 
   # v27.20.0 Notes & Important Events Next
@@ -450,7 +450,7 @@ contains e2e/important-timezone.spec.js "page.locator('#importantEditName')"
 contains CHANGES.md "v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix"
 contains README.md "v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix"
 contains docs/IMPORTANT_EVENT_MODAL_OFFLINE_NOTES_E2E_HOTFIX_V27.20.1.md "Important Event Modal & Offline Notes E2E Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
 contains src/main/resources/static/js/50-tasks.js "function closeImportantEventModals()"
 contains src/main/resources/static/js/50-tasks.js 'button,a,input,select,textarea,[role=button]'
 contains src/main/resources/static/js/50-tasks.js "e.stopPropagation();"
@@ -489,8 +489,8 @@ contains src/test/java/ru/daniil/shifts/web/CalendarMobileExperienceFrontendCont
 contains CHANGES.md "v27.21.0 — Schedule Templates & Calendar Layers"
 contains README.md "v27.21.0 — Schedule Templates & Calendar Layers"
 contains docs/SCHEDULE_TEMPLATES_CALENDAR_LAYERS_V27.21.0.md "Schedule Templates & Calendar Layers"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains docs/ARCHITECTURE.md "V39 Schedule Templates & Calendar Layers"
 contains src/main/resources/db/migration/postgresql/V39__schedule_templates_and_calendar_layers.sql "CREATE TABLE schedule_templates"
 contains src/main/resources/db/migration/postgresql/V39__schedule_templates_and_calendar_layers.sql "CREATE TABLE calendar_layers"
@@ -518,8 +518,8 @@ not_contains e2e/schedule-templates-calendar-layers.spec.js "await openDayModule
 contains CHANGES.md "v27.21.2 — Schedule Accordion E2E Selector Hotfix"
 contains README.md "v27.21.2 — Schedule Accordion E2E Selector Hotfix"
 contains docs/SCHEDULE_ACCORDION_E2E_SELECTOR_HOTFIX_V27.21.2.md "Schedule Accordion E2E Selector Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "dataLayer.loadCalendar(requestedYear, requestedMonth"
 contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "api.month(y, m, { fresh })"
 contains src/test/java/ru/daniil/shifts/web/ScheduleTemplateFrontendContractTest.java "authoritativeTemplatePreviewAndApplyKeepAlignmentOnTheServer"
@@ -531,8 +531,8 @@ contains src/test/java/ru/daniil/shifts/web/ScheduleTemplatesCalendarLayersFront
 contains CHANGES.md "v27.22.0 — Vacation Planner"
 contains README.md "v27.22.0 — Vacation Planner"
 contains docs/VACATION_PLANNER_V27.22.0.md "Vacation Planner"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains docs/ARCHITECTURE.md "V40 Vacation Planner"
 contains src/main/resources/db/migration/postgresql/V40__vacation_planner.sql "CREATE TABLE vacation_settings"
 contains src/main/resources/db/migration/postgresql/V40__vacation_planner.sql "INSERT INTO vacation_settings(user_id)"
@@ -574,15 +574,15 @@ contains e2e/calendar-comfort.spec.js "await expect(page.locator('#layout')).not
 not_contains e2e/calendar-comfort.spec.js "force: true"
 contains src/main/resources/static/js/50-tasks.js '$("pClose").addEventListener("click", () => selectDay(null));'
 contains src/main/resources/static/app.css '.layout.with-panel::before'
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 
   # v27.24.0 Calendar Comfort & Correctness
 contains CHANGES.md "v27.24.0 — Calendar Comfort & Correctness"
 contains README.md "v27.24.0 — Calendar Comfort & Correctness"
 contains docs/CALENDAR_COMFORT_CORRECTNESS_V27.24.0.md "Contextual return to today"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains src/main/resources/static/index.html 'id="todayBtn" type="button" hidden'
 contains src/main/resources/static/index.html 'id="todayShiftDateRange" hidden'
 contains src/main/resources/static/index.html 'id="calendarLoadStatus" role="status" aria-live="polite" hidden'
@@ -614,8 +614,8 @@ contains src/main/resources/static/js/55-calendar-sync.js "to:keyOf(end.getFullY
 not_contains src/main/resources/static/js/55-calendar-sync.js "localDateKey("
 contains src/test/java/ru/daniil/shifts/web/CalendarSyncFrontendContractTest.java "rangeDefaultsUseTheCanonicalCalendarDateKeyHelper"
 contains src/test/java/ru/daniil/shifts/web/CalendarSyncFrontendContractTest.java "!js.contains(\"localDateKey(\")"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 
   # v27.23.1 Calendar Sync JSON UTF-8 Contract Hotfix
 contains CHANGES.md "v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix"
@@ -624,15 +624,15 @@ contains docs/CALENDAR_SYNC_JSON_UTF8_CONTRACT_HOTFIX_V27.23.1.md "getContentAsS
 contains src/test/java/ru/daniil/shifts/web/CalendarSyncControllerTest.java "getContentAsString(StandardCharsets.UTF_8)"
 contains src/test/java/ru/daniil/shifts/web/CalendarSyncControllerTest.java "contains(\"\\u2026\")"
 not_contains src/test/java/ru/daniil/shifts/web/CalendarSyncControllerTest.java ".getContentAsString();"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 
   # v27.23.0 External Calendar Sync
 contains CHANGES.md "v27.23.0 — External Calendar Sync"
 contains README.md "v27.23.0 — External Calendar Sync"
 contains docs/EXTERNAL_CALENDAR_SYNC_V27.23.0.md "SHA-256-only persistent storage"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains docs/ARCHITECTURE.md "V41 External Calendar Sync"
 contains docs/MODULE_CONTRACTS.md '`calendar_sync`'
 contains docs/SECURITY_REVIEW.md "External calendar subscription"
@@ -701,7 +701,7 @@ not_contains src/test/java/ru/daniil/shifts/service/ModuleServiceContractTest.ja
 contains CHANGES.md "v27.19.1 — Task Board Date Range Compatibility Hotfix"
 contains README.md "v27.19.1 — Task Board Date Range Compatibility Hotfix"
 contains docs/TASK_BOARD_DATE_RANGE_COMPATIBILITY_HOTFIX_V27.19.1.md "Task Board Date Range Compatibility Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
 contains src/main/java/ru/daniil/shifts/web/TaskController.java '@RequestParam(name = "scheduledFrom"'
 contains src/main/java/ru/daniil/shifts/web/TaskController.java '@RequestParam(name = "scheduledTo"'
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "withinTaskBoardDeadlineRange"
@@ -717,7 +717,7 @@ contains e2e/tasks-inbox-next.spec.js "Tasks & Inbox Next keeps planning"
 contains CHANGES.md "v27.19.2 — Frontend Asset Contract Stability Hotfix"
 contains README.md "v27.19.2 — Frontend Asset Contract Stability Hotfix"
 contains docs/FRONTEND_ASSET_CONTRACT_STABILITY_HOTFIX_V27.19.2.md "Frontend Asset Contract Stability Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
 contains src/test/java/ru/daniil/shifts/web/TodayDashboardFrontendContractTest.java 'js/35-today.js?v='
 contains src/test/java/ru/daniil/shifts/web/UiCoreWorkspaceFrontendContractTest.java 'js/12-ui-platform.js?v='
 contains src/test/java/ru/daniil/shifts/web/CalendarMobileExperienceFrontendContractTest.java 'js/37-calendar-experience.js?v='
@@ -727,14 +727,14 @@ contains src/test/java/ru/daniil/shifts/web/DesignSystemMobileShellFrontendContr
 contains CHANGES.md "v27.19.3 — Task Deadline Validation E2E Contract Hotfix"
 contains README.md "v27.19.3 — Task Deadline Validation E2E Contract Hotfix"
 contains docs/TASK_DEADLINE_VALIDATION_E2E_CONTRACT_HOTFIX_V27.19.3.md "Task Deadline Validation E2E Contract Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
 contains e2e/task-modules.spec.js "Дедлайн не может быть раньше окончания запланированного интервала."
 
   # v27.19.4 Ghost Button Transition E2E Stabilization Hotfix
 contains CHANGES.md "v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix"
 contains README.md "v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix"
 contains docs/GHOST_BUTTON_TRANSITION_E2E_STABILIZATION_HOTFIX_V27.19.4.md "Ghost Button Transition E2E Stabilization Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
 contains e2e/appearance-quality.spec.js "const borderAlpha = context.getImageData(0, 0, 1, 1).data[3];"
 contains e2e/appearance-quality.spec.js "await expect.poll(async () => (await previewStyle(page)).borderAlpha).toBe(0);"
 not_contains e2e/appearance-quality.spec.js "expect(ghost.borderColor).toBe('rgba(0, 0, 0, 0)');"
@@ -1137,7 +1137,7 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "Status: v27.40.8."
+contains docs/SECURITY_REVIEW.md "Status: v27.40.9."
 contains docs/FINAL_PRODUCT_AUDIT_V27.2.29.md "## Launch decision"
 contains docs/TEST_CONFIG_HOTFIX.md "v27.2.5"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
@@ -1661,7 +1661,7 @@ contains deploy/scripts/remote-deploy.sh 'missing=()'
 contains CHANGES.md "v27.2.29 — Final security and product audit hardening"
 contains README.md "v27.2.29 — Final security and product audit hardening"
 contains docs/REGRESSION_TEST_BASELINE.md "v27.2.29 security baseline"
-contains docs/SECURITY_REVIEW.md "Status: v27.40.8."
+contains docs/SECURITY_REVIEW.md "Status: v27.40.9."
 contains src/main/resources/db/migration/postgresql/V23__web_auth_version.sql "auth_version BIGINT NOT NULL DEFAULT 0"
 contains src/main/java/ru/daniil/shifts/config/DutyLogUserPrincipal.java "private final long authVersion"
 contains src/main/java/ru/daniil/shifts/config/WebAccountStateFilter.java "current.getAuthVersion() != principal.getAuthVersion()"
@@ -1737,7 +1737,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1790,7 +1790,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1812,7 +1812,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1907,7 +1907,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -2066,7 +2066,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.10.0 — Task Details"
 contains README.md "v27.10.0 — Task Details"
 contains docs/TASK_DETAILS_V27.10.0.md "read-first"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains src/main/resources/db/migration/postgresql/V32__task_details.sql "ADD COLUMN description"
 contains src/main/java/ru/daniil/shifts/model/DayTask.java "private String description"
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "public TaskDto get(AppUser user, Long id)"
@@ -2087,7 +2087,7 @@ contains e2e/task-details.spec.js 'task details separate reading from editing an
 contains CHANGES.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains README.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md "immutable absolute occurrence"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_start_instant"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_source_timezone"
 contains src/main/java/ru/daniil/shifts/model/DayEntry.java "captureShiftOccurrence"
@@ -2107,7 +2107,7 @@ contains e2e/important-timezone.spec.js "a timezone projection can move a late s
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -2206,8 +2206,8 @@ fi
 contains CHANGES.md "v27.25.2 — Absence Experience Frontend Contract Hotfix"
 contains README.md "v27.25.2 — Absence Experience Frontend Contract Hotfix"
 contains docs/ABSENCE_EXPERIENCE_FRONTEND_CONTRACT_HOTFIX_V27.25.2.md "stale string contract"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains src/test/java/ru/daniil/shifts/web/VacationPlannerFrontendContractTest.java 'for (const absence of facts.absences.slice(0, 3))'
 contains src/test/java/ru/daniil/shifts/web/VacationPlannerFrontendContractTest.java 'for (const absence of facts.partialAbsences)'
 contains src/test/java/ru/daniil/shifts/web/VacationPlannerFrontendContractTest.java 'for (const absence of facts.absences.filter(item => item.coverage !== \"PARTIAL\"))'
@@ -2218,8 +2218,8 @@ not_contains src/main/resources/static/js/37-calendar-experience.js 'for (const 
 contains CHANGES.md "v27.25.1 — Absence Preview Lambda Compile Hotfix"
 contains README.md "v27.25.1 — Absence Preview Lambda Compile Hotfix"
 contains docs/ABSENCE_PREVIEW_LAMBDA_COMPILE_HOTFIX_V27.25.1.md "effectively-final"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java "LocalDate previewDate = date;"
 contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java "filter(period -> covers(period, previewDate))"
 not_contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java "filter(period -> covers(period, date))"
@@ -2230,8 +2230,8 @@ contains src/test/java/ru/daniil/shifts/web/AbsenceTimeOffOverhaulContractTest.j
 contains CHANGES.md "v27.25.0 — Absence & Time-Off Overhaul"
 contains README.md "v27.25.0 — Absence & Time-Off Overhaul"
 contains docs/ABSENCE_TIME_OFF_OVERHAUL_V27.25.0.md "planned shift from the work schedule"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains src/main/resources/db/migration/postgresql/V42__absence_time_off_overhaul.sql "time_off_balance_minutes"
 contains src/main/resources/db/migration/postgresql/V42__absence_time_off_overhaul.sql "TIME_OFF_HOURS"
 contains src/main/resources/db/migration/postgresql/V42__absence_time_off_overhaul.sql "coverage = 'PARTIAL'"
@@ -2255,12 +2255,12 @@ contains e2e/absence-time-off-overhaul.spec.js 'partial time off keeps the plann
 contains CHANGES.md "v27.26.0 — Unified Time & Compensation Ledger"
 contains README.md "v27.26.0 — Unified Time & Compensation Ledger"
 contains docs/UNIFIED_TIME_COMPENSATION_LEDGER_V27.26.0.md "planned shift / day off"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
-contains docs/API.md "# DutyLog API v27.40.8"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.40.8."
-contains docs/SECURITY_REVIEW.md "Status: v27.40.8."
-contains docs/MODULE_CONTRACTS.md "Status: v27.40.8."
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
+contains docs/API.md "# DutyLog API v27.40.9"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.40.9."
+contains docs/SECURITY_REVIEW.md "Status: v27.40.9."
+contains docs/MODULE_CONTRACTS.md "Status: v27.40.9."
 contains src/main/resources/db/migration/postgresql/V43__unified_time_compensation_ledger.sql "compensation_policy"
 contains src/main/resources/db/migration/postgresql/V43__unified_time_compensation_ledger.sql "source_absence_id"
 contains src/main/resources/db/migration/postgresql/V43__unified_time_compensation_ledger.sql "Начальный баланс отгулов — перенос в единый банк V43"
@@ -2704,8 +2704,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.40.8"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.40.8."
+contains docs/API.md "# DutyLog API v27.40.9"
+contains docs/RELEASE_CHECKLIST.md "Status: v27.40.9."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
@@ -2958,8 +2958,8 @@ contains CHANGES.md "v27.37.1 — Vue Calendar & Timeline Strict Typecheck Hotfi
 contains README.md "v27.37.1 — Vue Calendar & Timeline Strict Typecheck Hotfix"
 contains docs/VUE_CALENDAR_TIMELINE_STRICT_TYPECHECK_HOTFIX_V27.37.1.md "strict TypeScript"
 contains docs/migration/calendar-timeline-vue-migration-manifest.md "## v27.37.1 strict typecheck follow-up"
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains docs/RELEASE_CHECKLIST.md "v27.37.1 Vue Calendar & Timeline Strict Typecheck Hotfix acceptance"
 contains frontend/src/features/calendar-timeline/components/CalendarTimelineWorkspace.vue 'openDate: async (date: string, mode?: CalendarMode)'
 contains frontend/src/features/calendar-timeline/stores/calendarTimelineStore.ts 'async openDate(date: string, mode?: CalendarMode): Promise<void>'
@@ -2974,8 +2974,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineStrictTypecheckHo
   contains README.md "DutyLog v27.39.2 — Vue Settings Maven Contract Alignment Hotfix"
   contains docs/VUE_SETTINGS_WORKSPACE_INTEGRATIONS_V27.39.0.md "118 operations / 120 schemas"
   contains docs/VUE_SETTINGS_MAVEN_CONTRACT_ALIGNMENT_HOTFIX_V27.39.2.md "758 tests"
-  contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
   contains docs/architecture/adr/ADR-008-production-source-maps-and-frontend-diagnostics.md "Production frontend source maps are disabled by default"
   contains frontend/vite.config.ts 'DUTYLOG_FRONTEND_SOURCEMAPS'
   contains frontend/vite.config.ts '? "hidden" : false'
@@ -3019,7 +3019,7 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains docs/VUE_LEGACY_RETIREMENT_SETTINGS_CUTOVER_V27.40.0.md "# v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover"
   contains docs/VUE_LEGACY_RETIREMENT_SETTINGS_CUTOVER_V27.40.0.md "Remaining v27.40.x retirement blockers"
   contains docs/VUE_SETTINGS_MODULE_RUNTIME_SYNC_PWA_RECONNECT_HOTFIX_V27.39.6.md "44 passed and 4 failed"
-  contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
   contains docs/RELEASE_CHECKLIST.md "v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover acceptance"
   contains e2e/helpers.js "const alreadyEnabled = await toggle.isChecked()"
   contains e2e/helpers.js "if (alreadyEnabled === enabled)"
@@ -3049,14 +3049,29 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains frontend/src/features/settings-workspace/types/model.ts "const orderedVisibleWidgets = source.filter"
   contains e2e/absence-time-off-overhaul.spec.js "response.request().postDataJSON()"
   contains e2e/absence-time-off-overhaul.spec.js "expect(preview.durationMinutes).toBe(240)"
-  contains src/main/resources/static/service-worker.js 'dutylog-shell-v27.40.8-'
+  contains src/main/resources/static/service-worker.js 'dutylog-shell-v27.40.9-'
+
+  # v27.40.9 Vue Shell Navigation Model Retirement
+  contains CHANGES.md "v27.40.9 — Vue Shell Navigation Model Retirement"
+  contains README.md "DutyLog v27.40.9 — Vue Shell Navigation Model Retirement"
+  contains docs/VUE_SHELL_NAVIGATION_MODEL_RETIREMENT_V27.40.9.md "#tabbar"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
+  contains docs/RELEASE_CHECKLIST.md "v27.40.9 — Vue Shell Navigation Model Retirement acceptance"
+  contains src/main/resources/static/js/10-core.js 'window.DutyLogUI?.workspaceDefinition?.(config)'
+  contains src/main/resources/static/js/10-core.js 'LEGACY_ROUTE_MODULES'
+  not_contains src/main/resources/static/js/10-core.js 'document.querySelectorAll("#tabbar a[data-view]")'
+  contains frontend/src/app/navigation.ts 'ru: "Настройки", en: "Settings"'
+  contains frontend/src/app/AppNavigation.vue "language === 'en' ? 'More' : 'Ещё'"
+  contains e2e/vue-app-shell.spec.js "await expect(settings).toContainText('Настройки')"
+  contains e2e/vue-app-shell.spec.js "await expect(more).toContainText('Ещё')"
 
   # v27.40.8 Offline Reconnect Source Contract Alignment Hotfix
   contains CHANGES.md "v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix"
   contains README.md "DutyLog v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix"
   contains docs/OFFLINE_RECONNECT_SOURCE_CONTRACT_ALIGNMENT_HOTFIX_V27.40.8.md "758"
-  contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
   contains docs/RELEASE_CHECKLIST.md "v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix acceptance"
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'int unmountStart = notes.indexOf("onBeforeUnmount(() => {")'
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'String unmount = notes.substring(unmountStart, unmountEnd)'
@@ -3069,8 +3084,8 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains CHANGES.md "v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix"
   contains README.md "DutyLog v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix"
   contains docs/VUE_CALENDAR_SELECTED_DAY_PARITY_RECONNECT_HOTFIX_V27.40.7.md "43 clean passes, 1 retry-only flaky scenario, and 4 final failures"
-  contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
   contains docs/RELEASE_CHECKLIST.md "v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix acceptance"
   contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue 'sourceRange: dateTimeRange(occurrence.sourceStart, occurrence.sourceEnd)'
   contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue 'Рабочее время смены'
@@ -3085,8 +3100,8 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains CHANGES.md "v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix"
   contains README.md "DutyLog v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix"
   contains docs/VUE_CALENDAR_SELECTED_DAY_PREVIEW_KEY_STRICT_TYPE_HOTFIX_V27.40.6.md "TS2379"
-  contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
   contains docs/RELEASE_CHECKLIST.md "v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix acceptance"
   contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue 'v-for="(item, index) in schedulePreview?.items?.slice(0, 14) ?? []"'
   contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue ':key="item.date ?? `preview-${index}`"'
@@ -3107,8 +3122,8 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains CHANGES.md "v27.40.4 — Vue Calendar Selected-Day Panel Retirement"
   contains README.md "DutyLog v27.40.4 — Vue Calendar Selected-Day Panel Retirement"
   contains docs/VUE_CALENDAR_SELECTED_DAY_PANEL_RETIREMENT_V27.40.4.md "SelectedDayPanel.vue"
-  contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
   contains docs/RELEASE_CHECKLIST.md "v27.40.4 — Vue Calendar Selected-Day Panel Retirement acceptance"
   contains frontend/src/features/calendar-timeline/components/CalendarPage.vue 'SelectedDayPanel'
   contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue 'data-vue-selected-day-panel'
@@ -3147,7 +3162,7 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains CHANGES.md "v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix"
   contains README.md "DutyLog v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix"
   contains docs/VUE_NOTIFICATION_SETTINGS_FIRST_READ_TIMEZONE_PARITY_HOTFIX_V27.40.3.md "32 clean passes, 10 retry-only flaky scenarios and 6 final failures"
-  contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
   contains docs/RELEASE_CHECKLIST.md "v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix acceptance"
   contains src/main/java/ru/daniil/shifts/repo/UserRepository.java "LockModeType.PESSIMISTIC_WRITE"
   contains src/main/java/ru/daniil/shifts/repo/UserRepository.java "findForUpdateById"
@@ -3178,7 +3193,7 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains CHANGES.md "v27.39.3 — Frontend Diagnostics Release Version Source Hotfix"
   contains README.md "DutyLog v27.39.3 — Frontend Diagnostics Release Version Source Hotfix"
   contains docs/VUE_SETTINGS_FRONTEND_DIAGNOSTICS_VERSION_HOTFIX_V27.39.3.md "frontend/package.json"
-  contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
   contains docs/RELEASE_CHECKLIST.md "v27.39.3 — Frontend Diagnostics Release Version Source Hotfix acceptance"
   contains frontend/vite.config.ts 'import packageMetadata from "./package.json";'
   contains frontend/vite.config.ts 'const releaseVersion = packageMetadata.version;'
@@ -3197,7 +3212,7 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains src/main/resources/static/js/20-data.js 'await loadMonth({ fresh:true });'
   contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java 'month cache не должен откатывать уже загруженную глобальную карту модулей'
   contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java 'после authoritative module PATCH календарь должен обходить pre-mutation IndexedDB snapshot'
-  contains src/main/resources/static/service-worker.js 'dutylog-shell-v27.40.8-'
+  contains src/main/resources/static/service-worker.js 'dutylog-shell-v27.40.9-'
 
   # v27.38.14 Module Toggle Runtime Gate & Page Lifecycle Browser Parity Hotfix
   contains CHANGES.md "v27.38.14 — Module Toggle Runtime Gate & Page Lifecycle Browser Parity Hotfix"
@@ -3218,7 +3233,7 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains src/main/resources/static/js/70-user-boot.js 'if (expectedPageLifecycleFetchAbort(err)) return;'
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'optimisticModuleGate'
   contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java 'expectedPageLifecycleFetchAbort'
-  contains src/main/resources/static/service-worker.js 'dutylog-shell-v27.40.8-'
+  contains src/main/resources/static/service-worker.js 'dutylog-shell-v27.40.9-'
 
   # v27.38.13 Vue Productivity Legacy Renderer Retirement Barrier Hotfix
   contains CHANGES.md "v27.38.13 — Vue Productivity Legacy Renderer Retirement Barrier Hotfix"
@@ -3297,8 +3312,8 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains CHANGES.md "v27.38.8 — Vue Shared Browser Parity Hotfix"
   contains README.md "v27.38.8 — Vue Shared Browser Parity Hotfix"
   contains docs/VUE_SHARED_BROWSER_PARITY_HOTFIX_V27.38.8.md "four shared browser-parity root causes"
-  contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
   contains docs/RELEASE_CHECKLIST.md "v27.38.8 — Vue Shared Browser Parity Hotfix acceptance"
   contains e2e/helpers.js "Clicking an already-focused"
   not_contains e2e/helpers.js 'not.toHaveClass(/sel/)'
@@ -3314,8 +3329,8 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains CHANGES.md "v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix"
   contains README.md "v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix"
   contains docs/WINDOWS_FRONTEND_GATE_CALENDAR_CONTRACT_ALIGNMENT_HOTFIX_V27.38.5.md "Full 47/47 Chromium remains required before acceptance"
-  contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
   contains docs/RELEASE_CHECKLIST.md "v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix acceptance"
   contains frontend/src/features/productivity/components/ProductivityWorkspace.vue 'calendar.openDayPanel(targetDate, "notes")'
   contains frontend/src/features/productivity/stores/productivityStore.ts 'addMinutesToDateTime'
@@ -3349,8 +3364,8 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'import java.util.Locale;'
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'manifest.toLowerCase(Locale.ROOT).contains("offline/reconnect")'
   contains docs/migration/tasks-notes-important-vue-migration-manifest.md '## Offline/reconnect boundary'
-  contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
   contains docs/RELEASE_CHECKLIST.md "v27.38.3 — Vue Productivity Strict Typecheck Hotfix acceptance"
 
   # v27.38.1 Vue Productivity Static Contract Alignment Hotfix
@@ -3365,8 +3380,8 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'dataset.vueProductivity === \"ready\"'
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'productivity?.openTaskCreate'
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'productivity?.openImportantCreate'
-  contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+  contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
   contains docs/RELEASE_CHECKLIST.md "v27.38.1 — Vue Productivity Static Contract Alignment Hotfix acceptance"
 
   # v27.38.0 Vue Tasks, Notes & Important Days
@@ -3374,8 +3389,8 @@ contains CHANGES.md "v27.38.0 — Vue Tasks, Notes & Important Days"
 contains README.md "v27.38.0 — Vue Tasks, Notes & Important Days"
 contains docs/VUE_TASKS_NOTES_IMPORTANT_V27.38.0.md "No second IndexedDB/localStorage queue is introduced"
 contains docs/migration/tasks-notes-important-vue-migration-manifest.md 'target_release: "v27.38.0"'
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains docs/RELEASE_CHECKLIST.md "v27.38.0 — Vue Tasks, Notes & Important Days acceptance"
 contains docs/API.md "118 operations and 120 schemas"
 contains docs/ENGINEERING_QUALITY_REGISTER.md '| Q-10 | Offline queue и reconnect correctness | `v27.38.0`'
@@ -3408,8 +3423,8 @@ contains CHANGES.md "v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hot
 contains README.md "v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hotfix"
 contains docs/VUE_CALENDAR_SELECTED_DAY_ISLAND_LIFECYCLE_HOTFIX_V27.37.5.md "parkCalendarEditor()"
 contains docs/migration/calendar-timeline-vue-migration-manifest.md 'follow_up_release: "v27.37.5"'
-contains docs/ROADMAP.md "Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.8"
+contains docs/ROADMAP.md "Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.40.9"
 contains docs/RELEASE_CHECKLIST.md "v27.37.5 Vue Calendar Selected-Day Island Lifecycle Hotfix acceptance"
 contains docs/VUE_CALENDAR_SELECTED_DAY_PANEL_RETIREMENT_V27.40.4.md 'The old `#calendarLegacyPanelHost` attach/park lifecycle is removed'
 not_contains frontend/src/platform/bridge/legacyBridge.ts 'parkCalendarEditor'

@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.40.8"
+const DUTYLOG_VERSION = "27.40.9"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -167,21 +167,43 @@ function legacyProfileSnapshot(){
   return Object.freeze({ displayName:shown, initials, admin:!!profile.admin, onboardingCompleted:profile.onboardingCompleted === true });
 }
 
+const LEGACY_ROUTE_MODULES = Object.freeze({
+  vacation:"vacation",
+  overtime:"overtime",
+  payroll:"payroll",
+  tasks:"tasks",
+  important:"important_dates"
+});
+
+function legacyRouteEnabled(route){
+  if (["today","calendar","settings"].includes(route)) return true;
+  const moduleKey = LEGACY_ROUTE_MODULES[route];
+  return !moduleKey || state.modules?.[moduleKey] !== false;
+}
+
 function legacyNavigationSnapshot(){
-  const anchors = [...document.querySelectorAll("#tabbar a[data-view]")];
-  if (!anchors.length) return { navigation:[...LEGACY_ROUTE_FALLBACK], availableViews:[...LEGACY_ROUTE_FALLBACK] };
-  const availableViews = anchors
-    .filter(anchor => !anchor.hidden && !anchor.classList.contains("moduleHidden"))
-    .map(anchor => String(anchor.dataset.view || "").trim())
-    .filter(Boolean);
-  const navigation = anchors
-    .filter(anchor => !anchor.hidden && !anchor.classList.contains("moduleHidden") && !anchor.classList.contains("workspaceHidden"))
-    .map(anchor => String(anchor.dataset.view || "").trim())
-    .filter(Boolean);
+  const config = typeof normalizeThemeConfig === "function"
+    ? normalizeThemeConfig(state.preferences?.themeConfig || {})
+    : null;
+  const workspace = config ? window.DutyLogUI?.workspaceDefinition?.(config) : null;
+  const requested = Array.isArray(workspace?.navigation)
+    ? workspace.navigation.map(String)
+    : [...LEGACY_ROUTE_FALLBACK];
+  const availableViews = LEGACY_ROUTE_FALLBACK.filter(legacyRouteEnabled);
+  const available = new Set(availableViews);
+  const navigation = [...new Set(requested.filter(view => available.has(view)))];
+  if (!navigation.includes("today")) navigation.unshift("today");
+  if (!navigation.includes("settings")) navigation.push("settings");
+  const primary = navigation.slice(0, 5);
+  if (!primary.includes("today")) primary.unshift("today");
+  if (!primary.includes("settings")) {
+    if (primary.length >= 5) primary.pop();
+    primary.push("settings");
+  }
   if (state.profile?.admin && !availableViews.includes("admin")) availableViews.push("admin");
   return {
-    navigation:navigation.length ? navigation : availableViews,
-    availableViews:availableViews.length ? availableViews : [...LEGACY_ROUTE_FALLBACK]
+    navigation:[...new Set(primary)].slice(0, 5),
+    availableViews
   };
 }
 
@@ -342,7 +364,7 @@ window.DutyLogLegacyPlatform = Object.freeze({
       .find(node => !node.hasAttribute("data-vue-domain-owner"));
     const legacyToday = [...document.querySelectorAll("section.view#view-today")]
       .find(node => !node.hasAttribute("data-vue-domain-owner"));
-    // v27.40.8 retires the last Calendar DOM compatibility island. The old
+    // v27.40.9 retires the last Calendar DOM compatibility island. The old
     // #panel dies together with the legacy Calendar; Vue now owns selected-day UI.
     legacyCalendar?.remove();
     legacyToday?.remove();

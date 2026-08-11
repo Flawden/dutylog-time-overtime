@@ -1,17 +1,29 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**.
+Current release: **v27.40.9 — Vue Shell Navigation Model Retirement**.
 
 
-## v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix — current
-- [x] Use the exact v27.40.7 local Maven evidence: 758 tests executed, 1 failure, 0 errors, 0 skipped.
-- [x] Classify the sole failure as a formatting-sensitive source contract at `VueTasksNotesImportantMigrationFrontendContractTest` line 184, not a product/offline regression.
-- [x] Scope the contract to the real `SelectedDayNotes` `onBeforeUnmount` block and require the pending-timer guard, timer clear/reset and guarded `updateNote` call.
-- [x] Keep `dataLayer.syncQueue()` as the sole reconnect queue owner; do not change product runtime behavior, retries/timeouts, strictness, OpenAPI/Flyway or business rules.
+## v27.40.9 — Vue Shell Navigation Model Retirement — current
+- [x] Start only from the proven-green v27.40.8 staging baseline.
+- [x] Remove hidden legacy `#tabbar` anchors/classes from the shell navigation read model; navigation must come from persisted workspace configuration and authoritative module state.
+- [x] Preserve custom workspace order/visibility, module filtering, mandatory Today/Settings routes and the five-item primary navigation cap.
+- [x] Distinguish the Settings destination (`Настройки` / `Settings`) from the overflow action (`Ещё` / `More`).
+- [x] Keep the existing hash router only as a compatibility boundary for Payroll/Admin and remaining legacy route-entry hooks; do not add a second router or offline owner.
 - [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
 - [ ] Maven 758/758.
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+
+## v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix — accepted predecessor
+- [x] Use the exact v27.40.7 local Maven evidence: 758 tests executed, 1 failure, 0 errors, 0 skipped.
+- [x] Classify the sole failure as a formatting-sensitive source contract at `VueTasksNotesImportantMigrationFrontendContractTest` line 184, not a product/offline regression.
+- [x] Scope the contract to the real `SelectedDayNotes` `onBeforeUnmount` block and require the pending-timer guard, timer clear/reset and guarded `updateNote` call.
+- [x] Keep `dataLayer.syncQueue()` as the sole reconnect queue owner; do not change product runtime behavior, retries/timeouts, strictness, OpenAPI/Flyway or business rules.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 758/758.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image/PostgreSQL V47 staging acceptance.
 
 
 ## v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix — predecessor hotfix

@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Regression contract for v27.40.8 Vue-owned shell navigation and E2E compatibility. */
+/** Regression contract for v27.40.9 Vue-owned shell navigation and E2E compatibility. */
 class VueShellE2eNavigationCompatibilityHotfixTest {
 
     @Test
@@ -32,7 +32,7 @@ class VueShellE2eNavigationCompatibilityHotfixTest {
         assertTrue(shell.contains("data-vue-shell-profile"));
         assertTrue(shell.contains("data-vue-shell-logout"));
         assertTrue(navigation.contains("data-vue-shell-more"));
-        assertTrue(calendarSync.contains("Time and Overtime 27.40.8//RU"));
+        assertTrue(calendarSync.contains("Time and Overtime 27.40.9//RU"));
     }
 
     private static String read(String path) throws Exception {

@@ -1,6 +1,19 @@
 # Release checklist
 
-Status: v27.40.8.
+Status: v27.40.9.
+
+
+## v27.40.9 — Vue Shell Navigation Model Retirement acceptance
+
+- [x] Start from the proven-green v27.40.8 baseline.
+- [x] Require shell navigation snapshots to derive workspace order/visibility from persisted appearance configuration rather than hidden `#tabbar` anchors/classes.
+- [x] Require available routes to follow authoritative module state, while Today/Settings remain mandatory and primary navigation remains capped at five.
+- [x] Require distinct Settings (`Настройки` / `Settings`) and overflow (`Ещё` / `More`) labels.
+- [x] Keep Payroll/Admin hash routing and the existing single `dataLayer` offline owner as explicit later-retirement boundaries.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 758/758.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image and PostgreSQL V47 staging acceptance.
 
 
 ## v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix acceptance
@@ -9,10 +22,10 @@ Status: v27.40.8.
 - [x] Keep the reconnect product fix unchanged and replace only the stale comment-format assertion with structural `onBeforeUnmount` checks.
 - [x] Require the pending timer guard, timer cancellation/reset and guarded `updateNote` call inside the unmount block.
 - [x] Keep `dataLayer.syncQueue()` as the sole reconnect queue owner; no retry, timeout, strictness, OpenAPI, Flyway or business-rule relaxation.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 758/758.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image and PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 758/758.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image and PostgreSQL V47 staging acceptance.
 
 
 ## v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix acceptance

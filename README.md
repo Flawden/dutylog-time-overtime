@@ -1,3 +1,7 @@
+# DutyLog v27.40.9 — Vue Shell Navigation Model Retirement
+
+Starting from the proven-green v27.40.8 baseline, v27.40.9 removes the hidden legacy `#tabbar` DOM from the Vue shell navigation model. Primary navigation now follows persisted workspace preferences directly and available sections follow the authoritative module state; the fallback tabbar may still exist for recovery, but its CSS classes are no longer application state. The Settings destination is labelled `Настройки` / `Settings`, while the overflow control remains `Ещё` / `More`. Payroll/Admin hash routing and the single legacy `dataLayer` offline owner remain compatibility boundaries for later v27.40.x retirement cuts.
+
 # DutyLog v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix
 
 The v27.40.7 local Maven gate executed all 758 tests and failed exactly one static/source assertion in `VueTasksNotesImportantMigrationFrontendContractTest`: the test searched for a single uninterrupted English comment sentence, while the correct reconnect guard was split across two comment lines. v27.40.8 replaces that formatting-sensitive assertion with structural checks over the actual `onBeforeUnmount` block: only a pending debounce draft may clear its timer and call `updateNote`, while `dataLayer.syncQueue()` remains the sole reconnect queue owner. Product runtime behavior, retries/timeouts, strict TypeScript, OpenAPI 118/120 and Flyway V47 are unchanged.
