@@ -1,10 +1,12 @@
 # DutyLog regression test baseline
 
-Status: v27.40.5.
+Status: v27.40.6.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.5 aligns the historical Calendar/Timeline strict-source contract with the native selected-day domain introduced in v27.40.4. `CalendarTimelineWorkspace.vue` now explicitly imports and uses `CalendarDaySection` alongside `CalendarMode` and `DutyLogCalendarTimelineDomain`; strictness is unchanged. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+Current extension: v27.40.6 fixes the exact frontend-gate TS2379 exposed in the native selected-day schedule preview: generated `ScheduleTemplatePreviewItem.date` is optional, so `SelectedDayPanel.vue` now guarantees a defined Vue key with `item.date ?? `preview-${index}`` while keeping `exactOptionalPropertyTypes` unchanged. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+
+Historical v27.40.5 extension: the Calendar/Timeline strict-source contract was aligned with the native selected-day domain introduced in v27.40.4 by requiring `CalendarDaySection` and the typed `openDay` callback.
 
 Historical v27.40.4 extension: the live Calendar selected-day compatibility island was retired; `SelectedDayPanel.vue` owns the stable selected-day DOM while shift/marker writes still use the single existing offline `dataLayer` through a narrow adapter.
 

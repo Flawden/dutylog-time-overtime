@@ -1,3 +1,9 @@
+# v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix
+
+- Fixes exact `vue-tsc` TS2379 in `SelectedDayPanel.vue`: generated `ScheduleTemplatePreviewItem.date` is optional, so the preview row no longer passes `string | undefined` directly as a Vue `key` under `exactOptionalPropertyTypes`.
+- Uses the preview date when present and an index-based `preview-N` fallback only for schema-valid rows that omit the date; no `!`, cast, strictness relaxation, retry, timeout or runtime collector change is introduced.
+- Keeps the v27.40.4 native selected-day ownership and the v27.40.5 Maven source-contract alignment unchanged; OpenAPI 118/120, Flyway V47 and business/offline semantics are unchanged.
+
 # v27.40.5 — Selected-Day Strict Type Contract Alignment Hotfix
 
 - Aligns `VueCalendarTimelineStrictTypecheckHotfixTest` with the v27.40.4 native selected-day domain by requiring the explicit `CalendarDaySection` import instead of the retired two-type import literal.

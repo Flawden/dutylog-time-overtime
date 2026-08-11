@@ -1,7 +1,17 @@
 # Release checklist
 
-Status: v27.40.5.
+Status: v27.40.6.
 
+
+## v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix acceptance
+
+- [x] Preserve the v27.40.4 native selected-day UI owner and v27.40.5 strict-source contract alignment.
+- [x] Fix only the exact TS2379 preview-key failure by guaranteeing a defined Vue `key` for generated preview items with optional `date`.
+- [x] Keep `exactOptionalPropertyTypes`, OpenAPI 118/120, Flyway V47, retries/timeouts and offline ownership unchanged.
+- [ ] Run exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Run Maven 758/758.
+- [ ] Run Playwright canary and full 48/48 with 0 flaky.
+- [ ] Accept immutable staging image and PostgreSQL migration smoke.
 
 ## v27.40.5 — Selected-Day Strict Type Contract Alignment Hotfix acceptance
 

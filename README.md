@@ -1,3 +1,7 @@
+# DutyLog v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix
+
+The exact Node 20.18.1/npm 10.8.2 frontend gate for v27.40.5 exposed one strict-template error in `SelectedDayPanel.vue`: the generated schedule-preview schema allows `date?: string`, while Vue keys cannot receive `undefined` with `exactOptionalPropertyTypes`. v27.40.6 keeps the date key when available and provides a defined `preview-N` fallback when it is absent. Strict TypeScript, the v27.40.4 selected-day ownership cut, OpenAPI 118/120, Flyway V47 and the 153 / 758 / 48 / 52 acceptance surface remain unchanged.
+
 # DutyLog v27.40.5 — Selected-Day Strict Type Contract Alignment Hotfix
 
 v27.40.4 correctly introduced the explicit `CalendarDaySection` type into `CalendarTimelineWorkspace.vue`, but the historical v27.37.1 Maven source contract still required the older two-type import literal. v27.40.5 aligns that contract with the real native selected-day domain and adds an explicit `openDay(..., section?: CalendarDaySection | null)` assertion. Product behavior, strict TypeScript, OpenAPI 118/120, Flyway V47 and the 153 / 758 / 48 / 52 acceptance surface are unchanged.

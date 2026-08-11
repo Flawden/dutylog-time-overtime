@@ -1,13 +1,23 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.5 — Selected-Day Strict Type Contract Alignment Hotfix**.
+Current release: **v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix**.
 
 
 
 
 
 
-## v27.40.5 — Selected-Day Strict Type Contract Alignment Hotfix — current
+## v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix — current
+- [x] Start from the exact v27.40.5 tree and keep its source-contract alignment unchanged.
+- [x] Use the exact frontend-gate evidence: Node 20.18.1/npm 10.8.2 reaches `vue-tsc` and fails only with TS2379 at the schedule-preview row key in `SelectedDayPanel.vue`.
+- [x] Keep `exactOptionalPropertyTypes`; use `item.date` when present and a defined `preview-${index}` fallback when the generated optional date is absent.
+- [x] Do not add non-null assertions, casts, retries/timeouts, secondary offline ownership, OpenAPI/Flyway or business-rule changes.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 758/758.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.5 — Selected-Day Strict Type Contract Alignment Hotfix — predecessor hotfix
 - [x] Start from the exact v27.40.4 tree `37c6a0ba489a0a52c7c37b1f57b2f7c24c45de42`.
 - [x] Keep the native Vue selected-day ownership from v27.40.4 unchanged.
 - [x] Align the historical strict-source JUnit contract with the explicit `CalendarDaySection` import and typed `openDay` callback.
