@@ -19,6 +19,7 @@ class VueStrictOptionalTemplateContractHotfixTest {
         String tabs = read("frontend/src/shared/ui/UiTabs.vue");
         String vite = read("frontend/vite.config.ts");
         String tsconfig = read("frontend/tsconfig.json");
+        String diagnosticsSpec = read("frontend/src/platform/diagnostics/frontendDiagnostics.spec.ts");
 
         assertTrue(tsconfig.contains("\"exactOptionalPropertyTypes\": true"));
         assertTrue(navigation.contains(":aria-current=\"activeRoute === item.route ? 'page' : false\""));
@@ -29,6 +30,11 @@ class VueStrictOptionalTemplateContractHotfixTest {
         assertFalse(vite.contains("cssFileName:"));
         assertTrue(vite.contains("assetInfo.name === \"style.css\""));
         assertTrue(vite.contains("dutylog-vue-app-shell.css"));
+        assertTrue(vite.contains("import packageMetadata from \"./package.json\";"));
+        assertTrue(vite.contains("const releaseVersion = packageMetadata.version;"));
+        assertFalse(vite.contains("const releaseVersion = \"27."));
+        assertTrue(diagnosticsSpec.contains("import packageMetadata from \"../../../package.json\";"));
+        assertTrue(diagnosticsSpec.contains("expect(failure.releaseVersion).toBe(packageMetadata.version);"));
     }
 
     private static String read(String path) throws Exception {

@@ -1,3 +1,7 @@
+# DutyLog v27.39.3 — Frontend Diagnostics Release Version Source Hotfix
+
+The v27.39.0 Settings feature, v27.39.1 strict-TypeScript fixes and v27.39.2 Maven contract alignment remain unchanged. v27.39.3 removes the final duplicated frontend release literal exposed by the exact staging Vitest gate: Vite diagnostics now derive the release from the committed frontend package metadata instead of a hand-maintained string. Runtime/API/Flyway scope is unchanged; acceptance remains 48 Playwright / 52 Vitest / 758 JUnit / V47.
+
 # DutyLog v27.39.2 — Vue Settings Maven Contract Alignment Hotfix
 
 The v27.39.0 Settings feature and v27.39.1 strict-TypeScript runtime fixes remain unchanged. v27.39.2 is a source-contract-only follow-up to the local Maven gate: it updates two stale Java assertions to the already-current PWA predecessor fixture and Settings readiness publication form. Runtime/OpenAPI/Flyway scope is unchanged; acceptance remains 48 Playwright / 52 Vitest / 758 JUnit / V47.

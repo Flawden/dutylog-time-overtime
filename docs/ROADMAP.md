@@ -1,12 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.39.2 — Vue Settings Maven Contract Alignment Hotfix**.
+Current release: **v27.39.3 — Frontend Diagnostics Release Version Source Hotfix**.
 
 
 
 
 
-## v27.39.2 — Vue Settings Maven Contract Alignment Hotfix — current
+## v27.39.3 — Frontend Diagnostics Release Version Source Hotfix — current
+- [x] Use the exact v27.39.2 frontend gate failure: strict typecheck passes and only diagnostics release-version Vitest drifts.
+- [x] Make frontend package metadata the single release source for the Vite diagnostics define and its unit contract.
+- [x] Preserve Settings runtime, OpenAPI 118/120, Flyway V47 and strict browser/runtime policy unchanged.
+- [ ] Exact frontend, Maven 758/758, canary, clean 48/48 Chromium, image/PostgreSQL smoke and staging remain blocking acceptance gates.
+
+## v27.39.2 — Vue Settings Maven Contract Alignment Hotfix — predecessor
 - [x] Align the two stale Maven source contracts exposed after v27.39.1 fixed strict Vue typechecking.
 - [x] Keep runtime, API/OpenAPI, Flyway and browser behavior unchanged.
 - [ ] Exact frontend, Maven 758/758, canary, clean 48/48 Chromium, image/PostgreSQL smoke and staging remain blocking acceptance gates.

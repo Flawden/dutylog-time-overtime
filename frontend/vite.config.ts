@@ -1,8 +1,9 @@
 import { fileURLToPath, URL } from "node:url";
 import vue from "@vitejs/plugin-vue";
+import packageMetadata from "./package.json";
 import { defineConfig } from "vitest/config";
 
-const releaseVersion = "27.39.1";
+const releaseVersion = packageMetadata.version;
 const productionSourceMaps = process.env.DUTYLOG_FRONTEND_SOURCEMAPS === "true" ? "hidden" : false;
 
 export default defineConfig({

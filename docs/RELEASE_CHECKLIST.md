@@ -1,6 +1,18 @@
 # Release checklist
 
-Status: v27.39.2.
+Status: v27.39.3.
+
+
+## v27.39.3 — Frontend Diagnostics Release Version Source Hotfix acceptance
+
+- [x] Use the exact v27.39.2 staging frontend gate as source of truth: typecheck green, Vitest 51/52 with one release-version mismatch.
+- [x] Derive `__DUTYLOG_RELEASE_VERSION__` from `frontend/package.json`; no separately maintained release literal remains in Vite config.
+- [x] Derive the diagnostics unit-test expectation from the same package metadata and add static guards against hard-coded Vite version drift.
+- [x] Keep API/OpenAPI, backend business rules, Flyway, browser retries/timeouts and diagnostics semantics unchanged.
+- [ ] Exact frontend gate green: 52/52 Vitest plus production build/budget on Node 20.18.1/npm 10.8.2.
+- [ ] Maven verify 758/758 green on Java 17.
+- [ ] Canary green, Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image, PostgreSQL smoke and staging green.
 
 
 ## v27.39.2 — Vue Settings Maven Contract Alignment Hotfix acceptance

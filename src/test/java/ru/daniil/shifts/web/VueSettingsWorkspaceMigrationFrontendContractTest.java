@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Binding source contracts for v27.39.2 Vue Settings, Workspace & Integrations contract-alignment follow-up. */
+/** Binding source contracts for the v27.39.x Vue Settings, Workspace & Integrations migration. */
 class VueSettingsWorkspaceMigrationFrontendContractTest {
 
     private static final Path FEATURE = Path.of("frontend/src/features/settings-workspace");

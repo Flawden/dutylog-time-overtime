@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
+import packageMetadata from "../../../package.json";
 import {
   captureFrontendFailure,
   diagnosticsSnapshot,
@@ -26,7 +27,7 @@ describe("frontend diagnostics", () => {
       route: "vacation",
       requestId: `server-req-42${"x".repeat(83)}`,
     });
-    expect(failure.releaseVersion).toBe("27.39.2");
+    expect(failure.releaseVersion).toBe(packageMetadata.version);
     expect(diagnosticsSnapshot().lastRequest?.url).toBe("/api/v1/vacation-planner");
     expect(diagnosticsSnapshot().requestId).toHaveLength(96);
   });

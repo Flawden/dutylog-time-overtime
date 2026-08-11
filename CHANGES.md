@@ -1,3 +1,12 @@
+# v27.39.3 — Frontend Diagnostics Release Version Source Hotfix
+
+- Uses the exact v27.39.2 staging frontend gate as source of truth: strict `vue-tsc` passed, then Vitest ran 52 cases and failed only `frontendDiagnostics.spec.ts` because the diagnostics runtime still embedded `27.39.1` while the release contract expected `27.39.2`.
+- Removes the duplicated hard-coded frontend release literal from `vite.config.ts`; `__DUTYLOG_RELEASE_VERSION__` now derives from the canonical frontend `package.json` version used by the committed npm lockfile.
+- Makes the diagnostics Vitest assertion derive its expected release from the same package metadata, so future version bumps cannot leave the test and Vite define on different literals.
+- Adds release/static contracts that forbid reintroducing a hard-coded Vite release version while preserving strict TypeScript, OpenAPI, backend rules, Flyway, browser retries/timeouts and runtime diagnostics behavior.
+- Baseline remains 153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases / Flyway V47; OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`.
+- Acceptance still requires the exact frontend gate, Maven 758/758, canary, clean 48/48 Chromium with zero flaky retries, immutable image, PostgreSQL smoke and staging.
+
 # v27.39.2 — Vue Settings Maven Contract Alignment Hotfix
 
 - Uses the local v27.39.1 Maven `verify` failure as source of truth: 758 tests ran, 756 passed, and only two source/static contracts were stale after the Settings migration and strict-TypeScript hotfix.
