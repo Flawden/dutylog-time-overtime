@@ -1,3 +1,12 @@
+# v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix
+
+- Uses the complete v27.40.1 canary Playwright artifact as source of truth: the canary is the only executed browser scenario and fails on both attempts with strict runtime HTTP collection.
+- Classifies the alternating 500 as one shared-default seeding race introduced by the native Settings bootstrap: `listScheduleTemplates` and `listCalendarLayers` ran in one `Promise.all`, and both backend list paths can call `ScheduleTemplateService.ensureDefaults(user)`, so the first-user preset seed can collide on the unique `(user_id, name)` constraint. Settings now serializes the schedule-template read before the calendar-layer read, including later schedule refreshes.
+- Fixes the two deterministic 400 responses by passing the required `sourceTimezone` query parameter to generated `/api/v1/shifts/legacy-migration/preview` and `/api/v1/tasks/legacy-deadline-migration/preview` calls, using the authoritative profile/time-context timezone and preserving the selected timezone after migration.
+- Extends the existing Settings source contract only; no backend business rule, OpenAPI schema/operation, Flyway migration, browser retry/timeout or strict HTTP/runtime collector is weakened.
+- Baseline remains 153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases / Flyway V47; OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`.
+- Acceptance still requires exact frontend, Maven 758/758, clean canary, clean Chromium 48/48 with zero flaky retries, immutable image, PostgreSQL V47 smoke and staging.
+
 # v27.40.1 — Vue Settings Retirement Maven Contract Alignment Hotfix
 
 - Uses the first v27.40.0 staging run as the gate source of truth: exact frontend typecheck, 52 Vitest cases and production build complete before Maven fails.

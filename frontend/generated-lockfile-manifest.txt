@@ -1,10 +1,10 @@
-release=27.40.1
+release=27.40.2
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=2070bffdd278c84726ed0110a3ff9aff8d6eb870a93bba47808d7f060e1c23be
+committedLockfileSha256=ae44fcb2960286604c9100893d00c790bb811f90275fc166690343497d78a1c8
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=exact-vue-settings-retirement-maven-contract-alignment-acceptance-for-v27.40.1
+nextAction=exact-vue-settings-bootstrap-serialization-migration-preview-query-acceptance-for-v27.40.2

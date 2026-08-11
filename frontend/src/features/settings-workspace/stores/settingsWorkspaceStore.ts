@@ -121,14 +121,21 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
       await Promise.all(jobs);
     },
     async loadRetiredIslandData(api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
-      const [timeContext, shiftTypes, scheduleTemplates, calendarLayers] = await Promise.all([
-        api.timeContext(), api.shiftTypes(), api.scheduleTemplates(), api.calendarLayers(),
-      ]);
+      const [timeContext, shiftTypes] = await Promise.all([api.timeContext(), api.shiftTypes()]);
+      // Both list endpoints can lazily seed the same built-in schedule presets. The first
+      // Settings bootstrap must serialize those reads so two transactions cannot race the
+      // unique (owner, name) preset constraint. Later refreshes preserve the same boundary.
+      const scheduleTemplates = await api.scheduleTemplates();
+      const calendarLayers = await api.calendarLayers();
       this.timeContext = timeContext;
       this.shiftTypes = shiftTypes;
       this.scheduleTemplates = scheduleTemplates;
       this.calendarLayers = calendarLayers;
-      const migrations = await Promise.allSettled([api.legacyShiftPreview(), api.legacyTaskDeadlinePreview()]);
+      const sourceTimezone = this.profile?.workTimezone || timeContext?.workTimezone || "UTC";
+      const migrations = await Promise.allSettled([
+        api.legacyShiftPreview(sourceTimezone),
+        api.legacyTaskDeadlinePreview(sourceTimezone),
+      ]);
       this.legacyShiftPreview = migrations[0].status === "fulfilled" ? migrations[0].value : null;
       this.legacyTaskDeadlinePreview = migrations[1].status === "fulfilled" ? migrations[1].value : null;
     },
@@ -170,14 +177,14 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
       const ids = (this.legacyShiftPreview?.occurrences ?? []).map(item => item.dayEntryId).filter((id): id is number => typeof id === "number");
       if (!ids.length) return;
       await api.migrateLegacyShifts({ sourceTimezone, dayEntryIds: ids });
-      this.legacyShiftPreview = await api.legacyShiftPreview();
+      this.legacyShiftPreview = await api.legacyShiftPreview(sourceTimezone);
       await window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
     },
     async migrateLegacyTaskDeadlines(sourceTimezone: string, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
       const ids = (this.legacyTaskDeadlinePreview?.tasks ?? []).map(item => item.taskId).filter((id): id is number => typeof id === "number");
       if (!ids.length) return;
       await api.migrateLegacyTaskDeadlines({ sourceTimezone, taskIds: ids });
-      this.legacyTaskDeadlinePreview = await api.legacyTaskDeadlinePreview();
+      this.legacyTaskDeadlinePreview = await api.legacyTaskDeadlinePreview(sourceTimezone);
       await window.DutyLogVueDomains?.productivity?.refresh?.();
     },
     async saveNotificationSettings(body: DutyLogApiSchemas.NotificationSettingsUpdateRequest, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
@@ -204,7 +211,11 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
       this.notificationPreviewMode = "tomorrow";
     },
     async refreshScheduleData(api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
-      [this.scheduleTemplates, this.calendarLayers, this.shiftTypes] = await Promise.all([api.scheduleTemplates(), api.calendarLayers(), api.shiftTypes()]);
+      const scheduleTemplates = await api.scheduleTemplates();
+      const [calendarLayers, shiftTypes] = await Promise.all([api.calendarLayers(), api.shiftTypes()]);
+      this.scheduleTemplates = scheduleTemplates;
+      this.calendarLayers = calendarLayers;
+      this.shiftTypes = shiftTypes;
     },
     async saveScheduleTemplate(id: number | null, body: DutyLogApiSchemas.ScheduleTemplateInput, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
       this.scheduleMessage = this.language === "en" ? "Saving schedule…" : "сохраняю график…"; this.scheduleMessageOk = true;

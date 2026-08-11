@@ -1,7 +1,18 @@
 # Release checklist
 
-Status: v27.40.1.
+Status: v27.40.2.
 
+
+## v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix acceptance
+
+- [x] Classify the v27.40.1 canary artifact: one scenario, failed on both attempts, with one alternating 500 seed race and two deterministic 400 missing-query responses.
+- [x] Serialize the Schedule Templates / Calendar Layers first-user reads instead of allowing both list transactions to seed identical presets concurrently.
+- [x] Supply authoritative `sourceTimezone` to both generated migration-preview GETs and preserve it on post-migration refresh.
+- [x] Keep backend rules, OpenAPI 118/120, Flyway V47, browser retries/timeouts and strict HTTP/runtime collection unchanged.
+- [ ] Exact frontend gate must pass with 52/52 Vitest.
+- [ ] Maven Java 17 must pass 758/758.
+- [ ] Canary and full Chromium must pass 48/48 with zero flaky retries.
+- [ ] Immutable image, PostgreSQL V47 smoke and staging deployment must pass.
 
 ## v27.40.1 — Vue Settings Retirement Maven Contract Alignment Hotfix acceptance
 

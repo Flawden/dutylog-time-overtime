@@ -1,6 +1,6 @@
-# DutyLog API v27.40.1
+# DutyLog API v27.40.2
 
-`v27.40.1` changes no HTTP/OpenAPI or backend business contract. It moves the final Time, Schedule/Calendar Layers and Notifications Settings islands onto the already-generated `/api/v1/*` operations and removes their DOM compatibility bridge. OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`; Flyway remains V47.
+`v27.40.2` changes no HTTP/OpenAPI or backend business contract. It corrects native Vue Settings use of existing generated operations by supplying the already-required `sourceTimezone` query on the two legacy migration previews and serializing first-user schedule preset reads. OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`; Flyway remains V47.
 
 `v27.39.3` is a frontend diagnostics release-version source hotfix. It changes no HTTP/OpenAPI contract; the generated client remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47. The frontend build now derives its diagnostics release version from the committed frontend package metadata instead of a separate hard-coded Vite literal.
 

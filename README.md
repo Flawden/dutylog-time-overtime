@@ -1,6 +1,10 @@
+# DutyLog v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix
+
+v27.40.1 reaches the strict Playwright canary and fails only because the newly native Settings bootstrap creates one first-user schedule preset race and omits the required `sourceTimezone` query on two generated migration-preview GETs. v27.40.2 serializes the two shared-preset list reads and supplies the authoritative work timezone to both preview operations without weakening HTTP/runtime collection, retries, backend rules, OpenAPI 118/120, Flyway V47 or the 153 / 758 / 48 / 52 regression surface.
+
 # DutyLog v27.40.1 — Vue Settings Retirement Maven Contract Alignment Hotfix
 
-v27.40.0 reached the exact frontend gate successfully and then stopped in Maven. Reproducing the repository-only frontend/static contracts isolates one stale Java assertion: the Playwright Settings scenario correctly checks `expect(page.locator('#settingsLegacyHost')).toHaveCount(0)`, while the source contract still searched for the pre-wrapper string `page.locator(...).toHaveCount(0)`. v27.40.1 aligns that contract only; the Vue Settings retirement implementation, OpenAPI 118/120, Flyway V47, strict browser policy and 153 / 758 / 48 / 52 regression surface remain unchanged.
+v27.40.0 passed the exact frontend gate and then exposed one stale Maven source contract for the intentionally retired `#settingsLegacyHost`. v27.40.1 aligned that Java assertion only and carried the native Settings runtime forward unchanged into the browser canary.
 
 # DutyLog v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover
 

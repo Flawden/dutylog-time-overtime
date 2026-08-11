@@ -1,13 +1,21 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.1 — Vue Settings Retirement Maven Contract Alignment Hotfix**.
+Current release: **v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix**.
 
 
 
 
 
 
-## v27.40.1 — Vue Settings Retirement Maven Contract Alignment Hotfix — current
+## v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix — current
+- [x] Use the complete v27.40.1 canary artifact: one browser scenario executed and failed on both attempts under the strict runtime/HTTP collector.
+- [x] Serialize Schedule Templates before Calendar Layers so the two Settings reads cannot concurrently seed the same built-in presets on a fresh user.
+- [x] Pass required `sourceTimezone` on both generated legacy migration-preview GETs and reuse the selected timezone after migration.
+- [x] Keep backend business rules, OpenAPI 118/120, Flyway V47, retries/timeouts and runtime collectors unchanged.
+- [ ] Exact frontend, Maven 758/758, clean canary, Chromium 48/48 with zero flaky retries, immutable image, PostgreSQL V47 smoke and staging remain blocking acceptance gates.
+- [ ] Continue selected-day/router/modal/offline/Payroll/Admin retirement only from a green v27.40.x tree.
+
+## v27.40.1 — Vue Settings Retirement Maven Contract Alignment Hotfix — predecessor
 - [x] Preserve the v27.40.0 Settings native-island cutover unchanged.
 - [x] Fix the stale Maven source assertion for the retired `#settingsLegacyHost` Playwright contract; do not resurrect legacy DOM.
 - [x] Keep frontend strictness, OpenAPI 118/120, Flyway V47 and browser failure policy unchanged.

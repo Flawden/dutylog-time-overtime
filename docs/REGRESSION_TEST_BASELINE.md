@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.40.1.
+Status: v27.40.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.1 is a source-contract-only follow-up to the first v27.40.0 staging Maven failure. The frontend gate is already green; the only reproduced static contract failure was a stale Java string assertion that omitted Playwright's outer `expect(...)` wrapper around the intentionally retired `#settingsLegacyHost` count check. Runtime, API/OpenAPI, Flyway, retries/timeouts and the acceptance surface remain **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+Current extension: v27.40.2 is a browser-canary follow-up to v27.40.1. The only executed Playwright scenario failed on both attempts because native Settings bootstrapped schedule templates and calendar layers concurrently even though both list paths may lazily seed the same built-in presets, while two generated migration-preview GETs omitted their required `sourceTimezone` query. The fix serializes shared-default reads and passes the authoritative timezone; the acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
 
 `v27.39.0` introduced one Vue Settings ownership Chromium scenario, three Settings/Workspace model Vitest cases and six source/architecture JUnit contracts, reaching 757 `@Test` methods. `v27.39.1` adds one narrow strict-template regression method, so the JUnit baseline is now 758 without changing the 153-class / 48-Playwright / 52-Vitest surface.
 

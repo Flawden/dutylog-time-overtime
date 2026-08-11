@@ -50,8 +50,19 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         assertTrue(api.contains("client.request(\"getNotificationSettings\""));
         assertTrue(api.contains("client.request(\"listScheduleTemplates\""));
         assertTrue(api.contains("client.request(\"listCalendarLayers\""));
+        assertTrue(api.contains("legacyShiftPreview(sourceTimezone: string)"));
+        assertTrue(api.contains("previewLegacyShiftMigration\", { query: { sourceTimezone } }"));
+        assertTrue(api.contains("legacyTaskDeadlinePreview(sourceTimezone: string)"));
+        assertTrue(api.contains("previewLegacyTaskDeadlineMigration\", { query: { sourceTimezone } }"));
         assertTrue(generated.contains("\"updateModules\": { method: \"PATCH\", path: \"/api/v1/modules\" }"));
         assertTrue(generated.contains("\"rotateCalendarSubscription\": { method: \"POST\", path: \"/api/v1/calendar-sync/subscription\" }"));
+        String store = read(FEATURE.resolve("stores/settingsWorkspaceStore.ts"));
+        assertTrue(store.contains("const scheduleTemplates = await api.scheduleTemplates();"));
+        assertTrue(store.contains("const calendarLayers = await api.calendarLayers();"));
+        assertFalse(store.contains("api.timeContext(), api.shiftTypes(), api.scheduleTemplates(), api.calendarLayers()"));
+        assertTrue(store.contains("const sourceTimezone = this.profile?.workTimezone || timeContext?.workTimezone || \"UTC\""));
+        assertTrue(store.contains("api.legacyShiftPreview(sourceTimezone)"));
+        assertTrue(store.contains("api.legacyTaskDeadlinePreview(sourceTimezone)"));
         assertFalse(source.contains("jfetch("));
         assertFalse(source.contains("fetch("));
     }
