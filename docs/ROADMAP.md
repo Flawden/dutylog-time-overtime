@@ -1,12 +1,20 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.39.3 — Frontend Diagnostics Release Version Source Hotfix**.
+Current release: **v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix**.
 
 
 
 
 
-## v27.39.3 — Frontend Diagnostics Release Version Source Hotfix — current
+## v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix — current
+- [x] Use the complete v27.39.3 Playwright report: 48 scenarios, 31 passed / 17 failed, with screenshots/traces for every failure.
+- [x] Treat the 16 Settings-dependent failures as one stale E2E ownership selector: the legacy `#view-settings` is intentionally retired while `[data-vue-settings-workspace-view]` is visibly mounted.
+- [x] Route `openView(page, 'settings')` to the Vue Settings owner and wait for `data-vue-settings-workspace=ready`; do not restore the retired legacy container.
+- [x] Correlate the partial-time-off preview response to the exact 09:00–13:00 `PARTIAL` / `OVERTIME_BANK` request so an earlier auto-preview cannot satisfy the explicit-button wait.
+- [x] Keep the 240-minute business assertion, strict runtime/HTTP collection, retries/timeouts, OpenAPI 118/120 and Flyway V47 unchanged.
+- [ ] Exact frontend, Maven 758/758, canary, clean 48/48 Chromium with zero flaky retries, image/PostgreSQL smoke and staging remain blocking acceptance gates.
+
+## v27.39.3 — Frontend Diagnostics Release Version Source Hotfix — predecessor
 - [x] Use the exact v27.39.2 frontend gate failure: strict typecheck passes and only diagnostics release-version Vitest drifts.
 - [x] Make frontend package metadata the single release source for the Vite diagnostics define and its unit contract.
 - [x] Preserve Settings runtime, OpenAPI 118/120, Flyway V47 and strict browser/runtime policy unchanged.

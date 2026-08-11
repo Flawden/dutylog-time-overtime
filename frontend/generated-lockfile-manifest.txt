@@ -1,10 +1,10 @@
-release=27.39.3
+release=27.39.4
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=46cc0c269e42a59c3f340f42ae4fde8c8f67948cb4e36b83ef948e866d6e6e7a
+committedLockfileSha256=e720ff9d03d9ba80bcd0a0c8a004c4bdcdfb4c554c8ee6d957a093b804376690
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=exact-frontend-diagnostics-release-version-acceptance-for-v27.39.3
+nextAction=exact-settings-browser-ownership-preview-correlation-acceptance-for-v27.39.4

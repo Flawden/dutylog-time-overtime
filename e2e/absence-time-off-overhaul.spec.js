@@ -40,8 +40,19 @@ test('partial time off keeps the planned shift and spends the unified overtime b
   await page.locator('#vacationStartTime').fill('09:00');
   await page.locator('#vacationEndTime').fill('13:00');
 
-  const previewResponse = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/vacation-planner/preview'
-    && response.request().method() === 'POST' && response.status() === 200);
+  const previewResponse = page.waitForResponse(response => {
+    if (new URL(response.url()).pathname !== '/api/v1/vacation-planner/preview'
+      || response.request().method() !== 'POST' || response.status() !== 200) return false;
+    try {
+      const request = response.request().postDataJSON();
+      return request.coverage === 'PARTIAL'
+        && request.startTime === '09:00'
+        && request.endTime === '13:00'
+        && request.compensationPolicy === 'OVERTIME_BANK';
+    } catch (_) {
+      return false;
+    }
+  });
   await page.locator('#vacationPreviewBtn').click();
   const preview = await (await previewResponse).json();
   expect(preview.coverage).toBe('PARTIAL');

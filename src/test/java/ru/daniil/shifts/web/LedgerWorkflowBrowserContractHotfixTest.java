@@ -43,6 +43,8 @@ class LedgerWorkflowBrowserContractHotfixTest {
         assertFalse(timezone.contains("2026-07-03"));
         assertTrue(timezone.contains("sourceDisplay:`03.${month}`"));
         assertTrue(absences.contains("#vacationStatus').selectOption('APPROVED')"));
+        assertTrue(absences.contains("response.request().postDataJSON()"));
+        assertTrue(absences.contains("request.endTime === '13:00'"));
         assertTrue(unified.contains("#vacationStatus').selectOption('APPROVED')"));
         assertTrue(shell.contains("waitForAppIdle(page)"));
         assertTrue(overtimeNext.contains("openView(page, 'overtime')"));

@@ -1,3 +1,7 @@
+# DutyLog v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix
+
+The v27.39.0 Settings migration and v27.39.1–v27.39.3 compile/contract/version fixes remain intact. v27.39.4 consumes the complete 189 MB Playwright artifact: sixteen failures are one stale E2E selector for the intentionally retired `#view-settings`, while the only independent failure is an absence-preview response race. Browser helpers now target the Vue Settings owner, and the time-off scenario waits for the exact 09:00–13:00 preview request without weakening the 240-minute assertion. Runtime/API/Flyway scope is unchanged; acceptance remains 48 Playwright / 52 Vitest / 758 JUnit / V47.
+
 # DutyLog v27.39.3 — Frontend Diagnostics Release Version Source Hotfix
 
 The v27.39.0 Settings feature, v27.39.1 strict-TypeScript fixes and v27.39.2 Maven contract alignment remain unchanged. v27.39.3 removes the final duplicated frontend release literal exposed by the exact staging Vitest gate: Vite diagnostics now derive the release from the committed frontend package metadata instead of a hand-maintained string. Runtime/API/Flyway scope is unchanged; acceptance remains 48 Playwright / 52 Vitest / 758 JUnit / V47.

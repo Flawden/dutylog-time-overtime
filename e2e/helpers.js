@@ -122,11 +122,21 @@ async function navigateWithShell(page, view) {
   }, view);
 }
 
+async function waitForSettingsWorkspaceReady(page) {
+  await waitForVueShell(page);
+  await expect.poll(() => page.evaluate(() => document.documentElement.dataset.vueSettingsWorkspace === 'ready'), { timeout:30_000 }).toBe(true);
+  await expect(page.locator('[data-vue-settings-workspace-view]')).toBeVisible();
+}
+
 async function openView(page, view) {
-  const vueOwned = ['today', 'calendar', 'vacation', 'overtime'].includes(view);
-  const section = vueOwned
-    ? page.locator(`[data-vue-domain-route="${view}"]`)
-    : page.locator(`#view-${view}`);
+  const vueOwnedSelector = {
+    today: '[data-vue-domain-route="today"]',
+    calendar: '[data-vue-domain-route="calendar"]',
+    vacation: '[data-vue-domain-route="vacation"]',
+    overtime: '[data-vue-domain-route="overtime"]',
+    settings: '[data-vue-settings-workspace-view]',
+  }[view];
+  const section = page.locator(vueOwnedSelector || `#view-${view}`);
   if (!(await section.isVisible())) {
     await navigateWithShell(page, view);
     await expect(section).toBeVisible();
@@ -134,6 +144,7 @@ async function openView(page, view) {
   if (view === 'today' || view === 'calendar') await waitForCalendarTimelineReady(page, view);
   if (view === 'vacation') await waitForVacationReady(page);
   if (view === 'overtime') await waitForLedgerReady(page);
+  if (view === 'settings') await waitForSettingsWorkspaceReady(page);
   if (view === 'payroll') await waitForPayrollReady(page);
   return section;
 }

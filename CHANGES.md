@@ -1,3 +1,12 @@
+# v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix
+
+- Uses the complete v27.39.3 Playwright artifact as source of truth: 48 scenarios ran, 31 passed and 17 failed; 16 failures share the same retired `#view-settings` selector and one partial-time-off assertion captured an earlier auto-preview response.
+- Updates the shared E2E `openView()` ownership map so Settings targets `[data-vue-settings-workspace-view]` and waits for the Vue Settings readiness marker instead of waiting for the intentionally removed legacy container.
+- Makes the partial-time-off preview wait correlate by request payload (`PARTIAL`, `09:00`–`13:00`, `OVERTIME_BANK`) so the strict 240-minute assertion cannot accidentally consume a stale 09:00–18:00 background preview.
+- Adds static source contracts for both browser invariants without changing application runtime behavior, backend rules, OpenAPI, PostgreSQL/Flyway, browser retries/timeouts or runtime-error allowlists.
+- Baseline remains 153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases / Flyway V47; OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`.
+- Acceptance still requires exact frontend, Maven 758/758, canary, clean 48/48 Chromium with zero flaky retries, immutable image, PostgreSQL smoke and staging.
+
 # v27.39.3 — Frontend Diagnostics Release Version Source Hotfix
 
 - Uses the exact v27.39.2 staging frontend gate as source of truth: strict `vue-tsc` passed, then Vitest ran 52 cases and failed only `frontendDiagnostics.spec.ts` because the diagnostics runtime still embedded `27.39.1` while the release contract expected `27.39.2`.

@@ -25,7 +25,7 @@ test('Vue app shell owns navigation chrome while legacy product screens retain b
 
   const diagnostics = await page.evaluate(() => window.DutyLogVuePlatform?.snapshot());
   expect(diagnostics).toMatchObject({
-    releaseVersion: '27.39.3',
+    releaseVersion: '27.39.4',
     architecture: 'vue-shell-v1',
     phase: 'ready',
     legacyConnected: true,

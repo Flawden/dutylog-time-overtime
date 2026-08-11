@@ -1,7 +1,18 @@
 # Release checklist
 
-Status: v27.39.3.
+Status: v27.39.4.
 
+
+## v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix acceptance
+
+- [x] Classify the complete v27.39.3 Playwright artifact as 31/48 with 17 failures, not 17 unrelated product bugs.
+- [x] Bind all Settings navigation helpers to the Vue-owned `[data-vue-settings-workspace-view]` and explicit readiness attribute; never resurrect retired `#view-settings`.
+- [x] Bind the partial-time-off response wait to the exact `PARTIAL` 09:00–13:00 `OVERTIME_BANK` request while preserving `durationMinutes === 240` and remaining-bank assertions.
+- [x] Keep browser retries/timeouts, strict console/pageerror/HTTP collection, backend business authority, API/OpenAPI and Flyway unchanged.
+- [ ] Exact frontend gate green: 52/52 Vitest plus production build/budget on Node 20.18.1/npm 10.8.2.
+- [ ] Maven verify 758/758 green on Java 17.
+- [ ] Canary green, Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image, PostgreSQL smoke and staging green.
 
 ## v27.39.3 — Frontend Diagnostics Release Version Source Hotfix acceptance
 
