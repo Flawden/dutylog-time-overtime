@@ -165,6 +165,7 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
     @Test
     void offlineReconnectUsesExistingDataLayerQueueAndCachedSelectedDayWithoutInventingASecondStore() throws Exception {
         String bridge = read("src/main/resources/static/js/10-core.js");
+        String data = read("src/main/resources/static/js/20-data.js");
         String workspace = read(FEATURE.resolve("components/ProductivityWorkspace.vue"));
         String notes = read(FEATURE.resolve("components/SelectedDayNotes.vue"));
 
@@ -173,8 +174,11 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(bridge.contains("dataLayer.captureInbox"));
         assertTrue(bridge.contains("dataLayer.syncQueue"));
         assertTrue(bridge.contains("dataLayer.readSnapshot"));
-        assertTrue(workspace.contains("window.addEventListener(\"online\", reconnect)"));
-        assertTrue(workspace.contains("store.flushOfflineQueue()"));
+        assertTrue(data.contains("dutylog:offline-sync-complete"));
+        assertTrue(workspace.contains("OFFLINE_SYNC_COMPLETE_EVENT"));
+        assertTrue(workspace.contains("window.addEventListener(OFFLINE_SYNC_COMPLETE_EVENT, handleOfflineSyncComplete)"));
+        assertFalse(workspace.contains("window.addEventListener(\"online\", reconnect)"));
+        assertFalse(workspace.contains("store.flushOfflineQueue()"));
         assertTrue(notes.contains(":disabled=\"!shell.online\""));
     }
 

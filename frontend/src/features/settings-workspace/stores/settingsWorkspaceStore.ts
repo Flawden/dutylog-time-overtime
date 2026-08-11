@@ -50,6 +50,18 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
       const item = this.modules.find(module => module.key === key);
       return item ? item.enabled : false;
     },
+    synchronizeModuleEnabledMap(enabled: Readonly<Record<string, boolean>>): void {
+      if (!this.modules.length) return;
+      let changed = false;
+      const next = this.modules.map(module => {
+        if (!Object.prototype.hasOwnProperty.call(enabled, module.key)) return module;
+        const authoritative = enabled[module.key] === true;
+        if (module.enabled === authoritative) return module;
+        changed = true;
+        return { ...module, enabled: authoritative };
+      });
+      if (changed) this.modules = next;
+    },
     async bootstrap(bridge: LegacyBridge, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
       if (this.loading) return;
       this.loading = true;

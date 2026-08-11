@@ -51,6 +51,7 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
     @Test
     void moduleToggleKeepsDisableBeforePatchAndEnableAfterBackendAuthority() throws Exception {
         String store = read(FEATURE.resolve("stores/settingsWorkspaceStore.ts"));
+        String workspace = read(FEATURE.resolve("components/SettingsWorkspace.vue"));
         String bridge = read("src/main/resources/static/js/10-core.js");
 
         int disablePreview = store.indexOf("if (!enabled)");
@@ -59,6 +60,10 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         assertTrue(disablePreview >= 0 && update > disablePreview && commit > update);
         assertTrue(store.contains("bridge.previewModuleEnabled(key, false)"));
         assertTrue(store.contains("bridge.restoreModuleList"));
+        assertTrue(store.contains("synchronizeModuleEnabledMap(enabled: Readonly<Record<string, boolean>>"));
+        assertTrue(workspace.contains("modules: shellModules"));
+        assertTrue(workspace.contains("settings.synchronizeModuleEnabledMap(shellModules.value)"));
+        assertTrue(workspace.contains("watch(shellModules"));
         assertTrue(bridge.contains("await loadMonth({ fresh:true })"));
         assertTrue(bridge.contains("await refreshModuleAwareData"));
     }

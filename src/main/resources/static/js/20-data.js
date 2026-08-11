@@ -1359,6 +1359,12 @@ const dataLayer = {
       await this.refreshQueueState();
       updateOfflineStatus();
       if (document.body.classList.contains("syncDialogOpen")) renderOfflineSyncDialog();
+      // dataLayer is the single reconnect queue owner. Vue domains listen only
+      // for this completion signal so a browser `online` event cannot submit
+      // the same queued mutation through two competing reconnect triggers.
+      window.dispatchEvent(new CustomEvent("dutylog:offline-sync-complete", {
+        detail:{ pending:Number(state.offline.pending || 0), failed:Number(state.offline.failed?.length || 0) }
+      }));
     }
   },};
 

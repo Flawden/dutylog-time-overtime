@@ -1,6 +1,6 @@
-# DutyLog v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix
+# DutyLog v27.39.6 — Module Runtime Synchronization & Offline Reconnect Ownership Hotfix
 
-v27.39.5 consumes the complete v27.39.4 Playwright report: 42/48 scenarios passed and the six failures reduce to three concrete ownership/contract defects. Four Task cases were an idempotent-helper wait on an already-enabled module, the Settings shell let a legacy visibility bridge overwrite Vue's persisted open section, and Workspace Studio re-enabled a hidden Today card while moving another card. The hotfix fixes those causes without weakening browser policy; acceptance remains 48 Playwright / 52 Vitest / 758 JUnit / V47.
+v27.39.6 consumes the complete v27.39.5 Playwright report: 44/48 scenarios pass and all four final failures share one stale module-enablement split between Vue Settings and the authoritative shell/backend state after onboarding. The same artifact contains one retry-only PWA offline failure where reconnect submits the identical queued note PATCH twice. This hotfix synchronizes Settings from the live shell module map and restores the existing legacy dataLayer as the single reconnect queue owner, with Vue refreshing after a completion event. Browser policy remains strict; acceptance is still 48/48 with zero flaky retries, 52 Vitest, 758 JUnit and Flyway V47.
 
 # DutyLog v27.39.4 — Vue Settings Browser Ownership & Preview Correlation Hotfix
 

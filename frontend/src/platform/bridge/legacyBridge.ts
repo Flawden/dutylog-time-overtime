@@ -3,6 +3,7 @@ export const LEGACY_COMMAND_EVENT = "dutylog:legacy-command";
 export const LEGACY_STATE_EVENT = "dutylog:legacy-state";
 export const ABSENCE_TIME_BANK_PROJECTION_EVENT = "dutylog:absence-time-bank-projection";
 export const CALENDAR_TIMELINE_PROJECTION_EVENT = "dutylog:calendar-timeline-projection";
+export const OFFLINE_SYNC_COMPLETE_EVENT = "dutylog:offline-sync-complete";
 
 export interface AbsenceTimeBankProjectionSnapshot {
   planner: unknown;

@@ -1,13 +1,21 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix**.
+Current release: **v27.39.6 — Module Runtime Synchronization & Offline Reconnect Ownership Hotfix**.
 
 
 
 
 
 
-## v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix — current
+## v27.39.6 — Module Runtime Synchronization & Offline Reconnect Ownership Hotfix — current
+- [x] Use the complete v27.39.5 Playwright report: 48 scenarios, 44 passed / 4 failed, plus one first-attempt `pwa-offline` flaky that passed retry.
+- [x] Treat all four final Task failures as one real Settings/runtime synchronization defect: a pre-onboarding Vue module catalog must not stay checked after the authoritative shell/backend preset disables Tasks.
+- [x] Merge shell module enablement into Vue Settings after bootstrap and on subsequent legacy-state publications without replacing module catalog metadata.
+- [x] Keep the existing legacy `dataLayer` as the single reconnect queue owner; Vue Productivity refreshes only after `dutylog:offline-sync-complete` instead of issuing a second online flush.
+- [x] Keep retries, timeouts, HTTP/runtime collectors, backend rules, OpenAPI 118/120 and Flyway V47 unchanged.
+- [ ] Exact frontend, Maven 758/758, canary, clean 48/48 Chromium with zero flaky retries, image/PostgreSQL smoke and staging remain blocking acceptance gates.
+
+## v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix — predecessor
 - [x] Use the complete v27.39.4 Playwright report: 48 scenarios, 42 passed / 6 failed, zero skipped.
 - [x] Treat four Task failures as one idempotency bug in the shared module helper: an already-enabled checkbox must not wait for a PATCH that a no-op `check()` cannot emit.
 - [x] Keep Vue Settings as the sole owner of `dutylog.settings.openSection`; hiding parked legacy compatibility cards must not overwrite `appearance` with `none`.

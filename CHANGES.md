@@ -1,3 +1,13 @@
+# v27.39.6 — Module Runtime Synchronization & Offline Reconnect Ownership Hotfix
+
+- Uses the complete v27.39.5 Playwright artifact as source of truth: 48 scenarios ran, 44 passed and 4 failed; the four final failures are all Task-module journeys. One additional `pwa-offline` first attempt is flaky even though its retry passes, so acceptance is still blocked.
+- Fixes the Task failures at the product boundary rather than weakening the idempotent E2E helper: Vue Settings can bootstrap module metadata before first-run onboarding commits the selected preset, so it now merges the live shell/legacy module map after bootstrap and on every later module-state publication.
+- Keeps the shell/runtime module map authoritative for current enablement while preserving the generated module catalog metadata used by Settings. An onboarding `tasks=false` can no longer leave a stale checked Tasks card that makes an idempotent helper return while `#view-tasks` remains hidden.
+- Removes the redundant Vue Productivity `online` queue flush. The existing legacy `dataLayer` remains the single offline queue/reconnect owner and publishes `dutylog:offline-sync-complete`; Vue refreshes its read model only after that signal. This addresses the flaky trace where reconnect submitted the same queued note PATCH twice, producing one 200 and one concurrent 500 and leaving the queue pending.
+- Extends existing JUnit source contracts only; no backend business rule, OpenAPI operation/schema, Flyway migration, browser retry/timeout, HTTP/runtime collector or E2E business assertion is weakened.
+- Baseline remains 153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases / Flyway V47; OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`.
+- Acceptance still requires exact frontend, Maven 758/758, canary, clean 48/48 Chromium with zero flaky retries, immutable image, PostgreSQL smoke and staging.
+
 # v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix
 
 - Uses the complete v27.39.4 Playwright artifact as source of truth: 48 scenarios ran, 42 passed and 6 failed.

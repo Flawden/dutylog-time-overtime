@@ -1,6 +1,18 @@
 # Release checklist
 
-Status: v27.39.5.
+Status: v27.39.6.
+
+
+## v27.39.6 — Module Runtime Synchronization & Offline Reconnect Ownership Hotfix acceptance
+
+- [x] Classify the complete v27.39.5 browser artifact as 44/48 final with four Task-module failures plus one retry-only PWA offline flaky.
+- [x] Synchronize Vue Settings module enablement from the authoritative shell snapshot after onboarding/external module changes; do not make the idempotent E2E helper force unnecessary PATCHes.
+- [x] Preserve the legacy `dataLayer` as the sole offline queue/reconnect owner and publish one completion event for Vue Productivity refresh.
+- [x] Keep strict business assertions, browser retries/timeouts, HTTP/runtime collection, backend rules, OpenAPI and Flyway unchanged.
+- [ ] Exact frontend gate.
+- [ ] Maven 758/758.
+- [ ] Canary and Chromium 48/48, zero flaky retries.
+- [ ] Immutable image, PostgreSQL smoke and staging deploy.
 
 
 ## v27.39.5 — Vue Settings State Ownership Browser Parity Hotfix acceptance

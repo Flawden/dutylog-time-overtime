@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeMount, onBeforeUnmount, onMounted, watch } from "vue";
 import { storeToRefs } from "pinia";
-import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
+import { OFFLINE_SYNC_COMPLETE_EVENT, type LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
 import { useCalendarTimelineStore } from "@/features/calendar-timeline/stores/calendarTimelineStore";
 import { installProductivityBridge, useProductivityStore } from "../stores/productivityStore";
@@ -95,14 +95,19 @@ async function synchronizeProductivity(): Promise<void> {
   await store.refreshAll(focusDate.value);
 }
 
-async function reconnect(): Promise<void> {
+async function refreshAfterOfflineSync(): Promise<void> {
   if (!navigator.onLine) return;
-  try { await store.flushOfflineQueue(); } catch { /* the queue owns retry/backoff diagnostics */ }
+  // The legacy dataLayer is the single queue/sync owner during migration.
+  // Refresh Vue only after that owner publishes completion; do not start a
+  // second reconnect flush from ProductivityWorkspace.
+  store.synchronizeQueuedCount();
+  try { await store.refreshAll(focusDate.value); } catch { /* queue diagnostics remain authoritative */ }
 }
+function handleOfflineSyncComplete(): void { void refreshAfterOfflineSync(); }
 
 onMounted(() => {
   void synchronizeProductivity();
-  window.addEventListener("online", reconnect);
+  window.addEventListener(OFFLINE_SYNC_COMPLETE_EVENT, handleOfflineSyncComplete);
 });
 
 watch(activeRoute, route => { void synchronizeRoute(route); });
@@ -110,7 +115,7 @@ watch(focusDate, date => { void synchronizeSelectedDate(date); });
 watch([modulesLoaded, onboardingCompleted, modules], () => { void synchronizeProductivity(); }, { deep: true });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("online", reconnect);
+  window.removeEventListener(OFFLINE_SYNC_COMPLETE_EVENT, handleOfflineSyncComplete);
   restoreBridge?.();
   if (previousDomain) window.DutyLogVueDomains = Object.freeze({ ...(window.DutyLogVueDomains ?? {}), productivity: previousDomain });
   else if (window.DutyLogVueDomains) { const { productivity: _removed, ...rest } = window.DutyLogVueDomains; window.DutyLogVueDomains = Object.freeze(rest); }

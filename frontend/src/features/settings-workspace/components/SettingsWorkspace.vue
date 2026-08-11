@@ -10,7 +10,7 @@ import AppearanceSettingsCard from "./AppearanceSettingsCard.vue";
 const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
 const settings = useSettingsWorkspaceStore();
-const { activeRoute, rawRoute } = storeToRefs(shell);
+const { activeRoute, rawRoute, modules: shellModules } = storeToRefs(shell);
 const { profile, sessions, modules, calendarSync, telegram } = storeToRefs(settings);
 
 type Section = "profile" | "language" | "modules" | "calendar-sync" | "appearance" | "time" | "schedule" | "notifications";
@@ -107,12 +107,17 @@ onMounted(async () => {
   const now = new Date(); const from = new Date(now); from.setDate(from.getDate() - 30); const to = new Date(now); to.setDate(to.getDate() + 335); exportFrom.value = isoDay(from); exportTo.value = isoDay(to);
   await nextTick(); props.bridge.attachSettingsLegacy("settingsLegacyHost");
   try { await settings.bootstrap(props.bridge); } catch (_) {}
+  // Settings metadata may bootstrap before first-run onboarding commits its
+  // module preset. The shell snapshot is the current runtime authority, so
+  // merge its enabled flags after bootstrap and on every later module event.
+  settings.synchronizeModuleEnabledMap(shellModules.value);
   displayName.value = profile.value?.displayName ?? ""; birthday.value = profile.value?.birthday ?? "";
   const route = sectionFromRoute(rawRoute.value);
   const saved = (() => { try { return localStorage.getItem("dutylog.settings.openSection"); } catch (_) { return null; } })();
   if (route) open(route, false); else if (saved === "all") expandAll(); else if (saved === "none") collapseAll(); else if (saved && SECTIONS.includes(saved as Section)) open(saved as Section, false); else open("profile", false);
 });
 watch(profile, value => { if (!value) return; displayName.value = value.displayName ?? ""; birthday.value = value.birthday ?? ""; });
+watch(shellModules, value => { settings.synchronizeModuleEnabledMap(value); }, { deep: true });
 watch(rawRoute, route => { const section = sectionFromRoute(route); if (section) open(section, false); });
 watch([calendarEnabled, notificationsEnabled], () => { if (!isSectionVisible(activeSection.value)) open("modules"); });
 </script>
