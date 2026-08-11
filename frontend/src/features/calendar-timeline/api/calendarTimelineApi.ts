@@ -1,4 +1,5 @@
 import { createGeneratedDutyLogApiClient } from "@/platform/api/generatedClient";
+import type { DutyLogApiSchemas } from "@/generated/dutylog-api";
 import type { CalendarMode, CalendarRangeBundle } from "../types/domain";
 import { calendarLoadRange, normalizeCalendarBundle, todayIso, validDate } from "../types/model";
 
@@ -20,6 +21,15 @@ export const calendarTimelineApi = Object.freeze({
   },
   async setLayerVisibility(id: number, visible: boolean): Promise<void> {
     await client.request("updateCalendarLayer", { path: { id }, body: { visible } });
+  },
+  async listScheduleTemplates(): Promise<DutyLogApiSchemas.ScheduleTemplate[]> {
+    return (await client.request("listScheduleTemplates")) ?? [];
+  },
+  async previewScheduleTemplate(id: number, body: DutyLogApiSchemas.ScheduleTemplateApplyRequest): Promise<DutyLogApiSchemas.ScheduleTemplatePreview> {
+    return (await client.request("previewScheduleTemplate", { path: { id }, body })) ?? {};
+  },
+  async applyScheduleTemplate(id: number, body: DutyLogApiSchemas.ScheduleTemplateApplyRequest): Promise<DutyLogApiSchemas.ScheduleTemplateApplyResult> {
+    return (await client.request("applyScheduleTemplate", { path: { id }, body })) ?? {};
   },
 });
 

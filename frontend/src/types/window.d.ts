@@ -38,11 +38,8 @@ declare global {
     previewModuleEnabled?(key: string, enabled: boolean): void;
     commitModuleList?(modules: readonly Record<string, unknown>[]): Promise<void>;
     restoreModuleList?(modules: readonly Record<string, unknown>[]): void;
-    attachCalendarEditor?(hostId: string): void;
-    parkCalendarEditor?(): void;
-    openCalendarDay?(date: string): void;
-    openCalendarSection?(section: "tasks" | "notes" | "important"): void;
-    closeCalendarDay?(): void;
+    writeCalendarDay?(date: string, patch: Record<string, unknown>): Promise<{ queued: boolean; day: unknown | null }>;
+    openShiftTypeManager?(): void;
     openTaskCreate?(date: string): void;
     openTaskDetails?(id: number): void;
     openQuickActions?(date: string): void;

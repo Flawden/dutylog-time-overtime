@@ -1,7 +1,7 @@
 const { test, expect } = require('./fixtures');
 const { registerAndOnboard, openView } = require('./helpers');
 
-test('Vue owns Today, Month, Week and Day while the selected-day editor remains compatible', async ({ page }) => {
+test('Vue owns Today, Month, Week, Day and the selected-day editor', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'vue-calendar' });
 
   await expect(page.locator('[data-vue-domain-route="today"][data-vue-domain-owner="calendar-timeline"]')).toBeVisible();
@@ -27,8 +27,10 @@ test('Vue owns Today, Month, Week and Day while the selected-day editor remains 
 
   await page.locator('#calendarDayOpenDetails').click();
   await expect(page.locator('[data-calendar-mode="month"]')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('#calendarLegacyPanelHost > #panel')).toBeVisible();
-  await expect(page.locator('#calendarLegacyPanelHost > #panel')).toHaveCount(1);
+  await expect(page.locator('#panel[data-vue-selected-day-panel]')).toBeVisible();
+  await expect(page.locator('#panel[data-vue-selected-day-panel]')).toHaveCount(1);
+  await expect(page.locator('#calendarLegacyPanelHost')).toHaveCount(0);
+  await expect(page.locator('#accShift')).toBeVisible();
 
   const snapshot = await page.evaluate(() => window.DutyLogVueDomains?.calendarTimeline?.snapshot());
   expect(snapshot).toMatchObject({ mode: 'month' });

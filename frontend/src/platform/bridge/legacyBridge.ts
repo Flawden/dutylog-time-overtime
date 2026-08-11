@@ -36,11 +36,8 @@ export interface LegacyBridge {
   previewModuleEnabled(key: string, enabled: boolean): void;
   commitModuleList(modules: readonly Record<string, unknown>[]): Promise<void>;
   restoreModuleList(modules: readonly Record<string, unknown>[]): void;
-  attachCalendarEditor(hostId: string): void;
-  parkCalendarEditor(): void;
-  openCalendarDay(date: string): void;
-  openCalendarSection(section: "tasks" | "notes" | "important"): void;
-  closeCalendarDay(): void;
+  writeCalendarDay(date: string, patch: Record<string, unknown>): Promise<{ queued: boolean; day: unknown | null }>;
+  openShiftTypeManager(): void;
   openTaskCreate(date: string): void;
   openTaskDetails(id: number): void;
   openQuickActions(date: string): void;
@@ -93,11 +90,10 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
     previewModuleEnabled(key, enabled) { adapter()?.previewModuleEnabled?.(key, enabled); },
     async commitModuleList(modules) { await adapter()?.commitModuleList?.(modules); },
     restoreModuleList(modules) { adapter()?.restoreModuleList?.(modules); },
-    attachCalendarEditor(hostId: string) { adapter()?.attachCalendarEditor?.(hostId); },
-    parkCalendarEditor() { adapter()?.parkCalendarEditor?.(); },
-    openCalendarDay(date: string) { adapter()?.openCalendarDay?.(date); },
-    openCalendarSection(section) { adapter()?.openCalendarSection?.(section); },
-    closeCalendarDay() { adapter()?.closeCalendarDay?.(); },
+    async writeCalendarDay(date: string, patch: Record<string, unknown>) {
+      return (await adapter()?.writeCalendarDay?.(date, patch)) ?? { queued: false, day: null };
+    },
+    openShiftTypeManager() { adapter()?.openShiftTypeManager?.(); },
     openTaskCreate(date: string) { adapter()?.openTaskCreate?.(date); },
     openTaskDetails(id: number) { adapter()?.openTaskDetails?.(id); },
     openQuickActions(date: string) { adapter()?.openQuickActions?.(date); },

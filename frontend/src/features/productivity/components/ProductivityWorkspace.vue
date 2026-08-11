@@ -20,7 +20,7 @@ const shell = useShellStore();
 const calendar = useCalendarTimelineStore();
 const store = useProductivityStore();
 const { activeRoute, modules, modulesLoaded, onboardingCompleted, online } = storeToRefs(shell);
-const { focusDate } = storeToRefs(calendar);
+const { focusDate, dayPanelOpen } = storeToRefs(calendar);
 let previousDomain: DutyLogProductivityDomain | undefined;
 let restoreBridge: (() => void) | null = null;
 
@@ -44,10 +44,8 @@ const domain: DutyLogProductivityDomain = Object.freeze({
   openTaskDetails: async (id: number) => { await store.openTaskDetails(id); },
   openNoteCreate: async (date?: string, content = "") => {
     const targetDate = date || focusDate.value;
-    await calendar.openDate(targetDate, "month");
+    await calendar.openDayPanel(targetDate, "notes");
     props.bridge.navigate("calendar");
-    props.bridge.openCalendarDay(targetDate);
-    props.bridge.openCalendarSection("notes");
     await store.createNote(targetDate, content);
   },
   openImportantCreate: async (date?: string, title = "") => {
@@ -124,16 +122,16 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Teleport to="#sumTasks"><span data-vue-productivity-summary="tasks">{{ tasksSummary }}</span></Teleport>
-  <Teleport to="#sumNote"><span data-vue-productivity-summary="notes">{{ notesSummary }}</span></Teleport>
-  <Teleport to="#sumImp"><span data-vue-productivity-summary="important">{{ importantSummary }}</span></Teleport>
+  <Teleport defer v-if="activeRoute === 'calendar' && dayPanelOpen" to="#sumTasks"><span data-vue-productivity-summary="tasks">{{ tasksSummary }}</span></Teleport>
+  <Teleport defer v-if="activeRoute === 'calendar' && dayPanelOpen" to="#sumNote"><span data-vue-productivity-summary="notes">{{ notesSummary }}</span></Teleport>
+  <Teleport defer v-if="activeRoute === 'calendar' && dayPanelOpen" to="#sumImp"><span data-vue-productivity-summary="important">{{ importantSummary }}</span></Teleport>
 
   <TasksPage v-show="activeRoute === 'tasks'" />
   <ImportantPage v-show="activeRoute === 'important'" />
 
-  <Teleport v-if="tasksEnabled" to="#vueSelectedDayTasksMount"><SelectedDayTasks /></Teleport>
-  <Teleport v-if="notesEnabled" to="#vueSelectedDayNotesMount"><SelectedDayNotes /></Teleport>
-  <Teleport v-if="importantEnabled" to="#vueSelectedDayImportantMount"><SelectedDayImportant /></Teleport>
+  <Teleport defer v-if="activeRoute === 'calendar' && dayPanelOpen && tasksEnabled" to="#vueSelectedDayTasksMount"><SelectedDayTasks /></Teleport>
+  <Teleport defer v-if="activeRoute === 'calendar' && dayPanelOpen && notesEnabled" to="#vueSelectedDayNotesMount"><SelectedDayNotes /></Teleport>
+  <Teleport defer v-if="activeRoute === 'calendar' && dayPanelOpen && importantEnabled" to="#vueSelectedDayImportantMount"><SelectedDayImportant /></Teleport>
 
   <TaskModalLayer />
   <ImportantModalLayer />

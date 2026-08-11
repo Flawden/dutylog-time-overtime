@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.40.3"
+const DUTYLOG_VERSION = "27.40.4"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -332,21 +332,8 @@ window.DutyLogLegacyPlatform = Object.freeze({
         "importantDetailsModal", "importantEditModal",
         "noteFullscreen",
       ]) document.getElementById(id)?.remove();
-      const mounts = [
-        ["accTasks", "vueSelectedDayTasksMount"],
-        ["accNote", "vueSelectedDayNotesMount"],
-        ["accImp", "vueSelectedDayImportantMount"],
-      ];
-      for (const [sectionId, mountId] of mounts) {
-        const section = document.getElementById(sectionId);
-        const body = section?.querySelector(":scope > .accB");
-        if (!body) continue;
-        body.replaceChildren();
-        const mount = document.createElement("div");
-        mount.id = mountId;
-        mount.setAttribute("data-vue-productivity-mount", "");
-        body.appendChild(mount);
-      }
+      // Selected-day productivity mounts are now rendered by the Vue Calendar
+      // panel itself. Productivity owns their content, never legacy panel DOM.
       document.documentElement.setAttribute("data-vue-productivity", "ready");
       return;
     }
@@ -355,12 +342,8 @@ window.DutyLogLegacyPlatform = Object.freeze({
       .find(node => !node.hasAttribute("data-vue-domain-owner"));
     const legacyToday = [...document.querySelectorAll("section.view#view-today")]
       .find(node => !node.hasAttribute("data-vue-domain-owner"));
-    const panel = legacyCalendar?.querySelector("#panel");
-    if (panel) {
-      panel.hidden = true;
-      panel.remove();
-      document.body.appendChild(panel);
-    }
+    // v27.40.4 retires the last Calendar DOM compatibility island. The old
+    // #panel dies together with the legacy Calendar; Vue now owns selected-day UI.
     legacyCalendar?.remove();
     legacyToday?.remove();
     for (const id of ["prev", "next", "todayBtn"]) document.getElementById(id)?.remove();
@@ -369,34 +352,24 @@ window.DutyLogLegacyPlatform = Object.freeze({
     if (legacyMonthName) legacyMonthName.id = "legacyMonthName";
     if (legacyYearName) legacyYearName.id = "legacyYearName";
     document.documentElement.setAttribute("data-vue-calendar-timeline", "ready");
+    document.documentElement.setAttribute("data-vue-calendar-selected-day", "ready");
   },
-  attachCalendarEditor(hostId){
-    const host = document.getElementById(String(hostId || ""));
-    const panel = document.getElementById("panel");
-    if (host && panel && panel.parentElement !== host) host.appendChild(panel);
-  },
-  parkCalendarEditor(){
-    const panel = document.getElementById("panel");
-    if (!panel) return;
-    panel.hidden = true;
-    if (panel.parentElement !== document.body) document.body.appendChild(panel);
-  },
-  openCalendarDay(date){
+  async writeCalendarDay(date, patch){
     const key = String(date || "").slice(0, 10);
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return;
-    vueCalendarTimelineRefreshSuppressed = true;
-    try { if (typeof selectDay === "function") selectDay(key); }
-    finally { vueCalendarTimelineRefreshSuppressed = false; }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) throw new Error("Invalid calendar date");
+    if (typeof dataLayer === "undefined") throw new Error("Offline data layer is not ready");
+    const current = state.days?.[key] ? { ...state.days[key] } : { date:key };
+    const next = { ...current, ...(patch && typeof patch === "object" ? patch : {}), date:key };
+    const result = await dataLayer.putDay(key, next);
+    const saved = result?.day ? normalizeDay(result.day) : null;
+    if (saved) state.days[key] = saved;
+    else if (!result?.queued && state.days) delete state.days[key];
+    else if (result?.queued && state.days) state.days[key] = normalizeDay(next);
+    return { queued:!!result?.queued, day:cloneForVue(saved || (result?.queued ? normalizeDay(next) : null)) };
   },
-  openCalendarSection(section){
-    const id = ({ tasks:"accTasks", notes:"accNote", important:"accImp" })[String(section || "")];
-    const element = id ? document.getElementById(id) : null;
-    if (element && "open" in element) element.open = true;
-  },
-  closeCalendarDay(){
-    vueCalendarTimelineRefreshSuppressed = true;
-    try { if (typeof selectDay === "function") selectDay(null); }
-    finally { vueCalendarTimelineRefreshSuppressed = false; }
+  openShiftTypeManager(){
+    if (typeof window.openShiftTypeManager === "function") window.openShiftTypeManager();
+    else if (typeof openShiftTypeManager === "function") openShiftTypeManager();
   },
   openTaskCreate(date){
     if (typeof openTaskCreate === "function") openTaskCreate({ date:String(date || "").slice(0, 10) });

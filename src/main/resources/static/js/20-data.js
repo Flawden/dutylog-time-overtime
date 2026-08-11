@@ -279,6 +279,7 @@ function dismissDayModulesHint(){
   if (hint) hint.hidden = true;
 }
 function setDayPanelSectionVisibility(){
+  if (document.documentElement.dataset.vueCalendarSelectedDay === "ready") return;
   const hidden = [];
   for (const section of DAY_PANEL_SECTIONS) {
     const el = $(section.id);
@@ -312,6 +313,7 @@ function setDayPanelSectionVisibility(){
   }
 }
 function renderSelectedDayModules(){
+  if (document.documentElement.dataset.vueCalendarSelectedDay === "ready") return;
   setDayPanelSectionVisibility();
   if (!state.selected) return;
   renderChips();

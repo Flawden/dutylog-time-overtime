@@ -1,3 +1,13 @@
+# v27.40.4 — Vue Calendar Selected-Day Panel Retirement
+
+- Retires the last live Calendar selected-day DOM compatibility island: Vue now owns `#panel` directly through `SelectedDayPanel.vue`; `#calendarLegacyPanelHost` and the attach/park/open/close selected-day bridge lifecycle are removed.
+- Preserves stable selected-day browser/accessibility IDs and business flows for shift, emoji marker, schedule templates, overtime, absences, Tasks, Notes and Important Days while moving ownership rather than weakening assertions.
+- Keeps projected/cross-midnight shift semantics by mutating the occurrence `sourceDate`, not a continuation date.
+- Uses generated `/api/v1/schedule-templates/*` operations for schedule preview/apply and the already-native Absence & Time Bank / Productivity domains for their selected-day bodies.
+- Keeps the existing legacy `dataLayer` as the single IndexedDB/offline queue owner; the new `writeCalendarDay` bridge is a narrow transport adapter and does not create a second reconnect queue.
+- Adds a selected-day retirement readiness marker and legacy renderer barriers so stable IDs have one live writer after Vue readiness.
+- Keeps OpenAPI 118/120, Flyway V47 and the locked 153 / 758 / 48 / 52 acceptance surface unchanged. Full exact-toolchain, Maven, browser, image, PostgreSQL and staging gates remain mandatory.
+
 # v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix
 
 - Uses the complete 189 MB v27.40.2 Playwright report as source of truth: 48 scenarios produced 32 clean passes, 10 retry-only flaky scenarios and 6 final failures.

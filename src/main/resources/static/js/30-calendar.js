@@ -459,6 +459,12 @@ function renderSummary(){
 
 /* ─── Панель дня ────────────────────────────────────────────── */
 function selectDay(k){
+  if (document.documentElement.dataset.vueCalendarSelectedDay === "ready") {
+    const key = k ? String(k).slice(0, 10) : null;
+    if (key) window.DutyLogVueDomains?.calendarTimeline?.openDay?.(key);
+    else window.DutyLogVueDomains?.calendarTimeline?.closeDay?.();
+    return;
+  }
   state.selected = k;
   $("layout")?.classList.toggle("with-panel", !!k);
   document.body.classList.toggle("panel-open", !!k);
@@ -526,6 +532,7 @@ function renderSchedulePreview(preview){
     ${(preview.items || []).length > items.length ? `<small class="schedulePreviewMore">${esc(t(`И ещё ${preview.items.length - items.length} дней`))}</small>` : ""}`;
 }
 function renderScheduleControls(){
+  if (document.documentElement.dataset.vueCalendarSelectedDay === "ready") return;
   if (!state.selected) return;
   renderScheduleTemplateOptions();
   const input = $("tplDays");
@@ -621,6 +628,7 @@ const ACC_STORE = "acc-open-v1";
 
 /* Выжимки в заголовках свёрнутых секций — панель читается не раскрывая */
 function updateAccSummaries(){
+  if (document.documentElement.dataset.vueCalendarSelectedDay === "ready") return;
   const k = state.selected;
   if (!k) return;
   const vueOwnsProductivitySummaries = document.documentElement.dataset.vueProductivity === "ready";

@@ -2097,6 +2097,7 @@ function renderShiftProjection(){
 }
 
 function renderChips(){
+  if (document.documentElement.dataset.vueCalendarSelectedDay === "ready") return;
   const box = $("chips");
   box.innerHTML = "";
   const projectedOccurrence = state.selected ? shiftOccurrenceForDate(state.selected) : null;
@@ -2137,6 +2138,7 @@ function normalizeDayEmojiValue(value){
   return raw.length > 32 ? raw.slice(0, 32) : raw;
 }
 function renderDayEmojiControls(){
+  if (document.documentElement.dataset.vueCalendarSelectedDay === "ready") return;
   if (!$('dayEmojiGrid')) return;
   const k = state.selected;
   const cur = k ? normalizeDayEmojiValue(state.days[k]?.dayEmoji) : "";

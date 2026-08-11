@@ -39,6 +39,10 @@ onMounted(() => {
     openCreditEditor: async (date?: string | null) => {
       await store.openCreditEditor(date);
     },
+    editCredit: async (id: number) => {
+      await store.ensureLoaded();
+      store.editCredit(id);
+    },
     openTimeBankUsage: async (absenceId?: number | null) => {
       props.bridge.navigate("overtime");
       await store.openTimeBankUsage(absenceId ?? null);

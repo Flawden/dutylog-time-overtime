@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue app-shell plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.3.
+Status: Vue app-shell plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.4.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
@@ -27,7 +27,7 @@ The public `DutyLogCalendarTimelineDomain.openDate` callback explicitly carries 
 
 Vue now owns Today and the Calendar Month, Week and Day read surfaces through one bounded `calendar-timeline` feature. Its generated-API store owns focus date, view mode, stale-read sequencing, authoritative work-date loading and optimistic calendar-layer visibility with rollback. The Day view composes shifts, partial absences, timed tasks, important events, reminders and calendar-layer occurrences into one hourly timeline without reproducing backend business rules.
 
-The legacy Today and Calendar read roots are retired after Vue readiness. The mature selected-day mutation editor remains as one named compatibility island mounted beneath `#calendarLegacyPanelHost`; it is reached only through explicit bridge commands. Historical legacy render functions yield to a queued Vue refresh instead of re-rendering competing read surfaces.
+The legacy Today and Calendar read roots are retired after Vue readiness. As of v27.40.4 the selected-day mutation editor is also native Vue: `SelectedDayPanel.vue` owns `#panel` and its stable section IDs. Historical legacy selected-day renderers yield after the `data-vue-calendar-selected-day` readiness marker instead of mutating the Vue-owned nodes.
 
 `v27.36.8` remains the historical read-sequencing contract-alignment predecessor: Absence/Time Bank full and period-only reads share `readSequence`, and only the winning full read publishes the canonical projection.
 
@@ -63,11 +63,11 @@ When the active route is outside primary navigation, the visible More control an
 
 **Vue also owns the bounded Absence & Time Bank domain**: absence journal, unified composer, credit/scenario editor, plan/fact/compensation explanation, responsive ledger, usages, reservations and FIFO forecast. The Vue feature uses generated operation contracts and never reproduces backend business authority.
 
-**Vue also owns the bounded Calendar & Timeline domain**: Today, Calendar Month/Week/Day, focused-date navigation, hourly timeline composition and calendar-layer visibility. The generated-API store treats Spring Boot read models as authoritative and keeps only view state and optimistic presentation state locally.
+**Vue also owns the bounded Calendar & Timeline domain**: Today, Calendar Month/Week/Day, focused-date navigation, hourly timeline composition, calendar-layer visibility and the selected-day panel. The generated-API store treats Spring Boot read models as authoritative and keeps only view/panel state and optimistic presentation state locally.
 
 **Vue also owns the bounded Productivity domain**: Tasks/Inbox presentation, Task details/editor, selected-day Tasks, multiple daily Notes and Important Days. The existing dataLayer remains the only offline queue/snapshot infrastructure and is reached through typed bridge operations.
 
-**Legacy product screens remain authoritative** for Payroll, Settings and Admin. The selected-day Calendar shell remains a temporary compatibility host for still-legacy shift/schedule/overtime controls; its Tasks/Notes/Important bodies are Vue-owned.
+**Legacy product screens remain authoritative** for Payroll and Admin plus still-unretired shell/modal boundaries. Settings and the Calendar selected-day UI are Vue-owned. The existing legacy `dataLayer` remains a deliberately retained non-DOM offline mutation/sync adapter until its separate infrastructure retirement.
 
 ```text
 frontend/src
@@ -86,7 +86,7 @@ frontend/src
 - The Calendar/Timeline store owns only focused date, view mode, loading/error state and the current authoritative range snapshot; it never calculates canonical shifts, absences, task ownership or recurrence rules.
 - The shell receives only a frozen snapshot: route, allowed navigation, language, online/module readiness and safe profile display fields.
 - Pinia owns explicit shell and migrated-domain UI state; it never mirrors one global mutable product state.
-- Local form drafts remain local to each migrated composer or the temporary selected-day editor island.
+- Local form drafts remain local to each migrated composer or Vue selected-day section.
 - Offline queue and synchronization remain a separate infrastructure boundary; Productivity reuses that queue through named bridge operations and never creates a second mutable offline owner.
 
 ## Routing and bridge
@@ -101,9 +101,8 @@ subscribe
 navigate
 openModal
 logout
-attachCalendarEditor
-openCalendarDay
-closeCalendarDay
+writeCalendarDay
+openShiftTypeManager
 openTaskCreate
 openTaskDetails
 openQuickActions
@@ -115,7 +114,7 @@ offlineSelectedDay
 offlineSync
 ```
 
-Vue must not read `window.state`, query `#tabbar` or create a second mutation owner. The Absence & Time Bank workspace retires its route/modal owners after Vue readiness. The Calendar & Timeline workspace retires legacy Today/Calendar read roots, mounts only the selected-day editor island and converts historical render calls into queued Vue refresh requests. The Productivity workspace retires legacy Tasks/Important route roots and selected-day Tasks/Notes/Important bodies, while preserving named bridge adapters for offline infrastructure and historical entry points. Payroll, Settings and Admin retain their existing owners until their bounded migration releases.
+Vue must not read `window.state`, query `#tabbar` or create a second mutation owner. The Absence & Time Bank workspace retires its route/modal owners after Vue readiness. The Calendar & Timeline workspace retires legacy Today/Calendar roots including the old selected-day panel. Vue owns selected-day DOM; only a narrow `writeCalendarDay` adapter remains for the existing single offline dataLayer writer, and legacy selected-day renderers yield after Vue readiness. The Productivity workspace retires legacy Tasks/Important route roots and selected-day Tasks/Notes/Important bodies, while preserving named bridge adapters for offline infrastructure and historical entry points. Payroll, Settings and Admin retain their existing owners until their bounded migration releases.
 
 ## Shared design system
 

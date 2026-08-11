@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { nextTick, onBeforeMount, onBeforeUnmount, onMounted, watch } from "vue";
+import { onBeforeMount, onBeforeUnmount, onMounted, watch } from "vue";
 import { storeToRefs } from "pinia";
 import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
 import { installCalendarTimelineOfflineSource, useCalendarTimelineStore } from "../stores/calendarTimelineStore";
-import type { CalendarMode, DutyLogCalendarTimelineDomain } from "../types/domain";
+import type { CalendarDaySection, CalendarMode, DutyLogCalendarTimelineDomain } from "../types/domain";
 import CalendarPage from "./CalendarPage.vue";
 import TodayPage from "./TodayPage.vue";
 import "../calendar-timeline.css";
@@ -19,6 +19,8 @@ const domain: DutyLogCalendarTimelineDomain = Object.freeze({
   ready: () => store.loaded,
   refresh: () => store.refresh(),
   openDate: async (date: string, mode?: CalendarMode) => { props.bridge.navigate("calendar"); await store.openDate(date, mode); },
+  openDay: async (date: string, section?: CalendarDaySection | null) => { props.bridge.navigate("calendar"); await store.openDayPanel(date, section ?? null); },
+  closeDay: () => store.closeDayPanel(),
   snapshot: () => store.bundle ? Object.freeze({ focusDate: store.focusDate, mode: store.mode, from: store.bundle.from, to: store.bundle.to }) : null,
 });
 
@@ -33,7 +35,6 @@ async function synchronize(route: string): Promise<void> {
   if (route !== "today" && route !== "calendar") return;
   if (route === "today") await store.ensureTodayLoaded();
   else await store.ensureLoaded();
-  if (route === "calendar") await nextTick(() => props.bridge.attachCalendarEditor("calendarLegacyPanelHost"));
 }
 
 onMounted(() => {
@@ -46,6 +47,7 @@ onBeforeUnmount(() => {
   if (previousDomain) window.DutyLogVueDomains = Object.freeze({ ...(window.DutyLogVueDomains ?? {}), calendarTimeline: previousDomain });
   else if (window.DutyLogVueDomains) { const { calendarTimeline: _removed, ...rest } = window.DutyLogVueDomains; window.DutyLogVueDomains = Object.freeze(rest); }
   delete document.documentElement.dataset.vueCalendarTimeline;
+  delete document.documentElement.dataset.vueCalendarSelectedDay;
 });
 </script>
 <template><TodayPage v-if="activeRoute === 'today'" :bridge="bridge" /><CalendarPage v-else-if="activeRoute === 'calendar'" :bridge="bridge" /></template>

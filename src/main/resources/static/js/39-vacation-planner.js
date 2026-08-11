@@ -418,6 +418,7 @@ function renderVacationPlanner(){
 }
 
 function renderVacationDay(){
+  if (document.documentElement.dataset.vueCalendarSelectedDay === "ready") return;
   const box = $("vacationDayList");
   if (!box || !state.selected) return;
   const items = absencesOf(state.selected);

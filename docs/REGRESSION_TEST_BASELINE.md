@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.40.3.
+Status: v27.40.4.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.3 consumes the full v27.40.2 browser artifact: 48 scenarios yielded 32 clean passes, 10 retry-only flaky results and 6 final failures. The recurring 500 is one lazy `NotificationSettings` first-read race between Calendar and Vue Settings bootstrap; the missing-row path is now serialized on the owner row and double-checked after locking. Vue Time Settings also restores the curated legacy timezone fallback list and exact native success-copy contracts. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+Current extension: v27.40.4 retires the live Calendar selected-day compatibility island. `SelectedDayPanel.vue` owns the stable selected-day DOM while shift/marker writes still use the single existing offline `dataLayer` through a narrow adapter; schedule operations use the generated client and Absence/Time Bank plus Productivity keep their domain ownership. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
 
 `v27.39.0` introduced one Vue Settings ownership Chromium scenario, three Settings/Workspace model Vitest cases and six source/architecture JUnit contracts, reaching 757 `@Test` methods. `v27.39.1` adds one narrow strict-template regression method, so the JUnit baseline is now 758 without changing the 153-class / 48-Playwright / 52-Vitest surface.
 

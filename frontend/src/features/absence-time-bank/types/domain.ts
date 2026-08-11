@@ -160,5 +160,6 @@ export interface DutyLogAbsenceTimeBankDomain {
   openAbsenceComposer(options?: AbsenceComposerOpenOptions): Promise<void>;
   openAbsenceEditor(id: number): Promise<void>;
   openCreditEditor(date?: string | null): Promise<void>;
+  editCredit(id: number): Promise<void>;
   openTimeBankUsage(absenceId?: number | null): Promise<void>;
 }

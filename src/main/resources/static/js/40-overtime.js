@@ -341,7 +341,7 @@ async function saveLedgerAdjustment(event){
 function updateOvertimeBalanceLabel(){
   const acc = state.overtimeAccount || { balanceHours:0 };
   const bal = numOr0(acc.balanceHours);
-  if ($("otBalance")) $("otBalance").textContent = `${t("доступно")} ${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
+  if (document.documentElement.dataset.vueCalendarSelectedDay !== "ready" && $("otBalance")) $("otBalance").textContent = `${t("доступно")} ${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
   if ($("ledgerBalance")) $("ledgerBalance").textContent = `${bal > 0 ? "+" : ""}${fmtHours(bal)} ч`;
 }
 
@@ -550,6 +550,7 @@ function allocationDetailHtml(allocation){
 }
 
 function renderOvertimeDayDetails(){
+  if (document.documentElement.dataset.vueCalendarSelectedDay === "ready") return;
   if (!moduleEnabled("overtime")) return;
   const k = state.selected;
   const el = $("otDayDetails");

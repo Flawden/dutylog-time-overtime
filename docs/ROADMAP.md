@@ -1,20 +1,30 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix**.
+Current release: **v27.40.4 — Vue Calendar Selected-Day Panel Retirement**.
 
 
 
 
 
 
-## v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix — current
+## v27.40.4 — Vue Calendar Selected-Day Panel Retirement — current
+- [x] Start from the accepted v27.40.3 baseline.
+- [x] Replace the live `#calendarLegacyPanelHost -> #panel` compatibility island with native `SelectedDayPanel.vue` ownership while retaining stable selected-day selectors and behavior.
+- [x] Remove Calendar selected-day attach/park/open/close bridge methods; Calendar Pinia now owns panel open state and requested section.
+- [x] Keep shift and emoji mutation on the single existing offline `dataLayer` through a narrow `writeCalendarDay` adapter; do not create a second queue/reconnect owner.
+- [x] Preserve cross-midnight `sourceDate` mutation semantics and use generated schedule-template preview/apply operations.
+- [x] Keep Absence/Time Bank and Productivity as the owners of their selected-day bodies and mount them inside the Vue panel.
+- [ ] Exact frontend, Maven 758/758, clean canary, Chromium 48/48 with zero flaky retries, immutable image, PostgreSQL V47 smoke and staging remain blocking acceptance gates.
+- [ ] Continue hash-router/modal/offline-transport/Payroll/Admin/numbered-JS retirement, then close the Functional Parity and Layout/UX registers before v27.41.0.
+
+## v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix — accepted predecessor
 - [x] Use the complete v27.40.2 Playwright artifact: 48 scenarios, 32 clean passes / 10 flaky / 6 final failures.
 - [x] Serialize the missing `NotificationSettings` first-read path with an owner-row pessimistic lock and a post-lock double-check so Calendar and Vue Settings bootstrap cannot race the unique user row.
 - [x] Restore the curated legacy timezone fallback list in Vue Time Settings, including `Europe/Kyiv`, independently of browser ICU canonicalization.
 - [x] Make timezone-save E2E copy assertions exact for the native Vue message `Часовой пояс сохранён`.
 - [x] Keep HTTP/OpenAPI 118/120, Flyway V47, business rules, retries/timeouts and strict runtime collectors unchanged.
-- [ ] Exact frontend, Maven 758/758, clean canary, Chromium 48/48 with zero flaky retries, immutable image, PostgreSQL V47 smoke and staging remain blocking acceptance gates.
-- [ ] Continue selected-day/router/modal/offline/Payroll/Admin retirement only from a green v27.40.x tree.
+- [x] Exact frontend, Maven 758/758, clean canary, Chromium 48/48 with zero flaky retries, immutable image, PostgreSQL V47 smoke and staging accepted.
+- [x] v27.40.4 starts from this accepted tree.
 
 ## v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix — predecessor
 - [x] Use the complete v27.40.1 canary artifact: one browser scenario executed and failed on both attempts under the strict runtime/HTTP collector.

@@ -1,6 +1,10 @@
+# DutyLog v27.40.4 — Vue Calendar Selected-Day Panel Retirement
+
+v27.40.4 retires the last live Calendar selected-day DOM compatibility island. The Calendar page now renders a native Vue `SelectedDayPanel` while preserving the stable selected-day contracts for shifts, markers, schedule templates, overtime, absences, Tasks, Notes and Important Days. Offline day writes still flow through the single existing `dataLayer` owner; OpenAPI 118/120, Flyway V47 and the 153 / 758 / 48 / 52 acceptance surface remain unchanged.
+
 # DutyLog v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix
 
-The complete v27.40.2 Playwright artifact reduces 16 scenarios with failed attempts to one dominant first-read concurrency race plus two deterministic timezone parity mismatches. v27.40.3 serializes lazy `NotificationSettings` creation on the owner row, restores the legacy curated timezone aliases (including `Europe/Kyiv`) in native Vue Settings, and binds the exact Vue timezone-save success copy without weakening runtime collectors, retries, OpenAPI 118/120, Flyway V47 or the 153 / 758 / 48 / 52 acceptance surface.
+The v27.40.3 accepted predecessor serializes lazy `NotificationSettings` creation on the owner row, restores curated timezone aliases including `Europe/Kyiv`, and keeps the exact Vue timezone-save copy contract without changing OpenAPI 118/120, Flyway V47 or browser failure policy.
 
 # DutyLog v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix
 

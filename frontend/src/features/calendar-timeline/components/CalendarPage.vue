@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, nextTick, onBeforeUnmount, onMounted } from "vue";
+import { computed } from "vue";
 import { storeToRefs } from "pinia";
 import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
@@ -14,12 +14,13 @@ import {
   weekDates,
 } from "../types/model";
 import type { CalendarMode } from "../types/domain";
+import SelectedDayPanel from "./SelectedDayPanel.vue";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
 const store = useCalendarTimelineStore();
 const shell = useShellStore();
 const { language } = storeToRefs(shell);
-const { bundle, focusDate, mode, loading, error, workDate } = storeToRefs(store);
+const { bundle, focusDate, mode, loading, error, workDate, dayPanelOpen } = storeToRefs(store);
 
 const gridDates = computed(() => monthGridDates(focusDate.value));
 const week = computed(() => weekDates(focusDate.value));
@@ -141,42 +142,22 @@ async function openTimelineEvent(event: { type: string; actionId: number | null 
   else if (event.type === "vacation" && event.actionId != null) await window.DutyLogVueDomains?.absenceTimeBank?.openAbsenceEditor(event.actionId);
 }
 
-async function chooseDate(date: string): Promise<void> {
-  await store.openDate(date, "month");
-  await nextTick();
-  props.bridge.openCalendarDay(date);
-}
-
-async function chooseWeekDate(date: string): Promise<void> { await store.openDate(date, "week"); }
+async function chooseDate(date: string): Promise<void> { await store.openDayPanel(date); }
+async function chooseWeekDate(date: string): Promise<void> { store.closeDayPanel(); await store.openDate(date, "week"); }
 async function navigate(delta: number): Promise<void> {
-  props.bridge.closeCalendarDay();
+  store.closeDayPanel();
   await store.navigate(delta);
 }
 async function goToday(): Promise<void> {
   await store.goToday(mode.value);
-  if (mode.value === "month") {
-    await nextTick();
-    props.bridge.openCalendarDay(store.focusDate);
-  } else {
-    props.bridge.closeCalendarDay();
-  }
+  if (mode.value === "month") await store.openDayPanel(store.focusDate);
+  else store.closeDayPanel();
 }
 async function setMode(nextMode: CalendarMode): Promise<void> {
   await store.setMode(nextMode);
-  if (nextMode !== "month") props.bridge.closeCalendarDay();
+  if (nextMode !== "month") store.closeDayPanel();
 }
-async function openDetails(): Promise<void> {
-  await store.setMode("month");
-  await nextTick();
-  props.bridge.openCalendarDay(focusDate.value);
-}
-
-onMounted(() => {
-  props.bridge.attachCalendarEditor("calendarLegacyPanelHost");
-});
-onBeforeUnmount(() => {
-  props.bridge.parkCalendarEditor();
-});
+async function openDetails(): Promise<void> { await store.openDayPanel(focusDate.value); }
 </script>
 
 <template>
@@ -221,7 +202,7 @@ onBeforeUnmount(() => {
     </div>
 
     <div v-show="mode === 'month'" id="calendarMonthExperience">
-      <div id="layout" class="layout">
+      <div id="layout" class="layout" :class="{ 'with-panel': dayPanelOpen }">
         <div class="card vue-calendar-month-card">
           <div class="wd"><div v-for="label in (language === 'en' ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'])" :key="label">{{ label }}</div></div>
           <div id="grid" class="grid" :aria-busy="loading ? 'true' : 'false'">
@@ -265,7 +246,7 @@ onBeforeUnmount(() => {
           </div>
           <div id="summary" class="sum"><span class="lbl">Итого:</span><span>{{ monthSummary.shifts }} смен</span><span>{{ monthSummary.tasks }} задач</span><span>{{ monthSummary.absences }} отсутствий</span><span class="over">баланс {{ bundle?.overtimeAccount.balanceHours ?? 0 }} ч</span></div>
         </div>
-        <div id="calendarLegacyPanelHost" class="calendar-legacy-panel-host"></div>
+        <SelectedDayPanel v-if="dayPanelOpen" :bridge="bridge" />
       </div>
     </div>
   </section>

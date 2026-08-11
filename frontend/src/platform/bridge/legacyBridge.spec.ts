@@ -13,7 +13,7 @@ function fakeWindow(): Window {
 
 function snapshot(route = "calendar"): DutyLogLegacySnapshot {
   return {
-    version: "27.40.3",
+    version: "27.40.4",
     language: "ru",
     route,
     online: true,
@@ -25,24 +25,24 @@ function snapshot(route = "calendar"): DutyLogLegacySnapshot {
 }
 
 describe("legacy bridge", () => {
-  it("uses the explicit legacy adapter when it is available", () => {
+  it("uses the explicit legacy adapter when it is available", async () => {
     const target = fakeWindow();
     const navigate = vi.fn();
     const openModal = vi.fn();
     const logout = vi.fn();
     const retireDomainOwners = vi.fn();
-    const attachCalendarEditor = vi.fn();
-    const parkCalendarEditor = vi.fn();
+    const writeCalendarDay = vi.fn(async () => ({ queued: true, day: { date: "2026-08-11", shiftTypeId: 2 } }));
+    const openShiftTypeManager = vi.fn();
     const subscribe = vi.fn(() => vi.fn());
     target.DutyLogLegacyPlatform = {
-      version: "27.40.3",
+      version: "27.40.4",
       snapshot: () => snapshot(),
       navigate,
       openModal,
       logout,
       retireDomainOwners,
-      attachCalendarEditor,
-      parkCalendarEditor,
+      writeCalendarDay,
+      openShiftTypeManager,
       subscribe,
     };
 
@@ -51,8 +51,8 @@ describe("legacy bridge", () => {
     bridge.openModal("absenceComposerModal", "vacationStart");
     bridge.logout();
     bridge.retireDomainOwners("absence-time-bank");
-    bridge.attachCalendarEditor("calendarLegacyPanelHost");
-    bridge.parkCalendarEditor();
+    const written = await bridge.writeCalendarDay("2026-08-11", { shiftTypeId: 2 });
+    bridge.openShiftTypeManager();
     const listener = vi.fn();
     bridge.subscribe(listener);
 
@@ -62,8 +62,9 @@ describe("legacy bridge", () => {
     expect(openModal).toHaveBeenCalledWith("absenceComposerModal", "vacationStart");
     expect(logout).toHaveBeenCalledOnce();
     expect(retireDomainOwners).toHaveBeenCalledWith("absence-time-bank");
-    expect(attachCalendarEditor).toHaveBeenCalledWith("calendarLegacyPanelHost");
-    expect(parkCalendarEditor).toHaveBeenCalledOnce();
+    expect(writeCalendarDay).toHaveBeenCalledWith("2026-08-11", { shiftTypeId: 2 });
+    expect(written).toEqual({ queued: true, day: { date: "2026-08-11", shiftTypeId: 2 } });
+    expect(openShiftTypeManager).toHaveBeenCalledOnce();
     expect(subscribe).toHaveBeenCalledWith(listener);
   });
 

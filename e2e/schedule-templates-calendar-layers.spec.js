@@ -26,7 +26,7 @@ test('schedule templates preview safely and read-only layers compose across cale
   await page.locator('#tplDays').fill('4');
   await expect(page.locator('#tplOverwrite')).not.toBeChecked();
 
-  const previewResponse = page.waitForResponse(response => /\/api\/schedule-templates\/\d+\/preview$/.test(new URL(response.url()).pathname)
+  const previewResponse = page.waitForResponse(response => /\/api\/v1\/schedule-templates\/\d+\/preview$/.test(new URL(response.url()).pathname)
     && response.request().method() === 'POST' && response.status() === 200);
   await page.locator('#tplPreviewBtn').click();
   const preview = await (await previewResponse).json();
@@ -36,7 +36,7 @@ test('schedule templates preview safely and read-only layers compose across cale
   await expect(page.locator('#tplPreview')).toBeVisible();
   await expect(page.locator('#tplPreview')).toContainText('4 будет записано');
 
-  const applyResponse = page.waitForResponse(response => /\/api\/schedule-templates\/\d+\/apply$/.test(new URL(response.url()).pathname)
+  const applyResponse = page.waitForResponse(response => /\/api\/v1\/schedule-templates\/\d+\/apply$/.test(new URL(response.url()).pathname)
     && response.request().method() === 'POST' && response.status() === 200);
   await page.locator('#tplApply').click();
   const applied = await (await applyResponse).json();

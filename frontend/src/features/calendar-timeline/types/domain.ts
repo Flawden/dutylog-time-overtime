@@ -1,6 +1,7 @@
 import type { DutyLogApiSchemas } from "@/generated/dutylog-api";
 
 export type CalendarMode = "month" | "week" | "day";
+export type CalendarDaySection = "shift" | "emoji" | "schedule" | "overtime" | "vacation" | "important" | "tasks" | "notes";
 
 export interface CalendarShiftType {
   id: number;
@@ -95,5 +96,7 @@ export interface DutyLogCalendarTimelineDomain {
   ready(): boolean;
   refresh(): Promise<void>;
   openDate(date: string, mode?: CalendarMode): Promise<void>;
+  openDay(date: string, section?: CalendarDaySection | null): Promise<void>;
+  closeDay(): void;
   snapshot(): Readonly<{ focusDate: string; mode: CalendarMode; from: string; to: string }> | null;
 }

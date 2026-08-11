@@ -1,6 +1,19 @@
 # Release checklist
 
-Status: v27.40.3.
+Status: v27.40.4.
+
+
+## v27.40.4 — Vue Calendar Selected-Day Panel Retirement acceptance
+
+- [x] Remove `#calendarLegacyPanelHost` from the live Vue Calendar and render one native `#panel[data-vue-selected-day-panel]`.
+- [x] Remove selected-day attach/park/open/close bridge ownership and preserve stable IDs for existing browser journeys.
+- [x] Keep the legacy `dataLayer` as the sole offline day-write/reconnect owner; no second queue or online listener is introduced.
+- [x] Keep cross-midnight shift `sourceDate`, schedule preview/apply, overtime, absence and Productivity selected-day semantics intact.
+- [x] Bind legacy selected-day renderers to the Vue readiness barrier rather than allowing two writers for the same IDs.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate must pass with 52/52 Vitest.
+- [ ] Maven Java 17 must pass 758/758.
+- [ ] Canary and full Chromium must pass 48/48 with zero flaky retries.
+- [ ] Immutable image, PostgreSQL V47 smoke and staging deployment must pass.
 
 
 ## v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix acceptance
@@ -9,10 +22,10 @@ Status: v27.40.3.
 - [x] Guard only the missing-row notification-settings path with a pessimistic owner lock, double-check after lock acquisition and `saveAndFlush`; ordinary reads remain lock-free.
 - [x] Restore curated timezone aliases such as `Europe/Kyiv` in native Vue Time Settings and keep exact timezone-save UI copy assertions.
 - [x] Keep OpenAPI 118/120, Flyway V47, business semantics, retries/timeouts and strict browser failure collection unchanged.
-- [ ] Exact frontend gate must pass with 52/52 Vitest.
-- [ ] Maven Java 17 must pass 758/758.
-- [ ] Canary and full Chromium must pass 48/48 with zero flaky retries.
-- [ ] Immutable image, PostgreSQL V47 smoke and staging deployment must pass.
+- [x] Exact frontend gate passed with 52/52 Vitest.
+- [x] Maven Java 17 passed 758/758.
+- [x] Canary and full Chromium passed 48/48 with zero flaky retries.
+- [x] Immutable image, PostgreSQL V47 smoke and staging deployment accepted.
 
 ## v27.40.2 — Vue Settings Bootstrap Serialization & Migration Preview Query Hotfix acceptance
 

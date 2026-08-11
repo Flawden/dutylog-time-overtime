@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { calendarTimelineApi } from "../api/calendarTimelineApi";
-import type { CalendarMode, CalendarRangeBundle, CalendarTimelineProjectionSnapshot } from "../types/domain";
+import type { CalendarDaySection, CalendarMode, CalendarRangeBundle, CalendarTimelineProjectionSnapshot } from "../types/domain";
 import { calendarLoadRange, navigateDate, normalizeCalendarBundle, todayIso, validDate } from "../types/model";
 import { publishCalendarTimelineProjection } from "@/platform/bridge/legacyBridge";
 
@@ -65,6 +65,8 @@ export const useCalendarTimelineStore = defineStore("dutylog-calendar-timeline",
     loading: false,
     loaded: false,
     error: "" as string,
+    dayPanelOpen: false,
+    dayPanelSection: null as CalendarDaySection | null,
   }),
   getters: {
     range(state): { from: string; to: string } { return state.bundle ? { from: state.bundle.from, to: state.bundle.to } : calendarLoadRange(state.focusDate); },
@@ -125,6 +127,20 @@ export const useCalendarTimelineStore = defineStore("dutylog-calendar-timeline",
       this.persist();
       if (!this.loaded || next < currentRange.from || next > currentRange.to) await this.refresh();
     },
+    async openDayPanel(date: string, section: CalendarDaySection | null = null): Promise<void> {
+      await this.openDate(date, "month");
+      this.dayPanelOpen = true;
+      if (section) this.dayPanelSection = section;
+    },
+    closeDayPanel(): void {
+      this.dayPanelOpen = false;
+      this.dayPanelSection = null;
+    },
+    requestDayPanelSection(section: CalendarDaySection): void {
+      this.dayPanelOpen = true;
+      this.dayPanelSection = section;
+    },
+    clearDayPanelSectionRequest(): void { this.dayPanelSection = null; },
     async setMode(mode: CalendarMode): Promise<void> {
       this.mode = mode;
       this.persist();

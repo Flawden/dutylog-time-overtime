@@ -188,12 +188,16 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         String calendar = read("src/main/resources/static/js/30-calendar.js");
         String tasks = read("src/main/resources/static/js/50-tasks.js");
         String workspace = read(FEATURE.resolve("components/ProductivityWorkspace.vue"));
+        String selectedDayPanel = read("frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue");
         String manifest = read("docs/migration/tasks-notes-important-vue-migration-manifest.md");
 
         assertTrue(core.contains("domain === \"productivity\""));
-        assertTrue(core.contains("vueSelectedDayTasksMount"));
-        assertTrue(core.contains("vueSelectedDayNotesMount"));
-        assertTrue(core.contains("vueSelectedDayImportantMount"));
+        assertFalse(core.contains("vueSelectedDayTasksMount"));
+        assertFalse(core.contains("vueSelectedDayNotesMount"));
+        assertFalse(core.contains("vueSelectedDayImportantMount"));
+        assertTrue(selectedDayPanel.contains("vueSelectedDayTasksMount"));
+        assertTrue(selectedDayPanel.contains("vueSelectedDayNotesMount"));
+        assertTrue(selectedDayPanel.contains("vueSelectedDayImportantMount"));
         assertTrue(core.contains("setAttribute(\"data-vue-productivity\", \"ready\")"));
         assertTrue(tasks.contains("document.documentElement.dataset.vueProductivity === \"ready\""));
         assertTrue(tasks.contains("productivity?.openTaskCreate"));
@@ -208,8 +212,8 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(tasks.contains("function syncTaskBoardFiltersToInputs"));
         assertTrue(tasks.contains("function renderTaskBoard"));
         assertTrue(count(tasks, "if (vueOwnsProductivityUi()) return;") >= 14);
-        assertTrue(core.contains("openCalendarSection(section)"));
-        assertTrue(workspace.contains("props.bridge.openCalendarSection(\"notes\")"));
+        assertFalse(core.contains("openCalendarSection(section)"));
+        assertTrue(workspace.contains("calendar.openDayPanel(targetDate, \"notes\")"));
         assertTrue(calendar.contains("const vueOwnsProductivitySummaries = document.documentElement.dataset.vueProductivity === \"ready\""));
         assertTrue(calendar.contains("if ($(\"sumTasks\") && !vueOwnsProductivitySummaries)"));
         assertTrue(calendar.contains("if ($(\"sumImp\") && !vueOwnsProductivitySummaries)"));

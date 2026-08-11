@@ -71,7 +71,7 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(page.contains("class=\"calendarLayerToggle\""));
         assertTrue(page.contains("class=\"absenceFact\""));
         assertTrue(page.contains("class=\"partialAbsenceBar\""));
-        assertTrue(page.contains("props.bridge.closeCalendarDay()"));
+        assertTrue(page.contains("<SelectedDayPanel v-if=\"dayPanelOpen\""));
     }
 
     @Test
@@ -91,32 +91,44 @@ class VueCalendarTimelineMigrationFrontendContractTest {
     }
 
     @Test
-    void legacyPlatformRetiresReadSurfacesButPreservesTheDayEditorIsland() throws Exception {
+    void vueOwnsSelectedDayPanelWhileLegacyDataLayerRemainsTheSingleOfflineWriter() throws Exception {
         String bridge = read("frontend/src/platform/bridge/legacyBridge.ts");
         String page = read(FEATURE.resolve("components/CalendarPage.vue"));
+        String panel = read(FEATURE.resolve("components/SelectedDayPanel.vue"));
         String legacy = read("src/main/resources/static/js/10-core.js");
         String boot = read("src/main/resources/static/js/70-user-boot.js");
         String calendar = read("src/main/resources/static/js/30-calendar.js");
 
         assertTrue(bridge.contains("CALENDAR_TIMELINE_PROJECTION_EVENT"));
-        assertTrue(bridge.contains("attachCalendarEditor"));
-        assertTrue(bridge.contains("parkCalendarEditor"));
-        assertTrue(page.contains("onBeforeUnmount"));
-        assertTrue(page.contains("props.bridge.parkCalendarEditor()"));
+        assertTrue(bridge.contains("writeCalendarDay(date: string, patch: Record<string, unknown>)"));
+        assertFalse(bridge.contains("attachCalendarEditor"));
+        assertFalse(bridge.contains("parkCalendarEditor"));
+        assertFalse(bridge.contains("openCalendarDay"));
+        assertFalse(bridge.contains("openCalendarSection"));
+        assertFalse(bridge.contains("closeCalendarDay"));
+        assertTrue(page.contains("SelectedDayPanel"));
+        assertTrue(page.contains("store.openDayPanel"));
+        assertTrue(page.contains("<SelectedDayPanel v-if=\"dayPanelOpen\""));
+        assertTrue(panel.contains("id=\"panel\""));
+        assertTrue(panel.contains("data-vue-selected-day-panel"));
+        assertTrue(panel.contains("id=\"chips\""));
+        assertTrue(panel.contains("id=\"dayEmojiApply\""));
+        assertTrue(panel.contains("id=\"accVacation\""));
+        assertTrue(panel.contains("id=\"dayAddCredit\""));
+        assertTrue(panel.contains("props.bridge.writeCalendarDay"));
         assertTrue(legacy.contains("calendar-timeline"));
-        assertTrue(legacy.contains("attachCalendarEditor(hostId)"));
-        assertTrue(legacy.contains("parkCalendarEditor()"));
-        assertTrue(legacy.contains("panel.parentElement !== document.body"));
-        assertTrue(legacy.contains("document.body.appendChild(panel)"));
-        assertTrue(legacy.contains("openCalendarDay(date)"));
-        assertTrue(legacy.contains("data-vue-calendar-timeline"));
+        assertTrue(legacy.contains("async writeCalendarDay(date, patch)"));
+        assertTrue(legacy.contains("dataLayer.putDay(key, next)"));
+        assertTrue(legacy.contains("data-vue-calendar-selected-day"));
+        assertFalse(legacy.contains("attachCalendarEditor(hostId)"));
+        assertFalse(legacy.contains("parkCalendarEditor()"));
+        assertFalse(legacy.contains("document.body.appendChild(panel)"));
         assertTrue(boot.contains("document.querySelectorAll(\".nav #prev, .nav #todayBtn, .nav #next\")"));
         assertFalse(boot.contains("document.querySelector(\".nav #prev\").style.visibility"));
         assertFalse(boot.contains("document.querySelector(\".nav #todayBtn\").style.visibility"));
         assertFalse(boot.contains("document.querySelector(\".nav #next\").style.visibility"));
-        assertTrue(calendar.contains("$(\"layout\")?.classList.toggle(\"with-panel\", !!k);"));
-        assertFalse(calendar.contains("$(\"layout\").classList.toggle(\"with-panel\", !!k);"));
-        assertTrue(calendar.contains("$(\"panel\").hidden = !k;"));
+        assertTrue(calendar.contains("dataset.vueCalendarSelectedDay === \"ready\""));
+        assertTrue(calendar.contains("calendarTimeline?.openDay"));
     }
 
     @Test
@@ -150,14 +162,15 @@ class VueCalendarTimelineMigrationFrontendContractTest {
     }
 
     @Test
-    void browserAcceptanceKeepsOneVueOwnerAndTheSelectedDayEditorIsland() throws Exception {
+    void browserAcceptanceKeepsOneVueOwnerAndNativeSelectedDayPanel() throws Exception {
         String browser = read("e2e/vue-calendar-timeline-migration.spec.js");
         String helpers = read("e2e/helpers.js");
 
         assertTrue(browser.contains("data-vue-domain-owner=\"calendar-timeline\""));
         assertTrue(browser.contains("#calendarWeekStrip [data-date]"));
         assertTrue(browser.contains("#calendarTimelineHours span"));
-        assertTrue(browser.contains("#calendarLegacyPanelHost > #panel"));
+        assertTrue(browser.contains("#panel[data-vue-selected-day-panel]"));
+        assertTrue(browser.contains("#calendarLegacyPanelHost"));
         assertTrue(browser.contains("toHaveCount(1)"));
         assertTrue(helpers.contains("Clicking an already-focused"));
         assertFalse(helpers.contains("not.toHaveClass(/sel/)"));
