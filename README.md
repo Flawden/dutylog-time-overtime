@@ -1,3 +1,7 @@
+# DutyLog v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix
+
+The v27.40.7 local Maven gate executed all 758 tests and failed exactly one static/source assertion in `VueTasksNotesImportantMigrationFrontendContractTest`: the test searched for a single uninterrupted English comment sentence, while the correct reconnect guard was split across two comment lines. v27.40.8 replaces that formatting-sensitive assertion with structural checks over the actual `onBeforeUnmount` block: only a pending debounce draft may clear its timer and call `updateNote`, while `dataLayer.syncQueue()` remains the sole reconnect queue owner. Product runtime behavior, retries/timeouts, strict TypeScript, OpenAPI 118/120 and Flyway V47 are unchanged.
+
 # DutyLog v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix
 
 The v27.40.6 staging browser report reached the full 48-scenario suite and exposed four deterministic selected-day parity failures plus one retry-only offline-note failure. v27.40.7 ports the lost shift/timezone and cross-midnight overtime rendering semantics into the native Vue panel, updates one desktop notes-layout assertion that was specific to the retired narrow rail, and closes the reconnect race where `SelectedDayNotes` could submit the same queued note beside `dataLayer.syncQueue()`. The Vue selected-day owner remains in place, the existing dataLayer remains the only offline queue/sync owner, and no retry, timeout, strictness, OpenAPI or Flyway relaxation is introduced.

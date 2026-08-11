@@ -180,8 +180,14 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertFalse(workspace.contains("window.addEventListener(\"online\", reconnect)"));
         assertFalse(workspace.contains("store.flushOfflineQueue()"));
         assertTrue(notes.contains(":disabled=\"!shell.online\""));
-        assertTrue(notes.contains("if (timer != null && currentNote.value)"));
-        assertTrue(notes.contains("must not resubmit the already queued/current note beside dataLayer.syncQueue()"));
+        int unmountStart = notes.indexOf("onBeforeUnmount(() => {");
+        int unmountEnd = notes.indexOf("});", unmountStart);
+        assertTrue(unmountStart >= 0 && unmountEnd > unmountStart);
+        String unmount = notes.substring(unmountStart, unmountEnd);
+        assertTrue(unmount.contains("if (timer != null && currentNote.value)"));
+        assertTrue(unmount.contains("globalThis.clearTimeout(timer)"));
+        assertTrue(unmount.contains("timer = null"));
+        assertTrue(unmount.contains("void store.updateNote(currentNote.value.id"));
     }
 
     @Test

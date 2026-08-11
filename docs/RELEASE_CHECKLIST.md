@@ -1,6 +1,18 @@
 # Release checklist
 
-Status: v27.40.7.
+Status: v27.40.8.
+
+
+## v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix acceptance
+
+- [x] Record the exact v27.40.7 Maven result: 758 tests / 1 failure / 0 errors / 0 skipped.
+- [x] Keep the reconnect product fix unchanged and replace only the stale comment-format assertion with structural `onBeforeUnmount` checks.
+- [x] Require the pending timer guard, timer cancellation/reset and guarded `updateNote` call inside the unmount block.
+- [x] Keep `dataLayer.syncQueue()` as the sole reconnect queue owner; no retry, timeout, strictness, OpenAPI, Flyway or business-rule relaxation.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 758/758.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image and PostgreSQL V47 staging acceptance.
 
 
 ## v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix acceptance

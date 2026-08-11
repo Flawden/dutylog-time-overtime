@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.40.7"
+const DUTYLOG_VERSION = "27.40.8"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -342,7 +342,7 @@ window.DutyLogLegacyPlatform = Object.freeze({
       .find(node => !node.hasAttribute("data-vue-domain-owner"));
     const legacyToday = [...document.querySelectorAll("section.view#view-today")]
       .find(node => !node.hasAttribute("data-vue-domain-owner"));
-    // v27.40.7 retires the last Calendar DOM compatibility island. The old
+    // v27.40.8 retires the last Calendar DOM compatibility island. The old
     // #panel dies together with the legacy Calendar; Vue now owns selected-day UI.
     legacyCalendar?.remove();
     legacyToday?.remove();

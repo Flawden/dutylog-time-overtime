@@ -1,3 +1,10 @@
+# v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix
+
+- Uses the v27.40.7 local Maven result as source of truth: **758 tests / 1 failure / 0 errors**, with the sole failure at `VueTasksNotesImportantMigrationFrontendContractTest.offlineReconnectUsesExistingDataLayerQueueAndCachedSelectedDayWithoutInventingASecondStore`.
+- Classifies the failure as a stale formatting-sensitive source contract: the intended `SelectedDayNotes` reconnect guard is present, but the test searched for one uninterrupted comment sentence that is split across two source lines.
+- Replaces the comment-text assertion with structural checks scoped to the actual `onBeforeUnmount` block: pending timer guard, timer cancellation/reset and the guarded `updateNote` call must all remain present.
+- Changes no product runtime behavior, retry/timeout, strictness, OpenAPI/Flyway, business rule or offline ownership; `dataLayer.syncQueue()` remains the sole reconnect queue owner.
+
 # v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix
 
 - Classifies the v27.40.6 full Playwright report as 48 scenarios: 43 clean passed, one retry-only PWA offline-note flaky, and four final failures.

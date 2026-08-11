@@ -1,9 +1,20 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix**.
+Current release: **v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix**.
 
 
-## v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix — current
+## v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix — current
+- [x] Use the exact v27.40.7 local Maven evidence: 758 tests executed, 1 failure, 0 errors, 0 skipped.
+- [x] Classify the sole failure as a formatting-sensitive source contract at `VueTasksNotesImportantMigrationFrontendContractTest` line 184, not a product/offline regression.
+- [x] Scope the contract to the real `SelectedDayNotes` `onBeforeUnmount` block and require the pending-timer guard, timer clear/reset and guarded `updateNote` call.
+- [x] Keep `dataLayer.syncQueue()` as the sole reconnect queue owner; do not change product runtime behavior, retries/timeouts, strictness, OpenAPI/Flyway or business rules.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 758/758.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+
+## v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix — predecessor hotfix
 - [x] Use the complete v27.40.6 Playwright artifact: 48 scenarios, 43 clean passes, one retry-only PWA offline-note flaky and four final failures.
 - [x] Restore the native selected-day shift projection contract: display interval/timezone, source interval/timezone, moved source date, net work duration and break.
 - [x] Restore exact cross-midnight overtime allocation labels including `24:00` and next-day `00:00–…`.
