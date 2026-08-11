@@ -1,13 +1,20 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover**.
+Current release: **v27.40.1 — Vue Settings Retirement Maven Contract Alignment Hotfix**.
 
 
 
 
 
 
-## v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover — current
+## v27.40.1 — Vue Settings Retirement Maven Contract Alignment Hotfix — current
+- [x] Preserve the v27.40.0 Settings native-island cutover unchanged.
+- [x] Fix the stale Maven source assertion for the retired `#settingsLegacyHost` Playwright contract; do not resurrect legacy DOM.
+- [x] Keep frontend strictness, OpenAPI 118/120, Flyway V47 and browser failure policy unchanged.
+- [ ] Maven 758/758, canary, clean 48/48 Chromium with zero flaky retries, immutable image, PostgreSQL V47 smoke and staging remain blocking acceptance gates.
+- [ ] Continue the remaining v27.40.x selected-day/router/modal/offline/Payroll/Admin retirement only after this tree is green.
+
+## v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover — predecessor
 - [x] Start only from the accepted green v27.39.6 staging workflow.
 - [x] Retire `#settingsLegacyHost` / `#settingsLegacyParking` and remove the Settings attach/open compatibility bridge methods.
 - [x] Move Time/Timezone, Schedule Templates/Calendar Layers and Notifications into native Vue Settings using generated `/api/v1/*` operations.

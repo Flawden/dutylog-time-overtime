@@ -1,3 +1,10 @@
+# v27.40.1 — Vue Settings Retirement Maven Contract Alignment Hotfix
+
+- Uses the first v27.40.0 staging run as the gate source of truth: exact frontend typecheck, 52 Vitest cases and production build complete before Maven fails.
+- Reproduces the repository-only static frontend contracts and isolates the stale Settings assertion in `VueSettingsWorkspaceMigrationFrontendContractTest`: the Playwright scenario wraps the retired-host locator with `expect(...)`, while the Java contract still searched for the obsolete unwrapped string.
+- Aligns only that source contract and release metadata. The retired `#settingsLegacyHost` stays retired; Vue Settings runtime, API/OpenAPI, Flyway, browser retries/timeouts and strict runtime/HTTP collectors are unchanged.
+- Acceptance remains Maven 758/758, canary, clean Chromium 48/48 with zero flaky retries, immutable image, PostgreSQL V47 smoke and staging.
+
 # v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover
 
 - Starts from the accepted green v27.39.6 staging workflow and opens the v27.40.x legacy-retirement milestone without carrying Settings compatibility islands forward.

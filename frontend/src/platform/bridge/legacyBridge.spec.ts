@@ -13,7 +13,7 @@ function fakeWindow(): Window {
 
 function snapshot(route = "calendar"): DutyLogLegacySnapshot {
   return {
-    version: "27.40.0",
+    version: "27.40.1",
     language: "ru",
     route,
     online: true,
@@ -35,7 +35,7 @@ describe("legacy bridge", () => {
     const parkCalendarEditor = vi.fn();
     const subscribe = vi.fn(() => vi.fn());
     target.DutyLogLegacyPlatform = {
-      version: "27.40.0",
+      version: "27.40.1",
       snapshot: () => snapshot(),
       navigate,
       openModal,

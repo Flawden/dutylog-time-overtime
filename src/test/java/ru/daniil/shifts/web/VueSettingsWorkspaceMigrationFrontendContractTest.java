@@ -139,7 +139,7 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         assertTrue(helper.contains("if (view === 'settings') await waitForSettingsWorkspaceReady(page)"));
         assertTrue(calendarSync.contains("url.pathname === '/api/v1/calendar-sync/subscription'"));
         assertTrue(migration.contains("data-vue-settings-workspace"));
-        assertTrue(migration.contains("page.locator('#settingsLegacyHost').toHaveCount(0)"));
+        assertTrue(migration.contains("expect(page.locator('#settingsLegacyHost')).toHaveCount(0)"));
         assertTrue(migration.contains("data-vue-settings-native-section"));
         assertTrue(migration.contains("waitForApi(page, 'PUT', '/api/v1/profile')"));
         assertFalse(migration.contains("waitForTimeout"));

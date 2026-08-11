@@ -1,3 +1,7 @@
+# DutyLog v27.40.1 — Vue Settings Retirement Maven Contract Alignment Hotfix
+
+v27.40.0 reached the exact frontend gate successfully and then stopped in Maven. Reproducing the repository-only frontend/static contracts isolates one stale Java assertion: the Playwright Settings scenario correctly checks `expect(page.locator('#settingsLegacyHost')).toHaveCount(0)`, while the source contract still searched for the pre-wrapper string `page.locator(...).toHaveCount(0)`. v27.40.1 aligns that contract only; the Vue Settings retirement implementation, OpenAPI 118/120, Flyway V47, strict browser policy and 153 / 758 / 48 / 52 regression surface remain unchanged.
+
 # DutyLog v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover
 
 v27.39.6 is the accepted green staging baseline. v27.40.0 starts the final Vue-retirement family by deleting the Settings compatibility host/parking bridge and moving Time, Schedule/Calendar Layers and Notifications into native Vue Settings backed by generated `/api/v1/*` operations. The milestone remains fail-closed: this cut does **not** claim full numbered-JavaScript retirement while selected-day Calendar, legacy routing/modal adapters, offline `dataLayer`, Payroll and Admin still have explicit compatibility ownership. Acceptance remains 48/48 Chromium with zero flaky retries, 52 Vitest, 758 JUnit, Flyway V47 and the immutable staging pipeline.

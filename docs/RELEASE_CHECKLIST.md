@@ -1,7 +1,16 @@
 # Release checklist
 
-Status: v27.40.0.
+Status: v27.40.1.
 
+
+## v27.40.1 — Vue Settings Retirement Maven Contract Alignment Hotfix acceptance
+
+- [x] Use the first v27.40.0 staging failure at the first blocking backend gate: exact frontend typecheck/unit/build is green; Maven fails before release-check/Chromium.
+- [x] Align `VueSettingsWorkspaceMigrationFrontendContractTest` with the already-current Playwright assertion `expect(page.locator('#settingsLegacyHost')).toHaveCount(0)`.
+- [x] Keep the retired Settings host retired; no runtime, API/OpenAPI, Flyway, retry/timeout or browser-collector behavior changes.
+- [ ] Maven Java 17 must pass 758/758.
+- [ ] Canary and full Chromium must pass 48/48 with zero flaky retries.
+- [ ] Immutable image, PostgreSQL V47 smoke and staging deployment must pass.
 
 ## v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover acceptance
 

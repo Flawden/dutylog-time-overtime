@@ -1,6 +1,6 @@
 # DutyLog CI/CD
 
-Status: v27.40.0.
+Status: v27.40.1.
 
 ## v27.39.0 Settings, Workspace & Integrations delivery boundary
 
