@@ -1,3 +1,13 @@
+# v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement
+
+- Starts from the accepted green v27.40.16 staging baseline.
+- Vue publishes guarded canonical route commits through `dutylog:vue-route-committed`; duplicate commits are suppressed inside the Vue route owner.
+- Removes the historical `hashchange` listener from the live post-Vue path at `dutylog:vue-ready`; legacy no longer parses the hash or repeats route guards after Vue owns routing.
+- Keeps one narrow legacy route-effect adapter for Payroll/Admin only, while preserving the full historical router for pre-Vue recovery.
+- Avoids duplicate first-boot Payroll/Admin refresh by remembering the pre-Vue active route and applying a cutover effect only when Vue canonicalization changed it.
+- Adds one Vitest route-event case and two JUnit architecture contracts. Acceptance surface becomes **156 Java test classes / 766 `@Test` methods / 48 Chromium Playwright scenarios / 58 Vitest cases / Flyway V47**.
+- OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`; strict TypeScript and the single `dataLayer` offline mutation/reconnect owner remain unchanged.
+
 # v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix
 
 - Classifies the v27.40.15 full Playwright run as 48 scenarios: 43 clean passes, one retry-only multiple-notes failure and five final failures.

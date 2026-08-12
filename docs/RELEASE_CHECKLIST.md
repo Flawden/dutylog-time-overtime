@@ -1,22 +1,36 @@
 # Release checklist
 
-Status: v27.40.16.
+Status: v27.40.17.
 
 
 
-## v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix acceptance
+## v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement acceptance
+
+- [x] Base tree is the accepted green v27.40.16 release.
+- [x] Vue publishes guarded canonical route commits and suppresses duplicate identical commits.
+- [x] Legacy detaches its `hashchange` listener after Vue readiness and consumes route commits only for Payroll/Admin effects.
+- [x] Pre-Vue recovery keeps the full historical router and initial Payroll/Admin cutover does not double-refresh an unchanged route.
+- [x] No route/business/API/offline ownership relaxation: OpenAPI 118/120, Flyway V47, strict TypeScript and single `dataLayer` ownership remain.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Maven 766/766 on Java 17.
+- [ ] Playwright canary green.
+- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
+- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [ ] Staging deploy green.
+
+## v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix acceptance — accepted predecessor
 
 - [x] Base tree is exact v27.40.15 `f68af0298c0ef28438178e5596aa02783fa6d892`.
 - [x] v27.40.15 browser evidence classified as 43 clean / 1 retry-only flaky / 5 final failures across 48 scenarios.
 - [x] Vue Overtime/Vacation route entry performs a fresh canonical read; Today performs a fresh dashboard read.
 - [x] Today widget order/visibility is rendered from Vue workspace/module state.
 - [x] Note create uses the returned DTO without a follow-up selected-day reload race.
-- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
-- [ ] Maven 764/764 on Java 17.
-- [ ] Playwright canary green.
-- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
-- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
-- [ ] Staging deploy green.
+- [x] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [x] Maven 764/764 on Java 17.
+- [x] Playwright canary green.
+- [x] Full Chromium 48/48, 0 failed, 0 flaky.
+- [x] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [x] Staging deploy green.
 
 ## v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix acceptance
 

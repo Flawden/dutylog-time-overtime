@@ -274,7 +274,32 @@ init().catch(err => {
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */
 const VIEWS = window.DutyLogUI?.views?.() || { today:"view-today", calendar:"view-calendar", vacation:"view-vacation", overtime:"view-overtime", payroll:"view-payroll", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
 window.__dutylogLedgerRouteReady = Promise.resolve();
+function applyRemainingLegacyRouteEffects(active){
+  const payrollView = document.getElementById(VIEWS.payroll);
+  const adminView = document.getElementById(VIEWS.admin);
+  if (payrollView) payrollView.hidden = active !== "payroll";
+  if (adminView) adminView.hidden = active !== "admin";
+  if (active === "payroll" && typeof openPayrollView === "function") {
+    window.__dutylogPayrollReady = Promise.resolve(openPayrollView(true));
+  }
+  if (active === "admin") {
+    if (typeof initAdminNavigation === "function") initAdminNavigation();
+    renderDiagnosticsClient();
+    if (state.profile?.admin) refreshAdminPanel();
+  }
+}
+
+function handleVueRouteCommitted(event){
+  if (document.documentElement.dataset.vueShell !== "ready") return;
+  const active = String(event.detail?.activeRoute || "");
+  if (active) applyRemainingLegacyRouteEffects(active);
+}
+window.addEventListener("dutylog:vue-route-committed", handleVueRouteCommitted);
+
+let preVueActiveRoute = null;
 function applyRoute(){
+  if (document.documentElement.dataset.vueShell === "ready") return;
+
   const defaultRoute = "#today";
   const rawRoute = (location.hash || defaultRoute).slice(1);
   const name = rawRoute.startsWith("settings-") ? "settings" : rawRoute;
@@ -285,25 +310,7 @@ function applyRoute(){
   if (active === "payroll" && !moduleEnabled("payroll")) active = "calendar";
   if (active === "important" && !moduleEnabled("important_dates")) active = "calendar";
   if (active === "vacation" && !moduleEnabled("vacation")) active = "calendar";
-
-  if (document.documentElement.dataset.vueShell === "ready") {
-    // Vue owns route state, route guards, migrated route rendering and the
-    // selected-day close-on-route-exit behavior. Legacy only owns the two
-    // remaining legacy route-entry side effects until Payroll/Admin migrate.
-    const payrollView = document.getElementById(VIEWS.payroll);
-    const adminView = document.getElementById(VIEWS.admin);
-    if (payrollView) payrollView.hidden = active !== "payroll";
-    if (adminView) adminView.hidden = active !== "admin";
-    if (active === "payroll" && typeof openPayrollView === "function") {
-      window.__dutylogPayrollReady = Promise.resolve(openPayrollView(true));
-    }
-    if (active === "admin") {
-      if (typeof initAdminNavigation === "function") initAdminNavigation();
-      renderDiagnosticsClient();
-      if (state.profile?.admin) refreshAdminPanel();
-    }
-    return;
-  }
+  preVueActiveRoute = active;
 
   // Pre-Vue recovery keeps the historical router intact.
   document.body.dataset.view = active;
@@ -348,6 +355,11 @@ function applyRoute(){
   publishLegacyPlatformState();
 }
 window.addEventListener("hashchange", applyRoute);
+window.addEventListener("dutylog:vue-ready", () => {
+  window.removeEventListener("hashchange", applyRoute);
+  const active = String(document.body.dataset.view || "today");
+  if (active !== preVueActiveRoute) applyRemainingLegacyRouteEffects(active);
+}, { once:true });
 applyRoute();
 
 /* ─── Полноэкранный редактор заметок ────────────────────────── */

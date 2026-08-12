@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static architecture contract for v27.40.16 Vue route-guard authority and profile-state publication alignment. */
+/** Static architecture contract for Vue route-guard authority and profile-state publication alignment through v27.40.17. */
 class VueRouteGuardAuthorityCutoverTest {
 
     @Test
@@ -33,9 +33,9 @@ class VueRouteGuardAuthorityCutoverTest {
         String boot = read("src/main/resources/static/js/70-user-boot.js");
         String calendar = read("frontend/src/features/calendar-timeline/components/CalendarTimelineWorkspace.vue");
 
-        assertTrue(boot.contains("document.documentElement.dataset.vueShell === \"ready\""));
-        assertTrue(boot.contains("const payrollView = document.getElementById(VIEWS.payroll)"));
-        assertTrue(boot.contains("const adminView = document.getElementById(VIEWS.admin)"));
+        assertTrue(boot.contains("function applyRemainingLegacyRouteEffects(active)"));
+        assertTrue(boot.contains("window.addEventListener(\"dutylog:vue-route-committed\", handleVueRouteCommitted)"));
+        assertTrue(boot.contains("window.removeEventListener(\"hashchange\", applyRoute);"));
         assertTrue(boot.contains("Pre-Vue recovery keeps the historical router intact."));
         String loadProfile = loadProfileSurface(boot);
         assertTrue(loadProfile.contains("state.profile = p;"));
@@ -44,10 +44,13 @@ class VueRouteGuardAuthorityCutoverTest {
         assertTrue(loadProfile.indexOf("publishLegacyPlatformState();") > loadProfile.indexOf("applyRoute();"));
         assertTrue(calendar.contains("route !== \"calendar\" && store.dayPanelOpen"));
         assertTrue(calendar.contains("store.closeDayPanel()"));
-        assertFalse(appRouteSurface(boot).contains("renderTodayDashboard"));
-        assertFalse(appRouteSurface(boot).contains("renderImportantBoard"));
-        assertFalse(appRouteSurface(boot).contains("openVacationPlannerView"));
-        assertFalse(appRouteSurface(boot).contains("loadLedgerPage"));
+        String effects = legacyRouteEffectsSurface(boot);
+        assertTrue(effects.contains("VIEWS.payroll"));
+        assertTrue(effects.contains("VIEWS.admin"));
+        assertFalse(effects.contains("renderTodayDashboard"));
+        assertFalse(effects.contains("renderImportantBoard"));
+        assertFalse(effects.contains("openVacationPlannerView"));
+        assertFalse(effects.contains("loadLedgerPage"));
     }
 
     private static String loadProfileSurface(String boot) {
@@ -56,9 +59,9 @@ class VueRouteGuardAuthorityCutoverTest {
         return boot.substring(start, end);
     }
 
-    private static String appRouteSurface(String boot) {
-        int start = boot.indexOf("if (document.documentElement.dataset.vueShell === \"ready\")");
-        int end = boot.indexOf("// Pre-Vue recovery keeps the historical router intact.", start);
+    private static String legacyRouteEffectsSurface(String boot) {
+        int start = boot.indexOf("function applyRemainingLegacyRouteEffects(active)");
+        int end = boot.indexOf("function handleVueRouteCommitted(event)", start);
         return boot.substring(start, end);
     }
 

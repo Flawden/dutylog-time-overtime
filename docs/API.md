@@ -1,4 +1,6 @@
-# DutyLog API v27.40.16
+# DutyLog API v27.40.17
+
+`v27.40.17` changes no HTTP/OpenAPI shape. It retires the live post-Vue legacy hash listener and routes the remaining Payroll/Admin compatibility effects from Vue canonical route commits; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 
 `v27.40.16` changes no HTTP/OpenAPI shape. It restores Vue-owned route-entry freshness, Today workspace rendering ownership and note-create read-your-write behavior after the route-guard cutover; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 

@@ -3,7 +3,7 @@ import { onBeforeUnmount, onMounted } from "vue";
 import AppShell from "@/app/AppShell.vue";
 import AppErrorBoundary from "@/shared/errors/AppErrorBoundary.vue";
 import { updateFrontendRoute } from "@/platform/diagnostics/frontendDiagnostics";
-import { guardHashRoute, navigateHashRoute, readHashRoute, subscribeHashRoute } from "@/platform/router/hashRoute";
+import { guardHashRoute, navigateHashRoute, publishCommittedHashRoute, readHashRoute, subscribeHashRoute } from "@/platform/router/hashRoute";
 import { useShellStore } from "@/app/shellStore";
 import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { usePlatformStore } from "@/platform/stores/platformStore";
@@ -13,6 +13,7 @@ const platform = usePlatformStore();
 const shell = useShellStore();
 let unsubscribeLegacy: (() => void) | null = null;
 let unsubscribeRoute: (() => void) | null = null;
+let lastCommittedRoute = "";
 
 function synchronizeRoute(): void {
   const requested = readHashRoute();
@@ -26,6 +27,11 @@ function synchronizeRoute(): void {
   document.body.dataset.view = route.activeRoute;
   updateFrontendRoute(route.rawRoute);
   if (route.rawRoute !== requested.rawRoute) navigateHashRoute(route.rawRoute);
+  const committedKey = `${route.rawRoute}|${route.activeRoute}`;
+  if (committedKey !== lastCommittedRoute) {
+    lastCommittedRoute = committedKey;
+    publishCommittedHashRoute(route);
+  }
 }
 
 onMounted(() => {

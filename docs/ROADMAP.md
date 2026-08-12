@@ -1,19 +1,31 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix**.
+Current release: **v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement**.
 
 
-## v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix — current
+## v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement — current
+- [x] Start only from the accepted green v27.40.16 staging baseline.
+- [x] Publish canonical guarded Vue routes through `dutylog:vue-route-committed` instead of letting Legacy independently re-read the URL after Vue readiness.
+- [x] Detach the legacy `hashchange -> applyRoute()` listener when `dutylog:vue-ready` fires.
+- [x] Keep one narrow Payroll/Admin side-effect adapter driven only by committed Vue routes; keep the full historical router only for pre-Vue recovery.
+- [x] Prevent duplicate initial Payroll/Admin refresh when the pre-Vue recovery route already equals the canonical Vue route.
+- [x] Keep strict TypeScript, OpenAPI 118/120, Flyway V47 and single `dataLayer` offline ownership unchanged.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 766/766.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix — accepted predecessor
 - [x] Start from the exact v27.40.15 tree and keep Vue route-state/guard authority in place.
 - [x] Classify the v27.40.15 browser result: 48 scenarios, 43 clean passed, one retry-only multiple-notes failure and five final failures.
 - [x] Restore fresh route-entry reads inside Vue Overtime/Vacation and Today owners instead of restoring legacy `applyRoute()` side effects.
 - [x] Move Today widget order/visibility into Vue using persisted workspace definition plus authoritative module state.
 - [x] Make note creation read-your-write from the create response and remove the selected-day reload that can race the first editor keystrokes.
 - [x] Keep strict TypeScript, OpenAPI 118/120, Flyway V47 and single `dataLayer` offline ownership unchanged.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 764/764.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 764/764.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image/PostgreSQL V47 staging acceptance.
 
 ## v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix — predecessor cut (browser red)
 - [x] Carry the v27.40.14 Vue route-state/guard runtime forward unchanged from the v27.40.13 proven-green baseline.

@@ -1,10 +1,12 @@
 # DutyLog regression test baseline
 
-Status: v27.40.16.
+Status: v27.40.17.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.16 keeps Vue route-state/guard authority and fixes the runtime regressions exposed by the full v27.40.15 browser report: Vue-owned Overtime/Vacation and Today regain route-entry freshness, Today owns workspace widget order/visibility, and note creation becomes read-your-write so a follow-up reload cannot overwrite the first editor keystrokes. The v27.40.16 acceptance surface is **155 Java test classes / 764 `@Test` methods / 48 Chromium Playwright scenarios / 57 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+Current extension: v27.40.17 retires the live post-Vue legacy hash listener. Vue emits each guarded canonical route through `dutylog:vue-route-committed`; Legacy consumes only Payroll/Admin route effects, while full `applyRoute()` hash routing remains pre-Vue recovery. The acceptance surface is **156 Java test classes / 766 `@Test` methods / 48 Chromium Playwright scenarios / 58 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+
+Historical v27.40.16 extension: accepted green staging release restoring Vue route-entry freshness, Today workspace ownership and note create read-your-write after the route-guard cutover.
 
 Historical v27.40.14 extension: Vue became authoritative for admin/module route guards and canonical blocked-route redirects after profile/module state is known; post-Vue legacy `applyRoute()` was narrowed to Payroll/Admin side effects. Its CI stopped at one stale formatting-sensitive Maven source assertion, not a demonstrated runtime regression.
 

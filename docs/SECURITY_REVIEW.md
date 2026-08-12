@@ -1,6 +1,6 @@
 # DutyLog security review
 
-Status: v27.40.16.
+Status: v27.40.17.
 
 ## v27.40.16 Route-entry freshness / Today workspace review
 

@@ -1,3 +1,7 @@
+# DutyLog v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement
+
+v27.40.16 is the accepted green staging baseline. v27.40.17 removes the last post-Vue hash-routing competition: Vue publishes each guarded canonical route through `dutylog:vue-route-committed`, while the historical `hashchange -> applyRoute()` listener is detached at Vue readiness. Legacy consumes committed routes only for the two remaining Payroll/Admin side effects; the full old router remains available only before Vue readiness as recovery. OpenAPI remains 118/120, Flyway remains V47, strict frontend policy is unchanged, and the single legacy `dataLayer` remains the sole offline queue/reconnect owner.
+
 # DutyLog v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix
 
 The v27.40.15 staging browser run reached all 48 strict scenarios and exposed one common route-entry freshness regression after the v27.40.14 router narrowing, one Today workspace-ownership gap, and one retry-only note-create race. v27.40.16 keeps Vue route/guard authority in place, moves the missing fresh-read and workspace side effects into their actual Vue domain owners, and makes note creation read-your-write from the authoritative create response instead of reloading over a live editor draft. OpenAPI remains 118/120, Flyway remains V47, strict frontend policy is unchanged, and the single legacy `dataLayer` remains the sole offline queue/reconnect owner.
