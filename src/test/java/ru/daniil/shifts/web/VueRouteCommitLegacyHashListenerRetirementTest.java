@@ -27,7 +27,7 @@ class VueRouteCommitLegacyHashListenerRetirementTest {
     }
 
     @Test
-    void legacyStopsListeningToHashAfterVueReadyAndKeepsOnlyPayrollAdminEffects() throws Exception {
+    void legacyStopsListeningToHashAfterVueReadyAndKeepsOnlyAdminEffects() throws Exception {
         String boot = read("src/main/resources/static/js/70-user-boot.js");
         String effects = between(boot, "function applyRemainingLegacyRouteEffects(active)", "function handleVueRouteCommitted(event)");
         String recovery = between(boot, "function applyRoute()", "window.addEventListener(\"hashchange\", applyRoute)");
@@ -35,7 +35,7 @@ class VueRouteCommitLegacyHashListenerRetirementTest {
         assertTrue(boot.contains("window.addEventListener(\"dutylog:vue-route-committed\", handleVueRouteCommitted)"));
         assertTrue(boot.contains("window.removeEventListener(\"hashchange\", applyRoute);"));
         assertTrue(boot.contains("if (active !== preVueActiveRoute) applyRemainingLegacyRouteEffects(active);"));
-        assertTrue(effects.contains("VIEWS.payroll"));
+        assertFalse(effects.contains("VIEWS.payroll"));
         assertTrue(effects.contains("VIEWS.admin"));
         assertFalse(effects.contains("renderTodayDashboard"));
         assertFalse(effects.contains("openVacationPlannerView"));
@@ -44,6 +44,7 @@ class VueRouteCommitLegacyHashListenerRetirementTest {
         assertTrue(recovery.contains("renderTodayDashboard"));
         assertTrue(recovery.contains("openVacationPlannerView"));
         assertTrue(recovery.contains("loadLedgerPage"));
+        assertFalse(recovery.contains("openPayrollView"));
     }
 
     private static String between(String source, String startToken, String endToken) {

@@ -1,4 +1,6 @@
-# DutyLog API v27.40.20
+# DutyLog API v27.40.21
+
+`v27.40.21` changes no HTTP/OpenAPI shape. Payroll presentation now uses the existing generated payroll operation IDs and removes the old legacy browser API helpers; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 
 `v27.40.20` changes no HTTP/OpenAPI shape. It aligns Java source contracts with the shared E2E release-version authority introduced in v27.40.19; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 

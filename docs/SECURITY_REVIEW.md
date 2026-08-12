@@ -1,10 +1,17 @@
 # DutyLog security review
 
+## v27.40.21 Vue Payroll workspace retirement review
+
+- Payroll continues to use same-origin authenticated generated API operations; Spring Boot remains authoritative for ownership, closed-period eligibility, ledger integrity and immutable calculation snapshots.
+- The Vue migration adds no credential, token, origin, storage engine, offline queue or client-side monetary authority.
+- Removing legacy Payroll browser state/helpers reduces duplicate mutation surfaces rather than expanding them.
+
+Status: v27.40.21.
+
 ## v27.40.20 E2E release-version contract alignment review
 
 - The change is test/release metadata only. It adds no endpoint, credential flow, permission, storage surface or cross-origin dependency.
 
-Status: v27.40.20.
 
 ## v27.40.19 E2E release-version authority review
 

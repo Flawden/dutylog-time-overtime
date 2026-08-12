@@ -29,7 +29,7 @@ class VueRouteGuardAuthorityCutoverTest {
     }
 
     @Test
-    void postVueLegacyRouterOnlyKeepsPayrollAndAdminSideEffects() throws Exception {
+    void postVueLegacyRouterOnlyKeepsAdminSideEffects() throws Exception {
         String boot = read("src/main/resources/static/js/70-user-boot.js");
         String calendar = read("frontend/src/features/calendar-timeline/components/CalendarTimelineWorkspace.vue");
 
@@ -45,7 +45,7 @@ class VueRouteGuardAuthorityCutoverTest {
         assertTrue(calendar.contains("route !== \"calendar\" && store.dayPanelOpen"));
         assertTrue(calendar.contains("store.closeDayPanel()"));
         String effects = legacyRouteEffectsSurface(boot);
-        assertTrue(effects.contains("VIEWS.payroll"));
+        assertFalse(effects.contains("VIEWS.payroll"));
         assertTrue(effects.contains("VIEWS.admin"));
         assertFalse(effects.contains("renderTodayDashboard"));
         assertFalse(effects.contains("renderImportantBoard"));

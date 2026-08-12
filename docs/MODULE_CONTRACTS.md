@@ -1,10 +1,18 @@
 # Module contracts
 
+## Vue Payroll ownership (v27.40.21)
+
+- Vue is the sole live Payroll presentation/read-state owner for the `payroll` route.
+- Spring Boot remains authoritative for Payroll settings validation, period closure/integrity, canonical time projection, rounding, adjustments and immutable revisions.
+- Online requests use generated OpenAPI operations; legacy Payroll HTML/script/state/data helpers are retired.
+- This release adds no second offline mutation/sync owner.
+
+Status: v27.40.21.
+
 ## E2E release-version contract alignment (v27.40.20)
 
 - This test-only alignment changes no module authority, module persistence or runtime ownership.
 
-Status: v27.40.20.
 
 ## E2E release-version authority (v27.40.19)
 

@@ -1,3 +1,13 @@
+# v27.40.21 — Vue Payroll Workspace Retirement
+
+- Starts from the proven-green v27.40.20 staging baseline.
+- Migrates Payroll presentation/read state to `PayrollWorkspace.vue` + Pinia and generated OpenAPI operations while preserving stable `#payroll*` browser selectors and the existing Payroll Foundation E2E journey.
+- Removes the live legacy Payroll section, `45-payroll.js`, legacy Payroll state fields and legacy `api.payroll*` helpers.
+- Narrows post-Vue legacy route effects from Payroll/Admin to Admin only; pre-Vue recovery no longer invokes the retired Payroll owner.
+- Teaches the static HTML/JS ID checker that Vue templates may be authoritative ID owners without weakening duplicate-ID checks inside runtime HTML.
+- Acceptance surface becomes **158 Java test classes / 769 `@Test` methods / 48 Chromium Playwright scenarios / 58 Vitest cases / Flyway V47**.
+- OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`; strict TypeScript and single `dataLayer` offline ownership remain unchanged.
+
 # v27.40.20 — E2E Release Version Contract Alignment Hotfix
 
 - Classifies v27.40.19 CI as exact-frontend-green and Maven-red: 767 tests ran, with two deterministic source-contract failures before Playwright.

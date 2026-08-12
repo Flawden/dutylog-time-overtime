@@ -1,17 +1,29 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.20 — E2E Release Version Contract Alignment Hotfix**.
+Current release: **v27.40.21 — Vue Payroll Workspace Retirement**.
 
 
-## v27.40.20 — E2E Release Version Contract Alignment Hotfix — current
+## v27.40.21 — Vue Payroll Workspace Retirement — current
+- [x] Start from the proven-green v27.40.20 staging baseline.
+- [x] Move Payroll route presentation/read state to Vue + Pinia and generated OpenAPI operations.
+- [x] Preserve the existing Payroll Foundation browser journey and stable `#payroll*` selectors.
+- [x] Retire legacy `view-payroll`, `45-payroll.js`, legacy Payroll state and legacy Payroll data helpers.
+- [x] Narrow live post-Vue legacy route effects to Admin only.
+- [x] Keep OpenAPI 118/120, Flyway V47, strict TypeScript and single `dataLayer` offline ownership unchanged.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 769/769.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.20 — E2E Release Version Contract Alignment Hotfix — accepted predecessor
 - [x] Start from the exact v27.40.19 release tree and classify CI: exact frontend gate green; Maven 767 tests reached two deterministic source-contract failures before Playwright.
 - [x] Keep the shared `e2e/release-version.js` browser authority introduced in v27.40.19 unchanged.
 - [x] Replace stale Java assertions for PWA cache-prefix and Calendar ICS browser expectations with semantic checks for the shared release-version helper and template usage.
 - [x] Keep Vue route/offline runtime, OpenAPI 118/120, Flyway V47 and single `dataLayer` offline ownership unchanged apart from the normal release-version bump.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 767/767.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 767/767.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image/PostgreSQL V47 staging acceptance.
 
 ## v27.40.19 — E2E Release Version Authority Hotfix — predecessor cut (Maven red)
 - [x] Start from exact v27.40.18 release tree and classify its browser evidence: 48 total / 46 passed / 0 flaky / 2 deterministic final failures.

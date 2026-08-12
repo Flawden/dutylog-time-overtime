@@ -1,3 +1,7 @@
+# DutyLog v27.40.21 — Vue Payroll Workspace Retirement
+
+v27.40.20 is the proven-green staging baseline. v27.40.21 retires Payroll as a live legacy UI owner: the route now renders from a typed Vue/Pinia domain using generated OpenAPI operations, while the old `view-payroll`, `45-payroll.js`, legacy Payroll state and legacy Payroll data helpers are removed. The existing Payroll browser journey and stable `#payroll*` selectors remain the parity contract. Post-Vue legacy route effects are now Admin-only; OpenAPI remains 118/120, Flyway remains V47, and `dataLayer` remains the sole offline mutation/reconnect owner.
+
 # DutyLog v27.40.20 — E2E Release Version Contract Alignment Hotfix
 
 v27.40.19 correctly centralized browser release-version expectations, but two historical Java source contracts still asserted the pre-helper E2E source shape and stopped Maven before Chromium could run. v27.40.20 keeps the runtime and browser helper unchanged, aligns those contracts with the shared authority, and adds no route/offline/API/schema change.

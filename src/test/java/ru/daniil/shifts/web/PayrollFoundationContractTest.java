@@ -21,7 +21,9 @@ class PayrollFoundationContractTest {
         String modules = source("src/main/java/ru/daniil/shifts/module/DutyLogModules.java");
         String moduleKeys = source("src/main/java/ru/daniil/shifts/module/ModuleKeys.java");
         String html = resource("/static/index.html");
-        String javascript = resource("/static/js/45-payroll.js");
+        String component = source("frontend/src/features/payroll/components/PayrollWorkspace.vue");
+        String payrollApi = source("frontend/src/features/payroll/api/payrollApi.ts");
+        String core = resource("/static/js/10-core.js");
         String data = resource("/static/js/20-data.js");
         String openapi = resource("/static/openapi/dutylog-v1.yaml");
 
@@ -48,15 +50,20 @@ class PayrollFoundationContractTest {
         assertTrue(modules.contains("                    PAYROLL,\n                    ModuleCategory.TIME_ACCOUNTING,"));
         assertTrue(modules.contains("/api/v1/payroll"));
 
-        assertTrue(html.contains("id=\"view-payroll\""));
-        assertTrue(html.contains("id=\"payrollCalculate\""));
-        assertTrue(html.contains("id=\"payrollSnapshotList\""));
-        assertTrue(html.contains("js/45-payroll.js"));
-        assertTrue(javascript.contains("window.__dutylogPayrollReady"));
-        assertTrue(javascript.contains("api.calculatePayroll"));
-        assertTrue(javascript.contains("paidAbsenceMinutes"));
-        assertTrue(data.contains("payrollPeriod(month)"));
-        assertTrue(data.contains("calculatePayroll(month)"));
+        assertFalse(html.contains("id=\"view-payroll\""));
+        assertFalse(html.contains("js/45-payroll.js"));
+        assertTrue(component.contains("id=\"view-payroll\""));
+        assertTrue(component.contains("id=\"payrollCalculate\""));
+        assertTrue(component.contains("id=\"payrollSnapshotList\""));
+        assertTrue(component.contains("data-vue-domain-owner=\"payroll\""));
+        assertTrue(component.contains("paidAbsenceMinutes"));
+        assertTrue(payrollApi.contains("client.request(\"payrollPeriod\""));
+        assertTrue(payrollApi.contains("client.request(\"calculatePayrollRevision\""));
+
+        assertFalse(core.contains("payrollPeriod: null"));
+        assertFalse(core.contains("payrollLoading"));
+        assertFalse(data.contains("payrollPeriod(month)"));
+        assertFalse(data.contains("calculatePayroll(month)"));
 
         assertTrue(openapi.contains("/api/v1/payroll/periods/{month}:"));
         assertTrue(openapi.contains("/api/v1/payroll/settings:"));

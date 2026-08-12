@@ -13,7 +13,7 @@ function fakeWindow(): Window {
 
 function snapshot(): DutyLogLegacySnapshot {
   return {
-    version: "27.40.20",
+    version: "27.40.21",
     language: "ru",
     online: true,
     modulesLoaded: true,
@@ -31,7 +31,7 @@ describe("legacy bridge", () => {
     const writeCalendarDay = vi.fn(async () => ({ queued: true, day: { date: "2026-08-11", shiftTypeId: 2 } }));
     const subscribe = vi.fn(() => vi.fn());
     target.DutyLogLegacyPlatform = {
-      version: "27.40.20",
+      version: "27.40.21",
       snapshot: () => snapshot(),
       logout,
       retireDomainOwners,

@@ -275,13 +275,8 @@ init().catch(err => {
 const VIEWS = window.DutyLogUI?.views?.() || { today:"view-today", calendar:"view-calendar", vacation:"view-vacation", overtime:"view-overtime", payroll:"view-payroll", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
 window.__dutylogLedgerRouteReady = Promise.resolve();
 function applyRemainingLegacyRouteEffects(active){
-  const payrollView = document.getElementById(VIEWS.payroll);
   const adminView = document.getElementById(VIEWS.admin);
-  if (payrollView) payrollView.hidden = active !== "payroll";
   if (adminView) adminView.hidden = active !== "admin";
-  if (active === "payroll" && typeof openPayrollView === "function") {
-    window.__dutylogPayrollReady = Promise.resolve(openPayrollView(true));
-  }
   if (active === "admin") {
     if (typeof initAdminNavigation === "function") initAdminNavigation();
     renderDiagnosticsClient();
@@ -343,9 +338,6 @@ function applyRoute(){
   }
   if (active === "overtime" && typeof loadLedgerPage === "function") {
     window.__dutylogLedgerRouteReady = Promise.resolve(loadLedgerPage(true));
-  }
-  if (active === "payroll" && typeof openPayrollView === "function") {
-    window.__dutylogPayrollReady = Promise.resolve(openPayrollView(true));
   }
   if (active === "admin") {
     if (typeof initAdminNavigation === "function") initAdminNavigation();

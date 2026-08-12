@@ -1,10 +1,16 @@
 # DutyLog CI/CD
 
+## v27.40.21 Vue Payroll workspace retirement
+
+- Exact frontend/Maven/Chromium workflow topology is unchanged; the frontend gate must compile the new Vue Payroll workspace before Maven 769/769 and the existing 48-scenario browser suite.
+- The existing Payroll Foundation browser scenario remains blocking and now waits on `DutyLogVueDomains.payroll.ready()`.
+
+Status: v27.40.21.
+
 ## v27.40.20 E2E release-version contract alignment
 
 - Maven source contracts now assert the shared E2E release-version helper/template instead of current-release literals; workflow topology, retries and timeouts are unchanged.
 
-Status: v27.40.20.
 
 ## v27.40.19 E2E release-version authority
 

@@ -1,18 +1,33 @@
 # Release checklist
 
-Status: v27.40.20.
+Status: v27.40.21.
 
 
+
+## v27.40.21 — Vue Payroll Workspace Retirement acceptance
+
+- [x] Base tree is the proven-green v27.40.20 release.
+- [x] Payroll route is Vue-owned and uses generated OpenAPI operations.
+- [x] Legacy Payroll HTML/script/state/data helpers are absent from the live runtime.
+- [x] Post-Vue legacy route effects are Admin-only.
+- [x] Existing Payroll Foundation E2E remains the parity journey and waits on the public Vue Payroll domain.
+- [x] OpenAPI 118/120, Flyway V47 and single `dataLayer` offline ownership remain unchanged.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Maven 769/769 on Java 17.
+- [ ] Playwright canary green.
+- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
+- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [ ] Staging deploy green.
 
 ## v27.40.20 — E2E Release Version Contract Alignment Hotfix acceptance
 
 - [x] Exact v27.40.19 tree classified: frontend gate green; Maven 767 total / 2 deterministic source-contract failures; Playwright not reached.
 - [x] PWA and Calendar Sync Java contracts now require the shared `e2e/release-version.js` authority instead of current-release literals.
 - [x] No route/offline runtime ownership change beyond release metadata bump.
-- [ ] Exact frontend gate green.
-- [ ] Maven 767/767 green.
-- [ ] Playwright canary green and full 48/48 with zero flaky retries.
-- [ ] Immutable image + PostgreSQL V47 smoke + staging deploy green.
+- [x] Exact frontend gate green.
+- [x] Maven 767/767 green.
+- [x] Playwright canary green and full 48/48 with zero flaky retries.
+- [x] Immutable image + PostgreSQL V47 smoke + staging deploy green.
 
 
 ## v27.40.19 — E2E Release Version Authority Hotfix acceptance

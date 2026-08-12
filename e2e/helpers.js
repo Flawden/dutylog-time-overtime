@@ -94,13 +94,9 @@ async function waitForLedgerReady(page) {
 }
 
 async function waitForPayrollReady(page) {
-  await page.evaluate(async () => {
-    await Promise.resolve(window.__dutylogPayrollReady);
-  });
-  await expect.poll(() => page.evaluate(() => ({
-    loading:Boolean(typeof state !== 'undefined' && state.payrollLoading),
-    period:Boolean(typeof state !== 'undefined' && state.payrollPeriod)
-  })), { timeout:30_000 }).toEqual({ loading:false, period:true });
+  await waitForVueShell(page);
+  await expect.poll(() => page.evaluate(() => Boolean(window.DutyLogVueDomains?.payroll?.ready())), { timeout:30_000 }).toBe(true);
+  await expect(page.locator('[data-vue-domain-route="payroll"]')).toBeVisible();
 }
 
 async function waitForVueShell(page) {
@@ -135,6 +131,7 @@ async function openView(page, view) {
     vacation: '[data-vue-domain-route="vacation"]',
     overtime: '[data-vue-domain-route="overtime"]',
     settings: '[data-vue-settings-workspace-view]',
+    payroll: '[data-vue-domain-route="payroll"]',
   }[view];
   const section = page.locator(vueOwnedSelector || `#view-${view}`);
   if (!(await section.isVisible())) {

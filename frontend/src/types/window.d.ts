@@ -1,6 +1,7 @@
 import type { DutyLogAbsenceTimeBankDomain } from "@/features/absence-time-bank/types/domain";
 import type { DutyLogCalendarTimelineDomain } from "@/features/calendar-timeline/types/domain";
 import type { DutyLogProductivityDomain } from "@/features/productivity/types/domain";
+import type { DutyLogPayrollDomain } from "@/features/payroll/types/domain";
 import type { DutyLogSettingsWorkspaceDomain } from "@/features/settings-workspace/types/domain";
 
 export {};
@@ -79,6 +80,7 @@ declare global {
     readonly absenceTimeBank?: DutyLogAbsenceTimeBankDomain;
     readonly calendarTimeline?: DutyLogCalendarTimelineDomain;
     readonly productivity?: DutyLogProductivityDomain;
+    readonly payroll?: DutyLogPayrollDomain;
     readonly settingsWorkspace?: DutyLogSettingsWorkspaceDomain;
   }
 

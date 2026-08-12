@@ -16,6 +16,7 @@ import AbsenceTimeBankWorkspace from "@/features/absence-time-bank/components/Ab
 import CalendarTimelineWorkspace from "@/features/calendar-timeline/components/CalendarTimelineWorkspace.vue";
 import ProductivityWorkspace from "@/features/productivity/components/ProductivityWorkspace.vue";
 import SettingsWorkspace from "@/features/settings-workspace/components/SettingsWorkspace.vue";
+import PayrollWorkspace from "@/features/payroll/components/PayrollWorkspace.vue";
 import "@/features/settings-workspace/settings-workspace.css";
 import { navigateHashRoute } from "@/platform/router/hashRoute";
 
@@ -88,6 +89,7 @@ function logout(): void { props.bridge.logout(); }
   <AbsenceTimeBankWorkspace :bridge="bridge" />
   <ProductivityWorkspace :bridge="bridge" />
   <SettingsWorkspace :bridge="bridge" />
+  <PayrollWorkspace />
 
   <UiModal
     :open="shell.moreOpen"

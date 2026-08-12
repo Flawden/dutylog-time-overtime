@@ -8,19 +8,19 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.40.20"></script>
-<link href="app.css?v=27.40.20" rel="stylesheet"/>
-<link href="design-system.css?v=27.40.20" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.40.20" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.40.20" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.40.20" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.40.20" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.40.20" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.40.20" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.40.20" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.40.20" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.40.20" rel="stylesheet"/>
-<link href="/vue/dutylog-vue-app-shell.css?v=27.40.20" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.40.21"></script>
+<link href="app.css?v=27.40.21" rel="stylesheet"/>
+<link href="design-system.css?v=27.40.21" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.40.21" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.40.21" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.40.21" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.40.21" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.40.21" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.40.21" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.40.21" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.40.21" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.40.21" rel="stylesheet"/>
+<link href="/vue/dutylog-vue-app-shell.css?v=27.40.21" rel="stylesheet"/>
 </head>
 <body>
 <div id="dutylog-vue-root" data-vue-app-shell-host="true" aria-hidden="true"></div>
@@ -561,82 +561,7 @@
   </section>
 </div>
 </section>
-<section class="view payrollView" hidden id="view-payroll">
-  <div class="payrollWorkspace">
-    <header class="payrollHero card" aria-labelledby="payrollTitle">
-      <div>
-        <div class="eyebrow">Payroll Foundation</div>
-        <h2 id="payrollTitle">Расчёт зарплаты</h2>
-        <p>DutyLog берёт только утверждённый факт из закрытого периода. Каждый расчёт сохраняется отдельной неизменяемой ревизией.</p>
-      </div>
-      <div class="payrollHeroControls">
-        <label>Расчётный месяц<input id="payrollMonth" type="month"/></label>
-        <button id="payrollReload" type="button">Обновить</button>
-      </div>
-    </header>
-
-    <section class="payrollStatusRow" aria-label="Статус источника расчёта">
-      <div class="payrollStatusCard"><span>Период</span><b id="payrollPeriodStatus">—</b><small id="payrollPeriodHint">—</small></div>
-      <div class="payrollStatusCard"><span>Целостность</span><b id="payrollIntegrityStatus">—</b><small>Расчёт блокируется при расхождениях</small></div>
-      <div class="payrollStatusCard total"><span>К выплате</span><b id="payrollTotal">—</b><small id="payrollRevisionLabel">Предварительный расчёт</small></div>
-    </section>
-
-    <div class="payrollGrid">
-      <section class="card payrollSummaryCard">
-        <div class="payrollSectionHead">
-          <div><div class="eyebrow">Расшифровка времени</div><h3>Из чего сложилась сумма</h3></div>
-          <span id="payrollCurrencyBadge">RUB</span>
-        </div>
-        <div class="payrollMetricGrid">
-          <div><span>По графику</span><b id="payrollPlanned">—</b></div>
-          <div><span>Фактически отработано</span><b id="payrollWorked">—</b></div>
-          <div><span>Оплачиваемые отсутствия</span><b id="payrollPaidAbsence">—</b></div>
-          <div><span>Неоплачиваемое время</span><b id="payrollUnpaid">—</b></div>
-          <div><span>Корректировка времени</span><b id="payrollTimeAdjustment">—</b></div>
-          <div class="accent"><span>Оплачиваемое время</span><b id="payrollPayable">—</b></div>
-        </div>
-        <div class="payrollBreakdown" id="payrollBreakdown"></div>
-      </section>
-
-      <section class="card payrollSettingsCard">
-        <div class="payrollSectionHead"><div><div class="eyebrow">Правила расчёта</div><h3>Ставка и валюта</h3></div></div>
-        <form id="payrollSettingsForm" class="payrollSettingsForm">
-          <label>Код валюты<input id="payrollCurrency" maxlength="3" pattern="[A-Za-z]{3}" value="RUB" required/></label>
-          <label>Ставка за час<input id="payrollHourlyRate" type="number" min="0" max="10000000" step="0.01" required/></label>
-          <button class="primary" type="submit">Сохранить правила</button>
-        </form>
-        <p class="payrollHint">Денежные значения хранятся в минимальных единицах валюты. Первый релиз использует одну почасовую ставку без налогов и коэффициентов.</p>
-        <div class="payrollMoneySummary">
-          <div><span>Базовая сумма</span><b id="payrollBasePay">—</b></div>
-          <div><span>Начисления</span><b id="payrollAdditions">—</b></div>
-          <div><span>Удержания</span><b id="payrollDeductions">—</b></div>
-        </div>
-      </section>
-    </div>
-
-    <div class="payrollGrid payrollLowerGrid">
-      <section class="card payrollAdjustmentsCard">
-        <div class="payrollSectionHead"><div><div class="eyebrow">Ручные операции</div><h3>Начисления и удержания</h3></div></div>
-        <form id="payrollAdjustmentForm" class="payrollAdjustmentForm">
-          <select id="payrollAdjustmentType"><option value="ADDITION">Начисление</option><option value="DEDUCTION">Удержание</option></select>
-          <input id="payrollAdjustmentAmount" type="number" min="0.01" max="10000000000" step="0.01" placeholder="Сумма" required/>
-          <input id="payrollAdjustmentTitle" maxlength="120" placeholder="Например: премия" required/>
-          <input id="payrollAdjustmentNote" maxlength="500" placeholder="Комментарий"/>
-          <button type="submit">Добавить операцию</button>
-        </form>
-        <div class="payrollAdjustmentList" id="payrollAdjustmentList"></div>
-      </section>
-
-      <section class="card payrollSnapshotCard">
-        <div class="payrollSectionHead"><div><div class="eyebrow">Закрытый расчёт</div><h3>Ревизии snapshot</h3></div></div>
-        <div class="payrollBlocking" id="payrollBlocking"></div>
-        <button class="primary payrollCalculate" id="payrollCalculate" type="button">Зафиксировать новую ревизию</button>
-        <div class="payrollSnapshotList" id="payrollSnapshotList"></div>
-      </section>
-    </div>
-    <div class="appModalMessage payrollMessage" id="payrollMessage" role="status" aria-live="polite"></div>
-  </div>
-</section>
+<!-- Payroll is owned by the Vue payroll workspace from v27.40.21 onward. -->
 <section class="view" hidden="" id="view-tasks">
 <div class="taskBoardCard" id="taskBoardCard">
 <div class="taskBoardHead">
@@ -1428,7 +1353,7 @@
 <div class="status" id="diagnosticsStatus">—</div>
 </div>
 <div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.40.20</b></div>
+  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.40.21</b></div>
   <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
   <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
   <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
@@ -2059,20 +1984,19 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.40.20"></script>
-<script src="js/12-ui-platform.js?v=27.40.20"></script>
-<script src="js/20-data.js?v=27.40.20"></script>
-<script src="js/30-calendar.js?v=27.40.20"></script>
-<script src="js/35-today.js?v=27.40.20"></script>
-<script src="js/37-calendar-experience.js?v=27.40.20"></script>
-<script src="js/38-schedule-layers.js?v=27.40.20"></script>
-<script src="js/39-vacation-planner.js?v=27.40.20"></script>
-<script src="js/40-overtime.js?v=27.40.20"></script>
-<script src="js/45-payroll.js?v=27.40.20"></script>
-<script src="js/50-tasks.js?v=27.40.20"></script>
-<script src="js/55-calendar-sync.js?v=27.40.20"></script>
-<script src="js/60-settings.js?v=27.40.20"></script>
-<script src="js/70-user-boot.js?v=27.40.20"></script>
-<script type="module" src="/vue/dutylog-vue-app-shell.js?v=27.40.20"></script>
+<script src="js/10-core.js?v=27.40.21"></script>
+<script src="js/12-ui-platform.js?v=27.40.21"></script>
+<script src="js/20-data.js?v=27.40.21"></script>
+<script src="js/30-calendar.js?v=27.40.21"></script>
+<script src="js/35-today.js?v=27.40.21"></script>
+<script src="js/37-calendar-experience.js?v=27.40.21"></script>
+<script src="js/38-schedule-layers.js?v=27.40.21"></script>
+<script src="js/39-vacation-planner.js?v=27.40.21"></script>
+<script src="js/40-overtime.js?v=27.40.21"></script>
+<script src="js/50-tasks.js?v=27.40.21"></script>
+<script src="js/55-calendar-sync.js?v=27.40.21"></script>
+<script src="js/60-settings.js?v=27.40.21"></script>
+<script src="js/70-user-boot.js?v=27.40.21"></script>
+<script type="module" src="/vue/dutylog-vue-app-shell.js?v=27.40.21"></script>
 </body>
 </html>
