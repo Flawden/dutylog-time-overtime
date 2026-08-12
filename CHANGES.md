@@ -1,3 +1,11 @@
+# v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix
+
+- Keep the v27.40.14 Vue route-state/route-guard runtime unchanged.
+- Record the exact v27.40.14 CI result: frontend gate green; Maven executed 760 tests with 1 failure / 0 errors / 0 skipped; Playwright did not run because validate stopped at Maven.
+- Replace the formatting-sensitive `Profile load still must publish authoritative access state` comment assertion with structural checks over the actual `loadProfile()` function.
+- Require `state.profile = p`, `applyRoute()` and the subsequent `publishLegacyPlatformState()` call in source order.
+- Do not change retries, timeouts, TypeScript strictness, OpenAPI 118/120, Flyway V47, route business rules or offline ownership.
+
 # v27.40.14 — Vue Route Guard Authority Cutover
 
 - Starts from the proven-green v27.40.13 staging baseline.

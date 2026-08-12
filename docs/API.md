@@ -1,6 +1,6 @@
-# DutyLog API v27.40.14
+# DutyLog API v27.40.15
 
-`v27.40.14` changes no HTTP/OpenAPI shape. It moves admin/module route-guard authority and migrated route side effects into Vue while narrowing the post-Vue legacy router; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
+`v27.40.15` changes no HTTP/OpenAPI shape. It moves admin/module route-guard authority and migrated route side effects into Vue while narrowing the post-Vue legacy router; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 
 `v27.40.7` changes no HTTP/OpenAPI shape. It aligns the strict Calendar/Timeline source contract with the now-explicit `CalendarDaySection` type used by the native Vue selected-day domain; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 

@@ -1,10 +1,22 @@
 # Release checklist
 
-Status: v27.40.14.
+Status: v27.40.15.
 
 
 
-## v27.40.14 — Vue Route Guard Authority Cutover acceptance
+## v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix acceptance
+
+- [x] Carry the v27.40.14 product/runtime code forward unchanged.
+- [x] Record exact v27.40.14 CI evidence: exact frontend gate green; Maven 760 executed / 1 failure / 0 errors / 0 skipped.
+- [x] Replace the formatting-sensitive comment assertion with structural `loadProfile()` checks.
+- [x] Require profile assignment, `applyRoute()` and later `publishLegacyPlatformState()` publication in source order.
+- [x] Keep route rules, retries/timeouts, strict TypeScript, OpenAPI 118/120, Flyway V47 and offline ownership unchanged.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 760/760.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image and PostgreSQL V47 staging acceptance.
+
+## v27.40.14 — Vue Route Guard Authority Cutover acceptance — predecessor cut; Maven source-contract failure
 
 - [x] Start from the proven-green v27.40.13 staging baseline.
 - [x] Vue owns canonical hash read/write/subscription plus Admin/module route access policy after authoritative state loads.
@@ -12,10 +24,10 @@ Status: v27.40.14.
 - [x] Vue owns the body route marker and Calendar selected-day close-on-route-exit behavior.
 - [x] Post-Vue legacy `applyRoute()` contains only Payroll/Admin side effects; full historical routing remains pre-Vue recovery.
 - [x] No second router, offline queue or reconnect owner; OpenAPI remains 118/120 and Flyway V47.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 760/760.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image and PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 760/760 — exact CI: 759 passed, one formatting-sensitive source-contract failure, zero errors.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries — not reached.
+- [ ] Immutable image and PostgreSQL V47 staging acceptance — not reached.
 
 
 ## v27.40.13 — Vue Route State Authority Cutover acceptance — accepted predecessor

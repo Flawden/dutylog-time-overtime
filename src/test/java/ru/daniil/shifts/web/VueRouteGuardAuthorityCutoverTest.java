@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static architecture contract for v27.40.14 Vue route-guard authority and legacy-router narrowing. */
+/** Static architecture contract for v27.40.15 Vue route-guard authority and profile-state publication alignment. */
 class VueRouteGuardAuthorityCutoverTest {
 
     @Test
@@ -37,13 +37,23 @@ class VueRouteGuardAuthorityCutoverTest {
         assertTrue(boot.contains("const payrollView = document.getElementById(VIEWS.payroll)"));
         assertTrue(boot.contains("const adminView = document.getElementById(VIEWS.admin)"));
         assertTrue(boot.contains("Pre-Vue recovery keeps the historical router intact."));
-        assertTrue(boot.contains("Profile load still must publish authoritative access state"));
+        String loadProfile = loadProfileSurface(boot);
+        assertTrue(loadProfile.contains("state.profile = p;"));
+        assertTrue(loadProfile.contains("applyRoute();"));
+        assertTrue(loadProfile.contains("publishLegacyPlatformState();"));
+        assertTrue(loadProfile.indexOf("publishLegacyPlatformState();") > loadProfile.indexOf("applyRoute();"));
         assertTrue(calendar.contains("route !== \"calendar\" && store.dayPanelOpen"));
         assertTrue(calendar.contains("store.closeDayPanel()"));
         assertFalse(appRouteSurface(boot).contains("renderTodayDashboard"));
         assertFalse(appRouteSurface(boot).contains("renderImportantBoard"));
         assertFalse(appRouteSurface(boot).contains("openVacationPlannerView"));
         assertFalse(appRouteSurface(boot).contains("loadLedgerPage"));
+    }
+
+    private static String loadProfileSurface(String boot) {
+        int start = boot.indexOf("async function loadProfile()");
+        int end = boot.indexOf("$(\"nextHeaderAvatar\")", start);
+        return boot.substring(start, end);
     }
 
     private static String appRouteSurface(String boot) {

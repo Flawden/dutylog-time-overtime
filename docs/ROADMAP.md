@@ -1,19 +1,30 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.14 — Vue Route Guard Authority Cutover**.
+Current release: **v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix**.
 
 
-## v27.40.14 — Vue Route Guard Authority Cutover — current
+## v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix — current
+- [x] Carry the v27.40.14 Vue route-state/guard runtime forward unchanged from the v27.40.13 proven-green baseline.
+- [x] Record exact v27.40.14 CI evidence: frontend gate green; Maven 760 executed / 1 failure / 0 errors / 0 skipped; browser stages not reached.
+- [x] Scope the failing source contract to the actual `loadProfile()` function instead of an English comment line.
+- [x] Require `state.profile = p`, `applyRoute()` and a later `publishLegacyPlatformState()` call in source order.
+- [x] Keep route policy, strict TypeScript, OpenAPI 118/120, Flyway V47 and single `dataLayer` offline ownership unchanged.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 760/760.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.14 — Vue Route Guard Authority Cutover — predecessor cut (CI stopped at Maven)
 - [x] Start only from the proven-green v27.40.13 staging baseline.
 - [x] Move Admin/profile and module-disabled route guards into the typed Vue hash-route policy after authoritative access state loads.
 - [x] Canonicalize blocked direct hashes to Calendar without adding a second router.
 - [x] Move `body.dataset.view` and Calendar selected-day close-on-route-exit behavior under Vue ownership.
 - [x] Narrow post-Vue legacy `applyRoute()` to Payroll/Admin route-entry side effects; preserve the full historical branch only for pre-Vue recovery.
 - [x] Keep `dataLayer` as the sole offline mutation/reconnect owner and leave OpenAPI/Flyway unchanged.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 760/760.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 760/760 — exact CI result: 759 passed, 1 formatting-sensitive source-contract failure, 0 errors.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries — not reached.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance — not reached.
 
 
 ## v27.40.13 — Vue Route State Authority Cutover — accepted predecessor

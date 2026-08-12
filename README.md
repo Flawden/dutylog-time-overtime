@@ -1,3 +1,7 @@
+# DutyLog v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix
+
+v27.40.14 passed the exact frontend gate and then executed all 760 Maven tests with exactly one failure in `VueRouteGuardAuthorityCutoverTest`: a source contract searched for one uninterrupted English comment sentence even though the correct `loadProfile()` implementation already called `publishLegacyPlatformState()` after `applyRoute()`. v27.40.15 keeps the route-guard/runtime cut unchanged and replaces that formatting-sensitive assertion with structural checks scoped to the real `loadProfile()` function. OpenAPI 118/120, Flyway V47, strict frontend policy and the single legacy `dataLayer` owner are unchanged.
+
 # DutyLog v27.40.14 — Vue Route Guard Authority Cutover
 
 v27.40.13 is the accepted green staging baseline. v27.40.14 moves admin/module route guards into Vue, canonicalizes blocked hashes to Calendar, moves the body route marker and Calendar panel route-exit behavior under Vue ownership, and narrows the post-Vue legacy router to Payroll/Admin side effects only. The historical full router remains as pre-Vue recovery, while the single legacy `dataLayer` remains the sole offline queue/reconnect owner.

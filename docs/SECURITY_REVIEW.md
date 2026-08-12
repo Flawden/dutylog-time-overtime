@@ -1,8 +1,8 @@
 # DutyLog security review
 
-Status: v27.40.14.
+Status: v27.40.15.
 
-## v27.40.14 Vue Route Guard Authority review
+## v27.40.15 Vue Route Guard Authority review
 
 - Client-side Admin/module route guards now run in Vue only after authoritative profile/module state is known; this is UX/navigation enforcement, not a replacement for backend authorization.
 - Blocked hashes canonicalize to Calendar, while server-side ownership/role/module checks remain authoritative for every protected API.
