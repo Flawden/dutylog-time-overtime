@@ -1,3 +1,7 @@
+# DutyLog v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix
+
+v27.40.22 completed the live Admin migration, but exact CI stopped at Maven because `TodayDashboardFrontendContractTest` still asserted the old generic pre-Vue route fallback source line. v27.40.23 keeps the Vue Admin/runtime ownership unchanged and aligns that contract with the intended recovery policy: pre-Vue `#admin` falls back to Settings while unknown routes still fall back to Today. The acceptance surface remains 159 Java test classes / 772 tests / 48 Playwright scenarios / 60 Vitest cases, OpenAPI 124/130 and Flyway V47.
+
 # DutyLog v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement
 
 v27.40.21 is the proven-green staging baseline. v27.40.22 migrates the final live legacy UI domain — Admin Users/Roles, Registration and Diagnostics — into a typed Vue/Pinia workspace backed by generated `/api/v1/admin/**` operations. The historical `/api/admin/**` backend namespace remains a secured compatibility alias, but legacy Admin DOM/state/data/render ownership and the last post-Vue legacy route side-effect adapter are removed. After Vue readiness there are no legacy-owned user screens; limited pre-Vue recovery and the single `dataLayer` offline mutation/reconnect owner remain explicit infrastructure boundaries. OpenAPI advances to 124 operations / 130 schemas; Flyway remains V47.

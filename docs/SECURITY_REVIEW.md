@@ -1,5 +1,14 @@
 # DutyLog security review
 
+## v27.40.23 pre-Vue Admin fallback contract alignment review
+
+- This hotfix changes no authorization, endpoint, credential, storage or client privilege behavior.
+- Admin remains protected by both `/api/admin/**` and `/api/v1/admin/**` ADMIN matchers plus controller defense in depth.
+- The test alignment preserves the safer pre-Vue behavior: `#admin` does not revive a legacy privileged screen and falls back to Settings until Vue readiness.
+
+Status: v27.40.23.
+
+
 ## v27.40.22 Vue Admin workspace and final live legacy UI retirement review
 
 - Both `/api/admin/**` and canonical `/api/v1/admin/**` are protected by the same Spring Security ADMIN matcher and the controller's existing `requireAdmin()` defense-in-depth checks.

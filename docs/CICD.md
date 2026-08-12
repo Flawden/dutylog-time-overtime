@@ -1,5 +1,13 @@
 # DutyLog CI/CD
 
+## v27.40.23 pre-Vue Admin fallback contract alignment
+
+- Exact v27.40.22 frontend gate passed; Maven stopped before release-check and Playwright on a stale Today fallback source assertion.
+- v27.40.23 changes only the source contract plus normal release metadata; workflow topology, retries/timeouts and blocking gates remain unchanged.
+
+Status: v27.40.23.
+
+
 ## v27.40.22 Vue Admin workspace and final live legacy UI retirement
 
 - Exact frontend/Maven/Chromium topology is unchanged; the frontend gate must compile the new Vue Admin workspace and 60 Vitest cases before Maven 772/772 and the 48-scenario browser suite.

@@ -1,5 +1,14 @@
 # Module contracts
 
+## Pre-Vue Admin fallback contract alignment (v27.40.23)
+
+- Runtime/module ownership is unchanged from v27.40.22: Admin remains Vue-owned after readiness.
+- The legacy recovery contract now explicitly permits only `#admin -> Settings` before Vue readiness while unknown routes retain the Today fallback.
+- No second route, module or offline owner is introduced.
+
+Status: v27.40.23.
+
+
 ## Vue Admin ownership and final live legacy UI retirement (v27.40.22)
 
 - Vue is the sole live Admin presentation/read-state owner for Users/Roles, Registration and Diagnostics after shell readiness.

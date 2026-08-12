@@ -1,11 +1,13 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.40.22.
+Status: v27.40.23.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.22 retires the final live legacy UI owner by moving Admin Users/Roles, Registration and Diagnostics to a typed Vue/Pinia workspace backed by canonical generated `/api/v1/admin/**` operations. The acceptance surface is **159 Java test classes / 772 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases** with **124 operations / 130 schemas** and Flyway V47. After Vue readiness no legacy-owned user screen or post-Vue legacy route side-effect adapter remains.
+Current extension: v27.40.23 aligns the stale Today pre-Vue route source contract with the v27.40.22 final Admin ownership cut. The acceptance surface remains **159 Java test classes / 772 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases** with **124 operations / 130 schemas** and Flyway V47. After Vue readiness no legacy-owned user screen or post-Vue legacy route side-effect adapter remains.
+
+Historical v27.40.22 extension: final live Admin UI ownership moved to Vue; exact frontend gate passed, while Maven stopped on a stale TodayDashboard pre-Vue fallback source assertion before Playwright.
 
 Historical v27.40.21 extension: accepted green staging release retiring the live legacy Payroll owner.
 Historical v27.40.20 extension: accepted green staging release after aligning E2E release-version source contracts.

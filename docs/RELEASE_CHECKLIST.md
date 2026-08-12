@@ -1,9 +1,23 @@
 # Release checklist
 
-Status: v27.40.22.
+Status: v27.40.23.
 
 
-## v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement acceptance
+## v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix acceptance
+
+- [x] Base tree is exact v27.40.22.
+- [x] Exact v27.40.22 frontend gate passed and Maven stopped before Playwright.
+- [x] Reproduced source-only web contracts: 285 pass / 1 stale Today fallback assertion before alignment.
+- [x] Today shell contract now requires pre-Vue `admin -> settings` recovery and preserves unknown-route `-> today` fallback.
+- [x] No Admin runtime/API/security/offline ownership rollback; OpenAPI remains 124/130 and Flyway V47.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Maven 772/772 on Java 17.
+- [ ] Playwright canary green.
+- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
+- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [ ] Staging deploy green.
+
+## v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement acceptance — predecessor cut (Maven red)
 
 - [x] Base tree is the proven-green v27.40.21 release.
 - [x] Admin Users/Roles, Registration and Diagnostics are Vue-owned and use generated canonical `/api/v1/admin/**` operations.
@@ -12,8 +26,8 @@ Status: v27.40.22.
 - [x] No post-Vue legacy route side-effect adapter/event remains.
 - [x] Limited pre-Vue recovery and the single `dataLayer` offline owner remain unchanged.
 - [x] OpenAPI is 124/130, Flyway V47.
-- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
-- [ ] Maven 772/772 on Java 17.
+- [x] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Maven 772/772 on Java 17 — stale Today pre-Vue fallback source contract blocked verify.
 - [ ] Playwright canary green.
 - [ ] Full Chromium 48/48, 0 failed, 0 flaky.
 - [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.

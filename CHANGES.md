@@ -1,3 +1,12 @@
+# v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix
+
+- Classifies v27.40.22 staging as exact frontend-gate green and Maven-red before release-check/Playwright.
+- Reproduces the deterministic Maven blocker in `TodayDashboardFrontendContractTest`: the source contract still required the pre-v27.40.22 generic fallback line even though Admin is intentionally Vue-only and pre-Vue `#admin` now falls back to Settings.
+- Aligns the Today shell contract with the intentional ownership boundary by requiring both `admin -> settings` recovery and the unchanged generic unknown-route `-> today` fallback.
+- Executes the source-only web contract surface against the exact v27.40.22 tree: 285 pass and only this stale assertion fails before the alignment.
+- Keeps the v27.40.22 Vue Admin runtime/API/security ownership, OpenAPI 124/130, Flyway V47, strict TypeScript, Playwright 48 and the single `dataLayer` offline owner unchanged apart from normal release metadata.
+- Acceptance surface remains **159 Java test classes / 772 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases / Flyway V47**.
+
 # v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement
 
 - Starts from the proven-green v27.40.21 staging baseline.

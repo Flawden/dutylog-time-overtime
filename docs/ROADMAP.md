@@ -1,9 +1,20 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement**.
+Current release: **v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix**.
 
 
-## v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement — current
+## v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix — current
+- [x] Start from the exact v27.40.22 Admin-retirement tree.
+- [x] Classify exact CI: Node 20 frontend gate green; Maven red before release-check/Playwright.
+- [x] Reproduce the stale Today source contract against exact v27.40.22: 285 source-only web contracts pass and one fallback-shape assertion fails.
+- [x] Require intentional pre-Vue `admin -> settings` recovery plus unchanged unknown-route `-> today` fallback without restoring a live legacy Admin owner.
+- [x] Keep Admin generated API/security ownership, OpenAPI 124/130, Flyway V47, strict TypeScript and single `dataLayer` offline ownership unchanged.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 772/772.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement — predecessor cut (Maven red)
 - [x] Start from the proven-green v27.40.21 staging baseline.
 - [x] Give Admin a canonical generated `/api/v1/admin/**` contract while retaining the secured `/api/admin/**` backend alias.
 - [x] Move Users/Roles, Registration and Diagnostics presentation/read state to Vue + Pinia.
@@ -11,8 +22,8 @@ Current release: **v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Reti
 - [x] Remove the final post-Vue legacy route side-effect adapter/event; Vue is the sole live user-screen router/presentation owner after readiness.
 - [x] Keep limited pre-Vue recovery and the single `dataLayer` offline mutation/reconnect owner.
 - [x] Advance OpenAPI to 124/130 while keeping Flyway V47 and strict TypeScript unchanged.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 772/772.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 772/772 — blocked by stale `TodayDashboardFrontendContractTest` pre-Vue fallback source assertion.
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
 

@@ -1,4 +1,6 @@
-# DutyLog API v27.40.22
+# DutyLog API v27.40.23
+
+`v27.40.23` changes no HTTP/OpenAPI shape. It aligns a stale pre-Vue Today/Admin fallback source contract with the v27.40.22 Vue Admin ownership cut; OpenAPI remains **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 
 `v27.40.22` adds canonical `/api/v1/admin/**` aliases for Admin status, users/roles/password reset, registration settings and diagnostics while retaining `/api/admin/**` as a secured backend compatibility namespace. The Vue Admin workspace uses generated operation IDs only. OpenAPI advances to **124 operations / 130 schemas** with hash `8bb0573339f0`; Flyway remains V47.
 
