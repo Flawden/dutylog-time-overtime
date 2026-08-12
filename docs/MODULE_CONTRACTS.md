@@ -1,6 +1,6 @@
 # Module contracts
 
-Status: v27.40.17.
+Status: v27.40.18.
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
 
@@ -34,7 +34,7 @@ Status: v27.40.17.
 - Legacy route roots and editor modals are retired when the Vue workspace mounts; named adapters remain until their caller domains migrate.
 - Q-06 blocks duplicate writes, rejects stale reads and refreshes the server model after HTTP 409.
 
-Status: v27.40.17.
+Status: v27.40.18.
 
 ## v27.35.7 historical static-contract alignment
 

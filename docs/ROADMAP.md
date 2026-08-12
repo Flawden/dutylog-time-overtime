@@ -1,9 +1,20 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement**.
+Current release: **v27.40.18 — Calendar ICS Release Version Contract Hotfix**.
 
 
-## v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement — current
+## v27.40.18 — Calendar ICS Release Version Contract Hotfix — current
+- [x] Start from the exact v27.40.17 tree and preserve its Vue route-commit/hash-listener runtime unchanged.
+- [x] Classify v27.40.17 CI: exact frontend gate green; Maven stopped before release-check/Playwright because Calendar ICS PRODID remained on 27.40.16.
+- [x] Promote the Java `CalendarIcsService` PRODID to the current release.
+- [x] Add a project-version-derived Java contract so future releases cannot forget the ICS PRODID bump.
+- [x] Keep strict TypeScript, OpenAPI 118/120, Flyway V47 and single `dataLayer` offline ownership unchanged.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 767/767.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement — predecessor cut (Maven red)
 - [x] Start only from the accepted green v27.40.16 staging baseline.
 - [x] Publish canonical guarded Vue routes through `dutylog:vue-route-committed` instead of letting Legacy independently re-read the URL after Vue readiness.
 - [x] Detach the legacy `hashchange -> applyRoute()` listener when `dutylog:vue-ready` fires.

@@ -1,3 +1,7 @@
+# DutyLog v27.40.18 — Calendar ICS Release Version Contract Hotfix
+
+v27.40.17 proved the Vue route-commit/hash-listener cut at the exact frontend gate, then stopped in Maven because the Java ICS generator still hardcoded the previous 27.40.16 PRODID while the release contract expected 27.40.17. v27.40.18 fixes that runtime version drift, preserves the route architecture unchanged, and adds a project-version-derived Java contract so future releases cannot silently forget the ICS PRODID. OpenAPI remains 118/120, Flyway remains V47, and `dataLayer` remains the sole offline mutation/reconnect owner.
+
 # DutyLog v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement
 
 v27.40.16 is the accepted green staging baseline. v27.40.17 removes the last post-Vue hash-routing competition: Vue publishes each guarded canonical route through `dutylog:vue-route-committed`, while the historical `hashchange -> applyRoute()` listener is detached at Vue readiness. Legacy consumes committed routes only for the two remaining Payroll/Admin side effects; the full old router remains available only before Vue readiness as recovery. OpenAPI remains 118/120, Flyway remains V47, strict frontend policy is unchanged, and the single legacy `dataLayer` remains the sole offline queue/reconnect owner.

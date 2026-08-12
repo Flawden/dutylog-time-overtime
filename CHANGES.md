@@ -1,3 +1,12 @@
+# v27.40.18 — Calendar ICS Release Version Contract Hotfix
+
+- Classifies v27.40.17 staging as frontend-green but Maven-red before browser validation.
+- Fixes the concrete release drift: `CalendarIcsService` still emitted `PRODID ... 27.40.16` while v27.40.17 tests and package metadata expected the release version.
+- Promotes the actual ICS PRODID to v27.40.18 and keeps the v27.40.17 Vue route-commit/hash-listener runtime unchanged.
+- Adds a release-version contract that derives the DutyLog project version from `pom.xml` and requires the Java ICS producer to match it, preventing future forgotten hardcoded PRODID bumps.
+- Acceptance surface becomes **157 Java test classes / 767 `@Test` methods / 48 Chromium Playwright scenarios / 58 Vitest cases / Flyway V47**.
+- OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`; strict TypeScript and the single `dataLayer` offline owner remain unchanged.
+
 # v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement
 
 - Starts from the accepted green v27.40.16 staging baseline.

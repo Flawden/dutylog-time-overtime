@@ -1,4 +1,6 @@
-# DutyLog API v27.40.17
+# DutyLog API v27.40.18
+
+`v27.40.18` changes no HTTP/OpenAPI shape. It fixes only the Calendar ICS PRODID release marker and adds a release-version contract; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 
 `v27.40.17` changes no HTTP/OpenAPI shape. It retires the live post-Vue legacy hash listener and routes the remaining Payroll/Admin compatibility effects from Vue canonical route commits; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 

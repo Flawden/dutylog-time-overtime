@@ -1,10 +1,10 @@
-release=27.40.17
+release=27.40.18
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=2b19a8f43e756b575cba42eb5427b854d26a0e93521564c9ee8e6db1215db7cf
+committedLockfileSha256=5ee32ce2778f87d6858dd1bc546606427f1ac104a32ca3884778902076ebc804
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=vue-route-commit-legacy-hash-listener-retirement-acceptance-for-v27.40.17
+nextAction=calendar-ics-release-version-contract-hotfix-acceptance-for-v27.40.18

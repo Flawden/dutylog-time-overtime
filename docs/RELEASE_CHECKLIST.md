@@ -1,10 +1,25 @@
 # Release checklist
 
-Status: v27.40.17.
+Status: v27.40.18.
 
 
 
-## v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement acceptance
+## v27.40.18 — Calendar ICS Release Version Contract Hotfix acceptance
+
+- [x] Base tree is exact v27.40.17 route-commit/hash-listener release.
+- [x] Preserve the v27.40.17 route runtime unchanged.
+- [x] Java Calendar ICS PRODID matches the current DutyLog release version.
+- [x] Project-version-derived source contract prevents future ICS PRODID release drift.
+- [x] No route/business/API/offline ownership relaxation: OpenAPI 118/120, Flyway V47, strict TypeScript and single `dataLayer` ownership remain.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Maven 767/767 on Java 17.
+- [ ] Playwright canary green.
+- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
+- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [ ] Staging deploy green.
+
+## v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement acceptance — predecessor cut; Maven release-version drift
+
 
 - [x] Base tree is the accepted green v27.40.16 release.
 - [x] Vue publishes guarded canonical route commits and suppresses duplicate identical commits.
