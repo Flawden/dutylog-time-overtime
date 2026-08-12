@@ -1,6 +1,10 @@
 # Module contracts
 
-Status: v27.40.18.
+Status: v27.40.19.
+
+## E2E release-version authority (v27.40.19)
+
+- Browser release metadata is test infrastructure only and does not alter module authority or runtime module state.
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
 

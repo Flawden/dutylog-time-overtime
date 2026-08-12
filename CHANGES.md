@@ -1,3 +1,11 @@
+# v27.40.19 — E2E Release Version Authority Hotfix
+
+- Classifies v27.40.18 staging browser acceptance as 48 scenarios: 46 passed, 0 flaky and 2 deterministic final failures caused only by stale v27.40.16 E2E release literals.
+- Introduces `e2e/release-version.js` as the single browser-suite release-version source derived from root `package.json`.
+- Removes current-release hardcodes from Vue foundation/shell diagnostics, Calendar ICS browser acceptance and PWA cache-prefix acceptance while preserving the intentional historical `27.38.15-synthetic-previous` upgrade fixture.
+- Keeps the v27.40.17 Vue route-commit/hash-listener retirement and v27.40.18 Calendar ICS runtime fix unchanged apart from the normal release-version bump.
+- OpenAPI remains 118 operations / 120 schemas / `91b48b10fa56`; Flyway remains V47; strict TypeScript and single `dataLayer` offline ownership remain unchanged.
+
 # v27.40.18 — Calendar ICS Release Version Contract Hotfix
 
 - Classifies v27.40.17 staging as frontend-green but Maven-red before browser validation.

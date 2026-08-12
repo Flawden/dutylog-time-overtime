@@ -1,8 +1,22 @@
 # Release checklist
 
-Status: v27.40.18.
+Status: v27.40.19.
 
 
+
+## v27.40.19 — E2E Release Version Authority Hotfix acceptance
+
+- [x] Base tree is exact v27.40.18 release.
+- [x] v27.40.18 browser report classified as 48 total / 46 passed / 0 flaky / 2 deterministic final failures from stale v27.40.16 E2E literals.
+- [x] Browser current-release expectations derive from root `package.json` through `e2e/release-version.js`.
+- [x] Vue diagnostics, Calendar ICS and PWA current-release assertions use the canonical helper.
+- [x] Intentional historical `27.38.15-synthetic-previous` PWA fixture remains literal.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Maven 767/767 on Java 17.
+- [ ] Playwright canary green.
+- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
+- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [ ] Staging deploy green.
 
 ## v27.40.18 — Calendar ICS Release Version Contract Hotfix acceptance
 

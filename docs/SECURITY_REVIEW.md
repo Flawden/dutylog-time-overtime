@@ -1,6 +1,10 @@
 # DutyLog security review
 
-Status: v27.40.18.
+Status: v27.40.19.
+
+## v27.40.19 E2E release-version authority review
+
+- Reads only committed root `package.json` from the Node test process; no browser secret, endpoint, origin, storage or authorization boundary changes.
 
 ## v27.40.16 Route-entry freshness / Today workspace review
 

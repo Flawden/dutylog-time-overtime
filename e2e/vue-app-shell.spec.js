@@ -1,5 +1,6 @@
 const { test, expect } = require('./fixtures');
 const { registerAndOnboard, openView, toggleModule } = require('./helpers');
+const { releaseVersion } = require('./release-version');
 
 test('Vue app shell owns navigation chrome while legacy product screens retain behavior', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'vueappshell' });
@@ -29,7 +30,7 @@ test('Vue app shell owns navigation chrome while legacy product screens retain b
 
   const diagnostics = await page.evaluate(() => window.DutyLogVuePlatform?.snapshot());
   expect(diagnostics).toMatchObject({
-    releaseVersion: '27.40.16',
+    releaseVersion,
     architecture: 'vue-shell-v1',
     phase: 'ready',
     legacyConnected: true,

@@ -1,5 +1,6 @@
 const { test, expect } = require('./fixtures');
 const { registerAndOnboard, openView } = require('./helpers');
+const { releaseVersion } = require('./release-version');
 
 test('private calendar feed exports .ics, rotates safely and revokes the old secret', async ({ page, request }) => {
   await page.setViewportSize({ width: 1280, height: 900 });
@@ -28,7 +29,7 @@ test('private calendar feed exports .ics, rotates safely and revokes the old sec
   expect(feed.headers()['content-type']).toContain('text/calendar');
   const feedBody = await feed.text();
   expect(feedBody).toContain('BEGIN:VCALENDAR\r\n');
-  expect(feedBody).toContain('PRODID:-//DutyLog//Time and Overtime 27.40.18//RU');
+  expect(feedBody).toContain(`PRODID:-//DutyLog//Time and Overtime ${releaseVersion}//RU`);
   expect(feedBody).toContain('END:VCALENDAR\r\n');
 
   const [download] = await Promise.all([

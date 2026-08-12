@@ -1,4 +1,6 @@
-# DutyLog API v27.40.18
+# DutyLog API v27.40.19
+
+`v27.40.19` changes no HTTP/OpenAPI shape. It centralizes browser release-version expectations on root `package.json`; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 
 `v27.40.18` changes no HTTP/OpenAPI shape. It fixes only the Calendar ICS PRODID release marker and adds a release-version contract; OpenAPI remains **118 operations / 120 schemas** with hash `91b48b10fa56`, and Flyway remains V47.
 

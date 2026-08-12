@@ -1,9 +1,20 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.18 — Calendar ICS Release Version Contract Hotfix**.
+Current release: **v27.40.19 — E2E Release Version Authority Hotfix**.
 
 
-## v27.40.18 — Calendar ICS Release Version Contract Hotfix — current
+## v27.40.19 — E2E Release Version Authority Hotfix — current
+- [x] Start from exact v27.40.18 release tree and classify its browser evidence: 48 total / 46 passed / 0 flaky / 2 deterministic final failures.
+- [x] Remove stale v27.40.16 literals from current Vue foundation/shell browser release assertions.
+- [x] Derive current E2E release version from root `package.json` through `e2e/release-version.js`.
+- [x] Reuse the same authority for Calendar ICS and PWA current-release assertions; preserve the intentional historical previous-cache fixture.
+- [x] Keep Vue route/offline architecture, strict TypeScript, OpenAPI 118/120 and Flyway V47 unchanged.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 767/767.
+- [x] Playwright reached all 48 scenarios: 46 passed / 0 flaky / 2 final failures, both stale E2E release-version literals.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.18 — Calendar ICS Release Version Contract Hotfix — predecessor cut (browser red)
 - [x] Start from the exact v27.40.17 tree and preserve its Vue route-commit/hash-listener runtime unchanged.
 - [x] Classify v27.40.17 CI: exact frontend gate green; Maven stopped before release-check/Playwright because Calendar ICS PRODID remained on 27.40.16.
 - [x] Promote the Java `CalendarIcsService` PRODID to the current release.

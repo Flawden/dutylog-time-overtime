@@ -1,10 +1,11 @@
 # DutyLog regression test baseline
+Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
 Status: v27.40.18.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.18 fixes the Calendar ICS release-version drift that stopped v27.40.17 in Maven, while carrying the Vue route-commit/hash-listener runtime forward unchanged. The acceptance surface is **157 Java test classes / 767 `@Test` methods / 48 Chromium Playwright scenarios / 58 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+Current extension: v27.40.19 fixes the Calendar ICS release-version drift that stopped v27.40.17 in Maven, while carrying the Vue route-commit/hash-listener runtime forward unchanged. The acceptance surface is **157 Java test classes / 767 `@Test` methods / 48 Chromium Playwright scenarios / 58 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
 
 Historical v27.40.17 extension: route-commit/hash-listener retirement reached exact frontend green but was Maven-red because the Java Calendar ICS PRODID remained on 27.40.16.
 Historical v27.40.16 extension: accepted green staging release restoring Vue route-entry freshness, Today workspace ownership and note create read-your-write after the route-guard cutover.

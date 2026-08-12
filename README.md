@@ -1,3 +1,7 @@
+# DutyLog v27.40.19 — E2E Release Version Authority Hotfix
+
+v27.40.18 reached all 48 Chromium scenarios and failed only two deterministic browser assertions because the Vue foundation/shell tests still hardcoded v27.40.16 while the released app correctly reported v27.40.18. v27.40.19 makes root `package.json` the canonical E2E release-version source and reuses it for Vue diagnostics, Calendar ICS and PWA cache-prefix acceptance. Runtime routing, OpenAPI 118/120, Flyway V47 and the single `dataLayer` offline owner remain unchanged.
+
 # DutyLog v27.40.18 — Calendar ICS Release Version Contract Hotfix
 
 v27.40.17 proved the Vue route-commit/hash-listener cut at the exact frontend gate, then stopped in Maven because the Java ICS generator still hardcoded the previous 27.40.16 PRODID while the release contract expected 27.40.17. v27.40.18 fixes that runtime version drift, preserves the route architecture unchanged, and adds a project-version-derived Java contract so future releases cannot silently forget the ICS PRODID. OpenAPI remains 118/120, Flyway remains V47, and `dataLayer` remains the sole offline mutation/reconnect owner.

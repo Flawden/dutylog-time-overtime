@@ -1,6 +1,11 @@
 # DutyLog CI/CD
 
-Status: v27.40.18.
+Status: v27.40.19.
+
+## v27.40.19 E2E release-version authority
+
+- Playwright current-release assertions derive from root `package.json`; release bumps do not require hand-edited Vue/ICS/PWA expected version literals.
+- The suite remains 48 strict scenarios with existing retry/timeouts unchanged.
 
 ## v27.40.16 route-entry freshness acceptance boundary
 
