@@ -1,11 +1,13 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.40.24.
+Status: v27.40.25.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.24 final legacy ownership audit advances the static acceptance surface to 160 Java test classes / 775 @Test methods while keeping 48 Chromium Playwright scenarios / 60 Vitest cases, OpenAPI 124/130 and Flyway V47. After Vue readiness there are zero legacy-owned user screens; dead recovery chrome and orphan migration fallback DOM are physically retired, while first-run onboarding plus offline/sync UX are the only bounded live legacy presentation exceptions and dataLayer remains infrastructure.
+Current extension: v27.40.25 Vue offline/sync surface retirement advances the static acceptance surface to 161 Java test classes / 778 @Test methods while keeping 48 Chromium Playwright scenarios / 60 Vitest cases, OpenAPI 124/130 and Flyway V47. Vue owns offline status, sync diagnostics/actions and save feedback after readiness; the server-rendered header/dialog are recovery-only and physically removed post-ready. `dataLayer` remains the sole offline queue executor, and first-run onboarding is the only intentionally live post-ready legacy presentation exception.
+
+Historical v27.40.24 extension: final ownership audit advanced to 160 Java classes / 775 tests and bounded the remaining first-run plus offline/sync legacy presentation before this cut.
 
 Historical v27.40.22 extension: final live Admin UI ownership moved to Vue; exact frontend gate passed, while Maven stopped on a stale TodayDashboard pre-Vue fallback source assertion before Playwright.
 

@@ -1,9 +1,28 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface Retirement**.
+Current release: **v27.40.25 — Vue Offline Sync Surface & Legacy Header Retirement**.
 
 
-## v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface Retirement — current
+## v27.40.25 — Vue Offline Sync Surface & Legacy Header Retirement — current
+- [x] Start from the exact proven-green v27.40.24 staging baseline.
+- [x] Make Vue own the visible offline status, sync/failed queue diagnostics and manual sync actions while preserving stable browser selectors.
+- [x] Keep `dataLayer` as the sole IndexedDB/outbox/reconnect queue executor; Vue uses immutable snapshots and narrow bridge commands only.
+- [x] Physically retire the server-rendered `.head` and legacy offline sync dialog after Vue readiness while preserving them for pre-Vue recovery.
+- [x] Route legacy `setSave()` feedback into the Vue header after readiness instead of losing status when the old header is removed.
+- [x] Leave first-run onboarding as the only intentionally live post-ready legacy presentation exception.
+- [x] Keep OpenAPI 124/130, Flyway V47, retry/timeout policy and offline queue semantics unchanged.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 778/778 across 161 Java test classes on Java 17.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.26 — Vue First-Run Onboarding Ownership Retirement — planned next cut
+- [ ] Move first-run preset/module/profile presentation into Vue without changing backend onboarding authority.
+- [ ] Preserve current preset semantics, module persistence, profile completion and service-worker registration ordering.
+- [ ] Retire the post-ready legacy `#firstRunOnboarding` owner while retaining a safe boot/recovery boundary.
+- [ ] Prove zero intentionally live post-ready legacy presentation surfaces before Functional Parity Sweep.
+
+## v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface Retirement — accepted predecessor
 - [x] Start from the exact proven-green v27.40.23 staging baseline.
 - [x] Prove zero legacy-owned user screens after Vue readiness.
 - [x] Physically retire recovery-only shell chrome after successful Vue shell readiness.
@@ -11,10 +30,10 @@ Current release: **v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface 
 - [x] Keep first-run onboarding and offline/sync presentation as explicit bounded exceptions and preserve the single dataLayer offline owner.
 - [x] Correct stale frontend ownership/routing/bridge architecture documentation.
 - [x] Add executable source contracts and keep Playwright parity at 48 scenarios.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 775/775 across 160 Java test classes.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 775/775 across 160 Java test classes.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image/PostgreSQL V47 staging acceptance.
 
 ## v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix — accepted predecessor
 - [x] Start from the exact v27.40.22 Admin-retirement tree.

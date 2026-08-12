@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue owns the shell and all user-facing screens after readiness; bounded legacy presentation exceptions are explicit, DutyLog v27.40.24.
+Status: Vue owns the shell, all user-facing screens and offline/sync presentation after readiness; first-run onboarding is the only intentionally live post-ready legacy presentation exception, DutyLog v27.40.25.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
@@ -73,7 +73,9 @@ When the active route is outside primary navigation, the visible More control an
 
 **dataLayer remains the single offline mutation/sync owner.** IndexedDB snapshots, the offline mutation queue and reconnect flush continue behind narrow bridge operations. Vue must not create a second queue or independently flush the same mutations.
 
-**Known live legacy presentation is limited to first-run onboarding and offline/sync UX.** They remain intentionally live for parity in v27.40.24 and are not evidence of a remaining legacy-owned product screen. Recovery-only `nextTopbar` / `tabbar` markup still exists before Vue readiness but is physically removed after successful Vue shell readiness.
+**First-run onboarding is the only intentionally live post-ready legacy presentation exception in v27.40.25.** Offline/sync presentation is now Vue-owned: `AppShell.vue` owns the visible status/save feedback and `OfflineSyncModal.vue` owns queue/failed/diagnostic actions. The old `.head` / `#offlineSyncDialog` remain source recovery only and are physically removed after successful Vue readiness.
+
+Historical v27.40.24 ownership contract: **Known live legacy presentation is limited to first-run onboarding and offline/sync UX.** v27.40.25 supersedes the offline/sync half of that exception without replacing `dataLayer`.
 
 The legacy overtime/usage migration fallback DOM is retired with the Absence/Time Bank owner after readiness. Its API/data migration semantics are not deleted; surfacing equivalent native Vue migration UX remains an explicit Functional Parity Sweep item before v27.40.x closes.
 
@@ -99,7 +101,9 @@ The first reusable primitives are `UiButton`, `UiBadge`, `UiCard`, `UiTabs`, `Ui
 
 The server-rendered `nextTopbar` and `tabbar` remain available only during pre-Vue recovery. On successful `dutylog:vue-ready` for the Vue shell, `shell-bootstrap.js` physically removes those nodes rather than merely hiding a duplicate shell.
 
-First-run onboarding and offline/sync presentation (`offlineStatus` / `offlineSyncDialog`) are the only intentionally live legacy presentation exceptions in v27.40.24. `dataLayer` itself is infrastructure and remains the sole offline mutation/sync executor. A future ownership cut may migrate those presentation surfaces without replacing the queue.
+The old `.head`, `#offlineStatus` and `#offlineSyncDialog` remain in the server source only for pre-Vue recovery. After `dutylog:vue-ready`, `shell-bootstrap.js` removes the old header/dialog and publishes `data-vue-offline-sync="ready"`; legacy DOM handlers yield while Vue keeps the stable `#offlineStatus` / `#offlineSyncDialog` browser selectors. `dataLayer` itself remains infrastructure and the sole offline mutation/sync executor.
+
+First-run onboarding is the only intentionally live post-ready legacy presentation exception after v27.40.25.
 
 ## API client
 

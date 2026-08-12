@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.40.24"
+const DUTYLOG_VERSION = "27.40.25"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -202,12 +202,27 @@ function legacyNavigationSnapshot(){
   };
 }
 
+function legacyOfflineStatusSnapshot(){
+  return Object.freeze({
+    online:navigator.onLine && state.offline?.online !== false,
+    cacheReady:!!state.offline?.cacheReady,
+    lastSyncAt:state.offline?.lastSyncAt || null,
+    stale:!!state.offline?.stale,
+    pending:Number(state.offline?.pending || 0),
+    failed:Number(state.offline?.failed?.length || 0),
+    syncing:!!state.offline?.syncing,
+    syncLockedByOther:!!state.offline?.syncLockedByOther,
+  });
+}
+
 function legacyPlatformSnapshot(){
   const navigation = legacyNavigationSnapshot();
+  const offline = legacyOfflineStatusSnapshot();
   return Object.freeze({
     version: DUTYLOG_VERSION,
     language: state.language === "en" ? "en" : "ru",
-    online: navigator.onLine,
+    online: offline.online,
+    offline,
     modulesLoaded: !!state.modulesLoaded,
     modules:Object.freeze({ ...(state.modules || {}) }),
     navigation:Object.freeze([...navigation.navigation]),
@@ -400,6 +415,37 @@ window.DutyLogLegacyPlatform = Object.freeze({
     if (typeof dataLayer !== "undefined") await dataLayer.syncQueue();
   },
   offlinePending(){ return Number(state.offline?.pending || 0); },
+  async offlineSyncDetails(){
+    if (typeof dataLayer === "undefined") return null;
+    await dataLayer.refreshQueueState();
+    const normalizeItem = item => ({
+      id:String(item?.id || ""),
+      type:String(item?.type || ""),
+      payload:item?.payload && typeof item.payload === "object" ? cloneForVue(item.payload) : null,
+      createdAt:item?.createdAt || null,
+      failedAt:item?.failedAt || null,
+      attempts:Number(item?.attempts || 0),
+      lastError:item?.lastError || null,
+    });
+    const lock = typeof offlineSyncLockInfo === "function" ? offlineSyncLockInfo() : { active:false };
+    return Object.freeze({
+      queue:Object.freeze((await dataLayer.getQueueItems()).map(normalizeItem)),
+      failed:Object.freeze((await dataLayer.getFailedItems()).map(normalizeItem)),
+      lock:Object.freeze({
+        active:!!lock?.active,
+        expired:!!lock?.expired,
+        mine:!!lock?.mine,
+        startedAt:lock?.startedAt || null,
+        expiresAt:lock?.expiresAt || null,
+      }),
+      diagnosticsReport:typeof offlineDiagnosticsReportText === "function" ? offlineDiagnosticsReportText() : "",
+    });
+  },
+  async offlineRetryFailed(index){ if (typeof dataLayer !== "undefined") await dataLayer.retryFailed(Number(index)); },
+  async offlineRetryAllFailed(){ if (typeof dataLayer !== "undefined") await dataLayer.retryAllFailed(); },
+  async offlineRemoveFailed(index){ if (typeof dataLayer !== "undefined") await dataLayer.removeFailed(Number(index)); },
+  async offlineClearFailed(){ if (typeof dataLayer !== "undefined") await dataLayer.setFailedItems([]); },
+  async offlineExport(){ if (typeof dataLayer !== "undefined") await dataLayer.exportOfflineData(); },
   async offlineSelectedDay(date){
     const key = String(date || "").slice(0, 10);
     if (!/^\d{4}-\d{2}-\d{2}$/.test(key) || typeof dataLayer === "undefined") return { tasks:[], notes:[], important:[] };

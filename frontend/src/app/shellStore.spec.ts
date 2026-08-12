@@ -6,9 +6,10 @@ beforeEach(() => setActivePinia(createPinia()));
 
 function snapshot(overrides: Partial<DutyLogLegacySnapshot> = {}): DutyLogLegacySnapshot {
   return {
-    version: "27.40.24",
+    version: "27.40.25",
     language: "ru",
     online: true,
+    offline: { online:true, cacheReady:true, lastSyncAt:null, stale:false, pending:0, failed:0, syncing:false, syncLockedByOther:false },
     modulesLoaded: true,
     navigation: ["today", "calendar", "settings"],
     availableViews: ["today", "calendar", "tasks", "settings"],
@@ -25,6 +26,7 @@ describe("shell store", () => {
 
     expect(store.activeRoute).toBe("settings");
     expect(store.online).toBe(false);
+    expect(store.offline.pending).toBe(0);
     expect(store.primaryNavigation).toEqual(["today", "calendar", "settings"]);
     expect(store.secondaryNavigation).toEqual(["tasks"]);
     expect(store.initials).toBe("ДТ");
@@ -57,8 +59,12 @@ describe("shell store", () => {
     vi.useFakeTimers();
     const store = useShellStore();
     store.announce("Сохранено", "success");
+    store.synchronizeSaveFeedback({ state:"saved", message:"✓" });
     expect(store.toasts).toHaveLength(1);
-    vi.advanceTimersByTime(3600);
+    expect(store.saveFeedback?.message).toBe("✓");
+    vi.advanceTimersByTime(1500);
+    expect(store.saveFeedback).toBeNull();
+    vi.advanceTimersByTime(2100);
     expect(store.toasts).toHaveLength(0);
     vi.useRealTimers();
   });

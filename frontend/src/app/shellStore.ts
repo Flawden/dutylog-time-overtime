@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { navigationItem, normalizeSection, type DutyLogRoute } from "./navigation";
 
 interface ShellToast { id: number; message: string; tone: "success" | "info" | "warning" | "danger" }
+interface ShellSaveFeedback { revision: number; state: DutyLogSaveFeedbackSnapshot["state"]; message: string }
 
 const FALLBACK_NAVIGATION: readonly DutyLogRoute[] = Object.freeze(["today", "calendar", "vacation", "overtime", "tasks", "settings"]);
 
@@ -23,6 +24,9 @@ export const useShellStore = defineStore("dutylog-shell", {
     rawRoute: "today",
     language: "ru" as "ru" | "en",
     online: true,
+    offline: { online:true, cacheReady:false, lastSyncAt:null, stale:false, pending:0, failed:0, syncing:false, syncLockedByOther:false } as DutyLogOfflineSyncStatusSnapshot,
+    saveFeedback: null as ShellSaveFeedback | null,
+    saveFeedbackRevision: 0,
     modulesLoaded: false,
     profileLoaded: false,
     onboardingCompleted: false,
@@ -49,6 +53,7 @@ export const useShellStore = defineStore("dutylog-shell", {
     synchronize(snapshot: DutyLogLegacySnapshot | null): void {
       if (!snapshot) return;
       this.language = snapshot.language;
+      this.offline = { ...snapshot.offline };
       this.online = snapshot.online;
       this.modulesLoaded = snapshot.modulesLoaded;
       this.profileLoaded = snapshot.profile != null;
@@ -66,6 +71,15 @@ export const useShellStore = defineStore("dutylog-shell", {
     },
     openMore(): void { this.moreOpen = true; },
     closeMore(): void { this.moreOpen = false; },
+    synchronizeSaveFeedback(feedback: DutyLogSaveFeedbackSnapshot): void {
+      const revision = ++this.saveFeedbackRevision;
+      this.saveFeedback = feedback.message ? { revision, state:feedback.state, message:feedback.message } : null;
+      if (feedback.state === "saved" && feedback.message) {
+        globalThis.setTimeout(() => {
+          if (this.saveFeedback?.revision === revision) this.saveFeedback = null;
+        }, 1500);
+      }
+    },
     announce(message: string, tone: ShellToast["tone"] = "info"): void {
       const id = this.nextToastId++;
       this.toasts.push({ id, message, tone });

@@ -4,6 +4,7 @@ export const LEGACY_STATE_EVENT = "dutylog:legacy-state";
 export const ABSENCE_TIME_BANK_PROJECTION_EVENT = "dutylog:absence-time-bank-projection";
 export const CALENDAR_TIMELINE_PROJECTION_EVENT = "dutylog:calendar-timeline-projection";
 export const OFFLINE_SYNC_COMPLETE_EVENT = "dutylog:offline-sync-complete";
+export const SAVE_FEEDBACK_EVENT = "dutylog:save-feedback";
 
 export interface AbsenceTimeBankProjectionSnapshot {
   planner: unknown;
@@ -37,6 +38,12 @@ export interface LegacyBridge {
   offlineCaptureInbox(text: string): Promise<{ queued: boolean; item: unknown }>;
   offlineSync(): Promise<void>;
   offlinePending(): number;
+  offlineSyncDetails(): Promise<DutyLogOfflineSyncDetailsSnapshot | null>;
+  offlineRetryFailed(index: number): Promise<void>;
+  offlineRetryAllFailed(): Promise<void>;
+  offlineRemoveFailed(index: number): Promise<void>;
+  offlineClearFailed(): Promise<void>;
+  offlineExport(): Promise<void>;
   offlineSelectedDay(date: string): Promise<{ tasks: unknown[]; notes: unknown[]; important: unknown[] }>;
   offlineCalendarSnapshot(focusDate: string): Promise<{ bundle: unknown; savedAt: string | null } | null>;
   subscribe(listener: (snapshot: DutyLogLegacySnapshot) => void): () => void;
@@ -79,6 +86,12 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
     },
     async offlineSync() { await adapter()?.offlineSync?.(); },
     offlinePending() { return Number(adapter()?.offlinePending?.() ?? 0); },
+    async offlineSyncDetails() { return (await adapter()?.offlineSyncDetails?.()) ?? null; },
+    async offlineRetryFailed(index: number) { await adapter()?.offlineRetryFailed?.(index); },
+    async offlineRetryAllFailed() { await adapter()?.offlineRetryAllFailed?.(); },
+    async offlineRemoveFailed(index: number) { await adapter()?.offlineRemoveFailed?.(index); },
+    async offlineClearFailed() { await adapter()?.offlineClearFailed?.(); },
+    async offlineExport() { await adapter()?.offlineExport?.(); },
     async offlineSelectedDay(date: string) {
       return (await adapter()?.offlineSelectedDay?.(date)) ?? { tasks: [], notes: [], important: [] };
     },

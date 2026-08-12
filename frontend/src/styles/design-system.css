@@ -424,3 +424,73 @@ html[data-vue-shell="ready"] body.app-modal-open .vue-shell-nav { visibility: hi
 .vue-recovery dd { min-width: 0; margin: 0; overflow-wrap: anywhere; font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
 .vue-recovery__actions { display: flex; flex-wrap: wrap; gap: 12px; }
 @media (prefers-reduced-motion: reduce) { .vue-recovery { backdrop-filter: none; } }
+
+/* v27.40.25 — Vue-owned offline/sync presentation. dataLayer remains executor. */
+.vue-shell-sync-status {
+  appearance: none;
+  border: 1px solid color-mix(in srgb, currentColor 24%, var(--line));
+  cursor: pointer;
+  font: inherit;
+}
+.vue-shell-sync-status:hover { border-color: color-mix(in srgb, currentColor 46%, var(--line)); }
+.vue-shell-sync-status:focus-visible { outline: 2px solid color-mix(in srgb, var(--accent) 70%, transparent); outline-offset: 2px; }
+.vue-offline-sync { display: grid; gap: 16px; min-width: min(680px, 78vw); }
+.vue-offline-sync__meta { display: grid; gap: 4px; }
+.vue-offline-sync__meta > strong { font-size: 1rem; }
+.vue-offline-sync__meta > span { color: var(--mut); font-size: .86rem; }
+.vue-offline-sync__warning { margin: 4px 0 0; padding: 9px 11px; border: 1px solid color-mix(in srgb, var(--warning, #f5b841) 42%, var(--line)); border-radius: 10px; color: var(--warning, #f5b841); background: color-mix(in srgb, var(--warning, #f5b841) 8%, transparent); }
+.vue-offline-sync__section { display: grid; gap: 8px; }
+.vue-offline-sync__section h3 { margin: 0; font-size: .92rem; }
+.vue-offline-sync__list { display: grid; gap: 8px; }
+.vue-offline-sync__item { display: grid; gap: 6px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; background: color-mix(in srgb, var(--panel2) 74%, transparent); }
+.vue-offline-sync__item.is-failed { border-color: color-mix(in srgb, var(--danger, #ef6461) 45%, var(--line)); }
+.vue-offline-sync__item > div:first-child { display: flex; justify-content: space-between; gap: 12px; align-items: baseline; }
+.vue-offline-sync__item span, .vue-offline-sync__item small, .vue-offline-sync__empty { color: var(--mut); font-size: .82rem; }
+.vue-offline-sync__item-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+.vue-offline-sync__diagnostics { display: grid; gap: 4px; }
+.vue-offline-sync__diagnostics > div { display: flex; justify-content: space-between; gap: 16px; padding: 7px 9px; border-radius: 9px; background: color-mix(in srgb, var(--panel2) 70%, transparent); }
+.vue-offline-sync__diagnostics span { color: var(--mut); }
+.vue-offline-sync__diagnostics .is-warn strong { color: var(--warning, #f5b841); }
+.vue-offline-sync__diagnostics .is-ok strong { color: var(--success, #14cdb4); }
+.vue-offline-sync__feedback { min-height: 1.25em; font-size: .86rem; color: var(--mut); }
+.vue-offline-sync__feedback.is-ok { color: var(--success, #14cdb4); }
+.vue-offline-sync__feedback.is-warn { color: var(--warning, #f5b841); }
+.vue-offline-sync__feedback.is-err { color: var(--danger, #ef6461); }
+.vue-offline-sync__feedback.is-busy { color: var(--accent); }
+@media (max-width: 700px) {
+  .vue-offline-sync { min-width: 0; }
+  .vue-offline-sync__item > div:first-child, .vue-offline-sync__diagnostics > div { align-items: flex-start; flex-direction: column; gap: 3px; }
+  .vue-shell-sync-status { max-width: 44vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+}
+
+/* Sync entry and save feedback stay reachable on compact shell layouts. */
+@media (max-width: 840px) {
+  .vue-shell-header__actions > .vue-shell-sync-status.ui-badge,
+  .vue-shell-header__actions > [data-vue-save-state].ui-badge { display: inline-flex; }
+}
+@media (max-width: 520px) {
+  .vue-shell-header__actions > .vue-shell-sync-status.ui-badge {
+    width: 36px;
+    max-width: 36px;
+    padding-inline: 8px;
+    justify-content: center;
+    overflow: hidden;
+    font-size: 0;
+  }
+  .vue-shell-header__actions > [data-vue-save-state].ui-badge {
+    max-width: 72px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+@media (min-width: 841px) {
+  html[data-ui-layout="sidebar"][data-vue-shell="ready"] .vue-shell-header__actions .vue-shell-sync-status.ui-badge {
+    width: 42px;
+    max-width: 42px;
+    padding-inline: 8px;
+    justify-content: center;
+    overflow: hidden;
+    font-size: 0;
+  }
+}

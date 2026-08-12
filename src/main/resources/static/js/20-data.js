@@ -751,9 +751,15 @@ async function jfetch(url, opts = {}) {
 }
 
 function setSave(s, msg = "") {
+  const text = s === "saving" ? t("сохраняю…") : s === "saved" ? "✓" : s === "err" ? (msg || t("ошибка сети")) : "";
+  if (document.documentElement.dataset.vueShell === "ready") {
+    window.dispatchEvent(new CustomEvent("dutylog:save-feedback", { detail:{ state:s || "", message:text } }));
+    return;
+  }
   const el = $("saveState");
+  if (!el) return;
   el.classList.toggle("err", s === "err");
-  el.textContent = s === "saving" ? t("сохраняю…") : s === "saved" ? "✓" : s === "err" ? (msg || t("ошибка сети")) : "";
+  el.textContent = text;
   if (s === "saved") setTimeout(() => { if (el.textContent === "✓") el.textContent = ""; }, 1500);
 }
 
@@ -1369,6 +1375,10 @@ function updateOfflineStatus(){
   document.body.classList.toggle("offline", !online);
   document.body.classList.toggle("offline-stale", stale);
   document.body.classList.toggle("has-pending-sync", state.offline.pending > 0);
+  if (document.documentElement.dataset.vueOfflineSync === "ready") {
+    publishLegacyPlatformState();
+    return;
+  }
   const el = $("offlineStatus");
   if (!el) return;
   const parts = [];
@@ -1458,9 +1468,11 @@ window.addEventListener("storage", e => {
   if (e.key === OFFLINE_SYNC_LOCK_KEY) updateOfflineStatus();
 });
 document.addEventListener("keydown", e => {
+  if (document.documentElement.dataset.vueOfflineSync === "ready") return;
   if (e.key === "Escape" && document.body.classList.contains("syncDialogOpen")) closeOfflineSyncDialog();
 });
 document.addEventListener("click", async e => {
+  if (document.documentElement.dataset.vueOfflineSync === "ready") return;
   if (e.target?.id === "offlineStatus") { await openOfflineSyncDialog(); return; }
   if (e.target?.id === "offlineSyncClose" || e.target?.id === "offlineSyncBackdrop") { closeOfflineSyncDialog(); return; }
   if (e.target?.id === "offlineSyncNow") {

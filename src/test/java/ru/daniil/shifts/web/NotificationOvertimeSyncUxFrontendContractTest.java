@@ -4,6 +4,8 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,19 +28,20 @@ class NotificationOvertimeSyncUxFrontendContractTest {
 
     @Test
     void manualSyncHasAnAccessibleProgressAndResultSurface() throws IOException {
-        String html = resource("/static/index.html");
-        String data = resource("/static/js/20-data.js");
+        String modal = Files.readString(Path.of("frontend/src/app/OfflineSyncModal.vue"), StandardCharsets.UTF_8);
+        String bridge = Files.readString(Path.of("frontend/src/platform/bridge/legacyBridge.ts"), StandardCharsets.UTF_8);
 
-        assertTrue(html.contains("id=\"offlineSyncFeedback\" role=\"status\" aria-live=\"polite\""));
-        assertTrue(data.contains("setOfflineSyncButtonBusy(true)"));
-        assertTrue(data.contains("setOfflineSyncFeedback(t(\"Синхронизация…\")"));
-        assertTrue(data.contains("setOfflineSyncFeedback(t(\"Нет изменений\")"));
-        assertTrue(data.contains("setOfflineSyncFeedback(t(\"Синхронизация завершена\")"));
+        assertTrue(modal.contains("id=\"offlineSyncFeedback\""));
+        assertTrue(modal.contains("role=\"status\" aria-live=\"polite\""));
+        assertTrue(modal.contains("syncing.value = true"));
+        assertTrue(modal.contains("text.value.syncing"));
+        assertTrue(modal.contains("text.value.noChanges"));
+        assertTrue(modal.contains("text.value.syncComplete"));
+        assertTrue(bridge.contains("async offlineSync()"));
 
-        String css = resource("/static/app.css");
-        assertTrue(data.contains("compactStatus ? \"синхр…\" : \"синхронизация…\""));
-        assertTrue(css.contains("overflow-wrap:anywhere"));
-        assertTrue(css.contains("grid-template-columns:minmax(0,1fr)"));
+        String css = Files.readString(Path.of("frontend/src/styles/design-system.css"), StandardCharsets.UTF_8);
+        assertTrue(css.contains(".vue-offline-sync__feedback"));
+        assertTrue(css.contains(".vue-shell-sync-status"));
     }
 
     private static String resource(String path) throws IOException {

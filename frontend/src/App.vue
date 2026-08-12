@@ -5,7 +5,7 @@ import AppErrorBoundary from "@/shared/errors/AppErrorBoundary.vue";
 import { updateFrontendRoute } from "@/platform/diagnostics/frontendDiagnostics";
 import { guardHashRoute, navigateHashRoute, readHashRoute, subscribeHashRoute } from "@/platform/router/hashRoute";
 import { useShellStore } from "@/app/shellStore";
-import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
+import { SAVE_FEEDBACK_EVENT, type LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { usePlatformStore } from "@/platform/stores/platformStore";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
@@ -13,6 +13,9 @@ const platform = usePlatformStore();
 const shell = useShellStore();
 let unsubscribeLegacy: (() => void) | null = null;
 let unsubscribeRoute: (() => void) | null = null;
+const synchronizeSaveFeedback = (event: Event): void => {
+  shell.synchronizeSaveFeedback((event as CustomEvent<DutyLogSaveFeedbackSnapshot>).detail);
+};
 
 function synchronizeRoute(): void {
   const requested = readHashRoute();
@@ -37,11 +40,13 @@ onMounted(() => {
     synchronizeRoute();
   });
   unsubscribeRoute = subscribeHashRoute(() => synchronizeRoute());
+  window.addEventListener(SAVE_FEEDBACK_EVENT, synchronizeSaveFeedback);
 });
 
 onBeforeUnmount(() => {
   unsubscribeLegacy?.();
   unsubscribeRoute?.();
+  window.removeEventListener(SAVE_FEEDBACK_EVENT, synchronizeSaveFeedback);
 });
 </script>
 

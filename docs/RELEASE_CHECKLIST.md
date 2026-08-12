@@ -1,9 +1,25 @@
 # Release checklist
 
-Status: v27.40.24.
+Status: v27.40.25.
 
 
-## v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface Retirement acceptance
+## v27.40.25 — Vue Offline Sync Surface & Legacy Header Retirement acceptance
+
+- [x] Base content tree is exact proven-green v27.40.24 (`18dffd5d744336908c114475ef7a2283012364e6`).
+- [x] Vue owns the post-ready `#offlineStatus` and `#offlineSyncDialog` surface with stable queue/failed/diagnostic selectors.
+- [x] `LegacyBridge` exposes only bounded offline status/details/actions; Vue creates no second queue, lock, IndexedDB store or reconnect flush.
+- [x] `shell-bootstrap.js` removes the server-rendered `.head` and legacy sync dialog after Vue readiness while preserving pre-Vue recovery.
+- [x] Post-ready `setSave()` publishes typed Vue save feedback instead of writing the removed `#saveState`.
+- [x] First-run onboarding remains the only intentionally live post-ready legacy presentation exception.
+- [x] No HTTP/OpenAPI/Flyway/business/auth/retry/timeout/queue semantic change; OpenAPI 124/130, Flyway V47.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Maven 778/778 across 161 Java test classes on Java 17.
+- [ ] Playwright canary green.
+- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
+- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [ ] Staging deploy green.
+
+## v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface Retirement acceptance — accepted predecessor
 
 - [x] Base commit/tree are exact proven-green v27.40.23 (`a90eb9496510287b204890279bea41c93625ea46` / `c84f4fbc2de7a1ac0416ae278e5ee65024aa1a98`).
 - [x] Post-ready recovery `nextTopbar` / `tabbar` are physically removed rather than merely CSS-hidden.
@@ -11,12 +27,12 @@ Status: v27.40.24.
 - [x] First-run onboarding and offline/sync presentation remain explicit bounded exceptions; `dataLayer` remains the single offline mutation/sync owner.
 - [x] Frontend architecture documentation matches the post-v27.40.23 ownership model and removed bridge capabilities.
 - [x] No HTTP/OpenAPI/Flyway/business/auth/retry/timeout/offline-queue semantic change; OpenAPI 124/130, Flyway V47.
-- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
-- [ ] Maven 775/775 across 160 Java test classes on Java 17.
-- [ ] Playwright canary green.
-- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
-- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
-- [ ] Staging deploy green.
+- [x] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [x] Maven 775/775 across 160 Java test classes on Java 17.
+- [x] Playwright canary green.
+- [x] Full Chromium 48/48, 0 failed, 0 flaky.
+- [x] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [x] Staging deploy green.
 
 ## v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix acceptance
 

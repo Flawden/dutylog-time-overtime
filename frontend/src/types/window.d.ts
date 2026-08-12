@@ -14,10 +14,50 @@ declare global {
     onboardingCompleted: boolean;
   }
 
+  interface DutyLogOfflineSyncStatusSnapshot {
+    online: boolean;
+    cacheReady: boolean;
+    lastSyncAt: string | null;
+    stale: boolean;
+    pending: number;
+    failed: number;
+    syncing: boolean;
+    syncLockedByOther: boolean;
+  }
+
+  interface DutyLogOfflineQueueItemSnapshot {
+    id: string;
+    type: string;
+    payload: Record<string, unknown> | null;
+    createdAt: string | null;
+    failedAt: string | null;
+    attempts: number;
+    lastError: string | null;
+  }
+
+  interface DutyLogOfflineSyncDetailsSnapshot {
+    queue: readonly DutyLogOfflineQueueItemSnapshot[];
+    failed: readonly DutyLogOfflineQueueItemSnapshot[];
+    lock: Readonly<{
+      active: boolean;
+      expired: boolean;
+      mine: boolean;
+      startedAt: string | null;
+      expiresAt: string | null;
+    }>;
+    diagnosticsReport: string;
+  }
+
+  interface DutyLogSaveFeedbackSnapshot {
+    state: "" | "saving" | "saved" | "err" | "ok";
+    message: string;
+  }
+
   interface DutyLogLegacySnapshot {
     version: string;
     language: "ru" | "en";
     online: boolean;
+    offline: DutyLogOfflineSyncStatusSnapshot;
     modulesLoaded: boolean;
     modules?: Readonly<Record<string, boolean>>;
     navigation: readonly string[];
@@ -43,6 +83,12 @@ declare global {
     offlineCaptureInbox?(text: string): Promise<{ queued: boolean; item: unknown }>;
     offlineSync?(): Promise<void>;
     offlinePending?(): number;
+    offlineSyncDetails?(): Promise<DutyLogOfflineSyncDetailsSnapshot | null>;
+    offlineRetryFailed?(index: number): Promise<void>;
+    offlineRetryAllFailed?(): Promise<void>;
+    offlineRemoveFailed?(index: number): Promise<void>;
+    offlineClearFailed?(): Promise<void>;
+    offlineExport?(): Promise<void>;
     offlineSelectedDay?(date: string): Promise<{ tasks: unknown[]; notes: unknown[]; important: unknown[] }>;
     offlineCalendarSnapshot?(focusDate: string): Promise<{ bundle: unknown; savedAt: string | null } | null>;
     subscribe(listener: (snapshot: DutyLogLegacySnapshot) => void): () => void;

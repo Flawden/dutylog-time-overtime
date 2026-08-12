@@ -1,3 +1,14 @@
+# v27.40.25 — Vue Offline Sync Surface & Legacy Header Retirement
+
+- Starts from the proven-green v27.40.24 staging baseline and retires the remaining legacy offline/sync presentation without moving queue authority.
+- Makes `AppShell.vue` own the visible `#offlineStatus` and adds `OfflineSyncModal.vue` for pending/failed queue state, diagnostics and manual sync actions while preserving stable browser selectors.
+- Exposes immutable offline status/details plus narrow retry/remove/clear/export commands through `LegacyBridge`; Vue never owns IndexedDB, the outbox, the sync lock or `dataLayer.syncQueue()`.
+- Physically removes the server-rendered `.head` and legacy `#offlineSyncDialog` after Vue readiness; both remain available before readiness as recovery-only UI.
+- Routes the historical `setSave()` feedback surface through typed `dutylog:save-feedback` after Vue readiness so deleting the old header does not drop save/error status.
+- Leaves first-run onboarding as the only intentionally live post-ready legacy presentation exception for the next ownership cut.
+- Changes no HTTP/OpenAPI shape, Flyway migration, backend business rule, auth boundary, timeout/retry policy, IndexedDB schema or offline queue semantics.
+- Acceptance surface advances to **161 Java test classes / 778 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases / OpenAPI 124/130 / Flyway V47**.
+
 # v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface Retirement
 
 - Starts from the proven-green v27.40.23 staging baseline and performs the final source ownership audit before parity/UX closure.

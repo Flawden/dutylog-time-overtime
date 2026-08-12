@@ -1,8 +1,10 @@
-# DutyLog v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface Retirement
+# DutyLog v27.40.25 — Vue Offline Sync Surface & Legacy Header Retirement
 
-v27.40.23 is the proven-green baseline. v27.40.24 turns the completed screen migration into an explicit ownership contract: every user-facing screen is Vue-owned after readiness, recovery-only shell chrome and orphan migration fallback DOM are physically retired post-ready, and the architecture documentation matches the live tree.
+v27.40.24 is the proven-green baseline. v27.40.25 moves the remaining offline/sync presentation into the Vue shell while preserving the existing `dataLayer` as the single IndexedDB/outbox/reconnect executor.
 
-First-run onboarding and offline/sync UX remain the only bounded live legacy presentation exceptions. The existing `dataLayer` remains the single offline mutation/sync owner by design. OpenAPI stays 124/130 and Flyway stays V47.
+After Vue readiness the server-rendered `.head` and legacy `#offlineSyncDialog` are physically retired; Vue owns `#offlineStatus`, queue/failed diagnostics, manual sync actions and save-status feedback through narrow bridge capabilities. The recovery markup still exists before readiness. First-run onboarding is now the only intentionally live post-ready legacy presentation exception. OpenAPI stays 124/130 and Flyway stays V47.
+
+Previous accepted ownership checkpoint: **DutyLog v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface Retirement**.
 
 # DutyLog v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix
 

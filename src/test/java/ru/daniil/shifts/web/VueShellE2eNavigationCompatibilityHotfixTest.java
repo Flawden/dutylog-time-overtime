@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Regression contract for v27.40.24 Vue-owned shell navigation and E2E compatibility. */
+/** Regression contract for v27.40.25 Vue-owned shell navigation and E2E compatibility. */
 class VueShellE2eNavigationCompatibilityHotfixTest {
 
     @Test

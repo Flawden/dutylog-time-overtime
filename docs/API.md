@@ -1,6 +1,6 @@
-# DutyLog API v27.40.24
+# DutyLog API v27.40.25
 
-`v27.40.24` changes no HTTP/OpenAPI or Flyway shape. It retires dead post-ready browser UI ownership only; OpenAPI remains **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
+`v27.40.25` changes no HTTP/OpenAPI or Flyway shape. It moves offline/sync presentation and save feedback into the Vue shell while preserving the existing `dataLayer` queue executor; OpenAPI remains **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 
 `v27.40.23` changes no HTTP/OpenAPI shape. It aligns a stale pre-Vue Today/Admin fallback source contract with the v27.40.22 Vue Admin ownership cut; OpenAPI remains **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 
