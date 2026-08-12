@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.40.21"
+const DUTYLOG_VERSION = "27.40.22"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -112,9 +112,6 @@ const state = {
   scheduleTemplatePreview: null,
   timeSettings: null,
   telegramStatus: null,
-  registrationSettings: null,
-  adminUsers: [],
-  adminUsersPage: { page:0, size:50, total:0, totalPages:0, hasPrevious:false, hasNext:false },
   preferences: { themePreference:"system", accentColor:"#F5B841" },
   profile: null,
   language: initialLanguage(),

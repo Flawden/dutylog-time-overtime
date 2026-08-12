@@ -1,5 +1,13 @@
 # DutyLog CI/CD
 
+## v27.40.22 Vue Admin workspace and final live legacy UI retirement
+
+- Exact frontend/Maven/Chromium topology is unchanged; the frontend gate must compile the new Vue Admin workspace and 60 Vitest cases before Maven 772/772 and the 48-scenario browser suite.
+- Canonical `/api/v1/admin/**` aliases are exercised by source/security contracts; no retry, timeout, artifact or deployment bypass is added.
+- A green release proves the live application no longer needs a post-Vue legacy route/UI owner.
+
+Status: v27.40.22.
+
 ## v27.40.21 Vue Payroll workspace retirement
 
 - Exact frontend/Maven/Chromium workflow topology is unchanged; the frontend gate must compile the new Vue Payroll workspace before Maven 769/769 and the existing 48-scenario browser suite.

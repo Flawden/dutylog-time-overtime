@@ -1,10 +1,10 @@
-release=27.40.21
+release=27.40.22
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=dcf947756a1a9bc1c8cc3fe1357e9ceab23c3fe70c9b831c38743901d94e0db2
+committedLockfileSha256=6f85b190ed29b240308ddb839fb7f86509afeb2671f2380c2e7ae0cd5604bede
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=vue-payroll-workspace-retirement-acceptance-for-v27.40.21
+nextAction=vue-admin-workspace-final-live-legacy-ui-retirement-acceptance-for-v27.40.22

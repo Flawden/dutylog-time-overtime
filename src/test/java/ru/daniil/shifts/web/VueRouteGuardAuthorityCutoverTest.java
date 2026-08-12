@@ -29,14 +29,14 @@ class VueRouteGuardAuthorityCutoverTest {
     }
 
     @Test
-    void postVueLegacyRouterOnlyKeepsAdminSideEffects() throws Exception {
+    void postVueLegacyRouterHasNoLiveUiSideEffects() throws Exception {
         String boot = read("src/main/resources/static/js/70-user-boot.js");
         String calendar = read("frontend/src/features/calendar-timeline/components/CalendarTimelineWorkspace.vue");
 
-        assertTrue(boot.contains("function applyRemainingLegacyRouteEffects(active)"));
-        assertTrue(boot.contains("window.addEventListener(\"dutylog:vue-route-committed\", handleVueRouteCommitted)"));
         assertTrue(boot.contains("window.removeEventListener(\"hashchange\", applyRoute);"));
-        assertTrue(boot.contains("Pre-Vue recovery keeps the historical router intact."));
+        assertFalse(boot.contains("applyRemainingLegacyRouteEffects"));
+        assertFalse(boot.contains("dutylog:vue-route-committed"));
+        assertTrue(boot.contains("Pre-Vue recovery is intentionally limited to legacy-compatible screens."));
         String loadProfile = loadProfileSurface(boot);
         assertTrue(loadProfile.contains("state.profile = p;"));
         assertTrue(loadProfile.contains("applyRoute();"));
@@ -44,24 +44,11 @@ class VueRouteGuardAuthorityCutoverTest {
         assertTrue(loadProfile.indexOf("publishLegacyPlatformState();") > loadProfile.indexOf("applyRoute();"));
         assertTrue(calendar.contains("route !== \"calendar\" && store.dayPanelOpen"));
         assertTrue(calendar.contains("store.closeDayPanel()"));
-        String effects = legacyRouteEffectsSurface(boot);
-        assertFalse(effects.contains("VIEWS.payroll"));
-        assertTrue(effects.contains("VIEWS.admin"));
-        assertFalse(effects.contains("renderTodayDashboard"));
-        assertFalse(effects.contains("renderImportantBoard"));
-        assertFalse(effects.contains("openVacationPlannerView"));
-        assertFalse(effects.contains("loadLedgerPage"));
     }
 
     private static String loadProfileSurface(String boot) {
         int start = boot.indexOf("async function loadProfile()");
         int end = boot.indexOf("$(\"nextHeaderAvatar\")", start);
-        return boot.substring(start, end);
-    }
-
-    private static String legacyRouteEffectsSurface(String boot) {
-        int start = boot.indexOf("function applyRemainingLegacyRouteEffects(active)");
-        int end = boot.indexOf("function handleVueRouteCommitted(event)", start);
         return boot.substring(start, end);
     }
 

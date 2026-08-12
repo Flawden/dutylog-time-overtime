@@ -17,6 +17,7 @@ import CalendarTimelineWorkspace from "@/features/calendar-timeline/components/C
 import ProductivityWorkspace from "@/features/productivity/components/ProductivityWorkspace.vue";
 import SettingsWorkspace from "@/features/settings-workspace/components/SettingsWorkspace.vue";
 import PayrollWorkspace from "@/features/payroll/components/PayrollWorkspace.vue";
+import AdminWorkspace from "@/features/admin/components/AdminWorkspace.vue";
 import "@/features/settings-workspace/settings-workspace.css";
 import { navigateHashRoute } from "@/platform/router/hashRoute";
 
@@ -90,6 +91,7 @@ function logout(): void { props.bridge.logout(); }
   <ProductivityWorkspace :bridge="bridge" />
   <SettingsWorkspace :bridge="bridge" />
   <PayrollWorkspace />
+  <AdminWorkspace />
 
   <UiModal
     :open="shell.moreOpen"

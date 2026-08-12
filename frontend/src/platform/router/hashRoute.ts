@@ -1,6 +1,5 @@
 import { normalizeSection, type DutyLogRoute } from "@/app/navigation";
 
-export const VUE_ROUTE_COMMITTED_EVENT = "dutylog:vue-route-committed";
 
 export interface DutyLogRouteSnapshot {
   readonly rawRoute: string;
@@ -20,6 +19,7 @@ const ROUTE_MODULE: Partial<Record<DutyLogRoute, string>> = Object.freeze({
   payroll: "payroll",
   tasks: "tasks",
   important: "important_dates",
+  admin: "admin",
 });
 
 function normalizeHash(value: string): string {
@@ -45,13 +45,6 @@ export function guardHashRoute(
     return Object.freeze({ rawRoute: "calendar", activeRoute: "calendar" });
   }
   return requested;
-}
-
-export function publishCommittedHashRoute(
-  snapshot: DutyLogRouteSnapshot,
-  target: Window = window,
-): void {
-  target.dispatchEvent(new CustomEvent<DutyLogRouteSnapshot>(VUE_ROUTE_COMMITTED_EVENT, { detail: snapshot }));
 }
 
 export function navigateHashRoute(view: string, target: Window = window): void {

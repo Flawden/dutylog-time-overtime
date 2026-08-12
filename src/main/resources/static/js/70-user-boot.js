@@ -219,7 +219,6 @@ async function init(){
   state.timeSettings = loadTimeSettings();
   renderSwatches();
   initTimeSettingsEvents();
-  initDiagnosticsEvents();
   initSettingsAccordion();
   await dataLayer.init();
   try {
@@ -272,42 +271,24 @@ init().catch(err => {
 });
 
 /* ─── Вкладки: hash-роутинг ─────────────────────────────────── */
-const VIEWS = window.DutyLogUI?.views?.() || { today:"view-today", calendar:"view-calendar", vacation:"view-vacation", overtime:"view-overtime", payroll:"view-payroll", tasks:"view-tasks", important:"view-important", settings:"view-settings", admin:"view-admin" };
+const VIEWS = window.DutyLogUI?.views?.() || { today:"view-today", calendar:"view-calendar", vacation:"view-vacation", overtime:"view-overtime", payroll:"view-payroll", tasks:"view-tasks", important:"view-important", settings:"view-settings" };
 window.__dutylogLedgerRouteReady = Promise.resolve();
-function applyRemainingLegacyRouteEffects(active){
-  const adminView = document.getElementById(VIEWS.admin);
-  if (adminView) adminView.hidden = active !== "admin";
-  if (active === "admin") {
-    if (typeof initAdminNavigation === "function") initAdminNavigation();
-    renderDiagnosticsClient();
-    if (state.profile?.admin) refreshAdminPanel();
-  }
-}
-
-function handleVueRouteCommitted(event){
-  if (document.documentElement.dataset.vueShell !== "ready") return;
-  const active = String(event.detail?.activeRoute || "");
-  if (active) applyRemainingLegacyRouteEffects(active);
-}
-window.addEventListener("dutylog:vue-route-committed", handleVueRouteCommitted);
-
-let preVueActiveRoute = null;
 function applyRoute(){
   if (document.documentElement.dataset.vueShell === "ready") return;
 
   const defaultRoute = "#today";
   const rawRoute = (location.hash || defaultRoute).slice(1);
   const name = rawRoute.startsWith("settings-") ? "settings" : rawRoute;
-  let active = VIEWS[name] ? name : "today";
-  if (active === "admin" && state.profile && !state.profile.admin) active = "calendar";
+  // Admin is Vue-only from v27.40.22. During pre-Vue recovery we show Settings
+  // until the Vue shell mounts and applies the guarded canonical admin route.
+  let active = name === "admin" ? "settings" : (VIEWS[name] ? name : "today");
   if (active === "tasks" && !moduleEnabled("tasks")) active = "calendar";
   if (active === "overtime" && !moduleEnabled("overtime")) active = "calendar";
   if (active === "payroll" && !moduleEnabled("payroll")) active = "calendar";
   if (active === "important" && !moduleEnabled("important_dates")) active = "calendar";
   if (active === "vacation" && !moduleEnabled("vacation")) active = "calendar";
-  preVueActiveRoute = active;
 
-  // Pre-Vue recovery keeps the historical router intact.
+  // Pre-Vue recovery is intentionally limited to legacy-compatible screens.
   document.body.dataset.view = active;
   if (active !== "calendar") selectDay(null);
   for (const [key, id] of Object.entries(VIEWS)) {
@@ -339,18 +320,11 @@ function applyRoute(){
   if (active === "overtime" && typeof loadLedgerPage === "function") {
     window.__dutylogLedgerRouteReady = Promise.resolve(loadLedgerPage(true));
   }
-  if (active === "admin") {
-    if (typeof initAdminNavigation === "function") initAdminNavigation();
-    renderDiagnosticsClient();
-    if (state.profile?.admin) refreshAdminPanel();
-  }
   publishLegacyPlatformState();
 }
 window.addEventListener("hashchange", applyRoute);
 window.addEventListener("dutylog:vue-ready", () => {
   window.removeEventListener("hashchange", applyRoute);
-  const active = String(document.body.dataset.view || "today");
-  if (active !== preVueActiveRoute) applyRemainingLegacyRouteEffects(active);
 }, { once:true });
 applyRoute();
 

@@ -224,7 +224,7 @@ public final class DutyLogModules {
                     true,
                     List.of(CORE),
                     List.of("settings:admin", "nav:admin"),
-                    List.of("/api/admin"),
+                    List.of("/api/admin", "/api/v1/admin"),
                     List.of(),
                     110
             )

@@ -1,5 +1,14 @@
 # Module contracts
 
+## Vue Admin ownership and final live legacy UI retirement (v27.40.22)
+
+- Vue is the sole live Admin presentation/read-state owner for Users/Roles, Registration and Diagnostics after shell readiness.
+- Generated `/api/v1/admin/**` operations are the canonical browser contract; `/api/admin/**` remains a backend compatibility alias only.
+- Spring Security and `SystemController.requireAdmin()` remain authoritative for Admin access; client route/module guards are UX only.
+- No post-Vue legacy route side-effect adapter remains, and this release adds no second offline mutation/sync owner.
+
+Status: v27.40.22.
+
 ## Vue Payroll ownership (v27.40.21)
 
 - Vue is the sole live Payroll presentation/read-state owner for the `payroll` route.

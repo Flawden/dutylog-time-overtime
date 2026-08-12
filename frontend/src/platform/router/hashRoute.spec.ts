@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { VUE_ROUTE_COMMITTED_EVENT, guardHashRoute, navigateHashRoute, publishCommittedHashRoute, readHashRoute, subscribeHashRoute } from "./hashRoute";
+import { guardHashRoute, navigateHashRoute, readHashRoute, subscribeHashRoute } from "./hashRoute";
 
 function fakeWindow(hash = "#today"): Window {
   const target = new EventTarget() as unknown as Window;
@@ -17,15 +17,6 @@ describe("Vue hash route authority", () => {
     const target = fakeWindow("#today");
     navigateHashRoute("#overtime", target);
     expect(target.location.hash).toBe("#overtime");
-  });
-
-  it("publishes the guarded canonical route for the narrow legacy side-effect adapter", () => {
-    const target = fakeWindow("#payroll");
-    const listener = vi.fn();
-    target.addEventListener(VUE_ROUTE_COMMITTED_EVENT, event => listener((event as CustomEvent).detail));
-    const snapshot = { rawRoute: "payroll", activeRoute: "payroll" } as const;
-    publishCommittedHashRoute(snapshot, target);
-    expect(listener).toHaveBeenCalledWith(snapshot);
   });
 
   it("subscribes directly to hashchange and can unsubscribe", () => {

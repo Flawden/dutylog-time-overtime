@@ -1,10 +1,25 @@
 # Release checklist
 
-Status: v27.40.21.
+Status: v27.40.22.
 
 
+## v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement acceptance
 
-## v27.40.21 — Vue Payroll Workspace Retirement acceptance
+- [x] Base tree is the proven-green v27.40.21 release.
+- [x] Admin Users/Roles, Registration and Diagnostics are Vue-owned and use generated canonical `/api/v1/admin/**` operations.
+- [x] `/api/admin/**` and `/api/v1/admin/**` remain backend ADMIN-protected aliases.
+- [x] Legacy Admin HTML/state/data/render/event ownership is absent from the live runtime.
+- [x] No post-Vue legacy route side-effect adapter/event remains.
+- [x] Limited pre-Vue recovery and the single `dataLayer` offline owner remain unchanged.
+- [x] OpenAPI is 124/130, Flyway V47.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Maven 772/772 on Java 17.
+- [ ] Playwright canary green.
+- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
+- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [ ] Staging deploy green.
+
+## v27.40.21 — Vue Payroll Workspace Retirement acceptance — accepted predecessor
 
 - [x] Base tree is the proven-green v27.40.20 release.
 - [x] Payroll route is Vue-owned and uses generated OpenAPI operations.
@@ -12,12 +27,12 @@ Status: v27.40.21.
 - [x] Post-Vue legacy route effects are Admin-only.
 - [x] Existing Payroll Foundation E2E remains the parity journey and waits on the public Vue Payroll domain.
 - [x] OpenAPI 118/120, Flyway V47 and single `dataLayer` offline ownership remain unchanged.
-- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
-- [ ] Maven 769/769 on Java 17.
-- [ ] Playwright canary green.
-- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
-- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
-- [ ] Staging deploy green.
+- [x] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [x] Maven 769/769 on Java 17.
+- [x] Playwright canary green.
+- [x] Full Chromium 48/48, 0 failed, 0 flaky.
+- [x] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [x] Staging deploy green.
 
 ## v27.40.20 — E2E Release Version Contract Alignment Hotfix acceptance
 

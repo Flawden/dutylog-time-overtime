@@ -18,7 +18,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Регрессионный замок на защиту админки.
  *
- * Защита двухслойная: matcher `/api/admin/**` → hasRole("ADMIN") в SecurityConfig
+ * Защита двухслойная: matchers `/api/admin/**` и `/api/v1/admin/**` → hasRole("ADMIN") в SecurityConfig
  * плюс ручной requireAdmin() в SystemController. Эти тесты гарантируют, что
  * ни один слой не отвалится молча: обычный пользователь получает 403 на КАЖДЫЙ
  * админ-эндпоинт, аноним — 401, админ — работает.
@@ -51,6 +51,8 @@ class AdminAccessTest {
     void анонимПолучает401НаАдминке() throws Exception {
         mvc.perform(get("/api/admin/status"))
                 .andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/admin/status"))
+                .andExpect(status().isUnauthorized());
     }
 
     /* ── Обычный пользователь: 403 на каждый эндпоинт ── */
@@ -60,11 +62,17 @@ class AdminAccessTest {
         mvc.perform(get("/api/admin/status")
                         .with(user("test-regular").roles("USER")))
                 .andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/admin/status")
+                        .with(user("test-regular").roles("USER")))
+                .andExpect(status().isForbidden());
     }
 
     @Test
     void обычныйПользовательНеВидитСписокПользователей() throws Exception {
         mvc.perform(get("/api/admin/users")
+                        .with(user("test-regular").roles("USER")))
+                .andExpect(status().isForbidden());
+        mvc.perform(get("/api/v1/admin/users")
                         .with(user("test-regular").roles("USER")))
                 .andExpect(status().isForbidden());
     }
@@ -110,12 +118,21 @@ class AdminAccessTest {
         mvc.perform(get("/api/admin/status")
                         .with(user("test-admin").roles("ADMIN", "USER")))
                 .andExpect(status().isOk());
+        mvc.perform(get("/api/v1/admin/status")
+                        .with(user("test-admin").roles("ADMIN", "USER")))
+                .andExpect(status().isOk());
 
         mvc.perform(get("/api/admin/users")
                         .with(user("test-admin").roles("ADMIN", "USER")))
                 .andExpect(status().isOk());
+        mvc.perform(get("/api/v1/admin/users")
+                        .with(user("test-admin").roles("ADMIN", "USER")))
+                .andExpect(status().isOk());
 
         mvc.perform(get("/api/admin/settings/registration")
+                        .with(user("test-admin").roles("ADMIN", "USER")))
+                .andExpect(status().isOk());
+        mvc.perform(get("/api/v1/admin/settings/registration")
                         .with(user("test-admin").roles("ADMIN", "USER")))
                 .andExpect(status().isOk());
     }

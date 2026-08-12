@@ -1,3 +1,14 @@
+# v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement
+
+- Starts from the proven-green v27.40.21 staging baseline.
+- Migrates Admin Users/Roles, Registration and Diagnostics to `AdminWorkspace.vue` + Pinia and generated OpenAPI operations while preserving the established `#admin*`, registration and diagnostics selectors.
+- Adds canonical `/api/v1/admin/**` aliases for six Admin operations and keeps `/api/admin/**` as a backend compatibility alias; Spring Security protects both namespaces with ADMIN authority.
+- Expands OpenAPI to **124 operations / 130 schemas** and moves the contract description from Android-only wording to shared generated/typed DutyLog clients.
+- Removes the live legacy Admin HTML/state/data/render/event owner from `index.html`, `10-core.js`, `20-data.js` and `60-settings.js`.
+- Removes the final post-Vue legacy route side-effect adapter and `dutylog:vue-route-committed`; after Vue readiness there are no legacy-owned user screens.
+- Keeps limited pre-Vue recovery for compatible screens, maps pre-Vue `#admin` to Settings until Vue mounts, and keeps `dataLayer` as the sole offline mutation/reconnect owner.
+- Acceptance surface becomes **159 Java test classes / 772 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases / Flyway V47**.
+
 # v27.40.21 — Vue Payroll Workspace Retirement
 
 - Starts from the proven-green v27.40.20 staging baseline.

@@ -1,5 +1,14 @@
 # DutyLog security review
 
+## v27.40.22 Vue Admin workspace and final live legacy UI retirement review
+
+- Both `/api/admin/**` and canonical `/api/v1/admin/**` are protected by the same Spring Security ADMIN matcher and the controller's existing `requireAdmin()` defense-in-depth checks.
+- Vue Admin uses same-origin generated transport with the existing session/CSRF client; no bearer secret, third-party origin, local privilege cache or client-side authorization authority is introduced.
+- Removing legacy Admin state/API/render handlers and the final post-Vue route adapter reduces duplicate privileged UI surfaces.
+- Offline `dataLayer`, service-worker API policy, PostgreSQL/Flyway V47 and secret handling are unchanged.
+
+Status: v27.40.22.
+
 ## v27.40.21 Vue Payroll workspace retirement review
 
 - Payroll continues to use same-origin authenticated generated API operations; Spring Boot remains authoritative for ownership, closed-period eligibility, ledger integrity and immutable calculation snapshots.

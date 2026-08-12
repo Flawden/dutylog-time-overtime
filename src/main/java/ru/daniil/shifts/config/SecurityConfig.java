@@ -189,7 +189,7 @@ public class SecurityConfig {
                                 "/actuator/health/**",
                                 "/calendar-feed.ics"
                         ).permitAll()
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/admin/**", "/api/v1/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login.html")

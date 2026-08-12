@@ -8,19 +8,19 @@
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link href="/manifest.json" rel="manifest"/>
 <meta content="#0B1118" name="theme-color"/>
-<script src="js/shell-bootstrap.js?v=27.40.21"></script>
-<link href="app.css?v=27.40.21" rel="stylesheet"/>
-<link href="design-system.css?v=27.40.21" rel="stylesheet"/>
-<link href="ui/tokens.css?v=27.40.21" rel="stylesheet"/>
-<link href="ui/themes/dutylog-default.css?v=27.40.21" rel="stylesheet"/>
-<link href="ui/themes/midnight.css?v=27.40.21" rel="stylesheet"/>
-<link href="ui/themes/oled.css?v=27.40.21" rel="stylesheet"/>
-<link href="ui/themes/forest.css?v=27.40.21" rel="stylesheet"/>
-<link href="ui/themes/sunset.css?v=27.40.21" rel="stylesheet"/>
-<link href="ui/themes/industrial.css?v=27.40.21" rel="stylesheet"/>
-<link href="ui/themes/soft-purple.css?v=27.40.21" rel="stylesheet"/>
-<link href="ui/platform.css?v=27.40.21" rel="stylesheet"/>
-<link href="/vue/dutylog-vue-app-shell.css?v=27.40.21" rel="stylesheet"/>
+<script src="js/shell-bootstrap.js?v=27.40.22"></script>
+<link href="app.css?v=27.40.22" rel="stylesheet"/>
+<link href="design-system.css?v=27.40.22" rel="stylesheet"/>
+<link href="ui/tokens.css?v=27.40.22" rel="stylesheet"/>
+<link href="ui/themes/dutylog-default.css?v=27.40.22" rel="stylesheet"/>
+<link href="ui/themes/midnight.css?v=27.40.22" rel="stylesheet"/>
+<link href="ui/themes/oled.css?v=27.40.22" rel="stylesheet"/>
+<link href="ui/themes/forest.css?v=27.40.22" rel="stylesheet"/>
+<link href="ui/themes/sunset.css?v=27.40.22" rel="stylesheet"/>
+<link href="ui/themes/industrial.css?v=27.40.22" rel="stylesheet"/>
+<link href="ui/themes/soft-purple.css?v=27.40.22" rel="stylesheet"/>
+<link href="ui/platform.css?v=27.40.22" rel="stylesheet"/>
+<link href="/vue/dutylog-vue-app-shell.css?v=27.40.22" rel="stylesheet"/>
 </head>
 <body>
 <div id="dutylog-vue-root" data-vue-app-shell-host="true" aria-hidden="true"></div>
@@ -1274,101 +1274,7 @@
   </div>
 </div>
 </section>
-<section class="view adminView" hidden="" id="view-admin">
-<div class="adminShell settingsShell">
-  <aside class="settingsIndex adminIndex" aria-label="Разделы администрирования">
-    <div class="settingsIndexTitle">Админка</div>
-    <a data-admin-jump="users" href="#admin-users"><b>Пользователи</b><span>роли и пароли</span></a>
-    <a data-admin-jump="registration" href="#admin-registration"><b>Регистрация</b><span>доступ новых аккаунтов</span></a>
-    <a data-admin-jump="diagnostics" href="#admin-diagnostics"><b>Диагностика</b><span>сервер, база, кэш</span></a>
-    <div class="settingsIndexActions">
-      <button id="adminBackNav" type="button">назад к настройкам</button>
-    </div>
-  </aside>
-  <div class="adminContent settingsContent">
-  <div class="adminIntro settingsCard">
-    <div class="settingsHead">
-      <div>
-        <div class="eyebrow">Администрирование</div>
-        <div class="settingsTitle">Служебный профиль</div>
-        <div class="settingsHint">Техническая диагностика вынесена отдельно от пользовательских настроек. Этот раздел доступен только администратору приложения.</div>
-      </div>
-      <button id="adminBack" type="button">Назад к настройкам</button>
-    </div>
-  </div>
-<div class="settingsCard" id="adminUsersCard" data-settings-section="users">
-<a class="settingsAnchor" id="admin-users"></a>
-<div class="settingsHead">
-<div>
-<div class="eyebrow">Пользователи</div>
-<div class="settingsTitle">Пользователи и роли</div>
-<div class="settingsHint">Публичная регистрация создаёт только USER. Дополнительных админов назначает действующий администратор. Тариф FREE показан как задел под будущие PAID/VIP, но пока не влияет на права.</div>
-</div>
-<div class="status statusMetrics" id="adminUsersStatus">—</div>
-</div>
-<div class="adminUserFilters">
-  <input id="adminUsersSearch" placeholder="поиск: логин, имя, роль…" type="text"/>
-  <select id="adminUsersRoleFilter" title="Фильтр по роли">
-    <option value="all">все роли</option>
-    <option value="USER">USER</option>
-    <option value="ADMIN">ADMIN</option>
-  </select>
-</div>
-<div class="pagerRow" id="adminUsersPager"></div>
-<div class="adminUsersList" id="adminUsersList"><span class="emptyLine">Загрузка пользователей…</span></div>
-<div class="diagnosticsActions">
-  <button class="primary" id="adminUsersRefresh" type="button">Обновить пользователей</button>
-</div>
-</div>
-<div class="settingsCard" id="registrationAdminCard" data-settings-section="registration">
-<a class="settingsAnchor" id="admin-registration"></a>
-<div class="settingsHead">
-<div>
-<div class="eyebrow">Доступ</div>
-<div class="settingsTitle">Публичная регистрация</div>
-<div class="settingsHint">Администратор может открыть или закрыть создание новых обычных аккаунтов. Стартовый админ по-прежнему создаётся только через переменные окружения.</div>
-</div>
-<div class="status" id="registrationAdminStatus">—</div>
-</div>
-<div class="settingsGrid one">
-  <label class="checkline">
-    <input id="registrationEnabledToggle" type="checkbox">
-    <span>Разрешить публичную регистрацию пользователей</span>
-  </label>
-</div>
-<div class="settingsHint" id="registrationAdminDetails">Загрузка настройки регистрации…</div>
-<div class="diagnosticsActions">
-  <button id="registrationRefresh" type="button">Обновить статус регистрации</button>
-</div>
-</div>
-
-<div class="settingsCard" id="diagnosticsCard" data-settings-section="diagnostics">
-<a class="settingsAnchor" id="admin-diagnostics"></a>
-<div class="settingsHead">
-<div>
-<div class="eyebrow">Диагностика</div>
-<div class="settingsTitle">Состояние системы</div>
-<div class="settingsHint">Проверка версии приложения, подключения к серверу, базы данных, кэша браузера и Telegram-интеграции.</div>
-</div>
-<div class="status" id="diagnosticsStatus">—</div>
-</div>
-<div class="diagnosticsGrid" id="diagnosticsGrid">
-  <div class="diagItem"><span>Интерфейс</span><b id="diagFrontend">v27.40.21</b></div>
-  <div class="diagItem"><span>UI Core</span><b id="diagUiCore">v1</b></div>
-  <div class="diagItem"><span>Кэш приложения</span><b id="diagSw">проверяется…</b></div>
-  <div class="diagItem"><span>Браузер</span><b id="diagBrowser">—</b></div>
-  <div class="diagItem"><span>Защита сессии</span><b id="diagCsrf">—</b></div>
-</div>
-<div class="diagnosticsList" id="diagnosticsList"><span class="emptyLine">Нажмите «Обновить диагностику», чтобы получить отчёт.</span></div>
-<div class="diagnosticsActions">
-  <button class="primary" id="diagnosticsRefresh" type="button">Обновить диагностику</button>
-  <button id="diagnosticsCopy" type="button">Скопировать отчёт</button>
-</div>
-</div>
-
-</div>
-</div>
-</section>
+<!-- Admin is owned by the Vue admin workspace from v27.40.22 onward. -->
 </div>
 <div class="appModal" id="importantDetailsModal" hidden>
   <button class="appModalBackdrop" id="importantDetailsBackdrop" type="button" aria-label="Закрыть"></button>
@@ -1984,19 +1890,19 @@
   </div>
 </div>
 <!-- Ordered browser scripts. Keep this order stable; release-check verifies it. -->
-<script src="js/10-core.js?v=27.40.21"></script>
-<script src="js/12-ui-platform.js?v=27.40.21"></script>
-<script src="js/20-data.js?v=27.40.21"></script>
-<script src="js/30-calendar.js?v=27.40.21"></script>
-<script src="js/35-today.js?v=27.40.21"></script>
-<script src="js/37-calendar-experience.js?v=27.40.21"></script>
-<script src="js/38-schedule-layers.js?v=27.40.21"></script>
-<script src="js/39-vacation-planner.js?v=27.40.21"></script>
-<script src="js/40-overtime.js?v=27.40.21"></script>
-<script src="js/50-tasks.js?v=27.40.21"></script>
-<script src="js/55-calendar-sync.js?v=27.40.21"></script>
-<script src="js/60-settings.js?v=27.40.21"></script>
-<script src="js/70-user-boot.js?v=27.40.21"></script>
-<script type="module" src="/vue/dutylog-vue-app-shell.js?v=27.40.21"></script>
+<script src="js/10-core.js?v=27.40.22"></script>
+<script src="js/12-ui-platform.js?v=27.40.22"></script>
+<script src="js/20-data.js?v=27.40.22"></script>
+<script src="js/30-calendar.js?v=27.40.22"></script>
+<script src="js/35-today.js?v=27.40.22"></script>
+<script src="js/37-calendar-experience.js?v=27.40.22"></script>
+<script src="js/38-schedule-layers.js?v=27.40.22"></script>
+<script src="js/39-vacation-planner.js?v=27.40.22"></script>
+<script src="js/40-overtime.js?v=27.40.22"></script>
+<script src="js/50-tasks.js?v=27.40.22"></script>
+<script src="js/55-calendar-sync.js?v=27.40.22"></script>
+<script src="js/60-settings.js?v=27.40.22"></script>
+<script src="js/70-user-boot.js?v=27.40.22"></script>
+<script type="module" src="/vue/dutylog-vue-app-shell.js?v=27.40.22"></script>
 </body>
 </html>

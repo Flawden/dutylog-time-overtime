@@ -1,3 +1,7 @@
+# DutyLog v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement
+
+v27.40.21 is the proven-green staging baseline. v27.40.22 migrates the final live legacy UI domain — Admin Users/Roles, Registration and Diagnostics — into a typed Vue/Pinia workspace backed by generated `/api/v1/admin/**` operations. The historical `/api/admin/**` backend namespace remains a secured compatibility alias, but legacy Admin DOM/state/data/render ownership and the last post-Vue legacy route side-effect adapter are removed. After Vue readiness there are no legacy-owned user screens; limited pre-Vue recovery and the single `dataLayer` offline mutation/reconnect owner remain explicit infrastructure boundaries. OpenAPI advances to 124 operations / 130 schemas; Flyway remains V47.
+
 # DutyLog v27.40.21 — Vue Payroll Workspace Retirement
 
 v27.40.20 is the proven-green staging baseline. v27.40.21 retires Payroll as a live legacy UI owner: the route now renders from a typed Vue/Pinia domain using generated OpenAPI operations, while the old `view-payroll`, `45-payroll.js`, legacy Payroll state and legacy Payroll data helpers are removed. The existing Payroll browser journey and stable `#payroll*` selectors remain the parity contract. Post-Vue legacy route effects are now Admin-only; OpenAPI remains 118/120, Flyway remains V47, and `dataLayer` remains the sole offline mutation/reconnect owner.

@@ -117,12 +117,6 @@ const api = {
   async telegramCode() { return jfetch("/api/telegram/link-code", { method:"POST" }); },
   async telegramSettings(b) { return jfetch("/api/telegram/settings", { method:"PATCH", body:b }); },
   async telegramUnlink() { return jfetch("/api/telegram/link", { method:"DELETE" }); },
-  async systemStatus() { return jfetch("/api/admin/status"); },
-  async adminUsers(params = {}) { const qs = new URLSearchParams(); for (const [k, v] of Object.entries(params)) if (v !== undefined && v !== null && String(v).trim() !== "") qs.set(k, v); return jfetch(`/api/admin/users?${qs.toString()}`); },
-  async updateAdminUserRole(id, role) { return jfetch(`/api/admin/users/${id}/role`, { method:"PATCH", body:{ role } }); },
-  async resetAdminUserPassword(id, newPassword) { return jfetch(`/api/admin/users/${id}/password`, { method:"POST", body:{ newPassword } }); },
-  async registrationSettings() { return jfetch("/api/admin/settings/registration"); },
-  async updateRegistrationSettings(enabled) { return jfetch("/api/admin/settings/registration", { method:"PATCH", body:{ enabled } }); },
 };
 
 const MODULE_KEYS = ["core","calendar","shifts","notes","tasks","overtime","important_dates","vacation","payroll","calendar_sync","notifications","telegram","scenarios","admin"];

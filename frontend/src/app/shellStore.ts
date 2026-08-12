@@ -55,11 +55,14 @@ export const useShellStore = defineStore("dutylog-shell", {
       this.onboardingCompleted = snapshot.profile?.onboardingCompleted === true;
       if (snapshot.modules && !booleanMapEquals(this.modules, snapshot.modules)) this.modules = { ...snapshot.modules };
       this.primaryNavigation = validRoutes(snapshot.navigation);
-      this.availableNavigation = validRoutes(snapshot.availableViews);
+      const availableNavigation = validRoutes(snapshot.availableViews);
+      this.availableNavigation = snapshot.modulesLoaded && snapshot.modules?.admin === false
+        ? availableNavigation.filter(route => route !== "admin")
+        : availableNavigation;
       this.displayName = snapshot.profile?.displayName || "DutyLog";
       this.initials = snapshot.profile?.initials || "DL";
       this.admin = Boolean(snapshot.profile?.admin);
-      if (this.admin && !this.availableNavigation.includes("admin")) this.availableNavigation.push("admin");
+      if (this.admin && (!this.modulesLoaded || this.modules.admin !== false) && !this.availableNavigation.includes("admin")) this.availableNavigation.push("admin");
     },
     openMore(): void { this.moreOpen = true; },
     closeMore(): void { this.moreOpen = false; },

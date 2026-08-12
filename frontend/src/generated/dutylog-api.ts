@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 91b48b10fa56d3bd92f7d3f3c1dfc9a8d27d05641b3bf48f1dcd7445ab9c71c5
+ * SHA-256: 8bb0573339f0db88a5539da4a45a746503fe6b88bebee54c50766e621f0a8464
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 118 operations, 120 schemas
+ * Contract: 124 operations, 130 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "91b48b10fa56d3bd92f7d3f3c1dfc9a8d27d05641b3bf48f1dcd7445ab9c71c5";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "8bb0573339f0db88a5539da4a45a746503fe6b88bebee54c50766e621f0a8464";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -183,6 +183,84 @@ export namespace DutyLogApiSchemas {
     startTime: string;
     endTime: string;
     note?: string | null;
+  };
+
+  export type AdminDatabaseStatus = {
+    ok: boolean;
+    error?: string | null;
+  };
+
+  export type AdminRegistrationSettings = {
+    enabled: boolean;
+    mode: "open" | "closed";
+    source: "database" | "default";
+    updatedAt?: string | null;
+    updatedBy?: string | null;
+  };
+
+  export type AdminRegistrationSettingsRequest = {
+    enabled: boolean;
+  };
+
+  export type AdminSystemStatus = {
+    app: string;
+    version: string;
+    admin: string;
+    serverTime: string;
+    serverTimezone: string;
+    profiles: Array<string>;
+    database: DutyLogApiSchemas.AdminDatabaseStatus;
+    users: DutyLogApiSchemas.AdminUserManagementStatus;
+    registration: DutyLogApiSchemas.AdminRegistrationSettings;
+    telegram: DutyLogApiSchemas.AdminTelegramStatus;
+  };
+
+  export type AdminTelegramStatus = {
+    enabled: boolean;
+    tokenConfigured: boolean;
+    pollingEnabled: boolean;
+    notificationsEnabled: boolean;
+    configured?: boolean;
+    linked: boolean;
+    accountNotificationsEnabled?: boolean;
+    botUsername?: string | null;
+  };
+
+  export type AdminUser = {
+    id: number;
+    username: string;
+    displayName: string;
+    role: "USER" | "ADMIN";
+    accountTier: string;
+    bootstrapAdmin: boolean;
+    currentUser: boolean;
+    createdAt?: string | null;
+    updatedAt?: string | null;
+  };
+
+  export type AdminUserManagementStatus = {
+    total: number;
+    admins: number;
+    rolesAllowed: Array<string>;
+    accountTiersReserved: Array<string>;
+  };
+
+  export type AdminUserPage = {
+    items: Array<DutyLogApiSchemas.AdminUser>;
+    page: number;
+    size: number;
+    total: number;
+    totalPages: number;
+    hasPrevious: boolean;
+    hasNext: boolean;
+  };
+
+  export type AdminUserPasswordResetRequest = {
+    newPassword: string;
+  };
+
+  export type AdminUserRoleRequest = {
+    role: "USER" | "ADMIN";
   };
 
   export type ApiError = {
@@ -1372,6 +1450,7 @@ export namespace DutyLogApiSchemas {
 export const dutyLogOperations = {
   "addClosedPeriodAdjustment": { method: "POST", path: "/api/v1/ledger-integrity/adjustments" },
   "addPayrollAdjustment": { method: "POST", path: "/api/v1/payroll/adjustments" },
+  "adminSystemStatus": { method: "GET", path: "/api/v1/admin/status" },
   "applyScheduleTemplate": { method: "POST", path: "/api/v1/schedule-templates/{id}/apply" },
   "calculatePayrollRevision": { method: "POST", path: "/api/v1/payroll/periods/{month}/calculate" },
   "calendarRange": { method: "GET", path: "/api/v1/calendar" },
@@ -1407,6 +1486,7 @@ export const dutyLogOperations = {
   "exportCalendarRange": { method: "GET", path: "/api/v1/calendar-sync/export" },
   "exportImportantEventIcs": { method: "GET", path: "/api/v1/calendar-sync/events/{id}.ics" },
   "exportNotes": { method: "GET", path: "/api/v1/export/notes" },
+  "getAdminRegistrationSettings": { method: "GET", path: "/api/v1/admin/settings/registration" },
   "getCalendarSyncStatus": { method: "GET", path: "/api/v1/calendar-sync/status" },
   "getNotificationSettings": { method: "GET", path: "/api/v1/notifications/settings" },
   "getProfile": { method: "GET", path: "/api/v1/profile" },
@@ -1417,6 +1497,7 @@ export const dutyLogOperations = {
   "inspectLedgerIntegrity": { method: "GET", path: "/api/v1/ledger-integrity" },
   "listAbsenceTypes": { method: "GET", path: "/api/v1/vacation-planner/types" },
   "listActualWorkIntervals": { method: "GET", path: "/api/v1/actual-work" },
+  "listAdminUsers": { method: "GET", path: "/api/v1/admin/users" },
   "listCalendarLayers": { method: "GET", path: "/api/v1/calendar-layers" },
   "listDayNotes": { method: "GET", path: "/api/v1/notes" },
   "listImportantDayOccurrences": { method: "GET", path: "/api/v1/important-days/occurrences" },
@@ -1456,6 +1537,7 @@ export const dutyLogOperations = {
   "registerMobileUser": { method: "POST", path: "/api/v1/mobile/auth/register" },
   "registrationStatus": { method: "GET", path: "/api/v1/mobile/auth/registration-status" },
   "reopenAccountingPeriod": { method: "POST", path: "/api/v1/ledger-integrity/periods/{month}/reopen" },
+  "resetAdminUserPassword": { method: "POST", path: "/api/v1/admin/users/{id}/password" },
   "retiredCreateManualOvertimeUsage": { method: "POST", path: "/api/v1/overtime/usages" },
   "retiredUpdateManualOvertimeUsage": { method: "PATCH", path: "/api/v1/overtime/usages/{id}" },
   "revokeCalendarSubscription": { method: "DELETE", path: "/api/v1/calendar-sync/subscription" },
@@ -1471,6 +1553,8 @@ export const dutyLogOperations = {
   "updateAbsencePeriod": { method: "PATCH", path: "/api/v1/vacation-planner/absences/{id}" },
   "updateAbsenceType": { method: "PATCH", path: "/api/v1/vacation-planner/types/{id}" },
   "updateActualWorkInterval": { method: "PUT", path: "/api/v1/actual-work/{id}" },
+  "updateAdminRegistrationSettings": { method: "PATCH", path: "/api/v1/admin/settings/registration" },
+  "updateAdminUserRole": { method: "PATCH", path: "/api/v1/admin/users/{id}/role" },
   "updateCalendarLayer": { method: "PATCH", path: "/api/v1/calendar-layers/{id}" },
   "updateDayNote": { method: "PATCH", path: "/api/v1/notes/{id}" },
   "updateImportantDay": { method: "PATCH", path: "/api/v1/important-days/{id}" },
@@ -1500,6 +1584,10 @@ export interface DutyLogOperationTypes {
   "addPayrollAdjustment": {
     requestBody: DutyLogApiSchemas.PayrollAdjustmentInput;
     response: unknown;
+  };
+  "adminSystemStatus": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.AdminSystemStatus;
   };
   "applyScheduleTemplate": {
     requestBody: DutyLogApiSchemas.ScheduleTemplateApplyRequest;
@@ -1641,6 +1729,10 @@ export interface DutyLogOperationTypes {
     requestBody: undefined;
     response: string;
   };
+  "getAdminRegistrationSettings": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.AdminRegistrationSettings;
+  };
   "getCalendarSyncStatus": {
     requestBody: undefined;
     response: DutyLogApiSchemas.CalendarSyncStatus;
@@ -1680,6 +1772,10 @@ export interface DutyLogOperationTypes {
   "listActualWorkIntervals": {
     requestBody: undefined;
     response: Array<DutyLogApiSchemas.ActualWorkInterval>;
+  };
+  "listAdminUsers": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.AdminUserPage;
   };
   "listCalendarLayers": {
     requestBody: undefined;
@@ -1841,6 +1937,10 @@ export interface DutyLogOperationTypes {
     requestBody: undefined;
     response: unknown;
   };
+  "resetAdminUserPassword": {
+    requestBody: DutyLogApiSchemas.AdminUserPasswordResetRequest;
+    response: DutyLogApiSchemas.AdminUser;
+  };
   "retiredCreateManualOvertimeUsage": {
     requestBody: undefined;
     response: unknown;
@@ -1900,6 +2000,14 @@ export interface DutyLogOperationTypes {
   "updateActualWorkInterval": {
     requestBody: DutyLogApiSchemas.ActualWorkIntervalInput;
     response: unknown;
+  };
+  "updateAdminRegistrationSettings": {
+    requestBody: DutyLogApiSchemas.AdminRegistrationSettingsRequest;
+    response: DutyLogApiSchemas.AdminRegistrationSettings;
+  };
+  "updateAdminUserRole": {
+    requestBody: DutyLogApiSchemas.AdminUserRoleRequest;
+    response: DutyLogApiSchemas.AdminUser;
   };
   "updateCalendarLayer": {
     requestBody: DutyLogApiSchemas.CalendarLayerPatch;

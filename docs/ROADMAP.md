@@ -1,19 +1,32 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.21 — Vue Payroll Workspace Retirement**.
+Current release: **v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement**.
 
 
-## v27.40.21 — Vue Payroll Workspace Retirement — current
+## v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement — current
+- [x] Start from the proven-green v27.40.21 staging baseline.
+- [x] Give Admin a canonical generated `/api/v1/admin/**` contract while retaining the secured `/api/admin/**` backend alias.
+- [x] Move Users/Roles, Registration and Diagnostics presentation/read state to Vue + Pinia.
+- [x] Retire legacy Admin HTML/state/data/render/event ownership.
+- [x] Remove the final post-Vue legacy route side-effect adapter/event; Vue is the sole live user-screen router/presentation owner after readiness.
+- [x] Keep limited pre-Vue recovery and the single `dataLayer` offline mutation/reconnect owner.
+- [x] Advance OpenAPI to 124/130 while keeping Flyway V47 and strict TypeScript unchanged.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 772/772.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.21 — Vue Payroll Workspace Retirement — accepted predecessor
 - [x] Start from the proven-green v27.40.20 staging baseline.
 - [x] Move Payroll route presentation/read state to Vue + Pinia and generated OpenAPI operations.
 - [x] Preserve the existing Payroll Foundation browser journey and stable `#payroll*` selectors.
 - [x] Retire legacy `view-payroll`, `45-payroll.js`, legacy Payroll state and legacy Payroll data helpers.
 - [x] Narrow live post-Vue legacy route effects to Admin only.
 - [x] Keep OpenAPI 118/120, Flyway V47, strict TypeScript and single `dataLayer` offline ownership unchanged.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 769/769.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 769/769.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image/PostgreSQL V47 staging acceptance.
 
 ## v27.40.20 — E2E Release Version Contract Alignment Hotfix — accepted predecessor
 - [x] Start from the exact v27.40.19 release tree and classify CI: exact frontend gate green; Maven 767 tests reached two deterministic source-contract failures before Playwright.

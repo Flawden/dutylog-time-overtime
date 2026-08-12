@@ -47,17 +47,9 @@ class VuePayrollWorkspaceRetirementFrontendContractTest {
         assertFalse(core.contains("payrollLoading"));
         assertFalse(data.contains("payrollPeriod(month)"));
         assertFalse(data.contains("calculatePayroll(month)"));
-        String effects = between(boot, "function applyRemainingLegacyRouteEffects(active)", "function handleVueRouteCommitted(event)");
-        assertFalse(effects.contains("VIEWS.payroll"));
-        assertTrue(effects.contains("VIEWS.admin"));
+        assertFalse(boot.contains("applyRemainingLegacyRouteEffects"));
+        assertFalse(boot.contains("dutylog:vue-route-committed"));
         assertFalse(release.contains("\"js/45-payroll.js\""));
-    }
-
-    private static String between(String source, String startToken, String endToken) {
-        int start = source.indexOf(startToken);
-        int end = source.indexOf(endToken, start + startToken.length());
-        if (start < 0 || end < 0) throw new IllegalStateException("Contract surface not found");
-        return source.substring(start, end);
     }
 
     private static String read(String relative) throws Exception {

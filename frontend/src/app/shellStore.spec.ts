@@ -6,7 +6,7 @@ beforeEach(() => setActivePinia(createPinia()));
 
 function snapshot(overrides: Partial<DutyLogLegacySnapshot> = {}): DutyLogLegacySnapshot {
   return {
-    version: "27.40.21",
+    version: "27.40.22",
     language: "ru",
     online: true,
     modulesLoaded: true,
@@ -39,10 +39,18 @@ describe("shell store", () => {
     expect(store.modules).not.toBe(stableModules);
   });
 
-  it("adds the admin route only for an administrator", () => {
+  it("adds the admin route only for an administrator with the Admin module enabled", () => {
     const store = useShellStore();
-    store.synchronize(snapshot({ profile: { displayName: "Admin", initials: "AD", admin: true, onboardingCompleted: true } }));
+    const profile = { displayName: "Admin", initials: "AD", admin: true, onboardingCompleted: true };
+    store.synchronize(snapshot({ profile }));
     expect(store.availableNavigation).toContain("admin");
+
+    store.synchronize(snapshot({
+      profile,
+      modules: { admin: false },
+      availableViews: ["today", "calendar", "settings", "admin"],
+    }));
+    expect(store.availableNavigation).not.toContain("admin");
   });
 
   it("expires shell toasts without retaining global product state", () => {

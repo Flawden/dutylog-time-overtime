@@ -33,7 +33,7 @@ import java.util.List;
  * Ничего секретного не отдаёт: токены, пароли и URL БД здесь не светятся.
  */
 @RestController
-@RequestMapping("/api/admin")
+@RequestMapping({"/api/admin", "/api/v1/admin"})
 public class SystemController {
     private final Environment environment;
     private final JdbcTemplate jdbcTemplate;

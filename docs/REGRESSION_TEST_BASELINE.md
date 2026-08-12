@@ -1,12 +1,13 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.40.21.
+Status: v27.40.22.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.21 retires the live legacy Payroll UI/state/data owner and moves the route to a typed Vue/Pinia workspace backed by generated OpenAPI operations. The acceptance surface is **158 Java test classes / 769 `@Test` methods / 48 Chromium Playwright scenarios / 58 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+Current extension: v27.40.22 retires the final live legacy UI owner by moving Admin Users/Roles, Registration and Diagnostics to a typed Vue/Pinia workspace backed by canonical generated `/api/v1/admin/**` operations. The acceptance surface is **159 Java test classes / 772 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases** with **124 operations / 130 schemas** and Flyway V47. After Vue readiness no legacy-owned user screen or post-Vue legacy route side-effect adapter remains.
 
+Historical v27.40.21 extension: accepted green staging release retiring the live legacy Payroll owner.
 Historical v27.40.20 extension: accepted green staging release after aligning E2E release-version source contracts.
 Historical v27.40.19 extension: exact frontend green; Maven ran 767 tests and stopped on two stale source-contract assertions that still expected pre-helper E2E literals.
 Historical v27.40.17 extension: route-commit/hash-listener retirement reached exact frontend green but was Maven-red because the Java Calendar ICS PRODID remained on 27.40.16.
