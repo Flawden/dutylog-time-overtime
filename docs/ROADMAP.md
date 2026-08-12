@@ -1,18 +1,26 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix**.
+Current release: **v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix**.
 
 
-## v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix — current
-- [x] Carry the v27.40.14 Vue route-state/guard runtime forward unchanged from the v27.40.13 proven-green baseline.
-- [x] Record exact v27.40.14 CI evidence: frontend gate green; Maven 760 executed / 1 failure / 0 errors / 0 skipped; browser stages not reached.
-- [x] Scope the failing source contract to the actual `loadProfile()` function instead of an English comment line.
-- [x] Require `state.profile = p`, `applyRoute()` and a later `publishLegacyPlatformState()` call in source order.
-- [x] Keep route policy, strict TypeScript, OpenAPI 118/120, Flyway V47 and single `dataLayer` offline ownership unchanged.
+## v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix — current
+- [x] Start from the exact v27.40.15 tree and keep Vue route-state/guard authority in place.
+- [x] Classify the v27.40.15 browser result: 48 scenarios, 43 clean passed, one retry-only multiple-notes failure and five final failures.
+- [x] Restore fresh route-entry reads inside Vue Overtime/Vacation and Today owners instead of restoring legacy `applyRoute()` side effects.
+- [x] Move Today widget order/visibility into Vue using persisted workspace definition plus authoritative module state.
+- [x] Make note creation read-your-write from the create response and remove the selected-day reload that can race the first editor keystrokes.
+- [x] Keep strict TypeScript, OpenAPI 118/120, Flyway V47 and single `dataLayer` offline ownership unchanged.
 - [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 760/760.
+- [ ] Maven 764/764.
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix — predecessor cut (browser red)
+- [x] Carry the v27.40.14 Vue route-state/guard runtime forward unchanged from the v27.40.13 proven-green baseline.
+- [x] Replace the formatting-sensitive profile-publication comment assertion with structural `loadProfile()` checks.
+- [x] Exact frontend gate and Maven 760/760 reached browser validation.
+- [ ] Clean Playwright full Chromium 48/48 — exact report: 43 clean passed, one retry-only multiple-notes failure and five final failures.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance — blocked by browser failures.
 
 ## v27.40.14 — Vue Route Guard Authority Cutover — predecessor cut (CI stopped at Maven)
 - [x] Start only from the proven-green v27.40.13 staging baseline.

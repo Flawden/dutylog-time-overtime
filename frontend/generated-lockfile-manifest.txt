@@ -1,10 +1,10 @@
-release=27.40.15
+release=27.40.16
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=a1810a08d7e40701ee4302b75dba35b1e08930f5342cb88af19b717111eebf47
+committedLockfileSha256=3ba7c52e21e9dd9798f3075865bb6cd22214753be2b9b804624a2864f3beb16d
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=route-guard-profile-publication-contract-alignment-acceptance-for-v27.40.15
+nextAction=route-entry-freshness-today-workspace-note-ryw-acceptance-for-v27.40.16

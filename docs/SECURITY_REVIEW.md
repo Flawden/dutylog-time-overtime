@@ -1,6 +1,12 @@
 # DutyLog security review
 
-Status: v27.40.15.
+Status: v27.40.16.
+
+## v27.40.16 Route-entry freshness / Today workspace review
+
+- Fresh route-entry reads use existing same-origin generated APIs and existing session/authorization boundaries.
+- Today workspace visibility/order is derived from already-authoritative settings/module state; client route guards remain UX only.
+- Note create read-your-write uses the already-returned server DTO and does not add storage, queue, retry or reconnect ownership.
 
 ## v27.40.15 Vue Route Guard Authority review
 

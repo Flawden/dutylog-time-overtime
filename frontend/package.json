@@ -1,6 +1,6 @@
 {
   "name": "dutylog-vue-frontend",
-  "version": "27.40.15",
+  "version": "27.40.16",
   "private": true,
   "type": "module",
   "description": "Vue 3 + strict TypeScript frontend for DutyLog",

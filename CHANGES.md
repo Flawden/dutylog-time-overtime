@@ -1,3 +1,11 @@
+# v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix
+
+- Classifies the v27.40.15 full Playwright run as 48 scenarios: 43 clean passes, one retry-only multiple-notes failure and five final failures.
+- Restores route-entry freshness inside Vue owners after legacy `applyRoute()` was narrowed: Overtime/Vacation refresh the canonical absence/time-bank account on entry and Today refreshes its dashboard bundle.
+- Makes `TodayPage.vue` own workspace widget order/visibility from the Settings workspace definition plus authoritative module state instead of relying on legacy DOM classes/order.
+- Makes `createNote()` publish the returned authoritative note DTO directly into selected-day state, eliminating the post-create reload race that could overwrite the first typed title with `Новая заметка`.
+- Keeps Vue route/guard authority, strict TypeScript, OpenAPI 118/120, Flyway V47, retries/timeouts and the single legacy `dataLayer` offline owner unchanged.
+
 # v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix
 
 - Keep the v27.40.14 Vue route-state/route-guard runtime unchanged.

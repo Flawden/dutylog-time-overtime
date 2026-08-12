@@ -1,3 +1,7 @@
+# DutyLog v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix
+
+The v27.40.15 staging browser run reached all 48 strict scenarios and exposed one common route-entry freshness regression after the v27.40.14 router narrowing, one Today workspace-ownership gap, and one retry-only note-create race. v27.40.16 keeps Vue route/guard authority in place, moves the missing fresh-read and workspace side effects into their actual Vue domain owners, and makes note creation read-your-write from the authoritative create response instead of reloading over a live editor draft. OpenAPI remains 118/120, Flyway remains V47, strict frontend policy is unchanged, and the single legacy `dataLayer` remains the sole offline queue/reconnect owner.
+
 # DutyLog v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix
 
 v27.40.14 passed the exact frontend gate and then executed all 760 Maven tests with exactly one failure in `VueRouteGuardAuthorityCutoverTest`: a source contract searched for one uninterrupted English comment sentence even though the correct `loadProfile()` implementation already called `publishLegacyPlatformState()` after `applyRoute()`. v27.40.15 keeps the route-guard/runtime cut unchanged and replaces that formatting-sensitive assertion with structural checks scoped to the real `loadProfile()` function. OpenAPI 118/120, Flyway V47, strict frontend policy and the single legacy `dataLayer` owner are unchanged.

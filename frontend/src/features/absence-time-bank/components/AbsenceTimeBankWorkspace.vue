@@ -20,7 +20,10 @@ let previousDomain: DutyLogAbsenceTimeBankDomain | undefined;
 
 async function synchronizeRoute(route: string): Promise<void> {
   if (route !== "vacation" && route !== "overtime") return;
-  await store.ensureLoaded();
+  // Entering a Vue-owned planner/time-bank route is a freshness boundary.
+  // The legacy router used to force a fresh read on every entry; keep that
+  // behavior in the actual domain owner instead of depending on applyRoute().
+  await store.refresh();
 }
 
 onMounted(() => {

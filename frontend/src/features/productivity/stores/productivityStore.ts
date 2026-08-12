@@ -128,6 +128,10 @@ function taskDisplayDate(task: Task): string {
   return validDate(task.scheduledStartDate ?? task.date);
 }
 
+function sortDayNotes(notes: DayNote[]): DayNote[] {
+  return [...notes].sort((a, b) => Number(b.pinned) - Number(a.pinned) || a.sortOrder - b.sortOrder || a.id - b.id);
+}
+
 function defaultBoardAccepts(task: Task, state: {
   boardStatus: string; boardCategory: string; boardProject: string; boardPriority: string;
   boardSearch: string; boardFrom: string; boardTo: string;
@@ -552,8 +556,16 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       try {
         if (targetDate !== this.selectedDate) await this.loadSelectedDate(targetDate);
         const note = await api.createNote(targetDate, content);
-        await this.loadSelectedDate(targetDate);
-        if (note) this.selectedNoteId = note.id;
+        if (note) {
+          // The create response is already the authoritative DTO. Publish it
+          // immediately and do not issue a follow-up selected-day reload that
+          // can race the user's first keystrokes in the newly opened editor.
+          this.selectedNotes = sortDayNotes([
+            ...this.selectedNotes.filter(item => item.id !== note.id),
+            note,
+          ]);
+          this.selectedNoteId = note.id;
+        }
         await refreshCalendarIfMounted();
       } catch (error) { this.error = errorMessage(error); }
       finally { this.mutationPending = false; }
@@ -562,18 +574,17 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
     async updateNote(id: number, patch: { title?: string | null; content?: string | null; pinned?: boolean }): Promise<void> {
       const row = this.selectedNotes.find(note => note.id === id);
       if (!row || !bridge) return;
-      const sortNotes = (notes: DayNote[]) => [...notes].sort((a, b) => Number(b.pinned) - Number(a.pinned) || a.sortOrder - b.sortOrder || a.id - b.id);
       const optimistic: DayNote = {
         ...row,
         title: patch.title !== undefined ? patch.title : (row.title ?? null),
         content: patch.content ?? row.content,
         pinned: patch.pinned ?? row.pinned,
       };
-      this.selectedNotes = sortNotes(this.selectedNotes.map(note => note.id === id ? optimistic : note));
+      this.selectedNotes = sortDayNotes(this.selectedNotes.map(note => note.id === id ? optimistic : note));
       try {
         const result = await bridge.offlineUpdateNote(id, patch, row.date);
         if (result.queued) useShellStore().announce("Заметка сохранена оффлайн", "warning");
-        else if (result.note) this.selectedNotes = sortNotes(this.selectedNotes.map(note => note.id === id ? result.note as DayNote : note));
+        else if (result.note) this.selectedNotes = sortDayNotes(this.selectedNotes.map(note => note.id === id ? result.note as DayNote : note));
         this.synchronizeQueuedCount();
         await refreshCalendarIfMounted();
       } catch (error) { this.error = errorMessage(error); await this.loadSelectedDate(row.date); }

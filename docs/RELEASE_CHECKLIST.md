@@ -1,8 +1,22 @@
 # Release checklist
 
-Status: v27.40.15.
+Status: v27.40.16.
 
 
+
+## v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix acceptance
+
+- [x] Base tree is exact v27.40.15 `f68af0298c0ef28438178e5596aa02783fa6d892`.
+- [x] v27.40.15 browser evidence classified as 43 clean / 1 retry-only flaky / 5 final failures across 48 scenarios.
+- [x] Vue Overtime/Vacation route entry performs a fresh canonical read; Today performs a fresh dashboard read.
+- [x] Today widget order/visibility is rendered from Vue workspace/module state.
+- [x] Note create uses the returned DTO without a follow-up selected-day reload race.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Maven 764/764 on Java 17.
+- [ ] Playwright canary green.
+- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
+- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [ ] Staging deploy green.
 
 ## v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix acceptance
 

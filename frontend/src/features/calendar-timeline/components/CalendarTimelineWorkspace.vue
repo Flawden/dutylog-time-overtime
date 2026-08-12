@@ -34,7 +34,11 @@ onBeforeMount(() => {
 
 async function synchronize(route: string): Promise<void> {
   if (route !== "today" && route !== "calendar") return;
-  if (route === "today") await store.ensureTodayLoaded();
+  // Today is a dashboard freshness boundary: callers can mutate tasks, notes,
+  // important days and overtime while another route is open. A route entry
+  // must therefore refresh the authoritative bundle instead of reusing a
+  // previously loaded boot snapshot. Calendar itself keeps its focused range.
+  if (route === "today") await store.refresh(true);
   else await store.ensureLoaded();
 }
 

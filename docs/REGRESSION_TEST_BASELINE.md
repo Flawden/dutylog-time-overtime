@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.40.15.
+Status: v27.40.16.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.15 keeps the v27.40.14 route-guard/runtime cut unchanged and aligns its sole failing Maven source contract with the actual `loadProfile()` behavior. Exact v27.40.14 CI reached all 760 Maven tests after a green exact frontend gate and failed only one formatting-sensitive comment assertion; Playwright was not reached. The v27.40.15 acceptance surface remains **154 Java test classes / 760 `@Test` methods / 48 Chromium Playwright scenarios / 57 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+Current extension: v27.40.16 keeps Vue route-state/guard authority and fixes the runtime regressions exposed by the full v27.40.15 browser report: Vue-owned Overtime/Vacation and Today regain route-entry freshness, Today owns workspace widget order/visibility, and note creation becomes read-your-write so a follow-up reload cannot overwrite the first editor keystrokes. The v27.40.16 acceptance surface is **155 Java test classes / 764 `@Test` methods / 48 Chromium Playwright scenarios / 57 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
 
 Historical v27.40.14 extension: Vue became authoritative for admin/module route guards and canonical blocked-route redirects after profile/module state is known; post-Vue legacy `applyRoute()` was narrowed to Payroll/Admin side effects. Its CI stopped at one stale formatting-sensitive Maven source assertion, not a demonstrated runtime regression.
 

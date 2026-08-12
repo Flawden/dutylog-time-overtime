@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.15.
+Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.16.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
@@ -15,6 +15,8 @@ As of v27.40.12 the compatibility command surface is narrowed again: generic `op
 As of v27.40.13 Vue owns hash route state directly. `hashRoute.ts` reads, writes and subscribes to `location.hash`; `DutyLogLegacySnapshot` contains no route field and `LegacyBridge` contains no navigation capability. The legacy `applyRoute()` listener remains only to drive pre-Vue recovery and the still-legacy Payroll/Admin route-entry side effects from the same canonical hash. Vue owns hash route state; legacy no longer republishes it as application state.
 
 As of v27.40.15 Vue also owns route-access policy after authoritative profile/module state is loaded: non-admin Admin requests and disabled Vacation/Overtime/Payroll/Tasks/Important routes canonicalize to Calendar. Vue owns the body route marker and Calendar selected-day route-exit close behavior. Once `data-vue-shell="ready"`, legacy `applyRoute()` is narrowed to Payroll/Admin route-entry side effects only; its full rendering/navigation branch exists solely for pre-Vue recovery.
+
+As of v27.40.16 the Vue route owners also own their route-entry freshness: Overtime/Vacation refresh canonical account/planner state on entry, Today refreshes its dashboard bundle, and Today widget order/visibility comes directly from the persisted workspace definition plus authoritative module state. Productivity note creation is read-your-write from the create response so a post-create reload cannot overwrite a live editor draft.
 
 
 ## Vue Tasks, Notes & Important Days ownership (v27.38.0)

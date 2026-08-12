@@ -1,6 +1,12 @@
 # DutyLog CI/CD
 
-Status: v27.40.15.
+Status: v27.40.16.
+
+## v27.40.16 route-entry freshness acceptance boundary
+
+- Exact frontend gate remains Node 20.18.1/npm 10.8.2 with 57 Vitest cases; Maven baseline advances to 764 `@Test` methods across 155 Java test classes.
+- Chromium remains 48 strict scenarios with zero final failures and zero flaky retries required for acceptance.
+- No workflow/retry/timeout policy changes; the cut changes Vue read-model ownership only.
 
 ## v27.39.0 Settings, Workspace & Integrations delivery boundary
 

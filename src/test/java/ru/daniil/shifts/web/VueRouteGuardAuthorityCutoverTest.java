@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static architecture contract for v27.40.15 Vue route-guard authority and profile-state publication alignment. */
+/** Static architecture contract for v27.40.16 Vue route-guard authority and profile-state publication alignment. */
 class VueRouteGuardAuthorityCutoverTest {
 
     @Test
