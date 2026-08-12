@@ -1,3 +1,7 @@
+# DutyLog v27.40.20 — E2E Release Version Contract Alignment Hotfix
+
+v27.40.19 correctly centralized browser release-version expectations, but two historical Java source contracts still asserted the pre-helper E2E source shape and stopped Maven before Chromium could run. v27.40.20 keeps the runtime and browser helper unchanged, aligns those contracts with the shared authority, and adds no route/offline/API/schema change.
+
 # DutyLog v27.40.19 — E2E Release Version Authority Hotfix
 
 v27.40.18 reached all 48 Chromium scenarios and failed only two deterministic browser assertions because the Vue foundation/shell tests still hardcoded v27.40.16 while the released app correctly reported v27.40.18. v27.40.19 makes root `package.json` the canonical E2E release-version source and reuses it for Vue diagnostics, Calendar ICS and PWA cache-prefix acceptance. Runtime routing, OpenAPI 118/120, Flyway V47 and the single `dataLayer` offline owner remain unchanged.

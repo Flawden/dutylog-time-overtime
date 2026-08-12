@@ -1,7 +1,18 @@
 # Release checklist
 
-Status: v27.40.19.
+Status: v27.40.20.
 
+
+
+## v27.40.20 — E2E Release Version Contract Alignment Hotfix acceptance
+
+- [x] Exact v27.40.19 tree classified: frontend gate green; Maven 767 total / 2 deterministic source-contract failures; Playwright not reached.
+- [x] PWA and Calendar Sync Java contracts now require the shared `e2e/release-version.js` authority instead of current-release literals.
+- [x] No route/offline runtime ownership change beyond release metadata bump.
+- [ ] Exact frontend gate green.
+- [ ] Maven 767/767 green.
+- [ ] Playwright canary green and full 48/48 with zero flaky retries.
+- [ ] Immutable image + PostgreSQL V47 smoke + staging deploy green.
 
 
 ## v27.40.19 — E2E Release Version Authority Hotfix acceptance

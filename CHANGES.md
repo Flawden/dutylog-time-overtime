@@ -1,3 +1,10 @@
+# v27.40.20 — E2E Release Version Contract Alignment Hotfix
+
+- Classifies v27.40.19 CI as exact-frontend-green and Maven-red: 767 tests ran, with two deterministic source-contract failures before Playwright.
+- Aligns the PWA recurring-gate Java contract with `e2e/release-version.js` plus the `dutylog-shell-v${releaseVersion}-` template instead of reconstructing a current literal from `pom.xml`.
+- Aligns the shell/Calendar Sync Java contract with the shared release-version helper and `${releaseVersion}` ICS expectation instead of a hardcoded release string.
+- Keeps v27.40.19 browser release-version authority, v27.40.17 route retirement, strict TypeScript, OpenAPI 118/120, Flyway V47 and single `dataLayer` offline ownership unchanged apart from the normal release-version bump.
+
 # v27.40.19 — E2E Release Version Authority Hotfix
 
 - Classifies v27.40.18 staging browser acceptance as 48 scenarios: 46 passed, 0 flaky and 2 deterministic final failures caused only by stale v27.40.16 E2E release literals.

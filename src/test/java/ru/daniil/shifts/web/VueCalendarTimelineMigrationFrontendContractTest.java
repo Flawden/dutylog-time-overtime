@@ -192,7 +192,8 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(pwa.contains("dutylog-shell-v27.38.15-synthetic-previous"));
         String releaseVersion = projectVersion();
 
-        assertTrue(pwa.contains("dutylog-shell-v" + releaseVersion + "-"));
+        assertTrue(pwa.contains("const { releaseVersion } = require('./release-version');"));
+        assertTrue(pwa.contains("dutylog-shell-v${releaseVersion}-"));
         assertTrue(audit.contains("gzipSync"));
         assertTrue(audit.contains("budget.maxBytes"));
         assertTrue(budget.contains("\"release\": \"" + releaseVersion + "\""));

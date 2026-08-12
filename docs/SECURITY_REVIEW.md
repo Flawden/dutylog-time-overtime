@@ -1,6 +1,10 @@
 # DutyLog security review
 
-Status: v27.40.19.
+## v27.40.20 E2E release-version contract alignment review
+
+- The change is test/release metadata only. It adds no endpoint, credential flow, permission, storage surface or cross-origin dependency.
+
+Status: v27.40.20.
 
 ## v27.40.19 E2E release-version authority review
 

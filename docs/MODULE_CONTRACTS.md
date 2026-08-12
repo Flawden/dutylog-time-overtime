@@ -1,6 +1,10 @@
 # Module contracts
 
-Status: v27.40.19.
+## E2E release-version contract alignment (v27.40.20)
+
+- This test-only alignment changes no module authority, module persistence or runtime ownership.
+
+Status: v27.40.20.
 
 ## E2E release-version authority (v27.40.19)
 

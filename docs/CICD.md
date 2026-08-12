@@ -1,6 +1,10 @@
 # DutyLog CI/CD
 
-Status: v27.40.19.
+## v27.40.20 E2E release-version contract alignment
+
+- Maven source contracts now assert the shared E2E release-version helper/template instead of current-release literals; workflow topology, retries and timeouts are unchanged.
+
+Status: v27.40.20.
 
 ## v27.40.19 E2E release-version authority
 
