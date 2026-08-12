@@ -1,10 +1,10 @@
 # DutyLog regression test baseline
 
-Status: v27.40.11.
+Status: v27.40.12.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.11 retires the live legacy Shift Type Manager modal. Calendar opens the Vue Settings domain directly, Shift Type CRUD uses generated `/api/v1/shift-types` operations, stable editor IDs remain browser-visible, and the legacy source modal survives only as pre-Vue recovery fallback. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+Current extension: v27.40.12 retires dead generic modal/Productivity capabilities from the Vue↔legacy bridge after those flows moved to native Vue domains. The typed fallback command surface now contains navigation/logout only; Payroll/Admin hash routing and the single legacy `dataLayer` remain unchanged. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
 
 Historical v27.40.7 extension: v27.40.7 uses the complete v27.40.6 Playwright report (**43 clean / 1 retry-only flaky / 4 final failed**) to restore selected-day shift/timezone projection parity, exact cross-midnight overtime-allocation labels, and reconnect note-write ownership. The one multiple-notes failure is classified as a stale narrow-rail geometry assertion because the v27.40.4 native selected-day workspace intentionally became wide at the fixed 1440px desktop viewport; the replacement assertion requires side-by-side non-overlap and bounded width. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
 

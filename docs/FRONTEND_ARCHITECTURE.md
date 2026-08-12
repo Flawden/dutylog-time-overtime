@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.11.
+Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.12.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
@@ -10,6 +10,8 @@ Vue owns Settings section navigation plus Profile, Language, Modules, Calendar S
 Time, Schedule/Calendar Layers and Notifications are now native Vue Settings components. `#settingsLegacyHost`, `#settingsLegacyParking` and their attach/open bridge methods are retired; legacy Settings renderers yield after `data-vue-settings-workspace=ready`. v27.40.x still owns legacy router/state/modal adapters, offline dataLayer, Payroll/Admin and remaining numbered-JavaScript UI retirement.
 
 Appearance keeps UI Contract v2 and delegates only root visual application/current global shell synchronization through a typed bridge. It does not add a second workspace/theme model. ADR-008 disables public production source maps by default and keeps controlled frontend diagnostics secret-free.
+
+As of v27.40.12 the compatibility command surface is narrowed again: generic `openModal` and historical Task/Important opener capabilities are removed from `LegacyBridge` / `DutyLogLegacyPlatform`. Vue-owned Productivity and Settings domains are the only live owners for those UI flows. The legacy command fallback retains navigation/logout only; routing for Payroll/Admin and offline `dataLayer` remain explicit boundaries.
 
 ## Vue Tasks, Notes & Important Days ownership (v27.38.0)
 

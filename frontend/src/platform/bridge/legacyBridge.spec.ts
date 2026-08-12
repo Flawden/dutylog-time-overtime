@@ -13,7 +13,7 @@ function fakeWindow(): Window {
 
 function snapshot(route = "calendar"): DutyLogLegacySnapshot {
   return {
-    version: "27.40.11",
+    version: "27.40.12",
     language: "ru",
     route,
     online: true,
@@ -28,16 +28,14 @@ describe("legacy bridge", () => {
   it("uses the explicit legacy adapter when it is available", async () => {
     const target = fakeWindow();
     const navigate = vi.fn();
-    const openModal = vi.fn();
     const logout = vi.fn();
     const retireDomainOwners = vi.fn();
     const writeCalendarDay = vi.fn(async () => ({ queued: true, day: { date: "2026-08-11", shiftTypeId: 2 } }));
     const subscribe = vi.fn(() => vi.fn());
     target.DutyLogLegacyPlatform = {
-      version: "27.40.11",
+      version: "27.40.12",
       snapshot: () => snapshot(),
       navigate,
-      openModal,
       logout,
       retireDomainOwners,
       writeCalendarDay,
@@ -46,7 +44,6 @@ describe("legacy bridge", () => {
 
     const bridge = createLegacyBridge(target);
     bridge.navigate("#overtime");
-    bridge.openModal("absenceComposerModal", "vacationStart");
     bridge.logout();
     bridge.retireDomainOwners("absence-time-bank");
     const written = await bridge.writeCalendarDay("2026-08-11", { shiftTypeId: 2 });
@@ -56,7 +53,6 @@ describe("legacy bridge", () => {
     expect(bridge.connected()).toBe(true);
     expect(bridge.snapshot()?.route).toBe("calendar");
     expect(navigate).toHaveBeenCalledWith("overtime");
-    expect(openModal).toHaveBeenCalledWith("absenceComposerModal", "vacationStart");
     expect(logout).toHaveBeenCalledOnce();
     expect(retireDomainOwners).toHaveBeenCalledWith("absence-time-bank");
     expect(writeCalendarDay).toHaveBeenCalledWith("2026-08-11", { shiftTypeId: 2 });
@@ -71,13 +67,11 @@ describe("legacy bridge", () => {
 
     const bridge = createLegacyBridge(target);
     bridge.navigate("tasks");
-    bridge.openModal("taskEditModal");
     bridge.logout();
 
     expect(bridge.connected()).toBe(false);
     expect(commands).toEqual([
       { type: "navigate", view: "tasks" },
-      { type: "open-modal", id: "taskEditModal", focusId: null },
       { type: "logout" },
     ]);
   });

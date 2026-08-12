@@ -1,3 +1,11 @@
+# v27.40.12 — Legacy Command Surface Retirement
+
+- Starts from the proven-green v27.40.11 staging baseline.
+- Removes dead generic modal/Productivity capabilities from `LegacyBridge` and `DutyLogLegacyPlatform`: `openModal`, `openTaskCreate`, `openTaskDetails` and `openImportantDetails`.
+- Narrows the pre-adapter typed command fallback to the only remaining command capabilities, navigation and logout; the retired `open-modal` command variant is removed.
+- Keeps live Task/Important/Quick Actions behavior on the already-native `DutyLogVueDomains.productivity` owner and keeps Shift Type Manager on `DutyLogVueDomains.settingsWorkspace`.
+- Keeps Payroll/Admin hash routing and the existing legacy `dataLayer` offline mutation/reconnect owner unchanged; OpenAPI 118/120 and Flyway V47 remain unchanged.
+
 # v27.40.11 — Vue Shift Type Manager Modal Retirement
 
 - Starts from the proven-green v27.40.10 staging baseline.

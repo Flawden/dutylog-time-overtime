@@ -1,3 +1,7 @@
+# DutyLog v27.40.12 — Legacy Command Surface Retirement
+
+v27.40.11 is the accepted green staging baseline. v27.40.12 removes obsolete modal/Productivity commands from the Vue↔legacy compatibility API after Quick Actions, Task/Important details/editors and Shift Type Manager have native Vue owners. `LegacyBridge` no longer exposes generic `openModal`, Task/Important opener capabilities or the `open-modal` fallback command. Payroll/Admin hash routing and the single legacy `dataLayer` remain explicit later-retirement boundaries.
+
 # DutyLog v27.40.11 — Vue Shift Type Manager Modal Retirement
 
 v27.40.10 is the accepted green staging baseline. v27.40.11 retires the live legacy Shift Type Manager modal: Calendar now opens a Vue-owned editor through the Settings domain, Shift Type CRUD uses generated OpenAPI operations, and the generic legacy bridge loses its `openShiftTypeManager` adapter. The legacy source modal remains only for pre-Vue recovery and is removed at Vue Settings readiness. Payroll/Admin routing and historical numbered-JavaScript recovery entry points remain explicit later-retirement boundaries.

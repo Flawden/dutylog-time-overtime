@@ -1,9 +1,21 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.11 — Vue Shift Type Manager Modal Retirement**.
+Current release: **v27.40.12 — Legacy Command Surface Retirement**.
 
 
-## v27.40.11 — Vue Shift Type Manager Modal Retirement — current
+## v27.40.12 — Legacy Command Surface Retirement — current
+- [x] Start only from the proven-green v27.40.11 staging baseline.
+- [x] Remove dead generic `openModal`, `openTaskCreate`, `openTaskDetails` and `openImportantDetails` capabilities from `LegacyBridge`, `DutyLogLegacyPlatform` and global TypeScript declarations.
+- [x] Remove the retired `open-modal` typed fallback command while preserving navigation/logout fallback semantics.
+- [x] Keep Task/Important/Quick Actions and Shift Type UI ownership in their native Vue domains rather than routing through hidden legacy DOM.
+- [x] Keep Payroll/Admin hash routing and `dataLayer` offline ownership unchanged.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 758/758.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+
+## v27.40.11 — Vue Shift Type Manager Modal Retirement — accepted predecessor
 - [x] Start only from the proven-green v27.40.10 staging baseline.
 - [x] Replace the live legacy `shiftTypeModal` with `ShiftTypeManagerModal.vue` while preserving stable editor IDs and pre-Vue recovery fallback.
 - [x] Route Calendar `+` through `DutyLogVueDomains.settingsWorkspace` and remove `openShiftTypeManager` from `LegacyBridge` / `DutyLogLegacyPlatform`.
@@ -11,10 +23,10 @@ Current release: **v27.40.11 — Vue Shift Type Manager Modal Retirement**.
 - [x] Preserve built-in shift restrictions, cross-midnight norm calculation, break/planned-hour validation, notification settings and custom color behavior.
 - [x] Keep `dataLayer` as the sole offline mutation/reconnect owner; Shift Type CRUD remains online/server-authoritative.
 - [x] Keep Payroll/Admin hash routing and remaining historical numbered-JS entry points as explicit later-retirement boundaries.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 758/758.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 758/758.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image/PostgreSQL V47 staging acceptance.
 
 
 ## v27.40.10 — Vue Quick Actions Modal Retirement — accepted predecessor

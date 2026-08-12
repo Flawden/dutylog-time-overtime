@@ -29,7 +29,6 @@ declare global {
     readonly version: string;
     snapshot(): DutyLogLegacySnapshot;
     navigate(view: string): void;
-    openModal(id: string, focusId?: string | null): void;
     logout(): void;
     retireDomainOwners?(domain: "absence-time-bank" | "calendar-timeline" | "productivity" | "settings-workspace"): void;
     settingsAppearanceSnapshot?(): Record<string, unknown> | null;
@@ -40,9 +39,6 @@ declare global {
     commitModuleList?(modules: readonly Record<string, unknown>[]): Promise<void>;
     restoreModuleList?(modules: readonly Record<string, unknown>[]): void;
     writeCalendarDay?(date: string, patch: Record<string, unknown>): Promise<{ queued: boolean; day: unknown | null }>;
-    openTaskCreate?(date: string): void;
-    openTaskDetails?(id: number): void;
-    openImportantDetails?(id: number): void;
     offlineUpdateNote?(id: number, patch: Record<string, unknown>, date: string): Promise<{ queued: boolean; note: unknown | null }>;
     offlineSetTaskDone?(id: number, done: boolean): Promise<{ queued: boolean; task?: unknown }>;
     offlineCaptureInbox?(text: string): Promise<{ queued: boolean; item: unknown }>;

@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.40.11"
+const DUTYLOG_VERSION = "27.40.12"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -291,9 +291,6 @@ window.DutyLogLegacyPlatform = Object.freeze({
     const normalized = String(view || "").trim().replace(/^#/, "");
     if (normalized) window.location.hash = `#${normalized}`;
   },
-  openModal(id, focusId = null){
-    openAppModal(String(id || ""), focusId == null ? null : String(focusId));
-  },
   logout(){
     document.getElementById("logout")?.click();
   },
@@ -389,15 +386,6 @@ window.DutyLogLegacyPlatform = Object.freeze({
     else if (!result?.queued && state.days) delete state.days[key];
     else if (result?.queued && state.days) state.days[key] = normalizeDay(next);
     return { queued:!!result?.queued, day:cloneForVue(saved || (result?.queued ? normalizeDay(next) : null)) };
-  },
-  openTaskCreate(date){
-    if (typeof openTaskCreate === "function") openTaskCreate({ date:String(date || "").slice(0, 10) });
-  },
-  openTaskDetails(id){
-    if (typeof openTaskDetails === "function") openTaskDetails(Number(id));
-  },
-  openImportantDetails(id){
-    if (typeof openImportantDetails === "function") openImportantDetails(Number(id));
   },
   async offlineUpdateNote(id, patch, date){
     if (typeof dataLayer === "undefined") throw new Error("Offline data layer is not ready");

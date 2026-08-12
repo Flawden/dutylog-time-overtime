@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static architecture contract for v27.40.11 Vue App Shell & Design System continuation. */
+/** Static architecture contract for v27.40.12 legacy command surface retirement. */
 class VueFrontendFoundationContractTest {
 
     @Test
@@ -42,7 +42,16 @@ class VueFrontendFoundationContractTest {
         assertFalse(router.contains("createWebHashHistory"));
         assertTrue(bridge.contains("target.DutyLogLegacyPlatform"));
         assertTrue(bridge.contains("dutylog:legacy-command"));
+        assertFalse(bridge.contains("open-modal"));
+        assertFalse(bridge.contains("openModal("));
+        assertFalse(bridge.contains("openTaskCreate("));
+        assertFalse(bridge.contains("openTaskDetails("));
+        assertFalse(bridge.contains("openImportantDetails("));
         assertTrue(legacy.contains("window.DutyLogLegacyPlatform = Object.freeze"));
+        assertFalse(legacy.contains("  openModal(id"));
+        assertFalse(legacy.contains("  openTaskCreate(date"));
+        assertFalse(legacy.contains("  openTaskDetails(id"));
+        assertFalse(legacy.contains("  openImportantDetails(id"));
         assertTrue(legacy.contains("snapshot:legacyPlatformSnapshot"));
         assertFalse(frontendSources.contains("document.querySelector("));
         assertFalse(frontendSources.contains("window.state"));
@@ -90,14 +99,14 @@ class VueFrontendFoundationContractTest {
         String spec = read("e2e/vue-frontend-foundation.spec.js");
 
         assertTrue(html.contains("id=\"dutylog-vue-root\""));
-        assertTrue(html.contains("type=\"module\" src=\"/vue/dutylog-vue-app-shell.js?v=27.40.11\""));
+        assertTrue(html.contains("type=\"module\" src=\"/vue/dutylog-vue-app-shell.js?v=27.40.12\""));
         assertTrue(bootstrap.contains("window.__dutylogVueReady = new Promise"));
         assertTrue(main.contains("window.DutyLogVuePlatform = platform"));
         assertTrue(main.contains("host.dataset.vueReady = \"true\""));
         assertTrue(main.contains("Object.freeze"));
         assertTrue(spec.contains("window.__dutylogVueReady"));
         assertTrue(spec.contains("data-vue-ready"));
-        assertTrue(html.contains("js/70-user-boot.js?v=27.40.11"));
+        assertTrue(html.contains("js/70-user-boot.js?v=27.40.12"));
     }
 
     private static String read(String path) throws Exception {

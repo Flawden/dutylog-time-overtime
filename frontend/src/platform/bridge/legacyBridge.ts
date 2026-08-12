@@ -19,14 +19,12 @@ export interface CalendarTimelineProjectionSnapshot {
 
 export type LegacyCommand =
   | { type: "navigate"; view: string }
-  | { type: "open-modal"; id: string; focusId?: string | null }
   | { type: "logout" };
 
 export interface LegacyBridge {
   connected(): boolean;
   snapshot(): DutyLogLegacySnapshot | null;
   navigate(view: string): void;
-  openModal(id: string, focusId?: string | null): void;
   logout(): void;
   retireDomainOwners(domain: "absence-time-bank" | "calendar-timeline" | "productivity" | "settings-workspace"): void;
   settingsAppearanceSnapshot(): Record<string, unknown> | null;
@@ -37,9 +35,6 @@ export interface LegacyBridge {
   commitModuleList(modules: readonly Record<string, unknown>[]): Promise<void>;
   restoreModuleList(modules: readonly Record<string, unknown>[]): void;
   writeCalendarDay(date: string, patch: Record<string, unknown>): Promise<{ queued: boolean; day: unknown | null }>;
-  openTaskCreate(date: string): void;
-  openTaskDetails(id: number): void;
-  openImportantDetails(id: number): void;
   offlineUpdateNote(id: number, patch: Record<string, unknown>, date: string): Promise<{ queued: boolean; note: unknown | null }>;
   offlineSetTaskDone(id: number, done: boolean): Promise<{ queued: boolean; task?: unknown }>;
   offlineCaptureInbox(text: string): Promise<{ queued: boolean; item: unknown }>;
@@ -69,11 +64,6 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
       if (adapter()) adapter()?.navigate(normalized);
       else emitFallback({ type: "navigate", view: normalized });
     },
-    openModal(id: string, focusId: string | null = null) {
-      if (!id.trim()) return;
-      if (adapter()) adapter()?.openModal(id, focusId);
-      else emitFallback({ type: "open-modal", id, focusId });
-    },
     logout() {
       if (adapter()) adapter()?.logout();
       else emitFallback({ type: "logout" });
@@ -91,9 +81,6 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
     async writeCalendarDay(date: string, patch: Record<string, unknown>) {
       return (await adapter()?.writeCalendarDay?.(date, patch)) ?? { queued: false, day: null };
     },
-    openTaskCreate(date: string) { adapter()?.openTaskCreate?.(date); },
-    openTaskDetails(id: number) { adapter()?.openTaskDetails?.(id); },
-    openImportantDetails(id: number) { adapter()?.openImportantDetails?.(id); },
     async offlineUpdateNote(id: number, patch: Record<string, unknown>, date: string) {
       return (await adapter()?.offlineUpdateNote?.(id, patch, date)) ?? { queued: false, note: null };
     },
