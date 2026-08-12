@@ -77,6 +77,7 @@
 window.__dutylogVueReady = new Promise(resolve => {
   window.addEventListener("dutylog:vue-ready", event => {
     if (String(event.detail?.architecture || "").startsWith("vue-shell")) {
+      for (const id of ["nextTopbar", "tabbar"]) document.getElementById(id)?.remove();
       document.documentElement.dataset.vueShell = "ready";
     }
     resolve(event.detail);

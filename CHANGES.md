@@ -1,3 +1,14 @@
+# v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface Retirement
+
+- Starts from the proven-green v27.40.23 staging baseline and performs the final source ownership audit before parity/UX closure.
+- Physically retires recovery-only `nextTopbar` / `tabbar` after Vue readiness instead of keeping duplicate chrome hidden in the live DOM.
+- Extends Settings and Absence/Time Bank domain retirement to remove four orphan legacy migration fallback modals after their Vue owners are ready.
+- Keeps first-run onboarding and offline/sync UX as the only explicitly bounded live legacy presentation exceptions; keeps `dataLayer` as the single offline mutation/sync infrastructure owner.
+- Rewrites the stale frontend architecture map so Payroll/Admin and removed generic bridge commands cannot be mistaken for current ownership.
+- Adds an executable final ownership audit contract and updates browser parity from hidden fallback chrome to physically absent post-ready chrome.
+- Changes no HTTP/OpenAPI shape, Flyway migration, backend business rule, auth boundary, retry/timeout policy or offline queue semantics.
+- Acceptance surface advances to **160 Java test classes / 775 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases / OpenAPI 124/130 / Flyway V47**.
+
 # v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix
 
 - Classifies v27.40.22 staging as exact frontend-gate green and Maven-red before release-check/Playwright.

@@ -1,5 +1,14 @@
 # DutyLog security review
 
+## v27.40.24 final legacy ownership audit review
+
+- No endpoint, role, credential, token, origin, storage engine or authorization boundary is added.
+- Removing dead post-ready fallback DOM reduces duplicate UI surface without moving backend authority into the browser.
+- First-run onboarding and offline/sync presentation retain their existing behavior; dataLayer remains the single offline mutation/sync owner.
+- OpenAPI remains 124/130 and Flyway remains V47.
+
+Status: v27.40.24.
+
 ## v27.40.23 pre-Vue Admin fallback contract alignment review
 
 - This hotfix changes no authorization, endpoint, credential, storage or client privilege behavior.

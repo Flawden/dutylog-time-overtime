@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.40.23"
+const DUTYLOG_VERSION = "27.40.24"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -328,6 +328,7 @@ window.DutyLogLegacyPlatform = Object.freeze({
         "view-vacation", "view-overtime",
         "absenceComposerModal", "overtimeCreditModal", "overtimeUsageModal",
         "timeBankGuideModal", "timeBankGuideBackdrop",
+        "legacyOvertimeModal", "legacyUsageMigrationModal",
       ]) document.getElementById(id)?.remove();
       document.documentElement.setAttribute("data-vue-absence-time-bank", "ready");
       return;
@@ -336,6 +337,8 @@ window.DutyLogLegacyPlatform = Object.freeze({
       if (document.documentElement.dataset.vueSettingsWorkspace === "ready") return;
       document.getElementById("view-settings")?.remove();
       document.getElementById("shiftTypeModal")?.remove();
+      document.getElementById("legacyShiftModal")?.remove();
+      document.getElementById("legacyTaskDeadlineModal")?.remove();
       document.documentElement.setAttribute("data-vue-settings-workspace", "ready");
       return;
     }

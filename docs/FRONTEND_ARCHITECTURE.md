@@ -1,17 +1,17 @@
 # Frontend architecture
 
-Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.16.
+Status: Vue owns the shell and all user-facing screens after readiness; bounded legacy presentation exceptions are explicit, DutyLog v27.40.24.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
 
 Vue owns Settings section navigation plus Profile, Language, Modules, Calendar Sync and Appearance/Workspace Studio. Online writes use the generated OpenAPI client; Spring Boot remains authoritative for profile validation, module dependencies/locks, sessions and integration secrets. Telegram is exposed through a canonical `/api/v1/telegram` alias for the migrated UI.
 
-Time, Schedule/Calendar Layers and Notifications are now native Vue Settings components. `#settingsLegacyHost`, `#settingsLegacyParking` and their attach/open bridge methods are retired; legacy Settings renderers yield after `data-vue-settings-workspace=ready`. v27.40.x still owns legacy router/state/modal adapters, offline dataLayer, Payroll/Admin and remaining numbered-JavaScript UI retirement.
+Time, Schedule/Calendar Layers and Notifications are now native Vue Settings components. `#settingsLegacyHost`, `#settingsLegacyParking` and their attach/open bridge methods are retired; legacy Settings renderers yield after `data-vue-settings-workspace=ready`. Later v27.40.x cuts retired Payroll/Admin and all post-ready legacy screen routing; the offline dataLayer remains an intentional infrastructure boundary.
 
 Appearance keeps UI Contract v2 and delegates only root visual application/current global shell synchronization through a typed bridge. It does not add a second workspace/theme model. ADR-008 disables public production source maps by default and keeps controlled frontend diagnostics secret-free.
 
-As of v27.40.12 the compatibility command surface is narrowed again: generic `openModal` and historical Task/Important opener capabilities are removed from `LegacyBridge` / `DutyLogLegacyPlatform`. Vue-owned Productivity and Settings domains are the only live owners for those UI flows. The legacy command fallback retains navigation/logout only; routing for Payroll/Admin and offline `dataLayer` remain explicit boundaries.
+As of v27.40.12 the compatibility command surface was narrowed again: generic `openModal` and historical Task/Important opener capabilities were removed from `LegacyBridge` / `DutyLogLegacyPlatform`. Subsequent v27.40.x cuts also removed legacy navigation and Payroll/Admin screen ownership; logout, bounded synchronization adapters and the offline `dataLayer` remain explicit compatibility/infrastructure boundaries.
 As of v27.40.13 Vue owns hash route state directly. `hashRoute.ts` reads, writes and subscribes to `location.hash`; `DutyLogLegacySnapshot` contains no route field and `LegacyBridge` contains no navigation capability. The legacy `applyRoute()` listener remains only to drive pre-Vue recovery and the still-legacy Payroll/Admin route-entry side effects from the same canonical hash. Vue owns hash route state; legacy no longer republishes it as application state.
 
 As of v27.40.15 Vue also owns route-access policy after authoritative profile/module state is loaded: non-admin Admin requests and disabled Vacation/Overtime/Payroll/Tasks/Important routes canonicalize to Calendar. Vue owns the body route marker and Calendar selected-day route-exit close behavior. Once `data-vue-shell="ready"`, legacy `applyRoute()` is narrowed to Payroll/Admin route-entry side effects only; its full rendering/navigation branch exists solely for pre-Vue recovery.
@@ -67,61 +67,29 @@ When the active route is outside primary navigation, the visible More control an
 
 ## Current ownership
 
-**Vue owns the application shell**: brand, profile entry, primary/secondary navigation, active-route presentation, online state, shared modal/toast hosts and design-system primitives.
+**Vue owns the application shell. Vue owns all user-facing screens after Vue readiness**: shell/navigation, Today, Calendar/selected day, Absence & Time Bank, Tasks/Notes/Important Days, Settings/Workspace, Payroll and Admin. Spring Boot remains authoritative for persisted domain rules, validation, authorization and canonical read/write semantics.
 
-**Vue also owns the bounded Absence & Time Bank domain**: absence journal, unified composer, credit/scenario editor, plan/fact/compensation explanation, responsive ledger, usages, reservations and FIFO forecast. The Vue feature uses generated operation contracts and never reproduces backend business authority.
+**The generated OpenAPI client is the canonical online browser boundary** for migrated domains. Vue/Pinia owns presentation state and bounded optimistic state; it does not duplicate backend business authority.
 
-**Vue also owns the bounded Calendar & Timeline domain**: Today, Calendar Month/Week/Day, focused-date navigation, hourly timeline composition, calendar-layer visibility and the selected-day panel. The generated-API store treats Spring Boot read models as authoritative and keeps only view/panel state and optimistic presentation state locally.
+**dataLayer remains the single offline mutation/sync owner.** IndexedDB snapshots, the offline mutation queue and reconnect flush continue behind narrow bridge operations. Vue must not create a second queue or independently flush the same mutations.
 
-**Vue also owns the bounded Productivity domain**: Tasks/Inbox presentation, Task details/editor, selected-day Tasks, multiple daily Notes, Important Days and the global Quick Actions modal. The existing dataLayer remains the only offline queue/snapshot infrastructure and is reached through typed bridge operations.
+**Known live legacy presentation is limited to first-run onboarding and offline/sync UX.** They remain intentionally live for parity in v27.40.24 and are not evidence of a remaining legacy-owned product screen. Recovery-only `nextTopbar` / `tabbar` markup still exists before Vue readiness but is physically removed after successful Vue shell readiness.
 
-**Legacy product screens remain authoritative** for Payroll and Admin plus still-unretired shell/modal boundaries. Settings and the Calendar selected-day UI are Vue-owned. The existing legacy `dataLayer` remains a deliberately retained non-DOM offline mutation/sync adapter until its separate infrastructure retirement.
-
-```text
-frontend/src
-├── app                 Vue shell, navigation and cross-shell UI state
-├── platform            same-origin transport, bridge, router and readiness
-├── shared/ui           typed design-system primitives
-├── shared/overlays     modal and toast infrastructure
-├── styles              tokens, shell and responsive behavior
-└── features            bounded product domains added only after Gate A closes
-```
+The legacy overtime/usage migration fallback DOM is retired with the Absence/Time Bank owner after readiness. Its API/data migration semantics are not deleted; surfacing equivalent native Vue migration UX remains an explicit Functional Parity Sweep item before v27.40.x closes.
 
 ## State ownership
 
-- Spring Boot owns business rules and persisted truth.
-- Legacy product read models remain authoritative only for domains that have not migrated; Absence/Time Bank, Calendar/Timeline and Productivity use bounded Vue stores over backend read models.
-- The Calendar/Timeline store owns only focused date, view mode, loading/error state and the current authoritative range snapshot; it never calculates canonical shifts, absences, task ownership or recurrence rules.
-- The shell receives only a frozen snapshot: route, allowed navigation, language, online/module readiness and safe profile display fields.
-- Pinia owns explicit shell and migrated-domain UI state; it never mirrors one global mutable product state.
-- Local form drafts remain local to each migrated composer or Vue selected-day section.
-- Offline queue and synchronization remain a separate infrastructure boundary; Productivity reuses that queue through named bridge operations and never creates a second mutable offline owner.
+Spring Boot owns persisted domain state, authorization, validation, time/payroll/overtime semantics and canonical API projections. Vue Pinia stores own route-local/read-model/presentation state for every live user-facing screen. `dataLayer` owns only the established offline snapshot/outbox/reconnect infrastructure and exposes it through bounded bridge operations.
+
+No post-ready legacy product-screen read model or mutable route owner is authoritative. Limited pre-Vue recovery may still render the server fallback shell until the Vue shell announces readiness.
 
 ## Routing and bridge
 
-Vue Router still uses memory history. The released hash route remains authoritative for application-level navigation in `v27.38.15`; the Absence/Time Bank and Today/Calendar route bodies are Vue-owned. Vue navigation calls the named `DutyLogLegacyPlatform.navigate(view)` capability; legacy routing publishes the new frozen snapshot back through `subscribe(listener)`.
+`frontend/src/app/hashRoute.ts` is the canonical browser hash transport. **Vue owns hash route state**: it reads, writes, subscribes to and guards the hash route, including Admin/module access canonicalization. Public Vue navigation uses `DutyLogVuePlatform.navigate(...)` / the hash-route helper; legacy code does not own post-ready route commits.
 
-Allowed transition capabilities are:
+`LegacyBridge` is deliberately narrow. Its remaining capabilities cover snapshot/subscription/logout, domain-owner retirement, bounded Settings appearance/profile/module synchronization, Calendar-day offline writes and existing offline dataLayer operations. It has no generic navigation, modal, Task or Important opener command surface.
 
-```text
-snapshot
-subscribe
-navigate
-openModal
-logout
-writeCalendarDay
-openShiftTypeManager
-openTaskCreate
-openTaskDetails
-openImportantDetails
-offlineUpdateNote
-offlineSetTaskDone
-offlineCaptureInbox
-offlineSelectedDay
-offlineSync
-```
-
-Vue must not read `window.state`, query `#tabbar` or create a second mutation owner. The Absence & Time Bank workspace retires its route/modal owners after Vue readiness. The Calendar & Timeline workspace retires legacy Today/Calendar roots including the old selected-day panel. Vue owns selected-day DOM; only a narrow `writeCalendarDay` adapter remains for the existing single offline dataLayer writer, and legacy selected-day renderers yield after Vue readiness. The Productivity workspace retires legacy Tasks/Important route roots, selected-day Tasks/Notes/Important bodies and the live Quick Actions modal, while preserving named bridge adapters only for offline infrastructure and still-unretired historical entry points. Payroll, Settings and Admin retain their existing owners until their bounded migration releases.
+The bridge is a compatibility/infrastructure boundary, not a second application state model. New Vue domains must use generated API operations online and may use the existing offline bridge only where that queue already owns the mutation semantics.
 
 ## Shared design system
 
@@ -129,7 +97,9 @@ The first reusable primitives are `UiButton`, `UiBadge`, `UiCard`, `UiTabs`, `Ui
 
 ## Safe fallback
 
-Legacy topbar/tabbar stay in the document during the transition. They hide only after the Vue platform publishes successful readiness and sets `html[data-vue-shell="ready"]`. A failed Vue boot therefore leaves the released navigation usable. From v27.40.11 the hidden legacy `#tabbar` is recovery-only UI: its anchors, order and CSS visibility classes are not read back as Vue shell state. The shell read model derives workspace navigation from persisted appearance configuration and module availability from the runtime module map.
+The server-rendered `nextTopbar` and `tabbar` remain available only during pre-Vue recovery. On successful `dutylog:vue-ready` for the Vue shell, `shell-bootstrap.js` physically removes those nodes rather than merely hiding a duplicate shell.
+
+First-run onboarding and offline/sync presentation (`offlineStatus` / `offlineSyncDialog`) are the only intentionally live legacy presentation exceptions in v27.40.24. `dataLayer` itself is infrastructure and remains the sole offline mutation/sync executor. A future ownership cut may migrate those presentation surfaces without replacing the queue.
 
 ## API client
 

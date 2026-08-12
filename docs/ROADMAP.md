@@ -1,18 +1,31 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix**.
+Current release: **v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface Retirement**.
 
 
-## v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix — current
+## v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface Retirement — current
+- [x] Start from the exact proven-green v27.40.23 staging baseline.
+- [x] Prove zero legacy-owned user screens after Vue readiness.
+- [x] Physically retire recovery-only shell chrome after successful Vue shell readiness.
+- [x] Retire four orphan post-ready legacy migration fallback modals with their Vue domain owners.
+- [x] Keep first-run onboarding and offline/sync presentation as explicit bounded exceptions and preserve the single dataLayer offline owner.
+- [x] Correct stale frontend ownership/routing/bridge architecture documentation.
+- [x] Add executable source contracts and keep Playwright parity at 48 scenarios.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 775/775 across 160 Java test classes.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix — accepted predecessor
 - [x] Start from the exact v27.40.22 Admin-retirement tree.
 - [x] Classify exact CI: Node 20 frontend gate green; Maven red before release-check/Playwright.
 - [x] Reproduce the stale Today source contract against exact v27.40.22: 285 source-only web contracts pass and one fallback-shape assertion fails.
 - [x] Require intentional pre-Vue `admin -> settings` recovery plus unchanged unknown-route `-> today` fallback without restoring a live legacy Admin owner.
 - [x] Keep Admin generated API/security ownership, OpenAPI 124/130, Flyway V47, strict TypeScript and single `dataLayer` offline ownership unchanged.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 772/772.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 772/772.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image/PostgreSQL V47 staging acceptance.
 
 ## v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement — predecessor cut (Maven red)
 - [x] Start from the proven-green v27.40.21 staging baseline.

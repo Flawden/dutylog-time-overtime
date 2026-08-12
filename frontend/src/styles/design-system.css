@@ -323,10 +323,7 @@ body.vue-modal-open { overflow: hidden; }
 .ui-toast-enter-active, .ui-toast-leave-active { transition: transform .18s ease, opacity .18s ease; }
 .ui-toast-enter-from, .ui-toast-leave-to { transform: translateY(-8px); opacity: 0; }
 
-html[data-vue-shell="ready"] .nextTopbar,
-html[data-vue-shell="ready"] #tabbar {
-  display: none !important;
-}
+
 html[data-vue-shell="ready"] .wrap { padding-top: 0; }
 html[data-vue-shell="ready"] .head :is(#whoami, #headerAvatar, #adminOpen, #logout) { display: none !important; }
 html[data-vue-shell="ready"] body.app-modal-open .vue-shell-nav { visibility: hidden; pointer-events: none; }

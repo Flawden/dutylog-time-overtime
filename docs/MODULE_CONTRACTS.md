@@ -9,6 +9,16 @@
 Status: v27.40.23.
 
 
+## Final legacy ownership audit (v27.40.24)
+
+- After Vue readiness every user-facing route/screen is Vue-owned.
+- Recovery-only shell chrome and orphan migration fallback DOM are physically retired after the relevant Vue readiness boundary.
+- Known live legacy presentation is limited to first-run onboarding and offline/sync UX.
+- `dataLayer` and limited pre-Vue recovery are infrastructure/compatibility boundaries, not product-screen ownership.
+- Legacy overtime/usage migration API/data semantics remain intact; any required native Vue access is a Functional Parity Sweep item.
+
+Status: v27.40.24.
+
 ## Vue Admin ownership and final live legacy UI retirement (v27.40.22)
 
 - Vue is the sole live Admin presentation/read-state owner for Users/Roles, Registration and Diagnostics after shell readiness.

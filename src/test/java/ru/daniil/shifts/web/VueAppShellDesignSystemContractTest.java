@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static architecture contract for v27.40.23 Vue App Shell navigation-model retirement. */
+/** Static architecture contract for v27.40.24 final legacy ownership retirement. */
 class VueAppShellDesignSystemContractTest {
 
     @Test
@@ -19,12 +19,15 @@ class VueAppShellDesignSystemContractTest {
         String navigation = read("frontend/src/app/AppNavigation.vue");
         String css = read("frontend/src/styles/design-system.css");
         String html = read("src/main/resources/static/index.html");
+        String bootstrap = read("src/main/resources/static/js/shell-bootstrap.js");
 
         assertTrue(appShell.contains("data-vue-app-shell"));
         assertTrue(navigation.contains("data-vue-shell-navigation"));
         assertTrue(navigation.contains("aria-current"));
-        assertTrue(css.contains("html[data-vue-shell=\"ready\"] .nextTopbar"));
-        assertTrue(css.contains("html[data-vue-shell=\"ready\"] #tabbar"));
+        assertTrue(bootstrap.contains("for (const id of [\"nextTopbar\", \"tabbar\"])"));
+        assertTrue(bootstrap.contains("document.getElementById(id)?.remove();"));
+        assertFalse(css.contains("html[data-vue-shell=\"ready\"] .nextTopbar"));
+        assertFalse(css.contains("html[data-vue-shell=\"ready\"] #tabbar"));
         assertTrue(css.contains("@media (max-width: 840px)"));
         assertTrue(css.contains("@media (prefers-reduced-motion: reduce)"));
         assertTrue(html.contains("data-vue-app-shell-host=\"true\""));
@@ -72,7 +75,7 @@ class VueAppShellDesignSystemContractTest {
     }
 
     @Test
-    void vueShellKeepsProductScreensLegacyOwnedThroughNamedCapabilitiesOnly() throws Exception {
+    void vueShellOwnsAllProductScreensAndBridgeStaysNarrow() throws Exception {
         String frontendSources = readTree("frontend/src");
         String architecture = read("docs/FRONTEND_ARCHITECTURE.md");
 
@@ -85,7 +88,8 @@ class VueAppShellDesignSystemContractTest {
         assertFalse(frontendSources.contains("window.state"));
         assertFalse(frontendSources.contains("getElementById(\"tabbar\")"));
         assertTrue(architecture.contains("Vue owns the application shell"));
-        assertTrue(architecture.contains("Legacy product screens remain authoritative"));
+        assertTrue(architecture.contains("Vue owns all user-facing screens"));
+        assertFalse(architecture.contains("Legacy product screens remain authoritative"));
         assertTrue(architecture.contains("Vue owns hash route state"));
     }
 
@@ -101,7 +105,7 @@ class VueAppShellDesignSystemContractTest {
         assertTrue(vite.contains("dutylog-vue-app-shell.js"));
         assertTrue(docker.contains("dist/dutylog-vue-app-shell.js"));
         assertTrue(gate.contains("dist/dutylog-vue-app-shell.css"));
-        assertTrue(html.contains("/vue/dutylog-vue-app-shell.js?v=27.40.23"));
+        assertTrue(html.contains("/vue/dutylog-vue-app-shell.js?v=27.40.24"));
         assertTrue(e2e.contains("Vue app shell owns navigation chrome"));
         assertTrue(e2e.contains("#tabbar"));
         assertTrue(e2e.contains("data-route=\"calendar\""));

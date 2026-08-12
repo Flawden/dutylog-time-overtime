@@ -11,8 +11,8 @@ test('UI Core workspace persists in the single DutyLog shell after Classic sunse
   await expect(page.locator('html')).toHaveAttribute('data-ui-workspace', 'shift-worker');
   await expect(page.locator('html')).toHaveAttribute('data-ui-layout', 'dashboard');
   await expect(page.locator('[data-vue-app-shell]')).toBeVisible();
-  await expect(page.locator('#nextTopbar')).toBeHidden();
-  await expect(page.locator('#tabbar')).toBeHidden();
+  await expect(page.locator('#nextTopbar')).toHaveCount(0);
+  await expect(page.locator('#tabbar')).toHaveCount(0);
   await expect(page.locator('[data-vue-shell-navigation] [data-route="today"]')).toHaveAttribute('aria-current', 'page');
 
   const before = await page.evaluate(() => ({
@@ -66,7 +66,7 @@ test('UI Core workspace persists in the single DutyLog shell after Classic sunse
   await waitForAppIdle(page);
   await expect(page.locator('html')).toHaveAttribute('data-shell', 'next');
   await expect(page.locator('[data-vue-app-shell]')).toBeVisible();
-  await expect(page.locator('#nextTopbar')).toBeHidden();
+  await expect(page.locator('#nextTopbar')).toHaveCount(0);
   await expect(page.locator('[data-vue-shell-navigation] [data-route="today"]')).toBeVisible();
   await expect(page.locator('[data-shell-choice]')).toHaveCount(0);
 });

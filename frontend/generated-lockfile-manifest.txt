@@ -1,10 +1,10 @@
-release=27.40.23
+release=27.40.24
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=686f129a307ced61fa5f6905efb406d3e790fce779584c71eab0537896fb4b36
+committedLockfileSha256=146b59cd21ef03aba6d76281132b9ecc147e915126ed9de8e9441f50afebedd1
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=pre-vue-admin-fallback-contract-alignment-acceptance-for-v27.40.23
+nextAction=final-legacy-ownership-audit-dead-ui-surface-retirement-acceptance-for-v27.40.24

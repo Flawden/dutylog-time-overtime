@@ -1,11 +1,11 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.40.23.
+Status: v27.40.24.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.23 aligns the stale Today pre-Vue route source contract with the v27.40.22 final Admin ownership cut. The acceptance surface remains **159 Java test classes / 772 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases** with **124 operations / 130 schemas** and Flyway V47. After Vue readiness no legacy-owned user screen or post-Vue legacy route side-effect adapter remains.
+Current extension: v27.40.24 final legacy ownership audit advances the static acceptance surface to 160 Java test classes / 775 @Test methods while keeping 48 Chromium Playwright scenarios / 60 Vitest cases, OpenAPI 124/130 and Flyway V47. After Vue readiness there are zero legacy-owned user screens; dead recovery chrome and orphan migration fallback DOM are physically retired, while first-run onboarding plus offline/sync UX are the only bounded live legacy presentation exceptions and dataLayer remains infrastructure.
 
 Historical v27.40.22 extension: final live Admin UI ownership moved to Vue; exact frontend gate passed, while Maven stopped on a stale TodayDashboard pre-Vue fallback source assertion before Playwright.
 

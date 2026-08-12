@@ -1,5 +1,13 @@
 # DutyLog CI/CD
 
+## v27.40.24 final legacy ownership audit and dead UI surface retirement
+
+- CI topology, retry policy and timeout policy are unchanged.
+- Frontend gate must preserve 60 Vitest cases; Maven acceptance advances to 775/775 across 160 Java test classes; Chromium remains 48 strict scenarios.
+- The new ownership contract proves recovery chrome is physically absent post-ready while first-run/offline presentation and the single dataLayer queue remain bounded exceptions.
+
+Status: v27.40.24.
+
 ## v27.40.23 pre-Vue Admin fallback contract alignment
 
 - Exact v27.40.22 frontend gate passed; Maven stopped before release-check and Playwright on a stale Today fallback source assertion.
