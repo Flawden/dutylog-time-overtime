@@ -1,5 +1,5 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, openView } = require('./helpers');
+const { registerAndOnboard, openView, toggleModule } = require('./helpers');
 
 test('Vue app shell owns navigation chrome while legacy product screens retain behavior', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'vueappshell' });
@@ -29,10 +29,20 @@ test('Vue app shell owns navigation chrome while legacy product screens retain b
 
   const diagnostics = await page.evaluate(() => window.DutyLogVuePlatform?.snapshot());
   expect(diagnostics).toMatchObject({
-    releaseVersion: '27.40.13',
+    releaseVersion: '27.40.14',
     architecture: 'vue-shell-v1',
     phase: 'ready',
     legacyConnected: true,
     shellReady: true,
   });
+  await page.locator('[data-vue-shell-close]').click();
+
+  await toggleModule(page, 'tasks', false);
+  await page.evaluate(() => { window.location.hash = '#tasks'; });
+  await expect(page).toHaveURL(/#calendar$/);
+  await expect(page.locator('[data-vue-domain-route="calendar"]')).toBeVisible();
+
+  await page.evaluate(() => { window.location.hash = '#admin'; });
+  await expect(page).toHaveURL(/#calendar$/);
+  await expect(page.locator('[data-vue-domain-route="calendar"]')).toBeVisible();
 });

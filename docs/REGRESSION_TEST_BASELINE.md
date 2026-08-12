@@ -1,10 +1,12 @@
 # DutyLog regression test baseline
 
-Status: v27.40.13.
+Status: v27.40.14.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.13 makes Vue the direct owner of canonical hash route state. `DutyLogLegacySnapshot` no longer carries `route`, migrated Vue navigation no longer uses `LegacyBridge.navigate()`, and the public shell helper uses `DutyLogVuePlatform.navigate(...)`. Payroll/Admin still react to the same hash as compatibility side effects, and the single legacy `dataLayer` remains unchanged. The acceptance surface is **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 55 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+Current extension: v27.40.14 makes Vue authoritative for admin/module route guards and canonical blocked-route redirects after profile/module state is known. Vue also owns the body route marker and Calendar selected-day close-on-route-exit behavior; post-Vue legacy `applyRoute()` is narrowed to Payroll/Admin route-entry side effects while the historical full router remains pre-Vue recovery only. The single legacy `dataLayer` remains unchanged. The acceptance surface is **154 Java test classes / 760 `@Test` methods / 48 Chromium Playwright scenarios / 57 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+
+Historical v27.40.13 extension: v27.40.13 moved canonical hash read/write/subscription out of the legacy snapshot/bridge and into Vue while leaving access guards temporarily in legacy `applyRoute()`.
 
 Historical v27.40.12 extension: v27.40.12 retired dead generic modal/Productivity capabilities from the Vue↔legacy bridge after those flows moved to native Vue domains; the fallback command surface was narrowed to navigation/logout before v27.40.13 removed navigation from that bridge entirely.
 

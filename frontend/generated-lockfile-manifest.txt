@@ -1,10 +1,10 @@
-release=27.40.13
+release=27.40.14
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=a2f85a340e8f9e2c37dfd72c4d0489972e990a5dfc4142969ed67f824dae48c9
+committedLockfileSha256=c1136e64f86ac2e02924d3bf5e28672c2af31ac56258aa302ca70fdb0a0e7576
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=vue-route-state-authority-cutover-acceptance-for-v27.40.13
+nextAction=vue-route-guard-authority-cutover-acceptance-for-v27.40.14

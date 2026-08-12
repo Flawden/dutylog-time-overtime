@@ -24,6 +24,7 @@ export const useShellStore = defineStore("dutylog-shell", {
     language: "ru" as "ru" | "en",
     online: true,
     modulesLoaded: false,
+    profileLoaded: false,
     onboardingCompleted: false,
     modules: {} as Record<string, boolean>,
     primaryNavigation: [...FALLBACK_NAVIGATION] as DutyLogRoute[],
@@ -50,6 +51,7 @@ export const useShellStore = defineStore("dutylog-shell", {
       this.language = snapshot.language;
       this.online = snapshot.online;
       this.modulesLoaded = snapshot.modulesLoaded;
+      this.profileLoaded = snapshot.profile != null;
       this.onboardingCompleted = snapshot.profile?.onboardingCompleted === true;
       if (snapshot.modules && !booleanMapEquals(this.modules, snapshot.modules)) this.modules = { ...snapshot.modules };
       this.primaryNavigation = validRoutes(snapshot.navigation);

@@ -285,6 +285,27 @@ function applyRoute(){
   if (active === "payroll" && !moduleEnabled("payroll")) active = "calendar";
   if (active === "important" && !moduleEnabled("important_dates")) active = "calendar";
   if (active === "vacation" && !moduleEnabled("vacation")) active = "calendar";
+
+  if (document.documentElement.dataset.vueShell === "ready") {
+    // Vue owns route state, route guards, migrated route rendering and the
+    // selected-day close-on-route-exit behavior. Legacy only owns the two
+    // remaining legacy route-entry side effects until Payroll/Admin migrate.
+    const payrollView = document.getElementById(VIEWS.payroll);
+    const adminView = document.getElementById(VIEWS.admin);
+    if (payrollView) payrollView.hidden = active !== "payroll";
+    if (adminView) adminView.hidden = active !== "admin";
+    if (active === "payroll" && typeof openPayrollView === "function") {
+      window.__dutylogPayrollReady = Promise.resolve(openPayrollView(true));
+    }
+    if (active === "admin") {
+      if (typeof initAdminNavigation === "function") initAdminNavigation();
+      renderDiagnosticsClient();
+      if (state.profile?.admin) refreshAdminPanel();
+    }
+    return;
+  }
+
+  // Pre-Vue recovery keeps the historical router intact.
   document.body.dataset.view = active;
   if (active !== "calendar") selectDay(null);
   for (const [key, id] of Object.entries(VIEWS)) {
@@ -297,7 +318,6 @@ function applyRoute(){
     if (selected) a.setAttribute("aria-current", "page");
     else a.removeAttribute("aria-current");
   });
-  // месячная навигация в шапке осмысленна только в календаре
   document.querySelectorAll(".nav #prev, .nav #todayBtn, .nav #next").forEach(control => {
     control.style.visibility = active === "calendar" ? "visible" : "hidden";
   });
@@ -312,13 +332,9 @@ function applyRoute(){
   if (active === "calendar") renderCalendar();
   if (active === "important" && typeof renderImportantBoard === "function") renderImportantBoard();
   if (active === "vacation" && typeof openVacationPlannerView === "function") {
-    // Overtime credits can change while Vacation Planner is hidden. Route entry
-    // must refresh the shared compensation balance instead of repainting cache.
     window.__dutylogVacationReady = Promise.resolve(openVacationPlannerView(true));
   }
   if (active === "overtime" && typeof loadLedgerPage === "function") {
-    // The vacation workflow can mutate linked overtime usages while this view
-    // is hidden. Always enter Overtime through a fresh ledger projection.
     window.__dutylogLedgerRouteReady = Promise.resolve(loadLedgerPage(true));
   }
   if (active === "payroll" && typeof openPayrollView === "function") {
@@ -477,6 +493,9 @@ async function loadProfile(){
     av.style.background = avatarColor(p.username);
     if (location.hash === "#admin" && !p.admin) location.hash = "#calendar";
     applyRoute();
+    // Route publication is no longer a post-Vue applyRoute side effect. Profile
+    // load still must publish authoritative access state so Vue can re-run guards.
+    publishLegacyPlatformState();
     maybeShowOnboarding();
   } catch (e) { console.error(e); }
 }

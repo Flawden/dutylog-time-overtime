@@ -41,7 +41,10 @@ async function synchronize(route: string): Promise<void> {
 onMounted(() => {
   void synchronize(activeRoute.value);
 });
-watch(activeRoute, route => { void synchronize(route); });
+watch(activeRoute, route => {
+  if (route !== "calendar" && store.dayPanelOpen) store.closeDayPanel();
+  void synchronize(route);
+});
 onBeforeUnmount(() => {
   restoreOfflineSource?.();
   restoreOfflineSource = null;

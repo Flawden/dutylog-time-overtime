@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.13.
+Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.14.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
@@ -13,6 +13,8 @@ Appearance keeps UI Contract v2 and delegates only root visual application/curre
 
 As of v27.40.12 the compatibility command surface is narrowed again: generic `openModal` and historical Task/Important opener capabilities are removed from `LegacyBridge` / `DutyLogLegacyPlatform`. Vue-owned Productivity and Settings domains are the only live owners for those UI flows. The legacy command fallback retains navigation/logout only; routing for Payroll/Admin and offline `dataLayer` remain explicit boundaries.
 As of v27.40.13 Vue owns hash route state directly. `hashRoute.ts` reads, writes and subscribes to `location.hash`; `DutyLogLegacySnapshot` contains no route field and `LegacyBridge` contains no navigation capability. The legacy `applyRoute()` listener remains only to drive pre-Vue recovery and the still-legacy Payroll/Admin route-entry side effects from the same canonical hash. Vue owns hash route state; legacy no longer republishes it as application state.
+
+As of v27.40.14 Vue also owns route-access policy after authoritative profile/module state is loaded: non-admin Admin requests and disabled Vacation/Overtime/Payroll/Tasks/Important routes canonicalize to Calendar. Vue owns the body route marker and Calendar selected-day route-exit close behavior. Once `data-vue-shell="ready"`, legacy `applyRoute()` is narrowed to Payroll/Admin route-entry side effects only; its full rendering/navigation branch exists solely for pre-Vue recovery.
 
 
 ## Vue Tasks, Notes & Important Days ownership (v27.38.0)

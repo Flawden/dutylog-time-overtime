@@ -6,7 +6,7 @@ beforeEach(() => setActivePinia(createPinia()));
 
 function snapshot(overrides: Partial<DutyLogLegacySnapshot> = {}): DutyLogLegacySnapshot {
   return {
-    version: "27.40.13",
+    version: "27.40.14",
     language: "ru",
     online: true,
     modulesLoaded: true,
@@ -28,6 +28,7 @@ describe("shell store", () => {
     expect(store.primaryNavigation).toEqual(["today", "calendar", "settings"]);
     expect(store.secondaryNavigation).toEqual(["tasks"]);
     expect(store.initials).toBe("ДТ");
+    expect(store.profileLoaded).toBe(true);
     expect(store.onboardingCompleted).toBe(true);
 
     store.synchronize(snapshot({ modules: { tasks: false, notes: true } }));

@@ -1,10 +1,24 @@
 # Release checklist
 
-Status: v27.40.13.
+Status: v27.40.14.
 
 
 
-## v27.40.13 — Vue Route State Authority Cutover acceptance
+## v27.40.14 — Vue Route Guard Authority Cutover acceptance
+
+- [x] Start from the proven-green v27.40.13 staging baseline.
+- [x] Vue owns canonical hash read/write/subscription plus Admin/module route access policy after authoritative state loads.
+- [x] Blocked Admin/disabled-module direct hashes canonicalize to Calendar.
+- [x] Vue owns the body route marker and Calendar selected-day close-on-route-exit behavior.
+- [x] Post-Vue legacy `applyRoute()` contains only Payroll/Admin side effects; full historical routing remains pre-Vue recovery.
+- [x] No second router, offline queue or reconnect owner; OpenAPI remains 118/120 and Flyway V47.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 760/760.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image and PostgreSQL V47 staging acceptance.
+
+
+## v27.40.13 — Vue Route State Authority Cutover acceptance — accepted predecessor
 
 - [x] Start from the proven-green v27.40.12 staging baseline.
 - [x] Vue owns canonical hash read/write/subscription and shell route synchronization.
@@ -12,10 +26,10 @@ Status: v27.40.13.
 - [x] Migrated Vue navigation uses the typed hash route adapter and the public Vue platform exposes `navigate(...)`.
 - [x] Payroll/Admin legacy route side effects and pre-Vue recovery remain compatible with the same hash transport.
 - [x] No second router, offline queue or reconnect owner; OpenAPI remains 118/120 and Flyway V47.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 758/758.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image and PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 758/758.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image and PostgreSQL V47 staging acceptance.
 
 
 ## v27.40.12 — Legacy Command Surface Retirement acceptance — accepted predecessor

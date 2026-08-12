@@ -1,19 +1,32 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.13 — Vue Route State Authority Cutover**.
+Current release: **v27.40.14 — Vue Route Guard Authority Cutover**.
 
 
-## v27.40.13 — Vue Route State Authority Cutover — current
+## v27.40.14 — Vue Route Guard Authority Cutover — current
+- [x] Start only from the proven-green v27.40.13 staging baseline.
+- [x] Move Admin/profile and module-disabled route guards into the typed Vue hash-route policy after authoritative access state loads.
+- [x] Canonicalize blocked direct hashes to Calendar without adding a second router.
+- [x] Move `body.dataset.view` and Calendar selected-day close-on-route-exit behavior under Vue ownership.
+- [x] Narrow post-Vue legacy `applyRoute()` to Payroll/Admin route-entry side effects; preserve the full historical branch only for pre-Vue recovery.
+- [x] Keep `dataLayer` as the sole offline mutation/reconnect owner and leave OpenAPI/Flyway unchanged.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 760/760.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+
+## v27.40.13 — Vue Route State Authority Cutover — accepted predecessor
 - [x] Start only from the proven-green v27.40.12 staging baseline.
 - [x] Make Vue read/write/subscribe to the canonical hash directly through a typed route adapter.
 - [x] Remove `route` from the legacy snapshot and remove `navigate` from `LegacyBridge` / typed fallback commands.
 - [x] Route migrated Vue domains directly through `navigateHashRoute(...)` while keeping one browser hash transport.
 - [x] Preserve legacy Payroll/Admin route-entry side effects and pre-Vue recovery without making them route-state authority.
 - [x] Keep `dataLayer` as the sole offline mutation/reconnect owner and leave OpenAPI/Flyway unchanged.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 758/758.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 758/758.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image/PostgreSQL V47 staging acceptance.
 
 
 ## v27.40.12 — Legacy Command Surface Retirement — accepted predecessor

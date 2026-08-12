@@ -1,3 +1,7 @@
+# DutyLog v27.40.14 — Vue Route Guard Authority Cutover
+
+v27.40.13 is the accepted green staging baseline. v27.40.14 moves admin/module route guards into Vue, canonicalizes blocked hashes to Calendar, moves the body route marker and Calendar panel route-exit behavior under Vue ownership, and narrows the post-Vue legacy router to Payroll/Admin side effects only. The historical full router remains as pre-Vue recovery, while the single legacy `dataLayer` remains the sole offline queue/reconnect owner.
+
 # DutyLog v27.40.13 — Vue Route State Authority Cutover
 
 v27.40.12 is the accepted green staging baseline. v27.40.13 removes the last circular route-state dependency from the migrated Vue shell: Vue now reads, writes and subscribes to the canonical URL hash directly, `DutyLogLegacySnapshot` no longer carries `route`, and `LegacyBridge.navigate()` is retired. The legacy hash listener remains only as a compatibility side-effect adapter for Payroll/Admin and pre-Vue recovery; the single legacy `dataLayer` remains the sole offline queue/reconnect owner.

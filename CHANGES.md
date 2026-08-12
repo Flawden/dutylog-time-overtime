@@ -1,3 +1,12 @@
+# v27.40.14 — Vue Route Guard Authority Cutover
+
+- Starts from the proven-green v27.40.13 staging baseline.
+- Moves admin/module route guards into the typed Vue hash-route policy after authoritative profile/module state is available.
+- Canonicalizes blocked direct hashes to `#calendar` and makes Vue own `document.body.dataset.view`.
+- Closes the Vue selected-day panel when leaving Calendar instead of relying on legacy `selectDay(null)`.
+- Narrows post-Vue legacy `applyRoute()` to the only remaining legacy-owned route-entry side effects: Payroll and Admin; the full historical router remains only for pre-Vue recovery.
+- Keeps one browser hash transport, keeps `dataLayer` as the sole offline mutation/reconnect owner, and changes no OpenAPI/Flyway/business rules.
+
 # v27.40.13 — Vue Route State Authority Cutover
 
 - Starts from the proven-green v27.40.12 staging baseline.

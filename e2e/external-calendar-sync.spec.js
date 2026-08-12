@@ -28,7 +28,7 @@ test('private calendar feed exports .ics, rotates safely and revokes the old sec
   expect(feed.headers()['content-type']).toContain('text/calendar');
   const feedBody = await feed.text();
   expect(feedBody).toContain('BEGIN:VCALENDAR\r\n');
-  expect(feedBody).toContain('PRODID:-//DutyLog//Time and Overtime 27.40.13//RU');
+  expect(feedBody).toContain('PRODID:-//DutyLog//Time and Overtime 27.40.14//RU');
   expect(feedBody).toContain('END:VCALENDAR\r\n');
 
   const [download] = await Promise.all([
