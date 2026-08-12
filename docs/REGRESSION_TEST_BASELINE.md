@@ -1,10 +1,12 @@
 # DutyLog regression test baseline
 
-Status: v27.40.12.
+Status: v27.40.13.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.12 retires dead generic modal/Productivity capabilities from the Vue↔legacy bridge after those flows moved to native Vue domains. The typed fallback command surface now contains navigation/logout only; Payroll/Admin hash routing and the single legacy `dataLayer` remain unchanged. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+Current extension: v27.40.13 makes Vue the direct owner of canonical hash route state. `DutyLogLegacySnapshot` no longer carries `route`, migrated Vue navigation no longer uses `LegacyBridge.navigate()`, and the public shell helper uses `DutyLogVuePlatform.navigate(...)`. Payroll/Admin still react to the same hash as compatibility side effects, and the single legacy `dataLayer` remains unchanged. The acceptance surface is **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 55 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
+
+Historical v27.40.12 extension: v27.40.12 retired dead generic modal/Productivity capabilities from the Vue↔legacy bridge after those flows moved to native Vue domains; the fallback command surface was narrowed to navigation/logout before v27.40.13 removed navigation from that bridge entirely.
 
 Historical v27.40.7 extension: v27.40.7 uses the complete v27.40.6 Playwright report (**43 clean / 1 retry-only flaky / 4 final failed**) to restore selected-day shift/timezone projection parity, exact cross-midnight overtime-allocation labels, and reconnect note-write ownership. The one multiple-notes failure is classified as a stale narrow-rail geometry assertion because the v27.40.4 native selected-day workspace intentionally became wide at the fixed 1440px desktop viewport; the replacement assertion requires side-by-side non-overlap and bounded width. The acceptance surface remains **153 Java test classes / 758 `@Test` methods / 48 Chromium Playwright scenarios / 52 Vitest cases** with **118 operations / 120 schemas** and Flyway V47.
 

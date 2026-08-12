@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Regression contract for v27.40.12 Vue-owned shell navigation and E2E compatibility. */
+/** Regression contract for v27.40.13 Vue-owned shell navigation and E2E compatibility. */
 class VueShellE2eNavigationCompatibilityHotfixTest {
 
     @Test
@@ -22,7 +22,7 @@ class VueShellE2eNavigationCompatibilityHotfixTest {
         String calendarSync = read("e2e/external-calendar-sync.spec.js");
 
         assertTrue(helpers.contains("window.DutyLogVuePlatform"));
-        assertTrue(helpers.contains("platform.navigateLegacy(target)"));
+        assertTrue(helpers.contains("platform.navigate(target)"));
         assertTrue(helpers.contains("window.DutyLogLegacyPlatform?.navigate(target)"));
         assertTrue(helpers.contains("async function waitForVueShell(page)"));
         assertFalse(e2e.contains("#tabbar a[data-view="));
@@ -32,7 +32,7 @@ class VueShellE2eNavigationCompatibilityHotfixTest {
         assertTrue(shell.contains("data-vue-shell-profile"));
         assertTrue(shell.contains("data-vue-shell-logout"));
         assertTrue(navigation.contains("data-vue-shell-more"));
-        assertTrue(calendarSync.contains("Time and Overtime 27.40.12//RU"));
+        assertTrue(calendarSync.contains("Time and Overtime 27.40.13//RU"));
     }
 
     private static String read(String path) throws Exception {

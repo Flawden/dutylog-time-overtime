@@ -1,19 +1,34 @@
 # Release checklist
 
-Status: v27.40.12.
+Status: v27.40.13.
 
 
-## v27.40.12 — Legacy Command Surface Retirement acceptance
+
+## v27.40.13 — Vue Route State Authority Cutover acceptance
+
+- [x] Start from the proven-green v27.40.12 staging baseline.
+- [x] Vue owns canonical hash read/write/subscription and shell route synchronization.
+- [x] `DutyLogLegacySnapshot` carries no route state; `LegacyBridge` carries no navigate capability.
+- [x] Migrated Vue navigation uses the typed hash route adapter and the public Vue platform exposes `navigate(...)`.
+- [x] Payroll/Admin legacy route side effects and pre-Vue recovery remain compatible with the same hash transport.
+- [x] No second router, offline queue or reconnect owner; OpenAPI remains 118/120 and Flyway V47.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 758/758.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image and PostgreSQL V47 staging acceptance.
+
+
+## v27.40.12 — Legacy Command Surface Retirement acceptance — accepted predecessor
 
 - [x] Start from the proven-green v27.40.11 staging baseline.
 - [x] Remove dead generic modal/Productivity capabilities from the explicit Vue↔legacy bridge and platform declaration.
 - [x] Keep the typed pre-adapter command fallback for navigation/logout only; forbid the retired `open-modal` variant.
 - [x] Keep native Vue domains as the only live Task/Important/Quick Actions/Shift Type UI owners.
 - [x] Keep Payroll/Admin hash routing and the single `dataLayer` offline queue/reconnect owner unchanged.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 758/758.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image and PostgreSQL V47 staging acceptance.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 758/758.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image and PostgreSQL V47 staging acceptance.
 
 
 ## v27.40.11 — Vue Shift Type Manager Modal Retirement acceptance — accepted predecessor

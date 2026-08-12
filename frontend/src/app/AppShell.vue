@@ -17,6 +17,7 @@ import CalendarTimelineWorkspace from "@/features/calendar-timeline/components/C
 import ProductivityWorkspace from "@/features/productivity/components/ProductivityWorkspace.vue";
 import SettingsWorkspace from "@/features/settings-workspace/components/SettingsWorkspace.vue";
 import "@/features/settings-workspace/settings-workspace.css";
+import { navigateHashRoute } from "@/platform/router/hashRoute";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
@@ -55,10 +56,10 @@ const secondaryItems = computed(() => {
 
 function navigate(route: DutyLogRoute): void {
   shell.closeMore();
-  props.bridge.navigate(route);
+  navigateHashRoute(route);
 }
 
-function openProfile(): void { props.bridge.navigate("settings-profile"); }
+function openProfile(): void { navigateHashRoute("settings-profile"); }
 function logout(): void { props.bridge.logout(); }
 </script>
 
@@ -80,7 +81,7 @@ function logout(): void { props.bridge.logout(); }
         </button>
       </div>
     </header>
-    <AppNavigation :bridge="bridge" />
+    <AppNavigation />
   </div>
 
   <CalendarTimelineWorkspace :bridge="bridge" />

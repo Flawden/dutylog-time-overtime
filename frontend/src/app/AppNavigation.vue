@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
-import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { navigationItem, type DutyLogRoute } from "./navigation";
 import { useShellStore } from "./shellStore";
 import AppIcon from "@/shared/ui/AppIcon.vue";
+import { navigateHashRoute } from "@/platform/router/hashRoute";
 
-const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
 const { activeRoute, language, primaryNavigation, secondaryNavigation } = storeToRefs(shell);
 
@@ -15,7 +14,7 @@ const secondaryActive = computed(() => secondaryNavigation.value.includes(active
 const moreLabel = computed(() => language.value === "en" ? "More sections" : "Другие разделы");
 
 function navigate(route: DutyLogRoute): void {
-  props.bridge.navigate(route);
+  navigateHashRoute(route);
 }
 </script>
 

@@ -11,6 +11,7 @@ import ScheduleSettingsCard from "./ScheduleSettingsCard.vue";
 import NotificationSettingsCard from "./NotificationSettingsCard.vue";
 import ShiftTypeManagerModal from "./ShiftTypeManagerModal.vue";
 import type { DutyLogSettingsWorkspaceDomain } from "../types/domain";
+import { navigateHashRoute } from "@/platform/router/hashRoute";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
@@ -70,7 +71,7 @@ function open(section: Section, navigate = true): void {
   expandMode.value = "single";
   activeSection.value = section;
   try { localStorage.setItem("dutylog.settings.openSection", section); } catch (_) {}
-  if (navigate && rawRoute.value !== `settings-${section}`) props.bridge.navigate(`settings-${section}`);
+  if (navigate && rawRoute.value !== `settings-${section}`) navigateHashRoute(`settings-${section}`);
 }
 function expandAll(): void { expandMode.value = "all"; try { localStorage.setItem("dutylog.settings.openSection", "all"); } catch (_) {} }
 function collapseAll(): void { expandMode.value = "none"; try { localStorage.setItem("dutylog.settings.openSection", "none"); } catch (_) {} }

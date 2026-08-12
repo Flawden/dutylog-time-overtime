@@ -41,10 +41,12 @@ export const useShellStore = defineStore("dutylog-shell", {
     },
   },
   actions: {
+    synchronizeRoute(rawRoute: string): void {
+      this.rawRoute = rawRoute;
+      this.activeRoute = normalizeSection(rawRoute);
+    },
     synchronize(snapshot: DutyLogLegacySnapshot | null): void {
       if (!snapshot) return;
-      this.rawRoute = snapshot.route;
-      this.activeRoute = normalizeSection(snapshot.route);
       this.language = snapshot.language;
       this.online = snapshot.online;
       this.modulesLoaded = snapshot.modulesLoaded;

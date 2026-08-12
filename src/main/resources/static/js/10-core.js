@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.40.12"
+const DUTYLOG_VERSION = "27.40.13"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -212,7 +212,6 @@ function legacyPlatformSnapshot(){
   return Object.freeze({
     version: DUTYLOG_VERSION,
     language: state.language === "en" ? "en" : "ru",
-    route: String(window.location.hash || "#today").replace(/^#/, ""),
     online: navigator.onLine,
     modulesLoaded: !!state.modulesLoaded,
     modules:Object.freeze({ ...(state.modules || {}) }),

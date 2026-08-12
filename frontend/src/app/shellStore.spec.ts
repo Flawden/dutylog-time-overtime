@@ -6,9 +6,8 @@ beforeEach(() => setActivePinia(createPinia()));
 
 function snapshot(overrides: Partial<DutyLogLegacySnapshot> = {}): DutyLogLegacySnapshot {
   return {
-    version: "27.40.12",
+    version: "27.40.13",
     language: "ru",
-    route: "calendar",
     online: true,
     modulesLoaded: true,
     navigation: ["today", "calendar", "settings"],
@@ -19,9 +18,10 @@ function snapshot(overrides: Partial<DutyLogLegacySnapshot> = {}): DutyLogLegacy
 }
 
 describe("shell store", () => {
-  it("synchronizes route, workspace navigation and profile from the legacy read model", () => {
+  it("synchronizes route from Vue hash authority and workspace/profile from the legacy read model", () => {
     const store = useShellStore();
-    store.synchronize(snapshot({ route: "settings-profile", online: false }));
+    store.synchronizeRoute("settings-profile");
+    store.synchronize(snapshot({ online: false }));
 
     expect(store.activeRoute).toBe("settings");
     expect(store.online).toBe(false);

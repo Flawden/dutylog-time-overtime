@@ -17,14 +17,11 @@ export interface CalendarTimelineProjectionSnapshot {
   mode: "month" | "week" | "day";
 }
 
-export type LegacyCommand =
-  | { type: "navigate"; view: string }
-  | { type: "logout" };
+export type LegacyCommand = { type: "logout" };
 
 export interface LegacyBridge {
   connected(): boolean;
   snapshot(): DutyLogLegacySnapshot | null;
-  navigate(view: string): void;
   logout(): void;
   retireDomainOwners(domain: "absence-time-bank" | "calendar-timeline" | "productivity" | "settings-workspace"): void;
   settingsAppearanceSnapshot(): Record<string, unknown> | null;
@@ -45,10 +42,6 @@ export interface LegacyBridge {
   subscribe(listener: (snapshot: DutyLogLegacySnapshot) => void): () => void;
 }
 
-function normalizeView(view: string): string {
-  return view.trim().replace(/^#/, "");
-}
-
 export function createLegacyBridge(target: Window = window): LegacyBridge {
   const adapter = () => target.DutyLogLegacyPlatform;
   const emitFallback = (command: LegacyCommand) => {
@@ -58,12 +51,6 @@ export function createLegacyBridge(target: Window = window): LegacyBridge {
   return {
     connected: () => Boolean(adapter()),
     snapshot: () => adapter()?.snapshot() ?? null,
-    navigate(view: string) {
-      const normalized = normalizeView(view);
-      if (!normalized) return;
-      if (adapter()) adapter()?.navigate(normalized);
-      else emitFallback({ type: "navigate", view: normalized });
-    },
     logout() {
       if (adapter()) adapter()?.logout();
       else emitFallback({ type: "logout" });

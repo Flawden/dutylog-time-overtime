@@ -15,6 +15,7 @@ import TaskModalLayer from "./TaskModalLayer.vue";
 import ImportantModalLayer from "./ImportantModalLayer.vue";
 import QuickActionsModal from "./QuickActionsModal.vue";
 import "../productivity.css";
+import { navigateHashRoute } from "@/platform/router/hashRoute";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
@@ -47,7 +48,7 @@ const domain: DutyLogProductivityDomain = Object.freeze({
   openNoteCreate: async (date?: string, content = "") => {
     const targetDate = date || focusDate.value;
     await calendar.openDayPanel(targetDate, "notes");
-    props.bridge.navigate("calendar");
+    navigateHashRoute("calendar");
     await store.createNote(targetDate, content);
   },
   openImportantCreate: async (date?: string, title = "") => {
@@ -137,5 +138,5 @@ onBeforeUnmount(() => {
 
   <TaskModalLayer />
   <ImportantModalLayer />
-  <QuickActionsModal :bridge="bridge" />
+  <QuickActionsModal />
 </template>

@@ -8,6 +8,7 @@ import {
   installUnhandledRejectionDiagnostics,
 } from "./platform/diagnostics/frontendDiagnostics";
 import { platformRouter } from "./platform/router";
+import { navigateHashRoute } from "./platform/router/hashRoute";
 import { usePlatformStore } from "./platform/stores/platformStore";
 import { FRONTEND_ARCHITECTURE, RELEASE_VERSION } from "./platform/version";
 import "./styles/foundation.css";
@@ -81,7 +82,7 @@ async function boot(): Promise<void> {
       mountedAt: new Date().toISOString(),
       snapshot: () => freezeSnapshot(store),
       diagnostics: () => diagnosticsSnapshot(),
-      navigateLegacy: (view: string) => bridge.navigate(view),
+      navigate: (view: string) => navigateHashRoute(view),
     });
 
     window.DutyLogVuePlatform = platform;

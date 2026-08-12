@@ -10,6 +10,7 @@ import AbsenceComposer from "./AbsenceComposer.vue";
 import CreditEditor from "./CreditEditor.vue";
 import AbsencePage from "./AbsencePage.vue";
 import TimeBankPage from "./TimeBankPage.vue";
+import { navigateHashRoute } from "@/platform/router/hashRoute";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
@@ -28,12 +29,12 @@ onMounted(() => {
     ready: () => store.loaded,
     refresh: () => store.refresh(),
     openAbsenceComposer: async (options?: AbsenceComposerOpenOptions) => {
-      if (options?.source === "vacation") props.bridge.navigate("vacation");
-      if (options?.source === "time-bank") props.bridge.navigate("overtime");
+      if (options?.source === "vacation") navigateHashRoute("vacation");
+      if (options?.source === "time-bank") navigateHashRoute("overtime");
       await store.openAbsenceComposer(options);
     },
     openAbsenceEditor: async (id: number) => {
-      props.bridge.navigate("vacation");
+      navigateHashRoute("vacation");
       await store.openAbsenceEditor(id);
     },
     openCreditEditor: async (date?: string | null) => {
@@ -44,7 +45,7 @@ onMounted(() => {
       store.editCredit(id);
     },
     openTimeBankUsage: async (absenceId?: number | null) => {
-      props.bridge.navigate("overtime");
+      navigateHashRoute("overtime");
       await store.openTimeBankUsage(absenceId ?? null);
     },
   });
@@ -69,8 +70,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <AbsencePage v-if="activeRoute === 'vacation'" :bridge="bridge" />
-  <TimeBankPage v-else-if="activeRoute === 'overtime'" :bridge="bridge" />
+  <AbsencePage v-if="activeRoute === 'vacation'" />
+  <TimeBankPage v-else-if="activeRoute === 'overtime'" />
   <AbsenceComposer />
   <CreditEditor />
 </template>

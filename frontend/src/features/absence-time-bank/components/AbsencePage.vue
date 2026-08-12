@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { storeToRefs } from "pinia";
-import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import UiButton from "@/shared/ui/UiButton.vue";
 import UiCard from "@/shared/ui/UiCard.vue";
 import UiEmptyState from "@/shared/ui/UiEmptyState.vue";
 import { useAbsenceTimeBankStore } from "../stores/absenceTimeBankStore";
 import { absenceDisplayTitle, formatMinutes } from "../types/model";
 import type { AbsencePeriod } from "../types/domain";
+import { navigateHashRoute } from "@/platform/router/hashRoute";
 
-const props = defineProps<{ bridge: LegacyBridge }>();
 const store = useAbsenceTimeBankStore();
 const { planner, filteredAbsences, loading, error, conflict, periodFilter, search } = storeToRefs(store);
 const summary = computed(() => planner.value?.summary);
@@ -23,7 +22,7 @@ function periodRange(start: string, end: string): string {
 }
 
 async function openTimeBank(period: AbsencePeriod | null = null): Promise<void> {
-  props.bridge.navigate("overtime");
+  navigateHashRoute("overtime");
   await store.openTimeBankUsage(period ? Number(period.id) : null);
 }
 </script>

@@ -1,3 +1,12 @@
+# v27.40.13 — Vue Route State Authority Cutover
+
+- Starts from the proven-green v27.40.12 staging baseline.
+- Makes the browser hash the direct Vue route-state source: `App.vue` reads/subscribes through `hashRoute.ts` and synchronizes Pinia without waiting for a legacy-state snapshot.
+- Removes `route` from `DutyLogLegacySnapshot`, removes `LegacyBridge.navigate()` and removes the `navigate` typed fallback command.
+- Moves all migrated Vue navigation to `navigateHashRoute(...)` and renames the public shell helper capability from `DutyLogVuePlatform.navigateLegacy(...)` to `DutyLogVuePlatform.navigate(...)`.
+- Keeps legacy `applyRoute()` and `DutyLogLegacyPlatform.navigate(...)` only for pre-Vue recovery and remaining Payroll/Admin route-entry side effects.
+- Changes no OpenAPI/Flyway/business/offline ownership and does not weaken strict TypeScript, retries, timeouts or runtime collectors.
+
 # v27.40.12 — Legacy Command Surface Retirement
 
 - Starts from the proven-green v27.40.11 staging baseline.

@@ -52,9 +52,9 @@ class VueAbsenceTimeBankBrowserParityHotfixTest {
     void todayAndCalendarComposerLaunchesPreserveTheirCurrentRoute() throws IOException {
         String workspace = compact(read("frontend/src/features/absence-time-bank/components/AbsenceTimeBankWorkspace.vue"));
 
-        assertTrue(workspace.contains("if (options?.source === \"vacation\") props.bridge.navigate(\"vacation\");"));
-        assertTrue(workspace.contains("if (options?.source === \"time-bank\") props.bridge.navigate(\"overtime\");"));
-        assertFalse(workspace.contains("openCreditEditor: async (date?: string | null) => { props.bridge.navigate(\"overtime\"); await store.openCreditEditor(date); }"));
+        assertTrue(workspace.contains("if (options?.source === \"vacation\") navigateHashRoute(\"vacation\");"));
+        assertTrue(workspace.contains("if (options?.source === \"time-bank\") navigateHashRoute(\"overtime\");"));
+        assertFalse(workspace.contains("openCreditEditor: async (date?: string | null) => { navigateHashRoute(\"overtime\"); await store.openCreditEditor(date); }"));
     }
 
     @Test

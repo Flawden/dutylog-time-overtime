@@ -1,6 +1,12 @@
 # DutyLog security review
 
-Status: v27.40.12.
+Status: v27.40.13.
+
+## v27.40.13 Vue Route State Authority review
+
+- Route authority moves only between same-origin frontend layers: Vue now reads/writes the existing URL hash directly; no new origin, token, cookie or server endpoint is introduced.
+- Payroll/Admin continue to use the same legacy authorization and server-side guards; direct hash navigation does not grant access.
+- Offline persistence, service worker behavior, CSP, CSRF and session boundaries are unchanged.
 
 ## v27.39.0 Settings, Workspace & Integrations review
 

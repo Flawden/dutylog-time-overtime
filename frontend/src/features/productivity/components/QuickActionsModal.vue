@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { computed, nextTick, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
-import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
 import { useCalendarTimelineStore } from "@/features/calendar-timeline/stores/calendarTimelineStore";
 import { useProductivityStore } from "../stores/productivityStore";
+import { navigateHashRoute } from "@/platform/router/hashRoute";
 
-const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
 const calendar = useCalendarTimelineStore();
 const store = useProductivityStore();
@@ -47,7 +46,7 @@ async function createNote(): Promise<void> {
   const date = quickActionDate.value;
   close();
   await calendar.openDayPanel(date, "notes");
-  props.bridge.navigate("calendar");
+  navigateHashRoute("calendar");
   await store.createNote(date, text);
 }
 
@@ -56,7 +55,7 @@ async function createImportant(): Promise<void> {
   const text = quickActionText.value.trim();
   const date = quickActionDate.value;
   close();
-  props.bridge.navigate("important");
+  navigateHashRoute("important");
   await store.openImportantCreate(date, text);
 }
 

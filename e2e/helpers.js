@@ -114,8 +114,8 @@ async function navigateWithShell(page, view) {
   await waitForVueShell(page);
   await page.evaluate(target => {
     const platform = window.DutyLogVuePlatform;
-    if (platform?.navigateLegacy) {
-      platform.navigateLegacy(target);
+    if (platform?.navigate) {
+      platform.navigate(target);
       return;
     }
     window.DutyLogLegacyPlatform?.navigate(target);

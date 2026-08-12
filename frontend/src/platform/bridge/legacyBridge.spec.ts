@@ -11,11 +11,10 @@ function fakeWindow(): Window {
   return new EventTarget() as unknown as Window;
 }
 
-function snapshot(route = "calendar"): DutyLogLegacySnapshot {
+function snapshot(): DutyLogLegacySnapshot {
   return {
-    version: "27.40.12",
+    version: "27.40.13",
     language: "ru",
-    route,
     online: true,
     modulesLoaded: true,
     navigation: ["today", "calendar", "settings"],
@@ -27,15 +26,13 @@ function snapshot(route = "calendar"): DutyLogLegacySnapshot {
 describe("legacy bridge", () => {
   it("uses the explicit legacy adapter when it is available", async () => {
     const target = fakeWindow();
-    const navigate = vi.fn();
     const logout = vi.fn();
     const retireDomainOwners = vi.fn();
     const writeCalendarDay = vi.fn(async () => ({ queued: true, day: { date: "2026-08-11", shiftTypeId: 2 } }));
     const subscribe = vi.fn(() => vi.fn());
     target.DutyLogLegacyPlatform = {
-      version: "27.40.12",
+      version: "27.40.13",
       snapshot: () => snapshot(),
-      navigate,
       logout,
       retireDomainOwners,
       writeCalendarDay,
@@ -43,7 +40,6 @@ describe("legacy bridge", () => {
     };
 
     const bridge = createLegacyBridge(target);
-    bridge.navigate("#overtime");
     bridge.logout();
     bridge.retireDomainOwners("absence-time-bank");
     const written = await bridge.writeCalendarDay("2026-08-11", { shiftTypeId: 2 });
@@ -51,8 +47,7 @@ describe("legacy bridge", () => {
     bridge.subscribe(listener);
 
     expect(bridge.connected()).toBe(true);
-    expect(bridge.snapshot()?.route).toBe("calendar");
-    expect(navigate).toHaveBeenCalledWith("overtime");
+    expect(bridge.snapshot()?.language).toBe("ru");
     expect(logout).toHaveBeenCalledOnce();
     expect(retireDomainOwners).toHaveBeenCalledWith("absence-time-bank");
     expect(writeCalendarDay).toHaveBeenCalledWith("2026-08-11", { shiftTypeId: 2 });
@@ -60,20 +55,16 @@ describe("legacy bridge", () => {
     expect(subscribe).toHaveBeenCalledWith(listener);
   });
 
-  it("falls back to typed DOM events before the legacy adapter is ready", () => {
+  it("keeps only logout as a typed DOM fallback before the legacy adapter is ready", () => {
     const target = fakeWindow();
     const commands: unknown[] = [];
     target.addEventListener(LEGACY_COMMAND_EVENT, event => commands.push((event as CustomEvent).detail));
 
     const bridge = createLegacyBridge(target);
-    bridge.navigate("tasks");
     bridge.logout();
 
     expect(bridge.connected()).toBe(false);
-    expect(commands).toEqual([
-      { type: "navigate", view: "tasks" },
-      { type: "logout" },
-    ]);
+    expect(commands).toEqual([{ type: "logout" }]);
   });
 
 
@@ -104,11 +95,11 @@ describe("legacy bridge", () => {
     const bridge = createLegacyBridge(target);
     const unsubscribe = bridge.subscribe(listener);
 
-    target.dispatchEvent(new CustomEvent(LEGACY_STATE_EVENT, { detail: snapshot("settings-profile") }));
-    expect(listener).toHaveBeenCalledWith(expect.objectContaining({ route: "settings-profile" }));
+    target.dispatchEvent(new CustomEvent(LEGACY_STATE_EVENT, { detail: snapshot() }));
+    expect(listener).toHaveBeenCalledWith(expect.objectContaining({ language: "ru" }));
 
     unsubscribe();
-    target.dispatchEvent(new CustomEvent(LEGACY_STATE_EVENT, { detail: snapshot("today") }));
+    target.dispatchEvent(new CustomEvent(LEGACY_STATE_EVENT, { detail: snapshot() }));
     expect(listener).toHaveBeenCalledTimes(1);
   });
 });

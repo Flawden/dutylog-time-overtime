@@ -8,6 +8,7 @@ import type { CalendarDaySection, CalendarMode, DutyLogCalendarTimelineDomain } 
 import CalendarPage from "./CalendarPage.vue";
 import TodayPage from "./TodayPage.vue";
 import "../calendar-timeline.css";
+import { navigateHashRoute } from "@/platform/router/hashRoute";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
@@ -18,8 +19,8 @@ let restoreOfflineSource: (() => void) | null = null;
 const domain: DutyLogCalendarTimelineDomain = Object.freeze({
   ready: () => store.loaded,
   refresh: () => store.refresh(),
-  openDate: async (date: string, mode?: CalendarMode) => { props.bridge.navigate("calendar"); await store.openDate(date, mode); },
-  openDay: async (date: string, section?: CalendarDaySection | null) => { props.bridge.navigate("calendar"); await store.openDayPanel(date, section ?? null); },
+  openDate: async (date: string, mode?: CalendarMode) => { navigateHashRoute("calendar"); await store.openDate(date, mode); },
+  openDay: async (date: string, section?: CalendarDaySection | null) => { navigateHashRoute("calendar"); await store.openDayPanel(date, section ?? null); },
   closeDay: () => store.closeDayPanel(),
   snapshot: () => store.bundle ? Object.freeze({ focusDate: store.focusDate, mode: store.mode, from: store.bundle.from, to: store.bundle.to }) : null,
 });
@@ -50,4 +51,4 @@ onBeforeUnmount(() => {
   delete document.documentElement.dataset.vueCalendarSelectedDay;
 });
 </script>
-<template><TodayPage v-if="activeRoute === 'today'" :bridge="bridge" /><CalendarPage v-else-if="activeRoute === 'calendar'" :bridge="bridge" /></template>
+<template><TodayPage v-if="activeRoute === 'today'" /><CalendarPage v-else-if="activeRoute === 'calendar'" :bridge="bridge" /></template>

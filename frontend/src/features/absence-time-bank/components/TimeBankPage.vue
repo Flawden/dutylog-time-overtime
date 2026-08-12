@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, nextTick, watch, type ComponentPublicInstance } from "vue";
 import { storeToRefs } from "pinia";
-import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import UiButton from "@/shared/ui/UiButton.vue";
 import UiCard from "@/shared/ui/UiCard.vue";
 import UiEmptyState from "@/shared/ui/UiEmptyState.vue";
 import UiModal from "@/shared/overlays/UiModal.vue";
 import { useAbsenceTimeBankStore } from "../stores/absenceTimeBankStore";
+import { navigateHashRoute } from "@/platform/router/hashRoute";
 import {
   dayCreditTotals,
   fifoForecast,
@@ -23,7 +23,6 @@ import {
 } from "../types/model";
 import type { OvertimeCredit, OvertimeUsage } from "../types/domain";
 
-const props = defineProps<{ bridge: LegacyBridge }>();
 const store = useAbsenceTimeBankStore();
 const {
   account,
@@ -79,7 +78,7 @@ function isLastCreditOfDay(index: number): boolean {
 
 async function openAbsence(id: number | null | undefined): Promise<void> {
   if (!id) return;
-  props.bridge.navigate("vacation");
+  navigateHashRoute("vacation");
   await store.openAbsenceEditor(Number(id));
 }
 

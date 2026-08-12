@@ -16,7 +16,6 @@ declare global {
   interface DutyLogLegacySnapshot {
     version: string;
     language: "ru" | "en";
-    route: string;
     online: boolean;
     modulesLoaded: boolean;
     modules?: Readonly<Record<string, boolean>>;
@@ -28,7 +27,6 @@ declare global {
   interface DutyLogLegacyPlatform {
     readonly version: string;
     snapshot(): DutyLogLegacySnapshot;
-    navigate(view: string): void;
     logout(): void;
     retireDomainOwners?(domain: "absence-time-bank" | "calendar-timeline" | "productivity" | "settings-workspace"): void;
     settingsAppearanceSnapshot?(): Record<string, unknown> | null;
@@ -74,7 +72,7 @@ declare global {
         occurredAt: string;
       }> | null;
     }>;
-    navigateLegacy(view: string): void;
+    navigate(view: string): void;
   }
 
   interface DutyLogVueDomains {

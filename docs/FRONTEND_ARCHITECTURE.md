@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.12.
+Status: Vue app-shell navigation-model ownership plus Absence/Time Bank, Calendar/Timeline, Productivity and native Settings ownership, DutyLog v27.40.13.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
@@ -12,6 +12,8 @@ Time, Schedule/Calendar Layers and Notifications are now native Vue Settings com
 Appearance keeps UI Contract v2 and delegates only root visual application/current global shell synchronization through a typed bridge. It does not add a second workspace/theme model. ADR-008 disables public production source maps by default and keeps controlled frontend diagnostics secret-free.
 
 As of v27.40.12 the compatibility command surface is narrowed again: generic `openModal` and historical Task/Important opener capabilities are removed from `LegacyBridge` / `DutyLogLegacyPlatform`. Vue-owned Productivity and Settings domains are the only live owners for those UI flows. The legacy command fallback retains navigation/logout only; routing for Payroll/Admin and offline `dataLayer` remain explicit boundaries.
+As of v27.40.13 Vue owns hash route state directly. `hashRoute.ts` reads, writes and subscribes to `location.hash`; `DutyLogLegacySnapshot` contains no route field and `LegacyBridge` contains no navigation capability. The legacy `applyRoute()` listener remains only to drive pre-Vue recovery and the still-legacy Payroll/Admin route-entry side effects from the same canonical hash. Vue owns hash route state; legacy no longer republishes it as application state.
+
 
 ## Vue Tasks, Notes & Important Days ownership (v27.38.0)
 

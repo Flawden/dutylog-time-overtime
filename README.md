@@ -1,3 +1,7 @@
+# DutyLog v27.40.13 — Vue Route State Authority Cutover
+
+v27.40.12 is the accepted green staging baseline. v27.40.13 removes the last circular route-state dependency from the migrated Vue shell: Vue now reads, writes and subscribes to the canonical URL hash directly, `DutyLogLegacySnapshot` no longer carries `route`, and `LegacyBridge.navigate()` is retired. The legacy hash listener remains only as a compatibility side-effect adapter for Payroll/Admin and pre-Vue recovery; the single legacy `dataLayer` remains the sole offline queue/reconnect owner.
+
 # DutyLog v27.40.12 — Legacy Command Surface Retirement
 
 v27.40.11 is the accepted green staging baseline. v27.40.12 removes obsolete modal/Productivity commands from the Vue↔legacy compatibility API after Quick Actions, Task/Important details/editors and Shift Type Manager have native Vue owners. `LegacyBridge` no longer exposes generic `openModal`, Task/Important opener capabilities or the `open-modal` fallback command. Payroll/Admin hash routing and the single legacy `dataLayer` remain explicit later-retirement boundaries.
