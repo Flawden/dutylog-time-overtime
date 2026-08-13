@@ -1,6 +1,15 @@
 # DutyLog release checklist
 
-Status: v27.41.2.
+Status: v27.41.3.
+
+## v27.41.3 — Today Visual Parity & Overtime Summary Recovery acceptance
+- [x] Start from proven-green v27.41.2 commit `52a0e2a1b4e28aa56250bb813639830c56226a91` / tree `91fd1fa2fd426556d4031fbe14506cc722398b77`.
+- [x] Reuse the same typed shift/free-day/factual-absence visual semantics in Calendar Week and the Today seven-day strip.
+- [x] Keep Important Day, user marker and open-task information in stable compact zones on Today.
+- [x] Bind the Today overtime track to canonical `balanceHours / totalEarnedHours` and assert real non-zero Chromium width after a deterministic credit fixture.
+- [x] Keep Playwright 48, Vitest 64, Java @Test 790, Java test classes 163, OpenAPI 124/130 and Flyway V47 inventory unchanged.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
+
 
 ## v27.41.2 — Overtime Chart Source Contract Alignment acceptance
 - [x] Keep v27.41.1 runtime chart geometry unchanged: explicit 126 px plot, pixel bar heights, canonical day totals and actual usage dates.

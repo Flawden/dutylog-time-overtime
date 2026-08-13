@@ -1,3 +1,7 @@
+# v27.41.3 acceptance boundary
+
+v27.41.3 starts from proven-green v27.41.2 commit `52a0e2a1b4e28aa56250bb813639830c56226a91` / tree `91fd1fa2fd426556d4031fbe14506cc722398b77`. The release changes Today presentation plus shared typed calendar visual helpers and extends existing Chromium coverage without adding scenarios, retries or timeout inflation. Exact Node 20.18.1/npm 10.8.2 frontend validation, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
+
 # v27.41.2 acceptance boundary
 
 v27.41.2 starts from v27.41.1 and changes only the stale Java source-contract assertion for overtime chart zero-height/pixel geometry plus release metadata. Runtime Vue/TS chart geometry, canonical overtime accounting, Playwright geometry assertions, pipeline policy and dependency graph are unchanged. Exact Node 20.18.1/npm 10.8.2 frontend validation, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.

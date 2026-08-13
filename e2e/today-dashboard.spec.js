@@ -1,5 +1,5 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, waitForApi, openView } = require('./helpers');
+const { registerAndOnboard, waitForApi, openView, selectDate } = require('./helpers');
 
 test.use({ viewport: { width: 390, height: 844 } });
 
@@ -14,6 +14,37 @@ test('Today Dashboard composes the day and opens existing feature flows', async 
   await expect(page.locator('#todayTaskList')).toBeVisible();
 
   const workDate = await page.evaluate(async () => (await jfetch('/api/v1/time/context')).workDate);
+
+  await page.evaluate(async date => {
+    await jfetch('/api/overtime/credits', {
+      method:'POST',
+      body:{ date, hours:5, reason:'Today visual parity E2E' }
+    });
+  }, workDate);
+  await page.reload();
+  await expect(page.locator('#view-today')).toBeVisible();
+  await expect(page.locator('#todayOvertimeEarned')).toHaveText('5 ч');
+  await expect(page.locator('#todayOvertimeUsed')).toHaveText('0 ч');
+  await expect(page.locator('#todayOvertimeBalance')).toHaveText('5 ч');
+  const balanceProgress = page.locator('#todayOvertimeProgress');
+  await expect(balanceProgress).toHaveAttribute('data-balance-percent', '100.0');
+  expect(await balanceProgress.evaluate(node => node.getBoundingClientRect().width)).toBeGreaterThan(0);
+
+  await openView(page, 'calendar');
+  await selectDate(page, workDate);
+  const shiftSaved = waitForApi(page, 'PUT', `/api/days/${workDate}`);
+  await page.locator('#chips [data-shift-type-id]').first().click();
+  await shiftSaved;
+  await page.locator('#pClose').click();
+  await openView(page, 'today');
+  const todayChip = page.locator(`#todayDateStrip .todayDateChip[data-date="${workDate}"]`);
+  await expect(todayChip).toHaveClass(/hasShift/);
+  await expect(todayChip).toHaveAttribute('style', /--shift-color:/);
+  await expect(todayChip.locator('.todayDateShiftLabel')).toBeVisible();
+  const freeChip = page.locator('#todayDateStrip .todayDateChip.isScheduleFree').first();
+  await expect(freeChip).toBeVisible();
+  await expect(freeChip.locator('.todayDatePalm')).toBeVisible();
+
   const tomorrow = new Date(`${workDate}T00:00:00Z`);
   tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
   const tomorrowKey = tomorrow.toISOString().slice(0, 10);
@@ -30,6 +61,7 @@ test('Today Dashboard composes the day and opens existing feature flows', async 
   const upcomingTomorrow = page.locator('#todayUpcomingList .todayUpcomingRow', { hasText: importantTitle });
   await expect(upcomingTomorrow).toBeVisible();
   await expect(upcomingTomorrow.locator('strong')).toHaveText('завтра');
+  await expect(page.locator(`#todayDateStrip .todayDateChip[data-date="${tomorrowKey}"] .todayDateImportantGlyph`)).toBeVisible();
 
   await page.locator('#todayQuickTask').click();
   await expect(page.locator('#taskEditModal')).toBeVisible();
@@ -41,6 +73,7 @@ test('Today Dashboard composes the day and opens existing feature flows', async 
   await created;
   await expect(page.locator('#taskEditModal')).toBeHidden();
   await expect(page.locator('#todayTaskList')).toContainText('Проверить Today Dashboard');
+  await expect(page.locator(`#todayDateStrip .todayDateChip[data-date="${workDate}"] .todayDateTaskCount`)).toHaveText('1');
 
   await page.locator('#todayOpenCalendar').click();
   await expect(page.locator('#view-calendar')).toBeVisible();

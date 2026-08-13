@@ -225,6 +225,21 @@ export function calendarScheduleFree(facts: CalendarDayFacts): boolean {
   return !facts.shift && facts.absences.length === 0;
 }
 
+export function calendarFactualAbsence(facts: CalendarDayFacts): DutyLogApiSchemas.AbsenceOccurrence | null {
+  return facts.absences.find(item => item.coverage === "FULL_DAY" && item.replacesShift) ?? null;
+}
+
+export function calendarDayVisualStyle(facts: CalendarDayFacts): Record<string, string> {
+  const styles: Record<string, string> = {};
+  const shiftColor = facts.shift?.color;
+  if (shiftColor) styles["--shift-color"] = shiftColor;
+  const absenceColor = calendarFactualAbsence(facts)?.typeColor;
+  if (absenceColor) styles["--absence-color"] = absenceColor;
+  const importantColor = facts.important[0]?.color;
+  if (importantColor) styles["--important-color"] = importantColor;
+  return styles;
+}
+
 export type TodayShiftPhase = "active" | "future" | "finished" | "next";
 
 export interface TodayShiftProjection {

@@ -132,3 +132,141 @@
   .vue-calendar-view .cell .shift { margin:18px 22px 20px 0; }
   .vue-calendar-view .cell .vacationMark { left:5px; bottom:28px; }
 }
+
+/* v27.41.3 — Today Visual Parity & Overtime Summary Recovery.
+   The compact Today strip consumes the same schedule semantics as Calendar Week. */
+.vue-today-view .todayDateChip {
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  min-height:108px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  align-items:flex-start;
+  justify-content:flex-start;
+  gap:2px;
+}
+.vue-today-view .todayDateChip > small,
+.vue-today-view .todayDateChip > b { position:relative; z-index:5; }
+.vue-today-view .todayDateChip.hasShift:not(.hasAbsenceFact) {
+  border-color:color-mix(in srgb,var(--shift-color,var(--accent)) 44%,var(--line));
+  background:linear-gradient(160deg,color-mix(in srgb,var(--shift-color,var(--accent)) 18%,var(--panel2)),color-mix(in srgb,var(--shift-color,var(--accent)) 5%,var(--panel)));
+  box-shadow:inset 0 -3px 0 color-mix(in srgb,var(--shift-color,var(--accent)) 72%,transparent),0 7px 20px color-mix(in srgb,var(--shift-color,var(--accent)) 8%,transparent);
+}
+.vue-today-view .todayDateChip.isScheduleFree:not(.hasAbsenceFact) {
+  background:linear-gradient(160deg,color-mix(in srgb,var(--panel2) 95%,var(--mut)),var(--panel));
+}
+.vue-today-view .todayDateChip.hasAbsenceFact {
+  border-color:color-mix(in srgb,var(--absence-color,var(--accent)) 58%,var(--line));
+  background:linear-gradient(160deg,color-mix(in srgb,var(--absence-color,var(--accent)) 16%,var(--panel2)),color-mix(in srgb,var(--absence-color,var(--accent)) 5%,var(--panel)));
+  box-shadow:inset 0 -3px 0 color-mix(in srgb,var(--absence-color,var(--accent)) 76%,transparent);
+}
+.vue-today-view .todayDateChip.isToday {
+  outline:2px solid color-mix(in srgb,var(--accent) 78%,transparent);
+  outline-offset:-2px;
+}
+.vue-today-view .todayDateChip.isToday::after { display:none; }
+.vue-today-view .todayDateShiftLabel,
+.vue-today-view .todayDateAbsenceLabel {
+  position:absolute;
+  left:9px;
+  right:9px;
+  bottom:30px;
+  z-index:4;
+  overflow:hidden;
+  white-space:nowrap;
+  text-overflow:ellipsis;
+  color:var(--text);
+  font-size:9px!important;
+  font-weight:800;
+  letter-spacing:.035em;
+  text-transform:uppercase;
+  text-align:left;
+}
+.vue-today-view .todayDateAbsenceLabel { color:color-mix(in srgb,var(--absence-color,var(--accent)) 78%,var(--text)); }
+.vue-today-view .todayDatePalm {
+  position:absolute;
+  left:50%;
+  top:54%;
+  z-index:1;
+  width:38px;
+  height:38px;
+  transform:translate(-50%,-50%);
+  color:var(--text);
+  opacity:.12;
+  pointer-events:none;
+}
+.vue-today-view .todayDatePalm svg { width:100%; height:100%; overflow:visible; }
+.vue-today-view .todayDatePalm path {
+  fill:none;
+  stroke:currentColor;
+  stroke-width:3.3;
+  stroke-linecap:round;
+  stroke-linejoin:round;
+}
+.vue-today-view .todayDateImportantGlyph {
+  position:absolute;
+  top:7px;
+  right:7px;
+  z-index:6;
+  display:grid;
+  place-items:center;
+  min-width:20px;
+  height:20px;
+  padding:0 4px;
+  border:1px solid color-mix(in srgb,var(--important-color,var(--accent)) 42%,var(--line));
+  border-radius:7px;
+  color:var(--important-color,var(--accent));
+  background:color-mix(in srgb,var(--important-color,var(--accent)) 10%,var(--panel));
+  font-size:11px!important;
+  line-height:1;
+}
+.vue-today-view .todayDateMarkerGlyph {
+  position:absolute;
+  left:7px;
+  bottom:7px;
+  z-index:6;
+  display:grid;
+  place-items:center;
+  min-width:20px;
+  height:20px;
+  padding:0 3px;
+  border:1px solid color-mix(in srgb,var(--line) 80%,transparent);
+  border-radius:7px;
+  background:color-mix(in srgb,var(--panel) 74%,transparent);
+  font-size:13px!important;
+  line-height:1;
+}
+.vue-today-view .todayDateTaskCount {
+  position:absolute;
+  right:7px;
+  bottom:7px;
+  z-index:6;
+  display:grid;
+  place-items:center;
+  min-width:20px;
+  height:20px;
+  padding:0 5px;
+  border:1px solid color-mix(in srgb,var(--accent) 42%,var(--line));
+  border-radius:999px;
+  color:var(--text);
+  background:color-mix(in srgb,var(--accent) 18%,var(--panel));
+  font-size:9px!important;
+  font-weight:900;
+  line-height:1;
+}
+.vue-today-view .todayBalanceTrack { position:relative; }
+.vue-today-view #todayOvertimeProgress {
+  min-width:0;
+  will-change:width;
+}
+
+@media(max-width:720px){
+  .vue-today-view .todayDateChip { flex:0 0 88px!important; min-height:104px!important; padding:9px; }
+  .vue-today-view .todayDatePalm { width:34px; height:34px; opacity:.12; }
+  .vue-today-view .todayDateShiftLabel,.vue-today-view .todayDateAbsenceLabel { left:8px; right:8px; bottom:28px; font-size:8px!important; }
+  .vue-today-view .todayDateImportantGlyph { top:6px; right:6px; }
+  .vue-today-view .todayDateMarkerGlyph { left:6px; bottom:6px; }
+  .vue-today-view .todayDateTaskCount { right:6px; bottom:6px; }
+}

@@ -1,3 +1,7 @@
+# DutyLog v27.41.3 — Today Visual Parity & Overtime Summary Recovery
+
+The green v27.41.2 release restored the full Overtime chart, while staging still exposed two compact-home parity gaps: Today showed live overtime totals beside an inert progress track, and its seven-day strip ignored the visual grammar already proven in Calendar Week. v27.41.3 binds the balance track to the canonical account snapshot and makes the Today strip reuse the same shift/free-day/factual-absence semantics, with compact Important Day, user-marker and task zones. No accounting formula, HTTP API, Flyway, auth or offline ownership changes.
+
 # DutyLog v27.41.2 — Overtime Chart Source Contract Alignment
 
 v27.41.1 correctly moved the overtime chart to explicit pixel geometry, but an older Java source-contract test still demanded the previous `0%` implementation shape and stopped Maven before browser E2E could run. v27.41.2 aligns that contract to the intended `0px` + `CHART_PLOT_HEIGHT_PX` model without changing production runtime behavior.

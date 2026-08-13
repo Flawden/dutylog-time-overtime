@@ -1,4 +1,6 @@
-# DutyLog API v27.41.2
+# DutyLog API v27.41.3
+
+`v27.41.3` changes no HTTP/OpenAPI or Flyway shape. It reuses existing calendar/overtime read models only; generated online APIs remain **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 
 `v27.41.2` changes no HTTP/OpenAPI or Flyway shape. It only aligns a stale Java source-contract assertion with the already-intended v27.41.1 pixel chart geometry. Generated online APIs remain unchanged at **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 

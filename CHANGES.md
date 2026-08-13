@@ -1,3 +1,10 @@
+# v27.41.3 — Today Visual Parity & Overtime Summary Recovery
+- Starts from proven-green v27.41.2 commit `52a0e2a1b4e28aa56250bb813639830c56226a91` / tree `91fd1fa2fd426556d4031fbe14506cc722398b77`.
+- Makes the Today seven-day strip consume the same canonical shift/free-day/factual-absence visual semantics as Calendar Week, including shift tint, the schedule-free palm, Important Day glyphs, user day markers and open-task counts.
+- Restores the Today overtime balance track from the canonical account snapshot (`balanceHours / totalEarnedHours`) and locks non-zero rendered browser geometry instead of leaving an inert track beside live totals.
+- Extracts shared typed calendar visual-style/factual-absence helpers so Today and Calendar do not drift before People Profiles.
+- Keeps OpenAPI 124/130, Flyway V47, auth, offline/dataLayer, onboarding, timeout/retry policy and dependency graph unchanged.
+
 # v27.41.2 — Overtime Chart Source Contract Alignment
 - Starts from v27.41.1 commit `8971db008fbcdfeab9f4cb324f7bc017e0746c89`.
 - Fixes a stale Java source-contract assertion that still required the pre-v27.41.1 `0%` chart zero-height even though runtime intentionally moved to explicit pixel geometry (`0px` within a 126 px plot).

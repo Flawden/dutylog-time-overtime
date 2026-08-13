@@ -42,12 +42,15 @@ class FunctionalParitySweepIIMobileUsabilityContractTest {
     @Test
     void monthCalendarUsesShiftColorAsScannableDataOnMobile() throws IOException {
         String calendar = read("frontend/src/features/calendar-timeline/components/CalendarPage.vue");
+        String model = read("frontend/src/features/calendar-timeline/types/model.ts");
         String css = read("frontend/src/features/calendar-timeline/calendar-timeline.css");
         String browser = read("e2e/calendar-mobile-experience.spec.js");
 
         assertTrue(calendar.contains("hasShift: Boolean(cellFacts(date).shift)"));
-        assertTrue(calendar.contains("const shiftColor = facts.shift?.color;"));
-        assertTrue(calendar.contains("styles[\"--shift-color\"] = shiftColor"));
+        assertTrue(calendar.contains("return calendarDayVisualStyle(cellFacts(date));"));
+        assertTrue(model.contains("const shiftColor = facts.shift?.color;"));
+        assertTrue(model.contains("styles[\"--shift-color\"] = shiftColor"));
+        assertTrue(model.contains("calendarFactualAbsence(facts)"));
         assertTrue(calendar.contains(":aria-label=\"cellAriaLabel(date)\""));
         assertTrue(css.contains(".cell.hasShift:not(.hasAbsenceFact)"));
         assertTrue(css.contains(".cell.hasShift:not(.hasAbsenceFact) .shift { display:none; }"));

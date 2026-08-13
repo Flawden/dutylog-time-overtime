@@ -1,3 +1,7 @@
+# v27.41.3 Today Visual Parity & Overtime Summary Recovery review
+
+v27.41.3 adds no endpoint, credential, role, authorization, persistence, cross-user schedule access or dependency. Today consumes only the same current-user calendar/overtime snapshot already authorized for Calendar/Overtime; People Profiles remain out of scope.
+
 # v27.41.2 Overtime Chart Source Contract Alignment review
 
 v27.41.2 changes no auth, authorization, HTTP surface, persistence, offline queue or dependency. It aligns one Java source-contract assertion with existing pixel chart geometry.
@@ -11,7 +15,7 @@ v27.41.2 changes no auth, authorization, HTTP surface, persistence, offline queu
 - No new HTML injection surface, dependency or cross-user data path is introduced.
 - `dataLayer` remains the only IndexedDB/outbox/reconnect executor; OpenAPI remains 124/130 and Flyway remains V47.
 
-Status: v27.41.2.
+Status: v27.41.3.
 
 ## v27.41.0 Calendar Visual Language Foundation review
 

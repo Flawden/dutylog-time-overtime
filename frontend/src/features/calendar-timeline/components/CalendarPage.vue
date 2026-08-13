@@ -5,6 +5,8 @@ import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
 import { useCalendarTimelineStore } from "../stores/calendarTimelineStore";
 import {
+  calendarDayVisualStyle,
+  calendarFactualAbsence,
   calendarImportantGlyph,
   calendarOpenTaskCount,
   calendarScheduleFree,
@@ -111,15 +113,7 @@ function isWeekend(date: string): boolean {
   const value = new Date(`${date}T00:00:00Z`).getUTCDay();
   return value === 0 || value === 6;
 }
-function cellStyle(date: string): Record<string, string> {
-  const facts = cellFacts(date);
-  const styles: Record<string, string> = {};
-  const shiftColor = facts.shift?.color;
-  if (shiftColor) styles["--shift-color"] = shiftColor;
-  const absenceColor = factualAbsence(date)?.typeColor;
-  if (absenceColor) styles["--absence-color"] = absenceColor;
-  return styles;
-}
+function cellStyle(date: string): Record<string, string> { return calendarDayVisualStyle(cellFacts(date)); }
 function cellAriaLabel(date: string): string {
   const facts = cellFacts(date);
   const parts = [dateLabel(date, language.value, { weekday: "long", day: "numeric", month: "long" })];
@@ -134,7 +128,7 @@ function cellAriaLabel(date: string): string {
   if (dayMarker) parts.push(`${language.value === "en" ? "Day marker" : "Маркер дня"}: ${dayMarker}`);
   return parts.join(". ");
 }
-function factualAbsence(date: string) { return cellFacts(date).absences.find(item => item.coverage === "FULL_DAY" && item.replacesShift) ?? null; }
+function factualAbsence(date: string) { return calendarFactualAbsence(cellFacts(date)); }
 function partialAbsences(date: string) { return cellFacts(date).absences.filter(item => item.coverage === "PARTIAL" || item.coverage === "HOURS_ONLY"); }
 function secondaryAbsences(date: string) {
   const factual = factualAbsence(date);
