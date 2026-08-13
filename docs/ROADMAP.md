@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure**.
+Current release: **v27.40.33 — Overtime Chart Projection Fixture Contract Hotfix**.
 
 
 ## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary — proven green
@@ -21,7 +21,7 @@ Current release: **v27.40.32 — Functional Parity Sweep II & Mobile Usability C
 - [x] Keep those calculations in strict typed pure model helpers with unit/source contracts; do not reintroduce legacy DOM ownership.
 - [x] Preserve the bounded first-run onboarding exception and the single `dataLayer` offline owner unchanged.
 
-## v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure — current
+## v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure — exact frontend red predecessor
 - [x] Use canonical server day projection totals for overtime accrual charts and historical zero-row fallback; do not paint fake bars for zero values.
 - [x] Present ledger-integrity issues as grouped human-readable summaries while retaining stable machine diagnostics under technical details.
 - [x] Restore shift color as scannable month-grid information with full-day factual absence taking visual priority.
@@ -32,7 +32,13 @@ Current release: **v27.40.32 — Functional Parity Sweep II & Mobile Usability C
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
 
-## v27.41.0 — Vacation Entitlement & Accrual Engine — next after v27.40.32 green
+## v27.40.33 — Overtime Chart Projection Fixture Contract Hotfix — current
+- [x] Preserve v27.40.32 runtime/read-model behavior unchanged.
+- [x] Repair the two contradictory overtime chart Vitest fixtures discovered by exact frontend CI.
+- [x] Keep canonical server `dayEarnedHours` authority and actual `usageDate` chart ownership intact.
+- [ ] Exact frontend 63/63, Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
+
+## v27.41.0 — Vacation Entitlement & Accrual Engine — next after v27.40.33 green
 - [ ] Entitlement policy and annual allowance.
 - [ ] Accrual/carry-over/adjustments with explainable balance.
 - [ ] Planned/used/available vacation projection integrated with the existing Absence domain.

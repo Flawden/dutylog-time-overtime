@@ -1,3 +1,10 @@
+# v27.40.33 — Overtime Chart Projection Fixture Contract Hotfix
+- Starts from the exact v27.40.32 candidate tree after exact Node 20 frontend validation exposed two deterministic Vitest failures in `absence-time-bank/types/model.spec.ts`.
+- Keeps the v27.40.32 runtime/read-model logic unchanged: overtime charts still trust canonical server `dayEarnedHours` totals and usage still belongs to the actual `usageDate`.
+- Repairs only stale test fixtures whose row-level `hours` overrides (3 h / 2 h) still inherited the helper's default 4 h server projection, making the test data internally impossible and producing +8 h instead of the expected +5 h yearly total.
+- Makes those fixtures self-consistent by overriding matching day/source projection totals; no API, Flyway, auth, offline, calendar, navigation or production calculation behavior changes.
+- Acceptance inventory remains **163 Java test classes / 790 `@Test` methods / 48 Chromium Playwright scenarios / 63 Vitest cases / OpenAPI 124/130 / Flyway V47**.
+
 # v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure
 - Starts from the v27.40.31 Functional Parity Sweep I tree after manual staging acceptance confirmed live shift timing and relative Important Days copy.
 - Repairs overtime accrual presentation with canonical server daily projection totals, historical single-part zero-row fallback and true zero-height chart bars; mobile credit cards now lead with earned hours instead of an unlabeled remaining balance.

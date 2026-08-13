@@ -13,7 +13,7 @@ function fakeWindow(): Window {
 
 function snapshot(): DutyLogLegacySnapshot {
   return {
-    version: "27.40.32",
+    version: "27.40.33",
     language: "ru",
     online: true,
     offline: { online:true, cacheReady:true, lastSyncAt:null, stale:false, pending:0, failed:0, syncing:false, syncLockedByOther:false },
@@ -34,7 +34,7 @@ describe("legacy bridge", () => {
     const offlineRetryAllFailed = vi.fn(async () => undefined);
     const subscribe = vi.fn(() => vi.fn());
     target.DutyLogLegacyPlatform = {
-      version: "27.40.32",
+      version: "27.40.33",
       snapshot: () => snapshot(),
       logout,
       retireDomainOwners,

@@ -1,3 +1,9 @@
+# DutyLog v27.40.33 — Overtime Chart Projection Fixture Contract Hotfix
+
+v27.40.32 reached the exact frontend gate and failed two deterministic Vitest assertions because the affected fixtures overrode visible credit `hours` to 3 h / 2 h while silently retaining the helper's default canonical `dayEarnedHours=4`. The production v27.40.32 model is intentionally server-projection-first, so it correctly read those contradictory fixtures as 4 h + 4 h = 8 h. v27.40.33 changes no runtime behavior: it makes the fixtures internally coherent with the expected 3 h + 2 h = 5 h contract, then reruns the unchanged release surface.
+
+Previous candidate: **DutyLog v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure**.
+
 # DutyLog v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure
 
 v27.40.31 restored Today shift timing and relative Important Days copy. v27.40.32 closes the remaining manual-staging parity/usability gaps before Vacation/Payroll expansion: overtime charts use canonical server daily projections and stop painting fake zero bars; ledger-integrity warnings are grouped into human-readable explanations with machine codes behind technical details; the month calendar again uses shift color as scannable information; and the phone bottom navigation becomes visually icon-only while preserving accessible route names. No API/Flyway, auth, onboarding, module, or offline `dataLayer` ownership changes are introduced.

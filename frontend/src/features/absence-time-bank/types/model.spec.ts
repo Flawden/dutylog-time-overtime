@@ -130,8 +130,8 @@ describe("absence and time-bank domain model", () => {
   it("plots time-bank usage on the actual usage date without double-counting credit usedHours", () => {
     const data = account({
       credits: [
-        credit({ id: 1, workedDate: "2026-08-01", hours: 3, usedHours: 3, remainingHours: 0 }),
-        credit({ id: 2, workedDate: "2026-08-02", hours: 2, usedHours: 1, remainingHours: 1 }),
+        credit({ id: 1, workedDate: "2026-08-01", hours: 3, usedHours: 3, remainingHours: 0, projection: { ...credit({}).projection!, dayEarnedHours: 3, dayUsedHours: 3, dayRemainingHours: 0, sourceCreditHours: 3, sourceUsedHours: 3, sourceRemainingHours: 0 } }),
+        credit({ id: 2, workedDate: "2026-08-02", hours: 2, usedHours: 1, remainingHours: 1, projection: { ...credit({}).projection!, sourceWorkedDate: "2026-08-02", dayEarnedHours: 2, dayUsedHours: 1, dayRemainingHours: 1, sourceCreditHours: 2, sourceUsedHours: 1, sourceRemainingHours: 1 } }),
       ],
       usages: [usage({ usageDate: "2026-08-03", hours: 4, minutes: 240 })],
     });
@@ -146,8 +146,8 @@ describe("absence and time-bank domain model", () => {
   it("folds earned work dates and actual usage dates into the same yearly month bucket", () => {
     const data = account({
       credits: [
-        credit({ id: 1, workedDate: "2026-08-01", hours: 3 }),
-        credit({ id: 2, workedDate: "2026-08-02", hours: 2 }),
+        credit({ id: 1, workedDate: "2026-08-01", hours: 3, projection: { ...credit({}).projection!, dayEarnedHours: 3, dayRemainingHours: 3, sourceCreditHours: 3, sourceRemainingHours: 3 } }),
+        credit({ id: 2, workedDate: "2026-08-02", hours: 2, remainingHours: 2, projection: { ...credit({}).projection!, sourceWorkedDate: "2026-08-02", dayEarnedHours: 2, dayRemainingHours: 2, sourceCreditHours: 2, sourceRemainingHours: 2 } }),
       ],
       usages: [usage({ usageDate: "2026-08-03", hours: 4, minutes: 240 })],
     });

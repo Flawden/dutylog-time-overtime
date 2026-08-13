@@ -1,10 +1,10 @@
-release=27.40.32
+release=27.40.33
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=b41aed15221924e4106ea4c85faf7afa0bf8144ebc670b7ba993f0094c018c71
+committedLockfileSha256=04567fe64b403f553606a48a9d037779dc3c6f13b15d7fcad386aa381f3a5727
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=vacation-entitlement-accrual-engine-after-v27.40.32-green
+nextAction=vacation-entitlement-accrual-engine-after-v27.40.33-green

@@ -7,7 +7,7 @@
 - The bounded exception grants no new authority and owns no route, normal Settings screen or offline queue execution.
 - `dataLayer` remains the only IndexedDB queue/sync executor; OpenAPI remains 124/130 and Flyway V47.
 
-Status: v27.40.32.
+Status: v27.40.33.
 
 
 ## v27.40.29 Vue logout ownership and offline status contract hotfix review

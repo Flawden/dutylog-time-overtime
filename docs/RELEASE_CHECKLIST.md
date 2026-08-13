@@ -1,6 +1,15 @@
 # Release checklist
 
-Status: v27.40.32.
+Status: v27.40.33.
+
+## v27.40.33 — Overtime Chart Projection Fixture Contract Hotfix acceptance
+- [x] Start from exact v27.40.32 candidate content tree `170c4bf4c27bcc722e140a5fc12355e5ea0214ee`.
+- [x] Classify exact frontend failure as two deterministic contradictory Vitest fixtures, not a production `ledgerChartColumns()` regression.
+- [x] Keep server-projection-first runtime semantics and actual usage-date ownership unchanged.
+- [x] Align the 3 h / 2 h test rows with matching day/source projection totals.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2: 63/63 Vitest plus typecheck/build.
+- [ ] Maven 790/790 across 163 Java test classes on Java 17.
+- [ ] Playwright canary and full Chromium 48/48; immutable image, PostgreSQL V47 smoke and staging deploy green.
 
 ## v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure acceptance
 
