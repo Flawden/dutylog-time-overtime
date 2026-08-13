@@ -21,7 +21,9 @@ class FunctionalParitySweepIIMobileUsabilityContractTest {
 
         assertTrue(model.contains("serverProjection?.dayEarnedHours"));
         assertTrue(model.contains("export function creditRowEarnedHours"));
-        assertTrue(page.contains("if (!(hours > 0.0001)) return \"0%\""));
+        assertTrue(page.contains("const CHART_PLOT_HEIGHT_PX = 126;"));
+        assertTrue(page.contains("if (!(hours > 0.0001)) return \"0px\""));
+        assertTrue(page.contains("Math.round(ratio * CHART_PLOT_HEIGHT_PX)"));
         assertTrue(page.contains("credit.projection?.sourceCreditHours ?? creditRowEarnedHours(credit)"));
         assertTrue(spec.contains("historical visible row reports zero hours"));
     }

@@ -1,11 +1,11 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.41.1.
+Status: v27.41.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.41.1 preserves the proven-green Calendar Visual Language and restores overtime chart rendering with explicit plot geometry plus strict Chromium bar-height assertions. Inventory remains 163 Java test classes / 790 @Test methods / 48 Chromium Playwright scenarios / 64 Vitest cases, OpenAPI 124/130 and Flyway V47.
+Current extension: v27.41.2 preserves the v27.41.1 explicit plot geometry and strict Chromium bar-height assertions while aligning the stale Java source contract from `0%` to the intended `0px`/126 px pixel model. Inventory remains 163 Java test classes / 790 @Test methods / 48 Chromium Playwright scenarios / 64 Vitest cases, OpenAPI 124/130 and Flyway V47.
 
 
 

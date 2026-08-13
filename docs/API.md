@@ -1,6 +1,6 @@
-# DutyLog API v27.41.1
+# DutyLog API v27.41.2
 
-`v27.41.1` changes no HTTP/OpenAPI or Flyway shape. It only restores overtime-chart browser geometry while preserving the existing canonical projection/usage-date read model. Generated online APIs remain unchanged at **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
+`v27.41.2` changes no HTTP/OpenAPI or Flyway shape. It only aligns a stale Java source-contract assertion with the already-intended v27.41.1 pixel chart geometry. Generated online APIs remain unchanged at **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 
 `v27.41.0` added the Calendar Visual Language Foundation without changing HTTP/OpenAPI or Flyway shape.
 

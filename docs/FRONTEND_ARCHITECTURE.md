@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.41.1 preserves the proven-green v27.41.0 Calendar Visual Language and repairs only overtime-chart presentation geometry; canonical overtime projections remain in the Absence/Time Bank typed read model. First-run onboarding remains one explicitly bounded post-ready legacy presentation exception; `dataLayer` remains the single offline mutation/sync owner.
+Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.41.2 preserves the v27.41.1 overtime-chart pixel geometry and only aligns a stale Java source-contract assertion; canonical overtime projections remain in the Absence/Time Bank typed read model. First-run onboarding remains one explicitly bounded post-ready legacy presentation exception; `dataLayer` remains the single offline mutation/sync owner.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)

@@ -1,6 +1,13 @@
-# Release checklist
+# DutyLog release checklist
 
-Status: v27.41.1.
+Status: v27.41.2.
+
+## v27.41.2 — Overtime Chart Source Contract Alignment acceptance
+- [x] Keep v27.41.1 runtime chart geometry unchanged: explicit 126 px plot, pixel bar heights, canonical day totals and actual usage dates.
+- [x] Align `FunctionalParitySweepIIMobileUsabilityContractTest` with `0px` zero-height and `CHART_PLOT_HEIGHT_PX` instead of stale `0%`.
+- [x] Keep Playwright 48, Vitest 64, Java @Test 790, Java test classes 163, OpenAPI 124/130 and Flyway V47 inventory unchanged.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
+
 
 ## v27.41.1 — Overtime Chart Rendering Recovery acceptance
 

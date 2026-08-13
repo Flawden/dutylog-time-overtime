@@ -1,3 +1,7 @@
+# DutyLog v27.41.2 — Overtime Chart Source Contract Alignment
+
+v27.41.1 correctly moved the overtime chart to explicit pixel geometry, but an older Java source-contract test still demanded the previous `0%` implementation shape and stopped Maven before browser E2E could run. v27.41.2 aligns that contract to the intended `0px` + `CHART_PLOT_HEIGHT_PX` model without changing production runtime behavior.
+
 # DutyLog v27.41.1 — Overtime Chart Rendering Recovery
 
 v27.41.0 is proven green and manually accepted on staging. The overtime chart still exposed one surviving presentation regression: period columns and numeric totals were present, but the visual bars could collapse because bar heights were expressed as percentages inside a nested grid/flex height chain. v27.41.1 keeps the canonical `dayCreditTotals` / actual `usageDate` model unchanged and gives the chart an explicit 126 px plot geometry with pixel bar heights plus strict browser geometry assertions.

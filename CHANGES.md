@@ -1,3 +1,9 @@
+# v27.41.2 — Overtime Chart Source Contract Alignment
+- Starts from v27.41.1 commit `8971db008fbcdfeab9f4cb324f7bc017e0746c89`.
+- Fixes a stale Java source-contract assertion that still required the pre-v27.41.1 `0%` chart zero-height even though runtime intentionally moved to explicit pixel geometry (`0px` within a 126 px plot).
+- Adds stronger source assertions for `CHART_PLOT_HEIGHT_PX` and pixel normalization without changing production chart/accounting behavior.
+- Keeps OpenAPI 124/130, Flyway V47, auth, offline/dataLayer, onboarding, Playwright timeout/retry policy and dependency graph unchanged.
+
 # v27.41.1 — Overtime Chart Rendering Recovery
 - Starts from the proven-green v27.41.0 Calendar Visual Language staging baseline.
 - Restores visible overtime accrual/usage bars without changing canonical day-projection or usage-date accounting: the chart now maps normalized values to an explicit pixel plot height instead of relying on percentage heights inside the grid/flex track.

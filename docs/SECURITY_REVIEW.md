@@ -1,3 +1,7 @@
+# v27.41.2 Overtime Chart Source Contract Alignment review
+
+v27.41.2 changes no auth, authorization, HTTP surface, persistence, offline queue or dependency. It aligns one Java source-contract assertion with existing pixel chart geometry.
+
 # DutyLog security review
 
 ## v27.41.1 Overtime Chart Rendering Recovery review
@@ -7,7 +11,7 @@
 - No new HTML injection surface, dependency or cross-user data path is introduced.
 - `dataLayer` remains the only IndexedDB/outbox/reconnect executor; OpenAPI remains 124/130 and Flyway remains V47.
 
-Status: v27.41.1.
+Status: v27.41.2.
 
 ## v27.41.0 Calendar Visual Language Foundation review
 

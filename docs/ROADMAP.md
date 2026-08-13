@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.41.1 — Overtime Chart Rendering Recovery**.
+Current release: **v27.41.2 — Overtime Chart Source Contract Alignment**.
 
 
 ## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary — proven green
@@ -76,13 +76,19 @@ Current release: **v27.41.1 — Overtime Chart Rendering Recovery**.
 - [x] Carry the same shift/free-day visual language into week mode while preserving non-blocking calendar refresh.
 - [x] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
-## v27.41.1 — Overtime Chart Rendering Recovery — current
+
+## v27.41.2 — Overtime Chart Source Contract Alignment — current
+- Align the stale Java source-contract assertion with the v27.41.1 pixel chart geometry (`0px`, explicit 126 px plot).
+- No production runtime/accounting/API/Flyway/dependency changes.
+- Exit: exact CI + staging green, then proceed to People Profiles & Shared Availability.
+
+## v27.41.1 — Overtime Chart Rendering Recovery — historical candidate
 - [x] Preserve canonical overtime accounting/projection semantics unchanged.
 - [x] Restore visible earned/used bars using explicit browser-resolvable plot geometry.
 - [x] Lock real rendered bar heights in the existing Chromium Overtime Next journey.
 - [ ] Exact frontend, Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
-## v27.42.0 — People Profiles & Shared Availability — next after v27.41.1 green
+## v27.42.0 — People Profiles & Shared Availability — next after v27.41.2 green
 - [ ] Treat another person as a selected calendar profile, not an overlay pasted on top of the current user.
 - [ ] Switching profile recolors/reprojects the whole calendar to that person while making active identity unmistakable.
 - [ ] Add Shared Availability for common free days, including the nearest shared window and multi-day overlaps.

@@ -1,3 +1,7 @@
+# v27.41.2 acceptance boundary
+
+v27.41.2 starts from v27.41.1 and changes only the stale Java source-contract assertion for overtime chart zero-height/pixel geometry plus release metadata. Runtime Vue/TS chart geometry, canonical overtime accounting, Playwright geometry assertions, pipeline policy and dependency graph are unchanged. Exact Node 20.18.1/npm 10.8.2 frontend validation, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
+
 # v27.41.1 acceptance boundary
 
 v27.41.1 starts from the proven-green v27.41.0 staging baseline and changes only overtime chart presentation geometry, the existing Overtime Next Chromium assertions and release metadata. Pipeline policy is unchanged: exact Node 20.18.1/npm 10.8.2 frontend validation, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
