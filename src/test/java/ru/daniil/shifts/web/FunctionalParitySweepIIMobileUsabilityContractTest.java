@@ -49,7 +49,9 @@ class FunctionalParitySweepIIMobileUsabilityContractTest {
         assertTrue(calendar.contains(":aria-label=\"cellAriaLabel(date)\""));
         assertTrue(css.contains(".cell.hasShift:not(.hasAbsenceFact)"));
         assertTrue(css.contains(".cell.hasShift:not(.hasAbsenceFact) .shift { display:none; }"));
-        assertTrue(browser.contains(".cell.hasShift"));
+        assertTrue(browser.contains("const shiftSaved = waitForApi(page, 'PUT', `/api/days/${today}`);"));
+        assertTrue(browser.contains("const shiftCell = page.locator(`#grid .cell[data-date=\"${today}\"]`);"));
+        assertTrue(browser.contains("await expect(shiftCell).toHaveClass(/hasShift/);"));
     }
 
     @Test

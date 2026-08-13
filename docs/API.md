@@ -1,6 +1,6 @@
-# DutyLog API v27.40.36
+# DutyLog API v27.40.37
 
-`v27.40.36` changes no HTTP/OpenAPI or Flyway shape and changes no production runtime calculation. It repairs two deterministic Chromium E2E assumptions found after v27.40.35 reached 46/48: explicit shift test data for the calendar color assertion and case-insensitive matching of the existing Russian year-period label. Generated online APIs remain unchanged at **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
+`v27.40.37` changes no HTTP/OpenAPI or Flyway shape and changes no production runtime calculation. It aligns one stale Java source-contract assertion exposed by exact Maven after v27.40.36: the browser contract now follows the explicit date-scoped shift fixture and class assertion introduced by v27.40.36. Generated online APIs remain unchanged at **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 
 `v27.40.30` changes no HTTP/OpenAPI or Flyway shape. It closes the Vue Legacy Retirement phase with first-run onboarding retained as one bounded presentation compatibility surface; generated online APIs remain unchanged at **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 

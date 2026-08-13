@@ -1,6 +1,6 @@
-# v27.40.36 acceptance boundary
+# v27.40.37 acceptance boundary
 
-v27.40.36 starts from canonical v27.40.35 commit `de877d89baa8f639809737324b09f22065c4558d` / tree `93e5c05211553a541d74a6bd020b9bf60cf74171`. v27.40.35 passed exact frontend and Java 17 Maven and reached full Chromium with 46 passed / 2 deterministic failures. This hotfix changes only the two stale E2E assumptions plus release metadata; exact Node 20.18.1/npm 10.8.2 frontend validation, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
+v27.40.37 starts from exact v27.40.36 commit `e6523775d00c3e5c4d2e334a5cff34414c74398e`. v27.40.36 passed the exact frontend gate but Java 17 Maven exposed one stale source-contract assertion left behind by the deterministic calendar fixture change. This hotfix changes only that Java contract plus release metadata; exact Node 20.18.1/npm 10.8.2 frontend validation, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
 
 ## v27.40.29 Vue Logout Ownership & Offline Status Contract Hotfix
 

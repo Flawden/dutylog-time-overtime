@@ -1,3 +1,7 @@
+# DutyLog v27.40.37 — Calendar E2E Source Contract Alignment Hotfix
+
+v27.40.36 correctly repaired the two Chromium failures from v27.40.35, but its deterministic calendar fixture removed the literal `.cell.hasShift` selector that `FunctionalParitySweepIIMobileUsabilityContractTest` still searched for. Exact Java 17 Maven therefore failed before release-check and Chromium. v27.40.37 changes no production runtime and no Playwright scenario behavior; it aligns that stale Java source contract with the explicit date-scoped `shiftCell` fixture and `toHaveClass(/hasShift/)` assertion already present in v27.40.36.
+
 # DutyLog v27.40.36 — Calendar Fixture & Period Label E2E Hotfix
 
 v27.40.35 passed exact frontend and Java 17 Maven gates and reached full Chromium, where 46 of 48 scenarios passed. The calendar-mobile test assumed a fresh account already contained at least one assigned shift even though the canonical calendar response correctly returned no days; the overtime test expected `Год`/`Year` case-sensitively while the rendered Russian period label was the valid `2026 год`. v27.40.36 changes only those deterministic E2E contracts plus release metadata. Production runtime behavior is unchanged.

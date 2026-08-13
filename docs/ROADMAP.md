@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.36 — Calendar Fixture & Period Label E2E Hotfix**.
+Current release: **v27.40.37 — Calendar E2E Source Contract Alignment Hotfix**.
 
 
 ## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary — proven green
@@ -32,7 +32,13 @@ Current release: **v27.40.36 — Calendar Fixture & Period Label E2E Hotfix**.
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
 
-## v27.40.36 — Calendar Fixture & Period Label E2E Hotfix — current
+## v27.40.37 — Calendar E2E Source Contract Alignment Hotfix — current
+
+- v27.40.36 passed exact frontend validation but Java 17 Maven exposed one stale source-contract assertion.
+- The calendar source contract now follows the deterministic date-scoped `shiftCell` fixture and `toHaveClass(/hasShift/)` browser assertion introduced in v27.40.36.
+- Production runtime and Playwright behavior remain unchanged.
+
+## v27.40.36 — Calendar Fixture & Period Label E2E Hotfix — Maven-red predecessor
 
 - v27.40.35 passed exact frontend and Java 17 Maven and reached the full Chromium suite.
 - Full Chromium executed all 48 scenarios: 46 passed / 2 deterministic failed, both repeated on retry.
@@ -61,7 +67,7 @@ Current release: **v27.40.36 — Calendar Fixture & Period Label E2E Hotfix**.
 - [x] Keep canonical server `dayEarnedHours` authority and actual `usageDate` chart ownership intact.
 - [ ] Exact frontend 63/63, Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
-## v27.41.0 — Vacation Entitlement & Accrual Engine — next after v27.40.36 green
+## v27.41.0 — Vacation Entitlement & Accrual Engine — next after v27.40.37 green
 - [ ] Entitlement policy and annual allowance.
 - [ ] Accrual/carry-over/adjustments with explainable balance.
 - [ ] Planned/used/available vacation projection integrated with the existing Absence domain.

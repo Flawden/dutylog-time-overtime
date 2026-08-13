@@ -1,3 +1,9 @@
+# v27.40.37 — Calendar E2E Source Contract Alignment Hotfix
+- Starts from exact v27.40.36 commit `e6523775d00c3e5c4d2e334a5cff34414c74398e`, whose exact frontend gate passed but Java 17 Maven stopped before release-check/Chromium.
+- Fixes the stale Java source-contract assertion that still required the literal browser selector `.cell.hasShift` after v27.40.36 intentionally switched to an explicit date-scoped `shiftCell` fixture and `toHaveClass(/hasShift/)`.
+- Changes no production runtime or browser scenario behavior; the fix only aligns the compile-gated source contract with the deterministic E2E ownership introduced in v27.40.36.
+- Keeps OpenAPI 124/130, Flyway V47, auth, offline/dataLayer, onboarding, timeout/retry policy and dependency graph unchanged.
+
 # v27.40.36 — Calendar Fixture & Period Label E2E Hotfix
 - Starts from canonical v27.40.35 commit `de877d89baa8f639809737324b09f22065c4558d` / tree `93e5c05211553a541d74a6bd020b9bf60cf74171` after exact CI reached Chromium and finished 46/48 scenarios.
 - Changes no production runtime behavior: the calendar E2E now creates its own shift fact before asserting shift-color rendering, and the overtime year-period assertion matches the existing Russian `2026 год` copy case-insensitively.

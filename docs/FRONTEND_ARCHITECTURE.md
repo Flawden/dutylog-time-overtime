@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.40.36 preserves the v27.40.32 Functional Parity Sweep runtime unchanged and only repairs two deterministic Chromium E2E assumptions: explicit shift fixture ownership for the calendar color check and case-insensitive matching of the existing Russian year-period label; first-run onboarding remains one explicitly bounded post-ready legacy presentation exception.
+Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.40.37 preserves the v27.40.32 Functional Parity Sweep runtime unchanged and only aligns the Java calendar source contract with the deterministic date-scoped shift fixture already introduced in v27.40.36; first-run onboarding remains one explicitly bounded post-ready legacy presentation exception.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)

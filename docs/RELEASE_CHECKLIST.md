@@ -1,6 +1,14 @@
 # Release checklist
 
-Status: v27.40.36.
+Status: v27.40.37.
+
+## v27.40.37 — Calendar E2E Source Contract Alignment Hotfix acceptance
+
+- [x] Start from exact v27.40.36 commit `e6523775d00c3e5c4d2e334a5cff34414c74398e`.
+- [x] Preserve the v27.40.36 deterministic calendar fixture and case-insensitive year-label E2E fixes unchanged.
+- [x] Replace the stale Java literal `.cell.hasShift` source check with explicit assertions for the date-scoped `shiftCell` locator, PUT day fixture, and `toHaveClass(/hasShift/)`.
+- [x] Keep production Vue/TypeScript, backend, OpenAPI 124/130, Flyway V47, auth, offline/dataLayer, onboarding, retry and timeout policy unchanged.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
 ## v27.40.36 — Calendar Fixture & Period Label E2E Hotfix acceptance
 
