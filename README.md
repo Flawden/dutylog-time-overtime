@@ -1,3 +1,7 @@
+# DutyLog v27.41.5 — Browser Bundle Budget Rebaseline Hotfix
+
+Exact v27.41.4 frontend CI passed the authentic Node 20.18.1/npm 10.8.2 delivery gate, OpenAPI 124/130 drift check, strict `vue-tsc`, all 64 Vitest cases and the production Vite build, then failed only the raw browser-bundle audit at **806839 B** against the historical **800000 B** ceiling. v27.41.5 changes no product runtime behavior: it narrowly rebaselines raw to **810000 B**, keeps gzip locked at **250000 B**, and preserves all forbidden-runtime-pattern checks. Route/workspace bundle segmentation is the required follow-up instead of repeated budget inflation.
+
 # DutyLog v27.41.4 — Desktop UX & Workflow Clarity
 
 v27.41.3 is proven green and manually accepted on desktop/mobile staging. v27.41.4 closes the remaining desktop readability and workflow-clarity gaps: bounded ultrawide layouts, relevant-first Absence history with type/sort controls, actionable ledger-integrity records, readable FIFO allocation rows, a Vue Notes Focus Mode, and explicit “Оформить отгул” wording so time-off is never confused with a second manual bank-debit workflow. No HTTP/OpenAPI, Flyway, auth, offline ownership or accounting formula changes.

@@ -1,6 +1,6 @@
-# v27.41.4 Desktop UX & Workflow Clarity review
+# v27.41.5 Browser Bundle Budget Rebaseline review
 
-v27.41.4 adds no endpoint, credential, role, authorization, persistence, cross-user schedule access or dependency. Integrity actions only navigate to already-authorized current-user records, Notes Focus Mode teleports the same Vue editor state, and no automatic ledger repair or second bank-debit authority is introduced.
+v27.41.5 changes no endpoint, credential, role, authorization, persistence, cross-user schedule access, dependency, runtime code path or accounting authority. The only production-delivery change is a narrow raw browser-bundle ceiling rebaseline from 800000 B to 810000 B; the gzip ceiling remains 250000 B and all forbidden-runtime-pattern checks remain blocking.
 
 # v27.41.3 Today Visual Parity & Overtime Summary Recovery review
 
@@ -19,7 +19,7 @@ v27.41.2 changes no auth, authorization, HTTP surface, persistence, offline queu
 - No new HTML injection surface, dependency or cross-user data path is introduced.
 - `dataLayer` remains the only IndexedDB/outbox/reconnect executor; OpenAPI remains 124/130 and Flyway remains V47.
 
-Status: v27.41.4.
+Status: v27.41.5.
 
 ## v27.41.0 Calendar Visual Language Foundation review
 

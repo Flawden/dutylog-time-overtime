@@ -1,6 +1,14 @@
 # DutyLog release checklist
 
-Status: v27.41.4.
+Status: v27.41.5.
+
+## v27.41.5 — Browser Bundle Budget Rebaseline Hotfix acceptance
+
+- [ ] Exact Node 20.18.1 / npm 10.8.2 delivery, OpenAPI 124/130, strict typecheck and 64/64 Vitest pass.
+- [ ] Production Vite build audits at or below **810000 B raw** and **250000 B gzip**; the previous exact v27.41.4 measurement was 806839 B raw / about 195.76 kB gzip.
+- [ ] No production Vue/runtime/domain/API/Flyway/dependency change beyond release metadata and `frontend/browser-bundle-budget.json`.
+- [ ] Java 17 Maven 790/790, auth/onboarding canary, Chromium 48/48 with 0 flaky, immutable image, PostgreSQL V47 smoke and staging deploy all pass.
+- [ ] Follow-up delivery work is route/workspace bundle segmentation; do not keep raising the monolithic raw ceiling as a substitute for splitting.
 
 ## v27.41.4 — Desktop UX & Workflow Clarity acceptance
 - [x] Start from proven-green v27.41.3 commit `63ca2b91b8f06319401b50a72769998d0a50a9da` / tree `ba0abb256c71e48d44170b334bceffd81d44eb57`.

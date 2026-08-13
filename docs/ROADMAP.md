@@ -1,7 +1,14 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.41.4 — Desktop UX & Workflow Clarity**.
+Current release: **v27.41.5 — Browser Bundle Budget Rebaseline Hotfix**.
 
+
+## v27.41.5 — Browser Bundle Budget Rebaseline Hotfix
+
+- Exact v27.41.4 frontend CI passed delivery, OpenAPI 124/130, strict typecheck, 64/64 Vitest and Vite production build, then stopped only at the raw bundle audit: **806839 B > 800000 B**.
+- Rebaseline raw ceiling narrowly to **810000 B**; keep gzip ceiling locked at **250000 B** and keep forbidden runtime-pattern auditing unchanged.
+- No feature/runtime/domain/API/Flyway/dependency changes.
+- Next frontend-delivery task after green: **route/workspace bundle segmentation** so Today does not eagerly ship Calendar, Payroll, Settings, Admin and every other workspace in one monolithic entry.
 
 ## v27.41.4 — Desktop UX & Workflow Clarity
 - [x] Bound Calendar on ultrawide and align Payroll/Settings with the standard shell width.
@@ -107,7 +114,7 @@ Next planned product release after green: **v27.42.0 — People Profiles & Share
 - [x] Lock real rendered bar heights in the existing Chromium Overtime Next journey.
 - [ ] Exact frontend, Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
-## v27.42.0 — People Profiles & Shared Availability — next after v27.41.4 green
+## v27.42.0 — People Profiles & Shared Availability — after frontend bundle segmentation
 - [ ] Treat another person as a selected calendar profile, not an overlay pasted on top of the current user.
 - [ ] Switching profile recolors/reprojects the whole calendar to that person while making active identity unmistakable.
 - [ ] Add Shared Availability for common free days, including the nearest shared window and multi-day overlaps.

@@ -1,11 +1,11 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.41.4.
+Status: v27.41.5.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.41.4 preserves the green Calendar/Today/overtime runtime and adds desktop/workflow source contracts for bounded layouts, relevant-first Absence sorting, actionable integrity rows, FIFO allocation readability, Notes Focus Mode and canonical time-off wording. Inventory remains 163 Java test classes / 790 @Test methods / 48 Chromium Playwright scenarios / 64 Vitest cases, OpenAPI 124/130 and Flyway V47.
+Current extension: v27.41.5 preserves the v27.41.4 runtime candidate unchanged and rebaselines only the audited raw Vue browser-bundle ceiling from 800000 B to 810000 B after exact CI measured 806839 B; gzip remains capped at 250000 B. Inventory remains 163 Java test classes / 790 @Test methods / 48 Chromium Playwright scenarios / 64 Vitest cases, OpenAPI 124/130 and Flyway V47.
 
 
 

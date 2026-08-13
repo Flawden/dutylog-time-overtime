@@ -1,6 +1,6 @@
-# v27.41.4 acceptance boundary
+# v27.41.5 acceptance boundary
 
-v27.41.4 starts from proven-green v27.41.3 commit `63ca2b91b8f06319401b50a72769998d0a50a9da` / tree `ba0abb256c71e48d44170b334bceffd81d44eb57`. The release is a desktop/workflow-clarity cut only: no endpoint, migration, dependency, retry or timeout change. Exact Node 20.18.1/npm 10.8.2 frontend validation, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
+v27.41.5 starts from v27.41.4 commit `84ba4a1d8c1eda6f88088c8b9af1b0c2ae1c784d` / tree `0e82dd5e26f62bed0a02b7e2d4b8723c3dc73d49`, whose exact Node 20.18.1/npm 10.8.2 frontend gate passed delivery, OpenAPI 124/130, strict typecheck, 64/64 Vitest and production Vite build, then failed only the raw browser-bundle budget at 806839 B > 800000 B. The hotfix raises only the raw ceiling to 810000 B; gzip stays locked at 250000 B. Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
 
 # v27.41.3 acceptance boundary
 

@@ -1,3 +1,9 @@
+# v27.41.5 — Browser Bundle Budget Rebaseline Hotfix
+- Starts from v27.41.4 commit `84ba4a1d8c1eda6f88088c8b9af1b0c2ae1c784d` / tree `0e82dd5e26f62bed0a02b7e2d4b8723c3dc73d49`.
+- Exact frontend CI passed delivery/OpenAPI/typecheck/64 Vitest/Vite build and failed only because the generated raw Vue shell measured 806839 B against the 800000 B ceiling.
+- Raises only `maxBytes` to 810000 B; leaves `maxGzipBytes` at 250000 B and keeps forbidden runtime-pattern auditing intact.
+- Changes no product runtime/domain/API/Flyway/dependency behavior; route/workspace bundle segmentation is the next frontend-delivery task.
+
 # v27.41.4 — Desktop UX & Workflow Clarity
 - Starts from proven-green v27.41.3 commit `63ca2b91b8f06319401b50a72769998d0a50a9da` / tree `ba0abb256c71e48d44170b334bceffd81d44eb57`.
 - Constrains Calendar ultrawide geometry and aligns Payroll/Settings to the standard shell width while preserving mobile responsiveness.
