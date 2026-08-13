@@ -69,6 +69,14 @@ test('Notes and Important Events Next combine searchable notes with read-first t
   await page.locator('#noteEdit').fill('Уникальная поисковая фраза: Nebula-27120');
   await patch;
 
+  await page.locator('#noteFocusMode').click();
+  await expect(page.locator('[data-vue-selected-notes]')).toHaveClass(/is-focus-mode/);
+  await expect(page.locator('body')).toHaveClass(/note-focus-mode/);
+  await expect(page.locator('#noteEdit')).toHaveValue('Уникальная поисковая фраза: Nebula-27120');
+  await page.locator('#noteFocusMode').click();
+  await expect(page.locator('[data-vue-selected-notes]')).not.toHaveClass(/is-focus-mode/);
+  await expect(page.locator('body')).not.toHaveClass(/note-focus-mode/);
+
   await page.locator('#noteSearch').fill('Nebula-27120');
   await expect(page.locator('#noteSearchResults')).toBeVisible();
   await expect(page.locator('#noteSearchResults .noteSearchResult')).toHaveCount(1);

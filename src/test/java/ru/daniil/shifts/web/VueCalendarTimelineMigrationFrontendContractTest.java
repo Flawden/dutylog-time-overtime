@@ -115,6 +115,9 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(panel.contains("id=\"dayEmojiApply\""));
         assertTrue(panel.contains("id=\"accVacation\""));
         assertTrue(panel.contains("id=\"dayAddCredit\""));
+        assertTrue(panel.contains("id=\"dayAddUsage\""));
+        assertTrue(panel.contains("Оформить отгул"));
+        assertTrue(panel.contains("сам резервирует и списывает часы банка по FIFO"));
         assertTrue(panel.contains("props.bridge.writeCalendarDay"));
         assertTrue(panel.contains("sourceRange: dateTimeRange(occurrence.sourceStart, occurrence.sourceEnd)"));
         assertTrue(panel.contains("Рабочее время смены"));

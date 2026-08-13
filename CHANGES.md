@@ -1,3 +1,11 @@
+# v27.41.4 — Desktop UX & Workflow Clarity
+- Starts from proven-green v27.41.3 commit `63ca2b91b8f06319401b50a72769998d0a50a9da` / tree `ba0abb256c71e48d44170b334bceffd81d44eb57`.
+- Constrains Calendar ultrawide geometry and aligns Payroll/Settings to the standard shell width while preserving mobile responsiveness.
+- Makes Absence history relevant-first by default and adds explicit type + sort controls without changing backend period lifecycle rules.
+- Turns ledger-integrity warnings into source-aware records with dates/hours and direct navigation where the source is resolvable; no silent auto-repair is introduced.
+- Repairs FIFO allocation row readability, restores Notes Focus Mode using the same Vue draft/editor state, and clarifies that calendar “Оформить отгул” opens the canonical Absence → overtime-bank FIFO workflow rather than a manual debit.
+- Keeps OpenAPI 124/130, Flyway V47, Java/Vitest/Playwright inventory, auth, offline/dataLayer, onboarding, retry/timeout policy and dependency graph unchanged.
+
 # v27.41.3 — Today Visual Parity & Overtime Summary Recovery
 - Starts from proven-green v27.41.2 commit `52a0e2a1b4e28aa56250bb813639830c56226a91` / tree `91fd1fa2fd426556d4031fbe14506cc722398b77`.
 - Makes the Today seven-day strip consume the same canonical shift/free-day/factual-absence visual semantics as Calendar Week, including shift tint, the schedule-free palm, Important Day glyphs, user day markers and open-task counts.

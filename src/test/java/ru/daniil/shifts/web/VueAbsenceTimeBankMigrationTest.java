@@ -105,11 +105,17 @@ class VueAbsenceTimeBankMigrationTest {
 
         assertTrue(absence.contains("id=\"vacationPeriodList\""));
         assertTrue(absence.contains("data-bank-absence"));
+        assertTrue(absence.contains("sortedAbsences"));
+        assertTrue(absence.contains("Сначала актуальные"));
+        assertTrue(absence.contains("Все типы"));
         assertTrue(composer.contains("id=\"absenceFifoForecast\""));
         assertTrue(composer.contains("id=\"vacationPreview\""));
         assertTrue(bank.contains("id=\"ledgerChart\""));
         assertTrue(bank.contains("id=\"ledgerCards\""));
         assertTrue(bank.contains("id=\"ledgerIntegrityCard\""));
+        assertTrue(bank.contains("openIntegritySource"));
+        assertTrue(bank.contains("integrity-issue-record"));
+        assertTrue(bank.contains("timeBankAllocationRow__range"));
         assertTrue(bank.contains("id=\"actualWorkList\""));
         assertTrue(bank.contains("id=\"fifoForecastForm\""));
         assertTrue(credit.contains("id=\"scenarioManagerView\""));

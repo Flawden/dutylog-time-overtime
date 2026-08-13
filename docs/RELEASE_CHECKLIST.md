@@ -1,6 +1,18 @@
 # DutyLog release checklist
 
-Status: v27.41.3.
+Status: v27.41.4.
+
+## v27.41.4 — Desktop UX & Workflow Clarity acceptance
+- [x] Start from proven-green v27.41.3 commit `63ca2b91b8f06319401b50a72769998d0a50a9da` / tree `ba0abb256c71e48d44170b334bceffd81d44eb57`.
+- [x] Keep standard workspaces bounded to the shell width and Calendar bounded to a centered wide desktop surface.
+- [x] Sort Absences relevant-first by default and expose status/type/sort controls without backend lifecycle changes.
+- [x] Show ledger-integrity source records with actionable navigation and keep all repair explicit/manual.
+- [x] Keep FIFO allocation intervals readable on desktop and stacked safely on mobile.
+- [x] Restore Notes Focus Mode with one Vue draft/editor state and Escape/explicit exit.
+- [x] Label time-off as “Оформить отгул”; keep Absence → overtime bank → FIFO as the single normal debit workflow.
+- [x] Keep Playwright 48, Vitest 64, Java @Test 790, Java test classes 163, OpenAPI 124/130 and Flyway V47 inventory unchanged.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
+
 
 ## v27.41.3 — Today Visual Parity & Overtime Summary Recovery acceptance
 - [x] Start from proven-green v27.41.2 commit `52a0e2a1b4e28aa56250bb813639830c56226a91` / tree `91fd1fa2fd426556d4031fbe14506cc722398b77`.

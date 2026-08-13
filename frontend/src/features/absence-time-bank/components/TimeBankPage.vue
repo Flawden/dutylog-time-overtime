@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, nextTick, watch, type ComponentPublicInstance } from "vue";
 import { storeToRefs } from "pinia";
+import type { DutyLogApiSchemas } from "@/generated/dutylog-api";
 import UiButton from "@/shared/ui/UiButton.vue";
 import UiCard from "@/shared/ui/UiCard.vue";
 import UiEmptyState from "@/shared/ui/UiEmptyState.vue";
@@ -26,6 +27,7 @@ import type { OvertimeCredit, OvertimeUsage } from "../types/domain";
 
 const store = useAbsenceTimeBankStore();
 const {
+  planner,
   account,
   compensation,
   integrity,
@@ -79,31 +81,107 @@ const periodStateLabel = computed(() => {
   const closed = periods.filter(item => item.status === "CLOSED").length;
   return `Закрыто месяцев: ${closed} из ${periods.length}`;
 });
-const integrityIssueGroups = computed(() => {
-  const labels: Record<string, string> = {
-    ORPHAN_LINKED_USAGE: "Есть списание банка без связанного отсутствия.",
-    INACTIVE_ABSENCE_HAS_USAGE: "Неактивное отсутствие всё ещё удерживает часы переработки.",
-    USAGE_STATE_MISMATCH: "Статус списания не совпадает со статусом отсутствия.",
-    USAGE_MINUTES_MISMATCH: "Количество времени отсутствия и связанного списания различается.",
-    ALLOCATION_MISMATCH: "FIFO-распределение не совпадает с суммой списания.",
-    MISSING_LINKED_USAGE: "Отгул из банка переработок не имеет связанного списания.",
-    MISSING_ACTIVE_AUDIT: "Для активного отгула отсутствует текущая запись учёта.",
-    INACTIVE_ABSENCE_HAS_ACTIVE_AUDIT: "У завершённого или отменённого отсутствия осталась открытая запись учёта.",
-    AUDIT_STATE_MISMATCH: "Состояние записи учёта не совпадает со статусом отсутствия.",
-    AUDIT_MINUTES_MISMATCH: "Количество времени в записи учёта не совпадает с отсутствием.",
-    DUPLICATE_OPENING_CREDIT: "Начальный баланс был перенесён больше одного раза.",
+const integrityIssueLabels: Record<string, string> = {
+  ORPHAN_LINKED_USAGE: "Есть списание банка без связанного отсутствия.",
+  INACTIVE_ABSENCE_HAS_USAGE: "Неактивное отсутствие всё ещё удерживает часы переработки.",
+  USAGE_STATE_MISMATCH: "Статус списания не совпадает со статусом отсутствия.",
+  USAGE_MINUTES_MISMATCH: "Количество времени отсутствия и связанного списания различается.",
+  ALLOCATION_MISMATCH: "FIFO-распределение не совпадает с суммой списания.",
+  MISSING_LINKED_USAGE: "Отгул из банка переработок не имеет связанного списания.",
+  MISSING_ACTIVE_AUDIT: "Для активного отгула отсутствует текущая запись учёта.",
+  INACTIVE_ABSENCE_HAS_ACTIVE_AUDIT: "У завершённого или отменённого отсутствия осталась открытая запись учёта.",
+  AUDIT_STATE_MISMATCH: "Состояние записи учёта не совпадает со статусом отсутствия.",
+  AUDIT_MINUTES_MISMATCH: "Количество времени в записи учёта не совпадает с отсутствием.",
+  DUPLICATE_OPENING_CREDIT: "Начальный баланс был перенесён больше одного раза.",
+};
+
+type IntegrityIssueAction = "absence" | "usage" | "credits" | null;
+type IntegrityIssueView = {
+  code: string;
+  label: string;
+  sourceKind: string;
+  sourceId: number | null;
+  sourceTitle: string;
+  sourceMeta: string;
+  amountLabel: string;
+  action: IntegrityIssueAction;
+  actionLabel: string;
+};
+
+function absenceStatusLabel(status: string | null | undefined): string {
+  return ({ DRAFT:"черновик", PLANNED:"запланировано", SUBMITTED:"на согласовании", APPROVED:"подтверждено", REJECTED:"отклонено", CANCELLED:"отменено", COMPLETED:"завершено" } as Record<string,string>)[String(status ?? "")] ?? String(status ?? "—");
+}
+
+function latestAuditEntry(sourceKind: string, sourceId: number | null) {
+  if (!sourceId) return null;
+  let latest: DutyLogApiSchemas.TimeLedgerEntry | null = null;
+  for (const entry of integrity.value?.entries ?? []) {
+    if (String(entry.sourceKind) === sourceKind && Number(entry.sourceId ?? 0) === sourceId) latest = entry;
+  }
+  return latest;
+}
+
+function integrityIssueView(issue: DutyLogApiSchemas.LedgerIntegrityIssue): IntegrityIssueView {
+  const code = String(issue.code ?? "UNKNOWN");
+  const sourceKind = String(issue.sourceKind ?? "UNKNOWN");
+  const sourceIdValue = Number(issue.sourceId ?? 0);
+  const sourceId = sourceIdValue > 0 ? sourceIdValue : null;
+  const fallback = String(issue.message ?? "Нужно проверить запись учёта.");
+  const audit = latestAuditEntry(sourceKind, sourceId);
+
+  if (sourceKind === "ABSENCE" && sourceId) {
+    const absence = planner.value?.absences.find(item => Number(item.id) === sourceId);
+    return {
+      code, label: integrityIssueLabels[code] ?? fallback, sourceKind, sourceId,
+      sourceTitle: absence ? `${absence.title || absence.typeName}` : `Отсутствие #${sourceId}`,
+      sourceMeta: absence ? `${absence.startDate}${absence.endDate !== absence.startDate ? ` — ${absence.endDate}` : ""} · ${absenceStatusLabel(absence.status)}` : "Источник отсутствия не найден в текущем диапазоне.",
+      amountLabel: absence ? formatMinutes(absence.compensatedMinutes ?? absence.chargedMinutes) : (audit ? formatMinutes(Math.abs(audit.signedMinutes)) : ""),
+      action: "absence", actionLabel: "Открыть отсутствие",
+    };
+  }
+
+  if (sourceKind === "OVERTIME_USAGE" && sourceId) {
+    const usage = safeAccount.value.usages.find(item => Number(item.id) === sourceId);
+    return {
+      code, label: integrityIssueLabels[code] ?? fallback, sourceKind, sourceId,
+      sourceTitle: usage ? (usage.reason || `Списание #${sourceId}`) : `Списание #${sourceId}`,
+      sourceMeta: usage ? `${usage.usageDate} · ${usage.reserved ? "зарезервировано" : "проведено"}` : "Источник списания не найден в текущем диапазоне.",
+      amountLabel: usage ? formatMinutes(usage.minutes) : (audit ? formatMinutes(Math.abs(audit.signedMinutes)) : ""),
+      action: "usage", actionLabel: usage?.sourceAbsenceId ? "Открыть связанный отгул" : "Открыть использование банка",
+    };
+  }
+
+  if (sourceKind === "OVERTIME_CREDIT" && sourceId) {
+    const credit = safeAccount.value.credits.find(item => Number(item.id) === sourceId);
+    return {
+      code, label: integrityIssueLabels[code] ?? fallback, sourceKind, sourceId,
+      sourceTitle: credit ? (credit.reason || `Начисление #${sourceId}`) : `Начисление #${sourceId}`,
+      sourceMeta: credit?.workedDate ?? "Источник начисления не найден в текущем диапазоне.",
+      amountLabel: credit ? formatHours(creditRowEarnedHours(credit)) : "",
+      action: "credits", actionLabel: "Открыть начисления",
+    };
+  }
+
+  return {
+    code, label: integrityIssueLabels[code] ?? fallback, sourceKind, sourceId,
+    sourceTitle: sourceId ? `${sourceKind} #${sourceId}` : sourceKind,
+    sourceMeta: audit ? `${audit.effectiveDate} · ${audit.postingState}` : "Проверьте технические детали и журнал учёта.",
+    amountLabel: audit ? formatMinutes(Math.abs(audit.signedMinutes)) : "",
+    action: null, actionLabel: "",
   };
-  const groups = new Map<string, { code: string; label: string; count: number; sourceIds: number[] }>();
+}
+
+const integrityIssueGroups = computed(() => {
+  const groups = new Map<string, { code: string; label: string; items: IntegrityIssueView[] }>();
   for (const issue of integrity.value?.issues ?? []) {
-    const code = String(issue.code ?? "UNKNOWN");
-    const current = groups.get(code) ?? { code, label: labels[code] ?? String(issue.message ?? "Нужно проверить запись учёта."), count: 0, sourceIds: [] };
-    current.count += 1;
-    const sourceId = Number(issue.sourceId ?? 0);
-    if (sourceId > 0 && !current.sourceIds.includes(sourceId)) current.sourceIds.push(sourceId);
-    groups.set(code, current);
+    const item = integrityIssueView(issue);
+    const current = groups.get(item.code) ?? { code: item.code, label: item.label, items: [] };
+    current.items.push(item);
+    groups.set(item.code, current);
   }
   return [...groups.values()];
 });
+
 
 const usageRows = new Map<number, HTMLElement>();
 
@@ -137,6 +215,20 @@ async function openAbsence(id: number | null | undefined): Promise<void> {
   if (!id) return;
   navigateHashRoute("vacation");
   await store.openAbsenceEditor(Number(id));
+}
+
+async function openIntegritySource(item: IntegrityIssueView): Promise<void> {
+  if (item.action === "absence" && item.sourceId) {
+    await openAbsence(item.sourceId);
+    return;
+  }
+  if (item.action === "usage" && item.sourceId) {
+    const usage = safeAccount.value.usages.find(row => Number(row.id) === item.sourceId);
+    timeBankTab.value = "usage";
+    focusAbsenceUsageId.value = Number(usage?.sourceAbsenceId ?? 0) || null;
+    return;
+  }
+  if (item.action === "credits") timeBankTab.value = "credits";
 }
 
 async function selectPeriod(mode: "month" | "year"): Promise<void> {
@@ -239,11 +331,21 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
               <span>Баланс не исправляется автоматически. Закрытие расчётного периода может быть недоступно, пока расхождения не устранены.</span>
             </div>
             <div v-for="group in integrityIssueGroups" :key="group.code" class="integrity-issue-group">
-              <div><b>{{ group.label }}</b><span v-if="group.count > 1">{{ group.count }} записей</span><span v-else>1 запись</span></div>
+              <div><b>{{ group.label }}</b><span>{{ group.items.length }} {{ group.items.length === 1 ? 'запись' : 'записей' }}</span></div>
+              <div class="integrity-issue-records">
+                <article v-for="item in group.items" :key="`${item.code}-${item.sourceKind}-${item.sourceId ?? 'none'}`" class="integrity-issue-record">
+                  <div class="integrity-issue-record__copy">
+                    <strong>{{ item.sourceTitle }}</strong>
+                    <span>{{ item.sourceMeta }}<template v-if="item.amountLabel"> · {{ item.amountLabel }}</template></span>
+                    <small>{{ item.sourceKind }}<template v-if="item.sourceId"> #{{ item.sourceId }}</template></small>
+                  </div>
+                  <UiButton v-if="item.action" size="sm" @click="openIntegritySource(item)">{{ item.actionLabel }}</UiButton>
+                </article>
+              </div>
               <details>
                 <summary>Технические детали</summary>
                 <code>{{ group.code }}</code>
-                <small v-if="group.sourceIds.length">ID: {{ group.sourceIds.join(', ') }}</small>
+                <small>Источник и ID показаны в карточках выше. DutyLog не исправляет эти записи автоматически.</small>
               </details>
             </div>
           </div>
@@ -349,7 +451,9 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
           <p v-if="usageIsAbsenceOwned(usage)" class="usage-card__owner">Управляется отсутствием</p>
           <div class="usage-card__allocations">
             <div v-for="allocation in usage.allocations ?? []" :key="`${usage.id}-${allocation.creditId}-${allocation.minutes}`" class="timeBankAllocationRow">
-              <span>{{ allocation.workedDate }} · {{ allocation.displayStart && allocation.displayEnd ? `${allocation.displayStart}–${allocation.displayEnd}` : allocation.timeRange || 'источник' }}</span><b>{{ formatMinutes(allocation.minutes) }}</b>
+              <span class="timeBankAllocationRow__date">{{ allocation.workedDate }}</span>
+              <span class="timeBankAllocationRow__range">{{ allocation.displayStart && allocation.displayEnd ? `${allocation.displayStart}–${allocation.displayEnd}` : allocation.timeRange || 'источник' }}</span>
+              <b>{{ formatMinutes(allocation.minutes) }}</b>
             </div>
           </div>
           <UiButton v-if="usageIsAbsenceOwned(usage)" size="sm" :data-open-absence="usage.sourceAbsenceId" @click="openAbsence(usage.sourceAbsenceId)">Открыть отсутствие</UiButton>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import UiButton from "@/shared/ui/UiButton.vue";
 import UiCard from "@/shared/ui/UiCard.vue";
@@ -11,7 +11,48 @@ import { navigateHashRoute } from "@/platform/router/hashRoute";
 
 const store = useAbsenceTimeBankStore();
 const { planner, filteredAbsences, loading, error, conflict, periodFilter, search } = storeToRefs(store);
+const sortMode = ref<"relevant" | "newest" | "oldest">("relevant");
+const typeFilter = ref("all");
 const summary = computed(() => planner.value?.summary);
+
+const absenceTypes = computed(() => {
+  const rows = planner.value?.absences ?? [];
+  const seen = new Map<string, string>();
+  for (const period of rows) seen.set(String(period.typeId), period.typeName);
+  return [...seen.entries()].map(([id, name]) => ({ id, name })).sort((left, right) => left.name.localeCompare(right.name, "ru"));
+});
+
+function localIsoDate(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
+}
+
+function isHistory(period: AbsencePeriod): boolean {
+  return ["REJECTED", "CANCELLED", "COMPLETED"].includes(String(period.status ?? ""));
+}
+
+function relevantRank(period: AbsencePeriod, today: string): number {
+  if (isHistory(period)) return 3;
+  if (period.startDate <= today && period.endDate >= today) return 0;
+  if (period.startDate > today) return 1;
+  return 2;
+}
+
+const sortedAbsences = computed(() => {
+  const typed = filteredAbsences.value.filter(period => typeFilter.value === "all" || String(period.typeId) === typeFilter.value);
+  const rows = [...typed];
+  if (sortMode.value === "newest") return rows.sort((left, right) => right.startDate.localeCompare(left.startDate) || Number(right.id) - Number(left.id));
+  if (sortMode.value === "oldest") return rows.sort((left, right) => left.startDate.localeCompare(right.startDate) || Number(left.id) - Number(right.id));
+
+  const today = localIsoDate();
+  return rows.sort((left, right) => {
+    const leftRank = relevantRank(left, today);
+    const rightRank = relevantRank(right, today);
+    if (leftRank !== rightRank) return leftRank - rightRank;
+    if (leftRank === 1) return left.startDate.localeCompare(right.startDate);
+    return right.endDate.localeCompare(left.endDate) || right.startDate.localeCompare(left.startDate);
+  });
+});
 
 function statusLabel(status: string | undefined): string {
   return ({ DRAFT:"Черновик", PLANNED:"Запланировано", SUBMITTED:"На согласовании", APPROVED:"Подтверждено", REJECTED:"Отклонено", CANCELLED:"Отменено", COMPLETED:"Завершено" } as Record<string,string>)[String(status)] ?? String(status ?? "—");
@@ -53,20 +94,29 @@ async function openTimeBank(period: AbsencePeriod | null = null): Promise<void> 
         <div><p class="domain-eyebrow">Журнал</p><h2>Все периоды отсутствия</h2></div>
         <div class="domain-toolbar">
           <input v-model="search" type="search" placeholder="Поиск по причине или дате" aria-label="Поиск отсутствий" />
-          <select v-model="periodFilter" aria-label="Фильтр отсутствий">
-            <option value="all">Все</option>
+          <select v-model="periodFilter" aria-label="Фильтр по статусу отсутствия">
+            <option value="all">Все статусы</option>
             <option value="active">Активные</option>
             <option value="history">История</option>
+          </select>
+          <select v-model="typeFilter" aria-label="Фильтр по типу отсутствия">
+            <option value="all">Все типы</option>
+            <option v-for="type in absenceTypes" :key="type.id" :value="type.id">{{ type.name }}</option>
+          </select>
+          <select v-model="sortMode" aria-label="Сортировка отсутствий">
+            <option value="relevant">Сначала актуальные</option>
+            <option value="newest">Сначала новые</option>
+            <option value="oldest">Сначала старые</option>
           </select>
           <UiButton variant="ghost" :disabled="loading" @click="store.refresh()">Обновить</UiButton>
         </div>
       </header>
 
       <div id="vacationPeriodList" class="absence-list" aria-live="polite">
-        <UiEmptyState v-if="!loading && !filteredAbsences.length" title="Пока нет отсутствий" description="Создайте первый период через единый Vue-конструктор.">
+        <UiEmptyState v-if="!loading && !sortedAbsences.length" title="Пока нет отсутствий" description="Создайте первый период через единый Vue-конструктор.">
           <template #actions><UiButton variant="primary" @click="store.openAbsenceComposer()">Оформить отсутствие</UiButton></template>
         </UiEmptyState>
-        <article v-for="period in filteredAbsences" :key="period.id" class="absence-row vacationPeriodCard" :data-absence-id="period.id">
+        <article v-for="period in sortedAbsences" :key="period.id" class="absence-row vacationPeriodCard" :data-absence-id="period.id">
           <span class="absence-row__color" :style="{ background: period.typeColor || 'var(--accent)' }" aria-hidden="true"></span>
           <div class="absence-row__main">
             <div><strong>{{ absenceDisplayTitle(period) }}</strong><span class="domain-status">{{ statusLabel(period.status) }}</span></div>

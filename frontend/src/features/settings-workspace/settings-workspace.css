@@ -4,3 +4,14 @@
 .vueSettingsWorkspace .moduleCard input{flex:0 0 auto}
 .vueSettingsWorkspace .languageChoice.on{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
 .vueSettingsWorkspace .settingsCollapsedNote{pointer-events:none}
+
+/* v27.41.4 — keep dense settings readable on desktop/ultrawide. */
+.vueSettingsWorkspace{
+  width:min(calc(100% - 36px),var(--vue-shell-max));
+  max-width:var(--vue-shell-max);
+  margin-left:auto;
+  margin-right:auto;
+}
+@media(max-width:640px){
+  .vueSettingsWorkspace{width:min(calc(100% - 20px),var(--vue-shell-max))}
+}

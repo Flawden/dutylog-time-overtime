@@ -24,3 +24,42 @@
   .appModalPanel.taskEditorPanel, .vue-owned-modal .appModalPanel { max-height:92dvh; overflow:auto; }
   .taskDetailsFacts { display:grid; }
 }
+
+/* v27.41.4 — Notes Focus Mode keeps one Vue draft/editor and teleports it to the viewport. */
+body.note-focus-mode { overflow:hidden; }
+.dayNotesModule.is-focus-mode {
+  position:fixed;
+  inset:clamp(10px,2vw,24px);
+  z-index:11000;
+  padding:16px;
+  overflow:auto;
+  border:1px solid var(--vue-shell-border,var(--line));
+  border-radius:18px;
+  background:var(--panel);
+  box-shadow:0 28px 90px rgba(0,0,0,.62);
+  container-type:inline-size;
+}
+.dayNotesModule.is-focus-mode::before {
+  content:"Фокус-режим заметки · Esc — закрыть";
+  display:block;
+  color:var(--mut);
+  font-size:11px;
+  letter-spacing:.06em;
+  text-transform:uppercase;
+}
+.dayNotesModule.is-focus-mode .dayNotesLayout {
+  grid-template-columns:minmax(220px,300px) minmax(0,1fr);
+  min-height:calc(100dvh - 150px);
+}
+.dayNotesModule.is-focus-mode .dayNoteList { max-height:calc(100dvh - 165px); }
+.dayNotesModule.is-focus-mode .dayNoteEditor { min-height:calc(100dvh - 165px); }
+.dayNotesModule.is-focus-mode #noteEdit,
+.dayNotesModule.is-focus-mode #notePrev { min-height:calc(100dvh - 260px); }
+.dayNotesModule.is-focus-mode .noteFocusModeButton { color:var(--accent); border-color:var(--accent); }
+@media(max-width:760px){
+  .dayNotesModule.is-focus-mode{inset:6px;padding:12px}
+  .dayNotesModule.is-focus-mode .dayNotesLayout{grid-template-columns:1fr;min-height:auto}
+  .dayNotesModule.is-focus-mode .dayNoteList{max-height:160px}
+  .dayNotesModule.is-focus-mode .dayNoteEditor{min-height:0}
+  .dayNotesModule.is-focus-mode #noteEdit,.dayNotesModule.is-focus-mode #notePrev{min-height:calc(100dvh - 430px)}
+}

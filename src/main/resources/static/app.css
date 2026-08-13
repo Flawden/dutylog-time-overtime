@@ -3364,3 +3364,13 @@ body.panel-open .globalQuickAdd { display:none !important; }
 @media(max-width:980px){.overtimeMetricGrid{grid-template-columns:repeat(3,minmax(0,1fr))}.overtimeMetricCard.fifo{grid-column:span 2}.absenceListFilters{grid-template-columns:1fr 1fr}.absenceListFilters input{grid-column:1/-1}}
 @media(max-width:700px){.timeBankOrientation{grid-template-columns:1fr}.timeBankOrientation>i{display:none}.timeBankTabs button{flex:0 0 auto}.overtimeMetricGrid{grid-template-columns:1fr 1fr}.overtimeMetricCard.fifo{grid-column:1/-1}.timeBankSection{padding:13px;border-radius:17px}.timeBankSectionHead{flex-direction:column}.timeBankSectionHead>button{width:100%}.timeBankUsageSummary{grid-template-columns:1fr 1fr}.timeBankUsageSummary>div:last-child{grid-column:1/-1}.fifoForecastForm{grid-template-columns:1fr}.fifoForecastHead{flex-direction:column}.absenceListFilters{grid-template-columns:1fr}.absenceListFilters input{grid-column:auto}.absenceFifoForecast section>div{grid-template-columns:24px minmax(0,1fr) auto}.absenceFifoForecast section small{grid-column:2/4}.productGuideActions{align-items:stretch;flex-direction:column}.productGuideActions button{width:100%}}
 @media(max-width:430px){.overtimeMetricGrid{grid-template-columns:1fr}.overtimeMetricCard.fifo{grid-column:auto}.timeBankUsageSummary{grid-template-columns:1fr}.timeBankUsageSummary>div:last-child{grid-column:auto}.timeBankUsageCard>header{align-items:flex-start}.timeBankAllocationRow,.fifoForecastRow{grid-template-columns:25px minmax(0,1fr)}.timeBankAllocationRow strong,.fifoForecastRow strong{grid-column:2}.absenceFifoForecast header{flex-direction:column}.productGuideSteps article{grid-template-columns:34px minmax(0,1fr);padding:10px}.productGuideSteps article>span{width:32px;height:32px}}
+
+/* v27.41.4 — Desktop UX & Workflow Clarity: standard workspaces follow the shell width. */
+.payrollWorkspace{
+  width:min(calc(100% - 36px),var(--vue-shell-max));
+  margin-left:auto;
+  margin-right:auto;
+}
+@media(max-width:640px){
+  .payrollWorkspace{width:min(calc(100% - 20px),var(--vue-shell-max))}
+}

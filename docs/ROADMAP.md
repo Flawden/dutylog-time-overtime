@@ -1,6 +1,18 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.41.3 — Today Visual Parity & Overtime Summary Recovery**.
+Current release: **v27.41.4 — Desktop UX & Workflow Clarity**.
+
+
+## v27.41.4 — Desktop UX & Workflow Clarity
+- [x] Bound Calendar on ultrawide and align Payroll/Settings with the standard shell width.
+- [x] Add relevant-first Absence sorting plus explicit type/sort controls.
+- [x] Make accounting-integrity findings source-aware and actionable without silent repair.
+- [x] Repair FIFO allocation row readability and restore Notes Focus Mode.
+- [x] Clarify the canonical time-off workflow: Absence → overtime bank → FIFO; no second manual-debit UX.
+- [ ] Exact CI/staging acceptance.
+
+Next planned product release after green: **v27.42.0 — People Profiles & Shared Availability**.
+
 
 
 ## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary — proven green
@@ -77,12 +89,12 @@ Current release: **v27.41.3 — Today Visual Parity & Overtime Summary Recovery*
 - [x] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
 
-## v27.41.3 — Today Visual Parity & Overtime Summary Recovery — current
+## v27.41.3 — Today Visual Parity & Overtime Summary Recovery — proven green
 - [x] Start from proven-green v27.41.2 commit `52a0e2a1b4e28aa56250bb813639830c56226a91` / tree `91fd1fa2fd426556d4031fbe14506cc722398b77`.
 - [x] Give Today the same canonical shift/free-day/factual-absence visual language as Calendar Week.
 - [x] Restore the Today overtime balance track from canonical account totals and lock real browser geometry.
 - [x] Share typed day visual helpers so Calendar and Today cannot drift before profile switching.
-- [ ] Exit: exact CI + staging green, then proceed to People Profiles & Shared Availability.
+- [x] Exact CI + staging green; desktop/manual acceptance exposed the follow-up v27.41.4 closure scope.
 
 ## v27.41.2 — Overtime Chart Source Contract Alignment — proven green
 - [x] Align the stale Java source-contract assertion with the v27.41.1 pixel chart geometry (`0px`, explicit 126 px plot).
@@ -95,7 +107,7 @@ Current release: **v27.41.3 — Today Visual Parity & Overtime Summary Recovery*
 - [x] Lock real rendered bar heights in the existing Chromium Overtime Next journey.
 - [ ] Exact frontend, Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
-## v27.42.0 — People Profiles & Shared Availability — next after v27.41.3 green
+## v27.42.0 — People Profiles & Shared Availability — next after v27.41.4 green
 - [ ] Treat another person as a selected calendar profile, not an overlay pasted on top of the current user.
 - [ ] Switching profile recolors/reprojects the whole calendar to that person while making active identity unmistakable.
 - [ ] Add Shared Availability for common free days, including the nearest shared window and multi-day overlaps.

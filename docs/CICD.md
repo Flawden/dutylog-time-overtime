@@ -1,3 +1,7 @@
+# v27.41.4 acceptance boundary
+
+v27.41.4 starts from proven-green v27.41.3 commit `63ca2b91b8f06319401b50a72769998d0a50a9da` / tree `ba0abb256c71e48d44170b334bceffd81d44eb57`. The release is a desktop/workflow-clarity cut only: no endpoint, migration, dependency, retry or timeout change. Exact Node 20.18.1/npm 10.8.2 frontend validation, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
+
 # v27.41.3 acceptance boundary
 
 v27.41.3 starts from proven-green v27.41.2 commit `52a0e2a1b4e28aa56250bb813639830c56226a91` / tree `91fd1fa2fd426556d4031fbe14506cc722398b77`. The release changes Today presentation plus shared typed calendar visual helpers and extends existing Chromium coverage without adding scenarios, retries or timeout inflation. Exact Node 20.18.1/npm 10.8.2 frontend validation, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.

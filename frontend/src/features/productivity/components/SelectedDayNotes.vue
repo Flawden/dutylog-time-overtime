@@ -13,6 +13,7 @@ const { selectedNotes, currentNote, noteSearch, noteSearchResults } = storeToRef
 const title = ref("");
 const content = ref("");
 const preview = ref(false);
+const focusMode = ref(false);
 let timer: ReturnType<typeof globalThis.setTimeout> | null = null;
 let syncing = false;
 
@@ -33,7 +34,11 @@ function scheduleSave(): void {
   }, 420);
 }
 watch([title, content], scheduleSave);
+watch(focusMode, enabled => {
+  document.body.classList.toggle("note-focus-mode", enabled);
+});
 onBeforeUnmount(() => {
+  document.body.classList.remove("note-focus-mode");
   // Only flush a draft that is still inside the debounce window. A plain
   // unmount (including the brief offline→online readability transition) must
   // not resubmit the already queued/current note beside dataLayer.syncQueue().
@@ -51,7 +56,8 @@ async function openSearchResult(date: string, id: number): Promise<void> {
 </script>
 
 <template>
-  <div class="dayNotesModule vue-productivity-selected" data-vue-selected-notes>
+  <Teleport to="body" :disabled="!focusMode">
+  <div class="dayNotesModule vue-productivity-selected" :class="{ 'is-focus-mode': focusMode }" data-vue-selected-notes @keydown.esc="focusMode = false">
     <div class="dayNotesToolbar">
       <button class="primary" id="noteAdd" type="button" :disabled="!shell.online" @click="store.createNote()">＋ Новая заметка</button>
       <input id="noteSearch" v-model="noteSearch" type="search" placeholder="поиск по заметкам…" autocomplete="off" aria-controls="noteSearchResults" @input="store.searchNotesNow()" />
@@ -77,6 +83,7 @@ async function openSearchResult(date: string, id: number): Promise<void> {
           <div class="dayNoteEditorHead">
             <input id="noteTitle" v-model="title" maxlength="200" placeholder="Название заметки (необязательно)" type="text" />
             <div class="dayNoteActions">
+              <button id="noteFocusMode" class="noteFocusModeButton" type="button" :title="focusMode ? 'Вернуться к панели дня' : 'Редактор на весь экран'" :aria-pressed="focusMode ? 'true' : 'false'" @click="focusMode = !focusMode">{{ focusMode ? '↙' : '⛶' }}</button>
               <button id="notePin" type="button" title="Закрепить заметку" @click="store.updateNote(currentNote.id, { pinned: !currentNote.pinned })">📌</button>
               <button id="noteMoveUp" type="button" title="Выше" @click="store.moveNote(currentNote.id, 'UP')">↑</button>
               <button id="noteMoveDown" type="button" title="Ниже" @click="store.moveNote(currentNote.id, 'DOWN')">↓</button>
@@ -94,4 +101,5 @@ async function openSearchResult(date: string, id: number): Promise<void> {
       </div>
     </div>
   </div>
+  </Teleport>
 </template>

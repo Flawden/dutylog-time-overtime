@@ -37,6 +37,8 @@ test('overtime credit and usage editors work from calendar and ledger', async ({
   await expect(page.locator('#otDayDetails')).toContainText('+7');
   await expect(page.locator('#otBalance')).toContainText('+8');
 
+  await expect(page.locator('#dayAddUsage')).toHaveText('Оформить отгул');
+  await expect(page.locator('.overtimeUsageHint')).toContainText('списывает часы банка по FIFO');
   await page.locator('#dayAddUsage').click();
   await expect(page.locator('#absenceComposerModal')).toBeVisible();
   await expect(page.locator('#vacationType option:checked')).toContainText('Отгул');
@@ -121,6 +123,8 @@ test('deleting one canonical split time-off keeps every credit and the other abs
   await page.locator('#timeBankTabUsage').click();
   await expect(page.locator('#ledgerUsageList .timeBankUsageCard')).toHaveCount(2);
   await expect(page.locator(`#ledgerUsageList [data-usage-id="${firstUsageId}"] .timeBankAllocationRow`)).toHaveCount(2);
+  await expect(page.locator(`#ledgerUsageList [data-usage-id="${firstUsageId}"] .timeBankAllocationRow__date`)).toHaveCount(2);
+  await expect(page.locator(`#ledgerUsageList [data-usage-id="${firstUsageId}"] .timeBankAllocationRow__range`)).toHaveCount(2);
 
   await callApi(`/api/vacation-planner/absences/${firstAbsence.id}`, 'DELETE');
   await page.evaluate(() => loadLedgerPage(true));

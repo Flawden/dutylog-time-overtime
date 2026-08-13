@@ -14,6 +14,9 @@ test('Vue owns Absence and Time Bank while blocking duplicate domain mutations',
   await expect(page.locator('#view-vacation')).toHaveCount(0);
   await expect(page.locator('#view-overtime')).toHaveCount(0);
   await expect.poll(() => page.evaluate(() => Boolean(window.DutyLogVueDomains?.absenceTimeBank?.ready()))).toBe(true);
+  await expect(page.getByLabel('Фильтр по типу отсутствия')).toHaveValue('all');
+  await expect(page.getByLabel('Сортировка отсутствий')).toHaveValue('relevant');
+  await expect(page.getByLabel('Сортировка отсутствий').locator('option:checked')).toHaveText('Сначала актуальные');
 
   await page.locator('#vacationComposerOpen').click();
   const timeOffValue = await page.locator('#vacationType option', { hasText:'Отгул' }).getAttribute('value');

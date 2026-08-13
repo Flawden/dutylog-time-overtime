@@ -160,3 +160,34 @@ html[data-vue-absence-time-bank="ready"] :is(#view-vacation, #view-overtime) { d
 .scenario-manager__row > div { display: flex; gap: 5px; }
 @media (max-width: 900px) { .domain-overview-grid { grid-template-columns: 1fr; } .ledger-insights { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 640px) { .ledgerTableWrap { display: none; } .domain-mobile-cards { display: grid; } .ledger-insights, .integrity-metrics { grid-template-columns: 1fr; } .fifo-forecast-form, .fifo-forecast-head { align-items: stretch; flex-direction: column; } .fifo-forecast-form input { width: 100%; } }
+
+/* v27.41.4 — Desktop UX & Workflow Clarity. */
+.integrity-issue-records { display:grid; gap:7px; }
+.integrity-issue-record {
+  display:grid;
+  grid-template-columns:minmax(0,1fr) auto;
+  gap:10px;
+  align-items:center;
+  padding:9px 10px;
+  border:1px solid color-mix(in srgb,var(--line) 62%,transparent);
+  border-radius:10px;
+  background:color-mix(in srgb,var(--panel2) 66%,transparent);
+}
+.integrity-issue-record__copy { min-width:0; display:grid; gap:3px; }
+.integrity-issue-record__copy strong { overflow-wrap:anywhere; }
+.integrity-issue-record__copy span { color:var(--mut); font-size:11px; line-height:1.4; }
+.timeBankAllocationRow {
+  display:grid;
+  grid-template-columns:minmax(88px,auto) minmax(0,1fr) auto;
+  align-items:center;
+}
+.timeBankAllocationRow__date { color:var(--text); font-variant-numeric:tabular-nums; white-space:nowrap; }
+.timeBankAllocationRow__range { min-width:0; color:var(--mut); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.timeBankAllocationRow > b { white-space:nowrap; }
+@media (max-width:640px) {
+  .integrity-issue-record { grid-template-columns:1fr; }
+  .integrity-issue-record .ui-button { justify-self:start; }
+  .timeBankAllocationRow { grid-template-columns:minmax(0,1fr) auto; align-items:start; }
+  .timeBankAllocationRow__range { grid-column:1 / -1; white-space:normal; overflow-wrap:anywhere; }
+}
+.integrity-issue-record__copy small { color:var(--dim,var(--mut)); font:10px/1.3 ui-monospace,SFMono-Regular,Consolas,monospace; }

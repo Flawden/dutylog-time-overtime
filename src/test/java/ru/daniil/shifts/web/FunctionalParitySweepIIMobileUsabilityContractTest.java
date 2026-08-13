@@ -36,6 +36,8 @@ class FunctionalParitySweepIIMobileUsabilityContractTest {
         assertTrue(page.contains("Нужно проверить учёт"));
         assertTrue(page.contains("Технические детали"));
         assertTrue(page.contains("group.code"));
+        assertTrue(page.contains("Открыть отсутствие"));
+        assertTrue(page.contains("Источник и ID показаны в карточках выше"));
         assertFalse(page.contains("<b>{{ issue.code }}</b> — {{ issue.message }}"));
     }
 
@@ -54,6 +56,8 @@ class FunctionalParitySweepIIMobileUsabilityContractTest {
         assertTrue(calendar.contains(":aria-label=\"cellAriaLabel(date)\""));
         assertTrue(css.contains(".cell.hasShift:not(.hasAbsenceFact)"));
         assertTrue(css.contains(".cell.hasShift:not(.hasAbsenceFact) .shift { display:none; }"));
+        assertTrue(css.contains("width:min(100%,1680px)"));
+        assertTrue(css.contains(".cell .shiftClock"));
         assertTrue(browser.contains("const shiftSaved = waitForApi(page, 'PUT', `/api/days/${today}`);"));
         assertTrue(browser.contains("const shiftCell = page.locator(`#grid .cell[data-date=\"${today}\"]`);"));
         assertTrue(browser.contains("await expect(shiftCell).toHaveClass(/hasShift/);"));

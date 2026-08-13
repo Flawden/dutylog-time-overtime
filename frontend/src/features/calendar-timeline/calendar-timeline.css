@@ -270,3 +270,23 @@
   .vue-today-view .todayDateMarkerGlyph { left:6px; bottom:6px; }
   .vue-today-view .todayDateTaskCount { right:6px; bottom:6px; }
 }
+
+/* v27.41.4 — Desktop UX & Workflow Clarity.
+   Calendar may be wider than standard workspaces, but it must remain one coherent centered surface. */
+.vue-calendar-view > .vue-calendar-toolbar,
+.vue-calendar-view > .calendarExperience,
+.vue-calendar-view > #calendarMonthExperience {
+  width:min(100%,1680px);
+  margin-left:auto;
+  margin-right:auto;
+}
+.vue-calendar-view > .vue-calendar-toolbar { max-width:1680px; }
+.vue-calendar-view .cell .shiftClock {
+  display:inline;
+  margin-left:6px;
+  vertical-align:baseline;
+}
+.vue-calendar-view .overtimeUsageHint { max-width:760px; margin:8px 0 10px; }
+@media (max-width:560px) {
+  .vue-calendar-view .cell .shiftClock { display:none; }
+}

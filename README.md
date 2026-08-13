@@ -1,3 +1,7 @@
+# DutyLog v27.41.4 — Desktop UX & Workflow Clarity
+
+v27.41.3 is proven green and manually accepted on desktop/mobile staging. v27.41.4 closes the remaining desktop readability and workflow-clarity gaps: bounded ultrawide layouts, relevant-first Absence history with type/sort controls, actionable ledger-integrity records, readable FIFO allocation rows, a Vue Notes Focus Mode, and explicit “Оформить отгул” wording so time-off is never confused with a second manual bank-debit workflow. No HTTP/OpenAPI, Flyway, auth, offline ownership or accounting formula changes.
+
 # DutyLog v27.41.3 — Today Visual Parity & Overtime Summary Recovery
 
 The green v27.41.2 release restored the full Overtime chart, while staging still exposed two compact-home parity gaps: Today showed live overtime totals beside an inert progress track, and its seven-day strip ignored the visual grammar already proven in Calendar Week. v27.41.3 binds the balance track to the canonical account snapshot and makes the Today strip reuse the same shift/free-day/factual-absence semantics, with compact Important Day, user-marker and task zones. No accounting formula, HTTP API, Flyway, auth or offline ownership changes.

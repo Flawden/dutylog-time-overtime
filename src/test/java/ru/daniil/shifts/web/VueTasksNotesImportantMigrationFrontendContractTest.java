@@ -119,6 +119,8 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(notes.contains("id=\"noteAdd\""));
         assertTrue(notes.contains("id=\"noteList\""));
         assertTrue(notes.contains("id=\"noteEdit\""));
+        assertTrue(notes.contains("id=\"noteFocusMode\""));
+        assertTrue(notes.contains("<Teleport to=\"body\" :disabled=\"!focusMode\">"));
         assertTrue(notes.contains("dayNoteCardPin"));
         assertTrue(notes.contains("ReturnType<typeof globalThis.setTimeout>"));
         assertTrue(notes.contains("await calendar.openDate(date, \"month\")"));
