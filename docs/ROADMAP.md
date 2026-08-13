@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.37 — Calendar E2E Source Contract Alignment Hotfix**.
+Current release: **v27.41.0 — Calendar Visual Language Foundation**.
 
 
 ## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary — proven green
@@ -32,7 +32,7 @@ Current release: **v27.40.37 — Calendar E2E Source Contract Alignment Hotfix**
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
 
-## v27.40.37 — Calendar E2E Source Contract Alignment Hotfix — current
+## v27.40.37 — Calendar E2E Source Contract Alignment Hotfix — proven green
 
 - v27.40.36 passed exact frontend validation but Java 17 Maven exposed one stale source-contract assertion.
 - The calendar source contract now follows the deterministic date-scoped `shiftCell` fixture and `toHaveClass(/hasShift/)` browser assertion introduced in v27.40.36.
@@ -67,11 +67,31 @@ Current release: **v27.40.37 — Calendar E2E Source Contract Alignment Hotfix**
 - [x] Keep canonical server `dayEarnedHours` authority and actual `usageDate` chart ownership intact.
 - [ ] Exact frontend 63/63, Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
-## v27.41.0 — Vacation Entitlement & Accrual Engine — next after v27.40.37 green
+## v27.41.0 — Calendar Visual Language Foundation — current
+- [x] Start from proven-green v27.40.37 commit `b823e8741dd1f2dbc36424105f0e34cfeffc2817` / tree `1cf30a4e54b79c2a783aac1f3d2342bb05e936ef`.
+- [x] Give schedule-free days a monochrome low-opacity palm watermark instead of ambiguous dash/text output.
+- [x] Keep shift color as restrained semantic tint/glow and keep factual absence visually stronger than schedule decoration.
+- [x] Establish stable zones for date, Important Day icon, user day marker and open-task count.
+- [x] Reuse configured Important Day icons with compact `+N` overflow and accessible day summaries.
+- [x] Carry the same shift/free-day visual language into week mode while preserving non-blocking calendar refresh.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
+
+## v27.42.0 — People Profiles & Shared Availability — next after v27.41.0 green
+- [ ] Treat another person as a selected calendar profile, not an overlay pasted on top of the current user.
+- [ ] Switching profile recolors/reprojects the whole calendar to that person while making active identity unmistakable.
+- [ ] Add Shared Availability for common free days, including the nearest shared window and multi-day overlaps.
+- [ ] Define permission/privacy boundaries before exposing another person’s schedule details.
+
+## v27.43.0 — Vacation Entitlement & Accrual Engine
 - [ ] Entitlement policy and annual allowance.
 - [ ] Accrual/carry-over/adjustments with explainable balance.
 - [ ] Planned/used/available vacation projection integrated with the existing Absence domain.
 - [ ] Preserve modular-monolith boundaries so Payroll consumes Vacation through explicit domain contracts rather than internal persistence.
+
+## v27.44.0 — Payroll Calculation Engine
+- [ ] Canonical payroll periods, calculation snapshots and explainable breakdowns.
+- [ ] Consume Time/Vacation through explicit domain contracts rather than internal persistence.
+- [ ] Preserve immutable revisions and reconciliation-ready history.
 
 
 ## v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix — proven green

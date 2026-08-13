@@ -1,6 +1,18 @@
 # Release checklist
 
-Status: v27.40.37.
+Status: v27.41.0.
+
+## v27.41.0 — Calendar Visual Language Foundation acceptance
+
+- [x] Start from proven-green v27.40.37 commit `b823e8741dd1f2dbc36424105f0e34cfeffc2817` / tree `1cf30a4e54b79c2a783aac1f3d2342bb05e936ef`.
+- [x] Render a custom monochrome low-opacity palm only for schedule-free days; factual absence suppresses the palm.
+- [x] Preserve restrained shift-color tint/glow and existing factual absence priority.
+- [x] Give Important Day icon, user day marker and open-task count stable month-cell zones.
+- [x] Preserve configured Important Day icon and compact additional Important Days as `+N`.
+- [x] Carry shift/free-day semantics into week strip/agenda without replacing the non-blocking loading state.
+- [x] Add strict typed model/Vitest coverage and deterministic browser assertions without retry/timeout inflation.
+- [x] Keep OpenAPI 124/130, Flyway V47, auth, offline/dataLayer and bounded onboarding unchanged.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate with 64/64 Vitest, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
 ## v27.40.37 — Calendar E2E Source Contract Alignment Hotfix acceptance
 
@@ -8,7 +20,7 @@ Status: v27.40.37.
 - [x] Preserve the v27.40.36 deterministic calendar fixture and case-insensitive year-label E2E fixes unchanged.
 - [x] Replace the stale Java literal `.cell.hasShift` source check with explicit assertions for the date-scoped `shiftCell` locator, PUT day fixture, and `toHaveClass(/hasShift/)`.
 - [x] Keep production Vue/TypeScript, backend, OpenAPI 124/130, Flyway V47, auth, offline/dataLayer, onboarding, retry and timeout policy unchanged.
-- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
+- [x] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
 ## v27.40.36 — Calendar Fixture & Period Label E2E Hotfix acceptance
 

@@ -44,3 +44,91 @@
   .vue-calendar-view .cell.hasShift:not(.hasAbsenceFact) { min-height:78px; }
   .vue-calendar-view .cell.hasShift:not(.hasAbsenceFact) .shift { display:none; }
 }
+
+/* v27.41.0 — Calendar Visual Language Foundation.
+   Stable cell zones make the month readable without turning it into a badge cloud. */
+.vue-calendar-view .cell { isolation:isolate; }
+.vue-calendar-view .cell.isWeekend:not(.hasShift):not(.hasAbsenceFact) {
+  border-color:color-mix(in srgb,var(--line) 86%,var(--mut));
+}
+.vue-calendar-view .calendarCellDateZone { position:relative; z-index:5; align-self:flex-start; }
+.vue-calendar-view .cell .calendarCellImportantZone {
+  position:absolute; top:6px; right:7px; z-index:6; display:inline-flex; align-items:center; gap:2px;
+  min-width:22px; height:22px; padding:0 5px; border:1px solid color-mix(in srgb,var(--important-color,var(--accent)) 42%,var(--line));
+  border-radius:8px; color:var(--important-color,var(--accent)); background:color-mix(in srgb,var(--important-color,var(--accent)) 10%,var(--panel));
+  box-shadow:0 4px 14px rgba(0,0,0,.16); font-size:13px; line-height:1;
+}
+.vue-calendar-view .cell .calendarCellImportantZone small { font-size:8px; color:var(--mut); }
+.vue-calendar-view .cell .calendarCellMarkerZone {
+  position:absolute; left:7px; bottom:7px; top:auto; right:auto; z-index:6; display:grid; place-items:center;
+  min-width:22px; height:22px; padding:0 3px; border-radius:8px; background:color-mix(in srgb,var(--panel) 74%,transparent);
+  border:1px solid color-mix(in srgb,var(--line) 80%,transparent); font-size:15px; filter:none;
+}
+.vue-calendar-view .cell .calendarCellTaskZone {
+  position:absolute; right:7px; bottom:7px; z-index:6; display:grid; place-items:center; min-width:22px; height:22px; padding:0 6px;
+  border-radius:999px; color:var(--text); background:color-mix(in srgb,var(--accent) 18%,var(--panel));
+  border:1px solid color-mix(in srgb,var(--accent) 42%,var(--line)); box-shadow:0 4px 14px rgba(0,0,0,.18); font-size:10px; font-weight:900;
+}
+.vue-calendar-view .calendarDayOffWatermark {
+  position:absolute; inset:50% auto auto 50%; width:58%; max-width:62px; aspect-ratio:1; transform:translate(-50%,-46%);
+  color:var(--text); opacity:.105; pointer-events:none; z-index:1;
+}
+.vue-calendar-view .calendarDayOffWatermark svg,.vue-calendar-view .calendarWeekPalm svg { width:100%; height:100%; overflow:visible; }
+.vue-calendar-view .calendarDayOffWatermark path,.vue-calendar-view .calendarWeekPalm path {
+  fill:none; stroke:currentColor; stroke-width:3.3; stroke-linecap:round; stroke-linejoin:round;
+}
+.vue-calendar-view .cell.isScheduleFree { background:linear-gradient(155deg,color-mix(in srgb,var(--panel2) 96%,var(--mut)),var(--panel)); }
+.vue-calendar-view .cell.hasShift:not(.hasAbsenceFact) {
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03),inset 0 -3px 0 color-mix(in srgb,var(--shift-color,var(--accent)) 78%,transparent),0 0 18px color-mix(in srgb,var(--shift-color,var(--accent)) 8%,transparent);
+}
+.vue-calendar-view .cell .shift { position:relative; z-index:3; margin:24px 26px 25px 0; }
+.vue-calendar-view .cell .absenceFact,.vue-calendar-view .cell .plannedShiftGhost,.vue-calendar-view .cell .partialAbsenceBar { position:relative; z-index:4; }
+.vue-calendar-view .cell .vacationMark { position:absolute; left:7px; bottom:35px; z-index:6; }
+.vue-calendar-view .cell .calendarLayerChip { position:relative; z-index:4; margin-inline:28px; }
+.vue-calendar-view .wd .we { color:color-mix(in srgb,var(--accent) 48%,var(--mut)); }
+
+/* Keep legacy note/today affordances out of the fixed visual-language zones. */
+.vue-calendar-view .cell.todayCell::before {
+  top:10px; right:auto; left:30px; width:5px; height:5px; z-index:6;
+}
+.vue-calendar-view .cell .ear {
+  top:auto; right:auto; left:50%; bottom:9px; width:6px; height:6px; z-index:5;
+  border:0; border-radius:999px; background:var(--mut); transform:translateX(-50%);
+}
+.vue-calendar-view .cell .ear + .dayEmoji { top:auto; }
+.vue-calendar-view .cell .noteCountBadge {
+  top:auto; right:auto; left:50%; bottom:5px; z-index:6; transform:translateX(-50%);
+}
+.vue-calendar-view .calendarWeekTaskCount {
+  display:inline-grid; place-items:center; min-width:22px; height:22px; padding:0 6px; border-radius:999px;
+  color:var(--text); background:color-mix(in srgb,var(--accent) 18%,var(--panel));
+  border:1px solid color-mix(in srgb,var(--accent) 42%,var(--line)); font-size:10px; font-weight:900;
+}
+
+.vue-calendar-view .calendarWeekDay { position:relative; overflow:hidden; }
+.vue-calendar-view .calendarWeekDay.hasShift:not(.hasAbsenceFact) {
+  border-color:color-mix(in srgb,var(--shift-color,var(--accent)) 44%,var(--line));
+  background:linear-gradient(160deg,color-mix(in srgb,var(--shift-color,var(--accent)) 18%,var(--panel2)),color-mix(in srgb,var(--shift-color,var(--accent)) 5%,var(--panel)));
+  box-shadow:0 8px 22px color-mix(in srgb,var(--shift-color,var(--accent)) 9%,transparent),inset 0 -3px 0 color-mix(in srgb,var(--shift-color,var(--accent)) 72%,transparent);
+}
+.vue-calendar-view .calendarWeekDay.isScheduleFree { background:linear-gradient(160deg,color-mix(in srgb,var(--panel2) 95%,var(--mut)),var(--panel)); }
+.vue-calendar-view .calendarWeekDay.isWeekend:not(.hasShift) > small { color:color-mix(in srgb,var(--accent) 52%,var(--mut)); }
+.vue-calendar-view .calendarWeekPalm { display:inline-grid; place-items:center; width:30px; height:30px; margin:auto; color:var(--text); opacity:.18; }
+.vue-calendar-view .calendarWeekAgenda article.hasShift:not(.hasAbsenceFact) {
+  border-color:color-mix(in srgb,var(--shift-color,var(--accent)) 34%,var(--border));
+  background:linear-gradient(160deg,color-mix(in srgb,var(--shift-color,var(--accent)) 12%,var(--panel)),var(--panel));
+}
+.vue-calendar-view .calendarWeekAgenda article.isScheduleFree { background:color-mix(in srgb,var(--panel) 96%,var(--mut)); }
+.vue-calendar-view .calendarWeekShiftLabel { color:var(--text); font-weight:800; }
+.vue-calendar-view .calendarWeekFreeLabel { min-height:34px; display:flex; align-items:center; justify-content:center; margin:6px 0 0!important; }
+.vue-calendar-view .calendarWeekFreeLabel .calendarWeekPalm { width:34px; height:34px; opacity:.13; }
+
+@media(max-width:760px){
+  .vue-calendar-view .cell .calendarCellImportantZone,.vue-calendar-view .cell .calendarCellMarkerZone,.vue-calendar-view .cell .calendarCellTaskZone { min-width:19px; height:19px; }
+  .vue-calendar-view .cell .calendarCellImportantZone { top:5px; right:5px; padding-inline:4px; font-size:11px; }
+  .vue-calendar-view .cell .calendarCellMarkerZone { left:5px; bottom:5px; font-size:13px; }
+  .vue-calendar-view .cell .calendarCellTaskZone { right:5px; bottom:5px; font-size:9px; }
+  .vue-calendar-view .calendarDayOffWatermark { width:54%; max-width:44px; opacity:.105; }
+  .vue-calendar-view .cell .shift { margin:18px 22px 20px 0; }
+  .vue-calendar-view .cell .vacationMark { left:5px; bottom:28px; }
+}

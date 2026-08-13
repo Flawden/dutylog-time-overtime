@@ -5,6 +5,9 @@ import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
 import { useCalendarTimelineStore } from "../stores/calendarTimelineStore";
 import {
+  calendarImportantGlyph,
+  calendarOpenTaskCount,
+  calendarScheduleFree,
   dateLabel,
   dayFacts,
   minutesOf,
@@ -98,6 +101,16 @@ const timelineEvents = computed(() => {
 });
 
 function cellFacts(date: string) { return dayFacts(bundle.value, date); }
+function openTaskCount(date: string): number { return calendarOpenTaskCount(cellFacts(date)); }
+function importantMarker(date: string) { return cellFacts(date).important[0] ?? null; }
+function importantMarkerGlyph(date: string): string { return calendarImportantGlyph(importantMarker(date)); }
+function isScheduleFreeDay(date: string): boolean {
+  return Boolean(bundle.value) && calendarScheduleFree(cellFacts(date));
+}
+function isWeekend(date: string): boolean {
+  const value = new Date(`${date}T00:00:00Z`).getUTCDay();
+  return value === 0 || value === 6;
+}
 function cellStyle(date: string): Record<string, string> {
   const facts = cellFacts(date);
   const styles: Record<string, string> = {};
@@ -112,10 +125,13 @@ function cellAriaLabel(date: string): string {
   const parts = [dateLabel(date, language.value, { weekday: "long", day: "numeric", month: "long" })];
   const shiftName = facts.shift?.name;
   if (shiftName) parts.push(`${language.value === "en" ? "Shift" : "Смена"}: ${shiftName}`);
+  else if (calendarScheduleFree(facts)) parts.push(language.value === "en" ? "Schedule: day off" : "По графику: свободный день");
   if (facts.absences.length) parts.push(`${language.value === "en" ? "Absences" : "Отсутствия"}: ${facts.absences.length}`);
-  const openTasks = facts.tasks.filter(task => !task.done).length;
+  const openTasks = calendarOpenTaskCount(facts);
   if (openTasks) parts.push(`${language.value === "en" ? "Tasks" : "Задачи"}: ${openTasks}`);
   if (facts.important.length) parts.push(`${language.value === "en" ? "Important dates" : "Важные даты"}: ${facts.important.length}`);
+  const dayMarker = String(facts.day?.dayEmoji ?? "").trim();
+  if (dayMarker) parts.push(`${language.value === "en" ? "Day marker" : "Маркер дня"}: ${dayMarker}`);
   return parts.join(". ");
 }
 function factualAbsence(date: string) { return cellFacts(date).absences.find(item => item.coverage === "FULL_DAY" && item.replacesShift) ?? null; }
@@ -207,10 +223,17 @@ async function openDetails(): Promise<void> { await store.openDayPanel(focusDate
 
       <section v-show="mode === 'week'" id="calendarWeekExperience" class="calendarWeekExperience" aria-label="Недельный календарь">
         <div id="calendarWeekStrip" class="calendarWeekStrip">
-          <button v-for="date in week" :key="date" type="button" class="calendarWeekDay" :class="{ isSelected: date === focusDate, todayCell: date === workDate }" :data-date="date" @click="chooseWeekDate(date)"><small>{{ weekday(date) }}</small><b>{{ dayNumber(date) }}</b><span>{{ cellFacts(date).shift?.name || '—' }}</span></button>
+          <button v-for="date in week" :key="date" type="button" class="calendarWeekDay" :class="{ isSelected: date === focusDate, todayCell: date === workDate, hasShift: Boolean(cellFacts(date).shift), isScheduleFree: isScheduleFreeDay(date), hasAbsenceFact: Boolean(factualAbsence(date)), isWeekend: isWeekend(date) }" :style="cellStyle(date)" :data-date="date" :aria-label="cellAriaLabel(date)" @click="chooseWeekDate(date)">
+            <small>{{ weekday(date) }}</small><b>{{ dayNumber(date) }}</b>
+            <span v-if="cellFacts(date).shift">{{ cellFacts(date).shift?.name }}</span>
+            <span v-else-if="isScheduleFreeDay(date)" class="calendarWeekPalm" aria-hidden="true">
+              <svg viewBox="0 0 64 64" focusable="false"><path d="M31 55c1-12 2-24 1-36M31 22c-8-9-16-9-23-5 8 0 14 4 19 11M33 21c7-10 15-11 23-7-8 1-14 6-18 13M32 19c-2-8-7-13-14-15 5 5 8 11 9 18M33 19c3-8 8-13 15-15-5 5-8 11-10 18"/></svg>
+            </span>
+            <span v-else>{{ language === 'en' ? 'Absence' : 'Отсутствие' }}</span>
+          </button>
         </div>
         <div id="calendarWeekAgenda" class="calendarWeekAgenda">
-          <article v-for="date in week" :key="`agenda-${date}`"><header><b>{{ dayLabel(date) }}</b><span>{{ cellFacts(date).tasks.filter(task => !task.done).length }} задач</span></header><p v-if="cellFacts(date).shift">{{ cellFacts(date).shift?.name }}</p><p v-for="item in cellFacts(date).important" :key="item.id">★ {{ item.title }}</p><p v-for="absence in cellFacts(date).absences" :key="absence.periodId">{{ absence.title || absence.typeName }}</p></article>
+          <article v-for="date in week" :key="`agenda-${date}`" :class="{ hasShift: Boolean(cellFacts(date).shift), isScheduleFree: isScheduleFreeDay(date), hasAbsenceFact: Boolean(factualAbsence(date)) }" :style="cellStyle(date)"><header><b>{{ dayLabel(date) }}</b><span v-if="openTaskCount(date)" class="calendarWeekTaskCount">{{ openTaskCount(date) }}</span></header><p v-if="cellFacts(date).shift" class="calendarWeekShiftLabel">{{ cellFacts(date).shift?.name }}</p><p v-else-if="isScheduleFreeDay(date)" class="calendarWeekFreeLabel"><span class="calendarWeekPalm" aria-hidden="true"><svg viewBox="0 0 64 64" focusable="false"><path d="M31 55c1-12 2-24 1-36M31 22c-8-9-16-9-23-5 8 0 14 4 19 11M33 21c7-10 15-11 23-7-8 1-14 6-18 13M32 19c-2-8-7-13-14-15 5 5 8 11 9 18M33 19c3-8 8-13 15-15-5 5-8 11-10 18"/></svg></span></p><p v-for="item in cellFacts(date).important" :key="item.id">{{ item.icon || '★' }} {{ item.title }}</p><p v-for="absence in cellFacts(date).absences" :key="absence.periodId">{{ absence.title || absence.typeName }}</p></article>
         </div>
       </section>
 
@@ -224,21 +247,26 @@ async function openDetails(): Promise<void> { await store.openDayPanel(focusDate
     <div v-show="mode === 'month'" id="calendarMonthExperience">
       <div id="layout" class="layout" :class="{ 'with-panel': dayPanelOpen }">
         <div class="card vue-calendar-month-card">
-          <div class="wd"><div v-for="label in (language === 'en' ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'])" :key="label">{{ label }}</div></div>
+          <div class="wd"><div v-for="(label, index) in (language === 'en' ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'] : ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'])" :key="label" :class="{ we: index > 4 }">{{ label }}</div></div>
           <div id="grid" class="grid" :aria-busy="loading ? 'true' : 'false'">
             <button
               v-for="date in gridDates"
               :key="date"
               type="button"
               class="cell"
-              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasShift: Boolean(cellFacts(date).shift), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)) }"
+              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasShift: Boolean(cellFacts(date).shift), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)), isScheduleFree: inFocusMonth(date) && isScheduleFreeDay(date), isWeekend: isWeekend(date) }"
               :style="cellStyle(date)"
               :aria-label="cellAriaLabel(date)"
               :data-date="date"
               @click="chooseDate(date)"
             >
-              <span class="num">{{ dayNumber(date) }}</span>
-              <span v-if="cellFacts(date).day?.dayEmoji" class="dayEmoji">{{ cellFacts(date).day?.dayEmoji }}</span>
+              <span class="num calendarCellDateZone">{{ dayNumber(date) }}</span>
+              <span v-if="importantMarker(date)" class="importantMark calendarCellImportantZone" :style="{ '--important-color': importantMarker(date)?.color || 'var(--accent)' }" :title="importantMarker(date)?.title || ''"><span>{{ importantMarkerGlyph(date) }}</span><small v-if="cellFacts(date).important.length > 1">+{{ cellFacts(date).important.length - 1 }}</small></span>
+              <span v-if="cellFacts(date).day?.dayEmoji" class="dayEmoji calendarCellMarkerZone" :title="language === 'en' ? 'Day marker' : 'Маркер дня'">{{ cellFacts(date).day?.dayEmoji }}</span>
+              <span v-if="openTaskCount(date)" class="taskMark calendarCellTaskZone" :aria-label="`${language === 'en' ? 'Open tasks' : 'Открытых задач'}: ${openTaskCount(date)}`">{{ openTaskCount(date) }}</span>
+              <span v-if="inFocusMonth(date) && isScheduleFreeDay(date)" class="calendarDayOffWatermark" aria-hidden="true">
+                <svg viewBox="0 0 64 64" focusable="false"><path d="M31 55c1-12 2-24 1-36M31 22c-8-9-16-9-23-5 8 0 14 4 19 11M33 21c7-10 15-11 23-7-8 1-14 6-18 13M32 19c-2-8-7-13-14-15 5 5 8 11 9 18M33 19c3-8 8-13 15-15-5 5-8 11-10 18"/></svg>
+              </span>
               <template v-if="factualAbsence(date)">
                 <span
                   class="absenceFact"
@@ -260,8 +288,6 @@ async function openDetails(): Promise<void> { await store.openDayPanel(focusDate
               <span v-if="cellFacts(date).day?.notes?.length || cellFacts(date).day?.note" class="ear"></span>
               <span v-if="(cellFacts(date).day?.notes?.length ?? 0) > 1" class="noteCountBadge">{{ cellFacts(date).day?.notes?.length }}</span>
               <span v-if="secondaryAbsences(date).length" class="vacationMark" :style="{ background: secondaryAbsences(date)[0]?.typeColor }">●</span>
-              <span v-for="item in cellFacts(date).important.slice(0,1)" :key="item.id" class="importantMark">★</span>
-              <span v-if="cellFacts(date).tasks.some(task => !task.done)" class="taskMark">!</span>
               <span v-for="item in cellFacts(date).layers.slice(0,2)" :key="`${item.layer.id}-${item.entry.sourceDate}`" class="calendarLayerChip" :style="{ '--layer-color': item.layer.color }">{{ item.layer.name }}</span>
             </button>
           </div>

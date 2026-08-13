@@ -1,11 +1,11 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.40.37.
+Status: v27.41.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.37 keeps the v27.40.32 production parity/usability runtime unchanged. Exact v27.40.36 CI passed the frontend gate and then stopped in Java 17 Maven because `FunctionalParitySweepIIMobileUsabilityContractTest` still searched for literal `.cell.hasShift` after the browser scenario had moved to an explicit date-scoped `shiftCell` fixture plus `toHaveClass(/hasShift/)`. Inventory remains 163 Java test classes / 790 @Test methods / 48 Chromium Playwright scenarios / 63 Vitest cases, OpenAPI 124/130 and Flyway V47.
+Current extension: v27.41.0 adds the Calendar Visual Language Foundation on proven-green v27.40.37: schedule-free palm semantics, fixed Important/marker/task zones, configured Important icons, week visual parity and accessible free-day/marker copy. Inventory is 163 Java test classes / 790 @Test methods / 48 Chromium Playwright scenarios / 64 Vitest cases, OpenAPI 124/130 and Flyway V47.
 
 
 

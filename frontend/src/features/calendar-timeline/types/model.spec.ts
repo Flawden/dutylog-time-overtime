@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   addDays,
+  calendarImportantGlyph,
   calendarLoadRange,
+  calendarOpenTaskCount,
+  calendarScheduleFree,
   dayFacts,
   durationCountdown,
   importantRelativeLabel,
@@ -100,6 +103,31 @@ describe("calendar and timeline model", () => {
     expect(dayFacts(crossMidnight, "2026-08-04").tasks[0]?.text).toBe("Ночная задача");
     expect(dayFacts(crossMidnight, "2026-08-05").tasks[0]?.text).toBe("Ночная задача");
   });
+
+  it("defines the calendar visual language without conflating schedule, markers and tasks", () => {
+    const free = dayFacts(normalizeCalendarBundle({
+      from: "2026-08-01", to: "2026-08-31",
+      days: [{ date: "2026-08-09", dayEmoji: "🧪", overtimeHours: 0, timeOffHours: 0, overtimeBalanceHours: 0, version: 1 }],
+      tasks: [
+        { id: 51, date: "2026-08-09", text: "Open", done: false, tags: [], priority: "NORMAL", deadlineAbsolute: false, reminderEnabled: false, overdue: false, subtasks: [] },
+        { id: 52, date: "2026-08-09", text: "Done", done: true, tags: [], priority: "NORMAL", deadlineAbsolute: false, reminderEnabled: false, overdue: false, subtasks: [] },
+      ],
+    }, "2026-08-01", "2026-08-31"), "2026-08-09");
+    expect(calendarScheduleFree(free)).toBe(true);
+    expect(calendarOpenTaskCount(free)).toBe(1);
+    expect(free.day?.dayEmoji).toBe("🧪");
+
+    expect(calendarImportantGlyph({ id: 1, date: "2026-08-09", title: "Birthday", icon: "🎂" })).toBe("🎂");
+    expect(calendarImportantGlyph({ id: 2, date: "2026-08-09", title: "Period", eventType: "PERIOD" })).toBe("◇");
+    expect(calendarImportantGlyph({ id: 3, date: "2026-08-09", title: "Generic" })).toBe("★");
+
+    const absent = dayFacts(normalizeCalendarBundle({
+      from: "2026-08-01", to: "2026-08-31",
+      absences: [{ periodId: 9, typeId: 1, typeName: "Отгул", typeColor: "#4A90E2", date: "2026-08-09", startDate: "2026-08-09", endDate: "2026-08-09", status: "PLANNED", countedDay: true, shiftConflict: false }],
+    }, "2026-08-01", "2026-08-31"), "2026-08-09");
+    expect(calendarScheduleFree(absent)).toBe(false);
+  });
+
   it("restores Today live shift countdown and progress from immutable occurrence instants", () => {
     const bundle = normalizeCalendarBundle({
       from: "2026-08-01", to: "2026-08-31",

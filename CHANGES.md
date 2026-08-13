@@ -1,3 +1,10 @@
+# v27.41.0 — Calendar Visual Language Foundation
+- Starts from proven-green v27.40.37 commit `b823e8741dd1f2dbc36424105f0e34cfeffc2817` / tree `1cf30a4e54b79c2a783aac1f3d2342bb05e936ef`.
+- Introduces a stable month-cell visual grammar: schedule-free days use a low-opacity monochrome palm watermark, shift days retain restrained color tint/glow, full-day factual absence remains visually authoritative, and weekend headers are softly distinguished.
+- Gives Important Days, user day markers and open-task counts fixed, non-competing zones; Important Days render their configured icon (with semantic fallback) and multiple Important Days compact to `+N`.
+- Makes week mode use the same schedule semantics with shift tint/glow and palm-marked free days instead of ambiguous dash-only output, while preserving the non-blocking `Обновляю календарь…` refresh pattern.
+- Adds strict typed visual-language helpers plus Vitest coverage and extends the existing calendar-mobile E2E to verify palm/free-day semantics and Important-Day/week rendering without changing API, Flyway, auth, offline/dataLayer or onboarding ownership.
+
 # v27.40.37 — Calendar E2E Source Contract Alignment Hotfix
 - Starts from exact v27.40.36 commit `e6523775d00c3e5c4d2e334a5cff34414c74398e`, whose exact frontend gate passed but Java 17 Maven stopped before release-check/Chromium.
 - Fixes the stale Java source-contract assertion that still required the literal browser selector `.cell.hasShift` after v27.40.36 intentionally switched to an explicit date-scoped `shiftCell` fixture and `toHaveClass(/hasShift/)`.

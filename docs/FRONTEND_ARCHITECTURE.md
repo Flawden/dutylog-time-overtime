@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.40.37 preserves the v27.40.32 Functional Parity Sweep runtime unchanged and only aligns the Java calendar source contract with the deterministic date-scoped shift fixture already introduced in v27.40.36; first-run onboarding remains one explicitly bounded post-ready legacy presentation exception.
+Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.41.0 adds a calendar visual-language layer on top of the canonical Calendar/Timeline read model: schedule state drives tint/palm semantics, fixed cell zones keep Important Days/day markers/task counts independent, and factual absence remains authoritative. First-run onboarding remains one explicitly bounded post-ready legacy presentation exception; `dataLayer` remains the single offline mutation/sync owner.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)

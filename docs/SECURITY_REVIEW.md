@@ -1,5 +1,15 @@
 # DutyLog security review
 
+## v27.41.0 Calendar Visual Language Foundation review
+
+- No endpoint, credential, role, authorization, CSRF, session, origin, storage or permission change.
+- The release consumes only calendar data already authorized for the current user and adds no People Profile/shared-schedule data path.
+- Important Day icons and custom day markers are presentation-only values already returned by existing contracts; no HTML injection or new rendering authority is introduced.
+- `dataLayer` remains the only IndexedDB/outbox/reconnect executor; OpenAPI remains 124/130 and Flyway remains V47.
+
+Status: v27.41.0.
+
+
 ## v27.40.30 Legacy retirement closure / onboarding boundary review
 
 - No endpoint, credential, role, origin, authorization, session, storage or remember-me policy changes.
@@ -7,7 +17,7 @@
 - The bounded exception grants no new authority and owns no route, normal Settings screen or offline queue execution.
 - `dataLayer` remains the only IndexedDB queue/sync executor; OpenAPI remains 124/130 and Flyway V47.
 
-Status: v27.40.37.
+Status: v27.41.0.
 
 
 ## v27.40.29 Vue logout ownership and offline status contract hotfix review

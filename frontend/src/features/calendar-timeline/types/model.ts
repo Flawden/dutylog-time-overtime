@@ -208,6 +208,23 @@ export function dayFacts(bundle: CalendarRangeBundle | null, date: string): Cale
 }
 
 
+export function calendarOpenTaskCount(facts: CalendarDayFacts): number {
+  return facts.tasks.filter(task => !task.done).length;
+}
+
+export function calendarImportantGlyph(item: CalendarImportantOccurrence | null | undefined): string {
+  const configured = String(item?.icon ?? "").trim();
+  if (configured) return configured;
+  const eventType = String(item?.eventType ?? "IMPORTANT_DATE").toUpperCase();
+  if (eventType === "PERIOD") return "◇";
+  if (eventType === "EVENT") return "◆";
+  return "★";
+}
+
+export function calendarScheduleFree(facts: CalendarDayFacts): boolean {
+  return !facts.shift && facts.absences.length === 0;
+}
+
 export type TodayShiftPhase = "active" | "future" | "finished" | "next";
 
 export interface TodayShiftProjection {

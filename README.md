@@ -1,3 +1,7 @@
+# DutyLog v27.41.0 — Calendar Visual Language Foundation
+
+DutyLog now treats the calendar as a visual instrument instead of a text table. Work keeps restrained shift-color semantics; a real schedule-free day gets a large low-opacity monochrome palm watermark; Important Days, custom day markers and open-task counts occupy stable zones; factual absence remains stronger than schedule decoration; and week mode shares the same shift/free-day language. The release is deliberately presentation/model-only: no HTTP/OpenAPI, Flyway, auth, offline queue or onboarding authority changes.
+
 # DutyLog v27.40.37 — Calendar E2E Source Contract Alignment Hotfix
 
 v27.40.36 correctly repaired the two Chromium failures from v27.40.35, but its deterministic calendar fixture removed the literal `.cell.hasShift` selector that `FunctionalParitySweepIIMobileUsabilityContractTest` still searched for. Exact Java 17 Maven therefore failed before release-check and Chromium. v27.40.37 changes no production runtime and no Playwright scenario behavior; it aligns that stale Java source contract with the explicit date-scoped `shiftCell` fixture and `toHaveClass(/hasShift/)` assertion already present in v27.40.36.

@@ -27,6 +27,11 @@ test('calendar switches month week and hourly day while preserving the focused d
   await expect(shiftCell).toHaveAttribute('aria-label', /Смена|Shift/);
   await expect(shiftCell.locator('.shift')).toBeHidden();
 
+  const freeCell = page.locator('#grid .cell.isScheduleFree:not(.outside)').first();
+  await expect(freeCell).toBeVisible();
+  await expect(freeCell.locator('.calendarDayOffWatermark')).toBeVisible();
+  await expect(freeCell).toHaveAttribute('aria-label', /свободный день|day off/i);
+
   await selectDate(page, today);
   await openDayModule(page, 'important_dates');
   await expect(page.locator('#impDate')).toHaveValue(today);
@@ -38,10 +43,14 @@ test('calendar switches month week and hourly day while preserving the focused d
   await importantCreated;
   await page.locator('#pClose').click();
   await expect(page.locator('#panel')).toBeHidden();
+  await expect(shiftCell.locator('.calendarCellImportantZone')).toBeVisible();
+  await expect(shiftCell.locator('.calendarCellImportantZone')).toContainText('★');
 
   await page.locator('[data-calendar-mode="week"]').click();
   await expect(page.locator('#calendarWeekExperience')).toBeVisible();
   await expect(page.locator('#calendarWeekStrip .calendarWeekDay')).toHaveCount(7);
+  const freeWeekDay = page.locator('#calendarWeekStrip .calendarWeekDay.isScheduleFree').first();
+  await expect(freeWeekDay.locator('.calendarWeekPalm')).toBeVisible();
   await page.locator(`#calendarWeekStrip [data-date="${today}"]`).click();
   await expect(page.locator(`#calendarWeekStrip [data-date="${today}"]`)).toHaveClass(/isSelected/);
 
