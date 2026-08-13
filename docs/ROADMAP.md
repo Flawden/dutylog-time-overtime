@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.35 — Functional Parity Source Contract Scope Hotfix**.
+Current release: **v27.40.36 — Calendar Fixture & Period Label E2E Hotfix**.
 
 
 ## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary — proven green
@@ -32,12 +32,21 @@ Current release: **v27.40.35 — Functional Parity Source Contract Scope Hotfix*
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
 
-## v27.40.35 — Functional Parity Source Contract Scope Hotfix — current
+## v27.40.36 — Calendar Fixture & Period Label E2E Hotfix — current
 
-- v27.40.34 reached exact Java 17 Maven and exposed two stale Java source-contract assertions, not production failures.
-- Calendar contract now follows the existing `shiftColor` helper boundary instead of requiring an obsolete inline expression.
-- Overtime chart contract now checks canonical server projection authority inside `dayCreditTotals`, while `ledgerChartColumns` remains a consumer of those totals.
+- v27.40.35 passed exact frontend and Java 17 Maven and reached the full Chromium suite.
+- Full Chromium executed all 48 scenarios: 46 passed / 2 deterministic failed, both repeated on retry.
+- Calendar-mobile now creates its own shift fact before validating shift-color semantics instead of assuming a fresh account already has assigned days.
+- Overtime Next keeps the valid `2026 год` product copy and matches the year label case-insensitively.
 - Production runtime behavior remains unchanged.
+
+## v27.40.35 — Functional Parity Source Contract Scope Hotfix — browser-red predecessor
+
+- [x] Align the two stale Java source-contract assertions with the existing helper boundaries.
+- [x] Exact frontend stage passed.
+- [x] Java 17 Maven 790/790 passed and reached full Chromium.
+- [x] Chromium completed 48 scenarios with 46 passed / 2 deterministic E2E failures.
+- [ ] Superseded by v27.40.36 before image/PostgreSQL/staging acceptance.
 
 ## v27.40.34 — Vue Asset Version Contract Hotfix — Maven-red predecessor
 
@@ -52,7 +61,7 @@ Current release: **v27.40.35 — Functional Parity Source Contract Scope Hotfix*
 - [x] Keep canonical server `dayEarnedHours` authority and actual `usageDate` chart ownership intact.
 - [ ] Exact frontend 63/63, Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
-## v27.41.0 — Vacation Entitlement & Accrual Engine — next after v27.40.35 green
+## v27.41.0 — Vacation Entitlement & Accrual Engine — next after v27.40.36 green
 - [ ] Entitlement policy and annual allowance.
 - [ ] Accrual/carry-over/adjustments with explainable balance.
 - [ ] Planned/used/available vacation projection integrated with the existing Absence domain.

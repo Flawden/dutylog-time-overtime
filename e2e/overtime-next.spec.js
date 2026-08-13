@@ -64,7 +64,7 @@ test('Overtime Next keeps the professional desktop ledger and replaces it with d
 
   await page.locator('#ledgerThisYear').click();
   await expect(page.locator('#ledgerThisYear')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('#ledgerPeriodLabel')).toContainText(/Год|Year/);
+  await expect(page.locator('#ledgerPeriodLabel')).toContainText(/год|year/i);
 
   await page.setViewportSize({ width: 390, height: 844 });
   await expect(page.locator('.ledgerTableWrap')).toBeHidden();

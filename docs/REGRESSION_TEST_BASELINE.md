@@ -1,11 +1,11 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.40.35.
+Status: v27.40.36.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.35 keeps the v27.40.32 production parity/usability runtime unchanged and repairs two stale Java source-contract assertions exposed after v27.40.34 reached Maven: calendar color is asserted through its `shiftColor` helper, and canonical overtime projection authority is asserted in `dayCreditTotals` rather than outside that helper. Inventory remains 163 Java test classes / 790 @Test methods / 48 Chromium Playwright scenarios / 63 Vitest cases, OpenAPI 124/130 and Flyway V47.
+Current extension: v27.40.36 keeps the v27.40.32 production parity/usability runtime unchanged. Exact v27.40.35 CI passed frontend and Maven, then full Chromium completed 48 scenarios with 46 passed and two deterministic E2E failures: the calendar color check lacked its own shift fixture, and the overtime year-label check used a case-sensitive `Год|Year` regex against valid `2026 год` copy. Inventory remains 163 Java test classes / 790 @Test methods / 48 Chromium Playwright scenarios / 63 Vitest cases, OpenAPI 124/130 and Flyway V47.
 
 
 

@@ -1,3 +1,9 @@
+# v27.40.36 — Calendar Fixture & Period Label E2E Hotfix
+- Starts from canonical v27.40.35 commit `de877d89baa8f639809737324b09f22065c4558d` / tree `93e5c05211553a541d74a6bd020b9bf60cf74171` after exact CI reached Chromium and finished 46/48 scenarios.
+- Changes no production runtime behavior: the calendar E2E now creates its own shift fact before asserting shift-color rendering, and the overtime year-period assertion matches the existing Russian `2026 год` copy case-insensitively.
+- Keeps the v27.40.32 parity runtime, OpenAPI 124/130, Flyway V47, auth, offline/dataLayer, onboarding and dependency graph unchanged.
+- Treats both failures as deterministic stale browser-test assumptions rather than adding retries, timeouts or weaker product assertions.
+
 # v27.40.35 — Functional Parity Source Contract Scope Hotfix
 - Starts from the exact v27.40.34 candidate tree after exact Java 17 Maven ran all 790 tests and exposed two stale source-contract assertions.
 - Changes no production runtime behavior: calendar shift color still flows through `cellStyle`/`shiftColor`, and overtime charts still consume canonical daily projection totals from `dayCreditTotals`.

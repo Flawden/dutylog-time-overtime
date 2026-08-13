@@ -1,3 +1,7 @@
+# DutyLog v27.40.36 — Calendar Fixture & Period Label E2E Hotfix
+
+v27.40.35 passed exact frontend and Java 17 Maven gates and reached full Chromium, where 46 of 48 scenarios passed. The calendar-mobile test assumed a fresh account already contained at least one assigned shift even though the canonical calendar response correctly returned no days; the overtime test expected `Год`/`Year` case-sensitively while the rendered Russian period label was the valid `2026 год`. v27.40.36 changes only those deterministic E2E contracts plus release metadata. Production runtime behavior is unchanged.
+
 # DutyLog v27.40.35 — Functional Parity Source Contract Scope Hotfix
 
 v27.40.34 passed the exact Vue frontend stage and reached all 790 Java tests. Maven then exposed two stale source-contract assertions: one required calendar shift color to be assigned directly from `facts.shift.color` even though runtime already uses a `shiftColor` helper variable, and another searched for canonical `serverProjection?.dayEarnedHours` inside `ledgerChartColumns` even though that authority is intentionally encapsulated in `dayCreditTotals`. v27.40.35 changes no product runtime behavior; it aligns those contracts with the existing helper boundaries.

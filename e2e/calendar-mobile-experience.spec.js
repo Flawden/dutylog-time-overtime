@@ -11,8 +11,18 @@ test('calendar switches month week and hourly day while preserving the focused d
   await expect(page.locator('.calendarModeSwitch')).toBeVisible();
   await expect(page.locator('[data-calendar-mode="month"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#calendarMonthExperience')).toBeVisible();
-  const shiftCell = page.locator('#grid .cell.hasShift').first();
-  await expect(shiftCell).toBeVisible();
+
+  // A fresh account has no assigned days. Create the shift fact explicitly so
+  // this test verifies shift-color rendering instead of depending on ambient data.
+  await selectDate(page, today);
+  const shiftSaved = waitForApi(page, 'PUT', `/api/days/${today}`);
+  await page.locator('#chips [data-shift-type-id]').first().click();
+  await shiftSaved;
+  await page.locator('#pClose').click();
+  await expect(page.locator('#panel')).toBeHidden();
+
+  const shiftCell = page.locator(`#grid .cell[data-date="${today}"]`);
+  await expect(shiftCell).toHaveClass(/hasShift/);
   await expect(shiftCell).toHaveAttribute('style', /--shift-color:/);
   await expect(shiftCell).toHaveAttribute('aria-label', /Смена|Shift/);
   await expect(shiftCell.locator('.shift')).toBeHidden();

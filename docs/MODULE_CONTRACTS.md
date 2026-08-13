@@ -8,7 +8,7 @@
 - `profile.onboardingCompleted` and authoritative module state remain the cross-boundary data contract consumed by Vue.
 - No second bounded legacy presentation owner is permitted.
 
-Status: v27.40.35.
+Status: v27.40.36.
 
 ## Vue offline/sync presentation ownership (v27.40.29)
 
@@ -20,7 +20,7 @@ Status: v27.40.35.
 - Authenticated boot/profile publication may update recovery header identity only when `#whoami` still exists; Vue state publication must not depend on that node surviving readiness.
 - Vue shell logout is a post-ready control, but the underlying session action remains infrastructure: it is requested without clicking retired `#logout` and still performs the existing pending-save flush, CSRF-aware `/logout` request and login redirect.
 
-Status: v27.40.35.
+Status: v27.40.36.
 
 ## Pre-Vue Admin fallback contract alignment (v27.40.23)
 
