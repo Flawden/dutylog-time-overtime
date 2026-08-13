@@ -1,11 +1,11 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.40.30.
+Status: v27.40.31.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.30 closes Vue Legacy Retirement on the proven-green v27.40.29 baseline. First-run onboarding remains one explicit bounded presentation exception; no runtime onboarding/PWA/module semantics change. Inventory advances to 162 Java test classes / 785 @Test methods / 48 Chromium Playwright scenarios / 60 Vitest cases, OpenAPI 124/130 and Flyway V47.
+Current extension: v27.40.31 restores Vue Today functional parity for live shift countdown/progress and relative Important Days copy on the proven-green v27.40.30 baseline. Inventory advances to 162 Java test classes / 786 @Test methods / 48 Chromium Playwright scenarios / 62 Vitest cases, OpenAPI 124/130 and Flyway V47.
 
 
 

@@ -207,6 +207,98 @@ export function dayFacts(bundle: CalendarRangeBundle | null, date: string): Cale
   };
 }
 
+
+export type TodayShiftPhase = "active" | "future" | "finished" | "next";
+
+export interface TodayShiftProjection {
+  phase: TodayShiftPhase;
+  occurrence: DutyLogApiSchemas.ShiftOccurrence;
+  shift: CalendarShiftType | null;
+  progress: number;
+  remainingMs: number;
+  date: string;
+}
+
+function validInstant(value: string | null | undefined): number | null {
+  const parsed = Date.parse(String(value ?? ""));
+  return Number.isFinite(parsed) ? parsed : null;
+}
+
+/** Canonical Today shift projection, migrated from the retired legacy dashboard. */
+export function todayShiftProjection(bundle: CalendarRangeBundle | null, date: string, nowMs: number): TodayShiftProjection | null {
+  const timed = (bundle?.shiftOccurrences ?? [])
+    .map(occurrence => ({ occurrence, startMs: validInstant(occurrence.startInstant), endMs: validInstant(occurrence.endInstant) }))
+    .filter((item): item is { occurrence: DutyLogApiSchemas.ShiftOccurrence; startMs: number; endMs: number } => item.startMs !== null && item.endMs !== null)
+    .sort((a, b) => a.startMs - b.startMs);
+  const active = timed.find(item => item.startMs <= nowMs && nowMs < item.endMs) ?? null;
+  const today = occurrencesOf(bundle, date)
+    .map(occurrence => ({ occurrence, startMs: validInstant(occurrence.startInstant), endMs: validInstant(occurrence.endInstant) }))
+    .filter((item): item is { occurrence: DutyLogApiSchemas.ShiftOccurrence; startMs: number; endMs: number } => item.startMs !== null && item.endMs !== null)
+    .sort((a, b) => a.startMs - b.startMs);
+  const next = timed.find(item => item.startMs > nowMs) ?? null;
+  const relevant = active
+    ?? today.find(item => item.endMs > nowMs)
+    ?? today.at(-1)
+    ?? (next && next.startMs - nowMs <= 36 * 60 * 60 * 1000 ? next : null);
+  if (!relevant) return null;
+
+  const isActive = relevant.startMs <= nowMs && nowMs < relevant.endMs;
+  const isFuture = nowMs < relevant.startMs;
+  const duration = Math.max(1, relevant.endMs - relevant.startMs);
+  const progress = isFuture ? 0 : Math.max(0, Math.min(100, Math.round((nowMs - relevant.startMs) * 100 / duration)));
+  const phase: TodayShiftPhase = isActive ? "active" : (isFuture ? (today.includes(relevant) ? "future" : "next") : "finished");
+  return {
+    phase,
+    occurrence: relevant.occurrence,
+    shift: shiftType(bundle, relevant.occurrence.shiftTypeId),
+    progress,
+    remainingMs: isActive ? relevant.endMs - nowMs : (isFuture ? relevant.startMs - nowMs : 0),
+    date: String(relevant.occurrence.displayStart ?? relevant.occurrence.sourceDate).slice(0, 10) || date,
+  };
+}
+
+export function durationCountdown(ms: number, language: "ru" | "en"): string {
+  const totalMinutes = Math.max(0, Math.ceil(ms / 60_000));
+  const days = Math.floor(totalMinutes / 1_440);
+  const hours = Math.floor((totalMinutes % 1_440) / 60);
+  const minutes = totalMinutes % 60;
+  if (language === "en") {
+    if (days > 0) return `${days} d ${hours} h`;
+    if (hours > 0) return `${hours} h ${String(minutes).padStart(2, "0")} min`;
+    return `${minutes} min`;
+  }
+  if (days > 0) return `${days} дн. ${hours} ч`;
+  if (hours > 0) return `${hours} ч ${String(minutes).padStart(2, "0")} мин`;
+  return `${minutes} мин`;
+}
+
+export function daysBetween(from: string, to: string): number {
+  return Math.round((dateValue(to).getTime() - dateValue(from).getTime()) / 86_400_000);
+}
+
+function russianDayWord(value: number): string {
+  const mod100 = Math.abs(value) % 100;
+  const mod10 = Math.abs(value) % 10;
+  if (mod100 >= 11 && mod100 <= 14) return "дней";
+  if (mod10 === 1) return "день";
+  if (mod10 >= 2 && mod10 <= 4) return "дня";
+  return "дней";
+}
+
+export function importantRelativeLabel(from: string, to: string, language: "ru" | "en"): string {
+  const diff = daysBetween(from, to);
+  if (language === "en") {
+    if (diff === 0) return "today";
+    if (diff === 1) return "tomorrow";
+    return diff > 1 ? `in ${diff} days` : `${Math.abs(diff)} days ago`;
+  }
+  if (diff === 0) return "сегодня";
+  if (diff === 1) return "завтра";
+  if (diff > 1) return `через ${diff} ${russianDayWord(diff)}`;
+  const ago = Math.abs(diff);
+  return `${ago} ${russianDayWord(ago)} назад`;
+}
+
 export function dateLabel(date: string, language: "ru" | "en", options: Intl.DateTimeFormatOptions = {}): string {
   return new Intl.DateTimeFormat(language === "en" ? "en-US" : "ru-RU", { timeZone: "UTC", ...options }).format(dateValue(date));
 }

@@ -1,10 +1,10 @@
-release=27.40.30
+release=27.40.31
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=16b7db8036bcc2fe62bc66d34cca3d6685ab380853cb40dbb4e42f3b33fd2988
+committedLockfileSha256=044ef3b0c6e430617b7ab0dbe7e56f195fc534cc54bdd67e54737413f228efa7
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=functional-parity-sweep-from-proven-green-v27.40.30
+nextAction=functional-parity-sweep-II-after-v27.40.31

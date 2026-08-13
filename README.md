@@ -1,4 +1,8 @@
-# DutyLog v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary
+# DutyLog v27.40.31 — Functional Parity Sweep I
+
+v27.40.30 is the proven-green closure of Vue Legacy Retirement. v27.40.31 begins the user-visible parity phase by restoring two regressions that survived the migration: Today again shows live shift progress and `До конца` / `До начала` countdowns from immutable occurrence instants, and upcoming Important Days again show relative copy such as `завтра` and `через N дней`. The calculations live in strict typed Vue calendar/timeline model helpers; legacy UI ownership does not return.
+
+## DutyLog v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary (historical)
 
 v27.40.29 is the proven-green post-retirement baseline. v27.40.30 closes the Vue Legacy Retirement phase after a focused onboarding ownership audit: every routed user-facing screen, the shell and offline/sync presentation are Vue-owned after readiness; `dataLayer` remains the single offline mutation/sync infrastructure owner; `#firstRunOnboarding` is retained as one explicit bounded legacy presentation exception because rewriting that isolated boot overlay would add module/PWA first-claim risk without user-visible value. The next phase is Functional Parity Sweep, not another screen migration.
 

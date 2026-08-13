@@ -1,6 +1,6 @@
-# v27.40.30 acceptance boundary
+# v27.40.31 acceptance boundary
 
-v27.40.30 starts from the proven-green v27.40.29 staging baseline and changes no pipeline policy. Exact frontend, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
+v27.40.31 starts from the proven-green v27.40.30 staging baseline and changes no pipeline policy. Exact frontend, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
 
 ## v27.40.29 Vue Logout Ownership & Offline Status Contract Hotfix
 

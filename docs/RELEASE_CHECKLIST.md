@@ -1,6 +1,16 @@
 # Release checklist
 
-Status: v27.40.30.
+Status: v27.40.31.
+
+## v27.40.31 — Functional Parity Sweep I acceptance
+
+- [ ] Node 20.18.1 / npm 10.8.2 frontend gate green with strict TypeScript unchanged.
+- [ ] Vitest 62/62, including live shift projection/countdown and Important Days relative-label cases.
+- [ ] Maven 786/786 across 162 Java test classes on Java 17.
+- [ ] Playwright canary green; full Chromium 48/48, 0 failed, 0 flaky.
+- [ ] Immutable image build and PostgreSQL V47 smoke green.
+- [ ] Staging deploy green.
+- [ ] No OpenAPI/Flyway/auth/offline-owner change; first-run onboarding remains the single bounded legacy presentation exception.
 
 ## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary acceptance
 

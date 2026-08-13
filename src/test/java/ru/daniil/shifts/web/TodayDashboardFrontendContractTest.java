@@ -43,13 +43,27 @@ class TodayDashboardFrontendContractTest {
     }
 
     @Test
-    void liveShiftCardUsesImmutableInstantsForProgressAndCountdown() throws Exception {
-        String js = read("src/main/resources/static/js/35-today.js");
-        assertTrue(js.contains("Date.parse(item.startInstant)"));
-        assertTrue(js.contains("Date.parse(item.endInstant)"));
-        assertTrue(js.contains("todayDashboardCountdown"));
-        assertTrue(js.contains("aria-valuenow"));
-        assertTrue(js.contains("setInterval"));
+    void vueTodayRestoresImmutableInstantProgressAndCountdownParity() throws Exception {
+        String model = read("frontend/src/features/calendar-timeline/types/model.ts");
+        String page = read("frontend/src/features/calendar-timeline/components/TodayPage.vue");
+        assertTrue(model.contains("todayShiftProjection"));
+        assertTrue(model.contains("occurrence.startInstant"));
+        assertTrue(model.contains("occurrence.endInstant"));
+        assertTrue(model.contains("durationCountdown"));
+        assertTrue(page.contains(":aria-valuenow=\"shiftProgress\""));
+        assertTrue(page.contains("setInterval(() => { nowMs.value = Date.now(); }, 30_000)"));
+        assertTrue(page.contains("До конца"));
+        assertTrue(page.contains("До начала"));
+    }
+
+    @Test
+    void vueTodayRestoresRelativeImportantDayCopy() throws Exception {
+        String model = read("frontend/src/features/calendar-timeline/types/model.ts");
+        String page = read("frontend/src/features/calendar-timeline/components/TodayPage.vue");
+        assertTrue(model.contains("importantRelativeLabel"));
+        assertTrue(model.contains("return \"завтра\""));
+        assertTrue(model.contains("russianDayWord"));
+        assertTrue(page.contains("<strong>{{ relativeImportant(item.date) }}</strong>"));
     }
 
     @Test

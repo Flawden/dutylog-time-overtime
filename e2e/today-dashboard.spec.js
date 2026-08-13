@@ -13,6 +13,24 @@ test('Today Dashboard composes the day and opens existing feature flows', async 
   await expect(page.locator('#todayOvertimeBalance')).toBeVisible();
   await expect(page.locator('#todayTaskList')).toBeVisible();
 
+  const workDate = await page.evaluate(async () => (await jfetch('/api/v1/time/context')).workDate);
+  const tomorrow = new Date(`${workDate}T00:00:00Z`);
+  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1);
+  const tomorrowKey = tomorrow.toISOString().slice(0, 10);
+  const importantTitle = `Parity tomorrow ${Date.now()}`;
+  await openView(page, 'important');
+  await page.locator('#importantBoardNew').click();
+  await expect(page.locator('#importantEditModal')).toBeVisible();
+  await page.locator('#importantEditName').fill(importantTitle);
+  await page.locator('#importantEditStartDate').fill(tomorrowKey);
+  const importantCreated = waitForApi(page, 'POST', '/api/v1/important-days');
+  await page.locator('#importantEditSave').click();
+  await importantCreated;
+  await openView(page, 'today');
+  const upcomingTomorrow = page.locator('#todayUpcomingList .todayUpcomingRow', { hasText: importantTitle });
+  await expect(upcomingTomorrow).toBeVisible();
+  await expect(upcomingTomorrow.locator('strong')).toHaveText('завтра');
+
   await page.locator('#todayQuickTask').click();
   await expect(page.locator('#taskEditModal')).toBeVisible();
   const date = await page.locator('#taskEditDate').inputValue();

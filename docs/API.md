@@ -1,4 +1,6 @@
-# DutyLog API v27.40.30
+# DutyLog API v27.40.31
+
+`v27.40.31` changes no HTTP/OpenAPI or Flyway shape. It restores Vue Today presentation parity using existing calendar occurrence data only: live shift countdown/progress and relative Important Days labels. Generated online APIs remain unchanged at **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 
 `v27.40.30` changes no HTTP/OpenAPI or Flyway shape. It closes the Vue Legacy Retirement phase with first-run onboarding retained as one bounded presentation compatibility surface; generated online APIs remain unchanged at **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 

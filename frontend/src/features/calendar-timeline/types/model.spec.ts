@@ -3,9 +3,12 @@ import {
   addDays,
   calendarLoadRange,
   dayFacts,
+  durationCountdown,
+  importantRelativeLabel,
   monthGridDates,
   navigateDate,
   normalizeCalendarBundle,
+  todayShiftProjection,
   weekDates,
 } from "./model";
 
@@ -97,4 +100,39 @@ describe("calendar and timeline model", () => {
     expect(dayFacts(crossMidnight, "2026-08-04").tasks[0]?.text).toBe("Ночная задача");
     expect(dayFacts(crossMidnight, "2026-08-05").tasks[0]?.text).toBe("Ночная задача");
   });
+  it("restores Today live shift countdown and progress from immutable occurrence instants", () => {
+    const bundle = normalizeCalendarBundle({
+      from: "2026-08-01", to: "2026-08-31",
+      shiftTypes: [{ id: 11, name: "Ночь", color: "#445566" }],
+      shiftOccurrences: [{
+        dayEntryId: 31, sourceDate: "2026-08-12", shiftTypeId: 11,
+        startInstant: "2026-08-12T20:00:00Z", endInstant: "2026-08-13T04:00:00Z",
+        sourceStart: "2026-08-12T20:00", sourceEnd: "2026-08-13T04:00",
+        displayStart: "2026-08-12T20:00", displayEnd: "2026-08-13T04:00",
+        sourceTimezone: "UTC", displayTimezone: "UTC",
+        breakMinutes: 30, elapsedMinutes: 480, netMinutes: 450, legacyLocal: false,
+      }],
+    }, "2026-08-01", "2026-08-31");
+
+    const active = todayShiftProjection(bundle, "2026-08-13", Date.parse("2026-08-13T02:30:00Z"));
+    expect(active?.phase).toBe("active");
+    expect(active?.shift?.name).toBe("Ночь");
+    expect(active?.progress).toBe(81);
+    expect(durationCountdown(active?.remainingMs ?? 0, "ru")).toBe("1 ч 30 мин");
+
+    const future = todayShiftProjection(bundle, "2026-08-12", Date.parse("2026-08-12T18:45:00Z"));
+    expect(future?.phase).toBe("future");
+    expect(future?.progress).toBe(0);
+    expect(durationCountdown(future?.remainingMs ?? 0, "en")).toBe("1 h 15 min");
+  });
+
+  it("restores relative Important Days copy on Today", () => {
+    expect(importantRelativeLabel("2026-08-13", "2026-08-13", "ru")).toBe("сегодня");
+    expect(importantRelativeLabel("2026-08-13", "2026-08-14", "ru")).toBe("завтра");
+    expect(importantRelativeLabel("2026-08-13", "2026-08-15", "ru")).toBe("через 2 дня");
+    expect(importantRelativeLabel("2026-08-13", "2026-08-18", "ru")).toBe("через 5 дней");
+    expect(importantRelativeLabel("2026-08-13", "2026-09-03", "ru")).toBe("через 21 день");
+    expect(importantRelativeLabel("2026-08-13", "2026-08-15", "en")).toBe("in 2 days");
+  });
+
 });

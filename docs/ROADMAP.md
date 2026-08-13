@@ -1,26 +1,36 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary**.
+Current release: **v27.40.31 — Functional Parity Sweep I**.
 
 
-## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary — current
+## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary — proven green
 - [x] Start from the proven-green v27.40.29 staging baseline.
 - [x] Audit the exact first-run owner instead of migrating it by default.
 - [x] Keep `#firstRunOnboarding` as the single explicit bounded post-ready legacy presentation exception because it is isolated and preserves module dependency/profile/PWA first-claim ordering.
 - [x] Mark the exception with `data-bounded-legacy-owner="first-run-onboarding"` and add executable source contracts preventing the exception from broadening.
 - [x] Close Vue Legacy Retirement with Vue owning the shell, every routed user-facing screen and offline/sync presentation; retain `dataLayer` as the single offline mutation/sync infrastructure owner.
 - [x] Move the next development line to Functional Parity Sweep rather than cosmetic migration.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 785/785 across 162 Java test classes on Java 17.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.31 — Functional Parity Sweep I — current
+- [x] Start from the proven-green v27.40.30 retirement-closure baseline.
+- [x] Restore Today remaining-time-to-shift-end / until-start presentation and progress from immutable occurrence instants.
+- [x] Restore Important Days relative copy (`сегодня` / `завтра` / `через N дней`) in the Vue Today card.
+- [x] Keep those calculations in strict typed pure model helpers with unit/source contracts; do not reintroduce legacy DOM ownership.
+- [x] Preserve the bounded first-run onboarding exception and the single `dataLayer` offline owner unchanged.
 - [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 785/785 across 162 Java test classes on Java 17.
+- [ ] Maven 786/786 across 162 Java test classes on Java 17.
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
 
-## v27.40.31 — Functional Parity Sweep I — planned after v27.40.30 green
-- [ ] Restore/verify Today remaining-time-to-shift-end presentation.
-- [ ] Restore/verify Important Days relative copy (`завтра` / `через N дней`).
-- [ ] Re-check selected-day parity and workspace/module persistence after reload.
-- [ ] Preserve cross-midnight/timezone, offline/reconnect and direct-hash navigation contracts.
-- [ ] No new legacy migration work unless a demonstrated product defect requires it.
+## v27.40.32 — Functional Parity Sweep II — planned after v27.40.31 green
+- [ ] Re-check selected-day functional parity after full retirement.
+- [ ] Verify workspace/module persistence after reload.
+- [ ] Preserve cross-midnight/timezone, offline/reconnect and direct-hash navigation behavior under browser acceptance.
+- [ ] Classify any remaining parity gap by user-visible impact before changing runtime.
 
 ## v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix — proven green
 - [x] Start from the exact v27.40.28 candidate tree (`1f5053538a08357bc4874c4f9345e5eb25e38916`).

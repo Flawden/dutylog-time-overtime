@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.40.30 closes Vue Legacy Retirement with first-run onboarding retained as one explicitly bounded post-ready legacy presentation exception.
+Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.40.31 begins Functional Parity Sweep from the proven-green v27.40.30 retirement boundary; first-run onboarding remains one explicitly bounded post-ready legacy presentation exception.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
