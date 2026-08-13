@@ -11,6 +11,11 @@ test('calendar switches month week and hourly day while preserving the focused d
   await expect(page.locator('.calendarModeSwitch')).toBeVisible();
   await expect(page.locator('[data-calendar-mode="month"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('#calendarMonthExperience')).toBeVisible();
+  const shiftCell = page.locator('#grid .cell.hasShift').first();
+  await expect(shiftCell).toBeVisible();
+  await expect(shiftCell).toHaveAttribute('style', /--shift-color:/);
+  await expect(shiftCell).toHaveAttribute('aria-label', /Смена|Shift/);
+  await expect(shiftCell.locator('.shift')).toBeHidden();
 
   await selectDate(page, today);
   await openDayModule(page, 'important_dates');

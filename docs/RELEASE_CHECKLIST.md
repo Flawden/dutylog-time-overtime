@@ -1,6 +1,21 @@
 # Release checklist
 
-Status: v27.40.31.
+Status: v27.40.32.
+
+## v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure acceptance
+
+- [x] Start from the exact v27.40.31 Functional Parity Sweep I content tree.
+- [x] Overtime chart reads canonical projected day totals and zero values render at zero height; mobile credit cards lead with earned source hours.
+- [x] Ledger integrity groups repeated issues into human-readable summaries; raw codes/source IDs are available only under technical details.
+- [x] Month calendar uses shift colors as restrained scannable cell information and suppresses repetitive shift text on phone width while retaining an accessible day label.
+- [x] Phone bottom navigation is visually icon-only and every route retains an explicit accessible name.
+- [x] No HTTP/OpenAPI/Flyway/auth/module/onboarding/offline-owner/dependency/retry/timeout change; OpenAPI 124/130, Flyway V47.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Maven 790/790 across 163 Java test classes on Java 17.
+- [ ] Playwright canary green.
+- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
+- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [ ] Staging deploy green.
 
 ## v27.40.31 — Functional Parity Sweep I acceptance
 

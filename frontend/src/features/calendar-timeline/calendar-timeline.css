@@ -28,3 +28,19 @@
   .vue-schedule-preview-row{grid-template-columns:90px minmax(0,1fr)}
   .vue-schedule-preview-row small{grid-column:2}
 }
+
+/* v27.40.32 — Functional parity II: scannable shift-color month grid. */
+.vue-calendar-view .cell.hasShift:not(.hasAbsenceFact) {
+  border-color: color-mix(in srgb, var(--shift-color, var(--accent)) 34%, var(--line));
+  background: linear-gradient(155deg, color-mix(in srgb, var(--shift-color, var(--accent)) 22%, var(--panel2)), color-mix(in srgb, var(--shift-color, var(--accent)) 8%, var(--panel)));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.025), inset 0 -3px 0 color-mix(in srgb, var(--shift-color, var(--accent)) 74%, transparent);
+}
+.vue-calendar-view .cell.hasShift.todayCell:not(.hasAbsenceFact) {
+  background: linear-gradient(155deg, color-mix(in srgb, var(--shift-color, var(--accent)) 18%, var(--panel2)), color-mix(in srgb, var(--accent) 10%, var(--panel)));
+}
+.vue-calendar-view .cell.hasShift .shift { color: var(--text) !important; }
+.vue-calendar-view .cell.hasShift .shift::before { content:""; display:inline-block; width:7px; height:7px; margin-right:5px; border-radius:999px; background:var(--shift-color, var(--accent)); box-shadow:0 0 10px color-mix(in srgb,var(--shift-color, var(--accent)) 38%,transparent); vertical-align:1px; }
+@media(max-width:760px){
+  .vue-calendar-view .cell.hasShift:not(.hasAbsenceFact) { min-height:78px; }
+  .vue-calendar-view .cell.hasShift:not(.hasAbsenceFact) .shift { display:none; }
+}

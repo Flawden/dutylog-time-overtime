@@ -1,6 +1,6 @@
-# DutyLog v27.40.31 — Functional Parity Sweep I
+# DutyLog v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure
 
-v27.40.30 is the proven-green closure of Vue Legacy Retirement. v27.40.31 begins the user-visible parity phase by restoring two regressions that survived the migration: Today again shows live shift progress and `До конца` / `До начала` countdowns from immutable occurrence instants, and upcoming Important Days again show relative copy such as `завтра` and `через N дней`. The calculations live in strict typed Vue calendar/timeline model helpers; legacy UI ownership does not return.
+v27.40.31 restored Today shift timing and relative Important Days copy. v27.40.32 closes the remaining manual-staging parity/usability gaps before Vacation/Payroll expansion: overtime charts use canonical server daily projections and stop painting fake zero bars; ledger-integrity warnings are grouped into human-readable explanations with machine codes behind technical details; the month calendar again uses shift color as scannable information; and the phone bottom navigation becomes visually icon-only while preserving accessible route names. No API/Flyway, auth, onboarding, module, or offline `dataLayer` ownership changes are introduced.
 
 ## DutyLog v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary (historical)
 

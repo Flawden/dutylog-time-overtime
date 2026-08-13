@@ -8,6 +8,7 @@ import UiModal from "@/shared/overlays/UiModal.vue";
 import { useAbsenceTimeBankStore } from "../stores/absenceTimeBankStore";
 import { navigateHashRoute } from "@/platform/router/hashRoute";
 import {
+  creditRowEarnedHours,
   dayCreditTotals,
   fifoForecast,
   fifoOpenCredits,
@@ -37,6 +38,7 @@ const {
   guideOpen,
   fifoForecastHours,
   focusAbsenceUsageId,
+  range,
 } = storeToRefs(store);
 
 const emptyAccount = { totalEarnedHours: 0, totalUsedHours: 0, balanceHours: 0, credits: [], usages: [] };
@@ -53,9 +55,55 @@ const sourceCredits = computed(() => uniqueSourceCredits(safeAccount.value.credi
 const totalsByDay = computed(() => dayCreditTotals(safeAccount.value.credits));
 const forecast = computed(() => fifoForecast(safeAccount.value, Math.round(Math.max(0, Number(fifoForecastHours.value || 0)) * 60)));
 const maxChartHours = computed(() => Math.max(1, ...chartColumns.value.flatMap(column => [column.earnedHours, column.usedHours])));
-const periodLabel = computed(() => rangeMode.value === "year" ? "Год" : "Месяц");
+const periodLabel = computed(() => {
+  if (!range.value.from) return rangeMode.value === "year" ? "Год" : "Месяц";
+  if (rangeMode.value === "year") return `${range.value.from.slice(0, 4)} год`;
+  return new Intl.DateTimeFormat("ru-RU", { month: "long", year: "numeric", timeZone: "UTC" })
+    .format(new Date(`${range.value.from}T00:00:00Z`));
+});
 const integrityHealthy = computed(() => integrity.value?.healthy !== false);
-const currentPeriod = computed(() => integrity.value?.periods?.find(item => String(item.month ?? "") === new Date().toISOString().slice(0, 7)) ?? null);
+const integrityRangeLabel = computed(() => {
+  if (!integrity.value?.from || !integrity.value?.to) return "Период не загружен";
+  const format = (date: string) => new Intl.DateTimeFormat("ru-RU", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })
+    .format(new Date(`${date}T00:00:00Z`));
+  return `${format(integrity.value.from)} — ${format(integrity.value.to)}`;
+});
+const periodStateLabel = computed(() => {
+  const periods = integrity.value?.periods ?? [];
+  if (rangeMode.value === "month") {
+    const month = range.value.from.slice(0, 7);
+    const period = periods.find(item => String(item.month ?? "") === month);
+    return period?.status === "CLOSED" ? "Период закрыт" : "Период открыт";
+  }
+  if (!periods.length) return "Расчётные месяцы ещё не закрывались";
+  const closed = periods.filter(item => item.status === "CLOSED").length;
+  return `Закрыто месяцев: ${closed} из ${periods.length}`;
+});
+const integrityIssueGroups = computed(() => {
+  const labels: Record<string, string> = {
+    ORPHAN_LINKED_USAGE: "Есть списание банка без связанного отсутствия.",
+    INACTIVE_ABSENCE_HAS_USAGE: "Неактивное отсутствие всё ещё удерживает часы переработки.",
+    USAGE_STATE_MISMATCH: "Статус списания не совпадает со статусом отсутствия.",
+    USAGE_MINUTES_MISMATCH: "Количество времени отсутствия и связанного списания различается.",
+    ALLOCATION_MISMATCH: "FIFO-распределение не совпадает с суммой списания.",
+    MISSING_LINKED_USAGE: "Отгул из банка переработок не имеет связанного списания.",
+    MISSING_ACTIVE_AUDIT: "Для активного отгула отсутствует текущая запись учёта.",
+    INACTIVE_ABSENCE_HAS_ACTIVE_AUDIT: "У завершённого или отменённого отсутствия осталась открытая запись учёта.",
+    AUDIT_STATE_MISMATCH: "Состояние записи учёта не совпадает со статусом отсутствия.",
+    AUDIT_MINUTES_MISMATCH: "Количество времени в записи учёта не совпадает с отсутствием.",
+    DUPLICATE_OPENING_CREDIT: "Начальный баланс был перенесён больше одного раза.",
+  };
+  const groups = new Map<string, { code: string; label: string; count: number; sourceIds: number[] }>();
+  for (const issue of integrity.value?.issues ?? []) {
+    const code = String(issue.code ?? "UNKNOWN");
+    const current = groups.get(code) ?? { code, label: labels[code] ?? String(issue.message ?? "Нужно проверить запись учёта."), count: 0, sourceIds: [] };
+    current.count += 1;
+    const sourceId = Number(issue.sourceId ?? 0);
+    if (sourceId > 0 && !current.sourceIds.includes(sourceId)) current.sourceIds.push(sourceId);
+    groups.set(code, current);
+  }
+  return [...groups.values()];
+});
 
 const usageRows = new Map<number, HTMLElement>();
 
@@ -65,6 +113,12 @@ const tabs = [
   { value: "usage" as const, label: "Использование" },
   { value: "fifo" as const, label: "FIFO" },
 ];
+
+
+function chartBarHeight(hours: number): string {
+  if (!(hours > 0.0001)) return "0%";
+  return `${Math.max(4, (hours / maxChartHours.value) * 100)}%`;
+}
 
 function creditUsages(credit: OvertimeCredit): OvertimeUsage[] {
   const id = Number(credit.id);
@@ -175,9 +229,20 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
             <span>Проведено <b>{{ formatMinutes(integrity?.postedMinutes) }}</b></span>
             <span>Возвращено <b>{{ formatMinutes(integrity?.reversedMinutes) }}</b></span>
           </div>
-          <p>{{ currentPeriod?.status === 'CLOSED' ? 'Период закрыт' : 'Период открыт' }} · {{ integrity?.from }} — {{ integrity?.to }}</p>
-          <div v-if="!integrityHealthy" id="ledgerIntegrityIssues" class="domain-alert domain-alert--warning">
-            <p v-for="issue in integrity?.issues ?? []" :key="`${issue.code}-${issue.message}`"><b>{{ issue.code }}</b> — {{ issue.message }}</p>
+          <p class="integrity-period-copy"><b>{{ periodStateLabel }}</b><span>{{ integrityRangeLabel }}</span></p>
+          <div v-if="!integrityHealthy" id="ledgerIntegrityIssues" class="integrity-issues" role="alert">
+            <div class="integrity-issues__intro">
+              <strong>Нужно проверить учёт · {{ integrity?.issues.length ?? 0 }}</strong>
+              <span>Баланс не исправляется автоматически. Закрытие расчётного периода может быть недоступно, пока расхождения не устранены.</span>
+            </div>
+            <div v-for="group in integrityIssueGroups" :key="group.code" class="integrity-issue-group">
+              <div><b>{{ group.label }}</b><span v-if="group.count > 1">{{ group.count }} записей</span><span v-else>1 запись</span></div>
+              <details>
+                <summary>Технические детали</summary>
+                <code>{{ group.code }}</code>
+                <small v-if="group.sourceIds.length">ID: {{ group.sourceIds.join(', ') }}</small>
+              </details>
+            </div>
           </div>
         </article>
 
@@ -211,8 +276,8 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
         <div v-if="!chartColumns.length" class="domain-muted">В выбранном периоде нет операций.</div>
         <div v-for="column in chartColumns" :key="column.key" class="overtimeChartColumn" :data-series-key="column.key" :title="column.title">
           <div class="overtimeChartColumn__bars">
-            <i class="earned" :style="{ height: `${Math.max(4, (column.earnedHours / maxChartHours) * 100)}%` }"></i>
-            <i class="used" :style="{ height: `${Math.max(4, (column.usedHours / maxChartHours) * 100)}%` }"></i>
+            <i class="earned" :style="{ height: chartBarHeight(column.earnedHours) }"></i>
+            <i class="used" :style="{ height: chartBarHeight(column.usedHours) }"></i>
           </div>
           <small>{{ column.key.slice(rangeMode === 'year' ? 5 : 8) }}</small>
         </div>
@@ -227,7 +292,7 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
                 <td>{{ credit.workedDate }}</td>
                 <td>{{ credit.displayStart && credit.displayEnd ? `${credit.displayStart} — ${credit.displayEnd}` : credit.timeRange || 'вручную' }}</td>
                 <td>{{ credit.reason || 'Переработка' }}</td>
-                <td>{{ formatSignedHours(credit.hours) }}</td>
+                <td>{{ formatSignedHours(creditRowEarnedHours(credit)) }}</td>
                 <td>{{ formatSignedHours(credit.usedHours, true) }}</td>
                 <td>{{ formatHours(credit.remainingHours) }}</td>
                 <td><div class="domain-row-actions"><UiButton size="sm" :data-edit-credit="credit.id" @click="store.editCredit(Number(credit.id))">Изменить</UiButton><UiButton size="sm" variant="danger" @click="store.deleteCredit(Number(credit.id))">Удалить</UiButton></div></td>
@@ -246,9 +311,9 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
 
       <div id="ledgerCards" class="domain-mobile-cards">
         <details v-for="credit in sourceCredits" :key="credit.id" class="overtimeLedgerCard">
-          <summary><span><strong>{{ credit.workedDate }}</strong><small>{{ credit.reason || credit.timeRange || 'Переработка' }}</small></span><b>{{ formatSignedHours(credit.projection?.sourceRemainingHours ?? credit.remainingHours) }}</b></summary>
+          <summary><span><strong>{{ credit.workedDate }}</strong><small>{{ credit.reason || credit.timeRange || 'Переработка' }}</small></span><b>{{ formatSignedHours(credit.projection?.sourceCreditHours ?? creditRowEarnedHours(credit)) }}</b></summary>
           <div class="overtime-ledger-card__body">
-            <p>Начислено {{ formatSignedHours(credit.projection?.sourceCreditHours ?? credit.hours) }} · использовано {{ formatSignedHours(credit.usedHours, true) }}</p>
+            <p>Использовано {{ formatSignedHours(credit.projection?.sourceUsedHours ?? credit.usedHours, true) }} · осталось {{ formatHours(credit.projection?.sourceRemainingHours ?? credit.remainingHours) }}</p>
             <div v-for="usage in creditUsages(credit)" :key="usage.id" class="overtime-ledger-card__usage">{{ usage.reason || 'Отгул' }} · {{ formatMinutes(usage.minutes) }}</div>
             <UiButton size="sm" :data-edit-credit="credit.id" @click="store.editCredit(Number(credit.id))">Изменить начисление</UiButton>
           </div>

@@ -50,11 +50,13 @@ test('Overtime Next keeps the professional desktop ledger and replaces it with d
   await page.locator('#timeBankTabCredits').click();
   expect(await page.locator('#ledgerChart .overtimeChartColumn').count()).toBeGreaterThan(0);
   const monthKey = usageDate.slice(0, 7);
+  await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${monthKey}"]`)).toHaveAttribute('title', /\+5/);
   await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${monthKey}"]`)).toHaveAttribute('title', /−4/);
 
   await page.locator('#ledgerThisMonth').click();
   await expect(page.locator('#ledgerThisMonth')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${usageDate}"]`)).toHaveAttribute('title', /−4/);
+  await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${firstDate}"] .used`)).toHaveAttribute('style', /height:\s*0%/);
 
   await expect(page.locator('.ledgerTableWrap')).toBeVisible();
   await expect(page.locator('#ledgerRows tr[data-credit-id]')).toHaveCount(2);
@@ -71,7 +73,9 @@ test('Overtime Next keeps the professional desktop ledger and replaces it with d
 
   const card = page.locator('.overtimeLedgerCard').filter({ hasText:'Overtime Next second credit' });
   await expect(card).toBeVisible();
+  await expect(card.locator('summary')).toContainText('+2 ч');
   await card.locator('summary').click();
+  await expect(card).toContainText(/осталось 1 ч|remaining 1 h/i);
   await expect(card).toContainText('Overtime Next FIFO usage');
   await expect(card.locator('[data-edit-credit]')).toBeVisible();
 });

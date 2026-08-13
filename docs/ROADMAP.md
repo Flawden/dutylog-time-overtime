@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.31 — Functional Parity Sweep I**.
+Current release: **v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure**.
 
 
 ## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary — proven green
@@ -15,22 +15,29 @@ Current release: **v27.40.31 — Functional Parity Sweep I**.
 - [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [x] Immutable image/PostgreSQL V47 staging acceptance.
 
-## v27.40.31 — Functional Parity Sweep I — current
-- [x] Start from the proven-green v27.40.30 retirement-closure baseline.
+## v27.40.31 — Functional Parity Sweep I — accepted predecessor
 - [x] Restore Today remaining-time-to-shift-end / until-start presentation and progress from immutable occurrence instants.
 - [x] Restore Important Days relative copy (`сегодня` / `завтра` / `через N дней`) in the Vue Today card.
 - [x] Keep those calculations in strict typed pure model helpers with unit/source contracts; do not reintroduce legacy DOM ownership.
 - [x] Preserve the bounded first-run onboarding exception and the single `dataLayer` offline owner unchanged.
+
+## v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure — current
+- [x] Use canonical server day projection totals for overtime accrual charts and historical zero-row fallback; do not paint fake bars for zero values.
+- [x] Present ledger-integrity issues as grouped human-readable summaries while retaining stable machine diagnostics under technical details.
+- [x] Restore shift color as scannable month-grid information with full-day factual absence taking visual priority.
+- [x] Make phone bottom navigation icon-only visually while preserving accessible route names.
+- [x] Keep OpenAPI 124/130, Flyway V47, bounded onboarding and single `dataLayer` offline ownership unchanged.
 - [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 786/786 across 162 Java test classes on Java 17.
+- [ ] Maven 790/790 across 163 Java test classes on Java 17.
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
 
-## v27.40.32 — Functional Parity Sweep II — planned after v27.40.31 green
-- [ ] Re-check selected-day functional parity after full retirement.
-- [ ] Verify workspace/module persistence after reload.
-- [ ] Preserve cross-midnight/timezone, offline/reconnect and direct-hash navigation behavior under browser acceptance.
-- [ ] Classify any remaining parity gap by user-visible impact before changing runtime.
+## v27.41.0 — Vacation Entitlement & Accrual Engine — next after v27.40.32 green
+- [ ] Entitlement policy and annual allowance.
+- [ ] Accrual/carry-over/adjustments with explainable balance.
+- [ ] Planned/used/available vacation projection integrated with the existing Absence domain.
+- [ ] Preserve modular-monolith boundaries so Payroll consumes Vacation through explicit domain contracts rather than internal persistence.
+
 
 ## v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix — proven green
 - [x] Start from the exact v27.40.28 candidate tree (`1f5053538a08357bc4874c4f9345e5eb25e38916`).

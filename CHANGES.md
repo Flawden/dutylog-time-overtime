@@ -1,3 +1,12 @@
+# v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure
+- Starts from the v27.40.31 Functional Parity Sweep I tree after manual staging acceptance confirmed live shift timing and relative Important Days copy.
+- Repairs overtime accrual presentation with canonical server daily projection totals, historical single-part zero-row fallback and true zero-height chart bars; mobile credit cards now lead with earned hours instead of an unlabeled remaining balance.
+- Replaces raw repeated ledger-integrity codes in the primary UX with grouped human-readable explanations and counts while keeping stable machine codes/source IDs under technical details.
+- Restores shift color as restrained scannable information in the Vue month calendar and suppresses repetitive shift-name text on phone width without losing accessible day/shift labels.
+- Makes the fixed phone bottom navigation visually icon-only while keeping explicit route `aria-label` names and unchanged desktop/sidebar labels.
+- Keeps first-run onboarding as the single bounded legacy presentation exception and keeps `dataLayer` as the single offline mutation/sync owner.
+- Changes no HTTP/OpenAPI shape, Flyway migration, authentication/session logic, module semantics, retry/timeout policy or dependency graph.
+- Acceptance inventory advances to **163 Java test classes / 790 `@Test` methods / 48 Chromium Playwright scenarios / 63 Vitest cases / OpenAPI 124/130 / Flyway V47**.
 # v27.40.31 — Functional Parity Sweep I
 
 - Starts from the proven-green v27.40.30 Legacy Retirement Closure baseline; no new legacy migration work is introduced.

@@ -31,12 +31,13 @@ function navigate(route: DutyLogRoute): void {
       class="vue-shell-nav__item"
       :class="{ 'is-active': activeRoute === item.route }"
       type="button"
+      :aria-label="item.labels[language]"
       :aria-current="activeRoute === item.route ? 'page' : false"
       :data-route="item.route"
       @click="navigate(item.route)"
     >
       <AppIcon :name="item.icon" />
-      <span>{{ item.labels[language] }}</span>
+      <span class="vue-shell-nav__label">{{ item.labels[language] }}</span>
     </button>
     <button
       v-if="secondaryNavigation.length"
@@ -48,7 +49,7 @@ function navigate(route: DutyLogRoute): void {
       :aria-current="secondaryActive ? 'page' : false"
       @click="shell.openMore()"
     >
-      <AppIcon name="menu"/><span>{{ language === 'en' ? 'More' : 'Ещё' }}</span>
+      <AppIcon name="menu"/><span class="vue-shell-nav__label">{{ language === 'en' ? 'More' : 'Ещё' }}</span>
     </button>
   </nav>
 </template>

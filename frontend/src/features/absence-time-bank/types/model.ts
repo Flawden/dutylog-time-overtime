@@ -434,6 +434,44 @@ function periodKey(date: string, mode: LedgerRangeMode): string {
   return mode === "year" ? date.slice(0, 7) : date;
 }
 
+function finiteHours(value: unknown): number | null {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
+export function creditRowEarnedHours(credit: OvertimeCredit): number {
+  const rowHours = finiteHours(credit.hours) ?? 0;
+  if (Math.abs(rowHours) > 0.0001) return rowHours;
+  const projection = credit.projection;
+  if (!projection || Number(projection.partCount ?? 1) !== 1) return rowHours;
+  return finiteHours(projection.sourceCreditHours) ?? finiteHours(projection.dayEarnedHours) ?? rowHours;
+}
+
+export function dayCreditTotals(credits: OvertimeCredit[]): Map<string, { earned: number; used: number; remaining: number }> {
+  const rowsByDay = new Map<string, OvertimeCredit[]>();
+  for (const credit of credits) {
+    const rows = rowsByDay.get(credit.workedDate) ?? [];
+    rows.push(credit);
+    rowsByDay.set(credit.workedDate, rows);
+  }
+
+  const result = new Map<string, { earned: number; used: number; remaining: number }>();
+  for (const [date, rows] of rowsByDay) {
+    const serverProjection = rows.map(row => row.projection).find(projection => projection != null);
+    const fallback = rows.reduce((totals, row) => ({
+      earned: totals.earned + creditRowEarnedHours(row),
+      used: totals.used + (finiteHours(row.usedHours) ?? 0),
+      remaining: totals.remaining + (finiteHours(row.remainingHours) ?? 0),
+    }), { earned: 0, used: 0, remaining: 0 });
+    result.set(date, {
+      earned: finiteHours(serverProjection?.dayEarnedHours) ?? fallback.earned,
+      used: finiteHours(serverProjection?.dayUsedHours) ?? fallback.used,
+      remaining: finiteHours(serverProjection?.dayRemainingHours) ?? fallback.remaining,
+    });
+  }
+  return result;
+}
+
 export function ledgerChartColumns(account: OvertimeAccountReadModel, mode: LedgerRangeMode): LedgerChartColumn[] {
   const rows = new Map<string, { earnedHours: number; usedHours: number }>();
   const rowFor = (date: string) => {
@@ -443,8 +481,8 @@ export function ledgerChartColumns(account: OvertimeAccountReadModel, mode: Ledg
     return current;
   };
 
-  for (const credit of account.credits) {
-    rowFor(credit.workedDate).earnedHours += Number(credit.hours ?? 0);
+  for (const [date, totals] of dayCreditTotals(account.credits)) {
+    rowFor(date).earnedHours += totals.earned;
   }
   for (const usage of account.usages) {
     rowFor(usage.usageDate).usedHours += Number(usage.hours ?? 0);
@@ -456,18 +494,6 @@ export function ledgerChartColumns(account: OvertimeAccountReadModel, mode: Ledg
     usedHours: Math.round(value.usedHours * 100) / 100,
     title: `${key}: +${formatHours(value.earnedHours)} · −${formatHours(value.usedHours)}`,
   }));
-}
-
-export function dayCreditTotals(credits: OvertimeCredit[]): Map<string, { earned: number; used: number; remaining: number }> {
-  const result = new Map<string, { earned: number; used: number; remaining: number }>();
-  for (const credit of credits) {
-    const current = result.get(credit.workedDate) ?? { earned: 0, used: 0, remaining: 0 };
-    current.earned += Number(credit.hours ?? 0);
-    current.used += Number(credit.usedHours ?? 0);
-    current.remaining += Number(credit.remainingHours ?? 0);
-    result.set(credit.workedDate, current);
-  }
-  return result;
 }
 
 export function scenarioDescription(scenario: QuickScenario): string {

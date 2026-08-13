@@ -167,7 +167,7 @@
   box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 0 24px color-mix(in srgb, var(--accent) 12%, transparent);
 }
 .vue-shell-nav__item .ui-icon { flex: none; }
-.vue-shell-nav__item span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.vue-shell-nav__item .vue-shell-nav__label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 .ui-icon {
   width: 21px;
@@ -372,8 +372,9 @@ html[data-vue-shell="ready"] body.app-modal-open .vue-shell-nav { visibility: hi
     grid-template-columns: repeat(var(--vue-shell-nav-count, 5), minmax(0,1fr));
     padding: 6px 5px calc(6px + env(safe-area-inset-bottom, 0px));
   }
-  .vue-shell-nav__item { min-height: 55px; padding: 6px 4px; flex-direction: column; gap: 3px; font-size: 9px; }
-  .vue-shell-nav__item .ui-icon { width: 22px; height: 22px; }
+  .vue-shell-nav__item { min-height: 55px; padding: 6px 4px; flex-direction: column; gap: 0; font-size: 9px; }
+  .vue-shell-nav__item .ui-icon { width: 24px; height: 24px; }
+  .vue-shell-nav__item .vue-shell-nav__label { display: none; }
   html[data-vue-shell="ready"] .wrap { padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
   html[data-vue-shell="ready"] body.app-modal-open .vue-shell-nav,
   html[data-vue-shell="ready"] body.panel-open .vue-shell-nav { visibility: hidden; pointer-events: none; }

@@ -103,6 +103,19 @@ html[data-vue-absence-time-bank="ready"] :is(#view-vacation, #view-overtime) { d
 .integrity-metrics { margin: 12px 0 8px; display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 7px; }
 .integrity-metrics span { padding: 8px; display: grid; gap: 3px; color: var(--mut); border-radius: 9px; background: color-mix(in srgb, var(--panel) 76%, transparent); font-size: 12px; }
 .integrity-metrics b { color: var(--text); font-size: 14px; }
+.integrity-period-copy { display: grid; gap: 3px; color: var(--mut); }
+.integrity-period-copy b { color: var(--text); }
+.integrity-period-copy span { font-size: 12px; }
+.integrity-issues { margin-top: 10px; display: grid; gap: 8px; }
+.integrity-issues__intro { padding: 11px 12px; display: grid; gap: 4px; color: #ffe1a4; border: 1px solid color-mix(in srgb, #e5a83c 55%, var(--line)); border-radius: 12px; background: color-mix(in srgb, #e5a83c 14%, var(--panel)); }
+.integrity-issues__intro span { font-size: 12px; line-height: 1.45; }
+.integrity-issue-group { padding: 10px 11px; display: grid; gap: 7px; border: 1px solid var(--vue-shell-border-soft); border-radius: 11px; background: color-mix(in srgb, var(--panel) 76%, transparent); }
+.integrity-issue-group > div { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+.integrity-issue-group > div span { flex: none; color: var(--mut); font-size: 11px; }
+.integrity-issue-group details { color: var(--mut); font-size: 11px; }
+.integrity-issue-group details summary { cursor: pointer; }
+.integrity-issue-group code { display: inline-block; margin-top: 6px; padding: 3px 6px; border-radius: 6px; background: color-mix(in srgb, var(--panel2) 76%, transparent); color: var(--text); }
+.integrity-issue-group small { display: block; margin-top: 4px; }
 .actual-work-list { margin-top: 10px; display: grid; gap: 7px; }
 .actual-work-item { padding: 8px; display: grid; gap: 3px; border-radius: 9px; background: color-mix(in srgb, var(--panel) 76%, transparent); }
 .actual-work-item span { color: var(--mut); font-size: 12px; }
@@ -117,7 +130,7 @@ html[data-vue-absence-time-bank="ready"] :is(#view-vacation, #view-overtime) { d
 .ledger-chart { min-height: 190px; margin-bottom: 14px; padding: 14px 12px 8px; display: flex; align-items: flex-end; gap: 7px; overflow-x: auto; border: 1px solid var(--vue-shell-border-soft); border-radius: 14px; background: linear-gradient(to top, color-mix(in srgb, var(--line) 22%, transparent) 1px, transparent 1px); background-size: 100% 25%; }
 .overtimeChartColumn { min-width: 34px; height: 150px; display: grid; grid-template-rows: 1fr auto; gap: 5px; align-items: end; text-align: center; }
 .overtimeChartColumn__bars { height: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 3px; }
-.overtimeChartColumn__bars i { width: 10px; min-height: 4px; border-radius: 5px 5px 2px 2px; }
+.overtimeChartColumn__bars i { width: 10px; min-height: 0; border-radius: 5px 5px 2px 2px; transition: height .18s ease; }
 .overtimeChartColumn__bars .earned { background: var(--accent); }
 .overtimeChartColumn__bars .used { background: color-mix(in srgb, #ffb45b 86%, var(--accent)); }
 .overtimeChartColumn small { color: var(--mut); font-size: 9px; }

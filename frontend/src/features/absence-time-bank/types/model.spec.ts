@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import type { OvertimeAccountReadModel, OvertimeCredit, OvertimeUsage, QuickScenario } from "./domain";
 import {
   applyScenarioToCreditDraft,
+  creditRowEarnedHours,
+  dayCreditTotals,
   fifoForecast,
   ledgerChartColumns,
   newCreditDraft,
@@ -94,6 +96,34 @@ describe("absence and time-bank domain model", () => {
     expect(ledgerChartColumns(split, "month")).toEqual([
       expect.objectContaining({ key: "2026-08-03", earnedHours: 1, usedHours: 0 }),
       expect.objectContaining({ key: "2026-08-04", earnedHours: 3, usedHours: 0 }),
+    ]);
+  });
+
+  it("recovers canonical server day totals when a historical visible row reports zero hours", () => {
+    const historical = credit({
+      id: 8,
+      workedDate: "2026-08-06",
+      hours: 0,
+      usedHours: 0,
+      remainingHours: 0,
+      projection: {
+        ...credit({}).projection!,
+        partIndex: 1,
+        partCount: 1,
+        dayEarnedHours: 3,
+        dayUsedHours: 1,
+        dayRemainingHours: 2,
+        sourceCreditHours: 3,
+        sourceUsedHours: 1,
+        sourceRemainingHours: 2,
+      },
+    });
+    const data = account({ credits: [historical], usages: [] });
+
+    expect(creditRowEarnedHours(historical)).toBe(3);
+    expect(dayCreditTotals(data.credits).get("2026-08-06")).toEqual({ earned: 3, used: 1, remaining: 2 });
+    expect(ledgerChartColumns(data, "month")).toEqual([
+      expect.objectContaining({ key: "2026-08-06", earnedHours: 3, usedHours: 0 }),
     ]);
   });
 

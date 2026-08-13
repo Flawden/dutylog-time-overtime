@@ -14,18 +14,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class TimeBankUsageDateChartParityHotfixTest {
 
     @Test
-    void earnedSeriesUsesCreditWorkDatesOnly() throws IOException {
+    void earnedSeriesUsesCanonicalProjectedDayTotals() throws IOException {
         String model = compact(read("frontend/src/features/absence-time-bank/types/model.ts"));
-        String block = functionBlock(model, "export function ledgerChartColumns", "export function dayCreditTotals");
+        String block = functionBlock(model, "export function ledgerChartColumns", "export function scenarioDescription");
 
-        assertTrue(block.contains("for (const credit of account.credits)"));
-        assertTrue(block.contains("rowFor(credit.workedDate).earnedHours += Number(credit.hours ?? 0);"));
+        assertTrue(block.contains("for (const [date, totals] of dayCreditTotals(account.credits))"));
+        assertTrue(block.contains("rowFor(date).earnedHours += totals.earned;"));
+        assertTrue(block.contains("serverProjection?.dayEarnedHours"));
+        assertFalse(block.contains("rowFor(credit.workedDate).earnedHours += Number(credit.hours ?? 0);"));
     }
 
     @Test
     void usedSeriesUsesActualUsageDates() throws IOException {
         String model = compact(read("frontend/src/features/absence-time-bank/types/model.ts"));
-        String block = functionBlock(model, "export function ledgerChartColumns", "export function dayCreditTotals");
+        String block = functionBlock(model, "export function ledgerChartColumns", "export function scenarioDescription");
 
         assertTrue(block.contains("for (const usage of account.usages)"));
         assertTrue(block.contains("rowFor(usage.usageDate).usedHours += Number(usage.hours ?? 0);"));
@@ -34,7 +36,7 @@ class TimeBankUsageDateChartParityHotfixTest {
     @Test
     void chartDoesNotDoubleCountCreditAllocationTotalsAsUsageEvents() throws IOException {
         String model = compact(read("frontend/src/features/absence-time-bank/types/model.ts"));
-        String block = functionBlock(model, "export function ledgerChartColumns", "export function dayCreditTotals");
+        String block = functionBlock(model, "export function ledgerChartColumns", "export function scenarioDescription");
 
         assertFalse(block.contains("credit.usedHours"));
         assertFalse(block.contains("projection?.sourceUsedHours"));

@@ -98,6 +98,26 @@ const timelineEvents = computed(() => {
 });
 
 function cellFacts(date: string) { return dayFacts(bundle.value, date); }
+function cellStyle(date: string): Record<string, string> {
+  const facts = cellFacts(date);
+  const styles: Record<string, string> = {};
+  const shiftColor = facts.shift?.color;
+  if (shiftColor) styles["--shift-color"] = shiftColor;
+  const absenceColor = factualAbsence(date)?.typeColor;
+  if (absenceColor) styles["--absence-color"] = absenceColor;
+  return styles;
+}
+function cellAriaLabel(date: string): string {
+  const facts = cellFacts(date);
+  const parts = [dateLabel(date, language.value, { weekday: "long", day: "numeric", month: "long" })];
+  const shiftName = facts.shift?.name;
+  if (shiftName) parts.push(`${language.value === "en" ? "Shift" : "Смена"}: ${shiftName}`);
+  if (facts.absences.length) parts.push(`${language.value === "en" ? "Absences" : "Отсутствия"}: ${facts.absences.length}`);
+  const openTasks = facts.tasks.filter(task => !task.done).length;
+  if (openTasks) parts.push(`${language.value === "en" ? "Tasks" : "Задачи"}: ${openTasks}`);
+  if (facts.important.length) parts.push(`${language.value === "en" ? "Important dates" : "Важные даты"}: ${facts.important.length}`);
+  return parts.join(". ");
+}
 function factualAbsence(date: string) { return cellFacts(date).absences.find(item => item.coverage === "FULL_DAY" && item.replacesShift) ?? null; }
 function partialAbsences(date: string) { return cellFacts(date).absences.filter(item => item.coverage === "PARTIAL" || item.coverage === "HOURS_ONLY"); }
 function secondaryAbsences(date: string) {
@@ -211,8 +231,9 @@ async function openDetails(): Promise<void> { await store.openDayPanel(focusDate
               :key="date"
               type="button"
               class="cell"
-              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)) }"
-              :style="factualAbsence(date) ? { '--absence-color': factualAbsence(date)?.typeColor } : undefined"
+              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasShift: Boolean(cellFacts(date).shift), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)) }"
+              :style="cellStyle(date)"
+              :aria-label="cellAriaLabel(date)"
               :data-date="date"
               @click="chooseDate(date)"
             >

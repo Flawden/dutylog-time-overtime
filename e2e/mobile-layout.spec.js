@@ -21,6 +21,9 @@ test('calendar, filters and selected-day panel remain usable on a phone viewport
   await page.locator('#pClose').click();
   await expect(page.locator('#panel')).toBeHidden();
   await expect(page.locator('[data-vue-shell-navigation]')).toBeVisible();
+  await expect(page.locator('[data-vue-shell-navigation] .vue-shell-nav__label').first()).toBeHidden();
+  await expect(page.locator('[data-vue-shell-navigation] [data-route="today"]')).toHaveAttribute('aria-label', /Сегодня|Today/);
+  await expect(page.locator('[data-vue-shell-navigation] [data-route="today"] .ui-icon')).toBeVisible();
 
   await openView(page, 'tasks');
   await expect(page.locator('#view-tasks')).toBeVisible();
