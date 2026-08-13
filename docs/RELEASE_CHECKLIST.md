@@ -1,6 +1,23 @@
 # Release checklist
 
-Status: v27.40.28.
+Status: v27.40.29.
+
+
+## v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix acceptance
+
+- [x] Base content tree is exact v27.40.28 candidate (`1f5053538a08357bc4874c4f9345e5eb25e38916`).
+- [x] Attached Chromium report classified as 48 executed / 46 passed / 2 deterministic failures with matching retries; no image/deploy-only explanation is used.
+- [x] PWA offline failure is stale translated-copy coupling: body is offline and Vue `#offlineStatus` renders `Нет сети`; browser contract now uses `data-network-state="offline"`.
+- [x] Remember-me failure is real runtime ownership debt: Vue logout click produced no `/logout` network request because `DutyLogLegacyPlatform.logout()` still clicked retired `#logout`.
+- [x] Logout is DOM-independent and preserves the existing pending-save flush, CSRF-aware `POST /logout`, remember-me revocation and `/login.html` redirect in one session executor.
+- [x] First-run onboarding runtime is unchanged and is not migrated in this hotfix.
+- [x] No HTTP/OpenAPI/Flyway/business/auth/retry/timeout/dependency/offline-queue semantic change; OpenAPI 124/130, Flyway V47.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Maven 782/782 across 161 Java test classes on Java 17.
+- [ ] Playwright canary green.
+- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
+- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [ ] Staging deploy green.
 
 
 ## v27.40.28 — E2E Vue Shell Identity Contract Alignment Hotfix acceptance

@@ -1,3 +1,9 @@
+## v27.40.29 Vue Logout Ownership & Offline Status Contract Hotfix
+
+The v27.40.28 full Chromium run executed all 48 scenarios with 46 passing and two deterministic failures. PWA offline state was correct but the assertion was coupled to retired wording; remember-me logout clicked the Vue control but emitted no `/logout` request because the legacy platform adapter still clicked deleted `#logout`. This cut changes neither workflow topology nor retry/timeout policy. Maven inventory advances to 782/782 across 161 Java test classes; Chromium remains 48 strict scenarios.
+
+Status: v27.40.29.
+
 ## v27.40.28 E2E Vue Shell Identity Contract Alignment Hotfix
 
 The v27.40.27 full Chromium run reached the correct runtime state but failed one shared helper assertion because `#whoami` was intentionally removed with the legacy recovery header. This cut aligns `registerAndOnboard()` with the Vue-owned profile identity and adds a source contract preventing the helper from regressing to legacy chrome. Runtime, OpenAPI 124/130, Flyway V47 and offline queue semantics are unchanged.

@@ -1,12 +1,15 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.40.28.
+Status: v27.40.29.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.28 aligns the shared Playwright registration/onboarding helper with the Vue-owned shell identity after v27.40.27 proved the runtime boot fix. The Chromium screenshot/trace showed onboarding completed and the generated username rendered in `[data-vue-shell-profile]`; only the deleted `#whoami` assertion remained stale. Inventory stays at 161 Java test classes / 780 @Test methods / 48 Chromium Playwright scenarios / 60 Vitest cases, OpenAPI 124/130 and Flyway V47.
+Current extension: v27.40.29 classifies the v27.40.28 Chromium run as 46/48 with two deterministic roots: Vue correctly rendered the Russian offline state as `Нет сети` while the PWA test still required `оффлайн|offline`, and Vue logout still delegated through retired legacy `#logout`, so the trace recorded the click but no `/logout` request or login navigation. The hotfix adds a semantic `data-network-state` boundary and a DOM-independent logout request while preserving the single existing session executor. Inventory advances to 161 Java test classes / 782 @Test methods / 48 Chromium Playwright scenarios / 60 Vitest cases, OpenAPI 124/130 and Flyway V47.
 
+
+
+Historical v27.40.28 browser evidence: all 48 scenarios executed; 46 passed and 2 failed deterministically. The PWA failure observed correct Vue text `Нет сети` but asserted stale wording, while remember-me logout clicked `[data-vue-shell-logout]` and then remained on `/` because the platform adapter still depended on deleted `#logout`; both retries reproduced their root cause.
 
 Historical v27.40.26 browser evidence: first-run onboarding failed deterministically because `70-user-boot.js` resumed after Vue readiness and wrote to the retired `#whoami`; retry reproduced the same console exception.
 

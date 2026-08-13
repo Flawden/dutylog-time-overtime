@@ -1,5 +1,15 @@
 # DutyLog security review
 
+## v27.40.29 Vue logout ownership and offline status contract hotfix review
+
+- No endpoint, credential, role, origin, storage engine, authorization or remember-me policy changes.
+- Vue logout stops depending on retired DOM but still uses the existing same-origin CSRF-aware `POST /logout` path and server-side remember-me revocation.
+- The new `dutylog:logout-request` is an in-page presentation/action signal only; it grants no new authority and is consumed by the existing authenticated shell session code.
+- `data-network-state` exposes only coarse online/offline presentation state already visible to the user; no queue payload or secret is added to DOM.
+- `dataLayer` remains the only IndexedDB queue/sync executor; OpenAPI remains 124/130 and Flyway remains V47.
+
+Status: v27.40.29.
+
 ## v27.40.28 Legacy header async boot ownership hotfix review
 
 - No endpoint, credential, role, origin, storage engine, authorization or CSRF boundary changes.

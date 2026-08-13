@@ -54,7 +54,7 @@ document.addEventListener("keydown", event => {
   else closeAppModal(activeAppModalId);
 });
 
-const DUTYLOG_VERSION = "27.40.28"
+const DUTYLOG_VERSION = "27.40.29"
 
 const LANGUAGE_KEY = "dutylog.language.v1";
 function normalizeLanguage(value){
@@ -301,7 +301,7 @@ window.DutyLogLegacyPlatform = Object.freeze({
     if (normalized) window.location.hash = `#${normalized}`;
   },
   logout(){
-    document.getElementById("logout")?.click();
+    window.dispatchEvent(new CustomEvent("dutylog:logout-request"));
   },
   settingsAppearanceSnapshot(){ return cloneForVue(normalizeAppearance(state.preferences)); },
   previewAppearance(appearance){

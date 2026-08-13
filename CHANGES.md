@@ -1,3 +1,14 @@
+# v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix
+
+- Classifies the v27.40.28 Chromium run as **46 passed / 2 failed / 0 skipped** with two deterministic root causes and matching retries, not a flaky/image failure.
+- Fixes the real post-ready logout ownership regression: the Vue shell no longer delegates logout by clicking retired legacy `#logout`; `DutyLogLegacyPlatform.logout()` emits a DOM-independent session action consumed by `70-user-boot.js`.
+- Preserves the existing logout semantics in one executor: pending-save flush, same-origin CSRF-aware `POST /logout`, remember-me revocation and redirect to `/login.html`.
+- Replaces the stale Russian offline wording assertion (`оффлайн|offline`) with the Vue-owned semantic `data-network-state="offline"` contract while keeping visible localized copy (`Нет сети`) product-owned.
+- Adds executable source contracts preventing both the retired logout-button dependency and translated-copy E2E coupling from returning.
+- Keeps first-run onboarding runtime unchanged and defers its ownership migration until this hotfix is proven green.
+- Changes no HTTP/OpenAPI shape, Flyway migration, backend authorization rule, dependency graph, retry/timeout policy or `dataLayer` queue/sync semantics.
+- Acceptance inventory advances to **161 Java test classes / 782 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases / OpenAPI 124/130 / Flyway V47**.
+
 # v27.40.28 — E2E Vue Shell Identity Contract Alignment Hotfix
 
 - Classifies the v27.40.27 Chromium failure as one stale E2E identity contract, not a runtime/onboarding regression: onboarding completed, the Vue shell showed the generated username, and no page error was present.

@@ -147,11 +147,17 @@ function initMobileFilterToggles(){
 
 initMobileFilterToggles();
 
-$("logout").addEventListener("click", async () => {
+let dutyLogLogoutInFlight = false;
+async function performDutyLogLogout(){
+  if (dutyLogLogoutInFlight) return;
+  dutyLogLogoutInFlight = true;
   try { await flushPendingSave(); } catch (e) { /* не блокируем выход */ }
   try { await fetch("/logout", { method: "POST", headers: csrfToken() ? { "X-XSRF-TOKEN": csrfToken() } : {} }); } catch (e) { /* пофиг, всё равно уходим */ }
   window.location.href = "/login.html";
-});
+}
+
+$("logout")?.addEventListener("click", () => { void performDutyLogLogout(); });
+window.addEventListener("dutylog:logout-request", () => { void performDutyLogLogout(); });
 
 let dutyLogServiceWorkerRegistrationPromise = null;
 async function registerDutyLogServiceWorker(){

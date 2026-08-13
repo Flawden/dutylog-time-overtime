@@ -1,3 +1,9 @@
+# DutyLog v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix
+
+v27.40.28 aligned shell identity E2E with the retired legacy header, then Chromium exposed two independent post-retirement leftovers: the PWA offline scenario still asserted the old translated word “оффлайн” while Vue intentionally renders “Нет сети”, and the Vue logout action still delegated to the deleted legacy `#logout` DOM button. v27.40.29 makes logout DOM-independent through the existing session/action boundary and gives the Vue offline status a language-independent `data-network-state` contract. First-run onboarding is deliberately untouched until this cut is proven green.
+
+Previous browser-red contract hotfix: **DutyLog v27.40.28 — E2E Vue Shell Identity Contract Alignment Hotfix**.
+
 # DutyLog v27.40.28 — E2E Vue Shell Identity Contract Alignment Hotfix
 
 v27.40.27 fixed the real async boot race: onboarding now completes, the Vue shell renders the authenticated identity, and the retired recovery header stays gone. Exact Chromium then exposed one stale browser helper that still waited for the deleted `#whoami`. v27.40.28 changes no runtime behavior: `registerAndOnboard()` now asserts the Vue-owned `[data-vue-shell-profile]` identity and explicitly keeps E2E away from retired legacy chrome.

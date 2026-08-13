@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** v27.40.28 ownership contract: Vue owns post-ready chrome; legacy boot tolerates its retirement. */
+/** v27.40.29 ownership contract: Vue owns post-ready chrome; legacy boot tolerates its retirement. */
 class VueOfflineSyncSurfaceFrontendContractTest {
 
     @Test
@@ -65,6 +65,16 @@ class VueOfflineSyncSurfaceFrontendContractTest {
         assertTrue(boot.contains("if (who) " + Character.toString(123)));
         assertTrue(boot.contains("who.parentNode?.insertBefore(av, who);"));
         assertTrue(boot.contains("publishLegacyPlatformState();"));
+    }
+
+    @Test
+    void offlineBrowserContractUsesSemanticNetworkStateInsteadOfTranslatedCopy() throws Exception {
+        String shell = read("frontend/src/app/AppShell.vue");
+        String pwa = read("e2e/pwa-offline.spec.js");
+
+        assertTrue(shell.contains(":data-network-state=\"offline.online ? 'online' : 'offline'\""));
+        assertTrue(pwa.contains("toHaveAttribute('data-network-state', 'offline')"));
+        assertFalse(pwa.contains("toContainText(/оффлайн|offline/i)"));
     }
 
     @Test

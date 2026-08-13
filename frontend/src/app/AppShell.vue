@@ -105,7 +105,7 @@ function logout(): void { props.bridge.logout(); }
         <span class="vue-shell-brand__copy"><strong>Duty<span>Log</span></strong><small>{{ text.product }}</small></span>
       </button>
       <div class="vue-shell-header__actions">
-        <button id="offlineStatus" class="vue-shell-sync-status ui-badge" :class="`ui-badge--${offlineTone}`" type="button" :title="text.syncStatus" :aria-label="text.syncStatus" @click="offlineSyncOpen = true">
+        <button id="offlineStatus" class="vue-shell-sync-status ui-badge" :class="`ui-badge--${offlineTone}`" :data-network-state="offline.online ? 'online' : 'offline'" type="button" :title="text.syncStatus" :aria-label="text.syncStatus" @click="offlineSyncOpen = true">
           <span class="vue-shell-status-dot" aria-hidden="true"></span>
           {{ offlineLabel }}
         </button>

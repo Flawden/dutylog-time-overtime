@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Regression contract for v27.40.28 Vue-owned shell navigation and E2E compatibility. */
+/** Regression contract for v27.40.29 Vue-owned shell navigation and E2E compatibility. */
 class VueShellE2eNavigationCompatibilityHotfixTest {
 
     @Test
@@ -36,6 +36,20 @@ class VueShellE2eNavigationCompatibilityHotfixTest {
         assertTrue(navigation.contains("data-vue-shell-more"));
         assertTrue(calendarSync.contains("const { releaseVersion } = require('./release-version');"));
         assertTrue(calendarSync.contains("Time and Overtime ${releaseVersion}//RU"));
+    }
+
+    @Test
+    void vueLogoutNoLongerDependsOnTheRetiredLegacyHeaderButton() throws Exception {
+        String core = read("src/main/resources/static/js/10-core.js");
+        String boot = read("src/main/resources/static/js/70-user-boot.js");
+        String rememberMe = read("e2e/remember-me.spec.js");
+
+        assertTrue(core.contains("new CustomEvent(\"dutylog:logout-request\")"));
+        assertFalse(core.contains("document.getElementById(\"logout\")?.click()"));
+        assertTrue(boot.contains("window.addEventListener(\"dutylog:logout-request\""));
+        assertTrue(boot.contains("async function performDutyLogLogout()"));
+        assertTrue(boot.contains("await fetch(\"/logout\""));
+        assertTrue(rememberMe.contains("[data-vue-shell-logout]"));
     }
 
     private static String read(String path) throws Exception {

@@ -46,7 +46,7 @@ test('installed web shell preserves and synchronizes an existing note edited off
     await page.reload({ waitUntil: 'domcontentloaded' });
     await expect(page.locator('#appBoot')).toBeHidden({ timeout: 30_000 });
     await expect(page.locator('body')).toHaveClass(/offline/);
-    await expect(page.locator('#offlineStatus')).toContainText(/оффлайн|offline/i);
+    await expect(page.locator('#offlineStatus')).toHaveAttribute('data-network-state', 'offline');
     await expect(page.locator(`#grid [data-date="${date}"] .ear`)).toHaveCount(1);
     await selectDate(page, date);
     await openDayModule(page, 'notes');
