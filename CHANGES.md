@@ -1,3 +1,14 @@
+# v27.40.27 — Legacy Header Async Boot Ownership Hotfix
+
+- Classifies the v27.40.26 Chromium failure as one deterministic onboarding boot regression: the corrected post-ready header retirement removes `#whoami` while async `70-user-boot.js` is still awaiting authenticated startup work.
+- Guards the early authenticated username write when recovery `#whoami` has already been retired instead of resurrecting or delaying the legacy header.
+- Makes `renderHeaderIdentity()` tolerate a retired recovery header while continuing authoritative profile publication to Vue.
+- Adds executable source contracts proving authenticated boot/profile publication no longer require the legacy identity node.
+- Keeps Vue offline/sync presentation and `dataLayer` queue execution unchanged; first-run onboarding remains the only intentionally live post-ready legacy presentation owner.
+- Defers Vue First-Run Onboarding Ownership Retirement to v27.40.28.
+- Changes no HTTP/OpenAPI shape, Flyway migration, backend business rule, auth boundary, retry/timeout policy, dependency graph or offline queue semantics.
+- Acceptance inventory advances to **161 Java test classes / 780 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases / OpenAPI 124/130 / Flyway V47**.
+
 # v27.40.26 — Legacy Header Retirement Selector Hotfix
 
 - Classifies the v27.40.25 Chromium run as **46 passed / 2 failed / 0 skipped** with both deterministic failures sharing one root cause: duplicate `#offlineStatus` after Vue readiness.

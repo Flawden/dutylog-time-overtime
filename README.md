@@ -1,3 +1,9 @@
+# DutyLog v27.40.27 — Legacy Header Async Boot Ownership Hotfix
+
+v27.40.26 correctly retired `#legacyGlobalHeader`, then exposed a deeper async ownership race: `70-user-boot.js` resumed after Vue readiness and still wrote unconditionally to the retired `#whoami` node. That exception aborted authenticated boot before first-run onboarding could become visible. v27.40.27 makes legacy identity writes recovery-only and keeps authoritative profile publication independent of the retired header.
+
+Previous browser-red hotfix: **DutyLog v27.40.26 — Legacy Header Retirement Selector Hotfix**.
+
 # DutyLog v27.40.26 — Legacy Header Retirement Selector Hotfix
 
 v27.40.25 reached the full Chromium suite with 46/48 passing. Both failures were the same deterministic runtime ownership bug: `shell-bootstrap.js` tried to retire `body > .head`, but the recovery header actually lives at `.wrap > .head`, leaving a second `#offlineStatus` in the DOM after Vue readiness. v27.40.26 gives that recovery header an explicit `#legacyGlobalHeader` identity, retires it by ID, and aligns shell/mobile E2E with the Vue-owned header. Offline queue execution remains exclusively in `dataLayer`; first-run onboarding is still the only live post-ready legacy presentation exception.

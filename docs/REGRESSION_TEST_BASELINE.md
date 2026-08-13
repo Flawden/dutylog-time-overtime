@@ -1,12 +1,14 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.40.26.
+Status: v27.40.27.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.26 fixes the legacy-header retirement selector exposed by the v27.40.25 full Chromium run while keeping the acceptance inventory at 161 Java test classes / 778 @Test methods / 48 Chromium Playwright scenarios / 60 Vitest cases, OpenAPI 124/130 and Flyway V47. The recovery header has an explicit `#legacyGlobalHeader` identity, post-ready retirement is asserted directly, mobile geometry measures `.vue-shell-header`, and `dataLayer` remains the sole offline queue executor.
+Current extension: v27.40.27 fixes the async authenticated-boot ownership race exposed by the corrected v27.40.26 header retirement and advances the acceptance inventory to 161 Java test classes / 780 @Test methods / 48 Chromium Playwright scenarios / 60 Vitest cases, OpenAPI 124/130 and Flyway V47. Legacy username/profile identity writes are recovery-only when `#whoami` still exists; authoritative profile publication remains independent of the retired header, and `dataLayer` remains the sole offline queue executor.
 
+
+Historical v27.40.26 browser evidence: first-run onboarding failed deterministically because `70-user-boot.js` resumed after Vue readiness and wrote to the retired `#whoami`; retry reproduced the same console exception.
 
 Historical v27.40.25 browser evidence: all 48 scenarios executed; 46 passed and 2 failed deterministically because `#offlineStatus` resolved to both Vue and a legacy header that survived the impossible `body > .head` retirement selector. Both retries failed on the same duplicate-ID root cause.
 

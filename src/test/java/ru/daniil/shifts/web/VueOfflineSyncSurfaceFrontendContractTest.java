@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** v27.40.26 ownership contract: Vue owns offline/sync presentation, dataLayer owns execution. */
+/** v27.40.27 ownership contract: Vue owns post-ready chrome; legacy boot tolerates its retirement. */
 class VueOfflineSyncSurfaceFrontendContractTest {
 
     @Test
@@ -46,6 +46,25 @@ class VueOfflineSyncSurfaceFrontendContractTest {
         assertTrue(bootstrap.contains("dataset.vueOfflineSync = \"ready\""));
         assertTrue(data.contains("dataset.vueOfflineSync === \"ready\""));
         assertTrue(data.contains("publishLegacyPlatformState();"));
+    }
+
+    @Test
+    void authenticatedBootDoesNotRequireTheRetiredLegacyIdentityNode() throws Exception {
+        String boot = read("src/main/resources/static/js/70-user-boot.js");
+
+        assertTrue(boot.contains("const legacyWhoami = $(\"whoami\");"));
+        assertTrue(boot.contains("if (legacyWhoami) legacyWhoami.textContent = me.username;"));
+        assertFalse(boot.contains("$(\"whoami\").textContent = me.username;"));
+    }
+
+    @Test
+    void profilePublicationSurvivesLegacyHeaderRetirement() throws Exception {
+        String boot = read("src/main/resources/static/js/70-user-boot.js");
+
+        assertTrue(boot.contains("const who = $(\"whoami\");"));
+        assertTrue(boot.contains("if (who) " + Character.toString(123)));
+        assertTrue(boot.contains("who.parentNode?.insertBefore(av, who);"));
+        assertTrue(boot.contains("publishLegacyPlatformState();"));
     }
 
     @Test

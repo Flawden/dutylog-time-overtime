@@ -1,6 +1,6 @@
-# DutyLog API v27.40.26
+# DutyLog API v27.40.27
 
-`v27.40.26` changes no HTTP/OpenAPI or Flyway shape. It fixes the post-ready legacy-header retirement selector exposed by the v27.40.25 Chromium run; offline/sync presentation remains Vue-owned and `dataLayer` remains the single queue executor. OpenAPI remains **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
+`v27.40.27` changes no HTTP/OpenAPI or Flyway shape. It fixes the async authenticated-boot ownership race exposed after v27.40.26 correctly retired the recovery header: legacy identity writes now tolerate a missing `#whoami`, while authoritative profile publication to Vue continues. Offline/sync presentation remains Vue-owned and `dataLayer` remains the single queue executor. OpenAPI remains **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 
 `v27.40.23` changes no HTTP/OpenAPI shape. It aligns a stale pre-Vue Today/Admin fallback source contract with the v27.40.22 Vue Admin ownership cut; OpenAPI remains **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 

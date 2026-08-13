@@ -1,14 +1,14 @@
 # DutyLog security review
 
-## v27.40.26 Legacy header retirement selector hotfix review
+## v27.40.27 Legacy header async boot ownership hotfix review
 
 - No endpoint, credential, role, origin, storage engine, authorization or CSRF boundary changes.
-- Vue receives only bounded offline status/details and delegates sync/retry/remove/clear/export commands through the existing same-origin legacy adapter.
-- `dataLayer` remains the only IndexedDB queue/sync executor; the migration does not expose a second persistence or replay path.
-- The hotfix changes only recovery-header DOM identity/retirement selection and E2E ownership assertions; endpoint, credential, storage and queue semantics remain unchanged.
+- The hotfix only guards recovery-header identity writes after Vue readiness; it does not restore duplicate chrome or expose new client authority.
+- Authoritative profile/module state continues to publish through the existing same-origin platform boundary.
+- `dataLayer` remains the only IndexedDB queue/sync executor; offline/sync semantics are unchanged.
 - OpenAPI remains 124/130 and Flyway remains V47.
 
-Status: v27.40.26.
+Status: v27.40.27.
 
 ## v27.40.24 final legacy ownership audit review
 

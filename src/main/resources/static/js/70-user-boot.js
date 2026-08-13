@@ -223,7 +223,8 @@ async function init(){
   await dataLayer.init();
   try {
     const me = await jfetch("/api/auth/me");
-    $("whoami").textContent = me.username;
+    const legacyWhoami = $("whoami");
+    if (legacyWhoami) legacyWhoami.textContent = me.username;
     setAppBooting(true, "Загружаю модули…");
     await loadModules();
     setAppBooting(true, "Загружаю календарь…");
@@ -407,18 +408,22 @@ function avatarColor(seed){
 function renderHeaderIdentity(p){
   const shown = p.displayName || p.username;
   const who = $("whoami");
-  who.textContent = shown;
-  const adminOpen = $("adminOpen");
-  if (adminOpen) adminOpen.hidden = !p.admin;
-  let av = document.getElementById("headerAvatar");
-  if (!av) {
-    av = document.createElement("span");
-    av.id = "headerAvatar";
-    av.className = "avatar avatarSmall";
-    who.parentNode.insertBefore(av, who);
+  if (who) {
+    who.textContent = shown;
+    const adminOpen = $("adminOpen");
+    if (adminOpen) adminOpen.hidden = !p.admin;
+    let av = document.getElementById("headerAvatar");
+    if (!av) {
+      av = document.createElement("span");
+      av.id = "headerAvatar";
+      av.className = "avatar avatarSmall";
+      who.parentNode?.insertBefore(av, who);
+    }
+    if (av) {
+      av.textContent = avatarInitials(shown);
+      av.style.background = avatarColor(p.username);
+    }
   }
-  av.textContent = avatarInitials(shown);
-  av.style.background = avatarColor(p.username);
   const nextAvatar = $("nextHeaderAvatar");
   if (nextAvatar) {
     nextAvatar.textContent = avatarInitials(shown);

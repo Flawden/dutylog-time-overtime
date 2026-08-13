@@ -425,7 +425,7 @@ html[data-vue-shell="ready"] body.app-modal-open .vue-shell-nav { visibility: hi
 .vue-recovery__actions { display: flex; flex-wrap: wrap; gap: 12px; }
 @media (prefers-reduced-motion: reduce) { .vue-recovery { backdrop-filter: none; } }
 
-/* v27.40.26 — Vue-owned offline/sync presentation. dataLayer remains executor. */
+/* v27.40.27 — Vue-owned offline/sync presentation. dataLayer remains executor. */
 .vue-shell-sync-status {
   appearance: none;
   border: 1px solid color-mix(in srgb, currentColor 24%, var(--line));

@@ -1,18 +1,18 @@
 # Release checklist
 
-Status: v27.40.26.
+Status: v27.40.27.
 
 
-## v27.40.26 — Legacy Header Retirement Selector Hotfix acceptance
+## v27.40.27 — Legacy Header Async Boot Ownership Hotfix acceptance
 
-- [x] Base content tree is exact v27.40.25 candidate (`32968cfbc689cb0be5ad37a308a45a068c36fe00`).
-- [x] Attached Chromium report classified as 48 executed / 46 passed / 2 deterministic failures with one duplicate-`#offlineStatus` root cause.
-- [x] Recovery header has explicit `#legacyGlobalHeader`; `shell-bootstrap.js` retires it by ID after Vue readiness.
-- [x] Shell E2E requires `#legacyGlobalHeader` count zero and mobile layout measures `.vue-shell-header`.
-- [x] Offline Vue surface and `dataLayer` execution boundary are otherwise unchanged.
-- [x] No HTTP/OpenAPI/Flyway/business/auth/retry/timeout/dependency/offline-queue semantic change; OpenAPI 124/130, Flyway V47.
+- [x] Base content tree is exact v27.40.26 candidate (`04aa76ebc168028ce0b23e6b011d511366b3cde1`).
+- [x] Attached Chromium report classified as one deterministic failed scenario with retry reproducing the same `70-user-boot.js` `null.textContent` exception.
+- [x] Trace/runtime evidence ties the exception to `#whoami` disappearing after legitimate Vue header retirement, not to onboarding persistence or offline queue behavior.
+- [x] Early authenticated username write is guarded when recovery `#whoami` is absent.
+- [x] `renderHeaderIdentity()` tolerates retired recovery chrome while authoritative profile publication remains independent of that DOM.
+- [x] No header resurrection/readiness delay, HTTP/OpenAPI/Flyway/business/auth/retry/timeout/dependency/offline-queue semantic change; OpenAPI 124/130, Flyway V47.
 - [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
-- [ ] Maven 778/778 across 161 Java test classes on Java 17.
+- [ ] Maven 780/780 across 161 Java test classes on Java 17.
 - [ ] Playwright canary green.
 - [ ] Full Chromium 48/48, 0 failed, 0 flaky.
 - [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
