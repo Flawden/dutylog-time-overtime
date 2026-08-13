@@ -1,6 +1,22 @@
 # Release checklist
 
-Status: v27.40.27.
+Status: v27.40.28.
+
+
+## v27.40.28 — E2E Vue Shell Identity Contract Alignment Hotfix acceptance
+
+- [x] Base content tree is exact v27.40.27 candidate (`a3d409ac476429e3e64e23d4f9544de750af383e`).
+- [x] Attached Chromium report classified as one deterministic stale E2E assertion with retry reproducing the missing retired `#whoami`.
+- [x] Screenshot/trace prove onboarding completed and authenticated username rendered in the Vue shell with no demonstrated page error.
+- [x] Shared `registerAndOnboard()` plus auth reload, timezone reload and remember-me assertions use `[data-vue-shell-profile] > b`; no browser test waits for legacy `#whoami`.
+- [x] Existing executable shell compatibility contract forbids the stale helper selector.
+- [x] No runtime, HTTP/OpenAPI/Flyway/business/auth/retry/timeout/dependency/offline-queue semantic change; OpenAPI 124/130, Flyway V47.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate.
+- [ ] Maven 780/780 across 161 Java test classes on Java 17.
+- [ ] Playwright canary green.
+- [ ] Full Chromium 48/48, 0 failed, 0 flaky.
+- [ ] Immutable image and PostgreSQL V1–V47 migration smoke green.
+- [ ] Staging deploy green.
 
 
 ## v27.40.27 — Legacy Header Async Boot Ownership Hotfix acceptance

@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static architecture contract for v27.40.27 legacy command surface retirement. */
+/** Static architecture contract for v27.40.28 legacy command surface retirement. */
 class VueFrontendFoundationContractTest {
 
     @Test
@@ -99,14 +99,14 @@ class VueFrontendFoundationContractTest {
         String spec = read("e2e/vue-frontend-foundation.spec.js");
 
         assertTrue(html.contains("id=\"dutylog-vue-root\""));
-        assertTrue(html.contains("type=\"module\" src=\"/vue/dutylog-vue-app-shell.js?v=27.40.27\""));
+        assertTrue(html.contains("type=\"module\" src=\"/vue/dutylog-vue-app-shell.js?v=27.40.28\""));
         assertTrue(bootstrap.contains("window.__dutylogVueReady = new Promise"));
         assertTrue(main.contains("window.DutyLogVuePlatform = platform"));
         assertTrue(main.contains("host.dataset.vueReady = \"true\""));
         assertTrue(main.contains("Object.freeze"));
         assertTrue(spec.contains("window.__dutylogVueReady"));
         assertTrue(spec.contains("data-vue-ready"));
-        assertTrue(html.contains("js/70-user-boot.js?v=27.40.27"));
+        assertTrue(html.contains("js/70-user-boot.js?v=27.40.28"));
     }
 
     private static String read(String path) throws Exception {

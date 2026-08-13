@@ -20,7 +20,7 @@ test('remember-me restores a fresh browser session and logout revokes the old co
   await restoredPage.goto('/');
   await expect(restoredPage).not.toHaveURL(/login\.html/);
   await expect(restoredPage.locator('#appBoot')).toBeHidden({ timeout: 30_000 });
-  await expect(restoredPage.locator('#whoami')).toHaveText(account.username);
+  await expect(restoredPage.locator('[data-vue-shell-profile] > b')).toHaveText(account.username);
 
   const bootstrapStatuses = await restoredPage.evaluate(async () => {
     const paths = [

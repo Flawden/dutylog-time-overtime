@@ -1,24 +1,30 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.27 — Legacy Header Async Boot Ownership Hotfix**.
+Current release: **v27.40.28 — E2E Vue Shell Identity Contract Alignment Hotfix**.
 
 
-## v27.40.27 — Legacy Header Async Boot Ownership Hotfix — current
-- [x] Start from the exact v27.40.26 candidate tree (`04aa76ebc168028ce0b23e6b011d511366b3cde1`).
-- [x] Classify the attached Chromium failure as deterministic authenticated-boot breakage, not flaky onboarding behavior.
-- [x] Prove the corrected header retirement removes `#whoami` before async `70-user-boot.js` resumes.
-- [x] Make early auth identity and later `renderHeaderIdentity()` recovery-only instead of resurrecting or delaying legacy chrome.
-- [x] Keep authoritative profile publication, Vue shell/offline ownership, `dataLayer`, OpenAPI 124/130 and Flyway V47 unchanged.
+## v27.40.28 — E2E Vue Shell Identity Contract Alignment Hotfix — current
+- [x] Start from the exact v27.40.27 candidate tree (`a3d409ac476429e3e64e23d4f9544de750af383e`).
+- [x] Classify the attached Chromium failure as a stale `#whoami` E2E contract after the runtime boot fix succeeded.
+- [x] Align the shared registration/onboarding helper and every direct browser identity assertion with Vue-owned `[data-vue-shell-profile]`.
+- [x] Add executable source protection against reintroducing legacy identity selectors into the shared helper.
+- [x] Keep runtime, onboarding authority, Vue shell/offline ownership, `dataLayer`, OpenAPI 124/130 and Flyway V47 unchanged.
 - [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
 - [ ] Maven 780/780 across 161 Java test classes on Java 17.
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
 
-## v27.40.28 — Vue First-Run Onboarding Ownership Retirement — planned next cut
+## v27.40.29 — Vue First-Run Onboarding Ownership Retirement — planned next cut
 - [ ] Move first-run preset/module/profile presentation into Vue without changing backend onboarding authority.
 - [ ] Preserve current preset semantics, module persistence, profile completion and service-worker registration ordering.
 - [ ] Retire the post-ready legacy `#firstRunOnboarding` owner while retaining a safe boot/recovery boundary.
 - [ ] Prove zero intentionally live post-ready legacy presentation surfaces before Functional Parity Sweep.
+
+## v27.40.27 — Legacy Header Async Boot Ownership Hotfix — browser-red predecessor
+- [x] Correctly made authenticated boot/profile publication independent of retired `#whoami`.
+- [x] Chromium reached completed onboarding and rendered the authenticated identity in the Vue shell.
+- [x] The only remaining failure was the stale shared Playwright `#whoami` assertion.
+- [ ] Superseded by v27.40.28 before acceptance.
 
 ## v27.40.26 — Legacy Header Retirement Selector Hotfix — browser-red predecessor
 - [x] Correctly gave recovery header explicit `#legacyGlobalHeader` identity and retired it by ID.

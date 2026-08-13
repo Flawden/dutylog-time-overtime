@@ -1,11 +1,11 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.40.27.
+Status: v27.40.28.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.27 fixes the async authenticated-boot ownership race exposed by the corrected v27.40.26 header retirement and advances the acceptance inventory to 161 Java test classes / 780 @Test methods / 48 Chromium Playwright scenarios / 60 Vitest cases, OpenAPI 124/130 and Flyway V47. Legacy username/profile identity writes are recovery-only when `#whoami` still exists; authoritative profile publication remains independent of the retired header, and `dataLayer` remains the sole offline queue executor.
+Current extension: v27.40.28 aligns the shared Playwright registration/onboarding helper with the Vue-owned shell identity after v27.40.27 proved the runtime boot fix. The Chromium screenshot/trace showed onboarding completed and the generated username rendered in `[data-vue-shell-profile]`; only the deleted `#whoami` assertion remained stale. Inventory stays at 161 Java test classes / 780 @Test methods / 48 Chromium Playwright scenarios / 60 Vitest cases, OpenAPI 124/130 and Flyway V47.
 
 
 Historical v27.40.26 browser evidence: first-run onboarding failed deterministically because `70-user-boot.js` resumed after Vue readiness and wrote to the retired `#whoami`; retry reproduced the same console exception.

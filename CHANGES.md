@@ -1,3 +1,12 @@
+# v27.40.28 — E2E Vue Shell Identity Contract Alignment Hotfix
+
+- Classifies the v27.40.27 Chromium failure as one stale E2E identity contract, not a runtime/onboarding regression: onboarding completed, the Vue shell showed the generated username, and no page error was present.
+- Replaces `registerAndOnboard()`'s deleted `#whoami` assertion with the canonical Vue-owned `[data-vue-shell-profile] > b` identity boundary.
+- Extends the existing shell E2E source contract to require the Vue profile selector and forbid `page.locator('#whoami')` in the shared helper.
+- Leaves authenticated boot, first-run onboarding runtime, Vue shell state, offline/sync ownership, `dataLayer`, API/OpenAPI, Flyway, auth, business rules and retry/timeout policy unchanged.
+- Defers Vue First-Run Onboarding Ownership Retirement to v27.40.29.
+- Acceptance inventory remains **161 Java test classes / 780 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases / OpenAPI 124/130 / Flyway V47**.
+
 # v27.40.27 — Legacy Header Async Boot Ownership Hotfix
 
 - Classifies the v27.40.26 Chromium failure as one deterministic onboarding boot regression: the corrected post-ready header retirement removes `#whoami` while async `70-user-boot.js` is still awaiting authenticated startup work.

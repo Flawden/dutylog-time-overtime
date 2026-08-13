@@ -1,3 +1,9 @@
+# DutyLog v27.40.28 — E2E Vue Shell Identity Contract Alignment Hotfix
+
+v27.40.27 fixed the real async boot race: onboarding now completes, the Vue shell renders the authenticated identity, and the retired recovery header stays gone. Exact Chromium then exposed one stale browser helper that still waited for the deleted `#whoami`. v27.40.28 changes no runtime behavior: `registerAndOnboard()` now asserts the Vue-owned `[data-vue-shell-profile]` identity and explicitly keeps E2E away from retired legacy chrome.
+
+Previous browser-red runtime hotfix: **DutyLog v27.40.27 — Legacy Header Async Boot Ownership Hotfix**.
+
 # DutyLog v27.40.27 — Legacy Header Async Boot Ownership Hotfix
 
 v27.40.26 correctly retired `#legacyGlobalHeader`, then exposed a deeper async ownership race: `70-user-boot.js` resumed after Vue readiness and still wrote unconditionally to the retired `#whoami` node. That exception aborted authenticated boot before first-run onboarding could become visible. v27.40.27 makes legacy identity writes recovery-only and keeps authoritative profile publication independent of the retired header.

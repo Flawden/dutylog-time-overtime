@@ -1,6 +1,6 @@
 # Module contracts
 
-## Vue offline/sync presentation ownership (v27.40.27)
+## Vue offline/sync presentation ownership (v27.40.28)
 
 - Vue is the sole post-ready presentation owner for connection status, offline queue/failed diagnostics, manual sync controls and save feedback.
 - `LegacyBridge` exposes immutable status/details plus narrow commands; no new product module or browser business authority is introduced.
@@ -9,7 +9,7 @@
 - First-run onboarding is the only intentionally live post-ready legacy presentation exception after this cut.
 - Authenticated boot/profile publication may update recovery header identity only when `#whoami` still exists; Vue state publication must not depend on that node surviving readiness.
 
-Status: v27.40.27.
+Status: v27.40.28.
 
 ## Pre-Vue Admin fallback contract alignment (v27.40.23)
 

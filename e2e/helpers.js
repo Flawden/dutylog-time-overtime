@@ -46,7 +46,7 @@ async function registerAndOnboard(page, { preset = 'work', language = 'ru', pref
   expect((await modulesSaved).status()).toBe(200);
   expect((await profileSaved).status()).toBe(200);
   await expect(page.locator('#firstRunOnboarding')).toBeHidden({ timeout: 30_000 });
-  await expect(page.locator('#whoami')).toHaveText(account.username);
+  await expect(page.locator('[data-vue-shell-profile] > b')).toHaveText(account.username);
   return account;
 }
 

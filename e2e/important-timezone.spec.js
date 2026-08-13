@@ -61,7 +61,7 @@ test('important dates stay floating while canonical timezone survives reload', a
   await expect(page.locator('#timeSettingsStatus')).toHaveText('Часовой пояс сохранён');
 
   await page.reload();
-  await expect(page.locator('#whoami')).not.toBeEmpty();
+  await expect(page.locator('[data-vue-shell-profile] > b')).not.toBeEmpty();
   await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await expect(page.locator('#workTimezone')).toHaveValue('Europe/Chisinau');

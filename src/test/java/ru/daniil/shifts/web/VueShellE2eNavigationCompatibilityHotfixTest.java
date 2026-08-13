@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Regression contract for v27.40.27 Vue-owned shell navigation and E2E compatibility. */
+/** Regression contract for v27.40.28 Vue-owned shell navigation and E2E compatibility. */
 class VueShellE2eNavigationCompatibilityHotfixTest {
 
     @Test
@@ -30,6 +30,8 @@ class VueShellE2eNavigationCompatibilityHotfixTest {
         assertFalse(e2e.contains("page.locator('#logout').click()"));
         assertTrue(shell.contains("data-vue-shell-brand"));
         assertTrue(shell.contains("data-vue-shell-profile"));
+        assertTrue(helpers.contains("page.locator('[data-vue-shell-profile] > b')"));
+        assertFalse(e2e.contains("page.locator('#whoami')"));
         assertTrue(shell.contains("data-vue-shell-logout"));
         assertTrue(navigation.contains("data-vue-shell-more"));
         assertTrue(calendarSync.contains("const { releaseVersion } = require('./release-version');"));

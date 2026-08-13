@@ -1,3 +1,7 @@
+## v27.40.28 E2E Vue Shell Identity Contract Alignment Hotfix
+
+The v27.40.27 full Chromium run reached the correct runtime state but failed one shared helper assertion because `#whoami` was intentionally removed with the legacy recovery header. This cut aligns `registerAndOnboard()` with the Vue-owned profile identity and adds a source contract preventing the helper from regressing to legacy chrome. Runtime, OpenAPI 124/130, Flyway V47 and offline queue semantics are unchanged.
+
 # DutyLog CI/CD
 
 ## v27.40.27 Legacy Header Async Boot Ownership Hotfix
@@ -8,7 +12,7 @@
 - The hotfix keeps header retirement intact and makes legacy identity writes recovery-only; it does not delay Vue readiness or revive duplicate chrome.
 - Offline/sync ownership and `dataLayer` execution remain unchanged.
 
-Status: v27.40.27.
+Status: v27.40.28.
 
 ## v27.40.24 final legacy ownership audit and dead UI surface retirement
 
