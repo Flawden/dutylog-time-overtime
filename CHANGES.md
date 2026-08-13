@@ -1,3 +1,14 @@
+# v27.40.26 — Legacy Header Retirement Selector Hotfix
+
+- Classifies the v27.40.25 Chromium run as **46 passed / 2 failed / 0 skipped** with both deterministic failures sharing one root cause: duplicate `#offlineStatus` after Vue readiness.
+- Uses the Playwright trace to prove Vue reached `data-vue-offline-sync="ready"` / `data-vue-shell="ready"` while the legacy `.head` remained mounted under `.wrap`.
+- Fixes the retirement boundary by assigning the recovery header the explicit `#legacyGlobalHeader` identity and removing that node by ID instead of the impossible `body > .head` selector.
+- Replaces the false-positive Vue shell E2E assertion with a direct `#legacyGlobalHeader` absence check and moves the mobile header-height assertion to `.vue-shell-header`, preventing the corrected retirement from exposing a second stale browser contract.
+- Keeps the Vue offline/sync modal, save feedback, `LegacyBridge`, IndexedDB/outbox/reconnect execution and `dataLayer.syncQueue()` semantics unchanged.
+- Defers the planned first-run onboarding ownership cut to v27.40.27; onboarding remains the only intentionally live post-ready legacy presentation exception.
+- Changes no HTTP/OpenAPI shape, Flyway migration, backend business rule, auth boundary, timeout/retry policy, dependency graph or offline queue semantics.
+- Acceptance surface remains **161 Java test classes / 778 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases / OpenAPI 124/130 / Flyway V47**.
+
 # v27.40.25 — Vue Offline Sync Surface & Legacy Header Retirement
 
 - Starts from the proven-green v27.40.24 staging baseline and retires the remaining legacy offline/sync presentation without moving queue authority.

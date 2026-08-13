@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** v27.40.25 ownership contract: Vue owns offline/sync presentation, dataLayer owns execution. */
+/** v27.40.26 ownership contract: Vue owns offline/sync presentation, dataLayer owns execution. */
 class VueOfflineSyncSurfaceFrontendContractTest {
 
     @Test
@@ -38,9 +38,10 @@ class VueOfflineSyncSurfaceFrontendContractTest {
         String bootstrap = read("src/main/resources/static/js/shell-bootstrap.js");
         String data = read("src/main/resources/static/js/20-data.js");
 
-        assertTrue(html.contains("<div class=\"head\">"));
+        assertTrue(html.contains("id=\"legacyGlobalHeader\""));
         assertTrue(html.contains("id=\"offlineSyncDialog\""));
-        assertTrue(bootstrap.contains("document.querySelector(\"body > .head\")?.remove();"));
+        assertTrue(bootstrap.contains("document.getElementById(\"legacyGlobalHeader\")?.remove();"));
+        assertFalse(bootstrap.contains("document.querySelector(\"body > .head\")?.remove();"));
         assertTrue(bootstrap.contains("document.getElementById(\"offlineSyncDialog\")?.remove();"));
         assertTrue(bootstrap.contains("dataset.vueOfflineSync = \"ready\""));
         assertTrue(data.contains("dataset.vueOfflineSync === \"ready\""));

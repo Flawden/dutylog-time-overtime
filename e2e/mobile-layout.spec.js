@@ -8,7 +8,7 @@ test('calendar, filters and selected-day panel remain usable on a phone viewport
   const dimensions = await page.evaluate(() => ({
     viewport: document.documentElement.clientWidth,
     content: document.documentElement.scrollWidth,
-    headerHeight: document.querySelector('.head').getBoundingClientRect().height
+    headerHeight: document.querySelector('.vue-shell-header').getBoundingClientRect().height
   }));
   expect(dimensions.content).toBeLessThanOrEqual(dimensions.viewport + 1);
   expect(dimensions.headerHeight).toBeLessThan(150);

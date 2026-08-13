@@ -1,3 +1,9 @@
+# DutyLog v27.40.26 — Legacy Header Retirement Selector Hotfix
+
+v27.40.25 reached the full Chromium suite with 46/48 passing. Both failures were the same deterministic runtime ownership bug: `shell-bootstrap.js` tried to retire `body > .head`, but the recovery header actually lives at `.wrap > .head`, leaving a second `#offlineStatus` in the DOM after Vue readiness. v27.40.26 gives that recovery header an explicit `#legacyGlobalHeader` identity, retires it by ID, and aligns shell/mobile E2E with the Vue-owned header. Offline queue execution remains exclusively in `dataLayer`; first-run onboarding is still the only live post-ready legacy presentation exception.
+
+Previous browser-red ownership cut: **DutyLog v27.40.25 — Vue Offline Sync Surface & Legacy Header Retirement**.
+
 # DutyLog v27.40.25 — Vue Offline Sync Surface & Legacy Header Retirement
 
 v27.40.24 is the proven-green baseline. v27.40.25 moves the remaining offline/sync presentation into the Vue shell while preserving the existing `dataLayer` as the single IndexedDB/outbox/reconnect executor.

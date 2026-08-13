@@ -11,7 +11,7 @@ test('Vue app shell owns navigation chrome after legacy screen retirement', asyn
   await expect(page.locator('html')).toHaveAttribute('data-vue-shell', 'ready');
   await expect(page.locator('#tabbar')).toHaveCount(0);
   await expect(page.locator('#nextTopbar')).toHaveCount(0);
-  await expect(page.locator('body > .head')).toHaveCount(0);
+  await expect(page.locator('#legacyGlobalHeader')).toHaveCount(0);
 
   const settings = page.locator('[data-vue-shell-navigation] [data-route="settings"]');
   await expect(settings).toContainText('Настройки');

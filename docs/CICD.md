@@ -1,13 +1,14 @@
 # DutyLog CI/CD
 
-## v27.40.25 Vue offline sync surface and legacy header retirement
+## v27.40.26 Legacy Header Retirement Selector Hotfix
 
 - CI topology, retries and timeout policy are unchanged.
 - Frontend acceptance remains 60 Vitest cases; Maven static inventory advances to 778/778 across 161 Java test classes; Chromium remains 48 strict scenarios.
+- v27.40.25 full Chromium evidence was 46/48 with two deterministic failures from one duplicate-`#offlineStatus` root cause; v27.40.26 fixes that retirement selector and the false-positive shell assertion.
 - Browser acceptance now proves the stable offline status/manual-sync selectors are Vue-owned after readiness while the existing `dataLayer` remains the only queue executor.
 - The server-rendered header/dialog remain pre-Vue recovery only and are physically removed after the Vue shell announces readiness.
 
-Status: v27.40.25.
+Status: v27.40.26.
 
 ## v27.40.24 final legacy ownership audit and dead UI surface retirement
 

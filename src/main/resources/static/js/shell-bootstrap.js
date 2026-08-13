@@ -78,7 +78,7 @@ window.__dutylogVueReady = new Promise(resolve => {
   window.addEventListener("dutylog:vue-ready", event => {
     if (String(event.detail?.architecture || "").startsWith("vue-shell")) {
       for (const id of ["nextTopbar", "tabbar"]) document.getElementById(id)?.remove();
-      document.querySelector("body > .head")?.remove();
+      document.getElementById("legacyGlobalHeader")?.remove();
       document.getElementById("offlineSyncDialog")?.remove();
       document.body.classList.remove("syncDialogOpen");
       document.documentElement.dataset.vueOfflineSync = "ready";

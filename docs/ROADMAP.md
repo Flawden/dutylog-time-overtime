@@ -1,26 +1,31 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.25 — Vue Offline Sync Surface & Legacy Header Retirement**.
+Current release: **v27.40.26 — Legacy Header Retirement Selector Hotfix**.
 
 
-## v27.40.25 — Vue Offline Sync Surface & Legacy Header Retirement — current
-- [x] Start from the exact proven-green v27.40.24 staging baseline.
-- [x] Make Vue own the visible offline status, sync/failed queue diagnostics and manual sync actions while preserving stable browser selectors.
-- [x] Keep `dataLayer` as the sole IndexedDB/outbox/reconnect queue executor; Vue uses immutable snapshots and narrow bridge commands only.
-- [x] Physically retire the server-rendered `.head` and legacy offline sync dialog after Vue readiness while preserving them for pre-Vue recovery.
-- [x] Route legacy `setSave()` feedback into the Vue header after readiness instead of losing status when the old header is removed.
-- [x] Leave first-run onboarding as the only intentionally live post-ready legacy presentation exception.
-- [x] Keep OpenAPI 124/130, Flyway V47, retry/timeout policy and offline queue semantics unchanged.
+## v27.40.26 — Legacy Header Retirement Selector Hotfix — current
+- [x] Start from the exact v27.40.25 candidate tree (`32968cfbc689cb0be5ad37a308a45a068c36fe00`).
+- [x] Classify the full Chromium result as 46/48 with two deterministic failures sharing duplicate `#offlineStatus` ownership.
+- [x] Prove from trace DOM that Vue readiness completed while the legacy header survived under `.wrap > .head`.
+- [x] Give the recovery header an explicit `#legacyGlobalHeader` identity and retire it by ID after Vue readiness.
+- [x] Replace the false-positive `body > .head` shell assertion and move mobile header geometry to `.vue-shell-header`.
+- [x] Keep `dataLayer`, IndexedDB/outbox/reconnect execution, OpenAPI 124/130 and Flyway V47 unchanged.
 - [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
 - [ ] Maven 778/778 across 161 Java test classes on Java 17.
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
 
-## v27.40.26 — Vue First-Run Onboarding Ownership Retirement — planned next cut
+## v27.40.27 — Vue First-Run Onboarding Ownership Retirement — planned next cut
 - [ ] Move first-run preset/module/profile presentation into Vue without changing backend onboarding authority.
 - [ ] Preserve current preset semantics, module persistence, profile completion and service-worker registration ordering.
 - [ ] Retire the post-ready legacy `#firstRunOnboarding` owner while retaining a safe boot/recovery boundary.
 - [ ] Prove zero intentionally live post-ready legacy presentation surfaces before Functional Parity Sweep.
+
+## v27.40.25 — Vue Offline Sync Surface & Legacy Header Retirement — browser-red predecessor
+- [x] Move offline/sync presentation, diagnostics/actions and save feedback to Vue while preserving `dataLayer` as the single executor.
+- [x] Full Chromium suite executed 48 scenarios: 46 passed / 2 deterministic final failures.
+- [x] Both failures resolve to the same legacy-header retirement selector bug; no second offline queue/runtime root cause is demonstrated.
+- [ ] Superseded by v27.40.26 before acceptance because `body > .head` never matched the real `.wrap > .head` recovery header.
 
 ## v27.40.24 — Final Legacy Ownership Audit & Dead UI Surface Retirement — accepted predecessor
 - [x] Start from the exact proven-green v27.40.23 staging baseline.
