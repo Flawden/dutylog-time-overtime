@@ -1,10 +1,10 @@
-release=27.40.29
+release=27.40.30
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=230d722439a1820f0b59d6baa53d103c15c0c3de9f7029bdc68fed2966352e14
+committedLockfileSha256=16b7db8036bcc2fe62bc66d34cca3d6685ab380853cb40dbb4e42f3b33fd2988
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=vue-logout-ownership-offline-status-contract-hotfix-acceptance-for-v27.40.29
+nextAction=functional-parity-sweep-from-proven-green-v27.40.30

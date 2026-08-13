@@ -1,5 +1,15 @@
 # Module contracts
 
+## First-run onboarding bounded presentation contract (v27.40.30)
+
+- `#firstRunOnboarding` is the sole intentionally live post-ready legacy presentation owner and is explicitly marked `data-bounded-legacy-owner="first-run-onboarding"`.
+- The owner is not a route or normal product screen; Vue remains authoritative for every routed user-facing screen and the shell after readiness.
+- Onboarding may persist module choices, publish the completed profile and trigger the established post-completion PWA registration ordering, but it may not own normal Settings/module UI or offline/sync execution.
+- `profile.onboardingCompleted` and authoritative module state remain the cross-boundary data contract consumed by Vue.
+- No second bounded legacy presentation owner is permitted.
+
+Status: v27.40.30.
+
 ## Vue offline/sync presentation ownership (v27.40.29)
 
 - Vue is the sole post-ready presentation owner for connection status, offline queue/failed diagnostics, manual sync controls and save feedback.
@@ -10,7 +20,7 @@
 - Authenticated boot/profile publication may update recovery header identity only when `#whoami` still exists; Vue state publication must not depend on that node surviving readiness.
 - Vue shell logout is a post-ready control, but the underlying session action remains infrastructure: it is requested without clicking retired `#logout` and still performs the existing pending-save flush, CSRF-aware `/logout` request and login redirect.
 
-Status: v27.40.29.
+Status: v27.40.30.
 
 ## Pre-Vue Admin fallback contract alignment (v27.40.23)
 

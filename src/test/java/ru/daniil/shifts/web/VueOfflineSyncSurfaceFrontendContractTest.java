@@ -9,7 +9,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** v27.40.29 ownership contract: Vue owns post-ready chrome; legacy boot tolerates its retirement. */
+/** v27.40.30 ownership contract: Vue owns post-ready chrome; legacy boot tolerates its retirement. */
 class VueOfflineSyncSurfaceFrontendContractTest {
 
     @Test

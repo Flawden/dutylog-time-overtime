@@ -1,26 +1,38 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix**.
+Current release: **v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary**.
 
 
-## v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix — current
+## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary — current
+- [x] Start from the proven-green v27.40.29 staging baseline.
+- [x] Audit the exact first-run owner instead of migrating it by default.
+- [x] Keep `#firstRunOnboarding` as the single explicit bounded post-ready legacy presentation exception because it is isolated and preserves module dependency/profile/PWA first-claim ordering.
+- [x] Mark the exception with `data-bounded-legacy-owner="first-run-onboarding"` and add executable source contracts preventing the exception from broadening.
+- [x] Close Vue Legacy Retirement with Vue owning the shell, every routed user-facing screen and offline/sync presentation; retain `dataLayer` as the single offline mutation/sync infrastructure owner.
+- [x] Move the next development line to Functional Parity Sweep rather than cosmetic migration.
+- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [ ] Maven 785/785 across 162 Java test classes on Java 17.
+- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [ ] Immutable image/PostgreSQL V47 staging acceptance.
+
+## v27.40.31 — Functional Parity Sweep I — planned after v27.40.30 green
+- [ ] Restore/verify Today remaining-time-to-shift-end presentation.
+- [ ] Restore/verify Important Days relative copy (`завтра` / `через N дней`).
+- [ ] Re-check selected-day parity and workspace/module persistence after reload.
+- [ ] Preserve cross-midnight/timezone, offline/reconnect and direct-hash navigation contracts.
+- [ ] No new legacy migration work unless a demonstrated product defect requires it.
+
+## v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix — proven green
 - [x] Start from the exact v27.40.28 candidate tree (`1f5053538a08357bc4874c4f9345e5eb25e38916`).
 - [x] Classify the attached Chromium run as 46/48 with two deterministic roots, not flaky/image-only failure.
 - [x] Replace stale translated offline copy assertion with Vue-owned semantic network state.
 - [x] Remove the post-ready logout dependency on retired legacy `#logout` without duplicating session/logout execution.
 - [x] Add executable source protection for both ownership boundaries.
 - [x] Keep first-run onboarding, `dataLayer`, OpenAPI 124/130 and Flyway V47 unchanged.
-- [ ] Exact frontend gate on Node 20.18.1/npm 10.8.2.
-- [ ] Maven 782/782 across 161 Java test classes on Java 17.
-- [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
-- [ ] Immutable image/PostgreSQL V47 staging acceptance.
-
-## v27.40.30 — Vue First-Run Onboarding Ownership Retirement — planned only after v27.40.29 is proven green
-- [ ] Move first-run preset/module/profile presentation into Vue without changing backend onboarding authority.
-- [ ] Preserve current preset semantics, module persistence, profile completion and service-worker registration ordering.
-- [ ] Retire the post-ready legacy `#firstRunOnboarding` owner while retaining a safe boot/recovery boundary.
-- [ ] Prove zero intentionally live post-ready legacy presentation surfaces before Functional Parity Sweep.
-- [ ] If risk/evidence says migration is not worth destabilizing the product, keep onboarding as a bounded documented legacy exception instead of forcing zero for its own sake.
+- [x] Exact frontend gate on Node 20.18.1/npm 10.8.2.
+- [x] Maven 782/782 across 161 Java test classes on Java 17.
+- [x] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
+- [x] Immutable image/PostgreSQL V47 staging acceptance.
 
 ## v27.40.28 — E2E Vue Shell Identity Contract Alignment Hotfix — browser-red predecessor
 - [x] Correctly aligned all browser identity assertions with Vue-owned `[data-vue-shell-profile]`.

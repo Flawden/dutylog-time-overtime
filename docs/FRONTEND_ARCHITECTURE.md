@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue owns the shell, all user-facing screens and offline/sync presentation after readiness; first-run onboarding is the only intentionally live post-ready legacy presentation exception, DutyLog v27.40.29.
+Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.40.30 closes Vue Legacy Retirement with first-run onboarding retained as one explicitly bounded post-ready legacy presentation exception.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)
@@ -73,7 +73,12 @@ When the active route is outside primary navigation, the visible More control an
 
 **dataLayer remains the single offline mutation/sync owner.** IndexedDB snapshots, the offline mutation queue and reconnect flush continue behind narrow bridge operations. Vue must not create a second queue or independently flush the same mutations.
 
-**First-run onboarding is the only intentionally live post-ready legacy presentation exception in v27.40.29.** Offline/sync presentation is Vue-owned: `AppShell.vue` owns visible status/save feedback and `OfflineSyncModal.vue` owns queue/failed/diagnostic actions. The old `.head` / `#offlineSyncDialog` are source recovery only and are physically removed after successful Vue readiness. Async legacy boot/profile publication must therefore tolerate those recovery nodes disappearing while network awaits are in flight; no post-ready legacy identity write may be required for Vue state publication. The Vue logout control is likewise independent of recovery chrome: `DutyLogLegacyPlatform.logout()` publishes `dutylog:logout-request`, while the existing session action in `70-user-boot.js` remains the single flush/CSRF-aware `/logout`/redirect executor.
+**First-run onboarding is the only intentionally live post-ready legacy presentation exception in v27.40.30 and is now a deliberate bounded compatibility surface, not pending screen-migration debt.** Offline/sync presentation is Vue-owned: `AppShell.vue` owns visible status/save feedback and `OfflineSyncModal.vue` owns queue/failed/diagnostic actions. The old `.head` / `#offlineSyncDialog` are source recovery only and are physically removed after successful Vue readiness. Async legacy boot/profile publication must therefore tolerate those recovery nodes disappearing while network awaits are in flight; no post-ready legacy identity write may be required for Vue state publication. The Vue logout control is likewise independent of recovery chrome: `DutyLogLegacyPlatform.logout()` publishes `dutylog:logout-request`, while the existing session action in `70-user-boot.js` remains the single flush/CSRF-aware `/logout`/redirect executor.
+
+
+Historical v27.40.29 contract: **First-run onboarding is the only intentionally live post-ready legacy presentation exception in v27.40.29.**
+
+The v27.40.30 ownership audit intentionally closes the retirement phase with that exception in place. `#firstRunOnboarding` is marked `data-bounded-legacy-owner="first-run-onboarding"`; no second bounded legacy presentation owner is allowed. The overlay owns only first-run preset/module/profile completion presentation and the established service-worker registration handoff. It owns no hash route, normal Settings presentation, shell state, offline queue execution or routed product screen. Native Vue onboarding is deferred until product-level Guided Onboarding work or evidence demonstrates that this bounded surface itself is harmful.
 
 Historical v27.40.24 ownership contract: **Known live legacy presentation is limited to first-run onboarding and offline/sync UX.** v27.40.25 supersedes the offline/sync half of that exception without replacing `dataLayer`.
 

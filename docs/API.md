@@ -1,4 +1,6 @@
-# DutyLog API v27.40.29
+# DutyLog API v27.40.30
+
+`v27.40.30` changes no HTTP/OpenAPI or Flyway shape. It closes the Vue Legacy Retirement phase with first-run onboarding retained as one bounded presentation compatibility surface; generated online APIs remain unchanged at **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 
 `v27.40.29` changes no HTTP/OpenAPI or Flyway shape. The Vue shell logout control now reaches the existing same-origin `POST /logout` session action without relying on the retired legacy `#logout` DOM node, and the offline browser contract uses a semantic Vue network-state attribute instead of translated visible copy. OpenAPI remains **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 

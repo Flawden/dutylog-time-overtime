@@ -1,6 +1,15 @@
 # Release checklist
 
-Status: v27.40.29.
+Status: v27.40.30.
+
+## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary acceptance
+
+- [x] Base content tree is exact proven-green v27.40.29 candidate (`347a2f8b4a9eb19fb89ba24c247efdb6df8f3b51`).
+- [x] First-run ownership audit classifies onboarding as one isolated bounded presentation exception, not a routed screen or competing application owner.
+- [x] Explicit source marker and executable contracts prevent a second bounded legacy presentation owner from appearing.
+- [x] Onboarding module/profile/PWA completion ordering remains runtime-identical.
+- [x] OpenAPI remains 124/130 and Flyway V47; no dependency graph or timeout/retry policy changes.
+- [ ] Exact frontend gate, Maven 785/785, canary, 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking acceptance.
 
 
 ## v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix acceptance

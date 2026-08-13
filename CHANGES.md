@@ -1,3 +1,13 @@
+# v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary
+
+- Starts from the proven-green v27.40.29 staging baseline and closes the Vue Legacy Retirement architecture phase without forcing a cosmetic onboarding rewrite.
+- Records the First-Run Onboarding Ownership Audit decision: `#firstRunOnboarding` remains the sole intentionally live post-ready legacy presentation owner because its current isolated overlay preserves module-dependency persistence, profile completion and PWA first-claim ordering with no competing screen/route authority.
+- Marks that owner explicitly with `data-bounded-legacy-owner="first-run-onboarding"` and adds executable source contracts that forbid broadening the exception or introducing another post-ready legacy presentation owner.
+- Keeps Vue as the sole owner of the shell, every routed user-facing screen and offline/sync presentation; `dataLayer` remains the single offline mutation/sync infrastructure owner.
+- Moves the project from screen-retirement work to Functional Parity Sweep; the next work targets user-visible parity rather than zero-for-zero's-sake migration.
+- Changes no HTTP/OpenAPI shape, Flyway migration, backend authority, module semantics, PWA registration ordering, retry/timeout policy or dependency graph.
+- Acceptance inventory advances to **162 Java test classes / 785 `@Test` methods / 48 Chromium Playwright scenarios / 60 Vitest cases / OpenAPI 124/130 / Flyway V47**.
+
 # v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix
 
 - Classifies the v27.40.28 Chromium run as **46 passed / 2 failed / 0 skipped** with two deterministic root causes and matching retries, not a flaky/image failure.

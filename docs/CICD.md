@@ -1,3 +1,7 @@
+# v27.40.30 acceptance boundary
+
+v27.40.30 starts from the proven-green v27.40.29 staging baseline and changes no pipeline policy. Exact frontend, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
+
 ## v27.40.29 Vue Logout Ownership & Offline Status Contract Hotfix
 
 The v27.40.28 full Chromium run executed all 48 scenarios with 46 passing and two deterministic failures. PWA offline state was correct but the assertion was coupled to retired wording; remember-me logout clicked the Vue control but emitted no `/logout` request because the legacy platform adapter still clicked deleted `#logout`. This cut changes neither workflow topology nor retry/timeout policy. Maven inventory advances to 782/782 across 161 Java test classes; Chromium remains 48 strict scenarios.

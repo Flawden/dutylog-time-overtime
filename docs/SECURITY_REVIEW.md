@@ -1,5 +1,15 @@
 # DutyLog security review
 
+## v27.40.30 Legacy retirement closure / onboarding boundary review
+
+- No endpoint, credential, role, origin, authorization, session, storage or remember-me policy changes.
+- First-run onboarding remains on the existing authenticated module/profile APIs and gains only an explicit presentation-owner marker.
+- The bounded exception grants no new authority and owns no route, normal Settings screen or offline queue execution.
+- `dataLayer` remains the only IndexedDB queue/sync executor; OpenAPI remains 124/130 and Flyway V47.
+
+Status: v27.40.30.
+
+
 ## v27.40.29 Vue logout ownership and offline status contract hotfix review
 
 - No endpoint, credential, role, origin, storage engine, authorization or remember-me policy changes.

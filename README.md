@@ -1,4 +1,8 @@
-# DutyLog v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix
+# DutyLog v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary
+
+v27.40.29 is the proven-green post-retirement baseline. v27.40.30 closes the Vue Legacy Retirement phase after a focused onboarding ownership audit: every routed user-facing screen, the shell and offline/sync presentation are Vue-owned after readiness; `dataLayer` remains the single offline mutation/sync infrastructure owner; `#firstRunOnboarding` is retained as one explicit bounded legacy presentation exception because rewriting that isolated boot overlay would add module/PWA first-claim risk without user-visible value. The next phase is Functional Parity Sweep, not another screen migration.
+
+## DutyLog v27.40.29 — Vue Logout Ownership & Offline Status Contract Hotfix (historical)
 
 v27.40.28 aligned shell identity E2E with the retired legacy header, then Chromium exposed two independent post-retirement leftovers: the PWA offline scenario still asserted the old translated word “оффлайн” while Vue intentionally renders “Нет сети”, and the Vue logout action still delegated to the deleted legacy `#logout` DOM button. v27.40.29 makes logout DOM-independent through the existing session/action boundary and gives the Vue offline status a language-independent `data-network-state` contract. First-run onboarding is deliberately untouched until this cut is proven green.
 
