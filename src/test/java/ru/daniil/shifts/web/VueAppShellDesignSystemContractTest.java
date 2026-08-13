@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-/** Static architecture contract for v27.40.32 final legacy ownership retirement. */
+/** Static architecture contract for the Vue-owned responsive shell. */
 class VueAppShellDesignSystemContractTest {
 
     @Test
@@ -105,10 +105,18 @@ class VueAppShellDesignSystemContractTest {
         assertTrue(vite.contains("dutylog-vue-app-shell.js"));
         assertTrue(docker.contains("dist/dutylog-vue-app-shell.js"));
         assertTrue(gate.contains("dist/dutylog-vue-app-shell.css"));
-        assertTrue(html.contains("/vue/dutylog-vue-app-shell.js?v=27.40.32"));
+        assertTrue(html.contains("/vue/dutylog-vue-app-shell.js?v=" + releaseVersion()));
         assertTrue(e2e.contains("Vue app shell owns navigation chrome"));
         assertTrue(e2e.contains("#tabbar"));
         assertTrue(e2e.contains("data-route=\"calendar\""));
+    }
+
+    private static String releaseVersion() throws Exception {
+        return read("src/main/resources/application.properties").lines()
+                .filter(line -> line.startsWith("info.app.release-version="))
+                .map(line -> line.substring("info.app.release-version=".length()).trim())
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Missing info.app.release-version"));
     }
 
     private static String read(String path) throws Exception {

@@ -1,11 +1,11 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.40.33.
+Status: v27.40.34.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.40.33 keeps the v27.40.32 production parity/usability runtime unchanged and repairs two contradictory overtime-chart Vitest fixtures exposed by exact Node 20 validation. Inventory remains 163 Java test classes / 790 @Test methods / 48 Chromium Playwright scenarios / 63 Vitest cases, OpenAPI 124/130 and Flyway V47.
+Current extension: v27.40.34 keeps the v27.40.32 production parity/usability runtime unchanged and repairs two contradictory overtime-chart Vitest fixtures exposed by exact Node 20 validation. Inventory remains 163 Java test classes / 790 @Test methods / 48 Chromium Playwright scenarios / 63 Vitest cases, OpenAPI 124/130 and Flyway V47.
 
 
 

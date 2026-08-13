@@ -1,3 +1,9 @@
+# v27.40.34 — Vue Asset Version Contract Hotfix
+- Starts from exact v27.40.33 tree after exact Java 17 Maven validation reached shell source contracts and failed on stale cache-busting literals pinned to v27.40.32.
+- Changes no production behavior: Vue shell asset URLs still use the release version already emitted by the build.
+- Makes Java shell contracts derive the expected asset suffix from canonical `info.app.release-version` instead of embedding a patch number, preventing every release bump from creating a false Maven regression.
+- Preserves the v27.40.32 parity/mobile fixes and v27.40.33 overtime fixture correction unchanged.
+
 # v27.40.33 — Overtime Chart Projection Fixture Contract Hotfix
 - Starts from the exact v27.40.32 candidate tree after exact Node 20 frontend validation exposed two deterministic Vitest failures in `absence-time-bank/types/model.spec.ts`.
 - Keeps the v27.40.32 runtime/read-model logic unchanged: overtime charts still trust canonical server `dayEarnedHours` totals and usage still belongs to the actual `usageDate`.

@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.40.33 — Overtime Chart Projection Fixture Contract Hotfix**.
+Current release: **v27.40.34 — Vue Asset Version Contract Hotfix**.
 
 
 ## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary — proven green
@@ -32,13 +32,18 @@ Current release: **v27.40.33 — Overtime Chart Projection Fixture Contract Hotf
 - [ ] Clean Playwright canary and full Chromium 48/48 with zero flaky retries.
 - [ ] Immutable image/PostgreSQL V47 staging acceptance.
 
-## v27.40.33 — Overtime Chart Projection Fixture Contract Hotfix — current
+## v27.40.34 — Vue Asset Version Contract Hotfix — current
+
+- Java 17 Maven reached source-contract tests after v27.40.33 fixed the frontend fixtures, exposing stale shell asset assertions pinned to v27.40.32.
+- Replace release-number literals in those tests with the canonical application release-version contract; production runtime behavior remains unchanged.
+
+## v27.40.33 — Overtime Chart Projection Fixture Contract Hotfix — Maven-red predecessor
 - [x] Preserve v27.40.32 runtime/read-model behavior unchanged.
 - [x] Repair the two contradictory overtime chart Vitest fixtures discovered by exact frontend CI.
 - [x] Keep canonical server `dayEarnedHours` authority and actual `usageDate` chart ownership intact.
 - [ ] Exact frontend 63/63, Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
-## v27.41.0 — Vacation Entitlement & Accrual Engine — next after v27.40.33 green
+## v27.41.0 — Vacation Entitlement & Accrual Engine — next after v27.40.34 green
 - [ ] Entitlement policy and annual allowance.
 - [ ] Accrual/carry-over/adjustments with explainable balance.
 - [ ] Planned/used/available vacation projection integrated with the existing Absence domain.

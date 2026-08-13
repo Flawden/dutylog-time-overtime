@@ -1,3 +1,7 @@
+# DutyLog v27.40.34 — Vue Asset Version Contract Hotfix
+
+v27.40.33 passed the exact frontend stage and reached Java 17 Maven, where two Vue shell source-contract classes still expected browser asset URLs ending in `v=27.40.32`. The runtime correctly ships the current release suffix, so the tests—not the application—were stale. v27.40.34 removes those patch-number literals and derives the expected suffix from the canonical application release version. No product calculation, API, Flyway, auth, offline, calendar or navigation behavior changes.
+
 # DutyLog v27.40.33 — Overtime Chart Projection Fixture Contract Hotfix
 
 v27.40.32 reached the exact frontend gate and failed two deterministic Vitest assertions because the affected fixtures overrode visible credit `hours` to 3 h / 2 h while silently retaining the helper's default canonical `dayEarnedHours=4`. The production v27.40.32 model is intentionally server-projection-first, so it correctly read those contradictory fixtures as 4 h + 4 h = 8 h. v27.40.33 changes no runtime behavior: it makes the fixtures internally coherent with the expected 3 h + 2 h = 5 h contract, then reruns the unchanged release surface.

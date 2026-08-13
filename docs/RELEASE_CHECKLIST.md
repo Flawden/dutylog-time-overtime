@@ -1,6 +1,17 @@
 # Release checklist
 
-Status: v27.40.33.
+Status: v27.40.34.
+
+## v27.40.34 — Vue Asset Version Contract Hotfix acceptance
+
+- [x] Start from exact v27.40.33 content tree `2e9eea589e2de143a93b0869ce4b6b4ed80e8df4`.
+- [x] Preserve v27.40.32 functional runtime and v27.40.33 fixture correction unchanged.
+- [x] Remove stale hard-coded `27.40.32` cache-busting assertions from Vue shell Java source contracts.
+- [x] Derive expected browser asset version from `info.app.release-version` so patch releases do not invalidate the contract merely by bumping the release.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate green.
+- [ ] Java 17 Maven verify green.
+- [ ] 48/48 Chromium, image, PostgreSQL V47 smoke and staging deploy green.
+
 
 ## v27.40.33 — Overtime Chart Projection Fixture Contract Hotfix acceptance
 - [x] Start from exact v27.40.32 candidate content tree `170c4bf4c27bcc722e140a5fc12355e5ea0214ee`.
