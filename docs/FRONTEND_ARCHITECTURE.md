@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.40.34 preserves the v27.40.32 Functional Parity Sweep runtime unchanged and only repairs contradictory overtime projection unit-test fixtures found by exact frontend CI; first-run onboarding remains one explicitly bounded post-ready legacy presentation exception.
+Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.40.35 preserves the v27.40.32 Functional Parity Sweep runtime unchanged and only aligns stale Java source-contract scope with the existing calendar color helper and overtime day-total helper found by exact Maven CI; first-run onboarding remains one explicitly bounded post-ready legacy presentation exception.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)

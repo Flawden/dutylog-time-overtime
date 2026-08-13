@@ -1,6 +1,6 @@
-# v27.40.34 acceptance boundary
+# v27.40.35 acceptance boundary
 
-v27.40.34 starts from the exact v27.40.32 candidate tree and changes only contradictory frontend unit-test fixtures plus release metadata. Pipeline policy is unchanged: exact Node 20.18.1/npm 10.8.2 frontend validation, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
+v27.40.35 starts from the exact v27.40.34 candidate tree and changes only two stale Java source-contract assertions plus release metadata. Pipeline policy is unchanged: exact Node 20.18.1/npm 10.8.2 frontend validation, Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
 
 ## v27.40.29 Vue Logout Ownership & Offline Status Contract Hotfix
 

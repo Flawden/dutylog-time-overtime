@@ -1,3 +1,10 @@
+# v27.40.35 — Functional Parity Source Contract Scope Hotfix
+- Starts from the exact v27.40.34 candidate tree after exact Java 17 Maven ran all 790 tests and exposed two stale source-contract assertions.
+- Changes no production runtime behavior: calendar shift color still flows through `cellStyle`/`shiftColor`, and overtime charts still consume canonical daily projection totals from `dayCreditTotals`.
+- Aligns the calendar contract with the helper-based implementation instead of requiring the obsolete inline `facts.shift.color` assignment.
+- Aligns the overtime contract with ownership boundaries by checking `serverProjection?.dayEarnedHours` inside `dayCreditTotals` and checking only day-total consumption inside `ledgerChartColumns`.
+- Keeps OpenAPI 124/130, Flyway V47, auth, offline/dataLayer, onboarding and dependency graph unchanged.
+
 # v27.40.34 — Vue Asset Version Contract Hotfix
 - Starts from exact v27.40.33 tree after exact Java 17 Maven validation reached shell source contracts and failed on stale cache-busting literals pinned to v27.40.32.
 - Changes no production behavior: Vue shell asset URLs still use the release version already emitted by the build.

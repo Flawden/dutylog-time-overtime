@@ -16,12 +16,13 @@ class TimeBankUsageDateChartParityHotfixTest {
     @Test
     void earnedSeriesUsesCanonicalProjectedDayTotals() throws IOException {
         String model = compact(read("frontend/src/features/absence-time-bank/types/model.ts"));
-        String block = functionBlock(model, "export function ledgerChartColumns", "export function scenarioDescription");
+        String dayTotalsBlock = functionBlock(model, "export function dayCreditTotals", "export function ledgerChartColumns");
+        String chartBlock = functionBlock(model, "export function ledgerChartColumns", "export function scenarioDescription");
 
-        assertTrue(block.contains("for (const [date, totals] of dayCreditTotals(account.credits))"));
-        assertTrue(block.contains("rowFor(date).earnedHours += totals.earned;"));
-        assertTrue(block.contains("serverProjection?.dayEarnedHours"));
-        assertFalse(block.contains("rowFor(credit.workedDate).earnedHours += Number(credit.hours ?? 0);"));
+        assertTrue(dayTotalsBlock.contains("serverProjection?.dayEarnedHours"));
+        assertTrue(chartBlock.contains("for (const [date, totals] of dayCreditTotals(account.credits))"));
+        assertTrue(chartBlock.contains("rowFor(date).earnedHours += totals.earned;"));
+        assertFalse(chartBlock.contains("rowFor(credit.workedDate).earnedHours += Number(credit.hours ?? 0);"));
     }
 
     @Test

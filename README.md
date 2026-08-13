@@ -1,3 +1,7 @@
+# DutyLog v27.40.35 — Functional Parity Source Contract Scope Hotfix
+
+v27.40.34 passed the exact Vue frontend stage and reached all 790 Java tests. Maven then exposed two stale source-contract assertions: one required calendar shift color to be assigned directly from `facts.shift.color` even though runtime already uses a `shiftColor` helper variable, and another searched for canonical `serverProjection?.dayEarnedHours` inside `ledgerChartColumns` even though that authority is intentionally encapsulated in `dayCreditTotals`. v27.40.35 changes no product runtime behavior; it aligns those contracts with the existing helper boundaries.
+
 # DutyLog v27.40.34 — Vue Asset Version Contract Hotfix
 
 v27.40.33 passed the exact frontend stage and reached Java 17 Maven, where two Vue shell source-contract classes still expected browser asset URLs ending in `v=27.40.32`. The runtime correctly ships the current release suffix, so the tests—not the application—were stale. v27.40.34 removes those patch-number literals and derives the expected suffix from the canonical application release version. No product calculation, API, Flyway, auth, offline, calendar or navigation behavior changes.

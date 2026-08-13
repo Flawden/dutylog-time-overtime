@@ -44,7 +44,8 @@ class FunctionalParitySweepIIMobileUsabilityContractTest {
         String browser = read("e2e/calendar-mobile-experience.spec.js");
 
         assertTrue(calendar.contains("hasShift: Boolean(cellFacts(date).shift)"));
-        assertTrue(calendar.contains("styles[\"--shift-color\"] = facts.shift.color"));
+        assertTrue(calendar.contains("const shiftColor = facts.shift?.color;"));
+        assertTrue(calendar.contains("styles[\"--shift-color\"] = shiftColor"));
         assertTrue(calendar.contains(":aria-label=\"cellAriaLabel(date)\""));
         assertTrue(css.contains(".cell.hasShift:not(.hasAbsenceFact)"));
         assertTrue(css.contains(".cell.hasShift:not(.hasAbsenceFact) .shift { display:none; }"));

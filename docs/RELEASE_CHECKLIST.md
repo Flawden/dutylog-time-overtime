@@ -1,6 +1,15 @@
 # Release checklist
 
-Status: v27.40.34.
+Status: v27.40.35.
+
+## v27.40.35 — Functional Parity Source Contract Scope Hotfix acceptance
+
+- [x] Start from exact v27.40.34 content tree `57ec3c583c2b3518b96dd3c0a535cc97120d2585`.
+- [x] Preserve all v27.40.32 production runtime behavior unchanged.
+- [x] Align calendar shift-color source contract with the existing `shiftColor` helper instead of a stale inline implementation shape.
+- [x] Assert canonical `serverProjection?.dayEarnedHours` authority inside `dayCreditTotals`, where that authority actually lives, while keeping `ledgerChartColumns` responsible only for consuming day totals.
+- [x] Keep OpenAPI 124/130, Flyway V47, auth, offline/dataLayer and bounded onboarding unchanged.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
 ## v27.40.34 — Vue Asset Version Contract Hotfix acceptance
 
