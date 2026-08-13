@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.41.0 — Calendar Visual Language Foundation**.
+Current release: **v27.41.1 — Overtime Chart Rendering Recovery**.
 
 
 ## v27.40.30 — Legacy Retirement Closure & First-Run Onboarding Boundary — proven green
@@ -67,16 +67,22 @@ Current release: **v27.41.0 — Calendar Visual Language Foundation**.
 - [x] Keep canonical server `dayEarnedHours` authority and actual `usageDate` chart ownership intact.
 - [ ] Exact frontend 63/63, Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
-## v27.41.0 — Calendar Visual Language Foundation — current
+## v27.41.0 — Calendar Visual Language Foundation — proven green
 - [x] Start from proven-green v27.40.37 commit `b823e8741dd1f2dbc36424105f0e34cfeffc2817` / tree `1cf30a4e54b79c2a783aac1f3d2342bb05e936ef`.
 - [x] Give schedule-free days a monochrome low-opacity palm watermark instead of ambiguous dash/text output.
 - [x] Keep shift color as restrained semantic tint/glow and keep factual absence visually stronger than schedule decoration.
 - [x] Establish stable zones for date, Important Day icon, user day marker and open-task count.
 - [x] Reuse configured Important Day icons with compact `+N` overflow and accessible day summaries.
 - [x] Carry the same shift/free-day visual language into week mode while preserving non-blocking calendar refresh.
-- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
+- [x] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
-## v27.42.0 — People Profiles & Shared Availability — next after v27.41.0 green
+## v27.41.1 — Overtime Chart Rendering Recovery — current
+- [x] Preserve canonical overtime accounting/projection semantics unchanged.
+- [x] Restore visible earned/used bars using explicit browser-resolvable plot geometry.
+- [x] Lock real rendered bar heights in the existing Chromium Overtime Next journey.
+- [ ] Exact frontend, Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
+
+## v27.42.0 — People Profiles & Shared Availability — next after v27.41.1 green
 - [ ] Treat another person as a selected calendar profile, not an overlay pasted on top of the current user.
 - [ ] Switching profile recolors/reprojects the whole calendar to that person while making active identity unmistakable.
 - [ ] Add Shared Availability for common free days, including the nearest shared window and multi-day overlaps.

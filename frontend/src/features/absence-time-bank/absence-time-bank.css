@@ -129,8 +129,8 @@ html[data-vue-absence-time-bank="ready"] :is(#view-vacation, #view-overtime) { d
 .ledger-progress i { height: 100%; display: block; border-radius: inherit; background: var(--accent); }
 .ledger-chart { min-height: 190px; margin-bottom: 14px; padding: 14px 12px 8px; display: flex; align-items: flex-end; gap: 7px; overflow-x: auto; border: 1px solid var(--vue-shell-border-soft); border-radius: 14px; background: linear-gradient(to top, color-mix(in srgb, var(--line) 22%, transparent) 1px, transparent 1px); background-size: 100% 25%; }
 .overtimeChartColumn { min-width: 34px; height: 150px; display: grid; grid-template-rows: 1fr auto; gap: 5px; align-items: end; text-align: center; }
-.overtimeChartColumn__bars { height: 100%; display: flex; align-items: flex-end; justify-content: center; gap: 3px; }
-.overtimeChartColumn__bars i { width: 10px; min-height: 0; border-radius: 5px 5px 2px 2px; transition: height .18s ease; }
+.overtimeChartColumn__bars { height: 126px; display: flex; align-items: flex-end; justify-content: center; gap: 3px; }
+.overtimeChartColumn__bars i { display: block; flex: 0 0 10px; width: 10px; min-height: 0; border-radius: 5px 5px 2px 2px; transition: height .18s ease; }
 .overtimeChartColumn__bars .earned { background: var(--accent); }
 .overtimeChartColumn__bars .used { background: color-mix(in srgb, #ffb45b 86%, var(--accent)); }
 .overtimeChartColumn small { color: var(--mut); font-size: 9px; }

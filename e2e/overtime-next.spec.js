@@ -50,13 +50,25 @@ test('Overtime Next keeps the professional desktop ledger and replaces it with d
   await page.locator('#timeBankTabCredits').click();
   expect(await page.locator('#ledgerChart .overtimeChartColumn').count()).toBeGreaterThan(0);
   const monthKey = usageDate.slice(0, 7);
-  await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${monthKey}"]`)).toHaveAttribute('title', /\+5/);
-  await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${monthKey}"]`)).toHaveAttribute('title', /−4/);
+  const yearlyColumn = page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${monthKey}"]`);
+  await expect(yearlyColumn).toHaveAttribute('title', /\+5/);
+  await expect(yearlyColumn).toHaveAttribute('title', /−4/);
+  await expect(yearlyColumn).toHaveAttribute('data-earned-hours', '5');
+  await expect(yearlyColumn).toHaveAttribute('data-used-hours', '4');
+  const yearlyBarHeights = await yearlyColumn.locator('.overtimeChartColumn__bars i').evaluateAll(nodes =>
+    nodes.map(node => Math.round(node.getBoundingClientRect().height))
+  );
+  expect(yearlyBarHeights[0]).toBeGreaterThan(20);
+  expect(yearlyBarHeights[1]).toBeGreaterThan(20);
 
   await page.locator('#ledgerThisMonth').click();
   await expect(page.locator('#ledgerThisMonth')).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${usageDate}"]`)).toHaveAttribute('title', /−4/);
-  await expect(page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${firstDate}"] .used`)).toHaveAttribute('style', /height:\s*0%/);
+  const usageColumn = page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${usageDate}"]`);
+  const earnedColumn = page.locator(`#ledgerChart .overtimeChartColumn[data-series-key="${firstDate}"]`);
+  await expect(usageColumn).toHaveAttribute('title', /−4/);
+  await expect(earnedColumn.locator('.used')).toHaveAttribute('style', /height:\s*0px/);
+  expect(await earnedColumn.locator('.earned').evaluate(node => Math.round(node.getBoundingClientRect().height))).toBeGreaterThan(20);
+  expect(await usageColumn.locator('.used').evaluate(node => Math.round(node.getBoundingClientRect().height))).toBeGreaterThan(20);
 
   await expect(page.locator('.ledgerTableWrap')).toBeVisible();
   await expect(page.locator('#ledgerRows tr[data-credit-id]')).toHaveCount(2);

@@ -115,9 +115,12 @@ const tabs = [
 ];
 
 
+const CHART_PLOT_HEIGHT_PX = 126;
+
 function chartBarHeight(hours: number): string {
-  if (!(hours > 0.0001)) return "0%";
-  return `${Math.max(4, (hours / maxChartHours.value) * 100)}%`;
+  if (!(hours > 0.0001)) return "0px";
+  const ratio = Math.min(1, hours / maxChartHours.value);
+  return `${Math.max(5, Math.round(ratio * CHART_PLOT_HEIGHT_PX))}px`;
 }
 
 function creditUsages(credit: OvertimeCredit): OvertimeUsage[] {
@@ -274,10 +277,18 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
 
       <div id="ledgerChart" class="ledger-chart" role="img" :aria-label="`Начисления и списания: ${periodLabel}`">
         <div v-if="!chartColumns.length" class="domain-muted">В выбранном периоде нет операций.</div>
-        <div v-for="column in chartColumns" :key="column.key" class="overtimeChartColumn" :data-series-key="column.key" :title="column.title">
+        <div
+          v-for="column in chartColumns"
+          :key="column.key"
+          class="overtimeChartColumn"
+          :data-series-key="column.key"
+          :data-earned-hours="column.earnedHours"
+          :data-used-hours="column.usedHours"
+          :title="column.title"
+        >
           <div class="overtimeChartColumn__bars">
-            <i class="earned" :style="{ height: chartBarHeight(column.earnedHours) }"></i>
-            <i class="used" :style="{ height: chartBarHeight(column.usedHours) }"></i>
+            <i class="earned" aria-hidden="true" :style="{ height: chartBarHeight(column.earnedHours) }"></i>
+            <i class="used" aria-hidden="true" :style="{ height: chartBarHeight(column.usedHours) }"></i>
           </div>
           <small>{{ column.key.slice(rangeMode === 'year' ? 5 : 8) }}</small>
         </div>

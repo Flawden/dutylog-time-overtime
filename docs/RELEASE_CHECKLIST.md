@@ -1,6 +1,15 @@
 # Release checklist
 
-Status: v27.41.0.
+Status: v27.41.1.
+
+## v27.41.1 — Overtime Chart Rendering Recovery acceptance
+
+- [x] Start from the proven-green v27.41.0 staging baseline.
+- [x] Keep canonical server `dayEarnedHours` projection and actual `usageDate` aggregation unchanged.
+- [x] Replace nested percentage bar geometry with an explicit 126 px plot and bounded non-zero pixel heights; zero bars remain exactly zero.
+- [x] Add stable earned/used diagnostics and real Chromium `getBoundingClientRect().height` assertions in year and month views.
+- [x] Keep OpenAPI 124/130, Flyway V47, auth, offline/dataLayer, onboarding, Calendar Visual Language, dependencies, retry and timeout policy unchanged.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate with 64/64 Vitest, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
 ## v27.41.0 — Calendar Visual Language Foundation acceptance
 
@@ -12,7 +21,7 @@ Status: v27.41.0.
 - [x] Carry shift/free-day semantics into week strip/agenda without replacing the non-blocking loading state.
 - [x] Add strict typed model/Vitest coverage and deterministic browser assertions without retry/timeout inflation.
 - [x] Keep OpenAPI 124/130, Flyway V47, auth, offline/dataLayer and bounded onboarding unchanged.
-- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate with 64/64 Vitest, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
+- [x] Exact Node 20.18.1/npm 10.8.2 frontend gate with 64/64 Vitest, Java 17 Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
 ## v27.40.37 — Calendar E2E Source Contract Alignment Hotfix acceptance
 

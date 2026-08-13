@@ -1,3 +1,9 @@
+# v27.41.1 — Overtime Chart Rendering Recovery
+- Starts from the proven-green v27.41.0 Calendar Visual Language staging baseline.
+- Restores visible overtime accrual/usage bars without changing canonical day-projection or usage-date accounting: the chart now maps normalized values to an explicit pixel plot height instead of relying on percentage heights inside the grid/flex track.
+- Adds stable data diagnostics plus Chromium geometry assertions so a populated chart cannot pass while rendering zero-height bars.
+- Keeps OpenAPI 124/130, Flyway V47, auth, offline/dataLayer, onboarding, calendar visual language, retry/timeout policy and dependency graph unchanged.
+
 # v27.41.0 — Calendar Visual Language Foundation
 - Starts from proven-green v27.40.37 commit `b823e8741dd1f2dbc36424105f0e34cfeffc2817` / tree `1cf30a4e54b79c2a783aac1f3d2342bb05e936ef`.
 - Introduces a stable month-cell visual grammar: schedule-free days use a low-opacity monochrome palm watermark, shift days retain restrained color tint/glow, full-day factual absence remains visually authoritative, and weekend headers are softly distinguished.

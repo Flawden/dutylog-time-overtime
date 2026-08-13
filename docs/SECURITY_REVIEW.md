@@ -1,5 +1,14 @@
 # DutyLog security review
 
+## v27.41.1 Overtime Chart Rendering Recovery review
+
+- No endpoint, credential, role, authorization, CSRF, session, origin, storage or permission change.
+- The release only changes Vue/CSS chart geometry and browser assertions over data already authorized for the current user.
+- No new HTML injection surface, dependency or cross-user data path is introduced.
+- `dataLayer` remains the only IndexedDB/outbox/reconnect executor; OpenAPI remains 124/130 and Flyway remains V47.
+
+Status: v27.41.1.
+
 ## v27.41.0 Calendar Visual Language Foundation review
 
 - No endpoint, credential, role, authorization, CSRF, session, origin, storage or permission change.

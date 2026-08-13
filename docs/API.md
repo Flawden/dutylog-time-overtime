@@ -1,6 +1,8 @@
-# DutyLog API v27.41.0
+# DutyLog API v27.41.1
 
-`v27.41.0` changes no HTTP/OpenAPI or Flyway shape. It adds only typed calendar visual-language helpers, Vue month/week presentation, accessibility copy and browser/unit contracts: schedule-free palm semantics, fixed marker/task/Important zones, and restrained shift tint/glow. Generated online APIs remain unchanged at **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
+`v27.41.1` changes no HTTP/OpenAPI or Flyway shape. It only restores overtime-chart browser geometry while preserving the existing canonical projection/usage-date read model. Generated online APIs remain unchanged at **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
+
+`v27.41.0` added the Calendar Visual Language Foundation without changing HTTP/OpenAPI or Flyway shape.
 
 `v27.40.30` changes no HTTP/OpenAPI or Flyway shape. It closes the Vue Legacy Retirement phase with first-run onboarding retained as one bounded presentation compatibility surface; generated online APIs remain unchanged at **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 

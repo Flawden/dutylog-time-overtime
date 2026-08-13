@@ -1,3 +1,7 @@
+# DutyLog v27.41.1 — Overtime Chart Rendering Recovery
+
+v27.41.0 is proven green and manually accepted on staging. The overtime chart still exposed one surviving presentation regression: period columns and numeric totals were present, but the visual bars could collapse because bar heights were expressed as percentages inside a nested grid/flex height chain. v27.41.1 keeps the canonical `dayCreditTotals` / actual `usageDate` model unchanged and gives the chart an explicit 126 px plot geometry with pixel bar heights plus strict browser geometry assertions.
+
 # DutyLog v27.41.0 — Calendar Visual Language Foundation
 
 DutyLog now treats the calendar as a visual instrument instead of a text table. Work keeps restrained shift-color semantics; a real schedule-free day gets a large low-opacity monochrome palm watermark; Important Days, custom day markers and open-task counts occupy stable zones; factual absence remains stronger than schedule decoration; and week mode shares the same shift/free-day language. The release is deliberately presentation/model-only: no HTTP/OpenAPI, Flyway, auth, offline queue or onboarding authority changes.
