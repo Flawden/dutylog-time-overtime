@@ -1,4 +1,4 @@
-## v27.42.6 source-contract alignment
+## v27.42.7 source-contract alignment
 
 The v27.41.8 shared runtime architecture is unchanged. This hotfix only updates a Java source-shape guard from the pre-segmentation `budget.maxBytes` contract to the six entry/per-chunk/total raw+gzip dimensions enforced by the current browser audit.
 

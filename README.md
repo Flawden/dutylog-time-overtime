@@ -1,3 +1,7 @@
+# DutyLog v27.42.7 — People Profiles E2E Locator Alignment Hotfix
+
+v27.42.6 passed Maven and release checks, then failed in the People Profiles browser regression because `.calendarProfileReadOnly` matched two elements in strict mode. v27.42.7 keeps runtime behavior unchanged and makes the E2E contract target the exact user-facing read-only banner text.
+
 # DutyLog v27.42.6 — Release Check Current-Version Contract Hotfix
 
 v27.42.5 passed Maven and reached Release checks, then failed only because recurring source-contract blocks still expected v27.42.4 service-worker, bundle-budget and lockfile-manifest literals. v27.42.6 derives those current artifact expectations from the release-check `VERSION` and the committed lockfile SHA instead of duplicating a previous release number across historical guard sections. Production behavior is unchanged.

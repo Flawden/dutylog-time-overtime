@@ -77,7 +77,7 @@ test('schedule templates preview safely and people profiles switch the whole cal
   await expect(page.locator('#summary')).toContainText('Напарник');
 
   await page.locator('[data-calendar-mode="day"]').click();
-  await expect(page.locator('.calendarProfileReadOnly')).toContainText('только для просмотра');
+  await expect(page.getByText('График только для просмотра', { exact: true })).toBeVisible();
   await expect(page.locator('#calendarDayOpenDetails')).toHaveCount(0);
   await expect(page.locator('#calendarTimelineCanvas .calendarTimelineEvent.layer')).toBeVisible();
 

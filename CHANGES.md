@@ -1,3 +1,9 @@
+# v27.42.7 — People Profiles E2E Locator Alignment Hotfix
+- Fixes the exact v27.42.6 Browser E2E regression where `.calendarProfileReadOnly` matched both the read-only profile banner and the timezone label under Playwright strict mode.
+- Replaces the ambiguous CSS-class assertion with an exact user-facing `График только для просмотра` locator.
+- Keeps People Profiles runtime, schedule-template concurrency locking, persistence, OpenAPI and Flyway behavior unchanged.
+- v27.42.6 already passed Maven (792 tests) and release checks before this browser-only locator failure.
+
 # v27.42.6 — Release Check Current-Version Contract Hotfix
 - Fixes the exact v27.42.5 Release checks failure where recurring gate assertions still hardcoded v27.42.4 service-worker, bundle-budget and lockfile-manifest values.
 - Replaces copied current-release literals in recurring historical guard blocks with `${VERSION}` and the already computed `LOCKFILE_ACTUAL_SHA`, so future release bumps do not require editing dozens of predecessor sections.
