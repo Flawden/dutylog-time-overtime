@@ -1,8 +1,8 @@
 # DutyLog release checklist
 
-Status: v27.42.1.
+Status: v27.42.2.
 
-## v27.42.1 — People Profiles acceptance
+## v27.42.2 — People Profiles acceptance
 
 - [x] Exact v27.41.8 failure classified from CI: 791 tests, 1 failure, 0 errors.
 - [x] Only stale Java source contract plus release identity/documentation changed; no production chunk/budget semantics changed.

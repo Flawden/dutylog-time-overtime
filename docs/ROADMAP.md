@@ -1,9 +1,9 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.42.1 — People Profiles Source Contract Alignment Hotfix**.
+Current release: **v27.42.2 — People Profiles Source Contract Alignment Hotfix**.
 
 
-## v27.42.1 — People Profiles Source Contract Alignment Hotfix
+## v27.42.2 — People Profiles Source Contract Alignment Hotfix
 
 - [x] Preserve v27.42.0 People Profiles runtime unchanged.
 - [x] Align the stale selected-day-panel source assertion with the read-only profile boundary: `dayPanelOpen && viewingSelf`.

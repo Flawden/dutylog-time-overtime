@@ -1,3 +1,9 @@
+# v27.42.2 — Concurrent Schedule Seed Hotfix
+- Fixes a first-run onboarding HTTP 500 when legacy boot and Vue Settings concurrently request schedule templates for the same newly registered user.
+- Serializes lazy built-in schedule preset seeding per user with a database `PESSIMISTIC_WRITE` lock before checking/inserting the five unique presets.
+- Adds a concurrent regression test proving two simultaneous first reads both return five presets and persist exactly five rows.
+- Changes no People Profiles semantics, API/OpenAPI shape, Flyway schema, offline ownership, bundle budgets, dependencies, timeouts or Playwright retries.
+
 # v27.42.1 — People Profiles Source Contract Alignment Hotfix
 - Aligns the remaining selected-day-panel Java source contract with v27.42.0 People Profiles: another person's calendar is read-only, so `SelectedDayPanel` is mounted only when `dayPanelOpen && viewingSelf`.
 - Removes the stale assertion that still required the pre-People-Profiles `v-if="dayPanelOpen"` source shape.

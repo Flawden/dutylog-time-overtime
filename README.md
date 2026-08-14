@@ -1,3 +1,9 @@
+# DutyLog v27.42.2 — Concurrent Schedule Seed Hotfix
+
+First-run startup can legitimately have bounded legacy boot and Vue Settings reading schedule metadata at the same time. v27.42.2 makes lazy schedule-template preset seeding concurrency-safe at the backend by locking the owner row before the unique `(user_id, name)` presets are checked and created. This removes the PostgreSQL unique-race that surfaced as `GET /api/schedule-templates -> 500` and blocked onboarding.
+
+People Profiles behavior is unchanged.
+
 # DutyLog v27.42.1 — People Profiles Source Contract Alignment Hotfix
 
 v27.42.0 introduced one active calendar person context and correctly prevents the owner's selected-day editor from mounting while viewing a read-only people profile. One older assertion in `VueCalendarTimelineMigrationFrontendContractTest` still required the pre-profile `v-if="dayPanelOpen"` source shape. v27.42.1 aligns that source contract with the already-intended `dayPanelOpen && viewingSelf` boundary.

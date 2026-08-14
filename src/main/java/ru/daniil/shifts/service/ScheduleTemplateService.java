@@ -1,6 +1,7 @@
 package ru.daniil.shifts.service;
 
 import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.config.SecurityEventLogger;
@@ -180,24 +181,30 @@ public class ScheduleTemplateService {
 
     @Transactional
     public void ensureDefaults(AppUser user) {
+        // First-run boot has two legitimate readers (bounded legacy boot + Vue Settings).
+        // Serialize lazy preset seeding per owner in the database so concurrent transactions
+        // cannot both observe an empty set and race the unique (user_id, name) constraint.
+        AppUser lockedOwner = entityManager.find(AppUser.class, user.getId(), LockModeType.PESSIMISTIC_WRITE);
+        if (lockedOwner == null) throw ApiException.notFound("Пользователь не найден");
+
         Map<String, ShiftType> byName = new LinkedHashMap<>();
-        for (var dto : shiftTypeService.list(user)) {
-            ShiftType shift = shiftTypeService.requireOwnedShiftType(user, dto.id());
+        for (var dto : shiftTypeService.list(lockedOwner)) {
+            ShiftType shift = shiftTypeService.requireOwnedShiftType(lockedOwner, dto.id());
             byName.put(shift.getName(), shift);
         }
         ShiftType day = requireNamed(byName, "Дневная");
         ShiftType night = requireNamed(byName, "Ночная");
         ShiftType off = requireNamed(byName, "Выходной");
 
-        addPreset(user, "2 через 2", "Две дневные смены, затем два выходных.", "CYCLE_START",
+        addPreset(lockedOwner, "2 через 2", "Две дневные смены, затем два выходных.", "CYCLE_START",
                 List.of(day, day, off, off), 10);
-        addPreset(user, "День / Ночь / 48", "Дневная, ночная и двое суток отдыха.", "CYCLE_START",
+        addPreset(lockedOwner, "День / Ночь / 48", "Дневная, ночная и двое суток отдыха.", "CYCLE_START",
                 List.of(day, night, off, off), 20);
-        addPreset(user, "Пятидневка", "Понедельник–пятница рабочие, суббота и воскресенье выходные.", "WEEKDAY",
+        addPreset(lockedOwner, "Пятидневка", "Понедельник–пятница рабочие, суббота и воскресенье выходные.", "WEEKDAY",
                 List.of(day, day, day, day, day, off, off), 30);
-        addPreset(user, "День / 72", "Одна дневная смена и трое суток отдыха.", "CYCLE_START",
+        addPreset(lockedOwner, "День / 72", "Одна дневная смена и трое суток отдыха.", "CYCLE_START",
                 List.of(day, off, off, off), 40);
-        addPreset(user, "Ночь / 72", "Одна ночная смена и трое суток отдыха.", "CYCLE_START",
+        addPreset(lockedOwner, "Ночь / 72", "Одна ночная смена и трое суток отдыха.", "CYCLE_START",
                 List.of(night, off, off, off), 50);
         templates.flush();
     }
