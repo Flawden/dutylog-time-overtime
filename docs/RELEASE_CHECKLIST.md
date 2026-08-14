@@ -1,14 +1,14 @@
 # DutyLog release checklist
 
-Status: v27.42.4.
+Status: v27.42.5.
 
-## v27.42.4 — People Profiles acceptance
+## v27.42.5 — Release Check Shell Contract Hotfix acceptance
 
-- [x] Exact v27.41.8 failure classified from CI: 791 tests, 1 failure, 0 errors.
-- [x] Only stale Java source contract plus release identity/documentation changed; no production chunk/budget semantics changed.
+- [x] Exact v27.42.4 failure classified from CI: Maven green; Release checks failed on two shell/source-contract assertions.
+- [x] Only release-check shell/source contracts plus release identity/documentation changed; no production runtime semantics changed.
 - [x] Contract asserts entry/per-chunk/total raw+gzip browser budget keys and rejects retired `budget.maxBytes`.
 - [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate passes.
-- [ ] Exact Java 17 Maven gate passes 791/791.
+- [ ] Exact Java 17 Maven gate passes 792/792.
 - [ ] `release-check.sh` reaches and passes real segmented browser bundle audit.
 - [ ] Playwright canary/full Chromium, immutable image, PostgreSQL/Flyway and staging smoke remain green where configured.
 

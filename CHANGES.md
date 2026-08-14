@@ -1,3 +1,9 @@
+# v27.42.5 — Release Check Shell Contract Hotfix
+- Fixes the exact v27.42.4 Release checks failure after Maven and the 792/164 baselines were already green.
+- Aligns the committed schedule-seed regression method contract with the real method `concurrentFirstListsSeedFivePresetsExactlyOnce`.
+- Quotes the literal `792 `@Test` methods` release-doc assertion safely so Bash does not execute `@Test` as command substitution.
+- Changes no production runtime, People Profiles behavior, schedule-template locking, database schema, API/OpenAPI contract, bundle budget, retry or timeout behavior.
+
 # v27.42.4 — Release Check Contract Alignment Hotfix
 - Aligns the recurring release gate with the exact v27.42.3 CI reality: Maven is green at 792 tests / 164 test classes, while Release checks failed only on stale static expectations.
 - Updates release-check baselines for the committed concurrency regression test and corrects the current release identity/document contract.
