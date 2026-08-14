@@ -1,6 +1,6 @@
 # Frontend architecture
 
-Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.41.5 changes no runtime ownership or component structure; it only rebaselines the raw browser-bundle audit ceiling after the exact v27.41.4 build crossed the previous limit by 6839 B. First-run onboarding remains one explicitly bounded post-ready legacy presentation exception; `dataLayer` remains the single offline mutation/sync owner. Route/workspace bundle segmentation is the next frontend-delivery task.
+Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.41.6 keeps those ownership boundaries unchanged and only enriches the existing TimeBank integrity presentation with linked-audit context, conservative next-step guidance and a mobile-safe record grid. First-run onboarding remains one explicitly bounded post-ready legacy presentation exception; `dataLayer` remains the single offline mutation/sync owner. Route/workspace bundle segmentation remains the next frontend-delivery task.
 
 
 ## Vue Settings, Workspace & Integrations ownership (v27.39.0)

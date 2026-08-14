@@ -1,3 +1,7 @@
+# v27.41.6 Accounting Integrity Semantics & Actionability review
+
+v27.41.6 adds no endpoint, credential, role, authorization, dependency, cross-user data path or automatic repair capability. It corrects reconciliation of existing current-user absence audit facts and exposes only audit metadata already returned by the authorized ledger-integrity response. Historical accounting mutations remain explicit/manual.
+
 # v27.41.5 Browser Bundle Budget Rebaseline review
 
 v27.41.5 changes no endpoint, credential, role, authorization, persistence, cross-user schedule access, dependency, runtime code path or accounting authority. The only production-delivery change is a narrow raw browser-bundle ceiling rebaseline from 800000 B to 810000 B; the gzip ceiling remains 250000 B and all forbidden-runtime-pattern checks remain blocking.
@@ -19,7 +23,7 @@ v27.41.2 changes no auth, authorization, HTTP surface, persistence, offline queu
 - No new HTML injection surface, dependency or cross-user data path is introduced.
 - `dataLayer` remains the only IndexedDB/outbox/reconnect executor; OpenAPI remains 124/130 and Flyway remains V47.
 
-Status: v27.41.5.
+Status: v27.41.6.
 
 ## v27.41.0 Calendar Visual Language Foundation review
 

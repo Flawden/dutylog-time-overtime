@@ -1,6 +1,16 @@
 # DutyLog release checklist
 
-Status: v27.41.5.
+Status: v27.41.6.
+
+## v27.41.6 — Accounting Integrity Semantics & Actionability Hotfix acceptance
+
+- [x] Start from proven-green v27.41.5 commit `dc7738b80c9af1873a2ae0b0f2bab35a74724855` / tree `908dff05790d354e3b1b5a3aa940c1066f29f22c`.
+- [x] Do not flag a completed/approved non-overtime absence merely because its intentional zero-minute POSTED audit exists.
+- [x] Keep missing-active-audit compatibility scoped to overtime-backed active absences; validate state/minutes for any active audit that is present.
+- [x] Add a completed-unpaid regression test; Java inventory becomes 791 @Test methods across 163 classes.
+- [x] Stack integrity records vertically on mobile and show linked audit context plus a conservative next action without silent repair.
+- [x] Keep Playwright 48, Vitest 64, OpenAPI 124/130, Flyway V47 and browser budgets 810000/250000 unchanged.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Java 17 Maven 791/791, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
 ## v27.41.5 — Browser Bundle Budget Rebaseline Hotfix acceptance
 

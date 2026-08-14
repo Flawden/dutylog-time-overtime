@@ -225,17 +225,19 @@ public class LedgerIntegrityService {
                 issues.add(issue("MISSING_ACTIVE_AUDIT", "ERROR",
                         "Активный отгул не имеет текущей записи аудита", "ABSENCE", absence.getId()));
             }
-            if (latestAudit != null && (!overtimeBacked || !activeWorkflow)) {
+            if (latestAudit != null && !activeWorkflow) {
                 issues.add(issue("INACTIVE_ABSENCE_HAS_ACTIVE_AUDIT", "ERROR",
                         "Неактивное отсутствие имеет незакрытую запись аудита", "ABSENCE", absence.getId()));
             }
-            if (latestAudit != null && overtimeBacked && activeWorkflow) {
+            if (latestAudit != null && activeWorkflow) {
                 String expectedState = usagePostingState(absence.getStatus());
                 if (!expectedState.equals(latestAudit.getPostingState())) {
                     issues.add(issue("AUDIT_STATE_MISMATCH", "ERROR",
                             "Состояние аудита не совпадает со статусом отсутствия", "ABSENCE", absence.getId()));
                 }
-                if (latestAudit.getSignedMinutes() != -Math.max(0, absence.getCompensatedMinutes())) {
+                int expectedAuditMinutes = overtimeBacked
+                        ? -Math.max(0, absence.getCompensatedMinutes()) : 0;
+                if (latestAudit.getSignedMinutes() != expectedAuditMinutes) {
                     issues.add(issue("AUDIT_MINUTES_MISMATCH", "ERROR",
                             "Минуты аудита не совпадают с отсутствием", "ABSENCE", absence.getId()));
                 }

@@ -1,6 +1,6 @@
-# DutyLog API v27.41.5
+# DutyLog API v27.41.6
 
-`v27.41.5` changes no HTTP/OpenAPI, accounting, or Flyway shape. It only rebaselines the raw audited Vue browser-bundle ceiling from 800000 B to 810000 B after the exact v27.41.4 production build measured 806839 B raw / about 195.76 kB gzip; the gzip ceiling remains 250000 B. Online APIs remain **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
+`v27.41.6` changes ledger-integrity semantics inside the existing API response shape but adds no HTTP/OpenAPI or Flyway shape. Completed/approved non-overtime absences may correctly retain zero-minute `POSTED` audit facts without being reported as inactive; existing active audits are still validated for lifecycle state and expected minutes. Online APIs remain **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 
 `v27.41.3` changed no HTTP/OpenAPI or Flyway shape. It reused existing calendar/overtime read models only; generated online APIs remained **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remained V47.
 

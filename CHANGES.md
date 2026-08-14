@@ -1,3 +1,11 @@
+# v27.41.6 — Accounting Integrity Semantics & Actionability Hotfix
+- Starts from proven-green v27.41.5 commit `dc7738b80c9af1873a2ae0b0f2bab35a74724855` / tree `908dff05790d354e3b1b5a3aa940c1066f29f22c`.
+- Fixes a ledger-integrity false positive where completed/approved non-overtime absences intentionally carried zero-minute POSTED audit facts but were incorrectly classified as `INACTIVE_ABSENCE_HAS_ACTIVE_AUDIT` solely because their compensation source was not the overtime bank.
+- Keeps historical V44 compatibility: only overtime-backed active absences require a missing-audit finding, while any present active audit is now validated for lifecycle state and for either overtime minutes or the expected zero-minute non-overtime fact.
+- Adds a regression test for a completed unpaid absence, raising the Java inventory to 791 `@Test` methods across 163 classes.
+- Makes integrity findings mobile-safe and more actionable by showing the linked audit state plus a conservative next step; no automatic accounting repair is introduced.
+- Keeps OpenAPI 124/130, Flyway V47, Playwright 48, Vitest 64, auth, offline/dataLayer, onboarding, browser budgets and dependency graph unchanged.
+
 # v27.41.5 — Browser Bundle Budget Rebaseline Hotfix
 - Starts from v27.41.4 commit `84ba4a1d8c1eda6f88088c8b9af1b0c2ae1c784d` / tree `0e82dd5e26f62bed0a02b7e2d4b8723c3dc73d49`.
 - Exact frontend CI passed delivery/OpenAPI/typecheck/64 Vitest/Vite build and failed only because the generated raw Vue shell measured 806839 B against the 800000 B ceiling.

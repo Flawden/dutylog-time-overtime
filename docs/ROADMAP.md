@@ -1,7 +1,15 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.41.5 — Browser Bundle Budget Rebaseline Hotfix**.
+Current release: **v27.41.6 — Accounting Integrity Semantics & Actionability Hotfix**.
 
+
+## v27.41.6 — Accounting Integrity Semantics & Actionability Hotfix
+
+- Fix the false-positive integrity rule for valid zero-minute POSTED audit facts on completed/approved non-overtime absences.
+- Add a regression test for completed unpaid absence accounting semantics.
+- Make integrity records responsive on phone and explain the linked audit fact plus the next safe user action.
+- Do not add silent auto-repair, new HTTP/OpenAPI shape or Flyway migration.
+- After green/manual acceptance, resume frontend bundle segmentation and then People Profiles / Shared Availability.
 
 ## v27.41.5 — Browser Bundle Budget Rebaseline Hotfix
 

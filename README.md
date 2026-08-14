@@ -1,3 +1,7 @@
+# DutyLog v27.41.6 — Accounting Integrity Semantics & Actionability Hotfix
+
+The proven-green v27.41.5 staging build exposed six apparently actionable integrity warnings for completed unpaid absences. The backend audit model intentionally records those states as zero-minute `POSTED` accounting facts, but `inspect()` incorrectly treated any active audit on a non-overtime absence as inactive. v27.41.6 fixes that semantic false positive, adds a completed-unpaid regression test, and makes genuine integrity findings stack correctly on mobile while explaining the linked audit record and the next safe action. No automatic repair, HTTP/OpenAPI shape, Flyway migration or accounting formula is added.
+
 # DutyLog v27.41.5 — Browser Bundle Budget Rebaseline Hotfix
 
 Exact v27.41.4 frontend CI passed the authentic Node 20.18.1/npm 10.8.2 delivery gate, OpenAPI 124/130 drift check, strict `vue-tsc`, all 64 Vitest cases and the production Vite build, then failed only the raw browser-bundle audit at **806839 B** against the historical **800000 B** ceiling. v27.41.5 changes no product runtime behavior: it narrowly rebaselines raw to **810000 B**, keeps gzip locked at **250000 B**, and preserves all forbidden-runtime-pattern checks. Route/workspace bundle segmentation is the required follow-up instead of repeated budget inflation.

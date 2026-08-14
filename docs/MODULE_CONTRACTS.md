@@ -8,7 +8,16 @@
 - `profile.onboardingCompleted` and authoritative module state remain the cross-boundary data contract consumed by Vue.
 - No second bounded legacy presentation owner is permitted.
 
-Status: v27.41.5.
+Status: v27.41.6.
+
+## Accounting integrity semantics & actionability (v27.41.6)
+
+- `COMPLETED` and `APPROVED` are posted accounting facts, not inactive workflow states.
+- Non-overtime absences may intentionally own zero-minute POSTED audit entries; their presence is not itself an integrity failure.
+- Missing active-audit detection remains compatibility-scoped to overtime-backed active absences, while any present active audit must match expected posting state and minutes (zero for non-overtime, compensated minutes for overtime bank).
+- Integrity UI may explain and navigate to sources but must not silently mutate historical accounting records.
+
+Status: v27.41.6.
 
 ## Vue offline/sync presentation ownership (v27.40.29)
 
@@ -20,7 +29,7 @@ Status: v27.41.5.
 - Authenticated boot/profile publication may update recovery header identity only when `#whoami` still exists; Vue state publication must not depend on that node surviving readiness.
 - Vue shell logout is a post-ready control, but the underlying session action remains infrastructure: it is requested without clicking retired `#logout` and still performs the existing pending-save flush, CSRF-aware `/logout` request and login redirect.
 
-Status: v27.41.5.
+Status: v27.41.6.
 
 ## Pre-Vue Admin fallback contract alignment (v27.40.23)
 

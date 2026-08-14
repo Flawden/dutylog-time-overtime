@@ -1,3 +1,7 @@
+# v27.41.6 acceptance boundary
+
+v27.41.6 starts from proven-green v27.41.5 commit `dc7738b80c9af1873a2ae0b0f2bab35a74724855` / tree `908dff05790d354e3b1b5a3aa940c1066f29f22c`. The release changes ledger-integrity reconciliation semantics, one regression test and integrity presentation/CSS only. Exact Node 20.18.1/npm 10.8.2 frontend validation, Java 17 Maven **791/791**, auth/onboarding canary, mandatory Chromium 48/48, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.
+
 # v27.41.5 acceptance boundary
 
 v27.41.5 starts from v27.41.4 commit `84ba4a1d8c1eda6f88088c8b9af1b0c2ae1c784d` / tree `0e82dd5e26f62bed0a02b7e2d4b8723c3dc73d49`, whose exact Node 20.18.1/npm 10.8.2 frontend gate passed delivery, OpenAPI 124/130, strict typecheck, 64/64 Vitest and production Vite build, then failed only the raw browser-bundle budget at 806839 B > 800000 B. The hotfix raises only the raw ceiling to 810000 B; gzip stays locked at 250000 B. Java 17 Maven, auth/onboarding canary, mandatory 48/48 Chromium, immutable image, PostgreSQL V47 smoke and staging deploy remain blocking.

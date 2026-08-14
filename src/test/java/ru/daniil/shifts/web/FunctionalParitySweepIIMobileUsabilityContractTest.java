@@ -31,13 +31,18 @@ class FunctionalParitySweepIIMobileUsabilityContractTest {
     @Test
     void integrityProblemsAreGroupedForHumansAndCodesMoveBehindDetails() throws IOException {
         String page = read("frontend/src/features/absence-time-bank/components/TimeBankPage.vue");
+        String css = read("frontend/src/features/absence-time-bank/absence-time-bank.css");
 
         assertTrue(page.contains("integrityIssueGroups"));
         assertTrue(page.contains("Нужно проверить учёт"));
         assertTrue(page.contains("Технические детали"));
         assertTrue(page.contains("group.code"));
         assertTrue(page.contains("Открыть отсутствие"));
+        assertTrue(page.contains("Запись учёта #"));
+        assertTrue(page.contains("Что делать:"));
         assertTrue(page.contains("Источник и ID показаны в карточках выше"));
+        assertTrue(css.contains(".integrity-issue-group > .integrity-issue-records"));
+        assertTrue(css.contains("grid-template-columns:1fr"));
         assertFalse(page.contains("<b>{{ issue.code }}</b> — {{ issue.message }}"));
     }
 

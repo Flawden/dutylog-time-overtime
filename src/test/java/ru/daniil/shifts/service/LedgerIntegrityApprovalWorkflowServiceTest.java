@@ -29,6 +29,7 @@ class LedgerIntegrityApprovalWorkflowServiceTest {
 
     AppUser owner;
     AbsenceTypeDto timeOff;
+    AbsenceTypeDto unpaid;
 
     @BeforeEach
     void setUp() {
@@ -38,6 +39,8 @@ class LedgerIntegrityApprovalWorkflowServiceTest {
         users.save(owner);
         timeOff = planner.types(owner).stream()
                 .filter(type -> "TIME_OFF".equals(type.systemCode())).findFirst().orElseThrow();
+        unpaid = planner.types(owner).stream()
+                .filter(type -> "UNPAID".equals(type.systemCode())).findFirst().orElseThrow();
     }
 
     @Test
@@ -76,6 +79,25 @@ class LedgerIntegrityApprovalWorkflowServiceTest {
         assertTrue(integrity.entries().stream().anyMatch(item -> "ABSENCE_RESERVATION".equals(item.entryKind())));
         assertTrue(integrity.entries().stream().anyMatch(item -> "ABSENCE_POSTING".equals(item.entryKind())));
         assertTrue(integrity.entries().stream().anyMatch(item -> "REVERSED".equals(item.postingState())));
+    }
+
+    @Test
+    void completedUnpaidAbsenceKeepsPostedZeroMinuteAuditWithoutIntegrityFalsePositive() {
+        AbsencePeriodDto period = planner.createPeriod(owner, new AbsencePeriodCreateRequest(
+                unpaid.id(), "Без содержания", "2026-08-07", "2026-08-07",
+                "COMPLETED", null, "FULL_DAY", null, null, "UNPAID"));
+
+        LedgerIntegrityDto integrity = ledger.inspect(
+                owner, LocalDate.parse("2026-08-01"), LocalDate.parse("2026-08-31"));
+
+        assertTrue(integrity.healthy());
+        assertTrue(integrity.entries().stream().anyMatch(item ->
+                period.id().equals(item.sourceId())
+                        && "ABSENCE_POSTING".equals(item.entryKind())
+                        && "POSTED".equals(item.postingState())
+                        && item.signedMinutes() == 0));
+        assertFalse(integrity.issues().stream()
+                .anyMatch(item -> "INACTIVE_ABSENCE_HAS_ACTIVE_AUDIT".equals(item.code())));
     }
 
     @Test

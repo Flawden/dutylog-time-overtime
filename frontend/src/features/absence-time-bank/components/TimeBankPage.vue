@@ -89,7 +89,7 @@ const integrityIssueLabels: Record<string, string> = {
   ALLOCATION_MISMATCH: "FIFO-распределение не совпадает с суммой списания.",
   MISSING_LINKED_USAGE: "Отгул из банка переработок не имеет связанного списания.",
   MISSING_ACTIVE_AUDIT: "Для активного отгула отсутствует текущая запись учёта.",
-  INACTIVE_ABSENCE_HAS_ACTIVE_AUDIT: "У завершённого или отменённого отсутствия осталась открытая запись учёта.",
+  INACTIVE_ABSENCE_HAS_ACTIVE_AUDIT: "У неактивного отсутствия осталась открытая запись учёта.",
   AUDIT_STATE_MISMATCH: "Состояние записи учёта не совпадает со статусом отсутствия.",
   AUDIT_MINUTES_MISMATCH: "Количество времени в записи учёта не совпадает с отсутствием.",
   DUPLICATE_OPENING_CREDIT: "Начальный баланс был перенесён больше одного раза.",
@@ -104,12 +104,24 @@ type IntegrityIssueView = {
   sourceTitle: string;
   sourceMeta: string;
   amountLabel: string;
+  auditMeta: string;
+  nextStep: string;
   action: IntegrityIssueAction;
   actionLabel: string;
 };
 
 function absenceStatusLabel(status: string | null | undefined): string {
   return ({ DRAFT:"черновик", PLANNED:"запланировано", SUBMITTED:"на согласовании", APPROVED:"подтверждено", REJECTED:"отклонено", CANCELLED:"отменено", COMPLETED:"завершено" } as Record<string,string>)[String(status ?? "")] ?? String(status ?? "—");
+}
+
+function postingStateLabel(state: string | null | undefined): string {
+  return ({ RESERVED:"зарезервирована", POSTED:"проведена", REVERSED:"возвращена" } as Record<string,string>)[String(state ?? "")] ?? String(state ?? "—");
+}
+
+function integrityNextStep(code: string): string {
+  if (code === "INACTIVE_ABSENCE_HAS_ACTIVE_AUDIT") return "Проверьте статус отсутствия. Если он верен, не меняйте отсутствие ради предупреждения: проблема находится в исторической записи учёта.";
+  if (code === "MISSING_ACTIVE_AUDIT") return "Проверьте статус и источник покрытия отсутствия. Если они верны, связанная запись учёта требует восстановления.";
+  return "Откройте источник и сравните его статус и объём со связанной записью учёта. DutyLog не исправляет исторические операции автоматически.";
 }
 
 function latestAuditEntry(sourceKind: string, sourceId: number | null) {
@@ -128,6 +140,10 @@ function integrityIssueView(issue: DutyLogApiSchemas.LedgerIntegrityIssue): Inte
   const sourceId = sourceIdValue > 0 ? sourceIdValue : null;
   const fallback = String(issue.message ?? "Нужно проверить запись учёта.");
   const audit = latestAuditEntry(sourceKind, sourceId);
+  const auditMeta = audit
+    ? `Запись учёта #${audit.id} · ${postingStateLabel(audit.postingState)} · ${formatMinutes(audit.signedMinutes)}`
+    : "Связанная запись учёта не найдена.";
+  const nextStep = integrityNextStep(code);
 
   if (sourceKind === "ABSENCE" && sourceId) {
     const absence = planner.value?.absences.find(item => Number(item.id) === sourceId);
@@ -136,6 +152,7 @@ function integrityIssueView(issue: DutyLogApiSchemas.LedgerIntegrityIssue): Inte
       sourceTitle: absence ? `${absence.title || absence.typeName}` : `Отсутствие #${sourceId}`,
       sourceMeta: absence ? `${absence.startDate}${absence.endDate !== absence.startDate ? ` — ${absence.endDate}` : ""} · ${absenceStatusLabel(absence.status)}` : "Источник отсутствия не найден в текущем диапазоне.",
       amountLabel: absence ? formatMinutes(absence.compensatedMinutes ?? absence.chargedMinutes) : (audit ? formatMinutes(Math.abs(audit.signedMinutes)) : ""),
+      auditMeta, nextStep,
       action: "absence", actionLabel: "Открыть отсутствие",
     };
   }
@@ -147,6 +164,7 @@ function integrityIssueView(issue: DutyLogApiSchemas.LedgerIntegrityIssue): Inte
       sourceTitle: usage ? (usage.reason || `Списание #${sourceId}`) : `Списание #${sourceId}`,
       sourceMeta: usage ? `${usage.usageDate} · ${usage.reserved ? "зарезервировано" : "проведено"}` : "Источник списания не найден в текущем диапазоне.",
       amountLabel: usage ? formatMinutes(usage.minutes) : (audit ? formatMinutes(Math.abs(audit.signedMinutes)) : ""),
+      auditMeta, nextStep,
       action: "usage", actionLabel: usage?.sourceAbsenceId ? "Открыть связанный отгул" : "Открыть использование банка",
     };
   }
@@ -158,6 +176,7 @@ function integrityIssueView(issue: DutyLogApiSchemas.LedgerIntegrityIssue): Inte
       sourceTitle: credit ? (credit.reason || `Начисление #${sourceId}`) : `Начисление #${sourceId}`,
       sourceMeta: credit?.workedDate ?? "Источник начисления не найден в текущем диапазоне.",
       amountLabel: credit ? formatHours(creditRowEarnedHours(credit)) : "",
+      auditMeta, nextStep,
       action: "credits", actionLabel: "Открыть начисления",
     };
   }
@@ -167,6 +186,7 @@ function integrityIssueView(issue: DutyLogApiSchemas.LedgerIntegrityIssue): Inte
     sourceTitle: sourceId ? `${sourceKind} #${sourceId}` : sourceKind,
     sourceMeta: audit ? `${audit.effectiveDate} · ${audit.postingState}` : "Проверьте технические детали и журнал учёта.",
     amountLabel: audit ? formatMinutes(Math.abs(audit.signedMinutes)) : "",
+    auditMeta, nextStep,
     action: null, actionLabel: "",
   };
 }
@@ -328,7 +348,7 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
           <div v-if="!integrityHealthy" id="ledgerIntegrityIssues" class="integrity-issues" role="alert">
             <div class="integrity-issues__intro">
               <strong>Нужно проверить учёт · {{ integrity?.issues.length ?? 0 }}</strong>
-              <span>Баланс не исправляется автоматически. Закрытие расчётного периода может быть недоступно, пока расхождения не устранены.</span>
+              <span>Каждая карточка показывает источник, связанную запись учёта и следующий безопасный шаг. Баланс не исправляется автоматически.</span>
             </div>
             <div v-for="group in integrityIssueGroups" :key="group.code" class="integrity-issue-group">
               <div><b>{{ group.label }}</b><span>{{ group.items.length }} {{ group.items.length === 1 ? 'запись' : 'записей' }}</span></div>
@@ -337,6 +357,8 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
                   <div class="integrity-issue-record__copy">
                     <strong>{{ item.sourceTitle }}</strong>
                     <span>{{ item.sourceMeta }}<template v-if="item.amountLabel"> · {{ item.amountLabel }}</template></span>
+                    <span class="integrity-issue-record__audit">{{ item.auditMeta }}</span>
+                    <p class="integrity-issue-record__next"><b>Что делать:</b> {{ item.nextStep }}</p>
                     <small>{{ item.sourceKind }}<template v-if="item.sourceId"> #{{ item.sourceId }}</template></small>
                   </div>
                   <UiButton v-if="item.action" size="sm" @click="openIntegritySource(item)">{{ item.actionLabel }}</UiButton>
