@@ -1,10 +1,10 @@
-## v27.42.5 source-contract hotfix
+## v27.42.6 source-contract hotfix
 
 No dependency or lockfile graph change is introduced. Root/frontend package versions advance only as release identity; the reviewed dependency graph and Node 20.18.1/npm 10.8.2 gate remain unchanged.
 
 # Supply-chain maintenance
 
-Status: v27.42.5.
+Status: v27.42.6.
 
 Dependabot checks five maintained surfaces weekly:
 

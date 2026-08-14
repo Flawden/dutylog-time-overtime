@@ -1,9 +1,9 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.42.5 — Release Check Shell Contract Hotfix**.
+Current release: **v27.42.6 — Release Check Current-Version Contract Hotfix**.
 
 
-## v27.42.5 — Release Check Shell Contract Hotfix
+## v27.42.6 — Release Check Current-Version Contract Hotfix
 
 - [x] Preserve v27.42.0 People Profiles runtime unchanged.
 - [x] Align the stale selected-day-panel source assertion with the read-only profile boundary: `dayPanelOpen && viewingSelf`.

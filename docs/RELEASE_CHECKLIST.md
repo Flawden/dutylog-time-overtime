@@ -1,8 +1,8 @@
 # DutyLog release checklist
 
-Status: v27.42.5.
+Status: v27.42.6.
 
-## v27.42.5 — Release Check Shell Contract Hotfix acceptance
+## v27.42.6 — Release Check Current-Version Contract Hotfix acceptance
 
 - [x] Exact v27.42.4 failure classified from CI: Maven green; Release checks failed on two shell/source-contract assertions.
 - [x] Only release-check shell/source contracts plus release identity/documentation changed; no production runtime semantics changed.

@@ -1,3 +1,9 @@
+# v27.42.6 — Release Check Current-Version Contract Hotfix
+- Fixes the exact v27.42.5 Release checks failure where recurring gate assertions still hardcoded v27.42.4 service-worker, bundle-budget and lockfile-manifest values.
+- Replaces copied current-release literals in recurring historical guard blocks with `${VERSION}` and the already computed `LOCKFILE_ACTUAL_SHA`, so future release bumps do not require editing dozens of predecessor sections.
+- Keeps historical v27.42.4/v27.42.5 release identity assertions intact; only current artifact assertions become version-derived.
+- No production business/runtime, People Profiles, schedule-seed locking, persistence, OpenAPI or Flyway behavior changes.
+
 # v27.42.5 — Release Check Shell Contract Hotfix
 - Fixes the exact v27.42.4 Release checks failure after Maven and the 792/164 baselines were already green.
 - Aligns the committed schedule-seed regression method contract with the real method `concurrentFirstListsSeedFivePresetsExactlyOnce`.

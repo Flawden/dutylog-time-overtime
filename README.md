@@ -1,3 +1,7 @@
+# DutyLog v27.42.6 — Release Check Current-Version Contract Hotfix
+
+v27.42.5 passed Maven and reached Release checks, then failed only because recurring source-contract blocks still expected v27.42.4 service-worker, bundle-budget and lockfile-manifest literals. v27.42.6 derives those current artifact expectations from the release-check `VERSION` and the committed lockfile SHA instead of duplicating a previous release number across historical guard sections. Production behavior is unchanged.
+
 # DutyLog v27.42.5 — Release Check Shell Contract Hotfix
 
 v27.42.4 reached Release checks with Maven already green at 792 tests / 164 classes. The gate then failed on two defects in `release-check.sh`: a stale expected name for the concurrency regression method and double-quoted backticks that made Bash try to execute `@Test`. v27.42.5 fixes only those release-gate contracts and current release metadata.
