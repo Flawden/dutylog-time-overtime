@@ -104,8 +104,8 @@ class UnifiedTimeCompensationLedgerContractTest {
         assertFalse(calendarComfort.contains("force: true"));
         assertTrue(mobileLayout.contains("await openView(page, 'tasks');"));
         assertTrue(mobileLayout.contains("await expect(page.locator('#view-tasks')).toBeVisible();"));
-        assertTrue(taskModules.contains("page.locator('#view-tasks')"));
-        assertFalse(taskModules.contains("page.locator('#tabbar a[data-view=\"tasks\"]')"));
+        assertFalse(taskModules.contains("page.locator('#view-tasks')"));
+        assertTrue(taskModules.contains("page.locator('#tabbar a[data-view=\"tasks\"]')"));
     }
 
     @Test
