@@ -497,7 +497,7 @@ html[data-vue-shell="ready"] body.app-modal-open .vue-shell-nav { visibility: hi
 }
 
 
-/* v27.41.7: route/domain chunks keep a visible, non-blocking hand-off while loading. */
+/* v27.41.8: route/domain chunks keep a visible, non-blocking hand-off while loading. */
 .vue-async-workspace-loading{
   width:min(calc(100% - 24px),var(--vue-shell-max));
   margin:18px auto;

@@ -1,3 +1,7 @@
+# v27.41.8 Shared Runtime Bundle Split review
+
+v27.41.8 adds no endpoint, credential, authorization rule, dependency, persistence authority, cross-user data path or accounting mutation. It only changes Rollup chunk ownership for same-origin JavaScript already present in v27.41.7. CSP/same-origin policy and the service-worker JavaScript caching strategy remain unchanged; the browser audit continues to scan every emitted JS file for forbidden Node/CommonJS patterns.
+
 # v27.41.7 Frontend Bundle Segmentation review
 
 v27.41.7 adds no endpoint, credential, authorization rule, storage authority, dependency, cross-user data path or accounting mutation. The change only alters how already-authorized Vue code is delivered: a stable same-origin ES-module entry imports content-hashed same-origin chunks. Existing same-origin/CSP rules remain unchanged; the service worker uses its existing network-first JS policy and caches successful chunk responses under the current release cache. The audit scans all emitted JS for forbidden Node/CommonJS runtime patterns and caps entry, per-chunk and total size.
@@ -27,7 +31,7 @@ v27.41.2 changes no auth, authorization, HTTP surface, persistence, offline queu
 - No new HTML injection surface, dependency or cross-user data path is introduced.
 - `dataLayer` remains the only IndexedDB/outbox/reconnect executor; OpenAPI remains 124/130 and Flyway remains V47.
 
-Status: v27.41.7.
+Status: v27.41.8.
 
 ## v27.41.0 Calendar Visual Language Foundation review
 

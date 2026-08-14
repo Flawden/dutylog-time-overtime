@@ -8,7 +8,12 @@
 - `profile.onboardingCompleted` and authoritative module state remain the cross-boundary data contract consumed by Vue.
 - No second bounded legacy presentation owner is permitted.
 
-Status: v27.41.7.
+Status: v27.41.8.
+
+## Frontend shared runtime delivery (v27.41.8)
+- Shared bundling follows coarse architecture boundaries: npm vendor, generated API contract, platform infrastructure and Settings runtime owner.
+- This is a build/cache boundary only; domain ownership and cross-domain contracts do not change.
+- The single offline mutation/sync owner remains `dataLayer`.
 
 ## Accounting integrity semantics & actionability (v27.41.6)
 

@@ -1,3 +1,7 @@
+## v27.41.8 shared runtime segmentation
+
+Exact v27.41.7 proved content-hashed route/page chunks but left a 565411 B shared `main` chunk. v27.41.8 keeps those async boundaries and adds coarse manual chunks for npm vendor runtime, generated API contract, platform infrastructure and the intentionally eager Settings runtime owner. The split changes delivery/cache boundaries only; Vue ownership, hash routing, generated API usage and the single `dataLayer` offline mutation/sync boundary are unchanged.
+
 # Frontend architecture
 
 ## v27.41.7 delivery segmentation

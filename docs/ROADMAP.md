@@ -1,7 +1,14 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.41.7 — Frontend Bundle Segmentation**.
+Current release: **v27.41.8 — Shared Runtime Bundle Split**.
 
+## v27.41.8 — Shared Runtime Bundle Split
+
+- Preserve the v27.41.7 route/page async boundaries proven by exact Vite output.
+- Split the remaining 565411 B shared `main` chunk into coarse vendor, generated-contract, platform and Settings runtime chunks.
+- Keep all browser budgets unchanged; do not greenwash the v27.41.7 failure by raising the 300000/100000 per-chunk ceilings.
+- Preserve PWA/offline ownership, OpenAPI 124/130, Flyway V47 and the 48/64/791 regression surface.
+- After green/manual acceptance, start **v27.42.0 — People Profiles & Shared Availability**.
 
 ## v27.41.7 — Frontend Bundle Segmentation
 

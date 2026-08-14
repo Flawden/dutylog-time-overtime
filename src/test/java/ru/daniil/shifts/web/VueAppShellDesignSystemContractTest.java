@@ -104,6 +104,10 @@ class VueAppShellDesignSystemContractTest {
         assertTrue(vite.contains("vue-shell-v1"));
         assertTrue(vite.contains("dutylog-vue-app-shell.js"));
         assertTrue(vite.contains("chunkFileNames: \"chunks/[name]-[hash].js\""));
+        assertTrue(vite.contains("manualChunks: manualChunkName"));
+        assertTrue(vite.contains("return \"vendor\""));
+        assertTrue(vite.contains("return \"platform\""));
+        assertTrue(vite.contains("return \"settings-workspace\""));
         assertTrue(docker.contains("dist/dutylog-vue-app-shell.js"));
         assertTrue(gate.contains("dist/dutylog-vue-app-shell.css"));
         assertTrue(gate.contains("dist/chunks"));

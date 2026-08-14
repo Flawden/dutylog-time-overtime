@@ -30,6 +30,10 @@ class VueFrontendFoundationContractTest {
         assertTrue(vite.contains("dutylog-vue-app-shell.js"));
         assertTrue(vite.contains("dutylog-vue-app-shell.css"));
         assertTrue(vite.contains("chunkFileNames: \"chunks/[name]-[hash].js\""));
+        assertTrue(vite.contains("manualChunks: manualChunkName"));
+        assertTrue(vite.contains("return \"vendor\""));
+        assertTrue(vite.contains("return \"platform\""));
+        assertTrue(vite.contains("return \"settings-workspace\""));
         assertFalse(vite.contains("inlineDynamicImports: true"));
     }
 

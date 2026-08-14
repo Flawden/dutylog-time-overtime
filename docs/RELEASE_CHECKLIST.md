@@ -1,6 +1,15 @@
 # DutyLog release checklist
 
-Status: v27.41.7.
+Status: v27.41.8.
+
+## v27.41.8 — Shared Runtime Bundle Split acceptance
+
+- [x] Preserve the v27.41.7 page/workspace dynamic imports; do not revert route segmentation.
+- [x] Split shared runtime into coarse `vendor`, `api-contract`, `platform` and `settings-workspace` chunks.
+- [x] Keep browser ceilings unchanged: 750000/230000 entry, 300000/100000 per chunk, 825000/250000 total.
+- [x] Keep Playwright 48, Vitest 64, Java 791/163, OpenAPI 124/130 and Flyway V47 inventories unchanged.
+- [ ] Exact Node 20.18.1/npm 10.8.2 production build proves every emitted JS file within budget.
+- [ ] Java 17 Maven 791/791, canary, Chromium 48/48 with zero flaky, immutable image, PostgreSQL V47 smoke and staging deploy green.
 
 ## v27.41.6 — Accounting Integrity Semantics & Actionability Hotfix acceptance
 

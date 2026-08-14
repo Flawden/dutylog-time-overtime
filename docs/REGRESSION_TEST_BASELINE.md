@@ -1,11 +1,11 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.41.7.
+Status: v27.41.8.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.41.7 segments the Vue delivery graph into one stable entry plus content-hashed async chunks without changing the 163 Java test classes / 791 @Test methods / 48 Chromium Playwright scenarios / 64 Vitest cases, OpenAPI 124/130 or Flyway V47. The browser audit now scans every emitted JS file, requires multiple chunks, caps the eager entry separately and preserves the previous 250000 B total-gzip ceiling.
+Current extension: v27.41.8 keeps the v27.41.7 route/page chunks and splits the remaining shared 565411 B `main` runtime into coarse vendor/API/platform/settings owners without changing the 163 Java test classes / 791 @Test methods / 48 Chromium Playwright scenarios / 64 Vitest cases, OpenAPI 124/130 or Flyway V47. All v27.41.7 browser ceilings remain unchanged.
 
 
 

@@ -1,3 +1,10 @@
+# v27.41.8 — Shared Runtime Bundle Split
+- Starts from v27.41.7 Frontend Bundle Segmentation, whose exact frontend gate proved route/page chunking works but exposed one remaining shared `main` chunk at 565411 B raw / 141782 B gzip, above the intentionally strict 300000 B / 100000 B per-chunk ceiling.
+- Keeps the v27.41.7 async page boundaries and adds stable Rollup manual chunks for framework/vendor runtime, generated API contract, platform infrastructure and the eager Settings runtime owner.
+- Does not raise entry, per-chunk or total browser budgets: 750000/230000 entry, 300000/100000 per chunk, 825000/250000 total.
+- Changes no product behavior, HTTP/OpenAPI shape, Flyway schema, auth, accounting, offline queue ownership or People Profiles scope.
+- Exact Node 20.18.1/npm 10.8.2 CI must prove every emitted JS chunk is within budget before this release can be called green.
+
 # v27.41.7 — Frontend Bundle Segmentation
 - Starts from proven-green v27.41.6 commit `1029edde79681ca99d042889866cc652fec6f1ba` / tree `b472323094010aaf558b1b9a63b902aff649d4ff`.
 - Replaces the monolithic Vue JavaScript output with one stable entry plus content-hashed async chunks; no backend/API/Flyway/domain authority changes.

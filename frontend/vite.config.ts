@@ -6,6 +6,15 @@ import { defineConfig } from "vitest/config";
 const releaseVersion = packageMetadata.version;
 const productionSourceMaps = process.env.DUTYLOG_FRONTEND_SOURCEMAPS === "true" ? "hidden" : false;
 
+function manualChunkName(id: string): string | undefined {
+  const normalizedId = id.replaceAll("\\", "/");
+  if (normalizedId.includes("/node_modules/")) return "vendor";
+  if (normalizedId.includes("/src/generated/")) return "api-contract";
+  if (normalizedId.includes("/src/platform/")) return "platform";
+  if (normalizedId.includes("/src/features/settings-workspace/")) return "settings-workspace";
+  return undefined;
+}
+
 export default defineConfig({
   plugins: [vue()],
   resolve: {
@@ -42,6 +51,7 @@ export default defineConfig({
       output: {
         entryFileNames: "dutylog-vue-app-shell.js",
         chunkFileNames: "chunks/[name]-[hash].js",
+        manualChunks: manualChunkName,
         assetFileNames: assetInfo => assetInfo.name === "style.css"
           ? "dutylog-vue-app-shell.css"
           : "[name][extname]",

@@ -1,3 +1,9 @@
+# DutyLog v27.41.8 — Shared Runtime Bundle Split
+
+v27.41.7 successfully split route/page surfaces, but exact production Vite output still concentrated shared framework/platform/settings code in `chunks/main-*.js` at 565411 B raw / 141782 B gzip. v27.41.8 keeps those proven async boundaries and gives the remaining shared graph four stable cacheable owners: `vendor`, `api-contract`, `platform` and `settings-workspace`.
+
+The browser budgets are deliberately unchanged. No single emitted chunk may exceed 300000 B raw / 100000 B gzip, the complete JS graph remains capped at 825000 B raw / 250000 B gzip, and the stable entry remains separately bounded. This is a delivery-only cut: product runtime semantics, APIs, Flyway V47, auth, accounting and the single legacy `dataLayer` offline mutation/sync owner stay unchanged.
+
 # DutyLog v27.41.7 — Frontend Bundle Segmentation
 
 v27.41.6 is proven green. v27.41.7 replaces the single eager Vue JavaScript blob with stable entry + content-hashed async chunks while preserving the same Vue domain owners, hash routing, HTTP/OpenAPI contracts, offline queue authority and PWA cache policy. Today/Calendar pages, Absence/TimeBank pages and modals, Tasks/Important pages, Payroll and Admin now cross explicit async boundaries; Settings remains eager because Calendar still calls its Shift Type Manager domain directly.

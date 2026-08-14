@@ -1,3 +1,7 @@
+# v27.41.8 shared runtime bundle gate
+
+The v27.41.7 exact frontend gate passed lockfile verification, OpenAPI 124/130, strict typecheck, 64/64 Vitest and production Vite compilation, then failed only the new per-chunk browser audit because `chunks/main-8syw6Ngx.js` measured 565411 B raw / 141782 B gzip. v27.41.8 keeps every budget unchanged and adds coarse manual chunks so CI must prove the architecture rather than relax the gate. Java 17 Maven 791/791, canary, Chromium 48/48, immutable image, PostgreSQL V47 and staging remain blocking.
+
 # v27.41.6 acceptance boundary
 
 ## v27.41.7 segmented frontend gate
