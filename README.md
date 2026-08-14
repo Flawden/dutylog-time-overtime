@@ -1,3 +1,7 @@
+# DutyLog v27.42.4 — Release Check Contract Alignment Hotfix
+
+v27.42.3 passed Maven with the expanded 792-test / 164-class suite and then failed only in `release-check.sh`, whose static baselines and release identity still described older lineage. v27.42.4 aligns those recurring gates and regenerates the lockfile manifest without changing production behavior.
+
 # DutyLog v27.42.3 — Concurrent Schedule Seed Test Isolation Hotfix
 
 v27.42.2 added a real concurrency regression for first-read schedule preset seeding, and that test itself passed in CI. Its committed test owner, however, remained in the shared Spring/H2 ApplicationContext and leaked into `UserAdminServiceTest`, changing the expected isolated user count from 22 to 23. v27.42.3 isolates the concurrency test context after the class while leaving the production per-user database lock unchanged.

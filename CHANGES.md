@@ -1,3 +1,9 @@
+# v27.42.4 — Release Check Contract Alignment Hotfix
+- Aligns the recurring release gate with the exact v27.42.3 CI reality: Maven is green at 792 tests / 164 test classes, while Release checks failed only on stale static expectations.
+- Updates release-check baselines for the committed concurrency regression test and corrects the current release identity/document contract.
+- Regenerates the frontend lockfile manifest SHA after the release-version bump; no dependency graph or production runtime behavior changes.
+- Keeps the v27.42.2 per-user schedule seed lock and v27.42.3 test isolation unchanged.
+
 # v27.42.3 — Concurrent Schedule Seed Test Isolation Hotfix
 - Fixes Maven-suite contamination introduced by the v27.42.2 concurrency regression test: its committed `schedule-seed-race-*` owner survived in the shared Spring/H2 test context and made `UserAdminServiceTest` observe 23 users instead of its isolated 22.
 - Marks `ScheduleTemplateConcurrentSeedTest` dirty after the class so Spring discards that test ApplicationContext/database before unrelated suites execute.

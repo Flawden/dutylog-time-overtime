@@ -1,6 +1,6 @@
-# DutyLog API v27.42.3
+# DutyLog API v27.42.4
 
-`v27.42.3` is source-contract/release-metadata-only and changes no HTTP/OpenAPI/Flyway shape. `v27.41.8` is frontend-delivery-only and likewise changes no HTTP/OpenAPI/Flyway shape. OpenAPI remains **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47. `v27.41.6` changes ledger-integrity semantics inside the existing API response shape but adds no HTTP/OpenAPI or Flyway shape. Completed/approved non-overtime absences may correctly retain zero-minute `POSTED` audit facts without being reported as inactive; existing active audits are still validated for lifecycle state and expected minutes. Online APIs remain **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
+`v27.42.4` is source-contract/release-metadata-only and changes no HTTP/OpenAPI/Flyway shape. `v27.41.8` is frontend-delivery-only and likewise changes no HTTP/OpenAPI/Flyway shape. OpenAPI remains **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47. `v27.41.6` changes ledger-integrity semantics inside the existing API response shape but adds no HTTP/OpenAPI or Flyway shape. Completed/approved non-overtime absences may correctly retain zero-minute `POSTED` audit facts without being reported as inactive; existing active audits are still validated for lifecycle state and expected minutes. Online APIs remain **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
 
 `v27.41.3` changed no HTTP/OpenAPI or Flyway shape. It reused existing calendar/overtime read models only; generated online APIs remained **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remained V47.
 
