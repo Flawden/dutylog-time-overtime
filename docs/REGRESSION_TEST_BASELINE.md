@@ -1,11 +1,11 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.42.7.
+Status: v27.42.8.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.42.7 keeps the v27.41.8 shared runtime split and all v27.41.7 browser ceilings unchanged, while aligning the one stale Java bundle-gate source contract with the segmented entry/per-chunk/total raw+gzip model. Inventory is 164 Java test classes / 792 @Test methods / 48 Chromium Playwright scenarios / 66 Vitest cases, OpenAPI 124/130 and Flyway V47.
+Current extension: v27.42.8 keeps the v27.41.8 shared runtime split and all v27.41.7 browser ceilings unchanged, while aligning the one stale Java bundle-gate source contract with the segmented entry/per-chunk/total raw+gzip model. Inventory is 164 Java test classes / 792 @Test methods / 48 Chromium Playwright scenarios / 66 Vitest cases, OpenAPI 124/130 and Flyway V47.
 
 
 

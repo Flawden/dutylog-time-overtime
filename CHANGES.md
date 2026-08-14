@@ -1,3 +1,9 @@
+# v27.42.8 — Tasks Module E2E Route Contract Alignment Hotfix
+- Fixes the exact v27.42.7 Browser E2E regression where `task-modules.spec.js` asserted `#view-tasks` immediately after toggling the Tasks module while the Vue shell was still on Settings, so the route-owned Tasks page was intentionally not mounted.
+- Replaces that stale hidden-DOM assertion with the persistent Tasks navigation visibility contract and an explicit open of the Vue-owned Tasks route (`data-vue-domain-route="tasks"`).
+- Preserves the test's actual product guarantee: task data survives disabling and re-enabling the Tasks module.
+- Changes no production runtime, persistence, API/OpenAPI, Flyway, People Profiles, schedule-template locking, retry or timeout behavior.
+
 # v27.42.7 — People Profiles E2E Locator Alignment Hotfix
 - Fixes the exact v27.42.6 Browser E2E regression where `.calendarProfileReadOnly` matched both the read-only profile banner and the timezone label under Playwright strict mode.
 - Replaces the ambiguous CSS-class assertion with an exact user-facing `График только для просмотра` locator.

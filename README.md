@@ -1,3 +1,7 @@
+# DutyLog v27.42.8 — Tasks Module E2E Route Contract Alignment Hotfix
+
+v27.42.7 passed Maven, release checks and 47/48 Browser E2E tests. The only failure was a stale Tasks-module assertion that looked for the route-owned `#view-tasks` DOM while the application was still on Settings. v27.42.8 keeps runtime behavior unchanged and validates the persistent Tasks navigation state plus the real Vue Tasks route instead.
+
 # DutyLog v27.42.7 — People Profiles E2E Locator Alignment Hotfix
 
 v27.42.6 passed Maven and release checks, then failed in the People Profiles browser regression because `.calendarProfileReadOnly` matched two elements in strict mode. v27.42.7 keeps runtime behavior unchanged and makes the E2E contract target the exact user-facing read-only banner text.

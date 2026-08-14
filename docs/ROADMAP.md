@@ -1,9 +1,9 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.42.7 — People Profiles E2E Locator Alignment Hotfix**.
+Current release: **v27.42.8 — Tasks Module E2E Route Contract Alignment Hotfix**.
 
 
-## v27.42.7 — People Profiles E2E Locator Alignment Hotfix
+## v27.42.8 — Tasks Module E2E Route Contract Alignment Hotfix
 
 - [x] Preserve v27.42.0 People Profiles runtime unchanged.
 - [x] Align the stale selected-day-panel source assertion with the read-only profile boundary: `dayPanelOpen && viewingSelf`.
