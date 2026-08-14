@@ -62,7 +62,7 @@ class VueCalendarTimelineMigrationFrontendContractTest {
     }
 
     @Test
-    void calendarPageOwnsMonthWeekDayTimelineAndLayerControls() throws Exception {
+    void calendarPageOwnsMonthWeekDayTimelineAndPeopleProfileContext() throws Exception {
         String page = read(FEATURE.resolve("components/CalendarPage.vue"));
 
         assertTrue(page.contains("id=\"view-calendar\""));
@@ -71,10 +71,13 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(page.contains("id=\"calendarWeekExperience\""));
         assertTrue(page.contains("id=\"calendarDayExperience\""));
         assertTrue(page.contains("id=\"calendarTimelineCanvas\""));
-        assertTrue(page.contains("class=\"calendarLayerToggle\""));
+        assertTrue(page.contains("id=\"calendarProfileBar\""));
+        assertTrue(page.contains("class=\"calendarProfileToggle\""));
+        assertTrue(page.contains("store.selectProfile('self')"));
+        assertFalse(page.contains("class=\"calendarLayerChip\""));
         assertTrue(page.contains("class=\"absenceFact\""));
         assertTrue(page.contains("class=\"partialAbsenceBar\""));
-        assertTrue(page.contains("<SelectedDayPanel v-if=\"dayPanelOpen\""));
+        assertTrue(page.contains("<SelectedDayPanel v-if=\"dayPanelOpen && viewingSelf\""));
     }
 
     @Test

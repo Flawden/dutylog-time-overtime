@@ -1,3 +1,9 @@
+# DutyLog v27.42.0 — People Profiles
+
+DutyLog Calendar now has an explicit person context. `Я` keeps the full personal calendar; choosing a configured People Profile switches the whole month/week/day view to that person’s read-only schedule instead of stacking another schedule over the owner calendar. Personal tasks, absences, important dates, notes, overtime and editing remain owner-only. Existing calendar-layer records are reused as a compatibility transport, avoiding a schema/API migration in this release.
+
+Shared Availability is intentionally separate and follows after People Profiles.
+
 # DutyLog v27.41.9 — Browser Bundle Source Contract Alignment Hotfix
 
 v27.41.8 passed the exact frontend typecheck, 64/64 Vitest and production Vite build, then Java 17 Maven ran all 791 tests and stopped on one stale source-contract assertion: `VueCalendarTimelineMigrationFrontendContractTest` still required the retired monolithic `budget.maxBytes` key. v27.41.9 updates that contract to the segmented entry/per-chunk/total raw+gzip model already enforced by `audit-browser-bundle.mjs`.

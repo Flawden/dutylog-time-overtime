@@ -6,6 +6,8 @@ import {
   calendarOpenTaskCount,
   calendarScheduleFree,
   dayFacts,
+  dayFactsForProfile,
+  profileLayer,
   durationCountdown,
   importantRelativeLabel,
   monthGridDates,
@@ -102,6 +104,23 @@ describe("calendar and timeline model", () => {
     expect(dayFacts(crossMidnight, "2026-08-05").occurrences).toHaveLength(0);
     expect(dayFacts(crossMidnight, "2026-08-04").tasks[0]?.text).toBe("Ночная задача");
     expect(dayFacts(crossMidnight, "2026-08-05").tasks[0]?.text).toBe("Ночная задача");
+  });
+
+  it("switches to a people profile without leaking owner-only calendar facts", () => {
+    const bundle = normalizeCalendarBundle({
+      from: "2026-08-01", to: "2026-08-31",
+      shiftTypes: [{ id: 1, name: "Моя смена", color: "#112233" }],
+      days: [{ date: "2026-08-05", shiftTypeId: 1, overtimeHours: 0, timeOffHours: 0, overtimeBalanceHours: 0, version: 1 }],
+      tasks: [{ id: 2, date: "2026-08-05", text: "Личная задача", done: false, tags: [], priority: "NORMAL", deadlineAbsolute: false, reminderEnabled: false, overdue: false, subtasks: [] }],
+      calendarLayers: [{ id: 9, name: "Сашка", color: "#445566", timezone: "Europe/Moscow", visible: true, entries: [{ date: "2026-08-05", sourceDate: "2026-08-05", shiftTypeId: 7, shiftTypeName: "Ночь", shiftColor: "#778899", displayStart: "2026-08-05T20:00", displayEnd: "2026-08-06T08:00", timed: true, dayOff: false }] }],
+    }, "2026-08-01", "2026-08-31");
+    expect(profileLayer(bundle, "9")?.name).toBe("Сашка");
+    const profileFacts = dayFactsForProfile(bundle, "2026-08-05", "9");
+    expect(profileFacts.shift?.name).toBe("Ночь");
+    expect(profileFacts.tasks).toEqual([]);
+    expect(profileFacts.absences).toEqual([]);
+    expect(profileFacts.important).toEqual([]);
+    expect(dayFactsForProfile(bundle, "2026-08-05", "self").tasks[0]?.text).toBe("Личная задача");
   });
 
   it("defines the calendar visual language without conflating schedule, markers and tasks", () => {

@@ -97,6 +97,21 @@ describe("calendar and timeline store", () => {
     restoreOfflineApi();
   });
 
+  it("persists one active people profile and closes owner editing surfaces", async () => {
+    const restore = installCalendarTimelineApiForTests(mockApi({
+      load: vi.fn().mockResolvedValue({ ...loaded("Range"), bundle: normalizeCalendarBundle({ from: "2026-07-27", to: "2026-09-06", calendarLayers: [{ id: 7, name: "Сашка", color: "#123456", visible: true, entries: [] }] }, "2026-07-27", "2026-09-06") }),
+    }));
+    const store = useCalendarTimelineStore();
+    await store.refresh();
+    store.dayPanelOpen = true;
+    store.selectProfile("7");
+    expect(store.activeProfileId).toBe("7");
+    expect(store.dayPanelOpen).toBe(false);
+    store.selectProfile("999");
+    expect(store.activeProfileId).toBe("self");
+    restore();
+  });
+
   it("optimistically toggles a calendar layer and rolls back a failed mutation", async () => {
     const setLayerVisibility = vi.fn().mockRejectedValue(new Error("network"));
     const api = mockApi({

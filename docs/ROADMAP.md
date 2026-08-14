@@ -1,8 +1,8 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.41.9 — Browser Bundle Source Contract Alignment Hotfix**.
+Current release: **v27.42.0 — People Profiles**.
 
-## v27.41.9 — Browser Bundle Source Contract Alignment Hotfix
+## v27.42.0 — People Profiles
 
 - [x] Diagnose exact v27.41.8 CI rather than guessing: frontend gate passed; Java 17 Maven finished 791 tests with one stale source-contract failure.
 - [x] Replace retired `budget.maxBytes` source assertion with the six segmented entry/per-chunk/total raw+gzip budget dimensions.

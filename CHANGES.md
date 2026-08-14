@@ -1,3 +1,10 @@
+# v27.42.0 — People Profiles
+- Replaces stacked companion calendar overlays with one explicit calendar-person context: `Я` or one configured read-only profile.
+- Selecting a profile switches month/week/day schedule projection as a whole; owner-only tasks, absences, important dates, notes, overtime and edit surfaces never leak into another person context.
+- Persists the selected profile locally and automatically falls back to `Я` when a profile is hidden or removed.
+- Reuses the existing `calendar_layers` persistence/API as a compatibility transport, so no Flyway/OpenAPI migration is required in this release. Settings presents those records as People Profiles and the legacy visibility flag now means availability in the calendar switcher.
+- Keeps Shared Availability out of scope; comparison of two calendars remains the next separate product capability.
+
 # v27.41.9 — Browser Bundle Source Contract Alignment Hotfix
 - Starts from pushed v27.41.8 commit `3fab0e35d65d6028f48a98dcfb9575753b6c8798`, whose exact frontend typecheck/Vitest/Vite gate passed and whose Java 17 Maven gate ran all 791 tests with exactly one stale source-contract failure.
 - Aligns `VueCalendarTimelineMigrationFrontendContractTest` with the segmented browser-budget model introduced in v27.41.7: entry, per-chunk and total raw/gzip ceilings replace the retired monolithic `budget.maxBytes` key.

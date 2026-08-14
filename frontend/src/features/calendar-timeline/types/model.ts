@@ -2,6 +2,7 @@ import type { DutyLogApiSchemas } from "@/generated/dutylog-api";
 import type {
   CalendarImportantOccurrence,
   CalendarLayer,
+  CalendarLayerEntry,
   CalendarMode,
   CalendarRangeBundle,
   CalendarReminder,
@@ -207,6 +208,38 @@ export function dayFacts(bundle: CalendarRangeBundle | null, date: string): Cale
   };
 }
 
+export function profileLayer(bundle: CalendarRangeBundle | null, profileId: string): CalendarLayer | null {
+  if (profileId === "self") return null;
+  return bundle?.calendarLayers.find(layer => layer.visible && String(layer.id) === profileId) ?? null;
+}
+
+export function profileEntryForDate(bundle: CalendarRangeBundle | null, profileId: string, date: string): CalendarLayerEntry | null {
+  const layer = profileLayer(bundle, profileId);
+  if (!layer) return null;
+  return layer.entries.find(entry => (entry.date || entry.sourceDate) === date) ?? null;
+}
+
+export function dayFactsForProfile(bundle: CalendarRangeBundle | null, date: string, profileId: string): CalendarDayFacts {
+  if (profileId === "self") return dayFacts(bundle, date);
+  const layer = profileLayer(bundle, profileId);
+  const entry = profileEntryForDate(bundle, profileId, date);
+  const shift = entry && !entry.dayOff ? {
+    id: Number(entry.shiftTypeId ?? 0),
+    name: String(entry.shiftTypeName ?? "Смена"),
+    color: String(entry.shiftColor ?? layer?.color ?? "#7AB8FF"),
+  } satisfies CalendarShiftType : null;
+  return {
+    date,
+    day: null,
+    shift,
+    occurrences: [],
+    tasks: [],
+    important: [],
+    absences: [],
+    reminders: [],
+    layers: [],
+  };
+}
 
 export function calendarOpenTaskCount(facts: CalendarDayFacts): number {
   return facts.tasks.filter(task => !task.done).length;

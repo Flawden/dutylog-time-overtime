@@ -12,6 +12,9 @@ import {
   calendarScheduleFree,
   dateLabel,
   dayFacts,
+  dayFactsForProfile,
+  profileEntryForDate,
+  profileLayer,
   minutesOf,
   monthGridDates,
   monthStart,
@@ -25,19 +28,22 @@ const props = defineProps<{ bridge: LegacyBridge }>();
 const store = useCalendarTimelineStore();
 const shell = useShellStore();
 const { language } = storeToRefs(shell);
-const { bundle, focusDate, mode, loading, error, workDate, dayPanelOpen } = storeToRefs(store);
+const { bundle, focusDate, mode, loading, error, workDate, dayPanelOpen, activeProfileId } = storeToRefs(store);
 
 const gridDates = computed(() => monthGridDates(focusDate.value));
 const week = computed(() => weekDates(focusDate.value));
-const focusFacts = computed(() => dayFacts(bundle.value, focusDate.value));
+const selectedProfile = computed(() => profileLayer(bundle.value, activeProfileId.value));
+const peopleProfiles = computed(() => (bundle.value?.calendarLayers ?? []).filter(layer => layer.visible));
+const viewingSelf = computed(() => activeProfileId.value === "self");
+const focusFacts = computed(() => dayFactsForProfile(bundle.value, focusDate.value, activeProfileId.value));
 const focusMonth = computed(() => monthStart(focusDate.value).slice(0, 7));
 const monthTitle = computed(() => dateLabel(`${focusMonth.value}-01`, language.value, { month: "long" }));
 const yearTitle = computed(() => focusDate.value.slice(0, 4));
 const monthDates = computed(() => gridDates.value.filter(date => date.startsWith(focusMonth.value)));
 const monthSummary = computed(() => ({
-  shifts: monthDates.value.filter(date => dayFacts(bundle.value, date).shift).length,
-  tasks: monthDates.value.reduce((sum, date) => sum + dayFacts(bundle.value, date).tasks.filter(task => !task.done).length, 0),
-  absences: monthDates.value.reduce((sum, date) => sum + dayFacts(bundle.value, date).absences.length, 0),
+  shifts: monthDates.value.filter(date => dayFactsForProfile(bundle.value, date, activeProfileId.value).shift).length,
+  tasks: monthDates.value.reduce((sum, date) => sum + dayFactsForProfile(bundle.value, date, activeProfileId.value).tasks.filter(task => !task.done).length, 0),
+  absences: monthDates.value.reduce((sum, date) => sum + dayFactsForProfile(bundle.value, date, activeProfileId.value).absences.length, 0),
 }));
 
 const allDayItems = computed(() => [
@@ -87,11 +93,15 @@ const timelineEvents = computed(() => {
     const start = minutesOf(reminderTime, 9 * 60);
     events.push({ key: `reminder-${reminder.id}`, type: "reminder", title: reminder.title, start, end: Math.min(1440, start + 30), meta: reminder.details || "", color: "var(--accent)", actionId: null });
   }
-  for (const { layer, entry } of focusFacts.value.layers.filter(value => value.entry.timed !== false && value.entry.displayStart)) {
-    const startDate = String(entry.displayStart).slice(0, 10) || focusDate.value;
-    const endDate = String(entry.displayEnd || entry.displayStart).slice(0, 10) || startDate;
-    const value = segment(startDate, timePart(entry.displayStart), endDate, timePart(entry.displayEnd));
-    if (value) events.push({ key: `layer-${layer.id}-${entry.sourceDate || entry.date}`, type: "layer", title: `${layer.name}: ${entry.shiftTypeName || "Смена"}`, ...value, meta: layer.timezone || "", color: layer.color, actionId: null });
+  if (!viewingSelf.value) {
+    const layer = selectedProfile.value;
+    const entry = profileEntryForDate(bundle.value, activeProfileId.value, focusDate.value);
+    if (layer && entry?.timed !== false && entry?.displayStart) {
+      const startDate = String(entry.displayStart).slice(0, 10) || focusDate.value;
+      const endDate = String(entry.displayEnd || entry.displayStart).slice(0, 10) || startDate;
+      const value = segment(startDate, timePart(entry.displayStart), endDate, timePart(entry.displayEnd));
+      if (value) events.push({ key: `profile-${layer.id}-${entry.sourceDate || entry.date}`, type: "layer", title: entry.shiftTypeName || "Смена", ...value, meta: layer.timezone || "", color: entry.shiftColor || layer.color, actionId: null });
+    }
   }
   const laneEnds: number[] = [];
   return events.sort((left, right) => left.start - right.start || left.end - right.end).map(event => {
@@ -102,7 +112,7 @@ const timelineEvents = computed(() => {
   });
 });
 
-function cellFacts(date: string) { return dayFacts(bundle.value, date); }
+function cellFacts(date: string) { return dayFactsForProfile(bundle.value, date, activeProfileId.value); }
 function openTaskCount(date: string): number { return calendarOpenTaskCount(cellFacts(date)); }
 function importantMarker(date: string) { return cellFacts(date).important[0] ?? null; }
 function importantMarkerGlyph(date: string): string { return calendarImportantGlyph(importantMarker(date)); }
@@ -143,6 +153,10 @@ function absenceSystemClass(item: { systemCode?: string | null } | null | undefi
   return `absence-${code || "other"}`;
 }
 function shiftRange(date: string): string {
+  if (!viewingSelf.value) {
+    const entry = profileEntryForDate(bundle.value, activeProfileId.value, date);
+    return entry?.displayStart && entry?.displayEnd ? `${timePart(entry.displayStart)}–${timePart(entry.displayEnd)}` : "";
+  }
   const occurrence = cellFacts(date).occurrences[0];
   return occurrence ? `${timePart(occurrence.displayStart)}–${timePart(occurrence.displayEnd)}` : "";
 }
@@ -172,7 +186,7 @@ async function openTimelineEvent(event: { type: string; actionId: number | null 
   else if (event.type === "vacation" && event.actionId != null) await window.DutyLogVueDomains?.absenceTimeBank?.openAbsenceEditor(event.actionId);
 }
 
-async function chooseDate(date: string): Promise<void> { await store.openDayPanel(date); }
+async function chooseDate(date: string): Promise<void> { if (viewingSelf.value) await store.openDayPanel(date); else await store.openDate(date, "month"); }
 async function chooseWeekDate(date: string): Promise<void> { store.closeDayPanel(); await store.openDate(date, "week"); }
 async function navigate(delta: number): Promise<void> {
   store.closeDayPanel();
@@ -180,14 +194,14 @@ async function navigate(delta: number): Promise<void> {
 }
 async function goToday(): Promise<void> {
   await store.goToday(mode.value);
-  if (mode.value === "month") await store.openDayPanel(store.focusDate);
+  if (mode.value === "month" && viewingSelf.value) await store.openDayPanel(store.focusDate);
   else store.closeDayPanel();
 }
 async function setMode(nextMode: CalendarMode): Promise<void> {
   await store.setMode(nextMode);
   if (nextMode !== "month") store.closeDayPanel();
 }
-async function openDetails(): Promise<void> { await store.openDayPanel(focusDate.value); }
+async function openDetails(): Promise<void> { if (viewingSelf.value) await store.openDayPanel(focusDate.value); }
 </script>
 
 <template>
@@ -208,8 +222,9 @@ async function openDetails(): Promise<void> { await store.openDayPanel(focusDate
         </div>
         <div id="calendarLoadStatus" class="calendarLoadStatus" role="status" aria-live="polite" :hidden="!loading"><span aria-hidden="true"></span><b>Обновляю календарь…</b></div>
         <div id="calendarFocusLabel" class="calendarFocusLabel">{{ dateLabel(focusDate, language, { day:'numeric', month:'long', year:'numeric' }) }}</div>
-        <div id="calendarLayerBar" class="calendarLayerBar" :hidden="!(bundle?.calendarLayers.length)">
-          <button v-for="layer in bundle?.calendarLayers ?? []" :key="layer.id" type="button" class="calendarLayerToggle" :aria-pressed="layer.visible ? 'true' : 'false'" @click="store.toggleLayer(layer.id, !layer.visible)"><i :style="{ background: layer.color }"></i>{{ layer.name }}</button>
+        <div id="calendarProfileBar" class="calendarProfileBar" role="group" :aria-label="language === 'en' ? 'Calendar person' : 'Чей календарь'">
+          <button type="button" class="calendarProfileToggle" :aria-pressed="viewingSelf ? 'true' : 'false'" @click="store.selectProfile('self')"><i class="selfProfileDot"></i>{{ language === 'en' ? 'Me' : 'Я' }}</button>
+          <button v-for="profile in peopleProfiles" :key="profile.id" type="button" class="calendarProfileToggle" :aria-pressed="activeProfileId === String(profile.id) ? 'true' : 'false'" @click="store.selectProfile(String(profile.id))"><i :style="{ background: profile.color }"></i>{{ profile.name }}</button>
         </div>
       </div>
 
@@ -232,7 +247,7 @@ async function openDetails(): Promise<void> { await store.openDayPanel(focusDate
       </section>
 
       <section v-show="mode === 'day'" id="calendarDayExperience" class="calendarDayExperience" aria-label="Почасовой календарь дня">
-        <div class="calendarDayHeader"><div><div class="eyebrow">День</div><h2 id="calendarDayTitle">{{ dateLabel(focusDate, language, { weekday:'long', day:'numeric', month:'long' }) }}</h2><div id="calendarDaySubtitle" class="calendarDaySubtitle">{{ focusFacts.shift?.name || 'Смена не назначена' }}</div></div><button id="calendarDayOpenDetails" type="button" @click="openDetails">Все детали дня</button></div>
+        <div class="calendarDayHeader"><div><div class="eyebrow">День</div><h2 id="calendarDayTitle">{{ dateLabel(focusDate, language, { weekday:'long', day:'numeric', month:'long' }) }}</h2><div id="calendarDaySubtitle" class="calendarDaySubtitle">{{ focusFacts.shift?.name || (language === 'en' ? 'Day off' : 'Свободный день') }}</div></div><button v-if="viewingSelf" id="calendarDayOpenDetails" type="button" @click="openDetails">Все детали дня</button><span v-else class="calendarProfileReadOnly">{{ language === 'en' ? 'Read-only schedule' : 'График только для просмотра' }}</span></div>
         <div id="calendarAllDay" class="calendarAllDay" :hidden="!allDayItems.length"><div class="calendarAllDayHead">Весь день</div><div class="calendarAllDayItems"><div v-for="item in allDayItems" :key="item.key" class="calendarAllDayItem" :class="item.type" :style="{ '--event-color': item.color || 'var(--accent)' }">{{ item.title }}</div></div></div>
         <div id="calendarTimeline" class="calendarTimeline" aria-label="Почасовая шкала"><div id="calendarTimelineHours" class="calendarTimelineHours"><span v-for="index in 13" :key="index" :style="{ top: `${(((index - 1) * 2) / 24) * 100}%` }">{{ String((index - 1) * 2).padStart(2,'0') }}:00</span></div><div id="calendarTimelineCanvas" class="calendarTimelineCanvas"><button v-for="event in timelineEvents" :key="event.key" type="button" class="calendarTimelineEvent" :class="event.type" :style="eventStyle(event)" @click="openTimelineEvent(event)"><b>{{ event.title }}</b><span>{{ timelineRange(event) }}<template v-if="event.meta"> · {{ event.meta }}</template></span></button></div></div>
       </section>
@@ -282,12 +297,11 @@ async function openDetails(): Promise<void> { await store.openDayPanel(focusDate
               <span v-if="cellFacts(date).day?.notes?.length || cellFacts(date).day?.note" class="ear"></span>
               <span v-if="(cellFacts(date).day?.notes?.length ?? 0) > 1" class="noteCountBadge">{{ cellFacts(date).day?.notes?.length }}</span>
               <span v-if="secondaryAbsences(date).length" class="vacationMark" :style="{ background: secondaryAbsences(date)[0]?.typeColor }">●</span>
-              <span v-for="item in cellFacts(date).layers.slice(0,2)" :key="`${item.layer.id}-${item.entry.sourceDate}`" class="calendarLayerChip" :style="{ '--layer-color': item.layer.color }">{{ item.layer.name }}</span>
             </button>
           </div>
-          <div id="summary" class="sum"><span class="lbl">Итого:</span><span>{{ monthSummary.shifts }} смен</span><span>{{ monthSummary.tasks }} задач</span><span>{{ monthSummary.absences }} отсутствий</span><span class="over">баланс {{ bundle?.overtimeAccount.balanceHours ?? 0 }} ч</span></div>
+          <div id="summary" class="sum"><span class="lbl">{{ selectedProfile?.name || (language === 'en' ? 'Me' : 'Я') }}:</span><span>{{ monthSummary.shifts }} смен</span><template v-if="viewingSelf"><span>{{ monthSummary.tasks }} задач</span><span>{{ monthSummary.absences }} отсутствий</span><span class="over">баланс {{ bundle?.overtimeAccount.balanceHours ?? 0 }} ч</span></template><span v-else class="calendarProfileReadOnly">{{ selectedProfile?.timezone }}</span></div>
         </div>
-        <SelectedDayPanel v-if="dayPanelOpen" :bridge="bridge" />
+        <SelectedDayPanel v-if="dayPanelOpen && viewingSelf" :bridge="bridge" />
       </div>
     </div>
   </section>

@@ -290,3 +290,12 @@
 @media (max-width:560px) {
   .vue-calendar-view .cell .shiftClock { display:none; }
 }
+
+/* v27.42.0 People Profiles: one active calendar context, never stacked schedule overlays. */
+.calendarProfileBar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.calendarProfileToggle{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);background:var(--panel);color:var(--text);border-radius:999px;min-height:40px;padding:0 14px;cursor:pointer}
+.calendarProfileToggle[aria-pressed="true"]{background:color-mix(in srgb,var(--accent) 18%,var(--panel));border-color:var(--accent);box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 25%,transparent)}
+.calendarProfileToggle i{width:9px;height:9px;border-radius:999px;background:var(--profile-color,var(--accent))}
+.calendarProfileToggle .selfProfileDot{background:var(--accent)}
+.calendarProfileReadOnly{color:var(--muted);font-size:.82rem}
+@media (max-width:760px){.calendarProfileBar{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.calendarProfileToggle{flex:0 0 auto;min-height:36px;padding:0 12px}.calendarProfileBar::-webkit-scrollbar{display:none}}

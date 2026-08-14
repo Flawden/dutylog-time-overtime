@@ -8,7 +8,7 @@ const {
   waitForApi
 } = require('./helpers');
 
-test('schedule templates preview safely and read-only layers compose across calendar modes', async ({ page }) => {
+test('schedule templates preview safely and people profiles switch the whole calendar context', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await registerAndOnboard(page, { preset:'full', prefix:'schedule-layers' });
   const date = await currentLocalDateKey(page);
@@ -65,18 +65,22 @@ test('schedule templates preview safely and read-only layers compose across cale
 
   await openView(page, 'calendar');
   await selectDate(page, date);
-  const toggle = page.locator('#calendarLayerBar .calendarLayerToggle', { hasText:'Напарник' });
-  await expect(toggle).toBeVisible();
-  await expect(toggle).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator(`#grid [data-date="${date}"] .calendarLayerChip`, { hasText:'Напарник' })).toBeVisible();
+  const selfProfile = page.locator('#calendarProfileBar .calendarProfileToggle', { hasText:'Я' });
+  const companionProfile = page.locator('#calendarProfileBar .calendarProfileToggle', { hasText:'Напарник' });
+  await expect(selfProfile).toHaveAttribute('aria-pressed', 'true');
+  await expect(companionProfile).toBeVisible();
+  await companionProfile.click();
+  await expect(companionProfile).toHaveAttribute('aria-pressed', 'true');
+  await expect(selfProfile).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator(`#grid [data-date="${date}"] .calendarLayerChip`)).toHaveCount(0);
+  await expect(page.locator(`#grid [data-date="${date}"] .shift`)).toBeVisible();
+  await expect(page.locator('#summary')).toContainText('Напарник');
 
   await page.locator('[data-calendar-mode="day"]').click();
-  await expect(page.locator('#calendarTimelineCanvas .calendarTimelineEvent.layer', { hasText:'Напарник' })).toBeVisible();
+  await expect(page.locator('.calendarProfileReadOnly')).toContainText('только для просмотра');
+  await expect(page.locator('#calendarDayOpenDetails')).toHaveCount(0);
+  await expect(page.locator('#calendarTimelineCanvas .calendarTimelineEvent.layer')).toBeVisible();
 
-  const hiddenResponse = page.waitForResponse(response => new URL(response.url()).pathname === `/api/v1/calendar-layers/${layer.id}`
-    && response.request().method() === 'PATCH' && response.status() === 200);
-  await toggle.click();
-  await hiddenResponse;
-  await expect(toggle).toHaveAttribute('aria-pressed', 'false');
-  await expect(page.locator('#calendarTimelineCanvas .calendarTimelineEvent.layer', { hasText:'Напарник' })).toHaveCount(0);
+  await selfProfile.click();
+  await expect(selfProfile).toHaveAttribute('aria-pressed', 'true');
 });

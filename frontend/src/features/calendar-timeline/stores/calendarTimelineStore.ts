@@ -6,6 +6,7 @@ import { publishCalendarTimelineProjection } from "@/platform/bridge/legacyBridg
 
 const MODE_KEY = "dutylog.calendar.mode.v2";
 const FOCUS_KEY = "dutylog.calendar.focus.v2";
+const PROFILE_KEY = "dutylog.calendar.profile.v1";
 let readSequence = 0;
 let activeApi = calendarTimelineApi;
 
@@ -61,6 +62,7 @@ export const useCalendarTimelineStore = defineStore("dutylog-calendar-timeline",
     mode: initialMode() as CalendarMode,
     focusDate: validDate(storageGet(FOCUS_KEY), todayIso()),
     workDate: todayIso(),
+    activeProfileId: storageGet(PROFILE_KEY) ?? "self",
     bundle: null as CalendarRangeBundle | null,
     loading: false,
     loaded: false,
@@ -76,6 +78,7 @@ export const useCalendarTimelineStore = defineStore("dutylog-calendar-timeline",
     persist(): void {
       storageSet(MODE_KEY, this.mode);
       storageSet(FOCUS_KEY, this.focusDate);
+      storageSet(PROFILE_KEY, this.activeProfileId);
     },
     async ensureLoaded(): Promise<void> { if (!this.loaded) await this.refresh(); },
     async ensureTodayLoaded(): Promise<void> {
@@ -89,6 +92,10 @@ export const useCalendarTimelineStore = defineStore("dutylog-calendar-timeline",
         const result = await activeApi.load(this.focusDate, preferWorkDate);
         if (sequence !== readSequence) return;
         this.bundle = result.bundle;
+        if (this.activeProfileId !== "self" && !result.bundle.calendarLayers.some(layer => layer.visible && String(layer.id) === this.activeProfileId)) {
+          this.activeProfileId = "self";
+          this.persist();
+        }
         this.workDate = result.workDate;
         if (preferWorkDate) {
           this.focusDate = result.focusDate;
@@ -143,6 +150,13 @@ export const useCalendarTimelineStore = defineStore("dutylog-calendar-timeline",
     clearDayPanelSectionRequest(): void { this.dayPanelSection = null; },
     async setMode(mode: CalendarMode): Promise<void> {
       this.mode = mode;
+      this.persist();
+    },
+    selectProfile(profileId: string): void {
+      const normalized = profileId === "self" ? "self" : String(Number(profileId));
+      const exists = normalized === "self" || Boolean(this.bundle?.calendarLayers.some(layer => layer.visible && String(layer.id) === normalized));
+      this.activeProfileId = exists ? normalized : "self";
+      this.closeDayPanel();
       this.persist();
     },
     async navigate(delta: number): Promise<void> {
