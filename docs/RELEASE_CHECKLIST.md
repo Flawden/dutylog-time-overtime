@@ -1,6 +1,6 @@
 # DutyLog release checklist
 
-Status: v27.41.6.
+Status: v27.41.7.
 
 ## v27.41.6 — Accounting Integrity Semantics & Actionability Hotfix acceptance
 

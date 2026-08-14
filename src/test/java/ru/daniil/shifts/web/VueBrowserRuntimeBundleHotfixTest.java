@@ -27,6 +27,10 @@ class VueBrowserRuntimeBundleHotfixTest {
         assertTrue(audit.contains("CommonJS require"));
         assertTrue(audit.contains("CommonJS module.exports"));
         assertTrue(audit.contains("dutylog-vue-app-shell.js"));
+        assertTrue(audit.contains("collectJavaScriptBundles"));
+        assertTrue(audit.contains("maxEntryBytes"));
+        assertTrue(audit.contains("maxChunkBytes"));
+        assertTrue(audit.contains("maxTotalBytes"));
         assertTrue(dockerfile.contains("npm run build"));
         assertTrue(fixture.contains("page.on('pageerror'"));
         assertFalse(vite.contains("process: {}"));

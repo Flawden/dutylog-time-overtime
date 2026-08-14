@@ -29,6 +29,8 @@ class VueFrontendFoundationContractTest {
         assertTrue(tsconfig.contains("\"noUncheckedIndexedAccess\": true"));
         assertTrue(vite.contains("dutylog-vue-app-shell.js"));
         assertTrue(vite.contains("dutylog-vue-app-shell.css"));
+        assertTrue(vite.contains("chunkFileNames: \"chunks/[name]-[hash].js\""));
+        assertFalse(vite.contains("inlineDynamicImports: true"));
     }
 
     @Test

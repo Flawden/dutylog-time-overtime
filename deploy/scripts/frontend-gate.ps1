@@ -57,4 +57,7 @@ foreach ($asset in @('dutylog-vue-app-shell.js','dutylog-vue-app-shell.css')) {
   $path = Join-Path $FrontendDir "dist\$asset"
   if (-not (Test-Path -LiteralPath $path) -or (Get-Item -LiteralPath $path).Length -le 0) { throw "Vue frontend build asset is missing: $path" }
 }
+$ChunkDir = Join-Path $FrontendDir 'dist\chunks'
+$Chunks = if (Test-Path -LiteralPath $ChunkDir) { @(Get-ChildItem -LiteralPath $ChunkDir -Filter '*.js' -File -Recurse | Where-Object Length -gt 0) } else { @() }
+if ($Chunks.Count -eq 0) { throw 'Vue frontend segmented build emitted no async JS chunks.' }
 Write-Host 'Vue frontend committed-lockfile delivery gate passed.'

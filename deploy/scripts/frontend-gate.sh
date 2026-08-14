@@ -48,5 +48,9 @@ git -C "$PROJECT_ROOT" diff --exit-code --   frontend/package.json   frontend/pa
 
 test -s "$FRONTEND_DIR/dist/dutylog-vue-app-shell.js"
 test -s "$FRONTEND_DIR/dist/dutylog-vue-app-shell.css"
+if [[ ! -d "$FRONTEND_DIR/dist/chunks" ]] || ! find "$FRONTEND_DIR/dist/chunks" -type f -name '*.js' -size +0c -print -quit | grep -q .; then
+  echo "Vue frontend segmented build emitted no async JS chunks." >&2
+  exit 1
+fi
 
 echo "Vue frontend committed-lockfile delivery gate passed."

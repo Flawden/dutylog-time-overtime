@@ -43,6 +43,11 @@ class VueAbsenceTimeBankMigrationTest {
         assertTrue(legacyPlatform.contains("view-overtime"));
         assertTrue(legacyPlatform.contains("data-vue-absence-time-bank"));
         assertTrue(workspace.contains("openTimeBankUsage"));
+        assertTrue(workspace.contains("defineAsyncComponent"));
+        assertTrue(workspace.contains("import(\"./AbsencePage.vue\")"));
+        assertTrue(workspace.contains("import(\"./TimeBankPage.vue\")"));
+        assertTrue(workspace.contains("<AbsenceComposer v-if=\"absenceModalOpen\" />"));
+        assertTrue(workspace.contains("<CreditEditor v-if=\"creditModalOpen\" />"));
         assertFalse(workspace.contains("document.querySelector"));
     }
 

@@ -1,12 +1,13 @@
 <script setup lang="ts">
-import { onBeforeMount, onBeforeUnmount, onMounted, watch } from "vue";
+import { defineAsyncComponent, onBeforeMount, onBeforeUnmount, onMounted, watch } from "vue";
 import { storeToRefs } from "pinia";
 import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
 import { installCalendarTimelineOfflineSource, useCalendarTimelineStore } from "../stores/calendarTimelineStore";
 import type { CalendarDaySection, CalendarMode, DutyLogCalendarTimelineDomain } from "../types/domain";
-import CalendarPage from "./CalendarPage.vue";
-import TodayPage from "./TodayPage.vue";
+import AsyncWorkspaceLoading from "@/shared/ui/AsyncWorkspaceLoading.vue";
+const CalendarPage = defineAsyncComponent({ loader: () => import("./CalendarPage.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
+const TodayPage = defineAsyncComponent({ loader: () => import("./TodayPage.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
 import "../calendar-timeline.css";
 import { navigateHashRoute } from "@/platform/router/hashRoute";
 

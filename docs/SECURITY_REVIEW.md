@@ -1,3 +1,7 @@
+# v27.41.7 Frontend Bundle Segmentation review
+
+v27.41.7 adds no endpoint, credential, authorization rule, storage authority, dependency, cross-user data path or accounting mutation. The change only alters how already-authorized Vue code is delivered: a stable same-origin ES-module entry imports content-hashed same-origin chunks. Existing same-origin/CSP rules remain unchanged; the service worker uses its existing network-first JS policy and caches successful chunk responses under the current release cache. The audit scans all emitted JS for forbidden Node/CommonJS runtime patterns and caps entry, per-chunk and total size.
+
 # v27.41.6 Accounting Integrity Semantics & Actionability review
 
 v27.41.6 adds no endpoint, credential, role, authorization, dependency, cross-user data path or automatic repair capability. It corrects reconciliation of existing current-user absence audit facts and exposes only audit metadata already returned by the authorized ledger-integrity response. Historical accounting mutations remain explicit/manual.
@@ -23,7 +27,7 @@ v27.41.2 changes no auth, authorization, HTTP surface, persistence, offline queu
 - No new HTML injection surface, dependency or cross-user data path is introduced.
 - `dataLayer` remains the only IndexedDB/outbox/reconnect executor; OpenAPI remains 124/130 and Flyway remains V47.
 
-Status: v27.41.6.
+Status: v27.41.7.
 
 ## v27.41.0 Calendar Visual Language Foundation review
 

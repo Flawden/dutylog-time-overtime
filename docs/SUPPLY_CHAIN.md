@@ -1,6 +1,6 @@
 # Supply-chain maintenance
 
-Status: v27.41.6.
+Status: v27.41.7.
 
 Dependabot checks five maintained surfaces weekly:
 
@@ -10,7 +10,7 @@ Dependabot checks five maintained surfaces weekly:
 - Playwright/E2E npm dependencies at `/`;
 - Vue frontend npm dependencies at `/frontend`.
 
-v27.41.6 adds no dependency and preserves the exact reviewed Node/npm dependency graph and the v27.41.5 browser budgets (810000 B raw / 250000 B gzip). CI must remain green before merging an update. Review release notes and run the manual smoke checklist for framework, database, browser-runner or container-major updates.
+v27.41.7 adds no dependency and preserves the exact reviewed Node/npm dependency graph. The browser audit now covers the segmented JS graph and keeps total gzip capped at 250000 B. CI must remain green before merging an update. Review release notes and run the manual smoke checklist for framework, database, browser-runner or container-major updates.
 
 ## Vue frontend dependency policy
 

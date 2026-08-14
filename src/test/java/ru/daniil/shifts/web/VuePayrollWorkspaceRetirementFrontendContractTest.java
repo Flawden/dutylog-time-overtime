@@ -19,8 +19,8 @@ class VuePayrollWorkspaceRetirementFrontendContractTest {
         String types = read("frontend/src/types/window.d.ts");
         String helper = read("e2e/helpers.js");
 
-        assertTrue(shell.contains("import PayrollWorkspace"));
-        assertTrue(shell.contains("<PayrollWorkspace />"));
+        assertTrue(shell.contains("loader: () => import(\"@/features/payroll/components/PayrollWorkspace.vue\")"));
+        assertTrue(shell.contains("<PayrollWorkspace v-if=\"activeRoute === 'payroll'\" />"));
         assertTrue(component.contains("data-vue-domain-owner=\"payroll\""));
         assertTrue(component.contains("window.DutyLogVueDomains?.payroll"));
         assertFalse(component.contains("client.request(")); // API access stays out of the view.

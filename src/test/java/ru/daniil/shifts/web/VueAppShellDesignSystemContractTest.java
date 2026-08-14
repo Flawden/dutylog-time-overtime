@@ -94,7 +94,7 @@ class VueAppShellDesignSystemContractTest {
     }
 
     @Test
-    void releaseBuildShipsOneShellBundleAndBrowserParityScenario() throws Exception {
+    void releaseBuildShipsStableEntryPlusAsyncChunksAndBrowserParityScenario() throws Exception {
         String vite = read("frontend/vite.config.ts");
         String docker = read("Dockerfile");
         String gate = read("deploy/scripts/frontend-gate.sh");
@@ -103,8 +103,10 @@ class VueAppShellDesignSystemContractTest {
 
         assertTrue(vite.contains("vue-shell-v1"));
         assertTrue(vite.contains("dutylog-vue-app-shell.js"));
+        assertTrue(vite.contains("chunkFileNames: \"chunks/[name]-[hash].js\""));
         assertTrue(docker.contains("dist/dutylog-vue-app-shell.js"));
         assertTrue(gate.contains("dist/dutylog-vue-app-shell.css"));
+        assertTrue(gate.contains("dist/chunks"));
         assertTrue(html.contains("/vue/dutylog-vue-app-shell.js?v=" + releaseVersion()));
         assertTrue(e2e.contains("Vue app shell owns navigation chrome"));
         assertTrue(e2e.contains("#tabbar"));

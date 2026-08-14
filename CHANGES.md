@@ -1,3 +1,11 @@
+# v27.41.7 — Frontend Bundle Segmentation
+- Starts from proven-green v27.41.6 commit `1029edde79681ca99d042889866cc652fec6f1ba` / tree `b472323094010aaf558b1b9a63b902aff649d4ff`.
+- Replaces the monolithic Vue JavaScript output with one stable entry plus content-hashed async chunks; no backend/API/Flyway/domain authority changes.
+- Keeps Calendar/Absence/Productivity runtime owners eager while lazy-loading heavy route pages/modals; Payroll and Admin become route-lazy workspaces. Settings stays eager because Calendar still invokes its Shift Type Manager domain directly.
+- Browser audit now scans every emitted JS file, requires a real segmented graph, applies entry/per-chunk/total ceilings and preserves the previous 250000 B total-gzip ceiling.
+- Frontend/E2E preflight now require emitted chunks; same-origin JS chunks stay under the existing network-first service-worker cache policy so loaded workspaces survive offline reload.
+- Inventory remains 791 Java `@Test` methods / 163 classes / 48 Playwright / 64 Vitest, OpenAPI 124/130 and Flyway V47.
+
 # v27.41.6 — Accounting Integrity Semantics & Actionability Hotfix
 - Starts from proven-green v27.41.5 commit `dc7738b80c9af1873a2ae0b0f2bab35a74724855` / tree `908dff05790d354e3b1b5a3aa940c1066f29f22c`.
 - Fixes a ledger-integrity false positive where completed/approved non-overtime absences intentionally carried zero-minute POSTED audit facts but were incorrectly classified as `INACTIVE_ABSENCE_HAS_ACTIVE_AUDIT` solely because their compensation source was not the overtime bank.

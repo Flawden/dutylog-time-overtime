@@ -26,6 +26,9 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertTrue(workspace.contains("retireDomainOwners(\"productivity\")"));
         assertTrue(workspace.contains("<TasksPage"));
         assertTrue(workspace.contains("<ImportantPage"));
+        assertTrue(workspace.contains("defineAsyncComponent"));
+        assertTrue(workspace.contains("import(\"./TasksPage.vue\")"));
+        assertTrue(workspace.contains("import(\"./ImportantPage.vue\")"));
         assertTrue(workspace.contains("vueSelectedDayTasksMount"));
         assertTrue(workspace.contains("vueSelectedDayNotesMount"));
         assertTrue(workspace.contains("vueSelectedDayImportantMount"));

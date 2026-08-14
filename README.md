@@ -1,3 +1,9 @@
+# DutyLog v27.41.7 — Frontend Bundle Segmentation
+
+v27.41.6 is proven green. v27.41.7 replaces the single eager Vue JavaScript blob with stable entry + content-hashed async chunks while preserving the same Vue domain owners, hash routing, HTTP/OpenAPI contracts, offline queue authority and PWA cache policy. Today/Calendar pages, Absence/TimeBank pages and modals, Tasks/Important pages, Payroll and Admin now cross explicit async boundaries; Settings remains eager because Calendar still calls its Shift Type Manager domain directly.
+
+The browser audit now scans every emitted JS file, forbids Node/CommonJS runtime patterns across the whole graph, requires multiple chunks, locks a materially smaller eager-entry ceiling and keeps total gzip at the previous 250000 B ceiling. Loaded chunks are handled by the existing service-worker network-first JS policy and cached into the current release cache, so visited workspaces survive offline reload.
+
 # DutyLog v27.41.6 — Accounting Integrity Semantics & Actionability Hotfix
 
 The proven-green v27.41.5 staging build exposed six apparently actionable integrity warnings for completed unpaid absences. The backend audit model intentionally records those states as zero-minute `POSTED` accounting facts, but `inspect()` incorrectly treated any active audit on a non-overtime absence as inactive. v27.41.6 fixes that semantic false positive, adds a completed-unpaid regression test, and makes genuine integrity findings stack correctly on mobile while explaining the linked audit record and the next safe action. No automatic repair, HTTP/OpenAPI shape, Flyway migration or accounting formula is added.

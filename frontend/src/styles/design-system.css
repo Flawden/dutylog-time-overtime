@@ -495,3 +495,23 @@ html[data-vue-shell="ready"] body.app-modal-open .vue-shell-nav { visibility: hi
     font-size: 0;
   }
 }
+
+
+/* v27.41.7: route/domain chunks keep a visible, non-blocking hand-off while loading. */
+.vue-async-workspace-loading{
+  width:min(calc(100% - 24px),var(--vue-shell-max));
+  margin:18px auto;
+  padding:18px 20px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  color:var(--muted);
+  border:1px solid var(--line);
+  border-radius:18px;
+  background:color-mix(in srgb,var(--panel) 92%,transparent);
+}
+.vue-async-workspace-loading__dot{
+  width:9px;height:9px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 0 5px color-mix(in srgb,var(--accent) 12%,transparent);
+}

@@ -1,5 +1,10 @@
 # Frontend architecture
 
+## v27.41.7 delivery segmentation
+
+The Vue shell remains one application/runtime authority, but production delivery is no longer one monolithic JS artifact. The stable entry owns boot/navigation/shared runtime; route/page surfaces cross explicit `defineAsyncComponent` boundaries and Vite emits content-hashed `chunks/*.js`. Domain ownership is unchanged: lazy delivery must never create a second store, router, offline queue or backend authority.
+
+
 Status: Vue owns the shell, all routed user-facing screens and offline/sync presentation after readiness. DutyLog v27.41.6 keeps those ownership boundaries unchanged and only enriches the existing TimeBank integrity presentation with linked-audit context, conservative next-step guidance and a mobile-safe record grid. First-run onboarding remains one explicitly bounded post-ready legacy presentation exception; `dataLayer` remains the single offline mutation/sync owner. Route/workspace bundle segmentation remains the next frontend-delivery task.
 
 

@@ -40,8 +40,8 @@ export default defineConfig({
     },
     rollupOptions: {
       output: {
-        inlineDynamicImports: true,
         entryFileNames: "dutylog-vue-app-shell.js",
+        chunkFileNames: "chunks/[name]-[hash].js",
         assetFileNames: assetInfo => assetInfo.name === "style.css"
           ? "dutylog-vue-app-shell.css"
           : "[name][extname]",

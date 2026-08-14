@@ -22,6 +22,9 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(shell.contains("CalendarTimelineWorkspace"));
         assertTrue(workspace.contains("activeRoute === 'today'"));
         assertTrue(workspace.contains("activeRoute === 'calendar'"));
+        assertTrue(workspace.contains("defineAsyncComponent"));
+        assertTrue(workspace.contains("import(\"./TodayPage.vue\")"));
+        assertTrue(workspace.contains("import(\"./CalendarPage.vue\")"));
         assertTrue(workspace.contains("retireDomainOwners(\"calendar-timeline\")"));
         assertTrue(workspace.contains("DutyLogVueDomains"));
         assertTrue(workspace.indexOf("DutyLogVueDomains") < workspace.indexOf("retireDomainOwners(\"calendar-timeline\")"));

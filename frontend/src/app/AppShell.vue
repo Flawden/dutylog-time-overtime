@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, defineAsyncComponent, ref } from "vue";
 import { storeToRefs } from "pinia";
 import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { FRONTEND_ARCHITECTURE, RELEASE_VERSION } from "@/platform/version";
@@ -17,8 +17,18 @@ import AbsenceTimeBankWorkspace from "@/features/absence-time-bank/components/Ab
 import CalendarTimelineWorkspace from "@/features/calendar-timeline/components/CalendarTimelineWorkspace.vue";
 import ProductivityWorkspace from "@/features/productivity/components/ProductivityWorkspace.vue";
 import SettingsWorkspace from "@/features/settings-workspace/components/SettingsWorkspace.vue";
-import PayrollWorkspace from "@/features/payroll/components/PayrollWorkspace.vue";
-import AdminWorkspace from "@/features/admin/components/AdminWorkspace.vue";
+import AsyncWorkspaceLoading from "@/shared/ui/AsyncWorkspaceLoading.vue";
+
+const PayrollWorkspace = defineAsyncComponent({
+  loader: () => import("@/features/payroll/components/PayrollWorkspace.vue"),
+  loadingComponent: AsyncWorkspaceLoading,
+  delay: 120,
+});
+const AdminWorkspace = defineAsyncComponent({
+  loader: () => import("@/features/admin/components/AdminWorkspace.vue"),
+  loadingComponent: AsyncWorkspaceLoading,
+  delay: 120,
+});
 import "@/features/settings-workspace/settings-workspace.css";
 import { navigateHashRoute } from "@/platform/router/hashRoute";
 
@@ -123,8 +133,8 @@ function logout(): void { props.bridge.logout(); }
   <AbsenceTimeBankWorkspace :bridge="bridge" />
   <ProductivityWorkspace :bridge="bridge" />
   <SettingsWorkspace :bridge="bridge" />
-  <PayrollWorkspace />
-  <AdminWorkspace />
+  <PayrollWorkspace v-if="activeRoute === 'payroll'" />
+  <AdminWorkspace v-if="activeRoute === 'admin'" />
 
   <OfflineSyncModal :bridge="bridge" :open="offlineSyncOpen" :language="language" :status="offline" @close="offlineSyncOpen = false" />
 

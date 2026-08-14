@@ -39,8 +39,8 @@ class VueAdminWorkspaceRetirementFrontendContractTest {
         String store = read("frontend/src/features/admin/stores/adminStore.ts");
         String shellStore = read("frontend/src/app/shellStore.ts");
 
-        assertTrue(shell.contains("import AdminWorkspace"));
-        assertTrue(shell.contains("<AdminWorkspace />"));
+        assertTrue(shell.contains("loader: () => import(\"@/features/admin/components/AdminWorkspace.vue\")"));
+        assertTrue(shell.contains("<AdminWorkspace v-if=\"activeRoute === 'admin'\" />"));
         assertTrue(component.contains("data-vue-domain-route=\"admin\""));
         assertTrue(component.contains("id=\"adminUsersList\""));
         assertTrue(component.contains("id=\"registrationEnabledToggle\""));

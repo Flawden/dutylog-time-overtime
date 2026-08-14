@@ -8,7 +8,7 @@
 - `profile.onboardingCompleted` and authoritative module state remain the cross-boundary data contract consumed by Vue.
 - No second bounded legacy presentation owner is permitted.
 
-Status: v27.41.6.
+Status: v27.41.7.
 
 ## Accounting integrity semantics & actionability (v27.41.6)
 

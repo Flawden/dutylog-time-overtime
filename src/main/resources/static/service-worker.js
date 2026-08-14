@@ -1,6 +1,6 @@
 const RAW_BUILD_ID = "__DUTYLOG_BUILD_ID__";
 const BUILD_ID = RAW_BUILD_ID.startsWith("__") ? "local" : RAW_BUILD_ID;
-const CACHE_NAME = `dutylog-shell-v27.41.6-${BUILD_ID}`; // unique per immutable image build
+const CACHE_NAME = `dutylog-shell-v27.41.7-${BUILD_ID}`; // unique per immutable image build
 
 const SHELL = [
   "/manifest.json",
@@ -60,7 +60,8 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // JS/CSS — network-first: HTML может обновиться раньше shell-кэша.
+  // JS/CSS, включая content-hashed Vue chunks — network-first: HTML может обновиться раньше shell-кэша.
+  // Загруженный chunk кладётся в текущий release cache, поэтому посещённый workspace переживает offline reload.
   // Если отдать старые JS-файлы к новому index.html, получим фантомные баги.
   if (url.pathname.endsWith(".js") || url.pathname.endsWith(".css")) {
     event.respondWith(

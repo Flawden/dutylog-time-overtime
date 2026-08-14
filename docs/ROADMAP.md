@@ -1,7 +1,16 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.41.6 — Accounting Integrity Semantics & Actionability Hotfix**.
+Current release: **v27.41.7 — Frontend Bundle Segmentation**.
 
+
+## v27.41.7 — Frontend Bundle Segmentation
+
+- Replace the single eager Vue JS blob with a stable entry plus content-hashed async chunks.
+- Keep Calendar/Absence/Productivity domain owners available while lazy-loading their heavy route/page surfaces.
+- Route-lazy Payroll and Admin; keep Settings eager until its Shift Type Manager runtime owner can be separated safely.
+- Audit every emitted JS file, require a real segmented graph and keep total gzip capped at 250000 B.
+- Preserve hash routing, PWA offline reload for previously loaded chunks, `dataLayer` sync ownership, OpenAPI 124/130 and Flyway V47.
+- After green/manual acceptance, start **v27.42.0 — People Profiles & Shared Availability**.
 
 ## v27.41.6 — Accounting Integrity Semantics & Actionability Hotfix
 

@@ -1,21 +1,23 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, watch } from "vue";
+import { defineAsyncComponent, onBeforeUnmount, onMounted, watch } from "vue";
 import "../absence-time-bank.css";
 import { storeToRefs } from "pinia";
 import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
 import { useAbsenceTimeBankStore } from "../stores/absenceTimeBankStore";
 import type { AbsenceComposerOpenOptions, DutyLogAbsenceTimeBankDomain } from "../types/domain";
-import AbsenceComposer from "./AbsenceComposer.vue";
-import CreditEditor from "./CreditEditor.vue";
-import AbsencePage from "./AbsencePage.vue";
-import TimeBankPage from "./TimeBankPage.vue";
+import AsyncWorkspaceLoading from "@/shared/ui/AsyncWorkspaceLoading.vue";
+const AbsenceComposer = defineAsyncComponent({ loader: () => import("./AbsenceComposer.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
+const CreditEditor = defineAsyncComponent({ loader: () => import("./CreditEditor.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
+const AbsencePage = defineAsyncComponent({ loader: () => import("./AbsencePage.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
+const TimeBankPage = defineAsyncComponent({ loader: () => import("./TimeBankPage.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
 import { navigateHashRoute } from "@/platform/router/hashRoute";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
 const store = useAbsenceTimeBankStore();
 const { activeRoute } = storeToRefs(shell);
+const { absenceModalOpen, creditModalOpen } = storeToRefs(store);
 let previousDomain: DutyLogAbsenceTimeBankDomain | undefined;
 
 async function synchronizeRoute(route: string): Promise<void> {
@@ -75,6 +77,6 @@ onBeforeUnmount(() => {
 <template>
   <AbsencePage v-if="activeRoute === 'vacation'" />
   <TimeBankPage v-else-if="activeRoute === 'overtime'" />
-  <AbsenceComposer />
-  <CreditEditor />
+  <AbsenceComposer v-if="absenceModalOpen" />
+  <CreditEditor v-if="creditModalOpen" />
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, onBeforeUnmount, onMounted, watch } from "vue";
+import { computed, defineAsyncComponent, onBeforeMount, onBeforeUnmount, onMounted, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { OFFLINE_SYNC_COMPLETE_EVENT, type LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
@@ -9,8 +9,9 @@ import type { DutyLogProductivityDomain } from "../types/domain";
 import SelectedDayTasks from "./SelectedDayTasks.vue";
 import SelectedDayNotes from "./SelectedDayNotes.vue";
 import SelectedDayImportant from "./SelectedDayImportant.vue";
-import TasksPage from "./TasksPage.vue";
-import ImportantPage from "./ImportantPage.vue";
+import AsyncWorkspaceLoading from "@/shared/ui/AsyncWorkspaceLoading.vue";
+const TasksPage = defineAsyncComponent({ loader: () => import("./TasksPage.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
+const ImportantPage = defineAsyncComponent({ loader: () => import("./ImportantPage.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
 import TaskModalLayer from "./TaskModalLayer.vue";
 import ImportantModalLayer from "./ImportantModalLayer.vue";
 import QuickActionsModal from "./QuickActionsModal.vue";
@@ -129,8 +130,8 @@ onBeforeUnmount(() => {
   <Teleport defer v-if="activeRoute === 'calendar' && dayPanelOpen" to="#sumNote"><span data-vue-productivity-summary="notes">{{ notesSummary }}</span></Teleport>
   <Teleport defer v-if="activeRoute === 'calendar' && dayPanelOpen" to="#sumImp"><span data-vue-productivity-summary="important">{{ importantSummary }}</span></Teleport>
 
-  <TasksPage v-show="activeRoute === 'tasks'" />
-  <ImportantPage v-show="activeRoute === 'important'" />
+  <TasksPage v-if="activeRoute === 'tasks'" />
+  <ImportantPage v-if="activeRoute === 'important'" />
 
   <Teleport defer v-if="activeRoute === 'calendar' && dayPanelOpen && tasksEnabled" to="#vueSelectedDayTasksMount"><SelectedDayTasks /></Teleport>
   <Teleport defer v-if="activeRoute === 'calendar' && dayPanelOpen && notesEnabled" to="#vueSelectedDayNotesMount"><SelectedDayNotes /></Teleport>
