@@ -132,6 +132,7 @@ async function openView(page, view) {
     overtime: '[data-vue-domain-route="overtime"]',
     settings: '[data-vue-settings-workspace-view]',
     payroll: '[data-vue-domain-route="payroll"]',
+    tasks: '[data-vue-domain-route="tasks"]',
   }[view];
   const section = page.locator(vueOwnedSelector || `#view-${view}`);
   if (!(await section.isVisible())) {

@@ -105,7 +105,8 @@ class UnifiedTimeCompensationLedgerContractTest {
         assertTrue(mobileLayout.contains("await openView(page, 'tasks');"));
         assertTrue(mobileLayout.contains("await expect(page.locator('#view-tasks')).toBeVisible();"));
         assertFalse(taskModules.contains("page.locator('#view-tasks')"));
-        assertTrue(taskModules.contains("page.locator('#tabbar a[data-view=\"tasks\"]')"));
+        assertFalse(taskModules.contains("page.locator('#tabbar a[data-view=\"tasks\"]')"));
+        assertTrue(taskModules.contains("[data-vue-domain-route=\"tasks\"]"));
     }
 
     @Test

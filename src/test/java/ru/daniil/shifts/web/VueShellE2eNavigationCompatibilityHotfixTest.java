@@ -20,15 +20,12 @@ class VueShellE2eNavigationCompatibilityHotfixTest {
         String shell = read("frontend/src/app/AppShell.vue");
         String navigation = read("frontend/src/app/AppNavigation.vue");
         String calendarSync = read("e2e/external-calendar-sync.spec.js");
-        String taskModules = read("e2e/task-modules.spec.js");
-        String e2eWithoutTaskModules = e2e.replace(taskModules, "");
 
         assertTrue(helpers.contains("window.DutyLogVuePlatform"));
         assertTrue(helpers.contains("platform.navigate(target)"));
         assertTrue(helpers.contains("window.DutyLogLegacyPlatform?.navigate(target)"));
         assertTrue(helpers.contains("async function waitForVueShell(page)"));
-        assertFalse(e2eWithoutTaskModules.contains("#tabbar a[data-view="));
-        assertTrue(taskModules.contains("page.locator('#tabbar a[data-view=\"tasks\"]')"));
+        assertFalse(e2e.contains("#tabbar a[data-view="));
         assertFalse(e2e.contains("page.locator('.brandLockup').click()"));
         assertFalse(e2e.contains("page.locator('#logout').click()"));
         assertTrue(shell.contains("data-vue-shell-brand"));
