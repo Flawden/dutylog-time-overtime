@@ -1,6 +1,6 @@
-# v27.42.0 Browser Bundle Source Contract Alignment review
+# v27.42.1 Browser Bundle Source Contract Alignment review
 
-v27.42.0 changes no endpoint, authorization rule, credential handling, persistence path, accounting mutation, dependency or browser runtime behavior. It aligns one Java source-contract assertion with the already-shipped segmented bundle-budget keys and advances release identity only.
+v27.42.1 changes no endpoint, authorization rule, credential handling, persistence path, accounting mutation, dependency or browser runtime behavior. It aligns one Java source-contract assertion with the already-shipped segmented bundle-budget keys and advances release identity only.
 
 # v27.41.8 Shared Runtime Bundle Split review
 
@@ -35,7 +35,7 @@ v27.41.2 changes no auth, authorization, HTTP surface, persistence, offline queu
 - No new HTML injection surface, dependency or cross-user data path is introduced.
 - `dataLayer` remains the only IndexedDB/outbox/reconnect executor; OpenAPI remains 124/130 and Flyway remains V47.
 
-Status: v27.42.0.
+Status: v27.42.1.
 
 ## v27.41.0 Calendar Visual Language Foundation review
 

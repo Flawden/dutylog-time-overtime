@@ -114,7 +114,7 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertFalse(bridge.contains("closeCalendarDay"));
         assertTrue(page.contains("SelectedDayPanel"));
         assertTrue(page.contains("store.openDayPanel"));
-        assertTrue(page.contains("<SelectedDayPanel v-if=\"dayPanelOpen\""));
+        assertTrue(page.contains("<SelectedDayPanel v-if=\"dayPanelOpen && viewingSelf\""));
         assertTrue(panel.contains("id=\"panel\""));
         assertTrue(panel.contains("data-vue-selected-day-panel"));
         assertTrue(panel.contains("id=\"chips\""));

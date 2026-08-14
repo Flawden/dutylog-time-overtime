@@ -1,3 +1,9 @@
+# DutyLog v27.42.1 — People Profiles Source Contract Alignment Hotfix
+
+v27.42.0 introduced one active calendar person context and correctly prevents the owner's selected-day editor from mounting while viewing a read-only people profile. One older assertion in `VueCalendarTimelineMigrationFrontendContractTest` still required the pre-profile `v-if="dayPanelOpen"` source shape. v27.42.1 aligns that source contract with the already-intended `dayPanelOpen && viewingSelf` boundary.
+
+No People Profiles runtime, API, schema, bundle, budget or offline behavior changes in this hotfix.
+
 # DutyLog v27.42.0 — People Profiles
 
 DutyLog Calendar now has an explicit person context. `Я` keeps the full personal calendar; choosing a configured People Profile switches the whole month/week/day view to that person’s read-only schedule instead of stacking another schedule over the owner calendar. Personal tasks, absences, important dates, notes, overtime and editing remain owner-only. Existing calendar-layer records are reused as a compatibility transport, avoiding a schema/API migration in this release.

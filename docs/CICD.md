@@ -1,6 +1,6 @@
-# v27.42.0 browser bundle source-contract alignment
+# v27.42.1 browser bundle source-contract alignment
 
-Exact v27.41.8 frontend validation passed, then Java 17 Maven ran 791 tests and failed only because `VueCalendarTimelineMigrationFrontendContractTest` still searched for retired `budget.maxBytes`. v27.42.0 aligns that compile-gated source contract with the six segmented entry/per-chunk/total raw+gzip budget keys; the actual audit limits and Vite chunk architecture are unchanged.
+Exact v27.41.8 frontend validation passed, then Java 17 Maven ran 791 tests and failed only because `VueCalendarTimelineMigrationFrontendContractTest` still searched for retired `budget.maxBytes`. v27.42.1 aligns that compile-gated source contract with the six segmented entry/per-chunk/total raw+gzip budget keys; the actual audit limits and Vite chunk architecture are unchanged.
 
 # v27.41.8 shared runtime bundle gate
 

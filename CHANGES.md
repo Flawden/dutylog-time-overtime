@@ -1,3 +1,9 @@
+# v27.42.1 — People Profiles Source Contract Alignment Hotfix
+- Aligns the remaining selected-day-panel Java source contract with v27.42.0 People Profiles: another person's calendar is read-only, so `SelectedDayPanel` is mounted only when `dayPanelOpen && viewingSelf`.
+- Removes the stale assertion that still required the pre-People-Profiles `v-if="dayPanelOpen"` source shape.
+- Changes no People Profiles runtime behavior, calendar projection, API/OpenAPI shape, Flyway schema, offline ownership, bundle boundaries, budgets, dependencies, timeouts or retries.
+- CI must still prove the unchanged v27.42.0 People Profiles implementation through Maven, release checks and Playwright.
+
 # v27.42.0 — People Profiles
 - Replaces stacked companion calendar overlays with one explicit calendar-person context: `Я` or one configured read-only profile.
 - Selecting a profile switches month/week/day schedule projection as a whole; owner-only tasks, absences, important dates, notes, overtime and edit surfaces never leak into another person context.

@@ -1,5 +1,5 @@
 {
-  "release": "27.42.0",
+  "release": "27.42.1",
   "entry": "dist/dutylog-vue-app-shell.js",
   "chunkDirectory": "dist/chunks",
   "maxEntryBytes": 750000,
