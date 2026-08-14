@@ -1,3 +1,9 @@
+# DutyLog v27.42.3 — Concurrent Schedule Seed Test Isolation Hotfix
+
+v27.42.2 added a real concurrency regression for first-read schedule preset seeding, and that test itself passed in CI. Its committed test owner, however, remained in the shared Spring/H2 ApplicationContext and leaked into `UserAdminServiceTest`, changing the expected isolated user count from 22 to 23. v27.42.3 isolates the concurrency test context after the class while leaving the production per-user database lock unchanged.
+
+No People Profiles or production schedule behavior changes in this hotfix.
+
 # DutyLog v27.42.2 — Concurrent Schedule Seed Hotfix
 
 First-run startup can legitimately have bounded legacy boot and Vue Settings reading schedule metadata at the same time. v27.42.2 makes lazy schedule-template preset seeding concurrency-safe at the backend by locking the owner row before the unique `(user_id, name)` presets are checked and created. This removes the PostgreSQL unique-race that surfaced as `GET /api/schedule-templates -> 500` and blocked onboarding.

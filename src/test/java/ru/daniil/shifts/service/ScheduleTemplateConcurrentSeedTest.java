@@ -3,6 +3,7 @@ package ru.daniil.shifts.service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.ScheduleTemplateRepository;
 import ru.daniil.shifts.repo.UserRepository;
@@ -17,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class ScheduleTemplateConcurrentSeedTest {
 
     @Autowired ScheduleTemplateService templates;

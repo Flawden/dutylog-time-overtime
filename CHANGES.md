@@ -1,3 +1,9 @@
+# v27.42.3 — Concurrent Schedule Seed Test Isolation Hotfix
+- Fixes Maven-suite contamination introduced by the v27.42.2 concurrency regression test: its committed `schedule-seed-race-*` owner survived in the shared Spring/H2 test context and made `UserAdminServiceTest` observe 23 users instead of its isolated 22.
+- Marks `ScheduleTemplateConcurrentSeedTest` dirty after the class so Spring discards that test ApplicationContext/database before unrelated suites execute.
+- Keeps the v27.42.2 per-user `PESSIMISTIC_WRITE` production lock unchanged; the exact v27.42.2 CI reached 792 tests and reported only the downstream user-count isolation failure.
+- Changes no People Profiles runtime, HTTP/OpenAPI contract, Flyway schema, bundle budget, dependency, timeout, retry or onboarding behavior.
+
 # v27.42.2 — Concurrent Schedule Seed Hotfix
 - Fixes a first-run onboarding HTTP 500 when legacy boot and Vue Settings concurrently request schedule templates for the same newly registered user.
 - Serializes lazy built-in schedule preset seeding per user with a database `PESSIMISTIC_WRITE` lock before checking/inserting the five unique presets.

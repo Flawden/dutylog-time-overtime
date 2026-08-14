@@ -1,0 +1,112 @@
+[1mdiff --git a/src/main/java/ru/daniil/shifts/service/ScheduleTemplateService.java b/src/main/java/ru/daniil/shifts/service/ScheduleTemplateService.java[m
+[1mindex 334474a2..7e35ffbc 100644[m
+[1m--- a/src/main/java/ru/daniil/shifts/service/ScheduleTemplateService.java[m
+[1m+++ b/src/main/java/ru/daniil/shifts/service/ScheduleTemplateService.java[m
+[36m@@ -1,6 +1,7 @@[m
+ package ru.daniil.shifts.service;[m
+ [m
+ import jakarta.persistence.EntityManager;[m
+[32m+[m[32mimport jakarta.persistence.LockModeType;[m
+ import org.springframework.stereotype.Service;[m
+ import org.springframework.transaction.annotation.Transactional;[m
+ import ru.daniil.shifts.config.SecurityEventLogger;[m
+[36m@@ -180,24 +181,30 @@[m [mpublic class ScheduleTemplateService {[m
+ [m
+     @Transactional[m
+     public void ensureDefaults(AppUser user) {[m
+[32m+[m[32m        // First-run boot has two legitimate readers (bounded legacy boot + Vue Settings).[m
+[32m+[m[32m        // Serialize lazy preset seeding per owner in the database so concurrent transactions[m
+[32m+[m[32m        // cannot both observe an empty set and race the unique (user_id, name) constraint.[m
+[32m+[m[32m        AppUser lockedOwner = entityManager.find(AppUser.class, user.getId(), LockModeType.PESSIMISTIC_WRITE);[m
+[32m+[m[32m        if (lockedOwner == null) throw ApiException.notFound("Пользователь не найден");[m
+[32m+[m
+         Map<String, ShiftType> byName = new LinkedHashMap<>();[m
+[31m-        for (var dto : shiftTypeService.list(user)) {[m
+[31m-            ShiftType shift = shiftTypeService.requireOwnedShiftType(user, dto.id());[m
+[32m+[m[32m        for (var dto : shiftTypeService.list(lockedOwner)) {[m
+[32m+[m[32m            ShiftType shift = shiftTypeService.requireOwnedShiftType(lockedOwner, dto.id());[m
+             byName.put(shift.getName(), shift);[m
+         }[m
+         ShiftType day = requireNamed(byName, "Дневная");[m
+         ShiftType night = requireNamed(byName, "Ночная");[m
+         ShiftType off = requireNamed(byName, "Выходной");[m
+ [m
+[31m-        addPreset(user, "2 через 2", "Две дневные смены, затем два выходных.", "CYCLE_START",[m
+[32m+[m[32m        addPreset(lockedOwner, "2 через 2", "Две дневные смены, затем два выходных.", "CYCLE_START",[m
+                 List.of(day, day, off, off), 10);[m
+[31m-        addPreset(user, "День / Ночь / 48", "Дневная, ночная и двое суток отдыха.", "CYCLE_START",[m
+[32m+[m[32m        addPreset(lockedOwner, "День / Ночь / 48", "Дневная, ночная и двое суток отдыха.", "CYCLE_START",[m
+                 List.of(day, night, off, off), 20);[m
+[31m-        addPreset(user, "Пятидневка", "Понедельник–пятница рабочие, суббота и воскресенье выходные.", "WEEKDAY",[m
+[32m+[m[32m        addPreset(lockedOwner, "Пятидневка", "Понедельник–пятница рабочие, суббота и воскресенье выходные.", "WEEKDAY",[m
+                 List.of(day, day, day, day, day, off, off), 30);[m
+[31m-        addPreset(user, "День / 72", "Одна дневная смена и трое суток отдыха.", "CYCLE_START",[m
+[32m+[m[32m        addPreset(lockedOwner, "День / 72", "Одна дневная смена и трое суток отдыха.", "CYCLE_START",[m
+                 List.of(day, off, off, off), 40);[m
+[31m-        addPreset(user, "Ночь / 72", "Одна ночная смена и трое суток отдыха.", "CYCLE_START",[m
+[32m+[m[32m        addPreset(lockedOwner, "Ночь / 72", "Одна ночная смена и трое суток отдыха.", "CYCLE_START",[m
+                 List.of(night, off, off, off), 50);[m
+         templates.flush();[m
+     }[m
+[1mdiff --git a/src/test/java/ru/daniil/shifts/service/ScheduleTemplateConcurrentSeedTest.java b/src/test/java/ru/daniil/shifts/service/ScheduleTemplateConcurrentSeedTest.java[m
+[1mnew file mode 100644[m
+[1mindex 00000000..56324a12[m
+[1m--- /dev/null[m
+[1m+++ b/src/test/java/ru/daniil/shifts/service/ScheduleTemplateConcurrentSeedTest.java[m
+[36m@@ -0,0 +1,56 @@[m
+[32m+[m[32mpackage ru.daniil.shifts.service;[m
+[32m+[m
+[32m+[m[32mimport org.junit.jupiter.api.Test;[m
+[32m+[m[32mimport org.springframework.beans.factory.annotation.Autowired;[m
+[32m+[m[32mimport org.springframework.boot.test.context.SpringBootTest;[m
+[32m+[m[32mimport ru.daniil.shifts.model.AppUser;[m
+[32m+[m[32mimport ru.daniil.shifts.repo.ScheduleTemplateRepository;[m
+[32m+[m[32mimport ru.daniil.shifts.repo.UserRepository;[m
+[32m+[m
+[32m+[m[32mimport java.util.List;[m
+[32m+[m[32mimport java.util.concurrent.CountDownLatch;[m
+[32m+[m[32mimport java.util.concurrent.ExecutorService;[m
+[32m+[m[32mimport java.util.concurrent.Executors;[m
+[32m+[m[32mimport java.util.concurrent.Future;[m
+[32m+[m[32mimport java.util.concurrent.TimeUnit;[m
+[32m+[m
+[32m+[m[32mimport static org.junit.jupiter.api.Assertions.assertEquals;[m
+[32m+[m
+[32m+[m[32m@SpringBootTest[m
+[32m+[m[32mclass ScheduleTemplateConcurrentSeedTest {[m
+[32m+[m
+[32m+[m[32m    @Autowired ScheduleTemplateService templates;[m
+[32m+[m[32m    @Autowired ScheduleTemplateRepository templateRepository;[m
+[32m+[m[32m    @Autowired UserRepository users;[m
+[32m+[m
+[32m+[m[32m    @Test[m
+[32m+[m[32m    void concurrentFirstListsSeedFivePresetsExactlyOnce() throws Exception {[m
+[32m+[m[32m        AppUser owner = users.saveAndFlush(new AppUser([m
+[32m+[m[32m                "schedule-seed-race-" + System.nanoTime(), "{noop}unused"));[m
+[32m+[m[32m        Long ownerId = owner.getId();[m
+[32m+[m
+[32m+[m[32m        CountDownLatch ready = new CountDownLatch(2);[m
+[32m+[m[32m        CountDownLatch start = new CountDownLatch(1);[m
+[32m+[m[32m        ExecutorService pool = Executors.newFixedThreadPool(2);[m
+[32m+[m[32m        try {[m
+[32m+[m[32m            java.util.concurrent.Callable<List<ru.daniil.shifts.dto.Dtos.ScheduleTemplateDto>> call = () -> {[m
+[32m+[m[32m                AppUser concurrentOwner = users.findById(ownerId).orElseThrow();[m
+[32m+[m[32m                ready.countDown();[m
+[32m+[m[32m                start.await(5, TimeUnit.SECONDS);[m
+[32m+[m[32m                return templates.list(concurrentOwner);[m
+[32m+[m[32m            };[m
+[32m+[m
+[32m+[m[32m            Future<List<ru.daniil.shifts.dto.Dtos.ScheduleTemplateDto>> first = pool.submit(call);[m
+[32m+[m[32m            Future<List<ru.daniil.shifts.dto.Dtos.ScheduleTemplateDto>> second = pool.submit(call);[m
+[32m+[m[32m            ready.await(5, TimeUnit.SECONDS);[m
+[32m+[m[32m            start.countDown();[m
+[32m+[m
+[32m+[m[32m            assertEquals(5, first.get(10, TimeUnit.SECONDS).size());[m
+[32m+[m[32m            assertEquals(5, second.get(10, TimeUnit.SECONDS).size());[m
+[32m+[m[32m            AppUser persistedOwner = users.findById(ownerId).orElseThrow();[m
+[32m+[m[32m            assertEquals(5, templateRepository.findByOwnerOrderBySortOrderAscIdAsc(persistedOwner).size());[m
+[32m+[m[32m        } finally {[m
+[32m+[m[32m            pool.shutdownNow();[m
+[32m+[m[32m        }[m
+[32m+[m[32m    }[m
+[32m+[m[32m}[m
