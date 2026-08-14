@@ -1,6 +1,16 @@
 # DutyLog release checklist
 
-Status: v27.41.8.
+Status: v27.41.9.
+
+## v27.41.9 — Browser Bundle Source Contract Alignment Hotfix acceptance
+
+- [x] Exact v27.41.8 failure classified from CI: 791 tests, 1 failure, 0 errors.
+- [x] Only stale Java source contract plus release identity/documentation changed; no production chunk/budget semantics changed.
+- [x] Contract asserts entry/per-chunk/total raw+gzip browser budget keys and rejects retired `budget.maxBytes`.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate passes.
+- [ ] Exact Java 17 Maven gate passes 791/791.
+- [ ] `release-check.sh` reaches and passes real segmented browser bundle audit.
+- [ ] Playwright canary/full Chromium, immutable image, PostgreSQL/Flyway and staging smoke remain green where configured.
 
 ## v27.41.8 — Shared Runtime Bundle Split acceptance
 

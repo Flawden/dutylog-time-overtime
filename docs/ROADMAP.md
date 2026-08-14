@@ -1,6 +1,13 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.41.8 — Shared Runtime Bundle Split**.
+Current release: **v27.41.9 — Browser Bundle Source Contract Alignment Hotfix**.
+
+## v27.41.9 — Browser Bundle Source Contract Alignment Hotfix
+
+- [x] Diagnose exact v27.41.8 CI rather than guessing: frontend gate passed; Java 17 Maven finished 791 tests with one stale source-contract failure.
+- [x] Replace retired `budget.maxBytes` source assertion with the six segmented entry/per-chunk/total raw+gzip budget dimensions.
+- [x] Keep v27.41.8 manual chunks and all browser budget values unchanged.
+- [ ] Require exact CI to reach and pass the real multi-chunk browser audit before starting People Profiles.
 
 ## v27.41.8 — Shared Runtime Bundle Split
 

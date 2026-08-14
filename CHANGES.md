@@ -1,3 +1,10 @@
+# v27.41.9 — Browser Bundle Source Contract Alignment Hotfix
+- Starts from pushed v27.41.8 commit `3fab0e35d65d6028f48a98dcfb9575753b6c8798`, whose exact frontend typecheck/Vitest/Vite gate passed and whose Java 17 Maven gate ran all 791 tests with exactly one stale source-contract failure.
+- Aligns `VueCalendarTimelineMigrationFrontendContractTest` with the segmented browser-budget model introduced in v27.41.7: entry, per-chunk and total raw/gzip ceilings replace the retired monolithic `budget.maxBytes` key.
+- Strengthens the recurring-gate contract by asserting all six current budget dimensions and explicitly rejecting the obsolete `budget.maxBytes` shape.
+- Changes no Vue/Vite chunk ownership, browser budget values, product runtime behavior, HTTP/OpenAPI shape, Flyway schema, auth, accounting, offline/dataLayer ownership, dependency graph, timeout or retry policy.
+- CI must now reach the real multi-chunk browser audit before v27.41.8/v27.41.9 shared-runtime segmentation can be called green.
+
 # v27.41.8 — Shared Runtime Bundle Split
 - Starts from v27.41.7 Frontend Bundle Segmentation, whose exact frontend gate proved route/page chunking works but exposed one remaining shared `main` chunk at 565411 B raw / 141782 B gzip, above the intentionally strict 300000 B / 100000 B per-chunk ceiling.
 - Keeps the v27.41.7 async page boundaries and adds stable Rollup manual chunks for framework/vendor runtime, generated API contract, platform infrastructure and the eager Settings runtime owner.

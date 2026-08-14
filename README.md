@@ -1,3 +1,9 @@
+# DutyLog v27.41.9 — Browser Bundle Source Contract Alignment Hotfix
+
+v27.41.8 passed the exact frontend typecheck, 64/64 Vitest and production Vite build, then Java 17 Maven ran all 791 tests and stopped on one stale source-contract assertion: `VueCalendarTimelineMigrationFrontendContractTest` still required the retired monolithic `budget.maxBytes` key. v27.41.9 updates that contract to the segmented entry/per-chunk/total raw+gzip model already enforced by `audit-browser-bundle.mjs`.
+
+No production chunk boundary or budget is changed. The release exists only to let CI proceed to the real browser-bundle audit and determine whether the v27.41.8 shared-runtime split satisfies the unchanged limits.
+
 # DutyLog v27.41.8 — Shared Runtime Bundle Split
 
 v27.41.7 successfully split route/page surfaces, but exact production Vite output still concentrated shared framework/platform/settings code in `chunks/main-*.js` at 565411 B raw / 141782 B gzip. v27.41.8 keeps those proven async boundaries and gives the remaining shared graph four stable cacheable owners: `vendor`, `api-contract`, `platform` and `settings-workspace`.

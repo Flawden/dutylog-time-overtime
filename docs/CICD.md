@@ -1,3 +1,7 @@
+# v27.41.9 browser bundle source-contract alignment
+
+Exact v27.41.8 frontend validation passed, then Java 17 Maven ran 791 tests and failed only because `VueCalendarTimelineMigrationFrontendContractTest` still searched for retired `budget.maxBytes`. v27.41.9 aligns that compile-gated source contract with the six segmented entry/per-chunk/total raw+gzip budget keys; the actual audit limits and Vite chunk architecture are unchanged.
+
 # v27.41.8 shared runtime bundle gate
 
 The v27.41.7 exact frontend gate passed lockfile verification, OpenAPI 124/130, strict typecheck, 64/64 Vitest and production Vite compilation, then failed only the new per-chunk browser audit because `chunks/main-8syw6Ngx.js` measured 565411 B raw / 141782 B gzip. v27.41.8 keeps every budget unchanged and adds coarse manual chunks so CI must prove the architecture rather than relax the gate. Java 17 Maven 791/791, canary, Chromium 48/48, immutable image, PostgreSQL V47 and staging remain blocking.
