@@ -1,6 +1,17 @@
 # DutyLog release checklist
 
-Status: v27.43.0.
+Status: v27.44.0.
+
+## v27.44.0 — Shared Availability acceptance
+
+- [x] Selected-date availability is a pure read model over existing effective owner/profile schedules.
+- [x] Overnight work is clipped to the selected display date before busy intervals are merged/inverted.
+- [x] Owner factual full-day and partial/hour-only work absences reduce busy time.
+- [x] Untimed effective work fails closed.
+- [x] OpenAPI remains 126/132; Flyway V48; Java 792/164; Playwright 48; Vitest source baseline 70.
+- [ ] Exact Node 20.18.1/npm 10.8.2 delivery/typecheck/70 Vitest/Vite/bundle gate passes.
+- [ ] Chromium 48/48, immutable image/PostgreSQL V48 and staging Shared Availability smoke pass.
+
 
 
 ## v27.43.0 — People Profiles: Managed Schedule Overrides acceptance

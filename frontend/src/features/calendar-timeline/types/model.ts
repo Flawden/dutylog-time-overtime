@@ -8,6 +8,8 @@ import type {
   CalendarReminder,
   CalendarShiftType,
   CalendarTask,
+  SharedAvailabilityDay,
+  SharedAvailabilityWindow,
 } from "./domain";
 
 const DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -238,6 +240,210 @@ export function dayFactsForProfile(bundle: CalendarRangeBundle | null, date: str
     absences: [],
     reminders: [],
     layers: [],
+  };
+}
+
+type AvailabilityMinuteInterval = { start: number; end: number };
+
+function availabilityMinutes(value: string | null | undefined, fallback: number): number {
+  const match = /^(\d{2}):(\d{2})/.exec(String(value ?? ""));
+  if (!match) return fallback;
+  const hours = Number(match[1]);
+  const minutes = Number(match[2]);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes) || minutes < 0 || minutes > 59) return fallback;
+  if (hours === 24 && minutes === 0) return 1440;
+  if (hours < 0 || hours > 23) return fallback;
+  return hours * 60 + minutes;
+}
+
+function availabilityTime(minutes: number): string {
+  const bounded = Math.max(0, Math.min(1440, Math.round(minutes)));
+  if (bounded === 1440) return "24:00";
+  return `${String(Math.floor(bounded / 60)).padStart(2, "0")}:${String(bounded % 60).padStart(2, "0")}`;
+}
+
+function availabilityWindow(interval: AvailabilityMinuteInterval): SharedAvailabilityWindow {
+  return {
+    startMinute: interval.start,
+    endMinute: interval.end,
+    startTime: availabilityTime(interval.start),
+    endTime: availabilityTime(interval.end),
+    durationMinutes: Math.max(0, interval.end - interval.start),
+  };
+}
+
+function mergeAvailabilityIntervals(values: AvailabilityMinuteInterval[]): AvailabilityMinuteInterval[] {
+  const sorted = values
+    .filter(item => Number.isFinite(item.start) && Number.isFinite(item.end) && item.end > item.start)
+    .map(item => ({ start: Math.max(0, item.start), end: Math.min(1440, item.end) }))
+    .filter(item => item.end > item.start)
+    .sort((left, right) => left.start - right.start || left.end - right.end);
+  const merged: AvailabilityMinuteInterval[] = [];
+  for (const current of sorted) {
+    const previous = merged[merged.length - 1];
+    if (!previous || current.start > previous.end) merged.push({ ...current });
+    else previous.end = Math.max(previous.end, current.end);
+  }
+  return merged;
+}
+
+function subtractAvailabilityIntervals(
+  source: AvailabilityMinuteInterval[],
+  removed: AvailabilityMinuteInterval[],
+): AvailabilityMinuteInterval[] {
+  let result = mergeAvailabilityIntervals(source);
+  for (const cut of mergeAvailabilityIntervals(removed)) {
+    const next: AvailabilityMinuteInterval[] = [];
+    for (const item of result) {
+      if (cut.end <= item.start || cut.start >= item.end) {
+        next.push(item);
+        continue;
+      }
+      if (cut.start > item.start) next.push({ start: item.start, end: Math.min(cut.start, item.end) });
+      if (cut.end < item.end) next.push({ start: Math.max(cut.end, item.start), end: item.end });
+    }
+    result = next;
+  }
+  return mergeAvailabilityIntervals(result);
+}
+
+function invertAvailabilityIntervals(values: AvailabilityMinuteInterval[]): AvailabilityMinuteInterval[] {
+  const busy = mergeAvailabilityIntervals(values);
+  const free: AvailabilityMinuteInterval[] = [];
+  let cursor = 0;
+  for (const item of busy) {
+    if (item.start > cursor) free.push({ start: cursor, end: item.start });
+    cursor = Math.max(cursor, item.end);
+  }
+  if (cursor < 1440) free.push({ start: cursor, end: 1440 });
+  return free;
+}
+
+function clippedDisplayInterval(
+  date: string,
+  startText: string | null | undefined,
+  endText: string | null | undefined,
+): AvailabilityMinuteInterval | null {
+  const startRaw = String(startText ?? "");
+  const endRaw = String(endText ?? "");
+  const startDate = startRaw.slice(0, 10);
+  const endDate = endRaw.slice(0, 10);
+  if (!DATE_PATTERN.test(startDate) || !DATE_PATTERN.test(endDate)) return null;
+  if (date < startDate || date > endDate) return null;
+
+  const start = date === startDate ? availabilityMinutes(startRaw.slice(11, 16), 0) : 0;
+  const rawEnd = date === endDate ? availabilityMinutes(endRaw.slice(11, 16), 1440) : 1440;
+  if (date === endDate && endDate > startDate && rawEnd === 0) return null;
+  const end = date === endDate && rawEnd === 0 && startDate === endDate ? 1440 : rawEnd;
+  return end > start ? { start, end } : null;
+}
+
+function localShiftInterval(date: string, startTime: string, endTime: string): AvailabilityMinuteInterval | null {
+  const start = availabilityMinutes(startTime, -1);
+  const parsedEnd = availabilityMinutes(endTime, -1);
+  if (start < 0 || parsedEnd < 0) return null;
+  // The selected date only contains the source-day segment. Overnight spill is
+  // represented by canonical occurrences when available; legacy fallback keeps
+  // the source day busy through midnight rather than inventing another date.
+  const end = parsedEnd > start ? parsedEnd : 1440;
+  return end > start ? { start, end } : null;
+}
+
+function selfAvailabilityBusy(
+  bundle: CalendarRangeBundle,
+  date: string,
+): { intervals: AvailabilityMinuteInterval[]; untimed: boolean } {
+  const facts = dayFacts(bundle, date);
+  const fullDayAbsence = calendarFactualAbsence(facts);
+  if (
+    fullDayAbsence
+    && fullDayAbsence.coverage !== "PARTIAL"
+    && fullDayAbsence.coverage !== "HOURS_ONLY"
+  ) {
+    return { intervals: [], untimed: false };
+  }
+
+  let intervals = facts.occurrences
+    .map(item => clippedDisplayInterval(date, item.displayStart, item.displayEnd))
+    .filter((item): item is AvailabilityMinuteInterval => Boolean(item));
+
+  let untimed = false;
+  if (!intervals.length && facts.shift) {
+    if (facts.shift.startTime && facts.shift.endTime) {
+      const fallback = localShiftInterval(date, facts.shift.startTime, facts.shift.endTime);
+      if (fallback) intervals = [fallback];
+    } else {
+      untimed = true;
+    }
+  }
+
+  const partialAbsences = facts.absences
+    .filter(item => (item.coverage === "PARTIAL" || item.coverage === "HOURS_ONLY") && item.startTime && item.endTime)
+    .map(item => {
+      const start = availabilityMinutes(item.startTime, -1);
+      const end = availabilityMinutes(item.endTime, -1);
+      return start >= 0 && end > start ? { start, end } : null;
+    })
+    .filter((item): item is AvailabilityMinuteInterval => Boolean(item));
+
+  return { intervals: subtractAvailabilityIntervals(intervals, partialAbsences), untimed };
+}
+
+function profileAvailabilityBusy(
+  layer: CalendarLayer,
+  date: string,
+): { intervals: AvailabilityMinuteInterval[]; untimed: boolean } {
+  const relevant = (layer.entries ?? []).filter(entry => {
+    if (entry.dayOff || entry.overrideKind === "OFF") return false;
+    const displayStart = String(entry.displayStart ?? "");
+    const displayEnd = String(entry.displayEnd ?? "");
+    if (displayStart && displayEnd) {
+      const startDate = displayStart.slice(0, 10);
+      const endDate = displayEnd.slice(0, 10);
+      return DATE_PATTERN.test(startDate) && DATE_PATTERN.test(endDate) && date >= startDate && date <= endDate;
+    }
+    return (entry.date || entry.sourceDate) === date;
+  });
+
+  const intervals = relevant
+    .map(entry => clippedDisplayInterval(date, entry.displayStart, entry.displayEnd))
+    .filter((item): item is AvailabilityMinuteInterval => Boolean(item));
+  const untimed = relevant.some(entry => entry.timed === false || !entry.displayStart || !entry.displayEnd);
+  return { intervals: mergeAvailabilityIntervals(intervals), untimed };
+}
+
+export function sharedAvailabilityForDate(
+  bundle: CalendarRangeBundle | null,
+  date: string,
+  profileId: string,
+): SharedAvailabilityDay | null {
+  if (!bundle || profileId === "self") return null;
+  const layer = profileLayer(bundle, profileId);
+  if (!layer) return null;
+
+  const self = selfAvailabilityBusy(bundle, date);
+  const profile = profileAvailabilityBusy(layer, date);
+  const unknownReason = self.untimed
+    ? "SELF_UNTIMED_WORK"
+    : profile.untimed
+      ? "PROFILE_UNTIMED_WORK"
+      : null;
+  const precise = unknownReason == null;
+  const selfBusy = mergeAvailabilityIntervals(self.intervals);
+  const profileBusy = mergeAvailabilityIntervals(profile.intervals);
+  const free = precise ? invertAvailabilityIntervals([...selfBusy, ...profileBusy]) : [];
+
+  return {
+    date,
+    profileId: layer.id,
+    profileName: layer.name,
+    precise,
+    unknownReason,
+    allDayFree: precise && free.length === 1 && free[0]?.start === 0 && free[0]?.end === 1440,
+    noSharedFreeTime: precise && free.length === 0,
+    freeWindows: free.map(availabilityWindow),
+    selfBusy: selfBusy.map(availabilityWindow),
+    profileBusy: profileBusy.map(availabilityWindow),
   };
 }
 

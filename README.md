@@ -1,3 +1,11 @@
+# DutyLog v27.44.0 — Shared Availability
+
+Shared Availability turns People Profiles into a planning surface. While a managed profile is selected, Calendar derives the selected day's common free-from-work windows for `Я + профиль` from the two already-effective schedules.
+
+The calculation reuses canonical `displayStart/displayEnd` projection, including overnight work and v27.43.0 managed overrides. Owner factual work absences reduce busy time. Personal Tasks, Notes, Important Days, Payroll and Overtime are not Shared Availability inputs. Untimed work fails closed rather than guessing.
+
+This release covers the selected date. Nearest shared free day/window and multi-day discovery remain follow-up work after v27.44.0 is green.
+
 # DutyLog v27.43.0 — People Profiles: Managed Schedule Overrides
 
 People Profiles now support factual, date-specific schedule exceptions without becoming a second personal DutyLog. A managed profile keeps its generated base schedule, while an individual source date may be marked as not working or replaced with an actual working shift/time. Calendar projection, timezone handling and overnight splitting remain canonical in the existing CalendarLayer pipeline.

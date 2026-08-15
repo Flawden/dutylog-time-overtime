@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.43.0 — People Profiles: Managed Schedule Overrides**.
+Current release: **v27.44.0 — Shared Availability**.
 
 
 ## v27.43.0 — People Profiles: Managed Schedule Overrides
@@ -16,11 +16,13 @@ Current release: **v27.43.0 — People Profiles: Managed Schedule Overrides**.
 
 ## v27.44.0 — Shared Availability
 
-- [ ] Derive common free windows from the effective schedules of `Я` and one selected People Profile.
-- [ ] Show nearest shared free day/window and multi-day overlaps without copying another person's personal accounting domains.
-- [ ] Keep sharing/privacy as an explicit schedule-availability contract rather than exposing Notes, Payroll, Overtime or other private workspace data.
-
-
+- [x] Derive selected-date common free-from-work windows from the effective schedules of `Я` and one selected People Profile.
+- [x] Reuse canonical display-projected intervals so overnight work, timezone projection and v27.43.0 managed overrides stay authoritative.
+- [x] Respect owner factual full-day and PARTIAL/HOURS_ONLY work absences.
+- [x] Keep Tasks, Notes, Important Days, Payroll and Overtime outside work-availability semantics.
+- [x] Fail closed when an effective work shift has no exact time.
+- [x] Add native Vue Shared Availability UI plus four Vitest contracts without new API/OpenAPI/Flyway/dependency surface.
+- [ ] After green v27.44.0, add nearest shared free day/window and multi-day discovery as a separate follow-up.
 
 ## v27.42.8 — Tasks Module E2E Route Contract Alignment Hotfix
 

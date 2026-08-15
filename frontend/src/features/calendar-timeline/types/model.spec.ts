@@ -8,6 +8,7 @@ import {
   dayFacts,
   dayFactsForProfile,
   profileLayer,
+  sharedAvailabilityForDate,
   durationCountdown,
   importantRelativeLabel,
   monthGridDates,
@@ -121,6 +122,94 @@ describe("calendar and timeline model", () => {
     expect(profileFacts.absences).toEqual([]);
     expect(profileFacts.important).toEqual([]);
     expect(dayFactsForProfile(bundle, "2026-08-05", "self").tasks[0]?.text).toBe("Личная задача");
+  });
+
+  it("calculates shared free windows from both effective work schedules", () => {
+    const bundle = normalizeCalendarBundle({
+      from: "2026-08-01", to: "2026-08-31",
+      shiftTypes: [{ id: 1, name: "Моя смена", color: "#112233" }],
+      shiftOccurrences: [{
+        dayEntryId: 101, sourceDate: "2026-08-15", shiftTypeId: 1,
+        startInstant: "2026-08-15T08:00:00Z", endInstant: "2026-08-15T17:00:00Z",
+        sourceStart: "2026-08-15T08:00", sourceEnd: "2026-08-15T17:00",
+        displayStart: "2026-08-15T08:00", displayEnd: "2026-08-15T17:00",
+        sourceTimezone: "UTC", displayTimezone: "UTC",
+        breakMinutes: 0, elapsedMinutes: 540, netMinutes: 540, legacyLocal: false,
+      }],
+      calendarLayers: [{
+        id: 9, name: "Сашка", color: "#445566", visible: true,
+        entries: [{ date: "2026-08-15", sourceDate: "2026-08-15", shiftTypeId: 7, shiftTypeName: "Поздняя", timed: true, dayOff: false, displayStart: "2026-08-15T12:00", displayEnd: "2026-08-15T20:00" }],
+      }],
+    }, "2026-08-01", "2026-08-31");
+
+    const result = sharedAvailabilityForDate(bundle, "2026-08-15", "9");
+    expect(result?.precise).toBe(true);
+    expect(result?.freeWindows.map(item => `${item.startTime}–${item.endTime}`)).toEqual(["00:00–08:00", "20:00–24:00"]);
+  });
+
+  it("clips overnight work to the selected display date before finding shared free time", () => {
+    const bundle = normalizeCalendarBundle({
+      from: "2026-08-01", to: "2026-08-31",
+      shiftTypes: [{ id: 1, name: "Ночь", color: "#112233" }],
+      shiftOccurrences: [{
+        dayEntryId: 102, sourceDate: "2026-08-15", shiftTypeId: 1,
+        startInstant: "2026-08-15T20:00:00Z", endInstant: "2026-08-16T04:00:00Z",
+        sourceStart: "2026-08-15T20:00", sourceEnd: "2026-08-16T04:00",
+        displayStart: "2026-08-15T20:00", displayEnd: "2026-08-16T04:00",
+        sourceTimezone: "UTC", displayTimezone: "UTC",
+        breakMinutes: 0, elapsedMinutes: 480, netMinutes: 480, legacyLocal: false,
+      }],
+      calendarLayers: [{
+        id: 9, name: "Сашка", color: "#445566", visible: true,
+        entries: [{ date: "2026-08-16", sourceDate: "2026-08-16", shiftTypeId: 7, shiftTypeName: "День", timed: true, dayOff: false, displayStart: "2026-08-16T06:00", displayEnd: "2026-08-16T14:00" }],
+      }],
+    }, "2026-08-01", "2026-08-31");
+
+    const result = sharedAvailabilityForDate(bundle, "2026-08-16", "9");
+    expect(result?.freeWindows.map(item => `${item.startTime}–${item.endTime}`)).toEqual(["04:00–06:00", "14:00–24:00"]);
+  });
+
+  it("treats a full-day work absence as free time without leaking personal calendar items", () => {
+    const bundle = normalizeCalendarBundle({
+      from: "2026-08-01", to: "2026-08-31",
+      shiftTypes: [{ id: 1, name: "Моя смена", color: "#112233" }],
+      shiftOccurrences: [{
+        dayEntryId: 103, sourceDate: "2026-08-15", shiftTypeId: 1,
+        startInstant: "2026-08-15T08:00:00Z", endInstant: "2026-08-15T17:00:00Z",
+        sourceStart: "2026-08-15T08:00", sourceEnd: "2026-08-15T17:00",
+        displayStart: "2026-08-15T08:00", displayEnd: "2026-08-15T17:00",
+        sourceTimezone: "UTC", displayTimezone: "UTC",
+        breakMinutes: 0, elapsedMinutes: 540, netMinutes: 540, legacyLocal: false,
+      }],
+      absences: [{
+        periodId: 77, typeId: 1, typeName: "Отгул", typeColor: "#4A90E2", date: "2026-08-15",
+        startDate: "2026-08-15", endDate: "2026-08-15", coverage: "FULL_DAY", status: "PLANNED", countedDay: true, shiftConflict: true,
+      }],
+      tasks: [{ id: 2, date: "2026-08-15", text: "Личное", done: false, tags: [], priority: "NORMAL", deadlineAbsolute: false, reminderEnabled: false, overdue: false, subtasks: [] }],
+      calendarLayers: [{
+        id: 9, name: "Сашка", color: "#445566", visible: true,
+        entries: [{ date: "2026-08-15", sourceDate: "2026-08-15", shiftTypeId: 7, shiftTypeName: "День", timed: true, dayOff: false, displayStart: "2026-08-15T09:00", displayEnd: "2026-08-15T18:00" }],
+      }],
+    }, "2026-08-01", "2026-08-31");
+
+    const result = sharedAvailabilityForDate(bundle, "2026-08-15", "9");
+    expect(result?.selfBusy).toEqual([]);
+    expect(result?.freeWindows.map(item => `${item.startTime}–${item.endTime}`)).toEqual(["00:00–09:00", "18:00–24:00"]);
+  });
+
+  it("fails closed when an effective work shift has no exact time", () => {
+    const bundle = normalizeCalendarBundle({
+      from: "2026-08-01", to: "2026-08-31",
+      calendarLayers: [{
+        id: 9, name: "Сашка", color: "#445566", visible: true,
+        entries: [{ date: "2026-08-15", sourceDate: "2026-08-15", shiftTypeId: 7, shiftTypeName: "Смена", timed: false, dayOff: false }],
+      }],
+    }, "2026-08-01", "2026-08-31");
+
+    const result = sharedAvailabilityForDate(bundle, "2026-08-15", "9");
+    expect(result?.precise).toBe(false);
+    expect(result?.unknownReason).toBe("PROFILE_UNTIMED_WORK");
+    expect(result?.freeWindows).toEqual([]);
   });
 
   it("defines the calendar visual language without conflating schedule, markers and tasks", () => {

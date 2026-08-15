@@ -1,10 +1,14 @@
+## v27.44.0 shared availability
+
+No dependency or package graph change is introduced. Package/lockfile release identity advances to v27.44.0 only. Node 20.18.1/npm 10.8.2 and the reviewed dependency graph remain unchanged. OpenAPI remains 126/132 and Flyway remains V48.
+
 ## v27.43.0 managed schedule overrides
 
 No dependency or package graph change is introduced. Root/frontend package and lockfile release identities advance to v27.43.0 only; Node 20.18.1/npm 10.8.2, the reviewed dependency graph and browser supply-chain gates remain unchanged. The release adds application code, OpenAPI contract and Flyway V48 only.
 
 # Supply-chain maintenance
 
-Status: v27.43.0.
+Status: v27.44.0.
 
 ## v27.42.8 source-contract hotfix
 

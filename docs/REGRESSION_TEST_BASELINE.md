@@ -5,7 +5,7 @@ Status: v27.43.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.43.0 adds managed People Profile schedule overrides without increasing test-count baselines: inventory remains 164 Java test classes / 792 @Test methods / 48 Chromium Playwright scenarios / 66 Vitest cases. Java 17 `mvn clean verify` is green with JaCoCo met; OpenAPI is 126/132 and Flyway is V48. The existing People Profiles browser scenario now covers OFF override save/reset; exact Node 20.18.1/npm 10.8.2 frontend and Chromium acceptance remain CI-owned.
+Current extension: v27.44.0 adds managed People Profile schedule overrides without increasing test-count baselines: inventory remains 164 Java test classes / 792 @Test methods / 48 Chromium Playwright scenarios / 66 Vitest cases. Java 17 `mvn clean verify` is green with JaCoCo met; OpenAPI is 126/132 and Flyway is V48. The existing People Profiles browser scenario now covers OFF override save/reset; exact Node 20.18.1/npm 10.8.2 frontend and Chromium acceptance remain CI-owned.
 
 
 
@@ -1213,3 +1213,12 @@ A green test suite means the listed contracts still hold. It does not replace ex
 - Flyway adds V23 for `users.auth_version`.
 - Baseline: 65 Java test classes / 340 `@Test` methods and 5 Playwright scenarios.
 
+
+
+## v27.44.0 Shared Availability
+
+- Java baseline remains 792 tests / 164 classes.
+- Playwright baseline remains 48.
+- Vitest source baseline advances 66 -> 70.
+- OpenAPI remains 126 operations / 132 schemas.
+- Flyway remains V48.

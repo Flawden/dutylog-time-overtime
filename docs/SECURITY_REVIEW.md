@@ -1,3 +1,9 @@
+# v27.44.0 Shared Availability review
+
+v27.44.0 adds no endpoint, credential, role, authorization rule, persistence path, dependency or account-to-account sharing transport. Shared Availability is derived in Vue only from calendar data already authorized to the signed-in owner. It exposes no other-profile Notes, Tasks, Payroll, Overtime, personal absence ledger or credentials, and persists no inferred free windows.
+
+Status: v27.44.0.
+
 # v27.43.0 People Profiles Managed Schedule Overrides review
 
 v27.43.0 adds two authenticated Calendar-module endpoints for a calendar-layer owner to create/replace or delete one date-specific schedule override. Authorization is inherited from the parent `CalendarLayerService.requireOwned` check, ownership mismatches remain indistinguishable from not-found, and write requests remain under the existing CSRF/session policy. V48 stores only managed schedule facts (`WORK`/`OFF`, optional reason, owned shift type and optional time); it does not introduce account-to-account sharing, credentials, roles, personal Notes, Payroll, Overtime or absence-ledger access.

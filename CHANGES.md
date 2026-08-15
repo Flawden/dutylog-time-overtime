@@ -1,3 +1,14 @@
+# v27.44.0 — Shared Availability
+- Adds selected-date common free-from-work windows for `Я` plus one selected People Profile.
+- Derives availability from canonical effective/display-projected work intervals; no second schedule truth is persisted.
+- Reuses v27.43.0 managed schedule overrides automatically, including overnight projection.
+- Owner factual full-day absence removes work busy time; PARTIAL/HOURS_ONLY removes only its exact interval.
+- Tasks, Notes, Important Days, Payroll and Overtime are intentionally excluded from work-availability semantics.
+- Untimed effective work fails closed instead of inventing free time.
+- Adds `SharedAvailabilityCard.vue` and four Vitest model contracts; Vitest baseline advances 66 -> 70.
+- Adds no endpoint, dependency or Flyway migration: OpenAPI remains 126/132 and Flyway remains V48.
+- Browser budgets stay 835000 B raw / 250000 B gzip total pending exact Node 20 CI measurement.
+
 # v27.43.0 — People Profiles: Managed Schedule Overrides
 - Adds one reversible factual schedule override per managed People Profile source date while preserving the generated base schedule.
 - Supports `OFF` with `Отгул / Отпуск / Больничный / Другое`, and `WORK` with a selected owned shift type plus optional exact start/end time.

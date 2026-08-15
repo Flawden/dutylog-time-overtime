@@ -23,6 +23,7 @@ import {
 } from "../types/model";
 import type { CalendarMode } from "../types/domain";
 import ManagedProfileDayCard from "./ManagedProfileDayCard.vue";
+import SharedAvailabilityCard from "./SharedAvailabilityCard.vue";
 import SelectedDayPanel from "./SelectedDayPanel.vue";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
@@ -242,6 +243,14 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
       </div>
 
       <div v-if="error" class="domain-alert domain-alert--danger" role="alert">{{ error }} <button type="button" @click="store.refresh()">Повторить</button></div>
+
+      <SharedAvailabilityCard
+        v-if="!viewingSelf && selectedProfile"
+        :bundle="bundle"
+        :date="focusDate"
+        :profile="selectedProfile"
+        :language="language"
+      />
 
       <section v-show="mode === 'week'" id="calendarWeekExperience" class="calendarWeekExperience" aria-label="Недельный календарь">
         <div id="calendarWeekStrip" class="calendarWeekStrip">

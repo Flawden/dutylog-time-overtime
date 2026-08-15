@@ -74,6 +74,29 @@ export interface CalendarLayer {
   entries: CalendarLayerEntry[];
 }
 
+export interface SharedAvailabilityWindow {
+  startMinute: number;
+  endMinute: number;
+  startTime: string;
+  endTime: string;
+  durationMinutes: number;
+}
+
+export type SharedAvailabilityUnknownReason = "SELF_UNTIMED_WORK" | "PROFILE_UNTIMED_WORK";
+
+export interface SharedAvailabilityDay {
+  date: string;
+  profileId: number;
+  profileName: string;
+  precise: boolean;
+  unknownReason: SharedAvailabilityUnknownReason | null;
+  allDayFree: boolean;
+  noSharedFreeTime: boolean;
+  freeWindows: SharedAvailabilityWindow[];
+  selfBusy: SharedAvailabilityWindow[];
+  profileBusy: SharedAvailabilityWindow[];
+}
+
 export interface CalendarOvertimeSummary {
   overtimeHours: number;
   timeOffHours: number;
