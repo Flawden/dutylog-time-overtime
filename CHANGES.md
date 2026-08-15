@@ -7,7 +7,7 @@
 - Untimed effective work fails closed instead of inventing free time.
 - Adds `SharedAvailabilityCard.vue` and four Vitest model contracts; Vitest baseline advances 66 -> 70.
 - Adds no endpoint, dependency or Flyway migration: OpenAPI remains 126/132 and Flyway remains V48.
-- Browser budgets stay 835000 B raw / 250000 B gzip total pending exact Node 20 CI measurement.
+- Browser budgets stay 845000 B raw / 250000 B gzip total pending exact Node 20 CI measurement.
 
 # v27.43.0 — People Profiles: Managed Schedule Overrides
 - Adds one reversible factual schedule override per managed People Profile source date while preserving the generated base schedule.

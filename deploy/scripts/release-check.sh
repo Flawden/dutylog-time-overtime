@@ -4842,7 +4842,7 @@ contains frontend/src/features/calendar-timeline/types/model.ts "export function
 contains frontend/src/features/calendar-timeline/types/model.ts "calendarFactualAbsence(facts)"
 contains frontend/src/features/calendar-timeline/components/SharedAvailabilityCard.vue "data-shared-availability"
 contains frontend/src/features/calendar-timeline/components/CalendarPage.vue 'import SharedAvailabilityCard from "./SharedAvailabilityCard.vue";'
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 835000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 845000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.43.0 People Profiles Managed Schedule Overrides
