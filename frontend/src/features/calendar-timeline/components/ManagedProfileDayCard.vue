@@ -116,8 +116,8 @@ async function save(): Promise<void> {
       await store.saveProfileDayOverride(props.profile.id, overrideDate.value, {
         kind: "WORK",
         shiftTypeId: shiftTypeId.value,
-        startTime: startTime.value || undefined,
-        endTime: endTime.value || undefined,
+        startTime: startTime.value || null,
+        endTime: endTime.value || null,
       });
     }
     editing.value = false;
