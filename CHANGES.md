@@ -6,7 +6,9 @@
 - Extends calendar projection with planned-vs-actual metadata and applies overrides by companion `sourceDate` before timezone/display projection, including overnight shifts.
 - Adds Vue `ManagedProfileDayCard` without exposing owner Tasks, Notes, Overtime, Payroll or personal absence accounting to another profile.
 - OpenAPI advances to **126 operations / 132 schemas** with hash `2d67b4db5a3d`; Flyway advances to V48.
-- Java 17 `mvn clean verify` is green at 792 tests with JaCoCo gates met; exact Node 20.18.1/npm 10.8.2 frontend/Chromium/staging acceptance remains CI-owned.
+- Java 17 `mvn clean verify` is green at 792 tests with JaCoCo gates met.
+- First exact Node 20.18.1/npm 10.8.2 CI passed delivery verification, OpenAPI 126/132 drift check, strict `vue-tsc`, all 66 Vitest cases and the production Vite build; only the total raw JS graph exceeded its inherited 825000 B ceiling at 832328 B.
+- Rebaseline only `maxTotalBytes` narrowly to 835000 B; keep entry, per-chunk and total gzip ceilings unchanged, including the 250000 B total-gzip cap. Chromium/staging acceptance remains pending.
 
 # v27.42.8 — Tasks Module E2E Route Contract Alignment Hotfix
 - Fixes the exact v27.42.7 Browser E2E regression where `task-modules.spec.js` asserted `#view-tasks` immediately after toggling the Tasks module while the Vue shell was still on Settings, so the route-owned Tasks page was intentionally not mounted.

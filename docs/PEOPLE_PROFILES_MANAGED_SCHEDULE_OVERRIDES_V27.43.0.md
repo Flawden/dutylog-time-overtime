@@ -49,7 +49,12 @@ Flyway: **V48**.
 - full Java 17 `mvn clean verify`: **792/792**, zero failures/errors.
 - JaCoCo: all coverage checks met.
 - `git diff --check`: green.
-- exact frontend Node 20.18.1/npm 10.8.2, Vitest/build, Chromium 48/48, image/PostgreSQL and staging remain CI/staging acceptance gates.
+- exact Node 20.18.1/npm 10.8.2 delivery verification: green.
+- strict `vue-tsc`: green.
+- Vitest: **66/66 green**.
+- production Vite build: green.
+- first bundle audit measured **832328 B raw**, exceeding only the inherited **825000 B** total-raw ceiling; v27.43.0 narrowly rebaselines that one ceiling to **835000 B** while preserving all entry/per-chunk/gzip limits.
+- Chromium 48/48, image/PostgreSQL and staging remain CI/staging acceptance gates.
 
 ## Next
 
