@@ -1402,6 +1402,32 @@ paths:
       responses:
         '204': { description: Layer deleted }
         '404': { $ref: '#/components/responses/ApiError' }
+  /api/v1/calendar-layers/{id}/overrides/{date}:
+    put:
+      operationId: upsertCalendarLayerOverride
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+        - { in: path, name: date, required: true, schema: { type: string, format: date } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CalendarLayerOverrideInput' }
+      responses:
+        '200':
+          description: Companion schedule override created or updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CalendarLayerOverride' }
+        '404': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: deleteCalendarLayerOverride
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+        - { in: path, name: date, required: true, schema: { type: string, format: date } }
+      responses:
+        '204': { description: Override removed; the date follows the template again }
+        '404': { $ref: '#/components/responses/ApiError' }
 
   /api/v1/vacation-planner:
     get:
@@ -2263,6 +2289,28 @@ components:
         startDate: { type: string, format: date }
         endDate: { type: string, format: date, nullable: true }
         clearEndDate: { type: boolean, default: false }
+    CalendarLayerOverrideInput:
+      type: object
+      required: [kind]
+      properties:
+        kind: { type: string, enum: [WORK, OFF] }
+        reason: { type: string, enum: [TIME_OFF, VACATION, SICK, OTHER], nullable: true }
+        shiftTypeId: { type: integer, format: int64, nullable: true }
+        startTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', nullable: true }
+        endTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$', nullable: true }
+    CalendarLayerOverride:
+      type: object
+      required: [id, layerId, sourceDate, kind]
+      properties:
+        id: { type: integer, format: int64 }
+        layerId: { type: integer, format: int64 }
+        sourceDate: { type: string, format: date }
+        kind: { type: string, enum: [WORK, OFF] }
+        reason: { type: string, enum: [TIME_OFF, VACATION, SICK, OTHER], nullable: true }
+        shiftTypeId: { type: integer, format: int64, nullable: true }
+        shiftTypeName: { type: string, nullable: true }
+        startTime: { type: string, nullable: true }
+        endTime: { type: string, nullable: true }
     CalendarLayerEntry:
       type: object
       properties:
@@ -2271,9 +2319,9 @@ components:
         layerColor: { type: string }
         sourceDate: { type: string, format: date }
         date: { type: string, format: date }
-        shiftTypeId: { type: integer, format: int64 }
-        shiftTypeName: { type: string }
-        shiftColor: { type: string }
+        shiftTypeId: { type: integer, format: int64, nullable: true }
+        shiftTypeName: { type: string, nullable: true }
+        shiftColor: { type: string, nullable: true }
         sourceTimezone: { type: string }
         startInstant: { type: string, format: date-time, nullable: true }
         endInstant: { type: string, format: date-time, nullable: true }
@@ -2281,9 +2329,15 @@ components:
         displayEnd: { type: string, nullable: true }
         timed: { type: boolean }
         dayOff: { type: boolean }
+        sourceStartTime: { type: string, nullable: true }
+        sourceEndTime: { type: string, nullable: true }
+        plannedShiftTypeId: { type: integer, format: int64, nullable: true }
+        plannedShiftTypeName: { type: string, nullable: true }
+        overrideKind: { type: string, enum: [WORK, OFF], nullable: true }
+        overrideReason: { type: string, enum: [TIME_OFF, VACATION, SICK, OTHER], nullable: true }
     CalendarLayer:
       type: object
-      required: [id, name, color, timezone, visible, templateId, anchorDate, startDate, readOnly, entries]
+      required: [id, name, color, timezone, visible, templateId, anchorDate, startDate, readOnly, scheduleEditable, entries]
       properties:
         id: { type: integer, format: int64 }
         name: { type: string }
@@ -2297,6 +2351,7 @@ components:
         startDate: { type: string, format: date }
         endDate: { type: string, format: date, nullable: true }
         readOnly: { type: boolean, enum: [true] }
+        scheduleEditable: { type: boolean, enum: [true] }
         entries: { type: array, items: { $ref: '#/components/schemas/CalendarLayerEntry' } }
     ApiError:
       type: object

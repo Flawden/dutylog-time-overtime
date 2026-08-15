@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 8bb0573339f0db88a5539da4a45a746503fe6b88bebee54c50766e621f0a8464
+ * SHA-256: 2d67b4db5a3de8f686b104cea86c84d6e0f90a61ae36187e2d2986a4c52a1bb4
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 124 operations, 130 schemas
+ * Contract: 126 operations, 132 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "8bb0573339f0db88a5539da4a45a746503fe6b88bebee54c50766e621f0a8464";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "2d67b4db5a3de8f686b104cea86c84d6e0f90a61ae36187e2d2986a4c52a1bb4";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -286,6 +286,7 @@ export namespace DutyLogApiSchemas {
     startDate: string;
     endDate?: string | null;
     readOnly: true;
+    scheduleEditable: true;
     entries: Array<DutyLogApiSchemas.CalendarLayerEntry>;
   };
 
@@ -295,9 +296,9 @@ export namespace DutyLogApiSchemas {
     layerColor?: string;
     sourceDate?: string;
     date?: string;
-    shiftTypeId?: number;
-    shiftTypeName?: string;
-    shiftColor?: string;
+    shiftTypeId?: number | null;
+    shiftTypeName?: string | null;
+    shiftColor?: string | null;
     sourceTimezone?: string;
     startInstant?: string | null;
     endInstant?: string | null;
@@ -305,6 +306,12 @@ export namespace DutyLogApiSchemas {
     displayEnd?: string | null;
     timed?: boolean;
     dayOff?: boolean;
+    sourceStartTime?: string | null;
+    sourceEndTime?: string | null;
+    plannedShiftTypeId?: number | null;
+    plannedShiftTypeName?: string | null;
+    overrideKind?: "WORK" | "OFF" | null;
+    overrideReason?: "TIME_OFF" | "VACATION" | "SICK" | "OTHER" | null;
   };
 
   export type CalendarLayerInput = {
@@ -317,6 +324,26 @@ export namespace DutyLogApiSchemas {
     anchorDate: string;
     startDate: string;
     endDate?: string | null;
+  };
+
+  export type CalendarLayerOverride = {
+    id: number;
+    layerId: number;
+    sourceDate: string;
+    kind: "WORK" | "OFF";
+    reason?: "TIME_OFF" | "VACATION" | "SICK" | "OTHER" | null;
+    shiftTypeId?: number | null;
+    shiftTypeName?: string | null;
+    startTime?: string | null;
+    endTime?: string | null;
+  };
+
+  export type CalendarLayerOverrideInput = {
+    kind: "WORK" | "OFF";
+    reason?: "TIME_OFF" | "VACATION" | "SICK" | "OTHER" | null;
+    shiftTypeId?: number | null;
+    startTime?: string | null;
+    endTime?: string | null;
   };
 
   export type CalendarLayerPatch = {
@@ -1474,6 +1501,7 @@ export const dutyLogOperations = {
   "deleteAbsenceType": { method: "DELETE", path: "/api/v1/vacation-planner/types/{id}" },
   "deleteActualWorkInterval": { method: "DELETE", path: "/api/v1/actual-work/{id}" },
   "deleteCalendarLayer": { method: "DELETE", path: "/api/v1/calendar-layers/{id}" },
+  "deleteCalendarLayerOverride": { method: "DELETE", path: "/api/v1/calendar-layers/{id}/overrides/{date}" },
   "deleteDayNote": { method: "DELETE", path: "/api/v1/notes/{id}" },
   "deleteImportantDay": { method: "DELETE", path: "/api/v1/important-days/{id}" },
   "deleteInboxItem": { method: "DELETE", path: "/api/v1/inbox/{id}" },
@@ -1571,6 +1599,7 @@ export const dutyLogOperations = {
   "updateTask": { method: "PATCH", path: "/api/v1/tasks/{taskId}" },
   "updateTelegramSettings": { method: "PATCH", path: "/api/v1/telegram/settings" },
   "updateVacationSettings": { method: "PATCH", path: "/api/v1/vacation-planner/settings" },
+  "upsertCalendarLayerOverride": { method: "PUT", path: "/api/v1/calendar-layers/{id}/overrides/{date}" },
   "upsertDay": { method: "PUT", path: "/api/v1/days/{date}" },
 } as const;
 
@@ -1678,6 +1707,10 @@ export interface DutyLogOperationTypes {
     response: undefined;
   };
   "deleteCalendarLayer": {
+    requestBody: undefined;
+    response: undefined;
+  };
+  "deleteCalendarLayerOverride": {
     requestBody: undefined;
     response: undefined;
   };
@@ -2074,6 +2107,10 @@ export interface DutyLogOperationTypes {
   "updateVacationSettings": {
     requestBody: DutyLogApiSchemas.VacationSettingsInput;
     response: unknown;
+  };
+  "upsertCalendarLayerOverride": {
+    requestBody: DutyLogApiSchemas.CalendarLayerOverrideInput;
+    response: DutyLogApiSchemas.CalendarLayerOverride;
   };
   "upsertDay": {
     requestBody: undefined;

@@ -728,7 +728,7 @@ public final class Dtos {
             List<DayDto> days
     ) {}
 
-    /** One projected read-only occurrence from a companion calendar layer. */
+    /** One projected occurrence from a companion layer after factual overrides are applied. */
     public record CalendarLayerEntryDto(
             Long layerId,
             String layerName,
@@ -744,7 +744,13 @@ public final class Dtos {
             String displayStart,
             String displayEnd,
             boolean timed,
-            boolean dayOff
+            boolean dayOff,
+            String sourceStartTime,
+            String sourceEndTime,
+            Long plannedShiftTypeId,
+            String plannedShiftTypeName,
+            String overrideKind,
+            String overrideReason
     ) {}
 
     public record CalendarLayerDto(
@@ -760,7 +766,33 @@ public final class Dtos {
             String startDate,
             String endDate,
             boolean readOnly,
+            boolean scheduleEditable,
             List<CalendarLayerEntryDto> entries
+    ) {}
+
+    public record CalendarLayerOverrideRequest(
+            @NotBlank(message = "Тип изменения дня обязателен")
+            @Pattern(regexp = "WORK|OFF", message = "Тип изменения дня должен быть WORK или OFF")
+            String kind,
+            @Pattern(regexp = "TIME_OFF|VACATION|SICK|OTHER", message = "Неизвестная причина отсутствия")
+            String reason,
+            Long shiftTypeId,
+            @Pattern(regexp = "([01]\\d|2[0-3]):[0-5]\\d", message = "Время начала должно быть HH:mm")
+            String startTime,
+            @Pattern(regexp = "([01]\\d|2[0-3]):[0-5]\\d", message = "Время окончания должно быть HH:mm")
+            String endTime
+    ) {}
+
+    public record CalendarLayerOverrideDto(
+            Long id,
+            Long layerId,
+            String sourceDate,
+            String kind,
+            String reason,
+            Long shiftTypeId,
+            String shiftTypeName,
+            String startTime,
+            String endTime
     ) {}
 
     public record CalendarLayerCreateRequest(

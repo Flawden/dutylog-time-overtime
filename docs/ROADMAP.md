@@ -1,6 +1,25 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.42.8 — Tasks Module E2E Route Contract Alignment Hotfix**.
+Current release: **v27.43.0 — People Profiles: Managed Schedule Overrides**.
+
+
+## v27.43.0 — People Profiles: Managed Schedule Overrides
+
+- [x] Preserve a generated/base companion schedule and layer one reversible date-specific factual override on top.
+- [x] Support `Не работает` with optional reason (`Отгул`, `Отпуск`, `Больничный`, `Другое`).
+- [x] Support `Работает` on a generated day off, including a selected shift type and optional exact start/end time.
+- [x] Apply overrides by companion `sourceDate` before timezone/display projection so overnight shifts remain one factual source-day decision.
+- [x] Keep personal Tasks, Notes, Overtime, Payroll and absence accounting owner-only.
+- [x] Add V48, owner-scoped override API, generated OpenAPI client contract and native Vue `ManagedProfileDayCard`.
+- [x] Java 17 Maven 792/792 plus JaCoCo and OpenAPI contract drift are green locally.
+- [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Chromium 48/48, immutable image/PostgreSQL V48 and staging smoke.
+
+## v27.44.0 — Shared Availability
+
+- [ ] Derive common free windows from the effective schedules of `Я` and one selected People Profile.
+- [ ] Show nearest shared free day/window and multi-day overlaps without copying another person's personal accounting domains.
+- [ ] Keep sharing/privacy as an explicit schedule-availability contract rather than exposing Notes, Payroll, Overtime or other private workspace data.
+
 
 
 ## v27.42.8 — Tasks Module E2E Route Contract Alignment Hotfix
@@ -158,13 +177,13 @@ Next planned product release after green: **v27.42.0 — People Profiles & Share
 - [ ] Add Shared Availability for common free days, including the nearest shared window and multi-day overlaps.
 - [ ] Define permission/privacy boundaries before exposing another person’s schedule details.
 
-## v27.43.0 — Vacation Entitlement & Accrual Engine
+## v27.45.0 — Vacation Entitlement & Accrual Engine
 - [ ] Entitlement policy and annual allowance.
 - [ ] Accrual/carry-over/adjustments with explainable balance.
 - [ ] Planned/used/available vacation projection integrated with the existing Absence domain.
 - [ ] Preserve modular-monolith boundaries so Payroll consumes Vacation through explicit domain contracts rather than internal persistence.
 
-## v27.44.0 — Payroll Calculation Engine
+## v27.46.0 — Payroll Calculation Engine
 - [ ] Canonical payroll periods, calculation snapshots and explainable breakdowns.
 - [ ] Consume Time/Vacation through explicit domain contracts rather than internal persistence.
 - [ ] Preserve immutable revisions and reconciliation-ready history.
@@ -904,7 +923,7 @@ Next planned product release after green: **v27.42.0 — People Profiles & Share
 
 No new major product feature is added until the Vue migration is complete. DutyLog remains one repository, one Spring Boot application image/container and one deployment; PostgreSQL remains separate.
 
-After Vue parity:
+After Vue parity — historical planning snapshot; version numbers below are superseded by the current roadmap above:
 
 1. **v27.41.0 — Vacation Entitlement & Accrual Engine**: working-year boundaries, configurable annual entitlement, earned-vs-available balance, used/planned/advanced leave, service-time rules, multiple leave types, carry-over, date-based forecast and employer-balance reconciliation. Vacation entitlement days remain separate from monetary vacation-pay calculation.
 2. **v27.42.0 — Payroll Calculation Engine**: safe user-defined formula DSL, typed input/computed variables, dependency graph/cycle validation, period context and DutyLog work-time facts. `hourlyRate` is a configurable variable/formula, not a hardcoded fixed-price field.

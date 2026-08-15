@@ -22,6 +22,12 @@ export const calendarTimelineApi = Object.freeze({
   async setLayerVisibility(id: number, visible: boolean): Promise<void> {
     await client.request("updateCalendarLayer", { path: { id }, body: { visible } });
   },
+  async saveLayerOverride(id: number, date: string, body: DutyLogApiSchemas.CalendarLayerOverrideInput): Promise<void> {
+    await client.request("upsertCalendarLayerOverride", { path: { id, date }, body });
+  },
+  async deleteLayerOverride(id: number, date: string): Promise<void> {
+    await client.request("deleteCalendarLayerOverride", { path: { id, date } });
+  },
   async listScheduleTemplates(): Promise<DutyLogApiSchemas.ScheduleTemplate[]> {
     return (await client.request("listScheduleTemplates")) ?? [];
   },

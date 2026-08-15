@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import type { DutyLogApiSchemas } from "@/generated/dutylog-api";
 import { calendarTimelineApi } from "../api/calendarTimelineApi";
 import type { CalendarDaySection, CalendarMode, CalendarRangeBundle, CalendarTimelineProjectionSnapshot } from "../types/domain";
 import { calendarLoadRange, navigateDate, normalizeCalendarBundle, todayIso, validDate } from "../types/model";
@@ -173,6 +174,26 @@ export const useCalendarTimelineStore = defineStore("dutylog-calendar-timeline",
       catch (error) {
         if (layer) layer.visible = !visible;
         this.error = error instanceof Error ? error.message : "Не удалось изменить слой";
+      }
+    },
+    async saveProfileDayOverride(layerId: number, date: string, body: DutyLogApiSchemas.CalendarLayerOverrideInput): Promise<void> {
+      this.error = "";
+      try {
+        await activeApi.saveLayerOverride(layerId, date, body);
+        await this.refresh();
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : "Не удалось изменить график профиля";
+        throw error;
+      }
+    },
+    async resetProfileDayOverride(layerId: number, date: string): Promise<void> {
+      this.error = "";
+      try {
+        await activeApi.deleteLayerOverride(layerId, date);
+        await this.refresh();
+      } catch (error) {
+        this.error = error instanceof Error ? error.message : "Не удалось вернуть день к графику";
+        throw error;
       }
     },
   },

@@ -22,6 +22,7 @@ import {
   weekDates,
 } from "../types/model";
 import type { CalendarMode } from "../types/domain";
+import ManagedProfileDayCard from "./ManagedProfileDayCard.vue";
 import SelectedDayPanel from "./SelectedDayPanel.vue";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
@@ -36,6 +37,7 @@ const selectedProfile = computed(() => profileLayer(bundle.value, activeProfileI
 const peopleProfiles = computed(() => (bundle.value?.calendarLayers ?? []).filter(layer => layer.visible));
 const viewingSelf = computed(() => activeProfileId.value === "self");
 const focusFacts = computed(() => dayFactsForProfile(bundle.value, focusDate.value, activeProfileId.value));
+const focusProfileEntry = computed(() => profileEntryForDate(bundle.value, activeProfileId.value, focusDate.value));
 const focusMonth = computed(() => monthStart(focusDate.value).slice(0, 7));
 const monthTitle = computed(() => dateLabel(`${focusMonth.value}-01`, language.value, { month: "long" }));
 const yearTitle = computed(() => focusDate.value.slice(0, 4));
@@ -151,6 +153,17 @@ function absenceGlyph(item: { systemCode?: string | null } | null | undefined): 
 function absenceSystemClass(item: { systemCode?: string | null } | null | undefined): string {
   const code = String(item?.systemCode ?? "OTHER").toLowerCase().replace(/[^a-z0-9_-]/g, "");
   return `absence-${code || "other"}`;
+}
+function profileOverrideReason(date: string): string {
+  if (viewingSelf.value) return "";
+  const entry = profileEntryForDate(bundle.value, activeProfileId.value, date);
+  if (entry?.overrideKind !== "OFF") return "";
+  return ({
+    TIME_OFF: language.value === "en" ? "Time off" : "Отгул",
+    VACATION: language.value === "en" ? "Vacation" : "Отпуск",
+    SICK: language.value === "en" ? "Sick leave" : "Больничный",
+    OTHER: language.value === "en" ? "Other" : "Другое",
+  } as Record<string, string>)[String(entry.overrideReason ?? "OTHER")] ?? "";
 }
 function shiftRange(date: string): string {
   if (!viewingSelf.value) {
@@ -276,6 +289,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
               <span v-if="inFocusMonth(date) && isScheduleFreeDay(date)" class="calendarDayOffWatermark" aria-hidden="true">
                 <svg viewBox="0 0 64 64" focusable="false"><path d="M31 55c1-12 2-24 1-36M31 22c-8-9-16-9-23-5 8 0 14 4 19 11M33 21c7-10 15-11 23-7-8 1-14 6-18 13M32 19c-2-8-7-13-14-15 5 5 8 11 9 18M33 19c3-8 8-13 15-15-5 5-8 11-10 18"/></svg>
               </span>
+              <span v-if="profileOverrideReason(date)" class="absenceFact absence-time_off" data-profile-override-off>◷ {{ profileOverrideReason(date) }}</span>
               <template v-if="factualAbsence(date)">
                 <span
                   class="absenceFact"
@@ -303,6 +317,14 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
         </div>
         <SelectedDayPanel v-if="dayPanelOpen && viewingSelf" :bridge="bridge" />
       </div>
+      <ManagedProfileDayCard
+        v-if="!viewingSelf && selectedProfile && selectedProfile.scheduleEditable !== false"
+        :profile="selectedProfile"
+        :date="focusDate"
+        :entry="focusProfileEntry"
+        :shift-types="bundle?.shiftTypes ?? []"
+        :language="language"
+      />
     </div>
   </section>
 </template>

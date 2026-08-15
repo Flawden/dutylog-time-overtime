@@ -1,6 +1,8 @@
-# DutyLog API v27.42.8
+# DutyLog API v27.43.0
 
-`v27.42.8` is source-contract/release-metadata-only and changes no HTTP/OpenAPI/Flyway shape. `v27.41.8` is frontend-delivery-only and likewise changes no HTTP/OpenAPI/Flyway shape. OpenAPI remains **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47. `v27.41.6` changes ledger-integrity semantics inside the existing API response shape but adds no HTTP/OpenAPI or Flyway shape. Completed/approved non-overtime absences may correctly retain zero-minute `POSTED` audit facts without being reported as inactive; existing active audits are still validated for lifecycle state and expected minutes. Online APIs remain **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remains V47.
+`v27.43.0` adds managed People Profile schedule overrides under the existing Calendar authorization/module boundary. The canonical resources are `PUT /api/v1/calendar-layers/{id}/overrides/{date}` to create/replace one factual source-date override and `DELETE /api/v1/calendar-layers/{id}/overrides/{date}` to return that date to its generated template. Overrides are owner-scoped through the parent calendar layer, support `WORK` or `OFF`, and do not expose another person's Tasks, Notes, Overtime, Payroll or personal absence ledger. OpenAPI is **126 operations / 132 schemas** with hash `2d67b4db5a3d`, and Flyway is V48.
+
+`v27.42.8` is source-contract/release-metadata-only and changed no HTTP/OpenAPI/Flyway shape. OpenAPI at that release was **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway was V47.
 
 `v27.41.3` changed no HTTP/OpenAPI or Flyway shape. It reused existing calendar/overtime read models only; generated online APIs remained **124 operations / 130 schemas** with hash `8bb0573339f0`, and Flyway remained V47.
 

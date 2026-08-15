@@ -25,6 +25,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -119,8 +120,17 @@ class ScheduleTemplatesAndLayersControllerTest {
                                 """.formatted(template.id())))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.readOnly").value(true))
+                .andExpect(jsonPath("$.scheduleEditable").value(true))
                 .andReturn().getResponse().getContentAsString();
         long id = objectMapper.readTree(response).path("id").asLong();
+
+        mvc.perform(put("/api/v1/calendar-layers/{id}/overrides/{date}", id, "2026-08-01")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf())
+                        .contentType("application/json")
+                        .content("{\"kind\":\"OFF\",\"reason\":\"TIME_OFF\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.kind").value("OFF"))
+                .andExpect(jsonPath("$.reason").value("TIME_OFF"));
 
         mvc.perform(get("/api/calendar")
                         .with(user(owner.getUsername()).roles("USER"))
@@ -128,7 +138,13 @@ class ScheduleTemplatesAndLayersControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.calendarLayers.length()").value(1))
                 .andExpect(jsonPath("$.calendarLayers[0].entries.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(5)))
-                .andExpect(jsonPath("$.calendarLayers[0].entries[0].layerName").value("Рома"));
+                .andExpect(jsonPath("$.calendarLayers[0].entries[0].layerName").value("Рома"))
+                .andExpect(jsonPath("$.calendarLayers[0].entries[0].overrideKind").value("OFF"))
+                .andExpect(jsonPath("$.calendarLayers[0].entries[0].overrideReason").value("TIME_OFF"));
+
+        mvc.perform(delete("/api/v1/calendar-layers/{id}/overrides/{date}", id, "2026-08-01")
+                        .with(user(owner.getUsername()).roles("USER")).with(csrf()))
+                .andExpect(status().isNoContent());
 
         mvc.perform(patch("/api/v1/calendar-layers/{id}", id)
                         .with(user(owner.getUsername()).roles("USER")).with(csrf())

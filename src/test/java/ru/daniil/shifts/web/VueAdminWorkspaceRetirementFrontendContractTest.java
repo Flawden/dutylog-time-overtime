@@ -28,7 +28,12 @@ class VueAdminWorkspaceRetirementFrontendContractTest {
         assertTrue(openApi.contains("operationId: resetAdminUserPassword"));
         assertTrue(openApi.contains("operationId: getAdminRegistrationSettings"));
         assertTrue(openApi.contains("operationId: updateAdminRegistrationSettings"));
-        assertTrue(generated.contains("Contract: 124 operations, 130 schemas"));
+        assertTrue(generated.contains("\"adminSystemStatus\": { method: \"GET\", path: \"/api/v1/admin/status\" }"));
+        assertTrue(generated.contains("\"listAdminUsers\": { method: \"GET\", path: \"/api/v1/admin/users\" }"));
+        assertTrue(generated.contains("\"updateAdminUserRole\": { method: \"PATCH\", path: \"/api/v1/admin/users/{id}/role\" }"));
+        assertTrue(generated.contains("\"resetAdminUserPassword\": { method: \"POST\", path: \"/api/v1/admin/users/{id}/password\" }"));
+        assertTrue(generated.contains("\"getAdminRegistrationSettings\": { method: \"GET\", path: \"/api/v1/admin/settings/registration\" }"));
+        assertTrue(generated.contains("\"updateAdminRegistrationSettings\": { method: \"PATCH\", path: \"/api/v1/admin/settings/registration\" }"));
     }
 
     @Test

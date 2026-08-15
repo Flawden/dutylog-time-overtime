@@ -1,3 +1,11 @@
+# v27.43.0 People Profiles Managed Schedule Overrides review
+
+v27.43.0 adds two authenticated Calendar-module endpoints for a calendar-layer owner to create/replace or delete one date-specific schedule override. Authorization is inherited from the parent `CalendarLayerService.requireOwned` check, ownership mismatches remain indistinguishable from not-found, and write requests remain under the existing CSRF/session policy. V48 stores only managed schedule facts (`WORK`/`OFF`, optional reason, owned shift type and optional time); it does not introduce account-to-account sharing, credentials, roles, personal Notes, Payroll, Overtime or absence-ledger access.
+
+No dependency, CSP, offline-queue ownership or cross-user data path is added. Shared Availability remains out of scope.
+
+Status: v27.43.0.
+
 # v27.42.8 Browser Bundle Source Contract Alignment review
 
 v27.42.8 changes no endpoint, authorization rule, credential handling, persistence path, accounting mutation, dependency or browser runtime behavior. It aligns one Java source-contract assertion with the already-shipped segmented bundle-budget keys and advances release identity only.

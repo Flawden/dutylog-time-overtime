@@ -144,11 +144,40 @@ class ScheduleTemplatesAndLayersServiceTest {
                 "Маша", "#AA66FF", "Pacific/Kiritimati", true, 10, cycle.id(),
                 "2026-08-01", "2026-08-01", "2026-08-04"));
         assertTrue(created.readOnly());
+        assertTrue(created.scheduleEditable());
 
         CalendarLayerDto projected = layers.listForRange(owner, LocalDate.parse("2026-07-31"), LocalDate.parse("2026-08-04")).get(0);
         assertFalse(projected.entries().isEmpty());
         assertTrue(projected.entries().stream().anyMatch(e -> e.timed() && e.startInstant() != null && e.displayStart() != null));
         assertTrue(projected.entries().stream().allMatch(e -> "Pacific/Kiritimati".equals(e.sourceTimezone())));
+
+        layers.upsertOverride(owner, created.id(), "2026-08-01",
+                new ru.daniil.shifts.dto.Dtos.CalendarLayerOverrideRequest("OFF", "TIME_OFF", null, null, null));
+        CalendarLayerDto withTimeOff = layers.listForRange(owner, LocalDate.parse("2026-07-31"), LocalDate.parse("2026-08-04")).get(0);
+        var off = withTimeOff.entries().stream()
+                .filter(e -> "2026-08-01".equals(e.sourceDate()))
+                .findFirst().orElseThrow();
+        assertTrue(off.dayOff());
+        assertEquals("OFF", off.overrideKind());
+        assertEquals("TIME_OFF", off.overrideReason());
+        assertNotNull(off.plannedShiftTypeName());
+
+        layers.upsertOverride(owner, created.id(), "2026-08-03",
+                new ru.daniil.shifts.dto.Dtos.CalendarLayerOverrideRequest(
+                        "WORK", null, shifts.get("Дневная"), "09:00", "15:00"));
+        CalendarLayerDto withExtraShift = layers.listForRange(owner, LocalDate.parse("2026-07-31"), LocalDate.parse("2026-08-04")).get(0);
+        var extra = withExtraShift.entries().stream()
+                .filter(e -> "2026-08-03".equals(e.sourceDate()) && "WORK".equals(e.overrideKind()))
+                .findFirst().orElseThrow();
+        assertEquals("09:00", extra.sourceStartTime());
+        assertEquals("15:00", extra.sourceEndTime());
+        assertEquals("Дневная", extra.shiftTypeName());
+
+        layers.deleteOverride(owner, created.id(), "2026-08-03");
+        CalendarLayerDto restored = layers.listForRange(owner, LocalDate.parse("2026-07-31"), LocalDate.parse("2026-08-04")).get(0);
+        assertTrue(restored.entries().stream()
+                .filter(e -> "2026-08-03".equals(e.sourceDate()))
+                .allMatch(e -> e.overrideKind() == null));
 
         layers.update(owner, created.id(), new CalendarLayerUpdateRequest(
                 null, null, null, false, null, null, null, null, null, false));

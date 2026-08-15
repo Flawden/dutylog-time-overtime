@@ -1,5 +1,18 @@
 # Module contracts
 
+## Managed People Profile schedule contract (v27.43.0)
+
+- A People Profile remains a companion CalendarLayer used for planning context, not a second personal DutyLog workspace.
+- The generated template is the base schedule; a `calendar_layer_overrides` row is one reversible factual exception for a companion `sourceDate`.
+- `OFF` may carry `TIME_OFF`, `VACATION`, `SICK` or `OTHER`; `WORK` carries an owned shift type and may override its start/end time for that date.
+- Effective projection applies the override before timezone/display conversion and keeps all projected overnight segments tied to the same source date.
+- `DELETE .../overrides/{date}` means “return to generated schedule”; there is no persisted NORMAL override state.
+- Tasks, Notes, Important Days, Overtime, Payroll and personal absence accounting remain owner-only.
+- `scheduleEditable` describes a locally managed companion schedule capability; it does not grant cross-account sharing authority.
+
+Status: v27.43.0.
+
+
 ## First-run onboarding bounded presentation contract (v27.40.30)
 
 - `#firstRunOnboarding` is the sole intentionally live post-ready legacy presentation owner and is explicitly marked `data-bounded-legacy-owner="first-run-onboarding"`.

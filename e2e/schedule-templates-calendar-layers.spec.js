@@ -60,6 +60,7 @@ test('schedule templates preview safely and people profiles switch the whole cal
   await page.locator('#calendarLayerForm button[type="submit"]').click();
   const layer = await (await layerCreated).json();
   expect(layer.readOnly).toBe(true);
+  expect(layer.scheduleEditable).toBe(true);
   expect(layer.visible).toBe(true);
   await expect(page.locator('#calendarLayerList .calendarLayerCard', { hasText:'Напарник' })).toBeVisible();
 
@@ -75,6 +76,24 @@ test('schedule templates preview safely and people profiles switch the whole cal
   await expect(page.locator(`#grid [data-date="${date}"] .calendarLayerChip`)).toHaveCount(0);
   await expect(page.locator(`#grid [data-date="${date}"] .shift`)).toBeVisible();
   await expect(page.locator('#summary')).toContainText('Напарник');
+
+  const managedDay = page.locator('[data-managed-profile-day]');
+  await expect(managedDay).toBeVisible();
+  await managedDay.locator('[data-profile-override-edit]').click();
+  await managedDay.locator('[data-profile-override-kind]').selectOption('OFF');
+  await managedDay.locator('[data-profile-override-reason]').selectOption('TIME_OFF');
+  const overrideSaved = waitForApi(page, 'PUT', `/api/v1/calendar-layers/${layer.id}/overrides/${date}`);
+  await managedDay.locator('[data-profile-override-save]').click();
+  await overrideSaved;
+  await expect(managedDay).toContainText('Отгул');
+  await expect(page.locator(`#grid [data-date="${date}"] [data-profile-override-off]`)).toContainText('Отгул');
+  await expect(page.locator(`#grid [data-date="${date}"] .shift`)).toHaveCount(0);
+
+  await managedDay.locator('[data-profile-override-edit]').click();
+  const overrideDeleted = waitForApi(page, 'DELETE', `/api/v1/calendar-layers/${layer.id}/overrides/${date}`, 204);
+  await managedDay.locator('[data-profile-override-reset]').click();
+  await overrideDeleted;
+  await expect(page.locator(`#grid [data-date="${date}"] .shift`)).toBeVisible();
 
   await page.locator('[data-calendar-mode="day"]').click();
   await expect(page.getByText('График только для просмотра', { exact: true })).toBeVisible();

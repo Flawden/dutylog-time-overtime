@@ -1,3 +1,13 @@
+# v27.43.0 — People Profiles: Managed Schedule Overrides
+- Adds one reversible factual schedule override per managed People Profile source date while preserving the generated base schedule.
+- Supports `OFF` with `Отгул / Отпуск / Больничный / Другое`, and `WORK` with a selected owned shift type plus optional exact start/end time.
+- Adds PostgreSQL Flyway `V48__calendar_layer_schedule_overrides.sql`; deleting an override returns the date to the template, and deleting a layer cascades its overrides.
+- Adds owner-scoped `PUT /api/v1/calendar-layers/{id}/overrides/{date}` and `DELETE /api/v1/calendar-layers/{id}/overrides/{date}` under the existing Calendar module/CSRF/auth boundary.
+- Extends calendar projection with planned-vs-actual metadata and applies overrides by companion `sourceDate` before timezone/display projection, including overnight shifts.
+- Adds Vue `ManagedProfileDayCard` without exposing owner Tasks, Notes, Overtime, Payroll or personal absence accounting to another profile.
+- OpenAPI advances to **126 operations / 132 schemas** with hash `2d67b4db5a3d`; Flyway advances to V48.
+- Java 17 `mvn clean verify` is green at 792 tests with JaCoCo gates met; exact Node 20.18.1/npm 10.8.2 frontend/Chromium/staging acceptance remains CI-owned.
+
 # v27.42.8 — Tasks Module E2E Route Contract Alignment Hotfix
 - Fixes the exact v27.42.7 Browser E2E regression where `task-modules.spec.js` asserted `#view-tasks` immediately after toggling the Tasks module while the Vue shell was still on Settings, so the route-owned Tasks page was intentionally not mounted.
 - Replaces that stale hidden-DOM assertion with the persistent Tasks navigation visibility contract and an explicit open of the Vue-owned Tasks route (`data-vue-domain-route="tasks"`).

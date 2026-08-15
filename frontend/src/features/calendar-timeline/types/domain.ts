@@ -46,13 +46,22 @@ export interface CalendarLayerEntry {
   layerColor?: string;
   sourceDate?: string;
   date?: string;
-  shiftTypeId?: number;
-  shiftTypeName?: string;
-  shiftColor?: string;
+  shiftTypeId?: number | null;
+  shiftTypeName?: string | null;
+  shiftColor?: string | null;
+  sourceTimezone?: string;
+  startInstant?: string | null;
+  endInstant?: string | null;
   displayStart?: string | null;
   displayEnd?: string | null;
   timed?: boolean;
   dayOff?: boolean;
+  sourceStartTime?: string | null;
+  sourceEndTime?: string | null;
+  plannedShiftTypeId?: number | null;
+  plannedShiftTypeName?: string | null;
+  overrideKind?: "WORK" | "OFF" | null;
+  overrideReason?: "TIME_OFF" | "VACATION" | "SICK" | "OTHER" | null;
 }
 
 export interface CalendarLayer {
@@ -61,6 +70,7 @@ export interface CalendarLayer {
   color: string;
   visible: boolean;
   timezone?: string;
+  scheduleEditable?: boolean;
   entries: CalendarLayerEntry[];
 }
 

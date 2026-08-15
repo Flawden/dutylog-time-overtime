@@ -1,6 +1,20 @@
 # DutyLog release checklist
 
-Status: v27.42.8.
+Status: v27.43.0.
+
+
+## v27.43.0 — People Profiles: Managed Schedule Overrides acceptance
+
+- [x] V48 creates one unique `(layer_id, source_date)` factual override and cascades override cleanup when a CalendarLayer is deleted.
+- [x] Backend supports `WORK` / `OFF`, validates owned shift types, validates source-date bounds and preserves template data instead of rewriting generated schedule rows.
+- [x] Override application occurs by `sourceDate` before timezone/display projection, preserving truthful overnight segmentation.
+- [x] Canonical PUT/DELETE override routes require the existing Calendar module, authenticated owner context and normal CSRF protection.
+- [x] OpenAPI generator is authoritative at **126 operations / 132 schemas** (`2d67b4db5a3d`) and `contract:check` passes.
+- [x] Vue uses a separate managed-profile day editor; owner-only selected-day Tasks/Notes/Overtime/absence surfaces remain unavailable in another profile context.
+- [x] Java 17 `mvn clean verify` passes all 792 tests and JaCoCo checks.
+- [ ] Exact Node 20.18.1/npm 10.8.2 delivery/typecheck/66 Vitest/build gate passes in CI.
+- [ ] Chromium 48/48, immutable image, clean PostgreSQL V48 migration and staging smoke pass.
+
 
 ## v27.42.8 — Tasks Module E2E Route Contract Alignment Hotfix acceptance
 

@@ -1,3 +1,9 @@
+# DutyLog v27.43.0 — People Profiles: Managed Schedule Overrides
+
+People Profiles now support factual, date-specific schedule exceptions without becoming a second personal DutyLog. A managed profile keeps its generated base schedule, while an individual source date may be marked as not working or replaced with an actual working shift/time. Calendar projection, timezone handling and overnight splitting remain canonical in the existing CalendarLayer pipeline.
+
+v27.43.0 adds Flyway V48 plus owner-scoped PUT/DELETE override resources, exposes planned-vs-actual schedule metadata to Vue, and adds the dedicated `ManagedProfileDayCard` editor. Personal Tasks, Notes, Overtime, Payroll and absence ledgers remain owner-only. Shared Availability remains the next separate capability.
+
 # DutyLog v27.42.8 — Tasks Module E2E Route Contract Alignment Hotfix
 
 v27.42.7 passed Maven, release checks and 47/48 Browser E2E tests. The only failure was a stale Tasks-module assertion that looked for the route-owned `#view-tasks` DOM while the application was still on Settings. v27.42.8 keeps runtime behavior unchanged and validates the persistent Tasks navigation state plus the real Vue Tasks route instead.
