@@ -183,7 +183,7 @@ describe("calendar and timeline model", () => {
       }],
       absences: [{
         periodId: 77, typeId: 1, typeName: "Отгул", typeColor: "#4A90E2", date: "2026-08-15",
-        startDate: "2026-08-15", endDate: "2026-08-15", coverage: "FULL_DAY", status: "PLANNED", countedDay: true, shiftConflict: true,
+        startDate: "2026-08-15", endDate: "2026-08-15", coverage: "FULL_DAY", status: "PLANNED", countedDay: true, shiftConflict: true, replacesShift: true,
       }],
       tasks: [{ id: 2, date: "2026-08-15", text: "Личное", done: false, tags: [], priority: "NORMAL", deadlineAbsolute: false, reminderEnabled: false, overdue: false, subtasks: [] }],
       calendarLayers: [{
