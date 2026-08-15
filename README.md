@@ -1,3 +1,11 @@
+# DutyLog v27.44.1 — Shared Availability UX & Shared Shifts
+
+Shared Availability now answers the planning question in human language instead of looking like an interval debugger. The selected-day card leads with total common free-from-work time, uses `До …` / `После …` for day-edge windows, adds a compact 24-hour rail and keeps the detailed work-only semantics behind an info disclosure.
+
+`Совместные смены` is an explicit visual mode. When enabled, Calendar highlights every loaded date where `Я` and the selected People Profile actually work at the same time. Any positive overlap counts, including one minute; adjacent shifts with zero overlap do not. Month/week use a distinct coral outline and Day mode shows the exact simultaneous-work interval.
+
+The feature remains fully derived from the effective schedules already proven in v27.44.0; no new backend/database authority is introduced.
+
 # DutyLog v27.44.0 — Shared Availability
 
 Shared Availability turns People Profiles into a planning surface. While a managed profile is selected, Calendar derives the selected day's common free-from-work windows for `Я + профиль` from the two already-effective schedules.

@@ -10,7 +10,7 @@
 - Tasks, Notes, Important Days, Overtime, Payroll and personal absence accounting remain owner-only.
 - `scheduleEditable` describes a locally managed companion schedule capability; it does not grant cross-account sharing authority.
 
-Status: v27.44.0.
+Status: v27.44.1.
 
 
 ## First-run onboarding bounded presentation contract (v27.40.30)

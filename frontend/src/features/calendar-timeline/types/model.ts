@@ -307,6 +307,30 @@ function subtractAvailabilityIntervals(
   return mergeAvailabilityIntervals(result);
 }
 
+function intersectAvailabilityIntervals(
+  leftValues: AvailabilityMinuteInterval[],
+  rightValues: AvailabilityMinuteInterval[],
+): AvailabilityMinuteInterval[] {
+  const left = mergeAvailabilityIntervals(leftValues);
+  const right = mergeAvailabilityIntervals(rightValues);
+  const result: AvailabilityMinuteInterval[] = [];
+  let leftIndex = 0;
+  let rightIndex = 0;
+
+  while (leftIndex < left.length && rightIndex < right.length) {
+    const a = left[leftIndex];
+    const b = right[rightIndex];
+    if (!a || !b) break;
+    const start = Math.max(a.start, b.start);
+    const end = Math.min(a.end, b.end);
+    if (end > start) result.push({ start, end });
+    if (a.end <= b.end) leftIndex += 1;
+    else rightIndex += 1;
+  }
+
+  return result;
+}
+
 function invertAvailabilityIntervals(values: AvailabilityMinuteInterval[]): AvailabilityMinuteInterval[] {
   const busy = mergeAvailabilityIntervals(values);
   const free: AvailabilityMinuteInterval[] = [];
@@ -431,6 +455,7 @@ export function sharedAvailabilityForDate(
   const precise = unknownReason == null;
   const selfBusy = mergeAvailabilityIntervals(self.intervals);
   const profileBusy = mergeAvailabilityIntervals(profile.intervals);
+  const sharedBusy = precise ? intersectAvailabilityIntervals(selfBusy, profileBusy) : [];
   const free = precise ? invertAvailabilityIntervals([...selfBusy, ...profileBusy]) : [];
 
   return {
@@ -444,6 +469,7 @@ export function sharedAvailabilityForDate(
     freeWindows: free.map(availabilityWindow),
     selfBusy: selfBusy.map(availabilityWindow),
     profileBusy: profileBusy.map(availabilityWindow),
+    sharedBusyWindows: sharedBusy.map(availabilityWindow),
   };
 }
 

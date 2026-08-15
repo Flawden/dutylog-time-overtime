@@ -1,3 +1,9 @@
+# v27.44.1 Shared Availability UX & Shared Shifts review
+
+v27.44.1 adds only client-side derived presentation over calendar data already authorized to the signed-in owner. It adds no endpoint, credential, role, authorization rule, persistence path, dependency or account-to-account transport. Shared-shift highlighting uses only effective work intervals and persists no inferred overlap.
+
+Status: v27.44.1.
+
 # v27.44.0 Shared Availability review
 
 v27.44.0 adds no endpoint, credential, role, authorization rule, persistence path, dependency or account-to-account sharing transport. Shared Availability is derived in Vue only from calendar data already authorized to the signed-in owner. It exposes no other-profile Notes, Tasks, Payroll, Overtime, personal absence ledger or credentials, and persists no inferred free windows.

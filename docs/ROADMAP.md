@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.44.0 — Shared Availability**.
+Current release: **v27.44.1 — Shared Availability UX & Shared Shifts**.
 
 
 ## v27.43.0 — People Profiles: Managed Schedule Overrides
@@ -13,6 +13,16 @@ Current release: **v27.44.0 — Shared Availability**.
 - [x] Add V48, owner-scoped override API, generated OpenAPI client contract and native Vue `ManagedProfileDayCard`.
 - [x] Java 17 Maven 792/792 plus JaCoCo and OpenAPI contract drift are green locally.
 - [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Chromium 48/48, immutable image/PostgreSQL V48 and staging smoke.
+
+## v27.44.1 — Shared Availability UX & Shared Shifts
+
+- [x] Make selected-day Shared Availability compact and human-readable.
+- [x] Show total common free time plus natural `До` / `После` edge-window wording.
+- [x] Add a 24-hour availability rail and collapse the work-only explanation behind an info disclosure.
+- [x] Add `Совместные смены` visual mode for month/week/day.
+- [x] Highlight a date only for positive simultaneous work overlap; one minute counts, zero-minute adjacency does not.
+- [x] Reuse effective schedules/overrides/absence/overnight/timezone semantics; add no API/Flyway/dependency authority.
+- [ ] Exact Node 20, Maven/release-check, Chromium and staging acceptance.
 
 ## v27.44.0 — Shared Availability
 

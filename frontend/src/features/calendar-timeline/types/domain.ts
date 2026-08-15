@@ -95,6 +95,7 @@ export interface SharedAvailabilityDay {
   freeWindows: SharedAvailabilityWindow[];
   selfBusy: SharedAvailabilityWindow[];
   profileBusy: SharedAvailabilityWindow[];
+  sharedBusyWindows: SharedAvailabilityWindow[];
 }
 
 export interface CalendarOvertimeSummary {

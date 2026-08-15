@@ -1,6 +1,17 @@
 # DutyLog release checklist
 
-Status: v27.44.0.
+Status: v27.44.1.
+
+## v27.44.1 — Shared Availability UX & Shared Shifts acceptance
+
+- [x] Compact selected-day card shows total free time, natural edge wording and a 24-hour rail.
+- [x] Work-only semantics are disclosed without dominating the card.
+- [x] `Совместные смены` toggle drives month/week highlighting and exact Day timeline overlap bars.
+- [x] Positive overlap boundary is strict: one minute counts; adjacent shifts do not.
+- [x] Vitest source baseline is 71; OpenAPI 126/132, Flyway V48, Java 792/164 and Playwright 48 remain unchanged.
+- [ ] Exact Node 20.18.1/npm 10.8.2 delivery/typecheck/71 Vitest/Vite/bundle passes.
+- [ ] Maven, release-check, Chromium 48/48 and staging UX smoke pass.
+
 
 ## v27.44.0 — Shared Availability acceptance
 

@@ -1,3 +1,13 @@
+# v27.44.1 — Shared Availability UX & Shared Shifts
+- Reworks Shared Availability into a compact human-readable card: total common free time, `До …` / `После …` edge wording, compact window chips and a 24-hour visual rail.
+- Moves the long privacy/semantics explanation behind `Только рабочие графики ⓘ`.
+- Adds an explicit `Совместные смены` toggle. When enabled, month/week cells are highlighted with a separate coral work-overlap color and Day mode renders exact simultaneous-work intervals.
+- A calendar date is highlighted only when effective work intervals overlap by **more than zero minutes**; even one minute counts, adjacent shifts do not.
+- Shared work overlap inherits the same effective schedule, v27.43.0 overrides, factual absences, partial absences, overnight clipping and timezone projection as v27.44.0 free-window calculation.
+- Adds one Vitest contract for the positive-overlap boundary; source Vitest baseline advances **70 -> 71**.
+- No backend endpoint, OpenAPI, Flyway or dependency change: OpenAPI remains **126/132**, Flyway remains **V48**, Java remains **792/164**, Playwright remains **48**.
+- Browser budget ceilings remain the proven v27.44.0 values, including **845000 B raw / 250000 B gzip total**, pending the exact v27.44.1 Node 20 measurement.
+
 # v27.44.0 — Shared Availability
 - Adds selected-date common free-from-work windows for `Я` plus one selected People Profile.
 - Derives availability from canonical effective/display-projected work intervals; no second schedule truth is persisted.

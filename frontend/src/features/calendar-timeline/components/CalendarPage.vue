@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import { storeToRefs } from "pinia";
 import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
 import { useShellStore } from "@/app/shellStore";
@@ -15,13 +15,14 @@ import {
   dayFactsForProfile,
   profileEntryForDate,
   profileLayer,
+  sharedAvailabilityForDate,
   minutesOf,
   monthGridDates,
   monthStart,
   timePart,
   weekDates,
 } from "../types/model";
-import type { CalendarMode } from "../types/domain";
+import type { CalendarMode, SharedAvailabilityWindow } from "../types/domain";
 import ManagedProfileDayCard from "./ManagedProfileDayCard.vue";
 import SharedAvailabilityCard from "./SharedAvailabilityCard.vue";
 import SelectedDayPanel from "./SelectedDayPanel.vue";
@@ -37,6 +38,16 @@ const week = computed(() => weekDates(focusDate.value));
 const selectedProfile = computed(() => profileLayer(bundle.value, activeProfileId.value));
 const peopleProfiles = computed(() => (bundle.value?.calendarLayers ?? []).filter(layer => layer.visible));
 const viewingSelf = computed(() => activeProfileId.value === "self");
+const highlightSharedWork = ref(false);
+const sharedWorkByDate = computed(() => {
+  const result = new Map<string, SharedAvailabilityWindow[]>();
+  if (viewingSelf.value || !selectedProfile.value) return result;
+  for (const date of gridDates.value) {
+    const value = sharedAvailabilityForDate(bundle.value, date, activeProfileId.value);
+    if (value?.precise && value.sharedBusyWindows.length) result.set(date, value.sharedBusyWindows);
+  }
+  return result;
+});
 const focusFacts = computed(() => dayFactsForProfile(bundle.value, focusDate.value, activeProfileId.value));
 const focusProfileEntry = computed(() => profileEntryForDate(bundle.value, activeProfileId.value, focusDate.value));
 const focusMonth = computed(() => monthStart(focusDate.value).slice(0, 7));
@@ -106,6 +117,24 @@ const timelineEvents = computed(() => {
       if (value) events.push({ key: `profile-${layer.id}-${entry.sourceDate || entry.date}`, type: "layer", title: entry.shiftTypeName || "Смена", ...value, meta: layer.timezone || "", color: entry.shiftColor || layer.color, actionId: null });
     }
   }
+  if (highlightSharedWork.value && !viewingSelf.value) {
+    for (const window of sharedWorkWindows(focusDate.value)) {
+      const minutes = window.durationMinutes;
+      const hours = Math.floor(minutes / 60);
+      const rest = minutes % 60;
+      const duration = [hours ? `${hours} ч` : "", rest ? `${rest} мин` : ""].filter(Boolean).join(" ");
+      events.push({
+        key: `shared-work-${focusDate.value}-${window.startMinute}-${window.endMinute}`,
+        type: "shared-work",
+        title: language.value === "en" ? "Working together" : "Работаем вместе",
+        start: window.startMinute,
+        end: window.endMinute,
+        meta: duration,
+        color: "#ff8a5b",
+        actionId: null,
+      });
+    }
+  }
   const laneEnds: number[] = [];
   return events.sort((left, right) => left.start - right.start || left.end - right.end).map(event => {
     let lane = laneEnds.findIndex(value => value <= event.start);
@@ -116,6 +145,8 @@ const timelineEvents = computed(() => {
 });
 
 function cellFacts(date: string) { return dayFactsForProfile(bundle.value, date, activeProfileId.value); }
+function sharedWorkWindows(date: string): SharedAvailabilityWindow[] { return sharedWorkByDate.value.get(date) ?? []; }
+function hasSharedWorkOverlap(date: string): boolean { return highlightSharedWork.value && sharedWorkWindows(date).length > 0; }
 function openTaskCount(date: string): number { return calendarOpenTaskCount(cellFacts(date)); }
 function importantMarker(date: string) { return cellFacts(date).important[0] ?? null; }
 function importantMarkerGlyph(date: string): string { return calendarImportantGlyph(importantMarker(date)); }
@@ -250,11 +281,13 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
         :date="focusDate"
         :profile="selectedProfile"
         :language="language"
+        :highlight-shared-work="highlightSharedWork"
+        @toggle-shared-work="highlightSharedWork = !highlightSharedWork"
       />
 
       <section v-show="mode === 'week'" id="calendarWeekExperience" class="calendarWeekExperience" aria-label="Недельный календарь">
         <div id="calendarWeekStrip" class="calendarWeekStrip">
-          <button v-for="date in week" :key="date" type="button" class="calendarWeekDay" :class="{ isSelected: date === focusDate, todayCell: date === workDate, hasShift: Boolean(cellFacts(date).shift), isScheduleFree: isScheduleFreeDay(date), hasAbsenceFact: Boolean(factualAbsence(date)), isWeekend: isWeekend(date) }" :style="cellStyle(date)" :data-date="date" :aria-label="cellAriaLabel(date)" @click="chooseWeekDate(date)">
+          <button v-for="date in week" :key="date" type="button" class="calendarWeekDay" :class="{ isSelected: date === focusDate, todayCell: date === workDate, hasShift: Boolean(cellFacts(date).shift), isScheduleFree: isScheduleFreeDay(date), hasAbsenceFact: Boolean(factualAbsence(date)), isWeekend: isWeekend(date), hasSharedWorkOverlap: hasSharedWorkOverlap(date) }" :style="cellStyle(date)" :data-date="date" :aria-label="cellAriaLabel(date)" @click="chooseWeekDate(date)">
             <small>{{ weekday(date) }}</small><b>{{ dayNumber(date) }}</b>
             <span v-if="cellFacts(date).shift">{{ cellFacts(date).shift?.name }}</span>
             <span v-else-if="isScheduleFreeDay(date)" class="calendarWeekPalm" aria-hidden="true">
@@ -264,7 +297,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
           </button>
         </div>
         <div id="calendarWeekAgenda" class="calendarWeekAgenda">
-          <article v-for="date in week" :key="`agenda-${date}`" :class="{ hasShift: Boolean(cellFacts(date).shift), isScheduleFree: isScheduleFreeDay(date), hasAbsenceFact: Boolean(factualAbsence(date)) }" :style="cellStyle(date)"><header><b>{{ dayLabel(date) }}</b><span v-if="openTaskCount(date)" class="calendarWeekTaskCount">{{ openTaskCount(date) }}</span></header><p v-if="cellFacts(date).shift" class="calendarWeekShiftLabel">{{ cellFacts(date).shift?.name }}</p><p v-else-if="isScheduleFreeDay(date)" class="calendarWeekFreeLabel"><span class="calendarWeekPalm" aria-hidden="true"><svg viewBox="0 0 64 64" focusable="false"><path d="M31 55c1-12 2-24 1-36M31 22c-8-9-16-9-23-5 8 0 14 4 19 11M33 21c7-10 15-11 23-7-8 1-14 6-18 13M32 19c-2-8-7-13-14-15 5 5 8 11 9 18M33 19c3-8 8-13 15-15-5 5-8 11-10 18"/></svg></span></p><p v-for="item in cellFacts(date).important" :key="item.id">{{ item.icon || '★' }} {{ item.title }}</p><p v-for="absence in cellFacts(date).absences" :key="absence.periodId">{{ absence.title || absence.typeName }}</p></article>
+          <article v-for="date in week" :key="`agenda-${date}`" :class="{ hasShift: Boolean(cellFacts(date).shift), isScheduleFree: isScheduleFreeDay(date), hasAbsenceFact: Boolean(factualAbsence(date)), hasSharedWorkOverlap: hasSharedWorkOverlap(date) }" :style="cellStyle(date)"><header><b>{{ dayLabel(date) }}</b><span v-if="openTaskCount(date)" class="calendarWeekTaskCount">{{ openTaskCount(date) }}</span></header><p v-if="cellFacts(date).shift" class="calendarWeekShiftLabel">{{ cellFacts(date).shift?.name }}</p><p v-else-if="isScheduleFreeDay(date)" class="calendarWeekFreeLabel"><span class="calendarWeekPalm" aria-hidden="true"><svg viewBox="0 0 64 64" focusable="false"><path d="M31 55c1-12 2-24 1-36M31 22c-8-9-16-9-23-5 8 0 14 4 19 11M33 21c7-10 15-11 23-7-8 1-14 6-18 13M32 19c-2-8-7-13-14-15 5 5 8 11 9 18M33 19c3-8 8-13 15-15-5 5-8 11-10 18"/></svg></span></p><p v-for="item in cellFacts(date).important" :key="item.id">{{ item.icon || '★' }} {{ item.title }}</p><p v-for="absence in cellFacts(date).absences" :key="absence.periodId">{{ absence.title || absence.typeName }}</p></article>
         </div>
       </section>
 
@@ -285,7 +318,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
               :key="date"
               type="button"
               class="cell"
-              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasShift: Boolean(cellFacts(date).shift), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)), isScheduleFree: inFocusMonth(date) && isScheduleFreeDay(date), isWeekend: isWeekend(date) }"
+              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasShift: Boolean(cellFacts(date).shift), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)), isScheduleFree: inFocusMonth(date) && isScheduleFreeDay(date), isWeekend: isWeekend(date), hasSharedWorkOverlap: hasSharedWorkOverlap(date) }"
               :style="cellStyle(date)"
               :aria-label="cellAriaLabel(date)"
               :data-date="date"
@@ -322,7 +355,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
               <span v-if="secondaryAbsences(date).length" class="vacationMark" :style="{ background: secondaryAbsences(date)[0]?.typeColor }">●</span>
             </button>
           </div>
-          <div id="summary" class="sum"><span class="lbl">{{ selectedProfile?.name || (language === 'en' ? 'Me' : 'Я') }}:</span><span>{{ monthSummary.shifts }} смен</span><template v-if="viewingSelf"><span>{{ monthSummary.tasks }} задач</span><span>{{ monthSummary.absences }} отсутствий</span><span class="over">баланс {{ bundle?.overtimeAccount.balanceHours ?? 0 }} ч</span></template><span v-else class="calendarProfileReadOnly">{{ selectedProfile?.timezone }}</span></div>
+          <div id="summary" class="sum"><span class="lbl">{{ selectedProfile?.name || (language === 'en' ? 'Me' : 'Я') }}:</span><span>{{ monthSummary.shifts }} смен</span><template v-if="viewingSelf"><span>{{ monthSummary.tasks }} задач</span><span>{{ monthSummary.absences }} отсутствий</span><span class="over">баланс {{ bundle?.overtimeAccount.balanceHours ?? 0 }} ч</span></template><span v-else class="calendarProfileReadOnly">{{ selectedProfile?.timezone }}</span><span v-if="highlightSharedWork && !viewingSelf" class="sharedWorkLegend"><i></i>{{ language === 'en' ? 'Shared shift' : 'Совместная смена' }}</span></div>
         </div>
         <SelectedDayPanel v-if="dayPanelOpen && viewingSelf" :bridge="bridge" />
       </div>

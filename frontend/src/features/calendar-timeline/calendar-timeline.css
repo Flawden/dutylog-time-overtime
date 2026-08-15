@@ -299,3 +299,11 @@
 .calendarProfileToggle .selfProfileDot{background:var(--accent)}
 .calendarProfileReadOnly{color:var(--muted);font-size:.82rem}
 @media (max-width:760px){.calendarProfileBar{width:100%;overflow-x:auto;flex-wrap:nowrap;padding-bottom:2px}.calendarProfileToggle{flex:0 0 auto;min-height:36px;padding:0 12px}.calendarProfileBar::-webkit-scrollbar{display:none}}
+
+
+/* v27.44.1 Shared Availability UX and shared-work overlap */
+.vue-calendar-view{--shared-work-color:#ff8a5b}
+.vue-calendar-view .cell.hasSharedWorkOverlap{box-shadow:inset 0 0 0 2px var(--shared-work-color),0 0 12px color-mix(in srgb,var(--shared-work-color) 18%,transparent)}
+.calendarWeekDay.hasSharedWorkOverlap,.calendarWeekAgenda article.hasSharedWorkOverlap{border-color:var(--shared-work-color);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--shared-work-color) 72%,transparent),0 0 10px color-mix(in srgb,var(--shared-work-color) 14%,transparent)}
+.calendarTimelineEvent.shared-work{border-left-color:var(--shared-work-color);background:color-mix(in srgb,var(--shared-work-color) 16%,var(--panel));box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--shared-work-color) 30%,transparent)}
+.sharedWorkLegend{display:inline-flex;align-items:center;gap:6px;color:var(--text);font-weight:700}.sharedWorkLegend i{width:9px;height:9px;border-radius:999px;background:var(--shared-work-color);box-shadow:0 0 0 3px color-mix(in srgb,var(--shared-work-color) 14%,transparent)}
