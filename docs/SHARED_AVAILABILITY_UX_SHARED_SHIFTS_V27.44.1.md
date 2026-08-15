@@ -25,4 +25,4 @@ All calculations reuse v27.44.0 effective schedule inputs and therefore inherit 
 - Playwright: **48**.
 - OpenAPI: **126 / 132**.
 - Flyway: **V48**.
-- Browser total ceilings remain **845000 B raw / 250000 B gzip** for the first exact v27.44.1 measurement.
+- Exact Node 20 CI measured **847303 B raw**; the total raw ceiling is **850000 B**, while the **250000 B gzip** ceiling and all per-chunk ceilings remain unchanged.

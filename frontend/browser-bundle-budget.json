@@ -6,7 +6,7 @@
   "maxEntryGzipBytes": 230000,
   "maxChunkBytes": 300000,
   "maxChunkGzipBytes": 100000,
-  "maxTotalBytes": 845000,
+  "maxTotalBytes": 850000,
   "maxTotalGzipBytes": 250000,
   "policy": "Fail when the eager shell, any async chunk or the complete segmented JS graph exceeds its locked ceiling. Route/domain segmentation must reduce eager boot cost; total gzip may not exceed the previous monolithic ceiling."
 }

@@ -6,7 +6,7 @@
 - Shared work overlap inherits the same effective schedule, v27.43.0 overrides, factual absences, partial absences, overnight clipping and timezone projection as v27.44.0 free-window calculation.
 - Adds one Vitest contract for the positive-overlap boundary; source Vitest baseline advances **70 -> 71**.
 - No backend endpoint, OpenAPI, Flyway or dependency change: OpenAPI remains **126/132**, Flyway remains **V48**, Java remains **792/164**, Playwright remains **48**.
-- Browser budget ceilings remain the proven v27.44.0 values, including **845000 B raw / 250000 B gzip total**, pending the exact v27.44.1 Node 20 measurement.
+- Exact Node 20 CI measured **847303 B raw**; the v27.44.1 total raw ceiling is rebaselined to **850000 B**, while the **250000 B gzip** ceiling and all per-chunk ceilings remain unchanged.
 
 # v27.44.0 — Shared Availability
 - Adds selected-date common free-from-work windows for `Я` plus one selected People Profile.

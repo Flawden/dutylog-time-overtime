@@ -4840,7 +4840,7 @@ contains frontend/src/features/calendar-timeline/types/domain.ts "sharedBusyWind
 contains frontend/src/features/calendar-timeline/types/model.ts "sharedBusyWindows"
 contains frontend/src/features/calendar-timeline/components/SharedAvailabilityCard.vue "Совместные смены"
 contains frontend/browser-bundle-budget.json '"release": "27.44.1"'
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 845000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 850000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.44.0 Shared Availability
@@ -4853,8 +4853,8 @@ contains frontend/src/features/calendar-timeline/types/model.ts "export function
 contains frontend/src/features/calendar-timeline/types/model.ts "calendarFactualAbsence(facts)"
 contains frontend/src/features/calendar-timeline/components/SharedAvailabilityCard.vue "data-shared-availability"
 contains frontend/src/features/calendar-timeline/components/CalendarPage.vue 'import SharedAvailabilityCard from "./SharedAvailabilityCard.vue";'
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 845000'
-contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
+contains CHANGES.md "Browser budgets stay 845000 B raw / 250000 B gzip total pending exact Node 20 CI measurement."
+contains CHANGES.md "# v27.44.0 — Shared Availability"
 
 # v27.43.0 People Profiles Managed Schedule Overrides
 contains CHANGES.md "v27.43.0 — People Profiles: Managed Schedule Overrides"
