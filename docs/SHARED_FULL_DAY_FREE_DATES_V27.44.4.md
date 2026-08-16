@@ -18,7 +18,7 @@ Therefore:
 ## Visual language
 
 - green/teal outline = together free from work for the full day;
-- coral outline = at least one minute of simultaneous work, only while `Совместные смены` is enabled;
+- coral edge marker + outline = at least one minute of simultaneous work, only while `Показать совместные смены` is enabled; the base shift/absence color remains visible;
 - shift/absence/day-off semantics keep their existing colors and content.
 
 ## Regression surface

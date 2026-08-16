@@ -4842,6 +4842,11 @@ contains frontend/src/features/calendar-timeline/components/CalendarPage.vue "da
 contains frontend/src/features/calendar-timeline/components/CalendarPage.vue "Общих выходных"
 contains frontend/src/features/calendar-timeline/types/model.spec.ts "classifies shared full-day free dates from effective work rather than absence names"
 contains frontend/src/features/calendar-timeline/calendar-timeline.css "v27.44.4 shared full-day free dates"
+contains frontend/src/features/calendar-timeline/components/SharedAvailabilityCard.vue "Показать совместные смены"
+contains frontend/src/features/calendar-timeline/components/SharedAvailabilityCard.vue "Скрыть совместные смены"
+contains frontend/src/features/calendar-timeline/calendar-timeline.css "v27.44.4 shared-work calendar marker visibility hotfix"
+contains frontend/src/features/calendar-timeline/calendar-timeline.css ".vue-calendar-view .cell.hasSharedWorkOverlap::after"
+contains frontend/src/features/calendar-timeline/calendar-timeline.css ".calendarWeekDay.hasSharedWorkOverlap::after"
 contains frontend/browser-bundle-budget.json '"release": "27.44.4"'
 contains frontend/browser-bundle-budget.json '"maxTotalBytes": 855000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'

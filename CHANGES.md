@@ -3,6 +3,7 @@
 - Reuses the existing `sharedAvailabilityForDate(...).allDayFree` truth instead of maintaining an absence-type list: ordinary days off, managed `OFF`, and any factual `FULL_DAY + replacesShift=true` absence therefore participate automatically.
 - `PARTIAL` / `HOURS_ONLY`, any remaining effective work, untimed work, and companion dates outside declared schedule coverage do **not** become shared full-day-free dates.
 - Keeps the coral shared-work layer independent and toggle-controlled; positive overlap still means at least one minute of simultaneous work.
+- Hotfix: makes that toggle explicit (`Показать` / `Скрыть совместные смены`) and renders a high-contrast coral edge marker directly on month/week dates with positive overlap, without replacing the underlying shift color.
 - Adds a monthly `Общих выходных: N` summary while preserving `Совпало смен` / `Вместе на работе` when shared-work highlighting is enabled.
 - Adds one Vitest regression contract; source baseline advances **72 -> 73**.
 - No backend endpoint, OpenAPI, Flyway, dependency, payroll or persistence change: OpenAPI remains **126/132**, Flyway **V48**, Java **792/164**, Playwright **48**.

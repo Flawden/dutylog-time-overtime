@@ -127,7 +127,7 @@ const unknownText = computed(() => {
         <i aria-hidden="true"></i>
         {{ highlightSharedWork
           ? (language === 'en' ? 'Hide shared shifts' : 'Скрыть совместные смены')
-          : (language === 'en' ? 'Show shared shifts' : 'Совместные смены') }}
+          : (language === 'en' ? 'Show shared shifts' : 'Показать совместные смены') }}
       </button>
     </header>
 
