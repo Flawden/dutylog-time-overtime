@@ -221,6 +221,25 @@ export function profileEntryForDate(bundle: CalendarRangeBundle | null, profileI
   return layer.entries.find(entry => (entry.date || entry.sourceDate) === date) ?? null;
 }
 
+export function profileDateCovered(bundle: CalendarRangeBundle | null, profileId: string, date: string): boolean {
+  if (profileId === "self") return true;
+  const layer = profileLayer(bundle, profileId);
+  if (!layer) return false;
+
+  // A real projected row is authoritative even if timezone projection places it
+  // just outside the companion source-date bounds.
+  if (profileEntryForDate(bundle, profileId, date)) return true;
+
+  const start = String(layer.startDate ?? "").slice(0, 10);
+  const end = String(layer.endDate ?? "").slice(0, 10);
+  if (DATE_PATTERN.test(start) && date < start) return false;
+  if (DATE_PATTERN.test(end) && date > end) return false;
+
+  // Old/synthetic fixtures may not carry layer bounds. Preserve their previous
+  // semantics rather than turning all missing rows into unknown dates.
+  return true;
+}
+
 export function dayFactsForProfile(bundle: CalendarRangeBundle | null, date: string, profileId: string): CalendarDayFacts {
   if (profileId === "self") return dayFacts(bundle, date);
   const layer = profileLayer(bundle, profileId);
@@ -444,6 +463,22 @@ export function sharedAvailabilityForDate(
   if (!bundle || profileId === "self") return null;
   const layer = profileLayer(bundle, profileId);
   if (!layer) return null;
+
+  if (!profileDateCovered(bundle, profileId, date)) {
+    return {
+      date,
+      profileId: layer.id,
+      profileName: layer.name,
+      precise: false,
+      unknownReason: "PROFILE_OUTSIDE_COVERAGE",
+      allDayFree: false,
+      noSharedFreeTime: false,
+      freeWindows: [],
+      selfBusy: [],
+      profileBusy: [],
+      sharedBusyWindows: [],
+    };
+  }
 
   const self = selfAvailabilityBusy(bundle, date);
   const profile = profileAvailabilityBusy(layer, date);

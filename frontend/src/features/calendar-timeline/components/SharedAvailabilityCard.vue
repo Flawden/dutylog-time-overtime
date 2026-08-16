@@ -93,6 +93,11 @@ function boundaryStyle(boundary: { minute: number; lane: number }): Record<strin
 }
 
 const unknownText = computed(() => {
+  if (availability.value?.unknownReason === "PROFILE_OUTSIDE_COVERAGE") {
+    return props.language === "en"
+      ? `No work schedule is defined for profile “${props.profile.name}” on this date, so shared free time is not calculated.`
+      : `Для профиля «${props.profile.name}» график на эту дату не задан, поэтому общее свободное время не рассчитываем.`;
+  }
   if (availability.value?.unknownReason === "SELF_UNTIMED_WORK") {
     return props.language === "en"
       ? "Your work shift has no exact time, so a precise shared window cannot be calculated."

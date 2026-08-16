@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.44.2 — Exact Availability Timeline & Shared Shift Summary**.
+Current release: **v27.44.3 — People Profile Coverage Semantics Hotfix**.
 
 
 ## v27.43.0 — People Profiles: Managed Schedule Overrides
@@ -13,6 +13,16 @@ Current release: **v27.44.2 — Exact Availability Timeline & Shared Shift Summa
 - [x] Add V48, owner-scoped override API, generated OpenAPI client contract and native Vue `ManagedProfileDayCard`.
 - [x] Java 17 Maven 792/792 plus JaCoCo and OpenAPI contract drift are green locally.
 - [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Chromium 48/48, immutable image/PostgreSQL V48 and staging smoke.
+
+## v27.44.3 — People Profile Coverage Semantics Hotfix
+
+- [x] Distinguish actual companion day off from dates outside companion schedule coverage.
+- [x] Keep existing projected entries authoritative around timezone/display boundaries.
+- [x] Fail Shared Availability closed outside profile coverage instead of inventing free time.
+- [x] Remove day-off palms / free-day wording from uncovered month/week/day dates.
+- [x] Keep managed profile editing inside the configured layer range.
+- [x] Add one coverage regression contract; Vitest baseline 72.
+- [ ] Exact Node 20, Maven/release-check, Chromium and staging acceptance.
 
 ## v27.44.2 — Exact Availability Timeline & Shared Shift Summary
 

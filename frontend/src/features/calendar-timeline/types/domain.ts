@@ -71,6 +71,8 @@ export interface CalendarLayer {
   visible: boolean;
   timezone?: string;
   scheduleEditable?: boolean;
+  startDate?: string | null;
+  endDate?: string | null;
   entries: CalendarLayerEntry[];
 }
 
@@ -82,7 +84,7 @@ export interface SharedAvailabilityWindow {
   durationMinutes: number;
 }
 
-export type SharedAvailabilityUnknownReason = "SELF_UNTIMED_WORK" | "PROFILE_UNTIMED_WORK";
+export type SharedAvailabilityUnknownReason = "SELF_UNTIMED_WORK" | "PROFILE_UNTIMED_WORK" | "PROFILE_OUTSIDE_COVERAGE";
 
 export interface SharedAvailabilityDay {
   date: string;

@@ -1,6 +1,16 @@
 # DutyLog release checklist
 
-Status: v27.44.2.
+Status: v27.44.3.
+
+## v27.44.3 — People Profile Coverage Semantics Hotfix acceptance
+
+- [x] Dates before/after companion schedule coverage are not rendered as actual days off.
+- [x] Shared Availability returns an explicit unknown state outside companion coverage and never invents free windows there.
+- [x] Existing projected entries still override simple range comparison for timezone/display edge cases.
+- [x] Managed profile day editor is not offered outside layer bounds.
+- [x] Vitest source baseline is 72; OpenAPI 126/132, Flyway V48, Java 792/164 and Playwright 48 remain unchanged.
+- [ ] Exact Node 20.18.1/npm 10.8.2 delivery/typecheck/72 Vitest/Vite/bundle passes.
+- [ ] Maven, release-check, Chromium 48/48 and staging UX smoke pass.
 
 ## v27.44.2 — Exact Availability Timeline & Shared Shift Summary acceptance
 

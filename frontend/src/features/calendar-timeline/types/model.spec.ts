@@ -8,6 +8,7 @@ import {
   dayFacts,
   dayFactsForProfile,
   profileLayer,
+  profileDateCovered,
   sharedAvailabilityForDate,
   durationCountdown,
   importantRelativeLabel,
@@ -146,6 +147,32 @@ describe("calendar and timeline model", () => {
     expect(result?.precise).toBe(true);
     expect(result?.freeWindows.map(item => `${item.startTime}–${item.endTime}`)).toEqual(["00:00–08:00", "20:00–24:00"]);
     expect(result?.sharedBusyWindows.map(item => `${item.startTime}–${item.endTime}`)).toEqual(["12:00–17:00"]);
+  });
+
+  it("does not turn dates outside a companion profile range into days off or shared free time", () => {
+    const bundle = normalizeCalendarBundle({
+      from: "2026-08-01", to: "2026-08-31",
+      calendarLayers: [{
+        id: 9, name: "Сашка", color: "#445566", visible: true,
+        startDate: "2026-08-20", endDate: "2026-08-31",
+        entries: [{ date: "2026-08-20", sourceDate: "2026-08-20", timed: true, dayOff: true }],
+      }],
+    }, "2026-08-01", "2026-08-31");
+
+    expect(profileDateCovered(bundle, "9", "2026-08-19")).toBe(false);
+    expect(profileDateCovered(bundle, "9", "2026-08-20")).toBe(true);
+
+    const beforeStart = sharedAvailabilityForDate(bundle, "2026-08-19", "9");
+    expect(beforeStart).toMatchObject({
+      precise: false,
+      unknownReason: "PROFILE_OUTSIDE_COVERAGE",
+      allDayFree: false,
+      noSharedFreeTime: false,
+      freeWindows: [],
+      sharedBusyWindows: [],
+    });
+
+    expect(sharedAvailabilityForDate(bundle, "2026-08-20", "9")?.allDayFree).toBe(true);
   });
 
   it("counts even one minute of simultaneous work but not adjacent shifts", () => {

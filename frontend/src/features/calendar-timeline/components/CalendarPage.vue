@@ -15,6 +15,7 @@ import {
   dayFactsForProfile,
   profileEntryForDate,
   profileLayer,
+  profileDateCovered,
   sharedAvailabilityForDate,
   minutesOf,
   monthGridDates,
@@ -50,6 +51,27 @@ const sharedWorkByDate = computed(() => {
 });
 const focusFacts = computed(() => dayFactsForProfile(bundle.value, focusDate.value, activeProfileId.value));
 const focusProfileEntry = computed(() => profileEntryForDate(bundle.value, activeProfileId.value, focusDate.value));
+const focusProfileCovered = computed(() => viewingSelf.value || profileDateCovered(bundle.value, activeProfileId.value, focusDate.value));
+const profileCoverageLabel = computed(() => {
+  if (viewingSelf.value || !selectedProfile.value) return "";
+  const layer = selectedProfile.value;
+  const start = String(layer.startDate ?? "").slice(0, 10);
+  const end = String(layer.endDate ?? "").slice(0, 10);
+  const label = (value: string) => dateLabel(value, language.value, { day: "numeric", month: "short" });
+  let range = "";
+  if (/^\d{4}-\d{2}-\d{2}$/.test(start) && /^\d{4}-\d{2}-\d{2}$/.test(end)) {
+    range = language.value === "en" ? `schedule ${label(start)}–${label(end)}` : `график ${label(start)}–${label(end)}`;
+  } else if (/^\d{4}-\d{2}-\d{2}$/.test(start)) {
+    range = language.value === "en" ? `schedule from ${label(start)}` : `график с ${label(start)}`;
+  } else if (/^\d{4}-\d{2}-\d{2}$/.test(end)) {
+    range = language.value === "en" ? `schedule through ${label(end)}` : `график до ${label(end)}`;
+  }
+  return [layer.timezone || "", range].filter(Boolean).join(" · ");
+});
+const focusDayScheduleLabel = computed(() => {
+  if (!viewingSelf.value && !focusProfileCovered.value) return language.value === "en" ? "No schedule data" : "Нет данных о графике";
+  return focusFacts.value.shift?.name || (language.value === "en" ? "Day off" : "Свободный день");
+});
 const focusMonth = computed(() => monthStart(focusDate.value).slice(0, 7));
 const monthTitle = computed(() => dateLabel(`${focusMonth.value}-01`, language.value, { month: "long" }));
 const yearTitle = computed(() => focusDate.value.slice(0, 4));
@@ -168,8 +190,11 @@ function sharedWorkDurationLabel(minutesValue: number): string {
 function openTaskCount(date: string): number { return calendarOpenTaskCount(cellFacts(date)); }
 function importantMarker(date: string) { return cellFacts(date).important[0] ?? null; }
 function importantMarkerGlyph(date: string): string { return calendarImportantGlyph(importantMarker(date)); }
+function hasProfileCoverage(date: string): boolean {
+  return viewingSelf.value || profileDateCovered(bundle.value, activeProfileId.value, date);
+}
 function isScheduleFreeDay(date: string): boolean {
-  return Boolean(bundle.value) && calendarScheduleFree(cellFacts(date));
+  return Boolean(bundle.value) && hasProfileCoverage(date) && calendarScheduleFree(cellFacts(date));
 }
 function isWeekend(date: string): boolean {
   const value = new Date(`${date}T00:00:00Z`).getUTCDay();
@@ -180,7 +205,8 @@ function cellAriaLabel(date: string): string {
   const facts = cellFacts(date);
   const parts = [dateLabel(date, language.value, { weekday: "long", day: "numeric", month: "long" })];
   const shiftName = facts.shift?.name;
-  if (shiftName) parts.push(`${language.value === "en" ? "Shift" : "Смена"}: ${shiftName}`);
+  if (!hasProfileCoverage(date)) parts.push(language.value === "en" ? "No schedule data for this date" : "На эту дату нет данных о графике");
+  else if (shiftName) parts.push(`${language.value === "en" ? "Shift" : "Смена"}: ${shiftName}`);
   else if (calendarScheduleFree(facts)) parts.push(language.value === "en" ? "Schedule: day off" : "По графику: свободный день");
   if (facts.absences.length) parts.push(`${language.value === "en" ? "Absences" : "Отсутствия"}: ${facts.absences.length}`);
   const openTasks = calendarOpenTaskCount(facts);
@@ -309,22 +335,23 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
 
       <section v-show="mode === 'week'" id="calendarWeekExperience" class="calendarWeekExperience" aria-label="Недельный календарь">
         <div id="calendarWeekStrip" class="calendarWeekStrip">
-          <button v-for="date in week" :key="date" type="button" class="calendarWeekDay" :class="{ isSelected: date === focusDate, todayCell: date === workDate, hasShift: Boolean(cellFacts(date).shift), isScheduleFree: isScheduleFreeDay(date), hasAbsenceFact: Boolean(factualAbsence(date)), isWeekend: isWeekend(date), hasSharedWorkOverlap: hasSharedWorkOverlap(date) }" :style="cellStyle(date)" :data-date="date" :aria-label="cellAriaLabel(date)" @click="chooseWeekDate(date)">
+          <button v-for="date in week" :key="date" type="button" class="calendarWeekDay" :class="{ isSelected: date === focusDate, todayCell: date === workDate, hasShift: Boolean(cellFacts(date).shift), isScheduleFree: isScheduleFreeDay(date), hasAbsenceFact: Boolean(factualAbsence(date)), isWeekend: isWeekend(date), hasSharedWorkOverlap: hasSharedWorkOverlap(date), profileOutsideCoverage: !hasProfileCoverage(date) }" :style="cellStyle(date)" :data-date="date" :aria-label="cellAriaLabel(date)" @click="chooseWeekDate(date)">
             <small>{{ weekday(date) }}</small><b>{{ dayNumber(date) }}</b>
             <span v-if="cellFacts(date).shift">{{ cellFacts(date).shift?.name }}</span>
             <span v-else-if="isScheduleFreeDay(date)" class="calendarWeekPalm" aria-hidden="true">
               <svg viewBox="0 0 64 64" focusable="false"><path d="M31 55c1-12 2-24 1-36M31 22c-8-9-16-9-23-5 8 0 14 4 19 11M33 21c7-10 15-11 23-7-8 1-14 6-18 13M32 19c-2-8-7-13-14-15 5 5 8 11 9 18M33 19c3-8 8-13 15-15-5 5-8 11-10 18"/></svg>
             </span>
+            <span v-else-if="!hasProfileCoverage(date)">{{ language === 'en' ? 'No data' : 'Нет данных' }}</span>
             <span v-else>{{ language === 'en' ? 'Absence' : 'Отсутствие' }}</span>
           </button>
         </div>
         <div id="calendarWeekAgenda" class="calendarWeekAgenda">
-          <article v-for="date in week" :key="`agenda-${date}`" :class="{ hasShift: Boolean(cellFacts(date).shift), isScheduleFree: isScheduleFreeDay(date), hasAbsenceFact: Boolean(factualAbsence(date)), hasSharedWorkOverlap: hasSharedWorkOverlap(date) }" :style="cellStyle(date)"><header><b>{{ dayLabel(date) }}</b><span v-if="openTaskCount(date)" class="calendarWeekTaskCount">{{ openTaskCount(date) }}</span></header><p v-if="cellFacts(date).shift" class="calendarWeekShiftLabel">{{ cellFacts(date).shift?.name }}</p><p v-else-if="isScheduleFreeDay(date)" class="calendarWeekFreeLabel"><span class="calendarWeekPalm" aria-hidden="true"><svg viewBox="0 0 64 64" focusable="false"><path d="M31 55c1-12 2-24 1-36M31 22c-8-9-16-9-23-5 8 0 14 4 19 11M33 21c7-10 15-11 23-7-8 1-14 6-18 13M32 19c-2-8-7-13-14-15 5 5 8 11 9 18M33 19c3-8 8-13 15-15-5 5-8 11-10 18"/></svg></span></p><p v-for="item in cellFacts(date).important" :key="item.id">{{ item.icon || '★' }} {{ item.title }}</p><p v-for="absence in cellFacts(date).absences" :key="absence.periodId">{{ absence.title || absence.typeName }}</p></article>
+          <article v-for="date in week" :key="`agenda-${date}`" :class="{ hasShift: Boolean(cellFacts(date).shift), isScheduleFree: isScheduleFreeDay(date), hasAbsenceFact: Boolean(factualAbsence(date)), hasSharedWorkOverlap: hasSharedWorkOverlap(date), profileOutsideCoverage: !hasProfileCoverage(date) }" :style="cellStyle(date)"><header><b>{{ dayLabel(date) }}</b><span v-if="openTaskCount(date)" class="calendarWeekTaskCount">{{ openTaskCount(date) }}</span></header><p v-if="cellFacts(date).shift" class="calendarWeekShiftLabel">{{ cellFacts(date).shift?.name }}</p><p v-else-if="isScheduleFreeDay(date)" class="calendarWeekFreeLabel"><span class="calendarWeekPalm" aria-hidden="true"><svg viewBox="0 0 64 64" focusable="false"><path d="M31 55c1-12 2-24 1-36M31 22c-8-9-16-9-23-5 8 0 14 4 19 11M33 21c7-10 15-11 23-7-8 1-14 6-18 13M32 19c-2-8-7-13-14-15 5 5 8 11 9 18M33 19c3-8 8-13 15-15-5 5-8 11-10 18"/></svg></span></p><p v-for="item in cellFacts(date).important" :key="item.id">{{ item.icon || '★' }} {{ item.title }}</p><p v-for="absence in cellFacts(date).absences" :key="absence.periodId">{{ absence.title || absence.typeName }}</p></article>
         </div>
       </section>
 
       <section v-show="mode === 'day'" id="calendarDayExperience" class="calendarDayExperience" aria-label="Почасовой календарь дня">
-        <div class="calendarDayHeader"><div><div class="eyebrow">День</div><h2 id="calendarDayTitle">{{ dateLabel(focusDate, language, { weekday:'long', day:'numeric', month:'long' }) }}</h2><div id="calendarDaySubtitle" class="calendarDaySubtitle">{{ focusFacts.shift?.name || (language === 'en' ? 'Day off' : 'Свободный день') }}</div></div><button v-if="viewingSelf" id="calendarDayOpenDetails" type="button" @click="openDetails">Все детали дня</button><span v-else class="calendarProfileReadOnly">{{ language === 'en' ? 'Read-only schedule' : 'График только для просмотра' }}</span></div>
+        <div class="calendarDayHeader"><div><div class="eyebrow">День</div><h2 id="calendarDayTitle">{{ dateLabel(focusDate, language, { weekday:'long', day:'numeric', month:'long' }) }}</h2><div id="calendarDaySubtitle" class="calendarDaySubtitle">{{ focusDayScheduleLabel }}</div></div><button v-if="viewingSelf" id="calendarDayOpenDetails" type="button" @click="openDetails">Все детали дня</button><span v-else class="calendarProfileReadOnly">{{ language === 'en' ? 'Read-only schedule' : 'График только для просмотра' }}</span></div>
         <div id="calendarAllDay" class="calendarAllDay" :hidden="!allDayItems.length"><div class="calendarAllDayHead">Весь день</div><div class="calendarAllDayItems"><div v-for="item in allDayItems" :key="item.key" class="calendarAllDayItem" :class="item.type" :style="{ '--event-color': item.color || 'var(--accent)' }">{{ item.title }}</div></div></div>
         <div id="calendarTimeline" class="calendarTimeline" aria-label="Почасовая шкала"><div id="calendarTimelineHours" class="calendarTimelineHours"><span v-for="index in 13" :key="index" :style="{ top: `${(((index - 1) * 2) / 24) * 100}%` }">{{ String((index - 1) * 2).padStart(2,'0') }}:00</span></div><div id="calendarTimelineCanvas" class="calendarTimelineCanvas"><button v-for="event in timelineEvents" :key="event.key" type="button" class="calendarTimelineEvent" :class="event.type" :style="eventStyle(event)" @click="openTimelineEvent(event)"><b>{{ event.title }}</b><span>{{ timelineRange(event) }}<template v-if="event.meta"> · {{ event.meta }}</template></span></button></div></div>
       </section>
@@ -340,7 +367,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
               :key="date"
               type="button"
               class="cell"
-              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasShift: Boolean(cellFacts(date).shift), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)), isScheduleFree: inFocusMonth(date) && isScheduleFreeDay(date), isWeekend: isWeekend(date), hasSharedWorkOverlap: hasSharedWorkOverlap(date) }"
+              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasShift: Boolean(cellFacts(date).shift), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)), isScheduleFree: inFocusMonth(date) && isScheduleFreeDay(date), isWeekend: isWeekend(date), hasSharedWorkOverlap: hasSharedWorkOverlap(date), profileOutsideCoverage: !hasProfileCoverage(date) }"
               :style="cellStyle(date)"
               :aria-label="cellAriaLabel(date)"
               :data-date="date"
@@ -377,7 +404,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
               <span v-if="secondaryAbsences(date).length" class="vacationMark" :style="{ background: secondaryAbsences(date)[0]?.typeColor }">●</span>
             </button>
           </div>
-          <div id="summary" class="sum"><span class="lbl">{{ selectedProfile?.name || (language === 'en' ? 'Me' : 'Я') }}:</span><span>{{ monthSummary.shifts }} смен</span><template v-if="viewingSelf"><span>{{ monthSummary.tasks }} задач</span><span>{{ monthSummary.absences }} отсутствий</span><span class="over">баланс {{ bundle?.overtimeAccount.balanceHours ?? 0 }} ч</span></template><span v-else class="calendarProfileReadOnly">{{ selectedProfile?.timezone }}</span><span v-if="highlightSharedWork && !viewingSelf" class="sharedWorkLegend"><i></i>{{ language === 'en' ? 'Shared shift' : 'Совместная смена' }}</span></div>
+          <div id="summary" class="sum"><span class="lbl">{{ selectedProfile?.name || (language === 'en' ? 'Me' : 'Я') }}:</span><span>{{ monthSummary.shifts }} смен</span><template v-if="viewingSelf"><span>{{ monthSummary.tasks }} задач</span><span>{{ monthSummary.absences }} отсутствий</span><span class="over">баланс {{ bundle?.overtimeAccount.balanceHours ?? 0 }} ч</span></template><span v-else class="calendarProfileReadOnly">{{ profileCoverageLabel }}</span><span v-if="highlightSharedWork && !viewingSelf" class="sharedWorkLegend"><i></i>{{ language === 'en' ? 'Shared shift' : 'Совместная смена' }}</span></div>
           <div v-if="highlightSharedWork && !viewingSelf" class="sharedWorkMonthFooter" data-shared-work-month-summary>
             <span class="sharedWorkMonthCount"><i></i><b>{{ language === 'en' ? 'Shared shifts' : 'Совпало смен' }}: {{ sharedWorkMonthSummary.matchedShifts }}</b></span>
             <span>{{ language === 'en' ? 'Working together' : 'Вместе на работе' }}: <b>{{ sharedWorkDurationLabel(sharedWorkMonthSummary.overlapMinutes) }}</b></span>
@@ -386,7 +413,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
         <SelectedDayPanel v-if="dayPanelOpen && viewingSelf" :bridge="bridge" />
       </div>
       <ManagedProfileDayCard
-        v-if="!viewingSelf && selectedProfile && selectedProfile.scheduleEditable !== false"
+        v-if="!viewingSelf && selectedProfile && focusProfileCovered && selectedProfile.scheduleEditable !== false"
         :profile="selectedProfile"
         :date="focusDate"
         :entry="focusProfileEntry"

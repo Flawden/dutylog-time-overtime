@@ -1,3 +1,9 @@
+# DutyLog v27.44.3 — People Profile Coverage Semantics Hotfix
+
+People Profiles now distinguish **actual day off** from **no schedule data for this date**. A missing projected row outside a companion profile's configured `startDate` / `endDate` range is neutral, not a palm-marked free day.
+
+The same rule is used by Shared Availability: outside companion coverage DutyLog shows that the schedule is unknown and does not claim that both people are free. Existing shift colors, managed overrides, shared-shift overlap highlighting and exact selected-day timeline remain unchanged.
+
 # DutyLog v27.44.2 — Exact Availability Timeline & Shared Shift Summary
 
 Shared Availability now labels the actual minute at every visible rail transition instead of asking the user to estimate boundaries from 6-hour ticks. `00:00`/`24:00` remain explicit day edges and close labels can occupy alternating rows on narrow screens.

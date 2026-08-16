@@ -1,3 +1,9 @@
+# v27.44.3 People Profile Coverage Semantics Hotfix review
+
+v27.44.3 changes only client-side interpretation/presentation of already-authorized companion calendar data. It adds no endpoint, credential, role, authorization rule, persistence path, account-to-account transport or dependency. The fix is fail-closed: dates outside declared companion schedule coverage are treated as unknown rather than inferred free time.
+
+Status: v27.44.3.
+
 # v27.44.2 Exact Availability Timeline & Shared Shift Summary review
 
 v27.44.2 adds only local derived presentation: exact availability boundary labels and aggregate overlap statistics over already-authorized calendar data. It adds no endpoint, credential, authorization rule, persistence path, account-to-account transport or dependency. Shared-shift totals are not persisted.

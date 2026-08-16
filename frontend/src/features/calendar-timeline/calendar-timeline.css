@@ -315,3 +315,8 @@
 .sharedWorkMonthFooter b{color:var(--text)}
 .sharedWorkMonthCount i{width:9px;height:9px;border-radius:999px;background:var(--shared-work-color);box-shadow:0 0 0 3px color-mix(in srgb,var(--shared-work-color) 14%,transparent)}
 @media (max-width:640px){.sharedWorkMonthFooter{align-items:flex-start;display:grid;gap:6px}}
+
+
+/* v27.44.3 companion schedule coverage semantics */
+.vue-calendar-view .cell.profileOutsideCoverage,.calendarWeekDay.profileOutsideCoverage,.calendarWeekAgenda article.profileOutsideCoverage{opacity:.56}
+.vue-calendar-view .cell.profileOutsideCoverage.hasSharedWorkOverlap,.calendarWeekDay.profileOutsideCoverage.hasSharedWorkOverlap,.calendarWeekAgenda article.profileOutsideCoverage.hasSharedWorkOverlap{opacity:1}

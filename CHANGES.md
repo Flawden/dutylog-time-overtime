@@ -1,3 +1,13 @@
+# v27.44.3 — People Profile Coverage Semantics Hotfix
+- Fixes a People Profiles coverage bug: a companion date with no projected row is no longer automatically presented as a real day off when the date lies outside that profile's configured schedule range.
+- Adds explicit companion `startDate` / `endDate` typing and a `profileDateCovered(...)` model contract; a real projected entry still wins around timezone/display-boundary cases.
+- Month/week/day now show outside-range dates as neutral/unknown instead of palm-marked free days, and Day mode says `Нет данных о графике` rather than `Свободный день`.
+- Shared Availability fails closed outside companion coverage with `PROFILE_OUTSIDE_COVERAGE`; it no longer invents all-day shared free time from missing schedule data.
+- Managed profile day editing is hidden outside the configured profile range, matching the existing backend override bounds.
+- Adds one Vitest regression contract; source baseline advances **71 -> 72**.
+- No backend endpoint, OpenAPI, Flyway, dependency or schedule-authority change: OpenAPI remains **126/132**, Flyway **V48**, Java **792/164**, Playwright **48**.
+- Browser ceilings remain **850000 B raw / 250000 B gzip** pending exact Node 20 v27.44.3 measurement.
+
 # v27.44.2 — Exact Availability Timeline & Shared Shift Summary
 - Replaces approximate `00 / 06 / 12 / 18 / 24` availability-rail ticks with exact `HH:mm` labels at every visible free/shared-work segment boundary.
 - Keeps `00:00` and `24:00` at day edges and staggers close internal labels vertically to reduce mobile collisions.

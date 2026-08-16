@@ -1,3 +1,7 @@
+## v27.44.3 profile coverage semantics
+
+No dependency or package graph change is introduced. Root/frontend release identity advances to v27.44.3 only. Node 20.18.1/npm 10.8.2 and the reviewed dependency graph remain unchanged; OpenAPI stays 126/132 and Flyway stays V48.
+
 ## v27.44.2 exact availability timeline and shared shift summary
 
 No dependency or package graph change is introduced. Root/frontend release identity advances to v27.44.2 only. Node 20.18.1/npm 10.8.2 and the reviewed dependency graph remain unchanged; OpenAPI stays 126/132 and Flyway stays V48.
@@ -16,7 +20,7 @@ No dependency or package graph change is introduced. Root/frontend package and l
 
 # Supply-chain maintenance
 
-Status: v27.44.2.
+Status: v27.44.3.
 
 ## v27.42.8 source-contract hotfix
 
