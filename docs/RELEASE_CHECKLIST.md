@@ -1,6 +1,17 @@
 # DutyLog release checklist
 
-Status: v27.44.1.
+Status: v27.44.2.
+
+## v27.44.2 — Exact Availability Timeline & Shared Shift Summary acceptance
+
+- [x] Selected-day rail uses exact boundary labels, including `00:00` and `24:00`.
+- [x] Close boundary labels use alternating vertical lanes rather than reverting to approximate ticks.
+- [x] `Совместные смены` still highlights any date with >0 minutes simultaneous work, regardless of unequal shift start/end times.
+- [x] Month footer shows matched shift-date count and summed simultaneous-work minutes for the focus month only.
+- [x] OpenAPI 126/132, Flyway V48, Java 792/164, Playwright 48 and Vitest 71 remain the source baselines.
+- [ ] Exact Node 20.18.1/npm 10.8.2 delivery/typecheck/71 Vitest/Vite/bundle passes.
+- [ ] Maven, release-check, Chromium 48/48 and staging UX smoke pass.
+
 
 ## v27.44.1 — Shared Availability UX & Shared Shifts acceptance
 

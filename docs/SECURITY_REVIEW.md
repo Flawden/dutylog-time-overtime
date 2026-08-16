@@ -1,3 +1,9 @@
+# v27.44.2 Exact Availability Timeline & Shared Shift Summary review
+
+v27.44.2 adds only local derived presentation: exact availability boundary labels and aggregate overlap statistics over already-authorized calendar data. It adds no endpoint, credential, authorization rule, persistence path, account-to-account transport or dependency. Shared-shift totals are not persisted.
+
+Status: v27.44.2.
+
 # v27.44.1 Shared Availability UX & Shared Shifts review
 
 v27.44.1 adds only client-side derived presentation over calendar data already authorized to the signed-in owner. It adds no endpoint, credential, role, authorization rule, persistence path, dependency or account-to-account transport. Shared-shift highlighting uses only effective work intervals and persists no inferred overlap.

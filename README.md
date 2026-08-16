@@ -1,3 +1,11 @@
+# DutyLog v27.44.2 — Exact Availability Timeline & Shared Shift Summary
+
+Shared Availability now labels the actual minute at every visible rail transition instead of asking the user to estimate boundaries from 6-hour ticks. `00:00`/`24:00` remain explicit day edges and close labels can occupy alternating rows on narrow screens.
+
+The existing `Совместные смены` mode now finishes the month-level story: any positive simultaneous work still colors the date even when the two shifts have different starts or ends, and the month footer reports `Совпало смен` plus total `Вместе на работе` time.
+
+All values remain derived from the v27.44.x effective work schedule and override/absence/timezone projection. No second schedule truth is introduced.
+
 # DutyLog v27.44.1 — Shared Availability UX & Shared Shifts
 
 Shared Availability now answers the planning question in human language instead of looking like an interval debugger. The selected-day card leads with total common free-from-work time, uses `До …` / `После …` for day-edge windows, adds a compact 24-hour rail and keeps the detailed work-only semantics behind an info disclosure.

@@ -59,6 +59,17 @@ const monthSummary = computed(() => ({
   tasks: monthDates.value.reduce((sum, date) => sum + dayFactsForProfile(bundle.value, date, activeProfileId.value).tasks.filter(task => !task.done).length, 0),
   absences: monthDates.value.reduce((sum, date) => sum + dayFactsForProfile(bundle.value, date, activeProfileId.value).absences.length, 0),
 }));
+const sharedWorkMonthSummary = computed(() => {
+  let matchedShifts = 0;
+  let overlapMinutes = 0;
+  for (const date of monthDates.value) {
+    const windows = sharedWorkByDate.value.get(date) ?? [];
+    if (!windows.length) continue;
+    matchedShifts += 1;
+    overlapMinutes += windows.reduce((sum, window) => sum + window.durationMinutes, 0);
+  }
+  return { matchedShifts, overlapMinutes };
+});
 
 const allDayItems = computed(() => [
   ...focusFacts.value.important.filter(item => item.allDay !== false).map(item => ({ key: `important-${item.id}`, type: "important", title: item.title, color: item.color })),
@@ -147,6 +158,13 @@ const timelineEvents = computed(() => {
 function cellFacts(date: string) { return dayFactsForProfile(bundle.value, date, activeProfileId.value); }
 function sharedWorkWindows(date: string): SharedAvailabilityWindow[] { return sharedWorkByDate.value.get(date) ?? []; }
 function hasSharedWorkOverlap(date: string): boolean { return highlightSharedWork.value && sharedWorkWindows(date).length > 0; }
+function sharedWorkDurationLabel(minutesValue: number): string {
+  const minutes = Math.max(0, Math.round(minutesValue));
+  const hours = Math.floor(minutes / 60);
+  const rest = minutes % 60;
+  if (language.value === "en") return [hours ? `${hours} h` : "", rest ? `${rest} min` : ""].filter(Boolean).join(" ") || "0 min";
+  return [hours ? `${hours} ч` : "", rest ? `${rest} мин` : ""].filter(Boolean).join(" ") || "0 мин";
+}
 function openTaskCount(date: string): number { return calendarOpenTaskCount(cellFacts(date)); }
 function importantMarker(date: string) { return cellFacts(date).important[0] ?? null; }
 function importantMarkerGlyph(date: string): string { return calendarImportantGlyph(importantMarker(date)); }
@@ -168,6 +186,10 @@ function cellAriaLabel(date: string): string {
   const openTasks = calendarOpenTaskCount(facts);
   if (openTasks) parts.push(`${language.value === "en" ? "Tasks" : "Задачи"}: ${openTasks}`);
   if (facts.important.length) parts.push(`${language.value === "en" ? "Important dates" : "Важные даты"}: ${facts.important.length}`);
+  const sharedWindows = sharedWorkWindows(date);
+  if (highlightSharedWork.value && sharedWindows.length) {
+    parts.push(`${language.value === "en" ? "Working together" : "Работаем вместе"}: ${sharedWindows.map(window => `${window.startTime}–${window.endTime}`).join(", ")}`);
+  }
   const dayMarker = String(facts.day?.dayEmoji ?? "").trim();
   if (dayMarker) parts.push(`${language.value === "en" ? "Day marker" : "Маркер дня"}: ${dayMarker}`);
   return parts.join(". ");
@@ -356,6 +378,10 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
             </button>
           </div>
           <div id="summary" class="sum"><span class="lbl">{{ selectedProfile?.name || (language === 'en' ? 'Me' : 'Я') }}:</span><span>{{ monthSummary.shifts }} смен</span><template v-if="viewingSelf"><span>{{ monthSummary.tasks }} задач</span><span>{{ monthSummary.absences }} отсутствий</span><span class="over">баланс {{ bundle?.overtimeAccount.balanceHours ?? 0 }} ч</span></template><span v-else class="calendarProfileReadOnly">{{ selectedProfile?.timezone }}</span><span v-if="highlightSharedWork && !viewingSelf" class="sharedWorkLegend"><i></i>{{ language === 'en' ? 'Shared shift' : 'Совместная смена' }}</span></div>
+          <div v-if="highlightSharedWork && !viewingSelf" class="sharedWorkMonthFooter" data-shared-work-month-summary>
+            <span class="sharedWorkMonthCount"><i></i><b>{{ language === 'en' ? 'Shared shifts' : 'Совпало смен' }}: {{ sharedWorkMonthSummary.matchedShifts }}</b></span>
+            <span>{{ language === 'en' ? 'Working together' : 'Вместе на работе' }}: <b>{{ sharedWorkDurationLabel(sharedWorkMonthSummary.overlapMinutes) }}</b></span>
+          </div>
         </div>
         <SelectedDayPanel v-if="dayPanelOpen && viewingSelf" :bridge="bridge" />
       </div>

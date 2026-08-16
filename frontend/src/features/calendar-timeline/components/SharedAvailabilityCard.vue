@@ -51,6 +51,47 @@ function segmentStyle(window: SharedAvailabilityWindow): Record<string, string> 
   };
 }
 
+function boundaryTimeLabel(minutesValue: number): string {
+  const minutes = Math.max(0, Math.min(1440, Math.round(minutesValue)));
+  if (minutes === 1440) return "24:00";
+  return `${String(Math.floor(minutes / 60)).padStart(2, "0")}:${String(minutes % 60).padStart(2, "0")}`;
+}
+
+const timelineBoundaries = computed(() => {
+  const values = new Set<number>([0, 1440]);
+  for (const window of availability.value?.freeWindows ?? []) {
+    values.add(window.startMinute);
+    values.add(window.endMinute);
+  }
+  if (props.highlightSharedWork) {
+    for (const window of availability.value?.sharedBusyWindows ?? []) {
+      values.add(window.startMinute);
+      values.add(window.endMinute);
+    }
+  }
+
+  const ordered = [...values].sort((left, right) => left - right);
+  let closeRun = 0;
+  return ordered.map((minute, index) => {
+    if (index === 0 || minute - (ordered[index - 1] ?? 0) >= 120) closeRun = 0;
+    else closeRun += 1;
+    return {
+      minute,
+      label: boundaryTimeLabel(minute),
+      lane: minute === 0 || minute === 1440 ? 0 : closeRun % 2,
+      edgeStart: minute === 0,
+      edgeEnd: minute === 1440,
+    };
+  });
+});
+
+function boundaryStyle(boundary: { minute: number; lane: number }): Record<string, string> {
+  return {
+    left: `${(boundary.minute / 1440) * 100}%`,
+    top: `${boundary.lane * 15}px`,
+  };
+}
+
 const unknownText = computed(() => {
   if (availability.value?.unknownReason === "SELF_UNTIMED_WORK") {
     return props.language === "en"
@@ -126,7 +167,15 @@ const unknownText = computed(() => {
             ></span>
           </template>
         </div>
-        <div class="sharedAvailabilityTicks" aria-hidden="true"><span>00</span><span>06</span><span>12</span><span>18</span><span>24</span></div>
+        <div class="sharedAvailabilityBoundaries" aria-hidden="true">
+          <span
+            v-for="boundary in timelineBoundaries"
+            :key="`boundary-${boundary.minute}`"
+            class="sharedAvailabilityBoundary"
+            :class="{ edgeStart: boundary.edgeStart, edgeEnd: boundary.edgeEnd }"
+            :style="boundaryStyle(boundary)"
+          ><i></i><b>{{ boundary.label }}</b></span>
+        </div>
       </div>
 
       <div v-if="highlightSharedWork" class="sharedWorkSummary" data-shared-work-summary>
@@ -173,7 +222,12 @@ const unknownText = computed(() => {
 .sharedAvailabilitySegment{position:absolute;top:0;bottom:0;border-radius:999px}
 .sharedAvailabilitySegment.free{background:color-mix(in srgb,var(--accent) 72%,var(--panel))}
 .sharedAvailabilitySegment.sharedWork{background:var(--shared-work-color);z-index:2;box-shadow:0 0 8px color-mix(in srgb,var(--shared-work-color) 48%,transparent)}
-.sharedAvailabilityTicks{display:flex;justify-content:space-between;color:var(--muted);font-size:.64rem;font-variant-numeric:tabular-nums}
+.sharedAvailabilityBoundaries{position:relative;height:31px;color:var(--muted);font-size:.64rem;font-variant-numeric:tabular-nums;line-height:1}
+.sharedAvailabilityBoundary{position:absolute;transform:translateX(-50%);white-space:nowrap;display:grid;justify-items:center;gap:2px;z-index:3}
+.sharedAvailabilityBoundary i{width:1px;height:5px;background:color-mix(in srgb,var(--muted) 65%,transparent)}
+.sharedAvailabilityBoundary b{font-weight:650;color:var(--muted)}
+.sharedAvailabilityBoundary.edgeStart{transform:none;justify-items:start}
+.sharedAvailabilityBoundary.edgeEnd{transform:translateX(-100%);justify-items:end}
 .sharedWorkSummary{padding:8px 10px;border-left:3px solid var(--shared-work-color);border-radius:9px;background:color-mix(in srgb,var(--shared-work-color) 8%,var(--panelAlt,var(--panel)));display:grid;gap:2px}
 .sharedWorkSummary b{font-size:.84rem}.sharedWorkSummary span{color:var(--muted);font-size:.74rem}
 .sharedAvailabilityUnknown{padding:10px 11px;border:1px dashed var(--border);border-radius:12px;display:grid;gap:3px}.sharedAvailabilityUnknown span{color:var(--muted);font-size:.8rem}

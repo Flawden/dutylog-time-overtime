@@ -1,3 +1,12 @@
+# v27.44.2 — Exact Availability Timeline & Shared Shift Summary
+- Replaces approximate `00 / 06 / 12 / 18 / 24` availability-rail ticks with exact `HH:mm` labels at every visible free/shared-work segment boundary.
+- Keeps `00:00` and `24:00` at day edges and staggers close internal labels vertically to reduce mobile collisions.
+- `Совместные смены` remains a positive-overlap mode: any simultaneous work longer than zero minutes highlights the calendar date; different shift starts/ends are expected and supported.
+- Adds a month footer with `Совпало смен: N` and `Вместе на работе: H ч M мин`, derived only from current-month positive overlap windows.
+- Shared-work ranges are added to calendar-cell accessible text while the overlap mode is enabled.
+- No backend endpoint, OpenAPI, Flyway, dependency or schedule-authority change. OpenAPI remains **126/132**, Flyway **V48**, Java baseline **792/164**, Playwright **48**, Vitest **71**.
+- Browser ceilings remain **850000 B raw / 250000 B gzip** until exact Node 20 CI measures v27.44.2.
+
 # v27.44.1 — Shared Availability UX & Shared Shifts
 - Reworks Shared Availability into a compact human-readable card: total common free time, `До …` / `После …` edge wording, compact window chips and a 24-hour visual rail.
 - Moves the long privacy/semantics explanation behind `Только рабочие графики ⓘ`.
