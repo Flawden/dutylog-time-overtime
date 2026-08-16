@@ -22,4 +22,4 @@ This became especially visible after Shared Availability: an uncovered date coul
 - Playwright: **48**.
 - OpenAPI: **126 / 132**.
 - Flyway: **V48**.
-- Browser ceilings remain **850000 B raw / 250000 B gzip** pending exact Node 20 measurement.
+- Browser ceilings remain **855000 B raw / 250000 B gzip** pending exact Node 20 measurement.

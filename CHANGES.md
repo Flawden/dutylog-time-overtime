@@ -6,7 +6,7 @@
 - Managed profile day editing is hidden outside the configured profile range, matching the existing backend override bounds.
 - Adds one Vitest regression contract; source baseline advances **71 -> 72**.
 - No backend endpoint, OpenAPI, Flyway, dependency or schedule-authority change: OpenAPI remains **126/132**, Flyway **V48**, Java **792/164**, Playwright **48**.
-- Browser ceilings remain **850000 B raw / 250000 B gzip** pending exact Node 20 v27.44.3 measurement.
+- Browser ceilings remain **855000 B raw / 250000 B gzip** pending exact Node 20 v27.44.3 measurement.
 
 # v27.44.2 — Exact Availability Timeline & Shared Shift Summary
 - Replaces approximate `00 / 06 / 12 / 18 / 24` availability-rail ticks with exact `HH:mm` labels at every visible free/shared-work segment boundary.

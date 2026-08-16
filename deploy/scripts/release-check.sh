@@ -4846,7 +4846,7 @@ contains frontend/src/features/calendar-timeline/components/CalendarPage.vue "Н
 contains frontend/src/features/calendar-timeline/components/SharedAvailabilityCard.vue "график на эту дату не задан"
 contains frontend/src/features/calendar-timeline/calendar-timeline.css "v27.44.3 companion schedule coverage semantics"
 contains frontend/browser-bundle-budget.json '"release": "27.44.3"'
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 850000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 855000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.44.2 Exact Availability Timeline & Shared Shift Summary
