@@ -68,7 +68,11 @@ function loadEditing(): void {
 }
 function edit(id: number): void { settings.shiftTypeEditingId = Number(id); loadEditing(); }
 function close(): void { settings.closeShiftTypeManager(); resetDraft(); }
-function parseNumber(raw: string, fallback: number): number { const parsed = Number(raw.trim().replace(",", ".")); return raw.trim() === "" ? fallback : parsed; }
+function inputText(raw: unknown): string { return String(raw ?? "").trim(); }
+function parseNumber(raw: unknown, fallback: number): number {
+  const normalized = inputText(raw);
+  return normalized === "" ? fallback : Number(normalized.replace(",", "."));
+}
 function payload(): DutyLogApiSchemas.ShiftTypeCreateRequest | DutyLogApiSchemas.ShiftTypeUpdateRequest {
   const name = draft.value.name.trim();
   if (!editing.value?.builtin && !name) throw new Error(text.value.missingName);
@@ -79,7 +83,8 @@ function payload(): DutyLogApiSchemas.ShiftTypeCreateRequest | DutyLogApiSchemas
   const hours = parseNumber(draft.value.hours, plannedHours);
   if (!Number.isFinite(hours) || hours < 0 || hours > 24) throw new Error(text.value.invalidHours);
   if (!Number.isFinite(plannedHours) || plannedHours < 0 || plannedHours > 24) throw new Error(text.value.invalidPlan);
-  const reminder = draft.value.notificationMinutesBefore.trim() === "" ? -1 : Number(draft.value.notificationMinutesBefore);
+  const reminderText = inputText(draft.value.notificationMinutesBefore);
+  const reminder = reminderText === "" ? -1 : Number(reminderText);
   if (!Number.isFinite(reminder) || reminder < -1 || reminder > 1440) throw new Error(text.value.invalidReminder);
   // Empty strings and -1 deliberately preserve the legacy clear semantics:
   // backend update handlers interpret empty local times as null and -1 as a cleared per-shift reminder.

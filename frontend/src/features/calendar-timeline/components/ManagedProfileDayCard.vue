@@ -19,6 +19,7 @@ const shiftTypeId = ref<number | null>(null);
 const startTime = ref("");
 const endTime = ref("");
 const saving = ref(false);
+const saveError = ref("");
 
 const workingShifts = computed(() => props.shiftTypes.filter(shift =>
   Number(shift.plannedHours ?? 0) > 0 || Boolean(shift.startTime && shift.endTime)
@@ -65,6 +66,7 @@ const actualLabel = computed(() => {
 });
 
 function loadEditor(): void {
+  saveError.value = "";
   if (props.entry?.overrideKind === "OFF") {
     mode.value = "OFF";
     reason.value = (props.entry.overrideReason || "TIME_OFF") as typeof reason.value;
@@ -101,8 +103,13 @@ function selectShift(): void {
   endTime.value = shift?.endTime || "";
 }
 
+function mutationError(error: unknown, fallback: string): string {
+  return store.error || (error instanceof Error && error.message ? error.message : fallback);
+}
+
 async function save(): Promise<void> {
   saving.value = true;
+  saveError.value = "";
   try {
     if (mode.value === "SCHEDULE") {
       await store.resetProfileDayOverride(props.profile.id, overrideDate.value);
@@ -121,6 +128,8 @@ async function save(): Promise<void> {
       });
     }
     editing.value = false;
+  } catch (error) {
+    saveError.value = mutationError(error, props.language === "en" ? "Could not change this day" : "Не удалось изменить этот день");
   } finally {
     saving.value = false;
   }
@@ -128,9 +137,12 @@ async function save(): Promise<void> {
 
 async function reset(): Promise<void> {
   saving.value = true;
+  saveError.value = "";
   try {
     await store.resetProfileDayOverride(props.profile.id, overrideDate.value);
     editing.value = false;
+  } catch (error) {
+    saveError.value = mutationError(error, props.language === "en" ? "Could not restore the schedule" : "Не удалось вернуть день к графику");
   } finally {
     saving.value = false;
   }
@@ -187,6 +199,8 @@ async function reset(): Promise<void> {
         </div>
       </template>
 
+      <p v-if="saveError" class="managedProfileDayError" role="alert" data-profile-override-error>{{ saveError }}</p>
+
       <div class="managedProfileDayActions">
         <button class="primary" type="submit" :disabled="saving" data-profile-override-save>
           {{ saving ? '…' : (language === 'en' ? 'Save' : 'Сохранить') }}
@@ -212,6 +226,7 @@ async function reset(): Promise<void> {
 .managedProfileDayEditor>label{display:grid;gap:5px}
 .managedProfileTimeRow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 .managedProfileTimeRow label{display:grid;gap:5px}
+.managedProfileDayError{margin:0;padding:9px 10px;border:1px solid color-mix(in srgb,#ff8a5b 55%,var(--border));border-radius:10px;background:color-mix(in srgb,#ff8a5b 10%,var(--panel));color:#ffad8c;font-size:.82rem;font-weight:700}
 .managedProfileDayActions{display:flex;gap:8px;flex-wrap:wrap}
 @media (max-width:640px){.managedProfileDayFacts,.managedProfileTimeRow{grid-template-columns:1fr}.managedProfileDayCard{margin-inline:0}.managedProfileDayCard header{align-items:flex-start}}
 </style>

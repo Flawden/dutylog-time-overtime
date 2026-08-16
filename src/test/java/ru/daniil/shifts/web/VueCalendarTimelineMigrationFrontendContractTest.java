@@ -64,6 +64,7 @@ class VueCalendarTimelineMigrationFrontendContractTest {
     @Test
     void calendarPageOwnsMonthWeekDayTimelineAndPeopleProfileContext() throws Exception {
         String page = read(FEATURE.resolve("components/CalendarPage.vue"));
+        String managedProfileDay = read(FEATURE.resolve("components/ManagedProfileDayCard.vue"));
 
         assertTrue(page.contains("id=\"view-calendar\""));
         assertTrue(page.contains("id=\"grid\""));
@@ -78,6 +79,9 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(page.contains("class=\"absenceFact\""));
         assertTrue(page.contains("class=\"partialAbsenceBar\""));
         assertTrue(page.contains("<SelectedDayPanel v-if=\"dayPanelOpen && viewingSelf\""));
+        assertTrue(managedProfileDay.contains("data-profile-override-error"));
+        assertTrue(managedProfileDay.contains("catch (error)"));
+        assertTrue(managedProfileDay.contains("store.error ||"));
     }
 
     @Test

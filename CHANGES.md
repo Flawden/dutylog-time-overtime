@@ -4,6 +4,8 @@
 - `PARTIAL` / `HOURS_ONLY`, any remaining effective work, untimed work, and companion dates outside declared schedule coverage do **not** become shared full-day-free dates.
 - Keeps the coral shared-work layer independent and toggle-controlled; positive overlap still means at least one minute of simultaneous work.
 - Hotfix: makes that toggle explicit (`Показать` / `Скрыть совместные смены`) and renders a high-contrast coral edge marker directly on month/week dates with positive overlap, without replacing the underlying shift color.
+- Hotfix: normalizes numeric `<input type="number">` model values before parsing in the shift-type editor, preventing `trim is not a function` when creating/editing a shift on browsers that expose numeric v-model values as numbers.
+- Hotfix: contains managed People Profile override API failures inside the day editor and renders the exact API message inline instead of escalating a rejected save/reset into the global DutyLog recovery screen.
 - Adds a monthly `Общих выходных: N` summary while preserving `Совпало смен` / `Вместе на работе` when shared-work highlighting is enabled.
 - Adds one Vitest regression contract; source baseline advances **72 -> 73**.
 - No backend endpoint, OpenAPI, Flyway, dependency, payroll or persistence change: OpenAPI remains **126/132**, Flyway **V48**, Java **792/164**, Playwright **48**.

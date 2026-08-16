@@ -4847,6 +4847,12 @@ contains frontend/src/features/calendar-timeline/components/SharedAvailabilityCa
 contains frontend/src/features/calendar-timeline/calendar-timeline.css "v27.44.4 shared-work calendar marker visibility hotfix"
 contains frontend/src/features/calendar-timeline/calendar-timeline.css ".vue-calendar-view .cell.hasSharedWorkOverlap::after"
 contains frontend/src/features/calendar-timeline/calendar-timeline.css ".calendarWeekDay.hasSharedWorkOverlap::after"
+contains frontend/src/features/settings-workspace/components/ShiftTypeManagerModal.vue "function inputText(raw: unknown): string"
+contains frontend/src/features/settings-workspace/components/ShiftTypeManagerModal.vue "String(raw ?? \"\").trim()"
+not_contains frontend/src/features/settings-workspace/components/ShiftTypeManagerModal.vue "notificationMinutesBefore.trim()"
+contains frontend/src/features/calendar-timeline/components/ManagedProfileDayCard.vue "data-profile-override-error"
+contains frontend/src/features/calendar-timeline/components/ManagedProfileDayCard.vue "catch (error)"
+contains frontend/src/features/calendar-timeline/components/ManagedProfileDayCard.vue "store.error ||"
 contains frontend/browser-bundle-budget.json '"release": "27.44.4"'
 contains frontend/browser-bundle-budget.json '"maxTotalBytes": 855000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'

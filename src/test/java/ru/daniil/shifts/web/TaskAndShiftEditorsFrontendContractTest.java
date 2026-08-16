@@ -95,6 +95,9 @@ class TaskAndShiftEditorsFrontendContractTest {
         assertTrue(modal.contains("id=\"shiftTypeModal\""));
         assertTrue(modal.contains("id=\"shiftTypeForm\""));
         assertTrue(modal.contains("id=\"customList\""));
+        assertTrue(modal.contains("function inputText(raw: unknown): string"));
+        assertTrue(modal.contains("String(raw ?? \"\").trim()"));
+        assertFalse(modal.contains("notificationMinutesBefore.trim()"));
         assertTrue(settingsWorkspace.contains("settingsWorkspace: domain"));
         assertTrue(selectedDay.contains("DutyLogVueDomains?.settingsWorkspace?.openShiftTypeManager()"));
         assertFalse(bridge.contains("openShiftTypeManager"));
