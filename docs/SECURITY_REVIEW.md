@@ -2,7 +2,7 @@
 
 v27.44.3 changes only client-side interpretation/presentation of already-authorized companion calendar data. It adds no endpoint, credential, role, authorization rule, persistence path, account-to-account transport or dependency. The fix is fail-closed: dates outside declared companion schedule coverage are treated as unknown rather than inferred free time.
 
-Status: v27.44.3.
+Status: v27.44.4.
 
 # v27.44.2 Exact Availability Timeline & Shared Shift Summary review
 

@@ -1,3 +1,9 @@
+# DutyLog v27.44.4 — Shared Full-Day Free Dates
+
+The People Profiles month view now shows a separate green/teal signal when both people are effectively free from work for the whole day. The marker comes from the same effective-work calculation as Shared Availability, so real full-day absences and managed OFF overrides work without hard-coding absence names, while partial absences and unknown schedule coverage fail closed.
+
+The existing coral `Совместные смены` layer remains independent. Month summary now exposes `Общих выходных: N` alongside shared-shift totals when that mode is enabled.
+
 # DutyLog v27.44.3 — People Profile Coverage Semantics Hotfix
 
 People Profiles now distinguish **actual day off** from **no schedule data for this date**. A missing projected row outside a companion profile's configured `startDate` / `endDate` range is neutral, not a palm-marked free day.

@@ -40,12 +40,19 @@ const selectedProfile = computed(() => profileLayer(bundle.value, activeProfileI
 const peopleProfiles = computed(() => (bundle.value?.calendarLayers ?? []).filter(layer => layer.visible));
 const viewingSelf = computed(() => activeProfileId.value === "self");
 const highlightSharedWork = ref(false);
-const sharedWorkByDate = computed(() => {
-  const result = new Map<string, SharedAvailabilityWindow[]>();
+const sharedAvailabilityByDate = computed(() => {
+  const result = new Map<string, NonNullable<ReturnType<typeof sharedAvailabilityForDate>>>();
   if (viewingSelf.value || !selectedProfile.value) return result;
   for (const date of gridDates.value) {
     const value = sharedAvailabilityForDate(bundle.value, date, activeProfileId.value);
-    if (value?.precise && value.sharedBusyWindows.length) result.set(date, value.sharedBusyWindows);
+    if (value) result.set(date, value);
+  }
+  return result;
+});
+const sharedWorkByDate = computed(() => {
+  const result = new Map<string, SharedAvailabilityWindow[]>();
+  for (const [date, value] of sharedAvailabilityByDate.value) {
+    if (value.precise && value.sharedBusyWindows.length) result.set(date, value.sharedBusyWindows);
   }
   return result;
 });
@@ -92,6 +99,12 @@ const sharedWorkMonthSummary = computed(() => {
   }
   return { matchedShifts, overlapMinutes };
 });
+const sharedFreeMonthSummary = computed(() => ({
+  days: monthDates.value.filter(date => {
+    const value = sharedAvailabilityByDate.value.get(date);
+    return Boolean(value?.precise && value.allDayFree);
+  }).length,
+}));
 
 const allDayItems = computed(() => [
   ...focusFacts.value.important.filter(item => item.allDay !== false).map(item => ({ key: `important-${item.id}`, type: "important", title: item.title, color: item.color })),
@@ -180,6 +193,10 @@ const timelineEvents = computed(() => {
 function cellFacts(date: string) { return dayFactsForProfile(bundle.value, date, activeProfileId.value); }
 function sharedWorkWindows(date: string): SharedAvailabilityWindow[] { return sharedWorkByDate.value.get(date) ?? []; }
 function hasSharedWorkOverlap(date: string): boolean { return highlightSharedWork.value && sharedWorkWindows(date).length > 0; }
+function hasSharedFreeAllDay(date: string): boolean {
+  const value = sharedAvailabilityByDate.value.get(date);
+  return Boolean(value?.precise && value.allDayFree);
+}
 function sharedWorkDurationLabel(minutesValue: number): string {
   const minutes = Math.max(0, Math.round(minutesValue));
   const hours = Math.floor(minutes / 60);
@@ -367,7 +384,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
               :key="date"
               type="button"
               class="cell"
-              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasShift: Boolean(cellFacts(date).shift), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)), isScheduleFree: inFocusMonth(date) && isScheduleFreeDay(date), isWeekend: isWeekend(date), hasSharedWorkOverlap: hasSharedWorkOverlap(date), profileOutsideCoverage: !hasProfileCoverage(date) }"
+              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasShift: Boolean(cellFacts(date).shift), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)), isScheduleFree: inFocusMonth(date) && isScheduleFreeDay(date), isWeekend: isWeekend(date), hasSharedFreeAllDay: inFocusMonth(date) && hasSharedFreeAllDay(date), hasSharedWorkOverlap: hasSharedWorkOverlap(date), profileOutsideCoverage: !hasProfileCoverage(date) }"
               :style="cellStyle(date)"
               :aria-label="cellAriaLabel(date)"
               :data-date="date"
@@ -404,10 +421,13 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
               <span v-if="secondaryAbsences(date).length" class="vacationMark" :style="{ background: secondaryAbsences(date)[0]?.typeColor }">●</span>
             </button>
           </div>
-          <div id="summary" class="sum"><span class="lbl">{{ selectedProfile?.name || (language === 'en' ? 'Me' : 'Я') }}:</span><span>{{ monthSummary.shifts }} смен</span><template v-if="viewingSelf"><span>{{ monthSummary.tasks }} задач</span><span>{{ monthSummary.absences }} отсутствий</span><span class="over">баланс {{ bundle?.overtimeAccount.balanceHours ?? 0 }} ч</span></template><span v-else class="calendarProfileReadOnly">{{ profileCoverageLabel }}</span><span v-if="highlightSharedWork && !viewingSelf" class="sharedWorkLegend"><i></i>{{ language === 'en' ? 'Shared shift' : 'Совместная смена' }}</span></div>
-          <div v-if="highlightSharedWork && !viewingSelf" class="sharedWorkMonthFooter" data-shared-work-month-summary>
-            <span class="sharedWorkMonthCount"><i></i><b>{{ language === 'en' ? 'Shared shifts' : 'Совпало смен' }}: {{ sharedWorkMonthSummary.matchedShifts }}</b></span>
-            <span>{{ language === 'en' ? 'Working together' : 'Вместе на работе' }}: <b>{{ sharedWorkDurationLabel(sharedWorkMonthSummary.overlapMinutes) }}</b></span>
+          <div id="summary" class="sum"><span class="lbl">{{ selectedProfile?.name || (language === 'en' ? 'Me' : 'Я') }}:</span><span>{{ monthSummary.shifts }} смен</span><template v-if="viewingSelf"><span>{{ monthSummary.tasks }} задач</span><span>{{ monthSummary.absences }} отсутствий</span><span class="over">баланс {{ bundle?.overtimeAccount.balanceHours ?? 0 }} ч</span></template><span v-else class="calendarProfileReadOnly">{{ profileCoverageLabel }}</span><span v-if="!viewingSelf" class="sharedFreeLegend"><i></i>{{ language === 'en' ? 'Free together all day' : 'Вместе свободны весь день' }}</span><span v-if="highlightSharedWork && !viewingSelf" class="sharedWorkLegend"><i></i>{{ language === 'en' ? 'Shared shift' : 'Совместная смена' }}</span></div>
+          <div v-if="!viewingSelf" class="sharedAvailabilityMonthFooter" data-shared-availability-month-summary>
+            <span class="sharedFreeMonthCount" data-shared-free-month-summary><i></i><b>{{ language === 'en' ? 'Shared days off' : 'Общих выходных' }}: {{ sharedFreeMonthSummary.days }}</b></span>
+            <template v-if="highlightSharedWork">
+              <span class="sharedWorkMonthCount" data-shared-work-month-summary><i></i><b>{{ language === 'en' ? 'Shared shifts' : 'Совпало смен' }}: {{ sharedWorkMonthSummary.matchedShifts }}</b></span>
+              <span>{{ language === 'en' ? 'Working together' : 'Вместе на работе' }}: <b>{{ sharedWorkDurationLabel(sharedWorkMonthSummary.overlapMinutes) }}</b></span>
+            </template>
           </div>
         </div>
         <SelectedDayPanel v-if="dayPanelOpen && viewingSelf" :bridge="bridge" />

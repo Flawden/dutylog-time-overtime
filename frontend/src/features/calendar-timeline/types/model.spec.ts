@@ -260,6 +260,59 @@ describe("calendar and timeline model", () => {
     expect(result?.freeWindows.map(item => `${item.startTime}–${item.endTime}`)).toEqual(["00:00–09:00", "18:00–24:00"]);
   });
 
+  it("classifies shared full-day free dates from effective work rather than absence names", () => {
+    const bundle = normalizeCalendarBundle({
+      from: "2026-08-01", to: "2026-08-31",
+      shiftTypes: [{ id: 1, name: "Моя смена", color: "#112233" }],
+      shiftOccurrences: [
+        {
+          dayEntryId: 201, sourceDate: "2026-08-15", shiftTypeId: 1,
+          startInstant: "2026-08-15T08:00:00Z", endInstant: "2026-08-15T17:00:00Z",
+          sourceStart: "2026-08-15T08:00", sourceEnd: "2026-08-15T17:00",
+          displayStart: "2026-08-15T08:00", displayEnd: "2026-08-15T17:00",
+          sourceTimezone: "UTC", displayTimezone: "UTC",
+          breakMinutes: 0, elapsedMinutes: 540, netMinutes: 540, legacyLocal: false,
+        },
+        {
+          dayEntryId: 202, sourceDate: "2026-08-16", shiftTypeId: 1,
+          startInstant: "2026-08-16T08:00:00Z", endInstant: "2026-08-16T17:00:00Z",
+          sourceStart: "2026-08-16T08:00", sourceEnd: "2026-08-16T17:00",
+          displayStart: "2026-08-16T08:00", displayEnd: "2026-08-16T17:00",
+          sourceTimezone: "UTC", displayTimezone: "UTC",
+          breakMinutes: 0, elapsedMinutes: 540, netMinutes: 540, legacyLocal: false,
+        },
+      ],
+      absences: [
+        {
+          periodId: 88, typeId: 1, typeName: "Любое полное отсутствие", typeColor: "#4A90E2", date: "2026-08-15",
+          startDate: "2026-08-15", endDate: "2026-08-15", coverage: "FULL_DAY", status: "PLANNED",
+          countedDay: true, shiftConflict: true, replacesShift: true,
+        },
+        {
+          periodId: 89, typeId: 2, typeName: "Часть дня", typeColor: "#4A90E2", date: "2026-08-16",
+          startDate: "2026-08-16", endDate: "2026-08-16", coverage: "HOURS_ONLY", status: "PLANNED",
+          startTime: "08:00", endTime: "12:00", countedDay: false, shiftConflict: true, replacesShift: false,
+        },
+      ],
+      calendarLayers: [{
+        id: 9, name: "Сашка", color: "#445566", visible: true,
+        startDate: "2026-08-01", endDate: "2026-08-31",
+        entries: [
+          { date: "2026-08-09", sourceDate: "2026-08-09", timed: true, dayOff: true },
+          { date: "2026-08-15", sourceDate: "2026-08-15", timed: true, dayOff: true },
+          { date: "2026-08-16", sourceDate: "2026-08-16", timed: true, dayOff: true },
+        ],
+      }],
+    }, "2026-08-01", "2026-08-31");
+
+    // Ordinary day off + companion day off.
+    expect(sharedAvailabilityForDate(bundle, "2026-08-09", "9")?.allDayFree).toBe(true);
+    // Owner planned shift is fully replaced by a factual full-day absence; type name is irrelevant.
+    expect(sharedAvailabilityForDate(bundle, "2026-08-15", "9")?.allDayFree).toBe(true);
+    // HOURS_ONLY removes only part of owner work, so the date is not a shared full-day day off.
+    expect(sharedAvailabilityForDate(bundle, "2026-08-16", "9")?.allDayFree).toBe(false);
+  });
+
   it("fails closed when an effective work shift has no exact time", () => {
     const bundle = normalizeCalendarBundle({
       from: "2026-08-01", to: "2026-08-31",

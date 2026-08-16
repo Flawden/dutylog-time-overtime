@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.44.3 — People Profile Coverage Semantics Hotfix**.
+Current release: **v27.44.4 — Shared Full-Day Free Dates**.
 
 
 ## v27.43.0 — People Profiles: Managed Schedule Overrides
@@ -13,6 +13,17 @@ Current release: **v27.44.3 — People Profile Coverage Semantics Hotfix**.
 - [x] Add V48, owner-scoped override API, generated OpenAPI client contract and native Vue `ManagedProfileDayCard`.
 - [x] Java 17 Maven 792/792 plus JaCoCo and OpenAPI contract drift are green locally.
 - [ ] Exact Node 20.18.1/npm 10.8.2 frontend gate, Chromium 48/48, immutable image/PostgreSQL V48 and staging smoke.
+
+## v27.44.4 — Shared Full-Day Free Dates
+
+- [x] Mark current-month dates where both effective work interval sets are empty for the full calendar day.
+- [x] Reuse Shared Availability effective-work/coverage semantics rather than enumerating vacation/sick/time-off types.
+- [x] Count ordinary day off, managed OFF and factual `FULL_DAY + replacesShift=true` absence automatically.
+- [x] Exclude PARTIAL/HOURS_ONLY, remaining work, untimed work and outside-profile-coverage dates.
+- [x] Keep green full-day-free and coral simultaneous-work as independent visual layers.
+- [x] Add `Общих выходных: N` to the month summary; Vitest baseline 73.
+- [ ] Exact Node 20, Maven/release-check, Chromium and staging acceptance.
+- [ ] After acceptance, freeze People Profiles and move to Production Calendar / Compensation Foundation.
 
 ## v27.44.3 — People Profile Coverage Semantics Hotfix
 

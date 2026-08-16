@@ -1,6 +1,6 @@
 # DutyLog release checklist
 
-Status: v27.44.3.
+Status: v27.44.4.
 
 ## v27.44.3 — People Profile Coverage Semantics Hotfix acceptance
 

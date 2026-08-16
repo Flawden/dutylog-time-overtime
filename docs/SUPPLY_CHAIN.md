@@ -20,7 +20,7 @@ No dependency or package graph change is introduced. Root/frontend package and l
 
 # Supply-chain maintenance
 
-Status: v27.44.3.
+Status: v27.44.4.
 
 ## v27.42.8 source-contract hotfix
 
