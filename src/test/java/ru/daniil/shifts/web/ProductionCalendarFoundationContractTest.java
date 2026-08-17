@@ -50,7 +50,9 @@ class ProductionCalendarFoundationContractTest {
 
         assertTrue(controller.contains("/api/v1/production-calendar"));
         assertTrue(controller.contains("CacheControl.noStore()"));
-        assertTrue(payroll.contains("ProductionCalendarMonthDto productionCalendarMonth"));
+        assertTrue(payroll.contains("ProductionCalendarMonthDto"));
+        assertTrue(payroll.contains("productionCalendar.month(user, month.toString())"));
+        assertTrue(payroll.contains("production.productionNormMinutes()"));
         assertTrue(component.contains("data-production-calendar-foundation"));
         assertTrue(component.contains("data-production-calendar-summary-only"));
         assertFalse(component.contains("productionCalendarForm"));

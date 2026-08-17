@@ -1,3 +1,10 @@
+# v27.46.0 — Compensation Setup & Base Native Payroll
+
+- Adds effective-month HOURLY/SALARY compensation terms and human-first setup inside Payroll.
+- Salary base uses Production Calendar norm without letting overtime inflate monthly salary; immutable snapshots freeze compensation provenance.
+- Existing V45 hourly settings remain compatible through a migrated legacy term.
+- Browser ceilings remain **890000 B raw / 250000 B gzip** pending canonical Node 20 measurement.
+
 # v27.45.1 — Native Workday / Day Truth Integration
 - Introduces `WorkdayTruthService` plus owner-scoped `GET /api/v1/workdays/{date}` as the first human-facing daily read model: base schedule, required production norm, explicit factual work, absences and existing overtime-bank movements are joined without duplicating their storage.
 - Makes Production Calendar required minutes canonical for Time Compensation and Payroll source projections. A shortened 7-hour day therefore becomes a 7-hour obligation for full-day absence coverage and downstream time calculations instead of retaining the original 8-hour shift norm.

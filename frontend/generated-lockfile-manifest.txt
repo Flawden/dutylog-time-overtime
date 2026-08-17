@@ -1,10 +1,10 @@
-release=27.45.1
+release=27.46.0
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=b26ebd17ddd113c95dd823e61cdf2d6f8cb059addadf0b6af97805b3bbac62c6
+committedLockfileSha256=306532b673c7c24475bfbb11cf0607f487f8e92c7489b10524a722ed0c861b29
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=compensation-setup-after-v27.45.1-green
+nextAction=payroll-classification-after-v27.46.0-green

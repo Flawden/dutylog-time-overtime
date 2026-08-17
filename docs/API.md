@@ -1,4 +1,4 @@
-# DutyLog API v27.45.1
+# DutyLog API v27.46.0
 
 `v27.45.1` keeps owner-scoped `GET /api/v1/workdays/{date}` as the Day Truth read model. `ActualWorkIntervalInput` now accepts optional `endDate`; when omitted, same-day behavior remains and end-before-start infers the next day. Actual Work output includes `endDate`, while Overtime credit rows expose `sourceKind` and `editable` so `SYSTEM_ACTUAL_WORK` projections are read-only outside the source calendar day. One cross-midnight fact is allocated by calendar date for Time Compensation, Payroll source and ordinary overtime reconciliation. OpenAPI remains **130 operations / 136 schemas** with hash `34d257319830`; Flyway advances to V51.
 
@@ -1712,3 +1712,8 @@ GET /calendar-feed.ics?token=<43-character bearer secret>
 ```
 
 The raw token is returned only after issue/rotation. Persistent storage contains only SHA-256 and a short hint. Range export is limited to 366 days, 10,000 events and 5 MiB by default. All `.ics` responses use UTF-8, CRLF, RFC 5545 content-line folding and `Cache-Control: no-store`.
+
+## v27.46.0 compensation terms
+`PUT /api/v1/payroll/compensation-terms/{yyyy-MM}` upserts HOURLY/SALARY terms; `DELETE` removes that effective-month term. Payroll period responses expose the effective term and history.
+
+OpenAPI contract: **132 operations / 138 schemas**.

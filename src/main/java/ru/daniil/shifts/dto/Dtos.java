@@ -2648,6 +2648,30 @@ public final class Dtos {
             Long hourlyRateMinor
     ) {}
 
+    /** Effective-month compensation input. Exactly one money field is set according to payMode. */
+    public record PayrollCompensationTermRequest(
+            @NotBlank(message = "Способ оплаты обязателен")
+            @Pattern(regexp = "(?i)HOURLY|SALARY", message = "Способ оплаты должен быть HOURLY или SALARY")
+            String payMode,
+            @NotBlank(message = "Код валюты обязателен")
+            @Pattern(regexp = "[A-Za-z]{3}", message = "Код валюты должен состоять из трёх букв")
+            String currencyCode,
+            @Min(value = 1, message = "Ставка должна быть положительной")
+            @Max(value = 1000000000L, message = "Ставка слишком велика") Long hourlyRateMinor,
+            @Min(value = 1, message = "Оклад должен быть положительным")
+            @Max(value = 1000000000000L, message = "Оклад слишком велик") Long monthlySalaryMinor
+    ) {}
+
+    public record PayrollCompensationTermDto(
+            Long id,
+            String effectiveMonth,
+            String payMode,
+            String currencyCode,
+            Long hourlyRateMinor,
+            Long monthlySalaryMinor,
+            String updatedAt
+    ) {}
+
     /** Append-only manual money movement for one payroll month. */
     public record PayrollAdjustmentRequest(
             @NotBlank(message = "Месяц обязателен") String month,
@@ -2690,7 +2714,14 @@ public final class Dtos {
             long basePayMinor,
             long additionsMinor,
             long deductionsMinor,
-            long totalPayMinor
+            long totalPayMinor,
+            String payMode,
+            String compensationEffectiveMonth,
+            Long configuredHourlyRateMinor,
+            Long monthlySalaryMinor,
+            long effectiveHourlyRateMinor,
+            int productionNormMinutes,
+            int salaryCoveredMinutes
     ) {}
 
     /** Immutable versioned payroll snapshot of a closed accounting month. */
@@ -2717,10 +2748,17 @@ public final class Dtos {
             String sourceIntegrityCheckedAt,
             String calculationHash,
             String createdAt,
-            Long supersededById
+            Long supersededById,
+            String payMode,
+            String compensationEffectiveMonth,
+            Long configuredHourlyRateMinor,
+            Long monthlySalaryMinor,
+            long effectiveHourlyRateMinor,
+            int productionNormMinutes,
+            int salaryCoveredMinutes
     ) {}
 
-    /** One Payroll Foundation workspace payload; preview is available before final calculation. */
+    /** One Payroll workspace payload with effective compensation and immutable revision history. */
     public record PayrollPeriodDto(
             String month,
             boolean periodClosed,
@@ -2732,7 +2770,9 @@ public final class Dtos {
             PayrollPreviewDto preview,
             List<PayrollAdjustmentDto> adjustments,
             PayrollSnapshotDto latestSnapshot,
-            List<PayrollSnapshotDto> snapshots
+            List<PayrollSnapshotDto> snapshots,
+            PayrollCompensationTermDto effectiveCompensation,
+            List<PayrollCompensationTermDto> compensationHistory
     ) {}
 
     /** Private read-only iCalendar subscription state. Raw tokens are returned only on issue/rotation. */

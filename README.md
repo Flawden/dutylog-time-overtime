@@ -1,3 +1,7 @@
+# DutyLog v27.46.0 — Compensation Setup & Base Native Payroll
+
+Payroll now starts with a human question — hourly rate or monthly salary — and prices canonical Day Truth without asking the user to repeat time facts. See `docs/COMPENSATION_SETUP_BASE_NATIVE_PAYROLL_V27.46.0.md`.
+
 # DutyLog v27.45.1 — Native Workday / Day Truth Integration
 
 DutyLog starts moving from module-oriented input to the product north star: **the user describes reality once; DutyLog derives the consequences**. Calendar's selected day now joins the generated shift, Production Calendar obligation, explicit factual work, absences and existing Time Bank/overtime movements in one human-facing Day Truth card.

@@ -10,6 +10,9 @@ import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
+import java.time.YearMonth;
+import java.time.ZoneId;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
@@ -35,7 +38,7 @@ class PayrollFoundationServiceTest {
     void closedHealthyPeriodCreatesImmutableVersionedMoneySnapshots() {
         overtime.createCredit(owner, new OvertimeCreditCreateRequest(
                 "2026-08-03", null, null, null, null, null, 8.0, "Payroll source"));
-        payroll.updateSettings(owner, new PayrollSettingsUpdateRequest("rub", 100_000L));
+        payroll.upsertCompensationTerm(owner, "2026-08", new PayrollCompensationTermRequest("HOURLY", "rub", 100_000L, null));
 
         PayrollPeriodDto open = payroll.period(owner, "2026-08");
         assertFalse(open.periodClosed());
@@ -81,7 +84,13 @@ class PayrollFoundationServiceTest {
 
     @Test
     void openPeriodCannotBeCalculatedOrReceiveMoneyAdjustments() {
+        payroll.upsertCompensationTerm(owner, "2000-01",
+                new PayrollCompensationTermRequest("HOURLY", "EUR", 1_500L, null));
         payroll.updateSettings(owner, new PayrollSettingsUpdateRequest("EUR", 2_500L));
+
+        assertEquals(1_500L, payroll.period(owner, "2000-01").effectiveCompensation().hourlyRateMinor());
+        YearMonth currentMonth = YearMonth.now(ZoneId.of(owner.getWorkTimezone()));
+        assertEquals(2_500L, payroll.period(owner, currentMonth.toString()).effectiveCompensation().hourlyRateMinor());
 
         ApiException calculateBlocked = assertThrows(ApiException.class,
                 () -> payroll.calculate(owner, "2026-09"));

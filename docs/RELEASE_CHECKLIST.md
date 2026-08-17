@@ -1,6 +1,6 @@
 # DutyLog release checklist
 
-Status: v27.45.1.
+Status: v27.46.0.
 
 ## v27.45.1 — Native Workday / Day Truth Integration acceptance
 

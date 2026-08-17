@@ -5,7 +5,7 @@ Status: v27.43.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.45.1 Native Workday closed-loop acceptance: inventory is 167 Java test classes / 808 @Test methods / 48 Chromium Playwright scenarios / 73 Vitest cases. OpenAPI remains 130/136 (`34d257319830`) and Flyway advances to V51. Coverage proves shift-break inheritance and net Actual Work, idempotent SYSTEM_ACTUAL_WORK overtime reconciliation, edit/delete rollback, consumed-credit fail-closed behavior, holiday separation, Production Calendar required-minute canonicality, direct day-local recovery actions, and Payroll summary-only ownership. Exact Node 20.18.1/npm 10.8.2 frontend, Java 17 Maven/JaCoCo, Chromium and clean-PostgreSQL staging acceptance remain canonical gates.
+Current extension: v27.46.0 Native Workday closed-loop acceptance: inventory is 168 Java test classes / 812 @Test methods / 48 Chromium Playwright scenarios / 73 Vitest cases. OpenAPI remains 130/136 (`34d257319830`) and Flyway advances to V51. Coverage proves shift-break inheritance and net Actual Work, idempotent SYSTEM_ACTUAL_WORK overtime reconciliation, edit/delete rollback, consumed-credit fail-closed behavior, holiday separation, Production Calendar required-minute canonicality, direct day-local recovery actions, and Payroll summary-only ownership. Exact Node 20.18.1/npm 10.8.2 frontend, Java 17 Maven/JaCoCo, Chromium and clean-PostgreSQL staging acceptance remain canonical gates.
 
 
 
@@ -1258,3 +1258,8 @@ A green test suite means the listed contracts still hold. It does not replace ex
 - Vitest source baseline advances **72 -> 73**.
 - OpenAPI remains **126 operations / 132 schemas**.
 - Flyway remains **V48**.
+
+### v27.46.0 current acceptance baseline
+- Java: **168 test classes / 812 @Test methods**.
+- Playwright: **48**; Vitest: **73**.
+- OpenAPI: **132 operations / 138 schemas**; Flyway: **V52**.

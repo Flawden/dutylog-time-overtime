@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.45.1 — Native Workday / Day Truth Integration**.
+Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**.
 
 
 ## Product north star
@@ -38,7 +38,7 @@ Calendar / Today are the normal command surfaces. Overtime, Time Bank, Productio
 
 ## Core roadmap after Day Truth
 
-1. **v27.46.x — Compensation Setup & Payroll Core**: simple hourly mode or salary mode first; then salary/rate history, production-norm denominator, regular/night/overtime/holiday categories and explainable monthly money breakdown.
+1. **v27.46.x — Compensation Setup & Payroll Core**: [v27.46.0 done] effective-month hourly/salary setup, production-norm salary denominator and explainable base money; next: regular/night/overtime/holiday native pay classification.
 2. **Vacation Entitlement & Balance**: entitlement/accrual/carry-over/used/planned/available balance, separate from vacation pay.
 3. **Vacation Pay**: versioned jurisdiction calculation period, eligible earnings and average-pay breakdown.
 4. **Sick Leave Calculation**: versioned jurisdiction rules after official-source research.

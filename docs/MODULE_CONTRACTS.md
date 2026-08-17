@@ -9,7 +9,7 @@
 - Payroll is a summary/explainability surface for Production Calendar in normal use, not a duplicate special-day editor.
 - Advanced Overtime, Time Bank, Production Calendar and Payroll screens remain valid audit/correction surfaces; they are not the required everyday workflow.
 
-Status: v27.45.1.
+Status: v27.46.0.
 
 ## Production Calendar work-norm contract (v27.45.0)
 
@@ -339,3 +339,6 @@ PATCH /api/modules
 | `admin` | admin settings/system diagnostics | `/api/admin` | — |
 
 The notes ZIP export belongs to `core` as a data-portability operation. It remains available when the Notes UI module is disabled; module switches hide features but do not remove stored data or the user's ability to retrieve it.
+
+## v27.46.0 Payroll money boundary
+Payroll consumes `TimeCompensationService.PayrollSourceSnapshot` and Production Calendar norm. Compensation terms price those outputs; they do not own schedule/fact semantics.

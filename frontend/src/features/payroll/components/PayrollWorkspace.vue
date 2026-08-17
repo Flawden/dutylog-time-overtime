@@ -3,227 +3,63 @@ import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useShellStore } from "@/app/shellStore";
 import { usePayrollStore } from "../stores/payrollStore";
-import type { DutyLogPayrollDomain } from "../types/domain";
+import type { DutyLogPayrollDomain, PayrollCompensationTermInput } from "../types/domain";
 import { navigateHashRoute } from "@/platform/router/hashRoute";
 
-const shell = useShellStore();
-const store = usePayrollStore();
-const { activeRoute, language, modulesLoaded, modules } = storeToRefs(shell);
-const { period, loading, error } = storeToRefs(store);
+const shell = useShellStore(); const store = usePayrollStore();
+const { activeRoute, language, modulesLoaded, modules } = storeToRefs(shell); const { period, loading, error } = storeToRefs(store);
 let previousDomain: DutyLogPayrollDomain | undefined;
-
-function defaultMonth(): string {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-}
-
-const month = ref(defaultMonth());
-const currencyCode = ref("RUB");
-const hourlyRate = ref("0.00");
-const adjustmentType = ref<"ADDITION" | "DEDUCTION">("ADDITION");
-const adjustmentAmount = ref("");
-const adjustmentTitle = ref("");
-const adjustmentNote = ref("");
-const message = ref("");
-const messageOk = ref(false);
-
+function defaultMonth(): string { const now = new Date(); return `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`; }
+const month = ref(defaultMonth()); const effectiveMonth = ref(defaultMonth());
+const payMode = ref<"HOURLY"|"SALARY">("HOURLY"); const currencyCode = ref("RUB"); const compensationAmount = ref("");
+const adjustmentType = ref<"ADDITION"|"DEDUCTION">("ADDITION"); const adjustmentAmount = ref("");
+const adjustmentTitle = ref(""); const adjustmentNote = ref(""); const message = ref(""); const messageOk = ref(false);
 const payrollEnabled = computed(() => modulesLoaded.value && modules.value.payroll !== false);
-const preview = computed(() => period.value?.preview ?? null);
-const productionCalendar = computed(() => period.value?.productionCalendar ?? null);
+const preview = computed(() => period.value?.preview ?? null); const productionCalendar = computed(() => period.value?.productionCalendar ?? null);
 const productionAffectedDays = computed(() => productionCalendar.value?.days.filter(day => day.sourceType !== "NONE") ?? []);
-const currency = computed(() => preview.value?.currencyCode || period.value?.settings.currencyCode || "RUB");
+const effectiveCompensation = computed(() => period.value?.effectiveCompensation ?? null);
+const compensationHistory = computed(() => period.value?.compensationHistory ?? []);
+const currency = computed(() => preview.value?.currencyCode || effectiveCompensation.value?.currencyCode || period.value?.settings.currencyCode || "RUB");
+const salaryMode = computed(() => preview.value?.payMode === "SALARY");
 
 const text = computed(() => language.value === "en" ? {
-  foundation: "Payroll Foundation", title: "Payroll calculation", intro: "DutyLog uses only approved facts from a closed period. Every calculation is stored as an immutable revision.", month: "Accounting month", reload: "Refresh", period: "Period", periodClosed: "Period is closed", periodOpen: "Period is open", frozen: "The time source is frozen", live: "Preview changes with the calendar", integrity: "Integrity", healthy: "Ledger is healthy", unhealthy: "Ledger has issues", integrityHint: "Calculation is blocked when integrity checks fail", payable: "Payable", preview: "Preview calculation", revision: "Revision", breakdownEyebrow: "Time breakdown", breakdownTitle: "What makes up the amount", planned: "Scheduled", worked: "Worked", paidAbsence: "Paid absence", unpaid: "Unpaid time", timeAdjustment: "Time adjustment", payableTime: "Payable time", rules: "Calculation rules", rateCurrency: "Rate and currency", currencyCode: "Currency code", hourlyRate: "Hourly rate", saveRules: "Save rules", moneyHint: "Money is stored in minor currency units. This foundation uses one hourly rate without taxes or coefficients.", basePay: "Base amount", additions: "Additions", deductions: "Deductions", manual: "Manual operations", operations: "Additions and deductions", addition: "Addition", deduction: "Deduction", amount: "Amount", titlePlaceholder: "For example: bonus", notePlaceholder: "Comment", addOperation: "Add operation", snapshots: "Closed calculation", revisions: "Snapshot revisions", calculate: "Save new revision", noPaid: "No paid time", noAdjustments: "No manual adjustments", noSnapshots: "No calculations yet", saveRulesOk: "Payroll rules saved", adjustmentOk: "Money adjustment added", calculateOk: "Payroll revision saved", invalidRate: "Invalid hourly rate", invalidAmount: "Enter a positive amount", periodOpenBlock: "Close the accounting period first", integrityBlock: "Fix ledger integrity issues first", rateBlock: "Set the hourly rate first", ready: "Ready to calculate", perHour: "/ h", loading: "Loading…",
+  foundation:"Native Payroll",title:"Payroll",intro:"Tell DutyLog how you are paid once. Time comes from Day Truth; Payroll only prices it.",month:"Accounting month",reload:"Refresh",period:"Period",periodClosed:"Period is closed",periodOpen:"Period is open",frozen:"The time source is frozen",live:"Preview changes with Day Truth",integrity:"Integrity",healthy:"Ledger is healthy",unhealthy:"Ledger has issues",payable:"Base estimate",preview:"Preview",revision:"Revision",breakdown:"Time behind the amount",planned:"Required norm",worked:"Worked",paidAbsence:"Paid absence",unpaid:"Unpaid time",timeAdjustment:"Time adjustment",payableTime:"Payable time",setup:"How are you paid?",hourly:"Hourly rate",salary:"Monthly salary",effective:"Effective from month",currencyCode:"Currency",amount:"Amount",save:"Save compensation",history:"Compensation history",remove:"Delete",salaryHint:"Salary base is prorated only by uncovered required time. Overtime and holiday premiums are classified in the next Payroll step.",hourlyHint:"Hourly base uses canonical payable minutes. Premium multipliers come in the next Payroll step.",effectiveRate:"Effective hourly value",coverage:"Salary-covered norm",basePay:"Base amount",additions:"Additions",deductions:"Deductions",manual:"Manual operations",operations:"Additions and deductions",addition:"Addition",deduction:"Deduction",titlePlaceholder:"For example: bonus",notePlaceholder:"Comment",addOperation:"Add operation",snapshots:"Closed calculation",revisions:"Snapshot revisions",calculate:"Save new revision",noAdjustments:"No manual adjustments",noSnapshots:"No calculations yet",periodOpenBlock:"Close the accounting period first",integrityBlock:"Fix ledger integrity issues first",compensationBlock:"Set how you are paid first",coverageBlock:"Salary mode needs complete schedule coverage for the month",normBlock:"Salary mode needs a positive production norm",ready:"Ready to calculate",included:"Included in salary base",loading:"Loading…",openCalendar:"Open calendar",production:"Production norm",base:"Base schedule norm",adjustment:"Calendar adjustment",rules:"Calendar rules",noRules:"No production-calendar rules",coverageWarn:"Schedule coverage is incomplete; norm uses known dates only.",saved:"Compensation saved",deleted:"Compensation term deleted",adjustmentOk:"Money adjustment added",calculateOk:"Payroll revision saved",invalidAmount:"Enter a positive amount",
 } : {
-  foundation: "Payroll Foundation", title: "Расчёт зарплаты", intro: "DutyLog берёт только утверждённый факт из закрытого периода. Каждый расчёт сохраняется отдельной неизменяемой ревизией.", month: "Расчётный месяц", reload: "Обновить", period: "Период", periodClosed: "Период закрыт", periodOpen: "Период открыт", frozen: "Источник времени зафиксирован", live: "Предпросмотр меняется вместе с календарём", integrity: "Целостность", healthy: "Журнал согласован", unhealthy: "Есть расхождения", integrityHint: "Расчёт блокируется при расхождениях", payable: "К выплате", preview: "Предварительный расчёт", revision: "Ревизия", breakdownEyebrow: "Расшифровка времени", breakdownTitle: "Из чего сложилась сумма", planned: "Обязательная норма", worked: "Фактически отработано", paidAbsence: "Оплачиваемые отсутствия", unpaid: "Неоплачиваемое время", timeAdjustment: "Корректировка времени", payableTime: "Оплачиваемое время", rules: "Правила расчёта", rateCurrency: "Ставка и валюта", currencyCode: "Код валюты", hourlyRate: "Ставка за час", saveRules: "Сохранить правила", moneyHint: "Денежные значения хранятся в минимальных единицах валюты. Первый релиз использует одну почасовую ставку без налогов и коэффициентов.", basePay: "Базовая сумма", additions: "Начисления", deductions: "Удержания", manual: "Ручные операции", operations: "Начисления и удержания", addition: "Начисление", deduction: "Удержание", amount: "Сумма", titlePlaceholder: "Например: премия", notePlaceholder: "Комментарий", addOperation: "Добавить операцию", snapshots: "Закрытый расчёт", revisions: "Ревизии snapshot", calculate: "Зафиксировать новую ревизию", noPaid: "Нет оплачиваемого времени", noAdjustments: "Нет ручных операций", noSnapshots: "Расчётов пока нет", saveRulesOk: "Правила расчёта сохранены", adjustmentOk: "Денежная операция добавлена", calculateOk: "Ревизия расчёта сохранена", invalidRate: "Некорректная ставка", invalidAmount: "Укажи положительную сумму", periodOpenBlock: "Сначала закрой расчётный период", integrityBlock: "Сначала исправь расхождения журнала", rateBlock: "Сначала укажи почасовую ставку", ready: "Готово к фиксации", perHour: "/ ч", loading: "Загрузка…",
+  foundation:"Native Payroll",title:"Расчёт зарплаты",intro:"Один раз скажи DutyLog, как тебе платят. Время приходит из Day Truth, а Payroll только переводит его в деньги.",month:"Расчётный месяц",reload:"Обновить",period:"Период",periodClosed:"Период закрыт",periodOpen:"Период открыт",frozen:"Источник времени зафиксирован",live:"Предпросмотр меняется вместе с Day Truth",integrity:"Целостность",healthy:"Журнал согласован",unhealthy:"Есть расхождения",payable:"Базовый расчёт",preview:"Предпросмотр",revision:"Ревизия",breakdown:"Из какого времени получилась сумма",planned: "Обязательная норма",worked:"Фактически отработано",paidAbsence:"Оплачиваемые отсутствия",unpaid:"Неоплачиваемое время",timeAdjustment:"Корректировка времени",payableTime:"Оплачиваемое время",setup:"Как тебе платят?",hourly:"Почасовая ставка",salary:"Оклад",effective:"Действует с месяца",currencyCode:"Валюта",amount:"Сумма",save:"Сохранить условия",history:"История условий",remove:"Удалить",salaryHint:"Оклад уменьшается только на непокрытую обязательную норму. Доплаты за переработку, ночь и праздник будут отдельной классификацией следующего шага Payroll.",hourlyHint:"Почасовая база использует каноническое оплачиваемое время. Коэффициенты доплат появятся следующим шагом Payroll.",effectiveRate:"Расчётная стоимость часа",coverage:"Норма, покрытая окладом",basePay:"Базовая сумма",additions:"Начисления",deductions:"Удержания",manual:"Ручные операции",operations:"Начисления и удержания",addition:"Начисление",deduction:"Удержание",titlePlaceholder:"Например: премия",notePlaceholder:"Комментарий",addOperation:"Добавить операцию",snapshots:"Закрытый расчёт",revisions:"Ревизии snapshot",calculate:"Зафиксировать новую ревизию",noAdjustments:"Нет ручных операций",noSnapshots:"Расчётов пока нет",periodOpenBlock:"Сначала закрой расчётный период",integrityBlock:"Сначала исправь расхождения журнала",compensationBlock:"Сначала укажи, как тебе платят",coverageBlock:"Для оклада сначала заполни график на весь расчётный месяц",normBlock:"Для оклада нужна положительная расчётная норма месяца",ready:"Готово к фиксации",included:"Входит в базовый оклад",loading:"Загрузка…",openCalendar:"Открыть календарь",production:"Расчётная норма",base:"Базовая норма графика",adjustment:"Корректировка календаря",rules:"Правила календаря",noRules:"В этом месяце правил производственного календаря нет",coverageWarn:"График заполнен не на весь месяц: норма считается по известным датам.",saved:"Условия оплаты сохранены",deleted:"Условия оплаты удалены",adjustmentOk:"Денежная операция добавлена",calculateOk:"Ревизия расчёта сохранена",invalidAmount:"Укажи положительную сумму",
 });
-
-const productionText = computed(() => language.value === "en" ? {
-  eyebrow: "Production Calendar", title: "Required work norm", intro: "The calendar is now edited from the actual day. Payroll only explains the monthly result.", base: "Base schedule norm", adjustment: "Calendar adjustment", production: "Production norm", coverageWarn: "Schedule coverage is incomplete; the norm is calculated only from known dated schedule entries.", affected: "Calendar rules", noRules: "No production-calendar rules for this month", custom: "local", baseSource: "base", openCalendar: "Open calendar",
-} : {
-  eyebrow: "Производственный календарь", title: "Обязательная норма", intro: "Теперь особые дни редактируются там, где они происходят — в календаре. Payroll только объясняет итог месяца.", base: "Базовая норма графика", adjustment: "Корректировка календаря", production: "Расчётная норма", coverageWarn: "График заполнен не на весь месяц: норма считается только по известным календарным дням.", affected: "Правила календаря", noRules: "В этом месяце правил производственного календаря пока нет", custom: "локально", baseSource: "база", openCalendar: "Открыть календарь",
-});
-
-function minutes(value: number | null | undefined): string {
-  const total = Math.round(Number(value ?? 0));
-  const sign = total < 0 ? "−" : "";
-  const safe = Math.abs(total);
-  const hours = Math.floor(safe / 60);
-  const rest = safe % 60;
-  if (language.value === "en") return `${sign}${hours} h${rest ? ` ${rest} min` : ""}`;
-  return `${sign}${hours} ч${rest ? ` ${rest} мин` : ""}`;
-}
-
-function money(minor: number | null | undefined, code = currency.value): string {
-  const value = Number(minor ?? 0) / 100;
-  try {
-    return new Intl.NumberFormat(language.value === "en" ? "en-US" : "ru-RU", {
-      style: "currency", currency: String(code || "RUB").toUpperCase(), minimumFractionDigits: 2, maximumFractionDigits: 2,
-    }).format(value);
-  } catch {
-    return `${value.toFixed(2)} ${String(code || "RUB").toUpperCase()}`;
-  }
-}
-
-function moneyForMinutes(value: number | null | undefined, rate: number | null | undefined): number {
-  return Math.round((Number(value ?? 0) * Number(rate ?? 0)) / 60);
-}
-
-function requestErrorMessage(caught: unknown): string {
-  if (caught instanceof Error && caught.message) return caught.message;
-  return error.value || (language.value === "en" ? "Request failed" : "Не удалось выполнить запрос");
-}
-
-const breakdown = computed(() => {
-  const current = preview.value;
-  if (!current) return [];
-  return [
-    { key: "worked", label: text.value.worked, value: current.workedMinutes },
-    { key: "vacation", label: language.value === "en" ? "Paid vacation" : "Оплачиваемый отпуск", value: current.vacationMinutes },
-    { key: "sick", label: language.value === "en" ? "Sick leave" : "Больничный", value: current.sickMinutes },
-    { key: "overtime", label: language.value === "en" ? "Overtime time-off" : "Отгул из переработок", value: current.overtimeCompensatedMinutes },
-    { key: "adjustment", label: text.value.timeAdjustment, value: current.timeAdjustmentMinutes },
-  ].filter(item => Number(item.value) !== 0).map(item => ({ ...item, amount: moneyForMinutes(item.value, current.hourlyRateMinor) }));
-});
-
-const blocking = computed(() => {
-  switch (period.value?.blockingReason) {
-    case "PERIOD_OPEN": return text.value.periodOpenBlock;
-    case "LEDGER_INTEGRITY_FAILED": return text.value.integrityBlock;
-    case "PAYROLL_RATE_REQUIRED": return text.value.rateBlock;
-    default: return "";
-  }
-});
-
-function synchronizeInputs(): void {
-  const settings = period.value?.settings;
-  if (!settings) return;
-  currencyCode.value = settings.currencyCode || "RUB";
-  hourlyRate.value = (Number(settings.hourlyRateMinor ?? 0) / 100).toFixed(2);
-}
-
-function openCalendar(): void { navigateHashRoute("calendar"); }
-
-async function refresh(): Promise<void> {
-  if (!payrollEnabled.value) return;
-  try {
-    await store.load(month.value);
-    synchronizeInputs();
-  } catch {
-    message.value = error.value;
-    messageOk.value = false;
-  }
-}
-
-async function saveSettings(): Promise<void> {
-  const rate = Number(hourlyRate.value);
-  if (!Number.isFinite(rate) || rate < 0) { message.value = text.value.invalidRate; messageOk.value = false; return; }
-  try {
-    await store.saveSettings({ currencyCode: currencyCode.value.trim().toUpperCase() || "RUB", hourlyRateMinor: Math.round(rate * 100) });
-    synchronizeInputs();
-    message.value = text.value.saveRulesOk; messageOk.value = true;
-  } catch { message.value = error.value; messageOk.value = false; }
-}
-
-async function addAdjustment(): Promise<void> {
-  const amount = Number(adjustmentAmount.value);
-  if (!Number.isFinite(amount) || amount <= 0) { message.value = text.value.invalidAmount; messageOk.value = false; return; }
-  const title = adjustmentTitle.value.trim();
-  if (!title) { message.value = text.value.titlePlaceholder; messageOk.value = false; return; }
-  try {
-    await store.addAdjustment({ month: month.value, adjustmentType: adjustmentType.value, amountMinor: Math.round(amount * 100), title, note: adjustmentNote.value.trim() || null });
-    adjustmentAmount.value = ""; adjustmentTitle.value = ""; adjustmentNote.value = "";
-    message.value = text.value.adjustmentOk; messageOk.value = true;
-  } catch { message.value = error.value; messageOk.value = false; }
-}
-
-async function calculate(): Promise<void> {
-  try { await store.calculate(); message.value = text.value.calculateOk; messageOk.value = true; }
-  catch { message.value = error.value; messageOk.value = false; }
-}
-
-async function synchronizeRoute(route: string): Promise<void> {
-  if (route === "payroll" && payrollEnabled.value) await refresh();
-}
-
-onMounted(() => {
-  previousDomain = window.DutyLogVueDomains?.payroll;
-  const domain: DutyLogPayrollDomain = Object.freeze({ ready: () => store.loaded && !store.loading, refresh });
-  window.DutyLogVueDomains = Object.freeze({ ...(window.DutyLogVueDomains ?? {}), payroll: domain });
-  document.documentElement.dataset.vuePayroll = "ready";
-  void synchronizeRoute(activeRoute.value);
-});
-
-watch(activeRoute, route => { void synchronizeRoute(route); });
-watch([modulesLoaded, modules], () => { if (activeRoute.value === "payroll") void refresh(); }, { deep: true });
-
-onBeforeUnmount(() => {
-  if (previousDomain) window.DutyLogVueDomains = Object.freeze({ ...(window.DutyLogVueDomains ?? {}), payroll: previousDomain });
-  else if (window.DutyLogVueDomains) { const { payroll: _removed, ...rest } = window.DutyLogVueDomains; window.DutyLogVueDomains = Object.freeze(rest); }
-  delete document.documentElement.dataset.vuePayroll;
-});
+function minutes(value:number|null|undefined):string { const total=Math.round(Number(value??0)), sign=total<0?"−":"", safe=Math.abs(total), h=Math.floor(safe/60), m=safe%60; return language.value==="en"?`${sign}${h} h${m?` ${m} min`:""}`:`${sign}${h} ч${m?` ${m} мин`:""}`; }
+function money(minor:number|null|undefined, code=currency.value):string { const value=Number(minor??0)/100; try { return new Intl.NumberFormat(language.value==="en"?"en-US":"ru-RU",{style:"currency",currency:String(code||"RUB").toUpperCase(),minimumFractionDigits:2,maximumFractionDigits:2}).format(value); } catch { return `${value.toFixed(2)} ${code}`; } }
+function moneyForMinutes(value:number|null|undefined, rate:number|null|undefined):number { return Math.round((Number(value??0)*Number(rate??0))/60); }
+function compensationMonthLabel(value:string|null|undefined):string { if(value==="1970-01") return language.value==="en"?"Initial conditions":"Исходные условия"; return value||"—"; }
+function requestErrorMessage(caught:unknown):string { return caught instanceof Error&&caught.message?caught.message:error.value||(language.value==="en"?"Request failed":"Не удалось выполнить запрос"); }
+const breakdown = computed(() => { const p=preview.value; if(!p)return []; const rows=[{key:"worked",label:text.value.worked,value:p.workedMinutes},{key:"vacation",label:language.value==="en"?"Paid vacation":"Оплачиваемый отпуск",value:p.vacationMinutes},{key:"sick",label:language.value==="en"?"Sick leave":"Больничный",value:p.sickMinutes},{key:"overtime",label:language.value==="en"?"Overtime time-off":"Отгул из переработок",value:p.overtimeCompensatedMinutes},{key:"adjustment",label:text.value.timeAdjustment,value:p.timeAdjustmentMinutes}].filter(i=>Number(i.value)!==0); return rows.map(i=>({...i,amount:salaryMode.value?null:moneyForMinutes(i.value,p.effectiveHourlyRateMinor)})); });
+const blocking = computed(() => { switch(period.value?.blockingReason){case"PERIOD_OPEN":return text.value.periodOpenBlock;case"LEDGER_INTEGRITY_FAILED":return text.value.integrityBlock;case"PAYROLL_COMPENSATION_REQUIRED":return text.value.compensationBlock;case"PAYROLL_PRODUCTION_NORM_INCOMPLETE":return text.value.coverageBlock;case"PAYROLL_PRODUCTION_NORM_REQUIRED":return text.value.normBlock;default:return"";} });
+function synchronizeInputs():void { const term=effectiveCompensation.value; effectiveMonth.value=month.value; payMode.value=term?.payMode==="SALARY"?"SALARY":"HOURLY"; currencyCode.value=term?.currencyCode||period.value?.settings.currencyCode||"RUB"; const minor=payMode.value==="SALARY"?term?.monthlySalaryMinor:term?.hourlyRateMinor; compensationAmount.value=minor? (Number(minor)/100).toFixed(2):""; }
+function openCalendar():void { navigateHashRoute("calendar"); }
+async function refresh():Promise<void>{ if(!payrollEnabled.value)return; try{await store.load(month.value);synchronizeInputs();}catch(caught){message.value=requestErrorMessage(caught);messageOk.value=false;} }
+async function saveCompensation():Promise<void>{ const amount=Number(compensationAmount.value); if(!Number.isFinite(amount)||amount<=0){message.value=text.value.invalidAmount;messageOk.value=false;return;} const body:PayrollCompensationTermInput={payMode:payMode.value,currencyCode:currencyCode.value.trim().toUpperCase()||"RUB",hourlyRateMinor:payMode.value==="HOURLY"?Math.round(amount*100):null,monthlySalaryMinor:payMode.value==="SALARY"?Math.round(amount*100):null}; try{await store.saveCompensationTerm(effectiveMonth.value,body);synchronizeInputs();message.value=text.value.saved;messageOk.value=true;}catch(caught){message.value=requestErrorMessage(caught);messageOk.value=false;} }
+async function removeCompensation(termMonth:string):Promise<void>{ try{await store.deleteCompensationTerm(termMonth);synchronizeInputs();message.value=text.value.deleted;messageOk.value=true;}catch(caught){message.value=requestErrorMessage(caught);messageOk.value=false;} }
+async function addAdjustment():Promise<void>{const amount=Number(adjustmentAmount.value);if(!Number.isFinite(amount)||amount<=0){message.value=text.value.invalidAmount;messageOk.value=false;return;}const title=adjustmentTitle.value.trim();if(!title){message.value=text.value.titlePlaceholder;messageOk.value=false;return;}try{await store.addAdjustment({month:month.value,adjustmentType:adjustmentType.value,amountMinor:Math.round(amount*100),title,note:adjustmentNote.value.trim()||null});adjustmentAmount.value="";adjustmentTitle.value="";adjustmentNote.value="";message.value=text.value.adjustmentOk;messageOk.value=true;}catch(caught){message.value=requestErrorMessage(caught);messageOk.value=false;}}
+async function calculate():Promise<void>{try{await store.calculate();message.value=text.value.calculateOk;messageOk.value=true;}catch(caught){message.value=requestErrorMessage(caught);messageOk.value=false;}}
+async function synchronizeRoute(route:string):Promise<void>{if(route==="payroll"&&payrollEnabled.value)await refresh();}
+onMounted(()=>{previousDomain=window.DutyLogVueDomains?.payroll;const domain:DutyLogPayrollDomain=Object.freeze({ready:()=>store.loaded&&!store.loading,refresh});window.DutyLogVueDomains=Object.freeze({...(window.DutyLogVueDomains??{}),payroll:domain});document.documentElement.dataset.vuePayroll="ready";void synchronizeRoute(activeRoute.value);});
+watch(activeRoute,route=>{void synchronizeRoute(route);});watch([modulesLoaded,modules],()=>{if(activeRoute.value==="payroll")void refresh();},{deep:true});watch(month,()=>{effectiveMonth.value=month.value;});
+onBeforeUnmount(()=>{if(previousDomain)window.DutyLogVueDomains=Object.freeze({...(window.DutyLogVueDomains??{}),payroll:previousDomain});else if(window.DutyLogVueDomains){const{payroll:_removed,...rest}=window.DutyLogVueDomains;window.DutyLogVueDomains=Object.freeze(rest);}delete document.documentElement.dataset.vuePayroll;});
 </script>
 
-<template>
-  <section v-if="activeRoute === 'payroll'" id="view-payroll" class="view payrollView" data-vue-domain-route="payroll" data-vue-domain-owner="payroll">
-    <div class="payrollWorkspace">
-      <header class="payrollHero card" aria-labelledby="payrollTitle">
-        <div><div class="eyebrow">{{ text.foundation }}</div><h2 id="payrollTitle">{{ text.title }}</h2><p>{{ text.intro }}</p></div>
-        <div class="payrollHeroControls"><label>{{ text.month }}<input id="payrollMonth" v-model="month" type="month" @change="refresh"/></label><button id="payrollReload" type="button" :disabled="loading" @click="refresh">{{ text.reload }}</button></div>
-      </header>
+<template><section v-if="activeRoute === 'payroll'" id="view-payroll" class="view payrollView" data-vue-domain-route="payroll" data-vue-domain-owner="payroll"><div class="payrollWorkspace">
+<header class="payrollHero card" aria-labelledby="payrollTitle"><div><div class="eyebrow">{{ text.foundation }}</div><h2 id="payrollTitle">{{ text.title }}</h2><p>{{ text.intro }}</p></div><div class="payrollHeroControls"><label>{{ text.month }}<input id="payrollMonth" v-model="month" type="month" @change="refresh"/></label><button id="payrollReload" type="button" :disabled="loading" @click="refresh">{{ text.reload }}</button></div></header>
+<section class="payrollStatusRow" aria-label="Статус источника расчёта"><div class="payrollStatusCard"><span>{{ text.period }}</span><b id="payrollPeriodStatus" :class="period?.periodClosed?'ok':'warn'">{{ period?.periodClosed?text.periodClosed:text.periodOpen }}</b><small id="payrollPeriodHint">{{ period?.periodClosed?text.frozen:text.live }}</small></div><div class="payrollStatusCard"><span>{{ text.integrity }}</span><b id="payrollIntegrityStatus" :class="period?.integrityHealthy?'ok':'bad'">{{ period?.integrityHealthy?text.healthy:text.unhealthy }}</b></div><div class="payrollStatusCard total"><span>{{ text.payable }}</span><b id="payrollTotal">{{ money(preview?.totalPayMinor) }}</b><small id="payrollRevisionLabel">{{ period?.latestSnapshot?`${text.revision} ${period.latestSnapshot.revision} · ${money(period.latestSnapshot.totalPayMinor,period.latestSnapshot.currencyCode)}`:text.preview }}</small></div></section>
 
-      <section class="payrollStatusRow" aria-label="Статус источника расчёта">
-        <div class="payrollStatusCard"><span>{{ text.period }}</span><b id="payrollPeriodStatus" :class="period?.periodClosed ? 'ok' : 'warn'">{{ period?.periodClosed ? text.periodClosed : text.periodOpen }}</b><small id="payrollPeriodHint">{{ period?.periodClosed ? text.frozen : text.live }}</small></div>
-        <div class="payrollStatusCard"><span>{{ text.integrity }}</span><b id="payrollIntegrityStatus" :class="period?.integrityHealthy ? 'ok' : 'bad'">{{ period?.integrityHealthy ? text.healthy : text.unhealthy }}</b><small>{{ text.integrityHint }}</small></div>
-        <div class="payrollStatusCard total"><span>{{ text.payable }}</span><b id="payrollTotal">{{ money(preview?.totalPayMinor) }}</b><small id="payrollRevisionLabel">{{ period?.latestSnapshot ? `${text.revision} ${period.latestSnapshot.revision} · ${money(period.latestSnapshot.totalPayMinor, period.latestSnapshot.currencyCode)}` : text.preview }}</small></div>
-      </section>
+<div class="payrollGrid payrollCompensationGrid"><section class="card payrollSettingsCard payrollCompensationCard"><div class="payrollSectionHead"><div><div class="eyebrow">Compensation</div><h3>{{ text.setup }}</h3></div></div><form id="payrollSettingsForm" class="payrollSettingsForm nativeCompensationForm" @submit.prevent="saveCompensation"><div class="compensationModeSwitch"><button type="button" :class="{active:payMode==='HOURLY'}" @click="payMode='HOURLY'">{{ text.hourly }}</button><button type="button" :class="{active:payMode==='SALARY'}" @click="payMode='SALARY'">{{ text.salary }}</button></div><label>{{ text.effective }}<input id="payrollCompensationMonth" v-model="effectiveMonth" type="month" required/></label><label>{{ text.currencyCode }}<input id="payrollCurrency" v-model="currencyCode" maxlength="3" pattern="[A-Za-z]{3}" required/></label><label>{{ payMode==='SALARY'?text.salary:text.hourly }}<input id="payrollHourlyRate" v-model="compensationAmount" type="number" min="0.01" max="10000000000" step="0.01" required/></label><button class="primary" type="submit" :disabled="loading">{{ text.save }}</button></form><p class="payrollHint">{{ payMode==='SALARY'?text.salaryHint:text.hourlyHint }}</p>
+<div v-if="compensationHistory.length" class="compensationHistory"><div class="eyebrow">{{ text.history }}</div><article v-for="item in compensationHistory" :key="item.id" class="compensationHistoryRow"><span><b>{{ compensationMonthLabel(item.effectiveMonth) }} · {{ item.payMode==='SALARY'?text.salary:text.hourly }}</b><small>{{ item.payMode==='SALARY'?money(item.monthlySalaryMinor,item.currencyCode):`${money(item.hourlyRateMinor,item.currencyCode)} / ч` }}</small></span><button v-if="item.effectiveMonth !== '1970-01'" type="button" :disabled="loading" @click="removeCompensation(item.effectiveMonth)">{{ text.remove }}</button></article></div></section>
+<section class="card payrollMoneyCard"><div class="payrollSectionHead"><div><div class="eyebrow">{{ preview?.payMode || '—' }}</div><h3>{{ text.payable }}</h3></div><span id="payrollCurrencyBadge">{{ currency }}</span></div><div class="payrollMoneySummary nativePayrollSummary"><div v-if="preview?.payMode==='SALARY'"><span>{{ text.salary }}</span><b>{{ money(preview?.monthlySalaryMinor) }}</b></div><div><span>{{ text.production }}</span><b>{{ minutes(preview?.productionNormMinutes) }}</b></div><div><span>{{ text.effectiveRate }}</span><b>{{ money(preview?.effectiveHourlyRateMinor) }} / ч</b></div><div v-if="preview?.payMode==='SALARY'"><span>{{ text.coverage }}</span><b>{{ minutes(preview?.salaryCoveredMinutes) }} / {{ minutes(preview?.productionNormMinutes) }}</b></div><div><span>{{ text.basePay }}</span><b id="payrollBasePay">{{ money(preview?.basePayMinor) }}</b></div><div><span>{{ text.additions }}</span><b id="payrollAdditions">{{ money(preview?.additionsMinor) }}</b></div><div><span>{{ text.deductions }}</span><b id="payrollDeductions">{{ money(preview?.deductionsMinor) }}</b></div></div></section></div>
 
-      <section class="card productionCalendarCard" data-production-calendar-foundation>
-        <div class="payrollSectionHead">
-          <div><div class="eyebrow">{{ productionText.eyebrow }}</div><h3>{{ productionText.title }}</h3><p class="productionCalendarIntro">{{ productionText.intro }}</p></div>
-        </div>
-        <div class="productionNormMetrics">
-          <div><span>{{ productionText.base }}</span><b id="productionBaseNorm">{{ minutes(productionCalendar?.baseNormMinutes) }}</b></div>
-          <div><span>{{ productionText.adjustment }}</span><b id="productionNormAdjustment">{{ minutes(productionCalendar?.adjustmentMinutes) }}</b></div>
-          <div class="accent"><span>{{ productionText.production }}</span><b id="productionNorm">{{ minutes(productionCalendar?.productionNormMinutes) }}</b></div>
-        </div>
-        <p v-if="productionCalendar && !productionCalendar.scheduleCoverageComplete" class="productionCoverageWarning" id="productionCoverageWarning">{{ productionText.coverageWarn }} · {{ productionCalendar.scheduleCoverageDays }}/{{ productionCalendar.days.length }}</p>
-        <div class="productionCalendarSummaryOnly" data-production-calendar-summary-only>
-          <div class="productionCalendarRules">
-            <div class="payrollSectionHead compact"><div><div class="eyebrow">{{ productionText.affected }}</div></div><b>{{ productionAffectedDays.length }}</b></div>
-            <article v-for="day in productionAffectedDays" :key="day.date" class="productionCalendarRule productionCalendarRule--summary">
-              <span><b>{{ new Date(`${day.date}T12:00:00`).toLocaleDateString(language === 'en' ? 'en-US' : 'ru-RU', { day:'numeric', month:'short' }) }}</b><small>{{ day.label || (day.localOverride ? productionText.custom : productionText.baseSource) }}</small></span>
-              <strong>{{ minutes(day.baseNormMinutes) }} → {{ minutes(day.productionNormMinutes) }}</strong>
-            </article>
-            <div v-if="!productionAffectedDays.length" class="payrollEmpty">{{ productionText.noRules }}</div>
-          </div>
-          <div class="productionCalendarNativeHint"><p>{{ productionText.intro }}</p><button type="button" @click="openCalendar">{{ productionText.openCalendar }}</button></div>
-        </div>
-      </section>
+<section class="card productionCalendarCard" data-production-calendar-foundation><div class="payrollSectionHead"><div><div class="eyebrow">Production Calendar</div><h3>{{ text.production }}</h3></div><button type="button" @click="openCalendar">{{ text.openCalendar }}</button></div><div class="productionNormMetrics"><div><span>{{ text.base }}</span><b id="productionBaseNorm">{{ minutes(productionCalendar?.baseNormMinutes) }}</b></div><div><span>{{ text.adjustment }}</span><b id="productionNormAdjustment">{{ minutes(productionCalendar?.adjustmentMinutes) }}</b></div><div class="accent"><span>{{ text.production }}</span><b id="productionNorm">{{ minutes(productionCalendar?.productionNormMinutes) }}</b></div></div><p v-if="productionCalendar&&!productionCalendar.scheduleCoverageComplete" id="productionCoverageWarning" class="productionCoverageWarning">{{ text.coverageWarn }}</p><div class="productionCalendarRules" data-production-calendar-summary-only><article v-for="day in productionAffectedDays" :key="day.date" class="productionCalendarRule productionCalendarRule--summary"><span><b>{{ day.date }}</b><small>{{ day.label || day.dayKind }}</small></span><strong>{{ minutes(day.baseNormMinutes) }} → {{ minutes(day.productionNormMinutes) }}</strong></article><div v-if="!productionAffectedDays.length" class="payrollEmpty">{{ text.noRules }}</div></div></section>
 
-      <div class="payrollGrid">
-        <section class="card payrollSummaryCard">
-          <div class="payrollSectionHead"><div><div class="eyebrow">{{ text.breakdownEyebrow }}</div><h3>{{ text.breakdownTitle }}</h3></div><span id="payrollCurrencyBadge">{{ currency }}</span></div>
-          <div class="payrollMetricGrid">
-            <div><span>{{ text.planned }}</span><b id="payrollPlanned">{{ minutes(preview?.plannedMinutes) }}</b></div><div><span>{{ text.worked }}</span><b id="payrollWorked">{{ minutes(preview?.workedMinutes) }}</b></div><div><span>{{ text.paidAbsence }}</span><b id="payrollPaidAbsence">{{ minutes(preview?.paidAbsenceMinutes) }}</b></div><div><span>{{ text.unpaid }}</span><b id="payrollUnpaid">{{ minutes(preview?.unpaidMinutes) }}</b></div><div><span>{{ text.timeAdjustment }}</span><b id="payrollTimeAdjustment">{{ minutes(preview?.timeAdjustmentMinutes) }}</b></div><div class="accent"><span>{{ text.payableTime }}</span><b id="payrollPayable">{{ minutes(preview?.payableMinutes) }}</b></div>
-          </div>
-          <div class="payrollBreakdown" id="payrollBreakdown"><div v-for="item in breakdown" :key="item.key" class="payrollBreakdownRow" :class="item.key"><span><b>{{ item.label }}</b><small>{{ minutes(item.value) }}</small></span><strong>{{ money(item.amount) }}</strong></div><div v-if="!breakdown.length" class="payrollEmpty">{{ text.noPaid }}</div></div>
-        </section>
+<div class="payrollGrid"><section class="card payrollSummaryCard"><div class="payrollSectionHead"><div><div class="eyebrow">Day Truth → Payroll</div><h3>{{ text.breakdown }}</h3></div></div><div class="payrollMetricGrid"><div><span>{{ text.planned }}</span><b id="payrollPlanned">{{ minutes(preview?.plannedMinutes) }}</b></div><div><span>{{ text.worked }}</span><b id="payrollWorked">{{ minutes(preview?.workedMinutes) }}</b></div><div><span>{{ text.paidAbsence }}</span><b id="payrollPaidAbsence">{{ minutes(preview?.paidAbsenceMinutes) }}</b></div><div><span>{{ text.unpaid }}</span><b id="payrollUnpaid">{{ minutes(preview?.unpaidMinutes) }}</b></div><div><span>{{ text.timeAdjustment }}</span><b id="payrollTimeAdjustment">{{ minutes(preview?.timeAdjustmentMinutes) }}</b></div><div class="accent"><span>{{ text.payableTime }}</span><b id="payrollPayable">{{ minutes(preview?.payableMinutes) }}</b></div></div><div class="payrollBreakdown" id="payrollBreakdown"><div v-for="item in breakdown" :key="item.key" class="payrollBreakdownRow"><span><b>{{ item.label }}</b><small>{{ minutes(item.value) }}</small></span><strong>{{ item.amount===null?text.included:money(item.amount) }}</strong></div></div></section>
+<section class="card payrollSnapshotCard"><div class="payrollSectionHead"><div><div class="eyebrow">{{ text.snapshots }}</div><h3>{{ text.revisions }}</h3></div></div><div class="payrollBlocking" id="payrollBlocking" :class="blocking?'blocked':'ready'">{{ blocking || text.ready }}</div><button class="primary payrollCalculate" id="payrollCalculate" type="button" :disabled="!period?.canCalculate||loading" @click="calculate">{{ text.calculate }}</button><div class="payrollSnapshotList" id="payrollSnapshotList"><article v-for="item in period?.snapshots??[]" :key="item.id" class="payrollSnapshotItem" :class="item.supersededById?'superseded':'current'"><span><b>{{ text.revision }} {{ item.revision }}</b><small>{{ item.payMode }} · {{ compensationMonthLabel(item.compensationEffectiveMonth) }} · {{ new Date(item.createdAt).toLocaleString(language==='en'?'en-US':'ru-RU') }}</small></span><strong>{{ money(item.totalPayMinor,item.currencyCode) }}</strong></article><div v-if="!(period?.snapshots.length)" class="payrollEmpty">{{ text.noSnapshots }}</div></div></section></div>
 
-        <section class="card payrollSettingsCard">
-          <div class="payrollSectionHead"><div><div class="eyebrow">{{ text.rules }}</div><h3>{{ text.rateCurrency }}</h3></div></div>
-          <form id="payrollSettingsForm" class="payrollSettingsForm" @submit.prevent="saveSettings"><label>{{ text.currencyCode }}<input id="payrollCurrency" v-model="currencyCode" maxlength="3" pattern="[A-Za-z]{3}" required/></label><label>{{ text.hourlyRate }}<input id="payrollHourlyRate" v-model="hourlyRate" type="number" min="0" max="10000000" step="0.01" required/></label><button class="primary" type="submit" :disabled="loading">{{ text.saveRules }}</button></form>
-          <p class="payrollHint">{{ text.moneyHint }}</p><div class="payrollMoneySummary"><div><span>{{ text.basePay }}</span><b id="payrollBasePay">{{ money(preview?.basePayMinor) }}</b></div><div><span>{{ text.additions }}</span><b id="payrollAdditions">{{ money(preview?.additionsMinor) }}</b></div><div><span>{{ text.deductions }}</span><b id="payrollDeductions">{{ money(preview?.deductionsMinor) }}</b></div></div>
-        </section>
-      </div>
-
-      <div class="payrollGrid payrollLowerGrid">
-        <section class="card payrollAdjustmentsCard"><div class="payrollSectionHead"><div><div class="eyebrow">{{ text.manual }}</div><h3>{{ text.operations }}</h3></div></div><form id="payrollAdjustmentForm" class="payrollAdjustmentForm" @submit.prevent="addAdjustment"><select id="payrollAdjustmentType" v-model="adjustmentType" :disabled="!period?.periodClosed || loading"><option value="ADDITION">{{ text.addition }}</option><option value="DEDUCTION">{{ text.deduction }}</option></select><input id="payrollAdjustmentAmount" v-model="adjustmentAmount" type="number" min="0.01" max="10000000000" step="0.01" :placeholder="text.amount" required :disabled="!period?.periodClosed || loading"/><input id="payrollAdjustmentTitle" v-model="adjustmentTitle" maxlength="120" :placeholder="text.titlePlaceholder" required :disabled="!period?.periodClosed || loading"/><input id="payrollAdjustmentNote" v-model="adjustmentNote" maxlength="500" :placeholder="text.notePlaceholder" :disabled="!period?.periodClosed || loading"/><button type="submit" :disabled="!period?.periodClosed || loading">{{ text.addOperation }}</button></form><div class="payrollAdjustmentList" id="payrollAdjustmentList"><article v-for="item in period?.adjustments ?? []" :key="item.id" class="payrollAdjustmentItem" :class="item.adjustmentType === 'DEDUCTION' ? 'deduction' : 'addition'"><span><b>{{ item.title }}</b><small>{{ item.note || (item.adjustmentType === 'DEDUCTION' ? text.deduction : text.addition) }}</small></span><strong>{{ item.adjustmentType === 'DEDUCTION' ? '−' : '+' }}{{ money(item.amountMinor) }}</strong></article><div v-if="!(period?.adjustments.length)" class="payrollEmpty">{{ text.noAdjustments }}</div></div></section>
-
-        <section class="card payrollSnapshotCard"><div class="payrollSectionHead"><div><div class="eyebrow">{{ text.snapshots }}</div><h3>{{ text.revisions }}</h3></div></div><div class="payrollBlocking" id="payrollBlocking" :class="blocking ? 'blocked' : 'ready'">{{ blocking || `${text.ready} · ${money(preview?.hourlyRateMinor, currency)} ${text.perHour}` }}</div><button class="primary payrollCalculate" id="payrollCalculate" type="button" :disabled="!period?.canCalculate || loading" @click="calculate">{{ text.calculate }}</button><div class="payrollSnapshotList" id="payrollSnapshotList"><article v-for="item in period?.snapshots ?? []" :key="item.id" class="payrollSnapshotItem" :class="item.supersededById ? 'superseded' : 'current'"><span><b>{{ text.revision }} {{ item.revision }}</b><small>{{ new Date(item.createdAt).toLocaleString(language === 'en' ? 'en-US' : 'ru-RU') }} · {{ item.calculationHash.slice(0,10) }}</small></span><strong>{{ money(item.totalPayMinor, item.currencyCode) }}</strong></article><div v-if="!(period?.snapshots.length)" class="payrollEmpty">{{ text.noSnapshots }}</div></div></section>
-      </div>
-      <div class="appModalMessage payrollMessage" id="payrollMessage" :class="message ? (messageOk ? 'ok' : 'err') : ''" role="status" aria-live="polite">{{ message || (loading ? text.loading : error) }}</div>
-    </div>
-  </section>
-</template>
+<section class="card payrollAdjustmentsCard"><div class="payrollSectionHead"><div><div class="eyebrow">{{ text.manual }}</div><h3>{{ text.operations }}</h3></div></div><form id="payrollAdjustmentForm" class="payrollAdjustmentForm" @submit.prevent="addAdjustment"><select id="payrollAdjustmentType" v-model="adjustmentType" :disabled="!period?.periodClosed||loading"><option value="ADDITION">{{ text.addition }}</option><option value="DEDUCTION">{{ text.deduction }}</option></select><input id="payrollAdjustmentAmount" v-model="adjustmentAmount" type="number" min="0.01" step="0.01" :placeholder="text.amount" required :disabled="!period?.periodClosed||loading"/><input id="payrollAdjustmentTitle" v-model="adjustmentTitle" maxlength="120" :placeholder="text.titlePlaceholder" required :disabled="!period?.periodClosed||loading"/><input id="payrollAdjustmentNote" v-model="adjustmentNote" maxlength="500" :placeholder="text.notePlaceholder" :disabled="!period?.periodClosed||loading"/><button type="submit" :disabled="!period?.periodClosed||loading">{{ text.addOperation }}</button></form><div class="payrollAdjustmentList" id="payrollAdjustmentList"><article v-for="item in period?.adjustments??[]" :key="item.id" class="payrollAdjustmentItem" :class="item.adjustmentType==='DEDUCTION'?'deduction':'addition'"><span><b>{{ item.title }}</b><small>{{ item.note || (item.adjustmentType==='DEDUCTION'?text.deduction:text.addition) }}</small></span><strong>{{ item.adjustmentType==='DEDUCTION'?'−':'+' }}{{ money(item.amountMinor) }}</strong></article><div v-if="!(period?.adjustments.length)" class="payrollEmpty">{{ text.noAdjustments }}</div></div></section>
+<div class="appModalMessage payrollMessage" id="payrollMessage" :class="message?(messageOk?'ok':'err'):''" role="status" aria-live="polite">{{ message || (loading?text.loading:error) }}</div>
+</div></section></template>

@@ -797,6 +797,33 @@ paths:
       responses:
         '200': { description: Updated rate and currency, content: { application/json: { schema: { $ref: '#/components/schemas/PayrollSettings' } } } }
         '400': { $ref: '#/components/responses/ApiError' }
+  /api/v1/payroll/compensation-terms/{month}:
+    put:
+      operationId: upsertPayrollCompensationTerm
+      description: Creates or replaces the compensation terms that become effective from the first day of the selected month.
+      parameters:
+        - in: path
+          name: month
+          required: true
+          schema: { type: string, pattern: '^\d{4}-\d{2}$' }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PayrollCompensationTermInput' }
+      responses:
+        '200': { description: Effective-month compensation term, content: { application/json: { schema: { $ref: '#/components/schemas/PayrollCompensationTerm' } } } }
+    delete:
+      operationId: deletePayrollCompensationTerm
+      description: Removes the compensation term that starts in this month. Earlier terms may become effective again.
+      parameters:
+        - in: path
+          name: month
+          required: true
+          schema: { type: string, pattern: '^\d{4}-\d{2}$' }
+      responses:
+        '204': { description: Compensation term removed }
+
   /api/v1/payroll/adjustments:
     post:
       operationId: addPayrollAdjustment
@@ -2024,6 +2051,23 @@ components:
         - type: object
           properties:
             updatedAt: { type: string, format: date-time, nullable: true }
+    PayrollCompensationTermInput:
+      type: object
+      required: [payMode, currencyCode]
+      properties:
+        payMode: { type: string, enum: [HOURLY, SALARY] }
+        currencyCode: { type: string, pattern: '^[A-Za-z]{3}$' }
+        hourlyRateMinor: { type: integer, format: int64, nullable: true, minimum: 1, maximum: 1000000000 }
+        monthlySalaryMinor: { type: integer, format: int64, nullable: true, minimum: 1, maximum: 1000000000000 }
+    PayrollCompensationTerm:
+      allOf:
+        - $ref: '#/components/schemas/PayrollCompensationTermInput'
+        - type: object
+          required: [id, effectiveMonth, updatedAt]
+          properties:
+            id: { type: integer, format: int64 }
+            effectiveMonth: { type: string, pattern: '^\d{4}-\d{2}$' }
+            updatedAt: { type: string, format: date-time }
     PayrollAdjustmentInput:
       type: object
       required: [month, adjustmentType, amountMinor, title]
@@ -2043,24 +2087,31 @@ components:
             createdAt: { type: string, format: date-time }
     PayrollPreview:
       type: object
-      required: [month, currencyCode, hourlyRateMinor, plannedMinutes, workedMinutes, vacationMinutes, sickMinutes, overtimeCompensatedMinutes, unpaidMinutes, timeAdjustmentMinutes, paidAbsenceMinutes, payableMinutes, basePayMinor, additionsMinor, deductionsMinor, totalPayMinor]
+      required: [month, currencyCode, hourlyRateMinor, plannedMinutes, workedMinutes, vacationMinutes, sickMinutes, overtimeCompensatedMinutes, unpaidMinutes, timeAdjustmentMinutes, paidAbsenceMinutes, payableMinutes, basePayMinor, additionsMinor, deductionsMinor, totalPayMinor, effectiveHourlyRateMinor, productionNormMinutes, salaryCoveredMinutes]
       properties:
-        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        month: { type: string }
         currencyCode: { type: string }
-        hourlyRateMinor: { type: integer, format: int64 }
-        plannedMinutes: { type: integer, minimum: 0 }
-        workedMinutes: { type: integer, minimum: 0 }
-        vacationMinutes: { type: integer, minimum: 0 }
-        sickMinutes: { type: integer, minimum: 0 }
-        overtimeCompensatedMinutes: { type: integer, minimum: 0 }
-        unpaidMinutes: { type: integer, minimum: 0 }
+        hourlyRateMinor: { type: integer, format: int64, description: Effective hourly value; derived from salary and production norm in SALARY mode. }
+        plannedMinutes: { type: integer }
+        workedMinutes: { type: integer }
+        vacationMinutes: { type: integer }
+        sickMinutes: { type: integer }
+        overtimeCompensatedMinutes: { type: integer }
+        unpaidMinutes: { type: integer }
         timeAdjustmentMinutes: { type: integer }
-        paidAbsenceMinutes: { type: integer, minimum: 0 }
-        payableMinutes: { type: integer, minimum: 0 }
+        paidAbsenceMinutes: { type: integer }
+        payableMinutes: { type: integer }
         basePayMinor: { type: integer, format: int64 }
         additionsMinor: { type: integer, format: int64 }
         deductionsMinor: { type: integer, format: int64 }
         totalPayMinor: { type: integer, format: int64 }
+        payMode: { type: string, nullable: true, enum: [HOURLY, SALARY] }
+        compensationEffectiveMonth: { type: string, nullable: true, pattern: '^\d{4}-\d{2}$' }
+        configuredHourlyRateMinor: { type: integer, format: int64, nullable: true }
+        monthlySalaryMinor: { type: integer, format: int64, nullable: true }
+        effectiveHourlyRateMinor: { type: integer, format: int64 }
+        productionNormMinutes: { type: integer }
+        salaryCoveredMinutes: { type: integer }
     PayrollSnapshot:
       allOf:
         - $ref: '#/components/schemas/PayrollPreview'
@@ -2076,21 +2127,25 @@ components:
             supersededById: { type: integer, format: int64, nullable: true }
     PayrollPeriod:
       type: object
-      required: [month, periodClosed, integrityHealthy, canCalculate, settings, productionCalendar, preview, adjustments, snapshots]
+      required: [month, periodClosed, integrityHealthy, canCalculate, settings, productionCalendar, preview, adjustments, snapshots, compensationHistory]
       properties:
-        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        month: { type: string }
         periodClosed: { type: boolean }
         integrityHealthy: { type: boolean }
         canCalculate: { type: boolean }
-        blockingReason: { type: string, nullable: true, enum: [PERIOD_OPEN, LEDGER_INTEGRITY_FAILED, PAYROLL_RATE_REQUIRED] }
+        blockingReason: { type: string, nullable: true, enum: [PERIOD_OPEN, LEDGER_INTEGRITY_FAILED, PAYROLL_COMPENSATION_REQUIRED, PAYROLL_PRODUCTION_NORM_INCOMPLETE, PAYROLL_PRODUCTION_NORM_REQUIRED] }
         settings: { $ref: '#/components/schemas/PayrollSettings' }
         productionCalendar: { $ref: '#/components/schemas/ProductionCalendarMonth' }
         preview: { $ref: '#/components/schemas/PayrollPreview' }
         adjustments: { type: array, items: { $ref: '#/components/schemas/PayrollAdjustment' } }
         latestSnapshot:
-          allOf: [{ $ref: '#/components/schemas/PayrollSnapshot' }]
           nullable: true
+          allOf: [{ $ref: '#/components/schemas/PayrollSnapshot' }]
         snapshots: { type: array, items: { $ref: '#/components/schemas/PayrollSnapshot' } }
+        effectiveCompensation:
+          nullable: true
+          allOf: [{ $ref: '#/components/schemas/PayrollCompensationTerm' }]
+        compensationHistory: { type: array, items: { $ref: '#/components/schemas/PayrollCompensationTerm' } }
     VacationSettings:
       allOf:
         - $ref: '#/components/schemas/VacationSettingsInput'

@@ -16,6 +16,7 @@ class PayrollFoundationContractTest {
     void payrollFoundationKeepsClosedPeriodMoneyAndUiContracts() throws IOException {
         String migration = resource("/db/migration/postgresql/V45__payroll_foundation.sql");
         String service = source("src/main/java/ru/daniil/shifts/service/PayrollService.java");
+        String calculation = source("src/main/java/ru/daniil/shifts/service/CompensationCalculationService.java");
         String sourceProjection = source("src/main/java/ru/daniil/shifts/service/TimeCompensationService.java");
         String controller = source("src/main/java/ru/daniil/shifts/web/PayrollController.java");
         String modules = source("src/main/java/ru/daniil/shifts/module/DutyLogModules.java");
@@ -37,9 +38,12 @@ class PayrollFoundationContractTest {
         assertTrue(service.contains("requireClosedPeriod(user, month, true)"));
         assertTrue(service.contains("ledgerIntegrity.inspect"));
         assertTrue(service.contains("timeCompensation.payrollSource"));
-        assertTrue(service.contains("RoundingMode.HALF_UP"));
+        assertTrue(calculation.contains("RoundingMode.HALF_UP"));
         assertTrue(service.contains("calculationHash"));
         assertTrue(service.contains("previous.supersedeWith(created)"));
+        assertTrue(service.contains("production.scheduleCoverageComplete()"));
+        assertTrue(service.contains("PAYROLL_PRODUCTION_NORM_INCOMPLETE"));
+        assertTrue(component.contains("effectiveMonth.value=month.value"));
         assertTrue(sourceProjection.contains("Canonical posted-only source for money calculation"));
         assertTrue(sourceProjection.contains("APPROVED"));
         assertTrue(sourceProjection.contains("COMPLETED"));
