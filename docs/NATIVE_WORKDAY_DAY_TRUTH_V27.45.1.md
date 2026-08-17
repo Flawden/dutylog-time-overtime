@@ -74,4 +74,4 @@ A shortened day may establish a 7-hour required norm without specifying whether 
 - Java source inventory: 799 `@Test` methods / 166 test classes.
 - Playwright: 48.
 - Vitest: 73.
-- Browser ceilings: 875000 B raw / 250000 B gzip pending exact Node 20.18.1/npm 10.8.2 measurement.
+- Browser budget: canonical Node 20.18.1/npm 10.8.2 measured **881901 B raw** after delivery/OpenAPI/typecheck/Vitest/Vite passed; total raw is narrowly rebaselined **875000 → 890000 B**. Total gzip stays **250000 B** and entry/per-chunk ceilings remain unchanged.

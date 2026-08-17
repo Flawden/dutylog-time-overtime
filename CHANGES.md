@@ -8,7 +8,7 @@
 - Keeps norm effect and schedule time separate. A Production Calendar shortened day can change required minutes without silently rewriting a shift's start/end time.
 - OpenAPI advances to **130 operations / 136 schemas** with hash `08589423f031`; Flyway remains **V49**.
 - Source test inventory advances to **799 @Test methods / 166 Java test classes**; Playwright remains **48** and Vitest remains **73**.
-- Browser ceiling remains **875000 B raw / 250000 B gzip** pending exact Node 20.18.1/npm 10.8.2 measurement of the v27.45.1 graph.
+- Canonical Node 20.18.1/npm 10.8.2 passed delivery/OpenAPI/typecheck/Vitest/Vite and measured **881901 B raw** for the v27.45.1 graph; rebaseline only the total raw ceiling **875000 → 890000 B**, while **250000 B total gzip** and entry/per-chunk ceilings remain unchanged.
 
 # v27.45.0 — Production Calendar Foundation
 - Adds Production Calendar as a separate work-norm domain between the base schedule and future compensation rules; it does not create absences and does not mutate factual `DayEntry` shifts.

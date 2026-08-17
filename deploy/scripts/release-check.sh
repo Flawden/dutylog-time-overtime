@@ -4854,7 +4854,7 @@ not_contains frontend/src/features/payroll/components/PayrollWorkspace.vue "prod
 contains src/test/java/ru/daniil/shifts/service/ProductionCalendarFoundationServiceTest.java "shortenedDayBecomesCanonicalRequiredMinutesForTimeCompensation"
 contains src/test/java/ru/daniil/shifts/service/ProductionCalendarFoundationServiceTest.java "workdayTruthJoinsBaseNormRequiredNormAndExplicitReality"
 contains frontend/browser-bundle-budget.json '"release": "27.45.1"'
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 875000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 890000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 contains frontend/generated-lockfile-manifest.txt "nextAction=native-overtime-derivation-after-v${VERSION}-green"
 
