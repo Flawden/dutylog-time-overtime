@@ -4,7 +4,7 @@
 - `WorkdayTruthService` is a read-model join, not a second persistence authority. It combines base schedule, Production Calendar required norm, Time Compensation and explicit Actual Work.
 - Production Calendar required minutes are canonical for Time Compensation and Payroll source obligations. A full-day absence on a 7-hour shortened day therefore covers 7 hours, not the original shift's 8 hours.
 - Production Calendar never becomes an Absence; norm effect and schedule-time effect remain independent.
-- Explicit Actual Work reuses the existing Actual Work authority and accounting-period lock. v27.45.1 does not silently create Overtime credits; reconciliation/derivation is a separate next step.
+- Explicit Actual Work reuses the existing Actual Work authority and accounting-period lock, stores its unpaid break, and is the source for ordinary overtime reconciliation. One `SYSTEM_ACTUAL_WORK` credit per owner/date is a replaceable derived projection: editing fact updates it, deleting an unused fact removes it, consumed derived credit fails closed, manual same-day provenance is not duplicated, and holiday work remains outside ordinary bank derivation.
 - Payroll is a summary/explainability surface for Production Calendar in normal use, not a duplicate special-day editor.
 - Advanced Overtime, Time Bank, Production Calendar and Payroll screens remain valid audit/correction surfaces; they are not the required everyday workflow.
 

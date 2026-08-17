@@ -31,6 +31,9 @@ public class ActualWorkInterval {
     @Column(name = "worked_minutes", nullable = false)
     private int workedMinutes;
 
+    @Column(name = "break_minutes", nullable = false)
+    private int breakMinutes;
+
     @Column(length = 500)
     private String note;
 
@@ -53,6 +56,8 @@ public class ActualWorkInterval {
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
     public int getWorkedMinutes() { return workedMinutes; }
     public void setWorkedMinutes(int workedMinutes) { this.workedMinutes = workedMinutes; }
+    public int getBreakMinutes() { return Math.max(0, breakMinutes); }
+    public void setBreakMinutes(int breakMinutes) { this.breakMinutes = Math.max(0, breakMinutes); }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
     public Instant getCreatedAt() { return createdAt; }

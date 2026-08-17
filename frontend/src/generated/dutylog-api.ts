@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 08589423f03178c33df9449b5c790654d15435b7464fd7ccc4fc2bfe633c9756
+ * SHA-256: bb672251a4541219732ce729d7fcdcb66f7c51e5bf11a3ab1c4d9f2338e9c0ea
  * Generator: frontend/scripts/generate-openapi-contract.mjs
  * Contract: 130 operations, 136 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "08589423f03178c33df9449b5c790654d15435b7464fd7ccc4fc2bfe633c9756";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "bb672251a4541219732ce729d7fcdcb66f7c51e5bf11a3ab1c4d9f2338e9c0ea";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -174,6 +174,7 @@ export namespace DutyLogApiSchemas {
   export type ActualWorkInterval = DutyLogApiSchemas.ActualWorkIntervalInput & {
     id: number;
     workedMinutes: number;
+    breakMinutes: number;
     createdAt?: string | null;
     updatedAt?: string | null;
   };
@@ -182,6 +183,7 @@ export namespace DutyLogApiSchemas {
     workDate: string;
     startTime: string;
     endTime: string;
+    breakMinutes?: number | null;
     note?: string | null;
   };
 
@@ -1511,6 +1513,7 @@ export namespace DutyLogApiSchemas {
     shiftName?: string | null;
     scheduledStartTime?: string | null;
     scheduledEndTime?: string | null;
+    scheduledBreakMinutes: number;
     baseNormMinutes: number;
     requiredNormMinutes: number;
     productionCalendar: DutyLogApiSchemas.ProductionCalendarDay;

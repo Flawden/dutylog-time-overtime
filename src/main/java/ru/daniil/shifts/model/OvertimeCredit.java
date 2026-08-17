@@ -66,6 +66,10 @@ public class OvertimeCredit {
     @Column(name = "migrated_from_legacy", nullable = false)
     private Boolean migratedFromLegacy = false;
 
+    /** MANUAL for user-entered credits; SYSTEM_ACTUAL_WORK for Day Truth reconciliation. */
+    @Column(name = "source_kind", nullable = false, length = 30)
+    private String sourceKind = "MANUAL";
+
     @Column(name = "break_minutes", nullable = false)
     private Integer breakMinutes = 0;
 
@@ -132,6 +136,9 @@ public class OvertimeCredit {
     }
     public boolean isMigratedFromLegacy() { return migratedFromLegacy != null && migratedFromLegacy; }
     public void setMigratedFromLegacy(boolean migratedFromLegacy) { this.migratedFromLegacy = migratedFromLegacy; }
+    public String getSourceKind() { return sourceKind == null || sourceKind.isBlank() ? "MANUAL" : sourceKind; }
+    public void setSourceKind(String sourceKind) { this.sourceKind = sourceKind == null || sourceKind.isBlank() ? "MANUAL" : sourceKind; }
+    public boolean isSystemActualWorkDerived() { return "SYSTEM_ACTUAL_WORK".equals(getSourceKind()); }
     public String getSourceTimezone() { return sourceTimezone; }
     public void setSourceTimezone(String sourceTimezone) { this.sourceTimezone = sourceTimezone; }
     public int getBreakMinutes() { return breakMinutes == null ? 0 : breakMinutes; }

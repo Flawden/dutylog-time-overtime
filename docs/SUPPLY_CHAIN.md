@@ -1,6 +1,6 @@
 ## v27.45.1 native workday / day truth integration
 
-No dependency/package graph change is introduced. Root/frontend release identity advances to v27.45.1; the authentic Node 20.18.1/npm 10.8.2 lockfile graph remains unchanged. OpenAPI advances to 130/136 (`08589423f031`), Flyway remains V49. Canonical Node 20.18.1/npm 10.8.2 measured **881901 B raw** for the new graph; only the total raw ceiling is rebaselined **875000 → 890000 B**, while total gzip remains **250000 B** and entry/per-chunk ceilings remain unchanged.
+No dependency/package graph change is introduced. Root/frontend release identity remains v27.45.1; the authentic Node 20.18.1/npm 10.8.2 lockfile graph remains unchanged. Closed-loop acceptance changes application/OpenAPI/Flyway code only: OpenAPI remains 130/136 (`bb672251a454`) and Flyway advances to V50. The previously measured **881901 B raw** graph keeps the **890000 B raw / 250000 B gzip** ceilings; exact Node 20 CI remeasurement remains mandatory because Native Workday UI changed.
 
 ## v27.45.0 production calendar foundation
 

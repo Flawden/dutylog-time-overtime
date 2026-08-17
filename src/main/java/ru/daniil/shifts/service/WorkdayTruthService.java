@@ -59,6 +59,7 @@ public class WorkdayTruthService {
                 shift == null ? null : shift.getName(),
                 time(day == null ? null : day.getShiftSourceStartTime(), shift == null ? null : shift.getStartTime()),
                 time(day == null ? null : day.getShiftSourceEndTime(), shift == null ? null : shift.getEndTime()),
+                scheduledBreakMinutes(day, shift),
                 baseNormMinutes,
                 requiredNormMinutes,
                 production,
@@ -70,6 +71,11 @@ public class WorkdayTruthService {
                 row == null ? (requiredNormMinutes > 0 ? "По обязательной норме" : "Рабочее обязательство отсутствует") : row.factLabel(),
                 actual
         );
+    }
+
+    private int scheduledBreakMinutes(DayEntry day, ShiftType shift) {
+        if (day == null || shift == null) return 0;
+        return day.hasShiftOccurrenceSnapshot() ? day.getShiftBreakMinutes() : Math.max(0, shift.getBreakMinutes());
     }
 
     private String time(LocalTime snapshot, LocalTime fallback) {

@@ -2536,6 +2536,7 @@ public final class Dtos {
             String startTime,
             String endTime,
             int workedMinutes,
+            int breakMinutes,
             String note,
             String createdAt,
             String updatedAt
@@ -2545,8 +2546,15 @@ public final class Dtos {
             @NotBlank(message = "Дата обязательна") String workDate,
             @NotBlank(message = "Время начала обязательно") String startTime,
             @NotBlank(message = "Время окончания обязательно") String endTime,
+            @Min(value = 0, message = "Перерыв не может быть отрицательным")
+            @Max(value = 1440, message = "Перерыв не может быть больше 1440 минут")
+            Integer breakMinutes,
             @Size(max = 500, message = "Комментарий: максимум 500 символов") String note
-    ) {}
+    ) {
+        public ActualWorkIntervalRequest(String workDate, String startTime, String endTime, String note) {
+            this(workDate, startTime, endTime, null, note);
+        }
+    }
 
     /** Local production-calendar rule; schedule/norm and payroll effects are independent. */
     public record ProductionCalendarDayUpdateRequest(
@@ -2601,6 +2609,7 @@ public final class Dtos {
             String shiftName,
             String scheduledStartTime,
             String scheduledEndTime,
+            int scheduledBreakMinutes,
             int baseNormMinutes,
             int requiredNormMinutes,
             ProductionCalendarDayDto productionCalendar,

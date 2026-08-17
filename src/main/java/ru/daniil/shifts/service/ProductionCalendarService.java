@@ -38,15 +38,18 @@ public class ProductionCalendarService {
     private final DayEntryRepository scheduleDays;
     private final WorkNormService workNorm;
     private final AccountingPeriodLockService periodLocks;
+    private final WorkdayDerivedCompensationService derivedCompensation;
 
     public ProductionCalendarService(ProductionCalendarDayRepository days,
                                      DayEntryRepository scheduleDays,
                                      WorkNormService workNorm,
-                                     AccountingPeriodLockService periodLocks) {
+                                     AccountingPeriodLockService periodLocks,
+                                     WorkdayDerivedCompensationService derivedCompensation) {
         this.days = days;
         this.scheduleDays = scheduleDays;
         this.workNorm = workNorm;
         this.periodLocks = periodLocks;
+        this.derivedCompensation = derivedCompensation;
     }
 
     @Transactional(readOnly = true)
@@ -133,6 +136,7 @@ public class ProductionCalendarService {
                 .orElseGet(() -> new ProductionCalendarDay(user, date, LOCAL));
         item.update(kind, scheduleEffect, normOverride, payrollEffect, label, "CUSTOM", null);
         days.saveAndFlush(item);
+        derivedCompensation.reconcile(user, date);
         return resolvedDay(user, date);
     }
 
@@ -142,6 +146,7 @@ public class ProductionCalendarService {
         periodLocks.assertOpen(user, date);
         days.findByOwnerAndDateAndLayer(user, date, LOCAL).ifPresent(days::delete);
         days.flush();
+        derivedCompensation.reconcile(user, date);
     }
 
     @Transactional(readOnly = true)

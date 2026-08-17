@@ -14,6 +14,8 @@ public interface OvertimeCreditRepository extends JpaRepository<OvertimeCredit, 
     List<OvertimeCredit> findByOwnerOrderByWorkDateAscIdAsc(AppUser owner);
     List<OvertimeCredit> findByOwnerAndWorkDateBetweenOrderByWorkDateAscIdAsc(AppUser owner, LocalDate from, LocalDate to);
     Optional<OvertimeCredit> findByOwnerAndId(AppUser owner, Long id);
+    List<OvertimeCredit> findByOwnerAndWorkDateOrderByIdAsc(AppUser owner, LocalDate workDate);
+    Optional<OvertimeCredit> findByOwnerAndWorkDateAndSourceKind(AppUser owner, LocalDate workDate, String sourceKind);
 
     /**
      * Для начислений с точным временем запрещаем пересечения,

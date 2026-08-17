@@ -7,4 +7,4 @@ sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd
 committedLockfileSha256=b26ebd17ddd113c95dd823e61cdf2d6f8cb059addadf0b6af97805b3bbac62c6
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=native-overtime-derivation-after-v27.45.1-green
+nextAction=compensation-setup-after-v27.45.1-green

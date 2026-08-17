@@ -15,6 +15,7 @@ class ProductionCalendarFoundationContractTest {
     @Test
     void productionCalendarStaysBetweenScheduleNormAndMoneyRules() throws IOException {
         String migration = resource("/db/migration/postgresql/V49__production_calendar_foundation.sql");
+        String closedLoopMigration = resource("/db/migration/postgresql/V50__native_workday_closed_loop.sql");
         String service = source("src/main/java/ru/daniil/shifts/service/ProductionCalendarService.java");
         String norm = source("src/main/java/ru/daniil/shifts/service/WorkNormService.java");
         String controller = source("src/main/java/ru/daniil/shifts/web/ProductionCalendarController.java");
@@ -24,6 +25,9 @@ class ProductionCalendarFoundationContractTest {
         String dayPanel = source("frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue");
         String calendarPage = source("frontend/src/features/calendar-timeline/components/CalendarPage.vue");
         String workday = source("src/main/java/ru/daniil/shifts/service/WorkdayTruthService.java");
+        String derived = source("src/main/java/ru/daniil/shifts/service/WorkdayDerivedCompensationService.java");
+        String actualService = source("src/main/java/ru/daniil/shifts/service/ActualWorkService.java");
+        String selectedDay = source("frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue");
         String api = source("frontend/src/features/calendar-timeline/api/calendarTimelineApi.ts");
         String generatedApi = source("frontend/src/generated/dutylog-api.ts");
         String openapi = resource("/static/openapi/dutylog-v1.yaml");
@@ -32,6 +36,10 @@ class ProductionCalendarFoundationContractTest {
         assertTrue(migration.contains("schedule_effect IN ('NONE', 'NORM_OVERRIDE')"));
         assertTrue(migration.contains("payroll_effect IN ('NONE', 'HOLIDAY')"));
         assertFalse(migration.toUpperCase().contains("DROP TABLE"));
+        assertTrue(closedLoopMigration.contains("break_minutes"));
+        assertTrue(closedLoopMigration.contains("SYSTEM_ACTUAL_WORK"));
+        assertTrue(closedLoopMigration.contains("uq_overtime_credit_system_actual_day"));
+        assertFalse(closedLoopMigration.toUpperCase().contains("DROP TABLE"));
 
         assertTrue(service.contains("LOCAL_OVERRIDE"));
         assertTrue(service.contains("periodLocks.assertOpen(user, date)"));
@@ -51,6 +59,16 @@ class ProductionCalendarFoundationContractTest {
         assertTrue(dayPanel.contains("data-native-actual-work-editor"));
         assertTrue(calendarPage.contains("data-production-calendar-day"));
         assertTrue(workday.contains("class WorkdayTruthService"));
+        assertTrue(workday.contains("scheduledBreakMinutes"));
+        assertTrue(derived.contains("reconcileActualWorkCredit"));
+        assertTrue(derived.contains("HOLIDAY"));
+        assertTrue(actualService.contains("resolveBreakMinutes"));
+        assertTrue(actualService.contains("derivedCompensation.reconcile"));
+        assertTrue(dayPanel.contains("Неоплачиваемый перерыв, мин"));
+        assertTrue(dayPanel.contains("Сбросить особый день"));
+        assertTrue(dayPanel.contains("Удалить факт"));
+        assertFalse(selectedDay.contains("Текущее отображение"));
+        assertFalse(selectedDay.contains("Исходная смена"));
         assertTrue(api.contains("workdayTruth"));
         assertTrue(api.contains("upsertProductionCalendarDay"));
         assertTrue(api.contains("createActualWorkInterval"));
@@ -64,6 +82,8 @@ class ProductionCalendarFoundationContractTest {
         assertTrue(openapi.contains("WorkdayTruth:"));
         assertTrue(openapi.contains("scheduleEffect:"));
         assertTrue(openapi.contains("payrollEffect:"));
+        assertTrue(openapi.contains("scheduledBreakMinutes:"));
+        assertTrue(openapi.contains("breakMinutes:"));
     }
 
     private static String source(String path) throws IOException {

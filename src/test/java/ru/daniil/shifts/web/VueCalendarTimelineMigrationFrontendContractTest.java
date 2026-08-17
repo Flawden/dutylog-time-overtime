@@ -129,8 +129,8 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(panel.contains("Оформить отгул"));
         assertTrue(panel.contains("сам резервирует и списывает часы банка по FIFO"));
         assertTrue(panel.contains("props.bridge.writeCalendarDay"));
-        assertTrue(panel.contains("sourceRange: dateTimeRange(occurrence.sourceStart, occurrence.sourceEnd)"));
-        assertTrue(panel.contains("Рабочее время смены"));
+        assertTrue(panel.contains("shiftSourceDate = computed(() => selectedOccurrence.value?.sourceDate || focusDate.value)"));
+        assertTrue(panel.contains("props.bridge.writeCalendarDay(shiftSourceDate.value"));
         assertTrue(panel.contains("allocationRangeLabels(allocation)"));
         assertTrue(panel.contains("24:00"));
         assertTrue(legacy.contains("calendar-timeline"));

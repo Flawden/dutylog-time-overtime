@@ -20,6 +20,7 @@ const productionLabel = ref("");
 const actualId = ref<number | null>(null);
 const actualStart = ref("");
 const actualEnd = ref("");
+const actualBreakMinutes = ref("0");
 const actualNote = ref("");
 
 function formatMinutes(value: number | null | undefined): string {
@@ -51,6 +52,23 @@ const actualLabel = computed(() => truth.value?.explicitActual
 const actualDeltaMinutes = computed(() => truth.value?.explicitActual
   ? Number(truth.value.actualMinutes) - Number(truth.value.requiredNormMinutes)
   : 0);
+const holidayActual = computed(() => Boolean(truth.value?.explicitActual && truth.value.productionCalendar.payrollEffect === "HOLIDAY"));
+
+function clockMinutes(value: string): number | null {
+  const match = /^(\d{2}):(\d{2})$/.exec(value);
+  if (!match) return null;
+  return Number(match[1]) * 60 + Number(match[2]);
+}
+const actualPreview = computed(() => {
+  const start = clockMinutes(actualStart.value);
+  const end = clockMinutes(actualEnd.value);
+  const breakMinutes = Number(actualBreakMinutes.value);
+  if (start == null || end == null || !Number.isFinite(breakMinutes) || breakMinutes < 0) return null;
+  let elapsed = end - start;
+  if (elapsed <= 0) elapsed += 24 * 60;
+  const net = elapsed - Math.round(breakMinutes);
+  return { elapsed, breakMinutes: Math.round(breakMinutes), net };
+});
 const consequenceLabel = computed(() => {
   const value = truth.value;
   if (!value) return "—";
@@ -59,8 +77,10 @@ const consequenceLabel = computed(() => {
   if (value.overtimeEarnedMinutes > 0) pieces.push(`+${formatMinutes(value.overtimeEarnedMinutes)} в банк`);
   if (value.overtimeUsedMinutes > 0) pieces.push(`−${formatMinutes(value.overtimeUsedMinutes)} из банка`);
   if (normChanged.value) pieces.push(`норма ${formatMinutes(value.baseNormMinutes)} → ${formatMinutes(value.requiredNormMinutes)}`);
-  if (value.explicitActual && actualDeltaMinutes.value > 0 && value.overtimeEarnedMinutes <= 0) {
-    pieces.push(`факт выше нормы на ${formatMinutes(actualDeltaMinutes.value)} · проводка переработки пока не создана автоматически`);
+  if (holidayActual.value) {
+    pieces.push(`праздничная работа ${formatMinutes(value.actualMinutes)} · отдельная категория оплаты`);
+  } else if (value.explicitActual && actualDeltaMinutes.value > 0 && value.overtimeEarnedMinutes <= 0) {
+    pieces.push(`факт выше нормы на ${formatMinutes(actualDeltaMinutes.value)} · проверь ручную проводку этого дня`);
   }
   if (value.explicitActual && actualDeltaMinutes.value < 0 && value.absenceMinutes <= 0) {
     pieces.push(`факт ниже нормы на ${formatMinutes(Math.abs(actualDeltaMinutes.value))} · проверь отсутствие или причину`);
@@ -101,6 +121,8 @@ function resetActualEditor(item: DutyLogApiSchemas.ActualWorkInterval | null = n
   actualId.value = item?.id ?? null;
   actualStart.value = shortTime(item?.startTime) || shortTime(truth.value?.scheduledStartTime) || "08:00";
   actualEnd.value = shortTime(item?.endTime) || shortTime(truth.value?.scheduledEndTime) || "17:00";
+  const inheritedBreak = (truth.value?.actualWork.length ?? 0) === 0 ? Number(truth.value?.scheduledBreakMinutes ?? 0) : 0;
+  actualBreakMinutes.value = String(item?.breakMinutes ?? inheritedBreak);
   actualNote.value = item?.note ?? "";
 }
 
@@ -174,6 +196,11 @@ async function saveActual(): Promise<void> {
     error.value = "Укажи начало и конец фактической работы";
     return;
   }
+  const preview = actualPreview.value;
+  if (!preview || preview.breakMinutes > 1440 || preview.net <= 0) {
+    error.value = "Проверь время и перерыв: чистое рабочее время должно быть больше нуля";
+    return;
+  }
   loading.value = true;
   error.value = "";
   try {
@@ -181,6 +208,7 @@ async function saveActual(): Promise<void> {
       workDate: props.date,
       startTime: actualStart.value,
       endTime: actualEnd.value,
+      breakMinutes: preview.breakMinutes,
       note: actualNote.value.trim() || null,
     };
     if (actualId.value == null) await calendarTimelineApi.createActualWork(body);
@@ -215,6 +243,19 @@ async function deleteSelectedActual(): Promise<void> {
   await deleteActual(actualId.value);
 }
 
+async function quickDeleteActual(): Promise<void> {
+  const items = truth.value?.actualWork ?? [];
+  if (items.length !== 1) { openActual(items[0] ?? null); return; }
+  if (!window.confirm("Удалить фактическую работу этого дня? Связанная автоматическая переработка будет пересчитана.")) return;
+  await deleteActual(Number(items[0].id));
+}
+
+async function quickResetSpecialDay(): Promise<void> {
+  if (!truth.value?.productionCalendar.localOverride) return;
+  if (!window.confirm("Сбросить локальное правило особого дня и вернуть базовую норму?")) return;
+  await deleteSpecialDay();
+}
+
 async function openAbsence(): Promise<void> {
   await window.DutyLogVueDomains?.absenceTimeBank?.openAbsenceComposer({ date: props.date, source: "calendar" });
 }
@@ -239,7 +280,7 @@ onMounted(() => void load());
 
     <div class="nativeWorkdayTruthGrid">
       <button type="button" class="nativeTruthCell" @click="emit('openSection', 'shift')">
-        <small>По графику</small><b>{{ shiftLabel }}</b><span>{{ formatMinutes(truth?.baseNormMinutes) }}</span>
+        <small>По графику</small><b>{{ shiftLabel }}</b><span>{{ formatMinutes(truth?.baseNormMinutes) }}<template v-if="truth?.scheduledBreakMinutes"> · перерыв {{ formatMinutes(truth.scheduledBreakMinutes) }}</template></span>
       </button>
       <button type="button" class="nativeTruthCell" :class="{ changed: normChanged || productionSpecial }" @click="editor = editor === 'special' ? null : 'special'">
         <small>Обязательная норма</small><b>{{ formatMinutes(truth?.requiredNormMinutes) }}</b><span>{{ productionSpecial ? productionKindLabel(truth?.productionCalendar.dayKind || 'NORMAL') : 'Обычный день' }}</span>
@@ -253,9 +294,11 @@ onMounted(() => void load());
 
     <div class="nativeWorkdayActions">
       <button type="button" @click="emit('openSection', 'shift')">Изменить смену</button>
-      <button v-if="overtimeEnabled" type="button" @click="openActual(null)">Фактическая работа</button>
+      <button v-if="overtimeEnabled" type="button" @click="openActual(truth?.actualWork?.[0] ?? null)">{{ truth?.explicitActual ? 'Изменить факт' : 'Фактическая работа' }}</button>
+      <button v-if="overtimeEnabled && truth?.explicitActual" type="button" class="dangerSoft" @click="quickDeleteActual">Удалить факт</button>
       <button type="button" @click="openAbsence">Отсутствовать</button>
       <button type="button" :class="{ active: editor === 'special' }" @click="editor = editor === 'special' ? null : 'special'">Особый день</button>
+      <button v-if="truth?.productionCalendar.localOverride" type="button" class="dangerSoft" @click="quickResetSpecialDay">Сбросить особый день</button>
     </div>
 
     <form v-if="editor === 'special'" class="nativeWorkdayEditor" data-native-special-day-editor @submit.prevent="saveSpecialDay">
@@ -281,7 +324,7 @@ onMounted(() => void load());
       </label>
       <div class="nativeEditorActions">
         <button class="primary" type="submit" :disabled="loading">Сохранить</button>
-        <button v-if="truth?.productionCalendar.localOverride" type="button" :disabled="loading" @click="deleteSpecialDay">Удалить правило</button>
+        <button v-if="truth?.productionCalendar.localOverride" type="button" :disabled="loading" @click="deleteSpecialDay">Сбросить правило</button>
         <button type="button" @click="editor = null">Закрыть</button>
       </div>
       <p>Особый день меняет обязательную норму и/или категорию оплаты. Он не создаёт отгул и не двигает часы банка сам по себе.</p>
@@ -291,12 +334,14 @@ onMounted(() => void load());
       <div class="nativeEditorHead"><b>Фактическая работа</b><span>Вводи реальность — расчёт использует её вместо плана.</span></div>
       <div v-if="truth?.actualWork.length" class="nativeActualList">
         <button v-for="item in truth.actualWork" :key="item.id" type="button" :class="{ active: actualId === item.id }" @click="openActual(item)">
-          <b>{{ shortTime(item.startTime) }}–{{ shortTime(item.endTime) }}</b><span>{{ formatMinutes(item.workedMinutes) }}{{ item.note ? ` · ${item.note}` : '' }}</span>
+          <b>{{ shortTime(item.startTime) }}–{{ shortTime(item.endTime) }}</b><span>{{ formatMinutes(item.workedMinutes) }}<template v-if="item.breakMinutes"> · перерыв {{ formatMinutes(item.breakMinutes) }}</template>{{ item.note ? ` · ${item.note}` : '' }}</span>
         </button>
       </div>
       <form class="nativeActualForm" @submit.prevent="saveActual">
         <label>Начало<input v-model="actualStart" type="time" required/></label>
         <label>Конец<input v-model="actualEnd" type="time" required/></label>
+        <label>Неоплачиваемый перерыв, мин<input v-model="actualBreakMinutes" type="number" min="0" max="1440" step="1" inputmode="numeric"/></label>
+        <div class="nativeActualPreview wide" v-if="actualPreview">По часам {{ formatMinutes(actualPreview.elapsed) }} · перерыв {{ formatMinutes(actualPreview.breakMinutes) }} · <b>фактически {{ formatMinutes(Math.max(0, actualPreview.net)) }}</b><span v-if="actualId == null && truth?.scheduledBreakMinutes">Перерыв подставлен из смены автоматически.</span></div>
         <label class="wide">Причина / комментарий<input v-model="actualNote" maxlength="500" placeholder="Например: задержался по работе"/></label>
         <div class="nativeEditorActions wide">
           <button class="primary" type="submit" :disabled="loading">{{ actualId == null ? 'Записать факт' : 'Сохранить факт' }}</button>
@@ -304,11 +349,11 @@ onMounted(() => void load());
           <button type="button" @click="editor = null">Закрыть</button>
         </div>
       </form>
-      <p>Пока явный факт влияет на Time/Payroll read model. Автоматическое создание проводки переработки будет следующим интеграционным шагом, чтобы не дублировать существующие credits.</p>
+      <p>Факт — источник истины. DutyLog вычитает неоплачиваемый перерыв и автоматически согласует обычную переработку с банком времени. Праздничная работа остаётся отдельной категорией оплаты.</p>
     </div>
   </section>
 </template>
 
 <style scoped>
-.nativeWorkdayCard{border:1px solid color-mix(in srgb,var(--accent) 24%,var(--border));border-radius:18px;padding:14px;background:color-mix(in srgb,var(--surface, #151922) 96%,var(--accent) 4%);display:grid;gap:12px}.nativeWorkdayCard header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.nativeWorkdayCard header small,.nativeTruthCell small,.nativeWorkdayConsequences small{display:block;opacity:.68;font-size:.76rem}.nativeWorkdayCard h3{margin:2px 0 0;font-size:1rem}.nativeWorkdayBusy{font-size:.78rem;opacity:.7}.nativeWorkdayError{padding:9px 10px;border-radius:10px;background:color-mix(in srgb,#e45151 15%,transparent);color:#ffb8b8}.nativeWorkdayTruthGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.nativeTruthCell{text-align:left;border:1px solid var(--border);border-radius:12px;padding:10px;background:color-mix(in srgb,var(--surface, #151922) 92%,white 2%);display:grid;gap:3px;min-width:0}.nativeTruthCell.changed{border-color:color-mix(in srgb,var(--accent) 55%,var(--border));background:color-mix(in srgb,var(--accent) 10%,var(--surface, #151922))}.nativeTruthCell b{white-space:normal}.nativeTruthCell span{font-size:.78rem;opacity:.72}.nativeWorkdayConsequences{padding:9px 10px;border-radius:11px;background:color-mix(in srgb,var(--accent) 7%,transparent);display:grid;gap:2px}.nativeWorkdayActions{display:flex;flex-wrap:wrap;gap:7px}.nativeWorkdayActions button,.nativeEditorActions button{border-radius:10px;padding:8px 10px}.nativeWorkdayActions button.active{border-color:var(--accent)}.nativeWorkdayEditor{border-top:1px solid var(--border);padding-top:12px;display:grid;gap:10px}.nativeEditorHead{display:flex;justify-content:space-between;gap:12px;align-items:center}.nativeEditorHead span,.nativeWorkdayEditor p{font-size:.78rem;opacity:.7;margin:0}.nativeWorkdayEditor label{display:grid;gap:5px;font-size:.82rem}.nativeWorkdayEditor input,.nativeWorkdayEditor select{width:100%}.nativeCheck{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center}.nativeCheck input{width:auto}.nativeEditorActions{display:flex;flex-wrap:wrap;gap:7px}.nativeActualList{display:grid;gap:6px}.nativeActualList button{text-align:left;display:flex;justify-content:space-between;gap:12px;border-radius:10px;padding:8px}.nativeActualList button.active{border-color:var(--accent)}.nativeActualForm{display:grid;grid-template-columns:1fr 1fr;gap:9px}.nativeActualForm .wide{grid-column:1/-1}@media(max-width:760px){.nativeWorkdayTruthGrid{grid-template-columns:1fr}.nativeActualForm{grid-template-columns:1fr}.nativeActualForm .wide{grid-column:auto}.nativeEditorHead{align-items:flex-start;flex-direction:column}}
+.nativeWorkdayCard{border:1px solid color-mix(in srgb,var(--accent) 24%,var(--border));border-radius:18px;padding:14px;background:color-mix(in srgb,var(--surface, #151922) 96%,var(--accent) 4%);display:grid;gap:12px}.nativeWorkdayCard header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.nativeWorkdayCard header small,.nativeTruthCell small,.nativeWorkdayConsequences small{display:block;opacity:.68;font-size:.76rem}.nativeWorkdayCard h3{margin:2px 0 0;font-size:1rem}.nativeWorkdayBusy{font-size:.78rem;opacity:.7}.nativeWorkdayError{padding:9px 10px;border-radius:10px;background:color-mix(in srgb,#e45151 15%,transparent);color:#ffb8b8}.nativeWorkdayTruthGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.nativeTruthCell{text-align:left;border:1px solid var(--border);border-radius:12px;padding:10px;background:color-mix(in srgb,var(--surface, #151922) 92%,white 2%);display:grid;gap:3px;min-width:0}.nativeTruthCell.changed{border-color:color-mix(in srgb,var(--accent) 55%,var(--border));background:color-mix(in srgb,var(--accent) 10%,var(--surface, #151922))}.nativeTruthCell b{white-space:normal}.nativeTruthCell span{font-size:.78rem;opacity:.72}.nativeWorkdayConsequences{padding:9px 10px;border-radius:11px;background:color-mix(in srgb,var(--accent) 7%,transparent);display:grid;gap:2px}.nativeWorkdayActions{display:flex;flex-wrap:wrap;gap:7px}.nativeWorkdayActions button,.nativeEditorActions button{border-radius:10px;padding:8px 10px}.nativeWorkdayActions button.active{border-color:var(--accent)}.nativeWorkdayEditor{border-top:1px solid var(--border);padding-top:12px;display:grid;gap:10px}.nativeEditorHead{display:flex;justify-content:space-between;gap:12px;align-items:center}.nativeEditorHead span,.nativeWorkdayEditor p{font-size:.78rem;opacity:.7;margin:0}.nativeWorkdayEditor label{display:grid;gap:5px;font-size:.82rem}.nativeWorkdayEditor input,.nativeWorkdayEditor select{width:100%}.nativeCheck{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center}.nativeCheck input{width:auto}.nativeEditorActions{display:flex;flex-wrap:wrap;gap:7px}.nativeActualList{display:grid;gap:6px}.nativeActualList button{text-align:left;display:flex;justify-content:space-between;gap:12px;border-radius:10px;padding:8px}.nativeActualList button.active{border-color:var(--accent)}.nativeActualForm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.nativeActualForm .wide{grid-column:1/-1}.nativeActualPreview{padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--accent) 7%,transparent);font-size:.8rem;display:flex;flex-wrap:wrap;gap:6px}.nativeActualPreview span{opacity:.68}.dangerSoft{border-color:color-mix(in srgb,#e45151 45%,var(--border))!important}@media(max-width:760px){.nativeWorkdayTruthGrid{grid-template-columns:1fr}.nativeActualForm{grid-template-columns:1fr}.nativeActualForm .wide{grid-column:auto}.nativeEditorHead{align-items:flex-start;flex-direction:column}}
 </style>

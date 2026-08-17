@@ -2,7 +2,7 @@
 
 DutyLog starts moving from module-oriented input to the product north star: **the user describes reality once; DutyLog derives the consequences**. Calendar's selected day now joins the generated shift, Production Calendar obligation, explicit factual work, absences and existing Time Bank/overtime movements in one human-facing Day Truth card.
 
-Production Calendar special days are edited where they happen — on the date itself — and are visibly marked in Month/Week/Day views. Payroll keeps the monthly norm explanation but no longer acts as a second everyday Production Calendar editor. Explicit factual work uses the existing Actual Work authority; automatic overtime-credit derivation is intentionally the next integration step so v27.45.1 cannot silently duplicate manual credits.
+Production Calendar special days are edited where they happen — on the date itself — and are visibly marked in Month/Week/Day views. Payroll keeps the monthly norm explanation but no longer acts as a second everyday Production Calendar editor. Staging smoke then closed the missing loop inside the same v27.45.1 acceptance line: explicit factual work inherits/editably stores its unpaid break, derives net worked minutes, and reconciles ordinary overtime into the existing FIFO Time Bank without duplicate user entry. System-derived credits are provenance-tagged and fail closed if already consumed; holiday work remains a separate pay category. The selected day also owns direct fact/special-rule reset actions and no longer shows the duplicated shift-projection diagnostic block.
 
 # DutyLog v27.45.0 — Production Calendar Foundation
 

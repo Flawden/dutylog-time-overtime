@@ -85,40 +85,6 @@ function dateTimeRange(start: string | null | undefined, end: string | null | un
     ? `${shortDate(startDate)} ${startTime}–${shortDate(endDate)} ${endTime}`
     : `${startTime}–${endTime}`;
 }
-function projectedDayRange(occurrence: DutyLogApiSchemas.ShiftOccurrence, date: string): string {
-  const startDate = occurrence.displayStart.slice(0, 10);
-  const endDate = occurrence.displayEnd.slice(0, 10);
-  const startTime = startDate < date ? "00:00" : timePart(occurrence.displayStart);
-  const endTime = endDate > date ? "24:00" : timePart(occurrence.displayEnd);
-  return `${startTime}–${endTime}`;
-}
-function durationLabel(minutes: number | null | undefined): string {
-  const safe = Math.max(0, Number(minutes ?? 0));
-  if (!safe) return language.value === "en" ? "0m" : "0м";
-  const hours = Math.floor(safe / 60);
-  const minutesLeft = safe % 60;
-  const hourLabel = hours ? `${hours}${language.value === "en" ? "h" : "ч"}` : "";
-  const minuteLabel = minutesLeft ? `${minutesLeft}${language.value === "en" ? "m" : "м"}` : "";
-  return [hourLabel, minuteLabel].filter(Boolean).join(" ");
-}
-const shiftProjection = computed(() => {
-  const occurrence = selectedOccurrence.value;
-  if (!occurrence) return null;
-  const workLabel = language.value === "en" ? "Shift work time" : "Рабочее время смены";
-  const breakLabel = language.value === "en" ? "Shift break" : "Обед в смене";
-  const duration = `${workLabel}: ${durationLabel(occurrence.netMinutes)}${occurrence.breakMinutes > 0 ? ` · ${breakLabel}: ${durationLabel(occurrence.breakMinutes)}` : ""}`;
-  return {
-    currentRange: projectedDayRange(occurrence, focusDate.value),
-    currentTimezone: occurrence.displayTimezone,
-    sourceRange: dateTimeRange(occurrence.sourceStart, occurrence.sourceEnd),
-    sourceTimezone: occurrence.sourceTimezone,
-    moved: occurrence.sourceDate !== focusDate.value,
-    sourceDate: occurrence.sourceDate,
-    legacyLocal: occurrence.legacyLocal,
-    duration,
-  };
-});
-
 async function refreshNativeWorkday(): Promise<void> {
   await store.refresh();
   emit("dayTruthChanged");
@@ -303,23 +269,6 @@ onBeforeUnmount(() => { document.body.classList.remove("panel-open"); });
         <div id="chips" class="chips">
           <button v-for="shift in bundle?.shiftTypes ?? []" :key="shift.id" type="button" class="chip" :class="{ on: Number(activeShiftId) === Number(shift.id) }" :data-shift-type-id="shift.id" :aria-pressed="Number(activeShiftId) === Number(shift.id) ? 'true' : 'false'" :style="{ borderColor: shift.color, color: Number(activeShiftId) === Number(shift.id) ? '#14171C' : shift.color, background: Number(activeShiftId) === Number(shift.id) ? shift.color : `color-mix(in srgb, ${shift.color} 12%, transparent)` }" @click="toggleShift(shift.id)">{{ shift.name }} <span v-if="shift.plannedHours" class="h">·{{ formatHours(shift.plannedHours) }}ч</span></button>
           <button type="button" class="chip plus" title="Создать или настроить смену" @click="openShiftTypeManager">+</button>
-        </div>
-        <div id="shiftProjection" class="shiftProjection" :hidden="!shiftProjection">
-          <template v-if="shiftProjection">
-            <div class="shiftProjectionRow primary">
-              <span>{{ language === "en" ? "Current display" : "Текущее отображение" }}</span>
-              <strong>{{ shiftProjection.currentRange }}</strong>
-              <code>{{ shiftProjection.currentTimezone }}</code>
-            </div>
-            <div class="shiftProjectionRow">
-              <span>{{ language === "en" ? "Source shift" : "Исходная смена" }}</span>
-              <strong>{{ shiftProjection.sourceRange }}</strong>
-              <code>{{ shiftProjection.sourceTimezone }}</code>
-            </div>
-            <div v-if="shiftProjection.moved" class="shiftProjectionHint">{{ language === "en" ? "Shift is assigned to source date" : "Смена назначена на исходную дату" }}: {{ shiftProjection.sourceDate }}</div>
-            <div v-if="shiftProjection.legacyLocal" class="shiftProjectionHint warn">⚠ {{ language === "en" ? "Legacy shift has no source timezone yet" : "Старая смена ещё не привязана к часовому поясу" }}</div>
-            <div class="shiftProjectionHint">{{ shiftProjection.duration }}</div>
-          </template>
         </div>
       </div>
     </details>

@@ -57,11 +57,15 @@ Production norm
 
 but normal Production Calendar mutation is removed from Payroll. This prevents two competing everyday editors for the same real-world date.
 
-## Explicit factual work and Overtime boundary
+## Explicit factual work and closed-loop Overtime reconciliation
 
-Explicit Actual Work becomes directly reachable from the workday, but v27.45.1 does **not** automatically post an Overtime credit. Existing users may already have manual credits and the current credit model has its own exact interval/FIFO semantics. The Day Truth surface therefore exposes fact-vs-obligation deltas and clearly marks an unposted positive delta instead of silently double-crediting it.
+Staging smoke exposed two acceptance blockers: wall-clock Actual Work included the shift lunch, and a fact above the obligation did not affect the existing overtime bank. v27.45.1 closes both before acceptance.
 
-The next integration stage owns deterministic candidate derivation, duplicate detection/reconciliation and one-time posting into the existing Overtime authority.
+The first explicit fact on a date inherits the dated shift's unpaid break by default; the user may override it. `workedMinutes = elapsed clock minutes - breakMinutes`, while overlap validation continues to use the real clock span. Additional fact intervals default to zero inherited break so one scheduled lunch is not silently subtracted twice.
+
+For ordinary work, Day Truth deterministically reconciles `max(0, actual net minutes - required minutes)` into the existing FIFO Overtime authority. The projection is tagged `SYSTEM_ACTUAL_WORK` and is idempotent: editing the fact updates one credit, deleting an unused fact removes it, and shrinking/deleting a credit that has already been consumed fails closed with an actionable conflict. If a user already has a manual credit on that date, DutyLog does not silently create a second one. Holiday-classified work is deliberately excluded from ordinary Time Bank derivation and remains a separate compensation category.
+
+The selected day owns direct `Удалить факт` and `Сбросить особый день` actions, so mistakes can be reversed where they were entered. The former diagnostic `Текущее отображение / Исходная смена` block is removed from the normal UI; shift mechanics remain available through the contextual shift action.
 
 ## Norm effect versus schedule time
 
@@ -69,9 +73,9 @@ A shortened day may establish a 7-hour required norm without specifying whether 
 
 ## Acceptance baseline
 
-- OpenAPI: 130 operations / 136 schemas, `08589423f031`.
-- Flyway: V49.
-- Java source inventory: 799 `@Test` methods / 166 test classes.
+- OpenAPI: 130 operations / 136 schemas, `bb672251a454`.
+- Flyway: V50.
+- Java source inventory: 804 `@Test` methods / 167 test classes.
 - Playwright: 48.
 - Vitest: 73.
 - Browser budget: canonical Node 20.18.1/npm 10.8.2 measured **881901 B raw** after delivery/OpenAPI/typecheck/Vitest/Vite passed; total raw is narrowly rebaselined **875000 → 890000 B**. Total gzip stays **250000 B** and entry/per-chunk ceilings remain unchanged.

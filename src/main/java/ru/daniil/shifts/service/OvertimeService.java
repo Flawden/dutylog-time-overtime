@@ -319,6 +319,7 @@ public class OvertimeService {
         if (!calculated.calculated()) {
             LocalDate date = dayEntryService.parseDate(req.date(), "Дата переработки должна быть в формате yyyy-MM-dd");
             assertPeriodOpen(user, date);
+            ensureNoSystemActualWorkCredit(user, date, null);
             credits.save(new OvertimeCredit(
                     user,
                     date,
@@ -337,6 +338,7 @@ public class OvertimeService {
 
         for (CreditSegment segment : segments) {
             assertPeriodOpen(user, segment.workDate());
+            ensureNoSystemActualWorkCredit(user, segment.workDate(), null);
             ensureNoOvertimeOverlap(user, segment.startAt(), segment.endAt(), segment.startInstant(), segment.endInstant(), null);
         }
 
@@ -359,6 +361,62 @@ public class OvertimeService {
         }
         rebuildAllAllocations(user);
         return account(user);
+    }
+
+    /**
+     * Idempotent projection from explicit Actual Work into the FIFO overtime bank.
+     * One date owns at most one SYSTEM_ACTUAL_WORK credit. Existing manual credits
+     * on that date win to avoid silently double-counting legacy/user-entered data.
+     */
+    @Transactional
+    public void reconcileActualWorkCredit(AppUser user, LocalDate date, int targetMinutes,
+                                          int requiredMinutes, String reason) {
+        ensureAllocationConsistency(user);
+        assertPeriodOpen(user, date);
+        int safeTarget = Math.max(0, targetMinutes);
+        OvertimeCredit system = credits.findByOwnerAndWorkDateAndSourceKind(user, date, "SYSTEM_ACTUAL_WORK").orElse(null);
+        List<OvertimeCredit> manual = credits.findByOwnerAndWorkDateOrderByIdAsc(user, date).stream()
+                .filter(credit -> !credit.isSystemActualWorkDerived())
+                .toList();
+
+        if (system == null && safeTarget > 0 && !manual.isEmpty()) {
+            // Existing manual provenance wins: never create a second credit silently.
+            return;
+        }
+        if (system == null && safeTarget <= 0) return;
+
+        if (system != null) {
+            int usedMinutes = allocations.findByCredit(system).stream()
+                    .mapToInt(OvertimeAllocation::getAllocatedMinutes).sum();
+            if (safeTarget < usedMinutes) {
+                throw ApiException.conflict("DERIVED_OVERTIME_ALREADY_USED",
+                        "Нельзя уменьшить фактическую переработку до " + safeTarget
+                                + " мин: из неё уже использовано " + usedMinutes
+                                + " мин. Сначала измени связанный отгул.");
+            }
+            if (safeTarget == 0) {
+                credits.delete(system);
+                credits.flush();
+                rebuildAllAllocations(user);
+                return;
+            }
+            system.setCreditedMinutes(safeTarget);
+            system.setPlannedHours(Math.max(0, requiredMinutes) / 60.0);
+            system.setReason(normalize(reason));
+            system.setTimeRange("Факт дня");
+            credits.saveAndFlush(system);
+            rebuildAllAllocations(user);
+            return;
+        }
+
+        OvertimeCredit created = new OvertimeCredit(
+                user, date, "Факт дня", hoursFromMinutes(safeTarget), normalize(reason));
+        created.setSourceKind("SYSTEM_ACTUAL_WORK");
+        created.setCreditedMinutes(safeTarget);
+        created.setPlannedHours(Math.max(0, requiredMinutes) / 60.0);
+        created.setCalculated(false);
+        credits.saveAndFlush(created);
+        rebuildAllAllocations(user);
     }
 
     @Transactional
@@ -509,6 +567,10 @@ public class OvertimeService {
         }
         ensureAllocationConsistency(user);
         OvertimeCredit credit = requireOwnedCredit(user, id);
+        if (credit.isSystemActualWorkDerived()) {
+            throw ApiException.conflict("SYSTEM_DERIVED_CREDIT_MANAGED_BY_ACTUAL_WORK",
+                    "Это начисление создано из фактической работы и меняется через календарный день");
+        }
         assertPeriodOpen(user, credit.getWorkDate());
         double used = hoursFromMinutes(allocations.findByCredit(credit).stream().mapToInt(OvertimeAllocation::getAllocatedMinutes).sum());
         boolean keepLegacyLocalIdentity = credit.getStartAtInstant() == null
@@ -541,6 +603,7 @@ public class OvertimeService {
             }
             LocalDate date = dayEntryService.parseDate(normalized.date(), "Дата переработки должна быть в формате yyyy-MM-dd");
             assertPeriodOpen(user, date);
+            ensureNoSystemActualWorkCredit(user, date, credit.getId());
             credit.setWorkDate(date);
             credit.setTimeRange(normalize(calculated.timeRange()));
             credit.setStartAt(null);
@@ -568,6 +631,7 @@ public class OvertimeService {
 
         for (CreditSegment segment : segments) {
             assertPeriodOpen(user, segment.workDate());
+            ensureNoSystemActualWorkCredit(user, segment.workDate(), credit.getId());
             ensureNoOvertimeOverlap(user, segment.startAt(), segment.endAt(), segment.startInstant(), segment.endInstant(), credit.getId());
         }
 
@@ -658,6 +722,10 @@ public class OvertimeService {
     public OvertimeAccountDto deleteCredit(AppUser user, long id) {
         ensureAllocationConsistency(user);
         OvertimeCredit credit = requireOwnedCredit(user, id);
+        if (credit.isSystemActualWorkDerived()) {
+            throw ApiException.conflict("SYSTEM_DERIVED_CREDIT_MANAGED_BY_ACTUAL_WORK",
+                    "Это начисление создано из фактической работы и удаляется вместе с фактом в календаре");
+        }
         assertPeriodOpen(user, credit.getWorkDate());
         double used = hoursFromMinutes(allocations.findByCredit(credit).stream().mapToInt(OvertimeAllocation::getAllocatedMinutes).sum());
         if (used > 0.00001) {
@@ -968,6 +1036,14 @@ public class OvertimeService {
             throw ApiException.badRequest("Часовой пояс должен быть IANA-идентификатором, например Asia/Yekaterinburg");
         }
         return resolved.getId();
+    }
+
+    private void ensureNoSystemActualWorkCredit(AppUser user, LocalDate date, Long editingCreditId) {
+        OvertimeCredit derived = credits.findByOwnerAndWorkDateAndSourceKind(user, date, "SYSTEM_ACTUAL_WORK").orElse(null);
+        if (derived != null && (editingCreditId == null || !Objects.equals(editingCreditId, derived.getId()))) {
+            throw ApiException.conflict("ACTUAL_WORK_ALREADY_DERIVES_OVERTIME",
+                    "На эту дату переработка уже рассчитана из фактической работы. Измени факт в календаре или удали его перед ручным начислением.");
+        }
     }
 
     private OvertimeCredit requireOwnedCredit(AppUser user, long id) {

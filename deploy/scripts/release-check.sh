@@ -3123,7 +3123,7 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains deploy/scripts/frontend-gate.sh 'dist/chunks'
   contains e2e/preflight.mjs 'frontend/dist/chunks'
   contains src/main/resources/static/service-worker.js 'content-hashed Vue chunks'
-  contains frontend/generated-lockfile-manifest.txt "nextAction=native-overtime-derivation-after-v${VERSION}-green"
+  contains frontend/generated-lockfile-manifest.txt "nextAction=compensation-setup-after-v${VERSION}-green"
 
   # v27.41.5 Browser Bundle Budget Rebaseline Hotfix
   contains CHANGES.md "v27.41.5 — Browser Bundle Budget Rebaseline Hotfix"
@@ -3269,7 +3269,7 @@ not_contains src/test/java/ru/daniil/shifts/web/VueFrontendFoundationContractTes
   contains docs/MODULE_CONTRACTS.md "Status: v27.45.1."
   contains docs/SUPPLY_CHAIN.md "Status: v27.45.1."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
-  contains frontend/generated-lockfile-manifest.txt "nextAction=native-overtime-derivation-after-v${VERSION}-green"
+  contains frontend/generated-lockfile-manifest.txt "nextAction=compensation-setup-after-v${VERSION}-green"
   not_contains frontend/src/features/calendar-timeline/components/TodayPage.vue 'todayShiftCountdown">{{ facts.shift ?'
 
   # v27.40.30 Legacy Retirement Closure & First-Run Onboarding Boundary
@@ -3297,7 +3297,7 @@ not_contains src/test/java/ru/daniil/shifts/web/VueFrontendFoundationContractTes
   contains docs/MODULE_CONTRACTS.md "Status: v27.45.1."
   contains docs/SUPPLY_CHAIN.md "Status: v27.45.1."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
-  contains frontend/generated-lockfile-manifest.txt "nextAction=native-overtime-derivation-after-v${VERSION}-green"
+  contains frontend/generated-lockfile-manifest.txt "nextAction=compensation-setup-after-v${VERSION}-green"
 
   # v27.41.8 Shared Runtime Bundle Split
   contains CHANGES.md "v27.41.8 — Shared Runtime Bundle Split"
@@ -3358,7 +3358,7 @@ contains README.md "DutyLog v27.42.6 — Release Check Current-Version Contract 
 contains docs/RELEASE_CHECK_CURRENT_VERSION_CONTRACT_HOTFIX_V27.42.6.md 'current release artifact assertions use `${VERSION}`'
 contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
 contains frontend/generated-lockfile-manifest.txt "committedLockfileSha256=${LOCKFILE_ACTUAL_SHA}"
-contains frontend/generated-lockfile-manifest.txt "nextAction=native-overtime-derivation-after-v${VERSION}-green"
+contains frontend/generated-lockfile-manifest.txt "nextAction=compensation-setup-after-v${VERSION}-green"
 contains frontend/browser-bundle-budget.json "\"release\": \"${VERSION}\""
 contains src/main/resources/static/service-worker.js "dutylog-shell-v${VERSION}-"
 contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontendContractTest.java '<SelectedDayPanel v-if=\"dayPanelOpen && viewingSelf\"'
@@ -3393,7 +3393,7 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains docs/RELEASE_CHECKLIST.md "Status: v27.45.1."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
   contains frontend/generated-lockfile-manifest.txt "committedLockfileSha256=${LOCKFILE_ACTUAL_SHA}"
-  contains frontend/generated-lockfile-manifest.txt "nextAction=native-overtime-derivation-after-v${VERSION}-green"
+  contains frontend/generated-lockfile-manifest.txt "nextAction=compensation-setup-after-v${VERSION}-green"
 
   # v27.40.28 E2E Vue Shell Identity Contract Alignment Hotfix
   contains CHANGES.md "v27.40.28 — E2E Vue Shell Identity Contract Alignment Hotfix"
@@ -3410,7 +3410,7 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains docs/API.md "# DutyLog API v27.45.1"
   contains docs/RELEASE_CHECKLIST.md "Status: v27.45.1."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
-  contains frontend/generated-lockfile-manifest.txt "nextAction=native-overtime-derivation-after-v${VERSION}-green"
+  contains frontend/generated-lockfile-manifest.txt "nextAction=compensation-setup-after-v${VERSION}-green"
 
   # v27.40.27 Legacy Header Async Boot Ownership Hotfix
   contains CHANGES.md "v27.40.27 — Legacy Header Async Boot Ownership Hotfix"
@@ -3431,7 +3431,7 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains docs/RELEASE_CHECKLIST.md "Status: v27.45.1."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
   contains frontend/generated-lockfile-manifest.txt "committedLockfileSha256=${LOCKFILE_ACTUAL_SHA}"
-  contains frontend/generated-lockfile-manifest.txt "nextAction=native-overtime-derivation-after-v${VERSION}-green"
+  contains frontend/generated-lockfile-manifest.txt "nextAction=compensation-setup-after-v${VERSION}-green"
 
   # v27.40.26 Legacy Header Retirement Selector Hotfix
   contains CHANGES.md "v27.40.26 — Legacy Header Retirement Selector Hotfix"
@@ -3454,7 +3454,7 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains docs/SUPPLY_CHAIN.md "Status: v27.45.1."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
   contains frontend/generated-lockfile-manifest.txt "committedLockfileSha256=${LOCKFILE_ACTUAL_SHA}"
-  contains frontend/generated-lockfile-manifest.txt "nextAction=native-overtime-derivation-after-v${VERSION}-green"
+  contains frontend/generated-lockfile-manifest.txt "nextAction=compensation-setup-after-v${VERSION}-green"
 
   # v27.40.25 Vue Offline Sync Surface & Legacy Header Retirement
   contains CHANGES.md "v27.40.25 — Vue Offline Sync Surface & Legacy Header Retirement"
@@ -3472,7 +3472,7 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains docs/SUPPLY_CHAIN.md "Status: v27.45.1."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
   contains frontend/generated-lockfile-manifest.txt "committedLockfileSha256=${LOCKFILE_ACTUAL_SHA}"
-  contains frontend/generated-lockfile-manifest.txt "nextAction=native-overtime-derivation-after-v${VERSION}-green"
+  contains frontend/generated-lockfile-manifest.txt "nextAction=compensation-setup-after-v${VERSION}-green"
   contains frontend/src/app/AppShell.vue 'id="offlineStatus"'
   contains frontend/src/app/AppShell.vue '<OfflineSyncModal'
   contains frontend/src/app/OfflineSyncModal.vue 'id="offlineSyncDialog"'
@@ -3825,8 +3825,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains docs/ROADMAP.md "Current release: **v27.45.1 — Native Workday / Day Truth Integration**"
   contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.45.1"
   contains docs/RELEASE_CHECKLIST.md "v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix acceptance"
-  contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue 'sourceRange: dateTimeRange(occurrence.sourceStart, occurrence.sourceEnd)'
-  contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue 'Рабочее время смены'
+  contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue 'truth.value.scheduledStartTime && truth.value.scheduledEndTime'
+  contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue 'scheduledBreakMinutes'
   contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue 'allocationRangeLabels(allocation)'
   contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue '24:00'
   contains frontend/src/features/productivity/components/SelectedDayNotes.vue 'if (timer != null && currentNote.value)'
@@ -4805,15 +4805,15 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "799" ]]; then
-  ok "test method baseline: 799"
+if [[ "$TEST_METHODS" == "804" ]]; then
+  ok "test method baseline: 804"
 else
-  fail "expected 799 @Test methods, found $TEST_METHODS"
+  fail "expected 804 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "166" ]]; then
-  ok "test class baseline: 166"
+if [[ "$TEST_CLASSES" == "167" ]]; then
+  ok "test class baseline: 167"
 else
-  fail "expected 166 test classes, found $TEST_CLASSES"
+  fail "expected 167 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
@@ -4845,7 +4845,19 @@ contains frontend/src/generated/dutylog-api.ts '"workdayTruth": { method: "GET",
 contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue "data-native-workday-truth"
 contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue "data-native-special-day-editor"
 contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue "data-native-actual-work-editor"
-contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue "проводка переработки пока не создана автоматически"
+contains src/main/resources/db/migration/postgresql/V50__native_workday_closed_loop.sql "break_minutes"
+contains src/main/resources/db/migration/postgresql/V50__native_workday_closed_loop.sql "SYSTEM_ACTUAL_WORK"
+contains src/main/java/ru/daniil/shifts/service/ActualWorkService.java "resolveBreakMinutes"
+contains src/main/java/ru/daniil/shifts/service/ActualWorkService.java "derivedCompensation.reconcile(user"
+contains src/main/java/ru/daniil/shifts/service/WorkdayDerivedCompensationService.java "reconcileActualWorkCredit"
+contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "SYSTEM_DERIVED_CREDIT_MANAGED_BY_ACTUAL_WORK"
+contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "DERIVED_OVERTIME_ALREADY_USED"
+contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue "Неоплачиваемый перерыв, мин"
+contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue "Удалить факт"
+contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue "Сбросить особый день"
+not_contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue "проводка переработки пока не создана автоматически"
+not_contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue "Текущее отображение"
+not_contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue "Исходная смена"
 contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue "@open-section=\"openNativeWorkdaySection\""
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'planned: "Обязательная норма"'
 contains frontend/src/features/calendar-timeline/components/CalendarPage.vue "data-production-calendar-day"
@@ -4853,10 +4865,13 @@ contains frontend/src/features/payroll/components/PayrollWorkspace.vue "data-pro
 not_contains frontend/src/features/payroll/components/PayrollWorkspace.vue "productionCalendarForm"
 contains src/test/java/ru/daniil/shifts/service/ProductionCalendarFoundationServiceTest.java "shortenedDayBecomesCanonicalRequiredMinutesForTimeCompensation"
 contains src/test/java/ru/daniil/shifts/service/ProductionCalendarFoundationServiceTest.java "workdayTruthJoinsBaseNormRequiredNormAndExplicitReality"
+contains src/test/java/ru/daniil/shifts/service/NativeWorkdayClosedLoopServiceTest.java "firstActualIntervalInheritsShiftBreakAndPostsOnlyNetOvertime"
+contains src/test/java/ru/daniil/shifts/service/NativeWorkdayClosedLoopServiceTest.java "usedDerivedCreditBlocksFactDeletionInsteadOfCorruptingFifo"
+contains frontend/src/generated/dutylog-api.ts "SHA-256: bb672251a4541219732ce729d7fcdcb66f7c51e5bf11a3ab1c4d9f2338e9c0ea"
 contains frontend/browser-bundle-budget.json '"release": "27.45.1"'
 contains frontend/browser-bundle-budget.json '"maxTotalBytes": 890000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
-contains frontend/generated-lockfile-manifest.txt "nextAction=native-overtime-derivation-after-v${VERSION}-green"
+contains frontend/generated-lockfile-manifest.txt "nextAction=compensation-setup-after-v${VERSION}-green"
 
 # v27.45.0 Production Calendar Foundation
 contains CHANGES.md "v27.45.0 — Production Calendar Foundation"

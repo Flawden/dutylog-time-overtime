@@ -17,9 +17,11 @@ Calendar / Today are the normal command surfaces. Overtime, Time Bank, Productio
 - [x] Move normal Production Calendar editing to Calendar and make Payroll a monthly norm summary rather than a duplicate editor.
 - [x] Mark Production Calendar special dates directly in Month/Week/Day calendar views.
 - [x] Preserve independent norm and schedule-time truths; no implicit shift-time rewrite from a shortened-day rule.
-- [x] Reuse Actual Work as explicit fact and surface unresolved fact-vs-obligation deltas without automatically creating duplicate overtime credits yet.
-- [x] Source baselines: OpenAPI 130/136 (`08589423f031`), Flyway V49, Java 799/166, Playwright 48, Vitest 73.
-- [ ] Exact Node 20 frontend gate, Maven/JaCoCo, release-check, Chromium, clean PostgreSQL V49 and staging UX acceptance.
+- [x] Reuse Actual Work as explicit fact with an editable unpaid break inherited from the dated shift for the first fact.
+- [x] Reconcile ordinary fact-vs-required overtime into one provenance-tagged FIFO Time Bank credit; edit/delete updates the same projection, manual same-day data is not duplicated, used derived credit fails closed, and holiday work remains separately classified.
+- [x] Keep mistake recovery in the day itself (`Удалить факт`, `Сбросить особый день`) and remove the duplicated shift diagnostic projection from normal UI.
+- [x] Source baselines: OpenAPI 130/136 (`bb672251a454`), Flyway V50, Java 804/167, Playwright 48, Vitest 73.
+- [ ] Exact Node 20 frontend gate, Maven/JaCoCo, release-check, Chromium, clean PostgreSQL V50 and final staging UX acceptance.
 
 ## Accepted foundation
 
@@ -35,15 +37,14 @@ Calendar / Today are the normal command surfaces. Overtime, Time Bank, Productio
 
 ## Core roadmap after Day Truth
 
-1. **v27.45.2 — Native Overtime Derivation**: derive candidate overtime from explicit actual work vs required obligation, prevent duplicate/manual-credit collisions, explain/post the resulting bank movement once.
-2. **v27.46.x — Compensation Setup & Payroll Core**: simple hourly mode or salary mode first; then salary/rate history, production-norm denominator, regular/night/overtime/holiday categories and explainable monthly money breakdown.
-3. **Vacation Entitlement & Balance**: entitlement/accrual/carry-over/used/planned/available balance, separate from vacation pay.
-4. **Vacation Pay**: versioned jurisdiction calculation period, eligible earnings and average-pay breakdown.
-5. **Sick Leave Calculation**: versioned jurisdiction rules after official-source research.
-6. **Versioned Compensation Rule Set**: jurisdiction + rule-set version + effective date with immutable historical calculation provenance.
-7. **Formula Studio**: compose validated domain outputs; mandatory legal algorithms remain owned by rule sets.
-8. **Reports & Statistics**: salary/vacation/overtime/workload history derived from the same Day Truth without duplicate data entry.
-9. **Product Polish → Feature Freeze → v1.0**: Calendar/Today ergonomics, progressive disclosure, mobile-first UX, accessibility, performance, offline, onboarding, explainability and full regression acceptance.
+1. **v27.46.x — Compensation Setup & Payroll Core**: simple hourly mode or salary mode first; then salary/rate history, production-norm denominator, regular/night/overtime/holiday categories and explainable monthly money breakdown.
+2. **Vacation Entitlement & Balance**: entitlement/accrual/carry-over/used/planned/available balance, separate from vacation pay.
+3. **Vacation Pay**: versioned jurisdiction calculation period, eligible earnings and average-pay breakdown.
+4. **Sick Leave Calculation**: versioned jurisdiction rules after official-source research.
+5. **Versioned Compensation Rule Set**: jurisdiction + rule-set version + effective date with immutable historical calculation provenance.
+6. **Formula Studio**: compose validated domain outputs; mandatory legal algorithms remain owned by rule sets.
+7. **Reports & Statistics**: salary/vacation/overtime/workload history derived from the same Day Truth without duplicate data entry.
+8. **Product Polish → Feature Freeze → v1.0**: Calendar/Today ergonomics, progressive disclosure, mobile-first UX, accessibility, performance, offline, onboarding, explainability and full regression acceptance.
 
 ## v27.43.0 — People Profiles: Managed Schedule Overrides
 

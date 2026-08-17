@@ -1942,15 +1942,17 @@ components:
         workDate: { type: string, format: date }
         startTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$' }
         endTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$' }
+        breakMinutes: { type: integer, minimum: 0, maximum: 1440, nullable: true, description: Unpaid break; omitted on a new first interval to inherit the dated shift break. }
         note: { type: string, maxLength: 500, nullable: true }
     ActualWorkInterval:
       allOf:
         - $ref: '#/components/schemas/ActualWorkIntervalInput'
         - type: object
-          required: [id, workedMinutes]
+          required: [id, workedMinutes, breakMinutes]
           properties:
             id: { type: integer, format: int64 }
             workedMinutes: { type: integer, minimum: 1, maximum: 2880 }
+            breakMinutes: { type: integer, minimum: 0, maximum: 1440 }
             createdAt: { type: string, format: date-time, nullable: true }
             updatedAt: { type: string, format: date-time, nullable: true }
     ProductionCalendarDayInput:
@@ -1992,12 +1994,13 @@ components:
         days: { type: array, items: { $ref: '#/components/schemas/ProductionCalendarDay' } }
     WorkdayTruth:
       type: object
-      required: [date, baseNormMinutes, requiredNormMinutes, productionCalendar, explicitActual, actualMinutes, absenceMinutes, overtimeEarnedMinutes, overtimeUsedMinutes, factLabel, actualWork]
+      required: [date, scheduledBreakMinutes, baseNormMinutes, requiredNormMinutes, productionCalendar, explicitActual, actualMinutes, absenceMinutes, overtimeEarnedMinutes, overtimeUsedMinutes, factLabel, actualWork]
       properties:
         date: { type: string, format: date }
         shiftName: { type: string, nullable: true }
         scheduledStartTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$', nullable: true }
         scheduledEndTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$', nullable: true }
+        scheduledBreakMinutes: { type: integer, minimum: 0, maximum: 1440 }
         baseNormMinutes: { type: integer, minimum: 0 }
         requiredNormMinutes: { type: integer, minimum: 0 }
         productionCalendar: { $ref: '#/components/schemas/ProductionCalendarDay' }
