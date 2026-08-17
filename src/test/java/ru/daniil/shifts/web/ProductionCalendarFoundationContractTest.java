@@ -25,6 +25,7 @@ class ProductionCalendarFoundationContractTest {
         String calendarPage = source("frontend/src/features/calendar-timeline/components/CalendarPage.vue");
         String workday = source("src/main/java/ru/daniil/shifts/service/WorkdayTruthService.java");
         String api = source("frontend/src/features/calendar-timeline/api/calendarTimelineApi.ts");
+        String generatedApi = source("frontend/src/generated/dutylog-api.ts");
         String openapi = resource("/static/openapi/dutylog-v1.yaml");
 
         assertTrue(migration.contains("layer IN ('BASE', 'LOCAL_OVERRIDE')"));
@@ -53,6 +54,9 @@ class ProductionCalendarFoundationContractTest {
         assertTrue(api.contains("workdayTruth"));
         assertTrue(api.contains("upsertProductionCalendarDay"));
         assertTrue(api.contains("createActualWorkInterval"));
+        assertTrue(api.contains("requireResponse(await client.request"));
+        assertTrue(generatedApi.contains("response: DutyLogApiSchemas.ActualWorkInterval;"));
+        assertFalse(generatedApi.contains("requestBody: DutyLogApiSchemas.ActualWorkIntervalInput;\n    response: unknown;"));
 
         assertTrue(openapi.contains("/api/v1/production-calendar/months/{month}:"));
         assertTrue(openapi.contains("ProductionCalendarMonth:"));

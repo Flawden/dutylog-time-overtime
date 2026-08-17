@@ -1,6 +1,6 @@
 ## v27.45.1 native workday / day truth integration
 
-No dependency/package graph change is introduced. Root/frontend release identity advances to v27.45.1; the authentic Node 20.18.1/npm 10.8.2 lockfile graph remains unchanged. OpenAPI advances to 130/136 (`e78a6253744d`), Flyway remains V49, and the reviewed browser ceilings remain 875000 B raw / 250000 B gzip pending exact canonical Node 20 measurement of the new graph.
+No dependency/package graph change is introduced. Root/frontend release identity advances to v27.45.1; the authentic Node 20.18.1/npm 10.8.2 lockfile graph remains unchanged. OpenAPI advances to 130/136 (`08589423f031`), Flyway remains V49, and the reviewed browser ceilings remain 875000 B raw / 250000 B gzip pending exact canonical Node 20 measurement of the new graph.
 
 ## v27.45.0 production calendar foundation
 

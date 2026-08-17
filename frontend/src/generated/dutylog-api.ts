@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: e78a6253744df51e7cf373a70ffb4631785219bb24f8070575cecd9e33ab8739
+ * SHA-256: 08589423f03178c33df9449b5c790654d15435b7464fd7ccc4fc2bfe633c9756
  * Generator: frontend/scripts/generate-openapi-contract.mjs
  * Contract: 130 operations, 136 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "e78a6253744df51e7cf373a70ffb4631785219bb24f8070575cecd9e33ab8739";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "08589423f03178c33df9449b5c790654d15435b7464fd7ccc4fc2bfe633c9756";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -1710,7 +1710,7 @@ export interface DutyLogOperationTypes {
   };
   "createActualWorkInterval": {
     requestBody: DutyLogApiSchemas.ActualWorkIntervalInput;
-    response: unknown;
+    response: DutyLogApiSchemas.ActualWorkInterval;
   };
   "createCalendarLayer": {
     requestBody: DutyLogApiSchemas.CalendarLayerInput;
@@ -2094,7 +2094,7 @@ export interface DutyLogOperationTypes {
   };
   "updateActualWorkInterval": {
     requestBody: DutyLogApiSchemas.ActualWorkIntervalInput;
-    response: unknown;
+    response: DutyLogApiSchemas.ActualWorkInterval;
   };
   "updateAdminRegistrationSettings": {
     requestBody: DutyLogApiSchemas.AdminRegistrationSettingsRequest;

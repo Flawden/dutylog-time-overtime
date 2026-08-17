@@ -5,6 +5,11 @@ import { calendarLoadRange, normalizeCalendarBundle, todayIso, validDate } from 
 
 const client = createGeneratedDutyLogApiClient();
 
+function requireResponse<T>(value: T | null, operation: string): T {
+  if (value === null) throw new Error(`DutyLog API returned an empty response for ${operation}`);
+  return value;
+}
+
 export const calendarTimelineApi = Object.freeze({
   async load(focusDate: string, preferWorkDate = false): Promise<{ bundle: CalendarRangeBundle; workDate: string; focusDate: string }> {
     let workDate = validDate(focusDate, todayIso());
@@ -29,22 +34,22 @@ export const calendarTimelineApi = Object.freeze({
     await client.request("deleteCalendarLayerOverride", { path: { id, date } });
   },
   async workdayTruth(date: string): Promise<DutyLogApiSchemas.WorkdayTruth> {
-    return await client.request("workdayTruth", { path: { date } });
+    return requireResponse(await client.request("workdayTruth", { path: { date } }), "workdayTruth");
   },
   async productionCalendarMonth(month: string): Promise<DutyLogApiSchemas.ProductionCalendarMonth> {
-    return await client.request("productionCalendarMonth", { path: { month } });
+    return requireResponse(await client.request("productionCalendarMonth", { path: { month } }), "productionCalendarMonth");
   },
   async saveProductionDay(date: string, body: DutyLogApiSchemas.ProductionCalendarDayInput): Promise<DutyLogApiSchemas.ProductionCalendarDay> {
-    return await client.request("upsertProductionCalendarDay", { path: { date }, body });
+    return requireResponse(await client.request("upsertProductionCalendarDay", { path: { date }, body }), "upsertProductionCalendarDay");
   },
   async deleteProductionDay(date: string): Promise<void> {
     await client.request("deleteProductionCalendarDayOverride", { path: { date } });
   },
   async createActualWork(body: DutyLogApiSchemas.ActualWorkIntervalInput): Promise<DutyLogApiSchemas.ActualWorkInterval> {
-    return await client.request("createActualWorkInterval", { body });
+    return requireResponse(await client.request("createActualWorkInterval", { body }), "createActualWorkInterval");
   },
   async updateActualWork(id: number, body: DutyLogApiSchemas.ActualWorkIntervalInput): Promise<DutyLogApiSchemas.ActualWorkInterval> {
-    return await client.request("updateActualWorkInterval", { path: { id }, body });
+    return requireResponse(await client.request("updateActualWorkInterval", { path: { id }, body }), "updateActualWorkInterval");
   },
   async deleteActualWork(id: number): Promise<void> {
     await client.request("deleteActualWorkInterval", { path: { id } });

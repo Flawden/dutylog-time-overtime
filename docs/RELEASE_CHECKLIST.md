@@ -10,7 +10,7 @@ Status: v27.45.1.
 - [x] Production Calendar special days are visible in Month/Week/Day and normal editing no longer lives in Payroll.
 - [x] Payroll retains explainable monthly base→production norm summary only.
 - [x] Explicit actual work is stored through existing Actual Work APIs; automatic Overtime credit posting is intentionally deferred until duplicate/manual-credit reconciliation is designed.
-- [x] Source baselines: OpenAPI 130/136 (`e78a6253744d`), Flyway V49, Java 799/166, Playwright 48, Vitest 73.
+- [x] Source baselines: OpenAPI 130/136 (`08589423f031`), Flyway V49, Java 799/166, Playwright 48, Vitest 73.
 - [x] Browser ceilings remain 875000 B raw / 250000 B gzip pending exact Node 20 measurement.
 - [ ] Exact Node 20 frontend gate, Java 17 Maven/JaCoCo, release-check, Chromium 48/48, immutable image/clean PostgreSQL V49 and staging UX smoke pass.
 

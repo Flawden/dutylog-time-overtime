@@ -18,7 +18,7 @@ Calendar / Today are the normal command surfaces. Overtime, Time Bank, Productio
 - [x] Mark Production Calendar special dates directly in Month/Week/Day calendar views.
 - [x] Preserve independent norm and schedule-time truths; no implicit shift-time rewrite from a shortened-day rule.
 - [x] Reuse Actual Work as explicit fact and surface unresolved fact-vs-obligation deltas without automatically creating duplicate overtime credits yet.
-- [x] Source baselines: OpenAPI 130/136 (`e78a6253744d`), Flyway V49, Java 799/166, Playwright 48, Vitest 73.
+- [x] Source baselines: OpenAPI 130/136 (`08589423f031`), Flyway V49, Java 799/166, Playwright 48, Vitest 73.
 - [ ] Exact Node 20 frontend gate, Maven/JaCoCo, release-check, Chromium, clean PostgreSQL V49 and staging UX acceptance.
 
 ## Accepted foundation

@@ -69,7 +69,7 @@ A shortened day may establish a 7-hour required norm without specifying whether 
 
 ## Acceptance baseline
 
-- OpenAPI: 130 operations / 136 schemas, `e78a6253744d`.
+- OpenAPI: 130 operations / 136 schemas, `08589423f031`.
 - Flyway: V49.
 - Java source inventory: 799 `@Test` methods / 166 test classes.
 - Playwright: 48.

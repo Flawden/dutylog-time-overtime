@@ -6,7 +6,7 @@
 - Adds Production Calendar markers to Month/Week/Day calendar surfaces so shortened days, holidays and transfers are visible where the day actually lives.
 - Reuses the existing Actual Work domain for explicit fact. v27.45.1 deliberately does **not** auto-create Overtime credits yet; the Day Truth card calls out unexplained fact-vs-obligation deltas so the next release can derive/post overtime without duplicating existing manual credits.
 - Keeps norm effect and schedule time separate. A Production Calendar shortened day can change required minutes without silently rewriting a shift's start/end time.
-- OpenAPI advances to **130 operations / 136 schemas** with hash `e78a6253744d`; Flyway remains **V49**.
+- OpenAPI advances to **130 operations / 136 schemas** with hash `08589423f031`; Flyway remains **V49**.
 - Source test inventory advances to **799 @Test methods / 166 Java test classes**; Playwright remains **48** and Vitest remains **73**.
 - Browser ceiling remains **875000 B raw / 250000 B gzip** pending exact Node 20.18.1/npm 10.8.2 measurement of the v27.45.1 graph.
 

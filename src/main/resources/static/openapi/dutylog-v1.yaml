@@ -896,7 +896,11 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/ActualWorkIntervalInput' }
       responses:
-        '201': { description: Created factual interval, content: { application/json: { schema: { $ref: '#/components/schemas/ActualWorkInterval' } } } }
+        '201':
+          description: Created factual interval
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ActualWorkInterval' }
         '409': { $ref: '#/components/responses/ApiError' }
   /api/v1/actual-work/{id}:
     put:
@@ -909,7 +913,11 @@ paths:
           application/json:
             schema: { $ref: '#/components/schemas/ActualWorkIntervalInput' }
       responses:
-        '200': { description: Updated factual interval, content: { application/json: { schema: { $ref: '#/components/schemas/ActualWorkInterval' } } } }
+        '200':
+          description: Updated factual interval
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ActualWorkInterval' }
     delete:
       operationId: deleteActualWorkInterval
       parameters:
