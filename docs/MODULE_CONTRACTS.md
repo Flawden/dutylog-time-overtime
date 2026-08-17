@@ -1,3 +1,15 @@
+## Native Workday / Day Truth contract (v27.45.1)
+
+- Calendar / Today are the human command surfaces: one real-world event should be described once and derived domains should consume the same authorities.
+- `WorkdayTruthService` is a read-model join, not a second persistence authority. It combines base schedule, Production Calendar required norm, Time Compensation and explicit Actual Work.
+- Production Calendar required minutes are canonical for Time Compensation and Payroll source obligations. A full-day absence on a 7-hour shortened day therefore covers 7 hours, not the original shift's 8 hours.
+- Production Calendar never becomes an Absence; norm effect and schedule-time effect remain independent.
+- Explicit Actual Work reuses the existing Actual Work authority and accounting-period lock. v27.45.1 does not silently create Overtime credits; reconciliation/derivation is a separate next step.
+- Payroll is a summary/explainability surface for Production Calendar in normal use, not a duplicate special-day editor.
+- Advanced Overtime, Time Bank, Production Calendar and Payroll screens remain valid audit/correction surfaces; they are not the required everyday workflow.
+
+Status: v27.45.1.
+
 ## Production Calendar work-norm contract (v27.45.0)
 
 - Base schedule is the source of **base norm**; Production Calendar is a separate dated adjustment layer and never represents an absence.

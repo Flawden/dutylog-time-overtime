@@ -39,7 +39,7 @@ public class TimeCompensationService {
     private final OvertimeService overtime;
     private final LedgerIntegrityService ledgerIntegrity;
     private final TimeLedgerEntryRepository ledgerEntries;
-    private final WorkNormService workNorm;
+    private final ProductionCalendarService productionCalendar;
 
     public TimeCompensationService(DayEntryRepository days,
                                    ActualWorkIntervalRepository actualWork,
@@ -47,14 +47,14 @@ public class TimeCompensationService {
                                    OvertimeService overtime,
                                    LedgerIntegrityService ledgerIntegrity,
                                    TimeLedgerEntryRepository ledgerEntries,
-                                   WorkNormService workNorm) {
+                                   ProductionCalendarService productionCalendar) {
         this.days = days;
         this.actualWork = actualWork;
         this.vacationPlanner = vacationPlanner;
         this.overtime = overtime;
         this.ledgerIntegrity = ledgerIntegrity;
         this.ledgerEntries = ledgerEntries;
-        this.workNorm = workNorm;
+        this.productionCalendar = productionCalendar;
     }
 
     @Transactional
@@ -108,7 +108,7 @@ public class TimeCompensationService {
 
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
             DayEntry day = planned.get(date);
-            int plannedMinutes = workNorm.basePlannedMinutes(day);
+            int plannedMinutes = productionCalendar.requiredMinutes(user, date, day);
             List<AbsenceOccurrenceDto> dayAbsences = absences.getOrDefault(date, List.of());
             int absenceMinutes = absenceMinutes(plannedMinutes, dayAbsences);
             int earnedMinutes = earnedByDate.getOrDefault(date, 0);
@@ -215,7 +215,7 @@ public class TimeCompensationService {
         List<PayrollSourceDay> sourceDays = new ArrayList<>();
 
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
-            int plannedMinutes = workNorm.basePlannedMinutes(planned.get(date));
+            int plannedMinutes = productionCalendar.requiredMinutes(user, date, planned.get(date));
             List<AbsenceOccurrenceDto> absences = postedAbsences.getOrDefault(date, List.of());
             int absenceMinutes = absenceMinutes(plannedMinutes, absences);
             int earnedMinutes = earnedByDate.getOrDefault(date, 0);

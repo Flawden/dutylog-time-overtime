@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import type { LegacyBridge } from "@/platform/bridge/legacyBridge";
+import type { DutyLogApiSchemas } from "@/generated/dutylog-api";
 import { useShellStore } from "@/app/shellStore";
 import { useCalendarTimelineStore } from "../stores/calendarTimelineStore";
+import { calendarTimelineApi } from "../api/calendarTimelineApi";
 import {
   calendarDayVisualStyle,
   calendarFactualAbsence,
@@ -80,6 +82,23 @@ const focusDayScheduleLabel = computed(() => {
   return focusFacts.value.shift?.name || (language.value === "en" ? "Day off" : "Свободный день");
 });
 const focusMonth = computed(() => monthStart(focusDate.value).slice(0, 7));
+const productionMonth = ref<DutyLogApiSchemas.ProductionCalendarMonth | null>(null);
+async function loadProductionMonth(): Promise<void> {
+  if (!viewingSelf.value) { productionMonth.value = null; return; }
+  try { productionMonth.value = await calendarTimelineApi.productionCalendarMonth(focusMonth.value); }
+  catch { productionMonth.value = null; }
+}
+watch([focusMonth, viewingSelf], () => void loadProductionMonth(), { immediate: true });
+function productionDay(date: string): DutyLogApiSchemas.ProductionCalendarDay | null {
+  return productionMonth.value?.days.find(item => item.date === date && item.sourceType !== "NONE") ?? null;
+}
+function productionDayLabel(date: string): string {
+  const day = productionDay(date);
+  if (!day) return "";
+  const kind = ({ HOLIDAY:"Праздник", TRANSFERRED_DAY_OFF:"Выходной", TRANSFERRED_WORKDAY:"Рабочий перенос", SHORTENED_DAY:"Сокр." } as Record<string,string>)[day.dayKind] ?? "Особый";
+  if (day.dayKind === "SHORTENED_DAY" || day.dayKind === "TRANSFERRED_WORKDAY") return `${kind} · ${sharedWorkDurationLabel(day.productionNormMinutes)}`;
+  return kind;
+}
 const monthTitle = computed(() => dateLabel(`${focusMonth.value}-01`, language.value, { month: "long" }));
 const yearTitle = computed(() => focusDate.value.slice(0, 4));
 const monthDates = computed(() => gridDates.value.filter(date => date.startsWith(focusMonth.value)));
@@ -229,6 +248,8 @@ function cellAriaLabel(date: string): string {
   const openTasks = calendarOpenTaskCount(facts);
   if (openTasks) parts.push(`${language.value === "en" ? "Tasks" : "Задачи"}: ${openTasks}`);
   if (facts.important.length) parts.push(`${language.value === "en" ? "Important dates" : "Важные даты"}: ${facts.important.length}`);
+  const production = productionDay(date);
+  if (production) parts.push(`${language.value === "en" ? "Production calendar" : "Производственный календарь"}: ${productionDayLabel(date)}`);
   const sharedWindows = sharedWorkWindows(date);
   if (highlightSharedWork.value && sharedWindows.length) {
     parts.push(`${language.value === "en" ? "Working together" : "Работаем вместе"}: ${sharedWindows.map(window => `${window.startTime}–${window.endTime}`).join(", ")}`);
@@ -352,8 +373,9 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
 
       <section v-show="mode === 'week'" id="calendarWeekExperience" class="calendarWeekExperience" aria-label="Недельный календарь">
         <div id="calendarWeekStrip" class="calendarWeekStrip">
-          <button v-for="date in week" :key="date" type="button" class="calendarWeekDay" :class="{ isSelected: date === focusDate, todayCell: date === workDate, hasShift: Boolean(cellFacts(date).shift), isScheduleFree: isScheduleFreeDay(date), hasAbsenceFact: Boolean(factualAbsence(date)), isWeekend: isWeekend(date), hasSharedWorkOverlap: hasSharedWorkOverlap(date), profileOutsideCoverage: !hasProfileCoverage(date) }" :style="cellStyle(date)" :data-date="date" :aria-label="cellAriaLabel(date)" @click="chooseWeekDate(date)">
+          <button v-for="date in week" :key="date" type="button" class="calendarWeekDay" :class="{ isSelected: date === focusDate, todayCell: date === workDate, hasShift: Boolean(cellFacts(date).shift), isScheduleFree: isScheduleFreeDay(date), hasAbsenceFact: Boolean(factualAbsence(date)), isWeekend: isWeekend(date), hasSharedWorkOverlap: hasSharedWorkOverlap(date), hasProductionRule: Boolean(viewingSelf && productionDay(date)), profileOutsideCoverage: !hasProfileCoverage(date) }" :style="cellStyle(date)" :data-date="date" :aria-label="cellAriaLabel(date)" @click="chooseWeekDate(date)">
             <small>{{ weekday(date) }}</small><b>{{ dayNumber(date) }}</b>
+            <span v-if="viewingSelf && productionDay(date)" class="calendarWeekProductionBadge">{{ productionDayLabel(date) }}</span>
             <span v-if="cellFacts(date).shift">{{ cellFacts(date).shift?.name }}</span>
             <span v-else-if="isScheduleFreeDay(date)" class="calendarWeekPalm" aria-hidden="true">
               <svg viewBox="0 0 64 64" focusable="false"><path d="M31 55c1-12 2-24 1-36M31 22c-8-9-16-9-23-5 8 0 14 4 19 11M33 21c7-10 15-11 23-7-8 1-14 6-18 13M32 19c-2-8-7-13-14-15 5 5 8 11 9 18M33 19c3-8 8-13 15-15-5 5-8 11-10 18"/></svg>
@@ -368,7 +390,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
       </section>
 
       <section v-show="mode === 'day'" id="calendarDayExperience" class="calendarDayExperience" aria-label="Почасовой календарь дня">
-        <div class="calendarDayHeader"><div><div class="eyebrow">День</div><h2 id="calendarDayTitle">{{ dateLabel(focusDate, language, { weekday:'long', day:'numeric', month:'long' }) }}</h2><div id="calendarDaySubtitle" class="calendarDaySubtitle">{{ focusDayScheduleLabel }}</div></div><button v-if="viewingSelf" id="calendarDayOpenDetails" type="button" @click="openDetails">Все детали дня</button><span v-else class="calendarProfileReadOnly">{{ language === 'en' ? 'Read-only schedule' : 'График только для просмотра' }}</span></div>
+        <div class="calendarDayHeader"><div><div class="eyebrow">День</div><h2 id="calendarDayTitle">{{ dateLabel(focusDate, language, { weekday:'long', day:'numeric', month:'long' }) }}</h2><div id="calendarDaySubtitle" class="calendarDaySubtitle">{{ focusDayScheduleLabel }}</div><div v-if="viewingSelf && productionDay(focusDate)" class="calendarDayProductionBadge">{{ productionDayLabel(focusDate) }}</div></div><button v-if="viewingSelf" id="calendarDayOpenDetails" type="button" @click="openDetails">Все детали дня</button><span v-else class="calendarProfileReadOnly">{{ language === 'en' ? 'Read-only schedule' : 'График только для просмотра' }}</span></div>
         <div id="calendarAllDay" class="calendarAllDay" :hidden="!allDayItems.length"><div class="calendarAllDayHead">Весь день</div><div class="calendarAllDayItems"><div v-for="item in allDayItems" :key="item.key" class="calendarAllDayItem" :class="item.type" :style="{ '--event-color': item.color || 'var(--accent)' }">{{ item.title }}</div></div></div>
         <div id="calendarTimeline" class="calendarTimeline" aria-label="Почасовая шкала"><div id="calendarTimelineHours" class="calendarTimelineHours"><span v-for="index in 13" :key="index" :style="{ top: `${(((index - 1) * 2) / 24) * 100}%` }">{{ String((index - 1) * 2).padStart(2,'0') }}:00</span></div><div id="calendarTimelineCanvas" class="calendarTimelineCanvas"><button v-for="event in timelineEvents" :key="event.key" type="button" class="calendarTimelineEvent" :class="event.type" :style="eventStyle(event)" @click="openTimelineEvent(event)"><b>{{ event.title }}</b><span>{{ timelineRange(event) }}<template v-if="event.meta"> · {{ event.meta }}</template></span></button></div></div>
       </section>
@@ -384,7 +406,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
               :key="date"
               type="button"
               class="cell"
-              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasShift: Boolean(cellFacts(date).shift), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)), isScheduleFree: inFocusMonth(date) && isScheduleFreeDay(date), isWeekend: isWeekend(date), hasSharedFreeAllDay: inFocusMonth(date) && hasSharedFreeAllDay(date), hasSharedWorkOverlap: hasSharedWorkOverlap(date), profileOutsideCoverage: !hasProfileCoverage(date) }"
+              :class="{ sel: date === focusDate, todayCell: date === workDate, outside: !inFocusMonth(date), hasShift: Boolean(cellFacts(date).shift), hasVacation: cellFacts(date).absences.length, hasAbsenceFact: Boolean(factualAbsence(date)), isScheduleFree: inFocusMonth(date) && isScheduleFreeDay(date), isWeekend: isWeekend(date), hasSharedFreeAllDay: inFocusMonth(date) && hasSharedFreeAllDay(date), hasSharedWorkOverlap: hasSharedWorkOverlap(date), hasProductionRule: Boolean(viewingSelf && inFocusMonth(date) && productionDay(date)), profileOutsideCoverage: !hasProfileCoverage(date) }"
               :style="cellStyle(date)"
               :aria-label="cellAriaLabel(date)"
               :data-date="date"
@@ -393,6 +415,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
               <span class="num calendarCellDateZone">{{ dayNumber(date) }}</span>
               <span v-if="importantMarker(date)" class="importantMark calendarCellImportantZone" :style="{ '--important-color': importantMarker(date)?.color || 'var(--accent)' }" :title="importantMarker(date)?.title || ''"><span>{{ importantMarkerGlyph(date) }}</span><small v-if="cellFacts(date).important.length > 1">+{{ cellFacts(date).important.length - 1 }}</small></span>
               <span v-if="cellFacts(date).day?.dayEmoji" class="dayEmoji calendarCellMarkerZone" :title="language === 'en' ? 'Day marker' : 'Маркер дня'">{{ cellFacts(date).day?.dayEmoji }}</span>
+              <span v-if="viewingSelf && inFocusMonth(date) && productionDay(date)" class="productionDayMark" data-production-calendar-day>{{ productionDayLabel(date) }}</span>
               <span v-if="openTaskCount(date)" class="taskMark calendarCellTaskZone" :aria-label="`${language === 'en' ? 'Open tasks' : 'Открытых задач'}: ${openTaskCount(date)}`">{{ openTaskCount(date) }}</span>
               <span v-if="inFocusMonth(date) && isScheduleFreeDay(date)" class="calendarDayOffWatermark" aria-hidden="true">
                 <svg viewBox="0 0 64 64" focusable="false"><path d="M31 55c1-12 2-24 1-36M31 22c-8-9-16-9-23-5 8 0 14 4 19 11M33 21c7-10 15-11 23-7-8 1-14 6-18 13M32 19c-2-8-7-13-14-15 5 5 8 11 9 18M33 19c3-8 8-13 15-15-5 5-8 11-10 18"/></svg>
@@ -430,7 +453,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
             </template>
           </div>
         </div>
-        <SelectedDayPanel v-if="dayPanelOpen && viewingSelf" :bridge="bridge" />
+        <SelectedDayPanel v-if="dayPanelOpen && viewingSelf" :bridge="bridge" @day-truth-changed="loadProductionMonth" />
       </div>
       <ManagedProfileDayCard
         v-if="!viewingSelf && selectedProfile && focusProfileCovered && selectedProfile.scheduleEditable !== false"

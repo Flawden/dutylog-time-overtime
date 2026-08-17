@@ -1,3 +1,9 @@
+# v27.45.1 Native Workday / Day Truth Integration review
+
+`GET /api/v1/workdays/{date}` is authenticated, owner-derived from the principal, Shifts-module gated and `no-store`; the request accepts no user id and creates no mutation path. Native Calendar actions reuse existing Production Calendar, Actual Work and Absence authorities, so their existing owner/module, accounting-period, overlap and ledger-integrity checks remain authoritative. Payroll loses a duplicate everyday Production Calendar mutation surface rather than gaining a new privilege path. No dependency, credential, role or cross-account sharing change is introduced.
+
+Status: v27.45.1.
+
 # v27.45.0 Production Calendar Foundation review
 
 Production Calendar adds authenticated owner-scoped persistence and three API operations under the existing Shifts module gate. The backend derives the owner from the authenticated principal; clients cannot provide a user id. Local mutation is accounting-period locked, database uniqueness is `(user_id, calendar_date, layer)`, and the v27.45.0 UI can edit only `LOCAL_OVERRIDE`; `BASE` is reserved for future official/imported sources. The release adds no credential, role, cross-account sharing path or dependency. Production Calendar changes work-norm metadata only and does not create absences or execute money rules.

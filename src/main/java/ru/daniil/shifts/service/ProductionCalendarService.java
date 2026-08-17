@@ -145,14 +145,23 @@ public class ProductionCalendarService {
     }
 
     @Transactional(readOnly = true)
+    public int requiredMinutes(AppUser user, LocalDate date, DayEntry schedule) {
+        int baseMinutes = workNorm.basePlannedMinutes(schedule);
+        ProductionCalendarDay local = days.findByOwnerAndDateAndLayer(user, date, LOCAL).orElse(null);
+        ProductionCalendarDay base = days.findByOwnerAndDateAndLayer(user, date, BASE).orElse(null);
+        ProductionCalendarDay effective = local != null ? local : base;
+        return effective != null && "NORM_OVERRIDE".equals(effective.getScheduleEffect())
+                && effective.getNormMinutesOverride() != null ? effective.getNormMinutesOverride() : baseMinutes;
+    }
+
+    @Transactional(readOnly = true)
     public ProductionCalendarDayDto resolvedDay(AppUser user, LocalDate date) {
         DayEntry schedule = scheduleDays.findByOwnerAndDate(user, date).orElse(null);
         int baseMinutes = workNorm.basePlannedMinutes(schedule);
         ProductionCalendarDay local = days.findByOwnerAndDateAndLayer(user, date, LOCAL).orElse(null);
         ProductionCalendarDay base = days.findByOwnerAndDateAndLayer(user, date, BASE).orElse(null);
         ProductionCalendarDay effective = local != null ? local : base;
-        int productionMinutes = effective != null && "NORM_OVERRIDE".equals(effective.getScheduleEffect())
-                && effective.getNormMinutesOverride() != null ? effective.getNormMinutesOverride() : baseMinutes;
+        int productionMinutes = requiredMinutes(user, date, schedule);
         return toDto(date, effective, local != null, baseMinutes, productionMinutes);
     }
 

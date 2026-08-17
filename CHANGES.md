@@ -1,3 +1,15 @@
+# v27.45.1 — Native Workday / Day Truth Integration
+- Introduces `WorkdayTruthService` plus owner-scoped `GET /api/v1/workdays/{date}` as the first human-facing daily read model: base schedule, required production norm, explicit factual work, absences and existing overtime-bank movements are joined without duplicating their storage.
+- Makes Production Calendar required minutes canonical for Time Compensation and Payroll source projections. A shortened 7-hour day therefore becomes a 7-hour obligation for full-day absence coverage and downstream time calculations instead of retaining the original 8-hour shift norm.
+- Adds `NativeWorkdayCard` to the selected Calendar day. The date is already known; the user can open the existing shift editor, existing absence composer, edit a special Production Calendar day, or record explicit factual work from one context.
+- Moves Production Calendar mutation out of Payroll's normal workflow. Payroll keeps an explainable monthly base→production norm summary and a link back to Calendar; advanced domain screens remain available for audit/details rather than duplicate everyday input.
+- Adds Production Calendar markers to Month/Week/Day calendar surfaces so shortened days, holidays and transfers are visible where the day actually lives.
+- Reuses the existing Actual Work domain for explicit fact. v27.45.1 deliberately does **not** auto-create Overtime credits yet; the Day Truth card calls out unexplained fact-vs-obligation deltas so the next release can derive/post overtime without duplicating existing manual credits.
+- Keeps norm effect and schedule time separate. A Production Calendar shortened day can change required minutes without silently rewriting a shift's start/end time.
+- OpenAPI advances to **130 operations / 136 schemas** with hash `e78a6253744d`; Flyway remains **V49**.
+- Source test inventory advances to **799 @Test methods / 166 Java test classes**; Playwright remains **48** and Vitest remains **73**.
+- Browser ceiling remains **875000 B raw / 250000 B gzip** pending exact Node 20.18.1/npm 10.8.2 measurement of the v27.45.1 graph.
+
 # v27.45.0 — Production Calendar Foundation
 - Adds Production Calendar as a separate work-norm domain between the base schedule and future compensation rules; it does not create absences and does not mutate factual `DayEntry` shifts.
 - Adds Flyway `V49__production_calendar_foundation.sql` with layered date rules: reserved `BASE` source plus owner-editable `LOCAL_OVERRIDE`, where local wins for the same date.

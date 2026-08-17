@@ -5,7 +5,7 @@ Status: v27.43.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.45.0 adds Production Calendar Foundation: inventory is 166 Java test classes / 797 @Test methods / 48 Chromium Playwright scenarios / 73 Vitest cases. OpenAPI advances to 129/135 (`6e23a5b4b53f`) and Flyway to V49. New service/contract tests lock independent norm/payroll effects, transferred workday norm, accounting-period mutation locks, WorkNorm single-source conversion and Payroll/Vue/OpenAPI integration. Exact Node 20.18.1/npm 10.8.2 frontend, Java 17 Maven/JaCoCo, Chromium and clean-PostgreSQL staging acceptance remain canonical gates.
+Current extension: v27.45.1 adds Native Workday / Day Truth Integration: inventory is 166 Java test classes / 799 @Test methods / 48 Chromium Playwright scenarios / 73 Vitest cases. OpenAPI advances to 130/136 (`e78a6253744d`) and Flyway remains V49. New service/contract coverage proves Production Calendar required minutes are canonical in Time Compensation, Workday Truth joins base norm + required norm + explicit actual work, Calendar owns native special-day/factual-work actions, and Payroll is summary-only for Production Calendar. Exact Node 20.18.1/npm 10.8.2 frontend, Java 17 Maven/JaCoCo, Chromium and clean-PostgreSQL staging acceptance remain canonical gates.
 
 
 

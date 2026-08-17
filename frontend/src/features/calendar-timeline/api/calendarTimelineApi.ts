@@ -28,6 +28,27 @@ export const calendarTimelineApi = Object.freeze({
   async deleteLayerOverride(id: number, date: string): Promise<void> {
     await client.request("deleteCalendarLayerOverride", { path: { id, date } });
   },
+  async workdayTruth(date: string): Promise<DutyLogApiSchemas.WorkdayTruth> {
+    return await client.request("workdayTruth", { path: { date } });
+  },
+  async productionCalendarMonth(month: string): Promise<DutyLogApiSchemas.ProductionCalendarMonth> {
+    return await client.request("productionCalendarMonth", { path: { month } });
+  },
+  async saveProductionDay(date: string, body: DutyLogApiSchemas.ProductionCalendarDayInput): Promise<DutyLogApiSchemas.ProductionCalendarDay> {
+    return await client.request("upsertProductionCalendarDay", { path: { date }, body });
+  },
+  async deleteProductionDay(date: string): Promise<void> {
+    await client.request("deleteProductionCalendarDayOverride", { path: { date } });
+  },
+  async createActualWork(body: DutyLogApiSchemas.ActualWorkIntervalInput): Promise<DutyLogApiSchemas.ActualWorkInterval> {
+    return await client.request("createActualWorkInterval", { body });
+  },
+  async updateActualWork(id: number, body: DutyLogApiSchemas.ActualWorkIntervalInput): Promise<DutyLogApiSchemas.ActualWorkInterval> {
+    return await client.request("updateActualWorkInterval", { path: { id }, body });
+  },
+  async deleteActualWork(id: number): Promise<void> {
+    await client.request("deleteActualWorkInterval", { path: { id } });
+  },
   async listScheduleTemplates(): Promise<DutyLogApiSchemas.ScheduleTemplate[]> {
     return (await client.request("listScheduleTemplates")) ?? [];
   },

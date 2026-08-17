@@ -2595,6 +2595,24 @@ public final class Dtos {
             List<ProductionCalendarDayDto> days
     ) {}
 
+    /** Native per-date truth used by Calendar/Today as the human command surface. */
+    public record WorkdayTruthDto(
+            String date,
+            String shiftName,
+            String scheduledStartTime,
+            String scheduledEndTime,
+            int baseNormMinutes,
+            int requiredNormMinutes,
+            ProductionCalendarDayDto productionCalendar,
+            boolean explicitActual,
+            int actualMinutes,
+            int absenceMinutes,
+            int overtimeEarnedMinutes,
+            int overtimeUsedMinutes,
+            String factLabel,
+            List<ActualWorkIntervalDto> actualWork
+    ) {}
+
     /** Per-user money settings. All values are stored in minor currency units. */
     public record PayrollSettingsDto(
             String currencyCode,

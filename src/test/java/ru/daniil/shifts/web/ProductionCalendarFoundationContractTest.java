@@ -21,7 +21,10 @@ class ProductionCalendarFoundationContractTest {
         String payroll = source("src/main/java/ru/daniil/shifts/service/PayrollService.java");
         String time = source("src/main/java/ru/daniil/shifts/service/TimeCompensationService.java");
         String component = source("frontend/src/features/payroll/components/PayrollWorkspace.vue");
-        String api = source("frontend/src/features/payroll/api/payrollApi.ts");
+        String dayPanel = source("frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue");
+        String calendarPage = source("frontend/src/features/calendar-timeline/components/CalendarPage.vue");
+        String workday = source("src/main/java/ru/daniil/shifts/service/WorkdayTruthService.java");
+        String api = source("frontend/src/features/calendar-timeline/api/calendarTimelineApi.ts");
         String openapi = resource("/static/openapi/dutylog-v1.yaml");
 
         assertTrue(migration.contains("layer IN ('BASE', 'LOCAL_OVERRIDE')"));
@@ -33,21 +36,28 @@ class ProductionCalendarFoundationContractTest {
         assertTrue(service.contains("periodLocks.assertOpen(user, date)"));
         assertTrue(service.contains("productionMinutes - baseMinutes"));
         assertTrue(norm.contains("basePlannedMinutes"));
-        assertTrue(time.contains("workNorm.basePlannedMinutes"));
+        assertTrue(time.contains("productionCalendar.requiredMinutes(user, date"));
         assertFalse(time.contains("private int plannedMinutes(DayEntry entry)"));
 
         assertTrue(controller.contains("/api/v1/production-calendar"));
         assertTrue(controller.contains("CacheControl.noStore()"));
         assertTrue(payroll.contains("ProductionCalendarMonthDto productionCalendarMonth"));
         assertTrue(component.contains("data-production-calendar-foundation"));
-        assertTrue(component.contains("productionNormMinutes"));
-        assertTrue(component.contains("productionPayrollEffect"));
-        assertTrue(component.contains("requestErrorMessage(caught)"));
+        assertTrue(component.contains("data-production-calendar-summary-only"));
+        assertFalse(component.contains("productionCalendarForm"));
+        assertTrue(dayPanel.contains("data-native-workday-truth"));
+        assertTrue(dayPanel.contains("data-native-special-day-editor"));
+        assertTrue(dayPanel.contains("data-native-actual-work-editor"));
+        assertTrue(calendarPage.contains("data-production-calendar-day"));
+        assertTrue(workday.contains("class WorkdayTruthService"));
+        assertTrue(api.contains("workdayTruth"));
         assertTrue(api.contains("upsertProductionCalendarDay"));
-        assertTrue(api.contains("deleteProductionCalendarDayOverride"));
+        assertTrue(api.contains("createActualWorkInterval"));
 
         assertTrue(openapi.contains("/api/v1/production-calendar/months/{month}:"));
         assertTrue(openapi.contains("ProductionCalendarMonth:"));
+        assertTrue(openapi.contains("/api/v1/workdays/{date}:"));
+        assertTrue(openapi.contains("WorkdayTruth:"));
         assertTrue(openapi.contains("scheduleEffect:"));
         assertTrue(openapi.contains("payrollEffect:"));
     }

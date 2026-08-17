@@ -861,6 +861,21 @@ paths:
         '204': { description: Local production-calendar override removed }
         '409': { $ref: '#/components/responses/ApiError' }
 
+  /api/v1/workdays/{date}:
+    get:
+      operationId: workdayTruth
+      description: Native per-date truth joining schedule, required production norm, explicit fact and derived absence/overtime read models.
+      parameters:
+        - { in: path, name: date, required: true, schema: { type: string, format: date } }
+      responses:
+        '200':
+          description: Native workday truth
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/WorkdayTruth' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+
   /api/v1/actual-work:
     get:
       operationId: listActualWorkIntervals
@@ -1967,6 +1982,24 @@ components:
         scheduleCoverageDays: { type: integer, minimum: 0 }
         scheduleCoverageComplete: { type: boolean }
         days: { type: array, items: { $ref: '#/components/schemas/ProductionCalendarDay' } }
+    WorkdayTruth:
+      type: object
+      required: [date, baseNormMinutes, requiredNormMinutes, productionCalendar, explicitActual, actualMinutes, absenceMinutes, overtimeEarnedMinutes, overtimeUsedMinutes, factLabel, actualWork]
+      properties:
+        date: { type: string, format: date }
+        shiftName: { type: string, nullable: true }
+        scheduledStartTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$', nullable: true }
+        scheduledEndTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$', nullable: true }
+        baseNormMinutes: { type: integer, minimum: 0 }
+        requiredNormMinutes: { type: integer, minimum: 0 }
+        productionCalendar: { $ref: '#/components/schemas/ProductionCalendarDay' }
+        explicitActual: { type: boolean }
+        actualMinutes: { type: integer, minimum: 0 }
+        absenceMinutes: { type: integer, minimum: 0 }
+        overtimeEarnedMinutes: { type: integer, minimum: 0 }
+        overtimeUsedMinutes: { type: integer, minimum: 0 }
+        factLabel: { type: string }
+        actualWork: { type: array, items: { $ref: '#/components/schemas/ActualWorkInterval' } }
     PayrollSettingsInput:
       type: object
       required: [currencyCode, hourlyRateMinor]

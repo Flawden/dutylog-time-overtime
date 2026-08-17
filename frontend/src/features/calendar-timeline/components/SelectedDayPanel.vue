@@ -8,8 +8,10 @@ import { calendarTimelineApi } from "../api/calendarTimelineApi";
 import { useCalendarTimelineStore } from "../stores/calendarTimelineStore";
 import type { CalendarDaySection } from "../types/domain";
 import { dateLabel, dayFacts, timePart } from "../types/model";
+import NativeWorkdayCard from "./NativeWorkdayCard.vue";
 
 const props = defineProps<{ bridge: LegacyBridge }>();
+const emit = defineEmits<{ dayTruthChanged: [] }>();
 const shell = useShellStore();
 const store = useCalendarTimelineStore();
 const { language, modules, modulesLoaded } = storeToRefs(shell);
@@ -116,6 +118,14 @@ const shiftProjection = computed(() => {
     duration,
   };
 });
+
+async function refreshNativeWorkday(): Promise<void> {
+  await store.refresh();
+  emit("dayTruthChanged");
+}
+function openNativeWorkdaySection(section: "shift"): void {
+  openRequestedSection(section);
+}
 
 async function refreshAfterDayWrite(message: string, queued: boolean): Promise<void> {
   await store.refresh();
@@ -279,6 +289,13 @@ onBeforeUnmount(() => { document.body.classList.remove("panel-open"); });
       <div><div id="pWeekday" class="eyebrow">{{ panelWeekday }}</div><div id="pDate" class="d">{{ panelDate }}</div></div>
       <button id="pClose" type="button" class="close" aria-label="Закрыть" @click="store.closeDayPanel()">×</button>
     </header>
+
+    <NativeWorkdayCard
+      :date="focusDate"
+      :overtime-enabled="moduleEnabled('overtime')"
+      @refresh="refreshNativeWorkday"
+      @open-section="openNativeWorkdaySection"
+    />
 
     <details id="accShift" class="acc dayPanelModule" data-day-module="shifts" :open="isOpen('accShift')" @toggle="toggleSection('accShift', $event)">
       <summary><span class="accT">Смена</span><span id="sumShift" class="accS">{{ shiftSummary }}</span></summary>

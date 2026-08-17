@@ -1,6 +1,19 @@
 # DutyLog release checklist
 
-Status: v27.45.0.
+Status: v27.45.1.
+
+## v27.45.1 — Native Workday / Day Truth Integration acceptance
+
+- [x] Workday Truth joins base schedule, production-required norm, explicit actual work, absences and existing overtime/time-bank movements without a second persistence model.
+- [x] Time Compensation and Payroll source use Production Calendar required minutes as the canonical obligation for the date.
+- [x] Calendar selected-day surface opens shift, factual work, absence and special-day actions with the date already selected.
+- [x] Production Calendar special days are visible in Month/Week/Day and normal editing no longer lives in Payroll.
+- [x] Payroll retains explainable monthly base→production norm summary only.
+- [x] Explicit actual work is stored through existing Actual Work APIs; automatic Overtime credit posting is intentionally deferred until duplicate/manual-credit reconciliation is designed.
+- [x] Source baselines: OpenAPI 130/136 (`e78a6253744d`), Flyway V49, Java 799/166, Playwright 48, Vitest 73.
+- [x] Browser ceilings remain 875000 B raw / 250000 B gzip pending exact Node 20 measurement.
+- [ ] Exact Node 20 frontend gate, Java 17 Maven/JaCoCo, release-check, Chromium 48/48, immutable image/clean PostgreSQL V49 and staging UX smoke pass.
+
 
 ## v27.45.0 — Production Calendar Foundation acceptance
 
@@ -12,8 +25,8 @@ Status: v27.45.0.
 - [x] Payroll workspace exposes the Production Calendar summary/editor while the v27.28 money formula remains unchanged.
 - [x] Source baselines: OpenAPI 129/135 (`6e23a5b4b53f`), Flyway V49, Java 797/166, Playwright 48, Vitest 73.
 - [x] First exact Node 20.18.1/npm 10.8.2 run passed delivery/OpenAPI/typecheck/Vitest/Vite and measured 869227 B raw; only the total raw ceiling is rebaselined 855000 -> 875000, gzip/per-chunk ceilings unchanged.
-- [ ] Rerun the exact Node 20.18.1/npm 10.8.2 frontend gate against the measured 875000 B raw ceiling.
-- [ ] Java 17 `mvn clean verify`, release-check, Chromium 48/48, immutable image/clean PostgreSQL V49 and staging smoke pass.
+- [x] Rerun exact Node 20.18.1/npm 10.8.2 frontend gate against the measured 875000 B raw ceiling.
+- [x] Java 17 `mvn clean verify`, release-check, Chromium 48/48, immutable image/clean PostgreSQL V49 and staging smoke pass.
 
 
 ## v27.44.3 — People Profile Coverage Semantics Hotfix acceptance

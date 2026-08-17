@@ -334,3 +334,9 @@
 .sharedAvailabilityMonthFooter b{color:var(--text)}
 .sharedAvailabilityMonthFooter .sharedWorkMonthCount i{width:9px;height:9px;border-radius:999px;background:var(--shared-work-color);box-shadow:0 0 0 3px color-mix(in srgb,var(--shared-work-color) 14%,transparent)}
 @media (max-width:640px){.sharedAvailabilityMonthFooter{align-items:flex-start;display:grid;gap:6px}}
+
+/* v27.45.1 Native Workday / Production Calendar markers */
+.vue-calendar-view .cell.hasProductionRule{box-shadow:inset 0 -3px 0 color-mix(in srgb,#8a7dff 72%,transparent)}
+.productionDayMark{position:absolute;left:7px;bottom:6px;z-index:5;max-width:calc(100% - 14px);padding:2px 6px;border-radius:999px;background:color-mix(in srgb,#8a7dff 18%,var(--surface,#151922));border:1px solid color-mix(in srgb,#8a7dff 55%,transparent);font-size:.64rem;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:inherit}
+.calendarWeekProductionBadge,.calendarDayProductionBadge{display:inline-flex;align-items:center;width:max-content;max-width:100%;padding:2px 7px;border-radius:999px;border:1px solid color-mix(in srgb,#8a7dff 55%,transparent);background:color-mix(in srgb,#8a7dff 14%,transparent);font-size:.7rem;line-height:1.35}
+.calendarWeekDay.hasProductionRule{box-shadow:inset 0 -3px 0 color-mix(in srgb,#8a7dff 72%,transparent)}

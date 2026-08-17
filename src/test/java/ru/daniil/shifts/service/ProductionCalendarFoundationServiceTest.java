@@ -7,6 +7,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.ProductionCalendarDayUpdateRequest;
 import ru.daniil.shifts.dto.Dtos.ProductionCalendarMonthDto;
+import ru.daniil.shifts.dto.Dtos.ActualWorkIntervalRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.ShiftType;
@@ -27,6 +28,9 @@ class ProductionCalendarFoundationServiceTest {
     @Autowired ShiftTypeRepository shifts;
     @Autowired DayEntryRepository dayEntries;
     @Autowired ProductionCalendarService productionCalendar;
+    @Autowired TimeCompensationService timeCompensation;
+    @Autowired WorkdayTruthService workdayTruth;
+    @Autowired ActualWorkService actualWork;
     @Autowired LedgerIntegrityService ledgerIntegrity;
 
     AppUser owner;
@@ -88,6 +92,34 @@ class ProductionCalendarFoundationServiceTest {
         ProductionCalendarMonthDto restored = productionCalendar.month(owner, "2026-08");
         assertEquals(0, restored.productionNormMinutes());
         assertEquals(0, restored.affectedDays());
+    }
+
+    @Test
+    void shortenedDayBecomesCanonicalRequiredMinutesForTimeCompensation() {
+        assign("2026-08-19", day);
+        productionCalendar.upsertLocal(owner, "2026-08-19",
+                new ProductionCalendarDayUpdateRequest("SHORTENED_DAY", "NORM_OVERRIDE", 420, "NONE", "Предпраздничный"));
+
+        var summary = timeCompensation.summary(owner, LocalDate.parse("2026-08-19"), LocalDate.parse("2026-08-19"));
+        var row = summary.days().get(0);
+        assertEquals(420, row.plannedMinutes());
+        assertEquals(420, row.workedMinutes());
+        assertEquals("PLAN_DERIVED", row.actualSource());
+    }
+
+    @Test
+    void workdayTruthJoinsBaseNormRequiredNormAndExplicitReality() {
+        assign("2026-08-20", day);
+        productionCalendar.upsertLocal(owner, "2026-08-20",
+                new ProductionCalendarDayUpdateRequest("SHORTENED_DAY", "NORM_OVERRIDE", 420, "NONE", "Сокращённый"));
+        actualWork.create(owner, new ActualWorkIntervalRequest("2026-08-20", "08:00", "16:00", "Фактически работал"));
+
+        var truth = workdayTruth.truth(owner, LocalDate.parse("2026-08-20"));
+        assertEquals(480, truth.baseNormMinutes());
+        assertEquals(420, truth.requiredNormMinutes());
+        assertTrue(truth.explicitActual());
+        assertEquals(480, truth.actualMinutes());
+        assertEquals(1, truth.actualWork().size());
     }
 
     @Test

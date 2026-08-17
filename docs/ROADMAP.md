@@ -1,27 +1,49 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.45.0 — Production Calendar Foundation**.
+Current release: **v27.45.1 — Native Workday / Day Truth Integration**.
 
 
-## v27.45.0 — Production Calendar Foundation
+## Product north star
 
-- [x] Model Production Calendar as a separate domain between base schedule norm and future compensation rules.
-- [x] Keep schedule/norm effect independent from payroll classification.
-- [x] Add layered `BASE` + owner `LOCAL_OVERRIDE` date rules and Flyway V49.
-- [x] Compute base norm, production norm and explainable monthly adjustments without inventing a universal workday length.
+> **The user describes reality. DutyLog derives the consequences.**
+
+Calendar / Today are the normal command surfaces. Overtime, Time Bank, Production Calendar, Payroll and other domains remain authoritative internal/read-audit modules, but one real-world event must not be entered repeatedly across screens. Complexity is progressively disclosed; minimum setup must remain useful and every derived result must be explainable.
+
+## v27.45.1 — Native Workday / Day Truth Integration
+
+- [x] Add a single owner-scoped Workday Truth read model joining base schedule, production-required norm, explicit factual work, absences and existing overtime/time-bank movements.
+- [x] Make Production Calendar required minutes canonical for Time Compensation and Payroll source projections.
+- [x] Add one selected-day native card with context-preserving actions: shift, factual work, absence and special day.
+- [x] Move normal Production Calendar editing to Calendar and make Payroll a monthly norm summary rather than a duplicate editor.
+- [x] Mark Production Calendar special dates directly in Month/Week/Day calendar views.
+- [x] Preserve independent norm and schedule-time truths; no implicit shift-time rewrite from a shortened-day rule.
+- [x] Reuse Actual Work as explicit fact and surface unresolved fact-vs-obligation deltas without automatically creating duplicate overtime credits yet.
+- [x] Source baselines: OpenAPI 130/136 (`e78a6253744d`), Flyway V49, Java 799/166, Playwright 48, Vitest 73.
+- [ ] Exact Node 20 frontend gate, Maven/JaCoCo, release-check, Chromium, clean PostgreSQL V49 and staging UX acceptance.
+
+## Accepted foundation
+
+### v27.45.0 — Production Calendar Foundation
+
+- [x] Separate Production Calendar from Absence and factual schedule storage.
+- [x] Keep required-norm effect independent from future payroll classification.
+- [x] Add layered `BASE` + `LOCAL_OVERRIDE` date rules and Flyway V49.
+- [x] Compute base norm, production norm and explainable monthly adjustments without a universal workday length.
 - [x] Expose owner-scoped month/update/delete API and generated OpenAPI 129/135 contract.
-- [x] Show Production Calendar summary and local editor in Payroll while leaving the money formula unchanged.
-- [ ] Exact Node 20, Maven/release-check, Chromium, clean PostgreSQL V49 and staging acceptance.
+- [x] Canonical Node 20, Maven/release-check, Chromium, immutable image, clean PostgreSQL V49 and staging smoke accepted.
+- [x] Diagnostic UI proved the domain but also proved that everyday rule editing belongs in Calendar rather than Payroll.
 
-## Core roadmap after Production Calendar
+## Core roadmap after Day Truth
 
-1. **v27.46.0 — Payroll Core**: salary/rate history, production-norm denominator, regular/night/overtime/holiday categories and explainable monthly money breakdown.
-2. **v27.47.0 — Vacation Entitlement & Balance**: entitlement/accrual/carry-over/used/planned/available balance, separate from vacation pay.
-3. **v27.48.0 — Vacation Pay**: versioned jurisdiction calculation period, eligible earnings and average-pay breakdown.
-4. **v27.49.0 — Sick Leave Calculation**: versioned jurisdiction rules, service-time factors, limits and payer-day structure after official-rule research.
-5. **v27.50.0 — Versioned Compensation Rule Set**: jurisdiction + rule-set version + effective date with immutable historical calculation provenance.
-6. **v27.51.0 — Formula Studio**: compose validated domain outputs; mandatory legal algorithms remain owned by rule sets.
-
+1. **v27.45.2 — Native Overtime Derivation**: derive candidate overtime from explicit actual work vs required obligation, prevent duplicate/manual-credit collisions, explain/post the resulting bank movement once.
+2. **v27.46.x — Compensation Setup & Payroll Core**: simple hourly mode or salary mode first; then salary/rate history, production-norm denominator, regular/night/overtime/holiday categories and explainable monthly money breakdown.
+3. **Vacation Entitlement & Balance**: entitlement/accrual/carry-over/used/planned/available balance, separate from vacation pay.
+4. **Vacation Pay**: versioned jurisdiction calculation period, eligible earnings and average-pay breakdown.
+5. **Sick Leave Calculation**: versioned jurisdiction rules after official-source research.
+6. **Versioned Compensation Rule Set**: jurisdiction + rule-set version + effective date with immutable historical calculation provenance.
+7. **Formula Studio**: compose validated domain outputs; mandatory legal algorithms remain owned by rule sets.
+8. **Reports & Statistics**: salary/vacation/overtime/workload history derived from the same Day Truth without duplicate data entry.
+9. **Product Polish → Feature Freeze → v1.0**: Calendar/Today ergonomics, progressive disclosure, mobile-first UX, accessibility, performance, offline, onboarding, explainability and full regression acceptance.
 
 ## v27.43.0 — People Profiles: Managed Schedule Overrides
 

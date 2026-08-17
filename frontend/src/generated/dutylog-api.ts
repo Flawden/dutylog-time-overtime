@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 6e23a5b4b53fcc962a23b91521287959ecf8dc591111bf31582188ecbf9b14ff
+ * SHA-256: e78a6253744df51e7cf373a70ffb4631785219bb24f8070575cecd9e33ab8739
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 129 operations, 135 schemas
+ * Contract: 130 operations, 136 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "6e23a5b4b53fcc962a23b91521287959ecf8dc591111bf31582188ecbf9b14ff";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "e78a6253744df51e7cf373a70ffb4631785219bb24f8070575cecd9e33ab8739";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -1505,6 +1505,23 @@ export namespace DutyLogApiSchemas {
     timeOffPlannedMinutes?: number;
     timeOffRemainingMinutes?: number;
   };
+
+  export type WorkdayTruth = {
+    date: string;
+    shiftName?: string | null;
+    scheduledStartTime?: string | null;
+    scheduledEndTime?: string | null;
+    baseNormMinutes: number;
+    requiredNormMinutes: number;
+    productionCalendar: DutyLogApiSchemas.ProductionCalendarDay;
+    explicitActual: boolean;
+    actualMinutes: number;
+    absenceMinutes: number;
+    overtimeEarnedMinutes: number;
+    overtimeUsedMinutes: number;
+    factLabel: string;
+    actualWork: Array<DutyLogApiSchemas.ActualWorkInterval>;
+  };
 }
 
 export const dutyLogOperations = {
@@ -1637,6 +1654,7 @@ export const dutyLogOperations = {
   "upsertCalendarLayerOverride": { method: "PUT", path: "/api/v1/calendar-layers/{id}/overrides/{date}" },
   "upsertDay": { method: "PUT", path: "/api/v1/days/{date}" },
   "upsertProductionCalendarDay": { method: "PUT", path: "/api/v1/production-calendar/days/{date}" },
+  "workdayTruth": { method: "GET", path: "/api/v1/workdays/{date}" },
 } as const;
 
 export type DutyLogOperationId = keyof typeof dutyLogOperations;
@@ -2163,6 +2181,10 @@ export interface DutyLogOperationTypes {
   "upsertProductionCalendarDay": {
     requestBody: DutyLogApiSchemas.ProductionCalendarDayInput;
     response: DutyLogApiSchemas.ProductionCalendarDay;
+  };
+  "workdayTruth": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.WorkdayTruth;
   };
 }
 
