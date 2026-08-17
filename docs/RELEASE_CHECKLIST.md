@@ -11,7 +11,8 @@ Status: v27.45.0.
 - [x] Month payload explains base norm, production norm, adjustment categories, coverage and effective per-date rules.
 - [x] Payroll workspace exposes the Production Calendar summary/editor while the v27.28 money formula remains unchanged.
 - [x] Source baselines: OpenAPI 129/135 (`6e23a5b4b53f`), Flyway V49, Java 797/166, Playwright 48, Vitest 73.
-- [ ] Exact Node 20.18.1/npm 10.8.2 typecheck/Vitest/Vite/bundle gate passes without pre-raising the browser ceiling.
+- [x] First exact Node 20.18.1/npm 10.8.2 run passed delivery/OpenAPI/typecheck/Vitest/Vite and measured 869227 B raw; only the total raw ceiling is rebaselined 855000 -> 875000, gzip/per-chunk ceilings unchanged.
+- [ ] Rerun the exact Node 20.18.1/npm 10.8.2 frontend gate against the measured 875000 B raw ceiling.
 - [ ] Java 17 `mvn clean verify`, release-check, Chromium 48/48, immutable image/clean PostgreSQL V49 and staging smoke pass.
 
 

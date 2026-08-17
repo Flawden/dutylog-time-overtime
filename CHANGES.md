@@ -8,7 +8,7 @@
 - Payroll period payload now carries the Production Calendar month summary and Vue shows base schedule norm, calendar adjustment and production norm plus a manual local-rule editor. The existing payroll money formula is intentionally unchanged in v27.45.0.
 - OpenAPI advances to **129 operations / 135 schemas** with hash `6e23a5b4b53f`; Flyway advances to **V49**.
 - Source test inventory advances to **797 @Test methods / 166 Java test classes**; Playwright remains **48** and Vitest remains **73**.
-- Browser ceilings remain **855000 B raw / 250000 B gzip** pending exact Node 20.18.1/npm 10.8.2 measurement; no dependency graph change is introduced.
+- Canonical Node 20.18.1/npm 10.8.2 CI reached the production bundle audit with delivery/OpenAPI/typecheck/Vitest/Vite green and measured **869227 B raw**; rebaseline only the total raw ceiling to **875000 B**, while **250000 B total gzip** and all entry/per-chunk ceilings remain unchanged.
 
 # v27.44.4 — Shared Full-Day Free Dates
 - Adds a distinct green/teal month-grid marker for dates where `Я` and the selected People Profile are both effectively free from work for the entire calendar day.

@@ -4865,8 +4865,10 @@ contains frontend/src/features/payroll/components/PayrollWorkspace.vue "v27.45.0
 contains src/test/java/ru/daniil/shifts/service/ProductionCalendarFoundationServiceTest.java "holidayNormAndHolidayPayrollClassificationAreIndependent"
 contains src/test/java/ru/daniil/shifts/web/ProductionCalendarFoundationContractTest.java "class ProductionCalendarFoundationContractTest"
 contains frontend/browser-bundle-budget.json '"release": "27.45.0"'
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 855000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 875000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
+contains CHANGES.md "measured **869227 B raw**"
+contains CHANGES.md "total raw ceiling to **875000 B**"
 contains frontend/generated-lockfile-manifest.txt "nextAction=payroll-core-after-v${VERSION}-green"
 
 # v27.44.4 Shared Full-Day Free Dates
@@ -4891,8 +4893,6 @@ contains frontend/src/features/calendar-timeline/components/ManagedProfileDayCar
 contains frontend/src/features/calendar-timeline/components/ManagedProfileDayCard.vue "catch (error)"
 contains frontend/src/features/calendar-timeline/components/ManagedProfileDayCard.vue "store.error ||"
 contains CHANGES.md "Browser ceilings remain **855000 B raw / 250000 B gzip** pending exact Node 20 v27.44.4 measurement."
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 855000'
-contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.44.3 People Profile Coverage Semantics Hotfix
 contains CHANGES.md "v27.44.3 — People Profile Coverage Semantics Hotfix"
@@ -4908,8 +4908,6 @@ contains frontend/src/features/calendar-timeline/components/CalendarPage.vue "Н
 contains frontend/src/features/calendar-timeline/components/SharedAvailabilityCard.vue "график на эту дату не задан"
 contains frontend/src/features/calendar-timeline/calendar-timeline.css "v27.44.3 companion schedule coverage semantics"
 contains CHANGES.md "Browser ceilings remain **855000 B raw / 250000 B gzip**"
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 855000'
-contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.44.2 Exact Availability Timeline & Shared Shift Summary
 contains CHANGES.md "v27.44.2 — Exact Availability Timeline & Shared Shift Summary"

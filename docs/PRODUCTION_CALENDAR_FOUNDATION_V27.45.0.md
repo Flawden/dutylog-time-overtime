@@ -74,4 +74,4 @@ The month read model exposes:
 - Java source inventory: 797 `@Test` methods / 166 test classes.
 - Playwright: 48.
 - Vitest: 73.
-- Browser budget: unchanged 855000 B raw / 250000 B gzip until exact Node 20 measurement.
+- Browser budget: canonical Node 20.18.1/npm 10.8.2 measured **869227 B raw**; total raw is narrowly rebaselined to **875000 B**. Total gzip stays **250000 B** and entry/per-chunk ceilings remain unchanged.

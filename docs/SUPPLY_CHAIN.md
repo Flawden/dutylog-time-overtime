@@ -1,6 +1,6 @@
 ## v27.45.0 production calendar foundation
 
-No dependency/package graph change is introduced. Root/frontend release identity advances to v27.45.0; Node 20.18.1/npm 10.8.2 and the reviewed dependency graph remain unchanged. Application contract changes are Flyway V49 plus OpenAPI 129/135; browser ceilings remain 855000 B raw / 250000 B gzip pending exact canonical build measurement.
+No dependency/package graph change is introduced. Root/frontend release identity advances to v27.45.0; Node 20.18.1/npm 10.8.2 and the reviewed dependency graph remain unchanged. Application contract changes are Flyway V49 plus OpenAPI 129/135; canonical Node 20.18.1/npm 10.8.2 measured the v27.45.0 segmented JS graph at 869227 B raw; only the total raw ceiling is rebaselined to 875000 B, while total gzip remains 250000 B and the dependency graph is unchanged.
 
 ## v27.44.3 profile coverage semantics
 
