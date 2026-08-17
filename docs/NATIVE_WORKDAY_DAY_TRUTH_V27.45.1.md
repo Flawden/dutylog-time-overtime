@@ -71,11 +71,17 @@ The selected day owns direct `Удалить факт` and `Сбросить о�
 
 A shortened day may establish a 7-hour required norm without specifying whether the actual shift ends earlier, starts later or is otherwise adjusted. Schedule-time override remains a separate truth. Future per-date work-time UX may coordinate both from one user action while keeping their persistence semantics separate.
 
+## Cross-midnight fact and derived-credit ownership
+
+A factual interval may now finish on another calendar date. The day surface keeps the start date from the opened context and reveals an optional end-date control only when needed; end-before-start without an explicit date keeps the convenient next-day inference. The backend stores `endDate` and limits the interval to 48 hours.
+
+The source fact is not duplicated at midnight. Instead, `ActualWorkDayAllocationService` splits net minutes by calendar date for Day Truth, Time Compensation, Payroll source and Overtime reconciliation. Unpaid break is consumed from the earliest clock minutes, consistent with the existing calculated-overtime splitter. Derived `SYSTEM_ACTUAL_WORK` credits expose `sourceKind` and `editable=false`; Overtime shows them as automatic and routes back to the calendar day.
+
 ## Acceptance baseline
 
-- OpenAPI: 130 operations / 136 schemas, `bb672251a454`.
+- OpenAPI: 130 operations / 136 schemas, `34d257319830`.
 - Flyway: V50.
-- Java source inventory: 804 `@Test` methods / 167 test classes.
+- Java source inventory: 808 `@Test` methods / 167 test classes.
 - Playwright: 48.
 - Vitest: 73.
 - Browser budget: canonical Node 20.18.1/npm 10.8.2 measured **881901 B raw** after delivery/OpenAPI/typecheck/Vitest/Vite passed; total raw is narrowly rebaselined **875000 → 890000 B**. Total gzip stays **250000 B** and entry/per-chunk ceilings remain unchanged.

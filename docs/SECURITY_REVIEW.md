@@ -2,7 +2,7 @@
 
 `GET /api/v1/workdays/{date}` is authenticated, owner-derived from the principal, Shifts-module gated and `no-store`; the request accepts no user id and creates no mutation path. Native Calendar actions reuse existing Production Calendar, Actual Work and Absence authorities, so owner/module, accounting-period, overlap and ledger-integrity checks remain authoritative. V50 tags derived overtime as `SYSTEM_ACTUAL_WORK`; manual edit/delete of that projection is rejected, reconciliation is date/owner scoped, a partial unique index prevents duplicate system credits, and shrinking/deleting already-consumed derived credit fails closed before FIFO integrity can be corrupted. Holiday work does not silently enter the ordinary bank. No dependency, credential, role or cross-account sharing change is introduced.
 
-Status: v27.45.1.
+Status: v27.45.1. SYSTEM_ACTUAL_WORK rows are non-editable projections in the client and remain mutation-guarded by the backend; cross-date Actual Work is still owner-scoped and accounting-period locked across its full start/end range.
 
 # v27.45.0 Production Calendar Foundation review
 

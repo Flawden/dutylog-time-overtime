@@ -299,6 +299,10 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
     editCredit(id: number): void {
       const row = this.account?.credits.find(item => Number(item.id) === Number(id));
       if (!row) return;
+      if (row.editable === false || row.sourceKind === "SYSTEM_ACTUAL_WORK") {
+        this.conflict = "Автоматическая переработка меняется через фактическую работу календарного дня.";
+        return;
+      }
       this.creditDraft = creditDraftFromRow(row);
       this.creditPreview = null;
       this.creditModalOpen = true;
@@ -367,6 +371,11 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
       }
     },
     async deleteCredit(id: number): Promise<void> {
+      const row = this.account?.credits.find(item => Number(item.id) === Number(id));
+      if (row && (row.editable === false || row.sourceKind === "SYSTEM_ACTUAL_WORK")) {
+        this.conflict = "Автоматическая переработка удаляется вместе с исходным фактом в календаре.";
+        return;
+      }
       if (this.mutationPending || !globalThis.confirm("Удалить начисление переработки?")) return;
       this.mutationPending = true;
       this.error = "";

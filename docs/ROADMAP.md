@@ -20,7 +20,8 @@ Calendar / Today are the normal command surfaces. Overtime, Time Bank, Productio
 - [x] Reuse Actual Work as explicit fact with an editable unpaid break inherited from the dated shift for the first fact.
 - [x] Reconcile ordinary fact-vs-required overtime into one provenance-tagged FIFO Time Bank credit; edit/delete updates the same projection, manual same-day data is not duplicated, used derived credit fails closed, and holiday work remains separately classified.
 - [x] Keep mistake recovery in the day itself (`Удалить факт`, `Сбросить особый день`) and remove the duplicated shift diagnostic projection from normal UI.
-- [x] Source baselines: OpenAPI 130/136 (`bb672251a454`), Flyway V50, Java 804/167, Playwright 48, Vitest 73.
+- [x] Source baselines: OpenAPI 130/136 (`34d257319830`), Flyway V51, Java 808/167, Playwright 48, Vitest 73.
+- [x] Cross-midnight actual-work allocation and read-only SYSTEM_ACTUAL_WORK advanced surface accepted into the v27.45.1 line.
 - [ ] Exact Node 20 frontend gate, Maven/JaCoCo, release-check, Chromium, clean PostgreSQL V50 and final staging UX acceptance.
 
 ## Accepted foundation

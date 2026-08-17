@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: bb672251a4541219732ce729d7fcdcb66f7c51e5bf11a3ab1c4d9f2338e9c0ea
+ * SHA-256: 34d2573198303dd6b03f412910337e44049a2c9368f00795f6abdde900fbe882
  * Generator: frontend/scripts/generate-openapi-contract.mjs
  * Contract: 130 operations, 136 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "bb672251a4541219732ce729d7fcdcb66f7c51e5bf11a3ab1c4d9f2338e9c0ea";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "34d2573198303dd6b03f412910337e44049a2c9368f00795f6abdde900fbe882";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -181,6 +181,7 @@ export namespace DutyLogApiSchemas {
 
   export type ActualWorkIntervalInput = {
     workDate: string;
+    endDate?: string | null;
     startTime: string;
     endTime: string;
     breakMinutes?: number | null;
@@ -844,6 +845,8 @@ export namespace DutyLogApiSchemas {
     creditedDisplayEnd?: string | null;
     migratedFromLegacy: boolean;
     legacyTimezoneRequired: boolean;
+    sourceKind: "MANUAL" | "SYSTEM_ACTUAL_WORK";
+    editable: boolean;
     projection?: DutyLogApiSchemas.OvertimeDailyProjection;
   };
 

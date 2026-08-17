@@ -18,8 +18,11 @@ const payrollEffect = ref<DutyLogApiSchemas.ProductionCalendarDayInput["payrollE
 const productionLabel = ref("");
 
 const actualId = ref<number | null>(null);
+const actualWorkDate = ref("");
 const actualStart = ref("");
 const actualEnd = ref("");
+const actualEndsAnotherDay = ref(false);
+const actualEndDate = ref("");
 const actualBreakMinutes = ref("0");
 const actualNote = ref("");
 
@@ -32,6 +35,26 @@ function formatMinutes(value: number | null | undefined): string {
 
 function shortTime(value: string | null | undefined): string {
   return String(value ?? "").slice(0, 5);
+}
+
+function addDaysIso(date: string, days: number): string {
+  const value = new Date(`${date}T00:00:00Z`);
+  if (!Number.isFinite(value.getTime())) return date;
+  value.setUTCDate(value.getUTCDate() + days);
+  return value.toISOString().slice(0, 10);
+}
+
+function shortDate(value: string | null | undefined): string {
+  const text = String(value ?? "");
+  return /^\d{4}-\d{2}-\d{2}$/.test(text) ? `${text.slice(8,10)}.${text.slice(5,7)}` : text;
+}
+
+function actualIntervalLabel(item: DutyLogApiSchemas.ActualWorkInterval): string {
+  const startDate = item.workDate;
+  const endDate = item.endDate || item.workDate;
+  return startDate === endDate
+    ? `${shortTime(item.startTime)}–${shortTime(item.endTime)}`
+    : `${shortDate(startDate)} ${shortTime(item.startTime)} → ${shortDate(endDate)} ${shortTime(item.endTime)}`;
 }
 
 function errorMessage(value: unknown): string {
@@ -59,15 +82,27 @@ function clockMinutes(value: string): number | null {
   if (!match) return null;
   return Number(match[1]) * 60 + Number(match[2]);
 }
+const effectiveActualEndDate = computed(() => {
+  const start = clockMinutes(actualStart.value);
+  const end = clockMinutes(actualEnd.value);
+  const startDate = actualWorkDate.value || props.date;
+  if (actualEndsAnotherDay.value) return actualEndDate.value || addDaysIso(startDate, 1);
+  if (start != null && end != null && end <= start) return addDaysIso(startDate, 1);
+  return startDate;
+});
 const actualPreview = computed(() => {
   const start = clockMinutes(actualStart.value);
   const end = clockMinutes(actualEnd.value);
   const breakMinutes = Number(actualBreakMinutes.value);
-  if (start == null || end == null || !Number.isFinite(breakMinutes) || breakMinutes < 0) return null;
-  let elapsed = end - start;
-  if (elapsed <= 0) elapsed += 24 * 60;
+  const startDate = actualWorkDate.value || props.date;
+  const endDate = effectiveActualEndDate.value;
+  if (start == null || end == null || !Number.isFinite(breakMinutes) || breakMinutes < 0 || !startDate || !endDate) return null;
+  const startAt = new Date(`${startDate}T${actualStart.value}:00Z`);
+  const endAt = new Date(`${endDate}T${actualEnd.value}:00Z`);
+  const elapsed = Math.round((endAt.getTime() - startAt.getTime()) / 60_000);
+  if (!Number.isFinite(elapsed) || elapsed <= 0 || elapsed > 2880) return null;
   const net = elapsed - Math.round(breakMinutes);
-  return { elapsed, breakMinutes: Math.round(breakMinutes), net };
+  return { elapsed, breakMinutes: Math.round(breakMinutes), net, endDate };
 });
 const consequenceLabel = computed(() => {
   const value = truth.value;
@@ -119,11 +154,20 @@ function applyKindDefaults(): void {
 
 function resetActualEditor(item: DutyLogApiSchemas.ActualWorkInterval | null = null): void {
   actualId.value = item?.id ?? null;
+  actualWorkDate.value = item?.workDate ?? props.date;
   actualStart.value = shortTime(item?.startTime) || shortTime(truth.value?.scheduledStartTime) || "08:00";
   actualEnd.value = shortTime(item?.endTime) || shortTime(truth.value?.scheduledEndTime) || "17:00";
+  actualEndDate.value = item?.endDate ?? actualWorkDate.value;
+  actualEndsAnotherDay.value = actualEndDate.value !== actualWorkDate.value;
   const inheritedBreak = (truth.value?.actualWork.length ?? 0) === 0 ? Number(truth.value?.scheduledBreakMinutes ?? 0) : 0;
   actualBreakMinutes.value = String(item?.breakMinutes ?? inheritedBreak);
   actualNote.value = item?.note ?? "";
+}
+
+function toggleActualEndDate(): void {
+  if (actualEndsAnotherDay.value && (!actualEndDate.value || actualEndDate.value <= actualWorkDate.value)) {
+    actualEndDate.value = addDaysIso(actualWorkDate.value || props.date, 1);
+  }
 }
 
 async function load(): Promise<void> {
@@ -205,7 +249,8 @@ async function saveActual(): Promise<void> {
   error.value = "";
   try {
     const body: DutyLogApiSchemas.ActualWorkIntervalInput = {
-      workDate: props.date,
+      workDate: actualWorkDate.value || props.date,
+      endDate: preview.endDate === (actualWorkDate.value || props.date) ? null : preview.endDate,
       startTime: actualStart.value,
       endTime: actualEnd.value,
       breakMinutes: preview.breakMinutes,
@@ -336,14 +381,17 @@ onMounted(() => void load());
       <div class="nativeEditorHead"><b>Фактическая работа</b><span>Вводи реальность — расчёт использует её вместо плана.</span></div>
       <div v-if="truth?.actualWork.length" class="nativeActualList">
         <button v-for="item in truth.actualWork" :key="item.id" type="button" :class="{ active: actualId === item.id }" @click="openActual(item)">
-          <b>{{ shortTime(item.startTime) }}–{{ shortTime(item.endTime) }}</b><span>{{ formatMinutes(item.workedMinutes) }}<template v-if="item.breakMinutes"> · перерыв {{ formatMinutes(item.breakMinutes) }}</template>{{ item.note ? ` · ${item.note}` : '' }}</span>
+          <b>{{ actualIntervalLabel(item) }}</b><span>{{ formatMinutes(item.workedMinutes) }}<template v-if="item.breakMinutes"> · перерыв {{ formatMinutes(item.breakMinutes) }}</template>{{ item.note ? ` · ${item.note}` : '' }}</span>
         </button>
       </div>
       <form class="nativeActualForm" @submit.prevent="saveActual">
+        <div class="nativeActualStartDate wide" v-if="actualWorkDate !== date">Факт начался {{ actualWorkDate }} и продолжается в выбранном дне.</div>
         <label>Начало<input v-model="actualStart" type="time" required/></label>
         <label>Конец<input v-model="actualEnd" type="time" required/></label>
         <label>Неоплачиваемый перерыв, мин<input v-model="actualBreakMinutes" type="number" min="0" max="1440" step="1" inputmode="numeric"/></label>
-        <div class="nativeActualPreview wide" v-if="actualPreview">По часам {{ formatMinutes(actualPreview.elapsed) }} · перерыв {{ formatMinutes(actualPreview.breakMinutes) }} · <b>фактически {{ formatMinutes(Math.max(0, actualPreview.net)) }}</b><span v-if="actualId == null && truth?.scheduledBreakMinutes">Перерыв подставлен из смены автоматически.</span></div>
+        <label class="nativeCheck wide"><input v-model="actualEndsAnotherDay" type="checkbox" @change="toggleActualEndDate"/> Заканчивается в другой день</label>
+        <label v-if="actualEndsAnotherDay" class="wide">Дата окончания<input v-model="actualEndDate" type="date" :min="actualWorkDate || date"/></label>
+        <div class="nativeActualPreview wide" v-if="actualPreview">По часам {{ formatMinutes(actualPreview.elapsed) }} · перерыв {{ formatMinutes(actualPreview.breakMinutes) }} · <b>фактически {{ formatMinutes(Math.max(0, actualPreview.net)) }}</b><span v-if="actualPreview.endDate !== (actualWorkDate || date)">до {{ actualPreview.endDate }}</span><span v-if="!actualEndsAnotherDay && actualPreview.endDate !== (actualWorkDate || date)">Конец раньше начала — DutyLog считает окончанием следующего дня.</span><span v-if="actualId == null && truth?.scheduledBreakMinutes">Перерыв подставлен из смены автоматически.</span></div>
         <label class="wide">Причина / комментарий<input v-model="actualNote" maxlength="500" placeholder="Например: задержался по работе"/></label>
         <div class="nativeEditorActions wide">
           <button class="primary" type="submit" :disabled="loading">{{ actualId == null ? 'Записать факт' : 'Сохранить факт' }}</button>
@@ -357,5 +405,5 @@ onMounted(() => void load());
 </template>
 
 <style scoped>
-.nativeWorkdayCard{border:1px solid color-mix(in srgb,var(--accent) 24%,var(--border));border-radius:18px;padding:14px;background:color-mix(in srgb,var(--surface, #151922) 96%,var(--accent) 4%);display:grid;gap:12px}.nativeWorkdayCard header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.nativeWorkdayCard header small,.nativeTruthCell small,.nativeWorkdayConsequences small{display:block;opacity:.68;font-size:.76rem}.nativeWorkdayCard h3{margin:2px 0 0;font-size:1rem}.nativeWorkdayBusy{font-size:.78rem;opacity:.7}.nativeWorkdayError{padding:9px 10px;border-radius:10px;background:color-mix(in srgb,#e45151 15%,transparent);color:#ffb8b8}.nativeWorkdayTruthGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.nativeTruthCell{text-align:left;border:1px solid var(--border);border-radius:12px;padding:10px;background:color-mix(in srgb,var(--surface, #151922) 92%,white 2%);display:grid;gap:3px;min-width:0}.nativeTruthCell.changed{border-color:color-mix(in srgb,var(--accent) 55%,var(--border));background:color-mix(in srgb,var(--accent) 10%,var(--surface, #151922))}.nativeTruthCell b{white-space:normal}.nativeTruthCell span{font-size:.78rem;opacity:.72}.nativeWorkdayConsequences{padding:9px 10px;border-radius:11px;background:color-mix(in srgb,var(--accent) 7%,transparent);display:grid;gap:2px}.nativeWorkdayActions{display:flex;flex-wrap:wrap;gap:7px}.nativeWorkdayActions button,.nativeEditorActions button{border-radius:10px;padding:8px 10px}.nativeWorkdayActions button.active{border-color:var(--accent)}.nativeWorkdayEditor{border-top:1px solid var(--border);padding-top:12px;display:grid;gap:10px}.nativeEditorHead{display:flex;justify-content:space-between;gap:12px;align-items:center}.nativeEditorHead span,.nativeWorkdayEditor p{font-size:.78rem;opacity:.7;margin:0}.nativeWorkdayEditor label{display:grid;gap:5px;font-size:.82rem}.nativeWorkdayEditor input,.nativeWorkdayEditor select{width:100%}.nativeCheck{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center}.nativeCheck input{width:auto}.nativeEditorActions{display:flex;flex-wrap:wrap;gap:7px}.nativeActualList{display:grid;gap:6px}.nativeActualList button{text-align:left;display:flex;justify-content:space-between;gap:12px;border-radius:10px;padding:8px}.nativeActualList button.active{border-color:var(--accent)}.nativeActualForm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.nativeActualForm .wide{grid-column:1/-1}.nativeActualPreview{padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--accent) 7%,transparent);font-size:.8rem;display:flex;flex-wrap:wrap;gap:6px}.nativeActualPreview span{opacity:.68}.dangerSoft{border-color:color-mix(in srgb,#e45151 45%,var(--border))!important}@media(max-width:760px){.nativeWorkdayTruthGrid{grid-template-columns:1fr}.nativeActualForm{grid-template-columns:1fr}.nativeActualForm .wide{grid-column:auto}.nativeEditorHead{align-items:flex-start;flex-direction:column}}
+.nativeWorkdayCard{border:1px solid color-mix(in srgb,var(--accent) 24%,var(--border));border-radius:18px;padding:14px;background:color-mix(in srgb,var(--surface, #151922) 96%,var(--accent) 4%);display:grid;gap:12px}.nativeWorkdayCard header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.nativeWorkdayCard header small,.nativeTruthCell small,.nativeWorkdayConsequences small{display:block;opacity:.68;font-size:.76rem}.nativeWorkdayCard h3{margin:2px 0 0;font-size:1rem}.nativeWorkdayBusy{font-size:.78rem;opacity:.7}.nativeWorkdayError{padding:9px 10px;border-radius:10px;background:color-mix(in srgb,#e45151 15%,transparent);color:#ffb8b8}.nativeWorkdayTruthGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.nativeTruthCell{text-align:left;border:1px solid var(--border);border-radius:12px;padding:10px;background:color-mix(in srgb,var(--surface, #151922) 92%,white 2%);display:grid;gap:3px;min-width:0}.nativeTruthCell.changed{border-color:color-mix(in srgb,var(--accent) 55%,var(--border));background:color-mix(in srgb,var(--accent) 10%,var(--surface, #151922))}.nativeTruthCell b{white-space:normal}.nativeTruthCell span{font-size:.78rem;opacity:.72}.nativeWorkdayConsequences{padding:9px 10px;border-radius:11px;background:color-mix(in srgb,var(--accent) 7%,transparent);display:grid;gap:2px}.nativeWorkdayActions{display:flex;flex-wrap:wrap;gap:7px}.nativeWorkdayActions button,.nativeEditorActions button{border-radius:10px;padding:8px 10px}.nativeWorkdayActions button.active{border-color:var(--accent)}.nativeWorkdayEditor{border-top:1px solid var(--border);padding-top:12px;display:grid;gap:10px}.nativeEditorHead{display:flex;justify-content:space-between;gap:12px;align-items:center}.nativeEditorHead span,.nativeWorkdayEditor p{font-size:.78rem;opacity:.7;margin:0}.nativeWorkdayEditor label{display:grid;gap:5px;font-size:.82rem}.nativeWorkdayEditor input,.nativeWorkdayEditor select{width:100%}.nativeCheck{display:flex!important;grid-template-columns:auto 1fr!important;align-items:center}.nativeCheck input{width:auto}.nativeEditorActions{display:flex;flex-wrap:wrap;gap:7px}.nativeActualList{display:grid;gap:6px}.nativeActualList button{text-align:left;display:flex;justify-content:space-between;gap:12px;border-radius:10px;padding:8px}.nativeActualList button.active{border-color:var(--accent)}.nativeActualForm{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}.nativeActualForm .wide{grid-column:1/-1}.nativeActualStartDate{font-size:.8rem;opacity:.75}.nativeActualPreview{padding:8px 10px;border-radius:10px;background:color-mix(in srgb,var(--accent) 7%,transparent);font-size:.8rem;display:flex;flex-wrap:wrap;gap:6px}.nativeActualPreview span{opacity:.68}.dangerSoft{border-color:color-mix(in srgb,#e45151 45%,var(--border))!important}@media(max-width:760px){.nativeWorkdayTruthGrid{grid-template-columns:1fr}.nativeActualForm{grid-template-columns:1fr}.nativeActualForm .wide{grid-column:auto}.nativeEditorHead{align-items:flex-start;flex-direction:column}}
 </style>

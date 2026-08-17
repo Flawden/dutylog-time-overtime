@@ -1936,6 +1936,8 @@ public final class Dtos {
             String creditedDisplayEnd,
             boolean migratedFromLegacy,
             boolean legacyTimezoneRequired,
+            String sourceKind,
+            boolean editable,
             OvertimeDailyProjectionDto projection
     ) {
         /** Source-compatible constructor for v27.8 service/tests. */
@@ -1949,7 +1951,7 @@ public final class Dtos {
                     calculated, hours, reason, usedHours, remainingHours, usages,
                     startInstant, endInstant, sourceTimezone, displayStart, displayEnd, displayTimezone,
                     (int) Math.round(hours * 60.0), null, null, null, null, false,
-                    calculated && startInstant == null,
+                    calculated && startInstant == null, "MANUAL", true,
                     new OvertimeDailyProjectionDto(
                             workedDate, timeRange, 1, 1, 1, 1,
                             hours, usedHours, remainingHours,
@@ -2533,6 +2535,7 @@ public final class Dtos {
     public record ActualWorkIntervalDto(
             Long id,
             String workDate,
+            String endDate,
             String startTime,
             String endTime,
             int workedMinutes,
@@ -2544,6 +2547,7 @@ public final class Dtos {
 
     public record ActualWorkIntervalRequest(
             @NotBlank(message = "Дата обязательна") String workDate,
+            String endDate,
             @NotBlank(message = "Время начала обязательно") String startTime,
             @NotBlank(message = "Время окончания обязательно") String endTime,
             @Min(value = 0, message = "Перерыв не может быть отрицательным")
@@ -2552,7 +2556,11 @@ public final class Dtos {
             @Size(max = 500, message = "Комментарий: максимум 500 символов") String note
     ) {
         public ActualWorkIntervalRequest(String workDate, String startTime, String endTime, String note) {
-            this(workDate, startTime, endTime, null, note);
+            this(workDate, null, startTime, endTime, null, note);
+        }
+
+        public ActualWorkIntervalRequest(String workDate, String startTime, String endTime, Integer breakMinutes, String note) {
+            this(workDate, null, startTime, endTime, breakMinutes, note);
         }
     }
 

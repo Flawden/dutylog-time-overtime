@@ -226,6 +226,14 @@ function creditUsages(credit: OvertimeCredit): OvertimeUsage[] {
   return safeAccount.value.usages.filter(usage => (usage.allocations ?? []).some(allocation => Number(allocation.creditId) === id));
 }
 
+function isSystemActualWorkCredit(credit: OvertimeCredit): boolean {
+  return credit.sourceKind === "SYSTEM_ACTUAL_WORK" || credit.editable === false;
+}
+
+async function openDerivedCreditDay(credit: OvertimeCredit): Promise<void> {
+  await window.DutyLogVueDomains?.calendarTimeline?.openDay(credit.workedDate);
+}
+
 function isLastCreditOfDay(index: number): boolean {
   const rows = safeAccount.value.credits;
   return index === rows.length - 1 || rows[index + 1]?.workedDate !== rows[index]?.workedDate;
@@ -426,11 +434,11 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
               <tr :data-credit-id="credit.id">
                 <td>{{ credit.workedDate }}</td>
                 <td>{{ credit.displayStart && credit.displayEnd ? `${credit.displayStart} — ${credit.displayEnd}` : credit.timeRange || 'вручную' }}</td>
-                <td>{{ credit.reason || 'Переработка' }}</td>
+                <td><span v-if="isSystemActualWorkCredit(credit)" class="domain-source-badge">Автоматически</span>{{ credit.reason || 'Переработка' }}</td>
                 <td>{{ formatSignedHours(creditRowEarnedHours(credit)) }}</td>
                 <td>{{ formatSignedHours(credit.usedHours, true) }}</td>
                 <td>{{ formatHours(credit.remainingHours) }}</td>
-                <td><div class="domain-row-actions"><UiButton size="sm" :data-edit-credit="credit.id" @click="store.editCredit(Number(credit.id))">Изменить</UiButton><UiButton size="sm" variant="danger" @click="store.deleteCredit(Number(credit.id))">Удалить</UiButton></div></td>
+                <td><div class="domain-row-actions"><template v-if="isSystemActualWorkCredit(credit)"><UiButton size="sm" :data-open-derived-credit="credit.id" @click="openDerivedCreditDay(credit)">Открыть день</UiButton></template><template v-else><UiButton size="sm" :data-edit-credit="credit.id" @click="store.editCredit(Number(credit.id))">Изменить</UiButton><UiButton size="sm" variant="danger" @click="store.deleteCredit(Number(credit.id))">Удалить</UiButton></template></div></td>
               </tr>
               <tr v-if="isLastCreditOfDay(index)" class="ledger-day-total">
                 <td colspan="3">итого за день</td>
@@ -446,11 +454,12 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
 
       <div id="ledgerCards" class="domain-mobile-cards">
         <details v-for="credit in sourceCredits" :key="credit.id" class="overtimeLedgerCard">
-          <summary><span><strong>{{ credit.workedDate }}</strong><small>{{ credit.reason || credit.timeRange || 'Переработка' }}</small></span><b>{{ formatSignedHours(credit.projection?.sourceCreditHours ?? creditRowEarnedHours(credit)) }}</b></summary>
+          <summary><span><strong>{{ credit.workedDate }}</strong><small><template v-if="isSystemActualWorkCredit(credit)">Автоматически из фактической работы · </template>{{ credit.reason || credit.timeRange || 'Переработка' }}</small></span><b>{{ formatSignedHours(credit.projection?.sourceCreditHours ?? creditRowEarnedHours(credit)) }}</b></summary>
           <div class="overtime-ledger-card__body">
             <p>Использовано {{ formatSignedHours(credit.projection?.sourceUsedHours ?? credit.usedHours, true) }} · осталось {{ formatHours(credit.projection?.sourceRemainingHours ?? credit.remainingHours) }}</p>
             <div v-for="usage in creditUsages(credit)" :key="usage.id" class="overtime-ledger-card__usage">{{ usage.reason || 'Отгул' }} · {{ formatMinutes(usage.minutes) }}</div>
-            <UiButton size="sm" :data-edit-credit="credit.id" @click="store.editCredit(Number(credit.id))">Изменить начисление</UiButton>
+            <UiButton v-if="isSystemActualWorkCredit(credit)" size="sm" :data-open-derived-credit="credit.id" @click="openDerivedCreditDay(credit)">Открыть день / изменить факт</UiButton>
+            <UiButton v-else size="sm" :data-edit-credit="credit.id" @click="store.editCredit(Number(credit.id))">Изменить начисление</UiButton>
           </div>
         </details>
       </div>

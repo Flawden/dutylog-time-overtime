@@ -5,6 +5,7 @@
 - Production Calendar required minutes are canonical for Time Compensation and Payroll source obligations. A full-day absence on a 7-hour shortened day therefore covers 7 hours, not the original shift's 8 hours.
 - Production Calendar never becomes an Absence; norm effect and schedule-time effect remain independent.
 - Explicit Actual Work reuses the existing Actual Work authority and accounting-period lock, stores its unpaid break, and is the source for ordinary overtime reconciliation. One `SYSTEM_ACTUAL_WORK` credit per owner/date is a replaceable derived projection: editing fact updates it, deleting an unused fact removes it, consumed derived credit fails closed, manual same-day provenance is not duplicated, and holiday work remains outside ordinary bank derivation.
+- Actual Work may span calendar dates through explicit `endDate`. Storage remains one fact; `ActualWorkDayAllocationService` derives per-date net minutes for Time Compensation and overtime, consuming the fact break from the earliest clock minutes. `SYSTEM_ACTUAL_WORK` credit rows are read-only projections and advanced Overtime routes the user back to the calendar day instead of editing them directly.
 - Payroll is a summary/explainability surface for Production Calendar in normal use, not a duplicate special-day editor.
 - Advanced Overtime, Time Bank, Production Calendar and Payroll screens remain valid audit/correction surfaces; they are not the required everyday workflow.
 

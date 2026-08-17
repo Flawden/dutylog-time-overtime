@@ -35,6 +35,7 @@ import java.util.Map;
 public class TimeCompensationService {
     private final DayEntryRepository days;
     private final ActualWorkIntervalRepository actualWork;
+    private final ActualWorkDayAllocationService actualAllocation;
     private final VacationPlannerService vacationPlanner;
     private final OvertimeService overtime;
     private final LedgerIntegrityService ledgerIntegrity;
@@ -43,6 +44,7 @@ public class TimeCompensationService {
 
     public TimeCompensationService(DayEntryRepository days,
                                    ActualWorkIntervalRepository actualWork,
+                                   ActualWorkDayAllocationService actualAllocation,
                                    VacationPlannerService vacationPlanner,
                                    OvertimeService overtime,
                                    LedgerIntegrityService ledgerIntegrity,
@@ -50,6 +52,7 @@ public class TimeCompensationService {
                                    ProductionCalendarService productionCalendar) {
         this.days = days;
         this.actualWork = actualWork;
+        this.actualAllocation = actualAllocation;
         this.vacationPlanner = vacationPlanner;
         this.overtime = overtime;
         this.ledgerIntegrity = ledgerIntegrity;
@@ -64,11 +67,7 @@ public class TimeCompensationService {
             planned.put(entry.getDate(), entry);
         }
 
-        Map<LocalDate, List<ActualWorkInterval>> actualByDate = new LinkedHashMap<>();
-        for (ActualWorkInterval interval : actualWork
-                .findByOwnerAndWorkDateBetweenOrderByWorkDateAscStartTimeAscIdAsc(user, from, to)) {
-            actualByDate.computeIfAbsent(interval.getWorkDate(), ignored -> new ArrayList<>()).add(interval);
-        }
+        Map<LocalDate, List<ActualWorkInterval>> actualByDate = actualByDate(user, from, to);
 
         Map<LocalDate, List<AbsenceOccurrenceDto>> absences = new LinkedHashMap<>();
         for (AbsenceOccurrenceDto occurrence : vacationPlanner.occurrences(user, from, to)) {
@@ -113,9 +112,10 @@ public class TimeCompensationService {
             int absenceMinutes = absenceMinutes(plannedMinutes, dayAbsences);
             int earnedMinutes = earnedByDate.getOrDefault(date, 0);
             List<ActualWorkInterval> actualIntervals = actualByDate.getOrDefault(date, List.of());
+            LocalDate currentDate = date;
             boolean explicitActual = !actualIntervals.isEmpty();
             int workedMinutes = explicitActual
-                    ? actualIntervals.stream().mapToInt(ActualWorkInterval::getWorkedMinutes).sum()
+                    ? actualIntervals.stream().mapToInt(item -> actualAllocation.netMinutesOnDate(item, currentDate)).sum()
                     : Math.max(0, plannedMinutes - Math.min(plannedMinutes, absenceMinutes)) + earnedMinutes;
             int usedMinutes = usedByDate.getOrDefault(date, 0);
             int compensatedMinutes = compensatedByDate.getOrDefault(date, 0);
@@ -184,11 +184,7 @@ public class TimeCompensationService {
             planned.put(entry.getDate(), entry);
         }
 
-        Map<LocalDate, List<ActualWorkInterval>> actualByDate = new LinkedHashMap<>();
-        for (ActualWorkInterval interval : actualWork
-                .findByOwnerAndWorkDateBetweenOrderByWorkDateAscStartTimeAscIdAsc(user, from, to)) {
-            actualByDate.computeIfAbsent(interval.getWorkDate(), ignored -> new ArrayList<>()).add(interval);
-        }
+        Map<LocalDate, List<ActualWorkInterval>> actualByDate = actualByDate(user, from, to);
 
         Map<LocalDate, List<AbsenceOccurrenceDto>> postedAbsences = new LinkedHashMap<>();
         for (AbsenceOccurrenceDto occurrence : vacationPlanner.occurrences(user, from, to)) {
@@ -220,9 +216,10 @@ public class TimeCompensationService {
             int absenceMinutes = absenceMinutes(plannedMinutes, absences);
             int earnedMinutes = earnedByDate.getOrDefault(date, 0);
             List<ActualWorkInterval> actualIntervals = actualByDate.getOrDefault(date, List.of());
+            LocalDate currentDate = date;
             int workedMinutes = actualIntervals.isEmpty()
                     ? Math.max(0, plannedMinutes - Math.min(plannedMinutes, absenceMinutes)) + earnedMinutes
-                    : actualIntervals.stream().mapToInt(ActualWorkInterval::getWorkedMinutes).sum();
+                    : actualIntervals.stream().mapToInt(item -> actualAllocation.netMinutesOnDate(item, currentDate)).sum();
             int vacationMinutes = policyMinutes(plannedMinutes, absences, "VACATION_ALLOWANCE");
             int sickMinutes = policyMinutes(plannedMinutes, absences, "SICK_PAY");
             int overtimeMinutes = policyMinutes(plannedMinutes, absences, "OVERTIME_BANK");
@@ -253,6 +250,17 @@ public class TimeCompensationService {
         return new PayrollSourceSnapshot(from, to, plannedTotal, workedTotal, vacationTotal, sickTotal,
                 overtimeCompensatedTotal, unpaidTotal + otherUnpaidTotal, timeAdjustmentMinutes,
                 paidAbsenceMinutes, payableMinutes, List.copyOf(sourceDays));
+    }
+
+    private Map<LocalDate, List<ActualWorkInterval>> actualByDate(AppUser user, LocalDate from, LocalDate to) {
+        Map<LocalDate, List<ActualWorkInterval>> result = new LinkedHashMap<>();
+        for (ActualWorkInterval interval : actualWork.findOverlappingRange(user, from, to)) {
+            for (LocalDate date : actualAllocation.netMinutesByDate(interval).keySet()) {
+                if (date.isBefore(from) || date.isAfter(to)) continue;
+                result.computeIfAbsent(date, ignored -> new ArrayList<>()).add(interval);
+            }
+        }
+        return result;
     }
 
     private boolean isPostedStatus(String status) {

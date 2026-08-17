@@ -7,9 +7,12 @@
 - Closes the native workday loop discovered by staging smoke: explicit Actual Work now stores an unpaid break, inherits the dated shift break for the first fact by default, calculates net worked minutes, and reconciles ordinary fact-vs-obligation overtime into the existing FIFO Time Bank exactly once.
 - System-derived overtime is provenance-tagged `SYSTEM_ACTUAL_WORK`: editing the fact updates the same credit, deleting an unused fact removes it, already-consumed derived credit fails closed, existing manual same-day credit wins instead of being duplicated, and holiday-classified work is kept out of ordinary overtime-bank derivation.
 - Adds direct `Удалить факт` / `Сбросить особый день` recovery actions in the selected day and removes the duplicated `Текущее отображение / Исходная смена` diagnostic block from the normal day UI.
+- Follow-up staging smoke makes `SYSTEM_ACTUAL_WORK` credits explicitly read-only in Overtime: they now expose provenance and an `Открыть день` recovery path instead of opening the manual credit editor.
+- Explicit Actual Work now stores an `endDate`. Same-day input stays minimal, end-before-start still infers the next day, and an optional end-date control supports next-day / multi-date facts up to 48 hours.
+- Cross-midnight factual work remains one source fact but is allocated by calendar date for Day Truth, Payroll/Time Compensation and derived Overtime. Break minutes are consumed from the earliest clock minutes, matching the existing interval splitter semantics.
 - Keeps norm effect and schedule time separate. A Production Calendar shortened day can change required minutes without silently rewriting a shift's start/end time.
-- OpenAPI remains **130 operations / 136 schemas** with hash `bb672251a454`; Flyway advances to **V50** for Actual Work break provenance and system-derived overtime credit provenance.
-- Source test inventory advances to **804 @Test methods / 167 Java test classes**; Playwright remains **48** and Vitest remains **73**.
+- OpenAPI remains **130 operations / 136 schemas** with hash `34d257319830`; Flyway advances to **V51** for Actual Work break provenance and system-derived overtime credit provenance.
+- Source test inventory advances to **808 @Test methods / 167 Java test classes**; Playwright remains **48** and Vitest remains **73**.
 - Canonical Node 20.18.1/npm 10.8.2 passed delivery/OpenAPI/typecheck/Vitest/Vite and measured **881901 B raw** for the v27.45.1 graph; rebaseline only the total raw ceiling **875000 → 890000 B**, while **250000 B total gzip** and entry/per-chunk ceilings remain unchanged.
 
 # v27.45.0 — Production Calendar Foundation

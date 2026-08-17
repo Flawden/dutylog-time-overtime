@@ -4805,10 +4805,10 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "804" ]]; then
-  ok "test method baseline: 804"
+if [[ "$TEST_METHODS" == "808" ]]; then
+  ok "test method baseline: 808"
 else
-  fail "expected 804 @Test methods, found $TEST_METHODS"
+  fail "expected 808 @Test methods, found $TEST_METHODS"
 fi
 if [[ "$TEST_CLASSES" == "167" ]]; then
   ok "test class baseline: 167"
@@ -4847,8 +4847,17 @@ contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vu
 contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue "data-native-actual-work-editor"
 contains src/main/resources/db/migration/postgresql/V50__native_workday_closed_loop.sql "break_minutes"
 contains src/main/resources/db/migration/postgresql/V50__native_workday_closed_loop.sql "SYSTEM_ACTUAL_WORK"
+contains src/main/resources/db/migration/postgresql/V51__native_actual_work_end_date.sql "end_date"
+contains src/main/java/ru/daniil/shifts/service/ActualWorkDayAllocationService.java "netMinutesByDate"
+contains src/main/java/ru/daniil/shifts/service/ActualWorkService.java "reconcileRange"
+contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String endDate"
+contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue "Заканчивается в другой день"
+contains frontend/src/features/absence-time-bank/components/TimeBankPage.vue "Автоматически из фактической работы"
+contains frontend/src/features/absence-time-bank/components/TimeBankPage.vue "Открыть день / изменить факт"
+contains src/test/java/ru/daniil/shifts/service/NativeWorkdayClosedLoopServiceTest.java "crossMidnightActualSplitsNetMinutesAcrossCalendarDatesAndBankCredits"
+contains src/test/java/ru/daniil/shifts/service/NativeWorkdayClosedLoopServiceTest.java "systemActualWorkCreditRowsAreReadOnlyAndExposeProvenance"
 contains src/main/java/ru/daniil/shifts/service/ActualWorkService.java "resolveBreakMinutes"
-contains src/main/java/ru/daniil/shifts/service/ActualWorkService.java "derivedCompensation.reconcile(user"
+contains src/main/java/ru/daniil/shifts/service/ActualWorkService.java "derivedCompensation.reconcileRange(user"
 contains src/main/java/ru/daniil/shifts/service/WorkdayDerivedCompensationService.java "reconcileActualWorkCredit"
 contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "SYSTEM_DERIVED_CREDIT_MANAGED_BY_ACTUAL_WORK"
 contains src/main/java/ru/daniil/shifts/service/OvertimeService.java "DERIVED_OVERTIME_ALREADY_USED"
@@ -4867,7 +4876,7 @@ contains src/test/java/ru/daniil/shifts/service/ProductionCalendarFoundationServ
 contains src/test/java/ru/daniil/shifts/service/ProductionCalendarFoundationServiceTest.java "workdayTruthJoinsBaseNormRequiredNormAndExplicitReality"
 contains src/test/java/ru/daniil/shifts/service/NativeWorkdayClosedLoopServiceTest.java "firstActualIntervalInheritsShiftBreakAndPostsOnlyNetOvertime"
 contains src/test/java/ru/daniil/shifts/service/NativeWorkdayClosedLoopServiceTest.java "usedDerivedCreditBlocksFactDeletionInsteadOfCorruptingFifo"
-contains frontend/src/generated/dutylog-api.ts "SHA-256: bb672251a4541219732ce729d7fcdcb66f7c51e5bf11a3ab1c4d9f2338e9c0ea"
+contains frontend/src/generated/dutylog-api.ts "SHA-256: 34d2573198303dd6b03f412910337e44049a2c9368f00795f6abdde900fbe882"
 contains frontend/browser-bundle-budget.json '"release": "27.45.1"'
 contains frontend/browser-bundle-budget.json '"maxTotalBytes": 890000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'

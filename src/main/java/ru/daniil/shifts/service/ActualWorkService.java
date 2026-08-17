@@ -42,21 +42,20 @@ public class ActualWorkService {
     @Transactional(readOnly = true)
     public List<ActualWorkIntervalDto> list(AppUser user, LocalDate from, LocalDate to) {
         dates.validateRange(from, to);
-        return intervals.findByOwnerAndWorkDateBetweenOrderByWorkDateAscStartTimeAscIdAsc(user, from, to)
-                .stream().map(this::toDto).toList();
+        return intervals.findOverlappingRange(user, from, to).stream().map(this::toDto).toList();
     }
 
     @Transactional
     public ActualWorkIntervalDto create(AppUser user, ActualWorkIntervalRequest req) {
         ActualShape shape = parse(req);
-        int breakMinutes = resolveBreakMinutes(user, shape.date(), req.breakMinutes(), null);
+        int breakMinutes = resolveBreakMinutes(user, shape.startDate(), req.breakMinutes(), null);
         validateBreak(shape, breakMinutes);
-        ledger.assertRangeOpen(user, shape.date(), shape.date().plusDays(shape.overnight() ? 1 : 0));
+        ledger.assertRangeOpen(user, shape.startDate(), shape.endDate());
         validateNoOverlap(user, null, shape);
         ActualWorkInterval interval = new ActualWorkInterval(user);
         apply(interval, shape, breakMinutes, req.note());
         ActualWorkInterval saved = intervals.saveAndFlush(interval);
-        derivedCompensation.reconcile(user, shape.date());
+        derivedCompensation.reconcileRange(user, shape.startDate(), shape.endDate());
         return toDto(saved);
     }
 
@@ -64,19 +63,20 @@ public class ActualWorkService {
     public ActualWorkIntervalDto update(AppUser user, Long id, ActualWorkIntervalRequest req) {
         ActualWorkInterval interval = intervals.findByOwnerAndId(user, id)
                 .orElseThrow(() -> ApiException.notFound("Фактический интервал не найден"));
-        LocalDate oldDate = interval.getWorkDate();
-        boolean oldOvernight = !interval.getEndTime().isAfter(interval.getStartTime());
-        ledger.assertRangeOpen(user, oldDate, oldDate.plusDays(oldOvernight ? 1 : 0));
+        LocalDate oldStartDate = interval.getWorkDate();
+        LocalDate oldEndDate = interval.getEndDate();
+        ledger.assertRangeOpen(user, oldStartDate, oldEndDate);
 
         ActualShape shape = parse(req);
-        int breakMinutes = resolveBreakMinutes(user, shape.date(), req.breakMinutes(), interval);
+        int breakMinutes = resolveBreakMinutes(user, shape.startDate(), req.breakMinutes(), interval);
         validateBreak(shape, breakMinutes);
-        ledger.assertRangeOpen(user, shape.date(), shape.date().plusDays(shape.overnight() ? 1 : 0));
+        ledger.assertRangeOpen(user, shape.startDate(), shape.endDate());
         validateNoOverlap(user, id, shape);
         apply(interval, shape, breakMinutes, req.note());
         ActualWorkInterval saved = intervals.saveAndFlush(interval);
-        if (!oldDate.equals(shape.date())) derivedCompensation.reconcile(user, oldDate);
-        derivedCompensation.reconcile(user, shape.date());
+        LocalDate reconcileFrom = oldStartDate.isBefore(shape.startDate()) ? oldStartDate : shape.startDate();
+        LocalDate reconcileTo = oldEndDate.isAfter(shape.endDate()) ? oldEndDate : shape.endDate();
+        derivedCompensation.reconcileRange(user, reconcileFrom, reconcileTo);
         return toDto(saved);
     }
 
@@ -84,23 +84,22 @@ public class ActualWorkService {
     public void delete(AppUser user, Long id) {
         ActualWorkInterval interval = intervals.findByOwnerAndId(user, id)
                 .orElseThrow(() -> ApiException.notFound("Фактический интервал не найден"));
-        LocalDate date = interval.getWorkDate();
-        ledger.assertRangeOpen(user, date, date.plusDays(
-                !interval.getEndTime().isAfter(interval.getStartTime()) ? 1 : 0));
+        LocalDate startDate = interval.getWorkDate();
+        LocalDate endDate = interval.getEndDate();
+        ledger.assertRangeOpen(user, startDate, endDate);
         intervals.delete(interval);
         intervals.flush();
-        derivedCompensation.reconcile(user, date);
+        derivedCompensation.reconcileRange(user, startDate, endDate);
     }
 
     private void validateNoOverlap(AppUser user, Long excludeId, ActualShape requested) {
-        LocalDateTime requestedStart = requested.date().atTime(requested.start());
-        LocalDateTime requestedEnd = wallEnd(requested.date(), requested.start(), requested.end());
-        for (ActualWorkInterval current : intervals
-                .findByOwnerAndWorkDateBetweenOrderByWorkDateAscStartTimeAscIdAsc(
-                        user, requested.date().minusDays(1), requested.date().plusDays(1))) {
+        LocalDateTime requestedStart = requested.startDate().atTime(requested.start());
+        LocalDateTime requestedEnd = requested.endDate().atTime(requested.end());
+        for (ActualWorkInterval current : intervals.findOverlappingRange(
+                user, requested.startDate().minusDays(1), requested.endDate().plusDays(1))) {
             if (excludeId != null && excludeId.equals(current.getId())) continue;
             LocalDateTime currentStart = current.getWorkDate().atTime(current.getStartTime());
-            LocalDateTime currentEnd = wallEnd(current.getWorkDate(), current.getStartTime(), current.getEndTime());
+            LocalDateTime currentEnd = current.getEndDate().atTime(current.getEndTime());
             if (requestedStart.isBefore(currentEnd) && requestedEnd.isAfter(currentStart)) {
                 throw ApiException.conflict("ACTUAL_WORK_OVERLAP", "Фактические интервалы не должны пересекаться");
             }
@@ -109,25 +108,38 @@ public class ActualWorkService {
 
     private ActualShape parse(ActualWorkIntervalRequest req) {
         if (req == null) throw ApiException.badRequest("Некорректный JSON в запросе");
-        LocalDate date = dates.parseDate(req.workDate(), "Дата должна быть в формате yyyy-MM-dd");
+        LocalDate startDate = dates.parseDate(req.workDate(), "Дата должна быть в формате yyyy-MM-dd");
         LocalTime start;
         LocalTime end;
         try { start = LocalTime.parse(req.startTime()); end = LocalTime.parse(req.endTime()); }
         catch (Exception ex) { throw ApiException.badRequest("Время должно быть в формате HH:mm"); }
-        LocalDateTime startAt = date.atTime(start);
-        LocalDateTime endAt = wallEnd(date, start, end);
-        boolean overnight = !end.isAfter(start);
+
+        LocalDate endDate;
+        if (req.endDate() == null || req.endDate().isBlank()) {
+            endDate = end.isAfter(start) ? startDate : startDate.plusDays(1);
+        } else {
+            endDate = dates.parseDate(req.endDate(), "Дата окончания должна быть в формате yyyy-MM-dd");
+        }
+        if (endDate.isBefore(startDate)) {
+            throw ApiException.badRequest("Дата окончания не может быть раньше даты начала");
+        }
+
+        LocalDateTime startAt = startDate.atTime(start);
+        LocalDateTime endAt = endDate.atTime(end);
+        if (!endAt.isAfter(startAt)) {
+            throw ApiException.badRequest("Конец должен быть позже начала. Для ночной работы выбери следующий день окончания.");
+        }
         int elapsedMinutes = Math.toIntExact(Duration.between(startAt, endAt).toMinutes());
         if (elapsedMinutes <= 0 || elapsedMinutes > 2880) {
             throw ApiException.badRequest("Фактический интервал: от 1 минуты до 48 часов");
         }
-        return new ActualShape(date, start, end, elapsedMinutes, overnight);
+        return new ActualShape(startDate, endDate, start, end, elapsedMinutes);
     }
 
     private int resolveBreakMinutes(AppUser user, LocalDate date, Integer requested, ActualWorkInterval existing) {
         if (requested != null) return requested;
         if (existing != null) return existing.getBreakMinutes();
-        if (!intervals.findByOwnerAndWorkDateOrderByStartTimeAscIdAsc(user, date).isEmpty()) return 0;
+        if (!intervals.findOverlappingRange(user, date, date).isEmpty()) return 0;
         DayEntry day = dayEntries.findByOwnerAndDate(user, date).orElse(null);
         if (day == null) return 0;
         ShiftType shift = day.getShiftType();
@@ -144,14 +156,9 @@ public class ActualWorkService {
         }
     }
 
-    private LocalDateTime wallEnd(LocalDate date, LocalTime start, LocalTime end) {
-        LocalDateTime endAt = date.atTime(end);
-        if (!end.isAfter(start)) endAt = endAt.plusDays(1);
-        return endAt;
-    }
-
     private void apply(ActualWorkInterval interval, ActualShape shape, int breakMinutes, String note) {
-        interval.setWorkDate(shape.date());
+        interval.setWorkDate(shape.startDate());
+        interval.setEndDate(shape.endDate());
         interval.setStartTime(shape.start());
         interval.setEndTime(shape.end());
         interval.setBreakMinutes(breakMinutes);
@@ -161,12 +168,12 @@ public class ActualWorkService {
 
     private ActualWorkIntervalDto toDto(ActualWorkInterval interval) {
         return new ActualWorkIntervalDto(interval.getId(), interval.getWorkDate().toString(),
-                interval.getStartTime().toString(), interval.getEndTime().toString(), interval.getWorkedMinutes(),
-                interval.getBreakMinutes(), interval.getNote(),
+                interval.getEndDate().toString(), interval.getStartTime().toString(), interval.getEndTime().toString(),
+                interval.getWorkedMinutes(), interval.getBreakMinutes(), interval.getNote(),
                 interval.getCreatedAt() == null ? null : interval.getCreatedAt().toString(),
                 interval.getUpdatedAt() == null ? null : interval.getUpdatedAt().toString());
     }
 
-    private record ActualShape(LocalDate date, LocalTime start, LocalTime end,
-                               int elapsedMinutes, boolean overnight) {}
+    private record ActualShape(LocalDate startDate, LocalDate endDate, LocalTime start, LocalTime end,
+                               int elapsedMinutes) {}
 }

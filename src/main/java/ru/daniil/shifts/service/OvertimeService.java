@@ -1333,6 +1333,8 @@ public class OvertimeService {
                 slice.exact() ? displayEnd : displayLocal(user, credit.getCreditedEndAtInstant()),
                 credit.isMigratedFromLegacy(),
                 credit.getCreditedStartAtInstant() == null || credit.getCreditedEndAtInstant() == null,
+                credit.getSourceKind(),
+                !credit.isSystemActualWorkDerived(),
                 projection
         );
     }
@@ -1464,7 +1466,7 @@ public class OvertimeService {
                 row.sourceTimezone(), row.displayStart(), row.displayEnd(), row.displayTimezone(),
                 row.creditedMinutes(), row.creditedStartInstant(), row.creditedEndInstant(),
                 row.creditedDisplayStart(), row.creditedDisplayEnd(), row.migratedFromLegacy(),
-                row.legacyTimezoneRequired(), projection
+                row.legacyTimezoneRequired(), row.sourceKind(), row.editable(), projection
         );
     }
 

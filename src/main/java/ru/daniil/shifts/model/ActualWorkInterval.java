@@ -28,6 +28,9 @@ public class ActualWorkInterval {
     @Column(name = "end_time", nullable = false)
     private LocalTime endTime;
 
+    @Column(name = "end_date", nullable = false)
+    private LocalDate endDate;
+
     @Column(name = "worked_minutes", nullable = false)
     private int workedMinutes;
 
@@ -54,6 +57,8 @@ public class ActualWorkInterval {
     public void setStartTime(LocalTime startTime) { this.startTime = startTime; }
     public LocalTime getEndTime() { return endTime; }
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
+    public LocalDate getEndDate() { return endDate; }
+    public void setEndDate(LocalDate endDate) { this.endDate = endDate; }
     public int getWorkedMinutes() { return workedMinutes; }
     public void setWorkedMinutes(int workedMinutes) { this.workedMinutes = workedMinutes; }
     public int getBreakMinutes() { return Math.max(0, breakMinutes); }

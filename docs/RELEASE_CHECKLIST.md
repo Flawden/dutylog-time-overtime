@@ -11,7 +11,8 @@ Status: v27.45.1.
 - [x] Payroll retains explainable monthly base→production norm summary only.
 - [x] Explicit Actual Work stores/editably inherits unpaid break and reconciles ordinary fact-vs-required overtime into the existing FIFO bank exactly once; manual same-day data is not silently duplicated, holiday work remains separate, and consumed derived credit fails closed.
 - [x] Selected day can delete a mistaken fact/reset a local special-day rule, and the duplicated shift diagnostic projection is removed from normal UI.
-- [x] Source baselines: OpenAPI 130/136 (`bb672251a454`), Flyway V50, Java 804/167, Playwright 48, Vitest 73.
+- [x] Source baselines: OpenAPI 130/136 (`34d257319830`), Flyway V51, Java 808/167, Playwright 48, Vitest 73.
+- [ ] Staging smoke: SYSTEM_ACTUAL_WORK is read-only in Overtime and opens its calendar day; cross-midnight fact is shown once and allocated to both dates.
 - [x] First exact Node 20.18.1/npm 10.8.2 run passed delivery/OpenAPI/typecheck/Vitest/Vite and measured 881901 B raw; only the total raw ceiling is rebaselined 875000 → 890000 B, gzip/per-chunk ceilings unchanged.
 - [ ] Rerun the exact Node 20.18.1/npm 10.8.2 frontend gate against the measured 890000 B raw ceiling.
 - [ ] Java 17 Maven/JaCoCo, release-check, Chromium 48/48, immutable image/clean PostgreSQL V50 and final staging UX smoke pass.

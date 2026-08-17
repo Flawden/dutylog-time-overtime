@@ -111,6 +111,67 @@ class NativeWorkdayClosedLoopServiceTest {
         assertEquals("HOLIDAY", workdayTruth.truth(owner, date).productionCalendar().payrollEffect());
     }
 
+
+    @Test
+    void crossMidnightActualSplitsNetMinutesAcrossCalendarDatesAndBankCredits() {
+        LocalDate next = date.plusDays(1);
+        DayEntry nextEntry = new DayEntry(owner, next);
+        nextEntry.setShiftType(day);
+        days.saveAndFlush(nextEntry);
+
+        var saved = actualWork.create(owner,
+                new ActualWorkIntervalRequest(date.toString(), next.toString(), "08:30", "08:30", 30, "суточный факт"));
+
+        assertEquals(next.toString(), saved.endDate());
+        assertEquals(1410, saved.workedMinutes());
+        assertEquals(450, overtime.balanceMinutes(owner));
+        assertEquals(420, credits.findByOwnerAndWorkDateAndSourceKind(owner, date, "SYSTEM_ACTUAL_WORK").orElseThrow().getCreditedMinutes());
+        assertEquals(30, credits.findByOwnerAndWorkDateAndSourceKind(owner, next, "SYSTEM_ACTUAL_WORK").orElseThrow().getCreditedMinutes());
+        assertEquals(900, workdayTruth.truth(owner, date).actualMinutes());
+        assertEquals(510, workdayTruth.truth(owner, next).actualMinutes());
+        assertTrue(workdayTruth.truth(owner, next).explicitActual());
+    }
+
+    @Test
+    void endBeforeStartWithoutExplicitEndDateInfersNextDay() {
+        var saved = actualWork.create(owner,
+                new ActualWorkIntervalRequest(date.toString(), "17:00", "08:00", 0, "ночной факт"));
+
+        assertEquals(date.plusDays(1).toString(), saved.endDate());
+        assertEquals(900, saved.workedMinutes());
+        assertTrue(workdayTruth.truth(owner, date.plusDays(1)).explicitActual());
+    }
+
+    @Test
+    void deletingCrossMidnightFactReconcilesAllAffectedDates() {
+        LocalDate next = date.plusDays(1);
+        DayEntry nextEntry = new DayEntry(owner, next);
+        nextEntry.setShiftType(day);
+        days.saveAndFlush(nextEntry);
+        var saved = actualWork.create(owner,
+                new ActualWorkIntervalRequest(date.toString(), next.toString(), "08:30", "08:30", 30, null));
+        assertEquals(450, overtime.balanceMinutes(owner));
+
+        actualWork.delete(owner, saved.id());
+
+        assertEquals(0, overtime.balanceMinutes(owner));
+        assertTrue(credits.findByOwnerAndWorkDateOrderByIdAsc(owner, date).isEmpty());
+        assertTrue(credits.findByOwnerAndWorkDateOrderByIdAsc(owner, next).isEmpty());
+        assertFalse(workdayTruth.truth(owner, next).explicitActual());
+    }
+
+    @Test
+    void systemActualWorkCreditRowsAreReadOnlyAndExposeProvenance() {
+        actualWork.create(owner,
+                new ActualWorkIntervalRequest(date.toString(), "08:30", "18:00", null));
+
+        var row = overtime.account(owner).credits().stream()
+                .filter(item -> date.toString().equals(item.workedDate()))
+                .findFirst().orElseThrow();
+        assertEquals("SYSTEM_ACTUAL_WORK", row.sourceKind());
+        assertFalse(row.editable());
+    }
+
     @Test
     void usedDerivedCreditBlocksFactDeletionInsteadOfCorruptingFifo() {
         var saved = actualWork.create(owner,

@@ -11,11 +11,12 @@ import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.repo.ProductionCalendarDayRepository;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
- * Reconciles consequences that are fully derivable from an explicit factual workday.
- * The fact remains the command/source of truth; the overtime credit is a replaceable
- * system projection, never a second piece of user-entered reality.
+ * Reconciles consequences that are fully derivable from explicit factual work.
+ * The fact remains the command/source of truth; per-date overtime credits are
+ * replaceable system projections, never another piece of user-entered reality.
  */
 @Service
 public class WorkdayDerivedCompensationService {
@@ -23,17 +24,20 @@ public class WorkdayDerivedCompensationService {
     private static final String LOCAL = "LOCAL_OVERRIDE";
 
     private final ActualWorkIntervalRepository actualWork;
+    private final ActualWorkDayAllocationService allocation;
     private final DayEntryRepository scheduleDays;
     private final ProductionCalendarDayRepository productionDays;
     private final WorkNormService workNorm;
     private final OvertimeService overtime;
 
     public WorkdayDerivedCompensationService(ActualWorkIntervalRepository actualWork,
+                                             ActualWorkDayAllocationService allocation,
                                              DayEntryRepository scheduleDays,
                                              ProductionCalendarDayRepository productionDays,
                                              WorkNormService workNorm,
                                              OvertimeService overtime) {
         this.actualWork = actualWork;
+        this.allocation = allocation;
         this.scheduleDays = scheduleDays;
         this.productionDays = productionDays;
         this.workNorm = workNorm;
@@ -42,8 +46,19 @@ public class WorkdayDerivedCompensationService {
 
     @Transactional
     public void reconcile(AppUser user, LocalDate date) {
-        var intervals = actualWork.findByOwnerAndWorkDateOrderByStartTimeAscIdAsc(user, date);
-        int actualMinutes = intervals.stream().mapToInt(ActualWorkInterval::getWorkedMinutes).sum();
+        reconcileRange(user, date, date);
+    }
+
+    @Transactional
+    public void reconcileRange(AppUser user, LocalDate from, LocalDate to) {
+        for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
+            reconcileDate(user, date);
+        }
+    }
+
+    private void reconcileDate(AppUser user, LocalDate date) {
+        List<ActualWorkInterval> intervals = actualWork.findOverlappingRange(user, date, date);
+        int actualMinutes = intervals.stream().mapToInt(item -> allocation.netMinutesOnDate(item, date)).sum();
 
         DayEntry schedule = scheduleDays.findByOwnerAndDate(user, date).orElse(null);
         int baseMinutes = workNorm.basePlannedMinutes(schedule);
