@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { createPayrollApi, type PayrollApi } from "../api/payrollApi";
-import type { PayrollAdjustmentInput, PayrollPeriod, PayrollSettingsInput } from "../types/domain";
+import type { PayrollAdjustmentInput, PayrollPeriod, PayrollSettingsInput, ProductionCalendarDayInput } from "../types/domain";
 
 let api: PayrollApi = createPayrollApi();
 let loadSequence = 0;
@@ -48,6 +48,14 @@ export const usePayrollStore = defineStore("dutylog-payroll", {
     },
     async calculate(): Promise<void> {
       await api.calculate(this.month);
+      await this.load(this.month);
+    },
+    async saveProductionDay(date: string, body: ProductionCalendarDayInput): Promise<void> {
+      await api.upsertProductionDay(date, body);
+      await this.load(this.month);
+    },
+    async deleteProductionDay(date: string): Promise<void> {
+      await api.deleteProductionDay(date);
       await this.load(this.month);
     },
   },

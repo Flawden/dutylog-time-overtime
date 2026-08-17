@@ -34,19 +34,22 @@ public class PayrollService {
     private final TimeAccountingPeriodRepository accountingPeriods;
     private final TimeCompensationService timeCompensation;
     private final LedgerIntegrityService ledgerIntegrity;
+    private final ProductionCalendarService productionCalendar;
 
     public PayrollService(PayrollSettingsRepository settings,
                           PayrollAdjustmentRepository adjustments,
                           PayrollSnapshotRepository snapshots,
                           TimeAccountingPeriodRepository accountingPeriods,
                           TimeCompensationService timeCompensation,
-                          LedgerIntegrityService ledgerIntegrity) {
+                          LedgerIntegrityService ledgerIntegrity,
+                          ProductionCalendarService productionCalendar) {
         this.settings = settings;
         this.adjustments = adjustments;
         this.snapshots = snapshots;
         this.accountingPeriods = accountingPeriods;
         this.timeCompensation = timeCompensation;
         this.ledgerIntegrity = ledgerIntegrity;
+        this.productionCalendar = productionCalendar;
     }
 
     @Transactional
@@ -140,8 +143,9 @@ public class PayrollService {
         String blockingReason = !closed ? "PERIOD_OPEN"
                 : !integrity.healthy() ? "LEDGER_INTEGRITY_FAILED"
                 : !rateReady ? "PAYROLL_RATE_REQUIRED" : null;
+        ProductionCalendarMonthDto productionCalendarMonth = productionCalendar.month(user, month.toString());
         return new PayrollPeriodDto(month.toString(), closed, integrity.healthy(), canCalculate, blockingReason,
-                toSettings(payrollSettings), preview,
+                toSettings(payrollSettings), productionCalendarMonth, preview,
                 monthAdjustments.stream().map(this::toAdjustment).toList(),
                 history.isEmpty() ? null : history.get(0), history);
     }

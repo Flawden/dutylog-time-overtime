@@ -1,5 +1,5 @@
 import { createGeneratedDutyLogApiClient, type DutyLogGeneratedApiClient } from "@/platform/api/generatedClient";
-import type { PayrollAdjustmentInput, PayrollSettingsInput } from "../types/domain";
+import type { PayrollAdjustmentInput, PayrollSettingsInput, ProductionCalendarDayInput } from "../types/domain";
 
 export function createPayrollApi(client: DutyLogGeneratedApiClient = createGeneratedDutyLogApiClient()) {
   return Object.freeze({
@@ -14,6 +14,12 @@ export function createPayrollApi(client: DutyLogGeneratedApiClient = createGener
     },
     async calculate(month: string): Promise<void> {
       await client.request("calculatePayrollRevision", { path: { month } });
+    },
+    async upsertProductionDay(date: string, body: ProductionCalendarDayInput): Promise<void> {
+      await client.request("upsertProductionCalendarDay", { path: { date }, body });
+    },
+    async deleteProductionDay(date: string): Promise<void> {
+      await client.request("deleteProductionCalendarDayOverride", { path: { date } });
     },
   });
 }

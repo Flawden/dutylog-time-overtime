@@ -1,4 +1,6 @@
-# DutyLog API v27.44.4
+# DutyLog API v27.45.0
+
+`v27.45.0` adds owner-scoped Production Calendar endpoints under the existing shifts/module boundary: `GET /api/v1/production-calendar/months/{month}`, `PUT /api/v1/production-calendar/days/{date}`, and `DELETE /api/v1/production-calendar/days/{date}`. Local rules are accounting-period locked. Schedule/norm effect (`NONE` / `NORM_OVERRIDE`) is independent from payroll classification (`NONE` / `HOLIDAY`); no endpoint applies a legal multiplier or mutates an absence. OpenAPI is **129 operations / 135 schemas** with hash `6e23a5b4b53f`, and Flyway is V49.
 
 `v27.43.0` adds managed People Profile schedule overrides under the existing Calendar authorization/module boundary. The canonical resources are `PUT /api/v1/calendar-layers/{id}/overrides/{date}` to create/replace one factual source-date override and `DELETE /api/v1/calendar-layers/{id}/overrides/{date}` to return that date to its generated template. Overrides are owner-scoped through the parent calendar layer, support `WORK` or `OFF`, and do not expose another person's Tasks, Notes, Overtime, Payroll or personal absence ledger. OpenAPI is **126 operations / 132 schemas** with hash `2d67b4db5a3d`, and Flyway is V48.
 

@@ -59,7 +59,7 @@ public final class DutyLogModules {
                     true,
                     List.of(CALENDAR),
                     List.of("day:shift", "day:schedule", "settings:shift-types", "settings:time-region"),
-                    List.of("/api/shift-types", "/api/v1/shift-types"),
+                    List.of("/api/shift-types", "/api/v1/shift-types", "/api/production-calendar", "/api/v1/production-calendar"),
                     List.of("day.shift"),
                     30
             ),

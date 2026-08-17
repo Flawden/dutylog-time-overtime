@@ -12,7 +12,6 @@ import ru.daniil.shifts.dto.Dtos.TimeCompensationSummaryDto;
 import ru.daniil.shifts.model.ActualWorkInterval;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
-import ru.daniil.shifts.model.ShiftType;
 import ru.daniil.shifts.model.TimeLedgerEntry;
 import ru.daniil.shifts.repo.ActualWorkIntervalRepository;
 import ru.daniil.shifts.repo.DayEntryRepository;
@@ -40,19 +39,22 @@ public class TimeCompensationService {
     private final OvertimeService overtime;
     private final LedgerIntegrityService ledgerIntegrity;
     private final TimeLedgerEntryRepository ledgerEntries;
+    private final WorkNormService workNorm;
 
     public TimeCompensationService(DayEntryRepository days,
                                    ActualWorkIntervalRepository actualWork,
                                    VacationPlannerService vacationPlanner,
                                    OvertimeService overtime,
                                    LedgerIntegrityService ledgerIntegrity,
-                                   TimeLedgerEntryRepository ledgerEntries) {
+                                   TimeLedgerEntryRepository ledgerEntries,
+                                   WorkNormService workNorm) {
         this.days = days;
         this.actualWork = actualWork;
         this.vacationPlanner = vacationPlanner;
         this.overtime = overtime;
         this.ledgerIntegrity = ledgerIntegrity;
         this.ledgerEntries = ledgerEntries;
+        this.workNorm = workNorm;
     }
 
     @Transactional
@@ -106,7 +108,7 @@ public class TimeCompensationService {
 
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
             DayEntry day = planned.get(date);
-            int plannedMinutes = plannedMinutes(day);
+            int plannedMinutes = workNorm.basePlannedMinutes(day);
             List<AbsenceOccurrenceDto> dayAbsences = absences.getOrDefault(date, List.of());
             int absenceMinutes = absenceMinutes(plannedMinutes, dayAbsences);
             int earnedMinutes = earnedByDate.getOrDefault(date, 0);
@@ -213,7 +215,7 @@ public class TimeCompensationService {
         List<PayrollSourceDay> sourceDays = new ArrayList<>();
 
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
-            int plannedMinutes = plannedMinutes(planned.get(date));
+            int plannedMinutes = workNorm.basePlannedMinutes(planned.get(date));
             List<AbsenceOccurrenceDto> absences = postedAbsences.getOrDefault(date, List.of());
             int absenceMinutes = absenceMinutes(plannedMinutes, absences);
             int earnedMinutes = earnedByDate.getOrDefault(date, 0);
@@ -265,13 +267,6 @@ public class TimeCompensationService {
                                         int vacationMinutes, int sickMinutes, int overtimeCompensatedMinutes,
                                         int unpaidMinutes, int timeAdjustmentMinutes, int paidAbsenceMinutes,
                                         int payableMinutes, List<PayrollSourceDay> days) {}
-
-    private int plannedMinutes(DayEntry entry) {
-        if (entry == null || entry.getShiftType() == null) return 0;
-        if (entry.getShiftNetMinutes() > 0) return Math.toIntExact(entry.getShiftNetMinutes());
-        ShiftType shift = entry.getShiftType();
-        return Math.max(0, (int) Math.round(shift.effectivePlannedHours() * 60.0));
-    }
 
     private int absenceMinutes(int plannedMinutes, List<AbsenceOccurrenceDto> absences) {
         if (absences.stream().anyMatch(item -> "FULL_DAY".equals(item.coverage()) && item.replacesShift())) {

@@ -1,6 +1,19 @@
 # DutyLog release checklist
 
-Status: v27.44.4.
+Status: v27.45.0.
+
+## v27.45.0 — Production Calendar Foundation acceptance
+
+- [x] Base schedule norm and Production Calendar norm are separate values; Production Calendar does not create absence rows or rewrite dated shifts.
+- [x] `BASE` and `LOCAL_OVERRIDE` layers are unique per owner/date/layer and local override wins.
+- [x] Schedule/norm effect and payroll classification are independent; no universal holiday multiplier is hard-coded.
+- [x] Local Production Calendar mutation is blocked for closed accounting periods.
+- [x] Month payload explains base norm, production norm, adjustment categories, coverage and effective per-date rules.
+- [x] Payroll workspace exposes the Production Calendar summary/editor while the v27.28 money formula remains unchanged.
+- [x] Source baselines: OpenAPI 129/135 (`6e23a5b4b53f`), Flyway V49, Java 797/166, Playwright 48, Vitest 73.
+- [ ] Exact Node 20.18.1/npm 10.8.2 typecheck/Vitest/Vite/bundle gate passes without pre-raising the browser ceiling.
+- [ ] Java 17 `mvn clean verify`, release-check, Chromium 48/48, immutable image/clean PostgreSQL V49 and staging smoke pass.
+
 
 ## v27.44.3 — People Profile Coverage Semantics Hotfix acceptance
 

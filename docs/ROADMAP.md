@@ -1,6 +1,26 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.44.4 — Shared Full-Day Free Dates**.
+Current release: **v27.45.0 — Production Calendar Foundation**.
+
+
+## v27.45.0 — Production Calendar Foundation
+
+- [x] Model Production Calendar as a separate domain between base schedule norm and future compensation rules.
+- [x] Keep schedule/norm effect independent from payroll classification.
+- [x] Add layered `BASE` + owner `LOCAL_OVERRIDE` date rules and Flyway V49.
+- [x] Compute base norm, production norm and explainable monthly adjustments without inventing a universal workday length.
+- [x] Expose owner-scoped month/update/delete API and generated OpenAPI 129/135 contract.
+- [x] Show Production Calendar summary and local editor in Payroll while leaving the money formula unchanged.
+- [ ] Exact Node 20, Maven/release-check, Chromium, clean PostgreSQL V49 and staging acceptance.
+
+## Core roadmap after Production Calendar
+
+1. **v27.46.0 — Payroll Core**: salary/rate history, production-norm denominator, regular/night/overtime/holiday categories and explainable monthly money breakdown.
+2. **v27.47.0 — Vacation Entitlement & Balance**: entitlement/accrual/carry-over/used/planned/available balance, separate from vacation pay.
+3. **v27.48.0 — Vacation Pay**: versioned jurisdiction calculation period, eligible earnings and average-pay breakdown.
+4. **v27.49.0 — Sick Leave Calculation**: versioned jurisdiction rules, service-time factors, limits and payer-day structure after official-rule research.
+5. **v27.50.0 — Versioned Compensation Rule Set**: jurisdiction + rule-set version + effective date with immutable historical calculation provenance.
+6. **v27.51.0 — Formula Studio**: compose validated domain outputs; mandatory legal algorithms remain owned by rule sets.
 
 
 ## v27.43.0 — People Profiles: Managed Schedule Overrides
@@ -22,8 +42,8 @@ Current release: **v27.44.4 — Shared Full-Day Free Dates**.
 - [x] Exclude PARTIAL/HOURS_ONLY, remaining work, untimed work and outside-profile-coverage dates.
 - [x] Keep green full-day-free and coral simultaneous-work as independent visual layers.
 - [x] Add `Общих выходных: N` to the month summary; Vitest baseline 73.
-- [ ] Exact Node 20, Maven/release-check, Chromium and staging acceptance.
-- [ ] After acceptance, freeze People Profiles and move to Production Calendar / Compensation Foundation.
+- [x] Exact Node 20, Maven/release-check, Chromium and staging acceptance.
+- [x] People Profiles / Shared Availability accepted and feature-frozen after v27.44.4.
 
 ## v27.44.3 — People Profile Coverage Semantics Hotfix
 
@@ -219,13 +239,13 @@ Next planned product release after green: **v27.42.0 — People Profiles & Share
 - [ ] Add Shared Availability for common free days, including the nearest shared window and multi-day overlaps.
 - [ ] Define permission/privacy boundaries before exposing another person’s schedule details.
 
-## v27.45.0 — Vacation Entitlement & Accrual Engine
+## Superseded planning slot — Vacation Entitlement & Accrual Engine (now v27.47.0)
 - [ ] Entitlement policy and annual allowance.
 - [ ] Accrual/carry-over/adjustments with explainable balance.
 - [ ] Planned/used/available vacation projection integrated with the existing Absence domain.
 - [ ] Preserve modular-monolith boundaries so Payroll consumes Vacation through explicit domain contracts rather than internal persistence.
 
-## v27.46.0 — Payroll Calculation Engine
+## Superseded planning slot — Payroll Calculation Engine (now v27.46.0 Payroll Core)
 - [ ] Canonical payroll periods, calculation snapshots and explainable breakdowns.
 - [ ] Consume Time/Vacation through explicit domain contracts rather than internal persistence.
 - [ ] Preserve immutable revisions and reconciliation-ready history.

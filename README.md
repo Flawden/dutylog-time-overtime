@@ -1,3 +1,9 @@
+# DutyLog v27.45.0 — Production Calendar Foundation
+
+DutyLog now treats the production calendar as its own source of required work norm instead of trying to encode holidays and transferred days as absences. The base schedule produces the base norm; Production Calendar applies explicit dated norm adjustments; absences and factual work remain separate truths.
+
+Schedule/norm effect and payroll classification are independent. A date may reduce or add required norm while separately carrying a holiday-pay classification. v27.45.0 exposes this foundation and its monthly breakdown in Payroll, but deliberately leaves the existing money formula unchanged for the next Payroll Core release.
+
 # DutyLog v27.44.4 — Shared Full-Day Free Dates
 
 The People Profiles month view now shows a separate green/teal signal when both people are effectively free from work for the whole day. The marker comes from the same effective-work calculation as Shared Availability, so real full-day absences and managed OFF overrides work without hard-coding absence names, while partial absences and unknown schedule coverage fail closed.

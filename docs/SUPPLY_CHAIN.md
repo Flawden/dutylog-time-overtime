@@ -1,3 +1,7 @@
+## v27.45.0 production calendar foundation
+
+No dependency/package graph change is introduced. Root/frontend release identity advances to v27.45.0; Node 20.18.1/npm 10.8.2 and the reviewed dependency graph remain unchanged. Application contract changes are Flyway V49 plus OpenAPI 129/135; browser ceilings remain 855000 B raw / 250000 B gzip pending exact canonical build measurement.
+
 ## v27.44.3 profile coverage semantics
 
 No dependency or package graph change is introduced. Root/frontend release identity advances to v27.44.3 only. Node 20.18.1/npm 10.8.2 and the reviewed dependency graph remain unchanged; OpenAPI stays 126/132 and Flyway stays V48.
@@ -20,7 +24,7 @@ No dependency or package graph change is introduced. Root/frontend package and l
 
 # Supply-chain maintenance
 
-Status: v27.44.4.
+Status: v27.45.0.
 
 ## v27.42.8 source-contract hotfix
 

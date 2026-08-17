@@ -1,3 +1,15 @@
+# v27.45.0 — Production Calendar Foundation
+- Adds Production Calendar as a separate work-norm domain between the base schedule and future compensation rules; it does not create absences and does not mutate factual `DayEntry` shifts.
+- Adds Flyway `V49__production_calendar_foundation.sql` with layered date rules: reserved `BASE` source plus owner-editable `LOCAL_OVERRIDE`, where local wins for the same date.
+- Separates schedule/norm effect from payroll classification: `schedule_effect=NONE|NORM_OVERRIDE` and `payroll_effect=NONE|HOLIDAY` are independent, so a holiday may change the required norm, the pay category, both, or neither.
+- Supports `NORMAL`, `HOLIDAY`, `TRANSFERRED_DAY_OFF`, `TRANSFERRED_WORKDAY` and `SHORTENED_DAY` without hard-coding an 8-hour workday or a universal holiday multiplier.
+- Extracts canonical `WorkNormService.basePlannedMinutes(...)` and reuses it from Time Compensation and Production Calendar instead of maintaining parallel planned-minute conversion logic.
+- Adds owner-scoped GET month plus PUT/DELETE local-date APIs under the existing shifts/module boundary and accounting-period lock.
+- Payroll period payload now carries the Production Calendar month summary and Vue shows base schedule norm, calendar adjustment and production norm plus a manual local-rule editor. The existing payroll money formula is intentionally unchanged in v27.45.0.
+- OpenAPI advances to **129 operations / 135 schemas** with hash `6e23a5b4b53f`; Flyway advances to **V49**.
+- Source test inventory advances to **797 @Test methods / 166 Java test classes**; Playwright remains **48** and Vitest remains **73**.
+- Browser ceilings remain **855000 B raw / 250000 B gzip** pending exact Node 20.18.1/npm 10.8.2 measurement; no dependency graph change is introduced.
+
 # v27.44.4 — Shared Full-Day Free Dates
 - Adds a distinct green/teal month-grid marker for dates where `Я` and the selected People Profile are both effectively free from work for the entire calendar day.
 - Reuses the existing `sharedAvailabilityForDate(...).allDayFree` truth instead of maintaining an absence-type list: ordinary days off, managed `OFF`, and any factual `FULL_DAY + replacesShift=true` absence therefore participate automatically.

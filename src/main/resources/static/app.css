@@ -3374,3 +3374,15 @@ body.panel-open .globalQuickAdd { display:none !important; }
 @media(max-width:640px){
   .payrollWorkspace{width:min(calc(100% - 20px),var(--vue-shell-max))}
 }
+
+/* ─── v27.45.0 Production Calendar Foundation ───────────────── */
+.productionCalendarCard{padding:20px}.productionCalendarIntro{margin:6px 0 0;color:var(--mut);line-height:1.5;max-width:820px}
+.productionNormMetrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.productionNormMetrics>div{padding:13px;border:1px solid var(--line);border-radius:13px;background:color-mix(in srgb,var(--panel2) 68%,transparent);display:grid;gap:5px}
+.productionNormMetrics span{color:var(--dim);font-size:11px;font-weight:800}.productionNormMetrics b{font-size:18px}.productionNormMetrics .accent{border-color:color-mix(in srgb,var(--accent) 35%,var(--line))}.productionNormMetrics .accent b{color:var(--accent)}
+.productionCoverageWarning{margin:0 0 12px;padding:10px 12px;border-radius:12px;color:var(--accent);background:color-mix(in srgb,var(--accent) 9%,transparent);font-size:12px;font-weight:750}
+.productionCalendarGrid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr);gap:14px}.productionCalendarForm{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:14px;border:1px solid var(--line);border-radius:14px;background:color-mix(in srgb,var(--panel2) 54%,transparent)}
+.productionCalendarForm label{display:grid;gap:5px;color:var(--dim);font-size:12px;font-weight:800}.productionCalendarLabel,.productionCalendarActions,.productionCalendarForm>.payrollHint{grid-column:1/-1}.productionCalendarActions{display:flex;gap:8px;flex-wrap:wrap}.productionCalendarActions button{flex:1 1 180px}
+.productionCalendarRules{display:grid;align-content:start;gap:8px}.payrollSectionHead.compact{margin-bottom:2px}.productionCalendarRule{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left;padding:11px 12px;border:1px solid var(--line);border-radius:12px;background:color-mix(in srgb,var(--panel2) 58%,transparent);color:var(--text)}
+.productionCalendarRule.active{border-color:color-mix(in srgb,var(--accent) 45%,var(--line));box-shadow:0 0 0 1px color-mix(in srgb,var(--accent) 18%,transparent)}.productionCalendarRule span{display:grid;gap:3px;min-width:0}.productionCalendarRule small{color:var(--mut);overflow-wrap:anywhere}.productionCalendarRule strong{flex:none;color:var(--accent)}
+@media(max-width:900px){.productionCalendarGrid{grid-template-columns:1fr}}@media(max-width:640px){.productionNormMetrics{grid-template-columns:1fr}.productionCalendarForm{grid-template-columns:1fr}.productionCalendarLabel,.productionCalendarActions,.productionCalendarForm>.payrollHint{grid-column:auto}.productionCalendarRule{align-items:flex-start}}

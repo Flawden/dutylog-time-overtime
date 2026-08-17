@@ -5,7 +5,7 @@ Status: v27.43.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.44.4 adds managed People Profile schedule overrides without increasing test-count baselines: inventory remains 164 Java test classes / 792 @Test methods / 48 Chromium Playwright scenarios / 66 Vitest cases. Java 17 `mvn clean verify` is green with JaCoCo met; OpenAPI is 126/132 and Flyway is V48. The existing People Profiles browser scenario now covers OFF override save/reset; exact Node 20.18.1/npm 10.8.2 frontend and Chromium acceptance remain CI-owned.
+Current extension: v27.45.0 adds Production Calendar Foundation: inventory is 166 Java test classes / 797 @Test methods / 48 Chromium Playwright scenarios / 73 Vitest cases. OpenAPI advances to 129/135 (`6e23a5b4b53f`) and Flyway to V49. New service/contract tests lock independent norm/payroll effects, transferred workday norm, accounting-period mutation locks, WorkNorm single-source conversion and Payroll/Vue/OpenAPI integration. Exact Node 20.18.1/npm 10.8.2 frontend, Java 17 Maven/JaCoCo, Chromium and clean-PostgreSQL staging acceptance remain canonical gates.
 
 
 

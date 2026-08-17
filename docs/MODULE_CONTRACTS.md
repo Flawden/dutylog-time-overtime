@@ -1,3 +1,14 @@
+## Production Calendar work-norm contract (v27.45.0)
+
+- Base schedule is the source of **base norm**; Production Calendar is a separate dated adjustment layer and never represents an absence.
+- `schedule_effect` controls required norm only; `payroll_effect` classifies future compensation only. They are intentionally independent.
+- `NORM_OVERRIDE` stores an explicit 0–1440 minute required norm for that date, avoiding an implicit universal 8-hour assumption.
+- `BASE` is reserved for future official/imported material; `LOCAL_OVERRIDE` is owner-edited and wins for the same date.
+- Production Calendar mutation obeys accounting-period locks; current Payroll receives the norm summary but v27.45.0 does not change its money formula.
+- `WorkNormService` is the canonical conversion from a dated schedule entry to base planned minutes and is shared with Time Compensation.
+
+Status: v27.45.0.
+
 # Module contracts
 
 ## Managed People Profile schedule contract (v27.43.0)

@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 2d67b4db5a3de8f686b104cea86c84d6e0f90a61ae36187e2d2986a4c52a1bb4
+ * SHA-256: 6e23a5b4b53fcc962a23b91521287959ecf8dc591111bf31582188ecbf9b14ff
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 126 operations, 132 schemas
+ * Contract: 129 operations, 135 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "2d67b4db5a3de8f686b104cea86c84d6e0f90a61ae36187e2d2986a4c52a1bb4";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "6e23a5b4b53fcc962a23b91521287959ecf8dc591111bf31582188ecbf9b14ff";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -953,6 +953,7 @@ export namespace DutyLogApiSchemas {
     canCalculate: boolean;
     blockingReason?: "PERIOD_OPEN" | "LEDGER_INTEGRITY_FAILED" | "PAYROLL_RATE_REQUIRED" | null;
     settings: DutyLogApiSchemas.PayrollSettings;
+    productionCalendar: DutyLogApiSchemas.ProductionCalendarMonth;
     preview: DutyLogApiSchemas.PayrollPreview;
     adjustments: Array<DutyLogApiSchemas.PayrollAdjustment>;
     latestSnapshot?: DutyLogApiSchemas.PayrollSnapshot | null;
@@ -995,6 +996,38 @@ export namespace DutyLogApiSchemas {
     calculationHash: string;
     createdAt: string;
     supersededById?: number | null;
+  };
+
+  export type ProductionCalendarDay = DutyLogApiSchemas.ProductionCalendarDayInput & {
+    date: string;
+    sourceType: "NONE" | "CUSTOM" | "OFFICIAL" | "IMPORTED";
+    sourceRef?: string | null;
+    localOverride: boolean;
+    baseNormMinutes: number;
+    productionNormMinutes: number;
+    adjustmentMinutes: number;
+  };
+
+  export type ProductionCalendarDayInput = {
+    dayKind: "NORMAL" | "HOLIDAY" | "TRANSFERRED_DAY_OFF" | "TRANSFERRED_WORKDAY" | "SHORTENED_DAY";
+    scheduleEffect: "NONE" | "NORM_OVERRIDE";
+    normMinutesOverride?: number | null;
+    payrollEffect: "NONE" | "HOLIDAY";
+    label?: string | null;
+  };
+
+  export type ProductionCalendarMonth = {
+    month: string;
+    baseNormMinutes: number;
+    productionNormMinutes: number;
+    adjustmentMinutes: number;
+    holidayReductionMinutes: number;
+    shortenedReductionMinutes: number;
+    transferredAdjustmentMinutes: number;
+    affectedDays: number;
+    scheduleCoverageDays: number;
+    scheduleCoverageComplete: boolean;
+    days: Array<DutyLogApiSchemas.ProductionCalendarDay>;
   };
 
   export type Profile = {
@@ -1507,6 +1540,7 @@ export const dutyLogOperations = {
   "deleteInboxItem": { method: "DELETE", path: "/api/v1/inbox/{id}" },
   "deleteLegacyManualOvertimeUsage": { method: "DELETE", path: "/api/v1/overtime/usages/{id}" },
   "deleteOvertimeCredit": { method: "DELETE", path: "/api/v1/overtime/credits/{id}" },
+  "deleteProductionCalendarDayOverride": { method: "DELETE", path: "/api/v1/production-calendar/days/{date}" },
   "deleteQuickScenario": { method: "DELETE", path: "/api/v1/quick-scenarios/{id}" },
   "deleteScheduleTemplate": { method: "DELETE", path: "/api/v1/schedule-templates/{id}" },
   "deleteShiftType": { method: "DELETE", path: "/api/v1/shift-types/{id}" },
@@ -1558,6 +1592,7 @@ export const dutyLogOperations = {
   "previewLegacyTaskDeadlineMigration": { method: "GET", path: "/api/v1/tasks/legacy-deadline-migration/preview" },
   "previewOvertimeCredit": { method: "POST", path: "/api/v1/overtime/preview" },
   "previewScheduleTemplate": { method: "POST", path: "/api/v1/schedule-templates/{id}/preview" },
+  "productionCalendarMonth": { method: "GET", path: "/api/v1/production-calendar/months/{month}" },
   "promoteLegacyOvertimeUsages": { method: "POST", path: "/api/v1/overtime/legacy-usages/migrate" },
   "quickScenarios": { method: "GET", path: "/api/v1/quick-scenarios" },
   "readPrivateCalendarFeed": { method: "GET", path: "/api/v1/calendar-sync/events/{id}.ics" },
@@ -1601,6 +1636,7 @@ export const dutyLogOperations = {
   "updateVacationSettings": { method: "PATCH", path: "/api/v1/vacation-planner/settings" },
   "upsertCalendarLayerOverride": { method: "PUT", path: "/api/v1/calendar-layers/{id}/overrides/{date}" },
   "upsertDay": { method: "PUT", path: "/api/v1/days/{date}" },
+  "upsertProductionCalendarDay": { method: "PUT", path: "/api/v1/production-calendar/days/{date}" },
 } as const;
 
 export type DutyLogOperationId = keyof typeof dutyLogOperations;
@@ -1733,6 +1769,10 @@ export interface DutyLogOperationTypes {
   "deleteOvertimeCredit": {
     requestBody: undefined;
     response: unknown;
+  };
+  "deleteProductionCalendarDayOverride": {
+    requestBody: undefined;
+    response: undefined;
   };
   "deleteQuickScenario": {
     requestBody: undefined;
@@ -1940,6 +1980,10 @@ export interface DutyLogOperationTypes {
     requestBody: DutyLogApiSchemas.ScheduleTemplateApplyRequest;
     response: DutyLogApiSchemas.ScheduleTemplatePreview;
   };
+  "productionCalendarMonth": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.ProductionCalendarMonth;
+  };
   "promoteLegacyOvertimeUsages": {
     requestBody: DutyLogApiSchemas.LegacyOvertimeUsageMigrationRequest;
     response: DutyLogApiSchemas.LegacyOvertimeUsageMigrationResult;
@@ -2115,6 +2159,10 @@ export interface DutyLogOperationTypes {
   "upsertDay": {
     requestBody: undefined;
     response: unknown;
+  };
+  "upsertProductionCalendarDay": {
+    requestBody: DutyLogApiSchemas.ProductionCalendarDayInput;
+    response: DutyLogApiSchemas.ProductionCalendarDay;
   };
 }
 

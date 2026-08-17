@@ -819,6 +819,48 @@ paths:
         '201': { description: Immutable payroll revision, content: { application/json: { schema: { $ref: '#/components/schemas/PayrollSnapshot' } } } }
         '409': { $ref: '#/components/responses/ApiError' }
 
+  /api/v1/production-calendar/months/{month}:
+    get:
+      operationId: productionCalendarMonth
+      description: Base schedule norm plus effective production-calendar adjustments for one month.
+      parameters:
+        - { in: path, name: month, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' } }
+      responses:
+        '200':
+          description: Production-calendar month projection
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductionCalendarMonth' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/production-calendar/days/{date}:
+    put:
+      operationId: upsertProductionCalendarDay
+      description: Creates or replaces the local override for one production-calendar date.
+      parameters:
+        - { in: path, name: date, required: true, schema: { type: string, format: date } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProductionCalendarDayInput' }
+      responses:
+        '200':
+          description: Effective production-calendar date after applying the local override
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ProductionCalendarDay' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: deleteProductionCalendarDayOverride
+      description: Removes only the local override. A future BASE official/imported row remains intact.
+      parameters:
+        - { in: path, name: date, required: true, schema: { type: string, format: date } }
+      responses:
+        '204': { description: Local production-calendar override removed }
+        '409': { $ref: '#/components/responses/ApiError' }
+
   /api/v1/actual-work:
     get:
       operationId: listActualWorkIntervals
@@ -1888,6 +1930,43 @@ components:
             workedMinutes: { type: integer, minimum: 1, maximum: 2880 }
             createdAt: { type: string, format: date-time, nullable: true }
             updatedAt: { type: string, format: date-time, nullable: true }
+    ProductionCalendarDayInput:
+      type: object
+      required: [dayKind, scheduleEffect, payrollEffect]
+      properties:
+        dayKind: { type: string, enum: [NORMAL, HOLIDAY, TRANSFERRED_DAY_OFF, TRANSFERRED_WORKDAY, SHORTENED_DAY] }
+        scheduleEffect: { type: string, enum: [NONE, NORM_OVERRIDE], description: Independent effect on required work norm; it never mutates the factual schedule. }
+        normMinutesOverride: { type: integer, minimum: 0, maximum: 1440, nullable: true }
+        payrollEffect: { type: string, enum: [NONE, HOLIDAY], description: Independent payroll classification for work performed on the date. }
+        label: { type: string, maxLength: 120, nullable: true }
+    ProductionCalendarDay:
+      allOf:
+        - $ref: '#/components/schemas/ProductionCalendarDayInput'
+        - type: object
+          required: [date, sourceType, localOverride, baseNormMinutes, productionNormMinutes, adjustmentMinutes]
+          properties:
+            date: { type: string, format: date }
+            sourceType: { type: string, enum: [NONE, CUSTOM, OFFICIAL, IMPORTED] }
+            sourceRef: { type: string, maxLength: 240, nullable: true }
+            localOverride: { type: boolean }
+            baseNormMinutes: { type: integer, minimum: 0 }
+            productionNormMinutes: { type: integer, minimum: 0 }
+            adjustmentMinutes: { type: integer }
+    ProductionCalendarMonth:
+      type: object
+      required: [month, baseNormMinutes, productionNormMinutes, adjustmentMinutes, holidayReductionMinutes, shortenedReductionMinutes, transferredAdjustmentMinutes, affectedDays, scheduleCoverageDays, scheduleCoverageComplete, days]
+      properties:
+        month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
+        baseNormMinutes: { type: integer, minimum: 0 }
+        productionNormMinutes: { type: integer, minimum: 0 }
+        adjustmentMinutes: { type: integer }
+        holidayReductionMinutes: { type: integer, minimum: 0 }
+        shortenedReductionMinutes: { type: integer, minimum: 0 }
+        transferredAdjustmentMinutes: { type: integer }
+        affectedDays: { type: integer, minimum: 0 }
+        scheduleCoverageDays: { type: integer, minimum: 0 }
+        scheduleCoverageComplete: { type: boolean }
+        days: { type: array, items: { $ref: '#/components/schemas/ProductionCalendarDay' } }
     PayrollSettingsInput:
       type: object
       required: [currencyCode, hourlyRateMinor]
@@ -1952,7 +2031,7 @@ components:
             supersededById: { type: integer, format: int64, nullable: true }
     PayrollPeriod:
       type: object
-      required: [month, periodClosed, integrityHealthy, canCalculate, settings, preview, adjustments, snapshots]
+      required: [month, periodClosed, integrityHealthy, canCalculate, settings, productionCalendar, preview, adjustments, snapshots]
       properties:
         month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
         periodClosed: { type: boolean }
@@ -1960,6 +2039,7 @@ components:
         canCalculate: { type: boolean }
         blockingReason: { type: string, nullable: true, enum: [PERIOD_OPEN, LEDGER_INTEGRITY_FAILED, PAYROLL_RATE_REQUIRED] }
         settings: { $ref: '#/components/schemas/PayrollSettings' }
+        productionCalendar: { $ref: '#/components/schemas/ProductionCalendarMonth' }
         preview: { $ref: '#/components/schemas/PayrollPreview' }
         adjustments: { type: array, items: { $ref: '#/components/schemas/PayrollAdjustment' } }
         latestSnapshot:

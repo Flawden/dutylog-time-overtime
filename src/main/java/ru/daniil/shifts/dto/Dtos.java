@@ -2548,6 +2548,53 @@ public final class Dtos {
             @Size(max = 500, message = "Комментарий: максимум 500 символов") String note
     ) {}
 
+    /** Local production-calendar rule; schedule/norm and payroll effects are independent. */
+    public record ProductionCalendarDayUpdateRequest(
+            @NotBlank(message = "Тип дня обязателен")
+            @Pattern(regexp = "(?i)NORMAL|HOLIDAY|TRANSFERRED_DAY_OFF|TRANSFERRED_WORKDAY|SHORTENED_DAY",
+                    message = "Некорректный тип производственного дня")
+            String dayKind,
+            @NotBlank(message = "Влияние на норму обязательно")
+            @Pattern(regexp = "(?i)NONE|NORM_OVERRIDE", message = "Некорректное влияние на норму")
+            String scheduleEffect,
+            @Min(value = 0, message = "Норма дня не может быть отрицательной")
+            @Max(value = 1440, message = "Норма дня не может быть больше 1440 минут")
+            Integer normMinutesOverride,
+            @NotBlank(message = "Категория оплаты обязательна")
+            @Pattern(regexp = "(?i)NONE|HOLIDAY", message = "Некорректная категория оплаты")
+            String payrollEffect,
+            @Size(max = 120, message = "Название: максимум 120 символов") String label
+    ) {}
+
+    public record ProductionCalendarDayDto(
+            String date,
+            String dayKind,
+            String scheduleEffect,
+            Integer normMinutesOverride,
+            String payrollEffect,
+            String label,
+            String sourceType,
+            String sourceRef,
+            boolean localOverride,
+            int baseNormMinutes,
+            int productionNormMinutes,
+            int adjustmentMinutes
+    ) {}
+
+    public record ProductionCalendarMonthDto(
+            String month,
+            int baseNormMinutes,
+            int productionNormMinutes,
+            int adjustmentMinutes,
+            int holidayReductionMinutes,
+            int shortenedReductionMinutes,
+            int transferredAdjustmentMinutes,
+            int affectedDays,
+            int scheduleCoverageDays,
+            boolean scheduleCoverageComplete,
+            List<ProductionCalendarDayDto> days
+    ) {}
+
     /** Per-user money settings. All values are stored in minor currency units. */
     public record PayrollSettingsDto(
             String currencyCode,
@@ -2646,6 +2693,7 @@ public final class Dtos {
             boolean canCalculate,
             String blockingReason,
             PayrollSettingsDto settings,
+            ProductionCalendarMonthDto productionCalendar,
             PayrollPreviewDto preview,
             List<PayrollAdjustmentDto> adjustments,
             PayrollSnapshotDto latestSnapshot,

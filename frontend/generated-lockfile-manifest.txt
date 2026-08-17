@@ -1,10 +1,10 @@
-release=27.44.4
+release=27.45.0
 node=20.18.1
 npm=10.8.2
 lockfileVersion=3
 packages=134
 sourceArtifactSha256=3f6c590948a62c506c2191c9b279f15712f5182148c5f3131e96d5a56bd54060
-committedLockfileSha256=6cd8acb875a6ee2d4dca2536b068e63d3349a0af64514c96356c6ea99cbf8b6c
+committedLockfileSha256=66e1a1727d59fab5f4263778f9f9fd79f77394a88a50a5a469ac651195a621af
 source=github-actions-run-30906521813
 graphPolicy=ci-generated-transitive-graph-preserved-root-version-promoted-only
-nextAction=production-calendar-foundation-after-v27.44.4-green
+nextAction=payroll-core-after-v27.45.0-green

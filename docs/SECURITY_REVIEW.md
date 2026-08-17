@@ -1,3 +1,9 @@
+# v27.45.0 Production Calendar Foundation review
+
+Production Calendar adds authenticated owner-scoped persistence and three API operations under the existing Shifts module gate. The backend derives the owner from the authenticated principal; clients cannot provide a user id. Local mutation is accounting-period locked, database uniqueness is `(user_id, calendar_date, layer)`, and the v27.45.0 UI can edit only `LOCAL_OVERRIDE`; `BASE` is reserved for future official/imported sources. The release adds no credential, role, cross-account sharing path or dependency. Production Calendar changes work-norm metadata only and does not create absences or execute money rules.
+
+Status: v27.45.0.
+
 # v27.44.3 People Profile Coverage Semantics Hotfix review
 
 v27.44.3 changes only client-side interpretation/presentation of already-authorized companion calendar data. It adds no endpoint, credential, role, authorization rule, persistence path, account-to-account transport or dependency. The fix is fail-closed: dates outside declared companion schedule coverage are treated as unknown rather than inferred free time.
