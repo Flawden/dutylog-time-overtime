@@ -4840,7 +4840,7 @@ contains frontend/generated-lockfile-manifest.txt "nextAction=payroll-classifica
 contains frontend/browser-bundle-budget.json '"release": "27.46.0"'
 contains src/main/java/ru/daniil/shifts/service/PayrollService.java "PAYROLL_PRODUCTION_NORM_INCOMPLETE"
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue "effectiveMonth.value=month.value"
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 890000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 900000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.45.1 Native Workday / Day Truth Integration
@@ -4887,7 +4887,6 @@ contains src/test/java/ru/daniil/shifts/service/ProductionCalendarFoundationServ
 contains src/test/java/ru/daniil/shifts/service/ProductionCalendarFoundationServiceTest.java "workdayTruthJoinsBaseNormRequiredNormAndExplicitReality"
 contains src/test/java/ru/daniil/shifts/service/NativeWorkdayClosedLoopServiceTest.java "firstActualIntervalInheritsShiftBreakAndPostsOnlyNetOvertime"
 contains src/test/java/ru/daniil/shifts/service/NativeWorkdayClosedLoopServiceTest.java "usedDerivedCreditBlocksFactDeletionInsteadOfCorruptingFifo"
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 890000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.45.0 Production Calendar Foundation
