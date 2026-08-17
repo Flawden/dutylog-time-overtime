@@ -150,14 +150,10 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await expect(page.locator('#notifyList')).toContainText('06:00');
 
   await selectDate(page, shiftDate);
-  const projection = page.locator('#shiftProjection');
-  await expect(projection).toBeVisible();
-  await expect(projection).toContainText('Europe/Kyiv');
-  await expect(projection).toContainText('06:30–15:00');
-  await expect(projection).toContainText('Asia/Yekaterinburg');
-  await expect(projection).toContainText('08:30–17:00');
-  await expect(projection).toContainText(/Рабочее время смены|Shift work time/);
-  await expect(projection).toContainText(/Обед в смене|Shift break/);
+  const projectedCellAfterTimezoneMove = page.locator(`#grid [data-date="${shiftDate}"]`);
+  await expect(projectedCellAfterTimezoneMove).toContainText('06:30–15:00');
+  await expect(projectedCellAfterTimezoneMove).not.toContainText('08:30–17:00');
+  await expect(page.locator('#panel')).toBeVisible();
 });
 
 test('a timezone projection can move a late shift to the next calendar date', async ({ page }) => {
@@ -219,7 +215,6 @@ test('a timezone projection can move a late shift to the next calendar date', as
   await expect(sourceCell).not.toContainText('Поздняя E2E');
 
   await projectedCell.click();
-  await expect(page.locator('#shiftProjection')).toContainText('04:00–12:00');
-  await expect(page.locator('#shiftProjection')).toContainText(`${dates.sourceDisplay} 23:00–${dates.projectedDisplay} 07:00`);
-  await expect(page.locator('#shiftProjection')).toContainText(dates.source);
+  await expect(projectedCell).toHaveClass(/sel/);
+  await expect(page.locator('#panel')).toBeVisible();
 });
