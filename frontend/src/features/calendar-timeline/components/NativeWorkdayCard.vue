@@ -245,9 +245,11 @@ async function deleteSelectedActual(): Promise<void> {
 
 async function quickDeleteActual(): Promise<void> {
   const items = truth.value?.actualWork ?? [];
-  if (items.length !== 1) { openActual(items[0] ?? null); return; }
+  const item = items[0] ?? null;
+  if (items.length !== 1) { openActual(item); return; }
+  if (!item) return;
   if (!window.confirm("Удалить фактическую работу этого дня? Связанная автоматическая переработка будет пересчитана.")) return;
-  await deleteActual(Number(items[0].id));
+  await deleteActual(Number(item.id));
 }
 
 async function quickResetSpecialDay(): Promise<void> {
