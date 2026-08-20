@@ -497,7 +497,7 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
             <span class="domain-status">{{ usageKindLabel(usage) }} · {{ usage.reserved ? 'зарезервировано' : 'проведено' }}</span>
           </div>
           <p v-if="usageIsAbsenceOwned(usage)" class="usage-card__owner">Управляется отсутствием</p>
-          <p v-else-if="usageIsSettlementOwned(usage)" class="usage-card__owner">Управляется решением «к оплате» · сумма денег ещё не рассчитывается</p>
+          <p v-else-if="usageIsSettlementOwned(usage)" class="usage-card__owner">Управляется решением «к оплате» · сумма рассчитывается в Payroll по правилам Pricing</p>
           <p v-else class="usage-card__owner">Legacy-списание без отдельного бизнес-владельца</p>
           <div class="usage-card__allocations">
             <div v-for="allocation in usage.allocations ?? []" :key="`${usage.id}-${allocation.creditId}-${allocation.minutes}`" class="timeBankAllocationRow">
@@ -536,7 +536,7 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
       <div id="timeBankGuideModal" class="time-bank-guide">
         <section><b>1. Начисление</b><p>Каждая переработка остаётся отдельным неизменным источником времени.</p></section>
         <section><b>2. Отгул</b><p>Компенсация временем создаётся как отсутствие. Там находятся его статус и жизненный цикл.</p></section>
-        <section><b>3. К оплате</b><p>Это отдельное явное решение списать минуты из банка для будущей денежной выплаты. Сумма появится только после слоя Pricing.</p></section>
+        <section><b>3. К оплате</b><p>Это отдельное явное решение списать минуты из банка для денежной выплаты. Payroll рассчитывает сумму по исторической ставке и правилам Pricing исходной переработки.</p></section>
         <section><b>4. Один FIFO</b><p>И отгул, и «к оплате» используют одну очередь источников. Одна минута не может быть погашена дважды.</p></section>
         <section><b>5. Владельцы операций</b><p>Из банка можно открыть исходное отсутствие или решение «к оплате» и изменить его, пока расчётный период открыт.</p></section>
       </div>

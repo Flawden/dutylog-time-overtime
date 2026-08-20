@@ -88,7 +88,7 @@ const settlementHours =
   <UiModal
     :open="settlementModalOpen"
     :title="title"
-    description="Явное решение списать минуты из единого банка для будущей денежной выплаты. Стоимость пока не рассчитывается."
+    description="Явное решение списать минуты из единого банка для денежной выплаты. Сумма рассчитывается в Payroll по исторической ставке и правилам Pricing исходной переработки."
     @close="store.closeSettlementEditor()"
   >
     <div
@@ -168,8 +168,9 @@ const settlementHours =
         <span class="domain-muted">
           Эти минуты сразу уйдут из свободного
           остатка банка по тому же FIFO, что и
-          отгул. Денежная сумма появится позже
-          в Pricing / Payroll.
+          отгул. Денежная сумма рассчитывается
+          в Payroll по исторической ставке и
+          правилам Pricing исходной переработки.
         </span>
       </section>
 

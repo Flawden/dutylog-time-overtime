@@ -2654,7 +2654,7 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "50" ]]; then
+if [[ "$E2E_TESTS" == "51" ]]; then
   # v27.11.1 CI & Contract Hotfix
 contains CHANGES.md "v27.11.1 — CI & Contract Hotfix"
 contains README.md "v27.11.1 — CI & Contract Hotfix"
@@ -4909,9 +4909,23 @@ not_contains src/main/java/ru/daniil/shifts/module/DutyLogModules.java 'ModuleSe
   contains e2e/payroll-holiday-premium.spec.js "payrollEffect:'HOLIDAY'"
   contains e2e/payroll-holiday-premium.spec.js "ordinaryPremiumPayMinor).toBe(100000)"
   contains e2e/payroll-holiday-premium.spec.js "totalPayMinor).toBe(200000)"
-  ok "Playwright test baseline: 50"
+  # v27.46.2 6H4b OVERTIME bank-first cash settlement vertical
+  contains e2e/payroll-overtime-settlement.spec.js "banked overtime becomes Payroll money only after explicit settlement with configured tiers"
+  contains e2e/payroll-overtime-settlement.spec.js "OT_TIER_1"
+  contains e2e/payroll-overtime-settlement.spec.js "OT_TIER_2"
+  contains e2e/payroll-overtime-settlement.spec.js "settlementBasePayMinor).toBe(300000)"
+  contains e2e/payroll-overtime-settlement.spec.js "settlementPremiumPayMinor).toBe(200000)"
+  contains e2e/payroll-overtime-settlement.spec.js "settlementPayMinor).toBe(500000)"
+  contains e2e/payroll-overtime-settlement.spec.js "totalPayMinor).toBe(1300000)"
+  contains frontend/src/features/absence-time-bank/components/TimeBankPage.vue "сумма рассчитывается в Payroll по правилам Pricing"
+  contains frontend/src/features/absence-time-bank/components/SettlementEditor.vue "Сумма рассчитывается в Payroll по исторической ставке и правилам Pricing исходной переработки."
+  not_contains frontend/src/features/absence-time-bank/components/TimeBankPage.vue "сумма денег ещё не рассчитывается"
+  not_contains frontend/src/features/absence-time-bank/components/TimeBankPage.vue "Сумма появится только после слоя Pricing."
+  not_contains frontend/src/features/absence-time-bank/components/SettlementEditor.vue "Стоимость пока не рассчитывается."
+  not_contains frontend/src/features/absence-time-bank/components/SettlementEditor.vue "Денежная сумма появится позже"
+  ok "Playwright test baseline: 51"
 else
-  fail "expected 50 Playwright tests, found $E2E_TESTS"
+  fail "expected 51 Playwright tests, found $E2E_TESTS"
 fi
 
 VITEST_TESTS=$(grep -R --include='*.spec.ts' --include='*.test.ts' -h -E '^[[:space:]]*(it|test)\(' frontend/src | wc -l | tr -d ' ')
