@@ -5,7 +5,7 @@ async function setTimezone(page, zone) {
   await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption(zone);
-  const saved = waitForApi(page, 'PUT', '/api/v1/profile');
+  const saved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await saved;
 }

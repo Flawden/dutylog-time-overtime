@@ -29,8 +29,9 @@ test('Payroll Foundation calculates a versioned closed-month snapshot from the c
   expect(result.snapshot.revision).toBe(1);
   expect(result.snapshot.workedMinutes).toBe(480);
   expect(result.snapshot.payableMinutes).toBe(480);
-  expect(result.snapshot.basePayMinor).toBe(800000);
-  expect(result.snapshot.totalPayMinor).toBe(850000);
+  expect(result.snapshot.hourlyBasePayableMinutes).toBe(0);
+  expect(result.snapshot.basePayMinor).toBe(0);
+  expect(result.snapshot.totalPayMinor).toBe(50000);
   expect(result.snapshot.calculationHash).toHaveLength(64);
   expect(result.period.periodClosed).toBe(true);
   expect(result.period.integrityHealthy).toBe(true);

@@ -38,7 +38,7 @@ test('overtime credit and usage editors work from calendar and ledger', async ({
   await expect(page.locator('#otBalance')).toContainText('+8');
 
   await expect(page.locator('#dayAddUsage')).toHaveText('Оформить отгул');
-  await expect(page.locator('.overtimeUsageHint')).toContainText('списывает часы банка по FIFO');
+  await expect(page.locator('.overtimeUsageHint')).toContainText('расходуют один банк по FIFO');
   await page.locator('#dayAddUsage').click();
   await expect(page.locator('#absenceComposerModal')).toBeVisible();
   await expect(page.locator('#vacationType option:checked')).toContainText('Отгул');

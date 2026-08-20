@@ -51,7 +51,7 @@ test('important dates stay floating while canonical timezone survives reload', a
   await timezone.selectOption('Europe/Chisinau');
   await expect(page.locator('#timeSettingsStatus')).toContainText(/не сохранено|not saved/i);
   await expect(page.locator('#timeNowBox')).toContainText('Europe/Chisinau');
-  const profileSaved = waitForApi(page, 'PUT', '/api/v1/profile');
+  const profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
@@ -76,7 +76,7 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
-  let profileSaved = waitForApi(page, 'PUT', '/api/v1/profile');
+  let profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
@@ -124,7 +124,7 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
   await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('Europe/Kyiv');
-  profileSaved = waitForApi(page, 'PUT', '/api/v1/profile');
+  profileSaved = waitForApi(page, 'PUT', '/api/profile');
   const calendarRefreshed = page.waitForResponse(response => {
     const url = new URL(response.url());
     return response.request().method() === 'GET'
@@ -174,7 +174,7 @@ test('a timezone projection can move a late shift to the next calendar date', as
   await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('UTC');
-  let profileSaved = waitForApi(page, 'PUT', '/api/v1/profile');
+  let profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
@@ -196,7 +196,7 @@ test('a timezone projection can move a late shift to the next calendar date', as
   await page.locator('[data-settings-jump="time"]').click();
   // Moving from UTC to fixed UTC+5 sends the whole interval to the next local calendar date.
   await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
-  profileSaved = waitForApi(page, 'PUT', '/api/v1/profile');
+  profileSaved = waitForApi(page, 'PUT', '/api/profile');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
