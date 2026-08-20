@@ -3,6 +3,7 @@ package ru.daniil.shifts.service;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
 import ru.daniil.shifts.dto.Dtos.ActualWorkIntervalRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest;
 import ru.daniil.shifts.model.ActualWorkInterval;
@@ -18,6 +19,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_CLASS)
 class WorkTimezoneChangeServiceTest {
 
     @Autowired
