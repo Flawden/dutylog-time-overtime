@@ -4937,15 +4937,15 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1035" ]]; then
-  ok "test method baseline: 1035"
+if [[ "$TEST_METHODS" == "1042" ]]; then
+  ok "test method baseline: 1042"
 else
-  fail "expected 1035 @Test methods, found $TEST_METHODS"
+  fail "expected 1042 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "223" ]]; then
-  ok "test class baseline: 223"
+if [[ "$TEST_CLASSES" == "224" ]]; then
+  ok "test class baseline: 224"
 else
-  fail "expected 223 test classes, found $TEST_CLASSES"
+  fail "expected 224 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
@@ -5004,6 +5004,18 @@ contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
 contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
 contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
 contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
+
+# v27.47.0 7A3A Immutable Generic Compensation Component Snapshot Foundation
+contains src/main/resources/db/migration/postgresql/V63__payroll_snapshot_compensation_components.sql "compensation_component_count"
+contains src/main/resources/db/migration/postgresql/V63__payroll_snapshot_compensation_components.sql "CREATE TABLE payroll_snapshot_compensation_component_lines"
+contains src/main/resources/db/migration/postgresql/V63__payroll_snapshot_compensation_components.sql "Deliberately no FK to mutable configuration"
+contains src/main/java/ru/daniil/shifts/model/PayrollSnapshot.java "compensationComponentCount"
+contains src/main/java/ru/daniil/shifts/model/PayrollSnapshot.java "compensationComponentEarningsMinor"
+contains src/main/java/ru/daniil/shifts/model/PayrollSnapshot.java "compensationComponentFingerprint"
+contains src/main/java/ru/daniil/shifts/model/PayrollSnapshotComponentLine.java "class PayrollSnapshotComponentLine"
+contains src/main/java/ru/daniil/shifts/repo/PayrollSnapshotComponentLineRepository.java "findBySnapshotOrderByLineIndexAsc"
+contains src/test/java/ru/daniil/shifts/model/PayrollSnapshotCompensationComponentModelTest.java "zeroMoneyComponentProjectionMayStillFreezeIdentity"
+contains src/test/java/ru/daniil/shifts/model/PayrollSnapshotCompensationComponentModelTest.java "Премия за выживание после ночной смены"
 
 # v27.47.0 7A2 Generic Compensation Components API / Resolver development slice
 contains src/main/java/ru/daniil/shifts/service/CompensationComponentResolverService.java "class CompensationComponentResolverService"

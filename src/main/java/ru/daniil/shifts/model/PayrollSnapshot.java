@@ -37,6 +37,25 @@ public class PayrollSnapshot {
     @Column(name = "base_pay_minor", nullable = false) private long basePayMinor;
 
     /*
+     * Generic compensation component snapshot aggregate.
+     *
+     * Detailed immutable provenance is stored in
+     * payroll_snapshot_compensation_component_lines.
+     *
+     * count > 0 with zero earnings is valid: an enabled percentage component
+     * may legitimately evaluate to zero while still participating in the
+     * calculation identity.
+     */
+    @Column(name = "compensation_component_count", nullable = false)
+    private int compensationComponentCount;
+
+    @Column(name = "compensation_component_earnings_minor", nullable = false)
+    private long compensationComponentEarningsMinor;
+
+    @Column(name = "compensation_component_fingerprint", length = 64)
+    private String compensationComponentFingerprint;
+
+    /*
      * Ordinary-work premium snapshot.
      *
      * referenceBase is explainability only; ordinary base is already frozen in
@@ -137,8 +156,8 @@ public class PayrollSnapshot {
     }
 
     /**
-     * Full immutable Payroll snapshot constructor including ordinary premium
-     * time, explainability money and deep pricing identity.
+     * Source-compatible full constructor from before generic compensation
+     * component money became part of immutable Payroll revisions.
      */
     public PayrollSnapshot(AppUser owner, LocalDate periodMonth, int revision,
                            String currencyCode, long hourlyRateMinor, String payMode,
@@ -148,6 +167,79 @@ public class PayrollSnapshot {
                            int sickMinutes, int overtimeCompensatedMinutes, int unpaidMinutes,
                            int timeAdjustmentMinutes, int paidAbsenceMinutes, int payableMinutes,
                            int hourlyBasePayableMinutes, long basePayMinor,
+                           int ordinaryPremiumMinutes,
+                           long ordinaryPremiumReferenceBasePayMinor,
+                           long ordinaryPremiumPayMinor,
+                           String ordinaryPremiumPricingFingerprint,
+                           int settlementCount, int settlementMinutes,
+                           long settlementBasePayMinor, long settlementPremiumPayMinor,
+                           long settlementPayMinor, String settlementPricingFingerprint,
+                           long additionsMinor, long deductionsMinor, long totalPayMinor,
+                           Instant sourcePeriodClosedAt, Instant sourceIntegrityCheckedAt,
+                           String calculationHash) {
+        this(
+                owner,
+                periodMonth,
+                revision,
+                currencyCode,
+                hourlyRateMinor,
+                payMode,
+                compensationEffectiveFrom,
+                configuredHourlyRateMinor,
+                monthlySalaryMinor,
+                productionNormMinutes,
+                salaryCoveredMinutes,
+                plannedMinutes,
+                workedMinutes,
+                vacationMinutes,
+                sickMinutes,
+                overtimeCompensatedMinutes,
+                unpaidMinutes,
+                timeAdjustmentMinutes,
+                paidAbsenceMinutes,
+                payableMinutes,
+                hourlyBasePayableMinutes,
+                basePayMinor,
+                0,
+                0L,
+                null,
+                ordinaryPremiumMinutes,
+                ordinaryPremiumReferenceBasePayMinor,
+                ordinaryPremiumPayMinor,
+                ordinaryPremiumPricingFingerprint,
+                settlementCount,
+                settlementMinutes,
+                settlementBasePayMinor,
+                settlementPremiumPayMinor,
+                settlementPayMinor,
+                settlementPricingFingerprint,
+                additionsMinor,
+                deductionsMinor,
+                totalPayMinor,
+                sourcePeriodClosedAt,
+                sourceIntegrityCheckedAt,
+                calculationHash
+        );
+    }
+
+    /**
+     * Complete immutable Payroll snapshot constructor.
+     *
+     * Generic compensation component lines are persisted separately after
+     * the snapshot receives its database identity. This constructor freezes
+     * their aggregate count, money and deterministic projection fingerprint.
+     */
+    public PayrollSnapshot(AppUser owner, LocalDate periodMonth, int revision,
+                           String currencyCode, long hourlyRateMinor, String payMode,
+                           LocalDate compensationEffectiveFrom, Long configuredHourlyRateMinor,
+                           Long monthlySalaryMinor, int productionNormMinutes, int salaryCoveredMinutes,
+                           int plannedMinutes, int workedMinutes, int vacationMinutes,
+                           int sickMinutes, int overtimeCompensatedMinutes, int unpaidMinutes,
+                           int timeAdjustmentMinutes, int paidAbsenceMinutes, int payableMinutes,
+                           int hourlyBasePayableMinutes, long basePayMinor,
+                           int compensationComponentCount,
+                           long compensationComponentEarningsMinor,
+                           String compensationComponentFingerprint,
                            int ordinaryPremiumMinutes,
                            long ordinaryPremiumReferenceBasePayMinor,
                            long ordinaryPremiumPayMinor,
@@ -181,6 +273,36 @@ public class PayrollSnapshot {
         this.payableMinutes = payableMinutes;
         this.hourlyBasePayableMinutes = hourlyBasePayableMinutes;
         this.basePayMinor = basePayMinor;
+
+        if (compensationComponentCount < 0
+                || compensationComponentEarningsMinor < 0) {
+            throw new IllegalArgumentException(
+                    "Compensation component snapshot values must be non-negative"
+            );
+        }
+
+        if (compensationComponentCount == 0) {
+            if (compensationComponentEarningsMinor != 0
+                    || compensationComponentFingerprint != null) {
+                throw new IllegalArgumentException(
+                        "Empty compensation component snapshot cannot contain money or fingerprint"
+                );
+            }
+        } else if (compensationComponentFingerprint == null
+                || !compensationComponentFingerprint.matches(
+                        "[0-9a-f]{64}"
+                )) {
+            throw new IllegalArgumentException(
+                    "Non-empty compensation component snapshot requires fingerprint"
+            );
+        }
+
+        this.compensationComponentCount =
+                compensationComponentCount;
+        this.compensationComponentEarningsMinor =
+                compensationComponentEarningsMinor;
+        this.compensationComponentFingerprint =
+                compensationComponentFingerprint;
 
         if (ordinaryPremiumMinutes < 0
                 || ordinaryPremiumReferenceBasePayMinor < 0
@@ -235,7 +357,9 @@ public class PayrollSnapshot {
                 );
             }
         } else if (settlementPricingFingerprint == null
-                || !settlementPricingFingerprint.matches("[0-9a-f]{64}")) {
+                || !settlementPricingFingerprint.matches(
+                        "[0-9a-f]{64}"
+                )) {
             throw new IllegalArgumentException(
                     "Non-empty settlement snapshot requires pricing fingerprint"
             );
@@ -266,6 +390,9 @@ public class PayrollSnapshot {
     public int getPaidAbsenceMinutes() { return paidAbsenceMinutes; } public int getPayableMinutes() { return payableMinutes; }
     public int getHourlyBasePayableMinutes() { return hourlyBasePayableMinutes; }
     public long getBasePayMinor() { return basePayMinor; }
+    public int getCompensationComponentCount() { return compensationComponentCount; }
+    public long getCompensationComponentEarningsMinor() { return compensationComponentEarningsMinor; }
+    public String getCompensationComponentFingerprint() { return compensationComponentFingerprint; }
     public int getOrdinaryPremiumMinutes() { return ordinaryPremiumMinutes; }
     public long getOrdinaryPremiumReferenceBasePayMinor() { return ordinaryPremiumReferenceBasePayMinor; }
     public long getOrdinaryPremiumPayMinor() { return ordinaryPremiumPayMinor; }
