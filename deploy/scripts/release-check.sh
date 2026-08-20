@@ -2654,7 +2654,7 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "49" ]]; then
+if [[ "$E2E_TESTS" == "50" ]]; then
   # v27.11.1 CI & Contract Hotfix
 contains CHANGES.md "v27.11.1 — CI & Contract Hotfix"
 contains README.md "v27.11.1 — CI & Contract Hotfix"
@@ -4903,9 +4903,15 @@ not_contains src/main/java/ru/daniil/shifts/module/DutyLogModules.java 'ModuleSe
   contains e2e/payroll-night-premium.spec.js "ordinaryPremiumPayMinor).toBe(20000)"
   contains e2e/payroll-night-premium.spec.js "ordinaryPremiumPricingFingerprint).toHaveLength(64)"
   contains e2e/payroll-night-premium.spec.js "totalPayMinor).toBe(120000)"
-  ok "Playwright test baseline: 49"
+  # v27.46.2 6H4a HOLIDAY Premium vertical E2E
+  contains e2e/payroll-holiday-premium.spec.js "native HOLIDAY pricing adds configured premium from production calendar into Payroll and snapshot"
+  contains e2e/payroll-holiday-premium.spec.js "HOLIDAY_E2E_100"
+  contains e2e/payroll-holiday-premium.spec.js "payrollEffect:'HOLIDAY'"
+  contains e2e/payroll-holiday-premium.spec.js "ordinaryPremiumPayMinor).toBe(100000)"
+  contains e2e/payroll-holiday-premium.spec.js "totalPayMinor).toBe(200000)"
+  ok "Playwright test baseline: 50"
 else
-  fail "expected 49 Playwright tests, found $E2E_TESTS"
+  fail "expected 50 Playwright tests, found $E2E_TESTS"
 fi
 
 VITEST_TESTS=$(grep -R --include='*.spec.ts' --include='*.test.ts' -h -E '^[[:space:]]*(it|test)\(' frontend/src | wc -l | tr -d ' ')
