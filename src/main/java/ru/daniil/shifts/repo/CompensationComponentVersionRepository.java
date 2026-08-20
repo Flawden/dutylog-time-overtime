@@ -35,4 +35,18 @@ public interface CompensationComponentVersionRepository
             @Param("owner") AppUser owner,
             @Param("effectiveFrom") LocalDate effectiveFrom
     );
+
+    @Query("""
+            select version
+            from CompensationComponentVersion version
+            join fetch version.component component
+            where component.owner = :owner
+            order by component.id asc,
+                     version.effectiveFrom desc,
+                     version.id desc
+            """)
+    List<CompensationComponentVersion>
+    findOwnerHistory(
+            @Param("owner") AppUser owner
+    );
 }

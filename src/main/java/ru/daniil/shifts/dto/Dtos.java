@@ -2737,6 +2737,72 @@ public final class Dtos {
             String updatedAt
     ) {}
 
+    /** One effective-month user-defined compensation component version. */
+    public record PayrollCompensationComponentVersionRequest(
+            @NotBlank(message = "Название компонента обязательно")
+            @Size(max = 120, message = "Название компонента: максимум 120 символов")
+            String displayName,
+
+            @NotBlank(message = "Формула компонента обязательна")
+            @Pattern(
+                    regexp = "(?i)FIXED_AMOUNT|PERCENT_OF_BASE",
+                    message = "Формула должна быть FIXED_AMOUNT или PERCENT_OF_BASE"
+            )
+            String calculationType,
+
+            @Pattern(
+                    regexp = "(?i)NOMINAL_SALARY|EARNED_BASE_PAY",
+                    message = "Некорректная расчётная база"
+            )
+            String calculationBase,
+
+            @Min(value = 1, message = "Процент должен быть положительным")
+            @Max(value = 10000000L, message = "Процент слишком велик")
+            Integer rateBps,
+
+            @Min(value = 1, message = "Сумма должна быть положительной")
+            @Max(value = 1000000000000L, message = "Сумма слишком велика")
+            Long amountMinor,
+
+            @Pattern(
+                    regexp = "[A-Za-z]{3}",
+                    message = "Код валюты должен состоять из трёх букв"
+            )
+            String currencyCode,
+
+            @NotNull(message = "Нужно указать, включён ли компонент")
+            Boolean enabled
+    ) {}
+
+    /** Creates a new stable component identity and its first effective-month version. */
+    public record PayrollCompensationComponentCreateRequest(
+            @NotBlank(message = "Месяц действия обязателен")
+            @Pattern(
+                    regexp = "\\d{4}-(0[1-9]|1[0-2])",
+                    message = "Месяц действия должен быть в формате yyyy-MM"
+            )
+            String effectiveMonth,
+
+            @NotNull(message = "Настройки компонента обязательны")
+            @Valid
+            PayrollCompensationComponentVersionRequest version
+    ) {}
+
+    public record PayrollCompensationComponentVersionDto(
+            Long componentId,
+            Long versionId,
+            String effectiveMonth,
+            String displayName,
+            String calculationType,
+            String calculationBase,
+            Integer rateBps,
+            Long amountMinor,
+            String currencyCode,
+            boolean enabled,
+            String createdAt,
+            String updatedAt
+    ) {}
+
     /** One additive effective-dated pricing rule. premiumBps uses 10_000 = +1.00x. */
     public record PayPricingRuleRequest(
             @NotBlank(message = "Код правила обязателен")

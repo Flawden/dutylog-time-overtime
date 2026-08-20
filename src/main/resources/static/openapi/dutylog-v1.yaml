@@ -887,6 +887,75 @@ paths:
       responses:
         '204': { description: Compensation term removed }
 
+  /api/v1/payroll/compensation-components:
+    get:
+      operationId: listPayrollCompensationComponentHistory
+      description: Lists the owner's full generic compensation-component version history. Stable component identity is preserved across renames, formula changes and disabled versions.
+      responses:
+        '200':
+          description: Compensation component history
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PayrollCompensationComponentVersion' }
+        '401': { $ref: '#/components/responses/ApiError' }
+    post:
+      operationId: createPayrollCompensationComponent
+      description: Creates one stable owner-scoped compensation component and its initial effective-month version. Component display names are user-owned text and do not select legal or payroll semantics.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PayrollCompensationComponentCreateInput' }
+      responses:
+        '201':
+          description: Created compensation component version
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PayrollCompensationComponentVersion' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+
+  /api/v1/payroll/compensation-components/effective/{month}:
+    get:
+      operationId: listEffectivePayrollCompensationComponents
+      description: Resolves exactly one latest version of every stable compensation component effective for the requested month. Disabled versions remain explicit historical state.
+      parameters:
+        - { in: path, name: month, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' } }
+      responses:
+        '200':
+          description: Effective compensation components
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PayrollCompensationComponentVersion' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+
+  /api/v1/payroll/compensation-components/{componentId}/versions/{month}:
+    put:
+      operationId: upsertPayrollCompensationComponentVersion
+      description: Creates or wholly replaces the exact effective-month version of one existing owner-scoped stable component. Disabling is represented by enabled=false; the stable component itself is not deleted.
+      parameters:
+        - { in: path, name: componentId, required: true, schema: { type: integer, format: int64, minimum: 1 } }
+        - { in: path, name: month, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PayrollCompensationComponentVersionInput' }
+      responses:
+        '200':
+          description: Effective-month component version
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PayrollCompensationComponentVersion' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+
   /api/v1/payroll/pricing/terms:
     get:
       operationId: listPayrollPricingTerms
@@ -2215,6 +2284,81 @@ components:
             id: { type: integer, format: int64 }
             effectiveMonth: { type: string, pattern: '^\d{4}-\d{2}$' }
             updatedAt: { type: string, format: date-time }
+    PayrollCompensationComponentVersionInput:
+      type: object
+      required: [displayName, calculationType, enabled]
+      properties:
+        displayName:
+          type: string
+          minLength: 1
+          maxLength: 120
+        calculationType:
+          type: string
+          enum: [FIXED_AMOUNT, PERCENT_OF_BASE]
+        calculationBase:
+          type: string
+          enum: [NOMINAL_SALARY, EARNED_BASE_PAY]
+        rateBps:
+          type: integer
+          minimum: 1
+          maximum: 10000000
+        amountMinor:
+          type: integer
+          format: int64
+          minimum: 1
+          maximum: 1000000000000
+        currencyCode:
+          type: string
+          pattern: '^[A-Za-z]{3}$'
+        enabled:
+          type: boolean
+
+    PayrollCompensationComponentCreateInput:
+      type: object
+      required: [effectiveMonth, version]
+      properties:
+        effectiveMonth:
+          type: string
+          pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+        version:
+          $ref: '#/components/schemas/PayrollCompensationComponentVersionInput'
+
+    PayrollCompensationComponentVersion:
+      type: object
+      required:
+        [componentId, versionId, effectiveMonth, displayName, calculationType, enabled, createdAt, updatedAt]
+      properties:
+        componentId:
+          type: integer
+          format: int64
+        versionId:
+          type: integer
+          format: int64
+        effectiveMonth:
+          type: string
+          pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+        displayName:
+          type: string
+        calculationType:
+          type: string
+          enum: [FIXED_AMOUNT, PERCENT_OF_BASE]
+        calculationBase:
+          type: string
+          enum: [NOMINAL_SALARY, EARNED_BASE_PAY]
+        rateBps:
+          type: integer
+        amountMinor:
+          type: integer
+          format: int64
+        currencyCode:
+          type: string
+        enabled:
+          type: boolean
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+
     PayPricingRule:
       type: object
       required: [code, dimension, premiumBps, fromMinute]

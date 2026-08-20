@@ -4937,15 +4937,15 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1025" ]]; then
-  ok "test method baseline: 1025"
+if [[ "$TEST_METHODS" == "1035" ]]; then
+  ok "test method baseline: 1035"
 else
-  fail "expected 1025 @Test methods, found $TEST_METHODS"
+  fail "expected 1035 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "220" ]]; then
-  ok "test class baseline: 220"
+if [[ "$TEST_CLASSES" == "223" ]]; then
+  ok "test class baseline: 223"
 else
-  fail "expected 220 test classes, found $TEST_CLASSES"
+  fail "expected 223 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
@@ -4995,8 +4995,8 @@ contains src/main/java/ru/daniil/shifts/service/PayrollService.java "ordinaryPre
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'id="payrollOrdinaryPremiumBreakdown"'
 contains CHANGES.md 'OpenAPI is **138 operations / 144 schemas** with SHA-256 `1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`.'
 contains docs/TEMPORAL_WORK_CONTEXT_NATIVE_PAY_PRICING_V27.46.1.md 'OpenAPI: 138 operations / 144 schemas.'
-contains frontend/src/generated/dutylog-api.ts "Contract: 141 operations, 147 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 150 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "64609eb928b5eb8d1a0efdb4a97ee4224ada4f6c47a8c02e88de6abbde33aa3b"'
 contains docs/API.md "# DutyLog API v${VERSION}"
 contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
@@ -5004,6 +5004,28 @@ contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
 contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
 contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
 contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
+
+# v27.47.0 7A2 Generic Compensation Components API / Resolver development slice
+contains src/main/java/ru/daniil/shifts/service/CompensationComponentResolverService.java "class CompensationComponentResolverService"
+contains src/main/java/ru/daniil/shifts/service/CompensationComponentResolverService.java "putIfAbsent"
+contains src/main/java/ru/daniil/shifts/service/CompensationComponentConfigurationService.java "PAYROLL_COMP_COMPONENT_INVALID"
+contains src/main/java/ru/daniil/shifts/service/CompensationComponentConfigurationService.java "findOwnerHistory"
+contains src/main/java/ru/daniil/shifts/web/CompensationComponentController.java '/api/v1/payroll/compensation-components'
+not_contains src/main/java/ru/daniil/shifts/web/CompensationComponentController.java "@DeleteMapping"
+contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: createPayrollCompensationComponent"
+contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listPayrollCompensationComponentHistory"
+contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listEffectivePayrollCompensationComponents"
+contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: upsertPayrollCompensationComponentVersion"
+contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 150 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "64609eb928b5eb8d1a0efdb4a97ee4224ada4f6c47a8c02e88de6abbde33aa3b"'
+contains frontend/src/generated/dutylog-api.ts '"createPayrollCompensationComponent": { method: "POST", path: "/api/v1/payroll/compensation-components" }'
+contains frontend/src/generated/dutylog-api.ts '"listPayrollCompensationComponentHistory": { method: "GET", path: "/api/v1/payroll/compensation-components" }'
+contains frontend/src/generated/dutylog-api.ts '"listEffectivePayrollCompensationComponents": { method: "GET", path: "/api/v1/payroll/compensation-components/effective/{month}" }'
+contains frontend/src/generated/dutylog-api.ts '"upsertPayrollCompensationComponentVersion": { method: "PUT", path: "/api/v1/payroll/compensation-components/{componentId}/versions/{month}" }'
+contains src/test/java/ru/daniil/shifts/service/CompensationComponentConfigurationServiceTest.java "Премия за выживание после ночной смены"
+contains src/test/java/ru/daniil/shifts/service/CompensationComponentConfigurationServiceTest.java "disabledEffectiveVersionDoesNotEraseStableComponentHistory"
+contains src/test/java/ru/daniil/shifts/web/CompensationComponentControllerTest.java "componentWritesRemainCsrfProtected"
+contains src/test/java/ru/daniil/shifts/web/CompensationComponentOpenApiContractTest.java "Contract: 145 operations, 150 schemas"
 
 # v27.47.0 7A1 Generic Compensation Components semantic foundation development slice
 contains src/main/resources/db/migration/postgresql/V62__generic_compensation_components.sql "CREATE TABLE compensation_components"
@@ -5037,8 +5059,6 @@ contains docs/MODULE_CONTRACTS.md "## Effective-Dated Pricing Settings & Payroll
 contains docs/SUPPLY_CHAIN.md "## v27.46.2 effective-dated pricing settings & payroll verticals"
 contains frontend/browser-bundle-budget.json '"maxTotalBytes": 945000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
-contains frontend/src/generated/dutylog-api.ts "Contract: 141 operations, 147 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46"'
 
 # v27.46.2 6H1 Native Pricing API Foundation development slice
 contains src/main/java/ru/daniil/shifts/service/PayPricingConfigurationService.java "class PayPricingConfigurationService"

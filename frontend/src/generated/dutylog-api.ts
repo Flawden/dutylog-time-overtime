@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46
+ * SHA-256: 64609eb928b5eb8d1a0efdb4a97ee4224ada4f6c47a8c02e88de6abbde33aa3b
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 141 operations, 147 schemas
+ * Contract: 145 operations, 150 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "64609eb928b5eb8d1a0efdb4a97ee4224ada4f6c47a8c02e88de6abbde33aa3b";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -994,6 +994,36 @@ export namespace DutyLogApiSchemas {
     note?: string | null;
   };
 
+  export type PayrollCompensationComponentCreateInput = {
+    effectiveMonth: string;
+    version: DutyLogApiSchemas.PayrollCompensationComponentVersionInput;
+  };
+
+  export type PayrollCompensationComponentVersion = {
+    componentId?: number;
+    versionId?: number;
+    effectiveMonth?: string;
+    displayName?: string;
+    calculationType?: "FIXED_AMOUNT" | "PERCENT_OF_BASE";
+    calculationBase?: "NOMINAL_SALARY" | "EARNED_BASE_PAY";
+    rateBps?: number;
+    amountMinor?: number;
+    currencyCode?: string;
+    enabled?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+  };
+
+  export type PayrollCompensationComponentVersionInput = {
+    displayName: string;
+    calculationType: "FIXED_AMOUNT" | "PERCENT_OF_BASE";
+    calculationBase?: "NOMINAL_SALARY" | "EARNED_BASE_PAY";
+    rateBps?: number;
+    amountMinor?: number;
+    currencyCode?: string;
+    enabled: boolean;
+  };
+
   export type PayrollCompensationTerm = DutyLogApiSchemas.PayrollCompensationTermInput & {
     id: number;
     effectiveMonth: string;
@@ -1653,6 +1683,7 @@ export const dutyLogOperations = {
   "createImportantDay": { method: "POST", path: "/api/v1/important-days" },
   "createOvertimeCredit": { method: "POST", path: "/api/v1/overtime/credits" },
   "createOvertimeSettlement": { method: "POST", path: "/api/v1/overtime/settlements" },
+  "createPayrollCompensationComponent": { method: "POST", path: "/api/v1/payroll/compensation-components" },
   "createQuickScenario": { method: "POST", path: "/api/v1/quick-scenarios" },
   "createScheduleTemplate": { method: "POST", path: "/api/v1/schedule-templates" },
   "createShiftType": { method: "POST", path: "/api/v1/shift-types" },
@@ -1694,12 +1725,14 @@ export const dutyLogOperations = {
   "listAdminUsers": { method: "GET", path: "/api/v1/admin/users" },
   "listCalendarLayers": { method: "GET", path: "/api/v1/calendar-layers" },
   "listDayNotes": { method: "GET", path: "/api/v1/notes" },
+  "listEffectivePayrollCompensationComponents": { method: "GET", path: "/api/v1/payroll/compensation-components/effective/{month}" },
   "listImportantDayOccurrences": { method: "GET", path: "/api/v1/important-days/occurrences" },
   "listImportantDays": { method: "GET", path: "/api/v1/important-days" },
   "listInbox": { method: "GET", path: "/api/v1/inbox" },
   "listMobileSessions": { method: "GET", path: "/api/v1/mobile/auth/sessions" },
   "listModules": { method: "GET", path: "/api/v1/modules" },
   "listOvertimeSettlements": { method: "GET", path: "/api/v1/overtime/settlements" },
+  "listPayrollCompensationComponentHistory": { method: "GET", path: "/api/v1/payroll/compensation-components" },
   "listPayrollPricingTerms": { method: "GET", path: "/api/v1/payroll/pricing/terms" },
   "listProfileSessions": { method: "GET", path: "/api/v1/profile/sessions" },
   "listScheduleTemplates": { method: "GET", path: "/api/v1/schedule-templates" },
@@ -1772,6 +1805,7 @@ export const dutyLogOperations = {
   "updateWorkTimezoneContext": { method: "PUT", path: "/api/v1/time/work-context" },
   "upsertCalendarLayerOverride": { method: "PUT", path: "/api/v1/calendar-layers/{id}/overrides/{date}" },
   "upsertDay": { method: "PUT", path: "/api/v1/days/{date}" },
+  "upsertPayrollCompensationComponentVersion": { method: "PUT", path: "/api/v1/payroll/compensation-components/{componentId}/versions/{month}" },
   "upsertPayrollCompensationTerm": { method: "PUT", path: "/api/v1/payroll/compensation-terms/{month}" },
   "upsertPayrollPricingTerm": { method: "PUT", path: "/api/v1/payroll/pricing/terms/{effectiveFrom}" },
   "upsertProductionCalendarDay": { method: "PUT", path: "/api/v1/production-calendar/days/{date}" },
@@ -1852,6 +1886,10 @@ export interface DutyLogOperationTypes {
   "createOvertimeSettlement": {
     requestBody: DutyLogApiSchemas.OvertimeSettlementUpsertRequest;
     response: DutyLogApiSchemas.OvertimeSettlement;
+  };
+  "createPayrollCompensationComponent": {
+    requestBody: DutyLogApiSchemas.PayrollCompensationComponentCreateInput;
+    response: DutyLogApiSchemas.PayrollCompensationComponentVersion;
   };
   "createQuickScenario": {
     requestBody: DutyLogApiSchemas.QuickScenarioCreateRequest;
@@ -2017,6 +2055,10 @@ export interface DutyLogOperationTypes {
     requestBody: undefined;
     response: Array<DutyLogApiSchemas.DayNote>;
   };
+  "listEffectivePayrollCompensationComponents": {
+    requestBody: undefined;
+    response: Array<DutyLogApiSchemas.PayrollCompensationComponentVersion>;
+  };
   "listImportantDayOccurrences": {
     requestBody: undefined;
     response: Array<DutyLogApiSchemas.ImportantEventOccurrence>;
@@ -2040,6 +2082,10 @@ export interface DutyLogOperationTypes {
   "listOvertimeSettlements": {
     requestBody: undefined;
     response: Array<DutyLogApiSchemas.OvertimeSettlement>;
+  };
+  "listPayrollCompensationComponentHistory": {
+    requestBody: undefined;
+    response: Array<DutyLogApiSchemas.PayrollCompensationComponentVersion>;
   };
   "listPayrollPricingTerms": {
     requestBody: undefined;
@@ -2334,6 +2380,10 @@ export interface DutyLogOperationTypes {
   "upsertDay": {
     requestBody: undefined;
     response: unknown;
+  };
+  "upsertPayrollCompensationComponentVersion": {
+    requestBody: DutyLogApiSchemas.PayrollCompensationComponentVersionInput;
+    response: DutyLogApiSchemas.PayrollCompensationComponentVersion;
   };
   "upsertPayrollCompensationTerm": {
     requestBody: DutyLogApiSchemas.PayrollCompensationTermInput;
