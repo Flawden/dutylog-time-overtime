@@ -1823,13 +1823,49 @@ public final class Dtos {
             String reason
     ) {}
 
-    /** Деталь списания: сколько минут и какой именно участок были забраны из начисления. */
+    /**
+     * Explicit decision to consume canonical Time Bank minutes for future
+     * monetary settlement. Pricing is deliberately not part of this request.
+     */
+    public record OvertimeSettlementUpsertRequest(
+            @NotBlank(message = "Дата settlement обязательна")
+            String settlementDate,
+
+            @DecimalMin(value = "1", message = "Settlement должен содержать хотя бы 1 минуту")
+            @DecimalMax(value = "6000", message = "Settlement: максимум 6000 минут")
+            int minutes,
+
+            @Size(max = 1000, message = "Комментарий settlement: максимум 1000 символов")
+            String reason
+    ) {}
+
+    /** Public operational view; money is intentionally absent until Pricing. */
+    public record OvertimeSettlementDto(
+            Long id,
+            String settlementDate,
+            int minutes,
+            double hours,
+            String reason,
+            String createdAt,
+            String updatedAt
+    ) {}
+
+    /**
+     * Credit-side view of one consumed FIFO fragment.
+     *
+     * Ownership travels with the reference so a generic bank debit can be
+     * distinguished from time-off and cash settlement without re-querying the
+     * mutable business owner.
+     */
     public record OvertimeUsageRefDto(
             Long usageId,
             String usageDate,
             double hours,
             String reason,
             int minutes,
+            String sourceKind,
+            Long sourceAbsenceId,
+            Long sourceSettlementId,
             String startInstant,
             String endInstant,
             String displayStart,
@@ -1842,8 +1878,25 @@ public final class Dtos {
     ) {
         /** Source-compatible constructor for pre-v27.9 callers. */
         public OvertimeUsageRefDto(Long usageId, String usageDate, double hours, String reason) {
-            this(usageId, usageDate, hours, reason, (int) Math.round(hours * 60.0),
-                    null, null, null, null, null, 1, 1, false, false);
+            this(
+                    usageId,
+                    usageDate,
+                    hours,
+                    reason,
+                    (int) Math.round(hours * 60.0),
+                    "MANUAL",
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    1,
+                    1,
+                    false,
+                    false
+            );
         }
     }
 
@@ -1960,7 +2013,14 @@ public final class Dtos {
         }
     }
 
-    /** Списание отгула с расшифровкой, из каких начислений оно взяло часы. */
+    /**
+     * Canonical Time Bank debit.
+     *
+     * sourceKind determines the business owner:
+     * MANUAL = legacy debit,
+     * ABSENCE = time-off,
+     * SETTLEMENT = explicit future monetary settlement.
+     */
     public record OvertimeUsageDto(
             Long id,
             String usageDate,
@@ -1970,6 +2030,7 @@ public final class Dtos {
             int minutes,
             String sourceKind,
             Long sourceAbsenceId,
+            Long sourceSettlementId,
             boolean editable,
             String postingState,
             boolean reserved
@@ -1977,12 +2038,12 @@ public final class Dtos {
         public OvertimeUsageDto(Long id, String usageDate, double hours, String reason,
                                 List<OvertimeAllocationDto> allocations) {
             this(id, usageDate, hours, reason, allocations, (int) Math.round(hours * 60.0),
-                    "MANUAL", null, true, "POSTED", false);
+                    "MANUAL", null, null, true, "POSTED", false);
         }
 
         public OvertimeUsageDto(Long id, String usageDate, double hours, String reason,
                                 List<OvertimeAllocationDto> allocations, int minutes) {
-            this(id, usageDate, hours, reason, allocations, minutes, "MANUAL", null, true,
+            this(id, usageDate, hours, reason, allocations, minutes, "MANUAL", null, null, true,
                     "POSTED", false);
         }
     }
@@ -2541,6 +2602,10 @@ public final class Dtos {
             int workedMinutes,
             int breakMinutes,
             String note,
+            String sourceTimezone,
+            String startInstant,
+            String endInstant,
+            boolean identityReconstructed,
             String createdAt,
             String updatedAt
     ) {}
@@ -2711,7 +2776,22 @@ public final class Dtos {
             int timeAdjustmentMinutes,
             int paidAbsenceMinutes,
             int payableMinutes,
+            int hourlyBasePayableMinutes,
             long basePayMinor,
+            boolean ordinaryPremiumPricingReady,
+            String ordinaryPremiumPricingBlockingReason,
+            boolean ordinaryPremiumPricingIdentityRequired,
+            int ordinaryPremiumMinutes,
+            long ordinaryPremiumReferenceBasePayMinor,
+            long ordinaryPremiumPayMinor,
+            boolean settlementPricingReady,
+            String settlementPricingBlockingReason,
+            String settlementPricingFingerprint,
+            int settlementCount,
+            int settlementMinutes,
+            long settlementBasePayMinor,
+            long settlementPremiumPayMinor,
+            long settlementPayMinor,
             long additionsMinor,
             long deductionsMinor,
             long totalPayMinor,
@@ -2740,7 +2820,18 @@ public final class Dtos {
             int timeAdjustmentMinutes,
             int paidAbsenceMinutes,
             int payableMinutes,
+            int hourlyBasePayableMinutes,
             long basePayMinor,
+            int ordinaryPremiumMinutes,
+            long ordinaryPremiumReferenceBasePayMinor,
+            long ordinaryPremiumPayMinor,
+            String ordinaryPremiumPricingFingerprint,
+            int settlementCount,
+            int settlementMinutes,
+            long settlementBasePayMinor,
+            long settlementPremiumPayMinor,
+            long settlementPayMinor,
+            String settlementPricingFingerprint,
             long additionsMinor,
             long deductionsMinor,
             long totalPayMinor,

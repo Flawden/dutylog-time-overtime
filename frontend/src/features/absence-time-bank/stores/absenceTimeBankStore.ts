@@ -13,6 +13,8 @@ import type {
   LedgerRangeMode,
   OvertimeAccountReadModel,
   OvertimeCreditPreview,
+  OvertimeSettlement,
+  SettlementDraft,
   QuickScenario,
   ScenarioDraft,
   TimeBankTab,
@@ -30,6 +32,9 @@ import {
   newAbsenceDraft,
   newCreditDraft,
   newScenarioDraft,
+  newSettlementDraft,
+  settlementBody,
+  settlementDraftFromRow,
   scenarioCreateBody,
   scenarioDraftFromRow,
   scenarioUpdateBody,
@@ -66,6 +71,7 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
     integrity: null as LedgerIntegrityReadModel | null,
     actualWork: [] as ActualWorkInterval[],
     scenarios: [] as QuickScenario[],
+    settlements: [] as OvertimeSettlement[],
     range: { from: "", to: "" },
     rangeMode: "year" as LedgerRangeMode,
     loading: false,
@@ -75,9 +81,11 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
     mutationPending: false,
     absenceModalOpen: false,
     creditModalOpen: false,
+    settlementModalOpen: false,
     guideOpen: false,
     absenceDraft: newAbsenceDraft() as AbsenceDraft,
     creditDraft: newCreditDraft() as CreditDraft,
+    settlementDraft: newSettlementDraft() as SettlementDraft,
     scenarioDraft: newScenarioDraft() as ScenarioDraft,
     absencePreview: null as AbsencePreview | null,
     creditPreview: null as OvertimeCreditPreview | null,
@@ -121,6 +129,7 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
         this.integrity = result.integrity;
         this.actualWork = result.actualWork;
         this.scenarios = result.scenarios;
+        this.settlements = result.settlements;
         this.range = result.range;
         this.rangeMode = resolvedRangeMode;
         this.loaded = true;
@@ -383,6 +392,146 @@ export const useAbsenceTimeBankStore = defineStore("absence-time-bank", {
         await api.deleteCredit(id);
         await this.refresh();
         useShellStore().announce("Начисление удалено", "success");
+      } catch (error) {
+        await this.handleMutationError(error);
+      } finally {
+        this.mutationPending = false;
+      }
+    },
+    async openSettlementEditor(id: number | null = null, date: string | null = null): Promise<void> {
+      if (id === null) {
+        const referenceDate = date || todayIso();
+        await this.refresh(referenceDate, this.rangeMode);
+        this.settlementDraft = newSettlementDraft(referenceDate);
+      } else {
+        await this.ensureLoaded();
+
+        let row =
+          this.settlements.find(
+            item => Number(item.id) === Number(id)
+          );
+
+        if (!row) {
+          await this.refresh(
+            date || todayIso(),
+            this.rangeMode
+          );
+
+          row =
+            this.settlements.find(
+              item => Number(item.id) === Number(id)
+            );
+        }
+
+        if (!row) {
+          throw new Error(
+            "Решение к оплате не найдено"
+          );
+        }
+
+        this.settlementDraft =
+          settlementDraftFromRow(row);
+      }
+
+      this.conflict = "";
+      this.error = "";
+      this.settlementModalOpen = true;
+    },
+    closeSettlementEditor(): void {
+      this.settlementModalOpen = false;
+      this.error = "";
+      this.conflict = "";
+    },
+    async saveSettlement(): Promise<void> {
+      if (this.mutationPending) return;
+
+      const minutes =
+        Math.round(
+          Number(
+            this.settlementDraft.minutes ?? 0
+          )
+        );
+
+      if (minutes < 1 || minutes > 6000) {
+        this.error =
+          "Укажите от 1 до 6000 минут";
+        return;
+      }
+
+      if (!this.settlementDraft.settlementDate) {
+        this.error = "Укажите дату";
+        return;
+      }
+
+      this.mutationPending = true;
+      this.error = "";
+      this.conflict = "";
+
+      try {
+        const body =
+          settlementBody(
+            this.settlementDraft
+          );
+
+        if (this.settlementDraft.id) {
+          await api.updateSettlement(
+            this.settlementDraft.id,
+            body
+          );
+        } else {
+          await api.createSettlement(body);
+        }
+
+        const referenceDate =
+          this.settlementDraft.settlementDate;
+
+        this.settlementModalOpen = false;
+
+        await this.refresh(
+          referenceDate
+        );
+
+        useShellStore().announce(
+          "Переработка отправлена к оплате",
+          "success"
+        );
+      } catch (error) {
+        await this.handleMutationError(error);
+      } finally {
+        this.mutationPending = false;
+      }
+    },
+    async deleteSettlement(id: number): Promise<void> {
+      if (
+        this.mutationPending
+        || !globalThis.confirm(
+          "Удалить решение «к оплате» и вернуть его минуты в свободный остаток банка?"
+        )
+      ) {
+        return;
+      }
+
+      const referenceDate =
+        this.settlementDraft.settlementDate
+        || todayIso();
+
+      this.mutationPending = true;
+      this.error = "";
+      this.conflict = "";
+
+      try {
+        await api.deleteSettlement(id);
+
+        this.settlementModalOpen = false;
+
+        await this.refresh(
+          referenceDate
+        );
+
+        useShellStore().announce(
+          "Списание к оплате удалено, минуты возвращены в банк",
+          "success"
+        );
       } catch (error) {
         await this.handleMutationError(error);
       } finally {

@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**.
+Current release: **v27.46.1 — Temporal Work Context & Native Pay Pricing**.
 
 
 ## Product north star
@@ -8,6 +8,23 @@ Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**.
 > **The user describes reality. DutyLog derives the consequences.**
 
 Calendar / Today are the normal command surfaces. Overtime, Time Bank, Production Calendar, Payroll and other domains remain authoritative internal/read-audit modules, but one real-world event must not be entered repeatedly across screens. Complexity is progressively disclosed; minimum setup must remain useful and every derived result must be explainable.
+
+## v27.46.1 — Temporal Work Context & Native Pay Pricing
+
+- [x] Effective-dated Work Timezone history and historical correction boundaries.
+- [x] Exact Actual Work source timezone and absolute identity.
+- [x] Overlapping REGULAR / NIGHT / HOLIDAY / OVERTIME classification.
+- [x] Source-workday overtime ordinal continuity across midnight.
+- [x] Factual overtime provenance slices and deterministic FIFO offsets.
+- [x] Explicit overtime cash settlement as a separate Time Bank consumer.
+- [x] Effective-dated pricing rules and historical compensation-rate resolution.
+- [x] HOURLY ordinary base excludes banked overtime.
+- [x] Settlement pricing → Payroll → immutable deep fingerprint.
+- [x] Ordinary NIGHT/HOLIDAY source truth → pricing → Payroll → immutable deep fingerprint.
+- [x] Payroll UI explainability for ordinary premium without frontend total recomputation.
+- [x] OpenAPI 138/144 (`1c76051d2359`); Flyway source V61; Java 989/214; Playwright 48; Vitest 80.
+- [x] Canonical frontend build: 924966 / 925000 B raw, gzip below 250000 B.
+- [ ] Full Maven/JaCoCo, release-check, Chromium 48/48, clean PostgreSQL V1→V61 and staging acceptance.
 
 ## v27.45.1 — Native Workday / Day Truth Integration
 

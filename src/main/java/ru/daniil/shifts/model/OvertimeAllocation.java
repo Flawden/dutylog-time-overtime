@@ -31,6 +31,16 @@ public class OvertimeAllocation {
     @Column(name = "allocated_minutes")
     private Integer allocatedMinutes;
 
+    /**
+     * Start offset of this allocation inside the fungible overtime credit.
+     *
+     * This is the persisted form of AllocationPlanItem.alreadyConsumedMinutes.
+     * It does not change FIFO ordering; it only materializes which exact credit
+     * minute range this allocation consumed.
+     */
+    @Column(name = "credit_offset_start_minutes", nullable = false)
+    private Integer creditOffsetStartMinutes = 0;
+
     @Column(name = "start_at_instant")
     private Instant startAtInstant;
 
@@ -69,6 +79,22 @@ public class OvertimeAllocation {
     }
     public double getHours() { return getAllocatedMinutes() / 60.0; }
     public void setHours(double hours) { setAllocatedMinutes((int) Math.round(Math.max(0.0, hours) * 60.0)); }
+
+    public int getCreditOffsetStartMinutes() {
+        return creditOffsetStartMinutes == null
+                ? 0
+                : Math.max(0, creditOffsetStartMinutes);
+    }
+
+    public void setCreditOffsetStartMinutes(
+            int creditOffsetStartMinutes
+    ) {
+        this.creditOffsetStartMinutes =
+                Math.max(
+                        0,
+                        creditOffsetStartMinutes
+                );
+    }
     public Instant getStartAtInstant() { return startAtInstant; }
     public void setStartAtInstant(Instant startAtInstant) { this.startAtInstant = startAtInstant; }
     public Instant getEndAtInstant() { return endAtInstant; }

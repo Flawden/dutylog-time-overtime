@@ -20,7 +20,7 @@ function loaded(label: string, balanceHours = 8) {
     account: { totalEarnedHours: balanceHours, totalUsedHours: 0, balanceHours, credits: [], usages: [] },
     compensation: null,
     integrity: { from: "2026-01-01", to: "2026-12-31", healthy: true, reservedMinutes: 0, postedMinutes: 0, reversedMinutes: 0, orphanUsageCount: 0, allocationMismatchCount: 0, issues: [], entries: [], periods: [] },
-    actualWork: [], scenarios: [], range: { from: "2026-01-01", to: "2026-12-31" },
+    actualWork: [], scenarios: [], settlements: [], range: { from: "2026-01-01", to: "2026-12-31" },
   } as unknown as Awaited<ReturnType<AbsenceTimeBankApi["load"]>>;
 }
 
@@ -45,6 +45,9 @@ function mockApi(overrides: Partial<AbsenceTimeBankApi> = {}): AbsenceTimeBankAp
     createCredit: vi.fn().mockResolvedValue({}),
     updateCredit: vi.fn().mockResolvedValue({}),
     deleteCredit: vi.fn().mockResolvedValue(null),
+    createSettlement: vi.fn().mockResolvedValue({ id: 11 }),
+    updateSettlement: vi.fn().mockResolvedValue({ id: 11 }),
+    deleteSettlement: vi.fn().mockResolvedValue(null),
     shiftForDate: vi.fn().mockResolvedValue(null),
     listScenarios: vi.fn().mockResolvedValue([]),
     createScenario: vi.fn().mockResolvedValue({}),
@@ -265,4 +268,115 @@ describe("absence and time-bank store concurrency", () => {
     expect(store.loaded).toBe(true);
     restore();
   });
+  it("opens a native settlement on the requested date and submits exact bank minutes", async () => {
+    const createSettlement =
+      vi.fn().mockResolvedValue({
+        id: 11,
+        settlementDate: "2026-08-06",
+        minutes: 90,
+        hours: 1.5,
+        createdAt: "2026-08-06T10:00:00Z",
+        updatedAt: "2026-08-06T10:00:00Z",
+      });
+
+    const api =
+      mockApi({ createSettlement });
+
+    const restore =
+      installAbsenceTimeBankApiForTests(api);
+
+    const store =
+      useAbsenceTimeBankStore();
+
+    await store.openSettlementEditor(
+      null,
+      "2026-08-06"
+    );
+
+    expect(
+      store.settlementModalOpen
+    ).toBe(true);
+
+    expect(
+      store.settlementDraft
+    ).toMatchObject({
+      id: null,
+      settlementDate: "2026-08-06",
+      minutes: 60,
+    });
+
+    store.settlementDraft.minutes = 90;
+    store.settlementDraft.reason =
+      "Оплатить полтора часа";
+
+    await store.saveSettlement();
+
+    expect(
+      createSettlement
+    ).toHaveBeenCalledWith({
+      settlementDate: "2026-08-06",
+      minutes: 90,
+      reason: "Оплатить полтора часа",
+    });
+
+    expect(
+      store.settlementModalOpen
+    ).toBe(false);
+
+    expect(
+      store.mutationPending
+    ).toBe(false);
+
+    restore();
+  });
+
+  it("opens an existing settlement from the server-owned settlement list", async () => {
+    const loadedWithSettlement = {
+      ...loaded("Time off"),
+      settlements: [{
+        id: 42,
+        settlementDate: "2026-08-07",
+        minutes: 75,
+        hours: 1.25,
+        reason: "К оплате",
+        createdAt: "2026-08-07T10:00:00Z",
+        updatedAt: "2026-08-07T10:00:00Z",
+      }],
+    };
+
+    const api =
+      mockApi({
+        load:
+          vi.fn()
+            .mockResolvedValue(
+              loadedWithSettlement
+            ),
+      });
+
+    const restore =
+      installAbsenceTimeBankApiForTests(api);
+
+    const store =
+      useAbsenceTimeBankStore();
+
+    await store.refresh();
+
+    await store.openSettlementEditor(42);
+
+    expect(
+      store.settlementModalOpen
+    ).toBe(true);
+
+    expect(
+      store.settlementDraft
+    ).toEqual({
+      id: 42,
+      settlementDate: "2026-08-07",
+      minutes: 75,
+      reason: "К оплате",
+    });
+
+    restore();
+  });
+
 });

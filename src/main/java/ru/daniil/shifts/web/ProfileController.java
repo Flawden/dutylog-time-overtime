@@ -13,10 +13,7 @@ import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.MobileAuthService;
 import ru.daniil.shifts.service.RememberMeTokenService;
 import ru.daniil.shifts.service.UserTimeService;
-import ru.daniil.shifts.service.ShiftOccurrenceService;
-import ru.daniil.shifts.service.ShiftTypeService;
-import ru.daniil.shifts.service.TaskService;
-import ru.daniil.shifts.service.QuickScenarioService;
+import ru.daniil.shifts.service.WorkTimezoneChangeService;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.security.Principal;
@@ -46,10 +43,7 @@ public class ProfileController {
     private final MobileAuthService mobileAuthService;
     private final RememberMeTokenService rememberMeTokenService;
     private final UserTimeService userTimeService;
-    private final ShiftOccurrenceService shiftOccurrenceService;
-    private final ShiftTypeService shiftTypeService;
-    private final TaskService taskService;
-    private final QuickScenarioService quickScenarioService;
+    private final WorkTimezoneChangeService workTimezoneChangeService;
     private static final ObjectMapper JSON = new ObjectMapper();
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {};
 
@@ -60,20 +54,14 @@ public class ProfileController {
                              MobileAuthService mobileAuthService,
                              RememberMeTokenService rememberMeTokenService,
                              UserTimeService userTimeService,
-                             ShiftOccurrenceService shiftOccurrenceService,
-                             ShiftTypeService shiftTypeService,
-                             TaskService taskService,
-                             QuickScenarioService quickScenarioService,
+                             WorkTimezoneChangeService workTimezoneChangeService,
                              PasswordEncoder encoder) {
         this.users = users;
         this.currentUserService = currentUserService;
         this.mobileAuthService = mobileAuthService;
         this.rememberMeTokenService = rememberMeTokenService;
         this.userTimeService = userTimeService;
-        this.shiftOccurrenceService = shiftOccurrenceService;
-        this.shiftTypeService = shiftTypeService;
-        this.taskService = taskService;
-        this.quickScenarioService = quickScenarioService;
+        this.workTimezoneChangeService = workTimezoneChangeService;
         this.encoder = encoder;
     }
 
@@ -109,29 +97,36 @@ public class ProfileController {
     public Map<String, Object> update(@RequestBody ProfileUpdateRequest req, Principal principal) {
         AppUser user = currentUserService.requireUser(principal);
 
-        // DutyLog v27.9 uses one canonical user timezone. Both legacy profile
-        // fields remain in the wire contract, but they are always persisted together.
-        String requestedTimezone = req.workTimezone() != null ? req.workTimezone() : req.displayTimezone();
+        /*
+         * Legacy wire compatibility:
+         * Profile PUT still accepts workTimezone/displayTimezone, but a change
+         * now becomes an effective-dated Work Context mutation from the start
+         * of the user's current work-local day.
+         *
+         * Historical edits use the dedicated Work Context API.
+         */
+        String requestedTimezone =
+                req.workTimezone() != null
+                        ? req.workTimezone()
+                        : req.displayTimezone();
+
         if (requestedTimezone != null) {
-            String timezone = validatedTimezone(requestedTimezone, "Часовой пояс");
-            String previousTimezone = user.getWorkTimezone();
-            if (!previousTimezone.equals(timezone)) {
-                // Freeze all legacy dated shifts in the old zone before changing the
-                // canonical projection. This makes the common upgrade path automatic.
-                shiftOccurrenceService.captureLegacyBeforeTimezoneChange(user, previousTimezone);
-                // Timed task deadlines represent real moments too. Freeze legacy
-                // rows in the old zone and reproject every absolute deadline.
-                taskService.rebaseForTimezoneChange(user, previousTimezone, timezone);
-                // Existing dated shifts are immutable. Shift templates, however,
-                // define future assignments and must follow the same real-world
-                // moments in the new canonical timezone.
-                shiftTypeService.rebaseForTimezoneChange(user, previousTimezone, timezone);
-                // FIXED_TIME quick scenarios are real moments as well. Preserve
-                // their instant and update both wall-clock time and day offset.
-                quickScenarioService.rebaseForTimezoneChange(user, previousTimezone, timezone);
+            String timezone =
+                    validatedTimezone(
+                            requestedTimezone,
+                            "Часовой пояс"
+                    );
+
+            String currentTimezone =
+                    userTimeService.workZone(user).getId();
+
+            if (!currentTimezone.equals(timezone)) {
+                workTimezoneChangeService.upsertAndReconcile(
+                        user,
+                        userTimeService.workToday(user).atStartOfDay(),
+                        timezone
+                );
             }
-            user.setWorkTimezone(timezone);
-            user.setDisplayTimezone(timezone);
         }
 
         String name = req.displayName() == null ? null : req.displayName().trim();

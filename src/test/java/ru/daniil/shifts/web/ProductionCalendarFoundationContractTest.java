@@ -26,6 +26,7 @@ class ProductionCalendarFoundationContractTest {
         String calendarPage = source("frontend/src/features/calendar-timeline/components/CalendarPage.vue");
         String workday = source("src/main/java/ru/daniil/shifts/service/WorkdayTruthService.java");
         String derived = source("src/main/java/ru/daniil/shifts/service/WorkdayDerivedCompensationService.java");
+        String classification = source("src/main/java/ru/daniil/shifts/service/PayClassificationService.java");
         String actualService = source("src/main/java/ru/daniil/shifts/service/ActualWorkService.java");
         String selectedDay = source("frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue");
         String api = source("frontend/src/features/calendar-timeline/api/calendarTimelineApi.ts");
@@ -63,7 +64,10 @@ class ProductionCalendarFoundationContractTest {
         assertTrue(workday.contains("class WorkdayTruthService"));
         assertTrue(workday.contains("scheduledBreakMinutes"));
         assertTrue(derived.contains("reconcileActualWorkCredit"));
-        assertTrue(derived.contains("HOLIDAY"));
+        assertTrue(derived.contains("PayClassificationService"));
+        assertTrue(derived.contains("classification.classify("));
+        assertTrue(classification.contains("Production Calendar -> HOLIDAY pay dimension"));
+        assertTrue(classification.contains("\"HOLIDAY\".equals("));
         assertTrue(actualService.contains("resolveBreakMinutes"));
         assertTrue(actualService.contains("derivedCompensation.reconcile"));
         assertTrue(dayPanel.contains("Неоплачиваемый перерыв, мин"));

@@ -1,3 +1,6 @@
+## v27.46.1 temporal work context & native pay pricing
+Status: v27.46.1. No dependency graph change is introduced. Node 20.18.1/npm 10.8.2 and the authentic committed dependency graph remain unchanged; only root release identity and the committed lockfile hash advance. OpenAPI is 138/144 (`1c76051d2359`), Flyway source advances to V61, and the segmented production JS graph is 924966 B raw under the existing 925000 B ceiling with total gzip below 250000 B.
+
 ## v27.46.0 compensation setup & base native payroll
 Status: v27.46.0. No dependency graph change. Frontend lockfile provenance is preserved; only root release identity changes. OpenAPI gains native compensation-term operations/schemas.
 

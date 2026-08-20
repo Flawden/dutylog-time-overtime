@@ -225,9 +225,15 @@ function openShiftTypeManager(): void { window.DutyLogVueDomains?.settingsWorksp
 async function addCredit(): Promise<void> { await window.DutyLogVueDomains?.absenceTimeBank?.openCreditEditor(focusDate.value); }
 async function editCredit(id: number): Promise<void> { await window.DutyLogVueDomains?.absenceTimeBank?.editCredit(id); }
 async function addUsage(): Promise<void> { await window.DutyLogVueDomains?.absenceTimeBank?.openAbsenceComposer({ date: focusDate.value, systemCode: "TIME_OFF", source: "calendar" }); }
+async function addSettlement(): Promise<void> { await window.DutyLogVueDomains?.absenceTimeBank?.openSettlementEditor(null, focusDate.value); }
 async function openUsage(usage: DutyLogApiSchemas.OvertimeUsage): Promise<void> {
-  if (usage.sourceAbsenceId) await window.DutyLogVueDomains?.absenceTimeBank?.openAbsenceEditor(Number(usage.sourceAbsenceId));
-  else await window.DutyLogVueDomains?.absenceTimeBank?.openTimeBankUsage(null);
+  if (usage.sourceAbsenceId) {
+    await window.DutyLogVueDomains?.absenceTimeBank?.openAbsenceEditor(Number(usage.sourceAbsenceId));
+  } else if (usage.sourceSettlementId) {
+    await window.DutyLogVueDomains?.absenceTimeBank?.openSettlementEditor(Number(usage.sourceSettlementId), usage.usageDate);
+  } else {
+    await window.DutyLogVueDomains?.absenceTimeBank?.openTimeBankUsage(null);
+  }
 }
 
 const vacationSummary = computed(() => {
@@ -295,8 +301,8 @@ onBeforeUnmount(() => { document.body.classList.remove("panel-open"); });
 
     <details id="accOt" class="acc dayPanelModule" :class="{ moduleHidden: !moduleEnabled('overtime') }" data-day-module="overtime" :open="isOpen('accOt')" @toggle="toggleSection('accOt', $event)">
       <summary><span class="accT">Переработка</span><span id="sumOt" class="accS">{{ overtimeSummary }}</span></summary>
-      <div class="accB"><div class="overtimeDayCompact"><div class="overtimeDayActions"><button id="dayAddCredit" class="primary" type="button" @click="addCredit">+ Начислить</button><button id="dayAddUsage" type="button" @click="addUsage">Оформить отгул</button><span id="otBalance" class="bal">доступно {{ formatSignedHours(bundle?.overtimeAccount.balanceHours) }}</span></div><p class="dayPanelHint overtimeUsageHint">Отгул создаётся как отсутствие. DutyLog сам резервирует и списывает часы банка по FIFO — отдельного ручного списания здесь нет.</p>
-        <div id="otDayDetails" class="overtimeDayEntries"><div v-if="!dayCredits.length && !dayUsages.length" class="emptyLine">На этот день в журнале переработок записей нет. Начисления не сгорают при переходе между месяцами.</div><div v-for="credit in dayCredits" :key="`credit-${credit.id}`" class="overtimeDayEntry credit"><div><b>+{{ formatHours(credit.hours) }} ч</b><span>{{ creditRange(credit) }}<template v-if="credit.reason"> · {{ credit.reason }}</template></span><small>остаток: {{ formatHours(credit.remainingHours) }} ч</small></div><button type="button" @click="editCredit(credit.id)">ред.</button></div><div v-for="usage in dayUsages" :key="`usage-${usage.id}`" class="overtimeDayEntry usage"><div><b>−{{ formatHours(usage.hours) }} ч</b><span>{{ usage.reason || 'списание' }}</span><small v-for="allocation in usage.allocations" :key="`${usage.id}-${allocation.creditId}`"><template v-for="label in allocationRangeLabels(allocation)" :key="label"><span class="allocationRange">{{ label }}</span></template></small></div><button type="button" @click="openUsage(usage)">{{ usage.sourceAbsenceId ? 'Открыть отсутствие' : 'Открыть банк' }}</button></div></div>
+      <div class="accB"><div class="overtimeDayCompact"><div class="overtimeDayActions"><button id="dayAddCredit" class="primary" type="button" @click="addCredit">+ Начислить</button><button id="dayAddUsage" type="button" @click="addUsage">Оформить отгул</button><button id="dayAddSettlement" type="button" @click="addSettlement">К оплате</button><span id="otBalance" class="bal">доступно {{ formatSignedHours(bundle?.overtimeAccount.balanceHours) }}</span></div><p class="dayPanelHint overtimeUsageHint">Отгул создаётся как отсутствие, «к оплате» — как отдельное решение. Оба варианта расходуют один банк по FIFO; денежная сумма пока не рассчитывается.</p>
+        <div id="otDayDetails" class="overtimeDayEntries"><div v-if="!dayCredits.length && !dayUsages.length" class="emptyLine">На этот день в журнале переработок записей нет. Начисления не сгорают при переходе между месяцами.</div><div v-for="credit in dayCredits" :key="`credit-${credit.id}`" class="overtimeDayEntry credit"><div><b>+{{ formatHours(credit.hours) }} ч</b><span>{{ creditRange(credit) }}<template v-if="credit.reason"> · {{ credit.reason }}</template></span><small>остаток: {{ formatHours(credit.remainingHours) }} ч</small></div><button type="button" @click="editCredit(credit.id)">ред.</button></div><div v-for="usage in dayUsages" :key="`usage-${usage.id}`" class="overtimeDayEntry usage"><div><b>−{{ formatHours(usage.hours) }} ч</b><span>{{ usage.sourceKind === 'SETTLEMENT' ? 'К оплате' : usage.sourceAbsenceId ? 'Отгул' : 'Списание' }} · {{ usage.reason || 'без комментария' }}</span><small v-for="allocation in usage.allocations" :key="`${usage.id}-${allocation.creditId}`"><template v-for="label in allocationRangeLabels(allocation)" :key="label"><span class="allocationRange">{{ label }}</span></template></small></div><button type="button" @click="openUsage(usage)">{{ usage.sourceAbsenceId ? 'Открыть отсутствие' : usage.sourceSettlementId ? 'Открыть «к оплате»' : 'Открыть банк' }}</button></div></div>
       </div></div>
     </details>
 

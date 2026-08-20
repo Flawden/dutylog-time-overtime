@@ -1,11 +1,11 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.43.0.
+Status: v27.46.1.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.46.0 Native Workday closed-loop acceptance: inventory is 168 Java test classes / 812 @Test methods / 48 Chromium Playwright scenarios / 73 Vitest cases. OpenAPI remains 130/136 (`34d257319830`) and Flyway advances to V51. Coverage proves shift-break inheritance and net Actual Work, idempotent SYSTEM_ACTUAL_WORK overtime reconciliation, edit/delete rollback, consumed-credit fail-closed behavior, holiday separation, Production Calendar required-minute canonicality, direct day-local recovery actions, and Payroll summary-only ownership. Exact Node 20.18.1/npm 10.8.2 frontend, Java 17 Maven/JaCoCo, Chromium and clean-PostgreSQL staging acceptance remain canonical gates.
+Current extension: v27.46.1 Temporal Work Context & Native Pay Pricing: inventory is 216 Java test classes / 1006 @Test methods / 48 Chromium Playwright scenarios / 80 Vitest cases. OpenAPI is 138/144 (`1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`) and Flyway source advances to V61. Coverage includes temporal timezone history, exact Actual Work identity, overlapping pay classification, overtime provenance, explicit FIFO settlement, effective-dated pricing, historical rates, bank-first HOURLY Payroll, deep settlement/ordinary pricing fingerprints and Payroll ordinary-premium explainability. Canonical Node 20.18.1/npm 10.8.2 frontend is green at 924966/925000 B raw. Full Maven/JaCoCo is green locally; Chromium, clean PostgreSQL V1→V61 and staging acceptance remain final release gates.
 
 
 

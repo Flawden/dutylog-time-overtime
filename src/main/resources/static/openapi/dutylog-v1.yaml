@@ -626,6 +626,69 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/OvertimeAccount' }
         '401': { $ref: '#/components/responses/ApiError' }
+  /api/v1/overtime/settlements:
+    get:
+      operationId: listOvertimeSettlements
+      description: Lists explicit decisions to consume Time Bank minutes for future monetary settlement. No price or payroll amount is calculated at this layer.
+      responses:
+        '200':
+          description: Overtime settlements
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/OvertimeSettlement' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+    post:
+      operationId: createOvertimeSettlement
+      description: Consumes the canonical Time Bank through the existing FIFO and records an explicit future cash-settlement decision.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OvertimeSettlementUpsertRequest' }
+      responses:
+        '200':
+          description: Created settlement
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OvertimeSettlement' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+
+  /api/v1/overtime/settlements/{id}:
+    patch:
+      operationId: updateOvertimeSettlement
+      description: Changes an explicit settlement while the accounting period remains open and rebuilds the same canonical FIFO.
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OvertimeSettlementUpsertRequest' }
+      responses:
+        '200':
+          description: Updated settlement
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OvertimeSettlement' }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '404': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: deleteOvertimeSettlement
+      description: Deletes an open-period settlement and restores only its canonical Time Bank debit.
+      parameters:
+        - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
+      responses:
+        '204': { description: Settlement deleted and its bank debit restored }
+        '404': { $ref: '#/components/responses/ApiError' }
+        '409': { $ref: '#/components/responses/ApiError' }
+
   /api/v1/overtime/credits:
     post:
       operationId: createOvertimeCredit
@@ -678,7 +741,7 @@ paths:
         '409': { $ref: '#/components/responses/ApiError' }
     delete:
       operationId: deleteLegacyManualOvertimeUsage
-      description: Deletes only an unmigrated MANUAL usage. ABSENCE-owned usages are deleted together with their absence.
+      description: Deletes only an unmigrated MANUAL usage. ABSENCE- and SETTLEMENT-owned usages are managed by their business owner.
       parameters:
         - { in: path, name: id, required: true, schema: { type: integer, format: int64 } }
       responses:
@@ -775,7 +838,7 @@ paths:
   /api/v1/payroll/periods/{month}:
     get:
       operationId: payrollPeriod
-      description: Preview and immutable revision history for one payroll month. Final calculation requires a closed, healthy accounting period.
+      description: Preview and immutable revision history for one payroll month. The read remains available when settlement pricing is blocked; final calculation requires a closed, healthy period and priceable explicit settlements.
       parameters:
         - { in: path, name: month, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' } }
       responses:
@@ -839,7 +902,7 @@ paths:
   /api/v1/payroll/periods/{month}/calculate:
     post:
       operationId: calculatePayrollRevision
-      description: Freezes a new immutable payroll snapshot revision from the closed, healthy time ledger and current money adjustments.
+      description: Freezes a new immutable payroll snapshot revision from the closed, healthy time ledger, canonical compensation, priceable explicit overtime settlements and manual money adjustments.
       parameters:
         - { in: path, name: month, required: true, schema: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' } }
       responses:
@@ -1130,6 +1193,34 @@ paths:
         '204': { description: Session revoked }
         '401': { $ref: '#/components/responses/ApiError' }
         '404': { $ref: '#/components/responses/ApiError' }
+  /api/v1/time/work-context:
+    get:
+      operationId: getWorkTimezoneHistory
+      summary: Get effective-dated work timezone history
+      responses:
+        '200':
+          description: Current work timezone context and ordered history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkTimezoneHistory'
+    put:
+      operationId: updateWorkTimezoneContext
+      summary: Insert or replace an effective-dated work timezone term
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkTimezoneChangeRequest'
+      responses:
+        '200':
+          description: Updated work timezone context and ordered history
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkTimezoneHistory'
+
   /api/v1/time/context:
     get:
       operationId: getTimeContext
@@ -1976,13 +2067,17 @@ components:
       allOf:
         - $ref: '#/components/schemas/ActualWorkIntervalInput'
         - type: object
-          required: [id, workedMinutes, breakMinutes]
+          required: [id, workedMinutes, breakMinutes, identityReconstructed]
           properties:
             id: { type: integer, format: int64 }
             workedMinutes: { type: integer, minimum: 1, maximum: 2880 }
             breakMinutes: { type: integer, minimum: 0, maximum: 1440 }
             createdAt: { type: string, format: date-time, nullable: true }
             updatedAt: { type: string, format: date-time, nullable: true }
+            sourceTimezone: { type: string, nullable: true }
+            startInstant: { type: string, format: date-time, nullable: true }
+            endInstant: { type: string, format: date-time, nullable: true }
+            identityReconstructed: { type: boolean }
     ProductionCalendarDayInput:
       type: object
       required: [dayKind, scheduleEffect, payrollEffect]
@@ -2085,67 +2180,237 @@ components:
           properties:
             id: { type: integer, format: int64 }
             createdAt: { type: string, format: date-time }
-    PayrollPreview:
+    PayrollMoneyProjection:
       type: object
-      required: [month, currencyCode, hourlyRateMinor, plannedMinutes, workedMinutes, vacationMinutes, sickMinutes, overtimeCompensatedMinutes, unpaidMinutes, timeAdjustmentMinutes, paidAbsenceMinutes, payableMinutes, basePayMinor, additionsMinor, deductionsMinor, totalPayMinor, effectiveHourlyRateMinor, productionNormMinutes, salaryCoveredMinutes]
+      description: Canonical Payroll time and money projection shared by live preview and immutable revision snapshots.
+      required: [month, currencyCode, hourlyRateMinor, plannedMinutes, workedMinutes, vacationMinutes, sickMinutes, overtimeCompensatedMinutes, unpaidMinutes, timeAdjustmentMinutes, paidAbsenceMinutes, payableMinutes, hourlyBasePayableMinutes, basePayMinor, settlementCount, settlementMinutes, settlementBasePayMinor, settlementPremiumPayMinor, settlementPayMinor, settlementPricingFingerprint, additionsMinor, deductionsMinor, totalPayMinor, effectiveHourlyRateMinor, productionNormMinutes, salaryCoveredMinutes]
       properties:
-        month: { type: string }
-        currencyCode: { type: string }
-        hourlyRateMinor: { type: integer, format: int64, description: Effective hourly value; derived from salary and production norm in SALARY mode. }
-        plannedMinutes: { type: integer }
-        workedMinutes: { type: integer }
-        vacationMinutes: { type: integer }
-        sickMinutes: { type: integer }
-        overtimeCompensatedMinutes: { type: integer }
-        unpaidMinutes: { type: integer }
-        timeAdjustmentMinutes: { type: integer }
-        paidAbsenceMinutes: { type: integer }
-        payableMinutes: { type: integer }
-        basePayMinor: { type: integer, format: int64 }
-        additionsMinor: { type: integer, format: int64 }
-        deductionsMinor: { type: integer, format: int64 }
-        totalPayMinor: { type: integer, format: int64 }
-        payMode: { type: string, nullable: true, enum: [HOURLY, SALARY] }
-        compensationEffectiveMonth: { type: string, nullable: true, pattern: '^\d{4}-\d{2}$' }
-        configuredHourlyRateMinor: { type: integer, format: int64, nullable: true }
-        monthlySalaryMinor: { type: integer, format: int64, nullable: true }
-        effectiveHourlyRateMinor: { type: integer, format: int64 }
-        productionNormMinutes: { type: integer }
-        salaryCoveredMinutes: { type: integer }
+        month:
+          type: string
+        currencyCode:
+          type: string
+        hourlyRateMinor:
+          type: integer
+          format: int64
+          description: Effective hourly value; derived from salary and production norm in SALARY mode.
+        plannedMinutes:
+          type: integer
+        workedMinutes:
+          type: integer
+        vacationMinutes:
+          type: integer
+        sickMinutes:
+          type: integer
+        overtimeCompensatedMinutes:
+          type: integer
+        unpaidMinutes:
+          type: integer
+        timeAdjustmentMinutes:
+          type: integer
+        paidAbsenceMinutes:
+          type: integer
+        payableMinutes:
+          type: integer
+          description: Canonical payable time before HOURLY bank-first base separation.
+        hourlyBasePayableMinutes:
+          type: integer
+          minimum: 0
+          description: Minutes eligible for ordinary HOURLY base pay. Explicit banked overtime is excluded until settlement.
+        basePayMinor:
+          type: integer
+          format: int64
+        settlementCount:
+          type: integer
+          minimum: 0
+          description: Number of explicit overtime cash settlements included by settlementDate in this Payroll month.
+        settlementMinutes:
+          type: integer
+          minimum: 0
+        settlementBasePayMinor:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Base 1.0x monetary component of explicit overtime settlements.
+        settlementPremiumPayMinor:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Resolved premium component of explicit overtime settlements.
+        settlementPayMinor:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Total explicit overtime settlement money included in Payroll.
+        settlementPricingFingerprint:
+          type: string
+          nullable: true
+          pattern: '^[0-9a-f]{64}$'
+          description: Deterministic SHA-256 identity of the exact settlement provenance, historical compensation and resolved pricing inputs. Null when there are no settlements.
+        additionsMinor:
+          type: integer
+          format: int64
+        deductionsMinor:
+          type: integer
+          format: int64
+        totalPayMinor:
+          type: integer
+          format: int64
+          description: Base pay plus explicit settlement pay plus manual additions minus deductions.
+        payMode:
+          type: string
+          nullable: true
+          enum: [HOURLY, SALARY]
+        compensationEffectiveMonth:
+          type: string
+          nullable: true
+          pattern: '^\d{4}-\d{2}$'
+        configuredHourlyRateMinor:
+          type: integer
+          format: int64
+          nullable: true
+        monthlySalaryMinor:
+          type: integer
+          format: int64
+          nullable: true
+        effectiveHourlyRateMinor:
+          type: integer
+          format: int64
+        productionNormMinutes:
+          type: integer
+        salaryCoveredMinutes:
+          type: integer
+
+    PayrollPreview:
+      allOf:
+        - $ref: '#/components/schemas/PayrollMoneyProjection'
+        - type: object
+          required: [ordinaryPremiumPricingReady, ordinaryPremiumPricingBlockingReason, ordinaryPremiumPricingIdentityRequired, ordinaryPremiumMinutes, ordinaryPremiumReferenceBasePayMinor, ordinaryPremiumPayMinor, settlementPricingReady, settlementPricingBlockingReason]
+          properties:
+            ordinaryPremiumPricingReady:
+              type: boolean
+              description: False when ordinary-work NIGHT / HOLIDAY premium money cannot be valued safely from canonical source truth and effective-dated rules.
+            ordinaryPremiumPricingBlockingReason:
+              type: string
+              nullable: true
+              enum: [ORDINARY_PREMIUM_SOURCE_NOT_READY, PAY_PRICING_RULES_REQUIRED, PAYROLL_COMPENSATION_REQUIRED, PAYROLL_PRODUCTION_NORM_INCOMPLETE, PAYROLL_PRODUCTION_NORM_REQUIRED, PAY_PRICING_CURRENCY_MISMATCH, PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH]
+              description: Exact fail-closed reason when ordinaryPremiumPricingReady is false.
+            ordinaryPremiumPricingIdentityRequired:
+              type: boolean
+              description: True when effective-dated ordinary premium pricing participated and immutable snapshot identity is therefore required, even if the resulting premium is zero.
+            ordinaryPremiumMinutes:
+              type: integer
+              minimum: 0
+              description: Canonical ordinary-work minutes considered by the NIGHT / HOLIDAY premium projection.
+            ordinaryPremiumReferenceBasePayMinor:
+              type: integer
+              format: int64
+              minimum: 0
+              description: Reference ordinary base money used for premium explainability only. This amount is already covered by Payroll base pay and must not be added again.
+            ordinaryPremiumPayMinor:
+              type: integer
+              format: int64
+              minimum: 0
+              description: Additive ordinary-work NIGHT / HOLIDAY premium delta included in live Payroll total pay.
+            settlementPricingReady:
+              type: boolean
+              description: False when settlement money cannot be valued safely from canonical historical provenance/rules.
+            settlementPricingBlockingReason:
+              type: string
+              nullable: true
+              enum: [PAY_PRICING_PROVENANCE_REQUIRED, PAY_PRICING_RULES_REQUIRED, PAYROLL_COMPENSATION_REQUIRED, PAYROLL_PRODUCTION_NORM_INCOMPLETE, PAYROLL_PRODUCTION_NORM_REQUIRED, PAY_PRICING_CURRENCY_MISMATCH, PAYROLL_SETTLEMENT_CURRENCY_MISMATCH]
+              description: Exact fail-closed reason when settlementPricingReady is false.
+
     PayrollSnapshot:
       allOf:
-        - $ref: '#/components/schemas/PayrollPreview'
+        - $ref: '#/components/schemas/PayrollMoneyProjection'
         - type: object
-          required: [id, revision, sourcePeriodClosedAt, sourceIntegrityCheckedAt, calculationHash, createdAt]
+          required: [id, revision, ordinaryPremiumMinutes, ordinaryPremiumReferenceBasePayMinor, ordinaryPremiumPayMinor, ordinaryPremiumPricingFingerprint, sourcePeriodClosedAt, sourceIntegrityCheckedAt, calculationHash, createdAt]
           properties:
-            id: { type: integer, format: int64 }
-            revision: { type: integer, minimum: 1 }
-            sourcePeriodClosedAt: { type: string, format: date-time }
-            sourceIntegrityCheckedAt: { type: string, format: date-time }
-            calculationHash: { type: string, pattern: '^[0-9a-f]{64}$' }
-            createdAt: { type: string, format: date-time }
-            supersededById: { type: integer, format: int64, nullable: true }
+            ordinaryPremiumMinutes:
+              type: integer
+              minimum: 0
+              description: Canonical ordinary-work minutes frozen with this Payroll revision for NIGHT / HOLIDAY premium explainability.
+            ordinaryPremiumReferenceBasePayMinor:
+              type: integer
+              format: int64
+              minimum: 0
+              description: Frozen reference ordinary base money. Explainability only; it is already represented by basePayMinor and must not be added again.
+            ordinaryPremiumPayMinor:
+              type: integer
+              format: int64
+              minimum: 0
+              description: Frozen additive ordinary-work NIGHT / HOLIDAY premium delta included in totalPayMinor.
+            ordinaryPremiumPricingFingerprint:
+              type: string
+              nullable: true
+              pattern: '^[0-9a-f]{64}$'
+              description: Deterministic deep source, pricing-policy and historical-rate identity. Null when no ordinary premium pricing identity participated.
+            id:
+              type: integer
+              format: int64
+            revision:
+              type: integer
+              minimum: 1
+            sourcePeriodClosedAt:
+              type: string
+              format: date-time
+            sourceIntegrityCheckedAt:
+              type: string
+              format: date-time
+            calculationHash:
+              type: string
+              pattern: '^[0-9a-f]{64}$'
+            createdAt:
+              type: string
+              format: date-time
+            supersededById:
+              type: integer
+              format: int64
+              nullable: true
+
     PayrollPeriod:
       type: object
       required: [month, periodClosed, integrityHealthy, canCalculate, settings, productionCalendar, preview, adjustments, snapshots, compensationHistory]
       properties:
-        month: { type: string }
-        periodClosed: { type: boolean }
-        integrityHealthy: { type: boolean }
-        canCalculate: { type: boolean }
-        blockingReason: { type: string, nullable: true, enum: [PERIOD_OPEN, LEDGER_INTEGRITY_FAILED, PAYROLL_COMPENSATION_REQUIRED, PAYROLL_PRODUCTION_NORM_INCOMPLETE, PAYROLL_PRODUCTION_NORM_REQUIRED] }
-        settings: { $ref: '#/components/schemas/PayrollSettings' }
-        productionCalendar: { $ref: '#/components/schemas/ProductionCalendarMonth' }
-        preview: { $ref: '#/components/schemas/PayrollPreview' }
-        adjustments: { type: array, items: { $ref: '#/components/schemas/PayrollAdjustment' } }
+        month:
+          type: string
+        periodClosed:
+          type: boolean
+        integrityHealthy:
+          type: boolean
+        canCalculate:
+          type: boolean
+        blockingReason:
+          type: string
+          nullable: true
+          enum: [PERIOD_OPEN, LEDGER_INTEGRITY_FAILED, PAYROLL_COMPENSATION_REQUIRED, PAYROLL_PRODUCTION_NORM_INCOMPLETE, PAYROLL_PRODUCTION_NORM_REQUIRED, PAY_PRICING_PROVENANCE_REQUIRED, PAY_PRICING_RULES_REQUIRED, PAY_PRICING_CURRENCY_MISMATCH, PAYROLL_SETTLEMENT_CURRENCY_MISMATCH, ORDINARY_PREMIUM_SOURCE_NOT_READY, PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH]
+        settings:
+          $ref: '#/components/schemas/PayrollSettings'
+        productionCalendar:
+          $ref: '#/components/schemas/ProductionCalendarMonth'
+        preview:
+          $ref: '#/components/schemas/PayrollPreview'
+        adjustments:
+          type: array
+          items:
+            $ref: '#/components/schemas/PayrollAdjustment'
         latestSnapshot:
           nullable: true
-          allOf: [{ $ref: '#/components/schemas/PayrollSnapshot' }]
-        snapshots: { type: array, items: { $ref: '#/components/schemas/PayrollSnapshot' } }
+          allOf:
+            - $ref: '#/components/schemas/PayrollSnapshot'
+        snapshots:
+          type: array
+          items:
+            $ref: '#/components/schemas/PayrollSnapshot'
         effectiveCompensation:
           nullable: true
-          allOf: [{ $ref: '#/components/schemas/PayrollCompensationTerm' }]
-        compensationHistory: { type: array, items: { $ref: '#/components/schemas/PayrollCompensationTerm' } }
+          allOf:
+            - $ref: '#/components/schemas/PayrollCompensationTerm'
+        compensationHistory:
+          type: array
+          items:
+            $ref: '#/components/schemas/PayrollCompensationTerm'
+
     VacationSettings:
       allOf:
         - $ref: '#/components/schemas/VacationSettingsInput'
@@ -2550,6 +2815,49 @@ components:
           example: notifications
         requestId: { type: string, nullable: true }
         timestamp: { type: string, format: date-time }
+    WorkTimezoneChangeRequest:
+      type: object
+      required: [effectiveFrom, timezone]
+      properties:
+        effectiveFrom:
+          type: string
+          format: date
+          example: '2026-08-18'
+          description: First local calendar date interpreted with this work timezone
+        timezone:
+          type: string
+          maxLength: 80
+          example: Europe/Moscow
+          description: IANA timezone identifier
+
+    WorkTimezoneTerm:
+      type: object
+      required: [effectiveFrom, timezone, baseline]
+      properties:
+        effectiveFrom:
+          type: string
+          format: date
+        timezone:
+          type: string
+        baseline:
+          type: boolean
+          description: Protected migration/initial-conditions term
+
+    WorkTimezoneHistory:
+      type: object
+      required: [currentTimezone, currentDate, terms]
+      properties:
+        currentTimezone:
+          type: string
+          example: Europe/Moscow
+        currentDate:
+          type: string
+          format: date
+        terms:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkTimezoneTerm'
+
     TimeContext:
       type: object
       required: [nowInstant, workTimezone, displayTimezone, workLocalDateTime, displayLocalDateTime, workDate, displayDate, workOffset, displayOffset, sameTimezone]
@@ -2874,6 +3182,37 @@ components:
         customPlannedHours: { type: number, format: double, minimum: 0 }
         reasonTemplate: { type: string, maxLength: 300, nullable: true }
         sortOrder: { type: integer, minimum: 0 }
+    OvertimeSettlementUpsertRequest:
+      type: object
+      required: [settlementDate, minutes]
+      properties:
+        settlementDate:
+          type: string
+          format: date
+          description: Accounting date of the explicit settlement decision.
+        minutes:
+          type: integer
+          minimum: 1
+          maximum: 6000
+          description: Canonical Time Bank minutes to consume.
+        reason:
+          type: string
+          maxLength: 1000
+          nullable: true
+
+    OvertimeSettlement:
+      type: object
+      required: [id, settlementDate, minutes, hours, createdAt, updatedAt]
+      description: Explicit Time Bank debit decision awaiting the future Pricing/Payroll layer. Contains no money.
+      properties:
+        id: { type: integer, format: int64 }
+        settlementDate: { type: string, format: date }
+        minutes: { type: integer, minimum: 1 }
+        hours: { type: number, format: double, minimum: 0 }
+        reason: { type: string, nullable: true }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+
     OvertimeAllocation:
       type: object
       required: [creditId, workedDate, hours, minutes, exact, reconstructed]
@@ -2900,9 +3239,10 @@ components:
         hours: { type: number, format: double }
         minutes: { type: integer, minimum: 0 }
         reason: { type: string, nullable: true }
-        sourceKind: { type: string, enum: [MANUAL, ABSENCE] }
+        sourceKind: { type: string, enum: [MANUAL, ABSENCE, SETTLEMENT] }
         sourceAbsenceId: { type: integer, format: int64, nullable: true }
-        editable: { type: boolean, description: False for usages owned by an absence }
+        sourceSettlementId: { type: integer, format: int64, nullable: true }
+        editable: { type: boolean, description: False for usages owned by an absence or settlement }
         postingState: { type: string, enum: [RESERVED, POSTED] }
         reserved: { type: boolean }
         allocations:
@@ -2910,14 +3250,17 @@ components:
           items: { $ref: '#/components/schemas/OvertimeAllocation' }
     OvertimeUsageRef:
       type: object
-      required: [usageId, usageDate, hours, minutes, exact, reconstructed]
-      description: Allocation projected from the credit side; identifies the time-off request and the exact source interval it consumed.
+      required: [usageId, usageDate, hours, minutes, sourceKind, exact, reconstructed]
+      description: Allocation projected from the credit side; identifies the business owner of the bank debit and the exact source interval it consumed.
       properties:
         usageId: { type: integer, format: int64 }
         usageDate: { type: string, format: date }
         hours: { type: number, format: double }
         minutes: { type: integer, minimum: 0 }
         reason: { type: string, nullable: true }
+        sourceKind: { type: string, enum: [MANUAL, ABSENCE, SETTLEMENT] }
+        sourceAbsenceId: { type: integer, format: int64, nullable: true }
+        sourceSettlementId: { type: integer, format: int64, nullable: true }
         startInstant: { type: string, format: date-time, nullable: true }
         endInstant: { type: string, format: date-time, nullable: true }
         displayStart: { type: string, nullable: true }

@@ -41,6 +41,7 @@ public class TimeCompensationService {
     private final LedgerIntegrityService ledgerIntegrity;
     private final TimeLedgerEntryRepository ledgerEntries;
     private final ProductionCalendarService productionCalendar;
+    private final PayClassificationService payClassification;
 
     public TimeCompensationService(DayEntryRepository days,
                                    ActualWorkIntervalRepository actualWork,
@@ -49,7 +50,8 @@ public class TimeCompensationService {
                                    OvertimeService overtime,
                                    LedgerIntegrityService ledgerIntegrity,
                                    TimeLedgerEntryRepository ledgerEntries,
-                                   ProductionCalendarService productionCalendar) {
+                                   ProductionCalendarService productionCalendar,
+                                   PayClassificationService payClassification) {
         this.days = days;
         this.actualWork = actualWork;
         this.actualAllocation = actualAllocation;
@@ -58,6 +60,7 @@ public class TimeCompensationService {
         this.ledgerIntegrity = ledgerIntegrity;
         this.ledgerEntries = ledgerEntries;
         this.productionCalendar = productionCalendar;
+        this.payClassification = payClassification;
     }
 
     @Transactional
@@ -155,10 +158,48 @@ public class TimeCompensationService {
             unpaidTotal += unpaidMinutes;
         }
 
-        int reservedMinutes = account.usages().stream().filter(item -> "RESERVED".equals(item.postingState()))
-                .mapToInt(OvertimeUsageDto::minutes).sum();
-        int postedMinutes = account.usages().stream().filter(item -> "POSTED".equals(item.postingState()))
-                .mapToInt(OvertimeUsageDto::minutes).sum();
+        /*
+         * RESERVED / POSTED belong to the time-off approval projection.
+         * SETTLEMENT is immediately posted as a bank debit but is not an
+         * absence approval and therefore must not pollute these counters.
+         *
+         * Legacy MANUAL rows stay visible for backward compatibility.
+         */
+        int reservedMinutes =
+                account.usages()
+                        .stream()
+                        .filter(item ->
+                                !"SETTLEMENT".equals(
+                                        item.sourceKind()
+                                )
+                        )
+                        .filter(item ->
+                                "RESERVED".equals(
+                                        item.postingState()
+                                )
+                        )
+                        .mapToInt(
+                                OvertimeUsageDto::minutes
+                        )
+                        .sum();
+
+        int postedMinutes =
+                account.usages()
+                        .stream()
+                        .filter(item ->
+                                !"SETTLEMENT".equals(
+                                        item.sourceKind()
+                                )
+                        )
+                        .filter(item ->
+                                "POSTED".equals(
+                                        item.postingState()
+                                )
+                        )
+                        .mapToInt(
+                                OvertimeUsageDto::minutes
+                        )
+                        .sum();
         LedgerIntegrityDto integrity = ledgerIntegrity.inspect(user, from, to);
         long monthCount = java.time.temporal.ChronoUnit.MONTHS.between(YearMonth.from(from), YearMonth.from(to)) + 1;
         boolean periodClosed = integrity.periods().size() == monthCount
@@ -209,6 +250,7 @@ public class TimeCompensationService {
         int unpaidTotal = 0;
         int otherUnpaidTotal = 0;
         List<PayrollSourceDay> sourceDays = new ArrayList<>();
+        int hourlyBaseWorkedTotal = 0;
 
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
             int plannedMinutes = productionCalendar.requiredMinutes(user, date, planned.get(date));
@@ -220,6 +262,46 @@ public class TimeCompensationService {
             int workedMinutes = actualIntervals.isEmpty()
                     ? Math.max(0, plannedMinutes - Math.min(plannedMinutes, absenceMinutes)) + earnedMinutes
                     : actualIntervals.stream().mapToInt(item -> actualAllocation.netMinutesOnDate(item, currentDate)).sum();
+
+            /*
+             * HOURLY bank-first base:
+             *
+             * - explicit factual work uses Native Pay Classification and pays
+             *   only REGULAR minutes in the ordinary base;
+             * - OVERTIME factual minutes remain in Time Bank until explicit
+             *   monetary settlement;
+             * - PLAN_DERIVED compatibility rows historically add earned
+             *   overtime to workedMinutes, so remove that addition here.
+             *
+             * Payroll itself must not re-classify reality.
+             */
+            int hourlyBaseWorkedMinutes;
+
+            if (actualIntervals.isEmpty()) {
+                hourlyBaseWorkedMinutes =
+                        Math.max(
+                                0,
+                                workedMinutes - earnedMinutes
+                        );
+            } else {
+                PayClassificationService.DayClassification classified =
+                        payClassification.classify(
+                                user,
+                                date
+                        );
+
+                if (classified.workedMinutes()
+                        != workedMinutes) {
+                    throw new IllegalStateException(
+                            "Payroll source factual minutes disagree with Native Pay Classification on "
+                                    + date
+                    );
+                }
+
+                hourlyBaseWorkedMinutes =
+                        classified.regularMinutes();
+            }
+
             int vacationMinutes = policyMinutes(plannedMinutes, absences, "VACATION_ALLOWANCE");
             int sickMinutes = policyMinutes(plannedMinutes, absences, "SICK_PAY");
             int overtimeMinutes = policyMinutes(plannedMinutes, absences, "OVERTIME_BANK");
@@ -233,6 +315,7 @@ public class TimeCompensationService {
             }
             plannedTotal += plannedMinutes;
             workedTotal += workedMinutes;
+            hourlyBaseWorkedTotal += hourlyBaseWorkedMinutes;
             vacationTotal += vacationMinutes;
             sickTotal += sickMinutes;
             overtimeCompensatedTotal += overtimeMinutes;
@@ -246,10 +329,42 @@ public class TimeCompensationService {
                 .mapToInt(TimeLedgerEntry::getSignedMinutes)
                 .sum();
         int paidAbsenceMinutes = vacationTotal + sickTotal + overtimeCompensatedTotal;
-        int payableMinutes = Math.max(0, workedTotal + paidAbsenceMinutes + timeAdjustmentMinutes);
-        return new PayrollSourceSnapshot(from, to, plannedTotal, workedTotal, vacationTotal, sickTotal,
-                overtimeCompensatedTotal, unpaidTotal + otherUnpaidTotal, timeAdjustmentMinutes,
-                paidAbsenceMinutes, payableMinutes, List.copyOf(sourceDays));
+        int payableMinutes = Math.max(
+                0,
+                workedTotal
+                        + paidAbsenceMinutes
+                        + timeAdjustmentMinutes
+        );
+
+        int hourlyBasePayableMinutes = Math.max(
+                0,
+                hourlyBaseWorkedTotal
+                        + paidAbsenceMinutes
+                        + timeAdjustmentMinutes
+        );
+
+        if (hourlyBasePayableMinutes
+                > payableMinutes) {
+            throw new IllegalStateException(
+                    "HOURLY base payable minutes cannot exceed canonical payable minutes"
+            );
+        }
+
+        return new PayrollSourceSnapshot(
+                from,
+                to,
+                plannedTotal,
+                workedTotal,
+                vacationTotal,
+                sickTotal,
+                overtimeCompensatedTotal,
+                unpaidTotal + otherUnpaidTotal,
+                timeAdjustmentMinutes,
+                paidAbsenceMinutes,
+                payableMinutes,
+                hourlyBasePayableMinutes,
+                List.copyOf(sourceDays)
+        );
     }
 
     private Map<LocalDate, List<ActualWorkInterval>> actualByDate(AppUser user, LocalDate from, LocalDate to) {
@@ -271,10 +386,74 @@ public class TimeCompensationService {
                                    int vacationMinutes, int sickMinutes,
                                    int overtimeCompensatedMinutes, int unpaidMinutes) {}
 
-    public record PayrollSourceSnapshot(LocalDate from, LocalDate to, int plannedMinutes, int workedMinutes,
-                                        int vacationMinutes, int sickMinutes, int overtimeCompensatedMinutes,
-                                        int unpaidMinutes, int timeAdjustmentMinutes, int paidAbsenceMinutes,
-                                        int payableMinutes, List<PayrollSourceDay> days) {}
+    public record PayrollSourceSnapshot(
+            LocalDate from,
+            LocalDate to,
+            int plannedMinutes,
+            int workedMinutes,
+            int vacationMinutes,
+            int sickMinutes,
+            int overtimeCompensatedMinutes,
+            int unpaidMinutes,
+            int timeAdjustmentMinutes,
+            int paidAbsenceMinutes,
+            int payableMinutes,
+            int hourlyBasePayableMinutes,
+            List<PayrollSourceDay> days
+    ) {
+        public PayrollSourceSnapshot {
+            if (payableMinutes < 0
+                    || hourlyBasePayableMinutes < 0
+                    || hourlyBasePayableMinutes > payableMinutes) {
+                throw new IllegalArgumentException(
+                        "Invalid PayrollSource payable-minute totals"
+                );
+            }
+
+            days =
+                    days == null
+                            ? List.of()
+                            : List.copyOf(days);
+        }
+
+        /*
+         * Compatibility constructor for existing tests/internal callers.
+         *
+         * Before classifier-derived HOURLY base existed, payableMinutes was the
+         * only value. Callers that are not exercising the new bank-first
+         * boundary therefore retain the old exact meaning.
+         */
+        public PayrollSourceSnapshot(
+                LocalDate from,
+                LocalDate to,
+                int plannedMinutes,
+                int workedMinutes,
+                int vacationMinutes,
+                int sickMinutes,
+                int overtimeCompensatedMinutes,
+                int unpaidMinutes,
+                int timeAdjustmentMinutes,
+                int paidAbsenceMinutes,
+                int payableMinutes,
+                List<PayrollSourceDay> days
+        ) {
+            this(
+                    from,
+                    to,
+                    plannedMinutes,
+                    workedMinutes,
+                    vacationMinutes,
+                    sickMinutes,
+                    overtimeCompensatedMinutes,
+                    unpaidMinutes,
+                    timeAdjustmentMinutes,
+                    paidAbsenceMinutes,
+                    payableMinutes,
+                    payableMinutes,
+                    days
+            );
+        }
+    }
 
     private int absenceMinutes(int plannedMinutes, List<AbsenceOccurrenceDto> absences) {
         if (absences.stream().anyMatch(item -> "FULL_DAY".equals(item.coverage()) && item.replacesShift())) {

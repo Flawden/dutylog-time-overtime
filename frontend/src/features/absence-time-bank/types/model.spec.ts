@@ -5,9 +5,11 @@ import {
   creditRowEarnedHours,
   dayCreditTotals,
   fifoForecast,
+  fifoForecastForSettlement,
   ledgerChartColumns,
   newCreditDraft,
   uniqueSourceCredits,
+  usageKindLabel,
 } from "./model";
 
 function credit(overrides: Partial<OvertimeCredit>): OvertimeCredit {
@@ -186,4 +188,90 @@ describe("absence and time-bank domain model", () => {
       reason: "Scenario source",
     });
   });
+  it("restores the current settlement allocation while editing its FIFO forecast", () => {
+    const data = account({
+      balanceHours: 3,
+      credits: [
+        credit({
+          remainingHours: 2,
+          projection: {
+            ...credit({}).projection!,
+            sourceRemainingHours: 2,
+            dayRemainingHours: 2,
+          },
+        }),
+      ],
+      usages: [
+        usage({
+          sourceKind: "SETTLEMENT",
+          sourceAbsenceId: null,
+          sourceSettlementId: 77,
+          reserved: false,
+          allocations: [{
+            creditId: 1,
+            workedDate: "2026-08-01",
+            hours: 2,
+            minutes: 120,
+            exact: false,
+            reconstructed: false,
+          }],
+        }),
+      ],
+    });
+
+    const result =
+      fifoForecastForSettlement(
+        data,
+        180,
+        77
+      );
+
+    expect(
+      result.allocations[0]
+    ).toMatchObject({
+      creditId: 1,
+      minutes: 180,
+      remainingAfterMinutes: 60,
+    });
+
+    expect(
+      result.shortageMinutes
+    ).toBe(0);
+
+    expect(
+      result.freeAfterMinutes
+    ).toBe(120);
+  });
+
+  it("labels bank debit ownership without guessing from reason text", () => {
+    expect(
+      usageKindLabel(
+        usage({
+          sourceKind: "ABSENCE",
+          sourceAbsenceId: 91,
+        })
+      )
+    ).toBe("Отгул");
+
+    expect(
+      usageKindLabel(
+        usage({
+          sourceKind: "SETTLEMENT",
+          sourceAbsenceId: null,
+          sourceSettlementId: 44,
+        })
+      )
+    ).toBe("К оплате");
+
+    expect(
+      usageKindLabel(
+        usage({
+          sourceKind: "MANUAL",
+          sourceAbsenceId: null,
+          sourceSettlementId: null,
+        })
+      )
+    ).toBe("Старое списание");
+  });
+
 });

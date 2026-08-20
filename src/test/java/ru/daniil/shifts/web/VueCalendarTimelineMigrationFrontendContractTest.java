@@ -127,7 +127,8 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(panel.contains("id=\"dayAddCredit\""));
         assertTrue(panel.contains("id=\"dayAddUsage\""));
         assertTrue(panel.contains("Оформить отгул"));
-        assertTrue(panel.contains("сам резервирует и списывает часы банка по FIFO"));
+        assertTrue(panel.contains("id=\"dayAddSettlement\""));
+        assertTrue(panel.contains("Оба варианта расходуют один банк по FIFO"));
         assertTrue(panel.contains("props.bridge.writeCalendarDay"));
         assertTrue(panel.contains("shiftSourceDate = computed(() => selectedOccurrence.value?.sourceDate || focusDate.value)"));
         assertTrue(panel.contains("props.bridge.writeCalendarDay(shiftSourceDate.value"));

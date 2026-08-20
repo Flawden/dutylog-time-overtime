@@ -27,6 +27,7 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
     calendarSyncIssuedUrl: "",
     telegram: null as DutyLogApiSchemas.TelegramStatus | null,
     timeContext: null as DutyLogApiSchemas.TimeContext | null,
+    workTimezoneHistory: null as DutyLogApiSchemas.WorkTimezoneHistory | null,
     shiftTypes: [] as DutyLogApiSchemas.ShiftType[],
     shiftTypeManagerOpen: false,
     shiftTypeEditingId: null as number | null,
@@ -124,13 +125,18 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
       await Promise.all(jobs);
     },
     async loadRetiredIslandData(api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
-      const [timeContext, shiftTypes] = await Promise.all([api.timeContext(), api.shiftTypes()]);
+      const [timeContext, workTimezoneHistory, shiftTypes] = await Promise.all([
+        api.timeContext(),
+        api.workTimezoneHistory(),
+        api.shiftTypes(),
+      ]);
       // Both list endpoints can lazily seed the same built-in schedule presets. The first
       // Settings bootstrap must serialize those reads so two transactions cannot race the
       // unique (owner, name) preset constraint. Later refreshes preserve the same boundary.
       const scheduleTemplates = await api.scheduleTemplates();
       const calendarLayers = await api.calendarLayers();
       this.timeContext = timeContext;
+      this.workTimezoneHistory = workTimezoneHistory;
       this.shiftTypes = shiftTypes;
       this.scheduleTemplates = scheduleTemplates;
       this.calendarLayers = calendarLayers;
@@ -143,19 +149,50 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
       this.legacyTaskDeadlinePreview = migrations[1].status === "fulfilled" ? migrations[1].value : null;
     },
     async saveTimezone(timezone: string, bridge: LegacyBridge, api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
+      const effectiveFrom = this.workTimezoneHistory?.currentDate || this.timeContext?.workDate;
+      if (!effectiveFrom) throw new Error(this.language === "en" ? "Current work date unavailable" : "Не удалось определить текущую рабочую дату");
+      await this.saveTimezoneFrom(timezone, effectiveFrom, bridge, api);
+    },
+
+    async saveTimezoneFrom(
+      timezone: string,
+      effectiveFrom: string,
+      bridge: LegacyBridge,
+      api: SettingsWorkspaceApi = createSettingsWorkspaceApi(),
+    ): Promise<void> {
       this.timeMessage = this.language === "en" ? "Saving…" : "сохраняю…";
       this.timeMessageOk = true;
       try {
-        const updated = await api.updateProfile({ workTimezone: timezone, displayTimezone: timezone });
-        if (!updated) throw new Error("Profile update returned no data");
+        const workTimezoneHistory = await api.updateWorkTimezone({ timezone, effectiveFrom });
+        if (!workTimezoneHistory) throw new Error("Work timezone update returned no data");
+
+        const [updated, timeContext, shiftTypes] = await Promise.all([
+          api.profile(),
+          api.timeContext(),
+          api.shiftTypes(),
+        ]);
+
+        if (!updated) throw new Error("Profile unavailable after timezone update");
+
         this.profile = updated;
+        this.timeContext = timeContext;
+        this.workTimezoneHistory = workTimezoneHistory;
+        this.shiftTypes = shiftTypes;
+
         bridge.synchronizeProfile(plainRecord(updated));
-        [this.timeContext, this.shiftTypes] = await Promise.all([api.timeContext(), api.shiftTypes()]);
-        this.timeMessage = this.language === "en" ? "Timezone saved" : "Часовой пояс сохранён";
+
+        this.timeMessage = this.language === "en"
+          ? "Timezone saved"
+          : "Часовой пояс сохранён";
         this.timeMessageOk = true;
+
         await window.DutyLogVueDomains?.calendarTimeline?.refresh?.();
         await window.DutyLogVueDomains?.productivity?.refresh?.();
-      } catch (error) { this.timeMessage = errorMessage(error); this.timeMessageOk = false; throw error; }
+      } catch (error) {
+        this.timeMessage = errorMessage(error);
+        this.timeMessageOk = false;
+        throw error;
+      }
     },
     openShiftTypeManager(editId: number | null = null): void {
       this.shiftTypeEditingId = editId == null ? null : Number(editId);

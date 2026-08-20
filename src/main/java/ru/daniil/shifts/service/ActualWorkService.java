@@ -26,17 +26,20 @@ public class ActualWorkService {
     private final DayEntryService dates;
     private final LedgerIntegrityService ledger;
     private final WorkdayDerivedCompensationService derivedCompensation;
+    private final ActualWorkIdentityService identity;
 
     public ActualWorkService(ActualWorkIntervalRepository intervals,
                              DayEntryRepository dayEntries,
                              DayEntryService dates,
                              LedgerIntegrityService ledger,
-                             WorkdayDerivedCompensationService derivedCompensation) {
+                             WorkdayDerivedCompensationService derivedCompensation,
+                             ActualWorkIdentityService identity) {
         this.intervals = intervals;
         this.dayEntries = dayEntries;
         this.dates = dates;
         this.ledger = ledger;
         this.derivedCompensation = derivedCompensation;
+        this.identity = identity;
     }
 
     @Transactional(readOnly = true)
@@ -49,11 +52,13 @@ public class ActualWorkService {
     public ActualWorkIntervalDto create(AppUser user, ActualWorkIntervalRequest req) {
         ActualShape shape = parse(req);
         int breakMinutes = resolveBreakMinutes(user, shape.startDate(), req.breakMinutes(), null);
-        validateBreak(shape, breakMinutes);
+        ActualWorkIdentityService.Identity resolvedIdentity =
+                identity.resolve(user, shape.startDate(), shape.endDate(), shape.start(), shape.end());
+        validateBreak(resolvedIdentity.elapsedMinutes(), breakMinutes);
         ledger.assertRangeOpen(user, shape.startDate(), shape.endDate());
         validateNoOverlap(user, null, shape);
         ActualWorkInterval interval = new ActualWorkInterval(user);
-        apply(interval, shape, breakMinutes, req.note());
+        apply(interval, shape, resolvedIdentity, breakMinutes, req.note());
         ActualWorkInterval saved = intervals.saveAndFlush(interval);
         derivedCompensation.reconcileRange(user, shape.startDate(), shape.endDate());
         return toDto(saved);
@@ -69,10 +74,12 @@ public class ActualWorkService {
 
         ActualShape shape = parse(req);
         int breakMinutes = resolveBreakMinutes(user, shape.startDate(), req.breakMinutes(), interval);
-        validateBreak(shape, breakMinutes);
+        ActualWorkIdentityService.Identity resolvedIdentity =
+                identity.resolve(user, shape.startDate(), shape.endDate(), shape.start(), shape.end());
+        validateBreak(resolvedIdentity.elapsedMinutes(), breakMinutes);
         ledger.assertRangeOpen(user, shape.startDate(), shape.endDate());
         validateNoOverlap(user, id, shape);
-        apply(interval, shape, breakMinutes, req.note());
+        apply(interval, shape, resolvedIdentity, breakMinutes, req.note());
         ActualWorkInterval saved = intervals.saveAndFlush(interval);
         LocalDate reconcileFrom = oldStartDate.isBefore(shape.startDate()) ? oldStartDate : shape.startDate();
         LocalDate reconcileTo = oldEndDate.isAfter(shape.endDate()) ? oldEndDate : shape.endDate();
@@ -147,31 +154,54 @@ public class ActualWorkService {
         return day.hasShiftOccurrenceSnapshot() ? day.getShiftBreakMinutes() : Math.max(0, shift.getBreakMinutes());
     }
 
-    private void validateBreak(ActualShape shape, int breakMinutes) {
+    private void validateBreak(int elapsedMinutes, int breakMinutes) {
         if (breakMinutes < 0 || breakMinutes > 1440) {
             throw ApiException.badRequest("Перерыв должен быть от 0 до 1440 минут");
         }
-        if (breakMinutes >= shape.elapsedMinutes()) {
+        if (breakMinutes >= elapsedMinutes) {
             throw ApiException.badRequest("Перерыв должен быть короче фактического интервала работы");
         }
     }
 
-    private void apply(ActualWorkInterval interval, ActualShape shape, int breakMinutes, String note) {
+    private void apply(ActualWorkInterval interval,
+                       ActualShape shape,
+                       ActualWorkIdentityService.Identity resolvedIdentity,
+                       int breakMinutes,
+                       String note) {
         interval.setWorkDate(shape.startDate());
         interval.setEndDate(shape.endDate());
         interval.setStartTime(shape.start());
         interval.setEndTime(shape.end());
         interval.setBreakMinutes(breakMinutes);
-        interval.setWorkedMinutes(shape.elapsedMinutes() - breakMinutes);
+
+        // Real elapsed time comes from absolute identity, not wall-clock subtraction.
+        interval.setWorkedMinutes(resolvedIdentity.elapsedMinutes() - breakMinutes);
+
+        interval.setSourceTimezone(resolvedIdentity.sourceTimezone());
+        interval.setStartInstant(resolvedIdentity.startInstant());
+        interval.setEndInstant(resolvedIdentity.endInstant());
+        interval.setIdentityReconstructed(false);
+
         interval.setNote(note == null || note.isBlank() ? null : note.trim());
     }
 
     private ActualWorkIntervalDto toDto(ActualWorkInterval interval) {
-        return new ActualWorkIntervalDto(interval.getId(), interval.getWorkDate().toString(),
-                interval.getEndDate().toString(), interval.getStartTime().toString(), interval.getEndTime().toString(),
-                interval.getWorkedMinutes(), interval.getBreakMinutes(), interval.getNote(),
+        return new ActualWorkIntervalDto(
+                interval.getId(),
+                interval.getWorkDate().toString(),
+                interval.getEndDate().toString(),
+                interval.getStartTime().toString(),
+                interval.getEndTime().toString(),
+                interval.getWorkedMinutes(),
+                interval.getBreakMinutes(),
+                interval.getNote(),
+                interval.getSourceTimezone(),
+                interval.getStartInstant() == null ? null : interval.getStartInstant().toString(),
+                interval.getEndInstant() == null ? null : interval.getEndInstant().toString(),
+                interval.isIdentityReconstructed(),
                 interval.getCreatedAt() == null ? null : interval.getCreatedAt().toString(),
-                interval.getUpdatedAt() == null ? null : interval.getUpdatedAt().toString());
+                interval.getUpdatedAt() == null ? null : interval.getUpdatedAt().toString()
+        );
     }
 
     private record ActualShape(LocalDate startDate, LocalDate endDate, LocalTime start, LocalTime end,

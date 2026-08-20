@@ -26,11 +26,13 @@ class TaskDeadlineTimezoneFrontendContractTest {
     void timezoneSaveRefreshesTasksAndAbsoluteReminderProjection() throws Exception {
         String settings = Files.readString(STATIC.resolve("js/60-settings.js"));
         String profile = Files.readString(Path.of("src/main/java/ru/daniil/shifts/web/ProfileController.java"));
+        String timezoneChange = Files.readString(Path.of("src/main/java/ru/daniil/shifts/service/WorkTimezoneChangeService.java"));
         String reminders = Files.readString(Path.of("src/main/java/ru/daniil/shifts/service/NotificationService.java"));
 
         assertTrue(settings.contains("await loadTaskBoard(true)"));
         assertTrue(settings.contains("await showMonthNotifications()"));
-        assertTrue(profile.contains("taskService.rebaseForTimezoneChange"));
+        assertTrue(profile.contains("workTimezoneChangeService.upsertAndReconcile"));
+        assertTrue(timezoneChange.contains("taskService.rebaseForTimezoneChange"));
         assertTrue(reminders.contains("task.getDueInstant()"));
         assertTrue(reminders.contains("reminderAtInstant"));
     }

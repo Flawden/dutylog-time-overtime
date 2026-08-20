@@ -16,10 +16,23 @@ public class CompensationCalculationService {
     public Result calculate(CompensationTerm term, PayrollSourceSnapshot source, int productionNormMinutes) {
         if (term == null) throw new IllegalArgumentException("term is required");
         if ("HOURLY".equals(term.getPayMode())) {
-            long configured = requiredPositive(term.getHourlyRateMinor(), "PAYROLL_RATE_REQUIRED", "Укажи почасовую ставку");
-            long basePay = moneyForMinutes(source.payableMinutes(), configured);
-            return new Result("HOURLY", configured, null, configured,
-                    Math.max(0, productionNormMinutes), 0, basePay);
+            long configured = effectiveHourlyRateMinor(
+                    term,
+                    productionNormMinutes
+            );
+            long basePay = moneyForMinutes(
+                    source.hourlyBasePayableMinutes(),
+                    configured
+            );
+            return new Result(
+                    "HOURLY",
+                    configured,
+                    null,
+                    configured,
+                    Math.max(0, productionNormMinutes),
+                    0,
+                    basePay
+            );
         }
         if (!"SALARY".equals(term.getPayMode())) {
             throw ApiException.badRequest("PAYROLL_MODE_INVALID", "Некорректный способ оплаты");
@@ -31,9 +44,87 @@ public class CompensationCalculationService {
                     "Для оклада нужна положительная расчётная норма месяца");
         }
         int covered = salaryCoveredMinutes(source, norm);
-        long effectiveHourly = ratioMoney(salary, 60L, norm);
-        long basePay = ratioMoney(salary, covered, norm);
+        long effectiveHourly =
+                effectiveHourlyRateMinor(
+                        term,
+                        norm
+                );
+        long basePay =
+                ratioMoney(
+                        salary,
+                        covered,
+                        norm
+                );
         return new Result("SALARY", null, salary, effectiveHourly, norm, covered, basePay);
+    }
+
+    /**
+     * Canonical effective hourly value used by both monthly Payroll and
+     * historical settlement pricing.
+     *
+     * HOURLY returns the configured rate.
+     *
+     * SALARY derives the hourly value from that compensation term and the
+     * production norm of the valuation month:
+     *
+     * salary * 60 / productionNormMinutes, HALF_UP.
+     *
+     * This method prices no minutes by itself.
+     */
+    public long effectiveHourlyRateMinor(
+            CompensationTerm term,
+            int productionNormMinutes
+    ) {
+        if (term == null) {
+            throw new IllegalArgumentException(
+                    "term is required"
+            );
+        }
+
+        if ("HOURLY".equals(
+                term.getPayMode()
+        )) {
+            return requiredPositive(
+                    term.getHourlyRateMinor(),
+                    "PAYROLL_RATE_REQUIRED",
+                    "Укажи почасовую ставку"
+            );
+        }
+
+        if (!"SALARY".equals(
+                term.getPayMode()
+        )) {
+            throw ApiException.badRequest(
+                    "PAYROLL_MODE_INVALID",
+                    "Некорректный способ оплаты"
+            );
+        }
+
+        long salary =
+                requiredPositive(
+                        term.getMonthlySalaryMinor(),
+                        "PAYROLL_SALARY_REQUIRED",
+                        "Укажи месячный оклад"
+                );
+
+        int norm =
+                Math.max(
+                        0,
+                        productionNormMinutes
+                );
+
+        if (norm <= 0) {
+            throw ApiException.conflict(
+                    "PAYROLL_PRODUCTION_NORM_REQUIRED",
+                    "Для оклада нужна положительная расчётная норма месяца"
+            );
+        }
+
+        return ratioMoney(
+                salary,
+                60L,
+                norm
+        );
     }
 
     int salaryCoveredMinutes(PayrollSourceSnapshot source, int productionNormMinutes) {

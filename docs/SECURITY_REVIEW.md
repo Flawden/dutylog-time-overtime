@@ -1,3 +1,6 @@
+# v27.46.1 Temporal Work Context & Native Pay Pricing review
+Status: v27.46.1. Temporal Work Context, pricing terms, settlements and Payroll projections remain owner-scoped through the authenticated principal. Historical corrections remain accounting-period and consumed-credit guarded. Overtime provenance stores factual identity only while pricing remains separately effective-dated. Immutable Payroll snapshots freeze deep pricing identity without making client-provided fingerprints authoritative. No new credential, role or dependency trust boundary is introduced.
+
 # v27.46.0 Compensation Setup & Base Native Payroll review
 Status: v27.46.0. Owner-scoped compensation terms add no new trust boundary; Payroll still derives the user from the authenticated principal and snapshots remain immutable revisions.
 

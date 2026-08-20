@@ -1,6 +1,23 @@
 # DutyLog release checklist
 
-Status: v27.46.0.
+Status: v27.46.1.
+
+## v27.46.1 — Temporal Work Context & Native Pay Pricing acceptance
+
+- [x] Work timezone changes are effective-dated and do not silently reinterpret prior factual work.
+- [x] Actual Work carries exact historical identity when available.
+- [x] REGULAR / NIGHT / HOLIDAY / OVERTIME are overlapping dimensions.
+- [x] Overtime provenance remains factual and separate from pricing.
+- [x] Explicit settlement consumes the canonical FIFO Time Bank.
+- [x] Pricing rules are effective-dated; missing rules remain different from explicit zero premium.
+- [x] HOURLY base excludes banked overtime.
+- [x] Settlement and ordinary NIGHT/HOLIDAY pricing identity can be frozen into immutable Payroll revisions.
+- [x] Payroll UI explains ordinary premium separately and never recomputes backend total money.
+- [x] OpenAPI 138/144 (`1c76051d2359`), Flyway source V61, Java 1006/216, Playwright 48, Vitest 80.
+- [x] Canonical frontend production build passes at 924966 / 925000 B raw without another budget rebaseline.
+- [x] Full Maven/JaCoCo and release-check pass for the packaged v27.46.1 tree.
+- [ ] CI immutable image starts on clean PostgreSQL after Flyway V1→V61.
+- [ ] Chromium 48/48 and final staging smoke/UX acceptance pass.
 
 ## v27.45.1 — Native Workday / Day Truth Integration acceptance
 

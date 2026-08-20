@@ -8,9 +8,10 @@ import SettingsCard from "./SettingsCard.vue";
 const props = defineProps<{ bridge: LegacyBridge; active: boolean }>();
 const emit = defineEmits<{ open: [] }>();
 const settings = useSettingsWorkspaceStore();
-const { profile, shiftTypes, timeContext, legacyShiftPreview, legacyTaskDeadlinePreview } = storeToRefs(settings);
+const { profile, shiftTypes, timeContext, workTimezoneHistory, legacyShiftPreview, legacyTaskDeadlinePreview } = storeToRefs(settings);
 
 const workTimezone = ref("UTC");
+const effectiveFrom = ref("");
 const dayStart = ref("08:30");
 const dayEnd = ref("17:00");
 const dayBreak = ref(30);
@@ -33,9 +34,29 @@ const TIMEZONE_FALLBACKS = [
 
 const language = computed(() => settings.language);
 const text = computed(() => language.value === "en" ? {
-  eyebrow: "Time", title: "Timezone and time format", hint: "One IANA timezone is used for calendar, shifts, reminders and absolute intervals.", timezone: "Timezone", format: "Time format", current: "Current time", saveTimezone: "Save timezone", detect: "Detect automatically", shifts: "Shift templates", shiftsHint: "Built-in day and night shift defaults.", day: "Day", night: "Night", start: "Start", end: "End", break: "Break, min", plan: "Plan, h", saveShifts: "Save shift templates", legacyShifts: "Attach legacy shifts", legacyTasks: "Attach legacy task deadlines", migrationConfirm: "Interpret legacy local time in the selected timezone? This writes absolute instants.", saved: "saved",
+  eyebrow: "Time", title: "Timezone and time format", hint: "Work timezone is effective-dated so historical local work time keeps its original meaning.", timezone: "Timezone", format: "Time format", current: "Current time", saveTimezone: "Save timezone", detect: "Detect automatically", shifts: "Shift templates", shiftsHint: "Built-in day and night shift defaults.", day: "Day", night: "Night", start: "Start", end: "End", break: "Break, min", plan: "Plan, h", saveShifts: "Save shift templates", legacyShifts: "Attach legacy shifts", legacyTasks: "Attach legacy task deadlines", migrationConfirm: "Interpret legacy local time in the selected timezone? This writes absolute instants.", saved: "saved",
 } : {
-  eyebrow: "Время", title: "Часовой пояс и формат времени", hint: "Один IANA-часовой пояс используется для календаря, смен, напоминаний и абсолютных интервалов.", timezone: "Часовой пояс", format: "Формат времени", current: "Текущее время", saveTimezone: "Сохранить часовой пояс", detect: "Определить автоматически", shifts: "Шаблоны смен", shiftsHint: "Параметры встроенных дневной и ночной смен.", day: "Дневная", night: "Ночная", start: "Начало", end: "Конец", break: "Обед, мин", plan: "План, ч", saveShifts: "Сохранить параметры смен", legacyShifts: "Привязать старые смены", legacyTasks: "Привязать старые задачи", migrationConfirm: "Интерпретировать старое локальное время в выбранном часовом поясе? Будут записаны абсолютные моменты времени.", saved: "сохранено",
+  eyebrow: "Время", title: "Часовой пояс и формат времени", hint: "Рабочий часовой пояс хранится по периодам, чтобы историческое локальное время сохраняло исходный смысл.", timezone: "Часовой пояс", format: "Формат времени", current: "Текущее время", saveTimezone: "Сохранить часовой пояс", detect: "Определить автоматически", shifts: "Шаблоны смен", shiftsHint: "Параметры встроенных дневной и ночной смен.", day: "Дневная", night: "Ночная", start: "Начало", end: "Конец", break: "Обед, мин", plan: "План, ч", saveShifts: "Сохранить параметры смен", legacyShifts: "Привязать старые смены", legacyTasks: "Привязать старые задачи", migrationConfirm: "Интерпретировать старое локальное время в выбранном часовом поясе? Будут записаны абсолютные моменты времени.", saved: "сохранено",
+});
+
+const temporalText = computed(() => language.value === "en" ? {
+  effectiveFrom: "Effective from",
+  effectiveHint: "The selected timezone applies from this work-local date until the next history entry. Future dates are not available yet.",
+  history: "Work timezone history",
+  historyHint: "Each entry stays effective until the next one.",
+  baseline: "Initial conditions",
+  currentTerm: "current",
+  noHistory: "No timezone history",
+  historicalConfirm: "Changing a historical timezone can change the time binding of actual work and recalculate derived overtime for the affected period. Continue?",
+} : {
+  effectiveFrom: "Действует с",
+  effectiveHint: "Выбранный часовой пояс действует с этой рабочей локальной даты до следующей записи в истории. Будущие даты пока недоступны.",
+  history: "История рабочего часового пояса",
+  historyHint: "Каждая запись действует до начала следующей.",
+  baseline: "Исходные условия",
+  currentTerm: "текущий",
+  noHistory: "История часового пояса пока пуста",
+  historicalConfirm: "Изменение исторического часового пояса может изменить привязку фактической работы по времени и пересчитать производную переработку за затронутый период. Продолжить?",
 });
 
 const timeZones = computed(() => {
@@ -55,10 +76,81 @@ const nowLabel = computed(() => {
     }).format(new Date());
   } catch { return timeContext.value?.workLocalDateTime ?? "—"; }
 });
-const timezoneDirty = computed(() => workTimezone.value !== (profile.value?.workTimezone || timeContext.value?.workTimezone || "UTC"));
-const status = computed(() => timezoneDirty.value
-  ? (language.value === "en" ? "not saved" : "не сохранено")
-  : settings.timeMessage || `${text.value.saved} · ${workTimezone.value}`);
+const currentWorkDate = computed(() =>
+  workTimezoneHistory.value?.currentDate || timeContext.value?.workDate || ""
+);
+
+const currentTimezone = computed(() =>
+  workTimezoneHistory.value?.currentTimezone
+  || profile.value?.workTimezone
+  || timeContext.value?.workTimezone
+  || "UTC"
+);
+
+const historyTerms = computed(() =>
+  [...(workTimezoneHistory.value?.terms ?? [])]
+    .sort((a, b) => b.effectiveFrom.localeCompare(a.effectiveFrom))
+);
+
+function timezoneAt(date: string): string {
+  if (!date) return currentTimezone.value;
+  return historyTerms.value.find(term => term.effectiveFrom <= date)?.timezone
+    || currentTimezone.value;
+}
+
+const currentTermEffectiveFrom = computed(() => {
+  const date = currentWorkDate.value;
+  if (!date) return "";
+  return historyTerms.value.find(term => term.effectiveFrom <= date)?.effectiveFrom || "";
+});
+
+const effectiveDateValid = computed(() =>
+  Boolean(effectiveFrom.value)
+  && effectiveFrom.value >= "1970-01-02"
+  && (!currentWorkDate.value || effectiveFrom.value <= currentWorkDate.value)
+);
+
+const historicalSelection = computed(() =>
+  Boolean(effectiveFrom.value)
+  && Boolean(currentWorkDate.value)
+  && effectiveFrom.value < currentWorkDate.value
+);
+
+const timezoneDirty = computed(() =>
+  effectiveDateValid.value
+  && workTimezone.value !== timezoneAt(effectiveFrom.value)
+);
+
+const status = computed(() => {
+  if (!effectiveDateValid.value) {
+    return language.value === "en"
+      ? "choose an effective date"
+      : "укажите дату действия";
+  }
+  if (timezoneDirty.value) {
+    return language.value === "en" ? "not saved" : "не сохранено";
+  }
+  return settings.timeMessage
+    || `${text.value.saved} · ${workTimezone.value} · ${effectiveFrom.value}`;
+});
+
+function formatHistoryDate(date: string): string {
+  if (!date) return "—";
+  const parts = date.split("-").map(Number);
+  if (parts.length !== 3 || parts.some(value => !Number.isFinite(value))) return date;
+
+  const [year, month, day] = parts;
+  if (year === undefined || month === undefined || day === undefined) return date;
+
+  try {
+    return new Intl.DateTimeFormat(
+      language.value === "en" ? "en-US" : "ru-RU",
+      { year: "numeric", month: "short", day: "2-digit" },
+    ).format(new Date(year, month - 1, day, 12, 0, 0));
+  } catch {
+    return date;
+  }
+}
 
 function findBuiltIn(kind: "day" | "night") {
   const russian = kind === "day" ? "Дневная" : "Ночная";
@@ -67,7 +159,10 @@ function findBuiltIn(kind: "day" | "night") {
     ?? shiftTypes.value.find(item => item.builtin && english.test(item.name));
 }
 function syncDraft(): void {
-  workTimezone.value = profile.value?.workTimezone || timeContext.value?.workTimezone || "UTC";
+  if (!effectiveFrom.value && currentWorkDate.value) {
+    effectiveFrom.value = currentWorkDate.value;
+  }
+  workTimezone.value = timezoneAt(effectiveFrom.value || currentWorkDate.value);
   const day = findBuiltIn("day");
   const night = findBuiltIn("night");
   if (day) {
@@ -83,13 +178,31 @@ function syncDraft(): void {
     nightPlan.value = Number(night.plannedHours ?? night.hours ?? 11);
   }
 }
-watch([profile, shiftTypes, timeContext], syncDraft, { immediate: true, deep: true });
+watch([profile, shiftTypes, timeContext, workTimezoneHistory], syncDraft, { immediate: true, deep: true });
+
+watch(effectiveFrom, date => {
+  if (!date || !effectiveDateValid.value) return;
+  workTimezone.value = timezoneAt(date);
+});
 
 function detectBrowserTimezone(): void {
   try { workTimezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; }
   catch { workTimezone.value = "UTC"; }
 }
-async function saveTimezone(): Promise<void> { await settings.saveTimezone(workTimezone.value, props.bridge); }
+async function saveTimezone(): Promise<void> {
+  if (!effectiveDateValid.value || !timezoneDirty.value) return;
+  if (
+    historicalSelection.value
+    && !window.confirm(temporalText.value.historicalConfirm)
+  ) {
+    return;
+  }
+  await settings.saveTimezoneFrom(
+    workTimezone.value,
+    effectiveFrom.value,
+    props.bridge,
+  );
+}
 async function saveShifts(): Promise<void> {
   await settings.saveBuiltInShiftDefaults({
     dayStart: dayStart.value, dayEnd: dayEnd.value, dayBreakMinutes: dayBreak.value, dayPlannedHours: dayPlan.value,
@@ -114,20 +227,54 @@ async function migrateTasks(): Promise<void> {
         <select id="workTimezone" v-model="workTimezone" aria-describedby="timeZoneHelp"><option v-for="zone in timeZones" :key="zone" :value="zone">{{ zone }}</option></select>
       </label>
       <input id="displayTimezone" type="hidden" :value="workTimezone" />
+      <label>{{ temporalText.effectiveFrom }}
+        <input
+          id="workTimezoneEffectiveFrom"
+          v-model="effectiveFrom"
+          type="date"
+          min="1970-01-02"
+          :max="currentWorkDate"
+          aria-describedby="timeZoneHelp"
+          required
+        />
+      </label>
       <label>{{ text.format }}<select id="timeFormatPref" value="24h"><option value="24h">24 часа</option></select></label>
     </div>
     <div id="timeNowBox" class="timeNowBox"><div><span>{{ text.current }}:</span> <b>{{ nowLabel }}</b> <code>{{ workTimezone }}</code></div></div>
     <div class="timeSettingsActions timezoneActions">
-      <button id="timeSaveTimezone" class="primary" type="button" @click="saveTimezone">{{ text.saveTimezone }}</button>
+      <button id="timeSaveTimezone" class="primary" type="button" :disabled="!timezoneDirty" @click="saveTimezone">{{ text.saveTimezone }}</button>
       <button id="timeDetectBrowser" type="button" @click="detectBrowserTimezone">{{ text.detect }}</button>
       <button v-if="(legacyShiftPreview?.legacyCount ?? 0) > 0" id="legacyShiftOpen" type="button" @click="migrateShifts">⚠ {{ text.legacyShifts }} ({{ legacyShiftPreview?.legacyCount }})</button>
       <button v-if="(legacyTaskDeadlinePreview?.legacyCount ?? 0) > 0" id="legacyTaskDeadlineOpen" type="button" @click="migrateTasks">⚠ {{ text.legacyTasks }} ({{ legacyTaskDeadlinePreview?.legacyCount }})</button>
     </div>
-    <div id="timeZoneHelp" class="wideHint">IANA: Europe/Chisinau, Europe/Berlin, Asia/Yekaterinburg. {{ text.hint }}</div>
+    <div id="timeZoneHelp" class="wideHint">{{ temporalText.effectiveHint }} IANA: Europe/Chisinau, Europe/Berlin, Asia/Yekaterinburg.</div>
+
+    <section id="workTimezoneHistory" class="timeDefaults timeSettingsSubcard">
+      <div class="timeDefaultsHead">
+        <div>
+          <b>{{ temporalText.history }}</b>
+          <span>{{ temporalText.historyHint }}</span>
+        </div>
+      </div>
+      <div v-if="historyTerms.length">
+        <div
+          v-for="term in historyTerms"
+          :key="term.effectiveFrom"
+          class="wideHint"
+        >
+          <strong>{{ term.baseline ? temporalText.baseline : formatHistoryDate(term.effectiveFrom) }}</strong>
+          · <code>{{ term.timezone }}</code>
+          <span v-if="term.effectiveFrom === currentTermEffectiveFrom">
+            · {{ temporalText.currentTerm }}
+          </span>
+        </div>
+      </div>
+      <div v-else class="wideHint">{{ temporalText.noHistory }}</div>
+    </section>
 
     <div class="timeDefaults timeSettingsSubcard">
       <div class="timeDefaultsHead"><div><b>{{ text.shifts }}</b><span>{{ text.shiftsHint }}</span></div></div>
-      <div id="shiftTemplateZoneHint" class="wideHint">{{ workTimezone }}</div>
+      <div id="shiftTemplateZoneHint" class="wideHint">{{ currentTimezone }}</div>
       <div class="timeDefaultRow">
         <b>{{ text.day }}</b>
         <label>{{ text.start }} <input id="defDayStart" v-model="dayStart" type="time" /></label>

@@ -11,6 +11,10 @@ export function createSettingsWorkspaceApi(client: DutyLogGeneratedApiClient = c
     async modules() { return (await client.request("listModules")) ?? []; },
     async updateModules(body: DutyLogApiSchemas.ModuleSettingsUpdateRequest) { return (await client.request("updateModules", { body })) ?? []; },
     async timeContext() { return client.request("getTimeContext"); },
+    async workTimezoneHistory() { return client.request("getWorkTimezoneHistory"); },
+    async updateWorkTimezone(body: DutyLogApiSchemas.WorkTimezoneChangeRequest) {
+      return client.request("updateWorkTimezoneContext", { body });
+    },
     async shiftTypes() { return (await client.request("listShiftTypes")) ?? []; },
     async createShiftType(body: DutyLogApiSchemas.ShiftTypeCreateRequest) { return client.request("createShiftType", { body }); },
     async updateShiftType(id: number, body: DutyLogApiSchemas.ShiftTypeUpdateRequest) { return client.request("updateShiftType", { path: { id }, body }); },

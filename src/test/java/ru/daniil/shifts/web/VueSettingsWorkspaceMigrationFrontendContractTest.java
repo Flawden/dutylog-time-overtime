@@ -47,6 +47,8 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         assertTrue(api.contains("client.request(\"rotateCalendarSubscription\""));
         assertTrue(api.contains("client.request(\"getTelegramStatus\""));
         assertTrue(api.contains("client.request(\"getTimeContext\""));
+        assertTrue(api.contains("client.request(\"getWorkTimezoneHistory\""));
+        assertTrue(api.contains("client.request(\"updateWorkTimezoneContext\""));
         assertTrue(api.contains("client.request(\"getNotificationSettings\""));
         assertTrue(api.contains("client.request(\"listScheduleTemplates\""));
         assertTrue(api.contains("client.request(\"listCalendarLayers\""));
@@ -56,10 +58,16 @@ class VueSettingsWorkspaceMigrationFrontendContractTest {
         assertTrue(api.contains("previewLegacyTaskDeadlineMigration\", { query: { sourceTimezone } }"));
         assertTrue(generated.contains("\"updateModules\": { method: \"PATCH\", path: \"/api/v1/modules\" }"));
         assertTrue(generated.contains("\"rotateCalendarSubscription\": { method: \"POST\", path: \"/api/v1/calendar-sync/subscription\" }"));
+        assertTrue(generated.contains("\"getWorkTimezoneHistory\": { method: \"GET\", path: \"/api/v1/time/work-context\" }"));
+        assertTrue(generated.contains("\"updateWorkTimezoneContext\": { method: \"PUT\", path: \"/api/v1/time/work-context\" }"));
         String store = read(FEATURE.resolve("stores/settingsWorkspaceStore.ts"));
         assertTrue(store.contains("const scheduleTemplates = await api.scheduleTemplates();"));
         assertTrue(store.contains("const calendarLayers = await api.calendarLayers();"));
         assertFalse(store.contains("api.timeContext(), api.shiftTypes(), api.scheduleTemplates(), api.calendarLayers()"));
+        assertTrue(store.contains("workTimezoneHistory: null as DutyLogApiSchemas.WorkTimezoneHistory | null"));
+        assertTrue(store.contains("api.updateWorkTimezone({ timezone, effectiveFrom })"));
+        assertTrue(store.contains("saveTimezoneFrom("));
+        assertFalse(store.contains("api.updateProfile({ workTimezone: timezone"));
         assertTrue(store.contains("const sourceTimezone = this.profile?.workTimezone || timeContext?.workTimezone || \"UTC\""));
         assertTrue(store.contains("api.legacyShiftPreview(sourceTimezone)"));
         assertTrue(store.contains("api.legacyTaskDeadlinePreview(sourceTimezone)"));

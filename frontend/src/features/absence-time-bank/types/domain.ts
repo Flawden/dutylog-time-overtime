@@ -24,6 +24,8 @@ export type OvertimeAccount = Omit<DutyLogApiSchemas.OvertimeAccount, "credits" 
 export type OvertimeCreditCreateRequest = DutyLogApiSchemas.OvertimeCreditCreateRequest;
 export type OvertimeCreditUpdateRequest = DutyLogApiSchemas.OvertimeCreditUpdateRequest;
 export type OvertimeCreditPreview = DutyLogApiSchemas.OvertimeCreditPreview;
+export type OvertimeSettlement = DutyLogApiSchemas.OvertimeSettlement;
+export type OvertimeSettlementUpsertRequest = DutyLogApiSchemas.OvertimeSettlementUpsertRequest;
 export type TimeCompensationSummary = DutyLogApiSchemas.TimeCompensationSummary;
 export type LedgerIntegrity = DutyLogApiSchemas.LedgerIntegrity;
 export type ActualWorkInterval = DutyLogApiSchemas.ActualWorkInterval;
@@ -106,6 +108,13 @@ export interface CreditDraft {
   reason: string;
 }
 
+export interface SettlementDraft {
+  id: number | null;
+  settlementDate: string;
+  minutes: number;
+  reason: string;
+}
+
 export interface ScenarioDraft {
   id: number | null;
   name: string;
@@ -161,5 +170,6 @@ export interface DutyLogAbsenceTimeBankDomain {
   openAbsenceEditor(id: number): Promise<void>;
   openCreditEditor(date?: string | null): Promise<void>;
   editCredit(id: number): Promise<void>;
+  openSettlementEditor(id?: number | null, date?: string | null): Promise<void>;
   openTimeBankUsage(absenceId?: number | null): Promise<void>;
 }

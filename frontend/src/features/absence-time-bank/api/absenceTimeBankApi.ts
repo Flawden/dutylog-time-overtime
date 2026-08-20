@@ -7,6 +7,7 @@ import type {
   LedgerRangeMode,
   OvertimeCreditCreateRequest,
   OvertimeCreditUpdateRequest,
+  OvertimeSettlementUpsertRequest,
   QuickScenarioCreateRequest,
   QuickScenarioUpdateRequest,
 } from "../types/domain";
@@ -53,17 +54,20 @@ export function createAbsenceTimeBankApi(client: DutyLogGeneratedApiClient = cre
       const accountRequest = client.request("overtimeAccount");
       const periodRequest = loadPeriod(rangeMode);
       const scenarioRequest = optional(client.request("quickScenarios"), []);
-      const [planner, account, period, scenarios] = await Promise.all([
+      const settlementRequest = client.request("listOvertimeSettlements");
+      const [planner, account, period, scenarios, settlements] = await Promise.all([
         plannerRequest,
         accountRequest,
         periodRequest,
         scenarioRequest,
+        settlementRequest,
       ]);
       return {
         planner: asVacationPlanner(planner),
         account: asOvertimeAccount(account),
         ...period,
         scenarios: asQuickScenarios(scenarios),
+        settlements: Array.isArray(settlements) ? settlements : [],
       };
     },
     loadPeriod,
@@ -90,6 +94,15 @@ export function createAbsenceTimeBankApi(client: DutyLogGeneratedApiClient = cre
     },
     deleteCredit(id: number) {
       return client.request("deleteOvertimeCredit", { path: { id } });
+    },
+    createSettlement(body: OvertimeSettlementUpsertRequest) {
+      return client.request("createOvertimeSettlement", { body });
+    },
+    updateSettlement(id: number, body: OvertimeSettlementUpsertRequest) {
+      return client.request("updateOvertimeSettlement", { path: { id }, body });
+    },
+    deleteSettlement(id: number) {
+      return client.request("deleteOvertimeSettlement", { path: { id } });
     },
     async shiftForDate(date: string) {
       const calendar = await client.request("calendarRange", { query: { from: date, to: date } });

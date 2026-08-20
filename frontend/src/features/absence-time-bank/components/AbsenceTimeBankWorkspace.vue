@@ -9,6 +9,7 @@ import type { AbsenceComposerOpenOptions, DutyLogAbsenceTimeBankDomain } from ".
 import AsyncWorkspaceLoading from "@/shared/ui/AsyncWorkspaceLoading.vue";
 const AbsenceComposer = defineAsyncComponent({ loader: () => import("./AbsenceComposer.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
 const CreditEditor = defineAsyncComponent({ loader: () => import("./CreditEditor.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
+const SettlementEditor = defineAsyncComponent({ loader: () => import("./SettlementEditor.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
 const AbsencePage = defineAsyncComponent({ loader: () => import("./AbsencePage.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
 const TimeBankPage = defineAsyncComponent({ loader: () => import("./TimeBankPage.vue"), loadingComponent: AsyncWorkspaceLoading, delay: 120 });
 import { navigateHashRoute } from "@/platform/router/hashRoute";
@@ -17,7 +18,7 @@ const props = defineProps<{ bridge: LegacyBridge }>();
 const shell = useShellStore();
 const store = useAbsenceTimeBankStore();
 const { activeRoute } = storeToRefs(shell);
-const { absenceModalOpen, creditModalOpen } = storeToRefs(store);
+const { absenceModalOpen, creditModalOpen, settlementModalOpen } = storeToRefs(store);
 let previousDomain: DutyLogAbsenceTimeBankDomain | undefined;
 
 async function synchronizeRoute(route: string): Promise<void> {
@@ -49,6 +50,9 @@ onMounted(() => {
       await store.ensureLoaded();
       store.editCredit(id);
     },
+    openSettlementEditor: async (id?: number | null, date?: string | null) => {
+      await store.openSettlementEditor(id ?? null, date ?? null);
+    },
     openTimeBankUsage: async (absenceId?: number | null) => {
       navigateHashRoute("overtime");
       await store.openTimeBankUsage(absenceId ?? null);
@@ -79,4 +83,5 @@ onBeforeUnmount(() => {
   <TimeBankPage v-else-if="activeRoute === 'overtime'" />
   <AbsenceComposer v-if="absenceModalOpen" />
   <CreditEditor v-if="creditModalOpen" />
+  <SettlementEditor v-if="settlementModalOpen" />
 </template>

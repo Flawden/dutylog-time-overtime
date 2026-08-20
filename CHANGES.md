@@ -1,3 +1,19 @@
+# v27.46.1 — Temporal Work Context & Native Pay Pricing
+
+- Adds effective-dated Work Timezone history and exact historical Actual Work identity.
+- Adds source-aware overlapping REGULAR / NIGHT / HOLIDAY / OVERTIME classification, including overnight source-workday ordinal continuity.
+- Adds factual overtime provenance slices and deterministic FIFO allocation offsets.
+- Adds explicit cash settlements that consume the canonical Time Bank without becoming paid absence time.
+- Adds effective-dated pricing rules, pure premium pricing and historical compensation-rate resolution.
+- HOURLY Payroll base excludes banked overtime; explicit settlement money and ordinary NIGHT/HOLIDAY premium deltas are separate additive components.
+- Immutable Payroll revisions freeze settlement and ordinary-premium money/time plus deep deterministic pricing fingerprints.
+- Payroll UI explains ordinary NIGHT/HOLIDAY premium separately from overtime settlement and keeps backend `totalPayMinor` authoritative.
+- OpenAPI is **138 operations / 144 schemas** with SHA-256 `1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`.
+- Flyway source advances through **V61**.
+- Source inventory is **1006 @Test methods / 216 Java test classes / 80 Vitest cases / 48 Playwright scenarios**.
+- Canonical Node 20.18.1/npm 10.8.2 production build measures **924966 B raw** under the accepted **925000 B** ceiling; total gzip remains below **250000 B**.
+- Local full Maven/JaCoCo and release-check are green; Chromium 48/48, clean PostgreSQL V1→V61 image startup and staging acceptance remain final release gates.
+
 # v27.46.0 — Compensation Setup & Base Native Payroll
 
 - Adds effective-month HOURLY/SALARY compensation terms and human-first setup inside Payroll.

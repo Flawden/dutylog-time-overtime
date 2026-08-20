@@ -52,13 +52,15 @@ class ShiftOccurrenceFrontendContractTest {
         String settings = Files.readString(STATIC.resolve("js/60-settings.js"));
         String boot = Files.readString(STATIC.resolve("js/70-user-boot.js"));
         String profile = Files.readString(Path.of("src/main/java/ru/daniil/shifts/web/ProfileController.java"));
+        String timezoneChange = Files.readString(Path.of("src/main/java/ru/daniil/shifts/service/WorkTimezoneChangeService.java"));
         String reminders = Files.readString(Path.of("src/main/java/ru/daniil/shifts/service/NotificationService.java"));
 
         assertTrue(settings.contains("function syncTimeSettingsFromBuiltins"));
         assertTrue(settings.contains("syncTimeSettingsFromBuiltins();"));
         assertTrue(settings.contains("shiftTemplateZoneHint"));
         assertTrue(boot.contains("syncTimeSettingsFromBuiltins"));
-        assertTrue(profile.contains("shiftTypeService.rebaseForTimezoneChange"));
+        assertTrue(profile.contains("workTimezoneChangeService.upsertAndReconcile"));
+        assertTrue(timezoneChange.contains("shiftTypeService.rebaseForTimezoneChange"));
         assertTrue(reminders.contains("d.hasShiftOccurrenceSnapshot()"));
         assertTrue(reminders.contains("reminderAtInstant"));
         assertTrue(reminders.contains("displayedStart.toLocalDate()"));

@@ -15,11 +15,14 @@ import type {
   LedgerRangeMode,
   OvertimeAccountReadModel,
   OvertimeCredit,
+  OvertimeSettlement,
+  OvertimeSettlementUpsertRequest,
   OvertimeUsage,
   QuickScenario,
   QuickScenarioCreateRequest,
   QuickScenarioUpdateRequest,
   ScenarioDraft,
+  SettlementDraft,
   VacationPlannerReadModel,
 } from "./domain";
 
@@ -220,6 +223,32 @@ export function creditDraftFromRow(row: OvertimeCredit): CreditDraft {
   };
 }
 
+export function newSettlementDraft(date: string = todayIso()): SettlementDraft {
+  return {
+    id: null,
+    settlementDate: date,
+    minutes: 60,
+    reason: "",
+  };
+}
+
+export function settlementDraftFromRow(row: OvertimeSettlement): SettlementDraft {
+  return {
+    id: Number(row.id),
+    settlementDate: String(row.settlementDate ?? todayIso()),
+    minutes: Math.max(1, Math.round(Number(row.minutes ?? 0))),
+    reason: String(row.reason ?? ""),
+  };
+}
+
+export function settlementBody(draft: SettlementDraft): OvertimeSettlementUpsertRequest {
+  return {
+    settlementDate: draft.settlementDate,
+    minutes: Math.max(1, Math.round(Number(draft.minutes ?? 0))),
+    reason: draft.reason.trim() || null,
+  };
+}
+
 export function toLocalDateTimeInput(value: string | null | undefined): string {
   return value ? String(value).slice(0, 16) : "";
 }
@@ -365,6 +394,17 @@ export function usageIsAbsenceOwned(usage: OvertimeUsage): boolean {
   return usage.sourceKind === "ABSENCE" && Number(usage.sourceAbsenceId ?? 0) > 0;
 }
 
+export function usageIsSettlementOwned(usage: OvertimeUsage): boolean {
+  return usage.sourceKind === "SETTLEMENT"
+    && Number(usage.sourceSettlementId ?? 0) > 0;
+}
+
+export function usageKindLabel(usage: OvertimeUsage): string {
+  if (usageIsSettlementOwned(usage)) return "К оплате";
+  if (usageIsAbsenceOwned(usage)) return "Отгул";
+  return "Старое списание";
+}
+
 export function uniqueSourceCredits(credits: OvertimeCredit[]): OvertimeCredit[] {
   const byId = new Map<number, OvertimeCredit>();
   for (const credit of credits) {
@@ -382,7 +422,9 @@ export function fifoOpenCredits(account: OvertimeAccountReadModel): OvertimeCred
 }
 
 export function reservedUsageMinutes(account: OvertimeAccountReadModel): number {
-  return account.usages.filter(usage => usage.reserved).reduce((sum, usage) => sum + Number(usage.minutes ?? 0), 0);
+  return account.usages
+    .filter(usage => usage.sourceKind !== "SETTLEMENT" && usage.reserved)
+    .reduce((sum, usage) => sum + Number(usage.minutes ?? 0), 0);
 }
 
 export function fifoForecast(account: OvertimeAccountReadModel, requestedMinutes: number, excludeAbsenceId: number | null = null): FifoForecast {
@@ -417,6 +459,91 @@ export function fifoForecast(account: OvertimeAccountReadModel, requestedMinutes
     allocatedMinutes,
     shortageMinutes: remaining,
     freeAfterMinutes: Math.max(0, Math.round(account.balanceHours * 60) + restoredMinutes - Math.max(0, Math.round(requestedMinutes))),
+    allocations,
+  };
+}
+
+export function fifoForecastForSettlement(
+  account: OvertimeAccountReadModel,
+  requestedMinutes: number,
+  excludeSettlementId: number | null = null,
+): FifoForecast {
+  const restored = new Map<number, number>();
+
+  if (excludeSettlementId !== null) {
+    const usage = account.usages.find(
+      item => Number(item.sourceSettlementId ?? 0) === excludeSettlementId,
+    );
+
+    for (const allocation of usage?.allocations ?? []) {
+      const creditId = Number(allocation.creditId);
+      restored.set(
+        creditId,
+        (restored.get(creditId) ?? 0) + Number(allocation.minutes ?? 0),
+      );
+    }
+  }
+
+  const requested = Math.max(0, Math.round(requestedMinutes));
+  let remaining = requested;
+  const allocations = [] as FifoForecast["allocations"];
+
+  for (const credit of fifoOpenCredits(account)) {
+    if (remaining <= 0) break;
+
+    const creditId = Number(credit.id);
+    const available =
+      Math.max(
+        0,
+        Math.round(
+          Number(
+            credit.projection?.sourceRemainingHours
+              ?? credit.remainingHours
+              ?? 0
+          ) * 60
+        ),
+      )
+      + (restored.get(creditId) ?? 0);
+
+    const minutes = Math.min(available, remaining);
+
+    if (minutes > 0) {
+      remaining -= minutes;
+
+      allocations.push({
+        creditId,
+        workedDate: credit.workedDate,
+        reason: String(
+          credit.reason
+            ?? credit.timeRange
+            ?? "Переработка"
+        ),
+        minutes,
+        remainingAfterMinutes: Math.max(
+          0,
+          available - minutes
+        ),
+      });
+    }
+  }
+
+  const restoredMinutes =
+    [...restored.values()]
+      .reduce(
+        (sum, value) => sum + value,
+        0
+      );
+
+  return {
+    requestedMinutes: requested,
+    allocatedMinutes: requested - remaining,
+    shortageMinutes: remaining,
+    freeAfterMinutes: Math.max(
+      0,
+      Math.round(account.balanceHours * 60)
+        + restoredMinutes
+        - requested
+    ),
     allocations,
   };
 }

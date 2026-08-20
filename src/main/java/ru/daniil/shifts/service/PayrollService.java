@@ -7,6 +7,8 @@ import ru.daniil.shifts.model.*;
 import ru.daniil.shifts.repo.*;
 import ru.daniil.shifts.service.CompensationCalculationService.Result;
 import ru.daniil.shifts.service.TimeCompensationService.PayrollSourceSnapshot;
+import ru.daniil.shifts.service.PayrollSettlementPreviewService.SettlementPreview;
+import ru.daniil.shifts.service.PayrollOrdinaryPremiumPreviewService.OrdinaryPremiumPreview;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.nio.charset.StandardCharsets;
@@ -37,6 +39,8 @@ public class PayrollService {
     private final LedgerIntegrityService ledgerIntegrity;
     private final ProductionCalendarService productionCalendar;
     private final CompensationCalculationService calculation;
+    private final PayrollSettlementPreviewService settlementPricing;
+    private final PayrollOrdinaryPremiumPreviewService ordinaryPremiumPricing;
 
     public PayrollService(PayrollSettingsRepository settings,
                           CompensationTermRepository compensationTerms,
@@ -46,10 +50,14 @@ public class PayrollService {
                           TimeCompensationService timeCompensation,
                           LedgerIntegrityService ledgerIntegrity,
                           ProductionCalendarService productionCalendar,
-                          CompensationCalculationService calculation) {
+                          CompensationCalculationService calculation,
+                          PayrollSettlementPreviewService settlementPricing,
+                          PayrollOrdinaryPremiumPreviewService ordinaryPremiumPricing) {
         this.settings = settings; this.compensationTerms = compensationTerms; this.adjustments = adjustments;
         this.snapshots = snapshots; this.accountingPeriods = accountingPeriods; this.timeCompensation = timeCompensation;
         this.ledgerIntegrity = ledgerIntegrity; this.productionCalendar = productionCalendar; this.calculation = calculation;
+        this.settlementPricing = settlementPricing;
+        this.ordinaryPremiumPricing = ordinaryPremiumPricing;
     }
 
     @Transactional
@@ -133,11 +141,60 @@ public class PayrollService {
 
         PayrollSourceSnapshot source = timeCompensation.payrollSource(user, month.atDay(1), month.atEndOfMonth());
         List<PayrollAdjustment> monthAdjustments = adjustments.findByOwnerAndPeriodMonthOrderByIdAsc(user, month.atDay(1));
-        PayrollPreviewDto preview = preview(month, ensureSettings(user), term, production, source, monthAdjustments);
+
+        SettlementPreview settlementPreview =
+                settlementPricing.preview(
+                        user,
+                        month,
+                        term.getCurrencyCode()
+                );
+
+        if (!settlementPreview.ready()) {
+            throw ApiException.conflict(
+                    settlementPreview.blockingReason(),
+                    settlementPreview.blockingMessage() == null
+                            ? "Расчёт settlement для Payroll недоступен"
+                            : settlementPreview.blockingMessage()
+            );
+        }
+
+        OrdinaryPremiumPreview ordinaryPremiumPreview =
+                ordinaryPremiumPricing.preview(
+                        user,
+                        month,
+                        term.getCurrencyCode()
+                );
+
+        if (!ordinaryPremiumPreview.ready()) {
+            throw ApiException.conflict(
+                    ordinaryPremiumPreview.blockingReason(),
+                    ordinaryPremiumPreview.blockingMessage() == null
+                            ? "Расчёт обычных NIGHT / HOLIDAY доплат для Payroll недоступен"
+                            : ordinaryPremiumPreview.blockingMessage()
+            );
+        }
+
+        PayrollPreviewDto preview = preview(
+                month,
+                ensureSettings(user),
+                term,
+                production,
+                source,
+                monthAdjustments,
+                settlementPreview,
+                ordinaryPremiumPreview
+        );
+
         PayrollSnapshot previous = snapshots.findFirstByOwnerAndPeriodMonthOrderByRevisionDesc(user, month.atDay(1)).orElse(null);
         int revision = previous == null ? 1 : previous.getRevision() + 1;
         Instant checkedAt = Instant.now();
-        String hash = calculationHash(preview, period.getClosedAt(), monthAdjustments);
+        String hash =
+                calculationHash(
+                        preview,
+                        period.getClosedAt(),
+                        monthAdjustments,
+                        ordinaryPremiumPreview.pricingFingerprint()
+                );
 
         PayrollSnapshot created = snapshots.saveAndFlush(new PayrollSnapshot(
                 user, month.atDay(1), revision, preview.currencyCode(), preview.effectiveHourlyRateMinor(),
@@ -146,7 +203,15 @@ public class PayrollService {
                 preview.productionNormMinutes(), preview.salaryCoveredMinutes(),
                 preview.plannedMinutes(), preview.workedMinutes(), preview.vacationMinutes(), preview.sickMinutes(),
                 preview.overtimeCompensatedMinutes(), preview.unpaidMinutes(), preview.timeAdjustmentMinutes(),
-                preview.paidAbsenceMinutes(), preview.payableMinutes(), preview.basePayMinor(),
+                preview.paidAbsenceMinutes(), preview.payableMinutes(),
+                preview.hourlyBasePayableMinutes(), preview.basePayMinor(),
+                preview.ordinaryPremiumMinutes(),
+                preview.ordinaryPremiumReferenceBasePayMinor(),
+                preview.ordinaryPremiumPayMinor(),
+                ordinaryPremiumPreview.pricingFingerprint(),
+                preview.settlementCount(), preview.settlementMinutes(),
+                preview.settlementBasePayMinor(), preview.settlementPremiumPayMinor(),
+                preview.settlementPayMinor(), preview.settlementPricingFingerprint(),
                 preview.additionsMinor(), preview.deductionsMinor(), preview.totalPayMinor(),
                 period.getClosedAt(), checkedAt, hash));
         if (previous != null) { previous.supersedeWith(created); snapshots.save(previous); }
@@ -162,7 +227,37 @@ public class PayrollService {
         ProductionCalendarMonthDto production = productionCalendar.month(user, month.toString());
         CompensationTerm term = effectiveTerm(user, month);
         List<PayrollAdjustment> monthAdjustments = adjustments.findByOwnerAndPeriodMonthOrderByIdAsc(user, first);
-        PayrollPreviewDto preview = preview(month, legacySettings, term, production, source, monthAdjustments);
+
+        String payrollCurrency =
+                term == null
+                        ? legacySettings.getCurrencyCode()
+                        : term.getCurrencyCode();
+
+        SettlementPreview settlementPreview =
+                settlementPricing.preview(
+                        user,
+                        month,
+                        payrollCurrency
+                );
+
+        OrdinaryPremiumPreview ordinaryPremiumPreview =
+                ordinaryPremiumPricing.preview(
+                        user,
+                        month,
+                        payrollCurrency
+                );
+
+        PayrollPreviewDto preview = preview(
+                month,
+                legacySettings,
+                term,
+                production,
+                source,
+                monthAdjustments,
+                settlementPreview,
+                ordinaryPremiumPreview
+        );
+
         List<PayrollSnapshotDto> history = snapshots.findByOwnerAndPeriodMonthOrderByRevisionDesc(user, first).stream().map(this::toSnapshot).toList();
         List<PayrollCompensationTermDto> termHistory = compensationTerms.findByOwnerOrderByEffectiveFromDesc(user).stream().map(this::toTerm).toList();
 
@@ -170,13 +265,30 @@ public class PayrollService {
         boolean salaryMode = term != null && "SALARY".equals(term.getPayMode());
         boolean salaryCoverageReady = !salaryMode || production.scheduleCoverageComplete();
         boolean salaryNormReady = !salaryMode || production.productionNormMinutes() > 0;
-        boolean formulaReady = compensationReady && salaryCoverageReady && salaryNormReady;
-        boolean canCalculate = closed && integrity.healthy() && formulaReady;
+        boolean settlementPricingReady = settlementPreview.ready();
+        boolean ordinaryPremiumPricingReady =
+                ordinaryPremiumPreview.ready();
+
+        boolean formulaReady =
+                compensationReady
+                        && salaryCoverageReady
+                        && salaryNormReady
+                        && settlementPricingReady
+                        && ordinaryPremiumPricingReady;
+
+        boolean canCalculate =
+                closed
+                        && integrity.healthy()
+                        && formulaReady;
+
         String blockingReason = !closed ? "PERIOD_OPEN"
                 : !integrity.healthy() ? "LEDGER_INTEGRITY_FAILED"
                 : !compensationReady ? "PAYROLL_COMPENSATION_REQUIRED"
                 : !salaryCoverageReady ? "PAYROLL_PRODUCTION_NORM_INCOMPLETE"
-                : !salaryNormReady ? "PAYROLL_PRODUCTION_NORM_REQUIRED" : null;
+                : !salaryNormReady ? "PAYROLL_PRODUCTION_NORM_REQUIRED"
+                : !settlementPricingReady ? settlementPreview.blockingReason()
+                : !ordinaryPremiumPricingReady ? ordinaryPremiumPreview.blockingReason()
+                : null;
         return new PayrollPeriodDto(month.toString(), closed, integrity.healthy(), canCalculate, blockingReason,
                 toSettings(legacySettings), production, preview,
                 monthAdjustments.stream().map(this::toAdjustment).toList(),
@@ -186,7 +298,9 @@ public class PayrollService {
 
     private PayrollPreviewDto preview(YearMonth month, PayrollSettings legacySettings, CompensationTerm term,
                                       ProductionCalendarMonthDto production, PayrollSourceSnapshot source,
-                                      List<PayrollAdjustment> monthAdjustments) {
+                                      List<PayrollAdjustment> monthAdjustments,
+                                      SettlementPreview settlementPreview,
+                                      OrdinaryPremiumPreview ordinaryPremiumPreview) {
         long additions = monthAdjustments.stream().filter(item -> "ADDITION".equals(item.getAdjustmentType()))
                 .mapToLong(PayrollAdjustment::getAmountMinor).sum();
         long deductions = monthAdjustments.stream().filter(item -> "DEDUCTION".equals(item.getAdjustmentType()))
@@ -207,13 +321,84 @@ public class PayrollService {
             Result result = calculation.calculate(term, source, production.productionNormMinutes());
             effectiveHourly = result.effectiveHourlyRateMinor(); salaryCovered = result.salaryCoveredMinutes(); basePay = result.basePayMinor();
         }
-        long totalPay = safeMoney(basePay, additions, deductions);
-        return new PayrollPreviewDto(month.toString(), currency, effectiveHourly,
-                source.plannedMinutes(), source.workedMinutes(), source.vacationMinutes(), source.sickMinutes(),
-                source.overtimeCompensatedMinutes(), source.unpaidMinutes(), source.timeAdjustmentMinutes(),
-                source.paidAbsenceMinutes(), source.payableMinutes(), basePay, additions, deductions, totalPay,
-                mode, effectiveMonth, configuredHourly, salary, effectiveHourly,
-                production.productionNormMinutes(), salaryCovered);
+        long settlementBasePay =
+                settlementPreview.ready()
+                        ? settlementPreview.baseAmountMinor()
+                        : 0L;
+
+        long settlementPremiumPay =
+                settlementPreview.ready()
+                        ? settlementPreview.premiumAmountMinor()
+                        : 0L;
+
+        long settlementPay =
+                settlementPreview.ready()
+                        ? settlementPreview.totalAmountMinor()
+                        : 0L;
+
+        long ordinaryPremiumReferenceBase =
+                ordinaryPremiumPreview.ready()
+                        ? ordinaryPremiumPreview.referenceBaseAmountMinor()
+                        : 0L;
+
+        /*
+         * Delta-only invariant:
+         * ordinary base is already present in basePay.
+         */
+        long ordinaryPremiumPay =
+                ordinaryPremiumPreview.ready()
+                        ? ordinaryPremiumPreview.premiumAmountMinor()
+                        : 0L;
+
+        long totalPay =
+                safeMoney(
+                        basePay,
+                        settlementPay,
+                        ordinaryPremiumPay,
+                        additions,
+                        deductions
+                );
+
+        return new PayrollPreviewDto(
+                month.toString(),
+                currency,
+                effectiveHourly,
+                source.plannedMinutes(),
+                source.workedMinutes(),
+                source.vacationMinutes(),
+                source.sickMinutes(),
+                source.overtimeCompensatedMinutes(),
+                source.unpaidMinutes(),
+                source.timeAdjustmentMinutes(),
+                source.paidAbsenceMinutes(),
+                source.payableMinutes(),
+                source.hourlyBasePayableMinutes(),
+                basePay,
+                ordinaryPremiumPreview.ready(),
+                ordinaryPremiumPreview.blockingReason(),
+                ordinaryPremiumPreview.pricingIdentityRequired(),
+                ordinaryPremiumPreview.ordinaryMinutes(),
+                ordinaryPremiumReferenceBase,
+                ordinaryPremiumPay,
+                settlementPreview.ready(),
+                settlementPreview.blockingReason(),
+                settlementPreview.pricingFingerprint(),
+                settlementPreview.settlementCount(),
+                settlementPreview.minutes(),
+                settlementBasePay,
+                settlementPremiumPay,
+                settlementPay,
+                additions,
+                deductions,
+                totalPay,
+                mode,
+                effectiveMonth,
+                configuredHourly,
+                salary,
+                effectiveHourly,
+                production.productionNormMinutes(),
+                salaryCovered
+        );
     }
 
     private CompensationTerm effectiveTerm(AppUser user, YearMonth month) {
@@ -263,12 +448,41 @@ public class PayrollService {
         return settings.findByOwner(user).orElseGet(() -> settings.saveAndFlush(new PayrollSettings(user)));
     }
 
-    private long safeMoney(long basePay, long additions, long deductions) {
-        try { return Math.subtractExact(Math.addExact(basePay, additions), deductions); }
-        catch (ArithmeticException ex) { throw ApiException.badRequest("PAYROLL_AMOUNT_OVERFLOW", "Итоговая сумма слишком велика"); }
+    private long safeMoney(
+            long basePay,
+            long settlementPay,
+            long ordinaryPremiumPay,
+            long additions,
+            long deductions
+    ) {
+        try {
+            return Math.subtractExact(
+                    Math.addExact(
+                            Math.addExact(
+                                    Math.addExact(
+                                            basePay,
+                                            settlementPay
+                                    ),
+                                    ordinaryPremiumPay
+                            ),
+                            additions
+                    ),
+                    deductions
+            );
+        } catch (ArithmeticException ex) {
+            throw ApiException.badRequest(
+                    "PAYROLL_AMOUNT_OVERFLOW",
+                    "Итоговая сумма слишком велика"
+            );
+        }
     }
 
-    private String calculationHash(PayrollPreviewDto preview, Instant closedAt, List<PayrollAdjustment> monthAdjustments) {
+    private String calculationHash(
+            PayrollPreviewDto preview,
+            Instant closedAt,
+            List<PayrollAdjustment> monthAdjustments,
+            String ordinaryPremiumPricingFingerprint
+    ) {
         StringBuilder canonical = new StringBuilder()
                 .append(preview.month()).append('|').append(preview.currencyCode()).append('|')
                 .append(preview.payMode()).append('|').append(preview.compensationEffectiveMonth()).append('|')
@@ -279,7 +493,22 @@ public class PayrollService {
                 .append(preview.sickMinutes()).append('|').append(preview.overtimeCompensatedMinutes()).append('|')
                 .append(preview.unpaidMinutes()).append('|').append(preview.timeAdjustmentMinutes()).append('|')
                 .append(preview.paidAbsenceMinutes()).append('|').append(preview.payableMinutes()).append('|')
-                .append(preview.basePayMinor()).append('|').append(preview.additionsMinor()).append('|')
+                .append(preview.hourlyBasePayableMinutes()).append('|')
+                .append(preview.basePayMinor()).append('|')
+                .append(preview.ordinaryPremiumMinutes()).append('|')
+                .append(preview.ordinaryPremiumReferenceBasePayMinor()).append('|')
+                .append(preview.ordinaryPremiumPayMinor()).append('|')
+                .append(ordinaryPremiumPricingFingerprint == null
+                        ? ""
+                        : ordinaryPremiumPricingFingerprint).append('|')
+                .append(preview.settlementCount()).append('|').append(preview.settlementMinutes()).append('|')
+                .append(preview.settlementBasePayMinor()).append('|')
+                .append(preview.settlementPremiumPayMinor()).append('|')
+                .append(preview.settlementPayMinor()).append('|')
+                .append(preview.settlementPricingFingerprint() == null
+                        ? ""
+                        : preview.settlementPricingFingerprint()).append('|')
+                .append(preview.additionsMinor()).append('|')
                 .append(preview.deductionsMinor()).append('|').append(preview.totalPayMinor()).append('|')
                 .append(closedAt == null ? "" : closedAt.toString());
         for (PayrollAdjustment item : monthAdjustments) canonical.append('|').append(item.getId()).append(':')
@@ -304,7 +533,15 @@ public class PayrollService {
         return new PayrollSnapshotDto(value.getId(), YearMonth.from(value.getPeriodMonth()).toString(), value.getRevision(),
                 value.getCurrencyCode(), value.getHourlyRateMinor(), value.getPlannedMinutes(), value.getWorkedMinutes(),
                 value.getVacationMinutes(), value.getSickMinutes(), value.getOvertimeCompensatedMinutes(), value.getUnpaidMinutes(),
-                value.getTimeAdjustmentMinutes(), value.getPaidAbsenceMinutes(), value.getPayableMinutes(), value.getBasePayMinor(),
+                value.getTimeAdjustmentMinutes(), value.getPaidAbsenceMinutes(), value.getPayableMinutes(),
+                value.getHourlyBasePayableMinutes(), value.getBasePayMinor(),
+                value.getOrdinaryPremiumMinutes(),
+                value.getOrdinaryPremiumReferenceBasePayMinor(),
+                value.getOrdinaryPremiumPayMinor(),
+                value.getOrdinaryPremiumPricingFingerprint(),
+                value.getSettlementCount(), value.getSettlementMinutes(),
+                value.getSettlementBasePayMinor(), value.getSettlementPremiumPayMinor(), value.getSettlementPayMinor(),
+                value.getSettlementPricingFingerprint(),
                 value.getAdditionsMinor(), value.getDeductionsMinor(), value.getTotalPayMinor(), value.getSourcePeriodClosedAt().toString(),
                 value.getSourceIntegrityCheckedAt().toString(), value.getCalculationHash(),
                 value.getCreatedAt() == null ? null : value.getCreatedAt().toString(),

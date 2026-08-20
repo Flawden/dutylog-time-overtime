@@ -21,6 +21,70 @@ class CompensationCalculationServiceTest {
     }
 
     @Test
+    void hourlyBankFirstBaseExcludesUnsettledOvertimeMinutes() {
+        PayrollSourceDay sourceDay =
+                day(
+                        480,
+                        540,
+                        0,
+                        0,
+                        0
+                );
+
+        PayrollSourceSnapshot source =
+                new PayrollSourceSnapshot(
+                        LocalDate.of(
+                                2026,
+                                8,
+                                1
+                        ),
+                        LocalDate.of(
+                                2026,
+                                8,
+                                31
+                        ),
+                        480,
+                        540,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        0,
+                        540,
+                        480,
+                        List.of(sourceDay)
+                );
+
+        var result =
+                service.calculate(
+                        term(
+                                "HOURLY",
+                                100_000L,
+                                null
+                        ),
+                        source,
+                        480
+                );
+
+        assertEquals(
+                100_000L,
+                result.effectiveHourlyRateMinor()
+        );
+
+        /*
+         * 480 ordinary minutes * 100_000 minor/hour = 800_000.
+         *
+         * The extra 60 factual minutes live in Time Bank and are not paid
+         * again until explicit cash settlement.
+         */
+        assertEquals(
+                800_000L,
+                result.basePayMinor()
+        );
+    }
+
+    @Test
     void salaryModePaysExactMonthlySalaryAtFullProductionNormAndDerivesHourlyExplanation() {
         var result = service.calculate(term("SALARY", null, 8_000_000L), source(10_020, List.of(day(10_020, 10_020, 0, 0, 0))), 10_020);
         assertEquals(8_000_000L, result.basePayMinor()); assertEquals(10_020, result.salaryCoveredMinutes());

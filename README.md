@@ -1,3 +1,9 @@
+# DutyLog v27.46.1 — Temporal Work Context & Native Pay Pricing
+
+DutyLog now interprets work in historical temporal context, classifies overlapping REGULAR / NIGHT / HOLIDAY / OVERTIME dimensions, keeps overtime bank-first, and prices explicit settlements plus ordinary NIGHT/HOLIDAY premiums from effective-dated rules and historical compensation rates.
+
+Payroll preserves those consequences in immutable revisions with deep pricing fingerprints while keeping the backend authoritative for totals. See `docs/TEMPORAL_WORK_CONTEXT_NATIVE_PAY_PRICING_V27.46.1.md`.
+
 # DutyLog v27.46.0 — Compensation Setup & Base Native Payroll
 
 Payroll now starts with a human question — hourly rate or monthly salary — and prices canonical Day Truth without asking the user to repeat time facts. See `docs/COMPENSATION_SETUP_BASE_NATIVE_PAYROLL_V27.46.0.md`.

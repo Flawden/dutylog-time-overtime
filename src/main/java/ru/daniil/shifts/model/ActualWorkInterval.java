@@ -40,6 +40,24 @@ public class ActualWorkInterval {
     @Column(length = 500)
     private String note;
 
+    /**
+     * Absolute historical identity of this factual interval.
+     *
+     * Null values mean a legacy interval that has not yet been reconstructed
+     * from Temporal Work Context.
+     */
+    @Column(name = "source_timezone", length = 80)
+    private String sourceTimezone;
+
+    @Column(name = "start_instant")
+    private Instant startInstant;
+
+    @Column(name = "end_instant")
+    private Instant endInstant;
+
+    @Column(name = "identity_reconstructed", nullable = false)
+    private boolean identityReconstructed;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
 
@@ -65,6 +83,37 @@ public class ActualWorkInterval {
     public void setBreakMinutes(int breakMinutes) { this.breakMinutes = Math.max(0, breakMinutes); }
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
+
+    public String getSourceTimezone() { return sourceTimezone; }
+    public void setSourceTimezone(String sourceTimezone) {
+        this.sourceTimezone = sourceTimezone;
+    }
+
+    public Instant getStartInstant() { return startInstant; }
+    public void setStartInstant(Instant startInstant) {
+        this.startInstant = startInstant;
+    }
+
+    public Instant getEndInstant() { return endInstant; }
+    public void setEndInstant(Instant endInstant) {
+        this.endInstant = endInstant;
+    }
+
+    public boolean isIdentityReconstructed() {
+        return identityReconstructed;
+    }
+
+    public void setIdentityReconstructed(boolean identityReconstructed) {
+        this.identityReconstructed = identityReconstructed;
+    }
+
+    public boolean hasAbsoluteIdentity() {
+        return sourceTimezone != null
+                && !sourceTimezone.isBlank()
+                && startInstant != null
+                && endInstant != null;
+    }
+
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }
 

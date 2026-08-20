@@ -25,14 +25,18 @@ import ru.daniil.shifts.dto.Dtos.OvertimeLedgerItemDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeSummaryDto;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageCreateRequest;
 import ru.daniil.shifts.dto.Dtos.OvertimeUsageUpdateRequest;
+import ru.daniil.shifts.dto.Dtos.OvertimeSettlementDto;
+import ru.daniil.shifts.dto.Dtos.OvertimeSettlementUpsertRequest;
 import ru.daniil.shifts.dto.Dtos.LegacyOvertimeUsageMigrationPreviewDto;
 import ru.daniil.shifts.dto.Dtos.LegacyOvertimeUsageMigrationRequest;
 import ru.daniil.shifts.dto.Dtos.LegacyOvertimeUsageMigrationResultDto;
 import ru.daniil.shifts.model.AppUser;
+import ru.daniil.shifts.model.OvertimeSettlement;
 import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.ModuleService;
 import ru.daniil.shifts.service.DayEntryService;
 import ru.daniil.shifts.service.OvertimeService;
+import ru.daniil.shifts.service.OvertimeSettlementService;
 import ru.daniil.shifts.service.VacationPlannerService;
 import ru.daniil.shifts.service.exception.ApiException;
 
@@ -48,17 +52,20 @@ public class OvertimeController {
     private final ModuleService moduleService;
     private final DayEntryService dayEntryService;
     private final OvertimeService overtimeService;
+    private final OvertimeSettlementService overtimeSettlementService;
     private final VacationPlannerService vacationPlannerService;
 
     public OvertimeController(CurrentUserService currentUserService,
                               ModuleService moduleService,
                               DayEntryService dayEntryService,
                               OvertimeService overtimeService,
+                              OvertimeSettlementService overtimeSettlementService,
                               VacationPlannerService vacationPlannerService) {
         this.currentUserService = currentUserService;
         this.moduleService = moduleService;
         this.dayEntryService = dayEntryService;
         this.overtimeService = overtimeService;
+        this.overtimeSettlementService = overtimeSettlementService;
         this.vacationPlannerService = vacationPlannerService;
     }
 
@@ -77,6 +84,128 @@ public class OvertimeController {
         AppUser current = currentUserService.requireUser(principal);
         moduleService.requireEnabled(current, ModuleService.OVERTIME);
         return overtimeService.account(current);
+    }
+
+    /**
+     * Explicit monetary-settlement decisions.
+     *
+     * These endpoints only consume/restore Time Bank minutes. Pricing and
+     * Payroll money are intentionally deferred to the next architectural layer.
+     */
+    @GetMapping("/settlements")
+    public List<OvertimeSettlementDto> settlements(
+            Principal principal
+    ) {
+        AppUser current =
+                currentUserService.requireUser(
+                        principal
+                );
+
+        moduleService.requireEnabled(
+                current,
+                ModuleService.OVERTIME
+        );
+
+        return overtimeSettlementService
+                .list(current)
+                .stream()
+                .map(this::settlementDto)
+                .toList();
+    }
+
+    @PostMapping("/settlements")
+    public OvertimeSettlementDto createSettlement(
+            @Valid
+            @RequestBody
+            OvertimeSettlementUpsertRequest req,
+            Principal principal
+    ) {
+        AppUser current =
+                currentUserService.requireUser(
+                        principal
+                );
+
+        moduleService.requireEnabled(
+                current,
+                ModuleService.OVERTIME
+        );
+
+        LocalDate date =
+                dayEntryService.parseDate(
+                        req.settlementDate(),
+                        "Дата settlement должна быть в формате yyyy-MM-dd"
+                );
+
+        return settlementDto(
+                overtimeSettlementService.create(
+                        current,
+                        date,
+                        req.minutes(),
+                        req.reason()
+                )
+        );
+    }
+
+    @PatchMapping("/settlements/{id}")
+    public OvertimeSettlementDto updateSettlement(
+            @PathVariable("id")
+            long id,
+            @Valid
+            @RequestBody
+            OvertimeSettlementUpsertRequest req,
+            Principal principal
+    ) {
+        AppUser current =
+                currentUserService.requireUser(
+                        principal
+                );
+
+        moduleService.requireEnabled(
+                current,
+                ModuleService.OVERTIME
+        );
+
+        LocalDate date =
+                dayEntryService.parseDate(
+                        req.settlementDate(),
+                        "Дата settlement должна быть в формате yyyy-MM-dd"
+                );
+
+        return settlementDto(
+                overtimeSettlementService.update(
+                        current,
+                        id,
+                        date,
+                        req.minutes(),
+                        req.reason()
+                )
+        );
+    }
+
+    @DeleteMapping("/settlements/{id}")
+    public ResponseEntity<Void> deleteSettlement(
+            @PathVariable("id")
+            long id,
+            Principal principal
+    ) {
+        AppUser current =
+                currentUserService.requireUser(
+                        principal
+                );
+
+        moduleService.requireEnabled(
+                current,
+                ModuleService.OVERTIME
+        );
+
+        overtimeSettlementService.delete(
+                current,
+                id
+        );
+
+        return ResponseEntity
+                .noContent()
+                .build();
     }
 
     /** GET /api/overtime/account-page — журнал переработок страницами для UI. */
@@ -176,6 +305,14 @@ public class OvertimeController {
             throw ApiException.conflict("LINKED_USAGE_MANAGED_BY_ABSENCE",
                     "Связанное списание изменяется только через отсутствие");
         }
+
+        if (overtimeService.isSettlementLinkedUsage(current, id)) {
+            throw ApiException.conflict(
+                    "SETTLEMENT_USAGE_MANAGED_BY_SETTLEMENT",
+                    "Связанное списание изменяется только через денежный settlement"
+            );
+        }
+
         throw ApiException.conflict("LEGACY_USAGE_MUST_BE_MIGRATED",
                 "Старое списание сначала нужно перенести в список отсутствий");
     }
@@ -249,4 +386,23 @@ public class OvertimeController {
         LocalDate toDate = dayEntryService.parseDate(to, "Дата to должна быть в формате yyyy-MM-dd");
         return overtimeService.ledger(current, fromDate, toDate);
     }
+
+    private OvertimeSettlementDto settlementDto(
+            OvertimeSettlement settlement
+    ) {
+        return new OvertimeSettlementDto(
+                settlement.getId(),
+                settlement.getSettlementDate()
+                        .toString(),
+                settlement.getRequestedMinutes(),
+                settlement.getRequestedMinutes()
+                        / 60.0,
+                settlement.getReason(),
+                settlement.getCreatedAt()
+                        .toString(),
+                settlement.getUpdatedAt()
+                        .toString()
+        );
+    }
+
 }

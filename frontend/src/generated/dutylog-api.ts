@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 1daa74d7f4f2ad6a5473305fd3aff8dd8743fe5b96d8fd91bd0aa1fd3f9a8b12
+ * SHA-256: 1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 132 operations, 138 schemas
+ * Contract: 138 operations, 144 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "1daa74d7f4f2ad6a5473305fd3aff8dd8743fe5b96d8fd91bd0aa1fd3f9a8b12";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -177,6 +177,10 @@ export namespace DutyLogApiSchemas {
     breakMinutes: number;
     createdAt?: string | null;
     updatedAt?: string | null;
+    sourceTimezone?: string | null;
+    startInstant?: string | null;
+    endInstant?: string | null;
+    identityReconstructed: boolean;
   };
 
   export type ActualWorkIntervalInput = {
@@ -902,14 +906,31 @@ export namespace DutyLogApiSchemas {
     exact: boolean;
   };
 
+  export type OvertimeSettlement = {
+    id: number;
+    settlementDate: string;
+    minutes: number;
+    hours: number;
+    reason?: string | null;
+    createdAt: string;
+    updatedAt: string;
+  };
+
+  export type OvertimeSettlementUpsertRequest = {
+    settlementDate: string;
+    minutes: number;
+    reason?: string | null;
+  };
+
   export type OvertimeUsage = {
     id: number;
     usageDate: string;
     hours: number;
     minutes: number;
     reason?: string | null;
-    sourceKind: "MANUAL" | "ABSENCE";
+    sourceKind: "MANUAL" | "ABSENCE" | "SETTLEMENT";
     sourceAbsenceId?: number | null;
+    sourceSettlementId?: number | null;
     editable: boolean;
     postingState: "RESERVED" | "POSTED";
     reserved: boolean;
@@ -922,6 +943,9 @@ export namespace DutyLogApiSchemas {
     hours: number;
     minutes: number;
     reason?: string | null;
+    sourceKind: "MANUAL" | "ABSENCE" | "SETTLEMENT";
+    sourceAbsenceId?: number | null;
+    sourceSettlementId?: number | null;
     startInstant?: string | null;
     endInstant?: string | null;
     displayStart?: string | null;
@@ -964,23 +988,7 @@ export namespace DutyLogApiSchemas {
     monthlySalaryMinor?: number | null;
   };
 
-  export type PayrollPeriod = {
-    month: string;
-    periodClosed: boolean;
-    integrityHealthy: boolean;
-    canCalculate: boolean;
-    blockingReason?: "PERIOD_OPEN" | "LEDGER_INTEGRITY_FAILED" | "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | null;
-    settings: DutyLogApiSchemas.PayrollSettings;
-    productionCalendar: DutyLogApiSchemas.ProductionCalendarMonth;
-    preview: DutyLogApiSchemas.PayrollPreview;
-    adjustments: Array<DutyLogApiSchemas.PayrollAdjustment>;
-    latestSnapshot?: DutyLogApiSchemas.PayrollSnapshot | null;
-    snapshots: Array<DutyLogApiSchemas.PayrollSnapshot>;
-    effectiveCompensation?: DutyLogApiSchemas.PayrollCompensationTerm | null;
-    compensationHistory: Array<DutyLogApiSchemas.PayrollCompensationTerm>;
-  };
-
-  export type PayrollPreview = {
+  export type PayrollMoneyProjection = {
     month: string;
     currencyCode: string;
     hourlyRateMinor: number;
@@ -993,7 +1001,14 @@ export namespace DutyLogApiSchemas {
     timeAdjustmentMinutes: number;
     paidAbsenceMinutes: number;
     payableMinutes: number;
+    hourlyBasePayableMinutes: number;
     basePayMinor: number;
+    settlementCount: number;
+    settlementMinutes: number;
+    settlementBasePayMinor: number;
+    settlementPremiumPayMinor: number;
+    settlementPayMinor: number;
+    settlementPricingFingerprint: string | null;
     additionsMinor: number;
     deductionsMinor: number;
     totalPayMinor: number;
@@ -1006,6 +1021,33 @@ export namespace DutyLogApiSchemas {
     salaryCoveredMinutes: number;
   };
 
+  export type PayrollPeriod = {
+    month: string;
+    periodClosed: boolean;
+    integrityHealthy: boolean;
+    canCalculate: boolean;
+    blockingReason?: "PERIOD_OPEN" | "LEDGER_INTEGRITY_FAILED" | "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | "PAY_PRICING_PROVENANCE_REQUIRED" | "PAY_PRICING_RULES_REQUIRED" | "PAY_PRICING_CURRENCY_MISMATCH" | "PAYROLL_SETTLEMENT_CURRENCY_MISMATCH" | "ORDINARY_PREMIUM_SOURCE_NOT_READY" | "PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH" | null;
+    settings: DutyLogApiSchemas.PayrollSettings;
+    productionCalendar: DutyLogApiSchemas.ProductionCalendarMonth;
+    preview: DutyLogApiSchemas.PayrollPreview;
+    adjustments: Array<DutyLogApiSchemas.PayrollAdjustment>;
+    latestSnapshot?: DutyLogApiSchemas.PayrollSnapshot | null;
+    snapshots: Array<DutyLogApiSchemas.PayrollSnapshot>;
+    effectiveCompensation?: DutyLogApiSchemas.PayrollCompensationTerm | null;
+    compensationHistory: Array<DutyLogApiSchemas.PayrollCompensationTerm>;
+  };
+
+  export type PayrollPreview = DutyLogApiSchemas.PayrollMoneyProjection & {
+    ordinaryPremiumPricingReady: boolean;
+    ordinaryPremiumPricingBlockingReason: "ORDINARY_PREMIUM_SOURCE_NOT_READY" | "PAY_PRICING_RULES_REQUIRED" | "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | "PAY_PRICING_CURRENCY_MISMATCH" | "PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH" | null;
+    ordinaryPremiumPricingIdentityRequired: boolean;
+    ordinaryPremiumMinutes: number;
+    ordinaryPremiumReferenceBasePayMinor: number;
+    ordinaryPremiumPayMinor: number;
+    settlementPricingReady: boolean;
+    settlementPricingBlockingReason: "PAY_PRICING_PROVENANCE_REQUIRED" | "PAY_PRICING_RULES_REQUIRED" | "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | "PAY_PRICING_CURRENCY_MISMATCH" | "PAYROLL_SETTLEMENT_CURRENCY_MISMATCH" | null;
+  };
+
   export type PayrollSettings = DutyLogApiSchemas.PayrollSettingsInput & {
     updatedAt?: string | null;
   };
@@ -1015,7 +1057,11 @@ export namespace DutyLogApiSchemas {
     hourlyRateMinor: number;
   };
 
-  export type PayrollSnapshot = DutyLogApiSchemas.PayrollPreview & {
+  export type PayrollSnapshot = DutyLogApiSchemas.PayrollMoneyProjection & {
+    ordinaryPremiumMinutes: number;
+    ordinaryPremiumReferenceBasePayMinor: number;
+    ordinaryPremiumPayMinor: number;
+    ordinaryPremiumPricingFingerprint: string | null;
     id: number;
     revision: number;
     sourcePeriodClosedAt: string;
@@ -1550,6 +1596,23 @@ export namespace DutyLogApiSchemas {
     factLabel: string;
     actualWork: Array<DutyLogApiSchemas.ActualWorkInterval>;
   };
+
+  export type WorkTimezoneChangeRequest = {
+    effectiveFrom: string;
+    timezone: string;
+  };
+
+  export type WorkTimezoneHistory = {
+    currentTimezone: string;
+    currentDate: string;
+    terms: Array<DutyLogApiSchemas.WorkTimezoneTerm>;
+  };
+
+  export type WorkTimezoneTerm = {
+    effectiveFrom: string;
+    timezone: string;
+    baseline: boolean;
+  };
 }
 
 export const dutyLogOperations = {
@@ -1570,6 +1633,7 @@ export const dutyLogOperations = {
   "createDayNote": { method: "POST", path: "/api/v1/notes" },
   "createImportantDay": { method: "POST", path: "/api/v1/important-days" },
   "createOvertimeCredit": { method: "POST", path: "/api/v1/overtime/credits" },
+  "createOvertimeSettlement": { method: "POST", path: "/api/v1/overtime/settlements" },
   "createQuickScenario": { method: "POST", path: "/api/v1/quick-scenarios" },
   "createScheduleTemplate": { method: "POST", path: "/api/v1/schedule-templates" },
   "createShiftType": { method: "POST", path: "/api/v1/shift-types" },
@@ -1585,6 +1649,7 @@ export const dutyLogOperations = {
   "deleteInboxItem": { method: "DELETE", path: "/api/v1/inbox/{id}" },
   "deleteLegacyManualOvertimeUsage": { method: "DELETE", path: "/api/v1/overtime/usages/{id}" },
   "deleteOvertimeCredit": { method: "DELETE", path: "/api/v1/overtime/credits/{id}" },
+  "deleteOvertimeSettlement": { method: "DELETE", path: "/api/v1/overtime/settlements/{id}" },
   "deletePayrollCompensationTerm": { method: "DELETE", path: "/api/v1/payroll/compensation-terms/{month}" },
   "deleteProductionCalendarDayOverride": { method: "DELETE", path: "/api/v1/production-calendar/days/{date}" },
   "deleteQuickScenario": { method: "DELETE", path: "/api/v1/quick-scenarios/{id}" },
@@ -1602,6 +1667,7 @@ export const dutyLogOperations = {
   "getTelegramStatus": { method: "GET", path: "/api/v1/telegram/status" },
   "getTimeContext": { method: "GET", path: "/api/v1/time/context" },
   "getVacationPlanner": { method: "GET", path: "/api/v1/vacation-planner" },
+  "getWorkTimezoneHistory": { method: "GET", path: "/api/v1/time/work-context" },
   "inspectLedgerIntegrity": { method: "GET", path: "/api/v1/ledger-integrity" },
   "listAbsenceTypes": { method: "GET", path: "/api/v1/vacation-planner/types" },
   "listActualWorkIntervals": { method: "GET", path: "/api/v1/actual-work" },
@@ -1613,6 +1679,7 @@ export const dutyLogOperations = {
   "listInbox": { method: "GET", path: "/api/v1/inbox" },
   "listMobileSessions": { method: "GET", path: "/api/v1/mobile/auth/sessions" },
   "listModules": { method: "GET", path: "/api/v1/modules" },
+  "listOvertimeSettlements": { method: "GET", path: "/api/v1/overtime/settlements" },
   "listProfileSessions": { method: "GET", path: "/api/v1/profile/sessions" },
   "listScheduleTemplates": { method: "GET", path: "/api/v1/schedule-templates" },
   "listShiftTypes": { method: "GET", path: "/api/v1/shift-types" },
@@ -1671,6 +1738,7 @@ export const dutyLogOperations = {
   "updateModules": { method: "PATCH", path: "/api/v1/modules" },
   "updateNotificationSettings": { method: "PATCH", path: "/api/v1/notifications/settings" },
   "updateOvertimeCredit": { method: "PATCH", path: "/api/v1/overtime/credits/{id}" },
+  "updateOvertimeSettlement": { method: "PATCH", path: "/api/v1/overtime/settlements/{id}" },
   "updatePayrollSettings": { method: "PATCH", path: "/api/v1/payroll/settings" },
   "updateProfile": { method: "PUT", path: "/api/v1/profile" },
   "updateQuickScenario": { method: "PATCH", path: "/api/v1/quick-scenarios/{id}" },
@@ -1680,6 +1748,7 @@ export const dutyLogOperations = {
   "updateTask": { method: "PATCH", path: "/api/v1/tasks/{taskId}" },
   "updateTelegramSettings": { method: "PATCH", path: "/api/v1/telegram/settings" },
   "updateVacationSettings": { method: "PATCH", path: "/api/v1/vacation-planner/settings" },
+  "updateWorkTimezoneContext": { method: "PUT", path: "/api/v1/time/work-context" },
   "upsertCalendarLayerOverride": { method: "PUT", path: "/api/v1/calendar-layers/{id}/overrides/{date}" },
   "upsertDay": { method: "PUT", path: "/api/v1/days/{date}" },
   "upsertPayrollCompensationTerm": { method: "PUT", path: "/api/v1/payroll/compensation-terms/{month}" },
@@ -1758,6 +1827,10 @@ export interface DutyLogOperationTypes {
     requestBody: DutyLogApiSchemas.OvertimeCreditCreateRequest;
     response: unknown;
   };
+  "createOvertimeSettlement": {
+    requestBody: DutyLogApiSchemas.OvertimeSettlementUpsertRequest;
+    response: DutyLogApiSchemas.OvertimeSettlement;
+  };
   "createQuickScenario": {
     requestBody: DutyLogApiSchemas.QuickScenarioCreateRequest;
     response: DutyLogApiSchemas.QuickScenario;
@@ -1817,6 +1890,10 @@ export interface DutyLogOperationTypes {
   "deleteOvertimeCredit": {
     requestBody: undefined;
     response: unknown;
+  };
+  "deleteOvertimeSettlement": {
+    requestBody: undefined;
+    response: undefined;
   };
   "deletePayrollCompensationTerm": {
     requestBody: undefined;
@@ -1886,6 +1963,10 @@ export interface DutyLogOperationTypes {
     requestBody: undefined;
     response: DutyLogApiSchemas.VacationPlanner;
   };
+  "getWorkTimezoneHistory": {
+    requestBody: undefined;
+    response: DutyLogApiSchemas.WorkTimezoneHistory;
+  };
   "inspectLedgerIntegrity": {
     requestBody: undefined;
     response: DutyLogApiSchemas.LedgerIntegrity;
@@ -1929,6 +2010,10 @@ export interface DutyLogOperationTypes {
   "listModules": {
     requestBody: undefined;
     response: Array<DutyLogApiSchemas.Module>;
+  };
+  "listOvertimeSettlements": {
+    requestBody: undefined;
+    response: Array<DutyLogApiSchemas.OvertimeSettlement>;
   };
   "listProfileSessions": {
     requestBody: undefined;
@@ -2166,6 +2251,10 @@ export interface DutyLogOperationTypes {
     requestBody: DutyLogApiSchemas.OvertimeCreditUpdateRequest;
     response: unknown;
   };
+  "updateOvertimeSettlement": {
+    requestBody: DutyLogApiSchemas.OvertimeSettlementUpsertRequest;
+    response: DutyLogApiSchemas.OvertimeSettlement;
+  };
   "updatePayrollSettings": {
     requestBody: DutyLogApiSchemas.PayrollSettingsInput;
     response: unknown;
@@ -2203,6 +2292,10 @@ export interface DutyLogOperationTypes {
   "updateVacationSettings": {
     requestBody: DutyLogApiSchemas.VacationSettingsInput;
     response: unknown;
+  };
+  "updateWorkTimezoneContext": {
+    requestBody: DutyLogApiSchemas.WorkTimezoneChangeRequest;
+    response: DutyLogApiSchemas.WorkTimezoneHistory;
   };
   "upsertCalendarLayerOverride": {
     requestBody: DutyLogApiSchemas.CalendarLayerOverrideInput;

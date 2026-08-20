@@ -1,3 +1,16 @@
+## Temporal Work Context / Pay Classification / Pricing contract (v27.46.1)
+
+- Temporal Work Context decides how factual instants map into local work dates; it does not own Payroll coefficients.
+- Classification produces overlapping factual REGULAR / NIGHT / HOLIDAY / OVERTIME dimensions and preserves source identity.
+- Time Bank remains one fungible FIFO balance. Provenance describes factual source slices; pricing does not mutate provenance.
+- Explicit settlement is a dedicated bank consumer and is not an absence or implicit overtime payout.
+- Effective-dated pricing rules resolve separately from historical compensation rates.
+- HOURLY base excludes overtime retained in the bank; settlement money and ordinary NIGHT/HOLIDAY premium are explicit additive Payroll components.
+- Payroll preview is live. A saved Payroll revision freezes money/time plus deterministic deep pricing fingerprints and never rewrites prior revisions.
+- The frontend displays backend-owned results and does not recompute Payroll totals.
+
+Status: v27.46.1.
+
 ## Native Workday / Day Truth contract (v27.45.1)
 
 - Calendar / Today are the human command surfaces: one real-world event should be described once and derived domains should consume the same authorities.

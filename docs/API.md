@@ -1,4 +1,6 @@
-# DutyLog API v27.46.0
+# DutyLog API v27.46.1
+
+`v27.46.1` adds temporal work-context, historical Actual Work identity, explicit overtime-settlement and native pricing/Payroll contract surfaces. Payroll preview exposes ordinary-premium readiness plus canonical minutes/reference base/premium delta, while immutable Payroll snapshots expose frozen ordinary-premium aggregates and deterministic pricing identity. OpenAPI is **138 operations / 144 schemas** with SHA-256 `1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`; PostgreSQL Flyway advances to **V61**.
 
 `v27.45.1` keeps owner-scoped `GET /api/v1/workdays/{date}` as the Day Truth read model. `ActualWorkIntervalInput` now accepts optional `endDate`; when omitted, same-day behavior remains and end-before-start infers the next day. Actual Work output includes `endDate`, while Overtime credit rows expose `sourceKind` and `editable` so `SYSTEM_ACTUAL_WORK` projections are read-only outside the source calendar day. One cross-midnight fact is allocated by calendar date for Time Compensation, Payroll source and ordinary overtime reconciliation. OpenAPI remains **130 operations / 136 schemas** with hash `34d257319830`; Flyway advances to V51.
 

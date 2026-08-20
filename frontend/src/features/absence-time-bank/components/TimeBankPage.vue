@@ -21,6 +21,8 @@ import {
   reservedUsageMinutes,
   uniqueSourceCredits,
   usageIsAbsenceOwned,
+  usageIsSettlementOwned,
+  usageKindLabel,
   usageRatio,
 } from "../types/model";
 import type { OvertimeCredit, OvertimeUsage } from "../types/domain";
@@ -48,7 +50,13 @@ const safeAccount = computed(() => account.value ?? emptyAccount);
 const fifoCredits = computed(() => fifoOpenCredits(safeAccount.value));
 const reservedMinutes = computed(() => reservedUsageMinutes(safeAccount.value));
 const postedMinutes = computed(() => (safeAccount.value.usages ?? [])
-  .filter(item => !item.reserved)
+  .filter(item => item.sourceKind !== "SETTLEMENT" && !item.reserved)
+  .reduce((sum, item) => sum + Number(item.minutes ?? 0), 0));
+const settlementMinutes = computed(() => (safeAccount.value.usages ?? [])
+  .filter(item => item.sourceKind === "SETTLEMENT")
+  .reduce((sum, item) => sum + Number(item.minutes ?? 0), 0));
+const timeOffMinutes = computed(() => (safeAccount.value.usages ?? [])
+  .filter(item => item.sourceKind !== "SETTLEMENT")
   .reduce((sum, item) => sum + Number(item.minutes ?? 0), 0));
 const ratio = computed(() => usageRatio(safeAccount.value));
 const oldestRemaining = computed(() => oldestCreditRemainingMinutes(safeAccount.value));
@@ -290,11 +298,12 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
       <div>
         <p class="domain-eyebrow">Vue domain · FIFO без дублирования</p>
         <h1>Банк переработок</h1>
-        <p>Начисления остаются неизменными источниками. Отгулы оформляются как отсутствия, а банк показывает резерв, списание и происхождение каждой минуты.</p>
+        <p>Начисления остаются неизменными источниками. Отгул и решение «к оплате» расходуют один банк по FIFO, сохраняя происхождение каждой минуты.</p>
       </div>
       <div class="domain-hero__actions">
         <UiButton id="timeBankGuideOpen" variant="ghost" @click="store.openGuide()">Как работает банк</UiButton>
         <UiButton id="ledgerAddUsage" @click="store.openAbsenceComposer({ systemCode: 'TIME_OFF', source: 'time-bank' })">＋ Оформить отгул</UiButton>
+        <UiButton id="ledgerAddSettlement" @click="store.openSettlementEditor()">＋ К оплате</UiButton>
         <UiButton id="ledgerAddCredit" variant="primary" @click="store.openCreditEditor()">＋ Добавить переработку</UiButton>
       </div>
     </header>
@@ -304,7 +313,7 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
 
     <section class="domain-metrics domain-metrics--bank" aria-label="Баланс банка переработок">
       <UiCard><small>Начислено</small><strong id="ledgerEarned">{{ formatSignedHours(account?.totalEarnedHours) }}</strong><span>все источники</span></UiCard>
-      <UiCard><small>Использовано</small><strong id="ledgerUsed">{{ formatSignedHours(account?.totalUsedHours, true) }}</strong><span id="timeCompUsed">{{ formatMinutes(compensation?.overtimeUsedMinutes) }}</span></UiCard>
+      <UiCard><small>Использовано</small><strong id="ledgerUsed">{{ formatSignedHours(account?.totalUsedHours, true) }}</strong><span id="timeCompUsed">временем {{ formatMinutes(timeOffMinutes) }} · к оплате {{ formatMinutes(settlementMinutes) }}</span></UiCard>
       <UiCard><small>Зарезервировано</small><strong id="ledgerReserved">{{ formatMinutes(reservedMinutes) }}</strong><span>будущие отгулы</span></UiCard>
       <UiCard class="domain-metric--accent"><small>Свободный остаток</small><strong id="ledgerBalance">{{ formatSignedHours(account?.balanceHours) }}</strong><span id="ledgerBalanceCaption">после резервов · зарезервировано {{ formatMinutes(reservedMinutes) }}</span></UiCard>
     </section>
@@ -457,7 +466,7 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
           <summary><span><strong>{{ credit.workedDate }}</strong><small><template v-if="isSystemActualWorkCredit(credit)">Автоматически из фактической работы · </template>{{ credit.reason || credit.timeRange || 'Переработка' }}</small></span><b>{{ formatSignedHours(credit.projection?.sourceCreditHours ?? creditRowEarnedHours(credit)) }}</b></summary>
           <div class="overtime-ledger-card__body">
             <p>Использовано {{ formatSignedHours(credit.projection?.sourceUsedHours ?? credit.usedHours, true) }} · осталось {{ formatHours(credit.projection?.sourceRemainingHours ?? credit.remainingHours) }}</p>
-            <div v-for="usage in creditUsages(credit)" :key="usage.id" class="overtime-ledger-card__usage">{{ usage.reason || 'Отгул' }} · {{ formatMinutes(usage.minutes) }}</div>
+            <div v-for="usage in creditUsages(credit)" :key="usage.id" class="overtime-ledger-card__usage"><b>{{ usageKindLabel(usage) }}</b> · {{ usage.reason || 'без комментария' }} · {{ formatMinutes(usage.minutes) }}</div>
             <UiButton v-if="isSystemActualWorkCredit(credit)" size="sm" :data-open-derived-credit="credit.id" @click="openDerivedCreditDay(credit)">Открыть день / изменить факт</UiButton>
             <UiButton v-else size="sm" :data-edit-credit="credit.id" @click="store.editCredit(Number(credit.id))">Изменить начисление</UiButton>
           </div>
@@ -466,20 +475,30 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
     </section>
 
     <section v-else-if="timeBankTab === 'usage'" class="domain-panel" data-time-bank-section="usage">
-      <header class="domain-panel__header"><div><p class="domain-eyebrow">Отгулы</p><h2>Использование банка</h2></div></header>
+      <header class="domain-panel__header"><div><p class="domain-eyebrow">Отгул · к оплате · legacy</p><h2>Использование банка</h2></div></header>
       <div id="ledgerUsageList" class="usage-list">
-        <UiEmptyState v-if="!(account?.usages.length)" title="Списаний пока нет" description="Отгул создаётся через единый конструктор отсутствий." />
+        <UiEmptyState v-if="!(account?.usages.length)" title="Списаний пока нет" description="Оформите отгул или явно отправьте свободные минуты к оплате." />
         <article
           v-for="usage in account?.usages ?? []"
           :key="usage.id"
           class="timeBankUsageCard"
           :class="{ 'is-focused': Number(usage.sourceAbsenceId ?? 0) === focusAbsenceUsageId }"
           :data-usage-id="usage.id"
+          :data-source-kind="usage.sourceKind"
           :data-source-absence-id="usage.sourceAbsenceId ?? undefined"
+          :data-source-settlement-id="usage.sourceSettlementId ?? undefined"
           :ref="element => captureUsageRow(usage.sourceAbsenceId, element)"
         >
-          <div class="usage-card__head"><div><strong>{{ usage.reason || 'Отгул' }}</strong><p>{{ usage.usageDate }} · {{ formatHours(usage.hours) }}</p></div><span class="domain-status">{{ usage.reserved ? 'Зарезервировано' : 'Проведено' }}</span></div>
+          <div class="usage-card__head">
+            <div>
+              <strong>{{ usage.reason || usageKindLabel(usage) }}</strong>
+              <p>{{ usage.usageDate }} · {{ formatHours(usage.hours) }}</p>
+            </div>
+            <span class="domain-status">{{ usageKindLabel(usage) }} · {{ usage.reserved ? 'зарезервировано' : 'проведено' }}</span>
+          </div>
           <p v-if="usageIsAbsenceOwned(usage)" class="usage-card__owner">Управляется отсутствием</p>
+          <p v-else-if="usageIsSettlementOwned(usage)" class="usage-card__owner">Управляется решением «к оплате» · сумма денег ещё не рассчитывается</p>
+          <p v-else class="usage-card__owner">Legacy-списание без отдельного бизнес-владельца</p>
           <div class="usage-card__allocations">
             <div v-for="allocation in usage.allocations ?? []" :key="`${usage.id}-${allocation.creditId}-${allocation.minutes}`" class="timeBankAllocationRow">
               <span class="timeBankAllocationRow__date">{{ allocation.workedDate }}</span>
@@ -488,6 +507,7 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
             </div>
           </div>
           <UiButton v-if="usageIsAbsenceOwned(usage)" size="sm" :data-open-absence="usage.sourceAbsenceId" @click="openAbsence(usage.sourceAbsenceId)">Открыть отсутствие</UiButton>
+          <UiButton v-else-if="usageIsSettlementOwned(usage)" size="sm" :data-open-settlement="usage.sourceSettlementId" @click="store.openSettlementEditor(Number(usage.sourceSettlementId))">Открыть «к оплате»</UiButton>
         </article>
       </div>
     </section>
@@ -501,7 +521,7 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
         </article>
       </div>
       <form id="fifoForecastForm" class="fifo-forecast-form" @submit.prevent="submitForecast">
-        <label>Будущий отгул, часов <input id="fifoForecastHours" v-model.number="fifoForecastHours" type="number" min="0" max="1000" step="0.25" /></label>
+        <label>Будущее списание, часов <input id="fifoForecastHours" v-model.number="fifoForecastHours" type="number" min="0" max="1000" step="0.25" /></label>
         <UiButton type="submit">Рассчитать</UiButton>
       </form>
       <div id="ledgerFifoForecast" class="domain-fifo-forecast" aria-live="polite">
@@ -515,9 +535,10 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
     <UiModal :open="guideOpen" title="Как работает банк переработок" description="Короткая карта единого учёта времени." @close="store.closeGuide()">
       <div id="timeBankGuideModal" class="time-bank-guide">
         <section><b>1. Начисление</b><p>Каждая переработка остаётся отдельным неизменным источником времени.</p></section>
-        <section><b>2. Отсутствие</b><p>Отгул создаётся в конструкторе отсутствий. Там находится его статус и жизненный цикл.</p></section>
-        <section><b>3. FIFO</b><p>DutyLog резервирует и списывает сначала самый старый свободный остаток, сохраняя происхождение каждой минуты.</p></section>
-        <section><b>4. Две стороны одной операции</b><p>Из банка можно открыть отсутствие, а из журнала отсутствий — связанное списание.</p></section>
+        <section><b>2. Отгул</b><p>Компенсация временем создаётся как отсутствие. Там находятся его статус и жизненный цикл.</p></section>
+        <section><b>3. К оплате</b><p>Это отдельное явное решение списать минуты из банка для будущей денежной выплаты. Сумма появится только после слоя Pricing.</p></section>
+        <section><b>4. Один FIFO</b><p>И отгул, и «к оплате» используют одну очередь источников. Одна минута не может быть погашена дважды.</p></section>
+        <section><b>5. Владельцы операций</b><p>Из банка можно открыть исходное отсутствие или решение «к оплате» и изменить его, пока расчётный период открыт.</p></section>
       </div>
       <template #footer><UiButton id="timeBankGuideDone" variant="primary" @click="store.closeGuide()">Понятно</UiButton></template>
     </UiModal>

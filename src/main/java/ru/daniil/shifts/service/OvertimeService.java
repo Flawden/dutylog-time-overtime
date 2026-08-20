@@ -93,14 +93,30 @@ public class OvertimeService {
     @Transactional
     public OvertimeSummaryDto summary(AppUser user, LocalDate from, LocalDate to) {
         List<OvertimeCreditRowDto> rows = projectedRowsInRange(user, from, to);
-        double overtime = rows.stream().mapToDouble(OvertimeCreditRowDto::hours).sum();
-        double timeOff = rows.stream().mapToDouble(OvertimeCreditRowDto::usedHours).sum();
+
+        double overtime =
+                rows.stream()
+                        .mapToDouble(
+                                OvertimeCreditRowDto::hours
+                        )
+                        .sum();
+
+        double allUsed =
+                rows.stream()
+                        .mapToDouble(
+                                OvertimeCreditRowDto::usedHours
+                        )
+                        .sum();
+
+        double timeOff =
+                timeOffHours(rows);
+
         return new OvertimeSummaryDto(
                 from.toString(),
                 to.toString(),
                 round2(overtime),
                 round2(timeOff),
-                round2(overtime - timeOff)
+                round2(overtime - allUsed)
         );
     }
 
@@ -125,19 +141,74 @@ public class OvertimeService {
         for (Map.Entry<String, List<OvertimeCreditRowDto>> item : byDate.entrySet()) {
             LocalDate date = LocalDate.parse(item.getKey());
             DayEntry day = dayEntries.get(date);
-            double earned = round2(item.getValue().stream().mapToDouble(OvertimeCreditRowDto::hours).sum());
-            double used = round2(item.getValue().stream().mapToDouble(OvertimeCreditRowDto::usedHours).sum());
+            double earned =
+                    round2(
+                            item.getValue()
+                                    .stream()
+                                    .mapToDouble(
+                                            OvertimeCreditRowDto::hours
+                                    )
+                                    .sum()
+                    );
+
+            double allUsed =
+                    round2(
+                            item.getValue()
+                                    .stream()
+                                    .mapToDouble(
+                                            OvertimeCreditRowDto::usedHours
+                                    )
+                                    .sum()
+                    );
+
+            double timeOff =
+                    timeOffHours(
+                            item.getValue()
+                    );
+
             result.add(new OvertimeLedgerItemDto(
                     item.getKey(),
                     day != null && day.getShiftType() != null ? day.getShiftType().getId() : null,
                     day != null && day.getShiftType() != null ? day.getShiftType().getName() : null,
                     earned,
-                    used,
-                    round2(earned - used),
+                    timeOff,
+                    round2(earned - allUsed),
                     day != null && day.getNote() != null && !day.getNote().isBlank()
             ));
         }
         return List.copyOf(result);
+    }
+
+    /**
+     * Compatibility "timeOff" means compensation with time, not every bank
+     * debit. Cash settlement still reduces the same balance but must never be
+     * reported as time-off.
+     */
+    private double timeOffHours(
+            List<OvertimeCreditRowDto> rows
+    ) {
+        double minutesAsHours = 0.0;
+
+        for (OvertimeCreditRowDto row : rows) {
+            if (row.usages() == null) {
+                continue;
+            }
+
+            for (OvertimeUsageRefDto usage :
+                    row.usages()) {
+
+                if ("MANUAL".equals(
+                        usage.sourceKind()
+                ) || "ABSENCE".equals(
+                        usage.sourceKind()
+                )) {
+                    minutesAsHours +=
+                            usage.hours();
+                }
+            }
+        }
+
+        return round2(minutesAsHours);
     }
 
     /**
@@ -371,8 +442,45 @@ public class OvertimeService {
     @Transactional
     public void reconcileActualWorkCredit(AppUser user, LocalDate date, int targetMinutes,
                                           int requiredMinutes, String reason) {
+        reconcileActualWorkCreditInternal(
+                user, date, targetMinutes, requiredMinutes, reason, false
+        );
+    }
+
+    /**
+     * Narrow internal path for Temporal Work Context corrections.
+     *
+     * A historical timezone correction may rebuild live truth inside an already
+     * closed accounting month. Existing Payroll snapshots remain immutable.
+     *
+     * This bypasses ONLY the period-open gate. Allocation consistency and the
+     * DERIVED_OVERTIME_ALREADY_USED protection remain exactly the same.
+     */
+    @Transactional
+    public void reconcileActualWorkCreditHistoricalCorrection(
+            AppUser user,
+            LocalDate date,
+            int targetMinutes,
+            int requiredMinutes,
+            String reason
+    ) {
+        reconcileActualWorkCreditInternal(
+                user, date, targetMinutes, requiredMinutes, reason, true
+        );
+    }
+
+    private void reconcileActualWorkCreditInternal(
+            AppUser user,
+            LocalDate date,
+            int targetMinutes,
+            int requiredMinutes,
+            String reason,
+            boolean historicalCorrection
+    ) {
         ensureAllocationConsistency(user);
-        assertPeriodOpen(user, date);
+        if (!historicalCorrection) {
+            assertPeriodOpen(user, date);
+        }
         int safeTarget = Math.max(0, targetMinutes);
         OvertimeCredit system = credits.findByOwnerAndWorkDateAndSourceKind(user, date, "SYSTEM_ACTUAL_WORK").orElse(null);
         List<OvertimeCredit> manual = credits.findByOwnerAndWorkDateOrderByIdAsc(user, date).stream()
@@ -434,6 +542,7 @@ public class OvertimeService {
         usage.setRequestedMinutes(requestedMinutes);
         usage.setSourceKind("MANUAL");
         usage.setSourceAbsenceId(null);
+        usage.setSourceSettlementId(null);
         usages.save(usage);
         rebuildAllAllocations(user);
         return account(user);
@@ -480,7 +589,7 @@ public class OvertimeService {
     @Transactional(readOnly = true)
     public List<OvertimeUsage> legacyManualUsages(AppUser user) {
         return usages.findByOwnerOrderByUsageDateAscIdAsc(user).stream()
-                .filter(usage -> !usage.isAbsenceLinked())
+                .filter(OvertimeUsage::isManual)
                 .toList();
     }
 
@@ -489,6 +598,27 @@ public class OvertimeService {
     public boolean isAbsenceLinkedUsage(AppUser user, Long usageId) {
         return requireOwnedUsage(user, usageId).isAbsenceLinked();
     }
+
+    @Transactional(readOnly = true)
+    public boolean isSettlementLinkedUsage(
+            AppUser user,
+            long id
+    ) {
+        OvertimeUsage usage =
+                usages
+                        .findByOwnerAndId(
+                                user,
+                                id
+                        )
+                        .orElseThrow(() ->
+                                ApiException.notFound(
+                                        "Списание переработки не найдено"
+                                )
+                        );
+
+        return usage.isSettlementLinked();
+    }
+
 
     /** Promotes an existing MANUAL usage to an absence-owned usage without rebuilding FIFO. */
     @Transactional
@@ -502,8 +632,15 @@ public class OvertimeService {
             throw ApiException.conflict("LEGACY_USAGE_ALREADY_MIGRATED",
                     "Списание уже связано с отсутствием");
         }
+        if (!usage.isManual()) {
+            throw ApiException.conflict(
+                    "USAGE_NOT_LEGACY_MANUAL",
+                    "Это списание принадлежит другому доменному источнику"
+            );
+        }
         usage.setSourceKind("ABSENCE");
         usage.setSourceAbsenceId(absenceId);
+        usage.setSourceSettlementId(null);
         usage.setPostingState(postingState);
         if (reason != null && !reason.isBlank()) usage.setReason(normalize(reason));
         return usages.saveAndFlush(usage);
@@ -542,6 +679,7 @@ public class OvertimeService {
         usage.setReason(normalize(reason));
         usage.setSourceKind("ABSENCE");
         usage.setSourceAbsenceId(absenceId);
+        usage.setSourceSettlementId(null);
         usage.setPostingState(postingState);
         usages.saveAndFlush(usage);
         rebuildAllAllocations(user);
@@ -559,6 +697,138 @@ public class OvertimeService {
         usages.flush();
         rebuildAllAllocations(user);
     }
+
+    /**
+     * Creates or atomically replaces the canonical FIFO debit owned by one
+     * explicit cash settlement.
+     *
+     * OvertimeSettlement owns business meaning. OvertimeUsage remains only the
+     * low-level bank-debit/FIFO substrate.
+     */
+    @Transactional
+    public Long upsertLinkedSettlementUsage(
+            AppUser user,
+            Long settlementId,
+            LocalDate usageDate,
+            int requestedMinutes,
+            String reason
+    ) {
+        if (settlementId == null) {
+            throw ApiException.badRequest(
+                    "Settlement должен быть сохранён до списания банка"
+            );
+        }
+
+        if (usageDate == null) {
+            throw ApiException.badRequest(
+                    "Дата settlement обязательна"
+            );
+        }
+
+        if (requestedMinutes <= 0
+                || requestedMinutes > 6000) {
+            throw ApiException.badRequest(
+                    "Settlement должен содержать от 1 до 6000 минут"
+            );
+        }
+
+        OvertimeUsage usage =
+                usages
+                        .findByOwnerAndSourceSettlementId(
+                                user,
+                                settlementId
+                        )
+                        .orElse(null);
+
+        if (usage != null) {
+            assertPeriodOpen(
+                    user,
+                    usage.getUsageDate()
+            );
+        }
+
+        assertPeriodOpen(
+                user,
+                usageDate
+        );
+
+        Long excludedId =
+                usage == null
+                        ? null
+                        : usage.getId();
+
+        validateUsageCapacity(
+                user,
+                excludedId,
+                requestedMinutes
+        );
+
+        if (usage == null) {
+            usage =
+                    new OvertimeUsage(
+                            user,
+                            usageDate,
+                            hoursFromMinutes(
+                                    requestedMinutes
+                            ),
+                            normalize(reason)
+                    );
+        }
+
+        usage.setUsageDate(usageDate);
+        usage.setRequestedMinutes(requestedMinutes);
+        usage.setReason(normalize(reason));
+        usage.setSourceKind("SETTLEMENT");
+        usage.setSourceAbsenceId(null);
+        usage.setSourceSettlementId(settlementId);
+        usage.setPostingState("POSTED");
+
+        usages.saveAndFlush(usage);
+
+        rebuildAllAllocations(user);
+
+        return usage.getId();
+    }
+
+    /**
+     * Deletes only the low-level FIFO debit owned by settlement.
+     * The business owner deletes OvertimeSettlement itself afterwards.
+     */
+    @Transactional
+    public void deleteLinkedSettlementUsage(
+            AppUser user,
+            Long settlementId
+    ) {
+        if (settlementId == null) {
+            return;
+        }
+
+        OvertimeUsage usage =
+                usages
+                        .findByOwnerAndSourceSettlementId(
+                                user,
+                                settlementId
+                        )
+                        .orElse(null);
+
+        if (usage == null) {
+            return;
+        }
+
+        assertPeriodOpen(
+                user,
+                usage.getUsageDate()
+        );
+
+        allocations.deleteByUsage(usage);
+        allocations.flush();
+
+        usages.delete(usage);
+        usages.flush();
+
+        rebuildAllAllocations(user);
+    }
+
 
     @Transactional
     public OvertimeAccountDto updateCredit(AppUser user, long id, OvertimeCreditUpdateRequest req) {
@@ -699,6 +969,13 @@ public class OvertimeService {
                     "Это списание создано отсутствием и редактируется только через Vacation Planner");
         }
 
+        if (usage.isSettlementLinked()) {
+            throw ApiException.conflict(
+                    "SETTLEMENT_USAGE_MANAGED_BY_SETTLEMENT",
+                    "Это списание принадлежит денежному settlement и меняется только через settlement"
+            );
+        }
+
         LocalDate date = hasText(req.date())
                 ? dayEntryService.parseDate(req.date(), "Дата списания должна быть в формате yyyy-MM-dd")
                 : usage.getUsageDate();
@@ -743,6 +1020,12 @@ public class OvertimeService {
         if (usage.isAbsenceLinked()) {
             throw ApiException.conflict("LINKED_USAGE_MANAGED_BY_ABSENCE",
                     "Связанное списание удаляется вместе с отсутствием в Vacation Planner");
+        }
+        if (usage.isSettlementLinked()) {
+            throw ApiException.conflict(
+                    "SETTLEMENT_USAGE_MANAGED_BY_SETTLEMENT",
+                    "Связанное списание удаляется только вместе с денежным settlement"
+            );
         }
         List<OvertimeCredit> creditList = credits.findByOwnerOrderByWorkDateAscIdAsc(user);
         List<OvertimeUsage> remainingUsages = usages.findByOwnerOrderByUsageDateAscIdAsc(user).stream()
@@ -869,6 +1152,9 @@ public class OvertimeService {
                 throw new IllegalStateException("FIFO plan references a missing overtime entity");
             }
             OvertimeAllocation allocation = new OvertimeAllocation(credit, usage, item.allocatedMinutes());
+            allocation.setCreditOffsetStartMinutes(
+                    item.alreadyConsumedMinutes()
+            );
             applyAllocationInterval(allocation, credit, item.alreadyConsumedMinutes(), item.allocatedMinutes());
             allocations.save(allocation);
             persistedMinutes += item.allocatedMinutes();
@@ -1358,6 +1644,9 @@ public class OvertimeService {
                 hoursFromMinutes(fragment.minutes()),
                 allocation.getUsage().getReason(),
                 fragment.minutes(),
+                allocation.getUsage().getSourceKind(),
+                allocation.getUsage().getSourceAbsenceId(),
+                allocation.getUsage().getSourceSettlementId(),
                 instantText(fragment.start()),
                 instantText(fragment.end()),
                 displayLocal(user, fragment.start()),
@@ -1408,7 +1697,9 @@ public class OvertimeService {
                 usage.getRequestedMinutes(),
                 usage.getSourceKind(),
                 usage.getSourceAbsenceId(),
-                !usage.isAbsenceLinked(),
+                usage.getSourceSettlementId(),
+                !usage.isAbsenceLinked()
+                        && !usage.isSettlementLinked(),
                 usage.getPostingState(),
                 usage.isReserved()
         );
@@ -1550,13 +1841,49 @@ public class OvertimeService {
         if (row.usages() == null || row.usages().isEmpty()) {
             return "не списывалось";
         }
-        return row.usages().stream()
-                .map(u -> u.usageDate() + ": " + fmt(u.hours()) + " ч"
-                        + (hasText(u.displayStart()) && hasText(u.displayEnd())
-                            ? " [" + u.displayStart() + "–" + u.displayEnd() + "]"
-                            : " [без точного интервала]")
-                        + (hasText(u.reason()) ? " — " + u.reason() : ""))
-                .collect(Collectors.joining("\n"));
+
+        return row.usages()
+                .stream()
+                .map(u ->
+                        u.usageDate()
+                                + ": "
+                                + fmt(u.hours())
+                                + " ч · "
+                                + usageDispositionLabel(u)
+                                + (hasText(u.displayStart())
+                                && hasText(u.displayEnd())
+                                ? " ["
+                                + u.displayStart()
+                                + "–"
+                                + u.displayEnd()
+                                + "]"
+                                : " [без точного интервала]")
+                                + (hasText(u.reason())
+                                ? " — "
+                                + u.reason()
+                                : "")
+                )
+                .collect(
+                        Collectors.joining("\n")
+                );
+    }
+
+    private String usageDispositionLabel(
+            OvertimeUsageRefDto usage
+    ) {
+        if ("SETTLEMENT".equals(
+                usage.sourceKind()
+        )) {
+            return "к оплате";
+        }
+
+        if ("ABSENCE".equals(
+                usage.sourceKind()
+        )) {
+            return "отгул";
+        }
+
+        return "старое списание";
     }
 
     private void appendCsvLine(StringBuilder sb, List<String> cells) {

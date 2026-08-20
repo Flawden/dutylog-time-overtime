@@ -11,8 +11,18 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "overtime_usages", indexes = {
         @Index(name = "idx_overtime_usages_user_date", columnList = "user_id, usage_date"),
-        @Index(name = "idx_overtime_usages_source", columnList = "user_id, source_kind, source_absence_id")
-}, uniqueConstraints = @UniqueConstraint(name = "uq_overtime_usage_source_absence", columnNames = "source_absence_id"))
+        @Index(name = "idx_overtime_usages_source", columnList = "user_id, source_kind, source_absence_id"),
+        @Index(name = "idx_overtime_usages_settlement_source", columnList = "user_id, source_kind, source_settlement_id")
+}, uniqueConstraints = {
+        @UniqueConstraint(
+                name = "uq_overtime_usage_source_absence",
+                columnNames = "source_absence_id"
+        ),
+        @UniqueConstraint(
+                name = "uq_overtime_usage_source_settlement",
+                columnNames = "source_settlement_id"
+        )
+})
 public class OvertimeUsage {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,6 +52,15 @@ public class OvertimeUsage {
     /** Stable source identity without an entity cycle back to Vacation Planner. */
     @Column(name = "source_absence_id")
     private Long sourceAbsenceId;
+
+    /**
+     * Stable owner identity for an explicit cash settlement.
+     *
+     * SETTLEMENT usages are implementation details of OvertimeSettlement,
+     * exactly as ABSENCE usages are implementation details of Vacation Planner.
+     */
+    @Column(name = "source_settlement_id")
+    private Long sourceSettlementId;
 
     /** Future approved absence may reserve hours before they are finally posted. */
     @Column(name = "posting_state", nullable = false, length = 20)
@@ -82,6 +101,12 @@ public class OvertimeUsage {
     }
     public Long getSourceAbsenceId() { return sourceAbsenceId; }
     public void setSourceAbsenceId(Long sourceAbsenceId) { this.sourceAbsenceId = sourceAbsenceId; }
+
+    public Long getSourceSettlementId() { return sourceSettlementId; }
+    public void setSourceSettlementId(Long sourceSettlementId) {
+        this.sourceSettlementId = sourceSettlementId;
+    }
+
     public String getPostingState() { return postingState == null ? "POSTED" : postingState; }
     public void setPostingState(String postingState) {
         String normalized = postingState == null ? "POSTED" : postingState.trim().toUpperCase();
@@ -89,6 +114,28 @@ public class OvertimeUsage {
         this.postingState = normalized;
     }
     public boolean isReserved() { return "RESERVED".equals(getPostingState()); }
-    public boolean isAbsenceLinked() { return "ABSENCE".equals(getSourceKind()) && sourceAbsenceId != null; }
+
+    public boolean isManual() {
+        return "MANUAL".equals(getSourceKind())
+                && sourceAbsenceId == null
+                && sourceSettlementId == null;
+    }
+
+    public boolean isAbsenceLinked() {
+        return "ABSENCE".equals(getSourceKind())
+                && sourceAbsenceId != null
+                && sourceSettlementId == null;
+    }
+
+    public boolean isSettlementLinked() {
+        return "SETTLEMENT".equals(getSourceKind())
+                && sourceSettlementId != null
+                && sourceAbsenceId == null;
+    }
+
+    public boolean isManagedUsage() {
+        return isAbsenceLinked() || isSettlementLinked();
+    }
+
     public LocalDateTime getCreatedAt() { return createdAt; }
 }

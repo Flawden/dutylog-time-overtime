@@ -9,7 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.46.0}"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.46.1}"
+CURRENT_RELEASE_TITLE="Temporal Work Context & Native Pay Pricing"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -243,8 +244,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.46.0"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.46.0."
+contains docs/API.md "# DutyLog API v${VERSION}"
+contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
@@ -356,7 +357,7 @@ contains e2e/design-system-shell.spec.js 'UI Core workspace persists in the sing
 contains CHANGES.md "v27.18.0 — Overtime Next"
 contains README.md "v27.18.0 — Overtime Next"
 contains docs/OVERTIME_NEXT_V27.18.0.md "Overtime Next"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains src/main/resources/static/index.html 'id="overtimeWorkspaceTitle"'
 contains src/main/resources/static/index.html 'id="ledgerThisYear"'
 contains src/main/resources/static/index.html 'id="ledgerChart"'
@@ -404,7 +405,7 @@ contains e2e/important-timezone.spec.js 'await selectDate(page, shiftDate);'
 contains CHANGES.md "v27.18.3 — UI Settings & Button Variants Quality Hotfix"
 contains README.md "v27.18.3 — UI Settings & Button Variants Quality Hotfix"
 contains docs/UI_SETTINGS_BUTTON_VARIANTS_QUALITY_HOTFIX_V27.18.3.md "UI Settings & Button Variants Quality Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains src/main/resources/static/index.html 'id="uiPaletteState"'
 contains src/main/resources/static/index.html 'id="paletteThemeReset"'
 contains src/main/resources/static/index.html 'id="buttonVariantPreview"'
@@ -422,7 +423,7 @@ contains src/test/java/ru/daniil/shifts/web/UiCoreWorkspaceFrontendContractTest.
 contains CHANGES.md "v27.19.0 — Tasks & Inbox Next"
 contains README.md "v27.19.0 — Tasks & Inbox Next"
 contains docs/TASKS_INBOX_NEXT_V27.19.0.md "Tasks & Inbox Next"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains src/main/resources/db/migration/postgresql/V37__task_planning_intervals_and_projects.sql "scheduled_start_instant"
 
   # v27.20.0 Notes & Important Events Next
@@ -451,7 +452,7 @@ contains e2e/important-timezone.spec.js "page.locator('#importantEditName')"
 contains CHANGES.md "v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix"
 contains README.md "v27.20.1 — Important Event Modal & Offline Notes E2E Hotfix"
 contains docs/IMPORTANT_EVENT_MODAL_OFFLINE_NOTES_E2E_HOTFIX_V27.20.1.md "Important Event Modal & Offline Notes E2E Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains src/main/resources/static/js/50-tasks.js "function closeImportantEventModals()"
 contains src/main/resources/static/js/50-tasks.js 'button,a,input,select,textarea,[role=button]'
 contains src/main/resources/static/js/50-tasks.js "e.stopPropagation();"
@@ -490,8 +491,8 @@ contains src/test/java/ru/daniil/shifts/web/CalendarMobileExperienceFrontendCont
 contains CHANGES.md "v27.21.0 — Schedule Templates & Calendar Layers"
 contains README.md "v27.21.0 — Schedule Templates & Calendar Layers"
 contains docs/SCHEDULE_TEMPLATES_CALENDAR_LAYERS_V27.21.0.md "Schedule Templates & Calendar Layers"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains docs/ARCHITECTURE.md "V39 Schedule Templates & Calendar Layers"
 contains src/main/resources/db/migration/postgresql/V39__schedule_templates_and_calendar_layers.sql "CREATE TABLE schedule_templates"
 contains src/main/resources/db/migration/postgresql/V39__schedule_templates_and_calendar_layers.sql "CREATE TABLE calendar_layers"
@@ -519,8 +520,8 @@ not_contains e2e/schedule-templates-calendar-layers.spec.js "await openDayModule
 contains CHANGES.md "v27.21.2 — Schedule Accordion E2E Selector Hotfix"
 contains README.md "v27.21.2 — Schedule Accordion E2E Selector Hotfix"
 contains docs/SCHEDULE_ACCORDION_E2E_SELECTOR_HOTFIX_V27.21.2.md "Schedule Accordion E2E Selector Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "dataLayer.loadCalendar(requestedYear, requestedMonth"
 contains src/test/java/ru/daniil/shifts/web/CalendarMonthReloadContractTest.java "api.month(y, m, { fresh })"
 contains src/test/java/ru/daniil/shifts/web/ScheduleTemplateFrontendContractTest.java "authoritativeTemplatePreviewAndApplyKeepAlignmentOnTheServer"
@@ -532,8 +533,8 @@ contains src/test/java/ru/daniil/shifts/web/ScheduleTemplatesCalendarLayersFront
 contains CHANGES.md "v27.22.0 — Vacation Planner"
 contains README.md "v27.22.0 — Vacation Planner"
 contains docs/VACATION_PLANNER_V27.22.0.md "Vacation Planner"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains docs/ARCHITECTURE.md "V40 Vacation Planner"
 contains src/main/resources/db/migration/postgresql/V40__vacation_planner.sql "CREATE TABLE vacation_settings"
 contains src/main/resources/db/migration/postgresql/V40__vacation_planner.sql "INSERT INTO vacation_settings(user_id)"
@@ -575,15 +576,15 @@ contains e2e/calendar-comfort.spec.js "await expect(page.locator('#layout')).not
 not_contains e2e/calendar-comfort.spec.js "force: true"
 contains src/main/resources/static/js/50-tasks.js '$("pClose").addEventListener("click", () => selectDay(null));'
 contains src/main/resources/static/app.css '.layout.with-panel::before'
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 
   # v27.24.0 Calendar Comfort & Correctness
 contains CHANGES.md "v27.24.0 — Calendar Comfort & Correctness"
 contains README.md "v27.24.0 — Calendar Comfort & Correctness"
 contains docs/CALENDAR_COMFORT_CORRECTNESS_V27.24.0.md "Contextual return to today"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains src/main/resources/static/index.html 'id="todayBtn" type="button" hidden'
 contains src/main/resources/static/index.html 'id="todayShiftDateRange" hidden'
 contains src/main/resources/static/index.html 'id="calendarLoadStatus" role="status" aria-live="polite" hidden'
@@ -615,8 +616,8 @@ contains src/main/resources/static/js/55-calendar-sync.js "to:keyOf(end.getFullY
 not_contains src/main/resources/static/js/55-calendar-sync.js "localDateKey("
 contains src/test/java/ru/daniil/shifts/web/CalendarSyncFrontendContractTest.java "rangeDefaultsUseTheCanonicalCalendarDateKeyHelper"
 contains src/test/java/ru/daniil/shifts/web/CalendarSyncFrontendContractTest.java "!js.contains(\"localDateKey(\")"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 
   # v27.23.1 Calendar Sync JSON UTF-8 Contract Hotfix
 contains CHANGES.md "v27.23.1 — Calendar Sync JSON UTF-8 Contract Hotfix"
@@ -625,15 +626,15 @@ contains docs/CALENDAR_SYNC_JSON_UTF8_CONTRACT_HOTFIX_V27.23.1.md "getContentAsS
 contains src/test/java/ru/daniil/shifts/web/CalendarSyncControllerTest.java "getContentAsString(StandardCharsets.UTF_8)"
 contains src/test/java/ru/daniil/shifts/web/CalendarSyncControllerTest.java "contains(\"\\u2026\")"
 not_contains src/test/java/ru/daniil/shifts/web/CalendarSyncControllerTest.java ".getContentAsString();"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 
   # v27.23.0 External Calendar Sync
 contains CHANGES.md "v27.23.0 — External Calendar Sync"
 contains README.md "v27.23.0 — External Calendar Sync"
 contains docs/EXTERNAL_CALENDAR_SYNC_V27.23.0.md "SHA-256-only persistent storage"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains docs/ARCHITECTURE.md "V41 External Calendar Sync"
 contains docs/MODULE_CONTRACTS.md '`calendar_sync`'
 contains docs/SECURITY_REVIEW.md "External calendar subscription"
@@ -701,7 +702,7 @@ not_contains src/test/java/ru/daniil/shifts/service/ModuleServiceContractTest.ja
 contains CHANGES.md "v27.19.1 — Task Board Date Range Compatibility Hotfix"
 contains README.md "v27.19.1 — Task Board Date Range Compatibility Hotfix"
 contains docs/TASK_BOARD_DATE_RANGE_COMPATIBILITY_HOTFIX_V27.19.1.md "Task Board Date Range Compatibility Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains src/main/java/ru/daniil/shifts/web/TaskController.java '@RequestParam(name = "scheduledFrom"'
 contains src/main/java/ru/daniil/shifts/web/TaskController.java '@RequestParam(name = "scheduledTo"'
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "withinTaskBoardDeadlineRange"
@@ -717,7 +718,7 @@ contains e2e/tasks-inbox-next.spec.js "Tasks & Inbox Next keeps planning"
 contains CHANGES.md "v27.19.2 — Frontend Asset Contract Stability Hotfix"
 contains README.md "v27.19.2 — Frontend Asset Contract Stability Hotfix"
 contains docs/FRONTEND_ASSET_CONTRACT_STABILITY_HOTFIX_V27.19.2.md "Frontend Asset Contract Stability Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains src/test/java/ru/daniil/shifts/web/TodayDashboardFrontendContractTest.java 'js/35-today.js?v='
 contains src/test/java/ru/daniil/shifts/web/UiCoreWorkspaceFrontendContractTest.java 'js/12-ui-platform.js?v='
 contains src/test/java/ru/daniil/shifts/web/CalendarMobileExperienceFrontendContractTest.java 'js/37-calendar-experience.js?v='
@@ -727,14 +728,14 @@ contains src/test/java/ru/daniil/shifts/web/DesignSystemMobileShellFrontendContr
 contains CHANGES.md "v27.19.3 — Task Deadline Validation E2E Contract Hotfix"
 contains README.md "v27.19.3 — Task Deadline Validation E2E Contract Hotfix"
 contains docs/TASK_DEADLINE_VALIDATION_E2E_CONTRACT_HOTFIX_V27.19.3.md "Task Deadline Validation E2E Contract Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains e2e/task-modules.spec.js "Дедлайн не может быть раньше окончания запланированного интервала."
 
   # v27.19.4 Ghost Button Transition E2E Stabilization Hotfix
 contains CHANGES.md "v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix"
 contains README.md "v27.19.4 — Ghost Button Transition E2E Stabilization Hotfix"
 contains docs/GHOST_BUTTON_TRANSITION_E2E_STABILIZATION_HOTFIX_V27.19.4.md "Ghost Button Transition E2E Stabilization Hotfix"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains e2e/appearance-quality.spec.js "const borderAlpha = context.getImageData(0, 0, 1, 1).data[3];"
 contains e2e/appearance-quality.spec.js "await expect.poll(async () => (await previewStyle(page)).borderAlpha).toBe(0);"
 not_contains e2e/appearance-quality.spec.js "expect(ghost.borderColor).toBe('rgba(0, 0, 0, 0)');"
@@ -1045,14 +1046,129 @@ ok "bash scripts syntax"
 
 python3 - <<'PY'
 from pathlib import Path
-bad=[]
-for p in Path('src').rglob('*.java'):
-    text=p.read_text(encoding='utf-8')
-    if text.count('{') != text.count('}'):
-        bad.append((str(p), text.count('{'), text.count('}')))
+
+def java_code_only(source: str, path: Path) -> str:
+    out = []
+    i = 0
+    n = len(source)
+    state = "code"
+
+    while i < n:
+        if state == "code":
+            if source.startswith('"""', i):
+                out.extend("   ")
+                i += 3
+                state = "textblock"
+            elif source.startswith("//", i):
+                out.extend("  ")
+                i += 2
+                state = "line_comment"
+            elif source.startswith("/*", i):
+                out.extend("  ")
+                i += 2
+                state = "block_comment"
+            elif source[i] == '"':
+                out.append(" ")
+                i += 1
+                state = "string"
+            elif source[i] == "'":
+                out.append(" ")
+                i += 1
+                state = "char"
+            else:
+                out.append(source[i])
+                i += 1
+
+        elif state == "line_comment":
+            if source[i] == "\n":
+                out.append("\n")
+                i += 1
+                state = "code"
+            else:
+                out.append(" ")
+                i += 1
+
+        elif state == "block_comment":
+            if source.startswith("*/", i):
+                out.extend("  ")
+                i += 2
+                state = "code"
+            else:
+                out.append("\n" if source[i] == "\n" else " ")
+                i += 1
+
+        elif state == "string":
+            if source[i] == "\\" and i + 1 < n:
+                out.extend("  ")
+                i += 2
+            elif source[i] == '"':
+                out.append(" ")
+                i += 1
+                state = "code"
+            else:
+                out.append("\n" if source[i] == "\n" else " ")
+                i += 1
+
+        elif state == "char":
+            if source[i] == "\\" and i + 1 < n:
+                out.extend("  ")
+                i += 2
+            elif source[i] == "'":
+                out.append(" ")
+                i += 1
+                state = "code"
+            else:
+                out.append("\n" if source[i] == "\n" else " ")
+                i += 1
+
+        elif state == "textblock":
+            if source.startswith('"""', i):
+                out.extend("   ")
+                i += 3
+                state = "code"
+            else:
+                out.append("\n" if source[i] == "\n" else " ")
+                i += 1
+
+    if state not in {"code", "line_comment"}:
+        raise SystemExit(
+            f"unterminated Java lexical construct in {path}: {state}"
+        )
+
+    return "".join(out)
+
+bad = []
+
+for path in sorted(Path("src").rglob("*.java")):
+    source = path.read_text(encoding="utf-8")
+    code = java_code_only(source, path)
+
+    depth = 0
+    minimum = 0
+
+    for char in code:
+        if char == "{":
+            depth += 1
+        elif char == "}":
+            depth -= 1
+            minimum = min(minimum, depth)
+
+    if depth != 0 or minimum < 0:
+        bad.append(
+            (
+                str(path),
+                code.count("{"),
+                code.count("}"),
+                minimum,
+            )
+        )
+
 if bad:
-    raise SystemExit(f'java brace mismatch: {bad[:10]}')
-print('OK:    java brace balance')
+    raise SystemExit(
+        f"java code brace mismatch: {bad[:10]}"
+    )
+
+print("OK:    Java code brace balance")
 PY
 
 python3 - <<'PY'
@@ -1138,7 +1254,7 @@ contains src/main/java/ru/daniil/shifts/service/ModuleService.java "explicitlyDi
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "enableTelegram(user)"
 contains src/test/java/ru/daniil/shifts/telegram/TelegramLinkServiceTest.java "DL-000001"
 contains src/test/java/ru/daniil/shifts/web/RegistrationTest.java "status().isForbidden()"
-contains docs/SECURITY_REVIEW.md "Status: v27.46.0."
+contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
 contains docs/FINAL_PRODUCT_AUDIT_V27.2.29.md "## Launch decision"
 contains docs/TEST_CONFIG_HOTFIX.md "v27.2.5"
 contains .github/workflows/ci.yml "bash ./deploy/scripts/release-check.sh"
@@ -1662,7 +1778,7 @@ contains deploy/scripts/remote-deploy.sh 'missing=()'
 contains CHANGES.md "v27.2.29 — Final security and product audit hardening"
 contains README.md "v27.2.29 — Final security and product audit hardening"
 contains docs/REGRESSION_TEST_BASELINE.md "v27.2.29 security baseline"
-contains docs/SECURITY_REVIEW.md "Status: v27.46.0."
+contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
 contains src/main/resources/db/migration/postgresql/V23__web_auth_version.sql "auth_version BIGINT NOT NULL DEFAULT 0"
 contains src/main/java/ru/daniil/shifts/config/DutyLogUserPrincipal.java "private final long authVersion"
 contains src/main/java/ru/daniil/shifts/config/WebAccountStateFilter.java "current.getAuthVersion() != principal.getAuthVersion()"
@@ -1738,7 +1854,7 @@ contains src/main/resources/static/app.css ".ledgerEditingRow"
 # v27.3.1 stable browser session and editor modals
 contains CHANGES.md "v27.3.1 — Stable browser session and editor modals"
 contains docs/PERSISTENT_SESSION_AND_EDITOR_MODALS_V27.3.1.md "StablePersistentRememberMeServices"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains src/main/java/ru/daniil/shifts/config/StablePersistentRememberMeServices.java "processAutoLoginCookie"
 contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java "rememberMeServices(rememberMeServices)"
 contains src/test/java/ru/daniil/shifts/web/RememberMeAuthenticationTest.java "theSameRememberCookieCanBootstrapParallelPwaRequests"
@@ -1791,7 +1907,7 @@ contains e2e/overtime-scenario-manager.spec.js "overtime scenarios are created a
 contains CHANGES.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains README.md "v27.4.2 — Timezone simplification and critical regression pack"
 contains docs/TIMEZONE_AND_CRITICAL_REGRESSION_V27.4.2.md "Persistent login is restored"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains src/main/resources/static/index.html 'id="workTimezone"'
 contains src/main/resources/static/index.html 'id="timeSaveTimezone"'
 contains src/main/resources/static/index.html 'id="timeDetectBrowser"'
@@ -1813,7 +1929,7 @@ contains deploy/scripts/remote-deploy.sh "deploy/scripts/production-smoke-test.s
 contains CHANGES.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains README.md "v27.4.3 — Reminder timezone and sync UX bugfix"
 contains docs/REMINDER_TIMEZONE_SYNC_UX_V27.4.3.md "remindAtInstant"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "String remindAtInstant"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "instant.toString()"
 contains src/main/resources/static/js/60-settings.js "browserReminderInstantValue"
@@ -1908,7 +2024,7 @@ contains e2e/task-modules.spec.js "#taskInboxCard > summary"
 contains CHANGES.md "v27.7.0 — Time Foundation"
 contains README.md "v27.7.0 — Time Foundation"
 contains docs/TIME_FOUNDATION_V27.7.0.md "gap / nonexistent time"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 
 # v27.7.1 Task and ledger layout hotfix
 contains CHANGES.md "v27.7.1 — Task & Ledger Layout Hotfix"
@@ -2067,7 +2183,7 @@ contains e2e/task-modules.spec.js 'task subtasks keep order, update progress and
 contains CHANGES.md "v27.10.0 — Task Details"
 contains README.md "v27.10.0 — Task Details"
 contains docs/TASK_DETAILS_V27.10.0.md "read-first"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains src/main/resources/db/migration/postgresql/V32__task_details.sql "ADD COLUMN description"
 contains src/main/java/ru/daniil/shifts/model/DayTask.java "private String description"
 contains src/main/java/ru/daniil/shifts/service/TaskService.java "public TaskDto get(AppUser user, Long id)"
@@ -2088,7 +2204,7 @@ contains e2e/task-details.spec.js 'task details separate reading from editing an
 contains CHANGES.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains README.md "v27.11.0 — Shift Occurrences & Calendar Projection"
 contains docs/SHIFT_OCCURRENCES_CALENDAR_PROJECTION_V27.11.0.md "immutable absolute occurrence"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_start_instant"
 contains src/main/resources/db/migration/postgresql/V33__shift_occurrences.sql "shift_source_timezone"
 contains src/main/java/ru/daniil/shifts/model/DayEntry.java "captureShiftOccurrence"
@@ -2108,7 +2224,7 @@ contains e2e/important-timezone.spec.js "a timezone projection can move a late s
 contains CHANGES.md "v27.5.0 — Backup and recovery hardening"
 contains README.md "v27.5.0 — Backup and recovery hardening"
 contains docs/BACKUP_RESTORE_OPERATIONS_V27.5.0.md "RESTORE DRILL PASSED"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-deploy/compose/docker-compose.deploy.yml'
 not_contains deploy/scripts/backup-postgres.sh 'DUTYLOG_COMPOSE_FILE:-docker-compose.prod.yml'
 contains deploy/scripts/backup-postgres.sh 'flock -n 9'
@@ -2207,8 +2323,8 @@ fi
 contains CHANGES.md "v27.25.2 — Absence Experience Frontend Contract Hotfix"
 contains README.md "v27.25.2 — Absence Experience Frontend Contract Hotfix"
 contains docs/ABSENCE_EXPERIENCE_FRONTEND_CONTRACT_HOTFIX_V27.25.2.md "stale string contract"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains src/test/java/ru/daniil/shifts/web/VacationPlannerFrontendContractTest.java 'for (const absence of facts.absences.slice(0, 3))'
 contains src/test/java/ru/daniil/shifts/web/VacationPlannerFrontendContractTest.java 'for (const absence of facts.partialAbsences)'
 contains src/test/java/ru/daniil/shifts/web/VacationPlannerFrontendContractTest.java 'for (const absence of facts.absences.filter(item => item.coverage !== \"PARTIAL\"))'
@@ -2219,8 +2335,8 @@ not_contains src/main/resources/static/js/37-calendar-experience.js 'for (const 
 contains CHANGES.md "v27.25.1 — Absence Preview Lambda Compile Hotfix"
 contains README.md "v27.25.1 — Absence Preview Lambda Compile Hotfix"
 contains docs/ABSENCE_PREVIEW_LAMBDA_COMPILE_HOTFIX_V27.25.1.md "effectively-final"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java "LocalDate previewDate = date;"
 contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java "filter(period -> covers(period, previewDate))"
 not_contains src/main/java/ru/daniil/shifts/service/VacationPlannerService.java "filter(period -> covers(period, date))"
@@ -2231,8 +2347,8 @@ contains src/test/java/ru/daniil/shifts/web/AbsenceTimeOffOverhaulContractTest.j
 contains CHANGES.md "v27.25.0 — Absence & Time-Off Overhaul"
 contains README.md "v27.25.0 — Absence & Time-Off Overhaul"
 contains docs/ABSENCE_TIME_OFF_OVERHAUL_V27.25.0.md "planned shift from the work schedule"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains src/main/resources/db/migration/postgresql/V42__absence_time_off_overhaul.sql "time_off_balance_minutes"
 contains src/main/resources/db/migration/postgresql/V42__absence_time_off_overhaul.sql "TIME_OFF_HOURS"
 contains src/main/resources/db/migration/postgresql/V42__absence_time_off_overhaul.sql "coverage = 'PARTIAL'"
@@ -2256,12 +2372,12 @@ contains e2e/absence-time-off-overhaul.spec.js 'partial time off keeps the plann
 contains CHANGES.md "v27.26.0 — Unified Time & Compensation Ledger"
 contains README.md "v27.26.0 — Unified Time & Compensation Ledger"
 contains docs/UNIFIED_TIME_COMPENSATION_LEDGER_V27.26.0.md "planned shift / day off"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
-contains docs/API.md "# DutyLog API v27.46.0"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.46.0."
-contains docs/SECURITY_REVIEW.md "Status: v27.46.0."
-contains docs/MODULE_CONTRACTS.md "Status: v27.46.0."
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
+contains docs/API.md "# DutyLog API v${VERSION}"
+contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
+contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
+contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
 contains src/main/resources/db/migration/postgresql/V43__unified_time_compensation_ledger.sql "compensation_policy"
 contains src/main/resources/db/migration/postgresql/V43__unified_time_compensation_ledger.sql "source_absence_id"
 contains src/main/resources/db/migration/postgresql/V43__unified_time_compensation_ledger.sql "Начальный баланс отгулов — перенос в единый банк V43"
@@ -2558,7 +2674,8 @@ contains e2e/important-timezone.spec.js "dates.source"
 contains CHANGES.md "v27.11.3 — Shift Template & Reminder Timezone Hotfix"
 contains README.md "v27.11.3 — Shift Template & Reminder Timezone Hotfix"
 contains docs/SHIFT_TEMPLATE_REMINDER_TIMEZONE_HOTFIX_V27.11.3.md "Shift Template & Reminder Timezone Hotfix"
-contains src/main/java/ru/daniil/shifts/web/ProfileController.java "shiftTypeService.rebaseForTimezoneChange"
+contains src/main/java/ru/daniil/shifts/web/ProfileController.java "workTimezoneChangeService.upsertAndReconcile"
+contains src/main/java/ru/daniil/shifts/service/WorkTimezoneChangeService.java "shiftTypeService.rebaseForTimezoneChange"
 contains src/main/java/ru/daniil/shifts/service/NotificationService.java "d.hasShiftOccurrenceSnapshot()"
 contains src/main/resources/static/js/60-settings.js "function syncTimeSettingsFromBuiltins"
 contains e2e/important-timezone.spec.js "Начало 06:30 Europe/Kyiv"
@@ -2706,8 +2823,8 @@ contains src/test/java/ru/daniil/shifts/web/ImportantDatesTimezoneOvertimeFronte
 contains CHANGES.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains README.md "v27.16.3 — Time Settings Transaction Hotfix"
 contains docs/TIME_SETTINGS_TRANSACTION_HOTFIX_V27.16.3.md "Time Settings Transaction Hotfix"
-contains docs/API.md "# DutyLog API v27.46.0"
-contains docs/RELEASE_CHECKLIST.md "Status: v27.46.0."
+contains docs/API.md "# DutyLog API v${VERSION}"
+contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
 contains src/main/resources/static/js/60-settings.js "let timeSettingsApplyQueue = Promise.resolve();"
 contains src/main/resources/static/js/60-settings.js "const pending = timeSettingsApplyQueue.then(operation, operation);"
 contains src/main/resources/static/js/60-settings.js "function readShiftDefaultsDraft()"
@@ -2960,8 +3077,8 @@ contains CHANGES.md "v27.37.1 — Vue Calendar & Timeline Strict Typecheck Hotfi
 contains README.md "v27.37.1 — Vue Calendar & Timeline Strict Typecheck Hotfix"
 contains docs/VUE_CALENDAR_TIMELINE_STRICT_TYPECHECK_HOTFIX_V27.37.1.md "strict TypeScript"
 contains docs/migration/calendar-timeline-vue-migration-manifest.md "## v27.37.1 strict typecheck follow-up"
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains docs/RELEASE_CHECKLIST.md "v27.37.1 Vue Calendar & Timeline Strict Typecheck Hotfix acceptance"
 contains frontend/src/features/calendar-timeline/components/CalendarTimelineWorkspace.vue 'openDate: async (date: string, mode?: CalendarMode)'
 contains frontend/src/features/calendar-timeline/stores/calendarTimelineStore.ts 'async openDate(date: string, mode?: CalendarMode): Promise<void>'
@@ -2976,8 +3093,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineStrictTypecheckHo
   contains README.md "DutyLog v27.39.2 — Vue Settings Maven Contract Alignment Hotfix"
   contains docs/VUE_SETTINGS_WORKSPACE_INTEGRATIONS_V27.39.0.md "118 operations / 120 schemas"
   contains docs/VUE_SETTINGS_MAVEN_CONTRACT_ALIGNMENT_HOTFIX_V27.39.2.md "758 tests"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/architecture/adr/ADR-008-production-source-maps-and-frontend-diagnostics.md "Production frontend source maps are disabled by default"
   contains frontend/vite.config.ts 'DUTYLOG_FRONTEND_SOURCEMAPS'
   contains frontend/vite.config.ts '? "hidden" : false'
@@ -3021,7 +3138,7 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains docs/VUE_LEGACY_RETIREMENT_SETTINGS_CUTOVER_V27.40.0.md "# v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover"
   contains docs/VUE_LEGACY_RETIREMENT_SETTINGS_CUTOVER_V27.40.0.md "Remaining v27.40.x retirement blockers"
   contains docs/VUE_SETTINGS_MODULE_RUNTIME_SYNC_PWA_RECONNECT_HOTFIX_V27.39.6.md "44 passed and 4 failed"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
   contains docs/RELEASE_CHECKLIST.md "v27.40.0 — Vue Legacy Retirement & Parity: Settings Island Cutover acceptance"
   contains e2e/helpers.js "const alreadyEnabled = await toggle.isChecked()"
   contains e2e/helpers.js "if (alreadyEnabled === enabled)"
@@ -3141,7 +3258,8 @@ contains src/test/java/ru/daniil/shifts/web/VueSettingsWorkspaceMigrationFronten
   contains frontend/src/features/productivity/components/SelectedDayNotes.vue 'id="noteFocusMode"'
   contains frontend/src/features/productivity/components/SelectedDayNotes.vue '<Teleport to="body" :disabled="!focusMode">'
   contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue 'Оформить отгул'
-  contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue 'сам резервирует и списывает часы банка по FIFO'
+  contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue 'id="dayAddSettlement"'
+  contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue "Оба варианта расходуют один банк по FIFO"
   contains frontend/src/features/calendar-timeline/calendar-timeline.css 'width:min(100%,1680px)'
   contains frontend/src/features/settings-workspace/settings-workspace.css 'max-width:var(--vue-shell-max)'
   contains src/main/resources/static/app.css '.payrollWorkspace{'
@@ -3239,7 +3357,7 @@ not_contains src/test/java/ru/daniil/shifts/web/VueFrontendFoundationContractTes
   contains docs/OVERTIME_CHART_PROJECTION_FIXTURE_CONTRACT_HOTFIX_V27.40.33.md "contradictory overtime chart test fixtures"
   contains frontend/src/features/absence-time-bank/types/model.spec.ts 'dayEarnedHours: 3, dayUsedHours: 3, dayRemainingHours: 0'
   contains frontend/src/features/absence-time-bank/types/model.spec.ts 'sourceWorkedDate: "2026-08-02", dayEarnedHours: 2'
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 
   # v27.40.32 Functional Parity Sweep II & Mobile Usability Closure
   contains CHANGES.md "v27.40.32 — Functional Parity Sweep II & Mobile Usability Closure"
@@ -3260,13 +3378,13 @@ not_contains src/test/java/ru/daniil/shifts/web/VueFrontendFoundationContractTes
   contains src/test/java/ru/daniil/shifts/web/TodayDashboardFrontendContractTest.java 'vueTodayRestoresRelativeImportantDayCopy'
   contains src/main/resources/static/index.html 'data-bounded-legacy-owner="first-run-onboarding"'
   contains docs/ROADMAP.md 'v27.40.32 — Functional Parity Sweep II'
-  contains docs/API.md "# DutyLog API v27.46.0"
-  contains docs/RELEASE_CHECKLIST.md "Status: v27.46.0."
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
-  contains docs/SECURITY_REVIEW.md "Status: v27.46.0."
-  contains docs/MODULE_CONTRACTS.md "Status: v27.46.0."
-  contains docs/SUPPLY_CHAIN.md "Status: v27.46.0."
+  contains docs/API.md "# DutyLog API v${VERSION}"
+  contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
+  contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
+  contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
+  contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
   not_contains frontend/src/features/calendar-timeline/components/TodayPage.vue 'todayShiftCountdown">{{ facts.shift ?'
 
@@ -3287,13 +3405,13 @@ not_contains src/test/java/ru/daniil/shifts/web/VueFrontendFoundationContractTes
   contains docs/ROADMAP.md 'v27.40.32 — Functional Parity Sweep I'
   contains src/test/java/ru/daniil/shifts/web/FirstRunOnboardingBoundedLegacyExceptionFrontendContractTest.java 'class FirstRunOnboardingBoundedLegacyExceptionFrontendContractTest'
   contains src/test/java/ru/daniil/shifts/web/FirstRunOnboardingBoundedLegacyExceptionFrontendContractTest.java 'firstRunOnboardingIsTheOnlyExplicitBoundedLegacyPresentationOwner'
-  contains docs/API.md "# DutyLog API v27.46.0"
-  contains docs/RELEASE_CHECKLIST.md "Status: v27.46.0."
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
-  contains docs/SECURITY_REVIEW.md "Status: v27.46.0."
-  contains docs/MODULE_CONTRACTS.md "Status: v27.46.0."
-  contains docs/SUPPLY_CHAIN.md "Status: v27.46.0."
+  contains docs/API.md "# DutyLog API v${VERSION}"
+  contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
+  contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
+  contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
+  contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
 
   # v27.41.8 Shared Runtime Bundle Split
@@ -3383,10 +3501,10 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   not_contains e2e/pwa-offline.spec.js 'toContainText(/оффлайн|offline/i)'
   contains src/test/java/ru/daniil/shifts/web/VueOfflineSyncSurfaceFrontendContractTest.java 'offlineBrowserContractUsesSemanticNetworkStateInsteadOfTranslatedCopy'
   contains src/test/java/ru/daniil/shifts/web/VueShellE2eNavigationCompatibilityHotfixTest.java 'vueLogoutNoLongerDependsOnTheRetiredLegacyHeaderButton'
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
-  contains docs/API.md "# DutyLog API v27.46.0"
-  contains docs/RELEASE_CHECKLIST.md "Status: v27.46.0."
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
+  contains docs/API.md "# DutyLog API v${VERSION}"
+  contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
   contains frontend/generated-lockfile-manifest.txt "committedLockfileSha256=${LOCKFILE_ACTUAL_SHA}"
 
@@ -3400,10 +3518,10 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   not_contains e2e/remember-me.spec.js "page.locator('#whoami')"
   contains src/test/java/ru/daniil/shifts/web/VueShellE2eNavigationCompatibilityHotfixTest.java "page.locator('[data-vue-shell-profile] > b')"
   contains src/test/java/ru/daniil/shifts/web/VueShellE2eNavigationCompatibilityHotfixTest.java "page.locator('#whoami')"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
-  contains docs/API.md "# DutyLog API v27.46.0"
-  contains docs/RELEASE_CHECKLIST.md "Status: v27.46.0."
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
+  contains docs/API.md "# DutyLog API v${VERSION}"
+  contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
 
   # v27.40.27 Legacy Header Async Boot Ownership Hotfix
@@ -3419,10 +3537,10 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains src/main/resources/static/js/70-user-boot.js 'who.parentNode?.insertBefore(av, who);'
   contains src/test/java/ru/daniil/shifts/web/VueOfflineSyncSurfaceFrontendContractTest.java 'authenticatedBootDoesNotRequireTheRetiredLegacyIdentityNode'
   contains src/test/java/ru/daniil/shifts/web/VueOfflineSyncSurfaceFrontendContractTest.java 'profilePublicationSurvivesLegacyHeaderRetirement'
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
-  contains docs/API.md "# DutyLog API v27.46.0"
-  contains docs/RELEASE_CHECKLIST.md "Status: v27.46.0."
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
+  contains docs/API.md "# DutyLog API v${VERSION}"
+  contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
   contains frontend/generated-lockfile-manifest.txt "committedLockfileSha256=${LOCKFILE_ACTUAL_SHA}"
 
@@ -3438,13 +3556,13 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains e2e/mobile-layout.spec.js "document.querySelector('.vue-shell-header').getBoundingClientRect().height"
   not_contains e2e/mobile-layout.spec.js "document.querySelector('.head').getBoundingClientRect().height"
   contains src/test/java/ru/daniil/shifts/web/VueOfflineSyncSurfaceFrontendContractTest.java 'document.getElementById(\"legacyGlobalHeader\")?.remove();'
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
-  contains docs/API.md "# DutyLog API v27.46.0"
-  contains docs/RELEASE_CHECKLIST.md "Status: v27.46.0."
-  contains docs/SECURITY_REVIEW.md "Status: v27.46.0."
-  contains docs/MODULE_CONTRACTS.md "Status: v27.46.0."
-  contains docs/SUPPLY_CHAIN.md "Status: v27.46.0."
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
+  contains docs/API.md "# DutyLog API v${VERSION}"
+  contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
+  contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
+  contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
+  contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
   contains frontend/generated-lockfile-manifest.txt "committedLockfileSha256=${LOCKFILE_ACTUAL_SHA}"
 
@@ -3455,13 +3573,13 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains docs/FRONTEND_ARCHITECTURE.md "First-run onboarding is the only intentionally live post-ready legacy presentation exception in v27.40.29"
   contains docs/FRONTEND_ARCHITECTURE.md 'OfflineSyncModal.vue'
   contains docs/FRONTEND_ARCHITECTURE.md 'dataLayer remains the single offline mutation/sync owner'
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
-  contains docs/API.md "# DutyLog API v27.46.0"
-  contains docs/RELEASE_CHECKLIST.md "Status: v27.46.0."
-  contains docs/SECURITY_REVIEW.md "Status: v27.46.0."
-  contains docs/MODULE_CONTRACTS.md "Status: v27.46.0."
-  contains docs/SUPPLY_CHAIN.md "Status: v27.46.0."
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
+  contains docs/API.md "# DutyLog API v${VERSION}"
+  contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
+  contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
+  contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
+  contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
   contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
   contains frontend/generated-lockfile-manifest.txt "committedLockfileSha256=${LOCKFILE_ACTUAL_SHA}"
   contains frontend/src/app/AppShell.vue 'id="offlineStatus"'
@@ -3522,21 +3640,21 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains e2e/vue-app-shell.spec.js "page.locator('#nextTopbar')).toHaveCount(0)"
   contains e2e/design-system-shell.spec.js "page.locator('#nextTopbar')).toHaveCount(0)"
   contains src/test/java/ru/daniil/shifts/web/FinalLegacyOwnershipAuditFrontendContractTest.java 'remainingLegacyPresentationAndInfrastructureExceptionsAreExplicitAndBounded'
-  contains docs/API.md "# DutyLog API v27.46.0"
-  contains docs/RELEASE_CHECKLIST.md "Status: v27.46.0."
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
-  contains docs/SECURITY_REVIEW.md "Status: v27.46.0."
-  contains docs/MODULE_CONTRACTS.md "Status: v27.46.0."
-  contains docs/SUPPLY_CHAIN.md "Status: v27.46.0."
+  contains docs/API.md "# DutyLog API v${VERSION}"
+  contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
+  contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
+  contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
+  contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
   contains frontend/generated-lockfile-manifest.txt "committedLockfileSha256=${LOCKFILE_ACTUAL_SHA}"
 
   # v27.40.23 Pre-Vue Admin Fallback Contract Alignment Hotfix
   contains CHANGES.md "v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix"
   contains README.md "DutyLog v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix"
   contains docs/PRE_VUE_ADMIN_FALLBACK_CONTRACT_ALIGNMENT_HOTFIX_V27.40.23.md "285 passed / 1 failed"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.23 — Pre-Vue Admin Fallback Contract Alignment Hotfix acceptance"
   contains src/test/java/ru/daniil/shifts/web/TodayDashboardFrontendContractTest.java 'name === \"admin\" ? \"settings\"'
   contains src/test/java/ru/daniil/shifts/web/TodayDashboardFrontendContractTest.java 'VIEWS[name] ? name : \"today\"'
@@ -3549,11 +3667,10 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement"
   contains README.md "DutyLog v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement"
   contains docs/VUE_ADMIN_WORKSPACE_FINAL_LIVE_LEGACY_UI_RETIREMENT_V27.40.22.md "After Vue readiness, all user-facing routes are Vue-owned"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.22 — Vue Admin Workspace & Final Live Legacy UI Retirement acceptance"
   contains docs/API.md "132 operations / 138 schemas"
-  contains frontend/src/generated/dutylog-api.ts 'Contract: 132 operations, 138 schemas'
   contains src/main/java/ru/daniil/shifts/web/SystemController.java '@RequestMapping({"/api/admin", "/api/v1/admin"})'
   contains src/main/java/ru/daniil/shifts/config/SecurityConfig.java '"/api/admin/**", "/api/v1/admin/**"'
   contains frontend/src/app/AppShell.vue 'loader: () => import("@/features/admin/components/AdminWorkspace.vue")'
@@ -3588,8 +3705,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.21 — Vue Payroll Workspace Retirement"
   contains README.md "DutyLog v27.40.21 — Vue Payroll Workspace Retirement"
   contains docs/VUE_PAYROLL_WORKSPACE_RETIREMENT_V27.40.21.md "Post-Vue legacy route effects are now Admin-only"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.21 — Vue Payroll Workspace Retirement acceptance"
   contains frontend/src/app/AppShell.vue 'loader: () => import("@/features/payroll/components/PayrollWorkspace.vue")'
   contains frontend/src/app/AppShell.vue '<PayrollWorkspace v-if='
@@ -3610,8 +3727,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.20 — E2E Release Version Contract Alignment Hotfix"
   contains README.md "DutyLog v27.40.20 — E2E Release Version Contract Alignment Hotfix"
   contains docs/E2E_RELEASE_VERSION_CONTRACT_ALIGNMENT_HOTFIX_V27.40.20.md "two deterministic failures"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.20 — E2E Release Version Contract Alignment Hotfix acceptance"
   contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontendContractTest.java "dutylog-shell-v\${releaseVersion}-"
   contains src/test/java/ru/daniil/shifts/web/VueShellE2eNavigationCompatibilityHotfixTest.java 'Time and Overtime ${releaseVersion}//RU'
@@ -3621,8 +3738,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.19 — E2E Release Version Authority Hotfix"
   contains README.md "DutyLog v27.40.19 — E2E Release Version Authority Hotfix"
   contains docs/E2E_RELEASE_VERSION_AUTHORITY_HOTFIX_V27.40.19.md "e2e/release-version.js"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.19 — E2E Release Version Authority Hotfix acceptance"
   contains e2e/release-version.js "require('../package.json')"
   contains e2e/vue-frontend-foundation.spec.js "const { releaseVersion } = require('./release-version');"
@@ -3649,8 +3766,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.18 — Calendar ICS Release Version Contract Hotfix"
   contains README.md "DutyLog v27.40.18 — Calendar ICS Release Version Contract Hotfix"
   contains docs/CALENDAR_ICS_RELEASE_VERSION_CONTRACT_HOTFIX_V27.40.18.md 'Calendar ICS `PRODID`'
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.18 — Calendar ICS Release Version Contract Hotfix acceptance"
   contains src/test/java/ru/daniil/shifts/web/CalendarIcsReleaseVersionContractTest.java 'calendarIcsProdIdTracksTheProjectReleaseVersion'
   contains src/test/java/ru/daniil/shifts/web/CalendarIcsReleaseVersionContractTest.java 'calendarIcsProdIdTracksTheProjectReleaseVersion'
@@ -3659,8 +3776,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement"
   contains README.md "DutyLog v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement"
   contains docs/VUE_ROUTE_COMMIT_LEGACY_HASH_LISTENER_RETIREMENT_V27.40.17.md "dutylog:vue-route-committed"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.17 — Vue Route Commit & Legacy Hash Listener Retirement acceptance"
   not_contains frontend/src/platform/router/hashRoute.ts 'VUE_ROUTE_COMMITTED_EVENT = "dutylog:vue-route-committed"'
   not_contains frontend/src/platform/router/hashRoute.ts 'export function publishCommittedHashRoute'
@@ -3678,8 +3795,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix"
   contains README.md "DutyLog v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix"
   contains docs/VUE_ROUTE_ENTRY_FRESHNESS_TODAY_WORKSPACE_NOTE_RYW_HOTFIX_V27.40.16.md "read-your-write"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.16 — Vue Route-Entry Freshness, Today Workspace & Note Read-Your-Write Hotfix acceptance"
   contains frontend/src/features/absence-time-bank/components/AbsenceTimeBankWorkspace.vue "await store.refresh();"
   contains frontend/src/features/calendar-timeline/components/CalendarTimelineWorkspace.vue "await store.refresh(true);"
@@ -3691,8 +3808,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix"
   contains README.md "DutyLog v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix"
   contains docs/VUE_ROUTE_GUARD_PROFILE_PUBLICATION_CONTRACT_ALIGNMENT_HOTFIX_V27.40.15.md "publishLegacyPlatformState"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.15 — Route Guard Profile Publication Contract Alignment Hotfix acceptance"
   contains src/test/java/ru/daniil/shifts/web/VueRouteGuardAuthorityCutoverTest.java 'String loadProfile = loadProfileSurface(boot);'
   contains src/test/java/ru/daniil/shifts/web/VueRouteGuardAuthorityCutoverTest.java 'assertTrue(loadProfile.contains("publishLegacyPlatformState();"));'
@@ -3745,7 +3862,7 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains README.md "DutyLog v27.40.11 — Vue Shift Type Manager Modal Retirement"
   contains docs/VUE_SHIFT_TYPE_MANAGER_MODAL_RETIREMENT_V27.40.11.md "ShiftTypeManagerModal.vue"
   contains docs/ROADMAP.md "## v27.40.11 — Vue Shift Type Manager Modal Retirement — accepted predecessor"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.11 — Vue Shift Type Manager Modal Retirement acceptance — accepted predecessor"
   contains frontend/src/features/settings-workspace/components/ShiftTypeManagerModal.vue 'id="shiftTypeModal"'
   contains frontend/src/features/settings-workspace/components/ShiftTypeManagerModal.vue 'id="shiftTypeForm"'
@@ -3799,8 +3916,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix"
   contains README.md "DutyLog v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix"
   contains docs/OFFLINE_RECONNECT_SOURCE_CONTRACT_ALIGNMENT_HOTFIX_V27.40.8.md "758"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.8 — Offline Reconnect Source Contract Alignment Hotfix acceptance"
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'int unmountStart = notes.indexOf("onBeforeUnmount(() => {")'
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'String unmount = notes.substring(unmountStart, unmountEnd)'
@@ -3813,8 +3930,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix"
   contains README.md "DutyLog v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix"
   contains docs/VUE_CALENDAR_SELECTED_DAY_PARITY_RECONNECT_HOTFIX_V27.40.7.md "43 clean passes, 1 retry-only flaky scenario, and 4 final failures"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.7 — Selected-Day Parity & Offline Reconnect Ownership Hotfix acceptance"
   contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue 'truth.value.scheduledStartTime && truth.value.scheduledEndTime'
   contains frontend/src/features/calendar-timeline/components/NativeWorkdayCard.vue 'scheduledBreakMinutes'
@@ -3829,8 +3946,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix"
   contains README.md "DutyLog v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix"
   contains docs/VUE_CALENDAR_SELECTED_DAY_PREVIEW_KEY_STRICT_TYPE_HOTFIX_V27.40.6.md "TS2379"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.6 — Selected-Day Schedule Preview Key Strict Type Hotfix acceptance"
   contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue 'v-for="(item, index) in schedulePreview?.items?.slice(0, 14) ?? []"'
   contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue ':key="item.date ?? `preview-${index}`"'
@@ -3851,8 +3968,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.4 — Vue Calendar Selected-Day Panel Retirement"
   contains README.md "DutyLog v27.40.4 — Vue Calendar Selected-Day Panel Retirement"
   contains docs/VUE_CALENDAR_SELECTED_DAY_PANEL_RETIREMENT_V27.40.4.md "SelectedDayPanel.vue"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.40.4 — Vue Calendar Selected-Day Panel Retirement acceptance"
   contains frontend/src/features/calendar-timeline/components/CalendarPage.vue 'SelectedDayPanel'
   contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue 'data-vue-selected-day-panel'
@@ -3891,7 +4008,7 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix"
   contains README.md "DutyLog v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix"
   contains docs/VUE_NOTIFICATION_SETTINGS_FIRST_READ_TIMEZONE_PARITY_HOTFIX_V27.40.3.md "32 clean passes, 10 retry-only flaky scenarios and 6 final failures"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
   contains docs/RELEASE_CHECKLIST.md "v27.40.3 — Notification Settings First-Read Serialization & Timezone Parity Hotfix acceptance"
   contains src/main/java/ru/daniil/shifts/repo/UserRepository.java "LockModeType.PESSIMISTIC_WRITE"
   contains src/main/java/ru/daniil/shifts/repo/UserRepository.java "findForUpdateById"
@@ -3922,7 +4039,7 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.39.3 — Frontend Diagnostics Release Version Source Hotfix"
   contains README.md "DutyLog v27.39.3 — Frontend Diagnostics Release Version Source Hotfix"
   contains docs/VUE_SETTINGS_FRONTEND_DIAGNOSTICS_VERSION_HOTFIX_V27.39.3.md "frontend/package.json"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
   contains docs/RELEASE_CHECKLIST.md "v27.39.3 — Frontend Diagnostics Release Version Source Hotfix acceptance"
   contains frontend/vite.config.ts 'import packageMetadata from "./package.json";'
   contains frontend/vite.config.ts 'const releaseVersion = packageMetadata.version;'
@@ -4041,8 +4158,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.38.8 — Vue Shared Browser Parity Hotfix"
   contains README.md "v27.38.8 — Vue Shared Browser Parity Hotfix"
   contains docs/VUE_SHARED_BROWSER_PARITY_HOTFIX_V27.38.8.md "four shared browser-parity root causes"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.38.8 — Vue Shared Browser Parity Hotfix acceptance"
   contains e2e/helpers.js "Clicking an already-focused"
   not_contains e2e/helpers.js 'not.toHaveClass(/sel/)'
@@ -4058,8 +4175,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix"
   contains README.md "v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix"
   contains docs/WINDOWS_FRONTEND_GATE_CALENDAR_CONTRACT_ALIGNMENT_HOTFIX_V27.38.5.md "Full 47/47 Chromium remains required before acceptance"
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.38.7 — Vue Productivity Module Readiness Browser Canary Hotfix acceptance"
   contains frontend/src/features/productivity/components/ProductivityWorkspace.vue 'calendar.openDayPanel(targetDate, "notes")'
   contains frontend/src/features/productivity/stores/productivityStore.ts 'addMinutesToDateTime'
@@ -4093,8 +4210,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'import java.util.Locale;'
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'manifest.toLowerCase(Locale.ROOT).contains("offline/reconnect")'
   contains docs/migration/tasks-notes-important-vue-migration-manifest.md '## Offline/reconnect boundary'
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.38.3 — Vue Productivity Strict Typecheck Hotfix acceptance"
 
   # v27.38.1 Vue Productivity Static Contract Alignment Hotfix
@@ -4109,8 +4226,8 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'dataset.vueProductivity === \"ready\"'
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'productivity?.openTaskCreate'
   contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'productivity?.openImportantCreate'
-  contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+  contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+  contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
   contains docs/RELEASE_CHECKLIST.md "v27.38.1 — Vue Productivity Static Contract Alignment Hotfix acceptance"
 
   # v27.38.0 Vue Tasks, Notes & Important Days
@@ -4118,8 +4235,8 @@ contains CHANGES.md "v27.38.0 — Vue Tasks, Notes & Important Days"
 contains README.md "v27.38.0 — Vue Tasks, Notes & Important Days"
 contains docs/VUE_TASKS_NOTES_IMPORTANT_V27.38.0.md "No second IndexedDB/localStorage queue is introduced"
 contains docs/migration/tasks-notes-important-vue-migration-manifest.md 'target_release: "v27.38.0"'
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains docs/RELEASE_CHECKLIST.md "v27.38.0 — Vue Tasks, Notes & Important Days acceptance"
 contains docs/API.md "132 operations / 138 schemas"
 contains docs/ENGINEERING_QUALITY_REGISTER.md '| Q-10 | Offline queue и reconnect correctness | `v27.38.0`'
@@ -4141,7 +4258,6 @@ contains src/main/resources/static/js/10-core.js 'dataLayer.setTaskDone'
 contains src/main/resources/static/js/10-core.js 'dataLayer.captureInbox'
 contains src/main/resources/static/js/10-core.js 'dataLayer.syncQueue'
 contains src/main/resources/static/js/50-tasks.js 'document.documentElement.dataset.vueProductivity === "ready"'
-contains frontend/src/generated/dutylog-api.ts 'Contract: 132 operations, 138 schemas'
 contains src/test/java/ru/daniil/shifts/web/VueTasksNotesImportantMigrationFrontendContractTest.java 'class VueTasksNotesImportantMigrationFrontendContractTest'
 contains frontend/src/features/productivity/types/model.spec.ts 'normalizes persistent task tags case-insensitively without duplicates'
 not_contains frontend/src/features/productivity/api/productivityApi.ts 'fetch('
@@ -4152,8 +4268,8 @@ contains CHANGES.md "v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hot
 contains README.md "v27.37.5 — Vue Calendar Selected-Day Island Lifecycle Hotfix"
 contains docs/VUE_CALENDAR_SELECTED_DAY_ISLAND_LIFECYCLE_HOTFIX_V27.37.5.md "parkCalendarEditor()"
 contains docs/migration/calendar-timeline-vue-migration-manifest.md 'follow_up_release: "v27.37.5"'
-contains docs/ROADMAP.md "Current release: **v27.46.0 — Compensation Setup & Base Native Payroll**"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.0"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
 contains docs/RELEASE_CHECKLIST.md "v27.37.5 Vue Calendar Selected-Day Island Lifecycle Hotfix acceptance"
 contains docs/VUE_CALENDAR_SELECTED_DAY_PANEL_RETIREMENT_V27.40.4.md 'The old `#calendarLegacyPanelHost` attach/park lifecycle is removed'
 not_contains frontend/src/platform/bridge/legacyBridge.ts 'parkCalendarEditor'
@@ -4406,7 +4522,6 @@ contains src/main/resources/static/js/40-overtime.js 'vueDomain.openCreditEditor
 contains src/main/resources/static/openapi/dutylog-v1.yaml 'operationId: createQuickScenario'
 contains src/main/resources/static/openapi/dutylog-v1.yaml 'operationId: updateQuickScenario'
 contains src/main/resources/static/openapi/dutylog-v1.yaml 'operationId: deleteQuickScenario'
-contains frontend/src/generated/dutylog-api.ts 'Contract: 132 operations, 138 schemas'
 contains frontend/src/generated/dutylog-api.ts 'credits: Array<DutyLogApiSchemas.OvertimeCredit>'
 contains frontend/src/generated/dutylog-api.ts 'allocations: Array<DutyLogApiSchemas.OvertimeAllocation>'
 contains frontend/src/generated/dutylog-api.ts 'items: Array<DutyLogApiSchemas.AbsencePreviewItem>'
@@ -4787,24 +4902,24 @@ else
   fail "expected 48 Playwright tests, found $E2E_TESTS"
 fi
 
-VITEST_TESTS=$(grep -R --include='*.spec.ts' -h -E '^[[:space:]]*it\(' frontend/src | wc -l | tr -d ' ')
-if [[ "$VITEST_TESTS" == "73" ]]; then
-  ok "Vitest case baseline: 73"
+VITEST_TESTS=$(grep -R --include='*.spec.ts' --include='*.test.ts' -h -E '^[[:space:]]*(it|test)\(' frontend/src | wc -l | tr -d ' ')
+if [[ "$VITEST_TESTS" == "80" ]]; then
+  ok "Vitest case baseline: 80"
 else
-  fail "expected 73 Vitest cases, found $VITEST_TESTS"
+  fail "expected 80 Vitest cases, found $VITEST_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "812" ]]; then
-  ok "test method baseline: 812"
+if [[ "$TEST_METHODS" == "1006" ]]; then
+  ok "test method baseline: 1006"
 else
-  fail "expected 812 @Test methods, found $TEST_METHODS"
+  fail "expected 1006 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "168" ]]; then
-  ok "test class baseline: 168"
+if [[ "$TEST_CLASSES" == "216" ]]; then
+  ok "test class baseline: 216"
 else
-  fail "expected 168 test classes, found $TEST_CLASSES"
+  fail "expected 216 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
@@ -4823,6 +4938,45 @@ contains e2e/task-modules.spec.js "page.locator('[data-vue-domain-route=\"tasks\
 not_contains e2e/task-modules.spec.js "page.locator('#view-tasks')).not.toHaveClass(/moduleHidden/)"
 not_contains e2e/task-modules.spec.js "page.locator('#view-tasks')).toHaveClass(/moduleHidden/)"
 
+# v27.46.1 Temporal Work Context & Native Pay Pricing
+contains CHANGES.md "v27.46.1 — Temporal Work Context & Native Pay Pricing"
+contains README.md "DutyLog v27.46.1 — Temporal Work Context & Native Pay Pricing"
+contains docs/TEMPORAL_WORK_CONTEXT_NATIVE_PAY_PRICING_V27.46.1.md "Reality → Temporal Work Context → Classification → Time Bank / Settlement → Pricing → Payroll Snapshot"
+contains pom.xml "<version>${VERSION}</version>"
+contains package.json "\"version\": \"${VERSION}\""
+contains frontend/package.json "\"version\": \"${VERSION}\""
+contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
+contains frontend/generated-lockfile-manifest.txt "nextAction=roadmap-after-v${VERSION}-green"
+contains frontend/browser-bundle-budget.json "\"release\": \"${VERSION}\""
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 925000'
+contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
+contains src/main/resources/application-prod.properties "info.app.release-version=${VERSION}"
+contains src/main/resources/static/service-worker.js "dutylog-shell-v${VERSION}-"
+contains src/main/resources/db/migration/postgresql/V53__temporal_work_timezone.sql "CREATE TABLE work_timezone_terms"
+contains src/main/resources/db/migration/postgresql/V54__actual_work_historical_identity.sql "source_timezone"
+contains src/main/resources/db/migration/postgresql/V55__overtime_credit_provenance_slices.sql "CREATE TABLE overtime_credit_slices"
+contains src/main/resources/db/migration/postgresql/V56__overtime_allocation_credit_offsets.sql "credit_offset_start_minutes"
+contains src/main/resources/db/migration/postgresql/V57__explicit_overtime_settlement_foundation.sql "CREATE TABLE overtime_settlements"
+contains src/main/resources/db/migration/postgresql/V58__effective_dated_pay_pricing_rules.sql "CREATE TABLE pay_pricing_terms"
+contains src/main/resources/db/migration/postgresql/V59__payroll_snapshot_settlement_pricing.sql "settlement_pay_minor"
+contains src/main/resources/db/migration/postgresql/V60__payroll_snapshot_settlement_pricing_fingerprint.sql "settlement_pricing_fingerprint"
+contains src/main/resources/db/migration/postgresql/V61__payroll_snapshot_ordinary_premium_pricing.sql "ordinary_premium_pricing_fingerprint"
+contains src/main/java/ru/daniil/shifts/service/PayClassificationService.java "class PayClassificationService"
+contains src/main/java/ru/daniil/shifts/service/OvertimeSettlementService.java "class OvertimeSettlementService"
+contains src/main/java/ru/daniil/shifts/service/PayPricingEngine.java "class PayPricingEngine"
+contains src/main/java/ru/daniil/shifts/service/OrdinaryWorkPremiumPricingService.java "DUTYLOG_ORDINARY_PREMIUM_PRICING_V1"
+contains src/main/java/ru/daniil/shifts/service/PayrollService.java "ordinaryPremiumPreview.pricingFingerprint()"
+contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'id="payrollOrdinaryPremiumBreakdown"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 138 operations, 144 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352"'
+contains docs/API.md "# DutyLog API v${VERSION}"
+contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
+contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
+contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
+contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
+contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
+
 # v27.46.0 Compensation Setup & Base Native Payroll
 contains CHANGES.md "v27.46.0 — Compensation Setup & Base Native Payroll"
 contains README.md "DutyLog v27.46.0 — Compensation Setup & Base Native Payroll"
@@ -4835,12 +4989,8 @@ contains src/main/java/ru/daniil/shifts/service/PayrollService.java "PAYROLL_COM
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue "Как тебе платят?"
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue "Расчётная стоимость часа"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "/api/v1/payroll/compensation-terms/{month}:"
-contains frontend/src/generated/dutylog-api.ts "SHA-256: 1daa74d7f4f2ad6a5473305fd3aff8dd8743fe5b96d8fd91bd0aa1fd3f9a8b12"
-contains frontend/generated-lockfile-manifest.txt "nextAction=payroll-classification-after-v${VERSION}-green"
-contains frontend/browser-bundle-budget.json '"release": "27.46.0"'
 contains src/main/java/ru/daniil/shifts/service/PayrollService.java "PAYROLL_PRODUCTION_NORM_INCOMPLETE"
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue "effectiveMonth.value=month.value"
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 900000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.45.1 Native Workday / Day Truth Integration
@@ -4879,7 +5029,7 @@ not_contains frontend/src/features/calendar-timeline/components/NativeWorkdayCar
 not_contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue "Текущее отображение"
 not_contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue "Исходная смена"
 contains frontend/src/features/calendar-timeline/components/SelectedDayPanel.vue "@open-section=\"openNativeWorkdaySection\""
-contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'planned: "Обязательная норма"'
+contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'planned:"Обязательная норма"'
 contains frontend/src/features/calendar-timeline/components/CalendarPage.vue "data-production-calendar-day"
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue "data-production-calendar-summary-only"
 not_contains frontend/src/features/payroll/components/PayrollWorkspace.vue "productionCalendarForm"
