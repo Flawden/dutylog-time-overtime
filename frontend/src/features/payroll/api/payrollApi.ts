@@ -1,9 +1,22 @@
 import { createGeneratedDutyLogApiClient, type DutyLogGeneratedApiClient } from "@/platform/api/generatedClient";
-import type { PayrollAdjustmentInput, PayrollCompensationTermInput, PayrollSettingsInput, ProductionCalendarDayInput } from "../types/domain";
+import type {
+  PayPricingTermInput,
+  PayrollAdjustmentInput,
+  PayrollCompensationTermInput,
+  PayrollSettingsInput,
+  ProductionCalendarDayInput,
+} from "../types/domain";
 
 export function createPayrollApi(client: DutyLogGeneratedApiClient = createGeneratedDutyLogApiClient()) {
   return Object.freeze({
     period(month: string) { return client.request("payrollPeriod", { path: { month } }); },
+    pricingTerms() { return client.request("listPayrollPricingTerms"); },
+    async upsertPricingTerm(effectiveFrom: string, body: PayPricingTermInput): Promise<void> {
+      await client.request("upsertPayrollPricingTerm", { path: { effectiveFrom }, body });
+    },
+    async deletePricingTerm(effectiveFrom: string): Promise<void> {
+      await client.request("deletePayrollPricingTerm", { path: { effectiveFrom } });
+    },
     async updateSettings(body: PayrollSettingsInput): Promise<void> { await client.request("updatePayrollSettings", { body }); },
     async upsertCompensationTerm(month: string, body: PayrollCompensationTermInput): Promise<void> {
       await client.request("upsertPayrollCompensationTerm", { path: { month }, body });

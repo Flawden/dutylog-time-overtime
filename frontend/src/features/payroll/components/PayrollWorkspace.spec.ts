@@ -7,6 +7,11 @@ const source = readFileSync(
   "utf8",
 );
 
+const pricingSource = readFileSync(
+  fileURLToPath(new URL("./PricingSettingsCard.vue", import.meta.url)),
+  "utf8",
+);
+
 describe("PayrollWorkspace ordinary premium explainability", () => {
   it("shows backend-owned ordinary premium money and reference base", () => {
     expect(source).toContain(
@@ -24,6 +29,10 @@ describe("PayrollWorkspace ordinary premium explainability", () => {
     expect(source).toContain(
       'id="payrollGrandTotal">{{ money(preview?.totalPayMinor) }}',
     );
+    expect(pricingSource).toContain('id="pricingNightEnabled"');
+    expect(pricingSource).toContain('id="pricingHolidayEnabled"');
+    expect(pricingSource).toContain('id="pricingOvertimeEnabled"');
+    expect(pricingSource).toContain('Math.round(value * 100)');
   });
 
   it("does not mislabel ordinary pricing failure as settlement failure", () => {
@@ -39,6 +48,12 @@ describe("PayrollWorkspace ordinary premium explainability", () => {
     expect(source).not.toContain(
       'id="payrollOrdinaryPremiumPricingStatus"',
     );
+    expect(pricingSource).toContain(
+      'const MANAGED_CODES = new Set([',
+    );
+    expect(pricingSource).toContain(
+      '.filter(rule => !MANAGED_CODES.has(rule.code))',
+    );
   });
 
   it("shows frozen ordinary premium amount on saved revisions", () => {
@@ -50,6 +65,12 @@ describe("PayrollWorkspace ordinary premium explainability", () => {
     );
     expect(source).toContain(
       "item.ordinaryPremiumPayMinor",
+    );
+    expect(source).toContain(
+      '<PricingSettingsCard :language="language" />',
+    );
+    expect(pricingSource).toContain(
+      "banked overtime is explicitly settled for cash",
     );
   });
 });

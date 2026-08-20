@@ -2,6 +2,9 @@ import type { DutyLogApiSchemas } from "@/generated/dutylog-api";
 
 export type PayrollPeriod = DutyLogApiSchemas.PayrollPeriod;
 export type PayrollPreview = DutyLogApiSchemas.PayrollPreview;
+export type PayPricingRule = DutyLogApiSchemas.PayPricingRule;
+export type PayPricingTerm = DutyLogApiSchemas.PayPricingTerm;
+export type PayPricingTermInput = DutyLogApiSchemas.PayPricingTermInput;
 export type PayrollSettingsInput = DutyLogApiSchemas.PayrollSettingsInput;
 export type PayrollCompensationTermInput = DutyLogApiSchemas.PayrollCompensationTermInput;
 export type PayrollCompensationTerm = DutyLogApiSchemas.PayrollCompensationTerm;
