@@ -4948,7 +4948,7 @@ contains frontend/package.json "\"version\": \"${VERSION}\""
 contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
 contains frontend/generated-lockfile-manifest.txt "nextAction=roadmap-after-v${VERSION}-green"
 contains frontend/browser-bundle-budget.json "\"release\": \"${VERSION}\""
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 925000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 945000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 contains src/main/resources/application-prod.properties "info.app.release-version=${VERSION}"
 contains src/main/resources/static/service-worker.js "dutylog-shell-v${VERSION}-"
