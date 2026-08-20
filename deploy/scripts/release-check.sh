@@ -2654,7 +2654,7 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "48" ]]; then
+if [[ "$E2E_TESTS" == "49" ]]; then
   # v27.11.1 CI & Contract Hotfix
 contains CHANGES.md "v27.11.1 — CI & Contract Hotfix"
 contains README.md "v27.11.1 — CI & Contract Hotfix"
@@ -4897,9 +4897,15 @@ contains src/main/java/ru/daniil/shifts/module/DutyLogModules.java '            
 contains src/main/java/ru/daniil/shifts/module/DutyLogModules.java '                    ModuleCategory.TIME_ACCOUNTING,'
 not_contains src/main/java/ru/daniil/shifts/module/DutyLogModules.java 'ModuleService.PAYROLL'
 
-  ok "Playwright test baseline: 48"
+  # v27.46.2 6H3 Native NIGHT Premium vertical E2E
+  contains e2e/payroll-night-premium.spec.js "native NIGHT pricing adds configured premium from factual work into Payroll and snapshot"
+  contains e2e/payroll-night-premium.spec.js "NIGHT_E2E_20"
+  contains e2e/payroll-night-premium.spec.js "ordinaryPremiumPayMinor).toBe(20000)"
+  contains e2e/payroll-night-premium.spec.js "ordinaryPremiumPricingFingerprint).toHaveLength(64)"
+  contains e2e/payroll-night-premium.spec.js "totalPayMinor).toBe(120000)"
+  ok "Playwright test baseline: 49"
 else
-  fail "expected 48 Playwright tests, found $E2E_TESTS"
+  fail "expected 49 Playwright tests, found $E2E_TESTS"
 fi
 
 VITEST_TESTS=$(grep -R --include='*.spec.ts' --include='*.test.ts' -h -E '^[[:space:]]*(it|test)\(' frontend/src | wc -l | tr -d ' ')
