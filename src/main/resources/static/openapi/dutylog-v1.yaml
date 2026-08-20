@@ -887,6 +887,58 @@ paths:
       responses:
         '204': { description: Compensation term removed }
 
+  /api/v1/payroll/pricing/terms:
+    get:
+      operationId: listPayrollPricingTerms
+      description: Lists effective-dated Pay Pricing policy versions newest first. An existing empty term is an explicit base-only policy; absence of a historical term remains distinct and may block premium pricing.
+      responses:
+        '200':
+          description: Effective-dated pricing terms
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/PayPricingTerm' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+  /api/v1/payroll/pricing/terms/{effectiveFrom}:
+    put:
+      operationId: upsertPayrollPricingTerm
+      description: Creates or fully replaces the pricing policy version that becomes effective on this calendar date. Future effective dates are allowed.
+      parameters:
+        - in: path
+          name: effectiveFrom
+          required: true
+          schema: { type: string, format: date }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PayPricingTermInput' }
+      responses:
+        '200':
+          description: Effective-dated pricing term
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PayPricingTerm'
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+    delete:
+      operationId: deletePayrollPricingTerm
+      description: Removes the pricing version that starts on this date. An earlier version may become effective again; this differs from storing an explicit empty rule set.
+      parameters:
+        - in: path
+          name: effectiveFrom
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        '204': { description: Pricing term removed }
+        '400': { $ref: '#/components/responses/ApiError' }
+        '401': { $ref: '#/components/responses/ApiError' }
+        '403': { $ref: '#/components/responses/ApiError' }
+
   /api/v1/payroll/adjustments:
     post:
       operationId: addPayrollAdjustment
@@ -2162,6 +2214,48 @@ components:
           properties:
             id: { type: integer, format: int64 }
             effectiveMonth: { type: string, pattern: '^\d{4}-\d{2}$' }
+            updatedAt: { type: string, format: date-time }
+    PayPricingRule:
+      type: object
+      required: [code, dimension, premiumBps, fromMinute]
+      properties:
+        code: { type: string, minLength: 1, maxLength: 80 }
+        dimension: { type: string, enum: [NIGHT, HOLIDAY, OVERTIME] }
+        premiumBps:
+          type: integer
+          minimum: 0
+          maximum: 10000000
+          description: Additive premium basis points; 2000 = +20%, 10000 = +100%. Ordinary 1.00x base remains implicit.
+        fromMinute:
+          type: integer
+          minimum: 0
+          description: Overtime tier start offset. Must be 0 for NIGHT and HOLIDAY.
+        toMinuteExclusive:
+          type: integer
+          minimum: 1
+          nullable: true
+          description: Exclusive overtime tier end offset. Must be null for NIGHT and HOLIDAY.
+        exclusiveGroup:
+          type: string
+          maxLength: 80
+          nullable: true
+          description: Rules in one non-null group compete; the highest configured premium wins. Null rules stack independently.
+    PayPricingTermInput:
+      type: object
+      required: [rules]
+      properties:
+        rules:
+          type: array
+          maxItems: 64
+          items: { $ref: '#/components/schemas/PayPricingRule' }
+    PayPricingTerm:
+      allOf:
+        - $ref: '#/components/schemas/PayPricingTermInput'
+        - type: object
+          required: [id, effectiveFrom, updatedAt]
+          properties:
+            id: { type: integer, format: int64 }
+            effectiveFrom: { type: string, format: date }
             updatedAt: { type: string, format: date-time }
     PayrollAdjustmentInput:
       type: object

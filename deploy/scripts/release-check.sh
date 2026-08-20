@@ -4911,15 +4911,15 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1006" ]]; then
-  ok "test method baseline: 1006"
+if [[ "$TEST_METHODS" == "1015" ]]; then
+  ok "test method baseline: 1015"
 else
-  fail "expected 1006 @Test methods, found $TEST_METHODS"
+  fail "expected 1015 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "216" ]]; then
-  ok "test class baseline: 216"
+if [[ "$TEST_CLASSES" == "219" ]]; then
+  ok "test class baseline: 219"
 else
-  fail "expected 216 test classes, found $TEST_CLASSES"
+  fail "expected 219 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
@@ -4967,8 +4967,10 @@ contains src/main/java/ru/daniil/shifts/service/PayPricingEngine.java "class Pay
 contains src/main/java/ru/daniil/shifts/service/OrdinaryWorkPremiumPricingService.java "DUTYLOG_ORDINARY_PREMIUM_PRICING_V1"
 contains src/main/java/ru/daniil/shifts/service/PayrollService.java "ordinaryPremiumPreview.pricingFingerprint()"
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'id="payrollOrdinaryPremiumBreakdown"'
-contains frontend/src/generated/dutylog-api.ts "Contract: 138 operations, 144 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352"'
+contains CHANGES.md 'OpenAPI is **138 operations / 144 schemas** with SHA-256 `1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`.'
+contains docs/TEMPORAL_WORK_CONTEXT_NATIVE_PAY_PRICING_V27.46.1.md 'OpenAPI: 138 operations / 144 schemas.'
+contains frontend/src/generated/dutylog-api.ts "Contract: 141 operations, 147 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46"'
 contains docs/API.md "# DutyLog API v${VERSION}"
 contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
@@ -4976,6 +4978,18 @@ contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
 contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
 contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
 contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
+
+# v27.46.2 6H1 Native Pricing API Foundation development slice
+contains src/main/java/ru/daniil/shifts/service/PayPricingConfigurationService.java "class PayPricingConfigurationService"
+contains src/main/java/ru/daniil/shifts/web/PayPricingController.java '/api/v1/payroll/pricing/terms'
+contains src/main/resources/static/openapi/dutylog-v1.yaml '/api/v1/payroll/pricing/terms:'
+contains src/main/resources/static/openapi/dutylog-v1.yaml '/api/v1/payroll/pricing/terms/{effectiveFrom}:'
+contains frontend/src/generated/dutylog-api.ts '"listPayrollPricingTerms": { method: "GET", path: "/api/v1/payroll/pricing/terms" }'
+contains frontend/src/generated/dutylog-api.ts '"upsertPayrollPricingTerm": { method: "PUT", path: "/api/v1/payroll/pricing/terms/{effectiveFrom}" }'
+contains frontend/src/generated/dutylog-api.ts '"deletePayrollPricingTerm": { method: "DELETE", path: "/api/v1/payroll/pricing/terms/{effectiveFrom}" }'
+contains src/test/java/ru/daniil/shifts/service/PayPricingConfigurationServiceTest.java "class PayPricingConfigurationServiceTest"
+contains src/test/java/ru/daniil/shifts/web/PayPricingControllerTest.java "class PayPricingControllerTest"
+contains src/test/java/ru/daniil/shifts/web/PayPricingConfigurationOpenApiContractTest.java "class PayPricingConfigurationOpenApiContractTest"
 
 # v27.46.0 Compensation Setup & Base Native Payroll
 contains CHANGES.md "v27.46.0 — Compensation Setup & Base Native Payroll"

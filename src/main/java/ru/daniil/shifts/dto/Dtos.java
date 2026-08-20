@@ -2737,6 +2737,49 @@ public final class Dtos {
             String updatedAt
     ) {}
 
+    /** One additive effective-dated pricing rule. premiumBps uses 10_000 = +1.00x. */
+    public record PayPricingRuleRequest(
+            @NotBlank(message = "Код правила обязателен")
+            @Size(max = 80, message = "Код правила: максимум 80 символов")
+            String code,
+            @NotBlank(message = "Измерение правила обязательно")
+            @Pattern(regexp = "(?i)NIGHT|HOLIDAY|OVERTIME", message = "Измерение должно быть NIGHT, HOLIDAY или OVERTIME")
+            String dimension,
+            @NotNull(message = "Надбавка обязательна")
+            @Min(value = 0, message = "Надбавка не может быть отрицательной")
+            @Max(value = 10000000L, message = "Надбавка слишком велика")
+            Integer premiumBps,
+            @NotNull(message = "Начальная минута обязательна")
+            @Min(value = 0, message = "Начальная минута не может быть отрицательной")
+            Integer fromMinute,
+            @Min(value = 1, message = "Конечная минута должна быть положительной")
+            Integer toMinuteExclusive,
+            @Size(max = 80, message = "Группа исключения: максимум 80 символов")
+            String exclusiveGroup
+    ) {}
+
+    public record PayPricingTermRequest(
+            @NotNull(message = "Список правил обязателен")
+            @Size(max = 64, message = "Слишком много правил оплаты")
+            List<@Valid PayPricingRuleRequest> rules
+    ) {}
+
+    public record PayPricingRuleDto(
+            String code,
+            String dimension,
+            int premiumBps,
+            int fromMinute,
+            Integer toMinuteExclusive,
+            String exclusiveGroup
+    ) {}
+
+    public record PayPricingTermDto(
+            Long id,
+            String effectiveFrom,
+            List<PayPricingRuleDto> rules,
+            String updatedAt
+    ) {}
+
     /** Append-only manual money movement for one payroll month. */
     public record PayrollAdjustmentRequest(
             @NotBlank(message = "Месяц обязателен") String month,

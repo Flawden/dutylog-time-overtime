@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352
+ * SHA-256: 19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 138 operations, 144 schemas
+ * Contract: 141 operations, 147 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -962,6 +962,25 @@ export namespace DutyLogApiSchemas {
     newPassword: string;
   };
 
+  export type PayPricingRule = {
+    code: string;
+    dimension: "NIGHT" | "HOLIDAY" | "OVERTIME";
+    premiumBps: number;
+    fromMinute: number;
+    toMinuteExclusive?: number | null;
+    exclusiveGroup?: string | null;
+  };
+
+  export type PayPricingTerm = DutyLogApiSchemas.PayPricingTermInput & {
+    id: number;
+    effectiveFrom: string;
+    updatedAt: string;
+  };
+
+  export type PayPricingTermInput = {
+    rules: Array<DutyLogApiSchemas.PayPricingRule>;
+  };
+
   export type PayrollAdjustment = DutyLogApiSchemas.PayrollAdjustmentInput & {
     id: number;
     createdAt: string;
@@ -1651,6 +1670,7 @@ export const dutyLogOperations = {
   "deleteOvertimeCredit": { method: "DELETE", path: "/api/v1/overtime/credits/{id}" },
   "deleteOvertimeSettlement": { method: "DELETE", path: "/api/v1/overtime/settlements/{id}" },
   "deletePayrollCompensationTerm": { method: "DELETE", path: "/api/v1/payroll/compensation-terms/{month}" },
+  "deletePayrollPricingTerm": { method: "DELETE", path: "/api/v1/payroll/pricing/terms/{effectiveFrom}" },
   "deleteProductionCalendarDayOverride": { method: "DELETE", path: "/api/v1/production-calendar/days/{date}" },
   "deleteQuickScenario": { method: "DELETE", path: "/api/v1/quick-scenarios/{id}" },
   "deleteScheduleTemplate": { method: "DELETE", path: "/api/v1/schedule-templates/{id}" },
@@ -1680,6 +1700,7 @@ export const dutyLogOperations = {
   "listMobileSessions": { method: "GET", path: "/api/v1/mobile/auth/sessions" },
   "listModules": { method: "GET", path: "/api/v1/modules" },
   "listOvertimeSettlements": { method: "GET", path: "/api/v1/overtime/settlements" },
+  "listPayrollPricingTerms": { method: "GET", path: "/api/v1/payroll/pricing/terms" },
   "listProfileSessions": { method: "GET", path: "/api/v1/profile/sessions" },
   "listScheduleTemplates": { method: "GET", path: "/api/v1/schedule-templates" },
   "listShiftTypes": { method: "GET", path: "/api/v1/shift-types" },
@@ -1752,6 +1773,7 @@ export const dutyLogOperations = {
   "upsertCalendarLayerOverride": { method: "PUT", path: "/api/v1/calendar-layers/{id}/overrides/{date}" },
   "upsertDay": { method: "PUT", path: "/api/v1/days/{date}" },
   "upsertPayrollCompensationTerm": { method: "PUT", path: "/api/v1/payroll/compensation-terms/{month}" },
+  "upsertPayrollPricingTerm": { method: "PUT", path: "/api/v1/payroll/pricing/terms/{effectiveFrom}" },
   "upsertProductionCalendarDay": { method: "PUT", path: "/api/v1/production-calendar/days/{date}" },
   "workdayTruth": { method: "GET", path: "/api/v1/workdays/{date}" },
 } as const;
@@ -1899,6 +1921,10 @@ export interface DutyLogOperationTypes {
     requestBody: undefined;
     response: undefined;
   };
+  "deletePayrollPricingTerm": {
+    requestBody: undefined;
+    response: undefined;
+  };
   "deleteProductionCalendarDayOverride": {
     requestBody: undefined;
     response: undefined;
@@ -2014,6 +2040,10 @@ export interface DutyLogOperationTypes {
   "listOvertimeSettlements": {
     requestBody: undefined;
     response: Array<DutyLogApiSchemas.OvertimeSettlement>;
+  };
+  "listPayrollPricingTerms": {
+    requestBody: undefined;
+    response: Array<DutyLogApiSchemas.PayPricingTerm>;
   };
   "listProfileSessions": {
     requestBody: undefined;
@@ -2308,6 +2338,10 @@ export interface DutyLogOperationTypes {
   "upsertPayrollCompensationTerm": {
     requestBody: DutyLogApiSchemas.PayrollCompensationTermInput;
     response: unknown;
+  };
+  "upsertPayrollPricingTerm": {
+    requestBody: DutyLogApiSchemas.PayPricingTermInput;
+    response: DutyLogApiSchemas.PayPricingTerm;
   };
   "upsertProductionCalendarDay": {
     requestBody: DutyLogApiSchemas.ProductionCalendarDayInput;
