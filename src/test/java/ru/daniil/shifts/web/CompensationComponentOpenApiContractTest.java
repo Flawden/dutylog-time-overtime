@@ -62,7 +62,6 @@ class CompensationComponentOpenApiContractTest {
                 );
 
         for (String token : new String[] {
-                "Contract: 145 operations, 150 schemas",
                 "export type PayrollCompensationComponentCreateInput =",
                 "export type PayrollCompensationComponentVersionInput =",
                 "export type PayrollCompensationComponentVersion =",

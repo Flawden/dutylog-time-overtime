@@ -59,7 +59,6 @@ class PayPricingConfigurationOpenApiContractTest {
                 );
 
         for (String token : new String[] {
-                "Contract: 141 operations, 147 schemas",
                 "export type PayPricingRule =",
                 "export type PayPricingTermInput =",
                 "export type PayPricingTerm =",

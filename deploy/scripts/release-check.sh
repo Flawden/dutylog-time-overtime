@@ -5025,7 +5025,7 @@ contains frontend/src/generated/dutylog-api.ts '"upsertPayrollCompensationCompon
 contains src/test/java/ru/daniil/shifts/service/CompensationComponentConfigurationServiceTest.java "Премия за выживание после ночной смены"
 contains src/test/java/ru/daniil/shifts/service/CompensationComponentConfigurationServiceTest.java "disabledEffectiveVersionDoesNotEraseStableComponentHistory"
 contains src/test/java/ru/daniil/shifts/web/CompensationComponentControllerTest.java "componentWritesRemainCsrfProtected"
-contains src/test/java/ru/daniil/shifts/web/CompensationComponentOpenApiContractTest.java "Contract: 145 operations, 150 schemas"
+contains src/test/java/ru/daniil/shifts/web/CompensationComponentOpenApiContractTest.java "upsertPayrollCompensationComponentVersion"
 
 # v27.47.0 7A1 Generic Compensation Components semantic foundation development slice
 contains src/main/resources/db/migration/postgresql/V62__generic_compensation_components.sql "CREATE TABLE compensation_components"
