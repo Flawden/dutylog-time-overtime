@@ -1,3 +1,6 @@
+# v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals review
+Status: v27.46.2. Pricing-term reads and writes remain authenticated and owner-scoped; clients do not supply another user's identity. Whole-term replacement changes only the owner's effective-dated pricing configuration and does not make browser-provided money or fingerprints authoritative. NIGHT/HOLIDAY and OVERTIME results still flow through backend classification, historical-rate/Pricing services and immutable Payroll revisions. The release adds no credential, role, cross-account sharing, dependency or database-schema trust boundary.
+
 # v27.46.1 Temporal Work Context & Native Pay Pricing review
 Status: v27.46.1. Temporal Work Context, pricing terms, settlements and Payroll projections remain owner-scoped through the authenticated principal. Historical corrections remain accounting-period and consumed-credit guarded. Overtime provenance stores factual identity only while pricing remains separately effective-dated. Immutable Payroll snapshots freeze deep pricing identity without making client-provided fingerprints authoritative. No new credential, role or dependency trust boundary is introduced.
 

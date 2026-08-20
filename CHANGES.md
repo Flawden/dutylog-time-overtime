@@ -1,3 +1,19 @@
+# v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals
+
+- Exposes authenticated effective-dated Payroll Pricing Terms through native GET / whole-term PUT / exact-version DELETE operations.
+- `PUT` replaces the complete exact-date pricing aggregate; `rules: []` is explicit base-only pricing, while deleting an exact version can reactivate the preceding effective policy.
+- Adds a human-facing Payroll Pricing Settings surface for NIGHT, HOLIDAY and OVERTIME coefficients without exposing basis points, internal rule codes or exclusivity groups.
+- New effective-dated versions inherit the active policy before save and preserve unknown advanced rules.
+- Proves NIGHT ordinary-premium money end-to-end from factual work through classification, historical rate, Pricing, Payroll preview and immutable snapshot.
+- Proves HOLIDAY ordinary-premium money through the same native source-date pipeline.
+- Proves bank-first OVERTIME end-to-end: banked overtime alone creates no Payroll settlement money; only explicit FIFO cash settlement applies configured overtime tiers.
+- Keeps ordinary premiums and overtime settlement as separate explainable Payroll components while backend `totalPayMinor` remains authoritative.
+- OpenAPI is **141 operations / 147 schemas** with SHA-256 `19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46`.
+- Flyway remains at **V61**; v27.46.2 adds no schema migration.
+- Source inventory is **1015 @Test methods / 219 Java test classes / 80 Vitest cases / 51 Playwright scenarios**.
+- Accepted browser ceiling is **945000 B raw / 250000 B gzip**.
+- NIGHT, HOLIDAY and OVERTIME development slices have canonical Chromium/staging proof; the final versioned v27.46.2 tree still requires the normal release CI, clean PostgreSQL image and staging gates.
+
 # v27.46.1 — Temporal Work Context & Native Pay Pricing
 
 - Adds effective-dated Work Timezone history and exact historical Actual Work identity.

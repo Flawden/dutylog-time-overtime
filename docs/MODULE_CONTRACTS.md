@@ -1,3 +1,15 @@
+## Effective-Dated Pricing Settings & Payroll Verticals contract (v27.46.2)
+
+- Pricing configuration is effective-dated policy; it does not become factual work, Classification or Time Bank state.
+- Pricing Settings is a human-facing editor for NIGHT, HOLIDAY and OVERTIME policy and does not own Payroll arithmetic.
+- `rules: []` means explicit base-only policy; missing required policy remains a distinct fail-closed state.
+- NIGHT and HOLIDAY ordinary premiums reuse classified factual work and historical compensation rates.
+- OVERTIME remains bank-first: factual overtime creates Time Bank balance, while only explicit settlement converts FIFO-consumed minutes into settlement money.
+- Payroll preview remains live and backend-authoritative; immutable revisions freeze premium/settlement money, time and deep pricing fingerprints.
+- Existing historical v27.46.1 temporal/classification/provenance contracts remain unchanged.
+
+Status: v27.46.2.
+
 ## Temporal Work Context / Pay Classification / Pricing contract (v27.46.1)
 
 - Temporal Work Context decides how factual instants map into local work dates; it does not own Payroll coefficients.

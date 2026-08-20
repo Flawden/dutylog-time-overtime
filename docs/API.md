@@ -1,4 +1,13 @@
-# DutyLog API v27.46.1
+# DutyLog API v27.46.2
+
+## v27.46.2 Pricing Terms and Payroll verticals
+
+Authenticated Pricing Terms now expose effective-dated list, whole-term replace and exact-version delete semantics under `/api/v1/payroll/pricing/terms`. `rules: []` is explicit base-only pricing; deleting one version may expose the preceding effective policy again.
+
+NIGHT/HOLIDAY ordinary premiums and explicit bank-first OVERTIME cash settlement remain backend-priced and immutable Payroll snapshots freeze their deep pricing identity.
+
+OpenAPI is **141 operations / 147 schemas** with SHA-256 `19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46`. Flyway remains **V61**.
+
 
 `v27.46.1` adds temporal work-context, historical Actual Work identity, explicit overtime-settlement and native pricing/Payroll contract surfaces. Payroll preview exposes ordinary-premium readiness plus canonical minutes/reference base/premium delta, while immutable Payroll snapshots expose frozen ordinary-premium aggregates and deterministic pricing identity. OpenAPI is **138 operations / 144 schemas** with SHA-256 `1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`; PostgreSQL Flyway advances to **V61**.
 

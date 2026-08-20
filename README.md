@@ -1,3 +1,9 @@
+# DutyLog v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals
+
+Pricing is now a native user-facing Payroll capability instead of only a backend foundation. Effective-dated NIGHT, HOLIDAY and OVERTIME rules can be managed in human units while historical work keeps source-date pricing identity.
+
+NIGHT and HOLIDAY price ordinary factual work; overtime remains bank-first and becomes Payroll money only after an explicit FIFO cash settlement. Immutable Payroll revisions freeze the resulting pricing identity. See `docs/EFFECTIVE_DATED_PRICING_SETTINGS_PAYROLL_VERTICALS_V27.46.2.md`.
+
 # DutyLog v27.46.1 — Temporal Work Context & Native Pay Pricing
 
 DutyLog now interprets work in historical temporal context, classifies overlapping REGULAR / NIGHT / HOLIDAY / OVERTIME dimensions, keeps overtime bank-first, and prices explicit settlements plus ordinary NIGHT/HOLIDAY premiums from effective-dated rules and historical compensation rates.

@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.46.1 — Temporal Work Context & Native Pay Pricing**.
+Current release: **v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals**.
 
 
 ## Product north star
@@ -8,6 +8,22 @@ Current release: **v27.46.1 — Temporal Work Context & Native Pay Pricing**.
 > **The user describes reality. DutyLog derives the consequences.**
 
 Calendar / Today are the normal command surfaces. Overtime, Time Bank, Production Calendar, Payroll and other domains remain authoritative internal/read-audit modules, but one real-world event must not be entered repeatedly across screens. Complexity is progressively disclosed; minimum setup must remain useful and every derived result must be explainable.
+
+## v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals
+
+- [x] Public effective-dated Pricing Terms CRUD.
+- [x] Human-facing Pricing Settings for NIGHT, HOLIDAY and OVERTIME.
+- [x] Explicit base-only policy through `rules: []`.
+- [x] NIGHT factual work → ordinary premium → Payroll → immutable snapshot.
+- [x] HOLIDAY factual work → ordinary premium → Payroll → immutable snapshot.
+- [x] Banked OVERTIME remains money-neutral.
+- [x] Explicit FIFO cash settlement → configured overtime tiers → Payroll → immutable snapshot.
+- [x] OpenAPI 141/147 (`19f794b9af96`); Flyway remains V61.
+- [x] Regression inventory: 1015 Java tests / 219 classes / 80 Vitest / 51 Playwright.
+- [x] NIGHT / HOLIDAY / OVERTIME development slices accepted by Chromium and staging.
+- [ ] Final versioned v27.46.2 canonical CI, clean PostgreSQL and staging acceptance.
+
+Next Payroll slice: generic compensation components and explicit semantic calculation bases. Taxes, jurisdiction policy packs and multi-currency Payroll remain outside v27.46.2.
 
 ## v27.46.1 — Temporal Work Context & Native Pay Pricing
 
@@ -55,7 +71,7 @@ Calendar / Today are the normal command surfaces. Overtime, Time Bank, Productio
 
 ## Core roadmap after Day Truth
 
-1. **v27.46.x — Compensation Setup & Payroll Core**: [v27.46.0 done] effective-month hourly/salary setup, production-norm salary denominator and explainable base money; next: regular/night/overtime/holiday native pay classification.
+1. **v27.46.x — Compensation Setup & Payroll Core**: v27.46.0–v27.46.2 establish base compensation, temporal classification, effective-dated Pricing Settings and proven NIGHT/HOLIDAY/OVERTIME money verticals; next: generic compensation components and semantic calculation bases.
 2. **Vacation Entitlement & Balance**: entitlement/accrual/carry-over/used/planned/available balance, separate from vacation pay.
 3. **Vacation Pay**: versioned jurisdiction calculation period, eligible earnings and average-pay breakdown.
 4. **Sick Leave Calculation**: versioned jurisdiction rules after official-source research.

@@ -9,8 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.46.1}"
-CURRENT_RELEASE_TITLE="Temporal Work Context & Native Pay Pricing"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.46.2}"
+CURRENT_RELEASE_TITLE="Effective-Dated Pricing Settings & Payroll Verticals"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -5004,6 +5004,26 @@ contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
 contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
 contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
 contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
+
+# v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals release closure
+contains CHANGES.md "v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals"
+contains README.md "DutyLog v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals"
+contains docs/EFFECTIVE_DATED_PRICING_SETTINGS_PAYROLL_VERTICALS_V27.46.2.md "GET /api/v1/payroll/pricing/terms"
+contains docs/EFFECTIVE_DATED_PRICING_SETTINGS_PAYROLL_VERTICALS_V27.46.2.md 'rules: []'
+contains docs/EFFECTIVE_DATED_PRICING_SETTINGS_PAYROLL_VERTICALS_V27.46.2.md "141 operations / 147 schemas"
+contains docs/EFFECTIVE_DATED_PRICING_SETTINGS_PAYROLL_VERTICALS_V27.46.2.md "19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46"
+contains docs/API.md "141 operations / 147 schemas"
+contains docs/API.md "19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46"
+contains docs/ROADMAP.md "## v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals"
+contains docs/RELEASE_CHECKLIST.md "## v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals acceptance"
+contains docs/SECURITY_REVIEW.md "# v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals review"
+contains docs/MODULE_CONTRACTS.md "## Effective-Dated Pricing Settings & Payroll Verticals contract (v27.46.2)"
+contains docs/SUPPLY_CHAIN.md "## v27.46.2 effective-dated pricing settings & payroll verticals"
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 945000'
+contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
+contains frontend/src/generated/dutylog-api.ts "Contract: 141 operations, 147 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46"'
 
 # v27.46.2 6H1 Native Pricing API Foundation development slice
 contains src/main/java/ru/daniil/shifts/service/PayPricingConfigurationService.java "class PayPricingConfigurationService"

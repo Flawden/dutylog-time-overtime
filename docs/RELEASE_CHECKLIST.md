@@ -1,6 +1,22 @@
 # DutyLog release checklist
 
-Status: v27.46.1.
+Status: v27.46.2.
+
+## v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals acceptance
+
+- [x] Pricing Terms expose authenticated effective-dated GET, whole-term PUT and exact-version DELETE.
+- [x] `rules: []` is explicit base-only policy; DutyLog inserts no implicit statutory premium.
+- [x] Pricing Settings exposes NIGHT, HOLIDAY and OVERTIME in human units without exposing low-level rule internals.
+- [x] NIGHT ordinary premium is proven end-to-end through factual work, classification, Pricing, Payroll and immutable snapshot.
+- [x] HOLIDAY ordinary premium is proven end-to-end through factual work, classification, Pricing, Payroll and immutable snapshot.
+- [x] Banked OVERTIME alone remains money-neutral.
+- [x] Explicit cash settlement consumes the same FIFO Time Bank and applies configured OVERTIME tiers.
+- [x] OpenAPI is 141/147 (`19f794b9af96`); Flyway remains V61.
+- [x] Source inventory is 1015 Java @Test / 219 classes / 80 Vitest / 51 Playwright.
+- [x] Browser ceiling remains 945000 B raw / 250000 B gzip.
+- [ ] Final versioned v27.46.2 Node 20.18.1/npm 10.8.2 production build passes.
+- [ ] Final versioned v27.46.2 Java 17 Maven/JaCoCo and release-check pass.
+- [ ] Chromium 51/51, immutable-image clean PostgreSQL V1→V61 and final staging acceptance pass.
 
 ## v27.46.1 — Temporal Work Context & Native Pay Pricing acceptance
 

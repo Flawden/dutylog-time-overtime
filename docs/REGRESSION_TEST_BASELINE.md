@@ -1,11 +1,11 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.46.1.
+Status: v27.46.2.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.46.1 Temporal Work Context & Native Pay Pricing: inventory is 216 Java test classes / 1006 @Test methods / 48 Chromium Playwright scenarios / 80 Vitest cases. OpenAPI is 138/144 (`1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`) and Flyway source advances to V61. Coverage includes temporal timezone history, exact Actual Work identity, overlapping pay classification, overtime provenance, explicit FIFO settlement, effective-dated pricing, historical rates, bank-first HOURLY Payroll, deep settlement/ordinary pricing fingerprints and Payroll ordinary-premium explainability. Canonical Node 20.18.1/npm 10.8.2 frontend is green at 924966/925000 B raw. Full Maven/JaCoCo is green locally; Chromium, clean PostgreSQL V1→V61 and staging acceptance remain final release gates.
+Current extension: v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals: inventory is 219 Java test classes / 1015 @Test methods / 51 Chromium Playwright scenarios / 80 Vitest cases. OpenAPI is 141/147 (`19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46`) and Flyway remains V61. Coverage includes effective-dated Pricing Terms CRUD, human-facing Pricing Settings, NIGHT and HOLIDAY ordinary-premium verticals, and bank-first OVERTIME where only explicit FIFO cash settlement creates settlement money and applies configured tiers. The accepted browser ceiling is 945000 B raw / 250000 B gzip. Development-slice Chromium/staging proof is green; the final versioned v27.46.2 tree still runs canonical frontend, Maven/JaCoCo, Chromium, clean PostgreSQL and staging gates.
 
 
 
