@@ -4937,15 +4937,15 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1015" ]]; then
-  ok "test method baseline: 1015"
+if [[ "$TEST_METHODS" == "1025" ]]; then
+  ok "test method baseline: 1025"
 else
-  fail "expected 1015 @Test methods, found $TEST_METHODS"
+  fail "expected 1025 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "219" ]]; then
-  ok "test class baseline: 219"
+if [[ "$TEST_CLASSES" == "220" ]]; then
+  ok "test class baseline: 220"
 else
-  fail "expected 219 test classes, found $TEST_CLASSES"
+  fail "expected 220 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
@@ -5004,6 +5004,21 @@ contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
 contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
 contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
 contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
+
+# v27.47.0 7A1 Generic Compensation Components semantic foundation development slice
+contains src/main/resources/db/migration/postgresql/V62__generic_compensation_components.sql "CREATE TABLE compensation_components"
+contains src/main/resources/db/migration/postgresql/V62__generic_compensation_components.sql "CREATE TABLE compensation_component_versions"
+contains src/main/resources/db/migration/postgresql/V62__generic_compensation_components.sql "'FIXED_AMOUNT'"
+contains src/main/resources/db/migration/postgresql/V62__generic_compensation_components.sql "'PERCENT_OF_BASE'"
+contains src/main/resources/db/migration/postgresql/V62__generic_compensation_components.sql "'NOMINAL_SALARY'"
+contains src/main/resources/db/migration/postgresql/V62__generic_compensation_components.sql "'EARNED_BASE_PAY'"
+contains src/main/java/ru/daniil/shifts/model/CompensationComponentVersion.java "String displayName"
+contains src/main/java/ru/daniil/shifts/model/CompensationComponentVersion.java "enum CalculationType"
+contains src/main/java/ru/daniil/shifts/model/CompensationComponentVersion.java "enum CalculationBase"
+contains src/main/java/ru/daniil/shifts/service/CompensationComponentCalculationService.java "DUTYLOG_COMP_COMPONENT_PROJECTION_V1"
+contains src/main/java/ru/daniil/shifts/service/CompensationComponentCalculationService.java "RoundingMode.HALF_UP"
+contains src/test/java/ru/daniil/shifts/service/CompensationComponentCalculationServiceTest.java "Вредность 4%"
+contains src/test/java/ru/daniil/shifts/service/CompensationComponentCalculationServiceTest.java "duplicateStableComponentIdentityFailsClosed"
 
 # v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals release closure
 contains CHANGES.md "v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals"
