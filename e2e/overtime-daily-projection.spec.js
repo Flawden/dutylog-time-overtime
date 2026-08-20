@@ -4,8 +4,10 @@ const { registerAndOnboard, waitForApi, openView } = require('./helpers');
 async function setTimezone(page, zone) {
   await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
-  await page.locator('#workTimezone').selectOption(zone);
-  const saved = waitForApi(page, 'PUT', '/api/profile');
+  const timezone = page.locator('#workTimezone');
+  if (await timezone.inputValue() === zone) return;
+  await timezone.selectOption(zone);
+  const saved = waitForApi(page, 'PUT', '/api/v1/time/work-context');
   await page.locator('#timeSaveTimezone').click();
   await saved;
 }

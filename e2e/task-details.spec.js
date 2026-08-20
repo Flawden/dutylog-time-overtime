@@ -56,7 +56,7 @@ test('timed task deadline and reminder keep one instant across timezone changes'
   await openView(page, 'settings');
   await page.locator('[data-settings-jump="time"]').click();
   await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
-  let profileSaved = waitForApi(page, 'PUT', '/api/profile');
+  let profileSaved = waitForApi(page, 'PUT', '/api/v1/time/work-context');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await expect(page.locator('#timeSettingsStatus')).toHaveText('Часовой пояс сохранён');
@@ -103,7 +103,7 @@ test('timed task deadline and reminder keep one instant across timezone changes'
   expect(before.workTimezone).toBe('Asia/Yekaterinburg');
 
   await page.locator('#workTimezone').selectOption('Europe/Moscow');
-  profileSaved = waitForApi(page, 'PUT', '/api/profile');
+  profileSaved = waitForApi(page, 'PUT', '/api/v1/time/work-context');
   await page.locator('#timeSaveTimezone').click();
   await profileSaved;
   await expect(page.locator('#timeSettingsStatus')).toHaveText('Часовой пояс сохранён');
