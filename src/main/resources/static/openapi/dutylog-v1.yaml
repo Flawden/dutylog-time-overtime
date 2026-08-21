@@ -2418,10 +2418,53 @@ components:
           properties:
             id: { type: integer, format: int64 }
             createdAt: { type: string, format: date-time }
+    PayrollCompensationComponentLine:
+      type: object
+      description: Frozen explainability line for one generic compensation component. displayName is user-owned text and carries no machine semantics.
+      required: [componentId, versionId, effectiveMonth, displayName, calculationType, referenceBaseMinor, amountMinor]
+      properties:
+        componentId:
+          type: integer
+          format: int64
+        versionId:
+          type: integer
+          format: int64
+        effectiveMonth:
+          type: string
+          pattern: '^\d{4}-\d{2}$'
+        displayName:
+          type: string
+        calculationType:
+          type: string
+          enum: [FIXED_AMOUNT, PERCENT_OF_BASE]
+        calculationBase:
+          type: string
+          nullable: true
+          enum: [NOMINAL_SALARY, EARNED_BASE_PAY]
+        rateBps:
+          type: integer
+          nullable: true
+        configuredAmountMinor:
+          type: integer
+          format: int64
+          nullable: true
+        configuredCurrencyCode:
+          type: string
+          nullable: true
+          pattern: '^[A-Z]{3}$'
+        referenceBaseMinor:
+          type: integer
+          format: int64
+          minimum: 0
+        amountMinor:
+          type: integer
+          format: int64
+          minimum: 0
+
     PayrollMoneyProjection:
       type: object
       description: Canonical Payroll time and money projection shared by live preview and immutable revision snapshots.
-      required: [month, currencyCode, hourlyRateMinor, plannedMinutes, workedMinutes, vacationMinutes, sickMinutes, overtimeCompensatedMinutes, unpaidMinutes, timeAdjustmentMinutes, paidAbsenceMinutes, payableMinutes, hourlyBasePayableMinutes, basePayMinor, settlementCount, settlementMinutes, settlementBasePayMinor, settlementPremiumPayMinor, settlementPayMinor, settlementPricingFingerprint, additionsMinor, deductionsMinor, totalPayMinor, effectiveHourlyRateMinor, productionNormMinutes, salaryCoveredMinutes]
+      required: [month, currencyCode, hourlyRateMinor, plannedMinutes, workedMinutes, vacationMinutes, sickMinutes, overtimeCompensatedMinutes, unpaidMinutes, timeAdjustmentMinutes, paidAbsenceMinutes, payableMinutes, hourlyBasePayableMinutes, basePayMinor, compensationComponentCount, compensationComponentEarningsMinor, compensationComponentFingerprint, compensationComponentLines, settlementCount, settlementMinutes, settlementBasePayMinor, settlementPremiumPayMinor, settlementPayMinor, settlementPricingFingerprint, additionsMinor, deductionsMinor, totalPayMinor, effectiveHourlyRateMinor, productionNormMinutes, salaryCoveredMinutes]
       properties:
         month:
           type: string
@@ -2457,6 +2500,25 @@ components:
         basePayMinor:
           type: integer
           format: int64
+        compensationComponentCount:
+          type: integer
+          minimum: 0
+          description: Number of enabled generic compensation components participating in this projection.
+        compensationComponentEarningsMinor:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Generic compensation earnings added as their own Payroll phase, outside manual additions.
+        compensationComponentFingerprint:
+          type: string
+          nullable: true
+          pattern: '^[0-9a-f]{64}$'
+          description: Deterministic identity of the resolved generic compensation projection; null when no enabled component participates.
+        compensationComponentLines:
+          type: array
+          description: Explainability lines for generic compensation components. Snapshot instances return frozen lines rather than mutable configuration.
+          items:
+            $ref: '#/components/schemas/PayrollCompensationComponentLine'
         settlementCount:
           type: integer
           minimum: 0
@@ -2522,8 +2584,16 @@ components:
       allOf:
         - $ref: '#/components/schemas/PayrollMoneyProjection'
         - type: object
-          required: [ordinaryPremiumPricingReady, ordinaryPremiumPricingBlockingReason, ordinaryPremiumPricingIdentityRequired, ordinaryPremiumMinutes, ordinaryPremiumReferenceBasePayMinor, ordinaryPremiumPayMinor, settlementPricingReady, settlementPricingBlockingReason]
+          required: [compensationComponentCalculationReady, compensationComponentCalculationBlockingReason, ordinaryPremiumPricingReady, ordinaryPremiumPricingBlockingReason, ordinaryPremiumPricingIdentityRequired, ordinaryPremiumMinutes, ordinaryPremiumReferenceBasePayMinor, ordinaryPremiumPayMinor, settlementPricingReady, settlementPricingBlockingReason]
           properties:
+            compensationComponentCalculationReady:
+              type: boolean
+              description: False when an enabled generic compensation component cannot be valued safely for this Payroll preview.
+            compensationComponentCalculationBlockingReason:
+              type: string
+              nullable: true
+              enum: [PAYROLL_COMPENSATION_REQUIRED, PAYROLL_PRODUCTION_NORM_INCOMPLETE, PAYROLL_PRODUCTION_NORM_REQUIRED, PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH, PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE, PAYROLL_COMP_COMPONENT_INVALID]
+              description: Exact fail-closed reason for generic compensation projection readiness.
             ordinaryPremiumPricingReady:
               type: boolean
               description: False when ordinary-work NIGHT / HOLIDAY premium money cannot be valued safely from canonical source truth and effective-dated rules.
@@ -2621,7 +2691,7 @@ components:
         blockingReason:
           type: string
           nullable: true
-          enum: [PERIOD_OPEN, LEDGER_INTEGRITY_FAILED, PAYROLL_COMPENSATION_REQUIRED, PAYROLL_PRODUCTION_NORM_INCOMPLETE, PAYROLL_PRODUCTION_NORM_REQUIRED, PAY_PRICING_PROVENANCE_REQUIRED, PAY_PRICING_RULES_REQUIRED, PAY_PRICING_CURRENCY_MISMATCH, PAYROLL_SETTLEMENT_CURRENCY_MISMATCH, ORDINARY_PREMIUM_SOURCE_NOT_READY, PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH]
+          enum: [PERIOD_OPEN, LEDGER_INTEGRITY_FAILED, PAYROLL_COMPENSATION_REQUIRED, PAYROLL_PRODUCTION_NORM_INCOMPLETE, PAYROLL_PRODUCTION_NORM_REQUIRED, PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH, PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE, PAYROLL_COMP_COMPONENT_INVALID, PAY_PRICING_PROVENANCE_REQUIRED, PAY_PRICING_RULES_REQUIRED, PAY_PRICING_CURRENCY_MISMATCH, PAYROLL_SETTLEMENT_CURRENCY_MISMATCH, ORDINARY_PREMIUM_SOURCE_NOT_READY, PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH]
         settings:
           $ref: '#/components/schemas/PayrollSettings'
         productionCalendar:

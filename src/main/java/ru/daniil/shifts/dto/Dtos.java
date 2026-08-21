@@ -2871,6 +2871,26 @@ public final class Dtos {
             String createdAt
     ) {}
 
+    /**
+     * Immutable explainability line for one generic compensation component.
+     *
+     * displayName is opaque user-owned text; calculation semantics live in
+     * the machine-readable fields beside it.
+     */
+    public record PayrollCompensationComponentLineDto(
+            long componentId,
+            long versionId,
+            String effectiveMonth,
+            String displayName,
+            String calculationType,
+            String calculationBase,
+            Integer rateBps,
+            Long configuredAmountMinor,
+            String configuredCurrencyCode,
+            long referenceBaseMinor,
+            long amountMinor
+    ) {}
+
     /** Transparent source-time and money projection before it is frozen into a revision. */
     public record PayrollPreviewDto(
             String month,
@@ -2887,6 +2907,12 @@ public final class Dtos {
             int payableMinutes,
             int hourlyBasePayableMinutes,
             long basePayMinor,
+            boolean compensationComponentCalculationReady,
+            String compensationComponentCalculationBlockingReason,
+            int compensationComponentCount,
+            long compensationComponentEarningsMinor,
+            String compensationComponentFingerprint,
+            List<PayrollCompensationComponentLineDto> compensationComponentLines,
             boolean ordinaryPremiumPricingReady,
             String ordinaryPremiumPricingBlockingReason,
             boolean ordinaryPremiumPricingIdentityRequired,
@@ -2931,6 +2957,10 @@ public final class Dtos {
             int payableMinutes,
             int hourlyBasePayableMinutes,
             long basePayMinor,
+            int compensationComponentCount,
+            long compensationComponentEarningsMinor,
+            String compensationComponentFingerprint,
+            List<PayrollCompensationComponentLineDto> compensationComponentLines,
             int ordinaryPremiumMinutes,
             long ordinaryPremiumReferenceBasePayMinor,
             long ordinaryPremiumPayMinor,

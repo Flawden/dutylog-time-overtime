@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 64609eb928b5eb8d1a0efdb4a97ee4224ada4f6c47a8c02e88de6abbde33aa3b
+ * SHA-256: 56442081179218567fafea52e21e0e7b4fc00e9b96789b1058715809225df78f
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 145 operations, 150 schemas
+ * Contract: 145 operations, 151 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "64609eb928b5eb8d1a0efdb4a97ee4224ada4f6c47a8c02e88de6abbde33aa3b";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "56442081179218567fafea52e21e0e7b4fc00e9b96789b1058715809225df78f";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -999,6 +999,20 @@ export namespace DutyLogApiSchemas {
     version: DutyLogApiSchemas.PayrollCompensationComponentVersionInput;
   };
 
+  export type PayrollCompensationComponentLine = {
+    componentId: number;
+    versionId: number;
+    effectiveMonth: string;
+    displayName: string;
+    calculationType: "FIXED_AMOUNT" | "PERCENT_OF_BASE";
+    calculationBase?: "NOMINAL_SALARY" | "EARNED_BASE_PAY" | null;
+    rateBps?: number | null;
+    configuredAmountMinor?: number | null;
+    configuredCurrencyCode?: string | null;
+    referenceBaseMinor: number;
+    amountMinor: number;
+  };
+
   export type PayrollCompensationComponentVersion = {
     componentId?: number;
     versionId?: number;
@@ -1052,6 +1066,10 @@ export namespace DutyLogApiSchemas {
     payableMinutes: number;
     hourlyBasePayableMinutes: number;
     basePayMinor: number;
+    compensationComponentCount: number;
+    compensationComponentEarningsMinor: number;
+    compensationComponentFingerprint: string | null;
+    compensationComponentLines: Array<DutyLogApiSchemas.PayrollCompensationComponentLine>;
     settlementCount: number;
     settlementMinutes: number;
     settlementBasePayMinor: number;
@@ -1075,7 +1093,7 @@ export namespace DutyLogApiSchemas {
     periodClosed: boolean;
     integrityHealthy: boolean;
     canCalculate: boolean;
-    blockingReason?: "PERIOD_OPEN" | "LEDGER_INTEGRITY_FAILED" | "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | "PAY_PRICING_PROVENANCE_REQUIRED" | "PAY_PRICING_RULES_REQUIRED" | "PAY_PRICING_CURRENCY_MISMATCH" | "PAYROLL_SETTLEMENT_CURRENCY_MISMATCH" | "ORDINARY_PREMIUM_SOURCE_NOT_READY" | "PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH" | null;
+    blockingReason?: "PERIOD_OPEN" | "LEDGER_INTEGRITY_FAILED" | "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | "PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH" | "PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE" | "PAYROLL_COMP_COMPONENT_INVALID" | "PAY_PRICING_PROVENANCE_REQUIRED" | "PAY_PRICING_RULES_REQUIRED" | "PAY_PRICING_CURRENCY_MISMATCH" | "PAYROLL_SETTLEMENT_CURRENCY_MISMATCH" | "ORDINARY_PREMIUM_SOURCE_NOT_READY" | "PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH" | null;
     settings: DutyLogApiSchemas.PayrollSettings;
     productionCalendar: DutyLogApiSchemas.ProductionCalendarMonth;
     preview: DutyLogApiSchemas.PayrollPreview;
@@ -1087,6 +1105,8 @@ export namespace DutyLogApiSchemas {
   };
 
   export type PayrollPreview = DutyLogApiSchemas.PayrollMoneyProjection & {
+    compensationComponentCalculationReady: boolean;
+    compensationComponentCalculationBlockingReason: "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | "PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH" | "PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE" | "PAYROLL_COMP_COMPONENT_INVALID" | null;
     ordinaryPremiumPricingReady: boolean;
     ordinaryPremiumPricingBlockingReason: "ORDINARY_PREMIUM_SOURCE_NOT_READY" | "PAY_PRICING_RULES_REQUIRED" | "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | "PAY_PRICING_CURRENCY_MISMATCH" | "PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH" | null;
     ordinaryPremiumPricingIdentityRequired: boolean;

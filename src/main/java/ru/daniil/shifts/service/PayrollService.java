@@ -1,11 +1,16 @@
 package ru.daniil.shifts.service;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.dto.Dtos.*;
 import ru.daniil.shifts.model.*;
 import ru.daniil.shifts.repo.*;
 import ru.daniil.shifts.service.CompensationCalculationService.Result;
+import ru.daniil.shifts.service.CompensationComponentCalculationService.CalculatedLine;
+import ru.daniil.shifts.service.CompensationComponentCalculationService.Context;
+import ru.daniil.shifts.service.CompensationComponentCalculationService.Projection;
+import ru.daniil.shifts.service.PayrollCompensationComponentPreviewService.ComponentPreview;
 import ru.daniil.shifts.service.TimeCompensationService.PayrollSourceSnapshot;
 import ru.daniil.shifts.service.PayrollSettlementPreviewService.SettlementPreview;
 import ru.daniil.shifts.service.PayrollOrdinaryPremiumPreviewService.OrdinaryPremiumPreview;
@@ -42,6 +47,13 @@ public class PayrollService {
     private final PayrollSettlementPreviewService settlementPricing;
     private final PayrollOrdinaryPremiumPreviewService ordinaryPremiumPricing;
 
+    /*
+     * 7A3B collaborators are setter-injected so historical isolated tests
+     * that construct the pre-7A3B PayrollService directly remain source-compatible.
+     */
+    private PayrollCompensationComponentPreviewService componentPricing;
+    private PayrollSnapshotComponentLineRepository snapshotComponentLines;
+
     public PayrollService(PayrollSettingsRepository settings,
                           CompensationTermRepository compensationTerms,
                           PayrollAdjustmentRepository adjustments,
@@ -58,6 +70,15 @@ public class PayrollService {
         this.ledgerIntegrity = ledgerIntegrity; this.productionCalendar = productionCalendar; this.calculation = calculation;
         this.settlementPricing = settlementPricing;
         this.ordinaryPremiumPricing = ordinaryPremiumPricing;
+    }
+
+    @Autowired
+    void configureCompensationComponents(
+            PayrollCompensationComponentPreviewService componentPricing,
+            PayrollSnapshotComponentLineRepository snapshotComponentLines
+    ) {
+        this.componentPricing = componentPricing;
+        this.snapshotComponentLines = snapshotComponentLines;
     }
 
     @Transactional
@@ -175,6 +196,7 @@ public class PayrollService {
         }
 
         PayrollPreviewDto preview = preview(
+                user,
                 month,
                 ensureSettings(user),
                 term,
@@ -184,6 +206,13 @@ public class PayrollService {
                 settlementPreview,
                 ordinaryPremiumPreview
         );
+
+        if (!preview.compensationComponentCalculationReady()) {
+            throw ApiException.conflict(
+                    preview.compensationComponentCalculationBlockingReason(),
+                    "Расчёт generic compensation components для Payroll недоступен"
+            );
+        }
 
         PayrollSnapshot previous = snapshots.findFirstByOwnerAndPeriodMonthOrderByRevisionDesc(user, month.atDay(1)).orElse(null);
         int revision = previous == null ? 1 : previous.getRevision() + 1;
@@ -205,6 +234,9 @@ public class PayrollService {
                 preview.overtimeCompensatedMinutes(), preview.unpaidMinutes(), preview.timeAdjustmentMinutes(),
                 preview.paidAbsenceMinutes(), preview.payableMinutes(),
                 preview.hourlyBasePayableMinutes(), preview.basePayMinor(),
+                preview.compensationComponentCount(),
+                preview.compensationComponentEarningsMinor(),
+                preview.compensationComponentFingerprint(),
                 preview.ordinaryPremiumMinutes(),
                 preview.ordinaryPremiumReferenceBasePayMinor(),
                 preview.ordinaryPremiumPayMinor(),
@@ -214,6 +246,12 @@ public class PayrollService {
                 preview.settlementPayMinor(), preview.settlementPricingFingerprint(),
                 preview.additionsMinor(), preview.deductionsMinor(), preview.totalPayMinor(),
                 period.getClosedAt(), checkedAt, hash));
+
+        freezeComponentLines(
+                created,
+                preview.compensationComponentLines()
+        );
+
         if (previous != null) { previous.supersedeWith(created); snapshots.save(previous); }
         return toSnapshot(created);
     }
@@ -248,6 +286,7 @@ public class PayrollService {
                 );
 
         PayrollPreviewDto preview = preview(
+                user,
                 month,
                 legacySettings,
                 term,
@@ -265,6 +304,8 @@ public class PayrollService {
         boolean salaryMode = term != null && "SALARY".equals(term.getPayMode());
         boolean salaryCoverageReady = !salaryMode || production.scheduleCoverageComplete();
         boolean salaryNormReady = !salaryMode || production.productionNormMinutes() > 0;
+        boolean componentPricingReady =
+                preview.compensationComponentCalculationReady();
         boolean settlementPricingReady = settlementPreview.ready();
         boolean ordinaryPremiumPricingReady =
                 ordinaryPremiumPreview.ready();
@@ -273,6 +314,7 @@ public class PayrollService {
                 compensationReady
                         && salaryCoverageReady
                         && salaryNormReady
+                        && componentPricingReady
                         && settlementPricingReady
                         && ordinaryPremiumPricingReady;
 
@@ -286,6 +328,8 @@ public class PayrollService {
                 : !compensationReady ? "PAYROLL_COMPENSATION_REQUIRED"
                 : !salaryCoverageReady ? "PAYROLL_PRODUCTION_NORM_INCOMPLETE"
                 : !salaryNormReady ? "PAYROLL_PRODUCTION_NORM_REQUIRED"
+                : !componentPricingReady
+                    ? preview.compensationComponentCalculationBlockingReason()
                 : !settlementPricingReady ? settlementPreview.blockingReason()
                 : !ordinaryPremiumPricingReady ? ordinaryPremiumPreview.blockingReason()
                 : null;
@@ -296,31 +340,147 @@ public class PayrollService {
                 term == null ? null : toTerm(term), termHistory);
     }
 
-    private PayrollPreviewDto preview(YearMonth month, PayrollSettings legacySettings, CompensationTerm term,
-                                      ProductionCalendarMonthDto production, PayrollSourceSnapshot source,
-                                      List<PayrollAdjustment> monthAdjustments,
-                                      SettlementPreview settlementPreview,
-                                      OrdinaryPremiumPreview ordinaryPremiumPreview) {
-        long additions = monthAdjustments.stream().filter(item -> "ADDITION".equals(item.getAdjustmentType()))
-                .mapToLong(PayrollAdjustment::getAmountMinor).sum();
-        long deductions = monthAdjustments.stream().filter(item -> "DEDUCTION".equals(item.getAdjustmentType()))
-                .mapToLong(PayrollAdjustment::getAmountMinor).sum();
+    private PayrollPreviewDto preview(
+            AppUser user,
+            YearMonth month,
+            PayrollSettings legacySettings,
+            CompensationTerm term,
+            ProductionCalendarMonthDto production,
+            PayrollSourceSnapshot source,
+            List<PayrollAdjustment> monthAdjustments,
+            SettlementPreview settlementPreview,
+            OrdinaryPremiumPreview ordinaryPremiumPreview
+    ) {
+        long additions =
+                monthAdjustments.stream()
+                        .filter(item ->
+                                "ADDITION".equals(
+                                        item.getAdjustmentType()
+                                )
+                        )
+                        .mapToLong(
+                                PayrollAdjustment::getAmountMinor
+                        )
+                        .sum();
 
-        String currency = term == null ? legacySettings.getCurrencyCode() : term.getCurrencyCode();
-        String mode = term == null ? null : term.getPayMode();
-        String effectiveMonth = term == null ? null : YearMonth.from(term.getEffectiveFrom()).toString();
-        Long configuredHourly = term == null ? null : term.getHourlyRateMinor();
-        Long salary = term == null ? null : term.getMonthlySalaryMinor();
-        long effectiveHourly = 0L; int salaryCovered = 0; long basePay = 0L;
-        // A missing/zero salary denominator is a blocking preview state, not a broken Payroll route.
-        // Final calculate() still fails closed until Production Calendar exposes a positive norm.
-        boolean previewFormulaReady = term != null
-                && (!"SALARY".equals(term.getPayMode())
-                || (production.scheduleCoverageComplete() && production.productionNormMinutes() > 0));
+        long deductions =
+                monthAdjustments.stream()
+                        .filter(item ->
+                                "DEDUCTION".equals(
+                                        item.getAdjustmentType()
+                                )
+                        )
+                        .mapToLong(
+                                PayrollAdjustment::getAmountMinor
+                        )
+                        .sum();
+
+        String currency =
+                term == null
+                        ? legacySettings.getCurrencyCode()
+                        : term.getCurrencyCode();
+
+        String mode =
+                term == null
+                        ? null
+                        : term.getPayMode();
+
+        String effectiveMonth =
+                term == null
+                        ? null
+                        : YearMonth.from(
+                                term.getEffectiveFrom()
+                        ).toString();
+
+        Long configuredHourly =
+                term == null
+                        ? null
+                        : term.getHourlyRateMinor();
+
+        Long salary =
+                term == null
+                        ? null
+                        : term.getMonthlySalaryMinor();
+
+        long effectiveHourly = 0L;
+        int salaryCovered = 0;
+        long basePay = 0L;
+
+        /*
+         * EARNED_BASE_PAY is intentionally calculated before generic
+         * components, NIGHT/HOLIDAY premiums and settlements.
+         *
+         * This gives generic percentage components a stable, acyclic base.
+         */
+        boolean previewFormulaReady =
+                term != null
+                        && (!"SALARY".equals(
+                                term.getPayMode()
+                        )
+                        || (production.scheduleCoverageComplete()
+                        && production.productionNormMinutes() > 0));
+
         if (previewFormulaReady) {
-            Result result = calculation.calculate(term, source, production.productionNormMinutes());
-            effectiveHourly = result.effectiveHourlyRateMinor(); salaryCovered = result.salaryCoveredMinutes(); basePay = result.basePayMinor();
+            Result result =
+                    calculation.calculate(
+                            term,
+                            source,
+                            production.productionNormMinutes()
+                    );
+
+            effectiveHourly =
+                    result.effectiveHourlyRateMinor();
+
+            salaryCovered =
+                    result.salaryCoveredMinutes();
+
+            basePay =
+                    result.basePayMinor();
         }
+
+        String componentUnavailableReason =
+                term == null
+                        ? "PAYROLL_COMPENSATION_REQUIRED"
+                        : "SALARY".equals(term.getPayMode())
+                        && !production.scheduleCoverageComplete()
+                        ? "PAYROLL_PRODUCTION_NORM_INCOMPLETE"
+                        : "SALARY".equals(term.getPayMode())
+                        && production.productionNormMinutes() <= 0
+                        ? "PAYROLL_PRODUCTION_NORM_REQUIRED"
+                        : null;
+
+        Context componentContext =
+                previewFormulaReady
+                        ? new Context(
+                                currency,
+                                mode,
+                                salary,
+                                basePay
+                        )
+                        : null;
+
+        ComponentPreview componentPreview =
+                componentPreview(
+                        user,
+                        month,
+                        componentContext,
+                        componentUnavailableReason
+                );
+
+        Projection componentProjection =
+                componentPreview.ready()
+                        ? componentPreview.projection()
+                        : emptyComponentProjection();
+
+        List<PayrollCompensationComponentLineDto> componentLines =
+                componentProjection.lines()
+                        .stream()
+                        .map(this::toComponentLine)
+                        .toList();
+
+        long componentEarnings =
+                componentProjection.totalAmountMinor();
+
         long settlementBasePay =
                 settlementPreview.ready()
                         ? settlementPreview.baseAmountMinor()
@@ -343,18 +503,32 @@ public class PayrollService {
 
         /*
          * Delta-only invariant:
-         * ordinary base is already present in basePay.
+         * ordinary base is already represented by basePay.
          */
         long ordinaryPremiumPay =
                 ordinaryPremiumPreview.ready()
                         ? ordinaryPremiumPreview.premiumAmountMinor()
                         : 0L;
 
-        long totalPay =
+        /*
+         * Generic components are an explicit earnings phase.
+         *
+         * They are NOT folded into manual additionsMinor.
+         */
+        long earningsSubtotal =
                 safeMoney(
                         basePay,
                         settlementPay,
                         ordinaryPremiumPay,
+                        componentEarnings,
+                        0L
+                );
+
+        long totalPay =
+                safeMoney(
+                        earningsSubtotal,
+                        0L,
+                        0L,
                         additions,
                         deductions
                 );
@@ -374,6 +548,12 @@ public class PayrollService {
                 source.payableMinutes(),
                 source.hourlyBasePayableMinutes(),
                 basePay,
+                componentPreview.ready(),
+                componentPreview.blockingReason(),
+                componentLines.size(),
+                componentEarnings,
+                componentProjection.fingerprint(),
+                componentLines,
                 ordinaryPremiumPreview.ready(),
                 ordinaryPremiumPreview.blockingReason(),
                 ordinaryPremiumPreview.pricingIdentityRequired(),
@@ -398,6 +578,213 @@ public class PayrollService {
                 effectiveHourly,
                 production.productionNormMinutes(),
                 salaryCovered
+        );
+    }
+
+
+    private ComponentPreview componentPreview(
+            AppUser user,
+            YearMonth month,
+            Context context,
+            String unavailableReason
+    ) {
+        /*
+         * Compatibility path for isolated historical unit fixtures that
+         * manually construct PayrollService. Real Spring runtime always
+         * injects componentPricing.
+         */
+        if (componentPricing == null) {
+            return new ComponentPreview(
+                    month,
+                    true,
+                    null,
+                    null,
+                    emptyComponentProjection()
+            );
+        }
+
+        return componentPricing.preview(
+                user,
+                month,
+                context,
+                unavailableReason
+        );
+    }
+
+    private Projection emptyComponentProjection() {
+        return new Projection(
+                0L,
+                List.of(),
+                null
+        );
+    }
+
+    private PayrollCompensationComponentLineDto toComponentLine(
+            CalculatedLine line
+    ) {
+        return new PayrollCompensationComponentLineDto(
+                line.componentId(),
+                line.versionId(),
+                YearMonth.from(
+                        line.effectiveFrom()
+                ).toString(),
+                line.displayName(),
+                line.calculationType().name(),
+                line.calculationBase() == null
+                        ? null
+                        : line.calculationBase().name(),
+                line.rateBps(),
+                line.configuredAmountMinor(),
+                line.configuredCurrencyCode(),
+                line.referenceBaseMinor(),
+                line.amountMinor()
+        );
+    }
+
+    private List<PayrollCompensationComponentLineDto> frozenComponentLines(
+            PayrollSnapshot snapshot
+    ) {
+        if (snapshotComponentLines == null) {
+            /*
+             * Compatibility path for historical isolated unit fixtures that
+             * manually construct PayrollService.
+             *
+             * Real Spring runtime always injects the repository.
+             */
+            return List.of();
+        }
+
+        List<PayrollSnapshotComponentLine> frozen =
+                snapshotComponentLines
+                        .findBySnapshotOrderByLineIndexAsc(
+                                snapshot
+                        );
+
+        validateFrozenComponentLines(
+                snapshot,
+                frozen
+        );
+
+        return frozen.stream()
+                .map(line ->
+                        new PayrollCompensationComponentLineDto(
+                                line.getComponentId(),
+                                line.getVersionId(),
+                                YearMonth.from(
+                                        line.getEffectiveFrom()
+                                ).toString(),
+                                line.getDisplayName(),
+                                line.getCalculationType(),
+                                line.getCalculationBase(),
+                                line.getRateBps(),
+                                line.getConfiguredAmountMinor(),
+                                line.getConfiguredCurrencyCode(),
+                                line.getReferenceBaseMinor(),
+                                line.getAmountMinor()
+                        )
+                )
+                .toList();
+    }
+
+
+
+    private void validateFrozenComponentLines(
+            PayrollSnapshot snapshot,
+            List<PayrollSnapshotComponentLine> lines
+    ) {
+        if (snapshot == null
+                || lines == null) {
+            throw new IllegalStateException(
+                    "Frozen compensation component snapshot provenance is missing"
+            );
+        }
+
+        if (lines.size()
+                != snapshot.getCompensationComponentCount()) {
+            throw new IllegalStateException(
+                    "Frozen compensation component line count "
+                            + "does not match snapshot aggregate"
+            );
+        }
+
+        long amountSum = 0L;
+
+        for (int i = 0; i < lines.size(); i++) {
+            PayrollSnapshotComponentLine line =
+                    lines.get(i);
+
+            if (line == null
+                    || line.getLineIndex() != i) {
+                throw new IllegalStateException(
+                        "Frozen compensation component line order "
+                                + "does not match snapshot aggregate"
+                );
+            }
+
+            try {
+                amountSum =
+                        Math.addExact(
+                                amountSum,
+                                line.getAmountMinor()
+                        );
+
+            } catch (ArithmeticException ex) {
+                throw new IllegalStateException(
+                        "Frozen compensation component line amount overflow",
+                        ex
+                );
+            }
+        }
+
+        if (amountSum
+                != snapshot.getCompensationComponentEarningsMinor()) {
+            throw new IllegalStateException(
+                    "Frozen compensation component earnings "
+                            + "do not match snapshot aggregate"
+            );
+        }
+    }
+
+    private void freezeComponentLines(
+            PayrollSnapshot snapshot,
+            List<PayrollCompensationComponentLineDto> lines
+    ) {
+        if (snapshotComponentLines == null
+                || lines == null
+                || lines.isEmpty()) {
+            return;
+        }
+
+        List<PayrollSnapshotComponentLine> frozen =
+                new java.util.ArrayList<>();
+
+        for (int i = 0; i < lines.size(); i++) {
+            PayrollCompensationComponentLineDto line =
+                    lines.get(i);
+
+            frozen.add(
+                    new PayrollSnapshotComponentLine(
+                            snapshot,
+                            i,
+                            line.componentId(),
+                            line.versionId(),
+                            YearMonth.parse(
+                                    line.effectiveMonth()
+                            ).atDay(1),
+                            line.displayName(),
+                            line.calculationType(),
+                            line.calculationBase(),
+                            line.rateBps(),
+                            line.configuredAmountMinor(),
+                            line.configuredCurrencyCode(),
+                            line.referenceBaseMinor(),
+                            line.amountMinor()
+                    )
+            );
+        }
+
+        snapshotComponentLines.saveAllAndFlush(
+                frozen
         );
     }
 
@@ -495,6 +882,11 @@ public class PayrollService {
                 .append(preview.paidAbsenceMinutes()).append('|').append(preview.payableMinutes()).append('|')
                 .append(preview.hourlyBasePayableMinutes()).append('|')
                 .append(preview.basePayMinor()).append('|')
+                .append(preview.compensationComponentCount()).append('|')
+                .append(preview.compensationComponentEarningsMinor()).append('|')
+                .append(preview.compensationComponentFingerprint() == null
+                        ? ""
+                        : preview.compensationComponentFingerprint()).append('|')
                 .append(preview.ordinaryPremiumMinutes()).append('|')
                 .append(preview.ordinaryPremiumReferenceBasePayMinor()).append('|')
                 .append(preview.ordinaryPremiumPayMinor()).append('|')
@@ -529,25 +921,67 @@ public class PayrollService {
         return new PayrollAdjustmentDto(value.getId(), YearMonth.from(value.getPeriodMonth()).toString(), value.getAdjustmentType(),
                 value.getAmountMinor(), value.getTitle(), value.getNote(), value.getCreatedAt() == null ? null : value.getCreatedAt().toString());
     }
-    private PayrollSnapshotDto toSnapshot(PayrollSnapshot value) {
-        return new PayrollSnapshotDto(value.getId(), YearMonth.from(value.getPeriodMonth()).toString(), value.getRevision(),
-                value.getCurrencyCode(), value.getHourlyRateMinor(), value.getPlannedMinutes(), value.getWorkedMinutes(),
-                value.getVacationMinutes(), value.getSickMinutes(), value.getOvertimeCompensatedMinutes(), value.getUnpaidMinutes(),
-                value.getTimeAdjustmentMinutes(), value.getPaidAbsenceMinutes(), value.getPayableMinutes(),
-                value.getHourlyBasePayableMinutes(), value.getBasePayMinor(),
+    private PayrollSnapshotDto toSnapshot(
+            PayrollSnapshot value
+    ) {
+        List<PayrollCompensationComponentLineDto> componentLines =
+                frozenComponentLines(
+                        value
+                );
+
+        return new PayrollSnapshotDto(
+                value.getId(),
+                YearMonth.from(
+                        value.getPeriodMonth()
+                ).toString(),
+                value.getRevision(),
+                value.getCurrencyCode(),
+                value.getHourlyRateMinor(),
+                value.getPlannedMinutes(),
+                value.getWorkedMinutes(),
+                value.getVacationMinutes(),
+                value.getSickMinutes(),
+                value.getOvertimeCompensatedMinutes(),
+                value.getUnpaidMinutes(),
+                value.getTimeAdjustmentMinutes(),
+                value.getPaidAbsenceMinutes(),
+                value.getPayableMinutes(),
+                value.getHourlyBasePayableMinutes(),
+                value.getBasePayMinor(),
+                value.getCompensationComponentCount(),
+                value.getCompensationComponentEarningsMinor(),
+                value.getCompensationComponentFingerprint(),
+                componentLines,
                 value.getOrdinaryPremiumMinutes(),
                 value.getOrdinaryPremiumReferenceBasePayMinor(),
                 value.getOrdinaryPremiumPayMinor(),
                 value.getOrdinaryPremiumPricingFingerprint(),
-                value.getSettlementCount(), value.getSettlementMinutes(),
-                value.getSettlementBasePayMinor(), value.getSettlementPremiumPayMinor(), value.getSettlementPayMinor(),
+                value.getSettlementCount(),
+                value.getSettlementMinutes(),
+                value.getSettlementBasePayMinor(),
+                value.getSettlementPremiumPayMinor(),
+                value.getSettlementPayMinor(),
                 value.getSettlementPricingFingerprint(),
-                value.getAdditionsMinor(), value.getDeductionsMinor(), value.getTotalPayMinor(), value.getSourcePeriodClosedAt().toString(),
-                value.getSourceIntegrityCheckedAt().toString(), value.getCalculationHash(),
-                value.getCreatedAt() == null ? null : value.getCreatedAt().toString(),
-                value.getSupersededBy() == null ? null : value.getSupersededBy().getId(), value.getPayMode(),
-                YearMonth.from(value.getCompensationEffectiveFrom()).toString(), value.getConfiguredHourlyRateMinor(),
-                value.getMonthlySalaryMinor(), value.getHourlyRateMinor(), value.getProductionNormMinutes(), value.getSalaryCoveredMinutes());
+                value.getAdditionsMinor(),
+                value.getDeductionsMinor(),
+                value.getTotalPayMinor(),
+                value.getSourcePeriodClosedAt().toString(),
+                value.getSourceIntegrityCheckedAt().toString(),
+                value.getCalculationHash(),
+                value.getCreatedAt().toString(),
+                value.getSupersededBy() == null
+                        ? null
+                        : value.getSupersededBy().getId(),
+                value.getPayMode(),
+                YearMonth.from(
+                        value.getCompensationEffectiveFrom()
+                ).toString(),
+                value.getConfiguredHourlyRateMinor(),
+                value.getMonthlySalaryMinor(),
+                value.getHourlyRateMinor(),
+                value.getProductionNormMinutes(),
+                value.getSalaryCoveredMinutes()
+        );
     }
 
     private YearMonth parseMonth(String value) {

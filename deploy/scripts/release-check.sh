@@ -4937,15 +4937,15 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1042" ]]; then
-  ok "test method baseline: 1042"
+if [[ "$TEST_METHODS" == "1052" ]]; then
+  ok "test method baseline: 1052"
 else
-  fail "expected 1042 @Test methods, found $TEST_METHODS"
+  fail "expected 1052 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "224" ]]; then
-  ok "test class baseline: 224"
+if [[ "$TEST_CLASSES" == "227" ]]; then
+  ok "test class baseline: 227"
 else
-  fail "expected 224 test classes, found $TEST_CLASSES"
+  fail "expected 227 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
@@ -4995,8 +4995,8 @@ contains src/main/java/ru/daniil/shifts/service/PayrollService.java "ordinaryPre
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'id="payrollOrdinaryPremiumBreakdown"'
 contains CHANGES.md 'OpenAPI is **138 operations / 144 schemas** with SHA-256 `1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`.'
 contains docs/TEMPORAL_WORK_CONTEXT_NATIVE_PAY_PRICING_V27.46.1.md 'OpenAPI: 138 operations / 144 schemas.'
-contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 150 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "64609eb928b5eb8d1a0efdb4a97ee4224ada4f6c47a8c02e88de6abbde33aa3b"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 151 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "56442081179218567fafea52e21e0e7b4fc00e9b96789b1058715809225df78f"'
 contains docs/API.md "# DutyLog API v${VERSION}"
 contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
@@ -5004,6 +5004,19 @@ contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
 contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
 contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
 contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
+
+# v27.47.0 7A3B Generic Compensation Payroll Projection Integration
+contains src/main/java/ru/daniil/shifts/service/PayrollCompensationComponentPreviewService.java "PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH"
+contains src/main/java/ru/daniil/shifts/service/PayrollCompensationComponentPreviewService.java "PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE"
+contains src/main/java/ru/daniil/shifts/service/PayrollService.java "compensationComponentEarningsMinor"
+contains src/main/java/ru/daniil/shifts/service/PayrollService.java "freezeComponentLines"
+contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Frozen compensation component line count "
+contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Frozen compensation component earnings "
+contains src/main/java/ru/daniil/shifts/dto/Dtos.java "PayrollCompensationComponentLineDto"
+contains src/main/resources/static/openapi/dutylog-v1.yaml "PayrollCompensationComponentLine:"
+contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 151 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "56442081179218567fafea52e21e0e7b4fc00e9b96789b1058715809225df78f"'
+contains src/test/java/ru/daniil/shifts/service/PayrollCompensationComponentPayrollIntegrationTest.java "Премия за выживание после ночной смены"
 
 # v27.47.0 7A3A Immutable Generic Compensation Component Snapshot Foundation
 contains src/main/resources/db/migration/postgresql/V63__payroll_snapshot_compensation_components.sql "compensation_component_count"
@@ -5028,8 +5041,8 @@ contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: createP
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listPayrollCompensationComponentHistory"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listEffectivePayrollCompensationComponents"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: upsertPayrollCompensationComponentVersion"
-contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 150 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "64609eb928b5eb8d1a0efdb4a97ee4224ada4f6c47a8c02e88de6abbde33aa3b"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 151 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "56442081179218567fafea52e21e0e7b4fc00e9b96789b1058715809225df78f"'
 contains frontend/src/generated/dutylog-api.ts '"createPayrollCompensationComponent": { method: "POST", path: "/api/v1/payroll/compensation-components" }'
 contains frontend/src/generated/dutylog-api.ts '"listPayrollCompensationComponentHistory": { method: "GET", path: "/api/v1/payroll/compensation-components" }'
 contains frontend/src/generated/dutylog-api.ts '"listEffectivePayrollCompensationComponents": { method: "GET", path: "/api/v1/payroll/compensation-components/effective/{month}" }'
