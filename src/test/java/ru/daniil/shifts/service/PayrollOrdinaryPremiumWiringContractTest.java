@@ -61,10 +61,83 @@ class PayrollOrdinaryPremiumWiringContractTest {
                 )
         );
 
+        int earningsSubtotalStart =
+                payroll.indexOf(
+                        "long earningsSubtotal ="
+                );
+
+        int totalPayStart =
+                payroll.indexOf(
+                        "long totalPay =",
+                        earningsSubtotalStart
+                );
+
+        int previewReturnStart =
+                payroll.indexOf(
+                        "return new PayrollPreviewDto(",
+                        totalPayStart
+                );
+
         assertTrue(
-                payroll.contains(
-                        "ordinaryPremiumPay,\n                        additions"
-                )
+                earningsSubtotalStart >= 0,
+                "Payroll must expose an explicit earnings subtotal"
+        );
+
+        assertTrue(
+                totalPayStart > earningsSubtotalStart,
+                "Total pay must be assembled after the earnings subtotal"
+        );
+
+        assertTrue(
+                previewReturnStart > totalPayStart,
+                "Payroll preview return must follow total-pay assembly"
+        );
+
+        String earningsSubtotal =
+                payroll.substring(
+                        earningsSubtotalStart,
+                        totalPayStart
+                );
+
+        String totalPay =
+                payroll.substring(
+                        totalPayStart,
+                        previewReturnStart
+                );
+
+        assertTrue(
+                earningsSubtotal.contains(
+                        "ordinaryPremiumPay"
+                ),
+                "Ordinary NIGHT / HOLIDAY premium must remain an earnings component"
+        );
+
+        assertTrue(
+                earningsSubtotal.contains(
+                        "componentEarnings"
+                ),
+                "Generic compensation earnings must join the earnings phase explicitly"
+        );
+
+        assertTrue(
+                totalPay.contains(
+                        "earningsSubtotal"
+                ),
+                "Final pay must consume the explicit earnings subtotal"
+        );
+
+        assertTrue(
+                totalPay.contains(
+                        "additions"
+                ),
+                "Manual additions must remain a later explicit phase"
+        );
+
+        assertTrue(
+                totalPay.contains(
+                        "deductions"
+                ),
+                "Manual deductions must remain a later explicit phase"
         );
 
         assertTrue(
