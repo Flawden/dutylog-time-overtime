@@ -119,7 +119,20 @@ class PayrollSettlementExplainabilityFrontendContractTest {
 
         assertTrue(
                 component.contains(
-                        "<details v-if=\"item.settlementPricingFingerprint\""
+                        "<details v-if=\"item.settlementPricingFingerprint"
+                                + "||item.compensationComponentFingerprint\""
+                )
+        );
+
+        assertTrue(
+                component.contains(
+                        "<template v-if=\"item.settlementPricingFingerprint\""
+                )
+        );
+
+        assertTrue(
+                component.contains(
+                        "{{ item.settlementPricingFingerprint }}"
                 )
         );
 
