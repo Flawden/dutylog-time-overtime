@@ -4,6 +4,9 @@ import type {
   PayPricingTerm,
   PayPricingTermInput,
   PayrollAdjustmentInput,
+  PayrollCompensationComponentCreateInput,
+  PayrollCompensationComponentVersion,
+  PayrollCompensationComponentVersionInput,
   PayrollCompensationTermInput,
   PayrollPeriod,
   PayrollSettingsInput,
@@ -18,6 +21,9 @@ export const usePayrollStore = defineStore("dutylog-payroll", {
     month: "",
     period: null as PayrollPeriod | null,
     pricingTerms: [] as PayPricingTerm[],
+    compensationComponentHistory: [] as PayrollCompensationComponentVersion[],
+    compensationComponentsLoading: false,
+    compensationComponentsError: "",
     loading: false,
     loaded: false,
     error: "",
@@ -37,6 +43,36 @@ export const usePayrollStore = defineStore("dutylog-payroll", {
       }
       catch (error) { if (sequence === loadSequence) { this.loaded = false; this.error = errorMessage(error); } throw error; }
       finally { if (sequence === loadSequence) this.loading = false; }
+    },
+    async loadCompensationComponents(): Promise<void> {
+      this.compensationComponentsLoading = true;
+      this.compensationComponentsError = "";
+      try {
+        const history = await api.compensationComponentHistory();
+        this.compensationComponentHistory =
+          Array.isArray(history) ? history : [];
+      }
+      catch (error) {
+        this.compensationComponentsError = errorMessage(error);
+        throw error;
+      }
+      finally {
+        this.compensationComponentsLoading = false;
+      }
+    },
+    async createCompensationComponent(body: PayrollCompensationComponentCreateInput): Promise<void> {
+      await api.createCompensationComponent(body);
+      await this.loadCompensationComponents();
+      if (this.month) await this.load(this.month);
+    },
+    async saveCompensationComponentVersion(
+      componentId: number,
+      month: string,
+      body: PayrollCompensationComponentVersionInput,
+    ): Promise<void> {
+      await api.upsertCompensationComponentVersion(componentId, month, body);
+      await this.loadCompensationComponents();
+      if (this.month) await this.load(this.month);
     },
     async saveSettings(body: PayrollSettingsInput): Promise<void> { await api.updateSettings(body); await this.load(this.month); },
     async saveCompensationTerm(month: string, body: PayrollCompensationTermInput): Promise<void> { await api.upsertCompensationTerm(month, body); await this.load(this.month); },

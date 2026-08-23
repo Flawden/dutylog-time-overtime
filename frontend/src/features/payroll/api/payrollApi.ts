@@ -2,6 +2,8 @@ import { createGeneratedDutyLogApiClient, type DutyLogGeneratedApiClient } from 
 import type {
   PayPricingTermInput,
   PayrollAdjustmentInput,
+  PayrollCompensationComponentCreateInput,
+  PayrollCompensationComponentVersionInput,
   PayrollCompensationTermInput,
   PayrollSettingsInput,
   ProductionCalendarDayInput,
@@ -16,6 +18,22 @@ export function createPayrollApi(client: DutyLogGeneratedApiClient = createGener
     },
     async deletePricingTerm(effectiveFrom: string): Promise<void> {
       await client.request("deletePayrollPricingTerm", { path: { effectiveFrom } });
+    },
+    compensationComponentHistory() {
+      return client.request("listPayrollCompensationComponentHistory");
+    },
+    async createCompensationComponent(body: PayrollCompensationComponentCreateInput): Promise<void> {
+      await client.request("createPayrollCompensationComponent", { body });
+    },
+    async upsertCompensationComponentVersion(
+      componentId: number,
+      month: string,
+      body: PayrollCompensationComponentVersionInput,
+    ): Promise<void> {
+      await client.request(
+        "upsertPayrollCompensationComponentVersion",
+        { path: { componentId, month }, body },
+      );
     },
     async updateSettings(body: PayrollSettingsInput): Promise<void> { await client.request("updatePayrollSettings", { body }); },
     async upsertCompensationTerm(month: string, body: PayrollCompensationTermInput): Promise<void> {

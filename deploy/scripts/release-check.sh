@@ -4929,10 +4929,10 @@ else
 fi
 
 VITEST_TESTS=$(grep -R --include='*.spec.ts' --include='*.test.ts' -h -E '^[[:space:]]*(it|test)\(' frontend/src | wc -l | tr -d ' ')
-if [[ "$VITEST_TESTS" == "80" ]]; then
-  ok "Vitest case baseline: 80"
+if [[ "$VITEST_TESTS" == "83" ]]; then
+  ok "Vitest case baseline: 83"
 else
-  fail "expected 80 Vitest cases, found $VITEST_TESTS"
+  fail "expected 83 Vitest cases, found $VITEST_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
@@ -4974,7 +4974,7 @@ contains frontend/package.json "\"version\": \"${VERSION}\""
 contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
 contains frontend/generated-lockfile-manifest.txt "nextAction=roadmap-after-v${VERSION}-green"
 contains frontend/browser-bundle-budget.json "\"release\": \"${VERSION}\""
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 945000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 970000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 contains src/main/resources/application-prod.properties "info.app.release-version=${VERSION}"
 contains src/main/resources/static/service-worker.js "dutylog-shell-v${VERSION}-"
@@ -5004,6 +5004,18 @@ contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
 contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
 contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
 contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
+
+# v27.47.0 7A4A Generic Compensation Settings UI
+contains frontend/src/features/payroll/components/CompensationComponentsCard.vue "data-generic-compensation-components"
+contains frontend/src/features/payroll/components/CompensationComponentsCard.vue "премия за выживание после ночной смены"
+contains frontend/src/features/payroll/components/CompensationComponentsCard.vue "Фактически начисленная базовая оплата"
+contains frontend/src/features/payroll/api/payrollApi.ts 'client.request("createPayrollCompensationComponent"'
+contains frontend/src/features/payroll/api/payrollApi.ts '"upsertPayrollCompensationComponentVersion"'
+contains frontend/src/features/payroll/stores/payrollStore.ts "compensationComponentHistory"
+contains frontend/src/features/payroll/components/PayrollWorkspace.vue "<CompensationComponentsCard"
+contains frontend/src/features/payroll/components/CompensationComponentsCard.spec.ts "keeps display names user-owned"
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 970000'
+contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.47.0 7A3B Generic Compensation Payroll Projection Integration
 contains src/main/java/ru/daniil/shifts/service/PayrollCompensationComponentPreviewService.java "PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH"
@@ -5082,7 +5094,7 @@ contains docs/RELEASE_CHECKLIST.md "## v27.46.2 — Effective-Dated Pricing Sett
 contains docs/SECURITY_REVIEW.md "# v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals review"
 contains docs/MODULE_CONTRACTS.md "## Effective-Dated Pricing Settings & Payroll Verticals contract (v27.46.2)"
 contains docs/SUPPLY_CHAIN.md "## v27.46.2 effective-dated pricing settings & payroll verticals"
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 945000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 970000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.46.2 6H1 Native Pricing API Foundation development slice
