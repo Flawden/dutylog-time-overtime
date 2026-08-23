@@ -9,6 +9,7 @@ export type PayrollSettingsInput = DutyLogApiSchemas.PayrollSettingsInput;
 export type PayrollCompensationTermInput = DutyLogApiSchemas.PayrollCompensationTermInput;
 export type PayrollCompensationTerm = DutyLogApiSchemas.PayrollCompensationTerm;
 export type PayrollCompensationComponentVersion = DutyLogApiSchemas.PayrollCompensationComponentVersion;
+export type PayrollCompensationComponentLine = DutyLogApiSchemas.PayrollCompensationComponentLine;
 export type PayrollCompensationComponentVersionInput = DutyLogApiSchemas.PayrollCompensationComponentVersionInput;
 export type PayrollCompensationComponentCreateInput = DutyLogApiSchemas.PayrollCompensationComponentCreateInput;
 export type PayrollAdjustmentInput = DutyLogApiSchemas.PayrollAdjustmentInput;

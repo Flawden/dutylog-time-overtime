@@ -4929,10 +4929,10 @@ else
 fi
 
 VITEST_TESTS=$(grep -R --include='*.spec.ts' --include='*.test.ts' -h -E '^[[:space:]]*(it|test)\(' frontend/src | wc -l | tr -d ' ')
-if [[ "$VITEST_TESTS" == "83" ]]; then
-  ok "Vitest case baseline: 83"
+if [[ "$VITEST_TESTS" == "86" ]]; then
+  ok "Vitest case baseline: 86"
 else
-  fail "expected 83 Vitest cases, found $VITEST_TESTS"
+  fail "expected 86 Vitest cases, found $VITEST_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
@@ -5004,6 +5004,18 @@ contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
 contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
 contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
 contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
+
+# v27.47.0 7A4B Generic Compensation Explainability UI
+contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'id="payrollCompensationComponentsTotal"'
+contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'id="payrollCompensationComponentBreakdown"'
+contains frontend/src/features/payroll/components/PayrollWorkspace.vue "preview.compensationComponentLines"
+contains frontend/src/features/payroll/components/PayrollWorkspace.vue "compensationComponentCalculationBlockingReason"
+contains frontend/src/features/payroll/components/PayrollWorkspace.vue "PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH"
+contains frontend/src/features/payroll/components/PayrollWorkspace.vue "PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE"
+contains frontend/src/features/payroll/components/PayrollWorkspace.vue "PAYROLL_COMP_COMPONENT_INVALID"
+contains frontend/src/features/payroll/components/PayrollWorkspace.vue "item.compensationComponentLines"
+contains frontend/src/features/payroll/components/PayrollWorkspace.vue "item.compensationComponentFingerprint"
+contains frontend/src/features/payroll/components/PayrollWorkspace.spec.ts "PayrollWorkspace generic compensation explainability"
 
 # v27.47.0 7A4A Generic Compensation Settings UI
 contains frontend/src/features/payroll/components/CompensationComponentsCard.vue "data-generic-compensation-components"

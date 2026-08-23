@@ -74,3 +74,76 @@ describe("PayrollWorkspace ordinary premium explainability", () => {
     );
   });
 });
+
+describe("PayrollWorkspace generic compensation explainability", () => {
+  it("shows generic compensation aggregate and backend-owned preview lines", () => {
+    expect(source).toContain(
+      'id="payrollCompensationComponentsTotal"',
+    );
+    expect(source).toContain(
+      "preview?.compensationComponentEarningsMinor",
+    );
+    expect(source).toContain(
+      'id="payrollCompensationComponentBreakdown"',
+    );
+    expect(source).toContain(
+      "preview.compensationComponentLines",
+    );
+    expect(source).toContain(
+      "line.displayName",
+    );
+    expect(source).toContain(
+      "line.referenceBaseMinor",
+    );
+    expect(source).toContain(
+      "line.configuredAmountMinor",
+    );
+    expect(source).toContain(
+      "line.rateBps",
+    );
+  });
+
+  it("explains generic compensation blockers before downstream pricing blockers", () => {
+    expect(source).toContain(
+      "compensationComponentCalculationReady",
+    );
+    expect(source).toContain(
+      "compensationComponentCalculationBlockingReason",
+    );
+    expect(source).toContain(
+      'case"PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH"',
+    );
+    expect(source).toContain(
+      'case"PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE"',
+    );
+    expect(source).toContain(
+      'case"PAYROLL_COMP_COMPONENT_INVALID"',
+    );
+    expect(source).toContain(
+      "if(preview.value&&!preview.value.compensationComponentCalculationReady)",
+    );
+    expect(source.indexOf(
+      "if(preview.value&&!preview.value.compensationComponentCalculationReady)",
+    )).toBeLessThan(source.indexOf(
+      "if(preview.value&&!preview.value.settlementPricingReady)",
+    ));
+  });
+
+  it("renders frozen generic component lines and fingerprint from each snapshot", () => {
+    expect(source).toContain(
+      "item.compensationComponentEarningsMinor",
+    );
+    expect(source).toContain(
+      "item.compensationComponentLines",
+    );
+    expect(source).toContain(
+      "item.compensationComponentFingerprint",
+    );
+    expect(source).toContain(
+      "componentLineDetail(line,item.currencyCode)",
+    );
+    expect(source).toContain(
+      "snapshot-component-${item.id}-${line.versionId}",
+    );
+  });
+});
