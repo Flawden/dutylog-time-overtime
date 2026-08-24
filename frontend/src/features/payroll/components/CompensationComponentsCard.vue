@@ -55,6 +55,30 @@ const fixedCurrency = ref(
 );
 const enabled = ref(true);
 
+const preset = computed<
+  "earned" | "nominal" | "fixed"
+>({
+  get: () =>
+    calculationType.value === "FIXED_AMOUNT"
+      ? "fixed"
+      : calculationBase.value === "NOMINAL_SALARY"
+        ? "nominal"
+        : "earned",
+  set: value => {
+    calculationType.value =
+      value === "fixed"
+        ? "FIXED_AMOUNT"
+        : "PERCENT_OF_BASE";
+
+    if (value !== "fixed") {
+      calculationBase.value =
+        value === "nominal"
+          ? "NOMINAL_SALARY"
+          : "EARNED_BASE_PAY";
+    }
+  },
+});
+
 const message = ref("");
 const messageOk = ref(false);
 
@@ -78,6 +102,7 @@ const text = computed(() =>
         add: "New component",
         newTitle: "New earning component",
         editTitle: "Component version",
+        preset: "Preset",
         name: "Name",
         namePlaceholder: "For example: night-shift survival bonus",
         effective: "Effective from month",
@@ -118,6 +143,7 @@ const text = computed(() =>
         add: "Новый компонент",
         newTitle: "Новое начисление",
         editTitle: "Версия компонента",
+        preset: "Быстрый шаблон",
         name: "Название",
         namePlaceholder: "Например: премия за выживание после ночной смены",
         effective: "Действует с месяца",
@@ -749,6 +775,38 @@ onMounted(() => {
                 : text.editTitle
             }}
           </b>
+
+        </div>
+
+        <div
+          v-if="editingComponentId == null"
+          class="componentField"
+          data-compensation-preset-helper
+        >
+          <span>
+            {{ text.preset }}
+          </span>
+
+          <select
+            id="compensationComponentPreset"
+            v-model="preset"
+          >
+            <option value="earned">
+              {{ text.percent }}
+              ·
+              {{ text.earned }}
+            </option>
+
+            <option value="nominal">
+              {{ text.percent }}
+              ·
+              {{ text.nominal }}
+            </option>
+
+            <option value="fixed">
+              {{ text.fixed }}
+            </option>
+          </select>
 
         </div>
 

@@ -4929,10 +4929,10 @@ else
 fi
 
 VITEST_TESTS=$(grep -R --include='*.spec.ts' --include='*.test.ts' -h -E '^[[:space:]]*(it|test)\(' frontend/src | wc -l | tr -d ' ')
-if [[ "$VITEST_TESTS" == "86" ]]; then
-  ok "Vitest case baseline: 86"
+if [[ "$VITEST_TESTS" == "88" ]]; then
+  ok "Vitest case baseline: 88"
 else
-  fail "expected 86 Vitest cases, found $VITEST_TESTS"
+  fail "expected 88 Vitest cases, found $VITEST_TESTS"
 fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
@@ -5004,6 +5004,21 @@ contains docs/RELEASE_CHECKLIST.md "Status: v${VERSION}."
 contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
 contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
 contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
+
+# v27.47.0 7A5 Neutral Generic Compensation Presets
+contains frontend/src/features/payroll/components/CompensationComponentsCard.vue 'data-compensation-preset-helper'
+contains frontend/src/features/payroll/components/CompensationComponentsCard.vue 'id="compensationComponentPreset"'
+contains frontend/src/features/payroll/components/CompensationComponentsCard.vue 'value="earned"'
+contains frontend/src/features/payroll/components/CompensationComponentsCard.vue 'value="nominal"'
+contains frontend/src/features/payroll/components/CompensationComponentsCard.vue 'value="fixed"'
+not_contains frontend/src/features/payroll/components/CompensationComponentsCard.vue "Вредность"
+not_contains frontend/src/features/payroll/components/CompensationComponentsCard.vue "Районный коэффициент"
+not_contains frontend/src/features/payroll/components/CompensationComponentsCard.vue "Совмещение"
+not_contains frontend/src/features/payroll/api/payrollApi.ts "compensationPreset"
+not_contains frontend/src/features/payroll/stores/payrollStore.ts "compensationPreset"
+contains frontend/src/features/payroll/components/CompensationComponentsCard.spec.ts "keeps presets as ephemeral form helpers"
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 970000'
+contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.47.0 7A4B Generic Compensation Explainability UI
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'id="payrollCompensationComponentsTotal"'

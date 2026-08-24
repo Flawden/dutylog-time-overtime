@@ -117,4 +117,61 @@ describe("Generic compensation settings UI", () => {
       ':currency-code="currency"',
     );
   });
+
+  it("offers only neutral presets backed by existing formula families", () => {
+    expect(card).toContain(
+      "data-compensation-preset-helper",
+    );
+
+    expect(card).toContain(
+      'id="compensationComponentPreset"',
+    );
+
+    expect(card).toContain(
+      'value="earned"',
+    );
+
+    expect(card).toContain(
+      'value="nominal"',
+    );
+
+    expect(card).toContain(
+      'value="fixed"',
+    );
+
+    expect(card).not.toContain(
+      "Вредность",
+    );
+
+    expect(card).not.toContain(
+      "Районный коэффициент",
+    );
+
+    expect(card).not.toContain(
+      "Совмещение",
+    );
+  });
+
+  it("keeps presets as ephemeral form helpers rather than persisted payroll semantics", () => {
+    expect(card).toContain(
+      'v-model="preset"',
+    );
+
+    expect(card).toContain(
+      'value === "fixed"',
+    );
+
+    expect(card).toContain(
+      'value === "nominal"',
+    );
+
+    expect(api).not.toContain(
+      "compensationPreset",
+    );
+
+    expect(store).not.toContain(
+      "compensationPreset",
+    );
+  });
+
 });
