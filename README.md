@@ -1,3 +1,9 @@
+# DutyLog v27.47.0 — Generic Compensation Components
+
+Payroll now supports user-named recurring compensation components without turning display names into machine semantics. Fixed payments and percentages of explicit earned-base or nominal-salary bases resolve effective-month configuration into backend-owned Payroll projections.
+
+Immutable Payroll revisions freeze every calculated generic component line and its deterministic fingerprint, so later renames or rate changes cannot rewrite historical money. Disabled versions preserve history, and neutral presets only prefill the form rather than becoming persistent payroll semantics. See `docs/GENERIC_COMPENSATION_COMPONENTS_V27.47.0.md`.
+
 # DutyLog v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals
 
 Pricing is now a native user-facing Payroll capability instead of only a backend foundation. Effective-dated NIGHT, HOLIDAY and OVERTIME rules can be managed in human units while historical work keeps source-date pricing identity.

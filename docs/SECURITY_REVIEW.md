@@ -1,3 +1,6 @@
+# v27.47.0 Generic Compensation Components review
+Status: v27.47.0. Generic compensation history and writes remain authenticated and owner-scoped; clients never choose another user's owner identity. User-owned display names carry no authorization or legal semantics. Component formula configuration is validated server-side, unavailable bases fail closed, and browser-provided calculated money or fingerprints are never authoritative. Immutable snapshot component lines deliberately freeze scalar configuration/result identity rather than retaining mutable configuration references. No credential, role, cross-account sharing or dependency trust boundary is introduced; Flyway V62–V63 add owner-scoped configuration and immutable snapshot persistence only.
+
 # v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals review
 Status: v27.46.2. Pricing-term reads and writes remain authenticated and owner-scoped; clients do not supply another user's identity. Whole-term replacement changes only the owner's effective-dated pricing configuration and does not make browser-provided money or fingerprints authoritative. NIGHT/HOLIDAY and OVERTIME results still flow through backend classification, historical-rate/Pricing services and immutable Payroll revisions. The release adds no credential, role, cross-account sharing, dependency or database-schema trust boundary.
 

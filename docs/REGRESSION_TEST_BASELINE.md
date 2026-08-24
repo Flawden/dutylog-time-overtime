@@ -1,11 +1,13 @@
 # DutyLog regression test baseline
 Historical v27.40.18 browser evidence: exact frontend and Maven gates passed; Chromium executed 48 scenarios with 46 passed, zero flaky and two deterministic final failures caused by stale v27.40.16 E2E release literals.
 
-Status: v27.46.2.
+Status: v27.47.0.
 
 Historical checkpoint — Status: v27.2.31.
 
-Current extension: v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals: inventory is 219 Java test classes / 1015 @Test methods / 51 Chromium Playwright scenarios / 80 Vitest cases. OpenAPI is 141/147 (`19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46`) and Flyway remains V61. Coverage includes effective-dated Pricing Terms CRUD, human-facing Pricing Settings, NIGHT and HOLIDAY ordinary-premium verticals, and bank-first OVERTIME where only explicit FIFO cash settlement creates settlement money and applies configured tiers. The accepted browser ceiling is 945000 B raw / 250000 B gzip. Development-slice Chromium/staging proof is green; the final versioned v27.46.2 tree still runs canonical frontend, Maven/JaCoCo, Chromium, clean PostgreSQL and staging gates.
+Current extension: v27.47.0 Generic Compensation Components: inventory is 227 Java test classes / 1052 @Test methods / 52 Chromium Playwright scenarios / 88 Vitest cases. OpenAPI is 145/151 (`56442081179218567fafea52e21e0e7b4fc00e9b96789b1058715809225df78f`) and Flyway advances to V63. Coverage includes stable effective-dated generic components, arbitrary display names, fixed and percentage formulas, earned/nominal semantic bases, disabled-history semantics, fail-closed unavailable bases, Payroll projection integration, immutable frozen snapshot lines/fingerprints, Settings/explainability UI and E2E proof that later mutable configuration cannot rewrite an older Payroll revision. The accepted browser ceiling is 970000 B raw / 250000 B gzip. Development-slice Chromium/staging proof is green; the final versioned v27.47.0 tree still runs canonical frontend, Maven/JaCoCo, Chromium, clean PostgreSQL and staging gates.
+
+Historical v27.46.2 extension: inventory was 219 Java test classes / 1015 @Test methods / 51 Chromium Playwright scenarios / 80 Vitest cases; OpenAPI was 141/147 (`19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46`), Flyway remained V61, and the accepted browser ceiling was 945000 B raw / 250000 B gzip. That release established effective-dated Pricing Settings plus browser-proven NIGHT/HOLIDAY ordinary premiums and bank-first OVERTIME cash settlement before generic compensation components.
 
 
 

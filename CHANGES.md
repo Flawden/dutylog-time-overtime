@@ -1,3 +1,21 @@
+# v27.47.0 — Generic Compensation Components
+
+- Adds stable owner-scoped generic compensation components with effective-month versions and arbitrary user-owned display names.
+- Supports `FIXED_AMOUNT` and `PERCENT_OF_BASE` without encoding business meaning into the component name.
+- Percentage components use explicit semantic bases: `EARNED_BASE_PAY` or `NOMINAL_SALARY`; unavailable bases fail closed instead of silently producing zero.
+- Disabled effective versions preserve stable component history without contributing money, lines or fingerprint state.
+- Exposes authenticated history, create, effective-month resolution and exact-month version upsert APIs; generic component configuration has no physical-delete workflow.
+- Integrates generic component earnings as an explicit Payroll phase between base pay and existing ordinary premium / settlement / manual adjustment phases.
+- Immutable Payroll revisions freeze component identity, display name, formula configuration, reference base, result and deterministic component fingerprint independently of later configuration changes.
+- Adds native Payroll Settings and explainability UI for arbitrary components, including neutral form-only presets for earned-base percentage, nominal-salary percentage and fixed payment.
+- Browser E2E proves fail-closed unavailable-base behavior, disabled history, fixed + percentage earnings, revision supersession and old-snapshot immutability after mutable configuration changes.
+- OpenAPI is **145 operations / 151 schemas** with SHA-256 `56442081179218567fafea52e21e0e7b4fc00e9b96789b1058715809225df78f`.
+- Flyway advances to **V63**: V62 introduces generic compensation configuration and V63 freezes generic component lines into Payroll snapshots.
+- Source inventory is **1052 @Test methods / 227 Java test classes / 88 Vitest cases / 52 Playwright scenarios**.
+- Accepted browser ceiling is **970000 B raw / 250000 B gzip**; the generic-compensation frontend development tree passed canonical Node 20 and staging within that locked ceiling.
+- Taxes, jurisdiction policy packs, qualified-time formulas, arbitrary component dependency graphs and multi-currency Payroll periods remain outside v27.47.0.
+- Generic-compensation development slices through the 52nd Chromium scenario have canonical staging proof; the final versioned v27.47.0 tree still requires normal release CI, clean PostgreSQL migration and staging acceptance.
+
 # v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals
 
 - Exposes authenticated effective-dated Payroll Pricing Terms through native GET / whole-term PUT / exact-version DELETE operations.

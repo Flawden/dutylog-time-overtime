@@ -1,3 +1,6 @@
+## v27.47.0 generic compensation components
+Status: v27.47.0. No dependency graph change is introduced. Node 20.18.1/npm 10.8.2 and the reviewed frontend dependency graph remain unchanged; only root/frontend release identity and the committed frontend lockfile hash advance. OpenAPI is 145/151 (`564420811792`), Flyway advances to V63, the accepted segmented-browser raw ceiling is 970000 B and total gzip remains 250000 B. Generic compensation UI changes passed the canonical Node 20/staging gate without increasing those locked ceilings.
+
 ## v27.46.2 effective-dated pricing settings & payroll verticals
 Status: v27.46.2. No dependency graph change is introduced. Node 20.18.1/npm 10.8.2 and the reviewed frontend dependency graph remain unchanged; only release identity and the committed frontend lockfile hash advance. OpenAPI is 141/147 (`19f794b9af96`), Flyway remains V61, the accepted segmented-browser raw ceiling is 945000 B and total gzip remains 250000 B.
 

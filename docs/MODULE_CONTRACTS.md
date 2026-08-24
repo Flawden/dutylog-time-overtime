@@ -1,3 +1,19 @@
+## Generic Compensation Components contract (v27.47.0)
+
+- A component's `displayName` is user-owned opaque presentation text; calculation behavior is defined separately by machine semantics.
+- Stable component identity and effective-month versions preserve configuration history.
+- `FIXED_AMOUNT` and `PERCENT_OF_BASE` are the only generic formula families in v27.47.0.
+- `EARNED_BASE_PAY` and `NOMINAL_SALARY` are explicit monetary percentage bases; unavailable bases fail closed.
+- Disabled effective versions remain historical configuration but do not contribute lines, money or component fingerprint state.
+- Generic component earnings form an explicit acyclic Payroll phase after base pay; they do not recursively depend on later Payroll phases.
+- Payroll preview is live and backend-authoritative.
+- Immutable Payroll revisions freeze scalar component/version identity, user label, formula, reference base, result and deterministic fingerprint without mutable configuration foreign-key semantics.
+- Neutral presets are UI-only form defaults. No preset identity survives component creation.
+- NIGHT, HOLIDAY and OVERTIME remain specialized time-derived pricing verticals rather than generic component labels.
+- Taxes, jurisdiction rules, qualified-time formulas and arbitrary dependency graphs are outside this contract.
+
+Status: v27.47.0.
+
 ## Effective-Dated Pricing Settings & Payroll Verticals contract (v27.46.2)
 
 - Pricing configuration is effective-dated policy; it does not become factual work, Classification or Time Bank state.

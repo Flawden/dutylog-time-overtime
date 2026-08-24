@@ -1,6 +1,26 @@
 # DutyLog release checklist
 
-Status: v27.46.2.
+Status: v27.47.0.
+
+## v27.47.0 — Generic Compensation Components acceptance
+
+- [x] Stable compensation components keep user-owned names separate from machine calculation semantics.
+- [x] Effective-month versions support `FIXED_AMOUNT` and `PERCENT_OF_BASE`.
+- [x] Percentage formulas expose explicit `EARNED_BASE_PAY` and `NOMINAL_SALARY` bases.
+- [x] Missing semantic base fails closed with `PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE`.
+- [x] Disabled versions remain in history but contribute no Payroll component line or money.
+- [x] Authenticated history/create/effective/upsert-version API is owner-scoped and exposes no generic DELETE.
+- [x] Generic component money is an explicit Payroll phase and backend `totalPayMinor` remains authoritative.
+- [x] Immutable Payroll revisions freeze component configuration, reference base, result and deterministic fingerprint.
+- [x] Settings UI supports arbitrary labels plus neutral ephemeral presets.
+- [x] Explainability UI renders live component lines and historical snapshot lines independently.
+- [x] Chromium E2E proves revision 1 remains frozen after current component rename/rate mutation and revision 2 captures the new configuration.
+- [x] OpenAPI is 145/151 (`564420811792`); Flyway is V63.
+- [x] Source inventory is 1052 Java @Test / 227 classes / 88 Vitest / 52 Playwright.
+- [x] Browser ceiling remains 970000 B raw / 250000 B gzip.
+- [ ] Final versioned v27.47.0 Node 20.18.1/npm 10.8.2 production build passes.
+- [ ] Final versioned v27.47.0 Java 17 Maven/JaCoCo and release-check pass.
+- [ ] Chromium 52/52, immutable-image clean PostgreSQL V1→V63 and final staging acceptance pass.
 
 ## v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals acceptance
 

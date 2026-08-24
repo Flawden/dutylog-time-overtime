@@ -1,4 +1,14 @@
-# DutyLog API v27.46.2
+# DutyLog API v27.47.0
+
+## v27.47.0 Generic Compensation Components
+
+Authenticated generic compensation configuration is exposed under `/api/v1/payroll/compensation-components`: history/list, stable-component creation, effective-month resolution and exact-month version upsert.
+
+Versions carry user-owned `displayName`, `FIXED_AMOUNT` or `PERCENT_OF_BASE` calculation semantics, `EARNED_BASE_PAY` / `NOMINAL_SALARY` where applicable, and historical `enabled` state. There is intentionally no generic component DELETE operation.
+
+Payroll preview exposes generic-component readiness, blocking reason, aggregate earnings, deterministic fingerprint and calculated lines. Immutable Payroll snapshots expose frozen component lines instead of resolving mutable current configuration.
+
+OpenAPI is **145 operations / 151 schemas** with SHA-256 `56442081179218567fafea52e21e0e7b4fc00e9b96789b1058715809225df78f`. PostgreSQL Flyway advances to **V63**.
 
 ## v27.46.2 Pricing Terms and Payroll verticals
 

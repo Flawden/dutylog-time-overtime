@@ -9,8 +9,8 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 cd "$PROJECT_ROOT"
 
-VERSION="${DUTYLOG_RELEASE_VERSION:-27.46.2}"
-CURRENT_RELEASE_TITLE="Effective-Dated Pricing Settings & Payroll Verticals"
+VERSION="${DUTYLOG_RELEASE_VERSION:-27.47.0}"
+CURRENT_RELEASE_TITLE="Generic Compensation Components"
 ERRORS=0
 STATIC_JS=(
   "js/10-core.js"
@@ -5017,6 +5017,25 @@ contains docs/SECURITY_REVIEW.md "Status: v${VERSION}."
 contains docs/MODULE_CONTRACTS.md "Status: v${VERSION}."
 contains docs/SUPPLY_CHAIN.md "Status: v${VERSION}."
 
+# v27.47.0 Generic Compensation Components release closure
+contains CHANGES.md "v27.47.0 — Generic Compensation Components"
+contains README.md "DutyLog v27.47.0 — Generic Compensation Components"
+contains docs/GENERIC_COMPENSATION_COMPONENTS_V27.47.0.md "arbitrary user-owned"
+contains docs/GENERIC_COMPENSATION_COMPONENTS_V27.47.0.md "145 operations / 151 schemas"
+contains docs/GENERIC_COMPENSATION_COMPONENTS_V27.47.0.md "56442081179218567fafea52e21e0e7b4fc00e9b96789b1058715809225df78f"
+contains docs/GENERIC_COMPENSATION_COMPONENTS_V27.47.0.md "Flyway **V63**"
+contains docs/GENERIC_COMPENSATION_COMPONENTS_V27.47.0.md "52nd Chromium journey"
+contains docs/ROADMAP.md "## v27.47.0 — Generic Compensation Components"
+contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.47.0 Generic Compensation Components"
+contains docs/RELEASE_CHECKLIST.md "## v27.47.0 — Generic Compensation Components acceptance"
+contains docs/SECURITY_REVIEW.md "# v27.47.0 Generic Compensation Components review"
+contains docs/MODULE_CONTRACTS.md "## Generic Compensation Components contract (v27.47.0)"
+contains docs/SUPPLY_CHAIN.md "## v27.47.0 generic compensation components"
+contains src/main/resources/db/migration/postgresql/V62__generic_compensation_components.sql "CREATE TABLE compensation_components"
+contains src/main/resources/db/migration/postgresql/V63__payroll_snapshot_compensation_components.sql "payroll_snapshot_compensation_component_lines"
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 970000'
+contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
+
 # v27.47.0 7A5 Neutral Generic Compensation Presets
 contains frontend/src/features/payroll/components/CompensationComponentsCard.vue 'data-compensation-preset-helper'
 contains frontend/src/features/payroll/components/CompensationComponentsCard.vue 'id="compensationComponentPreset"'
@@ -5128,7 +5147,7 @@ contains docs/EFFECTIVE_DATED_PRICING_SETTINGS_PAYROLL_VERTICALS_V27.46.2.md "19
 contains docs/API.md "141 operations / 147 schemas"
 contains docs/API.md "19f794b9af9676dc21698f7a92e340c55c8d181dcae817395512c9d4cc063f46"
 contains docs/ROADMAP.md "## v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals"
-contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals"
+contains docs/REGRESSION_TEST_BASELINE.md "Historical v27.46.2 extension:"
 contains docs/RELEASE_CHECKLIST.md "## v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals acceptance"
 contains docs/SECURITY_REVIEW.md "# v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals review"
 contains docs/MODULE_CONTRACTS.md "## Effective-Dated Pricing Settings & Payroll Verticals contract (v27.46.2)"

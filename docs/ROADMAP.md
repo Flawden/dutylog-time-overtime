@@ -1,6 +1,6 @@
 # Roadmap до полноценного продукта
 
-Current release: **v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals**.
+Current release: **v27.47.0 — Generic Compensation Components**.
 
 
 ## Product north star
@@ -8,6 +8,26 @@ Current release: **v27.46.2 — Effective-Dated Pricing Settings & Payroll Verti
 > **The user describes reality. DutyLog derives the consequences.**
 
 Calendar / Today are the normal command surfaces. Overtime, Time Bank, Production Calendar, Payroll and other domains remain authoritative internal/read-audit modules, but one real-world event must not be entered repeatedly across screens. Complexity is progressively disclosed; minimum setup must remain useful and every derived result must be explainable.
+
+## v27.47.0 — Generic Compensation Components
+
+- [x] Stable generic compensation component identity plus effective-month version history.
+- [x] Arbitrary user-owned display names remain opaque to calculation semantics.
+- [x] `FIXED_AMOUNT` and `PERCENT_OF_BASE` formula families.
+- [x] Explicit `EARNED_BASE_PAY` and `NOMINAL_SALARY` semantic bases.
+- [x] Disabled effective versions preserve history without contributing Payroll money.
+- [x] Public authenticated component history/create/effective/upsert-version API.
+- [x] Generic component earnings integrated as an explicit acyclic Payroll phase.
+- [x] Immutable snapshot aggregate, frozen component lines and deterministic fingerprint.
+- [x] Payroll Settings UI plus per-component explainability.
+- [x] Neutral form-only presets; no legally loaded preset identity is persisted.
+- [x] E2E proof: unavailable-base blocker, disabled history, fixed + percent, mutable current configuration and immutable historical revisions.
+- [x] OpenAPI 145/151 (`564420811792`); Flyway V63.
+- [x] Regression inventory: 1052 Java tests / 227 classes / 88 Vitest / 52 Playwright.
+- [x] Generic-compensation development slices accepted by canonical Chromium and staging.
+- [ ] Final versioned v27.47.0 canonical CI, clean PostgreSQL V1→V63 and staging acceptance.
+
+Next Payroll release: **v27.48.0 — Real Payroll Bases & Qualified-Time Formulas**. It will introduce phase-restricted eligible-earnings bases and qualified-time formula families without arbitrary cyclic formulas. Tax policy and Payment Ledger remain later separate layers.
 
 ## v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals
 
@@ -71,7 +91,7 @@ Next Payroll slice: generic compensation components and explicit semantic calcul
 
 ## Core roadmap after Day Truth
 
-1. **v27.46.x — Compensation Setup & Payroll Core**: v27.46.0–v27.46.2 establish base compensation, temporal classification, effective-dated Pricing Settings and proven NIGHT/HOLIDAY/OVERTIME money verticals; next: generic compensation components and semantic calculation bases.
+1. **v27.46.x–v27.47.0 — Compensation Setup & Payroll Core**: base compensation, temporal classification, effective-dated Pricing, NIGHT/HOLIDAY/OVERTIME money verticals and generic compensation components are established; next: v27.48.0 Real Payroll Bases & Qualified-Time Formulas.
 2. **Vacation Entitlement & Balance**: entitlement/accrual/carry-over/used/planned/available balance, separate from vacation pay.
 3. **Vacation Pay**: versioned jurisdiction calculation period, eligible earnings and average-pay breakdown.
 4. **Sick Leave Calculation**: versioned jurisdiction rules after official-source research.
