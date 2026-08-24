@@ -2654,7 +2654,7 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "51" ]]; then
+if [[ "$E2E_TESTS" == "52" ]]; then
   # v27.11.1 CI & Contract Hotfix
 contains CHANGES.md "v27.11.1 — CI & Contract Hotfix"
 contains README.md "v27.11.1 — CI & Contract Hotfix"
@@ -4923,9 +4923,21 @@ not_contains src/main/java/ru/daniil/shifts/module/DutyLogModules.java 'ModuleSe
   not_contains frontend/src/features/absence-time-bank/components/TimeBankPage.vue "Сумма появится только после слоя Pricing."
   not_contains frontend/src/features/absence-time-bank/components/SettlementEditor.vue "Стоимость пока не рассчитывается."
   not_contains frontend/src/features/absence-time-bank/components/SettlementEditor.vue "Денежная сумма появится позже"
-  ok "Playwright test baseline: 51"
+  # v27.47.0 7A6A Generic Compensation Components E2E
+  contains e2e/payroll-compensation-components.spec.js "generic compensation components preserve frozen payroll revisions across later configuration changes"
+  contains e2e/payroll-compensation-components.spec.js "PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE"
+  contains e2e/payroll-compensation-components.spec.js "Премия за выживание после ночной смены"
+  contains e2e/payroll-compensation-components.spec.js "PERCENT_OF_BASE"
+  contains e2e/payroll-compensation-components.spec.js "FIXED_AMOUNT"
+  contains e2e/payroll-compensation-components.spec.js "compensationComponentEarningsMinor"
+  contains e2e/payroll-compensation-components.spec.js "persisted1Line.rateBps"
+  contains e2e/payroll-compensation-components.spec.js "persisted2Line.rateBps"
+  contains e2e/payroll-compensation-components.spec.js "persisted1.supersededById"
+  contains e2e/payroll-compensation-components.spec.js "#payrollCompensationComponentBreakdown"
+  contains e2e/payroll-compensation-components.spec.js "#compensationComponentPreset"
+  ok "Playwright test baseline: 52"
 else
-  fail "expected 51 Playwright tests, found $E2E_TESTS"
+  fail "expected 52 Playwright tests, found $E2E_TESTS"
 fi
 
 VITEST_TESTS=$(grep -R --include='*.spec.ts' --include='*.test.ts' -h -E '^[[:space:]]*(it|test)\(' frontend/src | wc -l | tr -d ' ')
