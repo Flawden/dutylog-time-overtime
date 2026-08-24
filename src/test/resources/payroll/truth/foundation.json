@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "1",
+  "cases": [
+    {
+      "sourceId": "synthetic-external-base-boundary",
+      "period": "2026-01",
+      "currency": "RUB",
+      "facts": [
+        {
+          "key": "visible_combination_rate",
+          "rateBps": 2500,
+          "provenance": "FACT",
+          "note": "The payslip explicitly exposes a 25 percent episode rate."
+        },
+        {
+          "key": "external_nominal_salary",
+          "provenance": "UNKNOWN",
+          "note": "The external reference salary is not present in the source."
+        }
+      ],
+      "earnings": [
+        {
+          "semanticKey": "COMBINATION",
+          "amountMinor": 123456,
+          "agreedRateBps": 2500,
+          "referenceBase": "UNKNOWN",
+          "provenance": "FACT",
+          "note": "Observed payout is factual; the external calculation base is deliberately unknown."
+        }
+      ],
+      "expectedGrossMinor": 123456,
+      "assertions": [
+        {
+          "key": "unknown_external_base_is_preserved",
+          "provenance": "PROVEN",
+          "statement": "A factual payout does not make its unavailable external reference salary known."
+        }
+      ]
+    }
+  ]
+}
