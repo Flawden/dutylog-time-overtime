@@ -37,7 +37,9 @@ record PayrollTruthEarning(
         PayrollTruthReferenceBase referenceBase,
         Long referenceAmountMinor,
         PayrollTruthProvenance provenance,
-        String note
+        String note,
+        String sourceLabel,
+        String sourcePeriod
 ) {
 }
 

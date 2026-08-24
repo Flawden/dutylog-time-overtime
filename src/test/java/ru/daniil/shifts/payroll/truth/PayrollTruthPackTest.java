@@ -43,7 +43,9 @@ class PayrollTruthPackTest {
                 PayrollTruthReferenceBase.UNKNOWN,
                 null,
                 PayrollTruthProvenance.PROVEN,
-                "Invalid on purpose"
+                "Invalid on purpose",
+                null,
+                null
         );
 
         PayrollTruthCase truthCase = new PayrollTruthCase(
@@ -107,7 +109,9 @@ class PayrollTruthPackTest {
                 PayrollTruthReferenceBase.EXTERNAL_REFERENCE_AMOUNT,
                 100_000L,
                 PayrollTruthProvenance.PROVEN,
-                "Exact synthetic arithmetic"
+                "Exact synthetic arithmetic",
+                null,
+                null
         );
 
         PayrollTruthCase truthCase = new PayrollTruthCase(

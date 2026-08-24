@@ -1,0 +1,843 @@
+{
+  "schemaVersion": "1",
+  "cases": [
+    {
+      "sourceId": "real-payroll-2025-11",
+      "period": "2025-11",
+      "currency": "RUB",
+      "facts": [
+        {
+          "key": "nominal_salary",
+          "amountMinor": 6054800,
+          "provenance": "FACT",
+          "note": "Source payslip field: Оклад (тариф)."
+        }
+      ],
+      "earnings": [
+        {
+          "semanticKey": "MONTHLY_BONUS",
+          "amountMinor": 1067570,
+          "provenance": "FACT",
+          "sourceLabel": "Премия ежемесячная по результатам текущего периода, %",
+          "sourcePeriod": "19.11-30.11"
+        },
+        {
+          "semanticKey": "BASE_PAY",
+          "amountMinor": 2566273,
+          "qualifiedMinutes": 3840,
+          "provenance": "FACT",
+          "sourceLabel": "Оплата по окладу (по часам)",
+          "sourcePeriod": "19.11-30.11"
+        },
+        {
+          "semanticKey": "REGIONAL_COEFFICIENT",
+          "amountMinor": 560474,
+          "provenance": "FACT",
+          "sourceLabel": "Районный коэффициент",
+          "sourcePeriod": "19.11-30.11"
+        },
+        {
+          "semanticKey": "HARMFUL_CONDITIONS",
+          "amountMinor": 102651,
+          "qualifiedMinutes": 3840,
+          "provenance": "FACT",
+          "sourceLabel": "Надбавка за вредные условия труда",
+          "sourcePeriod": "19.11-30.11"
+        },
+        {
+          "semanticKey": "MEDICAL_COMPENSATION",
+          "amountMinor": 157800,
+          "provenance": "FACT",
+          "sourceLabel": "Компенсация за медосмотр",
+          "sourcePeriod": "19.11-30.11"
+        }
+      ],
+      "expectedGrossMinor": 4454768,
+      "assertions": [
+        {
+          "key": "gross_reconciles",
+          "provenance": "PROVEN",
+          "statement": "Sum of factual earning lines equals source Начислено to the kopeck."
+        },
+        {
+          "key": "harmful_four_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed harmful-condition earning equals 4% of BASE_PAY + HOLIDAY_PAY with half-up kopeck rounding."
+        },
+        {
+          "key": "monthly_bonus_forty_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed monthly bonus equals 40% of the observed eligible base: BASE_PAY + HOLIDAY_PAY + HARMFUL_CONDITIONS + NIGHT_PREMIUM + COMBINATION."
+        },
+        {
+          "key": "regional_fifteen_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed regional coefficient equals 15% of the monthly-bonus eligible base + MONTHLY_BONUS + ONE_TIME_BONUS."
+        },
+        {
+          "key": "medical_excluded_from_regional_base",
+          "provenance": "PROVEN",
+          "statement": "November regional coefficient reconciles only when medical compensation is excluded."
+        }
+      ]
+    },
+    {
+      "sourceId": "real-payroll-2025-12",
+      "period": "2025-12",
+      "currency": "RUB",
+      "facts": [
+        {
+          "key": "nominal_salary",
+          "amountMinor": 6054800,
+          "provenance": "FACT",
+          "note": "Source payslip field: Оклад (тариф)."
+        },
+        {
+          "key": "unpaid_leave",
+          "minutes": 480,
+          "provenance": "FACT",
+          "note": "Source event: Отпуск за свой счет; period=16.12."
+        }
+      ],
+      "earnings": [
+        {
+          "semanticKey": "MONTHLY_BONUS",
+          "amountMinor": 2404306,
+          "provenance": "FACT",
+          "sourceLabel": "Премия ежемесячная по результатам текущего периода, %",
+          "sourcePeriod": "дек. 2025"
+        },
+        {
+          "semanticKey": "BASE_PAY",
+          "amountMinor": 5779582,
+          "qualifiedMinutes": 10080,
+          "provenance": "FACT",
+          "sourceLabel": "Оплата по окладу (по часам)",
+          "sourcePeriod": "дек. 2025"
+        },
+        {
+          "semanticKey": "REGIONAL_COEFFICIENT",
+          "amountMinor": 1262261,
+          "provenance": "FACT",
+          "sourceLabel": "Районный коэффициент",
+          "sourcePeriod": "дек. 2025"
+        },
+        {
+          "semanticKey": "HARMFUL_CONDITIONS",
+          "amountMinor": 231183,
+          "qualifiedMinutes": 10080,
+          "provenance": "FACT",
+          "sourceLabel": "Надбавка за вредные условия труда",
+          "sourcePeriod": "дек. 2025"
+        }
+      ],
+      "expectedGrossMinor": 9677332,
+      "assertions": [
+        {
+          "key": "gross_reconciles",
+          "provenance": "PROVEN",
+          "statement": "Sum of factual earning lines equals source Начислено to the kopeck."
+        },
+        {
+          "key": "harmful_four_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed harmful-condition earning equals 4% of BASE_PAY + HOLIDAY_PAY with half-up kopeck rounding."
+        },
+        {
+          "key": "monthly_bonus_forty_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed monthly bonus equals 40% of the observed eligible base: BASE_PAY + HOLIDAY_PAY + HARMFUL_CONDITIONS + NIGHT_PREMIUM + COMBINATION."
+        },
+        {
+          "key": "regional_fifteen_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed regional coefficient equals 15% of the monthly-bonus eligible base + MONTHLY_BONUS + ONE_TIME_BONUS."
+        }
+      ]
+    },
+    {
+      "sourceId": "real-payroll-2026-01",
+      "period": "2026-01",
+      "currency": "RUB",
+      "facts": [
+        {
+          "key": "nominal_salary",
+          "amountMinor": 6054800,
+          "provenance": "FACT",
+          "note": "Source payslip field: Оклад (тариф)."
+        },
+        {
+          "key": "unpaid_leave",
+          "minutes": 480,
+          "provenance": "FACT",
+          "note": "Source event: Отпуск за свой счет; period=27.01."
+        }
+      ],
+      "earnings": [
+        {
+          "semanticKey": "MONTHLY_BONUS",
+          "amountMinor": 2350877,
+          "provenance": "FACT",
+          "sourceLabel": "Премия ежемесячная по результатам текущего периода, %",
+          "sourcePeriod": "янв. 2026"
+        },
+        {
+          "semanticKey": "BASE_PAY",
+          "amountMinor": 5651147,
+          "qualifiedMinutes": 6720,
+          "provenance": "FACT",
+          "sourceLabel": "Оплата по окладу (по часам)",
+          "sourcePeriod": "янв. 2026"
+        },
+        {
+          "semanticKey": "REGIONAL_COEFFICIENT",
+          "amountMinor": 1234211,
+          "provenance": "FACT",
+          "sourceLabel": "Районный коэффициент",
+          "sourcePeriod": "янв. 2026"
+        },
+        {
+          "semanticKey": "HARMFUL_CONDITIONS",
+          "amountMinor": 226046,
+          "qualifiedMinutes": 6720,
+          "provenance": "FACT",
+          "sourceLabel": "Надбавка за вредные условия труда",
+          "sourcePeriod": "янв. 2026"
+        }
+      ],
+      "expectedGrossMinor": 9462281,
+      "assertions": [
+        {
+          "key": "gross_reconciles",
+          "provenance": "PROVEN",
+          "statement": "Sum of factual earning lines equals source Начислено to the kopeck."
+        },
+        {
+          "key": "harmful_four_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed harmful-condition earning equals 4% of BASE_PAY + HOLIDAY_PAY with half-up kopeck rounding."
+        },
+        {
+          "key": "monthly_bonus_forty_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed monthly bonus equals 40% of the observed eligible base: BASE_PAY + HOLIDAY_PAY + HARMFUL_CONDITIONS + NIGHT_PREMIUM + COMBINATION."
+        },
+        {
+          "key": "regional_fifteen_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed regional coefficient equals 15% of the monthly-bonus eligible base + MONTHLY_BONUS + ONE_TIME_BONUS."
+        }
+      ]
+    },
+    {
+      "sourceId": "real-payroll-2026-02",
+      "period": "2026-02",
+      "currency": "RUB",
+      "facts": [
+        {
+          "key": "nominal_salary",
+          "amountMinor": 6054800,
+          "provenance": "FACT",
+          "note": "Source payslip field: Оклад (тариф)."
+        },
+        {
+          "key": "unpaid_leave",
+          "minutes": 480,
+          "provenance": "FACT",
+          "note": "Source event: Отпуск за свой счет; period=06.02."
+        }
+      ],
+      "earnings": [
+        {
+          "semanticKey": "MONTHLY_BONUS",
+          "amountMinor": 2518797,
+          "provenance": "FACT",
+          "sourceLabel": "Премия ежемесячная по результатам текущего периода, %",
+          "sourcePeriod": "февр. 2026"
+        },
+        {
+          "semanticKey": "HOLIDAY_PAY",
+          "amountMinor": 318674,
+          "qualifiedMinutes": 480,
+          "provenance": "FACT",
+          "sourceLabel": "Оплата работы в праздничные и выходные дни без повышенной оплаты",
+          "sourcePeriod": "февр. 2026"
+        },
+        {
+          "semanticKey": "BASE_PAY",
+          "amountMinor": 5736126,
+          "qualifiedMinutes": 8640,
+          "provenance": "FACT",
+          "sourceLabel": "Оплата по окладу (по часам)",
+          "sourcePeriod": "февр. 2026"
+        },
+        {
+          "semanticKey": "REGIONAL_COEFFICIENT",
+          "amountMinor": 1466773,
+          "provenance": "FACT",
+          "sourceLabel": "Районный коэффициент",
+          "sourcePeriod": "февр. 2026"
+        },
+        {
+          "semanticKey": "HARMFUL_CONDITIONS",
+          "amountMinor": 242192,
+          "qualifiedMinutes": 8640,
+          "provenance": "FACT",
+          "sourceLabel": "Надбавка за вредные условия труда",
+          "sourcePeriod": "февр. 2026"
+        },
+        {
+          "semanticKey": "ONE_TIME_BONUS",
+          "amountMinor": 962700,
+          "provenance": "FACT",
+          "sourceLabel": "Единовременная премия по итогам работы за год",
+          "sourcePeriod": "февр. 2026"
+        }
+      ],
+      "expectedGrossMinor": 11245262,
+      "assertions": [
+        {
+          "key": "gross_reconciles",
+          "provenance": "PROVEN",
+          "statement": "Sum of factual earning lines equals source Начислено to the kopeck."
+        },
+        {
+          "key": "harmful_four_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed harmful-condition earning equals 4% of BASE_PAY + HOLIDAY_PAY with half-up kopeck rounding."
+        },
+        {
+          "key": "monthly_bonus_forty_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed monthly bonus equals 40% of the observed eligible base: BASE_PAY + HOLIDAY_PAY + HARMFUL_CONDITIONS + NIGHT_PREMIUM + COMBINATION."
+        },
+        {
+          "key": "regional_fifteen_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed regional coefficient equals 15% of the monthly-bonus eligible base + MONTHLY_BONUS + ONE_TIME_BONUS."
+        },
+        {
+          "key": "holiday_is_harmful_eligible",
+          "provenance": "PROVEN",
+          "statement": "February harmful amount reconciles against BASE_PAY + HOLIDAY_PAY, not BASE_PAY alone."
+        },
+        {
+          "key": "one_time_bonus_excluded_from_monthly_bonus_base",
+          "provenance": "PROVEN",
+          "statement": "Annual one-time bonus is excluded from the observed monthly-bonus base."
+        },
+        {
+          "key": "one_time_bonus_included_in_regional_base",
+          "provenance": "PROVEN",
+          "statement": "Annual one-time bonus is included in the observed regional base."
+        }
+      ]
+    },
+    {
+      "sourceId": "real-payroll-2026-03",
+      "period": "2026-03",
+      "currency": "RUB",
+      "facts": [
+        {
+          "key": "nominal_salary",
+          "amountMinor": 6054800,
+          "provenance": "FACT",
+          "note": "Source payslip field: Оклад (тариф)."
+        }
+      ],
+      "earnings": [
+        {
+          "semanticKey": "MONTHLY_BONUS",
+          "amountMinor": 2550880,
+          "provenance": "FACT",
+          "sourceLabel": "Премия ежемесячная по результатам текущего периода, %",
+          "sourcePeriod": "март 2026"
+        },
+        {
+          "semanticKey": "NIGHT_PREMIUM",
+          "amountMinor": 192653,
+          "qualifiedMinutes": 840,
+          "provenance": "FACT",
+          "sourceLabel": "Доплата за работу в ночное время",
+          "sourcePeriod": "11.03-12.03"
+        },
+        {
+          "semanticKey": "BASE_PAY",
+          "amountMinor": 1729943,
+          "qualifiedMinutes": 2880,
+          "provenance": "FACT",
+          "sourceLabel": "Оплата по окладу (по часам)",
+          "sourcePeriod": "01.03-10.03"
+        },
+        {
+          "semanticKey": "BASE_PAY",
+          "amountMinor": 756850,
+          "qualifiedMinutes": 1320,
+          "provenance": "FACT",
+          "sourceLabel": "Оплата по окладу (по часам)",
+          "sourcePeriod": "11.03-12.03"
+        },
+        {
+          "semanticKey": "BASE_PAY",
+          "amountMinor": 3459886,
+          "qualifiedMinutes": 5760,
+          "provenance": "FACT",
+          "sourceLabel": "Оплата по окладу (по часам)",
+          "sourcePeriod": "14.03-31.03"
+        },
+        {
+          "semanticKey": "REGIONAL_COEFFICIENT",
+          "amountMinor": 1339212,
+          "provenance": "FACT",
+          "sourceLabel": "Районный коэффициент",
+          "sourcePeriod": "март 2026"
+        },
+        {
+          "semanticKey": "HARMFUL_CONDITIONS",
+          "amountMinor": 69198,
+          "qualifiedMinutes": 2400,
+          "provenance": "FACT",
+          "sourceLabel": "Надбавка за вредные условия труда",
+          "sourcePeriod": "01.03-10.03"
+        },
+        {
+          "semanticKey": "HARMFUL_CONDITIONS",
+          "amountMinor": 30274,
+          "qualifiedMinutes": 1320,
+          "provenance": "FACT",
+          "sourceLabel": "Надбавка за вредные условия труда",
+          "sourcePeriod": "11.03-12.03"
+        },
+        {
+          "semanticKey": "HARMFUL_CONDITIONS",
+          "amountMinor": 138395,
+          "qualifiedMinutes": 5760,
+          "provenance": "FACT",
+          "sourceLabel": "Надбавка за вредные условия труда",
+          "sourcePeriod": "14.03-31.03"
+        }
+      ],
+      "expectedGrossMinor": 10267291,
+      "assertions": [
+        {
+          "key": "gross_reconciles",
+          "provenance": "PROVEN",
+          "statement": "Sum of factual earning lines equals source Начислено to the kopeck."
+        },
+        {
+          "key": "harmful_four_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed harmful-condition earning equals 4% of BASE_PAY + HOLIDAY_PAY with half-up kopeck rounding."
+        },
+        {
+          "key": "monthly_bonus_forty_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed monthly bonus equals 40% of the observed eligible base: BASE_PAY + HOLIDAY_PAY + HARMFUL_CONDITIONS + NIGHT_PREMIUM + COMBINATION."
+        },
+        {
+          "key": "regional_fifteen_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed regional coefficient equals 15% of the monthly-bonus eligible base + MONTHLY_BONUS + ONE_TIME_BONUS."
+        },
+        {
+          "key": "night_included_in_monthly_bonus_base",
+          "provenance": "PROVEN",
+          "statement": "March monthly bonus reconciles only with the night premium included in its observed base."
+        },
+        {
+          "key": "source_line_splits_are_material",
+          "provenance": "FACT",
+          "statement": "March source contains three BASE_PAY lines and three HARMFUL_CONDITIONS lines with distinct periods."
+        }
+      ]
+    },
+    {
+      "sourceId": "real-payroll-2026-04",
+      "period": "2026-04",
+      "currency": "RUB",
+      "facts": [
+        {
+          "key": "nominal_salary",
+          "amountMinor": 6054800,
+          "provenance": "FACT",
+          "note": "Source payslip field: Оклад (тариф)."
+        },
+        {
+          "key": "unpaid_leave",
+          "minutes": 960,
+          "provenance": "FACT",
+          "note": "Source event: Отпуск за свой счет; period=02.04-03.04."
+        }
+      ],
+      "earnings": [
+        {
+          "semanticKey": "MONTHLY_BONUS",
+          "amountMinor": 2288507,
+          "provenance": "FACT",
+          "sourceLabel": "Премия ежемесячная по результатам текущего периода, %",
+          "sourcePeriod": "апр. 2026"
+        },
+        {
+          "semanticKey": "BASE_PAY",
+          "amountMinor": 5501218,
+          "qualifiedMinutes": 9540,
+          "provenance": "FACT",
+          "sourceLabel": "Оплата по окладу (по часам)",
+          "sourcePeriod": "апр. 2026"
+        },
+        {
+          "semanticKey": "REGIONAL_COEFFICIENT",
+          "amountMinor": 1201466,
+          "provenance": "FACT",
+          "sourceLabel": "Районный коэффициент",
+          "sourcePeriod": "апр. 2026"
+        },
+        {
+          "semanticKey": "HARMFUL_CONDITIONS",
+          "amountMinor": 220049,
+          "qualifiedMinutes": 9540,
+          "provenance": "FACT",
+          "sourceLabel": "Надбавка за вредные условия труда",
+          "sourcePeriod": "апр. 2026"
+        }
+      ],
+      "expectedGrossMinor": 9211240,
+      "assertions": [
+        {
+          "key": "gross_reconciles",
+          "provenance": "PROVEN",
+          "statement": "Sum of factual earning lines equals source Начислено to the kopeck."
+        },
+        {
+          "key": "harmful_four_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed harmful-condition earning equals 4% of BASE_PAY + HOLIDAY_PAY with half-up kopeck rounding."
+        },
+        {
+          "key": "monthly_bonus_forty_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed monthly bonus equals 40% of the observed eligible base: BASE_PAY + HOLIDAY_PAY + HARMFUL_CONDITIONS + NIGHT_PREMIUM + COMBINATION."
+        },
+        {
+          "key": "regional_fifteen_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed regional coefficient equals 15% of the monthly-bonus eligible base + MONTHLY_BONUS + ONE_TIME_BONUS."
+        }
+      ]
+    },
+    {
+      "sourceId": "real-payroll-2026-05",
+      "period": "2026-05",
+      "currency": "RUB",
+      "facts": [
+        {
+          "key": "nominal_salary",
+          "amountMinor": 6054800,
+          "provenance": "FACT",
+          "note": "Source payslip field: Оклад (тариф)."
+        },
+        {
+          "key": "combination_agreed_rate",
+          "rateBps": 2500,
+          "provenance": "FACT",
+          "note": "User clarification: 25% was agreed for every combination episode represented in these payslips."
+        },
+        {
+          "key": "combination_external_nominal_salary",
+          "provenance": "UNKNOWN",
+          "note": "Salary of the substituted employee is not present in the source and must not be reverse-engineered into a FACT."
+        }
+      ],
+      "earnings": [
+        {
+          "semanticKey": "MONTHLY_BONUS",
+          "amountMinor": 2839581,
+          "provenance": "FACT",
+          "sourceLabel": "Премия ежемесячная по результатам текущего периода, %",
+          "sourcePeriod": "май 2026"
+        },
+        {
+          "semanticKey": "BASE_PAY",
+          "amountMinor": 6054800,
+          "qualifiedMinutes": 9060,
+          "provenance": "FACT",
+          "sourceLabel": "Оплата по окладу (по часам)",
+          "sourcePeriod": "май 2026"
+        },
+        {
+          "semanticKey": "REGIONAL_COEFFICIENT",
+          "amountMinor": 1490780,
+          "provenance": "FACT",
+          "sourceLabel": "Районный коэффициент",
+          "sourcePeriod": "май 2026"
+        },
+        {
+          "semanticKey": "COMBINATION",
+          "amountMinor": 801960,
+          "qualifiedMinutes": 4800,
+          "agreedRateBps": 2500,
+          "referenceBase": "UNKNOWN",
+          "provenance": "FACT",
+          "note": "Observed payout and hours are factual. 25% is user-confirmed for this episode; external salary base is unknown.",
+          "sourceLabel": "Доплата за совмещение должностей, исполнение обязанностей",
+          "sourcePeriod": "18.05-31.05"
+        },
+        {
+          "semanticKey": "HARMFUL_CONDITIONS",
+          "amountMinor": 242192,
+          "qualifiedMinutes": 9060,
+          "provenance": "FACT",
+          "sourceLabel": "Надбавка за вредные условия труда",
+          "sourcePeriod": "май 2026"
+        }
+      ],
+      "expectedGrossMinor": 11429313,
+      "assertions": [
+        {
+          "key": "gross_reconciles",
+          "provenance": "PROVEN",
+          "statement": "Sum of factual earning lines equals source Начислено to the kopeck."
+        },
+        {
+          "key": "harmful_four_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed harmful-condition earning equals 4% of BASE_PAY + HOLIDAY_PAY with half-up kopeck rounding."
+        },
+        {
+          "key": "monthly_bonus_forty_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed monthly bonus equals 40% of the observed eligible base: BASE_PAY + HOLIDAY_PAY + HARMFUL_CONDITIONS + NIGHT_PREMIUM + COMBINATION."
+        },
+        {
+          "key": "regional_fifteen_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed regional coefficient equals 15% of the monthly-bonus eligible base + MONTHLY_BONUS + ONE_TIME_BONUS."
+        },
+        {
+          "key": "combination_included_in_monthly_bonus_base",
+          "provenance": "PROVEN",
+          "statement": "May monthly bonus reconciles with combination earnings included in the observed base."
+        }
+      ]
+    },
+    {
+      "sourceId": "real-payroll-2026-06",
+      "period": "2026-06",
+      "currency": "RUB",
+      "facts": [
+        {
+          "key": "nominal_salary",
+          "amountMinor": 6054800,
+          "provenance": "FACT",
+          "note": "Source payslip field: Оклад (тариф)."
+        },
+        {
+          "key": "unpaid_leave",
+          "minutes": 480,
+          "provenance": "FACT",
+          "note": "Source event: Отпуск за свой счет; period=29.06."
+        },
+        {
+          "key": "combination_agreed_rate",
+          "rateBps": 2500,
+          "provenance": "FACT",
+          "note": "User clarification: 25% was agreed for every combination episode represented in these payslips."
+        },
+        {
+          "key": "combination_external_nominal_salary",
+          "provenance": "UNKNOWN",
+          "note": "Salary of the substituted employee is not present in the source and must not be reverse-engineered into a FACT."
+        }
+      ],
+      "earnings": [
+        {
+          "semanticKey": "MONTHLY_BONUS",
+          "amountMinor": 2718890,
+          "provenance": "FACT",
+          "sourceLabel": "Премия ежемесячная по результатам текущего периода, %",
+          "sourcePeriod": "июнь 2026"
+        },
+        {
+          "semanticKey": "BASE_PAY",
+          "amountMinor": 5764750,
+          "qualifiedMinutes": 9540,
+          "provenance": "FACT",
+          "sourceLabel": "Оплата по окладу (по часам)",
+          "sourcePeriod": "июнь 2026"
+        },
+        {
+          "semanticKey": "REGIONAL_COEFFICIENT",
+          "amountMinor": 1427417,
+          "provenance": "FACT",
+          "sourceLabel": "Районный коэффициент",
+          "sourcePeriod": "июнь 2026"
+        },
+        {
+          "semanticKey": "COMBINATION",
+          "amountMinor": 716062,
+          "qualifiedMinutes": 4740,
+          "agreedRateBps": 2500,
+          "referenceBase": "UNKNOWN",
+          "provenance": "FACT",
+          "note": "Observed payout and hours are factual. 25% is user-confirmed; external salary base is unknown.",
+          "sourceLabel": "Доплата за совмещение должностей, исполнение обязанностей",
+          "sourcePeriod": "01.06-15.06"
+        },
+        {
+          "semanticKey": "COMBINATION",
+          "amountMinor": 85824,
+          "qualifiedMinutes": 480,
+          "agreedRateBps": 2500,
+          "referenceBase": "UNKNOWN",
+          "provenance": "FACT",
+          "note": "Second independent June episode. Observed payout and hours are factual; external salary base is unknown.",
+          "sourceLabel": "Доплата за совмещение должностей, исполнение обязанностей",
+          "sourcePeriod": "29.06-30.06"
+        },
+        {
+          "semanticKey": "HARMFUL_CONDITIONS",
+          "amountMinor": 230590,
+          "qualifiedMinutes": 9540,
+          "provenance": "FACT",
+          "sourceLabel": "Надбавка за вредные условия труда",
+          "sourcePeriod": "июнь 2026"
+        }
+      ],
+      "expectedGrossMinor": 10943533,
+      "assertions": [
+        {
+          "key": "gross_reconciles",
+          "provenance": "PROVEN",
+          "statement": "Sum of factual earning lines equals source Начислено to the kopeck."
+        },
+        {
+          "key": "harmful_four_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed harmful-condition earning equals 4% of BASE_PAY + HOLIDAY_PAY with half-up kopeck rounding."
+        },
+        {
+          "key": "monthly_bonus_forty_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed monthly bonus equals 40% of the observed eligible base: BASE_PAY + HOLIDAY_PAY + HARMFUL_CONDITIONS + NIGHT_PREMIUM + COMBINATION."
+        },
+        {
+          "key": "regional_fifteen_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed regional coefficient equals 15% of the monthly-bonus eligible base + MONTHLY_BONUS + ONE_TIME_BONUS."
+        },
+        {
+          "key": "combination_is_episode_scoped",
+          "provenance": "PROVEN",
+          "statement": "June source contains two independent combination episodes with separate periods, hours and amounts."
+        }
+      ]
+    },
+    {
+      "sourceId": "real-payroll-2026-07",
+      "period": "2026-07",
+      "currency": "RUB",
+      "facts": [
+        {
+          "key": "nominal_salary",
+          "amountMinor": 6054800,
+          "provenance": "FACT",
+          "note": "Source payslip field: Оклад (тариф)."
+        },
+        {
+          "key": "combination_agreed_rate",
+          "rateBps": 2500,
+          "provenance": "FACT",
+          "note": "User clarification: 25% was agreed for every combination episode represented in these payslips."
+        },
+        {
+          "key": "combination_external_nominal_salary",
+          "provenance": "UNKNOWN",
+          "note": "Salary of the substituted employee is not present in the source and must not be reverse-engineered into a FACT."
+        }
+      ],
+      "earnings": [
+        {
+          "semanticKey": "MONTHLY_BONUS",
+          "amountMinor": 3079638,
+          "provenance": "FACT",
+          "sourceLabel": "Премия ежемесячная по результатам текущего периода, %",
+          "sourcePeriod": "июль 2026"
+        },
+        {
+          "semanticKey": "BASE_PAY",
+          "amountMinor": 6054800,
+          "qualifiedMinutes": 11040,
+          "provenance": "FACT",
+          "sourceLabel": "Оплата по окладу (по часам)",
+          "sourcePeriod": "июль 2026"
+        },
+        {
+          "semanticKey": "REGIONAL_COEFFICIENT",
+          "amountMinor": 1902560,
+          "provenance": "FACT",
+          "sourceLabel": "Районный коэффициент",
+          "sourcePeriod": "июль 2026"
+        },
+        {
+          "semanticKey": "COMBINATION",
+          "amountMinor": 1402102,
+          "qualifiedMinutes": 8640,
+          "agreedRateBps": 2500,
+          "referenceBase": "UNKNOWN",
+          "provenance": "FACT",
+          "note": "Observed payout and hours are factual. 25% is user-confirmed; external salary base is unknown.",
+          "sourceLabel": "Доплата за совмещение должностей, исполнение обязанностей",
+          "sourcePeriod": "01.07-26.07"
+        },
+        {
+          "semanticKey": "HARMFUL_CONDITIONS",
+          "amountMinor": 242192,
+          "qualifiedMinutes": 11040,
+          "provenance": "FACT",
+          "sourceLabel": "Надбавка за вредные условия труда",
+          "sourcePeriod": "июль 2026"
+        },
+        {
+          "semanticKey": "ONE_TIME_BONUS",
+          "amountMinor": 1905000,
+          "provenance": "FACT",
+          "sourceLabel": "Единовременная премия за достижения (приуроченная)",
+          "sourcePeriod": "июль 2026"
+        }
+      ],
+      "expectedGrossMinor": 14586292,
+      "assertions": [
+        {
+          "key": "gross_reconciles",
+          "provenance": "PROVEN",
+          "statement": "Sum of factual earning lines equals source Начислено to the kopeck."
+        },
+        {
+          "key": "harmful_four_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed harmful-condition earning equals 4% of BASE_PAY + HOLIDAY_PAY with half-up kopeck rounding."
+        },
+        {
+          "key": "monthly_bonus_forty_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed monthly bonus equals 40% of the observed eligible base: BASE_PAY + HOLIDAY_PAY + HARMFUL_CONDITIONS + NIGHT_PREMIUM + COMBINATION."
+        },
+        {
+          "key": "regional_fifteen_percent",
+          "provenance": "PROVEN",
+          "statement": "Observed regional coefficient equals 15% of the monthly-bonus eligible base + MONTHLY_BONUS + ONE_TIME_BONUS."
+        },
+        {
+          "key": "one_time_bonus_excluded_from_monthly_bonus_base",
+          "provenance": "PROVEN",
+          "statement": "July achievement bonus is excluded from the observed monthly-bonus base."
+        },
+        {
+          "key": "one_time_bonus_included_in_regional_base",
+          "provenance": "PROVEN",
+          "statement": "July achievement bonus is included in the observed regional base."
+        }
+      ]
+    }
+  ]
+}
