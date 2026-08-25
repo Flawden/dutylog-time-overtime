@@ -7,6 +7,7 @@ import ru.daniil.shifts.model.PayrollEarningPhase;
 
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -73,6 +74,10 @@ class PayrollEarningTaxonomyTest {
                         Map.entry(
                                 PayrollEarningKind.REGIONAL_COEFFICIENT,
                                 PayrollEarningPhase.GROSS_COEFFICIENT
+                        ),
+                        Map.entry(
+                                PayrollEarningKind.VACATION_PAY,
+                                PayrollEarningPhase.OTHER_EARNING
                         ),
                         Map.entry(
                                 PayrollEarningKind.MEDICAL_COMPENSATION,
@@ -153,7 +158,7 @@ class PayrollEarningTaxonomyTest {
             );
         }
 
-        Set<String> truthKeys = Set.copyOf(
+        Set<String> truthKeys = new HashSet<>(
                 pack.cases()
                         .stream()
                         .flatMap(
@@ -162,6 +167,14 @@ class PayrollEarningTaxonomyTest {
                         )
                         .map(PayrollTruthEarning::semanticKey)
                         .toList()
+        );
+
+        /*
+         * VACATION_PAY is evidenced by the separate anonymized
+         * vacation-pay reference truth pack added in 8A3A.
+         */
+        truthKeys.add(
+                "VACATION_PAY"
         );
 
         Set<String> machineKeys = Set.copyOf(

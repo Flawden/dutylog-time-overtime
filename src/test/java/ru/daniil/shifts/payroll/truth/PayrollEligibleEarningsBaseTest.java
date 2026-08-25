@@ -158,6 +158,35 @@ class PayrollEligibleEarningsBaseTest {
                                 PayrollEarningKind.MEDICAL_COMPENSATION
                         )
         );
+
+        /*
+         * Real vacation payroll reference:
+         * vacation pay is a separate earning and does not feed any of the
+         * observed current-month 4% / 40% / 15% bases.
+         */
+        assertFalse(
+                PayrollEarningBaseEligibility
+                        .isEligible(
+                                PayrollEarningKind.HARMFUL_CONDITIONS,
+                                PayrollEarningKind.VACATION_PAY
+                        )
+        );
+
+        assertFalse(
+                PayrollEarningBaseEligibility
+                        .isEligible(
+                                PayrollEarningKind.MONTHLY_BONUS,
+                                PayrollEarningKind.VACATION_PAY
+                        )
+        );
+
+        assertFalse(
+                PayrollEarningBaseEligibility
+                        .isEligible(
+                                PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                PayrollEarningKind.VACATION_PAY
+                        )
+        );
     }
 
     @Test

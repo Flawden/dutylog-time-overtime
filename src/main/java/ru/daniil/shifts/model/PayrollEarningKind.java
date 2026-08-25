@@ -14,6 +14,7 @@ public enum PayrollEarningKind {
     MONTHLY_BONUS(PayrollEarningPhase.PERFORMANCE_BONUS),
     ONE_TIME_BONUS(PayrollEarningPhase.PERFORMANCE_BONUS),
     REGIONAL_COEFFICIENT(PayrollEarningPhase.GROSS_COEFFICIENT),
+    VACATION_PAY(PayrollEarningPhase.OTHER_EARNING),
     MEDICAL_COMPENSATION(PayrollEarningPhase.OTHER_EARNING);
 
     private final PayrollEarningPhase phase;

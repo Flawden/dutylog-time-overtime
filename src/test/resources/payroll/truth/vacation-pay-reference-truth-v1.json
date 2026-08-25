@@ -1,0 +1,77 @@
+{
+  "schemaVersion": "1",
+  "sourceType": "ANONYMIZED_REAL_PAYSLIP_REFERENCE",
+  "evidenceStatus": "FACT",
+  "currency": "RUB",
+  "monthlySalaryMinor": 6054800,
+  "observedAverageDailyEarningsMinor": 368642,
+  "historicalAverageReferenceBase": {
+    "status": "UNKNOWN",
+    "amountMinor": null,
+    "note": "The payslips expose the resulting average daily earnings, but not the historical numerator or adjusted denominator used to derive it."
+  },
+  "months": [
+    {
+      "period": "2026-04",
+      "productionNormMinutes": 10500,
+      "workedMinutes": 10500,
+      "basePayMinor": 6054800,
+      "harmfulConditionsMinor": 242192,
+      "monthlyBonusMinor": 2518797,
+      "regionalCoefficientMinor": 1322368,
+      "vacationPostings": []
+    },
+    {
+      "period": "2026-05",
+      "productionNormMinutes": 9060,
+      "workedMinutes": 4260,
+      "basePayMinor": 2846959,
+      "harmfulConditionsMinor": 113878,
+      "monthlyBonusMinor": 1184335,
+      "regionalCoefficientMinor": 621776,
+      "vacationPostings": [
+        {
+          "semanticKey": "VACATION_PAY",
+          "postingPeriod": "2026-05",
+          "coveredFrom": "2026-05-18",
+          "coveredTo": "2026-05-31",
+          "scheduledWorkMinutes": 4800,
+          "payableCalendarDays": 14,
+          "amountMinor": 5160988
+        },
+        {
+          "semanticKey": "VACATION_PAY",
+          "postingPeriod": "2026-05",
+          "coveredFrom": "2026-06-01",
+          "coveredTo": "2026-06-15",
+          "scheduledWorkMinutes": 4740,
+          "payableCalendarDays": 14,
+          "amountMinor": 5160988
+        }
+      ]
+    },
+    {
+      "period": "2026-06",
+      "productionNormMinutes": 10020,
+      "workedMinutes": 5280,
+      "basePayMinor": 3190553,
+      "harmfulConditionsMinor": 127622,
+      "monthlyBonusMinor": 1327270,
+      "regionalCoefficientMinor": 696817,
+      "vacationPostings": []
+    },
+    {
+      "period": "2026-07",
+      "productionNormMinutes": 11040,
+      "workedMinutes": 11040,
+      "basePayMinor": 6054800,
+      "harmfulConditionsMinor": 242192,
+      "monthlyBonusMinor": 2518797,
+      "oneTimeBonusMinor": 1905000,
+      "regionalCoefficientMinor": 1608118,
+      "grossMinor": 12328907,
+      "vacationPostings": [],
+      "controlNote": "Post-vacation anonymized same-role, same-salary real payroll control month."
+    }
+  ]
+}

@@ -98,11 +98,155 @@ class CompensationCalculationServiceTest {
     }
 
     @Test
-    void paidAbsenceCoversSalaryNormWhileUncoveredMinutesProrateBase() {
-        var paid = service.calculate(term("SALARY", null, 8_000_000L), source(480, List.of(day(480, 240, 240, 0, 0))), 480);
-        assertEquals(8_000_000L, paid.basePayMinor());
-        var uncovered = service.calculate(term("SALARY", null, 8_000_000L), source(420, List.of(day(480, 420, 0, 0, 0))), 480);
-        assertEquals(420, uncovered.salaryCoveredMinutes()); assertEquals(7_000_000L, uncovered.basePayMinor());
+    void vacationIsSeparateFromSalaryCoverageWhileCompensatedTimeOffStillCoversNorm() {
+        PayrollSourceSnapshot vacationSource =
+                source(
+                        480,
+                        List.of(
+                                day(
+                                        480,
+                                        240,
+                                        240,
+                                        0,
+                                        0
+                                )
+                        )
+                );
+
+        /*
+         * paidAbsenceMinutes remains a generic source/read-model quantity.
+         * It must not silently define SALARY coverage.
+         */
+        assertEquals(
+                240,
+                vacationSource.vacationMinutes()
+        );
+        assertEquals(
+                240,
+                vacationSource.paidAbsenceMinutes()
+        );
+
+        var vacation =
+                service.calculate(
+                        term(
+                                "SALARY",
+                                null,
+                                8_000_000L
+                        ),
+                        vacationSource,
+                        480
+                );
+
+        assertEquals(
+                240,
+                vacation.salaryCoveredMinutes()
+        );
+        assertEquals(
+                4_000_000L,
+                vacation.basePayMinor()
+        );
+
+        /*
+         * Existing product invariant:
+         * compensated time off from the overtime bank is paid time
+         * and therefore still preserves salary coverage.
+         */
+        var compensatedTimeOff =
+                service.calculate(
+                        term(
+                                "SALARY",
+                                null,
+                                8_000_000L
+                        ),
+                        source(
+                                480,
+                                List.of(
+                                        day(
+                                                480,
+                                                240,
+                                                0,
+                                                0,
+                                                240
+                                        )
+                                )
+                        ),
+                        480
+                );
+
+        assertEquals(
+                480,
+                compensatedTimeOff.salaryCoveredMinutes()
+        );
+        assertEquals(
+                8_000_000L,
+                compensatedTimeOff.basePayMinor()
+        );
+
+        /*
+         * SICK_PAY stays on the pre-existing salary-coverage contract
+         * until separate real payroll evidence is available.
+         */
+        var sick =
+                service.calculate(
+                        term(
+                                "SALARY",
+                                null,
+                                8_000_000L
+                        ),
+                        source(
+                                480,
+                                List.of(
+                                        day(
+                                                480,
+                                                240,
+                                                0,
+                                                240,
+                                                0
+                                        )
+                                )
+                        ),
+                        480
+                );
+
+        assertEquals(
+                480,
+                sick.salaryCoveredMinutes()
+        );
+        assertEquals(
+                8_000_000L,
+                sick.basePayMinor()
+        );
+
+        var uncovered =
+                service.calculate(
+                        term(
+                                "SALARY",
+                                null,
+                                8_000_000L
+                        ),
+                        source(
+                                420,
+                                List.of(
+                                        day(
+                                                480,
+                                                420,
+                                                0,
+                                                0,
+                                                0
+                                        )
+                                )
+                        ),
+                        480
+                );
+
+        assertEquals(
+                420,
+                uncovered.salaryCoveredMinutes()
+        );
+        assertEquals(
+                7_000_000L,
+                uncovered.basePayMinor()
+        );
     }
 
     private CompensationTerm term(String mode, Long hourly, Long salary) {

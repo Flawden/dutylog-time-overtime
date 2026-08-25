@@ -127,15 +127,75 @@ public class CompensationCalculationService {
         );
     }
 
-    int salaryCoveredMinutes(PayrollSourceSnapshot source, int productionNormMinutes) {
+    int salaryCoveredMinutes(
+            PayrollSourceSnapshot source,
+            int productionNormMinutes
+    ) {
         long covered = 0;
+
         for (PayrollSourceDay day : source.days()) {
-            int paidAbsence = day.vacationMinutes() + day.sickMinutes() + day.overtimeCompensatedMinutes();
-            int dayCovered = Math.max(0, day.workedMinutes()) + Math.max(0, paidAbsence);
-            covered += Math.min(Math.max(0, day.plannedMinutes()), dayCovered);
+            /*
+             * Real same-role payroll evidence proves that annual vacation does
+             * not preserve monthly salary coverage. Salary is prorated to the
+             * covered worked quantity and vacation is paid separately through
+             * average earnings.
+             *
+             * OVERTIME_BANK compensated time off remains salary-covered.
+             *
+             * SICK_PAY deliberately retains its existing behavior until
+             * separate real-payroll evidence defines its replacement-payment
+             * semantics. Do not generalize the vacation finding to sickness.
+             */
+            int salaryCoveredAbsence =
+                    Math.addExact(
+                            Math.max(
+                                    0,
+                                    day.sickMinutes()
+                            ),
+                            Math.max(
+                                    0,
+                                    day.overtimeCompensatedMinutes()
+                            )
+                    );
+
+            int dayCovered =
+                    Math.addExact(
+                            Math.max(
+                                    0,
+                                    day.workedMinutes()
+                            ),
+                            salaryCoveredAbsence
+                    );
+
+            covered =
+                    Math.addExact(
+                            covered,
+                            Math.min(
+                                    Math.max(
+                                            0,
+                                            day.plannedMinutes()
+                                    ),
+                                    dayCovered
+                            )
+                    );
         }
-        covered += source.timeAdjustmentMinutes();
-        return (int) Math.max(0L, Math.min((long) Math.max(0, productionNormMinutes), covered));
+
+        covered =
+                Math.addExact(
+                        covered,
+                        source.timeAdjustmentMinutes()
+                );
+
+        return (int) Math.max(
+                0L,
+                Math.min(
+                        (long) Math.max(
+                                0,
+                                productionNormMinutes
+                        ),
+                        covered
+                )
+        );
     }
 
     private long requiredPositive(Long value, String code, String message) {
