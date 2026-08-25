@@ -440,4 +440,24 @@ class PayrollNativeQualifiedQuantityServiceTest {
                 holiday
         );
     }
+
+    @Test
+    void combinationRemainsUnsupportedUntilExternalEpisodeAndReferenceSemanticsAreProven() {
+        IllegalArgumentException error =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () ->
+                                service.resolve(
+                                        user,
+                                        YearMonth.of(2026, 7),
+                                        PayrollEarningKind.COMBINATION
+                                )
+                );
+
+        assertEquals(
+                "Native qualified quantity is not proven for COMBINATION",
+                error.getMessage()
+        );
+    }
+
 }
