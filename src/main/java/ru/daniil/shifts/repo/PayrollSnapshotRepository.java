@@ -11,4 +11,12 @@ import java.util.Optional;
 public interface PayrollSnapshotRepository extends JpaRepository<PayrollSnapshot, Long> {
     List<PayrollSnapshot> findByOwnerAndPeriodMonthOrderByRevisionDesc(AppUser owner, LocalDate periodMonth);
     Optional<PayrollSnapshot> findFirstByOwnerAndPeriodMonthOrderByRevisionDesc(AppUser owner, LocalDate periodMonth);
+
+    List<PayrollSnapshot>
+    findByOwnerAndPeriodMonthBetweenOrderByPeriodMonthAscRevisionDesc(
+            AppUser owner,
+            LocalDate from,
+            LocalDate to
+    );
+
 }
