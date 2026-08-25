@@ -90,8 +90,42 @@ final class PayrollTruthPackValidator {
         require(earning.amountMinor() >= 0, "Earning amountMinor cannot be negative");
 
         if (earning.qualifiedMinutes() != null) {
-            require(earning.qualifiedMinutes() >= 0, "qualifiedMinutes cannot be negative");
+            require(
+                    earning.qualifiedMinutes() >= 0,
+                    "qualifiedMinutes cannot be negative"
+            );
         }
+
+        if (earning.qualifiedQuantity() != null) {
+            require(
+                    earning.qualifiedQuantity().value() >= 0,
+                    "qualifiedQuantity cannot be negative"
+            );
+        }
+
+        /*
+         * Transitional compatibility is deliberately one-way:
+         *
+         * qualifiedMinutes is legacy evidence and therefore means MINUTES.
+         * New unit-aware truth may coexist with it only when both describe
+         * exactly the same quantity.
+         */
+        if (earning.qualifiedMinutes() != null
+                && earning.qualifiedQuantity() != null) {
+
+            require(
+                    earning.qualifiedQuantity().unit()
+                            == ru.daniil.shifts.model.PayrollQuantityUnit.MINUTES,
+                    "qualifiedMinutes can coexist only with MINUTES quantity"
+            );
+
+            require(
+                    earning.qualifiedQuantity().value()
+                            == earning.qualifiedMinutes(),
+                    "qualifiedMinutes and qualifiedQuantity disagree"
+            );
+        }
+
         if (earning.agreedRateBps() != null) {
             require(earning.agreedRateBps() >= 0, "agreedRateBps cannot be negative");
         }

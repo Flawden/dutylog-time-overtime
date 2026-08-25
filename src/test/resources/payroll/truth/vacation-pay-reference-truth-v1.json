@@ -37,6 +37,10 @@
           "coveredTo": "2026-05-31",
           "scheduledWorkMinutes": 4800,
           "payableCalendarDays": 14,
+          "qualifiedQuantity": {
+            "value": 14,
+            "unit": "CALENDAR_DAYS"
+          },
           "amountMinor": 5160988
         },
         {
@@ -46,6 +50,10 @@
           "coveredTo": "2026-06-15",
           "scheduledWorkMinutes": 4740,
           "payableCalendarDays": 14,
+          "qualifiedQuantity": {
+            "value": 14,
+            "unit": "CALENDAR_DAYS"
+          },
           "amountMinor": 5160988
         }
       ]

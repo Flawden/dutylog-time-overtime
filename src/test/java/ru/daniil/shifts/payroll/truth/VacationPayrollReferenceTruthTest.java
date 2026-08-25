@@ -102,6 +102,27 @@ class VacationPayrollReferenceTruthTest {
                     ).asText()
             );
 
+            JsonNode qualifiedQuantity =
+                    posting.path(
+                            "qualifiedQuantity"
+                    );
+
+            assertEquals(
+                    "CALENDAR_DAYS",
+                    qualifiedQuantity.path(
+                            "unit"
+                    ).asText()
+            );
+
+            assertEquals(
+                    posting.path(
+                            "payableCalendarDays"
+                    ).asLong(),
+                    qualifiedQuantity.path(
+                            "value"
+                    ).asLong()
+            );
+
             assertEquals(
                     Math.multiplyExact(
                             averageDaily,

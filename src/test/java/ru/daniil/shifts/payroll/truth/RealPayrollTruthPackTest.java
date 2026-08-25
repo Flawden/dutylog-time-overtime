@@ -231,8 +231,30 @@ class RealPayrollTruthPackTest {
             );
 
             assertNull(episode.referenceAmountMinor());
-            assertNotNull(episode.qualifiedMinutes());
-            assertTrue(episode.qualifiedMinutes() > 0);
+            assertNotNull(
+                    episode.qualifiedMinutes()
+            );
+
+            assertTrue(
+                    episode.qualifiedMinutes() > 0
+            );
+
+            var qualifiedQuantity =
+                    episode.resolvedQualifiedQuantity();
+
+            assertNotNull(
+                    qualifiedQuantity
+            );
+
+            assertEquals(
+                    ru.daniil.shifts.model.PayrollQuantityUnit.MINUTES,
+                    qualifiedQuantity.unit()
+            );
+
+            assertEquals(
+                    episode.qualifiedMinutes().longValue(),
+                    qualifiedQuantity.value()
+            );
             assertNotNull(episode.sourcePeriod());
             assertNotNull(episode.sourceLabel());
         }
