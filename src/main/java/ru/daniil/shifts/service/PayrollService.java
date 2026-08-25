@@ -511,18 +511,39 @@ public class PayrollService {
                         : 0L;
 
         /*
-         * Generic components are an explicit earnings phase.
+         * Ordered earnings assembly over already-calculated money.
          *
-         * They are NOT folded into manual additionsMinor.
+         * This is intentionally only an assembly contract:
+         * - phase ordering does not define eligible calculation bases;
+         * - no PayrollEarningKind is inferred from displayName;
+         * - settlement and generic components remain OTHER_EARNING until
+         *   they expose an explicit machine-owned semantic identity.
+         *
+         * ordinaryPremiumPay is the delta-only NIGHT / HOLIDAY premium,
+         * so its assembly phase is TIME_PREMIUM. Existing money sources and
+         * snapshot fields remain unchanged.
          */
         long earningsSubtotal =
-                safeMoney(
-                        basePay,
-                        settlementPay,
-                        ordinaryPremiumPay,
-                        componentEarnings,
-                        0L
-                );
+                assembleEarnings(
+                        List.of(
+                                new PayrollEarningsPipeline.Earning(
+                                        PayrollEarningPhase.BASE_PAY,
+                                        basePay
+                                ),
+                                new PayrollEarningsPipeline.Earning(
+                                        PayrollEarningPhase.TIME_PREMIUM,
+                                        ordinaryPremiumPay
+                                ),
+                                new PayrollEarningsPipeline.Earning(
+                                        PayrollEarningPhase.OTHER_EARNING,
+                                        settlementPay
+                                ),
+                                new PayrollEarningsPipeline.Earning(
+                                        PayrollEarningPhase.OTHER_EARNING,
+                                        componentEarnings
+                                )
+                        )
+                ).totalAmountMinor();
 
         long totalPay =
                 safeMoney(
@@ -833,6 +854,21 @@ public class PayrollService {
 
     private PayrollSettings ensureSettings(AppUser user) {
         return settings.findByOwner(user).orElseGet(() -> settings.saveAndFlush(new PayrollSettings(user)));
+    }
+
+    private PayrollEarningsPipeline.Result assembleEarnings(
+            List<PayrollEarningsPipeline.Earning> earnings
+    ) {
+        try {
+            return PayrollEarningsPipeline.assemble(
+                    earnings
+            );
+        } catch (ArithmeticException ex) {
+            throw ApiException.badRequest(
+                    "PAYROLL_AMOUNT_OVERFLOW",
+                    "Итоговая сумма слишком велика"
+            );
+        }
     }
 
     private long safeMoney(
