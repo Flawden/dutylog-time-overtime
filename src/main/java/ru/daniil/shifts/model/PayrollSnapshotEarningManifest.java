@@ -58,6 +58,12 @@ public class PayrollSnapshotEarningManifest {
     private long amountMinor;
 
     @Column(
+            name = "unclassified_amount_minor",
+            nullable = false
+    )
+    private long unclassifiedAmountMinor;
+
+    @Column(
             name = "fingerprint",
             nullable = false,
             length = 64
@@ -67,11 +73,36 @@ public class PayrollSnapshotEarningManifest {
     protected PayrollSnapshotEarningManifest() {
     }
 
+    /**
+     * Source-compatible constructor for the 8A3D1A+B manifest contract.
+     *
+     * Pre-8A3D1C callers have no explicitly unclassified amount and therefore
+     * delegate with zero. New production freeze code uses the six-argument
+     * constructor.
+     */
     public PayrollSnapshotEarningManifest(
             PayrollSnapshot snapshot,
             boolean complete,
             int lineCount,
             long amountMinor,
+            String fingerprint
+    ) {
+        this(
+                snapshot,
+                complete,
+                lineCount,
+                amountMinor,
+                0L,
+                fingerprint
+        );
+    }
+
+    public PayrollSnapshotEarningManifest(
+            PayrollSnapshot snapshot,
+            boolean complete,
+            int lineCount,
+            long amountMinor,
+            long unclassifiedAmountMinor,
             String fingerprint
     ) {
         this.snapshot =
@@ -92,6 +123,19 @@ public class PayrollSnapshotEarningManifest {
             );
         }
 
+        if (unclassifiedAmountMinor < 0) {
+            throw new IllegalArgumentException(
+                    "Unclassified semantic earning amount must be non-negative"
+            );
+        }
+
+        if (complete
+                && unclassifiedAmountMinor != 0L) {
+            throw new IllegalArgumentException(
+                    "Complete semantic earning manifest cannot contain unclassified money"
+            );
+        }
+
         if (fingerprint == null
                 || !fingerprint.matches(
                         "[0-9a-f]{64}"
@@ -104,6 +148,8 @@ public class PayrollSnapshotEarningManifest {
         this.complete = complete;
         this.lineCount = lineCount;
         this.amountMinor = amountMinor;
+        this.unclassifiedAmountMinor =
+                unclassifiedAmountMinor;
         this.fingerprint = fingerprint;
     }
 
@@ -125,6 +171,10 @@ public class PayrollSnapshotEarningManifest {
 
     public long getAmountMinor() {
         return amountMinor;
+    }
+
+    public long getUnclassifiedAmountMinor() {
+        return unclassifiedAmountMinor;
     }
 
     public String getFingerprint() {

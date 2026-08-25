@@ -215,6 +215,11 @@ class PayrollHistoricalSemanticEarningsServiceTest {
                         revision2
                 );
 
+        stubSnapshotEarningSourcesFromLines(
+                revision2,
+                revision2Frozen
+        );
+
         when(
                 manifests.findBySnapshot(
                         revision2
@@ -600,6 +605,11 @@ class PayrollHistoricalSemanticEarningsServiceTest {
                         vacation
                 );
 
+        stubSnapshotEarningSourcesFromLines(
+                august,
+                augustFrozen
+        );
+
         when(
                 manifests.findBySnapshot(
                         august
@@ -975,6 +985,11 @@ class PayrollHistoricalSemanticEarningsServiceTest {
         List<PayrollSnapshotEarningLine> empty =
                 List.of();
 
+        stubSnapshotEarningSourcesFromLines(
+                target,
+                empty
+        );
+
         when(
                 lines.findBySnapshotOrderByLineIndexAsc(
                         target
@@ -1038,6 +1053,88 @@ class PayrollHistoricalSemanticEarningsServiceTest {
         );
     }
 
+
+    @Test
+    void snapshotSourceTotalMismatchBlocksCompleteManifest() {
+        YearMonth event =
+                YearMonth.of(
+                        2026,
+                        9
+                );
+
+        List<PayrollSnapshot> history =
+                completeHistory(
+                        event,
+                        "RUB"
+                );
+
+        PayrollSnapshot target =
+                history.get(
+                        4
+                );
+
+        /*
+         * Manifest + semantic lines remain internally consistent, but the
+         * immutable Payroll snapshot contains one additional earning ruble.
+         *
+         * Historical read must therefore reject the month as incomplete
+         * semantic coverage instead of trusting the manifest declaration.
+         */
+        when(
+                target.getAdditionsMinor()
+        ).thenReturn(
+                1L
+        );
+
+        when(
+                snapshots
+                        .findByOwnerAndPeriodMonthBetweenOrderByPeriodMonthAscRevisionDesc(
+                                user,
+                                event.minusMonths(
+                                                12
+                                        )
+                                        .atDay(
+                                                1
+                                        ),
+                                event.minusMonths(
+                                                1
+                                        )
+                                        .atDay(
+                                                1
+                                        )
+                        )
+        ).thenReturn(
+                history
+        );
+
+        var result =
+                service.resolve(
+                        user,
+                        event
+                );
+
+        assertFalse(
+                result.ready()
+        );
+
+        assertEquals(
+                "HISTORICAL_SEMANTIC_EARNINGS_SOURCE_TOTAL_MISMATCH",
+                result.blockingReason()
+        );
+
+        assertEquals(
+                event.minusMonths(
+                                8
+                        ),
+                result.blockingPeriod()
+        );
+
+        assertTrue(
+                result.months()
+                        .isEmpty()
+        );
+    }
+
     private List<PayrollSnapshot> completeHistory(
             YearMonth event,
             String currency
@@ -1074,6 +1171,11 @@ class PayrollHistoricalSemanticEarningsServiceTest {
                     List.of(
                             frozenLine
                     );
+
+            stubSnapshotEarningSourcesFromLines(
+                    snapshot,
+                    frozenLines
+            );
 
             lenient().when(
                     lines.findBySnapshotOrderByLineIndexAsc(
@@ -1160,6 +1262,75 @@ class PayrollHistoricalSemanticEarningsServiceTest {
                 null,
                 null,
                 null
+        );
+    }
+
+
+    /**
+     * Frozen Payroll aggregate fixture corresponding to one semantic line set.
+     *
+     * This helper MUST be called before starting repository Mockito stubbing.
+     * Keeping it separate from manifest(...) prevents nested Mockito stubbing
+     * inside thenReturn(...).
+     */
+    private void stubSnapshotEarningSourcesFromLines(
+            PayrollSnapshot snapshot,
+            List<PayrollSnapshotEarningLine> frozenLines
+    ) {
+        long amount =
+                frozenLines
+                        .stream()
+                        .mapToLong(
+                                PayrollSnapshotEarningLine::getAmountMinor
+                        )
+                        .sum();
+
+        stubSnapshotEarningSources(
+                snapshot,
+                amount,
+                0L,
+                0L,
+                0L,
+                0L
+        );
+    }
+
+    private void stubSnapshotEarningSources(
+            PayrollSnapshot snapshot,
+            long basePayMinor,
+            long ordinaryPremiumPayMinor,
+            long settlementPayMinor,
+            long compensationComponentEarningsMinor,
+            long additionsMinor
+    ) {
+        lenient().when(
+                snapshot.getBasePayMinor()
+        ).thenReturn(
+                basePayMinor
+        );
+
+        lenient().when(
+                snapshot.getOrdinaryPremiumPayMinor()
+        ).thenReturn(
+                ordinaryPremiumPayMinor
+        );
+
+        lenient().when(
+                snapshot.getSettlementPayMinor()
+        ).thenReturn(
+                settlementPayMinor
+        );
+
+        lenient().when(
+                snapshot.getCompensationComponentEarningsMinor()
+        ).thenReturn(
+                compensationComponentEarningsMinor
+        );
+
+        lenient().when(
+                snapshot.getAdditionsMinor()
+        ).thenReturn(
+                additionsMinor
         );
     }
 

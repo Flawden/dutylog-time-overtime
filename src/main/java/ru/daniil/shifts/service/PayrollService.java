@@ -54,6 +54,14 @@ public class PayrollService {
     private PayrollCompensationComponentPreviewService componentPricing;
     private PayrollSnapshotComponentLineRepository snapshotComponentLines;
 
+    /*
+     * 8A3D1C remains setter-injected for the same source-compatibility reason:
+     * many historical isolated tests construct PayrollService directly.
+     *
+     * The Spring application context treats this collaborator as required.
+     */
+    private PayrollSemanticFreezeService semanticEarningFreeze;
+
     public PayrollService(PayrollSettingsRepository settings,
                           CompensationTermRepository compensationTerms,
                           PayrollAdjustmentRepository adjustments,
@@ -79,6 +87,14 @@ public class PayrollService {
     ) {
         this.componentPricing = componentPricing;
         this.snapshotComponentLines = snapshotComponentLines;
+    }
+
+    @Autowired
+    void configureSemanticEarningFreeze(
+            PayrollSemanticFreezeService semanticEarningFreeze
+    ) {
+        this.semanticEarningFreeze =
+                semanticEarningFreeze;
     }
 
     @Transactional
@@ -252,8 +268,39 @@ public class PayrollService {
                 preview.compensationComponentLines()
         );
 
+        freezeSemanticEarnings(
+                created,
+                preview
+        );
+
         if (previous != null) { previous.supersedeWith(created); snapshots.save(previous); }
         return toSnapshot(created);
+    }
+
+    private void freezeSemanticEarnings(
+            PayrollSnapshot snapshot,
+            PayrollPreviewDto preview
+    ) {
+        /*
+         * Compatibility path for historical direct-construction unit fixtures.
+         *
+         * In the real Spring application this collaborator is required by
+         * @Autowired and therefore cannot silently disappear.
+         */
+        if (semanticEarningFreeze == null) {
+            return;
+        }
+
+        semanticEarningFreeze.freeze(
+                snapshot,
+                new PayrollSemanticFreezeProjection.Source(
+                        preview.basePayMinor(),
+                        preview.ordinaryPremiumPayMinor(),
+                        preview.settlementPayMinor(),
+                        preview.compensationComponentEarningsMinor(),
+                        preview.additionsMinor()
+                )
+        );
     }
 
     private PayrollPeriodDto buildPeriod(AppUser user, YearMonth month, PayrollSettings legacySettings) {

@@ -252,6 +252,36 @@ public class PayrollHistoricalSemanticEarningsService {
                 );
             }
 
+            long manifestSourceAmount;
+
+            try {
+                manifestSourceAmount =
+                        Math.addExact(
+                                manifest.getAmountMinor(),
+                                manifest.getUnclassifiedAmountMinor()
+                        );
+            } catch (ArithmeticException ex) {
+                throw new IllegalStateException(
+                        "Historical semantic earning manifest amount overflow",
+                        ex
+                );
+            }
+
+            long snapshotSourceAmount =
+                    snapshotEarningSourceAmount(
+                            snapshot
+                    );
+
+            if (manifestSourceAmount
+                    != snapshotSourceAmount) {
+                return Resolution.blocked(
+                        referenceFrom,
+                        referenceTo,
+                        "HISTORICAL_SEMANTIC_EARNINGS_SOURCE_TOTAL_MISMATCH",
+                        month
+                );
+            }
+
             List<PayrollSnapshotEarningLine> frozen =
                     earningLines
                             .findBySnapshotOrderByLineIndexAsc(
@@ -418,6 +448,48 @@ public class PayrollHistoricalSemanticEarningsService {
                 currency,
                 resolved
         );
+    }
+
+    /**
+     * Frozen Payroll earning-source money represented by the semantic freeze.
+     *
+     * Deductions intentionally do not participate: they are not earnings.
+     */
+    private static long snapshotEarningSourceAmount(
+            PayrollSnapshot snapshot
+    ) {
+        try {
+            long total =
+                    snapshot.getBasePayMinor();
+
+            total =
+                    Math.addExact(
+                            total,
+                            snapshot.getOrdinaryPremiumPayMinor()
+                    );
+
+            total =
+                    Math.addExact(
+                            total,
+                            snapshot.getSettlementPayMinor()
+                    );
+
+            total =
+                    Math.addExact(
+                            total,
+                            snapshot.getCompensationComponentEarningsMinor()
+                    );
+
+            return Math.addExact(
+                    total,
+                    snapshot.getAdditionsMinor()
+            );
+        } catch (ArithmeticException ex) {
+            throw new IllegalStateException(
+                    "Historical Payroll earning-source amount overflow",
+                    ex
+            );
+        }
     }
 
     private static PayrollEarningKind parseKind(

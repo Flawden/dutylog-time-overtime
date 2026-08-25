@@ -106,4 +106,47 @@ class PayrollSnapshotEarningManifestTest {
                         )
         );
     }
+
+    @Test
+    void completeManifestRejectsUnclassifiedMoney() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        new PayrollSnapshotEarningManifest(
+                                snapshot,
+                                true,
+                                1,
+                                100L,
+                                1L,
+                                "0".repeat(
+                                        64
+                                )
+                        )
+        );
+    }
+
+    @Test
+    void incompleteManifestRetainsExplicitUnclassifiedMoney() {
+        PayrollSnapshotEarningManifest manifest =
+                new PayrollSnapshotEarningManifest(
+                        snapshot,
+                        false,
+                        1,
+                        100L,
+                        250L,
+                        "0".repeat(
+                                64
+                        )
+                );
+
+        assertEquals(
+                250L,
+                manifest.getUnclassifiedAmountMinor()
+        );
+
+        assertFalse(
+                manifest.isComplete()
+        );
+    }
+
 }
