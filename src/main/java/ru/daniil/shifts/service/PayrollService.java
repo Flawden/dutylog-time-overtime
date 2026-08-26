@@ -263,15 +263,17 @@ public class PayrollService {
                 preview.additionsMinor(), preview.deductionsMinor(), preview.totalPayMinor(),
                 period.getClosedAt(), checkedAt, hash));
 
-        freezeComponentLines(
-                created,
-                preview.compensationComponentLines()
-        );
+        List<PayrollSnapshotComponentLine> frozenComponentLines =
+                freezeComponentLines(
+                        created,
+                        preview.compensationComponentLines()
+                );
 
         freezeSemanticEarnings(
                 created,
                 preview,
-                ordinaryPremiumPreview
+                ordinaryPremiumPreview,
+                frozenComponentLines
         );
 
         if (previous != null) { previous.supersedeWith(created); snapshots.save(previous); }
@@ -282,7 +284,8 @@ public class PayrollService {
             PayrollSnapshot snapshot,
             PayrollPreviewDto preview,
             PayrollOrdinaryPremiumPreviewService.OrdinaryPremiumPreview
-                    ordinaryPremiumPreview
+                    ordinaryPremiumPreview,
+            List<PayrollSnapshotComponentLine> frozenComponentLines
     ) {
         /*
          * Compatibility path for historical direct-construction unit fixtures.
@@ -307,6 +310,47 @@ public class PayrollService {
             );
         }
 
+        List<PayrollSemanticFreezeProjection.ComponentLine>
+                semanticComponentLines =
+                        null;
+
+        if (frozenComponentLines != null) {
+            java.util.ArrayList<
+                    PayrollSemanticFreezeProjection.ComponentLine
+                    > mapped =
+                    new java.util.ArrayList<>();
+
+            for (int index = 0;
+                    index < frozenComponentLines.size();
+                    index++) {
+
+                PayrollSnapshotComponentLine line =
+                        frozenComponentLines.get(
+                                index
+                        );
+
+                if (line == null
+                        || line.getLineIndex() != index) {
+                    throw new IllegalStateException(
+                            "Frozen compensation component semantic order is invalid"
+                    );
+                }
+
+                mapped.add(
+                        new PayrollSemanticFreezeProjection.ComponentLine(
+                                index,
+                                line.getEarningKind(),
+                                line.getAmountMinor()
+                        )
+                );
+            }
+
+            semanticComponentLines =
+                    List.copyOf(
+                            mapped
+                    );
+        }
+
         semanticEarningFreeze.freeze(
                 snapshot,
                 new PayrollSemanticFreezeProjection.Source(
@@ -315,6 +359,7 @@ public class PayrollService {
                         ordinaryPremiumPreview.nightPremiumAmountMinor(),
                         preview.settlementPayMinor(),
                         preview.compensationComponentEarningsMinor(),
+                        semanticComponentLines,
                         preview.additionsMinor()
                 )
         );
@@ -870,14 +915,24 @@ public class PayrollService {
         return earningKind;
     }
 
-    private void freezeComponentLines(
+    private List<PayrollSnapshotComponentLine> freezeComponentLines(
             PayrollSnapshot snapshot,
             List<PayrollCompensationComponentLineDto> lines
     ) {
-        if (snapshotComponentLines == null
-                || lines == null
+        /*
+         * NULL means the historical direct-construction compatibility path
+         * has no exact frozen component evidence available.
+         *
+         * An exact empty List means production proved there were no
+         * compensation component lines.
+         */
+        if (snapshotComponentLines == null) {
+            return null;
+        }
+
+        if (lines == null
                 || lines.isEmpty()) {
-            return;
+            return List.of();
         }
 
         List<PayrollSnapshotComponentLine> frozen =
@@ -912,6 +967,10 @@ public class PayrollService {
         }
 
         snapshotComponentLines.saveAllAndFlush(
+                frozen
+        );
+
+        return List.copyOf(
                 frozen
         );
     }

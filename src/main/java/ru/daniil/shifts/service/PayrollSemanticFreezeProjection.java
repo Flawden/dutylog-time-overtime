@@ -13,12 +13,15 @@ import java.util.Objects;
  * proven by the current production model.
  *
  * Proven:
- * - native basePayMinor -> BASE_PAY.
+ * - native basePayMinor -> BASE_PAY;
+ * - proven ordinary NIGHT money -> NIGHT_PREMIUM;
+ * - positive generic compensation component lines whose immutable
+ *   earningKind is explicitly present -> that exact PayrollEarningKind.
  *
- * Explicitly NOT inferred yet:
- * - ordinary NIGHT/HOLIDAY aggregate premium money;
+ * Explicitly NOT inferred:
+ * - unresolved ordinary premium money;
  * - overtime settlement money;
- * - generic compensation component money;
+ * - generic compensation component lines with NULL earningKind;
  * - manual ADDITION adjustments.
  *
  * Deductions are not earnings and therefore do not participate in historical
@@ -77,11 +80,51 @@ public final class PayrollSemanticFreezeProjection {
                         source.settlementPayMinor()
                 );
 
-        unclassifiedAmount =
-                Math.addExact(
-                        unclassifiedAmount,
-                        source.compensationComponentEarningsMinor()
-                );
+        if (source.compensationComponentLines()
+                == null) {
+
+            /*
+             * Compatibility path: aggregate-only callers carry no exact
+             * machine semantic provenance, therefore generic money remains
+             * unclassified.
+             */
+            unclassifiedAmount =
+                    Math.addExact(
+                            unclassifiedAmount,
+                            source.compensationComponentEarningsMinor()
+                    );
+
+        } else {
+            for (ComponentLine line :
+                    source.compensationComponentLines()) {
+
+                if (line.amountMinor() == 0L) {
+                    continue;
+                }
+
+                if (line.earningKind() == null) {
+                    unclassifiedAmount =
+                            Math.addExact(
+                                    unclassifiedAmount,
+                                    line.amountMinor()
+                            );
+
+                } else {
+                    classified.add(
+                            new SemanticLine(
+                                    line.earningKind(),
+                                    line.amountMinor()
+                            )
+                    );
+
+                    classifiedAmount =
+                            Math.addExact(
+                                    classifiedAmount,
+                                    line.amountMinor()
+                            );
+                }
+            }
+        }
 
         unclassifiedAmount =
                 Math.addExact(
@@ -103,8 +146,28 @@ public final class PayrollSemanticFreezeProjection {
             long ordinaryNightPremiumPayMinor,
             long settlementPayMinor,
             long compensationComponentEarningsMinor,
+            List<ComponentLine> compensationComponentLines,
             long additionsMinor
     ) {
+        public Source(
+                long basePayMinor,
+                long ordinaryPremiumPayMinor,
+                long ordinaryNightPremiumPayMinor,
+                long settlementPayMinor,
+                long compensationComponentEarningsMinor,
+                long additionsMinor
+        ) {
+            this(
+                    basePayMinor,
+                    ordinaryPremiumPayMinor,
+                    ordinaryNightPremiumPayMinor,
+                    settlementPayMinor,
+                    compensationComponentEarningsMinor,
+                    null,
+                    additionsMinor
+            );
+        }
+
         public Source(
                 long basePayMinor,
                 long ordinaryPremiumPayMinor,
@@ -118,6 +181,7 @@ public final class PayrollSemanticFreezeProjection {
                     0L,
                     settlementPayMinor,
                     compensationComponentEarningsMinor,
+                    null,
                     additionsMinor
             );
         }
@@ -139,6 +203,47 @@ public final class PayrollSemanticFreezeProjection {
                 throw new IllegalArgumentException(
                         "Proven NIGHT premium cannot exceed ordinary premium aggregate"
                 );
+            }
+
+            if (compensationComponentLines != null) {
+                compensationComponentLines =
+                        List.copyOf(
+                                compensationComponentLines
+                        );
+
+                long componentAmount =
+                        0L;
+
+                for (int index = 0;
+                        index < compensationComponentLines.size();
+                        index++) {
+
+                    ComponentLine line =
+                            Objects.requireNonNull(
+                                    compensationComponentLines.get(index),
+                                    "Semantic component line is required"
+                            );
+
+                    if (line.lineIndex()
+                            != index) {
+                        throw new IllegalArgumentException(
+                                "Semantic component line order is invalid"
+                        );
+                    }
+
+                    componentAmount =
+                            Math.addExact(
+                                    componentAmount,
+                                    line.amountMinor()
+                            );
+                }
+
+                if (componentAmount
+                        != compensationComponentEarningsMinor) {
+                    throw new IllegalArgumentException(
+                            "Semantic component line sum does not match Payroll aggregate"
+                    );
+                }
             }
         }
 
@@ -168,6 +273,29 @@ public final class PayrollSemanticFreezeProjection {
                     total,
                     additionsMinor
             );
+        }
+    }
+
+    public record ComponentLine(
+            int lineIndex,
+            PayrollEarningKind earningKind,
+            long amountMinor
+    ) {
+        public ComponentLine {
+            if (lineIndex < 0
+                    || amountMinor < 0L) {
+                throw new IllegalArgumentException(
+                        "Semantic component line identity or money is invalid"
+                );
+            }
+
+            if (earningKind != null
+                    && !earningKind
+                            .isGenericCompensationComponentKind()) {
+                throw new IllegalArgumentException(
+                        "Semantic component line kind is not generic-component-owned"
+                );
+            }
         }
     }
 

@@ -56,6 +56,14 @@ class PayrollCompensationComponentPayrollIntegrationTest {
     @Autowired
     PayrollSnapshotComponentLineRepository frozenLines;
 
+    @Autowired
+    ru.daniil.shifts.repo.PayrollSnapshotEarningLineRepository
+            semanticLines;
+
+    @Autowired
+    ru.daniil.shifts.repo.PayrollSnapshotEarningManifestRepository
+            semanticManifests;
+
     AppUser owner;
 
     @BeforeEach
@@ -215,6 +223,110 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                 1,
                 first.compensationComponentLines()
                         .size()
+        );
+
+        var firstFrozenSnapshot =
+                payrollSnapshots
+                        .findFirstByOwnerAndPeriodMonthOrderByRevisionDesc(
+                                owner,
+                                LocalDate.of(
+                                        2026,
+                                        8,
+                                        1
+                                )
+                        )
+                        .orElseThrow();
+
+        var firstSemanticManifest =
+                semanticManifests
+                        .findBySnapshot(
+                                firstFrozenSnapshot
+                        )
+                        .orElseThrow();
+
+        var firstSemanticLines =
+                semanticLines
+                        .findBySnapshotOrderByLineIndexAsc(
+                                firstFrozenSnapshot
+                        );
+
+        assertTrue(
+                firstSemanticManifest.isComplete()
+        );
+
+        assertEquals(
+                0L,
+                firstSemanticManifest
+                        .getUnclassifiedAmountMinor()
+        );
+
+        assertEquals(
+                2,
+                firstSemanticManifest
+                        .getLineCount()
+        );
+
+        assertEquals(
+                832_000L,
+                firstSemanticManifest
+                        .getAmountMinor()
+        );
+
+        assertEquals(
+                2,
+                firstSemanticLines.size()
+        );
+
+        assertEquals(
+                "BASE_PAY",
+                firstSemanticLines
+                        .get(0)
+                        .getEarningKind()
+        );
+
+        assertEquals(
+                800_000L,
+                firstSemanticLines
+                        .get(0)
+                        .getAmountMinor()
+        );
+
+        assertEquals(
+                "HARMFUL_CONDITIONS",
+                firstSemanticLines
+                        .get(1)
+                        .getEarningKind()
+        );
+
+        assertEquals(
+                32_000L,
+                firstSemanticLines
+                        .get(1)
+                        .getAmountMinor()
+        );
+
+        assertNull(
+                firstSemanticLines
+                        .get(1)
+                        .getQualifiedQuantityValue()
+        );
+
+        assertNull(
+                firstSemanticLines
+                        .get(1)
+                        .getQualifiedQuantityUnit()
+        );
+
+        assertNull(
+                firstSemanticLines
+                        .get(1)
+                        .getEarningPeriodFrom()
+        );
+
+        assertNull(
+                firstSemanticLines
+                        .get(1)
+                        .getCoverageFrom()
         );
 
         String firstHash =
