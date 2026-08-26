@@ -12,6 +12,9 @@ import ru.daniil.shifts.service.PayPricingEngine.PricingResult;
 import ru.daniil.shifts.service.PayPricingEngine.PricingSlice;
 import ru.daniil.shifts.service.PayPricingPolicyService.ResolvedPricingPolicy;
 import ru.daniil.shifts.service.PayPricingRuleResolver.ConsumedSlice;
+import ru.daniil.shifts.service.PayPricingRuleResolver.Dimension;
+import ru.daniil.shifts.service.PayPricingRuleResolver.Rule;
+import ru.daniil.shifts.service.PayPricingRuleResolver.RuleSet;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.nio.charset.StandardCharsets;
@@ -23,8 +26,10 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 /**
@@ -145,6 +150,8 @@ public class OrdinaryWorkPremiumPricingService {
                     0,
                     0L,
                     0L,
+                    0L,
+                    0L,
                     List.of(),
                     List.of()
             );
@@ -188,6 +195,23 @@ public class OrdinaryWorkPremiumPricingService {
                 new TreeMap<>();
 
         Map<Long, Integer> minutesByRate =
+                new TreeMap<>();
+
+        /*
+         * Semantic identity remains outside PayPricingEngine.
+         *
+         * PayPricingEngine keeps its existing economic key
+         * (code, premiumBps), preserving all rounding semantics.
+         *
+         * For semantic history we separately retain the machine-owned
+         * Dimension associated with each economic key.
+         */
+        Map<Long, Map<PremiumEconomicKey, Set<Dimension>>>
+                premiumDimensionsByRate =
+                new TreeMap<>();
+
+        Map<Long, Set<PremiumEconomicKey>>
+                unresolvedPremiumKeysByRate =
                 new TreeMap<>();
 
         List<SourceDateValuation> valuations =
@@ -239,6 +263,7 @@ public class OrdinaryWorkPremiumPricingService {
                             );
 
             List<PricingSlice> resolvedPricingSlices;
+            RuleSet resolvedRuleSet = null;
             LocalDate pricingEffectiveFrom = null;
 
             if (premiumDimensionsPresent) {
@@ -251,6 +276,9 @@ public class OrdinaryWorkPremiumPricingService {
 
                 resolvedPricingSlices =
                         policy.pricingSlices();
+
+                resolvedRuleSet =
+                        policy.rules();
 
                 pricingEffectiveFrom =
                         policy.effectiveFrom();
@@ -306,6 +334,14 @@ public class OrdinaryWorkPremiumPricingService {
                                 + rate.currencyCode()
                 );
             }
+
+            retainPremiumSemanticIdentity(
+                    rate.baseHourlyRateMinor(),
+                    resolvedRuleSet,
+                    resolvedPricingSlices,
+                    premiumDimensionsByRate,
+                    unresolvedPremiumKeysByRate
+            );
 
             slicesByRate
                     .computeIfAbsent(
@@ -385,6 +421,9 @@ public class OrdinaryWorkPremiumPricingService {
         long referenceBaseAmountMinor = 0L;
         long premiumAmountMinor = 0L;
 
+        long nightPremiumAmountMinor = 0L;
+        long unclassifiedPremiumAmountMinor = 0L;
+
         int pricedTotalMinutes = 0;
 
         List<PricedRateBucket> buckets =
@@ -434,6 +473,60 @@ public class OrdinaryWorkPremiumPricingService {
                             priced.premiumAmountMinor()
                     );
 
+            Map<PremiumEconomicKey, Set<Dimension>>
+                    dimensions =
+                    premiumDimensionsByRate
+                            .getOrDefault(
+                                    hourlyRate,
+                                    Map.of()
+                            );
+
+            Set<PremiumEconomicKey> unresolved =
+                    unresolvedPremiumKeysByRate
+                            .getOrDefault(
+                                    hourlyRate,
+                                    Set.of()
+                            );
+
+            for (PricedPremium premium :
+                    priced.premiums()) {
+
+                PremiumEconomicKey key =
+                        new PremiumEconomicKey(
+                                premium.code(),
+                                premium.premiumBps()
+                        );
+
+                Set<Dimension> observed =
+                        dimensions.get(
+                                key
+                        );
+
+                boolean provenNight =
+                        !unresolved.contains(
+                                key
+                        )
+                                && observed != null
+                                && observed.size() == 1
+                                && observed.contains(
+                                        Dimension.NIGHT
+                                );
+
+                if (provenNight) {
+                    nightPremiumAmountMinor =
+                            Math.addExact(
+                                    nightPremiumAmountMinor,
+                                    premium.amountMinor()
+                            );
+                } else {
+                    unclassifiedPremiumAmountMinor =
+                            Math.addExact(
+                                    unclassifiedPremiumAmountMinor,
+                                    premium.amountMinor()
+                            );
+                }
+            }
+
             buckets.add(
                     new PricedRateBucket(
                             hourlyRate,
@@ -442,6 +535,19 @@ public class OrdinaryWorkPremiumPricingService {
                             priced.premiumAmountMinor(),
                             priced.premiums()
                     )
+            );
+        }
+
+        long semanticPremiumTotal =
+                Math.addExact(
+                        nightPremiumAmountMinor,
+                        unclassifiedPremiumAmountMinor
+                );
+
+        if (semanticPremiumTotal
+                != premiumAmountMinor) {
+            throw new IllegalStateException(
+                    "Ordinary premium semantic breakdown changed premium money"
             );
         }
 
@@ -463,10 +569,93 @@ public class OrdinaryWorkPremiumPricingService {
                 ordinaryMinutes,
                 referenceBaseAmountMinor,
                 premiumAmountMinor,
+                nightPremiumAmountMinor,
+                unclassifiedPremiumAmountMinor,
                 List.copyOf(buckets),
                 List.copyOf(valuations)
         );
     }
+
+    /**
+     * Retains the machine dimension associated with each economic pricing key.
+     *
+     * Missing, inconsistent or mixed identity is not guessed: corresponding
+     * money remains explicitly unclassified.
+     */
+    private static void retainPremiumSemanticIdentity(
+            long hourlyRate,
+            RuleSet rules,
+            List<PricingSlice> slices,
+            Map<Long, Map<PremiumEconomicKey, Set<Dimension>>>
+                    dimensionsByRate,
+            Map<Long, Set<PremiumEconomicKey>>
+                    unresolvedByRate
+    ) {
+        Map<String, List<Rule>> rulesByCode =
+                new LinkedHashMap<>();
+
+        if (rules != null) {
+            for (Rule rule : rules.rules()) {
+                rulesByCode
+                        .computeIfAbsent(
+                                rule.code(),
+                                ignored -> new ArrayList<>()
+                        )
+                        .add(rule);
+            }
+        }
+
+        Map<PremiumEconomicKey, Set<Dimension>> dimensions =
+                dimensionsByRate.computeIfAbsent(
+                        hourlyRate,
+                        ignored -> new LinkedHashMap<>()
+                );
+
+        Set<PremiumEconomicKey> unresolved =
+                unresolvedByRate.computeIfAbsent(
+                        hourlyRate,
+                        ignored -> new LinkedHashSet<>()
+                );
+
+        for (PricingSlice slice : slices) {
+            for (PayPricingEngine.PremiumComponent component :
+                    slice.components()) {
+
+                PremiumEconomicKey key =
+                        new PremiumEconomicKey(
+                                component.code(),
+                                component.premiumBps()
+                        );
+
+                List<Rule> matches =
+                        rulesByCode.getOrDefault(
+                                component.code(),
+                                List.of()
+                        );
+
+                if (matches.size() != 1
+                        || matches.get(0).premiumBps()
+                        != component.premiumBps()) {
+                    unresolved.add(key);
+                    continue;
+                }
+
+                dimensions
+                        .computeIfAbsent(
+                                key,
+                                ignored -> new LinkedHashSet<>()
+                        )
+                        .add(
+                                matches.get(0).dimension()
+                        );
+            }
+        }
+    }
+
+    private record PremiumEconomicKey(
+            String code,
+            int premiumBps
+    ) {}
 
     /**
      * Deterministic immutable identity of the complete ordinary premium
@@ -545,6 +734,16 @@ public class OrdinaryWorkPremiumPricingService {
         token(
                 canonical,
                 value.premiumAmountMinor()
+        );
+
+        token(
+                canonical,
+                value.nightPremiumAmountMinor()
+        );
+
+        token(
+                canonical,
+                value.unclassifiedPremiumAmountMinor()
         );
 
         List<SourceDateValuation> orderedSources =
@@ -1059,14 +1258,46 @@ public class OrdinaryWorkPremiumPricingService {
             int ordinaryMinutes,
             long referenceBaseAmountMinor,
             long premiumAmountMinor,
+            long nightPremiumAmountMinor,
+            long unclassifiedPremiumAmountMinor,
             List<PricedRateBucket> rateBuckets,
             List<SourceDateValuation> sources
     ) {
+        public MonthPremiumProjection(
+                YearMonth payrollMonth,
+                boolean ready,
+                String blockingReason,
+                List<BlockingDay> blockers,
+                String currencyCode,
+                int ordinaryMinutes,
+                long referenceBaseAmountMinor,
+                long premiumAmountMinor,
+                List<PricedRateBucket> rateBuckets,
+                List<SourceDateValuation> sources
+        ) {
+            this(
+                    payrollMonth,
+                    ready,
+                    blockingReason,
+                    blockers,
+                    currencyCode,
+                    ordinaryMinutes,
+                    referenceBaseAmountMinor,
+                    premiumAmountMinor,
+                    0L,
+                    premiumAmountMinor,
+                    rateBuckets,
+                    sources
+            );
+        }
+
         public MonthPremiumProjection {
             if (payrollMonth == null
                     || ordinaryMinutes < 0
                     || referenceBaseAmountMinor < 0
-                    || premiumAmountMinor < 0) {
+                    || premiumAmountMinor < 0
+                    || nightPremiumAmountMinor < 0
+                    || unclassifiedPremiumAmountMinor < 0) {
                 throw new IllegalArgumentException(
                         "Invalid ordinary premium month projection"
                 );
@@ -1076,6 +1307,28 @@ public class OrdinaryWorkPremiumPricingService {
                     blockers == null
                             ? List.of()
                             : List.copyOf(blockers);
+
+            long semanticPremiumTotal;
+
+            try {
+                semanticPremiumTotal =
+                        Math.addExact(
+                                nightPremiumAmountMinor,
+                                unclassifiedPremiumAmountMinor
+                        );
+            } catch (ArithmeticException ex) {
+                throw new IllegalArgumentException(
+                        "Ordinary premium semantic amount overflow",
+                        ex
+                );
+            }
+
+            if (semanticPremiumTotal
+                    != premiumAmountMinor) {
+                throw new IllegalArgumentException(
+                        "Ordinary premium semantic breakdown must preserve premium money"
+                );
+            }
 
             rateBuckets =
                     rateBuckets == null
@@ -1135,6 +1388,8 @@ public class OrdinaryWorkPremiumPricingService {
                 int minutes,
                 long referenceBase,
                 long premium,
+                long nightPremium,
+                long unclassifiedPremium,
                 List<PricedRateBucket> buckets,
                 List<SourceDateValuation> sources
         ) {
@@ -1147,6 +1402,8 @@ public class OrdinaryWorkPremiumPricingService {
                     minutes,
                     referenceBase,
                     premium,
+                    nightPremium,
+                    unclassifiedPremium,
                     buckets,
                     sources
             );
@@ -1164,6 +1421,8 @@ public class OrdinaryWorkPremiumPricingService {
                     blockers,
                     null,
                     minutes,
+                    0L,
+                    0L,
                     0L,
                     0L,
                     List.of(),

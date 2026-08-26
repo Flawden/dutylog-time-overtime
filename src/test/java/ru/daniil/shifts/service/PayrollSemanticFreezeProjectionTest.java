@@ -165,4 +165,65 @@ class PayrollSemanticFreezeProjectionTest {
                         )
         );
     }
+
+    @Test
+    void provenOrdinaryNightPremiumBecomesSemanticEarning() {
+        var result =
+                PayrollSemanticFreezeProjection.project(
+                        new PayrollSemanticFreezeProjection.Source(
+                                1_000L,
+                                300L,
+                                120L,
+                                0L,
+                                0L,
+                                0L
+                        )
+                );
+
+        assertEquals(
+                1_120L,
+                result.classifiedAmountMinor()
+        );
+
+        assertEquals(
+                180L,
+                result.unclassifiedAmountMinor()
+        );
+
+        assertEquals(
+                2,
+                result.classifiedLines().size()
+        );
+
+        assertEquals(
+                ru.daniil.shifts.model.PayrollEarningKind.NIGHT_PREMIUM,
+                result.classifiedLines()
+                        .get(1)
+                        .earningKind()
+        );
+
+        assertEquals(
+                120L,
+                result.classifiedLines()
+                        .get(1)
+                        .amountMinor()
+        );
+    }
+
+    @Test
+    void provenNightCannotExceedOrdinaryPremiumAggregate() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () ->
+                        new PayrollSemanticFreezeProjection.Source(
+                                1_000L,
+                                100L,
+                                101L,
+                                0L,
+                                0L,
+                                0L
+                        )
+        );
+    }
+
 }

@@ -9,6 +9,8 @@ import ru.daniil.shifts.service.OrdinaryWorkPremiumSourceService.SourcePiece;
 import ru.daniil.shifts.service.PayPricingEngine.PremiumComponent;
 import ru.daniil.shifts.service.PayPricingEngine.PricingSlice;
 import ru.daniil.shifts.service.PayPricingPolicyService.ResolvedPricingPolicy;
+import ru.daniil.shifts.service.PayPricingRuleResolver.Dimension;
+import ru.daniil.shifts.service.PayPricingRuleResolver.Rule;
 import ru.daniil.shifts.service.PayPricingRuleResolver.RuleSet;
 import ru.daniil.shifts.service.exception.ApiException;
 
@@ -519,6 +521,515 @@ class OrdinaryWorkPremiumPricingServiceTest {
         );
     }
 
+
+    @Test
+    void customCodeUsesMachineNightDimensionForSemanticMoney() {
+        LocalDate date =
+                LocalDate.of(
+                        2026,
+                        8,
+                        24
+                );
+
+        SourcePiece piece =
+                explicitPiece(
+                        date,
+                        60,
+                        true,
+                        false
+                );
+
+        stubMonth(
+                Map.of(
+                        date,
+                        readySource(
+                                date,
+                                List.of(piece)
+                        )
+                )
+        );
+
+        when(
+                pricingPolicy.resolveForSourceDate(
+                        eq(user),
+                        eq(date),
+                        anyList()
+                )
+        ).thenReturn(
+                semanticPolicy(
+                        date,
+                        List.of(
+                                new Rule(
+                                        "CUSTOM",
+                                        Dimension.NIGHT,
+                                        2_000,
+                                        0,
+                                        null,
+                                        null
+                                )
+                        ),
+                        List.of(
+                                new PricingSlice(
+                                        60,
+                                        List.of(
+                                                new PremiumComponent(
+                                                        "CUSTOM",
+                                                        2_000
+                                                )
+                                        )
+                                )
+                        )
+                )
+        );
+
+        when(
+                historicalRates.resolve(
+                        user,
+                        date
+                )
+        ).thenReturn(
+                rate(
+                        date,
+                        "RUB",
+                        60_000L
+                )
+        );
+
+        var result =
+                service.priceMonth(
+                        user,
+                        month
+                );
+
+        assertEquals(
+                12_000L,
+                result.premiumAmountMinor()
+        );
+
+        assertEquals(
+                12_000L,
+                result.nightPremiumAmountMinor()
+        );
+
+        assertEquals(
+                0L,
+                result.unclassifiedPremiumAmountMinor()
+        );
+    }
+
+    @Test
+    void nightLookingCodeWithHolidayDimensionRemainsUnclassified() {
+        LocalDate date =
+                LocalDate.of(
+                        2026,
+                        8,
+                        25
+                );
+
+        SourcePiece piece =
+                explicitPiece(
+                        date,
+                        60,
+                        false,
+                        true
+                );
+
+        stubMonth(
+                Map.of(
+                        date,
+                        readySource(
+                                date,
+                                List.of(piece)
+                        )
+                )
+        );
+
+        when(
+                pricingPolicy.resolveForSourceDate(
+                        eq(user),
+                        eq(date),
+                        anyList()
+                )
+        ).thenReturn(
+                semanticPolicy(
+                        date,
+                        List.of(
+                                new Rule(
+                                        "NIGHT",
+                                        Dimension.HOLIDAY,
+                                        2_000,
+                                        0,
+                                        null,
+                                        null
+                                )
+                        ),
+                        List.of(
+                                new PricingSlice(
+                                        60,
+                                        List.of(
+                                                new PremiumComponent(
+                                                        "NIGHT",
+                                                        2_000
+                                                )
+                                        )
+                                )
+                        )
+                )
+        );
+
+        when(
+                historicalRates.resolve(
+                        user,
+                        date
+                )
+        ).thenReturn(
+                rate(
+                        date,
+                        "RUB",
+                        60_000L
+                )
+        );
+
+        var result =
+                service.priceMonth(
+                        user,
+                        month
+                );
+
+        assertEquals(
+                0L,
+                result.nightPremiumAmountMinor()
+        );
+
+        assertEquals(
+                12_000L,
+                result.unclassifiedPremiumAmountMinor()
+        );
+    }
+
+    @Test
+    void mixedDimensionEconomicKeyFailsClosed() {
+        LocalDate first =
+                LocalDate.of(
+                        2026,
+                        8,
+                        26
+                );
+
+        LocalDate second =
+                LocalDate.of(
+                        2026,
+                        8,
+                        27
+                );
+
+        SourcePiece night =
+                explicitPiece(
+                        first,
+                        60,
+                        true,
+                        false
+                );
+
+        SourcePiece holiday =
+                explicitPiece(
+                        second,
+                        60,
+                        false,
+                        true
+                );
+
+        stubMonth(
+                Map.of(
+                        first,
+                        readySource(
+                                first,
+                                List.of(night)
+                        ),
+                        second,
+                        readySource(
+                                second,
+                                List.of(holiday)
+                        )
+                )
+        );
+
+        when(
+                pricingPolicy.resolveForSourceDate(
+                        eq(user),
+                        eq(first),
+                        anyList()
+                )
+        ).thenReturn(
+                semanticPolicy(
+                        first,
+                        List.of(
+                                new Rule(
+                                        "SHARED",
+                                        Dimension.NIGHT,
+                                        2_000,
+                                        0,
+                                        null,
+                                        null
+                                )
+                        ),
+                        List.of(
+                                new PricingSlice(
+                                        60,
+                                        List.of(
+                                                new PremiumComponent(
+                                                        "SHARED",
+                                                        2_000
+                                                )
+                                        )
+                                )
+                        )
+                )
+        );
+
+        when(
+                pricingPolicy.resolveForSourceDate(
+                        eq(user),
+                        eq(second),
+                        anyList()
+                )
+        ).thenReturn(
+                semanticPolicy(
+                        second,
+                        List.of(
+                                new Rule(
+                                        "SHARED",
+                                        Dimension.HOLIDAY,
+                                        2_000,
+                                        0,
+                                        null,
+                                        null
+                                )
+                        ),
+                        List.of(
+                                new PricingSlice(
+                                        60,
+                                        List.of(
+                                                new PremiumComponent(
+                                                        "SHARED",
+                                                        2_000
+                                                )
+                                        )
+                                )
+                        )
+                )
+        );
+
+        when(
+                historicalRates.resolve(
+                        user,
+                        first
+                )
+        ).thenReturn(
+                rate(
+                        first,
+                        "RUB",
+                        60_000L
+                )
+        );
+
+        when(
+                historicalRates.resolve(
+                        user,
+                        second
+                )
+        ).thenReturn(
+                rate(
+                        second,
+                        "RUB",
+                        60_000L
+                )
+        );
+
+        var result =
+                service.priceMonth(
+                        user,
+                        month
+                );
+
+        assertEquals(
+                24_000L,
+                result.premiumAmountMinor()
+        );
+
+        assertEquals(
+                0L,
+                result.nightPremiumAmountMinor()
+        );
+
+        assertEquals(
+                24_000L,
+                result.unclassifiedPremiumAmountMinor()
+        );
+    }
+
+    @Test
+    void nightAndHolidayStackPreservingExactMoneyPartition() {
+        LocalDate date =
+                LocalDate.of(
+                        2026,
+                        8,
+                        28
+                );
+
+        SourcePiece piece =
+                explicitPiece(
+                        date,
+                        60,
+                        true,
+                        true
+                );
+
+        stubMonth(
+                Map.of(
+                        date,
+                        readySource(
+                                date,
+                                List.of(piece)
+                        )
+                )
+        );
+
+        when(
+                pricingPolicy.resolveForSourceDate(
+                        eq(user),
+                        eq(date),
+                        anyList()
+                )
+        ).thenReturn(
+                semanticPolicy(
+                        date,
+                        List.of(
+                                new Rule(
+                                        "N",
+                                        Dimension.NIGHT,
+                                        2_000,
+                                        0,
+                                        null,
+                                        null
+                                ),
+                                new Rule(
+                                        "H",
+                                        Dimension.HOLIDAY,
+                                        10_000,
+                                        0,
+                                        null,
+                                        null
+                                )
+                        ),
+                        List.of(
+                                new PricingSlice(
+                                        60,
+                                        List.of(
+                                                new PremiumComponent(
+                                                        "N",
+                                                        2_000
+                                                ),
+                                                new PremiumComponent(
+                                                        "H",
+                                                        10_000
+                                                )
+                                        )
+                                )
+                        )
+                )
+        );
+
+        when(
+                historicalRates.resolve(
+                        user,
+                        date
+                )
+        ).thenReturn(
+                rate(
+                        date,
+                        "RUB",
+                        60_000L
+                )
+        );
+
+        var result =
+                service.priceMonth(
+                        user,
+                        month
+                );
+
+        assertEquals(
+                72_000L,
+                result.premiumAmountMinor()
+        );
+
+        assertEquals(
+                12_000L,
+                result.nightPremiumAmountMinor()
+        );
+
+        assertEquals(
+                60_000L,
+                result.unclassifiedPremiumAmountMinor()
+        );
+    }
+
+    @Test
+    void payrollPreviewPropagatesNightSemanticMoney() {
+        OrdinaryWorkPremiumPricingService mocked =
+                mock(
+                        OrdinaryWorkPremiumPricingService.class
+                );
+
+        PayrollOrdinaryPremiumPreviewService adapter =
+                new PayrollOrdinaryPremiumPreviewService(
+                        mocked
+                );
+
+        var projection =
+                new OrdinaryWorkPremiumPricingService.MonthPremiumProjection(
+                        month,
+                        true,
+                        null,
+                        List.of(),
+                        "RUB",
+                        60,
+                        60_000L,
+                        72_000L,
+                        12_000L,
+                        60_000L,
+                        List.of(),
+                        List.of()
+                );
+
+        when(
+                mocked.priceMonth(
+                        user,
+                        month
+                )
+        ).thenReturn(
+                projection
+        );
+
+        var result =
+                adapter.preview(
+                        user,
+                        month,
+                        "RUB"
+                );
+
+        assertEquals(
+                12_000L,
+                result.nightPremiumAmountMinor()
+        );
+
+        assertEquals(
+                60_000L,
+                result.unclassifiedPremiumAmountMinor()
+        );
+    }
+
     private void stubMonth(
             Map<LocalDate, OrdinaryPremiumSource> overrides
     ) {
@@ -595,6 +1106,26 @@ class OrdinaryWorkPremiumPricingServiceTest {
                 ),
                 new RuleSet(
                         List.of()
+                ),
+                slices
+        );
+    }
+
+
+    private ResolvedPricingPolicy semanticPolicy(
+            LocalDate sourceDate,
+            List<Rule> rules,
+            List<PricingSlice> slices
+    ) {
+        return new ResolvedPricingPolicy(
+                sourceDate,
+                LocalDate.of(
+                        2026,
+                        8,
+                        1
+                ),
+                new RuleSet(
+                        rules
                 ),
                 slices
         );

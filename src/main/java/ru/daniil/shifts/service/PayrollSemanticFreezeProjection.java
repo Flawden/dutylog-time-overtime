@@ -49,16 +49,26 @@ public final class PayrollSemanticFreezeProjection {
             );
         }
 
+        if (source.ordinaryNightPremiumPayMinor()
+                > 0L) {
+            classified.add(
+                    new SemanticLine(
+                            PayrollEarningKind.NIGHT_PREMIUM,
+                            source.ordinaryNightPremiumPayMinor()
+                    )
+            );
+        }
+
         long classifiedAmount =
-                source.basePayMinor();
+                Math.addExact(
+                        source.basePayMinor(),
+                        source.ordinaryNightPremiumPayMinor()
+                );
 
         long unclassifiedAmount =
-                0L;
-
-        unclassifiedAmount =
-                Math.addExact(
-                        unclassifiedAmount,
-                        source.ordinaryPremiumPayMinor()
+                Math.subtractExact(
+                        source.ordinaryPremiumPayMinor(),
+                        source.ordinaryNightPremiumPayMinor()
                 );
 
         unclassifiedAmount =
@@ -90,18 +100,44 @@ public final class PayrollSemanticFreezeProjection {
     public record Source(
             long basePayMinor,
             long ordinaryPremiumPayMinor,
+            long ordinaryNightPremiumPayMinor,
             long settlementPayMinor,
             long compensationComponentEarningsMinor,
             long additionsMinor
     ) {
+        public Source(
+                long basePayMinor,
+                long ordinaryPremiumPayMinor,
+                long settlementPayMinor,
+                long compensationComponentEarningsMinor,
+                long additionsMinor
+        ) {
+            this(
+                    basePayMinor,
+                    ordinaryPremiumPayMinor,
+                    0L,
+                    settlementPayMinor,
+                    compensationComponentEarningsMinor,
+                    additionsMinor
+            );
+        }
+
         public Source {
             if (basePayMinor < 0L
                     || ordinaryPremiumPayMinor < 0L
+                    || ordinaryNightPremiumPayMinor < 0L
                     || settlementPayMinor < 0L
                     || compensationComponentEarningsMinor < 0L
                     || additionsMinor < 0L) {
                 throw new IllegalArgumentException(
                         "Semantic freeze money sources must be non-negative"
+                );
+            }
+
+            if (ordinaryNightPremiumPayMinor
+                    > ordinaryPremiumPayMinor) {
+                throw new IllegalArgumentException(
+                        "Proven NIGHT premium cannot exceed ordinary premium aggregate"
                 );
             }
         }

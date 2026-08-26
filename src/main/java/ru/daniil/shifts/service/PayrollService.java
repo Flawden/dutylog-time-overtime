@@ -270,7 +270,8 @@ public class PayrollService {
 
         freezeSemanticEarnings(
                 created,
-                preview
+                preview,
+                ordinaryPremiumPreview
         );
 
         if (previous != null) { previous.supersedeWith(created); snapshots.save(previous); }
@@ -279,7 +280,9 @@ public class PayrollService {
 
     private void freezeSemanticEarnings(
             PayrollSnapshot snapshot,
-            PayrollPreviewDto preview
+            PayrollPreviewDto preview,
+            PayrollOrdinaryPremiumPreviewService.OrdinaryPremiumPreview
+                    ordinaryPremiumPreview
     ) {
         /*
          * Compatibility path for historical direct-construction unit fixtures.
@@ -291,11 +294,25 @@ public class PayrollService {
             return;
         }
 
+        if (ordinaryPremiumPreview == null) {
+            throw new IllegalStateException(
+                    "Semantic earning freeze requires ordinary premium preview"
+            );
+        }
+
+        if (preview.ordinaryPremiumPayMinor()
+                != ordinaryPremiumPreview.premiumAmountMinor()) {
+            throw new IllegalStateException(
+                    "Payroll ordinary premium aggregate differs from semantic preview"
+            );
+        }
+
         semanticEarningFreeze.freeze(
                 snapshot,
                 new PayrollSemanticFreezeProjection.Source(
                         preview.basePayMinor(),
                         preview.ordinaryPremiumPayMinor(),
+                        ordinaryPremiumPreview.nightPremiumAmountMinor(),
                         preview.settlementPayMinor(),
                         preview.compensationComponentEarningsMinor(),
                         preview.additionsMinor()

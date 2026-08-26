@@ -134,15 +134,47 @@ public class PayrollOrdinaryPremiumPreviewService {
             int ordinaryMinutes,
             long referenceBaseAmountMinor,
             long premiumAmountMinor,
+            long nightPremiumAmountMinor,
+            long unclassifiedPremiumAmountMinor,
             boolean pricingIdentityRequired,
             String pricingFingerprint,
             List<BlockingDay> blockers
     ) {
+        public OrdinaryPremiumPreview(
+                YearMonth month,
+                boolean ready,
+                String blockingReason,
+                String blockingMessage,
+                int ordinaryMinutes,
+                long referenceBaseAmountMinor,
+                long premiumAmountMinor,
+                boolean pricingIdentityRequired,
+                String pricingFingerprint,
+                List<BlockingDay> blockers
+        ) {
+            this(
+                    month,
+                    ready,
+                    blockingReason,
+                    blockingMessage,
+                    ordinaryMinutes,
+                    referenceBaseAmountMinor,
+                    premiumAmountMinor,
+                    0L,
+                    premiumAmountMinor,
+                    pricingIdentityRequired,
+                    pricingFingerprint,
+                    blockers
+            );
+        }
+
         public OrdinaryPremiumPreview {
             if (month == null
                     || ordinaryMinutes < 0
                     || referenceBaseAmountMinor < 0
-                    || premiumAmountMinor < 0) {
+                    || premiumAmountMinor < 0
+                    || nightPremiumAmountMinor < 0
+                    || unclassifiedPremiumAmountMinor < 0) {
                 throw new IllegalArgumentException(
                         "Invalid Payroll ordinary premium preview"
                 );
@@ -154,6 +186,28 @@ public class PayrollOrdinaryPremiumPreviewService {
                             : List.copyOf(
                                     blockers
                             );
+
+            long semanticPremiumTotal;
+
+            try {
+                semanticPremiumTotal =
+                        Math.addExact(
+                                nightPremiumAmountMinor,
+                                unclassifiedPremiumAmountMinor
+                        );
+            } catch (ArithmeticException ex) {
+                throw new IllegalArgumentException(
+                        "Ordinary premium preview semantic amount overflow",
+                        ex
+                );
+            }
+
+            if (semanticPremiumTotal
+                    != premiumAmountMinor) {
+                throw new IllegalArgumentException(
+                        "Ordinary premium preview semantic breakdown must preserve premium money"
+                );
+            }
 
             if (ready) {
                 if (blockingReason != null
@@ -212,6 +266,8 @@ public class PayrollOrdinaryPremiumPreviewService {
                     source.ordinaryMinutes(),
                     source.referenceBaseAmountMinor(),
                     source.premiumAmountMinor(),
+                    source.nightPremiumAmountMinor(),
+                    source.unclassifiedPremiumAmountMinor(),
                     pricingIdentityRequired,
                     fingerprint,
                     List.of()
@@ -231,6 +287,8 @@ public class PayrollOrdinaryPremiumPreviewService {
                     reason,
                     message,
                     ordinaryMinutes,
+                    0L,
+                    0L,
                     0L,
                     0L,
                     false,
