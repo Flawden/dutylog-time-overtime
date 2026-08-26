@@ -714,6 +714,9 @@ public class PayrollService {
                         line.effectiveFrom()
                 ).toString(),
                 line.displayName(),
+                line.earningKind() == null
+                        ? null
+                        : line.earningKind().name(),
                 line.calculationType().name(),
                 line.calculationBase() == null
                         ? null
@@ -759,6 +762,9 @@ public class PayrollService {
                                         line.getEffectiveFrom()
                                 ).toString(),
                                 line.getDisplayName(),
+                                line.getEarningKind() == null
+                                        ? null
+                                        : line.getEarningKind().name(),
                                 line.getCalculationType(),
                                 line.getCalculationBase(),
                                 line.getRateBps(),
@@ -830,6 +836,40 @@ public class PayrollService {
         }
     }
 
+    private ru.daniil.shifts.model.PayrollEarningKind
+            componentEarningKind(
+                    String raw
+            ) {
+        if (raw == null) {
+            return null;
+        }
+
+        final ru.daniil.shifts.model.PayrollEarningKind earningKind;
+
+        try {
+            earningKind =
+                    ru.daniil.shifts.model.PayrollEarningKind
+                            .valueOf(
+                                    raw
+                            );
+
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalStateException(
+                    "Frozen compensation component earning kind is invalid",
+                    ex
+            );
+        }
+
+        if (!earningKind
+                .isGenericCompensationComponentKind()) {
+            throw new IllegalStateException(
+                    "Frozen compensation component earning kind is unsupported"
+            );
+        }
+
+        return earningKind;
+    }
+
     private void freezeComponentLines(
             PayrollSnapshot snapshot,
             List<PayrollCompensationComponentLineDto> lines
@@ -857,6 +897,9 @@ public class PayrollService {
                                     line.effectiveMonth()
                             ).atDay(1),
                             line.displayName(),
+                            componentEarningKind(
+                                    line.earningKind()
+                            ),
                             line.calculationType(),
                             line.calculationBase(),
                             line.rateBps(),

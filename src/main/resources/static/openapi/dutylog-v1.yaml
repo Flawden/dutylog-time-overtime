@@ -2429,8 +2429,8 @@ components:
             createdAt: { type: string, format: date-time }
     PayrollCompensationComponentLine:
       type: object
-      description: Frozen explainability line for one generic compensation component. displayName is user-owned text and carries no machine semantics.
-      required: [componentId, versionId, effectiveMonth, displayName, calculationType, referenceBaseMinor, amountMinor]
+      description: Frozen/live explainability line for one generic compensation component. displayName is user-owned text and carries no machine semantics; earningKind is nullable machine provenance.
+      required: [componentId, versionId, effectiveMonth, displayName, earningKind, calculationType, referenceBaseMinor, amountMinor]
       properties:
         componentId:
           type: integer
@@ -2443,6 +2443,11 @@ components:
           pattern: '^\d{4}-\d{2}$'
         displayName:
           type: string
+        earningKind:
+          type: string
+          nullable: true
+          description: Machine semantic provenance. Null means explicitly UNCLASSIFIED.
+          enum: [HARMFUL_CONDITIONS, COMBINATION, MONTHLY_BONUS, ONE_TIME_BONUS, REGIONAL_COEFFICIENT]
         calculationType:
           type: string
           enum: [FIXED_AMOUNT, PERCENT_OF_BASE]

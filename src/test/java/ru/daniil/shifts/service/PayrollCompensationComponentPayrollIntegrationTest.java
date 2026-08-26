@@ -170,6 +170,11 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                 previewLine.displayName()
         );
 
+        assertEquals(
+                "HARMFUL_CONDITIONS",
+                previewLine.earningKind()
+        );
+
         ledger.closePeriod(
                 owner,
                 "2026-08"
@@ -281,6 +286,13 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                         .amountMinor()
         );
 
+        assertEquals(
+                "HARMFUL_CONDITIONS",
+                latest.compensationComponentLines()
+                        .get(0)
+                        .earningKind()
+        );
+
         /*
          * Mutable config changed, but revision 1 still explains exactly the
          * 4% projection that created it.
@@ -304,6 +316,13 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                 historical.compensationComponentLines()
                         .get(0)
                         .amountMinor()
+        );
+
+        assertEquals(
+                "HARMFUL_CONDITIONS",
+                historical.compensationComponentLines()
+                        .get(0)
+                        .earningKind()
         );
     }
 
@@ -604,6 +623,7 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                 rateBps,
                 null,
                 null,
+                "HARMFUL_CONDITIONS",
                 enabled
         );
     }

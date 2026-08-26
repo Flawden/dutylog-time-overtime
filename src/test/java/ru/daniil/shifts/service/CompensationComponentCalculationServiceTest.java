@@ -3,6 +3,7 @@ package ru.daniil.shifts.service;
 import org.junit.jupiter.api.Test;
 import ru.daniil.shifts.model.CompensationComponentVersion.CalculationBase;
 import ru.daniil.shifts.model.CompensationComponentVersion.CalculationType;
+import ru.daniil.shifts.model.PayrollEarningKind;
 import ru.daniil.shifts.service.CompensationComponentCalculationService.ComponentRule;
 import ru.daniil.shifts.service.CompensationComponentCalculationService.Context;
 
@@ -57,6 +58,7 @@ class CompensationComponentCalculationServiceTest {
                                         2,
                                         12,
                                         "Вредность 4%",
+                                        PayrollEarningKind.HARMFUL_CONDITIONS,
                                         CalculationBase.EARNED_BASE_PAY,
                                         400,
                                         true
@@ -82,6 +84,36 @@ class CompensationComponentCalculationServiceTest {
         assertEquals(
                 32_000L,
                 line.amountMinor()
+        );
+
+        assertEquals(
+                PayrollEarningKind.HARMFUL_CONDITIONS,
+                line.earningKind()
+        );
+
+        var unclassified =
+                service.calculate(
+                        hourlyContext(800_000L),
+                        List.of(
+                                percent(
+                                        2,
+                                        12,
+                                        "Вредность 4%",
+                                        CalculationBase.EARNED_BASE_PAY,
+                                        400,
+                                        true
+                                )
+                        )
+                );
+
+        assertEquals(
+                result.totalAmountMinor(),
+                unclassified.totalAmountMinor()
+        );
+
+        org.junit.jupiter.api.Assertions.assertNotEquals(
+                result.fingerprint(),
+                unclassified.fingerprint()
         );
     }
 
@@ -401,6 +433,26 @@ class CompensationComponentCalculationServiceTest {
             int rateBps,
             boolean enabled
     ) {
+        return percent(
+                componentId,
+                versionId,
+                name,
+                null,
+                base,
+                rateBps,
+                enabled
+        );
+    }
+
+    private ComponentRule percent(
+            long componentId,
+            long versionId,
+            String name,
+            PayrollEarningKind earningKind,
+            CalculationBase base,
+            int rateBps,
+            boolean enabled
+    ) {
         return new ComponentRule(
                 componentId,
                 versionId,
@@ -410,6 +462,7 @@ class CompensationComponentCalculationServiceTest {
                         1
                 ),
                 name,
+                earningKind,
                 CalculationType.PERCENT_OF_BASE,
                 base,
                 rateBps,

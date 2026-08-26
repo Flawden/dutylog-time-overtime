@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 74cbae0cd905bb6c50ffb54f00330917e5643325ddcd9413b1bdbd0a6bcf63bb
+ * SHA-256: 447d43d98cfb27f405a1784a088b842a427886fc2992002772a07bf3991f65ef
  * Generator: frontend/scripts/generate-openapi-contract.mjs
  * Contract: 145 operations, 151 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "74cbae0cd905bb6c50ffb54f00330917e5643325ddcd9413b1bdbd0a6bcf63bb";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "447d43d98cfb27f405a1784a088b842a427886fc2992002772a07bf3991f65ef";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -1004,6 +1004,7 @@ export namespace DutyLogApiSchemas {
     versionId: number;
     effectiveMonth: string;
     displayName: string;
+    earningKind: "HARMFUL_CONDITIONS" | "COMBINATION" | "MONTHLY_BONUS" | "ONE_TIME_BONUS" | "REGIONAL_COEFFICIENT" | null;
     calculationType: "FIXED_AMOUNT" | "PERCENT_OF_BASE";
     calculationBase?: "NOMINAL_SALARY" | "EARNED_BASE_PAY" | null;
     rateBps?: number | null;

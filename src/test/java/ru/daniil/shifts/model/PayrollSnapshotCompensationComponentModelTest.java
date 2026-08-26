@@ -122,6 +122,7 @@ class PayrollSnapshotCompensationComponentModelTest {
                                 1
                         ),
                         "Премия за выживание после ночной смены",
+                        PayrollEarningKind.HARMFUL_CONDITIONS,
                         "PERCENT_OF_BASE",
                         "EARNED_BASE_PAY",
                         400,
@@ -134,6 +135,11 @@ class PayrollSnapshotCompensationComponentModelTest {
         assertEquals(
                 "Премия за выживание после ночной смены",
                 line.getDisplayName()
+        );
+
+        assertEquals(
+                PayrollEarningKind.HARMFUL_CONDITIONS,
+                line.getEarningKind()
         );
 
         assertEquals(

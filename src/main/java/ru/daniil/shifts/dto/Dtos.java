@@ -2957,6 +2957,7 @@ public final class Dtos {
             long versionId,
             String effectiveMonth,
             String displayName,
+            String earningKind,
             String calculationType,
             String calculationBase,
             Integer rateBps,
@@ -2964,7 +2965,36 @@ public final class Dtos {
             String configuredCurrencyCode,
             long referenceBaseMinor,
             long amountMinor
-    ) {}
+    ) {
+        public PayrollCompensationComponentLineDto(
+                long componentId,
+                long versionId,
+                String effectiveMonth,
+                String displayName,
+                String calculationType,
+                String calculationBase,
+                Integer rateBps,
+                Long configuredAmountMinor,
+                String configuredCurrencyCode,
+                long referenceBaseMinor,
+                long amountMinor
+        ) {
+            this(
+                    componentId,
+                    versionId,
+                    effectiveMonth,
+                    displayName,
+                    null,
+                    calculationType,
+                    calculationBase,
+                    rateBps,
+                    configuredAmountMinor,
+                    configuredCurrencyCode,
+                    referenceBaseMinor,
+                    amountMinor
+            );
+        }
+    }
 
     /** Transparent source-time and money projection before it is frozen into a revision. */
     public record PayrollPreviewDto(

@@ -3,6 +3,7 @@ package ru.daniil.shifts.service;
 import org.springframework.stereotype.Service;
 import ru.daniil.shifts.model.CompensationComponentVersion.CalculationBase;
 import ru.daniil.shifts.model.CompensationComponentVersion.CalculationType;
+import ru.daniil.shifts.model.PayrollEarningKind;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -165,6 +166,7 @@ public class CompensationComponentCalculationService {
                 rule.versionId(),
                 rule.effectiveFrom(),
                 rule.displayName(),
+                rule.earningKind(),
                 rule.calculationType(),
                 null,
                 null,
@@ -212,6 +214,7 @@ public class CompensationComponentCalculationService {
                 rule.versionId(),
                 rule.effectiveFrom(),
                 rule.displayName(),
+                rule.earningKind(),
                 rule.calculationType(),
                 rule.calculationBase(),
                 rule.rateBps(),
@@ -262,9 +265,18 @@ public class CompensationComponentCalculationService {
         StringBuilder canonical =
                 new StringBuilder();
 
+        boolean semanticIdentityPresent =
+                lines.stream()
+                        .anyMatch(
+                                line ->
+                                        line.earningKind() != null
+                        );
+
         token(
                 canonical,
-                "DUTYLOG_COMP_COMPONENT_PROJECTION_V1"
+                semanticIdentityPresent
+                        ? "DUTYLOG_COMP_COMPONENT_PROJECTION_V2"
+                        : "DUTYLOG_COMP_COMPONENT_PROJECTION_V1"
         );
 
         token(
@@ -285,6 +297,14 @@ public class CompensationComponentCalculationService {
             token(canonical, line.versionId());
             token(canonical, line.effectiveFrom());
             token(canonical, line.displayName());
+
+            if (semanticIdentityPresent) {
+                token(
+                        canonical,
+                        line.earningKind()
+                );
+            }
+
             token(canonical, line.calculationType());
             token(canonical, line.calculationBase());
             token(canonical, line.rateBps());
@@ -430,6 +450,7 @@ public class CompensationComponentCalculationService {
             long versionId,
             LocalDate effectiveFrom,
             String displayName,
+            PayrollEarningKind earningKind,
             CalculationType calculationType,
             CalculationBase calculationBase,
             Integer rateBps,
@@ -437,6 +458,33 @@ public class CompensationComponentCalculationService {
             String currencyCode,
             boolean enabled
     ) {
+        public ComponentRule(
+                long componentId,
+                long versionId,
+                LocalDate effectiveFrom,
+                String displayName,
+                CalculationType calculationType,
+                CalculationBase calculationBase,
+                Integer rateBps,
+                Long amountMinor,
+                String currencyCode,
+                boolean enabled
+        ) {
+            this(
+                    componentId,
+                    versionId,
+                    effectiveFrom,
+                    displayName,
+                    null,
+                    calculationType,
+                    calculationBase,
+                    rateBps,
+                    amountMinor,
+                    currencyCode,
+                    enabled
+            );
+        }
+
         public ComponentRule {
             if (componentId <= 0L
                     || versionId <= 0L) {
@@ -467,6 +515,14 @@ public class CompensationComponentCalculationService {
             if (calculationType == null) {
                 throw new IllegalArgumentException(
                         "Compensation component calculation type is required"
+                );
+            }
+
+            if (earningKind != null
+                    && !earningKind
+                            .isGenericCompensationComponentKind()) {
+                throw new IllegalArgumentException(
+                        "Unsupported generic compensation component earning kind"
                 );
             }
 
@@ -509,6 +565,7 @@ public class CompensationComponentCalculationService {
             long versionId,
             LocalDate effectiveFrom,
             String displayName,
+            PayrollEarningKind earningKind,
             CalculationType calculationType,
             CalculationBase calculationBase,
             Integer rateBps,
@@ -517,6 +574,35 @@ public class CompensationComponentCalculationService {
             long referenceBaseMinor,
             long amountMinor
     ) {
+        public CalculatedLine(
+                long componentId,
+                long versionId,
+                LocalDate effectiveFrom,
+                String displayName,
+                CalculationType calculationType,
+                CalculationBase calculationBase,
+                Integer rateBps,
+                Long configuredAmountMinor,
+                String configuredCurrencyCode,
+                long referenceBaseMinor,
+                long amountMinor
+        ) {
+            this(
+                    componentId,
+                    versionId,
+                    effectiveFrom,
+                    displayName,
+                    null,
+                    calculationType,
+                    calculationBase,
+                    rateBps,
+                    configuredAmountMinor,
+                    configuredCurrencyCode,
+                    referenceBaseMinor,
+                    amountMinor
+            );
+        }
+
         public CalculatedLine {
             if (componentId <= 0L
                     || versionId <= 0L
@@ -528,6 +614,14 @@ public class CompensationComponentCalculationService {
                     || amountMinor < 0L) {
                 throw new IllegalArgumentException(
                         "Invalid calculated compensation component line"
+                );
+            }
+
+            if (earningKind != null
+                    && !earningKind
+                            .isGenericCompensationComponentKind()) {
+                throw new IllegalArgumentException(
+                        "Unsupported calculated compensation earning kind"
                 );
             }
         }

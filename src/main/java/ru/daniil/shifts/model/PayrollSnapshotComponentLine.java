@@ -54,6 +54,16 @@ public class PayrollSnapshotComponentLine {
     @Column(name = "display_name", nullable = false, length = 120)
     private String displayName;
 
+    /**
+     * Immutable machine semantic provenance.
+     * NULL means the source component was explicitly UNCLASSIFIED.
+     */
+    @jakarta.persistence.Enumerated(
+            jakarta.persistence.EnumType.STRING
+    )
+    @Column(name = "earning_kind", length = 40)
+    private PayrollEarningKind earningKind;
+
     @Column(name = "calculation_type", nullable = false, length = 24)
     private String calculationType;
 
@@ -92,6 +102,40 @@ public class PayrollSnapshotComponentLine {
             long referenceBaseMinor,
             long amountMinor
     ) {
+        this(
+                snapshot,
+                lineIndex,
+                componentId,
+                versionId,
+                effectiveFrom,
+                displayName,
+                null,
+                calculationType,
+                calculationBase,
+                rateBps,
+                configuredAmountMinor,
+                configuredCurrencyCode,
+                referenceBaseMinor,
+                amountMinor
+        );
+    }
+
+    public PayrollSnapshotComponentLine(
+            PayrollSnapshot snapshot,
+            int lineIndex,
+            long componentId,
+            long versionId,
+            LocalDate effectiveFrom,
+            String displayName,
+            PayrollEarningKind earningKind,
+            String calculationType,
+            String calculationBase,
+            Integer rateBps,
+            Long configuredAmountMinor,
+            String configuredCurrencyCode,
+            long referenceBaseMinor,
+            long amountMinor
+    ) {
         if (snapshot == null) {
             throw new IllegalArgumentException(
                     "Snapshot component line requires snapshot"
@@ -119,6 +163,14 @@ public class PayrollSnapshotComponentLine {
                 || name.length() > 120) {
             throw new IllegalArgumentException(
                     "Snapshot component line name must contain 1..120 characters"
+            );
+        }
+
+        if (earningKind != null
+                && !earningKind
+                        .isGenericCompensationComponentKind()) {
+            throw new IllegalArgumentException(
+                    "Unsupported snapshot compensation earning kind"
             );
         }
 
@@ -170,6 +222,7 @@ public class PayrollSnapshotComponentLine {
         this.versionId = versionId;
         this.effectiveFrom = effectiveFrom.withDayOfMonth(1);
         this.displayName = name;
+        this.earningKind = earningKind;
         this.calculationType = type;
         this.calculationBase = calculationBase;
         this.rateBps = rateBps;
@@ -186,6 +239,7 @@ public class PayrollSnapshotComponentLine {
     public long getVersionId() { return versionId; }
     public LocalDate getEffectiveFrom() { return effectiveFrom; }
     public String getDisplayName() { return displayName; }
+    public PayrollEarningKind getEarningKind() { return earningKind; }
     public String getCalculationType() { return calculationType; }
     public String getCalculationBase() { return calculationBase; }
     public Integer getRateBps() { return rateBps; }

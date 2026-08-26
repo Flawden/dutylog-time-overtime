@@ -173,6 +173,7 @@ public class PayrollCompensationComponentPreviewService {
                 version.getId(),
                 version.getEffectiveFrom(),
                 version.getDisplayName(),
+                version.getEarningKind(),
                 version.getCalculationType(),
                 version.getCalculationBase(),
                 version.getRateBps(),

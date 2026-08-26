@@ -66,6 +66,40 @@ class PayrollCompensationComponentOpenApiWiringTest {
                 )
         );
 
+        int componentLineStart =
+                yaml.indexOf(
+                        "    PayrollCompensationComponentLine:"
+                );
+
+        int componentLineEnd =
+                yaml.indexOf(
+                        "    PayrollMoneyProjection:",
+                        componentLineStart
+                );
+
+        assertTrue(
+                componentLineStart >= 0
+                        && componentLineEnd > componentLineStart
+        );
+
+        String componentLine =
+                yaml.substring(
+                        componentLineStart,
+                        componentLineEnd
+                );
+
+        assertTrue(
+                componentLine.contains(
+                        "earningKind:"
+                )
+        );
+
+        assertTrue(
+                componentLine.contains(
+                        "HARMFUL_CONDITIONS"
+                )
+        );
+
         for (String field : new String[] {
                 "compensationComponentCount:",
                 "compensationComponentEarningsMinor:",
