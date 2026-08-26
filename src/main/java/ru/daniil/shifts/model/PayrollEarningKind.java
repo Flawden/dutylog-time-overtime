@@ -26,4 +26,23 @@ public enum PayrollEarningKind {
     public PayrollEarningPhase phase() {
         return phase;
     }
+
+    /**
+     * Semantic identities that may be explicitly attached to a generic
+     * compensation component.
+     *
+     * Specialized/native Payroll verticals deliberately remain outside this
+     * configuration boundary.
+     */
+    public boolean isGenericCompensationComponentKind() {
+        return switch (this) {
+            case HARMFUL_CONDITIONS,
+                    COMBINATION,
+                    MONTHLY_BONUS,
+                    ONE_TIME_BONUS,
+                    REGIONAL_COEFFICIENT -> true;
+
+            default -> false;
+        };
+    }
 }

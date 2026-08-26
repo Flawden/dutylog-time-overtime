@@ -56,6 +56,16 @@ public class CompensationComponentVersion {
     @Column(name = "display_name", nullable = false, length = 120)
     private String displayName;
 
+    /**
+     * Optional machine-owned semantic identity.
+     *
+     * NULL means explicitly unclassified historical/configuration state.
+     * displayName must never be used to infer this value.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "earning_kind", length = 40)
+    private PayrollEarningKind earningKind;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "calculation_type", nullable = false, length = 24)
     private CalculationType calculationType;
@@ -200,12 +210,35 @@ public class CompensationComponentVersion {
         this.updatedAt = Instant.now();
     }
 
+    public void updateEarningKind(
+            PayrollEarningKind earningKind
+    ) {
+        if (earningKind != null
+                && !earningKind
+                        .isGenericCompensationComponentKind()) {
+            throw new IllegalArgumentException(
+                    "Unsupported generic compensation component earning kind"
+            );
+        }
+
+        this.earningKind = earningKind;
+        this.updatedAt = Instant.now();
+    }
+
     @PrePersist
     @PreUpdate
     void validatePersistentShape() {
         if (effectiveFrom == null) {
             throw new IllegalStateException(
                     "Compensation component effective month is missing"
+            );
+        }
+
+        if (earningKind != null
+                && !earningKind
+                        .isGenericCompensationComponentKind()) {
+            throw new IllegalStateException(
+                    "Unsupported generic compensation component earning kind"
             );
         }
 
@@ -237,6 +270,10 @@ public class CompensationComponentVersion {
 
     public String getDisplayName() {
         return displayName;
+    }
+
+    public PayrollEarningKind getEarningKind() {
+        return earningKind;
     }
 
     public CalculationType getCalculationType() {

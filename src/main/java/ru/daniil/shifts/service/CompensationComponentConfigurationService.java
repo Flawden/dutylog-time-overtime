@@ -8,12 +8,14 @@ import ru.daniil.shifts.dto.Dtos.PayrollCompensationComponentVersionRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.CompensationComponent;
 import ru.daniil.shifts.model.CompensationComponentVersion;
+import ru.daniil.shifts.model.PayrollEarningKind;
 import ru.daniil.shifts.model.CompensationComponentVersion.CalculationBase;
 import ru.daniil.shifts.model.CompensationComponentVersion.CalculationType;
 import ru.daniil.shifts.repo.CompensationComponentRepository;
 import ru.daniil.shifts.repo.CompensationComponentVersionRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
+import java.time.LocalDate;
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
 import java.util.List;
@@ -131,6 +133,19 @@ public class CompensationComponentConfigurationService {
                             parsed.currencyCode(),
                             parsed.enabled()
                     );
+
+            /*
+             * A stable component has no previous semantic identity.
+             * Missing kind therefore starts explicitly UNCLASSIFIED.
+             */
+            version.updateEarningKind(
+                    parsed.earningKindUpdate()
+                            .explicit()
+                            ? parsed.earningKindUpdate()
+                                    .value()
+                            : null
+            );
+
         } catch (IllegalArgumentException ex) {
             throw invalid(
                     ex.getMessage()
@@ -213,7 +228,28 @@ public class CompensationComponentConfigurationService {
             }
         }
 
+        /*
+         * Compatibility-safe semantic behavior:
+         *
+         * explicit kind       => set it;
+         * explicit UNCLASSIFIED => clear it;
+         * omitted on existing version => preserve it;
+         * omitted on new effective version => inherit prior effective kind.
+         */
+        PayrollEarningKind targetEarningKind =
+                resolvedEarningKind(
+                        user,
+                        component,
+                        effectiveMonth.atDay(1),
+                        version,
+                        parsed.earningKindUpdate()
+                );
+
         try {
+            version.updateEarningKind(
+                    targetEarningKind
+            );
+
             return toDto(
                     versions.saveAndFlush(
                             version
@@ -224,6 +260,80 @@ public class CompensationComponentConfigurationService {
                     ex.getMessage()
             );
         }
+    }
+
+    private PayrollEarningKind resolvedEarningKind(
+            AppUser user,
+            CompensationComponent component,
+            LocalDate effectiveFrom,
+            CompensationComponentVersion targetVersion,
+            ParsedEarningKind update
+    ) {
+        if (update == null) {
+            throw new IllegalArgumentException(
+                    "Semantic earning kind update is missing"
+            );
+        }
+
+        if (update.explicit()) {
+            return update.value();
+        }
+
+        /*
+         * An old client editing an already-existing effective version must
+         * never erase semantic identity merely because it does not know about
+         * the new field.
+         */
+        if (targetVersion != null
+                && targetVersion.getId() != null) {
+            return targetVersion.getEarningKind();
+        }
+
+        /*
+         * An old client creating the next effective version inherits the
+         * immediately previous machine identity.
+         *
+         * Query ordering is component ASC, effective DESC, id DESC.
+         */
+        Long componentId =
+                component == null
+                        ? null
+                        : component.getId();
+
+        if (componentId == null) {
+            throw new IllegalArgumentException(
+                    "Compensation component identity is incomplete"
+            );
+        }
+
+        LocalDate lookupDate =
+                effectiveFrom.minusDays(
+                        1
+                );
+
+        for (
+                CompensationComponentVersion candidate
+                : versions.findOwnerHistoryAtOrBefore(
+                        user,
+                        lookupDate
+                )
+        ) {
+            if (candidate == null
+                    || candidate.getComponent() == null
+                    || candidate.getComponent().getId() == null) {
+                continue;
+            }
+
+            if (candidate.getComponent()
+                    .getId()
+                    .equals(
+                            componentId
+                    )) {
+                return candidate.getEarningKind();
+            }
+        }
+
+        return null;
     }
 
     private CompensationComponent requireOwned(
@@ -290,6 +400,11 @@ public class CompensationComponentConfigurationService {
             );
         }
 
+        ParsedEarningKind earningKindUpdate =
+                parseEarningKindUpdate(
+                        request.earningKind()
+                );
+
         String displayName =
                 request.displayName() == null
                         ? ""
@@ -332,12 +447,67 @@ public class CompensationComponentConfigurationService {
 
         return new ParsedVersion(
                 displayName,
+                earningKindUpdate,
                 type,
                 base,
                 request.rateBps(),
                 request.amountMinor(),
                 request.currencyCode(),
                 request.enabled()
+        );
+    }
+
+    private ParsedEarningKind parseEarningKindUpdate(
+            String raw
+    ) {
+        /*
+         * Missing field is deliberately different from explicit
+         * UNCLASSIFIED so pre-8A3D1E clients cannot erase semantic identity.
+         */
+        if (raw == null) {
+            return new ParsedEarningKind(
+                    false,
+                    null
+            );
+        }
+
+        String normalized =
+                normalizeEnum(
+                        raw
+                );
+
+        if ("UNCLASSIFIED".equals(
+                normalized
+        )) {
+            return new ParsedEarningKind(
+                    true,
+                    null
+            );
+        }
+
+        final PayrollEarningKind earningKind;
+
+        try {
+            earningKind =
+                    PayrollEarningKind.valueOf(
+                            normalized
+                    );
+        } catch (IllegalArgumentException ex) {
+            throw invalid(
+                    "Некорректный семантический тип компонента"
+            );
+        }
+
+        if (!earningKind
+                .isGenericCompensationComponentKind()) {
+            throw invalid(
+                    "Этот тип выплаты нельзя создавать generic-компонентом"
+            );
+        }
+
+        return new ParsedEarningKind(
+                true,
+                earningKind
         );
     }
 
@@ -383,6 +553,9 @@ public class CompensationComponentConfigurationService {
                         version.getEffectiveFrom()
                 ).toString(),
                 version.getDisplayName(),
+                version.getEarningKind() == null
+                        ? null
+                        : version.getEarningKind().name(),
                 version.getCalculationType().name(),
                 version.getCalculationBase() == null
                         ? null
@@ -421,8 +594,14 @@ public class CompensationComponentConfigurationService {
         );
     }
 
+    private record ParsedEarningKind(
+            boolean explicit,
+            PayrollEarningKind value
+    ) {}
+
     private record ParsedVersion(
             String displayName,
+            ParsedEarningKind earningKindUpdate,
             CalculationType calculationType,
             CalculationBase calculationBase,
             Integer rateBps,

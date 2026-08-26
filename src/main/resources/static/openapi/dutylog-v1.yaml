@@ -2292,6 +2292,10 @@ components:
           type: string
           minLength: 1
           maxLength: 120
+        earningKind:
+          type: string
+          description: Optional compatibility-safe semantic update. Missing preserves/inherits identity on version upsert; UNCLASSIFIED explicitly clears it.
+          enum: [UNCLASSIFIED, HARMFUL_CONDITIONS, COMBINATION, MONTHLY_BONUS, ONE_TIME_BONUS, REGIONAL_COEFFICIENT]
         calculationType:
           type: string
           enum: [FIXED_AMOUNT, PERCENT_OF_BASE]
@@ -2326,7 +2330,7 @@ components:
     PayrollCompensationComponentVersion:
       type: object
       required:
-        [componentId, versionId, effectiveMonth, displayName, calculationType, enabled, createdAt, updatedAt]
+        [componentId, versionId, effectiveMonth, displayName, earningKind, calculationType, enabled, createdAt, updatedAt]
       properties:
         componentId:
           type: integer
@@ -2339,6 +2343,11 @@ components:
           pattern: '^\d{4}-(0[1-9]|1[0-2])$'
         displayName:
           type: string
+        earningKind:
+          type: string
+          nullable: true
+          description: Machine semantic identity. Null means explicitly UNCLASSIFIED.
+          enum: [HARMFUL_CONDITIONS, COMBINATION, MONTHLY_BONUS, ONE_TIME_BONUS, REGIONAL_COEFFICIENT]
         calculationType:
           type: string
           enum: [FIXED_AMOUNT, PERCENT_OF_BASE]

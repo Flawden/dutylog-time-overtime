@@ -2770,9 +2770,49 @@ public final class Dtos {
             )
             String currencyCode,
 
+            /**
+             * Optional compatibility-safe semantic update:
+             *
+             * null/missing:
+             * - CREATE => unclassified;
+             * - existing version UPSERT => preserve current kind;
+             * - new effective version UPSERT => inherit previous kind.
+             *
+             * UNCLASSIFIED explicitly clears semantic identity.
+             */
+            @Pattern(
+                    regexp = "(?i)UNCLASSIFIED|HARMFUL_CONDITIONS|COMBINATION|MONTHLY_BONUS|ONE_TIME_BONUS|REGIONAL_COEFFICIENT",
+                    message = "Некорректный семантический тип компонента"
+            )
+            String earningKind,
+
             @NotNull(message = "Нужно указать, включён ли компонент")
             Boolean enabled
-    ) {}
+    ) {
+        /**
+         * Source compatibility for existing Java callers.
+         */
+        public PayrollCompensationComponentVersionRequest(
+                String displayName,
+                String calculationType,
+                String calculationBase,
+                Integer rateBps,
+                Long amountMinor,
+                String currencyCode,
+                Boolean enabled
+        ) {
+            this(
+                    displayName,
+                    calculationType,
+                    calculationBase,
+                    rateBps,
+                    amountMinor,
+                    currencyCode,
+                    null,
+                    enabled
+            );
+        }
+    }
 
     /** Creates a new stable component identity and its first effective-month version. */
     public record PayrollCompensationComponentCreateRequest(
@@ -2793,6 +2833,7 @@ public final class Dtos {
             Long versionId,
             String effectiveMonth,
             String displayName,
+            String earningKind,
             String calculationType,
             String calculationBase,
             Integer rateBps,
@@ -2801,7 +2842,41 @@ public final class Dtos {
             boolean enabled,
             String createdAt,
             String updatedAt
-    ) {}
+    ) {
+        /**
+         * Source compatibility for existing Java callers.
+         */
+        public PayrollCompensationComponentVersionDto(
+                Long componentId,
+                Long versionId,
+                String effectiveMonth,
+                String displayName,
+                String calculationType,
+                String calculationBase,
+                Integer rateBps,
+                Long amountMinor,
+                String currencyCode,
+                boolean enabled,
+                String createdAt,
+                String updatedAt
+        ) {
+            this(
+                    componentId,
+                    versionId,
+                    effectiveMonth,
+                    displayName,
+                    null,
+                    calculationType,
+                    calculationBase,
+                    rateBps,
+                    amountMinor,
+                    currencyCode,
+                    enabled,
+                    createdAt,
+                    updatedAt
+            );
+        }
+    }
 
     /** One additive effective-dated pricing rule. premiumBps uses 10_000 = +1.00x. */
     public record PayPricingRuleRequest(

@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 56442081179218567fafea52e21e0e7b4fc00e9b96789b1058715809225df78f
+ * SHA-256: 74cbae0cd905bb6c50ffb54f00330917e5643325ddcd9413b1bdbd0a6bcf63bb
  * Generator: frontend/scripts/generate-openapi-contract.mjs
  * Contract: 145 operations, 151 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "56442081179218567fafea52e21e0e7b4fc00e9b96789b1058715809225df78f";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "74cbae0cd905bb6c50ffb54f00330917e5643325ddcd9413b1bdbd0a6bcf63bb";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -1018,6 +1018,7 @@ export namespace DutyLogApiSchemas {
     versionId?: number;
     effectiveMonth?: string;
     displayName?: string;
+    earningKind?: "HARMFUL_CONDITIONS" | "COMBINATION" | "MONTHLY_BONUS" | "ONE_TIME_BONUS" | "REGIONAL_COEFFICIENT" | null;
     calculationType?: "FIXED_AMOUNT" | "PERCENT_OF_BASE";
     calculationBase?: "NOMINAL_SALARY" | "EARNED_BASE_PAY";
     rateBps?: number;
@@ -1030,6 +1031,7 @@ export namespace DutyLogApiSchemas {
 
   export type PayrollCompensationComponentVersionInput = {
     displayName: string;
+    earningKind?: "UNCLASSIFIED" | "HARMFUL_CONDITIONS" | "COMBINATION" | "MONTHLY_BONUS" | "ONE_TIME_BONUS" | "REGIONAL_COEFFICIENT";
     calculationType: "FIXED_AMOUNT" | "PERCENT_OF_BASE";
     calculationBase?: "NOMINAL_SALARY" | "EARNED_BASE_PAY";
     rateBps?: number;

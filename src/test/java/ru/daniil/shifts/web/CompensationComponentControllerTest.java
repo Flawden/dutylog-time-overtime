@@ -77,6 +77,7 @@ class CompensationComponentControllerTest {
                                           "effectiveMonth":"2026-08",
                                           "version":{
                                             "displayName":"Премия за выживание после ночной смены",
+                                            "earningKind":"HARMFUL_CONDITIONS",
                                             "calculationType":"PERCENT_OF_BASE",
                                             "calculationBase":"EARNED_BASE_PAY",
                                             "rateBps":400,
@@ -98,6 +99,12 @@ class CompensationComponentControllerTest {
                         jsonPath("$.displayName")
                                 .value(
                                         "Премия за выживание после ночной смены"
+                                )
+                )
+                .andExpect(
+                        jsonPath("$.earningKind")
+                                .value(
+                                        "HARMFUL_CONDITIONS"
                                 )
                 )
                 .andExpect(
@@ -150,6 +157,12 @@ class CompensationComponentControllerTest {
                 .andExpect(
                         jsonPath("$.effectiveMonth")
                                 .value("2026-09")
+                )
+                .andExpect(
+                        jsonPath("$.earningKind")
+                                .value(
+                                        "HARMFUL_CONDITIONS"
+                                )
                 )
                 .andExpect(
                         jsonPath("$.rateBps")
