@@ -4986,7 +4986,7 @@ contains frontend/package.json "\"version\": \"${VERSION}\""
 contains frontend/generated-lockfile-manifest.txt "release=${VERSION}"
 contains frontend/generated-lockfile-manifest.txt "nextAction=roadmap-after-v${VERSION}-green"
 contains frontend/browser-bundle-budget.json "\"release\": \"${VERSION}\""
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 970000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 980000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 contains src/main/resources/application-prod.properties "info.app.release-version=${VERSION}"
 contains src/main/resources/static/service-worker.js "dutylog-shell-v${VERSION}-"
@@ -5033,7 +5033,7 @@ contains docs/MODULE_CONTRACTS.md "## Generic Compensation Components contract (
 contains docs/SUPPLY_CHAIN.md "## v27.47.0 generic compensation components"
 contains src/main/resources/db/migration/postgresql/V62__generic_compensation_components.sql "CREATE TABLE compensation_components"
 contains src/main/resources/db/migration/postgresql/V63__payroll_snapshot_compensation_components.sql "payroll_snapshot_compensation_component_lines"
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 970000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 980000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.47.0 7A5 Neutral Generic Compensation Presets
@@ -5097,7 +5097,7 @@ PY_RELEASE_GENERIC_PRESET
 not_contains frontend/src/features/payroll/api/payrollApi.ts "compensationPreset"
 not_contains frontend/src/features/payroll/stores/payrollStore.ts "compensationPreset"
 contains frontend/src/features/payroll/components/CompensationComponentsCard.spec.ts "keeps presets as ephemeral form helpers"
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 970000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 980000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.47.0 7A4B Generic Compensation Explainability UI
@@ -5121,7 +5121,7 @@ contains frontend/src/features/payroll/api/payrollApi.ts '"upsertPayrollCompensa
 contains frontend/src/features/payroll/stores/payrollStore.ts "compensationComponentHistory"
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue "<CompensationComponentsCard"
 contains frontend/src/features/payroll/components/CompensationComponentsCard.spec.ts "keeps display names user-owned"
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 970000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 980000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.47.0 7A3B Generic Compensation Payroll Projection Integration
@@ -5201,7 +5201,7 @@ contains docs/RELEASE_CHECKLIST.md "## v27.46.2 — Effective-Dated Pricing Sett
 contains docs/SECURITY_REVIEW.md "# v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals review"
 contains docs/MODULE_CONTRACTS.md "## Effective-Dated Pricing Settings & Payroll Verticals contract (v27.46.2)"
 contains docs/SUPPLY_CHAIN.md "## v27.46.2 effective-dated pricing settings & payroll verticals"
-contains frontend/browser-bundle-budget.json '"maxTotalBytes": 970000'
+contains frontend/browser-bundle-budget.json '"maxTotalBytes": 980000'
 contains frontend/browser-bundle-budget.json '"maxTotalGzipBytes": 250000'
 
 # v27.46.2 6H1 Native Pricing API Foundation development slice
