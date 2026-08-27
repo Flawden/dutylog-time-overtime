@@ -4949,15 +4949,15 @@ fi
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1171" ]]; then
-  ok "test method baseline: 1171"
+if [[ "$TEST_METHODS" == "1180" ]]; then
+  ok "test method baseline: 1180"
 else
-  fail "expected 1171 @Test methods, found $TEST_METHODS"
+  fail "expected 1180 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "246" ]]; then
-  ok "test class baseline: 246"
+if [[ "$TEST_CLASSES" == "247" ]]; then
+  ok "test class baseline: 247"
 else
-  fail "expected 246 test classes, found $TEST_CLASSES"
+  fail "expected 247 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
