@@ -5042,9 +5042,58 @@ contains frontend/src/features/payroll/components/CompensationComponentsCard.vue
 contains frontend/src/features/payroll/components/CompensationComponentsCard.vue 'value="earned"'
 contains frontend/src/features/payroll/components/CompensationComponentsCard.vue 'value="nominal"'
 contains frontend/src/features/payroll/components/CompensationComponentsCard.vue 'value="fixed"'
-not_contains frontend/src/features/payroll/components/CompensationComponentsCard.vue "Вредность"
-not_contains frontend/src/features/payroll/components/CompensationComponentsCard.vue "Районный коэффициент"
-not_contains frontend/src/features/payroll/components/CompensationComponentsCard.vue "Совмещение"
+# Generic compensation presets must remain semantically neutral.
+# Explicit machine-owned earning identity now has its own selector, therefore
+# semantic labels are allowed elsewhere in CompensationComponentsCard.vue.
+python3 - <<'PY_RELEASE_GENERIC_PRESET'
+from pathlib import Path
+
+card = Path(
+    "frontend/src/features/payroll/components/"
+    "CompensationComponentsCard.vue"
+).read_text(encoding="utf-8")
+
+marker = "data-compensation-preset-helper"
+
+start = card.find(marker)
+
+if start < 0:
+    raise SystemExit(
+        "ERROR: generic compensation preset helper is missing"
+    )
+
+end = card.find(
+    "</div>",
+    start,
+)
+
+if end < 0:
+    raise SystemExit(
+        "ERROR: generic compensation preset helper boundary is invalid"
+    )
+
+preset = card[start:end]
+
+for forbidden in (
+    "Вредность",
+    "Районный коэффициент",
+    "Совмещение",
+    "HARMFUL_CONDITIONS",
+    "COMBINATION",
+    "MONTHLY_BONUS",
+    "ONE_TIME_BONUS",
+    "REGIONAL_COEFFICIENT",
+):
+    if forbidden in preset:
+        raise SystemExit(
+            "ERROR: generic compensation preset contains semantic identity: "
+            + forbidden
+        )
+
+print(
+    "OK:    generic compensation presets remain semantically neutral"
+)
+PY_RELEASE_GENERIC_PRESET
 not_contains frontend/src/features/payroll/api/payrollApi.ts "compensationPreset"
 not_contains frontend/src/features/payroll/stores/payrollStore.ts "compensationPreset"
 contains frontend/src/features/payroll/components/CompensationComponentsCard.spec.ts "keeps presets as ephemeral form helpers"

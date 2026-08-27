@@ -86,6 +86,35 @@ describe("Generic compensation settings UI", () => {
     expect(card).toContain(
       "Previous versions are not deleted.",
     );
+
+    expect(card).toContain(
+      'id="compensationComponentEarningKind"',
+    );
+
+    for (const kind of [
+      "UNCLASSIFIED",
+      "HARMFUL_CONDITIONS",
+      "COMBINATION",
+      "MONTHLY_BONUS",
+      "ONE_TIME_BONUS",
+      "REGIONAL_COEFFICIENT",
+    ]) {
+      expect(card).toContain(
+        `value="${kind}"`,
+      );
+    }
+
+    expect(card).toContain(
+      'ref<GenericEarningKind>("UNCLASSIFIED")',
+    );
+
+    expect(card).toContain(
+      "version.earningKind == null",
+    );
+
+    expect(card).toContain(
+      "earningKind: earningKind.value",
+    );
   });
 
   it("uses generated operations through the payroll API and Pinia store", () => {
@@ -139,16 +168,33 @@ describe("Generic compensation settings UI", () => {
       'value="fixed"',
     );
 
-    expect(card).not.toContain(
-      "Вредность",
+    const presetStart =
+      card.indexOf(
+        "data-compensation-preset-helper",
+      );
+
+    const presetEnd =
+      card.indexOf(
+        "</div>",
+        presetStart,
+      );
+
+    const presetRegion =
+      card.slice(
+        presetStart,
+        presetEnd,
+      );
+
+    expect(presetRegion).not.toContain(
+      "HARMFUL_CONDITIONS",
     );
 
-    expect(card).not.toContain(
-      "Районный коэффициент",
+    expect(presetRegion).not.toContain(
+      "REGIONAL_COEFFICIENT",
     );
 
-    expect(card).not.toContain(
-      "Совмещение",
+    expect(presetRegion).not.toContain(
+      "COMBINATION",
     );
   });
 
@@ -171,6 +217,26 @@ describe("Generic compensation settings UI", () => {
 
     expect(store).not.toContain(
       "compensationPreset",
+    );
+
+    const presetModelStart =
+      card.indexOf(
+        "const preset = computed<",
+      );
+
+    const presetModelEnd =
+      card.indexOf(
+        "const message = ref",
+        presetModelStart,
+      );
+
+    expect(
+      card.slice(
+        presetModelStart,
+        presetModelEnd,
+      ),
+    ).not.toContain(
+      "earningKind",
     );
   });
 

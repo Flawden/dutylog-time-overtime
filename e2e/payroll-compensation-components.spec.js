@@ -728,5 +728,97 @@ test(
     await expect(
       preset.locator('option'),
     ).toHaveCount(3);
+
+    const semanticKind =
+      page.locator(
+        '#compensationComponentEarningKind',
+      );
+
+    await expect(semanticKind)
+      .toBeVisible();
+
+    await expect(
+      semanticKind.locator('option'),
+    ).toHaveCount(6);
+
+    /*
+     * New drafts start explicitly unclassified.
+     */
+    await expect(semanticKind)
+      .toHaveValue('UNCLASSIFIED');
+
+    /*
+     * The existing API-created component has no machine kind.
+     * Editing it must therefore load UNCLASSIFIED rather than infer
+     * anything from its user-owned name or formula.
+     */
+    const percentRow =
+      page.locator(
+        '.componentRow',
+      )
+        .filter({
+          hasText:
+            'Премия за выживание после ночной смены',
+        })
+        .first();
+
+    await expect(percentRow)
+      .toBeVisible();
+
+    await percentRow
+      .locator('button')
+      .first()
+      .click();
+
+    await expect(semanticKind)
+      .toHaveValue('UNCLASSIFIED');
+
+    await semanticKind.selectOption(
+      'HARMFUL_CONDITIONS',
+    );
+
+    const semanticSave =
+      page.waitForResponse(
+        response =>
+          response.request().method() === 'PUT'
+          && response.url().includes(
+            `/api/v1/payroll/compensation-components/${result.percent.componentId}/versions/${month}`,
+          ),
+      );
+
+    await page
+      .locator('#compensationComponentSave')
+      .click();
+
+    const semanticSaveResponse =
+      await semanticSave;
+
+    expect(
+      semanticSaveResponse.ok(),
+    ).toBe(true);
+
+    const semanticHistory =
+      await page.evaluate(
+        async () =>
+          await jfetch(
+            '/api/v1/payroll/compensation-components',
+          ),
+      );
+
+    const typedVersion =
+      semanticHistory.find(
+        version =>
+          Number(version.componentId)
+            === Number(result.percent.componentId)
+          && version.effectiveMonth === month,
+      );
+
+    expect(typedVersion).toBeTruthy();
+
+    expect(
+      typedVersion.earningKind,
+    ).toBe(
+      'HARMFUL_CONDITIONS',
+    );
   },
 );

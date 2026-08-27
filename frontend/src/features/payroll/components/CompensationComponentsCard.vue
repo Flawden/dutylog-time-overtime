@@ -15,6 +15,11 @@ type CalculationBase =
   | "NOMINAL_SALARY"
   | "EARNED_BASE_PAY";
 
+type GenericEarningKind =
+  NonNullable<
+    PayrollCompensationComponentVersionInput["earningKind"]
+  >;
+
 interface ComponentGroup {
   componentId: number;
   versions: PayrollCompensationComponentVersion[];
@@ -46,6 +51,8 @@ const effectiveMonth = ref(
 );
 
 const displayName = ref("");
+const earningKind =
+  ref<GenericEarningKind>("UNCLASSIFIED");
 const calculationType = ref<CalculationType>("PERCENT_OF_BASE");
 const calculationBase = ref<CalculationBase>("EARNED_BASE_PAY");
 const percentValue = ref("10");
@@ -105,6 +112,14 @@ const text = computed(() =>
         preset: "Preset",
         name: "Name",
         namePlaceholder: "For example: night-shift survival bonus",
+        semanticKind: "Payroll meaning",
+        semanticKindHint: "This machine-owned type is stored separately from the name and calculation formula.",
+        semanticUnclassified: "Unclassified",
+        semanticHarmfulConditions: "Harmful conditions",
+        semanticCombination: "Combination / additional duties",
+        semanticMonthlyBonus: "Monthly bonus",
+        semanticOneTimeBonus: "One-time bonus",
+        semanticRegionalCoefficient: "Regional coefficient",
         effective: "Effective from month",
         type: "Calculation",
         fixed: "Fixed amount",
@@ -146,6 +161,14 @@ const text = computed(() =>
         preset: "Быстрый шаблон",
         name: "Название",
         namePlaceholder: "Например: премия за выживание после ночной смены",
+        semanticKind: "Тип начисления",
+        semanticKindHint: "Машинный тип хранится отдельно от названия и формулы расчёта.",
+        semanticUnclassified: "Не классифицировано",
+        semanticHarmfulConditions: "Вредные условия труда",
+        semanticCombination: "Совмещение",
+        semanticMonthlyBonus: "Ежемесячная премия",
+        semanticOneTimeBonus: "Разовая премия",
+        semanticRegionalCoefficient: "Районный коэффициент",
         effective: "Действует с месяца",
         type: "Расчёт",
         fixed: "Фиксированная сумма",
@@ -422,6 +445,7 @@ function resetDraft(
       : currentMonth();
 
   displayName.value = "";
+  earningKind.value = "UNCLASSIFIED";
   calculationType.value = "PERCENT_OF_BASE";
   calculationBase.value = "EARNED_BASE_PAY";
   percentValue.value = "10";
@@ -474,6 +498,11 @@ function editVersion(
     String(
       version.displayName ?? "",
     );
+
+  earningKind.value =
+    version.earningKind == null
+      ? "UNCLASSIFIED"
+      : version.earningKind;
 
   calculationType.value =
     version.calculationType === "FIXED_AMOUNT"
@@ -587,6 +616,7 @@ PayrollCompensationComponentVersionInput {
 
     return {
       displayName: name,
+      earningKind: earningKind.value,
       calculationType: "PERCENT_OF_BASE",
       calculationBase:
         calculationBase.value,
@@ -629,6 +659,7 @@ PayrollCompensationComponentVersionInput {
 
   return {
     displayName: name,
+    earningKind: earningKind.value,
     calculationType: "FIXED_AMOUNT",
     amountMinor:
       Math.round(value * 100),
@@ -822,6 +853,46 @@ onMounted(() => {
             required
           />
         </label>
+
+        <label>
+          {{ text.semanticKind }}
+
+          <select
+            id="compensationComponentEarningKind"
+            v-model="earningKind"
+          >
+            <option value="UNCLASSIFIED">
+              {{ text.semanticUnclassified }}
+            </option>
+
+            <option value="HARMFUL_CONDITIONS">
+              {{ text.semanticHarmfulConditions }}
+            </option>
+
+            <option value="COMBINATION">
+              {{ text.semanticCombination }}
+            </option>
+
+            <option value="MONTHLY_BONUS">
+              {{ text.semanticMonthlyBonus }}
+            </option>
+
+            <option value="ONE_TIME_BONUS">
+              {{ text.semanticOneTimeBonus }}
+            </option>
+
+            <option value="REGIONAL_COEFFICIENT">
+              {{ text.semanticRegionalCoefficient }}
+            </option>
+          </select>
+        </label>
+
+        <p
+          class="componentHint"
+          data-compensation-semantic-kind-hint
+        >
+          {{ text.semanticKindHint }}
+        </p>
 
         <label>
           {{ text.effective }}
