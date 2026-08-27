@@ -57,6 +57,7 @@ tar -czf "$TMP_DIR/deploy-bundle.tgz" \
   deploy/scripts/install-backup-timer.sh \
   deploy/scripts/list-backups.sh \
   deploy/scripts/local-smoke-test.sh \
+  deploy/scripts/prune-dutylog-images.sh \
   deploy/scripts/restore-postgres.sh \
   deploy/scripts/rollback-environment.sh \
   deploy/scripts/reset-staging.sh \
@@ -79,3 +80,23 @@ printf -v Q_URL '%q' "$BASE_URL"
 
 REMOTE_COMMAND="cd $Q_PATH && chmod +x deploy/scripts/*.sh && bash deploy/scripts/deploy-environment.sh --environment $Q_ENV --image $Q_IMAGE --release-version $Q_RELEASE --build-version $Q_BUILD --tree $Q_TREE --commit $Q_COMMIT --build-time $Q_TIME --env-file .env --base-url $Q_URL"
 "${SSH[@]}" "$REMOTE" "$REMOTE_COMMAND"
+
+# Retention runs only after the deployment and its smoke checks have succeeded.
+# A retention failure does not roll back an already verified application, but it
+# does fail the deployment job so that host-capacity debt cannot accumulate
+# silently.
+RETENTION_KEEP_NEWEST="${DUTYLOG_IMAGE_RETENTION_KEEP_NEWEST:-5}"
+if [[ ! "$RETENTION_KEEP_NEWEST" =~ ^[0-9]+$ ]] \
+  || (( RETENTION_KEEP_NEWEST < 2 || RETENTION_KEEP_NEWEST > 20 )); then
+  echo "DUTYLOG_IMAGE_RETENTION_KEEP_NEWEST must be an integer between 2 and 20" >&2
+  exit 2
+fi
+
+printf -v Q_RETENTION_KEEP '%q' "$RETENTION_KEEP_NEWEST"
+
+RETENTION_COMMAND="cd $Q_PATH && bash deploy/scripts/prune-dutylog-images.sh --image $Q_IMAGE --keep-newest $Q_RETENTION_KEEP"
+
+if ! "${SSH[@]}" "$REMOTE" "$RETENTION_COMMAND"; then
+  echo "Application deployment succeeded, but post-deploy DutyLog image retention failed." >&2
+  exit 3
+fi

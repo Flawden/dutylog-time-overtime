@@ -4947,6 +4947,24 @@ else
   fail "expected 88 Vitest cases, found $VITEST_TESTS"
 fi
 
+
+# DutyLog deployment image retention
+contains deploy/scripts/prune-dutylog-images.sh '--image must be an immutable image digest reference'
+contains deploy/scripts/prune-dutylog-images.sh 'REPO="${BASH_REMATCH[1]}"'
+contains deploy/scripts/prune-dutylog-images.sh 'docker ps -aq'
+contains deploy/scripts/prune-dutylog-images.sh 'RepoDigests'
+contains deploy/scripts/prune-dutylog-images.sh 'docker image rm "$ref"'
+contains deploy/scripts/prune-dutylog-images.sh 'docker image inspect "$IMAGE_REF" >/dev/null'
+not_contains deploy/scripts/prune-dutylog-images.sh 'docker system prune'
+not_contains deploy/scripts/prune-dutylog-images.sh 'docker image prune'
+not_contains deploy/scripts/prune-dutylog-images.sh 'docker image rm -f'
+not_contains deploy/scripts/prune-dutylog-images.sh 'ctr '
+not_contains deploy/scripts/prune-dutylog-images.sh 'rm -rf'
+contains deploy/scripts/remote-deploy.sh 'deploy/scripts/prune-dutylog-images.sh'
+contains deploy/scripts/remote-deploy.sh 'DUTYLOG_IMAGE_RETENTION_KEEP_NEWEST'
+contains deploy/scripts/remote-deploy.sh 'Retention runs only after the deployment and its smoke checks have succeeded.'
+contains deploy/scripts/remote-deploy.sh 'Application deployment succeeded, but post-deploy DutyLog image retention failed.'
+
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
 if [[ "$TEST_METHODS" == "1180" ]]; then
