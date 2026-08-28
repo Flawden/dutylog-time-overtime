@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import ru.daniil.shifts.model.PayrollEarningKind;
 import ru.daniil.shifts.model.PayrollQualifiedQuantity;
 import ru.daniil.shifts.model.PayrollSnapshotComponentLine;
+import ru.daniil.shifts.service.PayrollBonusSourceFactService.BonusFact;
 import ru.daniil.shifts.service.PayrollCombinationEpisodeFactService.EpisodeFact;
 import ru.daniil.shifts.service.PayrollRegionalCoefficientSourceFactService.SourceFact;
 import ru.daniil.shifts.service.PayrollSemanticFreezeProjection.ComponentLine;
@@ -44,7 +45,12 @@ import java.util.Set;
  * regional money from BASE_PAY/HARMFUL/NIGHT/bonus periods and never uses the
  * posting month as earning provenance.</p>
  *
- * <p>Bonus kinds remain aggregate-only until their own provenance stage.</p>
+ * <p>8A4E2B3D2 adds explicit bonus source facts. A bonus source period is an
+ * observed fact, not a paragraph 15 legal classification and not an
+ * allocation over the bonus calculation base. MONTHLY_BONUS facts are
+ * accepted only against the D1 LOCAL_ELIGIBLE_EARNINGS percentage formula;
+ * ONE_TIME_BONUS facts preserve observed money/period without inventing a
+ * percentage base.</p>
  */
 @Service
 public class PayrollCompensationComponentSemanticProvenance {
@@ -61,6 +67,7 @@ public class PayrollCompensationComponentSemanticProvenance {
         return lines(
                 frozenComponentLines,
                 basePayLines,
+                null,
                 null,
                 null,
                 null
@@ -83,6 +90,7 @@ public class PayrollCompensationComponentSemanticProvenance {
                 basePayLines,
                 combinationFacts,
                 null,
+                null,
                 payrollCurrencyCode
         );
     }
@@ -97,6 +105,28 @@ public class PayrollCompensationComponentSemanticProvenance {
             List<SemanticLine> basePayLines,
             List<EpisodeFact> combinationFacts,
             List<SourceFact> regionalFacts,
+            String payrollCurrencyCode
+    ) {
+        return lines(
+                frozenComponentLines,
+                basePayLines,
+                combinationFacts,
+                regionalFacts,
+                null,
+                payrollCurrencyCode
+        );
+    }
+
+    /**
+     * Canonical B3D2 mapping with separate explicit source authorities for
+     * COMBINATION, REGIONAL_COEFFICIENT and bonus kinds.
+     */
+    public List<ComponentLine> lines(
+            List<PayrollSnapshotComponentLine> frozenComponentLines,
+            List<SemanticLine> basePayLines,
+            List<EpisodeFact> combinationFacts,
+            List<SourceFact> regionalFacts,
+            List<BonusFact> bonusFacts,
             String payrollCurrencyCode
     ) {
         if (frozenComponentLines == null) {
@@ -122,10 +152,18 @@ public class PayrollCompensationComponentSemanticProvenance {
                         ? null
                         : List.copyOf(regionalFacts);
 
+        List<BonusFact> bonus =
+                bonusFacts == null
+                        ? null
+                        : List.copyOf(bonusFacts);
+
         Set<Long> frozenCombinationComponentIds =
                 new HashSet<>();
 
         Set<Long> frozenRegionalComponentIds =
+                new HashSet<>();
+
+        Set<BonusIdentity> frozenBonusIdentities =
                 new HashSet<>();
 
         List<ComponentLine> result =
@@ -154,6 +192,16 @@ public class PayrollCompensationComponentSemanticProvenance {
                 );
             }
 
+            if (line.getEarningKind() == PayrollEarningKind.MONTHLY_BONUS
+                    || line.getEarningKind() == PayrollEarningKind.ONE_TIME_BONUS) {
+                frozenBonusIdentities.add(
+                        new BonusIdentity(
+                                line.getComponentId(),
+                                line.getEarningKind()
+                        )
+                );
+            }
+
             List<SemanticLine> detailed =
                     harmfulLines(
                             line,
@@ -174,6 +222,15 @@ public class PayrollCompensationComponentSemanticProvenance {
                         regionalLines(
                                 line,
                                 regional,
+                                payrollCurrencyCode
+                        );
+            }
+
+            if (detailed == null) {
+                detailed =
+                        bonusLines(
+                                line,
+                                bonus,
                                 payrollCurrencyCode
                         );
             }
@@ -212,6 +269,22 @@ public class PayrollCompensationComponentSemanticProvenance {
                 )) {
                     throw new IllegalStateException(
                             "Explicit REGIONAL source fact has no frozen REGIONAL_COEFFICIENT component"
+                    );
+                }
+            }
+        }
+
+        if (bonus != null) {
+            for (BonusFact fact : bonus) {
+                BonusIdentity identity =
+                        new BonusIdentity(
+                                fact.componentId(),
+                                fact.earningKind()
+                        );
+
+                if (!frozenBonusIdentities.contains(identity)) {
+                    throw new IllegalStateException(
+                            "Explicit bonus source fact has no matching frozen bonus component"
                     );
                 }
             }
@@ -539,6 +612,103 @@ public class PayrollCompensationComponentSemanticProvenance {
         }
 
         return List.copyOf(result);
+    }
+
+    private List<SemanticLine> bonusLines(
+            PayrollSnapshotComponentLine component,
+            List<BonusFact> bonusFacts,
+            String payrollCurrencyCode
+    ) {
+        PayrollEarningKind kind = component.getEarningKind();
+
+        if (kind != PayrollEarningKind.MONTHLY_BONUS
+                && kind != PayrollEarningKind.ONE_TIME_BONUS) {
+            return null;
+        }
+
+        if (bonusFacts == null || bonusFacts.isEmpty()) {
+            return null;
+        }
+
+        List<BonusFact> matching =
+                bonusFacts.stream()
+                        .filter(fact ->
+                                fact.componentId() == component.getComponentId()
+                                        && fact.earningKind() == kind
+                        )
+                        .toList();
+
+        if (matching.isEmpty()) {
+            return null;
+        }
+
+        if (kind == PayrollEarningKind.MONTHLY_BONUS) {
+            if (!"PERCENT_OF_BASE".equals(component.getCalculationType())
+                    || !"LOCAL_ELIGIBLE_EARNINGS".equals(component.getCalculationBase())
+                    || component.getRateBps() == null) {
+                throw new IllegalStateException(
+                        "Explicit MONTHLY_BONUS source fact requires frozen LOCAL_ELIGIBLE_EARNINGS percentage formula"
+                );
+            }
+
+            long expectedAmount =
+                    CompensationComponentCalculationService.percentageMoney(
+                            component.getReferenceBaseMinor(),
+                            component.getRateBps()
+                    );
+
+            if (expectedAmount != component.getAmountMinor()) {
+                throw new IllegalStateException(
+                        "MONTHLY_BONUS frozen formula disagrees with component aggregate"
+                );
+            }
+        }
+
+        if (payrollCurrencyCode == null
+                || !payrollCurrencyCode.matches("[A-Z]{3}")) {
+            throw new IllegalStateException(
+                    "Bonus provenance requires frozen Payroll currency"
+            );
+        }
+
+        long amountTotal = 0L;
+        List<SemanticLine> result = new ArrayList<>();
+
+        for (BonusFact fact : matching) {
+            if (!payrollCurrencyCode.equals(fact.currencyCode())) {
+                throw new IllegalStateException(
+                        "Bonus source currency disagrees with frozen Payroll currency"
+                );
+            }
+
+            amountTotal = Math.addExact(amountTotal, fact.amountMinor());
+
+            result.add(
+                    new SemanticLine(
+                            kind,
+                            fact.amountMinor(),
+                            null,
+                            fact.periodFrom(),
+                            fact.periodTo(),
+                            null,
+                            null
+                    )
+            );
+        }
+
+        if (amountTotal != component.getAmountMinor()) {
+            throw new IllegalStateException(
+                    "Bonus source money disagrees with frozen component aggregate"
+            );
+        }
+
+        return List.copyOf(result);
+    }
+
+    private record BonusIdentity(
+            long componentId,
+            PayrollEarningKind earningKind
+    ) {
     }
 
 }

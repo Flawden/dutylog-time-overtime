@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import ru.daniil.shifts.model.PayrollEarningKind;
 import ru.daniil.shifts.model.PayrollQualifiedQuantity;
 import ru.daniil.shifts.model.PayrollSnapshotComponentLine;
+import ru.daniil.shifts.service.PayrollBonusSourceFactService.BonusFact;
 import ru.daniil.shifts.service.PayrollCombinationEpisodeFactService.EpisodeFact;
 import ru.daniil.shifts.service.PayrollRegionalCoefficientSourceFactService.SourceFact;
 import ru.daniil.shifts.service.PayrollSemanticFreezeProjection.SemanticLine;
@@ -668,6 +669,220 @@ class PayrollCompensationComponentSemanticProvenanceTest {
     }
 
     @Test
+    void monthlyBonusUsesOnlyExplicitObservedBonusPeriodAndKeepsQuantityNull() {
+        var monthly = component(
+                0,
+                PayrollEarningKind.MONTHLY_BONUS,
+                "PERCENT_OF_BASE",
+                "LOCAL_ELIGIBLE_EARNINGS",
+                4_000,
+                6_377_200L,
+                2_550_880L
+        );
+
+        var result = service.lines(
+                List.of(monthly),
+                List.of(
+                        baseLine(1_729_943L, 2_880L, 1, 10),
+                        baseLine(756_850L, 1_320L, 11, 12),
+                        baseLine(3_459_886L, 5_760L, 14, 31)
+                ),
+                null,
+                null,
+                List.of(
+                        bonusFact(
+                                31L,
+                                42L,
+                                PayrollEarningKind.MONTHLY_BONUS,
+                                LocalDate.of(2026, 3, 1),
+                                LocalDate.of(2026, 3, 31),
+                                2_550_880L,
+                                "RUB"
+                        )
+                ),
+                "RUB"
+        );
+
+        var detailed = result.get(0).detailedLines();
+        assertNotNull(detailed);
+        assertEquals(1, detailed.size(),
+                "monthly bonus source must not be split over eligible-base source lines");
+        assertEquals(PayrollEarningKind.MONTHLY_BONUS, detailed.get(0).earningKind());
+        assertEquals(2_550_880L, detailed.get(0).amountMinor());
+        assertEquals(LocalDate.of(2026, 3, 1), detailed.get(0).earningPeriodFrom());
+        assertEquals(LocalDate.of(2026, 3, 31), detailed.get(0).earningPeriodTo());
+        assertNull(detailed.get(0).qualifiedQuantity());
+        assertNull(detailed.get(0).coverageFrom());
+        assertNull(detailed.get(0).coverageTo());
+    }
+
+    @Test
+    void oneTimeBonusPreservesExplicitSourceFactWithoutInventingPercentageBase() {
+        var oneTime = component(
+                0,
+                PayrollEarningKind.ONE_TIME_BONUS,
+                "FIXED_AMOUNT",
+                null,
+                null,
+                0L,
+                962_700L
+        );
+
+        var result = service.lines(
+                List.of(oneTime),
+                null,
+                null,
+                null,
+                List.of(
+                        bonusFact(
+                                32L,
+                                42L,
+                                PayrollEarningKind.ONE_TIME_BONUS,
+                                LocalDate.of(2026, 2, 1),
+                                LocalDate.of(2026, 2, 28),
+                                962_700L,
+                                "RUB"
+                        )
+                ),
+                "RUB"
+        );
+
+        var line = result.get(0).detailedLines().get(0);
+        assertEquals(PayrollEarningKind.ONE_TIME_BONUS, line.earningKind());
+        assertEquals(962_700L, line.amountMinor());
+        assertEquals(LocalDate.of(2026, 2, 1), line.earningPeriodFrom());
+        assertEquals(LocalDate.of(2026, 2, 28), line.earningPeriodTo());
+        assertNull(line.qualifiedQuantity());
+    }
+
+    @Test
+    void bonusStaysAggregateOnlyWithoutExplicitSourceFact() {
+        var result = service.lines(
+                List.of(
+                        component(
+                                0,
+                                PayrollEarningKind.MONTHLY_BONUS,
+                                "PERCENT_OF_BASE",
+                                "LOCAL_ELIGIBLE_EARNINGS",
+                                4_000,
+                                1_000_000L,
+                                400_000L
+                        )
+                ),
+                null,
+                null,
+                null,
+                null,
+                "RUB"
+        );
+
+        assertNull(result.get(0).detailedLines());
+    }
+
+    @Test
+    void monthlyBonusExplicitFactsFailClosedOnFormulaMoneyOrCurrencyContradiction() {
+        BonusFact fact = bonusFact(
+                31L,
+                42L,
+                PayrollEarningKind.MONTHLY_BONUS,
+                LocalDate.of(2026, 3, 1),
+                LocalDate.of(2026, 3, 31),
+                400_000L,
+                "RUB"
+        );
+
+        assertThrows(IllegalStateException.class, () -> service.lines(
+                List.of(component(
+                        0, PayrollEarningKind.MONTHLY_BONUS,
+                        "PERCENT_OF_BASE", "EARNED_BASE_PAY",
+                        4_000, 1_000_000L, 400_000L
+                )),
+                null, null, null, List.of(fact), "RUB"
+        ));
+
+        assertThrows(IllegalStateException.class, () -> service.lines(
+                List.of(component(
+                        0, PayrollEarningKind.MONTHLY_BONUS,
+                        "PERCENT_OF_BASE", "LOCAL_ELIGIBLE_EARNINGS",
+                        4_000, 1_000_000L, 399_999L
+                )),
+                null, null, null, List.of(fact), "RUB"
+        ));
+
+        assertThrows(IllegalStateException.class, () -> service.lines(
+                List.of(component(
+                        0, PayrollEarningKind.MONTHLY_BONUS,
+                        "PERCENT_OF_BASE", "LOCAL_ELIGIBLE_EARNINGS",
+                        4_000, 1_000_000L, 400_000L
+                )),
+                null, null, null,
+                List.of(bonusFact(
+                        31L, 42L, PayrollEarningKind.MONTHLY_BONUS,
+                        LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 31),
+                        400_000L, "USD"
+                )),
+                "RUB"
+        ));
+    }
+
+    @Test
+    void bonusSourceMoneyMustReconcileAndFactKindMustMatchFrozenBonusIdentity() {
+        var monthly = component(
+                0,
+                PayrollEarningKind.MONTHLY_BONUS,
+                "PERCENT_OF_BASE",
+                "LOCAL_ELIGIBLE_EARNINGS",
+                4_000,
+                1_000_000L,
+                400_000L
+        );
+
+        assertThrows(IllegalStateException.class, () -> service.lines(
+                List.of(monthly),
+                null, null, null,
+                List.of(bonusFact(
+                        31L, 42L, PayrollEarningKind.MONTHLY_BONUS,
+                        LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 15),
+                        300_000L, "RUB"
+                )),
+                "RUB"
+        ));
+
+        assertThrows(IllegalStateException.class, () -> service.lines(
+                List.of(monthly),
+                null, null, null,
+                List.of(bonusFact(
+                        32L, 42L, PayrollEarningKind.ONE_TIME_BONUS,
+                        LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 31),
+                        400_000L, "RUB"
+                )),
+                "RUB"
+        ));
+
+        var exact = service.lines(
+                List.of(monthly),
+                null, null, null,
+                List.of(
+                        bonusFact(
+                                33L, 42L, PayrollEarningKind.MONTHLY_BONUS,
+                                LocalDate.of(2026, 3, 1), LocalDate.of(2026, 3, 15),
+                                300_000L, "RUB"
+                        ),
+                        bonusFact(
+                                34L, 42L, PayrollEarningKind.MONTHLY_BONUS,
+                                LocalDate.of(2026, 3, 16), LocalDate.of(2026, 3, 31),
+                                100_000L, "RUB"
+                        )
+                ),
+                "RUB"
+        );
+
+        assertEquals(2, exact.get(0).detailedLines().size());
+        assertEquals(400_000L, exact.get(0).detailedLines().stream()
+                .mapToLong(SemanticLine::amountMinor).sum());
+    }
+
+    @Test
     void harmfulFailsClosedWhenFrozenFormulaDisagreesWithDetailedBaseTruth() {
         var base = List.of(
                 baseLine(
@@ -790,6 +1005,26 @@ class PayrollCompensationComponentSemanticProvenanceTest {
                 LocalDate.of(2026, 3, dayTo),
                 amountMinor,
                 "RUB"
+        );
+    }
+
+    private static BonusFact bonusFact(
+            long factId,
+            long componentId,
+            PayrollEarningKind earningKind,
+            LocalDate from,
+            LocalDate to,
+            long amountMinor,
+            String currency
+    ) {
+        return new BonusFact(
+                factId,
+                componentId,
+                earningKind,
+                from,
+                to,
+                amountMinor,
+                currency
         );
     }
 

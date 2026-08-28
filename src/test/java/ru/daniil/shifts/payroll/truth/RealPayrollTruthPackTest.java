@@ -169,6 +169,43 @@ class RealPayrollTruthPackTest {
     }
 
     @Test
+    void bonusSourcePeriodsRemainObservedFactsAndAreNotEligibleBaseSplits()
+            throws Exception {
+
+        PayrollTruthPack pack = read();
+        PayrollTruthCase november = byPeriod(pack, "2025-11");
+        PayrollTruthCase february = byPeriod(pack, "2026-02");
+        PayrollTruthCase march = byPeriod(pack, "2026-03");
+
+        List<PayrollTruthEarning> novemberMonthly = november.earnings()
+                .stream()
+                .filter(line -> "MONTHLY_BONUS".equals(line.semanticKey()))
+                .toList();
+
+        assertEquals(1, novemberMonthly.size());
+        assertEquals("19.11-30.11", novemberMonthly.get(0).sourcePeriod());
+        assertEquals(PayrollTruthProvenance.FACT, novemberMonthly.get(0).provenance());
+
+        assertEquals(3, count(march, "BASE_PAY"));
+        List<PayrollTruthEarning> marchMonthly = march.earnings()
+                .stream()
+                .filter(line -> "MONTHLY_BONUS".equals(line.semanticKey()))
+                .toList();
+        assertEquals(1, marchMonthly.size(),
+                "observed monthly bonus remains one source fact, not three base-pay-derived periods");
+        assertEquals("март 2026", marchMonthly.get(0).sourcePeriod());
+        assertEquals(PayrollTruthProvenance.FACT, marchMonthly.get(0).provenance());
+
+        List<PayrollTruthEarning> februaryOneTime = february.earnings()
+                .stream()
+                .filter(line -> "ONE_TIME_BONUS".equals(line.semanticKey()))
+                .toList();
+        assertEquals(1, februaryOneTime.size());
+        assertEquals("февр. 2026", februaryOneTime.get(0).sourcePeriod());
+        assertEquals(PayrollTruthProvenance.FACT, februaryOneTime.get(0).provenance());
+    }
+
+    @Test
     void negativeEligibilityCasesRemainExplicit() throws Exception {
         PayrollTruthPack pack = read();
 

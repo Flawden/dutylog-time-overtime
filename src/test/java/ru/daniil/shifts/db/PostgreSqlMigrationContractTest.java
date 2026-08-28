@@ -224,6 +224,32 @@ class PostgreSqlMigrationContractTest {
     }
 
 
+    @Test
+    void bonusSourceFactAuthorityStoresObservedBonusFactsWithoutParagraph15OrBaseInference() throws IOException {
+        String sql = Files.readString(
+                MIGRATION_ROOT.resolve(
+                        "V71__bonus_source_fact_authority.sql"
+                )
+        );
+
+        assertTrue(sql.contains("CREATE TABLE payroll_bonus_source_facts"));
+        assertTrue(sql.contains("earning_kind VARCHAR(32) NOT NULL"));
+        assertTrue(sql.contains("MONTHLY_BONUS"));
+        assertTrue(sql.contains("ONE_TIME_BONUS"));
+        assertTrue(sql.contains("period_from DATE NOT NULL"));
+        assertTrue(sql.contains("amount_minor BIGINT NOT NULL"));
+        assertFalse(sql.contains("qualified_minutes"));
+        assertFalse(sql.contains("reference_base_minor"));
+        assertFalse(sql.contains("REFERENCES compensation_components"),
+                "historical bonus facts must survive mutable component configuration");
+        assertFalse(sql.contains("UPDATE payroll_bonus_source_facts"),
+                "V71 must not synthesize historical bonus periods");
+        assertFalse(sql.toLowerCase().contains("paragraph_15"),
+                "source-period storage must not encode future average-earnings bonus policy");
+    }
+
+
+
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);

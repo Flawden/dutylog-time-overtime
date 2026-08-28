@@ -94,6 +94,14 @@ public class PayrollService {
     private PayrollRegionalCoefficientSourceFactService
             regionalCoefficientSourceFacts;
 
+    /*
+     * 8A4E2B3D2 explicit MONTHLY_BONUS / ONE_TIME_BONUS source facts are
+     * independent from both D1 money-base authority and future paragraph 15
+     * average-earnings treatment. Real Spring runtime requires this source
+     * authority; historical direct-construction tests remain compatible.
+     */
+    private PayrollBonusSourceFactService bonusSourceFacts;
+
     public PayrollService(PayrollSettingsRepository settings,
                           CompensationTermRepository compensationTerms,
                           PayrollAdjustmentRepository adjustments,
@@ -160,6 +168,13 @@ public class PayrollService {
     ) {
         this.regionalCoefficientSourceFacts =
                 regionalCoefficientSourceFacts;
+    }
+
+    @Autowired
+    void configureBonusSourceFacts(
+            PayrollBonusSourceFactService bonusSourceFacts
+    ) {
+        this.bonusSourceFacts = bonusSourceFacts;
     }
 
     @Transactional
@@ -418,12 +433,22 @@ public class PayrollService {
                                     snapshotMonth
                             );
 
+            List<PayrollBonusSourceFactService.BonusFact>
+                    bonusFacts =
+                    bonusSourceFacts == null
+                            ? null
+                            : bonusSourceFacts.resolveMonth(
+                                    snapshot.getOwner(),
+                                    snapshotMonth
+                            );
+
             semanticComponentLines =
                     componentSemanticProvenance.lines(
                             frozenComponentLines,
                             semanticBasePayLines,
                             combinationFacts,
                             regionalFacts,
+                            bonusFacts,
                             snapshot.getCurrencyCode()
                     );
         } else {

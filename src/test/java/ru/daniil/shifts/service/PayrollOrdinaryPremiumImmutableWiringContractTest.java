@@ -131,7 +131,11 @@ class PayrollOrdinaryPremiumImmutableWiringContractTest {
                 "PayrollRegionalCoefficientSourceFactService",
                 "configureRegionalCoefficientSourceFacts",
                 "regionalCoefficientSourceFacts.resolveMonth(",
-                "regionalFacts,"
+                "regionalFacts,",
+                "PayrollBonusSourceFactService",
+                "configureBonusSourceFacts",
+                "bonusSourceFacts.resolveMonth(",
+                "bonusFacts,"
         }) {
             assertTrue(
                     payroll.contains(marker),

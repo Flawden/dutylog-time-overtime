@@ -12,6 +12,7 @@ import ru.daniil.shifts.dto.Dtos.PayrollCompensationComponentVersionRequest;
 import ru.daniil.shifts.dto.Dtos.PayrollCompensationTermRequest;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
+import ru.daniil.shifts.model.PayrollEarningKind;
 import ru.daniil.shifts.model.ShiftType;
 import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.repo.PayrollSnapshotComponentLineRepository;
@@ -52,6 +53,9 @@ class PayrollCompensationComponentPayrollIntegrationTest {
 
     @Autowired
     PayrollRegionalCoefficientSourceFactService regionalSourceFacts;
+
+    @Autowired
+    PayrollBonusSourceFactService bonusSourceFacts;
 
     @Autowired
     PayrollSnapshotRepository payrollSnapshots;
@@ -488,22 +492,23 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                 )
         );
 
-        components.create(
-                owner,
-                new PayrollCompensationComponentCreateRequest(
-                        "2026-08",
-                        new PayrollCompensationComponentVersionRequest(
-                                "Ежемесячная премия 40%",
-                                "PERCENT_OF_BASE",
-                                "LOCAL_ELIGIBLE_EARNINGS",
-                                4_000,
-                                null,
-                                null,
-                                "MONTHLY_BONUS",
-                                true
+        var monthlyComponent =
+                components.create(
+                        owner,
+                        new PayrollCompensationComponentCreateRequest(
+                                "2026-08",
+                                new PayrollCompensationComponentVersionRequest(
+                                        "Ежемесячная премия 40%",
+                                        "PERCENT_OF_BASE",
+                                        "LOCAL_ELIGIBLE_EARNINGS",
+                                        4_000,
+                                        null,
+                                        null,
+                                        "MONTHLY_BONUS",
+                                        true
+                                )
                         )
-                )
-        );
+                );
 
         var regionalComponent =
                 components.create(
@@ -529,6 +534,16 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                 LocalDate.of(2026, 8, 3),
                 LocalDate.of(2026, 8, 3),
                 174_720L,
+                "RUB"
+        );
+
+        bonusSourceFacts.create(
+                owner,
+                monthlyComponent.componentId(),
+                PayrollEarningKind.MONTHLY_BONUS,
+                LocalDate.of(2026, 8, 3),
+                LocalDate.of(2026, 8, 3),
+                332_800L,
                 "RUB"
         );
 
@@ -576,6 +591,27 @@ class PayrollCompensationComponentPayrollIntegrationTest {
 
         var semantic =
                 semanticLines.findBySnapshotOrderByLineIndexAsc(snapshot);
+
+        var monthlySemantic =
+                semantic.stream()
+                        .filter(line ->
+                                "MONTHLY_BONUS".equals(
+                                        line.getEarningKind()
+                                )
+                        )
+                        .findFirst()
+                        .orElseThrow();
+
+        assertEquals(332_800L, monthlySemantic.getAmountMinor());
+        assertEquals(
+                LocalDate.of(2026, 8, 3),
+                monthlySemantic.getEarningPeriodFrom()
+        );
+        assertEquals(
+                LocalDate.of(2026, 8, 3),
+                monthlySemantic.getEarningPeriodTo()
+        );
+        assertNull(monthlySemantic.getQualifiedQuantityValue());
 
         var regionalSemantic =
                 semantic.stream()
