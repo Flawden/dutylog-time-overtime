@@ -249,6 +249,30 @@ class PostgreSqlMigrationContractTest {
     }
 
 
+    @Test
+    void bonusAverageEarningsFactAuthoritySeparatesParagraph15FactsFromSourceProvenance() throws IOException {
+        String sql = Files.readString(
+                MIGRATION_ROOT.resolve(
+                        "V72__bonus_average_earnings_fact_authority.sql"
+                )
+        );
+
+        assertTrue(sql.contains("CREATE TABLE payroll_bonus_average_earnings_facts"));
+        assertTrue(sql.contains("bonus_source_fact_id BIGINT NOT NULL"));
+        assertTrue(sql.contains("indicator_key VARCHAR(96) NOT NULL"));
+        assertTrue(sql.contains("award_period_from DATE NOT NULL"));
+        assertTrue(sql.contains("annual_result BOOLEAN"));
+        assertTrue(sql.contains("accrued_for_actual_work_time BOOLEAN"));
+        assertTrue(sql.contains("prorated_for_partial_award_period BOOLEAN"));
+        assertFalse(sql.contains("REFERENCES payroll_bonus_source_facts"),
+                "paragraph-15 history must survive mutable source-fact row lifetime");
+        assertFalse(sql.contains("amount_minor"),
+                "paragraph-15 factual authority must not duplicate observed bonus money");
+        assertFalse(sql.contains("UPDATE payroll_bonus_average_earnings_facts"),
+                "V72 must not synthesize paragraph-15 facts");
+    }
+
+
 
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
