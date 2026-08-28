@@ -310,6 +310,101 @@ class CompensationComponentConfigurationServiceTest {
         );
     }
 
+
+    @Test
+    void localEligibleEarningsBasePersistsOnlyAsExplicitFormulaIdentity() {
+        var created =
+                service.create(
+                        owner,
+                        new PayrollCompensationComponentCreateRequest(
+                                "2026-08",
+                                new PayrollCompensationComponentVersionRequest(
+                                        "Районный коэффициент",
+                                        "PERCENT_OF_BASE",
+                                        "LOCAL_ELIGIBLE_EARNINGS",
+                                        1_500,
+                                        null,
+                                        null,
+                                        "REGIONAL_COEFFICIENT",
+                                        true
+                                )
+                        )
+                );
+
+        assertEquals(
+                "LOCAL_ELIGIBLE_EARNINGS",
+                created.calculationBase()
+        );
+        assertEquals(
+                "REGIONAL_COEFFICIENT",
+                created.earningKind()
+        );
+        assertEquals(
+                1_500,
+                created.rateBps()
+        );
+    }
+
+    @Test
+    void localEligibleEarningsBaseRejectsNonRegionalSemanticTargetsAtConfigurationBoundary() {
+        ApiException wrongKind =
+                assertThrows(
+                        ApiException.class,
+                        () ->
+                                service.create(
+                                        owner,
+                                        new PayrollCompensationComponentCreateRequest(
+                                                "2026-09",
+                                                new PayrollCompensationComponentVersionRequest(
+                                                        "Месячная премия",
+                                                        "PERCENT_OF_BASE",
+                                                        "LOCAL_ELIGIBLE_EARNINGS",
+                                                        4_000,
+                                                        null,
+                                                        null,
+                                                        "MONTHLY_BONUS",
+                                                        true
+                                                )
+                                        )
+                                )
+                );
+
+        assertEquals(
+                CompensationComponentConfigurationService.INVALID_CODE,
+                wrongKind.getCode()
+        );
+        assertEquals(
+                400,
+                wrongKind.getStatus().value()
+        );
+
+        ApiException missingKind =
+                assertThrows(
+                        ApiException.class,
+                        () ->
+                                service.create(
+                                        owner,
+                                        new PayrollCompensationComponentCreateRequest(
+                                                "2026-09",
+                                                new PayrollCompensationComponentVersionRequest(
+                                                        "Без semantics",
+                                                        "PERCENT_OF_BASE",
+                                                        "LOCAL_ELIGIBLE_EARNINGS",
+                                                        1_500,
+                                                        null,
+                                                        null,
+                                                        true
+                                                )
+                                        )
+                                )
+                );
+
+        assertEquals(
+                CompensationComponentConfigurationService.INVALID_CODE,
+                missingKind.getCode()
+        );
+    }
+
     private PayrollCompensationComponentVersionRequest fixed(
             String name,
             long amount,

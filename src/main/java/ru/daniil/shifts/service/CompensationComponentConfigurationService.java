@@ -111,6 +111,19 @@ public class CompensationComponentConfigurationService {
                         request.version()
                 );
 
+        PayrollEarningKind createEarningKind =
+                parsed.earningKindUpdate()
+                        .explicit()
+                        ? parsed.earningKindUpdate()
+                                .value()
+                        : null;
+
+        validateLocalEligibleBaseTarget(
+                parsed.calculationType(),
+                parsed.calculationBase(),
+                createEarningKind
+        );
+
         CompensationComponent component =
                 components.saveAndFlush(
                         new CompensationComponent(
@@ -139,11 +152,7 @@ public class CompensationComponentConfigurationService {
              * Missing kind therefore starts explicitly UNCLASSIFIED.
              */
             version.updateEarningKind(
-                    parsed.earningKindUpdate()
-                            .explicit()
-                            ? parsed.earningKindUpdate()
-                                    .value()
-                            : null
+                    createEarningKind
             );
 
         } catch (IllegalArgumentException ex) {
@@ -210,6 +219,33 @@ public class CompensationComponentConfigurationService {
                                 )
                         );
 
+        /*
+         * Compatibility-safe semantic behavior:
+         *
+         * explicit kind       => set it;
+         * explicit UNCLASSIFIED => clear it;
+         * omitted on existing version => preserve it;
+         * omitted on new effective version => inherit prior effective kind.
+         *
+         * Resolve and validate the semantic target before mutating an
+         * already-managed version so an invalid LOCAL_ELIGIBLE_EARNINGS
+         * request fails without leaving transient cross-field mutation.
+         */
+        PayrollEarningKind targetEarningKind =
+                resolvedEarningKind(
+                        user,
+                        component,
+                        effectiveMonth.atDay(1),
+                        version,
+                        parsed.earningKindUpdate()
+                );
+
+        validateLocalEligibleBaseTarget(
+                parsed.calculationType(),
+                parsed.calculationBase(),
+                targetEarningKind
+        );
+
         if (version.getId() != null) {
             try {
                 version.update(
@@ -227,23 +263,6 @@ public class CompensationComponentConfigurationService {
                 );
             }
         }
-
-        /*
-         * Compatibility-safe semantic behavior:
-         *
-         * explicit kind       => set it;
-         * explicit UNCLASSIFIED => clear it;
-         * omitted on existing version => preserve it;
-         * omitted on new effective version => inherit prior effective kind.
-         */
-        PayrollEarningKind targetEarningKind =
-                resolvedEarningKind(
-                        user,
-                        component,
-                        effectiveMonth.atDay(1),
-                        version,
-                        parsed.earningKindUpdate()
-                );
 
         try {
             version.updateEarningKind(
@@ -455,6 +474,23 @@ public class CompensationComponentConfigurationService {
                 request.currencyCode(),
                 request.enabled()
         );
+    }
+
+    private void validateLocalEligibleBaseTarget(
+            CalculationType calculationType,
+            CalculationBase calculationBase,
+            PayrollEarningKind earningKind
+    ) {
+        if (calculationType
+                == CalculationType.PERCENT_OF_BASE
+                && calculationBase
+                == CalculationBase.LOCAL_ELIGIBLE_EARNINGS
+                && earningKind
+                != PayrollEarningKind.REGIONAL_COEFFICIENT) {
+            throw invalid(
+                    "LOCAL_ELIGIBLE_EARNINGS пока допустима только для REGIONAL_COEFFICIENT"
+            );
+        }
     }
 
     private ParsedEarningKind parseEarningKindUpdate(

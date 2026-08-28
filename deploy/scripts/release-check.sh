@@ -4967,10 +4967,10 @@ contains deploy/scripts/remote-deploy.sh 'Application deployment succeeded, but 
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1246" ]]; then
-  ok "test method baseline: 1246"
+if [[ "$TEST_METHODS" == "1258" ]]; then
+  ok "test method baseline: 1258"
 else
-  fail "expected 1246 @Test methods, found $TEST_METHODS"
+  fail "expected 1258 @Test methods, found $TEST_METHODS"
 fi
 if [[ "$TEST_CLASSES" == "253" ]]; then
   ok "test class baseline: 253"
@@ -5026,7 +5026,7 @@ contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'id="payr
 contains CHANGES.md 'OpenAPI is **138 operations / 144 schemas** with SHA-256 `1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`.'
 contains docs/TEMPORAL_WORK_CONTEXT_NATIVE_PAY_PRICING_V27.46.1.md 'OpenAPI: 138 operations / 144 schemas.'
 contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 151 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "447d43d98cfb27f405a1784a088b842a427886fc2992002772a07bf3991f65ef"'
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "ce11a4d7818dc9ec9adee219dd39542744c69c25f1e2651b930236fb8c7995a8"'
 contains docs/API.md "# DutyLog API v${VERSION}"
 contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
@@ -5152,7 +5152,7 @@ contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Frozen comp
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "PayrollCompensationComponentLineDto"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "PayrollCompensationComponentLine:"
 contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 151 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "447d43d98cfb27f405a1784a088b842a427886fc2992002772a07bf3991f65ef"'
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "ce11a4d7818dc9ec9adee219dd39542744c69c25f1e2651b930236fb8c7995a8"'
 contains src/test/java/ru/daniil/shifts/service/PayrollCompensationComponentPayrollIntegrationTest.java "Премия за выживание после ночной смены"
 
 # v27.47.0 7A3A Immutable Generic Compensation Component Snapshot Foundation
@@ -5179,7 +5179,7 @@ contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listPay
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listEffectivePayrollCompensationComponents"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: upsertPayrollCompensationComponentVersion"
 contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 151 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "447d43d98cfb27f405a1784a088b842a427886fc2992002772a07bf3991f65ef"'
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "ce11a4d7818dc9ec9adee219dd39542744c69c25f1e2651b930236fb8c7995a8"'
 contains frontend/src/generated/dutylog-api.ts '"createPayrollCompensationComponent": { method: "POST", path: "/api/v1/payroll/compensation-components" }'
 contains frontend/src/generated/dutylog-api.ts '"listPayrollCompensationComponentHistory": { method: "GET", path: "/api/v1/payroll/compensation-components" }'
 contains frontend/src/generated/dutylog-api.ts '"listEffectivePayrollCompensationComponents": { method: "GET", path: "/api/v1/payroll/compensation-components/effective/{month}" }'
@@ -5201,6 +5201,11 @@ contains src/main/java/ru/daniil/shifts/model/CompensationComponentVersion.java 
 contains src/main/java/ru/daniil/shifts/model/CompensationComponentVersion.java "enum CalculationBase"
 contains src/main/java/ru/daniil/shifts/service/CompensationComponentCalculationService.java "DUTYLOG_COMP_COMPONENT_PROJECTION_V1"
 contains src/main/java/ru/daniil/shifts/service/CompensationComponentCalculationService.java "RoundingMode.HALF_UP"
+contains src/main/resources/db/migration/postgresql/V69__local_eligible_earnings_component_base.sql "LOCAL_ELIGIBLE_EARNINGS"
+contains src/main/java/ru/daniil/shifts/service/CompensationComponentCalculationService.java "LOCAL_ELIGIBLE_EARNINGS is only proven for REGIONAL_COEFFICIENT"
+contains src/main/java/ru/daniil/shifts/service/PayrollService.java "componentUpstreamSemanticEarningsComplete"
+contains src/main/resources/static/openapi/dutylog-v1.yaml "LOCAL_ELIGIBLE_EARNINGS"
+contains frontend/src/features/payroll/components/CompensationComponentsCard.vue "LOCAL_ELIGIBLE_EARNINGS"
 contains src/test/java/ru/daniil/shifts/service/CompensationComponentCalculationServiceTest.java "Вредность 4%"
 contains src/test/java/ru/daniil/shifts/service/CompensationComponentCalculationServiceTest.java "duplicateStableComponentIdentityFailsClosed"
 

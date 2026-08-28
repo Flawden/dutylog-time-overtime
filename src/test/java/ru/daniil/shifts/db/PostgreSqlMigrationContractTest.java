@@ -180,6 +180,28 @@ class PostgreSqlMigrationContractTest {
                 "V68 must not synthesize historical source facts");
     }
 
+
+    @Test
+    void localEligibleEarningsBaseMigrationExtendsOnlyFormulaConstraintsWithoutBackfill() throws IOException {
+        String sql = Files.readString(
+                MIGRATION_ROOT.resolve(
+                        "V69__local_eligible_earnings_component_base.sql"
+                )
+        );
+
+        assertTrue(sql.contains("LOCAL_ELIGIBLE_EARNINGS"));
+        assertTrue(sql.contains("ck_compensation_component_calculation_base"));
+        assertTrue(sql.contains("ck_payroll_snapshot_component_line_shape"));
+        assertFalse(
+                sql.contains("UPDATE compensation_component_versions"),
+                "V69 must not reinterpret historical calculation bases"
+        );
+        assertFalse(
+                sql.contains("UPDATE payroll_snapshot_compensation_component_lines"),
+                "V69 must not rewrite immutable snapshot lines"
+        );
+    }
+
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);

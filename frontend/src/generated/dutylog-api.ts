@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 447d43d98cfb27f405a1784a088b842a427886fc2992002772a07bf3991f65ef
+ * SHA-256: ce11a4d7818dc9ec9adee219dd39542744c69c25f1e2651b930236fb8c7995a8
  * Generator: frontend/scripts/generate-openapi-contract.mjs
  * Contract: 145 operations, 151 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "447d43d98cfb27f405a1784a088b842a427886fc2992002772a07bf3991f65ef";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "ce11a4d7818dc9ec9adee219dd39542744c69c25f1e2651b930236fb8c7995a8";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -1006,7 +1006,7 @@ export namespace DutyLogApiSchemas {
     displayName: string;
     earningKind: "HARMFUL_CONDITIONS" | "COMBINATION" | "MONTHLY_BONUS" | "ONE_TIME_BONUS" | "REGIONAL_COEFFICIENT" | null;
     calculationType: "FIXED_AMOUNT" | "PERCENT_OF_BASE";
-    calculationBase?: "NOMINAL_SALARY" | "EARNED_BASE_PAY" | null;
+    calculationBase?: "NOMINAL_SALARY" | "EARNED_BASE_PAY" | "LOCAL_ELIGIBLE_EARNINGS" | null;
     rateBps?: number | null;
     configuredAmountMinor?: number | null;
     configuredCurrencyCode?: string | null;
@@ -1021,7 +1021,7 @@ export namespace DutyLogApiSchemas {
     displayName?: string;
     earningKind?: "HARMFUL_CONDITIONS" | "COMBINATION" | "MONTHLY_BONUS" | "ONE_TIME_BONUS" | "REGIONAL_COEFFICIENT" | null;
     calculationType?: "FIXED_AMOUNT" | "PERCENT_OF_BASE";
-    calculationBase?: "NOMINAL_SALARY" | "EARNED_BASE_PAY";
+    calculationBase?: "NOMINAL_SALARY" | "EARNED_BASE_PAY" | "LOCAL_ELIGIBLE_EARNINGS";
     rateBps?: number;
     amountMinor?: number;
     currencyCode?: string;
@@ -1034,7 +1034,7 @@ export namespace DutyLogApiSchemas {
     displayName: string;
     earningKind?: "UNCLASSIFIED" | "HARMFUL_CONDITIONS" | "COMBINATION" | "MONTHLY_BONUS" | "ONE_TIME_BONUS" | "REGIONAL_COEFFICIENT";
     calculationType: "FIXED_AMOUNT" | "PERCENT_OF_BASE";
-    calculationBase?: "NOMINAL_SALARY" | "EARNED_BASE_PAY";
+    calculationBase?: "NOMINAL_SALARY" | "EARNED_BASE_PAY" | "LOCAL_ELIGIBLE_EARNINGS";
     rateBps?: number;
     amountMinor?: number;
     currencyCode?: string;

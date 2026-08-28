@@ -7,6 +7,7 @@ import ru.daniil.shifts.model.CompensationComponent;
 import ru.daniil.shifts.model.CompensationComponentVersion;
 import ru.daniil.shifts.model.CompensationComponentVersion.CalculationBase;
 import ru.daniil.shifts.model.CompensationComponentVersion.CalculationType;
+import ru.daniil.shifts.model.PayrollEarningKind;
 import ru.daniil.shifts.service.CompensationComponentCalculationService.ComponentRule;
 import ru.daniil.shifts.service.CompensationComponentCalculationService.Context;
 import ru.daniil.shifts.service.CompensationComponentCalculationService.Projection;
@@ -34,6 +35,12 @@ public class PayrollCompensationComponentPreviewService {
     public static final String PAYROLL_COMPONENT_INVALID =
             "PAYROLL_COMP_COMPONENT_INVALID";
 
+    public static final String PAYROLL_LOCAL_BASE_INCOMPLETE =
+            "PAYROLL_COMP_COMPONENT_LOCAL_BASE_INCOMPLETE";
+
+    public static final String PAYROLL_LOCAL_BASE_UNSUPPORTED =
+            "PAYROLL_COMP_COMPONENT_LOCAL_BASE_UNSUPPORTED";
+
     private final CompensationComponentResolverService resolver;
     private final CompensationComponentCalculationService calculator;
 
@@ -51,6 +58,26 @@ public class PayrollCompensationComponentPreviewService {
             YearMonth month,
             Context context,
             String unavailableReason
+    ) {
+        return preview(
+                user,
+                month,
+                context,
+                unavailableReason,
+                List.of(),
+                false
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public ComponentPreview preview(
+            AppUser user,
+            YearMonth month,
+            Context context,
+            String unavailableReason,
+            List<PayrollEligibleEarningsBaseResolver.Earning>
+                    upstreamSemanticEarnings,
+            boolean upstreamSemanticEarningsComplete
     ) {
         if (user == null) {
             throw new IllegalArgumentException(
@@ -99,6 +126,52 @@ public class PayrollCompensationComponentPreviewService {
             );
         }
 
+        boolean localEligibleBaseRequired =
+                enabled.stream()
+                        .anyMatch(version ->
+                                version.getCalculationType()
+                                        == CalculationType.PERCENT_OF_BASE
+                                        && version.getCalculationBase()
+                                        == CalculationBase.LOCAL_ELIGIBLE_EARNINGS
+                        );
+
+        if (localEligibleBaseRequired) {
+            if (!upstreamSemanticEarningsComplete) {
+                return blocked(
+                        month,
+                        PAYROLL_LOCAL_BASE_INCOMPLETE,
+                        "LOCAL_ELIGIBLE_EARNINGS недоступна: upstream semantic earnings неполны"
+                );
+            }
+
+            for (CompensationComponentVersion version : enabled) {
+                if (version.getCalculationType()
+                        == CalculationType.PERCENT_OF_BASE
+                        && version.getCalculationBase()
+                        == CalculationBase.LOCAL_ELIGIBLE_EARNINGS
+                        && version.getEarningKind()
+                        != PayrollEarningKind.REGIONAL_COEFFICIENT) {
+                    return blocked(
+                            month,
+                            PAYROLL_LOCAL_BASE_UNSUPPORTED,
+                            "LOCAL_ELIGIBLE_EARNINGS пока поддержана только для REGIONAL_COEFFICIENT"
+                    );
+                }
+
+                if (!(version.getCalculationType()
+                        == CalculationType.PERCENT_OF_BASE
+                        && version.getCalculationBase()
+                        == CalculationBase.LOCAL_ELIGIBLE_EARNINGS)
+                        && version.getEarningKind() == null) {
+                    return blocked(
+                            month,
+                            PAYROLL_LOCAL_BASE_INCOMPLETE,
+                            "LOCAL_ELIGIBLE_EARNINGS нельзя доказать при включённом UNCLASSIFIED компоненте"
+                    );
+                }
+            }
+        }
+
         for (CompensationComponentVersion version : enabled) {
             if (version.getCalculationType()
                     == CalculationType.FIXED_AMOUNT
@@ -139,7 +212,9 @@ public class PayrollCompensationComponentPreviewService {
                     month,
                     calculator.calculate(
                             context,
-                            rules
+                            rules,
+                            upstreamSemanticEarnings,
+                            upstreamSemanticEarningsComplete
                     )
             );
 

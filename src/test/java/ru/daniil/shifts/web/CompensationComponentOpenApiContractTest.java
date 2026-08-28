@@ -42,7 +42,8 @@ class CompensationComponentOpenApiContractTest {
                 "operationId: upsertPayrollCompensationComponentVersion",
                 "PayrollCompensationComponentCreateInput:",
                 "PayrollCompensationComponentVersionInput:",
-                "PayrollCompensationComponentVersion:"
+                "PayrollCompensationComponentVersion:",
+                "LOCAL_ELIGIBLE_EARNINGS"
         }) {
             assertTrue(
                     yaml.contains(token),
@@ -65,6 +66,7 @@ class CompensationComponentOpenApiContractTest {
                 "export type PayrollCompensationComponentCreateInput =",
                 "export type PayrollCompensationComponentVersionInput =",
                 "export type PayrollCompensationComponentVersion =",
+                "LOCAL_ELIGIBLE_EARNINGS",
                 "\"createPayrollCompensationComponent\": { method: \"POST\", path: \"/api/v1/payroll/compensation-components\" }",
                 "\"listPayrollCompensationComponentHistory\": { method: \"GET\", path: \"/api/v1/payroll/compensation-components\" }",
                 "\"listEffectivePayrollCompensationComponents\": { method: \"GET\", path: \"/api/v1/payroll/compensation-components/effective/{month}\" }",

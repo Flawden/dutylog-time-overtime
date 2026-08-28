@@ -13,7 +13,8 @@ type CalculationType =
 
 type CalculationBase =
   | "NOMINAL_SALARY"
-  | "EARNED_BASE_PAY";
+  | "EARNED_BASE_PAY"
+  | "LOCAL_ELIGIBLE_EARNINGS";
 
 type GenericEarningKind =
   NonNullable<
@@ -127,7 +128,9 @@ const text = computed(() =>
         base: "Calculation base",
         nominal: "Monthly salary",
         earned: "Earned base pay",
+        eligible: "Eligible earnings for this Payroll meaning",
         nominalHint: "Monthly salary is available only in salary mode.",
+        eligibleHint: "This base uses the machine-owned eligible-earnings policy. It is currently available only for Regional coefficient.",
         percentValue: "Percent, %",
         amount: "Amount",
         currency: "Currency",
@@ -176,7 +179,9 @@ const text = computed(() =>
         base: "База расчёта",
         nominal: "Оклад",
         earned: "Фактически начисленная базовая оплата",
+        eligible: "Допустимые начисления для этого типа Payroll",
         nominalHint: "Оклад как база доступен только при окладной системе оплаты.",
+        eligibleHint: "Эта база берётся из машинной политики состава начислений. Сейчас она доступна только для районного коэффициента.",
         percentValue: "Процент, %",
         amount: "Сумма",
         currency: "Валюта",
@@ -390,7 +395,9 @@ function baseLabel(
 ): string {
   return base === "NOMINAL_SALARY"
     ? text.value.nominal
-    : text.value.earned;
+    : base === "LOCAL_ELIGIBLE_EARNINGS"
+      ? text.value.eligible
+      : text.value.earned;
 }
 
 function summary(
@@ -512,7 +519,9 @@ function editVersion(
   calculationBase.value =
     version.calculationBase === "NOMINAL_SALARY"
       ? "NOMINAL_SALARY"
-      : "EARNED_BASE_PAY";
+      : version.calculationBase === "LOCAL_ELIGIBLE_EARNINGS"
+        ? "LOCAL_ELIGIBLE_EARNINGS"
+        : "EARNED_BASE_PAY";
 
   percentValue.value =
     version.rateBps == null
@@ -722,6 +731,18 @@ async function save(): Promise<void> {
     messageOk.value = false;
   }
 }
+
+watch(
+  earningKind,
+  kind => {
+    if (
+      kind !== "REGIONAL_COEFFICIENT"
+      && calculationBase.value === "LOCAL_ELIGIBLE_EARNINGS"
+    ) {
+      calculationBase.value = "EARNED_BASE_PAY";
+    }
+  },
+);
 
 watch(
   () => props.month,
@@ -965,6 +986,13 @@ onMounted(() => {
               <option value="NOMINAL_SALARY">
                 {{ text.nominal }}
               </option>
+
+              <option
+                v-if="earningKind === 'REGIONAL_COEFFICIENT'"
+                value="LOCAL_ELIGIBLE_EARNINGS"
+              >
+                {{ text.eligible }}
+              </option>
             </select>
           </label>
 
@@ -976,6 +1004,16 @@ onMounted(() => {
             class="componentHint"
           >
             {{ text.nominalHint }}
+          </p>
+
+          <p
+            v-if="
+              calculationBase
+              === 'LOCAL_ELIGIBLE_EARNINGS'
+            "
+            class="componentHint"
+          >
+            {{ text.eligibleHint }}
           </p>
 
           <label>

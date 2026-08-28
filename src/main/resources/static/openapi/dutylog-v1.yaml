@@ -2301,7 +2301,7 @@ components:
           enum: [FIXED_AMOUNT, PERCENT_OF_BASE]
         calculationBase:
           type: string
-          enum: [NOMINAL_SALARY, EARNED_BASE_PAY]
+          enum: [NOMINAL_SALARY, EARNED_BASE_PAY, LOCAL_ELIGIBLE_EARNINGS]
         rateBps:
           type: integer
           minimum: 1
@@ -2353,7 +2353,7 @@ components:
           enum: [FIXED_AMOUNT, PERCENT_OF_BASE]
         calculationBase:
           type: string
-          enum: [NOMINAL_SALARY, EARNED_BASE_PAY]
+          enum: [NOMINAL_SALARY, EARNED_BASE_PAY, LOCAL_ELIGIBLE_EARNINGS]
         rateBps:
           type: integer
         amountMinor:
@@ -2454,7 +2454,7 @@ components:
         calculationBase:
           type: string
           nullable: true
-          enum: [NOMINAL_SALARY, EARNED_BASE_PAY]
+          enum: [NOMINAL_SALARY, EARNED_BASE_PAY, LOCAL_ELIGIBLE_EARNINGS]
         rateBps:
           type: integer
           nullable: true

@@ -6,6 +6,7 @@ import ru.daniil.shifts.model.CompensationComponent;
 import ru.daniil.shifts.model.CompensationComponentVersion;
 import ru.daniil.shifts.model.CompensationComponentVersion.CalculationBase;
 import ru.daniil.shifts.model.CompensationComponentVersion.CalculationType;
+import ru.daniil.shifts.model.PayrollEarningKind;
 import ru.daniil.shifts.service.CompensationComponentCalculationService.Context;
 
 import java.time.LocalDate;
@@ -240,10 +241,208 @@ class PayrollCompensationComponentPreviewServiceTest {
         );
     }
 
+
+    @Test
+    void regionalLocalEligibleBaseUsesExplicitSemanticUpstreamPool() {
+        doReturn(
+                List.of(
+                        version(
+                                10L,
+                                20L,
+                                "Вредность 4%",
+                                PayrollEarningKind.HARMFUL_CONDITIONS,
+                                CalculationType.PERCENT_OF_BASE,
+                                CalculationBase.EARNED_BASE_PAY,
+                                400,
+                                null,
+                                null,
+                                true
+                        ),
+                        version(
+                                11L,
+                                21L,
+                                "Районный 15%",
+                                PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                CalculationType.PERCENT_OF_BASE,
+                                CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
+                                1_500,
+                                null,
+                                null,
+                                true
+                        )
+                )
+        ).when(resolver).resolve(
+                owner,
+                YearMonth.of(2026, 8)
+        );
+
+        var result =
+                service.preview(
+                        owner,
+                        YearMonth.of(2026, 8),
+                        new Context(
+                                "RUB",
+                                "HOURLY",
+                                null,
+                                800_000L
+                        ),
+                        null,
+                        List.of(
+                                new PayrollEligibleEarningsBaseResolver.Earning(
+                                        PayrollEarningKind.BASE_PAY,
+                                        800_000L
+                                )
+                        ),
+                        true
+                );
+
+        assertTrue(result.ready());
+        assertEquals(2, result.projection().lines().size());
+        assertEquals(
+                832_000L,
+                result.projection().lines().get(1).referenceBaseMinor()
+        );
+        assertEquals(
+                124_800L,
+                result.projection().lines().get(1).amountMinor()
+        );
+    }
+
+    @Test
+    void regionalLocalEligibleBaseBlocksWhenSemanticUpstreamIsIncomplete() {
+        doReturn(
+                List.of(
+                        version(
+                                11L,
+                                21L,
+                                "Районный 15%",
+                                PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                CalculationType.PERCENT_OF_BASE,
+                                CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
+                                1_500,
+                                null,
+                                null,
+                                true
+                        )
+                )
+        ).when(resolver).resolve(
+                owner,
+                YearMonth.of(2026, 8)
+        );
+
+        var result =
+                service.preview(
+                        owner,
+                        YearMonth.of(2026, 8),
+                        new Context(
+                                "RUB",
+                                "HOURLY",
+                                null,
+                                800_000L
+                        ),
+                        null,
+                        List.of(),
+                        false
+                );
+
+        assertFalse(result.ready());
+        assertEquals(
+                PayrollCompensationComponentPreviewService.PAYROLL_LOCAL_BASE_INCOMPLETE,
+                result.blockingReason()
+        );
+    }
+
+    @Test
+    void regionalLocalEligibleBaseBlocksWhenAnotherEnabledComponentIsUnclassified() {
+        doReturn(
+                List.of(
+                        version(
+                                10L,
+                                20L,
+                                "Неизвестная выплата",
+                                null,
+                                CalculationType.FIXED_AMOUNT,
+                                null,
+                                null,
+                                10_000L,
+                                "RUB",
+                                true
+                        ),
+                        version(
+                                11L,
+                                21L,
+                                "Районный 15%",
+                                PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                CalculationType.PERCENT_OF_BASE,
+                                CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
+                                1_500,
+                                null,
+                                null,
+                                true
+                        )
+                )
+        ).when(resolver).resolve(
+                owner,
+                YearMonth.of(2026, 8)
+        );
+
+        var result =
+                service.preview(
+                        owner,
+                        YearMonth.of(2026, 8),
+                        new Context(
+                                "RUB",
+                                "HOURLY",
+                                null,
+                                800_000L
+                        ),
+                        null,
+                        List.of(
+                                new PayrollEligibleEarningsBaseResolver.Earning(
+                                        PayrollEarningKind.BASE_PAY,
+                                        800_000L
+                                )
+                        ),
+                        true
+                );
+
+        assertFalse(result.ready());
+        assertEquals(
+                PayrollCompensationComponentPreviewService.PAYROLL_LOCAL_BASE_INCOMPLETE,
+                result.blockingReason()
+        );
+    }
+
     private CompensationComponentVersion version(
             long componentId,
             long versionId,
             String name,
+            CalculationType type,
+            CalculationBase base,
+            Integer rateBps,
+            Long amountMinor,
+            String currency,
+            boolean enabled
+    ) {
+        return version(
+                componentId,
+                versionId,
+                name,
+                null,
+                type,
+                base,
+                rateBps,
+                amountMinor,
+                currency,
+                enabled
+        );
+    }
+
+    private CompensationComponentVersion version(
+            long componentId,
+            long versionId,
+            String name,
+            PayrollEarningKind earningKind,
             CalculationType type,
             CalculationBase base,
             Integer rateBps,
@@ -289,6 +488,12 @@ class PayrollCompensationComponentPreviewServiceTest {
                 version.getDisplayName()
         ).thenReturn(
                 name
+        );
+
+        when(
+                version.getEarningKind()
+        ).thenReturn(
+                earningKind
         );
 
         when(

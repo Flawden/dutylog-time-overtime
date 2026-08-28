@@ -664,12 +664,55 @@ public class PayrollService {
                         )
                         : null;
 
+        /*
+         * B3C1 regional eligible-base authority.
+         *
+         * Only semantic amounts already proven before generic component
+         * calculation may enter this seed pool. Generic component amounts are
+         * appended by CompensationComponentCalculationService itself before a
+         * deferred REGIONAL_COEFFICIENT is evaluated.
+         *
+         * Any ordinary premium money that is still semantically unclassified
+         * makes the local base incomplete. We do not guess that it is (or is
+         * not) HOLIDAY_PAY.
+         */
+        List<PayrollEligibleEarningsBaseResolver.Earning>
+                componentUpstreamSemanticEarnings =
+                new java.util.ArrayList<>();
+
+        if (previewFormulaReady) {
+            componentUpstreamSemanticEarnings.add(
+                    new PayrollEligibleEarningsBaseResolver.Earning(
+                            ru.daniil.shifts.model.PayrollEarningKind.BASE_PAY,
+                            basePay
+                    )
+            );
+
+            if (ordinaryPremiumPreview.ready()
+                    && ordinaryPremiumPreview.nightPremiumAmountMinor() > 0L) {
+                componentUpstreamSemanticEarnings.add(
+                        new PayrollEligibleEarningsBaseResolver.Earning(
+                                ru.daniil.shifts.model.PayrollEarningKind.NIGHT_PREMIUM,
+                                ordinaryPremiumPreview.nightPremiumAmountMinor()
+                        )
+                );
+            }
+        }
+
+        boolean componentUpstreamSemanticEarningsComplete =
+                previewFormulaReady
+                        && ordinaryPremiumPreview.ready()
+                        && ordinaryPremiumPreview
+                        .unclassifiedPremiumAmountMinor() == 0L;
+
         ComponentPreview componentPreview =
                 componentPreview(
                         user,
                         month,
                         componentContext,
-                        componentUnavailableReason
+                        componentUnavailableReason,
+                        componentUpstreamSemanticEarnings,
+                        componentUpstreamSemanticEarningsComplete
                 );
 
         Projection componentProjection =
@@ -812,7 +855,10 @@ public class PayrollService {
             AppUser user,
             YearMonth month,
             Context context,
-            String unavailableReason
+            String unavailableReason,
+            List<PayrollEligibleEarningsBaseResolver.Earning>
+                    upstreamSemanticEarnings,
+            boolean upstreamSemanticEarningsComplete
     ) {
         /*
          * Compatibility path for isolated historical unit fixtures that
@@ -833,7 +879,9 @@ public class PayrollService {
                 user,
                 month,
                 context,
-                unavailableReason
+                unavailableReason,
+                upstreamSemanticEarnings,
+                upstreamSemanticEarningsComplete
         );
     }
 

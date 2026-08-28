@@ -195,7 +195,8 @@ public class PayrollSnapshotComponentLine {
             }
         } else if ("PERCENT_OF_BASE".equals(type)) {
             if (!"NOMINAL_SALARY".equals(calculationBase)
-                    && !"EARNED_BASE_PAY".equals(calculationBase)) {
+                    && !"EARNED_BASE_PAY".equals(calculationBase)
+                    && !"LOCAL_ELIGIBLE_EARNINGS".equals(calculationBase)) {
                 throw new IllegalArgumentException(
                         "Invalid percentage snapshot component base"
                 );

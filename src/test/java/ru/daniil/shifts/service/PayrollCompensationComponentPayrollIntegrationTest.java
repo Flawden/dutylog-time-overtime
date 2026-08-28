@@ -452,6 +452,122 @@ class PayrollCompensationComponentPayrollIntegrationTest {
         );
     }
 
+
+    @Test
+    void regionalLocalEligibleBaseUsesSemanticComponentPoolAndFreezesResolvedReferenceBase() {
+        prepareRegularDay();
+
+        payroll.upsertCompensationTerm(
+                owner,
+                "2026-08",
+                new PayrollCompensationTermRequest(
+                        "HOURLY",
+                        "rub",
+                        100_000L,
+                        null
+                )
+        );
+
+        components.create(
+                owner,
+                new PayrollCompensationComponentCreateRequest(
+                        "2026-08",
+                        new PayrollCompensationComponentVersionRequest(
+                                "Вредность 4%",
+                                "PERCENT_OF_BASE",
+                                "EARNED_BASE_PAY",
+                                400,
+                                null,
+                                null,
+                                "HARMFUL_CONDITIONS",
+                                true
+                        )
+                )
+        );
+
+        components.create(
+                owner,
+                new PayrollCompensationComponentCreateRequest(
+                        "2026-08",
+                        new PayrollCompensationComponentVersionRequest(
+                                "Ежемесячная премия",
+                                "FIXED_AMOUNT",
+                                null,
+                                null,
+                                100_000L,
+                                "RUB",
+                                "MONTHLY_BONUS",
+                                true
+                        )
+                )
+        );
+
+        components.create(
+                owner,
+                new PayrollCompensationComponentCreateRequest(
+                        "2026-08",
+                        new PayrollCompensationComponentVersionRequest(
+                                "Районный коэффициент 15%",
+                                "PERCENT_OF_BASE",
+                                "LOCAL_ELIGIBLE_EARNINGS",
+                                1_500,
+                                null,
+                                null,
+                                "REGIONAL_COEFFICIENT",
+                                true
+                        )
+                )
+        );
+
+        var open = payroll.period(owner, "2026-08");
+
+        assertTrue(open.preview().compensationComponentCalculationReady());
+        assertEquals(800_000L, open.preview().basePayMinor());
+        assertEquals(271_800L, open.preview().compensationComponentEarningsMinor());
+        assertEquals(1_071_800L, open.preview().totalPayMinor());
+
+        var regional = open.preview().compensationComponentLines().get(2);
+
+        assertEquals("REGIONAL_COEFFICIENT", regional.earningKind());
+        assertEquals("LOCAL_ELIGIBLE_EARNINGS", regional.calculationBase());
+        assertEquals(932_000L, regional.referenceBaseMinor());
+        assertEquals(139_800L, regional.amountMinor());
+
+        ledger.closePeriod(owner, "2026-08");
+
+        var frozen = payroll.calculate(owner, "2026-08");
+        var frozenRegional = frozen.compensationComponentLines().get(2);
+
+        assertEquals("LOCAL_ELIGIBLE_EARNINGS", frozenRegional.calculationBase());
+        assertEquals(932_000L, frozenRegional.referenceBaseMinor());
+        assertEquals(139_800L, frozenRegional.amountMinor());
+
+        var snapshot =
+                payrollSnapshots
+                        .findFirstByOwnerAndPeriodMonthOrderByRevisionDesc(
+                                owner,
+                                LocalDate.of(2026, 8, 1)
+                        )
+                        .orElseThrow();
+
+        var semantic =
+                semanticLines.findBySnapshotOrderByLineIndexAsc(snapshot);
+
+        var regionalSemantic =
+                semantic.stream()
+                        .filter(line ->
+                                "REGIONAL_COEFFICIENT".equals(
+                                        line.getEarningKind()
+                                )
+                        )
+                        .findFirst()
+                        .orElseThrow();
+
+        assertEquals(139_800L, regionalSemantic.getAmountMinor());
+        assertNull(regionalSemantic.getEarningPeriodFrom());
+        assertNull(regionalSemantic.getEarningPeriodTo());
+    }
+
     @Test
     void disabledComponentDoesNotLeakIntoMoneyOrManualAdditions() {
         prepareRegularDay();

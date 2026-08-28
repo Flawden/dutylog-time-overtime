@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -37,9 +38,43 @@ public class CompensationComponentCalculationService {
 
     public static final int BASIS_POINTS = 10_000;
 
+    /**
+     * Compatibility path for pre-v27.48 callers.
+     *
+     * LOCAL_ELIGIBLE_EARNINGS is intentionally unavailable here because the
+     * caller did not supply a complete semantic upstream pool.
+     */
     public Projection calculate(
             Context context,
             List<ComponentRule> source
+    ) {
+        return calculate(
+                context,
+                source,
+                List.of(),
+                false
+        );
+    }
+
+    /**
+     * Calculates generic components with an optional complete pool of
+     * already-known upstream semantic earnings.
+     *
+     * The new LOCAL_ELIGIBLE_EARNINGS base is deliberately deferred until all
+     * non-local generic component lines are calculated. That keeps component
+     * presentation order stable while allowing a late semantic target such as
+     * REGIONAL_COEFFICIENT to read HARMFUL / COMBINATION / bonus amounts that
+     * were produced by other generic components in the same month.
+     *
+     * v27.48 B3C1 supports LOCAL_ELIGIBLE_EARNINGS only for
+     * REGIONAL_COEFFICIENT. No other target is silently generalized.
+     */
+    public Projection calculate(
+            Context context,
+            List<ComponentRule> source,
+            List<PayrollEligibleEarningsBaseResolver.Earning>
+                    upstreamSemanticEarnings,
+            boolean upstreamSemanticEarningsComplete
     ) {
         if (context == null) {
             throw new IllegalArgumentException(
@@ -83,13 +118,59 @@ public class CompensationComponentCalculationService {
                         )
                         .toList();
 
-        List<CalculatedLine> lines =
+        boolean localEligibleBaseRequired =
+                ordered.stream()
+                        .anyMatch(rule ->
+                                rule.enabled()
+                                        && rule.calculationType()
+                                        == CalculationType.PERCENT_OF_BASE
+                                        && rule.calculationBase()
+                                        == CalculationBase.LOCAL_ELIGIBLE_EARNINGS
+                        );
+
+        List<PayrollEligibleEarningsBaseResolver.Earning> semanticPool =
+                upstreamSemanticEarnings == null
+                        ? List.of()
+                        : List.copyOf(
+                                upstreamSemanticEarnings
+                        );
+
+        if (semanticPool.stream().anyMatch(Objects::isNull)) {
+            throw new IllegalArgumentException(
+                    "Upstream semantic earnings cannot contain null"
+            );
+        }
+
+        if (localEligibleBaseRequired
+                && !upstreamSemanticEarningsComplete) {
+            throw new IllegalArgumentException(
+                    "LOCAL_ELIGIBLE_EARNINGS requires complete upstream semantic earnings"
+            );
+        }
+
+        List<PayrollEligibleEarningsBaseResolver.Earning> mutableSemanticPool =
+                new ArrayList<>(
+                        semanticPool
+                );
+
+        List<CalculatedLine> calculated =
                 new ArrayList<>();
 
-        long total = 0L;
+        List<ComponentRule> deferredLocalRules =
+                new ArrayList<>();
 
         for (ComponentRule rule : ordered) {
             if (!rule.enabled()) {
+                continue;
+            }
+
+            if (rule.calculationType()
+                    == CalculationType.PERCENT_OF_BASE
+                    && rule.calculationBase()
+                    == CalculationBase.LOCAL_ELIGIBLE_EARNINGS) {
+                deferredLocalRules.add(
+                        rule
+                );
                 continue;
             }
 
@@ -99,6 +180,66 @@ public class CompensationComponentCalculationService {
                             rule
                     );
 
+            calculated.add(
+                    line
+            );
+
+            if (localEligibleBaseRequired) {
+                if (line.earningKind() == null) {
+                    throw new IllegalArgumentException(
+                            "LOCAL_ELIGIBLE_EARNINGS cannot prove a base while another enabled component is UNCLASSIFIED"
+                    );
+                }
+
+                mutableSemanticPool.add(
+                        new PayrollEligibleEarningsBaseResolver.Earning(
+                                line.earningKind(),
+                                line.amountMinor()
+                        )
+                );
+            }
+        }
+
+        for (ComponentRule rule : deferredLocalRules) {
+            if (rule.earningKind()
+                    != PayrollEarningKind.REGIONAL_COEFFICIENT) {
+                throw new IllegalArgumentException(
+                        "LOCAL_ELIGIBLE_EARNINGS is only proven for REGIONAL_COEFFICIENT"
+                );
+            }
+
+            long referenceBase =
+                    PayrollEligibleEarningsBaseResolver
+                            .resolve(
+                                    rule.earningKind(),
+                                    mutableSemanticPool
+                            )
+                            .totalAmountMinor();
+
+            calculated.add(
+                    percentage(
+                            rule,
+                            referenceBase
+                    )
+            );
+        }
+
+        List<CalculatedLine> lines =
+                calculated.stream()
+                        .sorted(
+                                Comparator
+                                        .comparingLong(
+                                                CalculatedLine::componentId
+                                        )
+                                        .thenComparingLong(
+                                                CalculatedLine::versionId
+                                        )
+                        )
+                        .toList();
+
+        long total = 0L;
+
+        for (CalculatedLine line : lines) {
             try {
                 total =
                         Math.addExact(
@@ -111,8 +252,6 @@ public class CompensationComponentCalculationService {
                         ex
                 );
             }
-
-            lines.add(line);
         }
 
         List<CalculatedLine> immutable =
@@ -201,8 +340,23 @@ public class CompensationComponentCalculationService {
 
                         yield context.monthlySalaryMinor();
                     }
+
+                    case LOCAL_ELIGIBLE_EARNINGS ->
+                            throw new IllegalStateException(
+                                    "LOCAL_ELIGIBLE_EARNINGS must be resolved through semantic calculation path"
+                            );
                 };
 
+        return percentage(
+                rule,
+                referenceBase
+        );
+    }
+
+    private CalculatedLine percentage(
+            ComponentRule rule,
+            long referenceBase
+    ) {
         long amount =
                 percentageMoney(
                         referenceBase,

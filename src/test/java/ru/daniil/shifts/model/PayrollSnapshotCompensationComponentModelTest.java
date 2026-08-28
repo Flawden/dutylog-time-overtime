@@ -204,6 +204,48 @@ class PayrollSnapshotCompensationComponentModelTest {
         );
     }
 
+
+    @Test
+    void localEligibleEarningsBaseCanBeFrozenWithoutReinterpretingItsMoney() {
+        PayrollSnapshot snapshot =
+                snapshot(
+                        1,
+                        150_000L,
+                        FINGERPRINT
+                );
+
+        PayrollSnapshotComponentLine line =
+                new PayrollSnapshotComponentLine(
+                        snapshot,
+                        0,
+                        12L,
+                        22L,
+                        LocalDate.of(2026, 8, 1),
+                        "Районный коэффициент",
+                        PayrollEarningKind.REGIONAL_COEFFICIENT,
+                        "PERCENT_OF_BASE",
+                        "LOCAL_ELIGIBLE_EARNINGS",
+                        1_500,
+                        null,
+                        null,
+                        1_000_000L,
+                        150_000L
+                );
+
+        assertEquals(
+                "LOCAL_ELIGIBLE_EARNINGS",
+                line.getCalculationBase()
+        );
+        assertEquals(
+                1_000_000L,
+                line.getReferenceBaseMinor()
+        );
+        assertEquals(
+                150_000L,
+                line.getAmountMinor()
+        );
+    }
+
     @Test
     void invalidFrozenLineShapeFailsClosed() {
         PayrollSnapshot snapshot =

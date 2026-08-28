@@ -2751,7 +2751,7 @@ public final class Dtos {
             String calculationType,
 
             @Pattern(
-                    regexp = "(?i)NOMINAL_SALARY|EARNED_BASE_PAY",
+                    regexp = "(?i)NOMINAL_SALARY|EARNED_BASE_PAY|LOCAL_ELIGIBLE_EARNINGS",
                     message = "Некорректная расчётная база"
             )
             String calculationBase,

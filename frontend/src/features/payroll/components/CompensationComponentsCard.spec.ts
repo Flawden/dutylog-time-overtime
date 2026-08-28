@@ -115,6 +115,22 @@ describe("Generic compensation settings UI", () => {
     expect(card).toContain(
       "earningKind: earningKind.value",
     );
+
+    expect(card).toContain(
+      'value="LOCAL_ELIGIBLE_EARNINGS"',
+    );
+
+    expect(card).toContain(
+      "Допустимые начисления для этого типа Payroll",
+    );
+
+    expect(card).toContain(
+      'kind !== "REGIONAL_COEFFICIENT"',
+    );
+
+    expect(workspace).toContain(
+      'base==="LOCAL_ELIGIBLE_EARNINGS"',
+    );
   });
 
   it("uses generated operations through the payroll API and Pinia store", () => {

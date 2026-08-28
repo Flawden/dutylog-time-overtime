@@ -388,6 +388,225 @@ class CompensationComponentCalculationServiceTest {
         );
     }
 
+
+    @Test
+    void regionalLocalEligibleBaseReadsUpstreamAndEarlierSemanticComponentsWithoutChangingLineOrder() {
+        ComponentRule regional =
+                percent(
+                        1,
+                        31,
+                        "Районный 15%",
+                        PayrollEarningKind.REGIONAL_COEFFICIENT,
+                        CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
+                        1_500,
+                        true
+                );
+
+        ComponentRule harmful =
+                percent(
+                        2,
+                        32,
+                        "Вредность 4%",
+                        PayrollEarningKind.HARMFUL_CONDITIONS,
+                        CalculationBase.EARNED_BASE_PAY,
+                        400,
+                        true
+                );
+
+        ComponentRule monthly =
+                fixed(
+                        3,
+                        33,
+                        "Ежемесячная премия",
+                        PayrollEarningKind.MONTHLY_BONUS,
+                        100_000L,
+                        "RUB",
+                        true
+                );
+
+        ComponentRule combination =
+                fixed(
+                        4,
+                        34,
+                        "Совмещение",
+                        PayrollEarningKind.COMBINATION,
+                        50_000L,
+                        "RUB",
+                        true
+                );
+
+        ComponentRule oneTime =
+                fixed(
+                        5,
+                        35,
+                        "Разовая премия",
+                        PayrollEarningKind.ONE_TIME_BONUS,
+                        20_000L,
+                        "RUB",
+                        true
+                );
+
+        var result =
+                service.calculate(
+                        hourlyContext(800_000L),
+                        List.of(
+                                oneTime,
+                                regional,
+                                combination,
+                                harmful,
+                                monthly
+                        ),
+                        List.of(
+                                new PayrollEligibleEarningsBaseResolver.Earning(
+                                        PayrollEarningKind.BASE_PAY,
+                                        800_000L
+                                ),
+                                new PayrollEligibleEarningsBaseResolver.Earning(
+                                        PayrollEarningKind.NIGHT_PREMIUM,
+                                        10_000L
+                                )
+                        ),
+                        true
+                );
+
+        assertEquals(
+                List.of(1L, 2L, 3L, 4L, 5L),
+                result.lines()
+                        .stream()
+                        .map(ComponentRuleLine -> ComponentRuleLine.componentId())
+                        .toList()
+        );
+
+        var regionalLine = result.lines().get(0);
+
+        assertEquals(
+                CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
+                regionalLine.calculationBase()
+        );
+        assertEquals(
+                1_012_000L,
+                regionalLine.referenceBaseMinor()
+        );
+        assertEquals(
+                151_800L,
+                regionalLine.amountMinor()
+        );
+        assertEquals(
+                353_800L,
+                result.totalAmountMinor()
+        );
+    }
+
+    @Test
+    void localEligibleBaseFailsClosedWhenUpstreamSemanticPoolIsIncomplete() {
+        IllegalArgumentException error =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () ->
+                                service.calculate(
+                                        hourlyContext(800_000L),
+                                        List.of(
+                                                percent(
+                                                        1,
+                                                        31,
+                                                        "Районный 15%",
+                                                        PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                                        CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
+                                                        1_500,
+                                                        true
+                                                )
+                                        ),
+                                        List.of(
+                                                new PayrollEligibleEarningsBaseResolver.Earning(
+                                                        PayrollEarningKind.BASE_PAY,
+                                                        800_000L
+                                                )
+                                        ),
+                                        false
+                                )
+                );
+
+        assertTrue(
+                error.getMessage().contains("complete upstream semantic earnings")
+        );
+    }
+
+    @Test
+    void localEligibleBaseFailsClosedWhenSiblingComponentIsUnclassified() {
+        IllegalArgumentException error =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () ->
+                                service.calculate(
+                                        hourlyContext(800_000L),
+                                        List.of(
+                                                fixed(
+                                                        2,
+                                                        32,
+                                                        "Неизвестная выплата",
+                                                        10_000L,
+                                                        "RUB",
+                                                        true
+                                                ),
+                                                percent(
+                                                        1,
+                                                        31,
+                                                        "Районный 15%",
+                                                        PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                                        CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
+                                                        1_500,
+                                                        true
+                                                )
+                                        ),
+                                        List.of(
+                                                new PayrollEligibleEarningsBaseResolver.Earning(
+                                                        PayrollEarningKind.BASE_PAY,
+                                                        800_000L
+                                                )
+                                        ),
+                                        true
+                                )
+                );
+
+        assertTrue(
+                error.getMessage().contains("UNCLASSIFIED")
+        );
+    }
+
+    @Test
+    void localEligibleBaseDoesNotGeneralizeBeyondRegionalCoefficient() {
+        IllegalArgumentException error =
+                assertThrows(
+                        IllegalArgumentException.class,
+                        () ->
+                                service.calculate(
+                                        hourlyContext(800_000L),
+                                        List.of(
+                                                percent(
+                                                        1,
+                                                        31,
+                                                        "Премия 40%",
+                                                        PayrollEarningKind.MONTHLY_BONUS,
+                                                        CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
+                                                        4_000,
+                                                        true
+                                                )
+                                        ),
+                                        List.of(
+                                                new PayrollEligibleEarningsBaseResolver.Earning(
+                                                        PayrollEarningKind.BASE_PAY,
+                                                        800_000L
+                                                )
+                                        ),
+                                        true
+                                )
+                );
+
+        assertTrue(
+                error.getMessage().contains("only proven for REGIONAL_COEFFICIENT")
+        );
+    }
+
     private Context hourlyContext(
             long earnedBase
     ) {
@@ -396,6 +615,34 @@ class CompensationComponentCalculationServiceTest {
                 "HOURLY",
                 null,
                 earnedBase
+        );
+    }
+
+    private ComponentRule fixed(
+            long componentId,
+            long versionId,
+            String name,
+            PayrollEarningKind earningKind,
+            long amount,
+            String currency,
+            boolean enabled
+    ) {
+        return new ComponentRule(
+                componentId,
+                versionId,
+                LocalDate.of(
+                        2026,
+                        9,
+                        1
+                ),
+                name,
+                earningKind,
+                CalculationType.FIXED_AMOUNT,
+                null,
+                null,
+                amount,
+                currency,
+                enabled
         );
     }
 

@@ -39,7 +39,16 @@ public class CompensationComponentVersion {
 
     public enum CalculationBase {
         NOMINAL_SALARY,
-        EARNED_BASE_PAY
+        EARNED_BASE_PAY,
+        /**
+         * Explicit machine-owned eligible-earnings base resolved from
+         * PayrollEarningBaseEligibility for the component's earningKind.
+         *
+         * v27.48.0 initially wires this base only for
+         * REGIONAL_COEFFICIENT. Other targets fail closed until their own
+         * production authority is proven.
+         */
+        LOCAL_ELIGIBLE_EARNINGS
     }
 
     @Id
