@@ -139,6 +139,8 @@ class PayrollCompensationComponentOpenApiWiringTest {
         for (String code : new String[] {
                 "PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH",
                 "PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE",
+                "PAYROLL_COMP_COMPONENT_LOCAL_BASE_INCOMPLETE",
+                "PAYROLL_COMP_COMPONENT_LOCAL_BASE_UNSUPPORTED",
                 "PAYROLL_COMP_COMPONENT_INVALID"
         }) {
             assertTrue(
