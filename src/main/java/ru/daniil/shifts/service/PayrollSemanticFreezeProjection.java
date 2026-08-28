@@ -1,7 +1,9 @@
 package ru.daniil.shifts.service;
 
 import ru.daniil.shifts.model.PayrollEarningKind;
+import ru.daniil.shifts.model.PayrollQualifiedQuantity;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -11,6 +13,12 @@ import java.util.Objects;
  *
  * 8A3D1C deliberately classifies only money whose machine-owned identity is
  * proven by the current production model.
+ *
+ * 8A4E2A adds a compatibility-safe source-line provenance boundary. Callers
+ * that can prove split earning/coverage facts may provide detailed BASE_PAY,
+ * NIGHT_PREMIUM or generic-component lines. Aggregate-only callers keep the
+ * old behavior and therefore keep null quantity/period provenance instead of
+ * inventing it from the posting month.
  *
  * Proven:
  * - native basePayMinor -> BASE_PAY;
@@ -22,7 +30,8 @@ import java.util.Objects;
  * - unresolved ordinary premium money;
  * - overtime settlement money;
  * - generic compensation component lines with NULL earningKind;
- * - manual ADDITION adjustments.
+ * - manual ADDITION adjustments;
+ * - earning/coverage periods from posting month or effective-dated config.
  *
  * Deductions are not earnings and therefore do not participate in historical
  * semantic earning completeness.
@@ -43,24 +52,19 @@ public final class PayrollSemanticFreezeProjection {
         List<SemanticLine> classified =
                 new ArrayList<>();
 
-        if (source.basePayMinor() > 0L) {
-            classified.add(
-                    new SemanticLine(
-                            PayrollEarningKind.BASE_PAY,
-                            source.basePayMinor()
-                    )
-            );
-        }
+        appendNativeLines(
+                classified,
+                PayrollEarningKind.BASE_PAY,
+                source.basePayMinor(),
+                source.basePayLines()
+        );
 
-        if (source.ordinaryNightPremiumPayMinor()
-                > 0L) {
-            classified.add(
-                    new SemanticLine(
-                            PayrollEarningKind.NIGHT_PREMIUM,
-                            source.ordinaryNightPremiumPayMinor()
-                    )
-            );
-        }
+        appendNativeLines(
+                classified,
+                PayrollEarningKind.NIGHT_PREMIUM,
+                source.ordinaryNightPremiumPayMinor(),
+                source.ordinaryNightPremiumLines()
+        );
 
         long classifiedAmount =
                 Math.addExact(
@@ -111,10 +115,7 @@ public final class PayrollSemanticFreezeProjection {
 
                 } else {
                     classified.add(
-                            new SemanticLine(
-                                    line.earningKind(),
-                                    line.amountMinor()
-                            )
+                            line.toSemanticLine()
                     );
 
                     classifiedAmount =
@@ -140,6 +141,57 @@ public final class PayrollSemanticFreezeProjection {
         );
     }
 
+    private static void appendNativeLines(
+            List<SemanticLine> target,
+            PayrollEarningKind requiredKind,
+            long aggregateAmountMinor,
+            List<SemanticLine> detailedLines
+    ) {
+        if (detailedLines == null) {
+            if (aggregateAmountMinor > 0L) {
+                target.add(
+                        new SemanticLine(
+                                requiredKind,
+                                aggregateAmountMinor
+                        )
+                );
+            }
+
+            return;
+        }
+
+        long detailedAmount = 0L;
+
+        for (SemanticLine line : detailedLines) {
+            if (line.earningKind()
+                    != requiredKind) {
+                throw new IllegalArgumentException(
+                        "Detailed semantic source line kind mismatch for "
+                                + requiredKind
+                );
+            }
+
+            detailedAmount =
+                    Math.addExact(
+                            detailedAmount,
+                            line.amountMinor()
+                    );
+        }
+
+        if (detailedAmount
+                != aggregateAmountMinor) {
+            throw new IllegalArgumentException(
+                    "Detailed semantic source line sum does not match "
+                            + requiredKind
+                            + " aggregate"
+            );
+        }
+
+        target.addAll(
+                detailedLines
+        );
+    }
+
     public record Source(
             long basePayMinor,
             long ordinaryPremiumPayMinor,
@@ -147,8 +199,37 @@ public final class PayrollSemanticFreezeProjection {
             long settlementPayMinor,
             long compensationComponentEarningsMinor,
             List<ComponentLine> compensationComponentLines,
-            long additionsMinor
+            long additionsMinor,
+            List<SemanticLine> basePayLines,
+            List<SemanticLine> ordinaryNightPremiumLines
     ) {
+        /**
+         * Compatibility constructor for the pre-8A4E2A production path.
+         *
+         * Null detailed-line lists intentionally mean "aggregate identity only".
+         */
+        public Source(
+                long basePayMinor,
+                long ordinaryPremiumPayMinor,
+                long ordinaryNightPremiumPayMinor,
+                long settlementPayMinor,
+                long compensationComponentEarningsMinor,
+                List<ComponentLine> compensationComponentLines,
+                long additionsMinor
+        ) {
+            this(
+                    basePayMinor,
+                    ordinaryPremiumPayMinor,
+                    ordinaryNightPremiumPayMinor,
+                    settlementPayMinor,
+                    compensationComponentEarningsMinor,
+                    compensationComponentLines,
+                    additionsMinor,
+                    null,
+                    null
+            );
+        }
+
         public Source(
                 long basePayMinor,
                 long ordinaryPremiumPayMinor,
@@ -164,7 +245,9 @@ public final class PayrollSemanticFreezeProjection {
                     settlementPayMinor,
                     compensationComponentEarningsMinor,
                     null,
-                    additionsMinor
+                    additionsMinor,
+                    null,
+                    null
             );
         }
 
@@ -182,7 +265,9 @@ public final class PayrollSemanticFreezeProjection {
                     settlementPayMinor,
                     compensationComponentEarningsMinor,
                     null,
-                    additionsMinor
+                    additionsMinor,
+                    null,
+                    null
             );
         }
 
@@ -203,6 +288,22 @@ public final class PayrollSemanticFreezeProjection {
                 throw new IllegalArgumentException(
                         "Proven NIGHT premium cannot exceed ordinary premium aggregate"
                 );
+            }
+
+            if (basePayLines != null) {
+                basePayLines =
+                        copySemanticLines(
+                                basePayLines,
+                                "Detailed BASE_PAY semantic line is required"
+                        );
+            }
+
+            if (ordinaryNightPremiumLines != null) {
+                ordinaryNightPremiumLines =
+                        copySemanticLines(
+                                ordinaryNightPremiumLines,
+                                "Detailed NIGHT semantic line is required"
+                        );
             }
 
             if (compensationComponentLines != null) {
@@ -247,6 +348,25 @@ public final class PayrollSemanticFreezeProjection {
             }
         }
 
+        private static List<SemanticLine> copySemanticLines(
+                List<SemanticLine> source,
+                String nullMessage
+        ) {
+            List<SemanticLine> copied =
+                    List.copyOf(
+                            source
+                    );
+
+            if (copied.stream()
+                    .anyMatch(Objects::isNull)) {
+                throw new IllegalArgumentException(
+                        nullMessage
+                );
+            }
+
+            return copied;
+        }
+
         public long totalEarningSourceAmountMinor() {
             long total =
                     basePayMinor;
@@ -279,8 +399,30 @@ public final class PayrollSemanticFreezeProjection {
     public record ComponentLine(
             int lineIndex,
             PayrollEarningKind earningKind,
-            long amountMinor
+            long amountMinor,
+            PayrollQualifiedQuantity qualifiedQuantity,
+            LocalDate earningPeriodFrom,
+            LocalDate earningPeriodTo,
+            LocalDate coverageFrom,
+            LocalDate coverageTo
     ) {
+        public ComponentLine(
+                int lineIndex,
+                PayrollEarningKind earningKind,
+                long amountMinor
+        ) {
+            this(
+                    lineIndex,
+                    earningKind,
+                    amountMinor,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+        }
+
         public ComponentLine {
             if (lineIndex < 0
                     || amountMinor < 0L) {
@@ -296,13 +438,66 @@ public final class PayrollSemanticFreezeProjection {
                         "Semantic component line kind is not generic-component-owned"
                 );
             }
+
+            requireOrderedPair(
+                    earningPeriodFrom,
+                    earningPeriodTo,
+                    "earning"
+            );
+
+            requireOrderedPair(
+                    coverageFrom,
+                    coverageTo,
+                    "coverage"
+            );
+
+            if (earningKind == null
+                    && (qualifiedQuantity != null
+                    || earningPeriodFrom != null
+                    || coverageFrom != null)) {
+                throw new IllegalArgumentException(
+                        "Unclassified component money cannot carry semantic provenance"
+                );
+            }
+        }
+
+        private SemanticLine toSemanticLine() {
+            return new SemanticLine(
+                    earningKind,
+                    amountMinor,
+                    qualifiedQuantity,
+                    earningPeriodFrom,
+                    earningPeriodTo,
+                    coverageFrom,
+                    coverageTo
+            );
         }
     }
 
     public record SemanticLine(
             PayrollEarningKind earningKind,
-            long amountMinor
+            long amountMinor,
+            PayrollQualifiedQuantity qualifiedQuantity,
+            LocalDate earningPeriodFrom,
+            LocalDate earningPeriodTo,
+            LocalDate coverageFrom,
+            LocalDate coverageTo
     ) {
+        public SemanticLine(
+                PayrollEarningKind earningKind,
+                long amountMinor
+        ) {
+            this(
+                    earningKind,
+                    amountMinor,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null
+            );
+        }
+
         public SemanticLine {
             Objects.requireNonNull(
                     earningKind,
@@ -314,6 +509,37 @@ public final class PayrollSemanticFreezeProjection {
                         "Frozen semantic earning line must contain positive money"
                 );
             }
+
+            requireOrderedPair(
+                    earningPeriodFrom,
+                    earningPeriodTo,
+                    "earning"
+            );
+
+            requireOrderedPair(
+                    coverageFrom,
+                    coverageTo,
+                    "coverage"
+            );
+        }
+    }
+
+    private static void requireOrderedPair(
+            LocalDate from,
+            LocalDate to,
+            String label
+    ) {
+        if ((from == null)
+                != (to == null)
+                || (from != null
+                && to.isBefore(
+                        from
+                ))) {
+            throw new IllegalArgumentException(
+                    "Semantic "
+                            + label
+                            + " period is invalid"
+            );
         }
     }
 

@@ -2,6 +2,10 @@ package ru.daniil.shifts.service;
 
 import org.junit.jupiter.api.Test;
 import ru.daniil.shifts.model.PayrollEarningKind;
+import ru.daniil.shifts.model.PayrollQualifiedQuantity;
+
+import java.time.LocalDate;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -321,5 +325,211 @@ class PayrollSemanticFreezeProjectionTest {
                         )
         );
     }
+
+    @Test
+    void detailedNativeLinesPreserveSplitSourceProvenanceWithoutChangingMoney() {
+        var first =
+                new PayrollSemanticFreezeProjection.SemanticLine(
+                        PayrollEarningKind.BASE_PAY,
+                        2_000L,
+                        PayrollQualifiedQuantity.minutes(
+                                4_800L
+                        ),
+                        LocalDate.of(
+                                2026,
+                                3,
+                                1
+                        ),
+                        LocalDate.of(
+                                2026,
+                                3,
+                                10
+                        ),
+                        null,
+                        null
+                );
+
+        var second =
+                new PayrollSemanticFreezeProjection.SemanticLine(
+                        PayrollEarningKind.BASE_PAY,
+                        4_000L,
+                        PayrollQualifiedQuantity.minutes(
+                                9_600L
+                        ),
+                        LocalDate.of(
+                                2026,
+                                3,
+                                14
+                        ),
+                        LocalDate.of(
+                                2026,
+                                3,
+                                31
+                        ),
+                        null,
+                        null
+                );
+
+        var result =
+                PayrollSemanticFreezeProjection.project(
+                        new PayrollSemanticFreezeProjection.Source(
+                                6_000L,
+                                0L,
+                                0L,
+                                0L,
+                                0L,
+                                null,
+                                0L,
+                                List.of(
+                                        first,
+                                        second
+                                ),
+                                null
+                        )
+                );
+
+        assertTrue(
+                result.complete()
+        );
+
+        assertEquals(
+                6_000L,
+                result.classifiedAmountMinor()
+        );
+
+        assertEquals(
+                List.of(
+                        first,
+                        second
+                ),
+                result.classifiedLines()
+        );
+
+        assertEquals(
+                LocalDate.of(
+                        2026,
+                        3,
+                        14
+                ),
+                result.classifiedLines()
+                        .get(1)
+                        .earningPeriodFrom()
+        );
+    }
+
+    @Test
+    void detailedNativeLinesMustMatchOwnedKindAndAggregateExactly() {
+        var wrongKind =
+                new PayrollSemanticFreezeProjection.SemanticLine(
+                        PayrollEarningKind.NIGHT_PREMIUM,
+                        1_000L
+                );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> PayrollSemanticFreezeProjection.project(
+                        new PayrollSemanticFreezeProjection.Source(
+                                1_000L,
+                                0L,
+                                0L,
+                                0L,
+                                0L,
+                                null,
+                                0L,
+                                List.of(
+                                        wrongKind
+                                ),
+                                null
+                        )
+                )
+        );
+
+        var incompleteBase =
+                new PayrollSemanticFreezeProjection.SemanticLine(
+                        PayrollEarningKind.BASE_PAY,
+                        999L
+                );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> PayrollSemanticFreezeProjection.project(
+                        new PayrollSemanticFreezeProjection.Source(
+                                1_000L,
+                                0L,
+                                0L,
+                                0L,
+                                0L,
+                                null,
+                                0L,
+                                List.of(
+                                        incompleteBase
+                                ),
+                                null
+                        )
+                )
+        );
+    }
+
+    @Test
+    void genericComponentProvenanceSurvivesSemanticProjection() {
+        var result =
+                PayrollSemanticFreezeProjection.project(
+                        new PayrollSemanticFreezeProjection.Source(
+                                0L,
+                                0L,
+                                0L,
+                                0L,
+                                500L,
+                                List.of(
+                                        new PayrollSemanticFreezeProjection.ComponentLine(
+                                                0,
+                                                PayrollEarningKind.COMBINATION,
+                                                500L,
+                                                PayrollQualifiedQuantity.minutes(
+                                                        1_200L
+                                                ),
+                                                LocalDate.of(
+                                                        2026,
+                                                        6,
+                                                        1
+                                                ),
+                                                LocalDate.of(
+                                                        2026,
+                                                        6,
+                                                        15
+                                                ),
+                                                null,
+                                                null
+                                        )
+                                ),
+                                0L
+                        )
+                );
+
+        var line =
+                result.classifiedLines()
+                        .get(0);
+
+        assertEquals(
+                PayrollEarningKind.COMBINATION,
+                line.earningKind()
+        );
+
+        assertEquals(
+                1_200L,
+                line.qualifiedQuantity()
+                        .value()
+        );
+
+        assertEquals(
+                LocalDate.of(
+                        2026,
+                        6,
+                        15
+                ),
+                line.earningPeriodTo()
+        );
+    }
+
 
 }

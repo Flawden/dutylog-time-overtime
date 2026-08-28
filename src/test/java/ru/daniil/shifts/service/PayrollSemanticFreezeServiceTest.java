@@ -3,6 +3,10 @@ package ru.daniil.shifts.service;
 import org.junit.jupiter.api.Test;
 import ru.daniil.shifts.model.PayrollEarningKind;
 import ru.daniil.shifts.model.PayrollSnapshot;
+import ru.daniil.shifts.model.PayrollQualifiedQuantity;
+
+import java.time.LocalDate;
+import java.util.List;
 import ru.daniil.shifts.repo.PayrollSnapshotEarningLineRepository;
 import ru.daniil.shifts.repo.PayrollSnapshotEarningManifestRepository;
 
@@ -201,4 +205,92 @@ class PayrollSemanticFreezeServiceTest {
                         result.manifest()
                 );
     }
+    @Test
+    void freezePersistsExplicitSourceLineQuantityAndPeriods() {
+        var result =
+                service.freeze(
+                        snapshot,
+                        new PayrollSemanticFreezeProjection.Source(
+                                2_000L,
+                                0L,
+                                0L,
+                                0L,
+                                0L,
+                                null,
+                                0L,
+                                List.of(
+                                        new PayrollSemanticFreezeProjection.SemanticLine(
+                                                PayrollEarningKind.BASE_PAY,
+                                                2_000L,
+                                                PayrollQualifiedQuantity.minutes(
+                                                        4_800L
+                                                ),
+                                                LocalDate.of(
+                                                        2026,
+                                                        3,
+                                                        1
+                                                ),
+                                                LocalDate.of(
+                                                        2026,
+                                                        3,
+                                                        10
+                                                ),
+                                                LocalDate.of(
+                                                        2026,
+                                                        3,
+                                                        1
+                                                ),
+                                                LocalDate.of(
+                                                        2026,
+                                                        3,
+                                                        10
+                                                )
+                                        )
+                                ),
+                                null
+                        )
+                );
+
+        var frozen =
+                result.lines()
+                        .get(0);
+
+        assertEquals(
+                4_800L,
+                frozen.getQualifiedQuantityValue()
+        );
+
+        assertEquals(
+                "MINUTES",
+                frozen.getQualifiedQuantityUnit()
+        );
+
+        assertEquals(
+                LocalDate.of(
+                        2026,
+                        3,
+                        1
+                ),
+                frozen.getEarningPeriodFrom()
+        );
+
+        assertEquals(
+                LocalDate.of(
+                        2026,
+                        3,
+                        10
+                ),
+                frozen.getCoverageTo()
+        );
+
+        assertEquals(
+                PayrollSemanticEarningFingerprint.calculate(
+                        result.lines()
+                ),
+                result.manifest()
+                        .getFingerprint()
+        );
+    }
+
+
 }

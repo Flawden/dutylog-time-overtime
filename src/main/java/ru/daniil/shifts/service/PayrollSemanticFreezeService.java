@@ -84,11 +84,11 @@ public class PayrollSemanticFreezeService {
                             index,
                             sourceLine.earningKind(),
                             sourceLine.amountMinor(),
-                            null,
-                            null,
-                            null,
-                            null,
-                            null
+                            sourceLine.qualifiedQuantity(),
+                            sourceLine.earningPeriodFrom(),
+                            sourceLine.earningPeriodTo(),
+                            sourceLine.coverageFrom(),
+                            sourceLine.coverageTo()
                     )
             );
         }

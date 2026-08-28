@@ -4967,10 +4967,10 @@ contains deploy/scripts/remote-deploy.sh 'Application deployment succeeded, but 
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1189" ]]; then
-  ok "test method baseline: 1189"
+if [[ "$TEST_METHODS" == "1193" ]]; then
+  ok "test method baseline: 1193"
 else
-  fail "expected 1189 @Test methods, found $TEST_METHODS"
+  fail "expected 1193 @Test methods, found $TEST_METHODS"
 fi
 if [[ "$TEST_CLASSES" == "248" ]]; then
   ok "test class baseline: 248"
