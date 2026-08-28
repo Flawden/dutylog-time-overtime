@@ -93,7 +93,12 @@ class PayrollOrdinaryPremiumImmutableWiringContractTest {
                 "semanticBasePayLines",
                 "basePaySemanticProvenance.lines(",
                 "preview.salaryCoveredMinutes()",
-                "semanticBasePayLines,"
+                "semanticBasePayLines,",
+                "PayrollCompensationComponentSemanticProvenance",
+                "configureCompensationComponentSemanticProvenance",
+                "componentSemanticProvenance.lines(",
+                "frozenComponentLines,",
+                "semanticBasePayLines"
         }) {
             assertTrue(
                     payroll.contains(marker),

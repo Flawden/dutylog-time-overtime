@@ -225,7 +225,7 @@ public class CompensationComponentCalculationService {
         );
     }
 
-    private long percentageMoney(
+    static long percentageMoney(
             long baseMinor,
             int rateBps
     ) {

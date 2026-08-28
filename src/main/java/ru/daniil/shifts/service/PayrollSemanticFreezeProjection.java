@@ -16,9 +16,11 @@ import java.util.Objects;
  *
  * 8A4E2A adds a compatibility-safe source-line provenance boundary. Callers
  * that can prove split earning/coverage facts may provide detailed BASE_PAY,
- * NIGHT_PREMIUM or generic-component lines. Aggregate-only callers keep the
- * old behavior and therefore keep null quantity/period provenance instead of
- * inventing it from the posting month.
+ * NIGHT_PREMIUM or generic-component lines. 8A4E2B3A also permits one frozen
+ * generic component aggregate to expand into multiple exact semantic source
+ * lines when a dedicated formula-provenance adapter proves that split.
+ * Aggregate-only callers keep the old behavior and therefore keep null
+ * quantity/period provenance instead of inventing it from the posting month.
  *
  * Proven:
  * - native basePayMinor -> BASE_PAY;
@@ -114,8 +116,8 @@ public final class PayrollSemanticFreezeProjection {
                             );
 
                 } else {
-                    classified.add(
-                            line.toSemanticLine()
+                    classified.addAll(
+                            line.toSemanticLines()
                     );
 
                     classifiedAmount =
@@ -404,7 +406,8 @@ public final class PayrollSemanticFreezeProjection {
             LocalDate earningPeriodFrom,
             LocalDate earningPeriodTo,
             LocalDate coverageFrom,
-            LocalDate coverageTo
+            LocalDate coverageTo,
+            List<SemanticLine> detailedLines
     ) {
         public ComponentLine(
                 int lineIndex,
@@ -419,6 +422,34 @@ public final class PayrollSemanticFreezeProjection {
                     null,
                     null,
                     null,
+                    null,
+                    null
+            );
+        }
+
+        /**
+         * Compatibility constructor for the pre-8A4E2B3A single-line
+         * generic-component provenance contract.
+         */
+        public ComponentLine(
+                int lineIndex,
+                PayrollEarningKind earningKind,
+                long amountMinor,
+                PayrollQualifiedQuantity qualifiedQuantity,
+                LocalDate earningPeriodFrom,
+                LocalDate earningPeriodTo,
+                LocalDate coverageFrom,
+                LocalDate coverageTo
+        ) {
+            this(
+                    lineIndex,
+                    earningKind,
+                    amountMinor,
+                    qualifiedQuantity,
+                    earningPeriodFrom,
+                    earningPeriodTo,
+                    coverageFrom,
+                    coverageTo,
                     null
             );
         }
@@ -451,25 +482,83 @@ public final class PayrollSemanticFreezeProjection {
                     "coverage"
             );
 
+            if (detailedLines != null) {
+                detailedLines =
+                        List.copyOf(
+                                detailedLines
+                        );
+
+                if (detailedLines.isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "Detailed component provenance cannot be empty"
+                    );
+                }
+
+                if (qualifiedQuantity != null
+                        || earningPeriodFrom != null
+                        || earningPeriodTo != null
+                        || coverageFrom != null
+                        || coverageTo != null) {
+                    throw new IllegalArgumentException(
+                            "Component aggregate and detailed provenance cannot coexist"
+                    );
+                }
+
+                long detailedAmount = 0L;
+
+                for (SemanticLine line : detailedLines) {
+                    Objects.requireNonNull(
+                            line,
+                            "Detailed component semantic line is required"
+                    );
+
+                    if (line.earningKind()
+                            != earningKind) {
+                        throw new IllegalArgumentException(
+                                "Detailed component semantic kind mismatch"
+                        );
+                    }
+
+                    detailedAmount =
+                            Math.addExact(
+                                    detailedAmount,
+                                    line.amountMinor()
+                            );
+                }
+
+                if (detailedAmount != amountMinor) {
+                    throw new IllegalArgumentException(
+                            "Detailed component semantic line sum does not match aggregate"
+                    );
+                }
+            }
+
             if (earningKind == null
                     && (qualifiedQuantity != null
                     || earningPeriodFrom != null
-                    || coverageFrom != null)) {
+                    || coverageFrom != null
+                    || detailedLines != null)) {
                 throw new IllegalArgumentException(
                         "Unclassified component money cannot carry semantic provenance"
                 );
             }
         }
 
-        private SemanticLine toSemanticLine() {
-            return new SemanticLine(
-                    earningKind,
-                    amountMinor,
-                    qualifiedQuantity,
-                    earningPeriodFrom,
-                    earningPeriodTo,
-                    coverageFrom,
-                    coverageTo
+        private List<SemanticLine> toSemanticLines() {
+            if (detailedLines != null) {
+                return detailedLines;
+            }
+
+            return List.of(
+                    new SemanticLine(
+                            earningKind,
+                            amountMinor,
+                            qualifiedQuantity,
+                            earningPeriodFrom,
+                            earningPeriodTo,
+                            coverageFrom,
+                            coverageTo
+                    )
             );
         }
     }

@@ -532,4 +532,104 @@ class PayrollSemanticFreezeProjectionTest {
     }
 
 
+    @Test
+    void detailedGenericComponentProvenanceExpandsWithoutChangingAggregateMoney() {
+        var detailed = List.of(
+                new PayrollSemanticFreezeProjection.SemanticLine(
+                        PayrollEarningKind.HARMFUL_CONDITIONS,
+                        4_000L,
+                        null,
+                        LocalDate.of(2026, 3, 1),
+                        LocalDate.of(2026, 3, 10),
+                        null,
+                        null
+                ),
+                new PayrollSemanticFreezeProjection.SemanticLine(
+                        PayrollEarningKind.HARMFUL_CONDITIONS,
+                        6_000L,
+                        null,
+                        LocalDate.of(2026, 3, 11),
+                        LocalDate.of(2026, 3, 31),
+                        null,
+                        null
+                )
+        );
+
+        var result = PayrollSemanticFreezeProjection.project(
+                new PayrollSemanticFreezeProjection.Source(
+                        0L,
+                        0L,
+                        0L,
+                        0L,
+                        10_000L,
+                        List.of(
+                                new PayrollSemanticFreezeProjection.ComponentLine(
+                                        0,
+                                        PayrollEarningKind.HARMFUL_CONDITIONS,
+                                        10_000L,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        null,
+                                        detailed
+                                )
+                        ),
+                        0L
+                )
+        );
+
+        assertEquals(2, result.classifiedLines().size());
+        assertEquals(10_000L, result.classifiedAmountMinor());
+        assertEquals(0L, result.unclassifiedAmountMinor());
+        assertTrue(result.complete());
+    }
+
+    @Test
+    void detailedGenericComponentProvenanceMustMatchKindAndAggregateMoney() {
+        var wrongAmount = List.of(
+                new PayrollSemanticFreezeProjection.SemanticLine(
+                        PayrollEarningKind.HARMFUL_CONDITIONS,
+                        9_999L
+                )
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new PayrollSemanticFreezeProjection.ComponentLine(
+                        0,
+                        PayrollEarningKind.HARMFUL_CONDITIONS,
+                        10_000L,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        wrongAmount
+                )
+        );
+
+        var wrongKind = List.of(
+                new PayrollSemanticFreezeProjection.SemanticLine(
+                        PayrollEarningKind.COMBINATION,
+                        10_000L
+                )
+        );
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new PayrollSemanticFreezeProjection.ComponentLine(
+                        0,
+                        PayrollEarningKind.HARMFUL_CONDITIONS,
+                        10_000L,
+                        null,
+                        null,
+                        null,
+                        null,
+                        null,
+                        wrongKind
+                )
+        );
+    }
+
 }

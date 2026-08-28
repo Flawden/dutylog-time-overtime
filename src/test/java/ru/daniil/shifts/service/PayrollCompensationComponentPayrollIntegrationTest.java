@@ -317,16 +317,30 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                         .getQualifiedQuantityUnit()
         );
 
-        assertNull(
+        assertEquals(
+                LocalDate.of(2026, 8, 3),
                 firstSemanticLines
                         .get(1)
                         .getEarningPeriodFrom()
+        );
+
+        assertEquals(
+                LocalDate.of(2026, 8, 3),
+                firstSemanticLines
+                        .get(1)
+                        .getEarningPeriodTo()
         );
 
         assertNull(
                 firstSemanticLines
                         .get(1)
                         .getCoverageFrom()
+        );
+
+        assertNull(
+                firstSemanticLines
+                        .get(1)
+                        .getCoverageTo()
         );
 
         String firstHash =

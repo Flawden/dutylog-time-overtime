@@ -69,6 +69,14 @@ public class PayrollService {
      */
     private PayrollBasePaySemanticProvenance basePaySemanticProvenance;
 
+    /*
+     * 8A4E2B3A remains setter-injected for historical direct-construction
+     * compatibility. Real Spring runtime requires it and can therefore expand
+     * only machine-proven generic component source lines.
+     */
+    private PayrollCompensationComponentSemanticProvenance
+            componentSemanticProvenance;
+
     public PayrollService(PayrollSettingsRepository settings,
                           CompensationTermRepository compensationTerms,
                           PayrollAdjustmentRepository adjustments,
@@ -110,6 +118,15 @@ public class PayrollService {
     ) {
         this.basePaySemanticProvenance =
                 basePaySemanticProvenance;
+    }
+
+    @Autowired
+    void configureCompensationComponentSemanticProvenance(
+            PayrollCompensationComponentSemanticProvenance
+                    componentSemanticProvenance
+    ) {
+        this.componentSemanticProvenance =
+                componentSemanticProvenance;
     }
 
     @Transactional
@@ -327,47 +344,6 @@ public class PayrollService {
             );
         }
 
-        List<PayrollSemanticFreezeProjection.ComponentLine>
-                semanticComponentLines =
-                        null;
-
-        if (frozenComponentLines != null) {
-            java.util.ArrayList<
-                    PayrollSemanticFreezeProjection.ComponentLine
-                    > mapped =
-                    new java.util.ArrayList<>();
-
-            for (int index = 0;
-                    index < frozenComponentLines.size();
-                    index++) {
-
-                PayrollSnapshotComponentLine line =
-                        frozenComponentLines.get(
-                                index
-                        );
-
-                if (line == null
-                        || line.getLineIndex() != index) {
-                    throw new IllegalStateException(
-                            "Frozen compensation component semantic order is invalid"
-                    );
-                }
-
-                mapped.add(
-                        new PayrollSemanticFreezeProjection.ComponentLine(
-                                index,
-                                line.getEarningKind(),
-                                line.getAmountMinor()
-                        )
-                );
-            }
-
-            semanticComponentLines =
-                    List.copyOf(
-                            mapped
-                    );
-        }
-
         List<PayrollSemanticFreezeProjection.SemanticLine>
                 semanticBasePayLines =
                         basePaySemanticProvenance == null
@@ -381,6 +357,56 @@ public class PayrollService {
                                         preview.salaryCoveredMinutes(),
                                         preview.basePayMinor()
                                 );
+
+        List<PayrollSemanticFreezeProjection.ComponentLine>
+                semanticComponentLines;
+
+        if (componentSemanticProvenance != null) {
+            semanticComponentLines =
+                    componentSemanticProvenance.lines(
+                            frozenComponentLines,
+                            semanticBasePayLines
+                    );
+        } else {
+            /*
+             * Compatibility path for historical direct-construction tests:
+             * preserve the pre-B3A aggregate component semantic freeze.
+             */
+            semanticComponentLines = null;
+
+            if (frozenComponentLines != null) {
+                java.util.ArrayList<
+                        PayrollSemanticFreezeProjection.ComponentLine
+                        > mapped =
+                        new java.util.ArrayList<>();
+
+                for (int index = 0;
+                        index < frozenComponentLines.size();
+                        index++) {
+
+                    PayrollSnapshotComponentLine line =
+                            frozenComponentLines.get(index);
+
+                    if (line == null
+                            || line.getLineIndex() != index) {
+                        throw new IllegalStateException(
+                                "Frozen compensation component semantic order is invalid"
+                        );
+                    }
+
+                    mapped.add(
+                            new PayrollSemanticFreezeProjection.ComponentLine(
+                                    index,
+                                    line.getEarningKind(),
+                                    line.getAmountMinor()
+                            )
+                    );
+                }
+
+                semanticComponentLines =
+                        List.copyOf(mapped);
+            }
+        }
 
         List<PayrollSemanticFreezeProjection.SemanticLine>
                 semanticNightLines =
