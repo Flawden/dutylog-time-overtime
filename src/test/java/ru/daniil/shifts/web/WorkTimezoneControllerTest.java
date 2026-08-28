@@ -138,13 +138,24 @@ class WorkTimezoneControllerTest {
         LocalDate today =
                 userTimeService.workToday(owner);
 
+        /*
+         * Keep the already-current term strictly before both possible local
+         * dates around a cross-zone midnight. Using "today" here makes the
+         * fixture depend on wall-clock execution time: Yekaterinburg can
+         * already be on the next date while Moscow is still on the previous
+         * one, which turns the subsequently inserted middle term into the
+         * current window.
+         */
+        LocalDate currentTermDate =
+                today.minusDays(1);
+
         putTimezone(
-                today,
+                currentTermDate,
                 "Europe/Moscow"
         );
 
         LocalDate historical =
-                today.minusDays(10);
+                currentTermDate.minusDays(10);
 
         mvc.perform(
                         put("/api/v1/time/work-context")
@@ -173,7 +184,7 @@ class WorkTimezoneControllerTest {
                 )
                 .andExpect(
                         jsonPath("$.terms[2].effectiveFrom")
-                                .value(today.toString())
+                                .value(currentTermDate.toString())
                 )
                 .andExpect(
                         jsonPath("$.terms[2].timezone")
