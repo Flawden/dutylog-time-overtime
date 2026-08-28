@@ -62,6 +62,13 @@ public class PayrollService {
      */
     private PayrollSemanticFreezeService semanticEarningFreeze;
 
+    /*
+     * 8A4E2B2 keeps the same compatibility pattern: real Spring runtime
+     * requires the collaborator, while historical direct-construction tests
+     * retain aggregate-only BASE_PAY freeze semantics.
+     */
+    private PayrollBasePaySemanticProvenance basePaySemanticProvenance;
+
     public PayrollService(PayrollSettingsRepository settings,
                           CompensationTermRepository compensationTerms,
                           PayrollAdjustmentRepository adjustments,
@@ -95,6 +102,14 @@ public class PayrollService {
     ) {
         this.semanticEarningFreeze =
                 semanticEarningFreeze;
+    }
+
+    @Autowired
+    void configureBasePaySemanticProvenance(
+            PayrollBasePaySemanticProvenance basePaySemanticProvenance
+    ) {
+        this.basePaySemanticProvenance =
+                basePaySemanticProvenance;
     }
 
     @Transactional
@@ -272,6 +287,7 @@ public class PayrollService {
         freezeSemanticEarnings(
                 created,
                 preview,
+                source,
                 ordinaryPremiumPreview,
                 frozenComponentLines
         );
@@ -283,6 +299,7 @@ public class PayrollService {
     private void freezeSemanticEarnings(
             PayrollSnapshot snapshot,
             PayrollPreviewDto preview,
+            PayrollSourceSnapshot source,
             PayrollOrdinaryPremiumPreviewService.OrdinaryPremiumPreview
                     ordinaryPremiumPreview,
             List<PayrollSnapshotComponentLine> frozenComponentLines
@@ -352,6 +369,20 @@ public class PayrollService {
         }
 
         List<PayrollSemanticFreezeProjection.SemanticLine>
+                semanticBasePayLines =
+                        basePaySemanticProvenance == null
+                                ? null
+                                : basePaySemanticProvenance.lines(
+                                        source,
+                                        preview.payMode(),
+                                        preview.configuredHourlyRateMinor(),
+                                        preview.monthlySalaryMinor(),
+                                        preview.productionNormMinutes(),
+                                        preview.salaryCoveredMinutes(),
+                                        preview.basePayMinor()
+                                );
+
+        List<PayrollSemanticFreezeProjection.SemanticLine>
                 semanticNightLines =
                         PayrollOrdinaryPremiumSemanticProvenance
                                 .nightLines(
@@ -368,7 +399,7 @@ public class PayrollService {
                         preview.compensationComponentEarningsMinor(),
                         semanticComponentLines,
                         preview.additionsMinor(),
-                        null,
+                        semanticBasePayLines,
                         semanticNightLines
                 )
         );

@@ -207,7 +207,7 @@ public class CompensationCalculationService {
         return ratioMoney(hourlyRateMinor, Math.max(0, minutes), 60L);
     }
 
-    private long ratioMoney(long amount, long numerator, long denominator) {
+    long ratioMoney(long amount, long numerator, long denominator) {
         if (denominator <= 0) throw ApiException.badRequest("PAYROLL_DIVISOR_INVALID", "Некорректный делитель расчёта");
         try {
             return BigDecimal.valueOf(amount)

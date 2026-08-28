@@ -74,6 +74,34 @@ class PayrollOrdinaryPremiumImmutableWiringContractTest {
         );
     }
 
+
+    @Test
+    void payrollWiresExactBasePaySemanticProvenance()
+            throws Exception {
+
+        String payroll =
+                Files.readString(
+                        Path.of(
+                                "src/main/java/ru/daniil/shifts/service/"
+                                        + "PayrollService.java"
+                        )
+                );
+
+        for (String marker : new String[] {
+                "PayrollBasePaySemanticProvenance",
+                "configureBasePaySemanticProvenance",
+                "semanticBasePayLines",
+                "basePaySemanticProvenance.lines(",
+                "preview.salaryCoveredMinutes()",
+                "semanticBasePayLines,"
+        }) {
+            assertTrue(
+                    payroll.contains(marker),
+                    marker
+            );
+        }
+    }
+
     private static String region(
             String source,
             String start,

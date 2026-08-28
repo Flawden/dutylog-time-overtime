@@ -310,8 +310,16 @@ public class TimeCompensationService {
             int otherUnpaidMinutes = Math.max(0, absenceMinutes - classified);
 
             if (plannedMinutes > 0 || workedMinutes > 0 || absenceMinutes > 0) {
-                sourceDays.add(new PayrollSourceDay(date, plannedMinutes, workedMinutes, vacationMinutes,
-                        sickMinutes, overtimeMinutes, unpaidMinutes + otherUnpaidMinutes));
+                sourceDays.add(new PayrollSourceDay(
+                        date,
+                        plannedMinutes,
+                        workedMinutes,
+                        vacationMinutes,
+                        sickMinutes,
+                        overtimeMinutes,
+                        unpaidMinutes + otherUnpaidMinutes,
+                        hourlyBaseWorkedMinutes
+                ));
             }
             plannedTotal += plannedMinutes;
             workedTotal += workedMinutes;
@@ -382,9 +390,42 @@ public class TimeCompensationService {
         return "APPROVED".equals(status) || "COMPLETED".equals(status);
     }
 
-    public record PayrollSourceDay(LocalDate date, int plannedMinutes, int workedMinutes,
-                                   int vacationMinutes, int sickMinutes,
-                                   int overtimeCompensatedMinutes, int unpaidMinutes) {}
+    public record PayrollSourceDay(
+            LocalDate date,
+            int plannedMinutes,
+            int workedMinutes,
+            int vacationMinutes,
+            int sickMinutes,
+            int overtimeCompensatedMinutes,
+            int unpaidMinutes,
+            int hourlyBaseWorkedMinutes
+    ) {
+        /*
+         * Compatibility constructor for pre-8A4E2B2 tests/internal callers.
+         * Before exact BASE_PAY provenance, PayrollSourceDay did not expose
+         * classifier-derived HOURLY ordinary-base minutes separately.
+         */
+        public PayrollSourceDay(
+                LocalDate date,
+                int plannedMinutes,
+                int workedMinutes,
+                int vacationMinutes,
+                int sickMinutes,
+                int overtimeCompensatedMinutes,
+                int unpaidMinutes
+        ) {
+            this(
+                    date,
+                    plannedMinutes,
+                    workedMinutes,
+                    vacationMinutes,
+                    sickMinutes,
+                    overtimeCompensatedMinutes,
+                    unpaidMinutes,
+                    workedMinutes
+            );
+        }
+    }
 
     public record PayrollSourceSnapshot(
             LocalDate from,
