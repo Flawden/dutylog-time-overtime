@@ -95,6 +95,135 @@ public class PayrollHistoricalSemanticEarningsService {
                         1
                 );
 
+        List<YearMonth> required =
+                new ArrayList<>(
+                        12
+                );
+
+        for (int offset = 0;
+                offset < 12;
+                offset++) {
+            required.add(
+                    referenceFrom.plusMonths(
+                            offset
+                    )
+            );
+        }
+
+        RequiredResolution selected =
+                resolveRequiredMonths(
+                        user,
+                        eventMonth,
+                        required
+                );
+
+        if (!selected.ready()) {
+            return Resolution.blocked(
+                    referenceFrom,
+                    referenceTo,
+                    selected.blockingReason(),
+                    selected.blockingPeriod()
+            );
+        }
+
+        return Resolution.ready(
+                referenceFrom,
+                referenceTo,
+                selected.currencyCode(),
+                selected.months()
+        );
+    }
+
+    /**
+     * Resolves only months proven by a higher-level authority to require
+     * immutable Payroll history.
+     *
+     * <p>The ordinary {@link #resolve(AppUser, YearMonth)} contract remains
+     * strict 12/12. This boundary exists for integrations such as average
+     * earnings, where explicit employment history can prove a whole reference
+     * month was outside employment and therefore requires no Payroll snapshot.
+     * Required months remain fail-closed with the exact same snapshot, manifest,
+     * semantic completeness, fingerprint and currency checks.</p>
+     */
+    @Transactional(readOnly = true)
+    public RequiredResolution resolveRequiredMonths(
+            AppUser user,
+            YearMonth eventMonth,
+            List<YearMonth> requiredMonths
+    ) {
+        if (user == null) {
+            throw new IllegalArgumentException(
+                    "Historical semantic earnings require user"
+            );
+        }
+
+        if (eventMonth == null) {
+            throw new IllegalArgumentException(
+                    "Historical semantic earnings require event month"
+            );
+        }
+
+        if (requiredMonths == null) {
+            throw new IllegalArgumentException(
+                    "Historical semantic earnings require required months"
+            );
+        }
+
+        YearMonth referenceFrom =
+                eventMonth.minusMonths(
+                        12
+                );
+
+        YearMonth referenceTo =
+                eventMonth.minusMonths(
+                        1
+                );
+
+        List<YearMonth> required =
+                List.copyOf(
+                        requiredMonths
+                );
+
+        YearMonth previousRequired = null;
+
+        for (YearMonth requiredMonth
+                : required) {
+
+            if (requiredMonth == null
+                    || requiredMonth.isBefore(
+                    referenceFrom
+            )
+                    || requiredMonth.isAfter(
+                    referenceTo
+            )) {
+                throw new IllegalArgumentException(
+                        "Required historical month lies outside reference window"
+                );
+            }
+
+            if (previousRequired != null
+                    && !requiredMonth.isAfter(
+                    previousRequired
+            )) {
+                throw new IllegalArgumentException(
+                        "Required historical months must be strictly ascending and unique"
+                );
+            }
+
+            previousRequired =
+                    requiredMonth;
+        }
+
+        if (required.isEmpty()) {
+            return RequiredResolution.ready(
+                    referenceFrom,
+                    referenceTo,
+                    null,
+                    required,
+                    List.of()
+            );
+        }
+
         List<PayrollSnapshot> candidates =
                 snapshots
                         .findByOwnerAndPeriodMonthBetweenOrderByPeriodMonthAscRevisionDesc(
@@ -139,6 +268,12 @@ public class PayrollHistoricalSemanticEarningsService {
                     );
                 }
 
+                if (!required.contains(
+                        candidateMonth
+                )) {
+                    continue;
+                }
+
                 latestByMonth.merge(
                         candidateMonth,
                         candidate,
@@ -156,14 +291,8 @@ public class PayrollHistoricalSemanticEarningsService {
 
         String currency = null;
 
-        for (int offset = 0;
-                offset < 12;
-                offset++) {
-
-            YearMonth month =
-                    referenceFrom.plusMonths(
-                            offset
-                    );
+        for (YearMonth month
+                : required) {
 
             PayrollSnapshot snapshot =
                     latestByMonth.get(
@@ -171,7 +300,7 @@ public class PayrollHistoricalSemanticEarningsService {
                     );
 
             if (snapshot == null) {
-                return Resolution.blocked(
+                return RequiredResolution.blocked(
                         referenceFrom,
                         referenceTo,
                         "HISTORICAL_PAYROLL_SNAPSHOT_MISSING",
@@ -180,7 +309,7 @@ public class PayrollHistoricalSemanticEarningsService {
             }
 
             if (snapshot.getSupersededBy() != null) {
-                return Resolution.blocked(
+                return RequiredResolution.blocked(
                         referenceFrom,
                         referenceTo,
                         "HISTORICAL_PAYROLL_LATEST_REVISION_SUPERSEDED",
@@ -196,7 +325,7 @@ public class PayrollHistoricalSemanticEarningsService {
                     || !snapshotCurrency.matches(
                             "[A-Z]{3}"
                     )) {
-                return Resolution.blocked(
+                return RequiredResolution.blocked(
                         referenceFrom,
                         referenceTo,
                         "HISTORICAL_PAYROLL_CURRENCY_INVALID",
@@ -211,7 +340,7 @@ public class PayrollHistoricalSemanticEarningsService {
             } else if (!currency.equals(
                     snapshotCurrency
             )) {
-                return Resolution.blocked(
+                return RequiredResolution.blocked(
                         referenceFrom,
                         referenceTo,
                         "HISTORICAL_PAYROLL_CURRENCY_MISMATCH",
@@ -235,7 +364,7 @@ public class PayrollHistoricalSemanticEarningsService {
                  * No non-empty line heuristic, display-name inference, gross
                  * decomposition or local backsolve is allowed.
                  */
-                return Resolution.blocked(
+                return RequiredResolution.blocked(
                         referenceFrom,
                         referenceTo,
                         "HISTORICAL_SEMANTIC_EARNINGS_MANIFEST_MISSING",
@@ -244,7 +373,7 @@ public class PayrollHistoricalSemanticEarningsService {
             }
 
             if (!manifest.isComplete()) {
-                return Resolution.blocked(
+                return RequiredResolution.blocked(
                         referenceFrom,
                         referenceTo,
                         "HISTORICAL_SEMANTIC_EARNINGS_INCOMPLETE",
@@ -274,7 +403,7 @@ public class PayrollHistoricalSemanticEarningsService {
 
             if (manifestSourceAmount
                     != snapshotSourceAmount) {
-                return Resolution.blocked(
+                return RequiredResolution.blocked(
                         referenceFrom,
                         referenceTo,
                         "HISTORICAL_SEMANTIC_EARNINGS_SOURCE_TOTAL_MISMATCH",
@@ -296,7 +425,7 @@ public class PayrollHistoricalSemanticEarningsService {
 
             if (manifest.getLineCount()
                     != frozen.size()) {
-                return Resolution.blocked(
+                return RequiredResolution.blocked(
                         referenceFrom,
                         referenceTo,
                         "HISTORICAL_SEMANTIC_EARNINGS_COUNT_MISMATCH",
@@ -331,7 +460,7 @@ public class PayrollHistoricalSemanticEarningsService {
 
             if (manifest.getAmountMinor()
                     != frozenAmount) {
-                return Resolution.blocked(
+                return RequiredResolution.blocked(
                         referenceFrom,
                         referenceTo,
                         "HISTORICAL_SEMANTIC_EARNINGS_AMOUNT_MISMATCH",
@@ -349,7 +478,7 @@ public class PayrollHistoricalSemanticEarningsService {
                     .equals(
                             frozenFingerprint
                     )) {
-                return Resolution.blocked(
+                return RequiredResolution.blocked(
                         referenceFrom,
                         referenceTo,
                         "HISTORICAL_SEMANTIC_EARNINGS_FINGERPRINT_MISMATCH",
@@ -442,10 +571,11 @@ public class PayrollHistoricalSemanticEarningsService {
             );
         }
 
-        return Resolution.ready(
+        return RequiredResolution.ready(
                 referenceFrom,
                 referenceTo,
                 currency,
+                required,
                 resolved
         );
     }
@@ -677,6 +807,128 @@ public class PayrollHistoricalSemanticEarningsService {
                             )
                     );
 
+        }
+    }
+
+    public record RequiredResolution(
+            YearMonth referenceFrom,
+            YearMonth referenceTo,
+            boolean ready,
+            String blockingReason,
+            YearMonth blockingPeriod,
+            String currencyCode,
+            List<YearMonth> requiredMonths,
+            List<HistoricalMonth> months
+    ) {
+        public RequiredResolution {
+            Objects.requireNonNull(
+                    referenceFrom,
+                    "Historical reference start is required"
+            );
+
+            Objects.requireNonNull(
+                    referenceTo,
+                    "Historical reference end is required"
+            );
+
+            requiredMonths =
+                    List.copyOf(
+                            Objects.requireNonNull(
+                                    requiredMonths,
+                                    "Required historical months are required"
+                            )
+                    );
+
+            months =
+                    List.copyOf(
+                            Objects.requireNonNull(
+                                    months,
+                                    "Historical months are required"
+                            )
+                    );
+
+            if (ready) {
+                if (blockingReason != null
+                        || blockingPeriod != null
+                        || months.size() != requiredMonths.size()
+                        || (!months.isEmpty()
+                        && (currencyCode == null
+                        || !currencyCode.matches(
+                        "[A-Z]{3}"
+                )))) {
+                    throw new IllegalArgumentException(
+                            "Ready required historical semantic earnings resolution is invalid"
+                    );
+                }
+
+                for (int index = 0;
+                        index < months.size();
+                        index++) {
+                    if (!requiredMonths.get(index)
+                            .equals(
+                                    months.get(index)
+                                            .period()
+                            )) {
+                        throw new IllegalArgumentException(
+                                "Required historical semantic earnings month order is invalid"
+                        );
+                    }
+                }
+
+                if (months.isEmpty()
+                        && currencyCode != null) {
+                    throw new IllegalArgumentException(
+                            "Empty required historical semantic earnings cannot invent currency"
+                    );
+                }
+            } else {
+                if (blockingReason == null
+                        || blockingReason.isBlank()
+                        || blockingPeriod == null
+                        || currencyCode != null
+                        || !months.isEmpty()) {
+                    throw new IllegalArgumentException(
+                            "Blocked required historical semantic earnings resolution is invalid"
+                    );
+                }
+            }
+        }
+
+        public static RequiredResolution ready(
+                YearMonth from,
+                YearMonth to,
+                String currency,
+                List<YearMonth> requiredMonths,
+                List<HistoricalMonth> months
+        ) {
+            return new RequiredResolution(
+                    from,
+                    to,
+                    true,
+                    null,
+                    null,
+                    currency,
+                    requiredMonths,
+                    months
+            );
+        }
+
+        public static RequiredResolution blocked(
+                YearMonth from,
+                YearMonth to,
+                String reason,
+                YearMonth period
+        ) {
+            return new RequiredResolution(
+                    from,
+                    to,
+                    false,
+                    reason,
+                    period,
+                    null,
+                    List.of(),
+                    List.of()
+            );
         }
     }
 

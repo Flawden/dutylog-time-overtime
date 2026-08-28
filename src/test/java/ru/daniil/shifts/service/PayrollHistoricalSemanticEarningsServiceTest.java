@@ -1135,6 +1135,179 @@ class PayrollHistoricalSemanticEarningsServiceTest {
         );
     }
 
+    @Test
+    void requiredMonthsCanOmitProvenNonEmploymentMonthsWithoutWeakeningSnapshotChecks() {
+        YearMonth event =
+                YearMonth.of(
+                        2026,
+                        9
+                );
+
+        List<PayrollSnapshot> history =
+                completeHistory(
+                        event,
+                        "RUB"
+                );
+
+        when(
+                snapshots
+                        .findByOwnerAndPeriodMonthBetweenOrderByPeriodMonthAscRevisionDesc(
+                                user,
+                                event.minusMonths(12).atDay(1),
+                                event.minusMonths(1).atDay(1)
+                        )
+        ).thenReturn(
+                history
+        );
+
+        List<YearMonth> required =
+                List.of(
+                        YearMonth.of(2026, 6),
+                        YearMonth.of(2026, 7),
+                        YearMonth.of(2026, 8)
+                );
+
+        var result =
+                service.resolveRequiredMonths(
+                        user,
+                        event,
+                        required
+                );
+
+        assertTrue(
+                result.ready()
+        );
+
+        assertEquals(
+                required,
+                result.requiredMonths()
+        );
+
+        assertEquals(
+                required,
+                result.months()
+                        .stream()
+                        .map(
+                                PayrollHistoricalSemanticEarningsService.HistoricalMonth::period
+                        )
+                        .toList()
+        );
+
+        assertEquals(
+                "RUB",
+                result.currencyCode()
+        );
+    }
+
+    @Test
+    void missingRequiredMonthStillBlocksWithoutPartialHistory() {
+        YearMonth event =
+                YearMonth.of(
+                        2026,
+                        9
+                );
+
+        List<PayrollSnapshot> history =
+                completeHistory(
+                        event,
+                        "RUB"
+                );
+
+        YearMonth missing =
+                YearMonth.of(
+                        2026,
+                        7
+                );
+
+        history.removeIf(snapshot ->
+                missing.equals(
+                        YearMonth.from(
+                                snapshot.getPeriodMonth()
+                        )
+                )
+        );
+
+        when(
+                snapshots
+                        .findByOwnerAndPeriodMonthBetweenOrderByPeriodMonthAscRevisionDesc(
+                                user,
+                                event.minusMonths(12).atDay(1),
+                                event.minusMonths(1).atDay(1)
+                        )
+        ).thenReturn(
+                history
+        );
+
+        var result =
+                service.resolveRequiredMonths(
+                        user,
+                        event,
+                        List.of(
+                                missing,
+                                YearMonth.of(2026, 8)
+                        )
+                );
+
+        assertFalse(
+                result.ready()
+        );
+
+        assertEquals(
+                "HISTORICAL_PAYROLL_SNAPSHOT_MISSING",
+                result.blockingReason()
+        );
+
+        assertEquals(
+                missing,
+                result.blockingPeriod()
+        );
+
+        assertTrue(
+                result.months()
+                        .isEmpty()
+        );
+    }
+
+    @Test
+    void emptyRequiredMonthSetIsReadyZeroHistoryWithoutRepositoryInference() {
+        YearMonth event =
+                YearMonth.of(
+                        2026,
+                        9
+                );
+
+        var result =
+                service.resolveRequiredMonths(
+                        user,
+                        event,
+                        List.of()
+                );
+
+        assertTrue(
+                result.ready()
+        );
+
+        assertTrue(
+                result.requiredMonths()
+                        .isEmpty()
+        );
+
+        assertTrue(
+                result.months()
+                        .isEmpty()
+        );
+
+        assertNull(
+                result.currencyCode()
+        );
+
+        org.mockito.Mockito.verifyNoInteractions(
+                snapshots,
+                lines,
+                manifests
+        );
+    }
+
     private List<PayrollSnapshot> completeHistory(
             YearMonth event,
             String currency
