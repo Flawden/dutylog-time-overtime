@@ -321,4 +321,19 @@ class PostgreSqlMigrationContractTest {
         }
         return Integer.parseInt(matcher.group(1));
     }
+    @Test
+    void bonusP15NatureAuthorityMigrationKeepsNatureExplicitAndNoBackfill() throws Exception {
+        String sql = Files.readString(
+                Path.of("src/main/resources/db/migration/postgresql/V74__bonus_p15_reward_nature_fact_authority.sql")
+        );
+
+        assertTrue(sql.contains("CREATE TABLE payroll_bonus_p15_nature_facts"));
+        assertTrue(sql.contains("'SERVICE_LENGTH'"));
+        assertTrue(sql.contains("'WORK_PERIOD'"));
+        assertFalse(sql.toUpperCase().contains("INSERT INTO PAYROLL_BONUS_P15_NATURE_FACTS"));
+        assertFalse(sql.toUpperCase().contains("UPDATE PAYROLL_BONUS_P15_NATURE_FACTS"));
+        assertFalse(sql.contains("REFERENCES payroll_bonus_average_earnings_facts"));
+        assertFalse(sql.contains("REFERENCES payroll_bonus_source_facts"));
+    }
+
 }
