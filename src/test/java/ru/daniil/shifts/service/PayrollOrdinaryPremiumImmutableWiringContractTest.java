@@ -177,6 +177,38 @@ class PayrollOrdinaryPremiumImmutableWiringContractTest {
         );
     }
 
+
+    @Test
+    void payrollFreezesExplicitP15RewardNatureBesideSnapshot()
+            throws Exception {
+
+        String payroll =
+                Files.readString(
+                        Path.of(
+                                "src/main/java/ru/daniil/shifts/service/"
+                                        + "PayrollService.java"
+                        )
+                );
+
+        for (String marker : new String[] {
+                "PayrollBonusP15NatureFactService",
+                "PayrollBonusP15NatureFreezeService",
+                "configureBonusP15NatureFreeze",
+                "bonusP15NatureFacts.resolveForAverageFacts(",
+                "bonusP15NatureFreeze.freeze(",
+                "averageFacts,",
+                "natureFacts"
+        }) {
+            assertTrue(payroll.contains(marker), marker);
+        }
+
+        assertTrue(
+                payroll.contains(
+                        "Snapshot P15 reward-nature freeze lacks required authority"
+                )
+        );
+    }
+
     private static String region(
             String source,
             String start,

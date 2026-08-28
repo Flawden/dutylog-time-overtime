@@ -110,6 +110,14 @@ public class PayrollService {
     private PayrollBonusAverageEarningsFactService bonusAverageEarningsFacts;
     private PayrollBonusAverageEarningsFreezeService bonusAverageEarningsFreeze;
 
+    /*
+     * 8A4F3B freezes explicit F3A reward-nature facts beside the same Payroll
+     * revision. Missing nature remains an incomplete manifest; it is never
+     * guessed from display name, posting month or award-period length.
+     */
+    private PayrollBonusP15NatureFactService bonusP15NatureFacts;
+    private PayrollBonusP15NatureFreezeService bonusP15NatureFreeze;
+
     public PayrollService(PayrollSettingsRepository settings,
                           CompensationTermRepository compensationTerms,
                           PayrollAdjustmentRepository adjustments,
@@ -192,6 +200,15 @@ public class PayrollService {
     ) {
         this.bonusAverageEarningsFacts = bonusAverageEarningsFacts;
         this.bonusAverageEarningsFreeze = bonusAverageEarningsFreeze;
+    }
+
+    @Autowired
+    void configureBonusP15NatureFreeze(
+            PayrollBonusP15NatureFactService bonusP15NatureFacts,
+            PayrollBonusP15NatureFreezeService bonusP15NatureFreeze
+    ) {
+        this.bonusP15NatureFacts = bonusP15NatureFacts;
+        this.bonusP15NatureFreeze = bonusP15NatureFreeze;
     }
 
     @Transactional
@@ -552,6 +569,26 @@ public class PayrollService {
                     snapshot,
                     bonusFacts,
                     averageFacts
+            );
+
+            if (bonusP15NatureFacts == null
+                    || bonusP15NatureFreeze == null) {
+                throw new IllegalStateException(
+                        "Snapshot P15 reward-nature freeze lacks required authority"
+                );
+            }
+
+            List<PayrollBonusP15NatureFactService.NatureFact>
+                    natureFacts =
+                    bonusP15NatureFacts.resolveForAverageFacts(
+                            snapshot.getOwner(),
+                            averageFacts
+                    );
+
+            bonusP15NatureFreeze.freeze(
+                    snapshot,
+                    averageFacts,
+                    natureFacts
             );
         }
     }

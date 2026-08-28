@@ -336,4 +336,25 @@ class PostgreSqlMigrationContractTest {
         assertFalse(sql.contains("REFERENCES payroll_bonus_source_facts"));
     }
 
+    @Test
+    void snapshotBonusP15NatureFreezeMigrationIsImmutableAndNoBackfill() throws Exception {
+        String sql = Files.readString(
+                Path.of("src/main/resources/db/migration/postgresql/V75__snapshot_bonus_p15_reward_nature_freeze.sql")
+        );
+
+        assertTrue(sql.contains("CREATE TABLE payroll_snapshot_bonus_p15_nature_manifests"));
+        assertTrue(sql.contains("CREATE TABLE payroll_snapshot_bonus_p15_nature_facts"));
+        assertTrue(sql.contains("average_fact_count INTEGER NOT NULL"));
+        assertTrue(sql.contains("nature_fact_count INTEGER NOT NULL"));
+        assertTrue(sql.contains("complete = (nature_fact_count = average_fact_count)"));
+        assertTrue(sql.contains("bonus_nature_fact_id BIGINT NOT NULL"));
+        assertTrue(sql.contains("'SERVICE_LENGTH'"));
+        assertFalse(sql.contains("REFERENCES payroll_bonus_p15_nature_facts"),
+                "snapshot history must survive mutable F3A nature rows");
+        assertFalse(sql.contains("REFERENCES payroll_bonus_average_earnings_facts"),
+                "snapshot history must survive mutable F1 rows");
+        assertFalse(sql.toUpperCase().contains("INSERT INTO PAYROLL_SNAPSHOT_BONUS_P15_NATURE"));
+        assertFalse(sql.toUpperCase().contains("UPDATE PAYROLL_SNAPSHOT_BONUS_P15_NATURE"));
+    }
+
 }

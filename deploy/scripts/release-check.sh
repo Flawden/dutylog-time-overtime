@@ -4967,15 +4967,15 @@ contains deploy/scripts/remote-deploy.sh 'Application deployment succeeded, but 
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1362" ]]; then
-  ok "test method baseline: 1362"
+if [[ "$TEST_METHODS" == "1384" ]]; then
+  ok "test method baseline: 1384"
 else
-  fail "expected 1362 @Test methods, found $TEST_METHODS"
+  fail "expected 1384 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "266" ]]; then
-  ok "test class baseline: 266"
+if [[ "$TEST_CLASSES" == "271" ]]; then
+  ok "test class baseline: 271"
 else
-  fail "expected 266 test classes, found $TEST_CLASSES"
+  fail "expected 271 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
