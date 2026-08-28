@@ -2,13 +2,17 @@ package ru.daniil.shifts.service;
 
 import org.springframework.stereotype.Service;
 import ru.daniil.shifts.model.PayrollEarningKind;
+import ru.daniil.shifts.model.PayrollQualifiedQuantity;
 import ru.daniil.shifts.model.PayrollSnapshotComponentLine;
+import ru.daniil.shifts.service.PayrollCombinationEpisodeFactService.EpisodeFact;
 import ru.daniil.shifts.service.PayrollSemanticFreezeProjection.ComponentLine;
 import ru.daniil.shifts.service.PayrollSemanticFreezeProjection.SemanticLine;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Evidence-driven semantic source-line provenance for frozen generic
@@ -22,10 +26,18 @@ import java.util.Objects;
  * machine formula and already-proven detailed BASE_PAY money lines.</p>
  *
  * <p>The derived HARMFUL lines copy only earning periods. They deliberately do
- * not copy BASE_PAY qualified quantity or coverage. COMBINATION,
- * REGIONAL_COEFFICIENT and bonus kinds remain aggregate-only until their own
- * source/base truth is implemented; displayName and posting month are never
- * used as provenance.</p>
+ * not copy BASE_PAY qualified quantity or coverage.</p>
+ *
+ * <p>8A4E2B3B adds a separate COMBINATION evidence path. Explicit observed
+ * episode facts may carry source period, qualified minutes and payout money
+ * even while the external substituted-employee salary remains unknown. Those
+ * facts are accepted only when their money reconciles exactly to the frozen
+ * component aggregate. No reference base is inferred from the episode facts,
+ * from displayName or from the local component formula.</p>
+ *
+ * <p>REGIONAL_COEFFICIENT and bonus kinds remain aggregate-only until their own
+ * source/base truth is implemented; posting month is never used as
+ * earning-period provenance.</p>
  */
 @Service
 public class PayrollCompensationComponentSemanticProvenance {
@@ -38,6 +50,25 @@ public class PayrollCompensationComponentSemanticProvenance {
     public List<ComponentLine> lines(
             List<PayrollSnapshotComponentLine> frozenComponentLines,
             List<SemanticLine> basePayLines
+    ) {
+        return lines(
+                frozenComponentLines,
+                basePayLines,
+                null,
+                null
+        );
+    }
+
+    /**
+     * Canonical evidence-aware mapping used by the real Payroll freeze path.
+     * A null combination-fact list means no explicit episode authority is
+     * available and preserves the pre-B3B aggregate-only behavior.
+     */
+    public List<ComponentLine> lines(
+            List<PayrollSnapshotComponentLine> frozenComponentLines,
+            List<SemanticLine> basePayLines,
+            List<EpisodeFact> combinationFacts,
+            String payrollCurrencyCode
     ) {
         if (frozenComponentLines == null) {
             return null;
@@ -52,6 +83,14 @@ public class PayrollCompensationComponentSemanticProvenance {
             );
         }
 
+        List<EpisodeFact> combination =
+                combinationFacts == null
+                        ? null
+                        : List.copyOf(combinationFacts);
+
+        Set<Long> frozenCombinationComponentIds =
+                new HashSet<>();
+
         List<ComponentLine> result =
                 new ArrayList<>();
 
@@ -64,11 +103,27 @@ public class PayrollCompensationComponentSemanticProvenance {
                 );
             }
 
+            if (line.getEarningKind()
+                    == PayrollEarningKind.COMBINATION) {
+                frozenCombinationComponentIds.add(
+                        line.getComponentId()
+                );
+            }
+
             List<SemanticLine> detailed =
                     harmfulLines(
                             line,
                             basePayLines
                     );
+
+            if (detailed == null) {
+                detailed =
+                        combinationLines(
+                                line,
+                                combination,
+                                payrollCurrencyCode
+                        );
+            }
 
             result.add(
                     new ComponentLine(
@@ -83,6 +138,18 @@ public class PayrollCompensationComponentSemanticProvenance {
                             detailed
                     )
             );
+        }
+
+        if (combination != null) {
+            for (EpisodeFact fact : combination) {
+                if (!frozenCombinationComponentIds.contains(
+                        fact.componentId()
+                )) {
+                    throw new IllegalStateException(
+                            "Explicit COMBINATION episode fact has no frozen COMBINATION component"
+                    );
+                }
+            }
         }
 
         return List.copyOf(result);
@@ -229,4 +296,82 @@ public class PayrollCompensationComponentSemanticProvenance {
 
         return List.copyOf(result);
     }
+    private List<SemanticLine> combinationLines(
+            PayrollSnapshotComponentLine component,
+            List<EpisodeFact> combinationFacts,
+            String payrollCurrencyCode
+    ) {
+        if (component.getEarningKind()
+                != PayrollEarningKind.COMBINATION) {
+            return null;
+        }
+
+        if (combinationFacts == null
+                || combinationFacts.isEmpty()) {
+            return null;
+        }
+
+        if (payrollCurrencyCode == null
+                || !payrollCurrencyCode.matches("[A-Z]{3}")) {
+            throw new IllegalStateException(
+                    "COMBINATION provenance requires frozen Payroll currency"
+            );
+        }
+
+        List<EpisodeFact> matching =
+                combinationFacts.stream()
+                        .filter(fact ->
+                                fact.componentId()
+                                        == component.getComponentId()
+                        )
+                        .toList();
+
+        if (matching.isEmpty()) {
+            return null;
+        }
+
+        long amountTotal = 0L;
+        List<SemanticLine> result =
+                new ArrayList<>();
+
+        for (EpisodeFact fact : matching) {
+            if (!payrollCurrencyCode.equals(
+                    fact.currencyCode()
+            )) {
+                throw new IllegalStateException(
+                        "COMBINATION episode currency disagrees with frozen Payroll currency"
+                );
+            }
+
+            amountTotal =
+                    Math.addExact(
+                            amountTotal,
+                            fact.amountMinor()
+                    );
+
+            result.add(
+                    new SemanticLine(
+                            PayrollEarningKind.COMBINATION,
+                            fact.amountMinor(),
+                            PayrollQualifiedQuantity.minutes(
+                                    fact.qualifiedMinutes()
+                            ),
+                            fact.periodFrom(),
+                            fact.periodTo(),
+                            null,
+                            null
+                    )
+            );
+        }
+
+        if (amountTotal
+                != component.getAmountMinor()) {
+            throw new IllegalStateException(
+                    "COMBINATION episode money disagrees with frozen component aggregate"
+            );
+        }
+
+        return List.copyOf(result);
+    }
+
 }

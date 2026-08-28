@@ -77,6 +77,15 @@ public class PayrollService {
     private PayrollCompensationComponentSemanticProvenance
             componentSemanticProvenance;
 
+    /*
+     * 8A4E2B3B explicit COMBINATION episode facts are also setter-injected
+     * for historical direct-construction compatibility. Real Spring runtime
+     * requires the authority and therefore never fabricates source periods
+     * from posting month or generic component configuration.
+     */
+    private PayrollCombinationEpisodeFactService
+            combinationEpisodeFacts;
+
     public PayrollService(PayrollSettingsRepository settings,
                           CompensationTermRepository compensationTerms,
                           PayrollAdjustmentRepository adjustments,
@@ -127,6 +136,14 @@ public class PayrollService {
     ) {
         this.componentSemanticProvenance =
                 componentSemanticProvenance;
+    }
+
+    @Autowired
+    void configureCombinationEpisodeFacts(
+            PayrollCombinationEpisodeFactService combinationEpisodeFacts
+    ) {
+        this.combinationEpisodeFacts =
+                combinationEpisodeFacts;
     }
 
     @Transactional
@@ -362,10 +379,23 @@ public class PayrollService {
                 semanticComponentLines;
 
         if (componentSemanticProvenance != null) {
+            List<PayrollCombinationEpisodeFactService.EpisodeFact>
+                    combinationFacts =
+                    combinationEpisodeFacts == null
+                            ? null
+                            : combinationEpisodeFacts.resolveMonth(
+                                    snapshot.getOwner(),
+                                    YearMonth.from(
+                                            snapshot.getPeriodMonth()
+                                    )
+                            );
+
             semanticComponentLines =
                     componentSemanticProvenance.lines(
                             frozenComponentLines,
-                            semanticBasePayLines
+                            semanticBasePayLines,
+                            combinationFacts,
+                            snapshot.getCurrencyCode()
                     );
         } else {
             /*

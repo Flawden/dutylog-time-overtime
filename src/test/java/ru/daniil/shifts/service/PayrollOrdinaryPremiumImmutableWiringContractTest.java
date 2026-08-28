@@ -107,6 +107,35 @@ class PayrollOrdinaryPremiumImmutableWiringContractTest {
         }
     }
 
+
+
+    @Test
+    void payrollWiresExplicitCombinationEpisodeFactsIntoSemanticFreeze()
+            throws Exception {
+
+        String payroll =
+                Files.readString(
+                        Path.of(
+                                "src/main/java/ru/daniil/shifts/service/"
+                                        + "PayrollService.java"
+                        )
+                );
+
+        for (String marker : new String[] {
+                "PayrollCombinationEpisodeFactService",
+                "configureCombinationEpisodeFacts",
+                "combinationEpisodeFacts.resolveMonth(",
+                "snapshot.getOwner()",
+                "snapshot.getPeriodMonth()",
+                "snapshot.getCurrencyCode()"
+        }) {
+            assertTrue(
+                    payroll.contains(marker),
+                    marker
+            );
+        }
+    }
+
     private static String region(
             String source,
             String start,

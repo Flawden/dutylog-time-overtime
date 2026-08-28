@@ -158,6 +158,28 @@ class PostgreSqlMigrationContractTest {
         assertFalse(sql.contains("INSERT INTO shift_types"));
     }
 
+
+    @Test
+    void combinationEpisodeFactAuthorityPreservesObservedFactsWithoutInventingReferenceSalary() throws IOException {
+        String sql = Files.readString(
+                MIGRATION_ROOT.resolve(
+                        "V68__combination_episode_fact_authority.sql"
+                )
+        );
+
+        assertTrue(sql.contains("CREATE TABLE payroll_combination_episode_facts"));
+        assertTrue(sql.contains("qualified_minutes BIGINT NOT NULL"));
+        assertTrue(sql.contains("amount_minor BIGINT NOT NULL"));
+        assertTrue(sql.contains("agreed_rate_bps INTEGER"));
+        assertTrue(sql.contains("component_id BIGINT NOT NULL"));
+        assertFalse(sql.contains("REFERENCES compensation_components"),
+                "historical combination facts must not depend on mutable component-row lifetime");
+        assertFalse(sql.contains("reference_salary"));
+        assertFalse(sql.contains("reference_base_minor"));
+        assertFalse(sql.contains("UPDATE payroll_combination_episode_facts"),
+                "V68 must not synthesize historical source facts");
+    }
+
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);
