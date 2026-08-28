@@ -5,6 +5,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.OrdinaryWorkPremiumPricingService.BlockingDay;
 import ru.daniil.shifts.service.OrdinaryWorkPremiumPricingService.MonthPremiumProjection;
+import ru.daniil.shifts.service.OrdinaryWorkPremiumPricingService.NightPremiumSourceLine;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.YearMonth;
@@ -136,6 +137,7 @@ public class PayrollOrdinaryPremiumPreviewService {
             long premiumAmountMinor,
             long nightPremiumAmountMinor,
             long unclassifiedPremiumAmountMinor,
+            List<NightPremiumSourceLine> exactNightPremiumSourceLines,
             boolean pricingIdentityRequired,
             String pricingFingerprint,
             List<BlockingDay> blockers
@@ -162,6 +164,41 @@ public class PayrollOrdinaryPremiumPreviewService {
                     premiumAmountMinor,
                     0L,
                     premiumAmountMinor,
+                    List.of(),
+                    pricingIdentityRequired,
+                    pricingFingerprint,
+                    blockers
+            );
+        }
+
+        /**
+         * Compatibility constructor for callers created before 8A4E2B1.
+         */
+        public OrdinaryPremiumPreview(
+                YearMonth month,
+                boolean ready,
+                String blockingReason,
+                String blockingMessage,
+                int ordinaryMinutes,
+                long referenceBaseAmountMinor,
+                long premiumAmountMinor,
+                long nightPremiumAmountMinor,
+                long unclassifiedPremiumAmountMinor,
+                boolean pricingIdentityRequired,
+                String pricingFingerprint,
+                List<BlockingDay> blockers
+        ) {
+            this(
+                    month,
+                    ready,
+                    blockingReason,
+                    blockingMessage,
+                    ordinaryMinutes,
+                    referenceBaseAmountMinor,
+                    premiumAmountMinor,
+                    nightPremiumAmountMinor,
+                    unclassifiedPremiumAmountMinor,
+                    List.of(),
                     pricingIdentityRequired,
                     pricingFingerprint,
                     blockers
@@ -186,6 +223,41 @@ public class PayrollOrdinaryPremiumPreviewService {
                             : List.copyOf(
                                     blockers
                             );
+
+            exactNightPremiumSourceLines =
+                    exactNightPremiumSourceLines == null
+                            ? List.of()
+                            : List.copyOf(
+                                    exactNightPremiumSourceLines
+                            );
+
+            long exactNightAmount = 0L;
+
+            for (NightPremiumSourceLine line :
+                    exactNightPremiumSourceLines) {
+                if (line == null
+                        || !YearMonth.from(
+                                line.earningDate()
+                        ).equals(
+                                month
+                        )) {
+                    throw new IllegalArgumentException(
+                            "Payroll NIGHT provenance belongs to another month"
+                    );
+                }
+
+                exactNightAmount =
+                        Math.addExact(
+                                exactNightAmount,
+                                line.amountMinor()
+                        );
+            }
+
+            if (exactNightAmount > nightPremiumAmountMinor) {
+                throw new IllegalArgumentException(
+                        "Payroll exact NIGHT provenance exceeds NIGHT aggregate"
+                );
+            }
 
             long semanticPremiumTotal;
 
@@ -240,6 +312,7 @@ public class PayrollOrdinaryPremiumPreviewService {
                         || blockingMessage.isBlank()
                         || referenceBaseAmountMinor != 0
                         || premiumAmountMinor != 0
+                        || !exactNightPremiumSourceLines.isEmpty()
                         || pricingIdentityRequired
                         || pricingFingerprint != null) {
                     throw new IllegalArgumentException(
@@ -268,6 +341,7 @@ public class PayrollOrdinaryPremiumPreviewService {
                     source.premiumAmountMinor(),
                     source.nightPremiumAmountMinor(),
                     source.unclassifiedPremiumAmountMinor(),
+                    source.exactNightPremiumSourceLines(),
                     pricingIdentityRequired,
                     fingerprint,
                     List.of()
@@ -291,6 +365,7 @@ public class PayrollOrdinaryPremiumPreviewService {
                     0L,
                     0L,
                     0L,
+                    List.of(),
                     false,
                     null,
                     blockers

@@ -615,6 +615,127 @@ class OrdinaryWorkPremiumPricingServiceTest {
                 0L,
                 result.unclassifiedPremiumAmountMinor()
         );
+
+        assertEquals(
+                1,
+                result.exactNightPremiumSourceLines().size()
+        );
+
+        var exact =
+                result.exactNightPremiumSourceLines().get(0);
+
+        assertEquals(date, exact.earningDate());
+        assertEquals(60, exact.minutes());
+        assertEquals(12_000L, exact.amountMinor());
+    }
+
+    @Test
+    void multiDateNightEconomicBucketKeepsMoneyUnallocatedByDate() {
+        LocalDate first =
+                LocalDate.of(
+                        2026,
+                        8,
+                        24
+                );
+
+        LocalDate second =
+                LocalDate.of(
+                        2026,
+                        8,
+                        25
+                );
+
+        SourcePiece firstPiece =
+                explicitPiece(
+                        first,
+                        30,
+                        true,
+                        false
+                );
+
+        SourcePiece secondPiece =
+                explicitPiece(
+                        second,
+                        30,
+                        true,
+                        false
+                );
+
+        stubMonth(
+                Map.of(
+                        first,
+                        readySource(
+                                first,
+                                List.of(firstPiece)
+                        ),
+                        second,
+                        readySource(
+                                second,
+                                List.of(secondPiece)
+                        )
+                )
+        );
+
+        Rule nightRule =
+                new Rule(
+                        "NIGHT",
+                        Dimension.NIGHT,
+                        2_000,
+                        0,
+                        null,
+                        null
+                );
+
+        for (LocalDate date : List.of(first, second)) {
+            when(
+                    pricingPolicy.resolveForSourceDate(
+                            eq(user),
+                            eq(date),
+                            anyList()
+                    )
+            ).thenReturn(
+                    semanticPolicy(
+                            date,
+                            List.of(nightRule),
+                            List.of(
+                                    new PricingSlice(
+                                            30,
+                                            List.of(
+                                                    new PremiumComponent(
+                                                            "NIGHT",
+                                                            2_000
+                                                    )
+                                            )
+                                    )
+                            )
+                    )
+            );
+
+            when(
+                    historicalRates.resolve(
+                            user,
+                            date
+                    )
+            ).thenReturn(
+                    rate(
+                            date,
+                            "RUB",
+                            60_000L
+                    )
+            );
+        }
+
+        var result =
+                service.priceMonth(
+                        user,
+                        month
+                );
+
+        assertEquals(12_000L, result.nightPremiumAmountMinor());
+        assertTrue(
+                result.exactNightPremiumSourceLines().isEmpty(),
+                "Monthly economic rounding must not be split across dates without an allocation contract"
+        );
     }
 
     @Test

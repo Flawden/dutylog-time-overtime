@@ -351,6 +351,13 @@ public class PayrollService {
                     );
         }
 
+        List<PayrollSemanticFreezeProjection.SemanticLine>
+                semanticNightLines =
+                        PayrollOrdinaryPremiumSemanticProvenance
+                                .nightLines(
+                                        ordinaryPremiumPreview
+                                );
+
         semanticEarningFreeze.freeze(
                 snapshot,
                 new PayrollSemanticFreezeProjection.Source(
@@ -360,7 +367,9 @@ public class PayrollService {
                         preview.settlementPayMinor(),
                         preview.compensationComponentEarningsMinor(),
                         semanticComponentLines,
-                        preview.additionsMinor()
+                        preview.additionsMinor(),
+                        null,
+                        semanticNightLines
                 )
         );
     }

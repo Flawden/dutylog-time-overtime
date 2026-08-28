@@ -32,7 +32,9 @@ class PayrollOrdinaryPremiumImmutableWiringContractTest {
                 "preview.ordinaryPremiumMinutes()",
                 "preview.ordinaryPremiumReferenceBasePayMinor()",
                 "preview.ordinaryPremiumPayMinor()",
-                "ordinaryPremiumPreview.pricingFingerprint()"
+                "ordinaryPremiumPreview.pricingFingerprint()",
+                "PayrollOrdinaryPremiumSemanticProvenance",
+                "semanticNightLines"
         }) {
             assertTrue(
                     payroll.contains(marker),

@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Test;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.OrdinaryWorkPremiumPricingService.BlockingDay;
 import ru.daniil.shifts.service.OrdinaryWorkPremiumPricingService.MonthPremiumProjection;
+import ru.daniil.shifts.service.OrdinaryWorkPremiumPricingService.NightPremiumSourceLine;
 import ru.daniil.shifts.service.OrdinaryWorkPremiumPricingService.SourceDateValuation;
 import ru.daniil.shifts.service.OrdinaryWorkPremiumSourceService.SourceKind;
 import ru.daniil.shifts.service.exception.ApiException;
@@ -92,6 +93,19 @@ class PayrollOrdinaryPremiumPreviewServiceTest {
                         60,
                         60_000L,
                         12_000L,
+                        12_000L,
+                        0L,
+                        List.of(
+                                new NightPremiumSourceLine(
+                                        LocalDate.of(
+                                                2026,
+                                                8,
+                                                24
+                                        ),
+                                        60,
+                                        12_000L
+                                )
+                        ),
                         List.of(),
                         List.of()
                 )
@@ -115,6 +129,22 @@ class PayrollOrdinaryPremiumPreviewServiceTest {
         assertEquals(
                 12_000L,
                 result.premiumAmountMinor()
+        );
+
+        assertEquals(
+                1,
+                result.exactNightPremiumSourceLines().size()
+        );
+
+        assertEquals(
+                LocalDate.of(
+                        2026,
+                        8,
+                        24
+                ),
+                result.exactNightPremiumSourceLines()
+                        .get(0)
+                        .earningDate()
         );
 
         assertNotEquals(

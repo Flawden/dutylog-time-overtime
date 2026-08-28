@@ -153,6 +153,7 @@ public class OrdinaryWorkPremiumPricingService {
                     0L,
                     0L,
                     List.of(),
+                    List.of(),
                     List.of()
             );
         }
@@ -212,6 +213,10 @@ public class OrdinaryWorkPremiumPricingService {
 
         Map<Long, Set<PremiumEconomicKey>>
                 unresolvedPremiumKeysByRate =
+                new TreeMap<>();
+
+        Map<Long, Map<PremiumEconomicKey, Set<LocalDate>>>
+                premiumSourceDatesByRate =
                 new TreeMap<>();
 
         List<SourceDateValuation> valuations =
@@ -343,6 +348,13 @@ public class OrdinaryWorkPremiumPricingService {
                     unresolvedPremiumKeysByRate
             );
 
+            retainPremiumSourceDate(
+                    rate.baseHourlyRateMinor(),
+                    sourceDate,
+                    resolvedPricingSlices,
+                    premiumSourceDatesByRate
+            );
+
             slicesByRate
                     .computeIfAbsent(
                             rate.baseHourlyRateMinor(),
@@ -427,6 +439,9 @@ public class OrdinaryWorkPremiumPricingService {
         int pricedTotalMinutes = 0;
 
         List<PricedRateBucket> buckets =
+                new ArrayList<>();
+
+        List<NightPremiumSourceLine> exactNightPremiumSourceLines =
                 new ArrayList<>();
 
         for (
@@ -518,6 +533,43 @@ public class OrdinaryWorkPremiumPricingService {
                                     nightPremiumAmountMinor,
                                     premium.amountMinor()
                             );
+
+                    Set<LocalDate> sourceDates =
+                            premiumSourceDatesByRate
+                                    .getOrDefault(
+                                            hourlyRate,
+                                            Map.of()
+                                    )
+                                    .get(
+                                            key
+                                    );
+
+                    if (sourceDates == null
+                            || sourceDates.isEmpty()) {
+                        throw new IllegalStateException(
+                                "Proven NIGHT premium lacks source-date provenance"
+                        );
+                    }
+
+                    /*
+                     * PayPricingEngine rounds after aggregating one economic
+                     * premium key inside one hourly-rate bucket. Therefore
+                     * money is attributable to one source date without a new
+                     * allocation policy only when every priced minute of this
+                     * economic bucket came from that one date.
+                     */
+                    if (sourceDates.size() == 1
+                            && premium.amountMinor() > 0L) {
+                        exactNightPremiumSourceLines.add(
+                                new NightPremiumSourceLine(
+                                        sourceDates
+                                                .iterator()
+                                                .next(),
+                                        premium.minutes(),
+                                        premium.amountMinor()
+                                )
+                        );
+                    }
                 } else {
                     unclassifiedPremiumAmountMinor =
                             Math.addExact(
@@ -571,6 +623,7 @@ public class OrdinaryWorkPremiumPricingService {
                 premiumAmountMinor,
                 nightPremiumAmountMinor,
                 unclassifiedPremiumAmountMinor,
+                List.copyOf(exactNightPremiumSourceLines),
                 List.copyOf(buckets),
                 List.copyOf(valuations)
         );
@@ -647,6 +700,40 @@ public class OrdinaryWorkPremiumPricingService {
                         )
                         .add(
                                 matches.get(0).dimension()
+                        );
+            }
+        }
+    }
+
+    private static void retainPremiumSourceDate(
+            long hourlyRate,
+            LocalDate sourceDate,
+            List<PricingSlice> slices,
+            Map<Long, Map<PremiumEconomicKey, Set<LocalDate>>>
+                    sourceDatesByRate
+    ) {
+        Map<PremiumEconomicKey, Set<LocalDate>> sourceDates =
+                sourceDatesByRate.computeIfAbsent(
+                        hourlyRate,
+                        ignored -> new LinkedHashMap<>()
+                );
+
+        for (PricingSlice slice : slices) {
+            for (PayPricingEngine.PremiumComponent component :
+                    slice.components()) {
+                PremiumEconomicKey key =
+                        new PremiumEconomicKey(
+                                component.code(),
+                                component.premiumBps()
+                        );
+
+                sourceDates
+                        .computeIfAbsent(
+                                key,
+                                ignored -> new LinkedHashSet<>()
+                        )
+                        .add(
+                                sourceDate
                         );
             }
         }
@@ -1223,6 +1310,22 @@ public class OrdinaryWorkPremiumPricingService {
         }
     }
 
+    public record NightPremiumSourceLine(
+            LocalDate earningDate,
+            int minutes,
+            long amountMinor
+    ) {
+        public NightPremiumSourceLine {
+            if (earningDate == null
+                    || minutes <= 0
+                    || amountMinor <= 0L) {
+                throw new IllegalArgumentException(
+                        "Exact NIGHT premium source line is invalid"
+                );
+            }
+        }
+    }
+
     public record PricedRateBucket(
             long baseHourlyRateMinor,
             int minutes,
@@ -1260,6 +1363,7 @@ public class OrdinaryWorkPremiumPricingService {
             long premiumAmountMinor,
             long nightPremiumAmountMinor,
             long unclassifiedPremiumAmountMinor,
+            List<NightPremiumSourceLine> exactNightPremiumSourceLines,
             List<PricedRateBucket> rateBuckets,
             List<SourceDateValuation> sources
     ) {
@@ -1286,6 +1390,41 @@ public class OrdinaryWorkPremiumPricingService {
                     premiumAmountMinor,
                     0L,
                     premiumAmountMinor,
+                    List.of(),
+                    rateBuckets,
+                    sources
+            );
+        }
+
+        /**
+         * Compatibility constructor for callers created before 8A4E2B1.
+         */
+        public MonthPremiumProjection(
+                YearMonth payrollMonth,
+                boolean ready,
+                String blockingReason,
+                List<BlockingDay> blockers,
+                String currencyCode,
+                int ordinaryMinutes,
+                long referenceBaseAmountMinor,
+                long premiumAmountMinor,
+                long nightPremiumAmountMinor,
+                long unclassifiedPremiumAmountMinor,
+                List<PricedRateBucket> rateBuckets,
+                List<SourceDateValuation> sources
+        ) {
+            this(
+                    payrollMonth,
+                    ready,
+                    blockingReason,
+                    blockers,
+                    currencyCode,
+                    ordinaryMinutes,
+                    referenceBaseAmountMinor,
+                    premiumAmountMinor,
+                    nightPremiumAmountMinor,
+                    unclassifiedPremiumAmountMinor,
+                    List.of(),
                     rateBuckets,
                     sources
             );
@@ -1330,6 +1469,41 @@ public class OrdinaryWorkPremiumPricingService {
                 );
             }
 
+            exactNightPremiumSourceLines =
+                    exactNightPremiumSourceLines == null
+                            ? List.of()
+                            : List.copyOf(
+                                    exactNightPremiumSourceLines
+                            );
+
+            long exactNightAmount = 0L;
+
+            for (NightPremiumSourceLine line :
+                    exactNightPremiumSourceLines) {
+                if (line == null
+                        || !YearMonth.from(
+                                line.earningDate()
+                        ).equals(
+                                payrollMonth
+                        )) {
+                    throw new IllegalArgumentException(
+                            "Exact NIGHT premium source line belongs to another payroll month"
+                    );
+                }
+
+                exactNightAmount =
+                        Math.addExact(
+                                exactNightAmount,
+                                line.amountMinor()
+                        );
+            }
+
+            if (exactNightAmount > nightPremiumAmountMinor) {
+                throw new IllegalArgumentException(
+                        "Exact NIGHT premium source money exceeds proven NIGHT aggregate"
+                );
+            }
+
             rateBuckets =
                     rateBuckets == null
                             ? List.of()
@@ -1362,6 +1536,7 @@ public class OrdinaryWorkPremiumPricingService {
                         || currencyCode != null
                         || referenceBaseAmountMinor != 0
                         || premiumAmountMinor != 0
+                        || !exactNightPremiumSourceLines.isEmpty()
                         || !rateBuckets.isEmpty()
                         || !sources.isEmpty()) {
                     throw new IllegalArgumentException(
@@ -1390,6 +1565,7 @@ public class OrdinaryWorkPremiumPricingService {
                 long premium,
                 long nightPremium,
                 long unclassifiedPremium,
+                List<NightPremiumSourceLine> exactNightPremiumSourceLines,
                 List<PricedRateBucket> buckets,
                 List<SourceDateValuation> sources
         ) {
@@ -1404,6 +1580,7 @@ public class OrdinaryWorkPremiumPricingService {
                     premium,
                     nightPremium,
                     unclassifiedPremium,
+                    exactNightPremiumSourceLines,
                     buckets,
                     sources
             );
@@ -1425,6 +1602,7 @@ public class OrdinaryWorkPremiumPricingService {
                     0L,
                     0L,
                     0L,
+                    List.of(),
                     List.of(),
                     List.of()
             );
