@@ -312,8 +312,26 @@ class CompensationComponentConfigurationServiceTest {
 
 
     @Test
-    void localEligibleEarningsBasePersistsOnlyAsExplicitFormulaIdentity() {
-        var created =
+    void localEligibleEarningsBasePersistsOnlyForExplicitMonthlyAndRegionalFormulaIdentities() {
+        var monthly =
+                service.create(
+                        owner,
+                        new PayrollCompensationComponentCreateRequest(
+                                "2026-08",
+                                new PayrollCompensationComponentVersionRequest(
+                                        "Ежемесячная премия",
+                                        "PERCENT_OF_BASE",
+                                        "LOCAL_ELIGIBLE_EARNINGS",
+                                        4_000,
+                                        null,
+                                        null,
+                                        "MONTHLY_BONUS",
+                                        true
+                                )
+                        )
+                );
+
+        var regional =
                 service.create(
                         owner,
                         new PayrollCompensationComponentCreateRequest(
@@ -333,20 +351,33 @@ class CompensationComponentConfigurationServiceTest {
 
         assertEquals(
                 "LOCAL_ELIGIBLE_EARNINGS",
-                created.calculationBase()
+                monthly.calculationBase()
+        );
+        assertEquals(
+                "MONTHLY_BONUS",
+                monthly.earningKind()
+        );
+        assertEquals(
+                4_000,
+                monthly.rateBps()
+        );
+
+        assertEquals(
+                "LOCAL_ELIGIBLE_EARNINGS",
+                regional.calculationBase()
         );
         assertEquals(
                 "REGIONAL_COEFFICIENT",
-                created.earningKind()
+                regional.earningKind()
         );
         assertEquals(
                 1_500,
-                created.rateBps()
+                regional.rateBps()
         );
     }
 
     @Test
-    void localEligibleEarningsBaseRejectsNonRegionalSemanticTargetsAtConfigurationBoundary() {
+    void localEligibleEarningsBaseRejectsUnprovenSemanticTargetsAtConfigurationBoundary() {
         ApiException wrongKind =
                 assertThrows(
                         ApiException.class,
@@ -356,13 +387,13 @@ class CompensationComponentConfigurationServiceTest {
                                         new PayrollCompensationComponentCreateRequest(
                                                 "2026-09",
                                                 new PayrollCompensationComponentVersionRequest(
-                                                        "Месячная премия",
+                                                        "Разовая премия",
                                                         "PERCENT_OF_BASE",
                                                         "LOCAL_ELIGIBLE_EARNINGS",
-                                                        4_000,
+                                                        1_000,
                                                         null,
                                                         null,
-                                                        "MONTHLY_BONUS",
+                                                        "ONE_TIME_BONUS",
                                                         true
                                                 )
                                         )

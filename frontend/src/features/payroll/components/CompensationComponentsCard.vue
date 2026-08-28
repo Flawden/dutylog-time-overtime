@@ -130,7 +130,7 @@ const text = computed(() =>
         earned: "Earned base pay",
         eligible: "Eligible earnings for this Payroll meaning",
         nominalHint: "Monthly salary is available only in salary mode.",
-        eligibleHint: "This base uses the machine-owned eligible-earnings policy. It is currently available only for Regional coefficient.",
+        eligibleHint: "This base uses the machine-owned eligible-earnings policy. It is available for Monthly bonus and Regional coefficient.",
         percentValue: "Percent, %",
         amount: "Amount",
         currency: "Currency",
@@ -181,7 +181,7 @@ const text = computed(() =>
         earned: "Фактически начисленная базовая оплата",
         eligible: "Допустимые начисления для этого типа Payroll",
         nominalHint: "Оклад как база доступен только при окладной системе оплаты.",
-        eligibleHint: "Эта база берётся из машинной политики состава начислений. Сейчас она доступна только для районного коэффициента.",
+        eligibleHint: "Эта база берётся из машинной политики состава начислений. Она доступна для ежемесячной премии и районного коэффициента.",
         percentValue: "Процент, %",
         amount: "Сумма",
         currency: "Валюта",
@@ -736,7 +736,8 @@ watch(
   earningKind,
   kind => {
     if (
-      kind !== "REGIONAL_COEFFICIENT"
+      kind !== "MONTHLY_BONUS"
+      && kind !== "REGIONAL_COEFFICIENT"
       && calculationBase.value === "LOCAL_ELIGIBLE_EARNINGS"
     ) {
       calculationBase.value = "EARNED_BASE_PAY";
@@ -988,7 +989,10 @@ onMounted(() => {
               </option>
 
               <option
-                v-if="earningKind === 'REGIONAL_COEFFICIENT'"
+                v-if="
+                  earningKind === 'MONTHLY_BONUS'
+                  || earningKind === 'REGIONAL_COEFFICIENT'
+                "
                 value="LOCAL_ELIGIBLE_EARNINGS"
               >
                 {{ text.eligible }}

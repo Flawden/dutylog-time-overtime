@@ -694,12 +694,13 @@ public class PayrollService {
                         : null;
 
         /*
-         * B3C1 regional eligible-base authority.
+         * B3D1 monthly/regional eligible-base authority.
          *
          * Only semantic amounts already proven before generic component
          * calculation may enter this seed pool. Generic component amounts are
-         * appended by CompensationComponentCalculationService itself before a
-         * deferred REGIONAL_COEFFICIENT is evaluated.
+         * appended by CompensationComponentCalculationService itself, while
+         * deferred LOCAL_ELIGIBLE_EARNINGS targets are evaluated by semantic
+         * phase: MONTHLY_BONUS before REGIONAL_COEFFICIENT.
          *
          * Any ordinary premium money that is still semantically unclassified
          * makes the local base incomplete. We do not guess that it is (or is

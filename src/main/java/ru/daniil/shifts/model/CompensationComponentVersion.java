@@ -44,9 +44,9 @@ public class CompensationComponentVersion {
          * Explicit machine-owned eligible-earnings base resolved from
          * PayrollEarningBaseEligibility for the component's earningKind.
          *
-         * v27.48.0 initially wires this base only for
-         * REGIONAL_COEFFICIENT. Other targets fail closed until their own
-         * production authority is proven.
+         * v27.48.0 wires this base only for the explicitly proven
+         * MONTHLY_BONUS and REGIONAL_COEFFICIENT targets. Other targets fail
+         * closed until their own production authority is proven.
          */
         LOCAL_ELIGIBLE_EARNINGS
     }

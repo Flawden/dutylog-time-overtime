@@ -150,11 +150,13 @@ public class PayrollCompensationComponentPreviewService {
                         && version.getCalculationBase()
                         == CalculationBase.LOCAL_ELIGIBLE_EARNINGS
                         && version.getEarningKind()
+                        != PayrollEarningKind.MONTHLY_BONUS
+                        && version.getEarningKind()
                         != PayrollEarningKind.REGIONAL_COEFFICIENT) {
                     return blocked(
                             month,
                             PAYROLL_LOCAL_BASE_UNSUPPORTED,
-                            "LOCAL_ELIGIBLE_EARNINGS пока поддержана только для REGIONAL_COEFFICIENT"
+                            "LOCAL_ELIGIBLE_EARNINGS поддержана только для MONTHLY_BONUS и REGIONAL_COEFFICIENT"
                     );
                 }
 

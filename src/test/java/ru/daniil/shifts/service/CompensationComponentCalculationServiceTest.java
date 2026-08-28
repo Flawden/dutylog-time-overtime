@@ -390,7 +390,7 @@ class CompensationComponentCalculationServiceTest {
 
 
     @Test
-    void regionalLocalEligibleBaseReadsUpstreamAndEarlierSemanticComponentsWithoutChangingLineOrder() {
+    void monthlyAndRegionalLocalEligibleBasesRespectSemanticPhaseDependenciesWithoutChangingLineOrder() {
         ComponentRule regional =
                 percent(
                         1,
@@ -414,13 +414,13 @@ class CompensationComponentCalculationServiceTest {
                 );
 
         ComponentRule monthly =
-                fixed(
+                percent(
                         3,
                         33,
-                        "Ежемесячная премия",
+                        "Ежемесячная премия 40%",
                         PayrollEarningKind.MONTHLY_BONUS,
-                        100_000L,
-                        "RUB",
+                        CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
+                        4_000,
                         true
                 );
 
@@ -478,21 +478,31 @@ class CompensationComponentCalculationServiceTest {
         );
 
         var regionalLine = result.lines().get(0);
+        var monthlyLine = result.lines().get(2);
+
+        assertEquals(
+                892_000L,
+                monthlyLine.referenceBaseMinor()
+        );
+        assertEquals(
+                356_800L,
+                monthlyLine.amountMinor()
+        );
 
         assertEquals(
                 CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
                 regionalLine.calculationBase()
         );
         assertEquals(
-                1_012_000L,
+                1_268_800L,
                 regionalLine.referenceBaseMinor()
         );
         assertEquals(
-                151_800L,
+                190_320L,
                 regionalLine.amountMinor()
         );
         assertEquals(
-                353_800L,
+                649_120L,
                 result.totalAmountMinor()
         );
     }
@@ -574,7 +584,7 @@ class CompensationComponentCalculationServiceTest {
     }
 
     @Test
-    void localEligibleBaseDoesNotGeneralizeBeyondRegionalCoefficient() {
+    void localEligibleBaseDoesNotGeneralizeBeyondProvenMonthlyAndRegionalTargets() {
         IllegalArgumentException error =
                 assertThrows(
                         IllegalArgumentException.class,
@@ -585,10 +595,10 @@ class CompensationComponentCalculationServiceTest {
                                                 percent(
                                                         1,
                                                         31,
-                                                        "Премия 40%",
-                                                        PayrollEarningKind.MONTHLY_BONUS,
+                                                        "Разовая премия",
+                                                        PayrollEarningKind.ONE_TIME_BONUS,
                                                         CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
-                                                        4_000,
+                                                        1_000,
                                                         true
                                                 )
                                         ),
@@ -603,7 +613,7 @@ class CompensationComponentCalculationServiceTest {
                 );
 
         assertTrue(
-                error.getMessage().contains("only proven for REGIONAL_COEFFICIENT")
+                error.getMessage().contains("only proven for MONTHLY_BONUS and REGIONAL_COEFFICIENT")
         );
     }
 

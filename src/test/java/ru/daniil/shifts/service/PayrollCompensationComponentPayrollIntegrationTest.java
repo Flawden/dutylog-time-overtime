@@ -457,7 +457,7 @@ class PayrollCompensationComponentPayrollIntegrationTest {
 
 
     @Test
-    void regionalLocalEligibleBaseUsesSemanticComponentPoolAndFreezesResolvedReferenceBase() {
+    void monthlyAndRegionalLocalEligibleBasesUseSemanticComponentPoolAndFreezeResolvedReferenceBases() {
         prepareRegularDay();
 
         payroll.upsertCompensationTerm(
@@ -493,12 +493,12 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                 new PayrollCompensationComponentCreateRequest(
                         "2026-08",
                         new PayrollCompensationComponentVersionRequest(
-                                "Ежемесячная премия",
-                                "FIXED_AMOUNT",
+                                "Ежемесячная премия 40%",
+                                "PERCENT_OF_BASE",
+                                "LOCAL_ELIGIBLE_EARNINGS",
+                                4_000,
                                 null,
                                 null,
-                                100_000L,
-                                "RUB",
                                 "MONTHLY_BONUS",
                                 true
                         )
@@ -528,7 +528,7 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                 regionalComponent.componentId(),
                 LocalDate.of(2026, 8, 3),
                 LocalDate.of(2026, 8, 3),
-                139_800L,
+                174_720L,
                 "RUB"
         );
 
@@ -536,24 +536,35 @@ class PayrollCompensationComponentPayrollIntegrationTest {
 
         assertTrue(open.preview().compensationComponentCalculationReady());
         assertEquals(800_000L, open.preview().basePayMinor());
-        assertEquals(271_800L, open.preview().compensationComponentEarningsMinor());
-        assertEquals(1_071_800L, open.preview().totalPayMinor());
+        assertEquals(539_520L, open.preview().compensationComponentEarningsMinor());
+        assertEquals(1_339_520L, open.preview().totalPayMinor());
 
+        var monthly = open.preview().compensationComponentLines().get(1);
         var regional = open.preview().compensationComponentLines().get(2);
+
+        assertEquals("MONTHLY_BONUS", monthly.earningKind());
+        assertEquals("LOCAL_ELIGIBLE_EARNINGS", monthly.calculationBase());
+        assertEquals(832_000L, monthly.referenceBaseMinor());
+        assertEquals(332_800L, monthly.amountMinor());
 
         assertEquals("REGIONAL_COEFFICIENT", regional.earningKind());
         assertEquals("LOCAL_ELIGIBLE_EARNINGS", regional.calculationBase());
-        assertEquals(932_000L, regional.referenceBaseMinor());
-        assertEquals(139_800L, regional.amountMinor());
+        assertEquals(1_164_800L, regional.referenceBaseMinor());
+        assertEquals(174_720L, regional.amountMinor());
 
         ledger.closePeriod(owner, "2026-08");
 
         var frozen = payroll.calculate(owner, "2026-08");
+        var frozenMonthly = frozen.compensationComponentLines().get(1);
         var frozenRegional = frozen.compensationComponentLines().get(2);
 
+        assertEquals("LOCAL_ELIGIBLE_EARNINGS", frozenMonthly.calculationBase());
+        assertEquals(832_000L, frozenMonthly.referenceBaseMinor());
+        assertEquals(332_800L, frozenMonthly.amountMinor());
+
         assertEquals("LOCAL_ELIGIBLE_EARNINGS", frozenRegional.calculationBase());
-        assertEquals(932_000L, frozenRegional.referenceBaseMinor());
-        assertEquals(139_800L, frozenRegional.amountMinor());
+        assertEquals(1_164_800L, frozenRegional.referenceBaseMinor());
+        assertEquals(174_720L, frozenRegional.amountMinor());
 
         var snapshot =
                 payrollSnapshots
@@ -576,7 +587,7 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                         .findFirst()
                         .orElseThrow();
 
-        assertEquals(139_800L, regionalSemantic.getAmountMinor());
+        assertEquals(174_720L, regionalSemantic.getAmountMinor());
         assertEquals(
                 LocalDate.of(2026, 8, 3),
                 regionalSemantic.getEarningPeriodFrom()

@@ -5202,7 +5202,7 @@ contains src/main/java/ru/daniil/shifts/model/CompensationComponentVersion.java 
 contains src/main/java/ru/daniil/shifts/service/CompensationComponentCalculationService.java "DUTYLOG_COMP_COMPONENT_PROJECTION_V1"
 contains src/main/java/ru/daniil/shifts/service/CompensationComponentCalculationService.java "RoundingMode.HALF_UP"
 contains src/main/resources/db/migration/postgresql/V69__local_eligible_earnings_component_base.sql "LOCAL_ELIGIBLE_EARNINGS"
-contains src/main/java/ru/daniil/shifts/service/CompensationComponentCalculationService.java "LOCAL_ELIGIBLE_EARNINGS is only proven for REGIONAL_COEFFICIENT"
+contains src/main/java/ru/daniil/shifts/service/CompensationComponentCalculationService.java "LOCAL_ELIGIBLE_EARNINGS is only proven for MONTHLY_BONUS and REGIONAL_COEFFICIENT"
 contains src/main/java/ru/daniil/shifts/service/PayrollService.java "componentUpstreamSemanticEarningsComplete"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "LOCAL_ELIGIBLE_EARNINGS"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "PAYROLL_COMP_COMPONENT_LOCAL_BASE_INCOMPLETE"

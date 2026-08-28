@@ -486,9 +486,11 @@ public class CompensationComponentConfigurationService {
                 && calculationBase
                 == CalculationBase.LOCAL_ELIGIBLE_EARNINGS
                 && earningKind
+                != PayrollEarningKind.MONTHLY_BONUS
+                && earningKind
                 != PayrollEarningKind.REGIONAL_COEFFICIENT) {
             throw invalid(
-                    "LOCAL_ELIGIBLE_EARNINGS пока допустима только для REGIONAL_COEFFICIENT"
+                    "LOCAL_ELIGIBLE_EARNINGS допустима только для MONTHLY_BONUS и REGIONAL_COEFFICIENT"
             );
         }
     }

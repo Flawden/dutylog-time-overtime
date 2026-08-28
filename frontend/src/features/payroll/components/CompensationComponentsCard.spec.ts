@@ -125,7 +125,15 @@ describe("Generic compensation settings UI", () => {
     );
 
     expect(card).toContain(
+      'kind !== "MONTHLY_BONUS"',
+    );
+
+    expect(card).toContain(
       'kind !== "REGIONAL_COEFFICIENT"',
+    );
+
+    expect(card).toContain(
+      "earningKind === 'MONTHLY_BONUS'",
     );
 
     expect(workspace).toContain(

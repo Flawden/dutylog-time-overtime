@@ -243,9 +243,21 @@ class PayrollCompensationComponentPreviewServiceTest {
 
 
     @Test
-    void regionalLocalEligibleBaseUsesExplicitSemanticUpstreamPool() {
+    void monthlyAndRegionalLocalEligibleBasesUseExplicitSemanticUpstreamPoolInPhaseOrder() {
         doReturn(
                 List.of(
+                        version(
+                                9L,
+                                19L,
+                                "Районный 15%",
+                                PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                CalculationType.PERCENT_OF_BASE,
+                                CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
+                                1_500,
+                                null,
+                                null,
+                                true
+                        ),
                         version(
                                 10L,
                                 20L,
@@ -261,11 +273,11 @@ class PayrollCompensationComponentPreviewServiceTest {
                         version(
                                 11L,
                                 21L,
-                                "Районный 15%",
-                                PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                "Ежемесячная премия 40%",
+                                PayrollEarningKind.MONTHLY_BONUS,
                                 CalculationType.PERCENT_OF_BASE,
                                 CalculationBase.LOCAL_ELIGIBLE_EARNINGS,
-                                1_500,
+                                4_000,
                                 null,
                                 null,
                                 true
@@ -297,15 +309,15 @@ class PayrollCompensationComponentPreviewServiceTest {
                 );
 
         assertTrue(result.ready());
-        assertEquals(2, result.projection().lines().size());
-        assertEquals(
-                832_000L,
-                result.projection().lines().get(1).referenceBaseMinor()
-        );
-        assertEquals(
-                124_800L,
-                result.projection().lines().get(1).amountMinor()
-        );
+        assertEquals(3, result.projection().lines().size());
+
+        var regional = result.projection().lines().get(0);
+        var monthly = result.projection().lines().get(2);
+
+        assertEquals(832_000L, monthly.referenceBaseMinor());
+        assertEquals(332_800L, monthly.amountMinor());
+        assertEquals(1_164_800L, regional.referenceBaseMinor());
+        assertEquals(174_720L, regional.amountMinor());
     }
 
     @Test

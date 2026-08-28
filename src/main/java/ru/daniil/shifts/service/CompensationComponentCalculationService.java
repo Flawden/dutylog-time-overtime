@@ -66,8 +66,11 @@ public class CompensationComponentCalculationService {
      * REGIONAL_COEFFICIENT to read HARMFUL / COMBINATION / bonus amounts that
      * were produced by other generic components in the same month.
      *
-     * v27.48 B3C1 supports LOCAL_ELIGIBLE_EARNINGS only for
-     * REGIONAL_COEFFICIENT. No other target is silently generalized.
+     * v27.48 B3D1 supports LOCAL_ELIGIBLE_EARNINGS only for the
+     * machine-owned targets whose local bases are explicitly proven here:
+     * MONTHLY_BONUS and REGIONAL_COEFFICIENT. Deferred local-base rules are
+     * evaluated by semantic phase so REGIONAL always sees every calculated
+     * monthly bonus regardless of component presentation order.
      */
     public Projection calculate(
             Context context,
@@ -200,13 +203,27 @@ public class CompensationComponentCalculationService {
             }
         }
 
-        for (ComponentRule rule : deferredLocalRules) {
-            if (rule.earningKind()
-                    != PayrollEarningKind.REGIONAL_COEFFICIENT) {
-                throw new IllegalArgumentException(
-                        "LOCAL_ELIGIBLE_EARNINGS is only proven for REGIONAL_COEFFICIENT"
-                );
-            }
+        List<ComponentRule> orderedLocalRules =
+                deferredLocalRules.stream()
+                        .sorted(
+                                Comparator
+                                        .comparingInt(
+                                                (ComponentRule rule) ->
+                                                        supportedLocalBasePhase(
+                                                                rule
+                                                        )
+                                        )
+                                        .thenComparingLong(
+                                                ComponentRule::componentId
+                                        )
+                                        .thenComparingLong(
+                                                ComponentRule::versionId
+                                        )
+                        )
+                        .toList();
+
+        for (ComponentRule rule : orderedLocalRules) {
+            supportedLocalBasePhase(rule);
 
             long referenceBase =
                     PayrollEligibleEarningsBaseResolver
@@ -216,10 +233,20 @@ public class CompensationComponentCalculationService {
                             )
                             .totalAmountMinor();
 
-            calculated.add(
+            CalculatedLine line =
                     percentage(
                             rule,
                             referenceBase
+                    );
+
+            calculated.add(
+                    line
+            );
+
+            mutableSemanticPool.add(
+                    new PayrollEligibleEarningsBaseResolver.Earning(
+                            line.earningKind(),
+                            line.amountMinor()
                     )
             );
         }
@@ -265,6 +292,23 @@ public class CompensationComponentCalculationService {
                         immutable
                 )
         );
+    }
+
+
+    private int supportedLocalBasePhase(
+            ComponentRule rule
+    ) {
+        PayrollEarningKind kind =
+                rule.earningKind();
+
+        if (kind != PayrollEarningKind.MONTHLY_BONUS
+                && kind != PayrollEarningKind.REGIONAL_COEFFICIENT) {
+            throw new IllegalArgumentException(
+                    "LOCAL_ELIGIBLE_EARNINGS is only proven for MONTHLY_BONUS and REGIONAL_COEFFICIENT"
+            );
+        }
+
+        return kind.phase().ordinal();
     }
 
     private CalculatedLine calculateLine(
