@@ -5,6 +5,7 @@ import ru.daniil.shifts.model.PayrollEarningKind;
 import ru.daniil.shifts.model.PayrollQualifiedQuantity;
 import ru.daniil.shifts.model.PayrollSnapshotComponentLine;
 import ru.daniil.shifts.service.PayrollCombinationEpisodeFactService.EpisodeFact;
+import ru.daniil.shifts.service.PayrollRegionalCoefficientSourceFactService.SourceFact;
 import ru.daniil.shifts.service.PayrollSemanticFreezeProjection.ComponentLine;
 import ru.daniil.shifts.service.PayrollSemanticFreezeProjection.SemanticLine;
 
@@ -35,9 +36,15 @@ import java.util.Set;
  * component aggregate. No reference base is inferred from the episode facts,
  * from displayName or from the local component formula.</p>
  *
- * <p>REGIONAL_COEFFICIENT and bonus kinds remain aggregate-only until their own
- * source/base truth is implemented; posting month is never used as
- * earning-period provenance.</p>
+ * <p>8A4E2B3C2 adds explicit REGIONAL_COEFFICIENT source facts. Real source
+ * evidence shows the regional line has its own observed earning period and is
+ * not a synthetic split over every eligible-base source line. Therefore the
+ * service accepts only explicit observed regional source lines whose money
+ * reconciles to a frozen LOCAL_ELIGIBLE_EARNINGS formula. It never allocates
+ * regional money from BASE_PAY/HARMFUL/NIGHT/bonus periods and never uses the
+ * posting month as earning provenance.</p>
+ *
+ * <p>Bonus kinds remain aggregate-only until their own provenance stage.</p>
  */
 @Service
 public class PayrollCompensationComponentSemanticProvenance {
@@ -55,6 +62,7 @@ public class PayrollCompensationComponentSemanticProvenance {
                 frozenComponentLines,
                 basePayLines,
                 null,
+                null,
                 null
         );
     }
@@ -68,6 +76,27 @@ public class PayrollCompensationComponentSemanticProvenance {
             List<PayrollSnapshotComponentLine> frozenComponentLines,
             List<SemanticLine> basePayLines,
             List<EpisodeFact> combinationFacts,
+            String payrollCurrencyCode
+    ) {
+        return lines(
+                frozenComponentLines,
+                basePayLines,
+                combinationFacts,
+                null,
+                payrollCurrencyCode
+        );
+    }
+
+    /**
+     * Canonical B3C2 mapping with explicit COMBINATION and REGIONAL source
+     * authorities. Null fact lists mean that exact source provenance is not
+     * configured and preserve aggregate-only semantics.
+     */
+    public List<ComponentLine> lines(
+            List<PayrollSnapshotComponentLine> frozenComponentLines,
+            List<SemanticLine> basePayLines,
+            List<EpisodeFact> combinationFacts,
+            List<SourceFact> regionalFacts,
             String payrollCurrencyCode
     ) {
         if (frozenComponentLines == null) {
@@ -88,7 +117,15 @@ public class PayrollCompensationComponentSemanticProvenance {
                         ? null
                         : List.copyOf(combinationFacts);
 
+        List<SourceFact> regional =
+                regionalFacts == null
+                        ? null
+                        : List.copyOf(regionalFacts);
+
         Set<Long> frozenCombinationComponentIds =
+                new HashSet<>();
+
+        Set<Long> frozenRegionalComponentIds =
                 new HashSet<>();
 
         List<ComponentLine> result =
@@ -110,6 +147,13 @@ public class PayrollCompensationComponentSemanticProvenance {
                 );
             }
 
+            if (line.getEarningKind()
+                    == PayrollEarningKind.REGIONAL_COEFFICIENT) {
+                frozenRegionalComponentIds.add(
+                        line.getComponentId()
+                );
+            }
+
             List<SemanticLine> detailed =
                     harmfulLines(
                             line,
@@ -121,6 +165,15 @@ public class PayrollCompensationComponentSemanticProvenance {
                         combinationLines(
                                 line,
                                 combination,
+                                payrollCurrencyCode
+                        );
+            }
+
+            if (detailed == null) {
+                detailed =
+                        regionalLines(
+                                line,
+                                regional,
                                 payrollCurrencyCode
                         );
             }
@@ -147,6 +200,18 @@ public class PayrollCompensationComponentSemanticProvenance {
                 )) {
                     throw new IllegalStateException(
                             "Explicit COMBINATION episode fact has no frozen COMBINATION component"
+                    );
+                }
+            }
+        }
+
+        if (regional != null) {
+            for (SourceFact fact : regional) {
+                if (!frozenRegionalComponentIds.contains(
+                        fact.componentId()
+                )) {
+                    throw new IllegalStateException(
+                            "Explicit REGIONAL source fact has no frozen REGIONAL_COEFFICIENT component"
                     );
                 }
             }
@@ -368,6 +433,108 @@ public class PayrollCompensationComponentSemanticProvenance {
                 != component.getAmountMinor()) {
             throw new IllegalStateException(
                     "COMBINATION episode money disagrees with frozen component aggregate"
+            );
+        }
+
+        return List.copyOf(result);
+    }
+
+    private List<SemanticLine> regionalLines(
+            PayrollSnapshotComponentLine component,
+            List<SourceFact> regionalFacts,
+            String payrollCurrencyCode
+    ) {
+        if (component.getEarningKind()
+                != PayrollEarningKind.REGIONAL_COEFFICIENT) {
+            return null;
+        }
+
+        if (regionalFacts == null
+                || regionalFacts.isEmpty()) {
+            return null;
+        }
+
+        List<SourceFact> matching =
+                regionalFacts.stream()
+                        .filter(fact ->
+                                fact.componentId()
+                                        == component.getComponentId()
+                        )
+                        .toList();
+
+        if (matching.isEmpty()) {
+            return null;
+        }
+
+        if (!"PERCENT_OF_BASE".equals(
+                component.getCalculationType()
+        )
+                || !"LOCAL_ELIGIBLE_EARNINGS".equals(
+                component.getCalculationBase()
+        )
+                || component.getRateBps() == null) {
+            throw new IllegalStateException(
+                    "Explicit REGIONAL source fact requires frozen LOCAL_ELIGIBLE_EARNINGS percentage formula"
+            );
+        }
+
+        if (payrollCurrencyCode == null
+                || !payrollCurrencyCode.matches("[A-Z]{3}")) {
+            throw new IllegalStateException(
+                    "REGIONAL provenance requires frozen Payroll currency"
+            );
+        }
+
+        long expectedAmount =
+                CompensationComponentCalculationService
+                        .percentageMoney(
+                                component.getReferenceBaseMinor(),
+                                component.getRateBps()
+                        );
+
+        if (expectedAmount
+                != component.getAmountMinor()) {
+            throw new IllegalStateException(
+                    "REGIONAL frozen formula disagrees with component aggregate"
+            );
+        }
+
+        long amountTotal = 0L;
+        List<SemanticLine> result =
+                new ArrayList<>();
+
+        for (SourceFact fact : matching) {
+            if (!payrollCurrencyCode.equals(
+                    fact.currencyCode()
+            )) {
+                throw new IllegalStateException(
+                        "REGIONAL source currency disagrees with frozen Payroll currency"
+                );
+            }
+
+            amountTotal =
+                    Math.addExact(
+                            amountTotal,
+                            fact.amountMinor()
+                    );
+
+            result.add(
+                    new SemanticLine(
+                            PayrollEarningKind.REGIONAL_COEFFICIENT,
+                            fact.amountMinor(),
+                            null,
+                            fact.periodFrom(),
+                            fact.periodTo(),
+                            null,
+                            null
+                    )
+            );
+        }
+
+        if (amountTotal
+                != component.getAmountMinor()) {
+            throw new IllegalStateException(
+                    "REGIONAL source money disagrees with frozen component aggregate"
             );
         }
 

@@ -202,6 +202,28 @@ class PostgreSqlMigrationContractTest {
         );
     }
 
+    @Test
+    void regionalSourceFactAuthorityStoresObservedPeriodAndMoneyWithoutRebuildingEligibleBase() throws IOException {
+        String sql = Files.readString(
+                MIGRATION_ROOT.resolve(
+                        "V70__regional_coefficient_source_fact_authority.sql"
+                )
+        );
+
+        assertTrue(sql.contains("CREATE TABLE payroll_regional_coefficient_source_facts"));
+        assertTrue(sql.contains("period_from DATE NOT NULL"));
+        assertTrue(sql.contains("period_to DATE NOT NULL"));
+        assertTrue(sql.contains("amount_minor BIGINT NOT NULL"));
+        assertTrue(sql.contains("component_id BIGINT NOT NULL"));
+        assertFalse(sql.contains("qualified_minutes"));
+        assertFalse(sql.contains("reference_base_minor"));
+        assertFalse(sql.contains("REFERENCES compensation_components"),
+                "historical regional facts must survive mutable component configuration");
+        assertFalse(sql.contains("UPDATE payroll_regional_coefficient_source_facts"),
+                "V70 must not synthesize historical regional periods");
+    }
+
+
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);

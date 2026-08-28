@@ -51,6 +51,9 @@ class PayrollCompensationComponentPayrollIntegrationTest {
     CompensationComponentConfigurationService components;
 
     @Autowired
+    PayrollRegionalCoefficientSourceFactService regionalSourceFacts;
+
+    @Autowired
     PayrollSnapshotRepository payrollSnapshots;
 
     @Autowired
@@ -502,21 +505,31 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                 )
         );
 
-        components.create(
-                owner,
-                new PayrollCompensationComponentCreateRequest(
-                        "2026-08",
-                        new PayrollCompensationComponentVersionRequest(
-                                "Районный коэффициент 15%",
-                                "PERCENT_OF_BASE",
-                                "LOCAL_ELIGIBLE_EARNINGS",
-                                1_500,
-                                null,
-                                null,
-                                "REGIONAL_COEFFICIENT",
-                                true
+        var regionalComponent =
+                components.create(
+                        owner,
+                        new PayrollCompensationComponentCreateRequest(
+                                "2026-08",
+                                new PayrollCompensationComponentVersionRequest(
+                                        "Районный коэффициент 15%",
+                                        "PERCENT_OF_BASE",
+                                        "LOCAL_ELIGIBLE_EARNINGS",
+                                        1_500,
+                                        null,
+                                        null,
+                                        "REGIONAL_COEFFICIENT",
+                                        true
+                                )
                         )
-                )
+                );
+
+        regionalSourceFacts.create(
+                owner,
+                regionalComponent.componentId(),
+                LocalDate.of(2026, 8, 3),
+                LocalDate.of(2026, 8, 3),
+                139_800L,
+                "RUB"
         );
 
         var open = payroll.period(owner, "2026-08");
@@ -564,8 +577,14 @@ class PayrollCompensationComponentPayrollIntegrationTest {
                         .orElseThrow();
 
         assertEquals(139_800L, regionalSemantic.getAmountMinor());
-        assertNull(regionalSemantic.getEarningPeriodFrom());
-        assertNull(regionalSemantic.getEarningPeriodTo());
+        assertEquals(
+                LocalDate.of(2026, 8, 3),
+                regionalSemantic.getEarningPeriodFrom()
+        );
+        assertEquals(
+                LocalDate.of(2026, 8, 3),
+                regionalSemantic.getEarningPeriodTo()
+        );
     }
 
     @Test

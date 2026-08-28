@@ -4967,15 +4967,15 @@ contains deploy/scripts/remote-deploy.sh 'Application deployment succeeded, but 
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1258" ]]; then
-  ok "test method baseline: 1258"
+if [[ "$TEST_METHODS" == "1283" ]]; then
+  ok "test method baseline: 1283"
 else
-  fail "expected 1258 @Test methods, found $TEST_METHODS"
+  fail "expected 1283 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "253" ]]; then
-  ok "test class baseline: 253"
+if [[ "$TEST_CLASSES" == "255" ]]; then
+  ok "test class baseline: 255"
 else
-  fail "expected 253 test classes, found $TEST_CLASSES"
+  fail "expected 255 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
@@ -5212,6 +5212,15 @@ contains frontend/src/generated/dutylog-api.ts "PAYROLL_COMP_COMPONENT_LOCAL_BAS
 contains frontend/src/features/payroll/components/CompensationComponentsCard.vue "LOCAL_ELIGIBLE_EARNINGS"
 contains src/test/java/ru/daniil/shifts/service/CompensationComponentCalculationServiceTest.java "Вредность 4%"
 contains src/test/java/ru/daniil/shifts/service/CompensationComponentCalculationServiceTest.java "duplicateStableComponentIdentityFailsClosed"
+
+# v27.48.0 8A4E2B3C2 REGIONAL explicit source-period authority
+contains src/main/resources/db/migration/postgresql/V70__regional_coefficient_source_fact_authority.sql "CREATE TABLE payroll_regional_coefficient_source_facts"
+contains src/main/resources/db/migration/postgresql/V70__regional_coefficient_source_fact_authority.sql "Missing rows mean no exact source"
+contains src/main/java/ru/daniil/shifts/model/PayrollRegionalCoefficientSourceFact.java "never authorize using posting month"
+contains src/main/java/ru/daniil/shifts/service/PayrollRegionalCoefficientSourceFactService.java "never allocates a monthly regional amount"
+contains src/main/java/ru/daniil/shifts/service/PayrollService.java "regionalCoefficientSourceFacts.resolveMonth("
+contains src/main/java/ru/daniil/shifts/service/PayrollCompensationComponentSemanticProvenance.java "Explicit REGIONAL source fact requires frozen LOCAL_ELIGIBLE_EARNINGS percentage formula"
+contains src/test/java/ru/daniil/shifts/payroll/truth/RealPayrollTruthPackTest.java "Observed REGIONAL remains one source line"
 
 # v27.46.2 Effective-Dated Pricing Settings & Payroll Verticals release closure
 contains CHANGES.md "v27.46.2 — Effective-Dated Pricing Settings & Payroll Verticals"

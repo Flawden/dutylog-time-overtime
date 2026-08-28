@@ -139,6 +139,36 @@ class RealPayrollTruthPackTest {
     }
 
     @Test
+    void regionalSourcePeriodIsExplicitFactAndNotARewriteOfEligibleBaseSplits()
+            throws Exception {
+
+        PayrollTruthPack pack = read();
+        PayrollTruthCase november = byPeriod(pack, "2025-11");
+        PayrollTruthCase march = byPeriod(pack, "2026-03");
+
+        List<PayrollTruthEarning> novemberRegional = november.earnings()
+                .stream()
+                .filter(line -> "REGIONAL_COEFFICIENT".equals(line.semanticKey()))
+                .toList();
+
+        List<PayrollTruthEarning> marchRegional = march.earnings()
+                .stream()
+                .filter(line -> "REGIONAL_COEFFICIENT".equals(line.semanticKey()))
+                .toList();
+
+        assertEquals(1, novemberRegional.size());
+        assertEquals("19.11-30.11", novemberRegional.get(0).sourcePeriod());
+        assertEquals(PayrollTruthProvenance.FACT, novemberRegional.get(0).provenance());
+
+        assertEquals(3, count(march, "BASE_PAY"),
+                "March BASE_PAY has three explicit source splits");
+        assertEquals(1, marchRegional.size(),
+                "Observed REGIONAL remains one source line, not three synthetic splits");
+        assertEquals("март 2026", marchRegional.get(0).sourcePeriod());
+        assertEquals(PayrollTruthProvenance.FACT, marchRegional.get(0).provenance());
+    }
+
+    @Test
     void negativeEligibilityCasesRemainExplicit() throws Exception {
         PayrollTruthPack pack = read();
 

@@ -86,6 +86,14 @@ public class PayrollService {
     private PayrollCombinationEpisodeFactService
             combinationEpisodeFacts;
 
+    /*
+     * 8A4E2B3C2 explicit REGIONAL source facts stay separate from the
+     * LOCAL_ELIGIBLE_EARNINGS money formula. Real Spring runtime requires
+     * this authority; historical direct-construction tests remain compatible.
+     */
+    private PayrollRegionalCoefficientSourceFactService
+            regionalCoefficientSourceFacts;
+
     public PayrollService(PayrollSettingsRepository settings,
                           CompensationTermRepository compensationTerms,
                           PayrollAdjustmentRepository adjustments,
@@ -144,6 +152,14 @@ public class PayrollService {
     ) {
         this.combinationEpisodeFacts =
                 combinationEpisodeFacts;
+    }
+
+    @Autowired
+    void configureRegionalCoefficientSourceFacts(
+            PayrollRegionalCoefficientSourceFactService regionalCoefficientSourceFacts
+    ) {
+        this.regionalCoefficientSourceFacts =
+                regionalCoefficientSourceFacts;
     }
 
     @Transactional
@@ -379,15 +395,27 @@ public class PayrollService {
                 semanticComponentLines;
 
         if (componentSemanticProvenance != null) {
+            YearMonth snapshotMonth =
+                    YearMonth.from(
+                            snapshot.getPeriodMonth()
+                    );
+
             List<PayrollCombinationEpisodeFactService.EpisodeFact>
                     combinationFacts =
                     combinationEpisodeFacts == null
                             ? null
                             : combinationEpisodeFacts.resolveMonth(
                                     snapshot.getOwner(),
-                                    YearMonth.from(
-                                            snapshot.getPeriodMonth()
-                                    )
+                                    snapshotMonth
+                            );
+
+            List<PayrollRegionalCoefficientSourceFactService.SourceFact>
+                    regionalFacts =
+                    regionalCoefficientSourceFacts == null
+                            ? null
+                            : regionalCoefficientSourceFacts.resolveMonth(
+                                    snapshot.getOwner(),
+                                    snapshotMonth
                             );
 
             semanticComponentLines =
@@ -395,6 +423,7 @@ public class PayrollService {
                             frozenComponentLines,
                             semanticBasePayLines,
                             combinationFacts,
+                            regionalFacts,
                             snapshot.getCurrencyCode()
                     );
         } else {

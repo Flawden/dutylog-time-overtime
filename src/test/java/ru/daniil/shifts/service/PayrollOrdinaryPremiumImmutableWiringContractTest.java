@@ -127,7 +127,11 @@ class PayrollOrdinaryPremiumImmutableWiringContractTest {
                 "combinationEpisodeFacts.resolveMonth(",
                 "snapshot.getOwner()",
                 "snapshot.getPeriodMonth()",
-                "snapshot.getCurrencyCode()"
+                "snapshot.getCurrencyCode()",
+                "PayrollRegionalCoefficientSourceFactService",
+                "configureRegionalCoefficientSourceFacts",
+                "regionalCoefficientSourceFacts.resolveMonth(",
+                "regionalFacts,"
         }) {
             assertTrue(
                     payroll.contains(marker),

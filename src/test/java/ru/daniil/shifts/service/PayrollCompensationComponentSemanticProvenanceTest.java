@@ -5,6 +5,7 @@ import ru.daniil.shifts.model.PayrollEarningKind;
 import ru.daniil.shifts.model.PayrollQualifiedQuantity;
 import ru.daniil.shifts.model.PayrollSnapshotComponentLine;
 import ru.daniil.shifts.service.PayrollCombinationEpisodeFactService.EpisodeFact;
+import ru.daniil.shifts.service.PayrollRegionalCoefficientSourceFactService.SourceFact;
 import ru.daniil.shifts.service.PayrollSemanticFreezeProjection.SemanticLine;
 
 import java.time.LocalDate;
@@ -443,6 +444,229 @@ class PayrollCompensationComponentSemanticProvenanceTest {
         assertEquals(60_000L, result.get(1).detailedLines().get(0).amountMinor());
     }
 
+
+    @Test
+    void regionalUsesOnlyExplicitObservedSourcePeriodsAndDoesNotSplitByEligibleBaseLines() {
+        var regional = component(
+                0,
+                PayrollEarningKind.REGIONAL_COEFFICIENT,
+                "PERCENT_OF_BASE",
+                "LOCAL_ELIGIBLE_EARNINGS",
+                1_500,
+                8_928_080L,
+                1_339_212L
+        );
+
+        var result = service.lines(
+                List.of(regional),
+                List.of(
+                        baseLine(1_729_943L, 2_880L, 1, 10),
+                        baseLine(756_850L, 1_320L, 11, 12),
+                        baseLine(3_459_886L, 5_760L, 14, 31)
+                ),
+                null,
+                List.of(
+                        regionalFact(
+                                21L,
+                                42L,
+                                1,
+                                31,
+                                1_339_212L
+                        )
+                ),
+                "RUB"
+        );
+
+        var detailed = result.get(0).detailedLines();
+
+        assertNotNull(detailed);
+        assertEquals(1, detailed.size(),
+                "observed monthly regional line must not be synthesized into base-pay splits");
+        assertEquals(1_339_212L, detailed.get(0).amountMinor());
+        assertEquals(LocalDate.of(2026, 3, 1), detailed.get(0).earningPeriodFrom());
+        assertEquals(LocalDate.of(2026, 3, 31), detailed.get(0).earningPeriodTo());
+        assertNull(detailed.get(0).qualifiedQuantity());
+        assertNull(detailed.get(0).coverageFrom());
+        assertNull(detailed.get(0).coverageTo());
+    }
+
+    @Test
+    void regionalStaysAggregateOnlyWithoutExplicitSourceFact() {
+        var result = service.lines(
+                List.of(
+                        component(
+                                0,
+                                PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                "PERCENT_OF_BASE",
+                                "LOCAL_ELIGIBLE_EARNINGS",
+                                1_500,
+                                1_000_000L,
+                                150_000L
+                        )
+                ),
+                null,
+                null,
+                null,
+                "RUB"
+        );
+
+        assertNull(result.get(0).detailedLines());
+    }
+
+    @Test
+    void regionalExplicitFactsFailClosedOnUnsupportedFormulaMoneyOrCurrency() {
+        SourceFact fact = regionalFact(
+                21L,
+                42L,
+                1,
+                31,
+                150_000L
+        );
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.lines(
+                        List.of(
+                                component(
+                                        0,
+                                        PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                        "PERCENT_OF_BASE",
+                                        "EARNED_BASE_PAY",
+                                        1_500,
+                                        1_000_000L,
+                                        150_000L
+                                )
+                        ),
+                        null,
+                        null,
+                        List.of(fact),
+                        "RUB"
+                )
+        );
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.lines(
+                        List.of(
+                                component(
+                                        0,
+                                        PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                        "PERCENT_OF_BASE",
+                                        "LOCAL_ELIGIBLE_EARNINGS",
+                                        1_500,
+                                        1_000_000L,
+                                        149_999L
+                                )
+                        ),
+                        null,
+                        null,
+                        List.of(fact),
+                        "RUB"
+                )
+        );
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.lines(
+                        List.of(
+                                component(
+                                        0,
+                                        PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                        "PERCENT_OF_BASE",
+                                        "LOCAL_ELIGIBLE_EARNINGS",
+                                        1_500,
+                                        1_000_000L,
+                                        150_000L
+                                )
+                        ),
+                        null,
+                        null,
+                        List.of(
+                                new SourceFact(
+                                        21L,
+                                        42L,
+                                        LocalDate.of(2026, 3, 1),
+                                        LocalDate.of(2026, 3, 31),
+                                        150_000L,
+                                        "USD"
+                                )
+                        ),
+                        "RUB"
+                )
+        );
+    }
+
+    @Test
+    void regionalExplicitSourceMoneyMustReconcileExactlyAndMayPreserveExplicitSplitFacts() {
+        var regional = component(
+                0,
+                PayrollEarningKind.REGIONAL_COEFFICIENT,
+                "PERCENT_OF_BASE",
+                "LOCAL_ELIGIBLE_EARNINGS",
+                1_500,
+                1_000_000L,
+                150_000L
+        );
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.lines(
+                        List.of(regional),
+                        null,
+                        null,
+                        List.of(
+                                regionalFact(21L, 42L, 1, 15, 100_000L)
+                        ),
+                        "RUB"
+                )
+        );
+
+        var exact = service.lines(
+                List.of(regional),
+                null,
+                null,
+                List.of(
+                        regionalFact(21L, 42L, 1, 15, 100_000L),
+                        regionalFact(22L, 42L, 16, 31, 50_000L)
+                ),
+                "RUB"
+        );
+
+        assertEquals(2, exact.get(0).detailedLines().size());
+        assertEquals(
+                150_000L,
+                exact.get(0).detailedLines().stream()
+                        .mapToLong(SemanticLine::amountMinor)
+                        .sum()
+        );
+    }
+
+    @Test
+    void explicitRegionalFactWithoutMatchingFrozenRegionalComponentFailsClosed() {
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.lines(
+                        List.of(
+                                component(
+                                        0,
+                                        PayrollEarningKind.REGIONAL_COEFFICIENT,
+                                        "PERCENT_OF_BASE",
+                                        "LOCAL_ELIGIBLE_EARNINGS",
+                                        1_500,
+                                        1_000_000L,
+                                        150_000L
+                                )
+                        ),
+                        null,
+                        null,
+                        List.of(
+                                regionalFact(21L, 99L, 1, 31, 150_000L)
+                        ),
+                        "RUB"
+                )
+        );
+    }
+
     @Test
     void harmfulFailsClosedWhenFrozenFormulaDisagreesWithDetailedBaseTruth() {
         var base = List.of(
@@ -549,6 +773,23 @@ class PayrollCompensationComponentSemanticProvenanceTest {
                 amountMinor,
                 "RUB",
                 agreedRateBps
+        );
+    }
+
+    private static SourceFact regionalFact(
+            long factId,
+            long componentId,
+            int dayFrom,
+            int dayTo,
+            long amountMinor
+    ) {
+        return new SourceFact(
+                factId,
+                componentId,
+                LocalDate.of(2026, 3, dayFrom),
+                LocalDate.of(2026, 3, dayTo),
+                amountMinor,
+                "RUB"
         );
     }
 
