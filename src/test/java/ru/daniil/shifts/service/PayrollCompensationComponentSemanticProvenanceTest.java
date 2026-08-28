@@ -351,6 +351,99 @@ class PayrollCompensationComponentSemanticProvenanceTest {
     }
 
     @Test
+    void combinationRequiresCanonicalFrozenCurrencyOnlyForMatchingExplicitFacts() {
+        var component = component(
+                0,
+                PayrollEarningKind.COMBINATION,
+                "FIXED_AMOUNT",
+                null,
+                null,
+                0L,
+                100_000L
+        );
+        var fact = combinationFact(
+                10L,
+                42L,
+                1,
+                10,
+                480L,
+                100_000L,
+                null
+        );
+
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.lines(
+                        List.of(component),
+                        null,
+                        List.of(fact),
+                        null
+                )
+        );
+        assertThrows(
+                IllegalStateException.class,
+                () -> service.lines(
+                        List.of(component),
+                        null,
+                        List.of(fact),
+                        "rub"
+                )
+        );
+
+        var aggregateOnly = service.lines(
+                List.of(component),
+                null,
+                List.of(),
+                null
+        );
+        assertNull(aggregateOnly.get(0).detailedLines());
+    }
+
+    @Test
+    void explicitFactsCanCoverOnlyOneOfSeveralFrozenCombinationComponents() {
+        var first = component(
+                0,
+                PayrollEarningKind.COMBINATION,
+                "FIXED_AMOUNT",
+                null,
+                null,
+                0L,
+                40_000L
+        );
+        var second = component(
+                1,
+                PayrollEarningKind.COMBINATION,
+                "FIXED_AMOUNT",
+                null,
+                null,
+                0L,
+                60_000L
+        );
+        when(second.getComponentId()).thenReturn(99L);
+
+        var result = service.lines(
+                List.of(first, second),
+                null,
+                List.of(
+                        combinationFact(
+                                11L,
+                                99L,
+                                20,
+                                21,
+                                120L,
+                                60_000L,
+                                null
+                        )
+                ),
+                "RUB"
+        );
+
+        assertNull(result.get(0).detailedLines());
+        assertNotNull(result.get(1).detailedLines());
+        assertEquals(60_000L, result.get(1).detailedLines().get(0).amountMinor());
+    }
+
+    @Test
     void harmfulFailsClosedWhenFrozenFormulaDisagreesWithDetailedBaseTruth() {
         var base = List.of(
                 baseLine(
