@@ -273,6 +273,37 @@ class PostgreSqlMigrationContractTest {
     }
 
 
+    @Test
+    void snapshotBonusAverageEarningsFreezePreservesOnlyExplicitD2AndF1Facts() throws IOException {
+        String sql = Files.readString(
+                MIGRATION_ROOT.resolve(
+                        "V73__snapshot_bonus_average_earnings_fact_freeze.sql"
+                )
+        );
+
+        assertTrue(sql.contains("CREATE TABLE payroll_snapshot_bonus_average_earnings_manifests"));
+        assertTrue(sql.contains("CREATE TABLE payroll_snapshot_bonus_average_earnings_facts"));
+        assertTrue(sql.contains("source_fact_count INTEGER NOT NULL"));
+        assertTrue(sql.contains("fact_count INTEGER NOT NULL"));
+        assertTrue(sql.contains("complete = (fact_count = source_fact_count)"));
+        assertTrue(sql.contains("bonus_source_fact_id BIGINT NOT NULL"));
+        assertTrue(sql.contains("bonus_average_fact_id BIGINT NOT NULL"));
+        assertTrue(sql.contains("source_period_from DATE NOT NULL"));
+        assertTrue(sql.contains("award_period_from DATE NOT NULL"));
+        assertTrue(sql.contains("annual_result BOOLEAN"));
+        assertTrue(sql.contains("accrued_for_actual_work_time BOOLEAN"));
+        assertTrue(sql.contains("prorated_for_partial_award_period BOOLEAN"));
+        assertFalse(sql.contains("REFERENCES payroll_bonus_source_facts"),
+                "snapshot history must survive mutable D2 source rows");
+        assertFalse(sql.contains("REFERENCES payroll_bonus_average_earnings_facts"),
+                "snapshot history must survive mutable F1 rows");
+        assertFalse(sql.contains("UPDATE payroll_snapshot_bonus_average_earnings"),
+                "V73 must not backfill or synthesize historical paragraph-15 facts");
+        assertFalse(sql.toLowerCase().contains("coalesce(annual_result"),
+                "UNKNOWN paragraph-15 booleans must not become false defaults");
+    }
+
+
 
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();

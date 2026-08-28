@@ -144,6 +144,39 @@ class PayrollOrdinaryPremiumImmutableWiringContractTest {
         }
     }
 
+
+    @Test
+    void payrollFreezesExplicitBonusAverageEarningsFactsBesideSnapshot()
+            throws Exception {
+
+        String payroll =
+                Files.readString(
+                        Path.of(
+                                "src/main/java/ru/daniil/shifts/service/"
+                                        + "PayrollService.java"
+                        )
+                );
+
+        for (String marker : new String[] {
+                "PayrollBonusAverageEarningsFactService",
+                "PayrollBonusAverageEarningsFreezeService",
+                "configureBonusAverageEarningsFreeze",
+                "bonusAverageEarningsFacts.resolveForBonusFacts(",
+                "bonusAverageEarningsFreeze.freeze(",
+                "bonusFacts,",
+                "averageFacts"
+        }) {
+            assertTrue(payroll.contains(marker), marker);
+        }
+
+        assertTrue(
+                payroll.contains(
+                        "Snapshot bonus average-earnings freeze lacks required authority"
+                ),
+                "real Spring snapshot path must fail closed if required authority disappears"
+        );
+    }
+
     private static String region(
             String source,
             String start,

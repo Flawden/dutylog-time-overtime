@@ -102,6 +102,14 @@ public class PayrollService {
      */
     private PayrollBonusSourceFactService bonusSourceFacts;
 
+    /*
+     * 8A4F2 freezes already-explicit D2 + F1 bonus facts beside each immutable
+     * Payroll snapshot. Missing F1 facts become an incomplete snapshot manifest;
+     * they do not block ordinary Payroll creation and are never defaulted.
+     */
+    private PayrollBonusAverageEarningsFactService bonusAverageEarningsFacts;
+    private PayrollBonusAverageEarningsFreezeService bonusAverageEarningsFreeze;
+
     public PayrollService(PayrollSettingsRepository settings,
                           CompensationTermRepository compensationTerms,
                           PayrollAdjustmentRepository adjustments,
@@ -175,6 +183,15 @@ public class PayrollService {
             PayrollBonusSourceFactService bonusSourceFacts
     ) {
         this.bonusSourceFacts = bonusSourceFacts;
+    }
+
+    @Autowired
+    void configureBonusAverageEarningsFreeze(
+            PayrollBonusAverageEarningsFactService bonusAverageEarningsFacts,
+            PayrollBonusAverageEarningsFreezeService bonusAverageEarningsFreeze
+    ) {
+        this.bonusAverageEarningsFacts = bonusAverageEarningsFacts;
+        this.bonusAverageEarningsFreeze = bonusAverageEarningsFreeze;
     }
 
     @Transactional
@@ -409,6 +426,8 @@ public class PayrollService {
         List<PayrollSemanticFreezeProjection.ComponentLine>
                 semanticComponentLines;
 
+        List<PayrollBonusSourceFactService.BonusFact> bonusFacts = null;
+
         if (componentSemanticProvenance != null) {
             YearMonth snapshotMonth =
                     YearMonth.from(
@@ -433,8 +452,7 @@ public class PayrollService {
                                     snapshotMonth
                             );
 
-            List<PayrollBonusSourceFactService.BonusFact>
-                    bonusFacts =
+            bonusFacts =
                     bonusSourceFacts == null
                             ? null
                             : bonusSourceFacts.resolveMonth(
@@ -513,6 +531,29 @@ public class PayrollService {
                         semanticNightLines
                 )
         );
+
+        if (bonusAverageEarningsFreeze != null) {
+            if (bonusSourceFacts == null
+                    || bonusAverageEarningsFacts == null
+                    || bonusFacts == null) {
+                throw new IllegalStateException(
+                        "Snapshot bonus average-earnings freeze lacks required authority"
+                );
+            }
+
+            List<PayrollBonusAverageEarningsFactService.AverageFact>
+                    averageFacts =
+                    bonusAverageEarningsFacts.resolveForBonusFacts(
+                            snapshot.getOwner(),
+                            bonusFacts
+                    );
+
+            bonusAverageEarningsFreeze.freeze(
+                    snapshot,
+                    bonusFacts,
+                    averageFacts
+            );
+        }
     }
 
     private PayrollPeriodDto buildPeriod(AppUser user, YearMonth month, PayrollSettings legacySettings) {
