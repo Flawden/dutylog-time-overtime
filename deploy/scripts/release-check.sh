@@ -5003,15 +5003,25 @@ contains src/test/java/ru/daniil/shifts/service/AverageEarningsBonusP15Reference
 
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1523" ]]; then
-  ok "test method baseline: 1523"
+# 8A4F3H final average-earnings numerator money assembly contracts.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsNumeratorCalculationService.java "RAW_PREMIUM_RECONCILIATION_MISMATCH"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsNumeratorCalculationService.java "premium.calculation().includedPremiumAmountMinor()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsNumeratorCalculationService.java "AverageEarningsParagraph5MoneyPolicy.resolve("
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph5MoneyPolicy.java "PP_540_P5_ORDINARY_EARNING_TIME_AUTHORITY_MISSING"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph5MoneyPolicy.java "PP_540_P5_ORDINARY_EARNING_PARTIAL_OVERLAP_UNRESOLVED"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph5MoneyPolicy.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph5MoneyPolicy.java ".divide("
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsNumeratorFactsService.java "AverageEarningsNumeratorCalculationService"
+
+if [[ "$TEST_METHODS" == "1571" ]]; then
+  ok "test method baseline: 1571"
 else
-  fail "expected 1523 @Test methods, found $TEST_METHODS"
+  fail "expected 1571 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "284" ]]; then
-  ok "test class baseline: 284"
+if [[ "$TEST_CLASSES" == "287" ]]; then
+  ok "test class baseline: 287"
 else
-  fail "expected 284 test classes, found $TEST_CLASSES"
+  fail "expected 287 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
