@@ -118,6 +118,13 @@ public class PayrollService {
     private PayrollBonusP15NatureFactService bonusP15NatureFacts;
     private PayrollBonusP15NatureFreezeService bonusP15NatureFreeze;
 
+    /*
+     * 8A4F3F2 freezes P15 scheduled-work FACT authority beside each immutable
+     * Payroll revision. Missing mode/clock authority becomes an incomplete
+     * manifest; ordinary Payroll remains calculable and no ratio is guessed.
+     */
+    private PayrollP15ScheduledWorkFreezeService p15ScheduledWorkFreeze;
+
     public PayrollService(PayrollSettingsRepository settings,
                           CompensationTermRepository compensationTerms,
                           PayrollAdjustmentRepository adjustments,
@@ -209,6 +216,13 @@ public class PayrollService {
     ) {
         this.bonusP15NatureFacts = bonusP15NatureFacts;
         this.bonusP15NatureFreeze = bonusP15NatureFreeze;
+    }
+
+    @Autowired
+    void configureP15ScheduledWorkFreeze(
+            PayrollP15ScheduledWorkFreezeService p15ScheduledWorkFreeze
+    ) {
+        this.p15ScheduledWorkFreeze = p15ScheduledWorkFreeze;
     }
 
     @Transactional
@@ -391,8 +405,35 @@ public class PayrollService {
                 frozenComponentLines
         );
 
+        freezeP15ScheduledWork(
+                created,
+                user,
+                source
+        );
+
         if (previous != null) { previous.supersedeWith(created); snapshots.save(previous); }
         return toSnapshot(created);
+    }
+
+    private void freezeP15ScheduledWork(
+            PayrollSnapshot snapshot,
+            AppUser user,
+            PayrollSourceSnapshot source
+    ) {
+        /*
+         * Historical direct-construction unit fixtures predate F3F2 and do not
+         * run through Spring setter injection. Real Spring runtime requires
+         * this collaborator, so production snapshots always persist a manifest.
+         */
+        if (p15ScheduledWorkFreeze == null) {
+            return;
+        }
+
+        p15ScheduledWorkFreeze.freeze(
+                snapshot,
+                user,
+                source
+        );
     }
 
     private void freezeSemanticEarnings(

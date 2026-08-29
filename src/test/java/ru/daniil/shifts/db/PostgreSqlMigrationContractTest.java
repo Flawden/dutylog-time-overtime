@@ -372,4 +372,24 @@ class PostgreSqlMigrationContractTest {
                 "work-time accounting regime must not be inferred from Payroll pay mode");
     }
 
+    @Test
+    void snapshotP15ScheduledWorkFreezeMigrationSeparatesOutsidePlanAndNeverBackfillsLegacySnapshots() throws Exception {
+        String sql = Files.readString(
+                MIGRATION_ROOT.resolve("V77__snapshot_p15_scheduled_work_fact_freeze.sql")
+        );
+
+        assertTrue(sql.contains("CREATE TABLE payroll_snapshot_p15_work_time_manifests"));
+        assertTrue(sql.contains("CREATE TABLE payroll_snapshot_p15_scheduled_work_facts"));
+        assertTrue(sql.contains("planned_and_worked_minutes INTEGER NOT NULL"));
+        assertTrue(sql.contains("planned_not_worked_minutes INTEGER NOT NULL"));
+        assertTrue(sql.contains("worked_outside_plan_minutes INTEGER NOT NULL"));
+        assertTrue(sql.contains("accounting_mode IN ('DAILY', 'SUMMARIZED')"));
+        assertFalse(sql.contains("REFERENCES work_time_accounting_terms"),
+                "snapshot mode identity must survive mutable F3F1 history");
+        assertFalse(sql.toUpperCase().contains("INSERT INTO PAYROLL_SNAPSHOT_P15"),
+                "V77 must not fabricate scheduled-work authority for legacy snapshots");
+        assertFalse(sql.toUpperCase().contains("UPDATE PAYROLL_SNAPSHOTS"),
+                "V77 must not derive P15 facts from legacy aggregate planned/worked minutes");
+    }
+
 }

@@ -4974,17 +4974,31 @@ contains src/main/java/ru/daniil/shifts/service/WorkTimeAccountingHistoryService
 not_contains src/main/java/ru/daniil/shifts/service/WorkTimeAccountingHistoryService.java "getPayMode()"
 contains src/test/java/ru/daniil/shifts/service/WorkTimeAccountingHistoryServiceTest.java "missingHistoryRemainsUnknownWithoutCompatibilityBaseline"
 
+# 8A4F3F2 — immutable P15 scheduled-work snapshot FACT authority.
+contains src/main/resources/db/migration/postgresql/V77__snapshot_p15_scheduled_work_fact_freeze.sql "CREATE TABLE payroll_snapshot_p15_work_time_manifests"
+contains src/main/resources/db/migration/postgresql/V77__snapshot_p15_scheduled_work_fact_freeze.sql "CREATE TABLE payroll_snapshot_p15_scheduled_work_facts"
+contains src/main/resources/db/migration/postgresql/V77__snapshot_p15_scheduled_work_fact_freeze.sql "worked_outside_plan_minutes INTEGER NOT NULL"
+not_contains src/main/resources/db/migration/postgresql/V77__snapshot_p15_scheduled_work_fact_freeze.sql "INSERT INTO payroll_snapshot_p15"
+contains src/main/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeService.java "PLANNED_AND_WORKED"
+contains src/main/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeService.java "WORKED_OUTSIDE_PLAN"
+contains src/main/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeService.java "paragraph-13"
+contains src/main/java/ru/daniil/shifts/service/PayrollService.java "freezeP15ScheduledWork("
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15Formula.java "PayrollP15ScheduledWorkFreezeService"
+contains src/test/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeServiceTest.java "absencePlusDerivedOvertimeCannotMasqueradeAsFullyWorkedReferenceTime"
+contains src/test/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeServiceTest.java "explicitSecondHalfOfOvernightShiftMarksFirstHalfNotWorkedAndCarriesSupportingActualIdentity"
+contains src/test/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeServiceTest.java "fullPlanDerivedOvernightShiftCarriesPreviousSourceTruthAcrossMonthBoundary"
+
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1448" ]]; then
-  ok "test method baseline: 1448"
+if [[ "$TEST_METHODS" == "1463" ]]; then
+  ok "test method baseline: 1463"
 else
-  fail "expected 1448 @Test methods, found $TEST_METHODS"
+  fail "expected 1463 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "276" ]]; then
-  ok "test class baseline: 276"
+if [[ "$TEST_CLASSES" == "279" ]]; then
+  ok "test class baseline: 279"
 else
-  fail "expected 276 test classes, found $TEST_CLASSES"
+  fail "expected 279 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
