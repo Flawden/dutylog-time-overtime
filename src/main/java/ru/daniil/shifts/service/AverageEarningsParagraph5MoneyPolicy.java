@@ -38,7 +38,25 @@ public final class AverageEarningsParagraph5MoneyPolicy {
             List<AverageEarningsNumeratorFactsService.MonthFact> months,
             List<AverageEarningsBonusP15ReferenceCompletenessService.Paragraph5Exclusion> exclusions
     ) {
+        return resolve(
+                eventDate,
+                AverageEarningsReferenceWindow.primary(eventDate),
+                months,
+                exclusions
+        );
+    }
+
+    public static Resolution resolve(
+            LocalDate eventDate,
+            AverageEarningsReferenceWindow referenceWindow,
+            List<AverageEarningsNumeratorFactsService.MonthFact> months,
+            List<AverageEarningsBonusP15ReferenceCompletenessService.Paragraph5Exclusion> exclusions
+    ) {
         Objects.requireNonNull(eventDate, "Paragraph-5 money policy requires event date");
+        Objects.requireNonNull(
+                referenceWindow,
+                "Paragraph-5 money policy requires reference window"
+        ).requireEventDate(eventDate);
         AverageEarningsLegalPolicy.requireRegime(eventDate);
 
         months = List.copyOf(Objects.requireNonNull(
@@ -50,9 +68,8 @@ public final class AverageEarningsParagraph5MoneyPolicy {
                 "Paragraph-5 money policy requires exclusion facts"
         ));
 
-        YearMonth eventMonth = YearMonth.from(eventDate);
-        YearMonth referenceFrom = eventMonth.minusMonths(12);
-        YearMonth referenceTo = eventMonth.minusMonths(1);
+        YearMonth referenceFrom = referenceWindow.referenceFrom();
+        YearMonth referenceTo = referenceWindow.referenceTo();
 
         if (months.size() != 12) {
             throw new IllegalArgumentException(
@@ -389,12 +406,11 @@ public final class AverageEarningsParagraph5MoneyPolicy {
                     decisions,
                     "Paragraph-5 line decisions are required"
             ));
-            if (!referenceFrom.equals(YearMonth.from(eventDate).minusMonths(12))
-                    || !referenceTo.equals(YearMonth.from(eventDate).minusMonths(1))) {
-                throw new IllegalArgumentException(
-                        "Paragraph-5 money reference window is not canonical"
-                );
-            }
+            new AverageEarningsReferenceWindow(
+                    YearMonth.from(eventDate),
+                    referenceFrom,
+                    referenceTo
+            );
             if (ready == (blockingReason != null)) {
                 throw new IllegalArgumentException(
                         "Paragraph-5 money resolution state is invalid"

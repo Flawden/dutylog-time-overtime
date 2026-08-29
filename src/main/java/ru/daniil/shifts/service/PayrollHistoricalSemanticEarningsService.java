@@ -151,15 +151,28 @@ public class PayrollHistoricalSemanticEarningsService {
             YearMonth eventMonth,
             List<YearMonth> requiredMonths
     ) {
+        return resolveRequiredMonths(
+                user,
+                AverageEarningsReferenceWindow.primary(eventMonth),
+                requiredMonths
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public RequiredResolution resolveRequiredMonths(
+            AppUser user,
+            AverageEarningsReferenceWindow referenceWindow,
+            List<YearMonth> requiredMonths
+    ) {
         if (user == null) {
             throw new IllegalArgumentException(
                     "Historical semantic earnings require user"
             );
         }
 
-        if (eventMonth == null) {
+        if (referenceWindow == null) {
             throw new IllegalArgumentException(
-                    "Historical semantic earnings require event month"
+                    "Historical semantic earnings require reference window"
             );
         }
 
@@ -169,15 +182,8 @@ public class PayrollHistoricalSemanticEarningsService {
             );
         }
 
-        YearMonth referenceFrom =
-                eventMonth.minusMonths(
-                        12
-                );
-
-        YearMonth referenceTo =
-                eventMonth.minusMonths(
-                        1
-                );
+        YearMonth referenceFrom = referenceWindow.referenceFrom();
+        YearMonth referenceTo = referenceWindow.referenceTo();
 
         List<YearMonth> required =
                 List.copyOf(

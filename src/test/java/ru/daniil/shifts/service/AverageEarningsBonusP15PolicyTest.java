@@ -117,6 +117,31 @@ class AverageEarningsBonusP15PolicyTest {
     }
 
     @Test
+    void previousEqualReferenceWindowKeepsAnnualRewardBoundToLegalEventYear() {
+        YearMonth previousFrom = YearMonth.of(2024, 8);
+        YearMonth previousTo = YearMonth.of(2025, 7);
+        var fact = fact(1, YearMonth.of(2026, 8), PayrollBonusP15Nature.ANNUAL_RESULT,
+                "YEAR_RESULT", 2_000_000L,
+                LocalDate.of(2025, 1, 1), LocalDate.of(2025, 12, 31), true, true);
+
+        var result = AverageEarningsBonusP15Policy.resolve(
+                EVENT,
+                previousFrom,
+                previousTo,
+                false,
+                List.of(fact)
+        );
+
+        var decision = only(result);
+        assertTrue(decision.included());
+        assertEquals(LegalRule.PP_540_P15_PREVIOUS_CALENDAR_YEAR, decision.legalRule());
+        assertEquals(
+                ReferenceTimeAdjustment.PROPORTIONAL_TO_REFERENCE_WORKED_TIME,
+                decision.referenceTimeAdjustment()
+        );
+    }
+
+    @Test
     void serviceLengthForPreviousCalendarYearUsesSamePreviousYearClause() {
         var fact = fact(1, YearMonth.of(2026, 2), PayrollBonusP15Nature.SERVICE_LENGTH,
                 "SERVICE", 500_000L,

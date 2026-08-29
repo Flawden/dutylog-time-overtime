@@ -65,24 +65,29 @@ public class AverageEarningsReferenceFactsService {
             AppUser user,
             YearMonth eventMonth
     ) {
+        return resolve(
+                user,
+                AverageEarningsReferenceWindow.primary(eventMonth)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public ReferenceFacts resolve(
+            AppUser user,
+            AverageEarningsReferenceWindow referenceWindow
+    ) {
         Objects.requireNonNull(
                 user,
                 "Average earnings reference facts require user"
         );
         Objects.requireNonNull(
-                eventMonth,
-                "Average earnings reference facts require event month"
+                referenceWindow,
+                "Average earnings reference facts require reference window"
         );
 
-        LocalDate referenceFrom =
-                eventMonth
-                        .minusMonths(12)
-                        .atDay(1);
-
-        LocalDate referenceTo =
-                eventMonth
-                        .minusMonths(1)
-                        .atEndOfMonth();
+        YearMonth eventMonth = referenceWindow.eventMonth();
+        LocalDate referenceFrom = referenceWindow.referenceFromDate();
+        LocalDate referenceTo = referenceWindow.referenceToDate();
 
         List<AbsencePeriod> rows =
                 absences

@@ -64,8 +64,29 @@ public class AverageEarningsNumeratorCalculationService {
             YearMonth discoveryThroughMonth,
             List<YearMonth> provenNoPayrollMonths
     ) {
+        return calculate(
+                user,
+                eventDate,
+                AverageEarningsReferenceWindow.primary(eventDate),
+                discoveryThroughMonth,
+                provenNoPayrollMonths
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Resolution calculate(
+            AppUser user,
+            LocalDate eventDate,
+            AverageEarningsReferenceWindow referenceWindow,
+            YearMonth discoveryThroughMonth,
+            List<YearMonth> provenNoPayrollMonths
+    ) {
         Objects.requireNonNull(user, "Average earnings numerator requires user");
         Objects.requireNonNull(eventDate, "Average earnings numerator requires event date");
+        Objects.requireNonNull(
+                referenceWindow,
+                "Average earnings numerator requires reference window"
+        ).requireEventDate(eventDate);
         Objects.requireNonNull(
                 discoveryThroughMonth,
                 "Average earnings numerator requires discovery-through month"
@@ -77,9 +98,9 @@ public class AverageEarningsNumeratorCalculationService {
 
         AverageEarningsLegalPolicy.requireRegime(eventDate);
 
-        YearMonth eventMonth = YearMonth.from(eventDate);
-        YearMonth referenceFrom = eventMonth.minusMonths(12);
-        YearMonth referenceTo = eventMonth.minusMonths(1);
+        YearMonth eventMonth = referenceWindow.eventMonth();
+        YearMonth referenceFrom = referenceWindow.referenceFrom();
+        YearMonth referenceTo = referenceWindow.referenceTo();
 
         if (discoveryThroughMonth.isBefore(referenceTo)) {
             throw new IllegalArgumentException(
@@ -89,7 +110,9 @@ public class AverageEarningsNumeratorCalculationService {
 
         AverageEarningsNumeratorFactsService.Resolution facts =
                 Objects.requireNonNull(
-                        numeratorFacts.resolve(user, eventDate),
+                        referenceWindow.primary()
+                                ? numeratorFacts.resolve(user, eventDate)
+                                : numeratorFacts.resolve(user, eventDate, referenceWindow),
                         "Average earnings numerator facts authority returned null"
                 );
 
@@ -151,12 +174,20 @@ public class AverageEarningsNumeratorCalculationService {
 
         AverageEarningsBonusP15CalculationPipelineService.Resolution premium =
                 Objects.requireNonNull(
-                        p15.calculate(
-                                user,
-                                eventDate,
-                                discoveryThroughMonth,
-                                mergedNoPayroll
-                        ),
+                        referenceWindow.primary()
+                                ? p15.calculate(
+                                        user,
+                                        eventDate,
+                                        discoveryThroughMonth,
+                                        mergedNoPayroll
+                                )
+                                : p15.calculate(
+                                        user,
+                                        eventDate,
+                                        referenceWindow,
+                                        discoveryThroughMonth,
+                                        mergedNoPayroll
+                                ),
                         "Paragraph-15 pipeline returned null"
                 );
 
@@ -211,11 +242,18 @@ public class AverageEarningsNumeratorCalculationService {
         }
 
         AverageEarningsParagraph5MoneyPolicy.Resolution paragraph5 =
-                AverageEarningsParagraph5MoneyPolicy.resolve(
-                        eventDate,
-                        facts.months(),
-                        premium.referenceCompleteness().paragraph5Exclusions()
-                );
+                referenceWindow.primary()
+                        ? AverageEarningsParagraph5MoneyPolicy.resolve(
+                                eventDate,
+                                facts.months(),
+                                premium.referenceCompleteness().paragraph5Exclusions()
+                        )
+                        : AverageEarningsParagraph5MoneyPolicy.resolve(
+                                eventDate,
+                                referenceWindow,
+                                facts.months(),
+                                premium.referenceCompleteness().paragraph5Exclusions()
+                        );
 
         if (!paragraph5.ready()) {
             return Resolution.blocked(
@@ -437,12 +475,15 @@ public class AverageEarningsNumeratorCalculationService {
                     discoveryThroughMonth,
                     "Numerator calculation discovery-through month is required"
             );
-            if (!eventMonth.equals(YearMonth.from(eventDate))
-                    || !referenceFrom.equals(eventMonth.minusMonths(12))
-                    || !referenceTo.equals(eventMonth.minusMonths(1))
-                    || discoveryThroughMonth.isBefore(referenceTo)) {
+            if (!eventMonth.equals(YearMonth.from(eventDate))) {
                 throw new IllegalArgumentException(
-                        "Numerator calculation window is not canonical"
+                        "Numerator calculation event month does not match legal event date"
+                );
+            }
+            new AverageEarningsReferenceWindow(eventMonth, referenceFrom, referenceTo);
+            if (discoveryThroughMonth.isBefore(referenceTo)) {
+                throw new IllegalArgumentException(
+                        "Numerator calculation discovery cannot end before selected reference period"
                 );
             }
             if (ready == (blockingReason != null)) {

@@ -109,6 +109,19 @@ public class VacationAverageReferenceCalendarService {
             AppUser user,
             LocalDate eventDate
     ) {
+        return resolve(
+                user,
+                eventDate,
+                AverageEarningsReferenceWindow.primary(eventDate)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Result resolve(
+            AppUser user,
+            LocalDate eventDate,
+            AverageEarningsReferenceWindow referenceWindow
+    ) {
         Objects.requireNonNull(
                 user,
                 "Vacation average reference calendar requires user"
@@ -118,32 +131,19 @@ public class VacationAverageReferenceCalendarService {
                 eventDate,
                 "Vacation average reference calendar requires event date"
         );
+        Objects.requireNonNull(
+                referenceWindow,
+                "Vacation average reference calendar requires reference window"
+        ).requireEventDate(eventDate);
 
         AverageEarningsLegalPolicy
                 .requireRegime(
                         eventDate
                 );
 
-        YearMonth eventMonth =
-                YearMonth.from(
-                        eventDate
-                );
-
-        LocalDate referenceFrom =
-                eventMonth
-                        .minusMonths(
-                                12
-                        )
-                        .atDay(
-                                1
-                        );
-
-        LocalDate referenceTo =
-                eventMonth
-                        .minusMonths(
-                                1
-                        )
-                        .atEndOfMonth();
+        YearMonth eventMonth = referenceWindow.eventMonth();
+        LocalDate referenceFrom = referenceWindow.referenceFromDate();
+        LocalDate referenceTo = referenceWindow.referenceToDate();
 
         EmploymentHistoryService.Resolution employmentResolution =
                 Objects.requireNonNull(
@@ -176,10 +176,15 @@ public class VacationAverageReferenceCalendarService {
 
         AverageEarningsReferenceFactsService.ReferenceFacts facts =
                 Objects.requireNonNull(
-                        referenceFacts.resolve(
-                                user,
-                                eventMonth
-                        ),
+                        referenceWindow.primary()
+                                ? referenceFacts.resolve(
+                                        user,
+                                        eventMonth
+                                )
+                                : referenceFacts.resolve(
+                                        user,
+                                        referenceWindow
+                                ),
                         "Average earnings reference facts are required"
                 );
 
@@ -346,16 +351,16 @@ public class VacationAverageReferenceCalendarService {
 
         List<VacationAverageCalendarDenominator.MonthFact> monthFacts =
                 monthFacts(
-                        eventMonth,
+                        referenceWindow.referenceFrom(),
                         employedDates,
                         excludedDates
                 );
 
         VacationAverageCalendarDenominator.Result denominator =
                 VacationAverageCalendarDenominator
-                        .primary(
+                        .calculate(
                                 eventDate,
-                                eventMonth,
+                                referenceWindow,
                                 monthFacts
                         );
 
@@ -505,7 +510,7 @@ public class VacationAverageReferenceCalendarService {
     }
 
     private List<VacationAverageCalendarDenominator.MonthFact> monthFacts(
-            YearMonth eventMonth,
+            YearMonth referenceFrom,
             Set<LocalDate> employedDates,
             Set<LocalDate> excludedDates
     ) {
@@ -514,10 +519,7 @@ public class VacationAverageReferenceCalendarService {
                         12
                 );
 
-        YearMonth referenceMonth =
-                eventMonth.minusMonths(
-                        12
-                );
+        YearMonth referenceMonth = referenceFrom;
 
         for (int offset = 0;
                 offset < 12;
@@ -654,6 +656,23 @@ public class VacationAverageReferenceCalendarService {
                     denominator,
                     "Vacation average denominator is required"
             );
+
+            if (!eventMonth.equals(YearMonth.from(eventDate))) {
+                throw new IllegalArgumentException(
+                        "Vacation reference calendar event month does not match legal event date"
+                );
+            }
+            new AverageEarningsReferenceWindow(
+                    eventMonth,
+                    YearMonth.from(referenceFrom),
+                    YearMonth.from(referenceTo)
+            );
+            if (!referenceFrom.equals(YearMonth.from(referenceFrom).atDay(1))
+                    || !referenceTo.equals(YearMonth.from(referenceTo).atEndOfMonth())) {
+                throw new IllegalArgumentException(
+                        "Vacation reference calendar must use whole calendar months"
+                );
+            }
 
             if (months.size() != 12) {
                 throw new IllegalArgumentException(

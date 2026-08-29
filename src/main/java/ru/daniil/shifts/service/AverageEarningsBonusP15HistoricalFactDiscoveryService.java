@@ -83,6 +83,23 @@ public class AverageEarningsBonusP15HistoricalFactDiscoveryService {
             YearMonth discoveryThroughMonth,
             List<YearMonth> provenNoPayrollMonths
     ) {
+        return resolve(
+                user,
+                eventDate,
+                AverageEarningsReferenceWindow.primary(eventDate),
+                discoveryThroughMonth,
+                provenNoPayrollMonths
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Resolution resolve(
+            AppUser user,
+            LocalDate eventDate,
+            AverageEarningsReferenceWindow referenceWindow,
+            YearMonth discoveryThroughMonth,
+            List<YearMonth> provenNoPayrollMonths
+    ) {
         Objects.requireNonNull(
                 user,
                 "Paragraph-15 historical discovery requires user"
@@ -91,6 +108,10 @@ public class AverageEarningsBonusP15HistoricalFactDiscoveryService {
                 eventDate,
                 "Paragraph-15 historical discovery requires event date"
         );
+        Objects.requireNonNull(
+                referenceWindow,
+                "Paragraph-15 historical discovery requires reference window"
+        ).requireEventDate(eventDate);
         Objects.requireNonNull(
                 discoveryThroughMonth,
                 "Paragraph-15 historical discovery requires as-of Payroll month"
@@ -102,9 +123,9 @@ public class AverageEarningsBonusP15HistoricalFactDiscoveryService {
 
         AverageEarningsLegalPolicy.requireRegime(eventDate);
 
-        YearMonth eventMonth = YearMonth.from(eventDate);
-        YearMonth referenceFrom = eventMonth.minusMonths(12);
-        YearMonth referenceTo = eventMonth.minusMonths(1);
+        YearMonth eventMonth = referenceWindow.eventMonth();
+        YearMonth referenceFrom = referenceWindow.referenceFrom();
+        YearMonth referenceTo = referenceWindow.referenceTo();
 
         if (discoveryThroughMonth.isBefore(referenceTo)) {
             throw new IllegalArgumentException(
@@ -459,6 +480,17 @@ public class AverageEarningsBonusP15HistoricalFactDiscoveryService {
             Objects.requireNonNull(referenceFrom, "Paragraph-15 discovery reference start is required");
             Objects.requireNonNull(referenceTo, "Paragraph-15 discovery reference end is required");
             Objects.requireNonNull(discoveryThroughMonth, "Paragraph-15 discovery as-of month is required");
+            if (!eventMonth.equals(YearMonth.from(eventDate))) {
+                throw new IllegalArgumentException(
+                        "Paragraph-15 discovery event month does not match legal event date"
+                );
+            }
+            new AverageEarningsReferenceWindow(eventMonth, referenceFrom, referenceTo);
+            if (discoveryThroughMonth.isBefore(referenceTo)) {
+                throw new IllegalArgumentException(
+                        "Paragraph-15 discovery cannot end before selected reference period"
+                );
+            }
             facts = List.copyOf(Objects.requireNonNull(
                     facts,
                     "Paragraph-15 discovered facts are required"

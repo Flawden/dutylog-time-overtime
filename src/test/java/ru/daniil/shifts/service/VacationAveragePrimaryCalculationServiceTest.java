@@ -54,6 +54,32 @@ class VacationAveragePrimaryCalculationServiceTest {
     }
 
     @Test
+    void explicitPreviousReferenceWindowFlowsToNumeratorAndCalendarWithoutChangingEventDate() {
+        AverageEarningsReferenceWindow window = new AverageEarningsReferenceWindow(
+                EVENT_MONTH,
+                YearMonth.of(2024, 9),
+                YearMonth.of(2025, 8)
+        );
+        var money = readyNumerator(3_516_000L, "RUB", window);
+        var calendarResult = readyCalendar(
+                VacationAverageCalendarDenominator.ExactDays.of(1758, 5),
+                window
+        );
+        when(numerator.calculate(user, EVENT, window, THROUGH, List.of())).thenReturn(money);
+        when(calendar.resolve(user, EVENT, window)).thenReturn(calendarResult);
+
+        var result = service.calculate(user, EVENT, window, THROUGH, List.of());
+
+        assertTrue(result.ready());
+        assertEquals(EVENT, result.eventDate());
+        assertEquals(window.referenceFrom(), result.referenceFrom());
+        assertEquals(window.referenceTo(), result.referenceTo());
+        assertEquals(java.math.BigInteger.valueOf(10_000L), result.averageDaily().numeratorMinor());
+        verify(numerator).calculate(user, EVENT, window, THROUGH, List.of());
+        verify(calendar).resolve(user, EVENT, window);
+    }
+
+    @Test
     void numeratorBlockerPropagatesBeforeCalendarAuthorityIsRead() {
         var blocked = mock(AverageEarningsNumeratorCalculationService.Resolution.class);
         when(blocked.ready()).thenReturn(false);
@@ -219,12 +245,24 @@ class VacationAveragePrimaryCalculationServiceTest {
             long amount,
             String currency
     ) {
+        return readyNumerator(
+                amount,
+                currency,
+                AverageEarningsReferenceWindow.primary(EVENT)
+        );
+    }
+
+    private AverageEarningsNumeratorCalculationService.Resolution readyNumerator(
+            long amount,
+            String currency,
+            AverageEarningsReferenceWindow window
+    ) {
         var result = mock(AverageEarningsNumeratorCalculationService.Resolution.class);
         lenient().when(result.ready()).thenReturn(true);
         lenient().when(result.eventDate()).thenReturn(EVENT);
         lenient().when(result.eventMonth()).thenReturn(EVENT_MONTH);
-        lenient().when(result.referenceFrom()).thenReturn(FROM);
-        lenient().when(result.referenceTo()).thenReturn(TO);
+        lenient().when(result.referenceFrom()).thenReturn(window.referenceFrom());
+        lenient().when(result.referenceTo()).thenReturn(window.referenceTo());
         lenient().when(result.discoveryThroughMonth()).thenReturn(THROUGH);
         lenient().when(result.currencyCode()).thenReturn(currency);
         lenient().when(result.numeratorAmountMinor()).thenReturn(amount);
@@ -234,19 +272,29 @@ class VacationAveragePrimaryCalculationServiceTest {
     private VacationAverageReferenceCalendarService.Result readyCalendar(
             VacationAverageCalendarDenominator.ExactDays days
     ) {
+        return readyCalendar(
+                days,
+                AverageEarningsReferenceWindow.primary(EVENT)
+        );
+    }
+
+    private VacationAverageReferenceCalendarService.Result readyCalendar(
+            VacationAverageCalendarDenominator.ExactDays days,
+            AverageEarningsReferenceWindow window
+    ) {
         var denominator = mock(VacationAverageCalendarDenominator.Result.class);
-        when(denominator.eventDate()).thenReturn(EVENT);
-        when(denominator.eventMonth()).thenReturn(EVENT_MONTH);
-        when(denominator.referenceFrom()).thenReturn(FROM);
-        when(denominator.referenceTo()).thenReturn(TO);
-        when(denominator.denominatorDays()).thenReturn(days);
+        lenient().when(denominator.eventDate()).thenReturn(EVENT);
+        lenient().when(denominator.eventMonth()).thenReturn(EVENT_MONTH);
+        lenient().when(denominator.referenceFrom()).thenReturn(window.referenceFrom());
+        lenient().when(denominator.referenceTo()).thenReturn(window.referenceTo());
+        lenient().when(denominator.denominatorDays()).thenReturn(days);
 
         var result = mock(VacationAverageReferenceCalendarService.Result.class);
-        when(result.eventDate()).thenReturn(EVENT);
-        when(result.eventMonth()).thenReturn(EVENT_MONTH);
-        when(result.referenceFrom()).thenReturn(FROM.atDay(1));
-        when(result.referenceTo()).thenReturn(TO.atEndOfMonth());
-        when(result.denominator()).thenReturn(denominator);
+        lenient().when(result.eventDate()).thenReturn(EVENT);
+        lenient().when(result.eventMonth()).thenReturn(EVENT_MONTH);
+        lenient().when(result.referenceFrom()).thenReturn(window.referenceFromDate());
+        lenient().when(result.referenceTo()).thenReturn(window.referenceToDate());
+        lenient().when(result.denominator()).thenReturn(denominator);
         return result;
     }
 }

@@ -88,6 +88,43 @@ class AverageEarningsBonusP15CalculationPipelineServiceTest {
     }
 
     @Test
+    void previousEqualReferenceWindowKeepsLegalEventDateThroughDiscoveryCompletenessPolicyAndFormula() {
+        AverageEarningsReferenceWindow window = new AverageEarningsReferenceWindow(
+                EVENT_MONTH,
+                YearMonth.of(2024, 8),
+                YearMonth.of(2025, 7)
+        );
+        var annual = annual(1, YearMonth.of(2026, 8), true);
+        when(discovery.resolve(user, EVENT, window, THROUGH, List.of())).thenReturn(
+                AverageEarningsBonusP15HistoricalFactDiscoveryService.Resolution.ready(
+                        EVENT, EVENT_MONTH, window.referenceFrom(), window.referenceTo(),
+                        THROUGH, "RUB", List.of(annual)
+                )
+        );
+        when(completeness.resolve(user, EVENT, window, List.of())).thenReturn(
+                AverageEarningsBonusP15ReferenceCompletenessService.Resolution.ready(
+                        EVENT, EVENT_MONTH, window.referenceFrom(), window.referenceTo(),
+                        WorkTimeAccountingMode.SUMMARIZED,
+                        new AverageEarningsBonusP15Formula.ReferenceWorkedTimeFact(
+                                WORKING_MINUTES, 900, 1_000
+                        ),
+                        false, false, List.of(), true, false, List.of()
+                )
+        );
+
+        var result = service.calculate(user, EVENT, window, THROUGH, List.of());
+
+        assertTrue(result.ready());
+        assertEquals(EVENT, result.eventDate());
+        assertEquals(window.referenceFrom(), result.referenceFrom());
+        assertEquals(window.referenceTo(), result.referenceTo());
+        assertTrue(result.policy().decisions().get(0).included());
+        assertEquals(1_800_000L, result.calculation().includedPremiumAmountMinor());
+        verify(discovery).resolve(user, EVENT, window, THROUGH, List.of());
+        verify(completeness).resolve(user, EVENT, window, List.of());
+    }
+
+    @Test
     void historicalDiscoveryBlockerStopsBeforeCompleteness() {
         when(discovery.resolve(user, EVENT, THROUGH, List.of())).thenReturn(
                 AverageEarningsBonusP15HistoricalFactDiscoveryService.Resolution.blocked(

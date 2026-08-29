@@ -373,6 +373,33 @@ class VacationAverageCalendarDenominatorTest {
     }
 
     @Test
+    void previousEqualReferenceWindowKeepsLegalEventDateAndUsesSelectedMonths() {
+        LocalDate eventDate = LocalDate.of(2026, 8, 14);
+        AverageEarningsReferenceWindow window = new AverageEarningsReferenceWindow(
+                YearMonth.of(2026, 8),
+                YearMonth.of(2024, 8),
+                YearMonth.of(2025, 7)
+        );
+        List<MonthFact> months = new ArrayList<>();
+        for (int offset = 0; offset < 12; offset++) {
+            YearMonth month = window.referenceFrom().plusMonths(offset);
+            months.add(new MonthFact(month, month.lengthOfMonth()));
+        }
+
+        Result result = VacationAverageCalendarDenominator.calculate(
+                eventDate,
+                window,
+                months
+        );
+
+        assertEquals(eventDate, result.eventDate());
+        assertEquals(YearMonth.of(2026, 8), result.eventMonth());
+        assertEquals(YearMonth.of(2024, 8), result.referenceFrom());
+        assertEquals(YearMonth.of(2025, 7), result.referenceTo());
+        assertExact(result.denominatorDays(), 1758, 5);
+    }
+
+    @Test
     void countableDaysOutsideCalendarBoundsFailClosed() {
         assertThrows(
                 IllegalArgumentException.class,

@@ -95,6 +95,38 @@ class AverageEarningsNumeratorCalculationServiceTest {
     }
 
     @Test
+    void explicitPreviousReferenceWindowFlowsFromNumeratorFactsIntoParagraph15AtSameEventDate() {
+        AverageEarningsReferenceWindow window = new AverageEarningsReferenceWindow(
+                EVENT_MONTH,
+                YearMonth.of(2024, 9),
+                YearMonth.of(2025, 8)
+        );
+        List<AverageEarningsNumeratorFactsService.MonthFact> months = new ArrayList<>();
+        for (int i = 0; i < 12; i++) {
+            months.add(AverageEarningsNumeratorFactsService.MonthFact.notEmployed(
+                    window.referenceFrom().plusMonths(i)
+            ));
+        }
+        var facts = facts(months, window);
+        when(numeratorFacts.resolve(user, EVENT, window)).thenReturn(facts);
+
+        var blocked = mock(AverageEarningsBonusP15CalculationPipelineService.Resolution.class);
+        when(blocked.ready()).thenReturn(false);
+        when(blocked.blockingReason()).thenReturn("P15_ALT_BLOCKED");
+        when(p15.calculate(eq(user), eq(EVENT), eq(window), eq(THROUGH), anyList()))
+                .thenReturn(blocked);
+
+        var result = service.calculate(user, EVENT, window, THROUGH, List.of());
+
+        assertFalse(result.ready());
+        assertEquals(window.referenceFrom(), result.referenceFrom());
+        assertEquals(window.referenceTo(), result.referenceTo());
+        assertEquals("P15_ALT_BLOCKED", result.blockingReason());
+        verify(numeratorFacts).resolve(user, EVENT, window);
+        verify(p15).calculate(eq(user), eq(EVENT), eq(window), eq(THROUGH), anyList());
+    }
+
+    @Test
     void numeratorFactsBlockerStopsBeforeParagraph15Pipeline() {
         when(numeratorFacts.resolve(user, EVENT)).thenReturn(
                 AverageEarningsNumeratorFactsService.Resolution.blocked(
@@ -437,6 +469,16 @@ class AverageEarningsNumeratorCalculationServiceTest {
     private AverageEarningsNumeratorFactsService.Resolution facts(
             List<AverageEarningsNumeratorFactsService.MonthFact> months
     ) {
+        return facts(
+                months,
+                AverageEarningsReferenceWindow.primary(EVENT)
+        );
+    }
+
+    private AverageEarningsNumeratorFactsService.Resolution facts(
+            List<AverageEarningsNumeratorFactsService.MonthFact> months,
+            AverageEarningsReferenceWindow window
+    ) {
         boolean employed = months.stream().anyMatch(AverageEarningsNumeratorFactsService.MonthFact::employed);
         long ordinary = months.stream().mapToLong(AverageEarningsNumeratorFactsService.MonthFact::ordinaryCandidateAmountMinor).sum();
         long premium = months.stream().mapToLong(AverageEarningsNumeratorFactsService.MonthFact::premiumSpecialAmountMinor).sum();
@@ -444,8 +486,8 @@ class AverageEarningsNumeratorCalculationServiceTest {
         return AverageEarningsNumeratorFactsService.Resolution.ready(
                 EVENT,
                 EVENT_MONTH,
-                FROM,
-                TO,
+                window.referenceFrom(),
+                window.referenceTo(),
                 AverageEarningsLegalPolicy.LegalRegime.RU_PP_540_2025,
                 employed ? "RUB" : null,
                 months,

@@ -200,6 +200,45 @@ class AverageEarningsNumeratorFactsServiceTest {
     }
 
     @Test
+    void explicitPreviousReferenceWindowUsesItsOwnEmploymentAndSemanticHistoryBounds() {
+        LocalDate eventDate = LocalDate.of(2026, 9, 10);
+        AverageEarningsReferenceWindow window = new AverageEarningsReferenceWindow(
+                YearMonth.of(2026, 9),
+                YearMonth.of(2024, 9),
+                YearMonth.of(2025, 8)
+        );
+
+        when(employment.resolve(
+                user,
+                window.referenceFromDate(),
+                window.referenceToDate()
+        )).thenReturn(EmploymentHistoryService.Resolution.configured(
+                window.referenceFromDate(),
+                window.referenceToDate(),
+                List.of()
+        ));
+        when(historical.resolveRequiredMonths(user, window, List.of())).thenReturn(
+                PayrollHistoricalSemanticEarningsService.RequiredResolution.ready(
+                        window.referenceFrom(),
+                        window.referenceTo(),
+                        null,
+                        List.of(),
+                        List.of()
+                )
+        );
+
+        var result = service.resolve(user, eventDate, window);
+
+        assertTrue(result.ready());
+        assertEquals(eventDate, result.eventDate());
+        assertEquals(window.referenceFrom(), result.referenceFrom());
+        assertEquals(window.referenceTo(), result.referenceTo());
+        assertEquals(12, result.months().size());
+        assertTrue(result.months().stream().noneMatch(AverageEarningsNumeratorFactsService.MonthFact::employed));
+        verify(historical).resolveRequiredMonths(user, window, List.of());
+    }
+
+    @Test
     void configuredHistoryWhollyOutsideReferenceWindowProducesTwelveZeroMonths() {
         LocalDate eventDate =
                 LocalDate.of(

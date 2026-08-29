@@ -51,16 +51,35 @@ public final class VacationAverageCalendarDenominator {
             YearMonth eventMonth,
             List<MonthFact> monthFacts
     ) {
+        Objects.requireNonNull(eventMonth, "Vacation average denominator requires event month");
+        if (!YearMonth.from(Objects.requireNonNull(
+                eventDate,
+                "Vacation average denominator requires event date"
+        )).equals(eventMonth)) {
+            throw new IllegalArgumentException(
+                    "Average earnings event date must belong to event month"
+            );
+        }
+        return calculate(
+                eventDate,
+                AverageEarningsReferenceWindow.primary(eventMonth),
+                monthFacts
+        );
+    }
+
+    public static Result calculate(
+            LocalDate eventDate,
+            AverageEarningsReferenceWindow referenceWindow,
+            List<MonthFact> monthFacts
+    ) {
         Objects.requireNonNull(
                 eventDate,
                 "Vacation average denominator requires event date"
         );
-
         Objects.requireNonNull(
-                eventMonth,
-                "Vacation average denominator requires event month"
-        );
-
+                referenceWindow,
+                "Vacation average denominator requires reference window"
+        ).requireEventDate(eventDate);
         Objects.requireNonNull(
                 monthFacts,
                 "Vacation average denominator requires month facts"
@@ -72,31 +91,15 @@ public final class VacationAverageCalendarDenominator {
                                 eventDate
                         );
 
-        if (!YearMonth.from(
-                eventDate
-        ).equals(
-                eventMonth
-        )) {
-            throw new IllegalArgumentException(
-                    "Average earnings event date must belong to event month"
-            );
-        }
-
         if (monthFacts.size() != 12) {
             throw new IllegalArgumentException(
-                    "Primary vacation average denominator requires exactly 12 months"
+                    "Vacation average denominator requires exactly 12 months"
             );
         }
 
-        YearMonth referenceFrom =
-                eventMonth.minusMonths(
-                        12
-                );
-
-        YearMonth referenceTo =
-                eventMonth.minusMonths(
-                        1
-                );
+        YearMonth eventMonth = referenceWindow.eventMonth();
+        YearMonth referenceFrom = referenceWindow.referenceFrom();
+        YearMonth referenceTo = referenceWindow.referenceTo();
 
         List<MonthContribution> contributions =
                 new ArrayList<>(
@@ -324,6 +327,13 @@ public final class VacationAverageCalendarDenominator {
                     denominatorDays,
                     "Calendar denominator is required"
             );
+
+            if (!eventMonth.equals(YearMonth.from(eventDate))) {
+                throw new IllegalArgumentException(
+                        "Vacation denominator event month does not match legal event date"
+                );
+            }
+            new AverageEarningsReferenceWindow(eventMonth, referenceFrom, referenceTo);
 
             if (months.size() != 12) {
                 throw new IllegalArgumentException(

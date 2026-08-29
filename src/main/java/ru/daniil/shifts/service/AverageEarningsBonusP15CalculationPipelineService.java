@@ -59,8 +59,29 @@ public class AverageEarningsBonusP15CalculationPipelineService {
             YearMonth discoveryThroughMonth,
             List<YearMonth> provenNoPayrollMonths
     ) {
+        return calculate(
+                user,
+                eventDate,
+                AverageEarningsReferenceWindow.primary(eventDate),
+                discoveryThroughMonth,
+                provenNoPayrollMonths
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Resolution calculate(
+            AppUser user,
+            LocalDate eventDate,
+            AverageEarningsReferenceWindow referenceWindow,
+            YearMonth discoveryThroughMonth,
+            List<YearMonth> provenNoPayrollMonths
+    ) {
         Objects.requireNonNull(user, "P15 pipeline requires user");
         Objects.requireNonNull(eventDate, "P15 pipeline requires event date");
+        Objects.requireNonNull(
+                referenceWindow,
+                "P15 pipeline requires reference window"
+        ).requireEventDate(eventDate);
         Objects.requireNonNull(
                 discoveryThroughMonth,
                 "P15 pipeline requires discovery-through month"
@@ -72,17 +93,25 @@ public class AverageEarningsBonusP15CalculationPipelineService {
 
         AverageEarningsLegalPolicy.requireRegime(eventDate);
 
-        YearMonth eventMonth = YearMonth.from(eventDate);
-        YearMonth referenceFrom = eventMonth.minusMonths(12);
-        YearMonth referenceTo = eventMonth.minusMonths(1);
+        YearMonth eventMonth = referenceWindow.eventMonth();
+        YearMonth referenceFrom = referenceWindow.referenceFrom();
+        YearMonth referenceTo = referenceWindow.referenceTo();
 
         AverageEarningsBonusP15HistoricalFactDiscoveryService.Resolution historical =
-                discovery.resolve(
-                        user,
-                        eventDate,
-                        discoveryThroughMonth,
-                        provenNoPayrollMonths
-                );
+                referenceWindow.primary()
+                        ? discovery.resolve(
+                                user,
+                                eventDate,
+                                discoveryThroughMonth,
+                                provenNoPayrollMonths
+                        )
+                        : discovery.resolve(
+                                user,
+                                eventDate,
+                                referenceWindow,
+                                discoveryThroughMonth,
+                                provenNoPayrollMonths
+                        );
 
         if (!historical.ready()) {
             return Resolution.blocked(
@@ -121,11 +150,18 @@ public class AverageEarningsBonusP15CalculationPipelineService {
                         .toList();
 
         AverageEarningsBonusP15ReferenceCompletenessService.Resolution reference =
-                completeness.resolve(
-                        user,
-                        eventDate,
-                        referenceNoPayrollMonths
-                );
+                referenceWindow.primary()
+                        ? completeness.resolve(
+                                user,
+                                eventDate,
+                                referenceNoPayrollMonths
+                        )
+                        : completeness.resolve(
+                                user,
+                                eventDate,
+                                referenceWindow,
+                                referenceNoPayrollMonths
+                        );
 
         if (!reference.ready()) {
             return Resolution.blocked(
@@ -285,12 +321,15 @@ public class AverageEarningsBonusP15CalculationPipelineService {
                     "P15 pipeline discovery-through month is required"
             );
 
-            if (!eventMonth.equals(YearMonth.from(eventDate))
-                    || !referenceFrom.equals(eventMonth.minusMonths(12))
-                    || !referenceTo.equals(eventMonth.minusMonths(1))
-                    || discoveryThroughMonth.isBefore(referenceTo)) {
+            if (!eventMonth.equals(YearMonth.from(eventDate))) {
                 throw new IllegalArgumentException(
-                        "P15 pipeline reference/discovery window is invalid"
+                        "P15 pipeline event month does not match legal event date"
+                );
+            }
+            new AverageEarningsReferenceWindow(eventMonth, referenceFrom, referenceTo);
+            if (discoveryThroughMonth.isBefore(referenceTo)) {
+                throw new IllegalArgumentException(
+                        "P15 pipeline discovery cannot end before selected reference period"
                 );
             }
             if (ready == (blockingReason != null)) {

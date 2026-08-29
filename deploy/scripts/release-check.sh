@@ -5022,15 +5022,32 @@ not_contains src/main/java/ru/daniil/shifts/service/VacationAverageDailyEarnings
 not_contains src/main/java/ru/daniil/shifts/service/VacationAverageDailyEarningsFormula.java "RoundingMode"
 not_contains src/main/java/ru/daniil/shifts/service/VacationAveragePrimaryCalculationService.java "averageHourly"
 
-if [[ "$TEST_METHODS" == "1597" ]]; then
-  ok "test method baseline: 1597"
+# 8A4F3J1 reference-window parameterization: legal event date != selected 12-month window.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsReferenceWindow.java "referenceTo.equals(referenceFrom.plusMonths(11))"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsReferenceWindow.java "eventMonth.minusMonths(12)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15Policy.java "int previousEventYear = eventDate.getYear() - 1"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15Policy.java "AverageEarningsReferenceWindow.of("
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsNumeratorCalculationService.java "AverageEarningsReferenceWindow referenceWindow"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15CalculationPipelineService.java "AverageEarningsReferenceWindow referenceWindow"
+contains src/main/java/ru/daniil/shifts/service/VacationAverageReferenceCalendarService.java "AverageEarningsReferenceWindow referenceWindow"
+contains src/main/java/ru/daniil/shifts/service/VacationAverageCalendarDenominator.java "AverageEarningsReferenceWindow referenceWindow"
+contains src/main/java/ru/daniil/shifts/service/VacationAveragePrimaryCalculationService.java "AverageEarningsReferenceWindow referenceWindow"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsNumeratorCalculationService.java "minusMonths(12)"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15CalculationPipelineService.java "minusMonths(12)"
+not_contains src/main/java/ru/daniil/shifts/service/VacationAverageReferenceCalendarService.java "minusMonths(12)"
+not_contains src/main/java/ru/daniil/shifts/service/VacationAveragePrimaryCalculationService.java "minusMonths(12)"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsBonusP15PolicyTest.java "previousEqualReferenceWindowKeepsAnnualRewardBoundToLegalEventYear"
+contains src/test/java/ru/daniil/shifts/service/VacationAveragePrimaryCalculationServiceTest.java "explicitPreviousReferenceWindowFlowsToNumeratorAndCalendarWithoutChangingEventDate"
+
+if [[ "$TEST_METHODS" == "1619" ]]; then
+  ok "test method baseline: 1619"
 else
-  fail "expected 1597 @Test methods, found $TEST_METHODS"
+  fail "expected 1619 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "290" ]]; then
-  ok "test class baseline: 290"
+if [[ "$TEST_CLASSES" == "292" ]]; then
+  ok "test class baseline: 292"
 else
-  fail "expected 290 test classes, found $TEST_CLASSES"
+  fail "expected 292 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix

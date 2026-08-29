@@ -18,9 +18,12 @@ import java.util.Objects;
  * -> exact average-daily earnings
  * </pre>
  *
- * <p>This layer deliberately remains primary-reference only. Paragraphs 6-8
- * fallback selection, final vacation-pay days, final money rounding and
- * compensation-for-unused-vacation scenarios remain separate boundaries.</p>
+ * <p>The ordinary public path remains primary-reference. A parameterized
+ * reference-window overload exists only so a later paragraphs 6-8 resolver can
+ * evaluate a legally selected equal reference period without changing the
+ * legal event date. Fallback selection itself, final vacation-pay days, final
+ * money rounding and compensation-for-unused-vacation scenarios remain
+ * separate boundaries.</p>
  *
  * <p>Paragraph 13 average-hourly earnings is intentionally absent: paragraph
  * 13 expressly excludes vacation and unused-vacation compensation.</p>
@@ -55,8 +58,29 @@ public class VacationAveragePrimaryCalculationService {
             YearMonth discoveryThroughMonth,
             List<YearMonth> provenNoPayrollMonths
     ) {
+        return calculate(
+                user,
+                eventDate,
+                AverageEarningsReferenceWindow.primary(eventDate),
+                discoveryThroughMonth,
+                provenNoPayrollMonths
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Resolution calculate(
+            AppUser user,
+            LocalDate eventDate,
+            AverageEarningsReferenceWindow referenceWindow,
+            YearMonth discoveryThroughMonth,
+            List<YearMonth> provenNoPayrollMonths
+    ) {
         Objects.requireNonNull(user, "Vacation average calculation requires user");
         Objects.requireNonNull(eventDate, "Vacation average calculation requires event date");
+        Objects.requireNonNull(
+                referenceWindow,
+                "Vacation average calculation requires reference window"
+        ).requireEventDate(eventDate);
         Objects.requireNonNull(
                 discoveryThroughMonth,
                 "Vacation average calculation requires discovery-through month"
@@ -68,18 +92,26 @@ public class VacationAveragePrimaryCalculationService {
 
         AverageEarningsLegalPolicy.requireRegime(eventDate);
 
-        YearMonth eventMonth = YearMonth.from(eventDate);
-        YearMonth referenceFrom = eventMonth.minusMonths(12);
-        YearMonth referenceTo = eventMonth.minusMonths(1);
+        YearMonth eventMonth = referenceWindow.eventMonth();
+        YearMonth referenceFrom = referenceWindow.referenceFrom();
+        YearMonth referenceTo = referenceWindow.referenceTo();
 
         AverageEarningsNumeratorCalculationService.Resolution money =
                 Objects.requireNonNull(
-                        numerator.calculate(
-                                user,
-                                eventDate,
-                                discoveryThroughMonth,
-                                provenNoPayrollMonths
-                        ),
+                        referenceWindow.primary()
+                                ? numerator.calculate(
+                                        user,
+                                        eventDate,
+                                        discoveryThroughMonth,
+                                        provenNoPayrollMonths
+                                )
+                                : numerator.calculate(
+                                        user,
+                                        eventDate,
+                                        referenceWindow,
+                                        discoveryThroughMonth,
+                                        provenNoPayrollMonths
+                                ),
                         "Vacation average numerator authority returned null"
                 );
 
@@ -113,7 +145,9 @@ public class VacationAveragePrimaryCalculationService {
 
         VacationAverageReferenceCalendarService.Result calendarAuthority =
                 Objects.requireNonNull(
-                        calendar.resolve(user, eventDate),
+                        referenceWindow.primary()
+                                ? calendar.resolve(user, eventDate)
+                                : calendar.resolve(user, eventDate, referenceWindow),
                         "Vacation average reference calendar authority returned null"
                 );
 
@@ -179,12 +213,15 @@ public class VacationAveragePrimaryCalculationService {
                     "Vacation average discovery-through month is required"
             );
 
-            if (!eventMonth.equals(YearMonth.from(eventDate))
-                    || !referenceFrom.equals(eventMonth.minusMonths(12))
-                    || !referenceTo.equals(eventMonth.minusMonths(1))
-                    || discoveryThroughMonth.isBefore(referenceTo)) {
+            if (!eventMonth.equals(YearMonth.from(eventDate))) {
                 throw new IllegalArgumentException(
-                        "Vacation average primary window is not canonical"
+                        "Vacation average event month does not match legal event date"
+                );
+            }
+            new AverageEarningsReferenceWindow(eventMonth, referenceFrom, referenceTo);
+            if (discoveryThroughMonth.isBefore(referenceTo)) {
+                throw new IllegalArgumentException(
+                        "Vacation average discovery cannot end before selected reference period"
                 );
             }
 

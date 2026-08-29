@@ -63,8 +63,27 @@ public class AverageEarningsBonusP15ReferenceCompletenessService {
             LocalDate eventDate,
             List<YearMonth> provenNoPayrollMonths
     ) {
+        return resolve(
+                user,
+                eventDate,
+                AverageEarningsReferenceWindow.primary(eventDate),
+                provenNoPayrollMonths
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Resolution resolve(
+            AppUser user,
+            LocalDate eventDate,
+            AverageEarningsReferenceWindow referenceWindow,
+            List<YearMonth> provenNoPayrollMonths
+    ) {
         Objects.requireNonNull(user, "P15 reference completeness requires user");
         Objects.requireNonNull(eventDate, "P15 reference completeness requires event date");
+        Objects.requireNonNull(
+                referenceWindow,
+                "P15 reference completeness requires reference window"
+        ).requireEventDate(eventDate);
         Objects.requireNonNull(
                 provenNoPayrollMonths,
                 "P15 reference completeness requires explicit no-Payroll proofs"
@@ -72,12 +91,14 @@ public class AverageEarningsBonusP15ReferenceCompletenessService {
 
         AverageEarningsLegalPolicy.requireRegime(eventDate);
 
-        YearMonth eventMonth = YearMonth.from(eventDate);
-        YearMonth referenceFrom = eventMonth.minusMonths(12);
-        YearMonth referenceTo = eventMonth.minusMonths(1);
+        YearMonth eventMonth = referenceWindow.eventMonth();
+        YearMonth referenceFrom = referenceWindow.referenceFrom();
+        YearMonth referenceTo = referenceWindow.referenceTo();
 
         AverageEarningsBonusP15ReferenceWorkedTimeFactService.Resolution worked =
-                workedTime.resolve(user, eventDate, provenNoPayrollMonths);
+                referenceWindow.primary()
+                        ? workedTime.resolve(user, eventDate, provenNoPayrollMonths)
+                        : workedTime.resolve(user, eventDate, referenceWindow, provenNoPayrollMonths);
 
         if (!worked.ready()) {
             return Resolution.blocked(
@@ -107,7 +128,9 @@ public class AverageEarningsBonusP15ReferenceCompletenessService {
         }
 
         AverageEarningsReferenceFactsService.ReferenceFacts factual =
-                referenceFacts.resolve(user, eventMonth);
+                referenceWindow.primary()
+                        ? referenceFacts.resolve(user, eventMonth)
+                        : referenceFacts.resolve(user, referenceWindow);
 
         if (factual == null) {
             throw new IllegalStateException(
@@ -258,13 +281,12 @@ public class AverageEarningsBonusP15ReferenceCompletenessService {
                     "P15 completeness paragraph-5 exclusions are required"
             ));
 
-            if (!eventMonth.equals(YearMonth.from(eventDate))
-                    || !referenceFrom.equals(eventMonth.minusMonths(12))
-                    || !referenceTo.equals(eventMonth.minusMonths(1))) {
+            if (!eventMonth.equals(YearMonth.from(eventDate))) {
                 throw new IllegalArgumentException(
-                        "P15 completeness reference window is not canonical"
+                        "P15 completeness event month does not match legal event date"
                 );
             }
+            new AverageEarningsReferenceWindow(eventMonth, referenceFrom, referenceTo);
             if (ready == (blockingReason != null)) {
                 throw new IllegalArgumentException(
                         "P15 completeness resolution state is invalid"

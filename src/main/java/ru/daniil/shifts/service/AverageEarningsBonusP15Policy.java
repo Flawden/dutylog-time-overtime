@@ -71,7 +71,7 @@ public final class AverageEarningsBonusP15Policy {
         Objects.requireNonNull(facts, "Paragraph-15 policy requires bonus facts");
 
         AverageEarningsLegalPolicy.requireRegime(eventDate);
-        requireCanonicalReferenceWindow(eventDate, referenceFrom, referenceTo);
+        requireReferenceWindow(eventDate, referenceFrom, referenceTo);
 
         List<BonusFact> frozenFacts = List.copyOf(facts);
         for (BonusFact fact : frozenFacts) {
@@ -157,20 +157,16 @@ public final class AverageEarningsBonusP15Policy {
         return Resolution.ready(decisions);
     }
 
-    private static void requireCanonicalReferenceWindow(
+    private static void requireReferenceWindow(
             LocalDate eventDate,
             YearMonth referenceFrom,
             YearMonth referenceTo
     ) {
-        YearMonth eventMonth = YearMonth.from(eventDate);
-        YearMonth expectedFrom = eventMonth.minusMonths(12);
-        YearMonth expectedTo = eventMonth.minusMonths(1);
-
-        if (!expectedFrom.equals(referenceFrom) || !expectedTo.equals(referenceTo)) {
-            throw new IllegalArgumentException(
-                    "Paragraph-15 policy requires the canonical 12-month reference window"
-            );
-        }
+        AverageEarningsReferenceWindow.of(
+                eventDate,
+                referenceFrom,
+                referenceTo
+        );
     }
 
     private static String monthlyDuplicateBlocker(

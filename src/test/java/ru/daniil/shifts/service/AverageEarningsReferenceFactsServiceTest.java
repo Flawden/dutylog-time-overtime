@@ -205,6 +205,33 @@ class AverageEarningsReferenceFactsServiceTest {
     }
 
     @Test
+    void explicitPreviousReferenceWindowQueriesItsOwnCalendarBounds() {
+        YearMonth eventMonth = YearMonth.of(2026, 8);
+        AverageEarningsReferenceWindow window = new AverageEarningsReferenceWindow(
+                eventMonth,
+                YearMonth.of(2024, 8),
+                YearMonth.of(2025, 7)
+        );
+
+        when(absences.findByOwnerAndEndDateGreaterThanEqualAndStartDateLessThanEqualOrderByStartDateAscIdAsc(
+                user,
+                LocalDate.of(2024, 8, 1),
+                LocalDate.of(2025, 7, 31)
+        )).thenReturn(List.of());
+
+        var result = service.resolve(user, window);
+
+        assertEquals(eventMonth, result.eventMonth());
+        assertEquals(LocalDate.of(2024, 8, 1), result.referenceFrom());
+        assertEquals(LocalDate.of(2025, 7, 31), result.referenceTo());
+        verify(absences).findByOwnerAndEndDateGreaterThanEqualAndStartDateLessThanEqualOrderByStartDateAscIdAsc(
+                user,
+                LocalDate.of(2024, 8, 1),
+                LocalDate.of(2025, 7, 31)
+        );
+    }
+
+    @Test
     void machineFactsAndSourceBoundarySurviveWithoutDisplayInference() {
         doReturn(
                 List.of(
@@ -466,7 +493,7 @@ class AverageEarningsReferenceFactsServiceTest {
                 () ->
                         service.resolve(
                                 user,
-                                null
+                                (YearMonth) null
                         )
         );
     }
