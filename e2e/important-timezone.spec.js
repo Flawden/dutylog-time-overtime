@@ -1,5 +1,5 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, currentLocalDateKey, waitForApi, waitForAppIdle, openView, selectDate } = require('./helpers');
+const { registerAndOnboard, currentLocalDateKey, waitForApi, waitForAppIdle, openView, selectDate, runWithOptionalHistoricalTimezoneConfirmation } = require('./helpers');
 
 test('important dates stay floating while canonical timezone survives reload', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'important' });
@@ -131,7 +131,10 @@ test('existing dated shift keeps its source zone and reprojects after canonical 
       && url.pathname === '/api/v1/calendar'
       && response.status() === 200;
   });
-  await page.locator('#timeSaveTimezone').click();
+  await runWithOptionalHistoricalTimezoneConfirmation(
+    page,
+    () => page.locator('#timeSaveTimezone').click(),
+  );
   await profileSaved;
   await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
   await waitForAppIdle(page);

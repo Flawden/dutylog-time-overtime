@@ -1,5 +1,5 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, waitForApi, openView } = require('./helpers');
+const { registerAndOnboard, waitForApi, openView, runWithOptionalHistoricalTimezoneConfirmation } = require('./helpers');
 
 async function setTimezone(page, zone) {
   await openView(page, 'settings');
@@ -8,7 +8,10 @@ async function setTimezone(page, zone) {
   if (await timezone.inputValue() === zone) return;
   await timezone.selectOption(zone);
   const saved = waitForApi(page, 'PUT', '/api/v1/time/work-context');
-  await page.locator('#timeSaveTimezone').click();
+  await runWithOptionalHistoricalTimezoneConfirmation(
+    page,
+    () => page.locator('#timeSaveTimezone').click(),
+  );
   await saved;
 }
 

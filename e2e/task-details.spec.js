@@ -5,7 +5,8 @@ const {
   selectDate,
   waitForApi,
   openDayModule,
-  openView
+  openView,
+  runWithOptionalHistoricalTimezoneConfirmation
 } = require('./helpers');
 
 test('task details separate reading from editing and persist a long description', async ({ page }) => {
@@ -104,7 +105,10 @@ test('timed task deadline and reminder keep one instant across timezone changes'
 
   await page.locator('#workTimezone').selectOption('Europe/Moscow');
   profileSaved = waitForApi(page, 'PUT', '/api/v1/time/work-context');
-  await page.locator('#timeSaveTimezone').click();
+  await runWithOptionalHistoricalTimezoneConfirmation(
+    page,
+    () => page.locator('#timeSaveTimezone').click(),
+  );
   await profileSaved;
   await expect(page.locator('#timeSettingsStatus')).toHaveText('Часовой пояс сохранён');
 

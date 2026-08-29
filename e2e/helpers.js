@@ -194,6 +194,34 @@ async function selectDate(page, date) {
   return cell;
 }
 
+async function runWithOptionalHistoricalTimezoneConfirmation(page, action) {
+  let unexpectedDialog = null;
+  const handler = async dialog => {
+    const message = dialog.message();
+    const historicalTimezoneConfirm = dialog.type() === 'confirm'
+      && /исторического часового пояса|historical timezone/i.test(message);
+
+    if (historicalTimezoneConfirm) {
+      await dialog.accept();
+      return;
+    }
+
+    unexpectedDialog = `${dialog.type()}: ${message}`;
+    await dialog.dismiss();
+  };
+
+  page.on('dialog', handler);
+  try {
+    await action();
+  } finally {
+    page.off('dialog', handler);
+  }
+
+  if (unexpectedDialog) {
+    throw new Error(`Unexpected dialog while saving timezone: ${unexpectedDialog}`);
+  }
+}
+
 function waitForApi(page, method, path, status = 200) {
   return page.waitForResponse(response => matchesApi(response, method, path) && response.status() === status);
 }
@@ -284,6 +312,7 @@ module.exports = {
   openView,
   selectDate,
   waitForApi,
+  runWithOptionalHistoricalTimezoneConfirmation,
   openSelectedDayDetails,
   openDayModule,
   openDayModuleById,
