@@ -4965,17 +4965,26 @@ contains deploy/scripts/remote-deploy.sh 'DUTYLOG_IMAGE_RETENTION_KEEP_NEWEST'
 contains deploy/scripts/remote-deploy.sh 'Retention runs only after the deployment and its smoke checks have succeeded.'
 contains deploy/scripts/remote-deploy.sh 'Application deployment succeeded, but post-deploy DutyLog image retention failed.'
 
+# 8A4F3F1 — explicit effective-dated work-time accounting regime FACT authority.
+contains src/main/resources/db/migration/postgresql/V76__work_time_accounting_regime_fact_authority.sql "CREATE TABLE work_time_accounting_terms"
+contains src/main/resources/db/migration/postgresql/V76__work_time_accounting_regime_fact_authority.sql "accounting_mode IN ('DAILY', 'SUMMARIZED')"
+not_contains src/main/resources/db/migration/postgresql/V76__work_time_accounting_regime_fact_authority.sql "INSERT INTO work_time_accounting_terms"
+contains src/main/java/ru/daniil/shifts/service/WorkTimeAccountingHistoryService.java "WORK_TIME_ACCOUNTING_MODE_FACT_MISSING"
+contains src/main/java/ru/daniil/shifts/service/WorkTimeAccountingHistoryService.java "resolveRange"
+not_contains src/main/java/ru/daniil/shifts/service/WorkTimeAccountingHistoryService.java "getPayMode()"
+contains src/test/java/ru/daniil/shifts/service/WorkTimeAccountingHistoryServiceTest.java "missingHistoryRemainsUnknownWithoutCompatibilityBaseline"
+
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1436" ]]; then
-  ok "test method baseline: 1436"
+if [[ "$TEST_METHODS" == "1448" ]]; then
+  ok "test method baseline: 1448"
 else
-  fail "expected 1436 @Test methods, found $TEST_METHODS"
+  fail "expected 1448 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "274" ]]; then
-  ok "test class baseline: 274"
+if [[ "$TEST_CLASSES" == "276" ]]; then
+  ok "test class baseline: 276"
 else
-  fail "expected 274 test classes, found $TEST_CLASSES"
+  fail "expected 276 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix

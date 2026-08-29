@@ -357,4 +357,19 @@ class PostgreSqlMigrationContractTest {
         assertFalse(sql.toUpperCase().contains("UPDATE PAYROLL_SNAPSHOT_BONUS_P15_NATURE"));
     }
 
+    @Test
+    void workTimeAccountingRegimeMigrationKeepsHistoricalModeExplicitAndNoBackfill() throws Exception {
+        String sql = Files.readString(
+                MIGRATION_ROOT.resolve("V76__work_time_accounting_regime_fact_authority.sql")
+        );
+
+        assertTrue(sql.contains("CREATE TABLE work_time_accounting_terms"));
+        assertTrue(sql.contains("accounting_mode IN ('DAILY', 'SUMMARIZED')"));
+        assertTrue(sql.contains("UNIQUE (user_id, effective_from)"));
+        assertFalse(sql.toUpperCase().contains("INSERT INTO WORK_TIME_ACCOUNTING_TERMS"),
+                "V76 must not invent a historical accounting mode for existing users");
+        assertFalse(sql.contains("pay_mode"),
+                "work-time accounting regime must not be inferred from Payroll pay mode");
+    }
+
 }
