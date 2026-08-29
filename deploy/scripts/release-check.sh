@@ -5039,15 +5039,15 @@ not_contains src/main/java/ru/daniil/shifts/service/VacationAveragePrimaryCalcul
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsBonusP15PolicyTest.java "previousEqualReferenceWindowKeepsAnnualRewardBoundToLegalEventYear"
 contains src/test/java/ru/daniil/shifts/service/VacationAveragePrimaryCalculationServiceTest.java "explicitPreviousReferenceWindowFlowsToNumeratorAndCalendarWithoutChangingEventDate"
 
-if [[ "$TEST_METHODS" == "1619" ]]; then
-  ok "test method baseline: 1619"
+if [[ "$TEST_METHODS" == "1647" ]]; then
+  ok "test method baseline: 1647"
 else
-  fail "expected 1619 @Test methods, found $TEST_METHODS"
+  fail "expected 1647 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "292" ]]; then
-  ok "test class baseline: 292"
+if [[ "$TEST_CLASSES" == "294" ]]; then
+  ok "test class baseline: 294"
 else
-  fail "expected 292 test classes, found $TEST_CLASSES"
+  fail "expected 294 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix

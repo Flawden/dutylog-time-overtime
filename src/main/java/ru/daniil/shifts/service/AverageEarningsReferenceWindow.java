@@ -71,6 +71,14 @@ public record AverageEarningsReferenceWindow(
                 && referenceTo.equals(eventMonth.minusMonths(1));
     }
 
+    public AverageEarningsReferenceWindow precedingEqual() {
+        return new AverageEarningsReferenceWindow(
+                eventMonth,
+                referenceFrom.minusMonths(12),
+                referenceTo.minusMonths(12)
+        );
+    }
+
     public LocalDate referenceFromDate() {
         return referenceFrom.atDay(1);
     }

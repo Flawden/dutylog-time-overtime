@@ -100,4 +100,32 @@ class AverageEarningsReferenceWindowTest {
         assertThrows(NullPointerException.class, () ->
                 new AverageEarningsReferenceWindow(YearMonth.of(2026, 8), YearMonth.of(2025, 8), null));
     }
+
+    @Test
+    void precedingEqualMovesExactlyTwelveMonthsAndPreservesEventMonth() {
+        var primary = AverageEarningsReferenceWindow.primary(EVENT);
+
+        var preceding = primary.precedingEqual();
+
+        assertEquals(primary.eventMonth(), preceding.eventMonth());
+        assertEquals(primary.referenceFrom().minusMonths(12), preceding.referenceFrom());
+        assertEquals(primary.referenceTo().minusMonths(12), preceding.referenceTo());
+        assertFalse(preceding.primary());
+    }
+
+    @Test
+    void precedingEqualAlsoWorksForAlreadyExplicitWindowWithoutChangingLegalEventMonth() {
+        var explicit = AverageEarningsReferenceWindow.of(
+                EVENT,
+                YearMonth.of(2024, 9),
+                YearMonth.of(2025, 8)
+        );
+
+        var preceding = explicit.precedingEqual();
+
+        assertEquals(YearMonth.from(EVENT), preceding.eventMonth());
+        assertEquals(YearMonth.of(2023, 9), preceding.referenceFrom());
+        assertEquals(YearMonth.of(2024, 8), preceding.referenceTo());
+    }
+
 }
