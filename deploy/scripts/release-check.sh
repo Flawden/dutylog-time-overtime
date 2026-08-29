@@ -5039,15 +5039,25 @@ not_contains src/main/java/ru/daniil/shifts/service/VacationAveragePrimaryCalcul
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsBonusP15PolicyTest.java "previousEqualReferenceWindowKeepsAnnualRewardBoundToLegalEventYear"
 contains src/test/java/ru/daniil/shifts/service/VacationAveragePrimaryCalculationServiceTest.java "explicitPreviousReferenceWindowFlowsToNumeratorAndCalendarWithoutChangingEventDate"
 
-if [[ "$TEST_METHODS" == "1647" ]]; then
-  ok "test method baseline: 1647"
+# 8A4F3J3A paragraph-7 pre-event actually-worked FACT authority.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventWorkFactService.java "LocalDate periodTo = eventDate.minusDays(1)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventWorkFactService.java "timeCompensation.payrollSource("
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventWorkFactService.java "if (day.workedMinutes() > 0)"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventWorkFactService.java "CompensationCalculationService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventWorkFactService.java "HistoricalCompensationRateService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventWorkFactService.java "PARAGRAPH_8"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventWorkFactServiceTest.java "paidAbsenceWithoutWorkedMinutesDoesNotBecomeParagraph7WorkedDay"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventWorkAuthorityContractTest.java "eventDateAndFutureDaysCannotEnterParagraph7Facts"
+
+if [[ "$TEST_METHODS" == "1670" ]]; then
+  ok "test method baseline: 1670"
 else
-  fail "expected 1647 @Test methods, found $TEST_METHODS"
+  fail "expected 1670 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "294" ]]; then
-  ok "test class baseline: 294"
+if [[ "$TEST_CLASSES" == "296" ]]; then
+  ok "test class baseline: 296"
 else
-  fail "expected 294 test classes, found $TEST_CLASSES"
+  fail "expected 296 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
