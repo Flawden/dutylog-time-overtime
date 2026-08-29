@@ -4988,17 +4988,30 @@ contains src/test/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeSer
 contains src/test/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeServiceTest.java "explicitSecondHalfOfOvernightShiftMarksFirstHalfNotWorkedAndCarriesSupportingActualIdentity"
 contains src/test/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeServiceTest.java "fullPlanDerivedOvernightShiftCarriesPreviousSourceTruthAcrossMonthBoundary"
 
+# 8A4F3F3 — 12-month P15 reference worked-time FACT resolver.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15ReferenceWorkedTimeFactService.java "P15_REFERENCE_WORK_TIME_DAILY_PARTIAL_DAY_UNRESOLVED"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15ReferenceWorkedTimeFactService.java "P15_REFERENCE_WORK_TIME_MIXED_ACCOUNTING_MODE"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15ReferenceWorkedTimeFactService.java "getPlannedAndWorkedMinutes()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15ReferenceWorkedTimeFactService.java "getScheduleMinutes()"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15ReferenceWorkedTimeFactService.java "WorkTimeAccountingHistoryService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15ReferenceWorkedTimeFactService.java "snapshot.getWorkedMinutes()"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15ReferenceWorkedTimeFactService.java "snapshot.getPlannedMinutes()"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsBonusP15Formula.java "AverageEarningsBonusP15ReferenceWorkedTimeFactService"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsBonusP15ReferenceWorkedTimeFactServiceTest.java "summarizedUsesOnlyScheduledIntersectionAndKeepsOvertimeOutsideCoefficient"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsBonusP15ReferenceWorkedTimeFactServiceTest.java "dailyPartialScheduledDayBlocksInsteadOfRoundingToZeroOrOne"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsBonusP15ReferenceWorkedTimeFactServiceTest.java "mixedModesAcrossReferenceMonthsAlsoBlock"
+
 TEST_METHODS=$(grep -R --include='*.java' -h -E '^[[:space:]]*@Test([[:space:]]|$)' src/test/java | wc -l | tr -d ' ')
 TEST_CLASSES=$(find src/test/java -name '*Test.java' -type f | wc -l | tr -d ' ')
-if [[ "$TEST_METHODS" == "1463" ]]; then
-  ok "test method baseline: 1463"
+if [[ "$TEST_METHODS" == "1489" ]]; then
+  ok "test method baseline: 1489"
 else
-  fail "expected 1463 @Test methods, found $TEST_METHODS"
+  fail "expected 1489 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "279" ]]; then
-  ok "test class baseline: 279"
+if [[ "$TEST_CLASSES" == "281" ]]; then
+  ok "test class baseline: 281"
 else
-  fail "expected 279 test classes, found $TEST_CLASSES"
+  fail "expected 281 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
