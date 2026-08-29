@@ -5013,15 +5013,24 @@ not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph5Mon
 not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph5MoneyPolicy.java ".divide("
 not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsNumeratorFactsService.java "AverageEarningsNumeratorCalculationService"
 
-if [[ "$TEST_METHODS" == "1571" ]]; then
-  ok "test method baseline: 1571"
+# 8A4F3I primary vacation average-daily exact-money contracts.
+contains src/main/java/ru/daniil/shifts/service/VacationAveragePrimaryCalculationService.java "VacationAverageDailyEarningsFormula.calculate("
+contains src/main/java/ru/daniil/shifts/service/VacationAveragePrimaryCalculationService.java "Paragraph 13 average-hourly earnings is intentionally absent"
+contains src/main/java/ru/daniil/shifts/service/VacationAverageDailyEarningsFormula.java "ExactMoneyPerDay"
+contains src/main/java/ru/daniil/shifts/service/VacationAverageDailyEarningsFormula.java "does not calculate vacation-pay money"
+not_contains src/main/java/ru/daniil/shifts/service/VacationAverageDailyEarningsFormula.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/VacationAverageDailyEarningsFormula.java "RoundingMode"
+not_contains src/main/java/ru/daniil/shifts/service/VacationAveragePrimaryCalculationService.java "averageHourly"
+
+if [[ "$TEST_METHODS" == "1597" ]]; then
+  ok "test method baseline: 1597"
 else
-  fail "expected 1571 @Test methods, found $TEST_METHODS"
+  fail "expected 1597 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "287" ]]; then
-  ok "test class baseline: 287"
+if [[ "$TEST_CLASSES" == "290" ]]; then
+  ok "test class baseline: 290"
 else
-  fail "expected 287 test classes, found $TEST_CLASSES"
+  fail "expected 290 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
