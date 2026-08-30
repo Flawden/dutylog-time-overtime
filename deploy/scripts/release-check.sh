@@ -5178,16 +5178,32 @@ contains src/test/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeSer
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactServiceTest.java "summarizedMissedSchedulePreservesTrueDenominator"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactServiceTest.java "dailyPartialScheduledDayBlocksInsteadOfRounding"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBonusWorkTimeAuthorityContractTest.java "J3B6B3AReusesCanonicalP15PlanActualRelationAuthority"
+# 8A4F3J3B6B3B paragraph-7 pre-event BONUS P15 formula/money.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Formula.java "Pure paragraph-7 paragraph-15 BONUS money formula"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Formula.java "MONTHLY_PART_FOR_PRE_EVENT_MONTH"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Formula.java "denominator = denominator.multiply(BigInteger.valueOf(awardMonthCount));"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Formula.java "workTimeAuthority.scheduleFullyWorked()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Formula.java "ACTUAL_WORK_TIME_ACCRUAL_FACT_REQUIRED"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Formula.java "INCLUDED_CURRENCY_MISMATCH"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Formula.java "roundHalfUpToLong(numerator, denominator)"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Formula.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Formula.java "RoundingMode"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Formula.java "Paragraph8"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Formula.java "PARAGRAPH_8"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FormulaTest.java "monthlyPartAndWorkedTimeRatioRoundOnlyOnceAtFinalMinorUnit"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FormulaTest.java "unknownActualAccrualFactBlocksOnlyWhenBasisIsIncomplete"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FormulaTest.java "includedCurrenciesMustMatchBeforeMoneyCanBeSummed"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBonusP15FormulaContractTest.java "J3B6B3BUsesOneMonthlyPartAndOneFinalHalfUpBoundary"
 
-if [[ "$TEST_METHODS" == "1935" ]]; then
-  ok "test method baseline: 1935"
+if [[ "$TEST_METHODS" == "1962" ]]; then
+  ok "test method baseline: 1962"
 else
-  fail "expected 1935 @Test methods, found $TEST_METHODS"
+  fail "expected 1962 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "314" ]]; then
-  ok "test class baseline: 314"
+if [[ "$TEST_CLASSES" == "316" ]]; then
+  ok "test class baseline: 316"
 else
-  fail "expected 314 test classes, found $TEST_CLASSES"
+  fail "expected 316 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
