@@ -5083,16 +5083,28 @@ not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7Pre
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactServiceTest.java "combinationPeriodCrossingEventBlocksInsteadOfProratingMoney"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactServiceTest.java "zeroBasePayWithWorkedTimeStillDiscoversObservedSemanticFacts"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventSemanticWageAuthorityContractTest.java "J3B3ReadsOnlyExplicitDatedSemanticSourceAuthorities"
+# 8A4F3J3B4 paragraph-7 pre-event range-bound ordinary NIGHT / HOLIDAY premium.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventOrdinaryPremiumService.java "date.isBefore(cutoffExclusive)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventOrdinaryPremiumService.java "slicesByRate"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventOrdinaryPremiumService.java "priced.premiumAmountMinor()"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventOrdinaryPremiumService.java "priceMonth("
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventOrdinaryPremiumService.java "PayrollOrdinaryPremiumPreviewService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventOrdinaryPremiumService.java "priced.baseAmountMinor()"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventOrdinaryPremiumService.java "priced.totalAmountMinor()"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventOrdinaryPremiumService.java "PARAGRAPH_8"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventOrdinaryPremiumServiceTest.java "sameEconomicKeyAcrossDatesIsAggregatedBeforeHalfUpRounding"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventOrdinaryPremiumServiceTest.java "laterAmbiguousCurrencyClearsEarlierAcceptedPricingEvidence"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventOrdinaryPremiumAuthorityContractTest.java "J3B4AddsOnlyPremiumMoneyAndNeverDuplicatesBasePay"
 
-if [[ "$TEST_METHODS" == "1735" ]]; then
-  ok "test method baseline: 1735"
+if [[ "$TEST_METHODS" == "1765" ]]; then
+  ok "test method baseline: 1765"
 else
-  fail "expected 1735 @Test methods, found $TEST_METHODS"
+  fail "expected 1765 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "302" ]]; then
-  ok "test class baseline: 302"
+if [[ "$TEST_CLASSES" == "304" ]]; then
+  ok "test class baseline: 304"
 else
-  fail "expected 302 test classes, found $TEST_CLASSES"
+  fail "expected 304 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
