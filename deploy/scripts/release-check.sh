@@ -5137,16 +5137,36 @@ contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEven
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityServiceTest.java "unmatchedHistoricalAnnualRewardIsSurfacedForLaterP15Policy"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityServiceTest.java "unmatchedHistoricalMonthlyBonusIsIgnored"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBonusAccrualAuthorityContractTest.java "J3B6B1HistoricalDiscoveryAddsOnlyAnnualOrServiceRewardsWithoutPreEventSource"
+# 8A4F3J3B6B2 paragraph-7 pre-event bonus paragraph-15 POLICY.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "[eventMonthStart,eventDate)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "EXCLUDE_NOT_ACCRUED_IN_P7_EVENT_MONTH"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "MONTHLY_PART_FOR_PRE_EVENT_MONTH"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "eventDate.getYear() - 1"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "IncompletePreEventTreatment"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "REQUIRE_EXPLICIT_ACTUAL_WORK_ACCRUAL_FACT"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "AverageEarningsBonusP15Policy.resolve"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "AverageEarningsBonusP15Formula"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "ReferenceWorkedTimeFact"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "ProductionCalendarService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "TimeCompensationService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "BigInteger"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "RoundingMode"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15Policy.java "PARAGRAPH_8"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15PolicyTest.java "duplicateMonthlyIndicatorInEventMonthBlocksInsteadOfChoosingForEmployer"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15PolicyTest.java "workPeriodAccruedInEventMonthSelectsOneMonthlyPartForP7Basis"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15PolicyTest.java "awardInsidePreEventAndUnknownActualAccrualDefersFailClosedDecisionToB6B3"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBonusP15PolicyContractTest.java "J3B6B2DefersIncompleteBasisRatioToB6B3"
 
-if [[ "$TEST_METHODS" == "1855" ]]; then
-  ok "test method baseline: 1855"
+if [[ "$TEST_METHODS" == "1896" ]]; then
+  ok "test method baseline: 1896"
 else
-  fail "expected 1855 @Test methods, found $TEST_METHODS"
+  fail "expected 1896 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "310" ]]; then
-  ok "test class baseline: 310"
+if [[ "$TEST_CLASSES" == "312" ]]; then
+  ok "test class baseline: 312"
 else
-  fail "expected 310 test classes, found $TEST_CLASSES"
+  fail "expected 312 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
