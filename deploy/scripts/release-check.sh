@@ -5215,16 +5215,34 @@ contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEven
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthorityTest.java "allSixMoneyBucketsAssembleOneExactNumerator"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthorityTest.java "accruedWagePresenceIsIndependentFromWorkedTimePresence"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventAccruedWageAuthorityContractTest.java "J3B6CRawBonusFactsAreProvenanceOnlyAndCannotDoubleCountP15Money"
+# 8A4F3J4 paragraph-8 established tariff / official-salary authority.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "RULE_ID = \"PP_540_P8\""
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "LocalDate compensationBoundary = eventMonth.atDay(1);"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "findFirstByOwnerAndEffectiveFromLessThanEqualOrderByEffectiveFromDesc"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "term.getHourlyRateMinor()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "EstablishedBasis.HOURLY_TARIFF_RATE"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "term.getMonthlySalaryMinor()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "EstablishedBasis.MONTHLY_OFFICIAL_SALARY"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "Blocked paragraph-8 authority cannot expose partial compensation identity"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "HistoricalCompensationRateService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "CompensationCalculationService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "ProductionCalendarService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "AverageEarningsParagraph6ReferenceResolver"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "AverageEarningsParagraph7PreEvent"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "RoundingMode"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityServiceTest.java "salaryResolvesExactConfiguredMonthlyOfficialSalaryWithoutHourlyDerivation"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph8TariffSalaryAuthorityContractTest.java "J4NeverUsesDerivedHistoricalHourlyRateAuthority"
 
-if [[ "$TEST_METHODS" == "1998" ]]; then
-  ok "test method baseline: 1998"
+if [[ "$TEST_METHODS" == "2028" ]]; then
+  ok "test method baseline: 2028"
 else
-  fail "expected 1998 @Test methods, found $TEST_METHODS"
+  fail "expected 2028 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "318" ]]; then
-  ok "test class baseline: 318"
+if [[ "$TEST_CLASSES" == "320" ]]; then
+  ok "test class baseline: 320"
 else
-  fail "expected 318 test classes, found $TEST_CLASSES"
+  fail "expected 320 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
