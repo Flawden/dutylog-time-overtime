@@ -5248,16 +5248,33 @@ not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsOrderedFallba
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolverTest.java "primarySelectionStopsBeforeParagraph7AndParagraph8"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolverTest.java "paragraph7BlockedNeverFallsThroughToParagraph8"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsOrderedFallbackResolverContractTest.java "J5CannotJumpDirectlyFromParagraph6ExhaustionToParagraph8"
+# 8A4F3K unified exact vacation average-daily resolver.
+contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java "J5 owns that policy"
+contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java "VacationAveragePrimaryCalculationService.Resolution"
+contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java "Paragraph7CalendarBasis"
+contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java "basis.denominatorDays()"
+contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java "PARAGRAPH_8_FORMULA_BASIS_REQUIRED"
+contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java "MONTHLY_OFFICIAL_SALARY_DIV_29_3"
+contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java "HOURLY_TARIFF_AVERAGE_MONTHLY_NORM_DIV_29_3"
+contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java "authorityCode"
+not_contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java "RoundingMode"
+not_contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java ".workedDayCount()"
+not_contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java "payableVacationDays"
+not_contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolver.java "vacationPayMinor"
+contains src/test/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolverTest.java "paragraph7UsesExplicitParagraph10PartialMonthDenominator"
+contains src/test/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolverTest.java "paragraph8HourlyTariffUsesExplicitAnnualNormFormula"
+contains src/test/java/ru/daniil/shifts/web/VacationAverageUnifiedDailyResolverContractTest.java "KDoesNotChooseFallbackBranch"
 
-if [[ "$TEST_METHODS" == "2064" ]]; then
-  ok "test method baseline: 2064"
+if [[ "$TEST_METHODS" == "2102" ]]; then
+  ok "test method baseline: 2102"
 else
-  fail "expected 2064 @Test methods, found $TEST_METHODS"
+  fail "expected 2102 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "322" ]]; then
-  ok "test class baseline: 322"
+if [[ "$TEST_CLASSES" == "324" ]]; then
+  ok "test class baseline: 324"
 else
-  fail "expected 322 test classes, found $TEST_CLASSES"
+  fail "expected 324 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
