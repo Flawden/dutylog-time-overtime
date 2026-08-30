@@ -5123,16 +5123,30 @@ not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7Pre
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactServiceTest.java "missingAverageFactBlocksAndDoesNotReadNatureAuthority"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactServiceTest.java "natureFactIdentityMismatchBlocksWithoutPartialAuthority"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBonusP15FactAuthorityContractTest.java "J3B6ADoesNotRunParagraph15PolicyOrFormula"
+# 8A4F3J3B6B1 paragraph-7 pre-event bonus accrual / annual discovery FACT authority.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityService.java "historicalDiscovery.resolve("
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityService.java "DIRECT_ACCRUAL_AUTHORITY_MISSING"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityService.java "HISTORICAL_ANNUAL_OR_SERVICE_DISCOVERY"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityService.java "PayrollBonusP15Nature.ANNUAL_RESULT"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityService.java "PayrollBonusP15Nature.SERVICE_LENGTH"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityService.java "AverageEarningsBonusP15Policy.resolve"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityService.java "AverageEarningsBonusP15Formula"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityService.java "AverageEarningsNumeratorCalculationService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityService.java "PARAGRAPH_8"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityServiceTest.java "missingDirectAccrualAuthorityBlocksWithoutPartialFacts"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityServiceTest.java "unmatchedHistoricalAnnualRewardIsSurfacedForLaterP15Policy"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusAccrualAuthorityServiceTest.java "unmatchedHistoricalMonthlyBonusIsIgnored"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBonusAccrualAuthorityContractTest.java "J3B6B1HistoricalDiscoveryAddsOnlyAnnualOrServiceRewardsWithoutPreEventSource"
 
-if [[ "$TEST_METHODS" == "1817" ]]; then
-  ok "test method baseline: 1817"
+if [[ "$TEST_METHODS" == "1855" ]]; then
+  ok "test method baseline: 1855"
 else
-  fail "expected 1817 @Test methods, found $TEST_METHODS"
+  fail "expected 1855 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "308" ]]; then
-  ok "test class baseline: 308"
+if [[ "$TEST_CLASSES" == "310" ]]; then
+  ok "test class baseline: 310"
 else
-  fail "expected 308 test classes, found $TEST_CLASSES"
+  fail "expected 310 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
