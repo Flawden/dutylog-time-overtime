@@ -5233,16 +5233,31 @@ not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8Tar
 not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityService.java "RoundingMode"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph8TariffSalaryAuthorityServiceTest.java "salaryResolvesExactConfiguredMonthlyOfficialSalaryWithoutHourlyDerivation"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph8TariffSalaryAuthorityContractTest.java "J4NeverUsesDerivedHistoricalHourlyRateAuthority"
+# 8A4F3J5 ordered primary -> p6 -> p7 -> p8 fallback resolver.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolver.java "PRIMARY -> PARAGRAPH 6 PRECEDING -> PARAGRAPH 7 PRE-EVENT -> PARAGRAPH 8"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolver.java "paragraph7Supplier.get()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolver.java "paragraph8Supplier.get()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolver.java "if (paragraph7WagePresent && paragraph7WorkedTimePresent)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolver.java "NO_PRE_EVENT_ACCRUED_WAGE"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolver.java "NO_PRE_EVENT_ACTUALLY_WORKED_TIME"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolver.java "Blocked ordered fallback cannot expose partial selection"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolver.java "VacationAverageDailyEarningsFormula"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolver.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolver.java "RoundingMode"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolver.java "CompensationTermRepository"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolverTest.java "primarySelectionStopsBeforeParagraph7AndParagraph8"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsOrderedFallbackResolverTest.java "paragraph7BlockedNeverFallsThroughToParagraph8"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsOrderedFallbackResolverContractTest.java "J5CannotJumpDirectlyFromParagraph6ExhaustionToParagraph8"
 
-if [[ "$TEST_METHODS" == "2028" ]]; then
-  ok "test method baseline: 2028"
+if [[ "$TEST_METHODS" == "2064" ]]; then
+  ok "test method baseline: 2064"
 else
-  fail "expected 2028 @Test methods, found $TEST_METHODS"
+  fail "expected 2064 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "320" ]]; then
-  ok "test class baseline: 320"
+if [[ "$TEST_CLASSES" == "322" ]]; then
+  ok "test class baseline: 322"
 else
-  fail "expected 320 test classes, found $TEST_CLASSES"
+  fail "expected 322 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
