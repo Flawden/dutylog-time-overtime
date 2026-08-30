@@ -5069,16 +5069,30 @@ not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7Pre
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayFormulaTest.java "hourlyHalfMinorRoundsUp"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayFormulaTest.java "salaryHalfMinorRoundsUp"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBasePayFormulaContractTest.java "J3B2DoesNotSelectFallbackOrInferEligibilityFromMoney"
+# 8A4F3J3B3 paragraph-7 pre-event explicit semantic wage FACT authority.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactService.java "combinationFacts.resolveMonth(user, eventMonth)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactService.java "regionalFacts.resolveMonth(user, eventMonth)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactService.java "bonusFacts.resolveMonth(user, eventMonth)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactService.java "SOURCE_PERIOD_CROSSES_EVENT"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactService.java "SOURCE_CURRENCY_MISMATCH"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactService.java "PayrollService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactService.java "PayrollSnapshot"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactService.java "PayrollHistoricalSemanticEarningsService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactService.java "PayrollOrdinaryPremiumPreviewService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactService.java "AverageEarningsParagraph8"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactServiceTest.java "combinationPeriodCrossingEventBlocksInsteadOfProratingMoney"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventSemanticWageFactServiceTest.java "zeroBasePayWithWorkedTimeStillDiscoversObservedSemanticFacts"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventSemanticWageAuthorityContractTest.java "J3B3ReadsOnlyExplicitDatedSemanticSourceAuthorities"
 
-if [[ "$TEST_METHODS" == "1711" ]]; then
-  ok "test method baseline: 1711"
+if [[ "$TEST_METHODS" == "1735" ]]; then
+  ok "test method baseline: 1735"
 else
-  fail "expected 1711 @Test methods, found $TEST_METHODS"
+  fail "expected 1735 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "300" ]]; then
-  ok "test class baseline: 300"
+if [[ "$TEST_CLASSES" == "302" ]]; then
+  ok "test class baseline: 302"
 else
-  fail "expected 300 test classes, found $TEST_CLASSES"
+  fail "expected 302 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
