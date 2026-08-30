@@ -5095,16 +5095,31 @@ not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7Pre
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventOrdinaryPremiumServiceTest.java "sameEconomicKeyAcrossDatesIsAggregatedBeforeHalfUpRounding"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventOrdinaryPremiumServiceTest.java "laterAmbiguousCurrencyClearsEarlierAcceptedPricingEvidence"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventOrdinaryPremiumAuthorityContractTest.java "J3B4AddsOnlyPremiumMoneyAndNeverDuplicatesBasePay"
+# 8A4F3J3B5 paragraph-7 pre-event range-bound HARMFUL_CONDITIONS compensation.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationService.java "PayrollEarningKind.HARMFUL_CONDITIONS"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationService.java "CalculationBase.EARNED_BASE_PAY"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationService.java "resolver.resolve(user, eventMonth)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationService.java "calculator.calculate("
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationService.java "CONFIGURATION_NOT_RANGE_BOUND"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationService.java "PayrollCompensationComponentPreviewService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationService.java "PayrollSnapshot"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationService.java "RoundingMode"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationService.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationService.java "PARAGRAPH_8"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationServiceTest.java "harmfulPercentOfPreEventEarnedBaseUsesCanonicalCalculator"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationServiceTest.java "fixedAmountHarmfulBlocksInsteadOfProratingMonthlyMoney"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationServiceTest.java "workedTimeWithZeroBasePayProducesZeroWithoutFallbackMeaning"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventHarmfulCompensationAuthorityContractTest.java "J3B5ReusesCanonicalResolverAndComponentCalculator"
 
-if [[ "$TEST_METHODS" == "1765" ]]; then
-  ok "test method baseline: 1765"
+if [[ "$TEST_METHODS" == "1793" ]]; then
+  ok "test method baseline: 1793"
 else
-  fail "expected 1765 @Test methods, found $TEST_METHODS"
+  fail "expected 1793 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "304" ]]; then
-  ok "test class baseline: 304"
+if [[ "$TEST_CLASSES" == "306" ]]; then
+  ok "test class baseline: 306"
 else
-  fail "expected 304 test classes, found $TEST_CLASSES"
+  fail "expected 306 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
