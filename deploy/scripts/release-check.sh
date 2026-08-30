@@ -5048,16 +5048,28 @@ not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7Pre
 not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventWorkFactService.java "PARAGRAPH_8"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventWorkFactServiceTest.java "paidAbsenceWithoutWorkedMinutesDoesNotBecomeParagraph7WorkedDay"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventWorkAuthorityContractTest.java "eventDateAndFutureDaysCannotEnterParagraph7Facts"
+# 8A4F3J3B1 paragraph-7 pre-event BASE_PAY pricing FACT authority.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayAuthorityService.java "LocalDate compensationBoundary = eventMonth.atDay(1)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayAuthorityService.java "day.hourlyBaseWorkedMinutes()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayAuthorityService.java "Math.min("
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayAuthorityService.java "day.plannedMinutes(),"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayAuthorityService.java "day.workedMinutes()"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayAuthorityService.java "CompensationCalculationService"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayAuthorityService.java "amountMinor"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayAuthorityService.java "PARAGRAPH_8"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayAuthorityServiceTest.java "hourlyAuthorityUsesOnlyHourlyBaseWorkedMinutes"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayAuthorityServiceTest.java "salaryAuthorityCapsEachWorkedDayAtPlannedMinutes"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBasePayAuthorityContractTest.java "salaryAuthorityCapsQuantityAtScheduledWorkWithoutMoneyFormula"
 
-if [[ "$TEST_METHODS" == "1670" ]]; then
-  ok "test method baseline: 1670"
+if [[ "$TEST_METHODS" == "1691" ]]; then
+  ok "test method baseline: 1691"
 else
-  fail "expected 1670 @Test methods, found $TEST_METHODS"
+  fail "expected 1691 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "296" ]]; then
-  ok "test class baseline: 296"
+if [[ "$TEST_CLASSES" == "298" ]]; then
+  ok "test class baseline: 298"
 else
-  fail "expected 296 test classes, found $TEST_CLASSES"
+  fail "expected 298 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
