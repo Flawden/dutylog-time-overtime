@@ -5194,16 +5194,37 @@ contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEven
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FormulaTest.java "unknownActualAccrualFactBlocksOnlyWhenBasisIsIncomplete"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FormulaTest.java "includedCurrenciesMustMatchBeforeMoneyCanBeSummed"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBonusP15FormulaContractTest.java "J3B6B3BUsesOneMonthlyPartAndOneFinalHalfUpBoundary"
+# 8A4F3J3B6C full paragraph-7 pre-event accrued-wage authority.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "Final paragraph-7 authority for money actually accrued"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "basePay.basePayAmountMinor()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "ordinary.ordinaryPremiumAmountMinor()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "harmful.harmfulAmountMinor()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "case COMBINATION_EPISODE"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "case REGIONAL_SOURCE"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "case BONUS_SOURCE"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "bonus.includedPremiumAmountMinor()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "semantic.equals(bonusSemantic)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "TOTAL_OVERFLOW"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "workedTimePresent()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "accruedWagePresent()"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "AverageEarningsParagraph8"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "PARAGRAPH_8"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "@Service"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthority.java "@Transactional"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthorityTest.java "rawBonusSemanticMoneyIsNeverAddedDirectly"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthorityTest.java "allSixMoneyBucketsAssembleOneExactNumerator"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthorityTest.java "accruedWagePresenceIsIndependentFromWorkedTimePresence"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventAccruedWageAuthorityContractTest.java "J3B6CRawBonusFactsAreProvenanceOnlyAndCannotDoubleCountP15Money"
 
-if [[ "$TEST_METHODS" == "1962" ]]; then
-  ok "test method baseline: 1962"
+if [[ "$TEST_METHODS" == "1998" ]]; then
+  ok "test method baseline: 1998"
 else
-  fail "expected 1962 @Test methods, found $TEST_METHODS"
+  fail "expected 1998 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "316" ]]; then
-  ok "test class baseline: 316"
+if [[ "$TEST_CLASSES" == "318" ]]; then
+  ok "test class baseline: 318"
 else
-  fail "expected 316 test classes, found $TEST_CLASSES"
+  fail "expected 318 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
