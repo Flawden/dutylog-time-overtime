@@ -5060,16 +5060,25 @@ not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7Pre
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayAuthorityServiceTest.java "hourlyAuthorityUsesOnlyHourlyBaseWorkedMinutes"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayAuthorityServiceTest.java "salaryAuthorityCapsEachWorkedDayAtPlannedMinutes"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBasePayAuthorityContractTest.java "salaryAuthorityCapsQuantityAtScheduledWorkWithoutMoneyFormula"
+# 8A4F3J3B2 paragraph-7 pre-event BASE_PAY pure money formula.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayFormula.java "RoundingMode.HALF_UP"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayFormula.java "ratioMoney("
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayFormula.java "@Service"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayFormula.java "Repository"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayFormula.java "PARAGRAPH_8"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayFormulaTest.java "hourlyHalfMinorRoundsUp"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBasePayFormulaTest.java "salaryHalfMinorRoundsUp"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBasePayFormulaContractTest.java "J3B2DoesNotSelectFallbackOrInferEligibilityFromMoney"
 
-if [[ "$TEST_METHODS" == "1691" ]]; then
-  ok "test method baseline: 1691"
+if [[ "$TEST_METHODS" == "1711" ]]; then
+  ok "test method baseline: 1711"
 else
-  fail "expected 1691 @Test methods, found $TEST_METHODS"
+  fail "expected 1711 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "298" ]]; then
-  ok "test class baseline: 298"
+if [[ "$TEST_CLASSES" == "300" ]]; then
+  ok "test class baseline: 300"
 else
-  fail "expected 298 test classes, found $TEST_CLASSES"
+  fail "expected 300 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
