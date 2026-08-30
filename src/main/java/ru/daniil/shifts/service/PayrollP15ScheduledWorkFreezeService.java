@@ -40,6 +40,15 @@ import java.util.*;
 @Service
 public class PayrollP15ScheduledWorkFreezeService {
 
+    public static final String RANGE_MODE_AUTHORITY_BLOCKED =
+            "P15_SCHEDULED_WORK_RANGE_MODE_AUTHORITY_BLOCKED";
+    public static final String RANGE_DERIVATION_INCOMPLETE =
+            "P15_SCHEDULED_WORK_RANGE_DERIVATION_INCOMPLETE";
+    public static final String RANGE_SOURCE_IDENTITY_INCOMPLETE =
+            "P15_SCHEDULED_WORK_RANGE_SOURCE_IDENTITY_INCOMPLETE";
+    public static final String RANGE_PREVIOUS_SOURCE_WINDOW_MISMATCH =
+            "P15_SCHEDULED_WORK_RANGE_PREVIOUS_SOURCE_WINDOW_MISMATCH";
+
     private final PayrollSnapshotP15ScheduledWorkFactRepository facts;
     private final PayrollSnapshotP15WorkTimeManifestRepository manifests;
     private final WorkTimeAccountingHistoryService accountingHistory;
@@ -70,6 +79,132 @@ public class PayrollP15ScheduledWorkFreezeService {
         this.actualAllocation = Objects.requireNonNull(actualAllocation, "Actual allocation service is required");
         this.relationEngine = Objects.requireNonNull(relationEngine, "Plan/fact relation engine is required");
         this.timeCompensation = Objects.requireNonNull(timeCompensation, "Canonical Payroll time source is required");
+    }
+
+    /**
+     * Read-only exact scheduled-work derivation for an arbitrary inclusive Payroll source range.
+     *
+     * <p>The method deliberately reuses the same plan/actual allocation helpers and
+     * {@link PlannedActualWorkRelationEngine} as the immutable monthly freeze, but it never
+     * persists facts or a manifest. Unlike the freeze path, which may persist an incomplete
+     * manifest without blocking ordinary Payroll creation, this read path fails closed and
+     * exposes no partial facts when accounting-mode authority, relation derivation or exact
+     * source identity is missing.</p>
+     */
+    @Transactional(readOnly = true)
+    public RangeResult deriveRange(
+            AppUser user,
+            PayrollSourceSnapshot source
+    ) {
+        Objects.requireNonNull(user, "P15 scheduled-work range requires user");
+        Objects.requireNonNull(source, "P15 scheduled-work range requires Payroll source");
+        LocalDate from = Objects.requireNonNull(
+                source.from(),
+                "P15 scheduled-work range requires source start"
+        );
+        LocalDate to = Objects.requireNonNull(
+                source.to(),
+                "P15 scheduled-work range requires source end"
+        );
+        if (to.isBefore(from)) {
+            throw new IllegalArgumentException("P15 scheduled-work range end precedes start");
+        }
+
+        Map<LocalDate, PayrollSourceDay> currentSource = sourceDays(source, from, to);
+        Map<LocalDate, PayrollSourceDay> derivationSource = new LinkedHashMap<>(currentSource);
+
+        LocalDate previousDate = from.minusDays(1);
+        PayrollSourceSnapshot previous = Objects.requireNonNull(
+                timeCompensation.payrollSource(user, previousDate, previousDate),
+                "P15 scheduled-work previous-day Payroll source returned null"
+        );
+        if (!previousDate.equals(previous.from()) || !previousDate.equals(previous.to())) {
+            return RangeResult.blocked(
+                    from,
+                    to,
+                    RANGE_PREVIOUS_SOURCE_WINDOW_MISMATCH,
+                    previousDate
+            );
+        }
+        for (PayrollSourceDay day : previous.days()) {
+            if (previousDate.equals(day.date())) {
+                putUniqueSourceDay(derivationSource, day);
+            }
+        }
+
+        List<PlannedOccurrence> occurrences = plannedOccurrences(user, previousDate, to);
+        Map<LocalDate, List<PlannedPiece>> plannedByDate = plannedByDate(occurrences, from, to);
+        List<ActualOccurrence> actualOccurrences = actualOccurrences(user, from, to);
+        Map<LocalDate, List<ActualPiece>> actualByDate = actualByDate(actualOccurrences, from, to);
+        ExplicitContext explicitContext = explicitContext(occurrences, actualByDate, from, to);
+
+        TreeSet<LocalDate> candidateDates = new TreeSet<>();
+        candidateDates.addAll(currentSource.keySet());
+        candidateDates.addAll(plannedByDate.keySet());
+        candidateDates.addAll(actualByDate.keySet());
+
+        List<RangeFact> resolved = new ArrayList<>();
+        for (LocalDate date : candidateDates) {
+            WorkTimeAccountingHistoryService.Resolution mode = accountingHistory.resolveAt(user, date);
+            if (mode == null || !mode.ready() || mode.fact() == null) {
+                String reason = mode == null || mode.blockingReason() == null
+                        ? RANGE_MODE_AUTHORITY_BLOCKED + ":" + date
+                        : mode.blockingReason();
+                return RangeResult.blocked(from, to, reason, date);
+            }
+
+            DraftFact draft = explicitContext.dates().contains(date)
+                    ? explicitDraft(
+                            date,
+                            currentSource.get(date),
+                            plannedByDate.getOrDefault(date, List.of()),
+                            actualByDate.getOrDefault(date, List.of()),
+                            explicitContext.support().getOrDefault(date, List.of()),
+                            mode.fact()
+                    )
+                    : planDerivedDraft(
+                            date,
+                            currentSource.get(date),
+                            derivationSource,
+                            plannedByDate.getOrDefault(date, List.of()),
+                            mode.fact()
+                    );
+            if (draft == null) {
+                return RangeResult.blocked(
+                        from,
+                        to,
+                        RANGE_DERIVATION_INCOMPLETE + ":" + date,
+                        date
+                );
+            }
+            if (!draft.sourceIdentityExact()) {
+                return RangeResult.blocked(
+                        from,
+                        to,
+                        RANGE_SOURCE_IDENTITY_INCOMPLETE + ":" + date,
+                        date
+                );
+            }
+            resolved.add(new RangeFact(
+                    draft.date(),
+                    draft.mode().termId(),
+                    draft.mode().effectiveFrom(),
+                    draft.mode().mode(),
+                    draft.sourceKind(),
+                    draft.payrollPlannedMinutes(),
+                    draft.payrollWorkedMinutes(),
+                    draft.payrollHourlyBaseWorkedMinutes(),
+                    draft.scheduleMinutes(),
+                    draft.plannedAndWorkedMinutes(),
+                    draft.plannedNotWorkedMinutes(),
+                    draft.workedOutsidePlanMinutes(),
+                    true,
+                    canonicalIds(draft.plannedDayEntryIds()),
+                    canonicalIds(draft.actualWorkIntervalIds()),
+                    draft.sourceFingerprint()
+            ));
+        }
+        return RangeResult.ready(from, to, resolved);
     }
 
     @Transactional
@@ -834,6 +969,121 @@ public class PayrollP15ScheduledWorkFreezeService {
             List<Long> actualWorkIntervalIds,
             String sourceFingerprint
     ) {
+    }
+
+    public record RangeFact(
+            LocalDate date,
+            long workTimeAccountingTermId,
+            LocalDate workTimeAccountingEffectiveFrom,
+            WorkTimeAccountingMode accountingMode,
+            PayrollSnapshotP15ScheduledWorkSourceKind sourceKind,
+            int payrollPlannedMinutes,
+            int payrollWorkedMinutes,
+            int payrollHourlyBaseWorkedMinutes,
+            int scheduleMinutes,
+            int plannedAndWorkedMinutes,
+            int plannedNotWorkedMinutes,
+            int workedOutsidePlanMinutes,
+            boolean sourceIdentityExact,
+            String plannedDayEntryIds,
+            String actualWorkIntervalIds,
+            String sourceFingerprint
+    ) {
+        public RangeFact {
+            Objects.requireNonNull(date, "P15 scheduled-work range FACT date is required");
+            Objects.requireNonNull(
+                    workTimeAccountingEffectiveFrom,
+                    "P15 scheduled-work range accounting effective date is required"
+            );
+            Objects.requireNonNull(accountingMode, "P15 scheduled-work range accounting mode is required");
+            Objects.requireNonNull(sourceKind, "P15 scheduled-work range source kind is required");
+            Objects.requireNonNull(plannedDayEntryIds, "P15 scheduled-work range planned ids are required");
+            Objects.requireNonNull(actualWorkIntervalIds, "P15 scheduled-work range actual ids are required");
+            if (workTimeAccountingTermId <= 0L
+                    || workTimeAccountingEffectiveFrom.isAfter(date)
+                    || payrollPlannedMinutes < 0
+                    || payrollWorkedMinutes < 0
+                    || payrollHourlyBaseWorkedMinutes < 0
+                    || payrollHourlyBaseWorkedMinutes > payrollWorkedMinutes
+                    || scheduleMinutes < 0
+                    || plannedAndWorkedMinutes < 0
+                    || plannedNotWorkedMinutes < 0
+                    || workedOutsidePlanMinutes < 0
+                    || (long) scheduleMinutes
+                    != (long) plannedAndWorkedMinutes + plannedNotWorkedMinutes
+                    || !sourceIdentityExact
+                    || sourceFingerprint == null
+                    || !sourceFingerprint.matches("[0-9a-f]{64}")) {
+                throw new IllegalArgumentException("P15 scheduled-work range FACT is invalid");
+            }
+        }
+    }
+
+    public record RangeResult(
+            LocalDate from,
+            LocalDate to,
+            boolean ready,
+            String blockingReason,
+            LocalDate blockingDate,
+            List<RangeFact> facts
+    ) {
+        public RangeResult {
+            Objects.requireNonNull(from, "P15 scheduled-work range start is required");
+            Objects.requireNonNull(to, "P15 scheduled-work range end is required");
+            if (to.isBefore(from)) {
+                throw new IllegalArgumentException("P15 scheduled-work result range is invalid");
+            }
+            facts = List.copyOf(Objects.requireNonNull(facts, "P15 scheduled-work range facts are required"));
+            if (ready == (blockingReason != null)) {
+                throw new IllegalArgumentException("P15 scheduled-work range state is invalid");
+            }
+            if (ready) {
+                if (blockingDate != null) {
+                    throw new IllegalArgumentException("Ready P15 scheduled-work range cannot contain blocker date");
+                }
+                LocalDate previous = null;
+                for (RangeFact fact : facts) {
+                    if (fact == null
+                            || fact.date().isBefore(from)
+                            || fact.date().isAfter(to)
+                            || (previous != null && !fact.date().isAfter(previous))) {
+                        throw new IllegalArgumentException("P15 scheduled-work range facts are outside exact window");
+                    }
+                    previous = fact.date();
+                }
+            } else {
+                boolean blockerInsideRange = blockingDate != null
+                        && !blockingDate.isBefore(from)
+                        && !blockingDate.isAfter(to);
+                boolean previousSourceWindowBlock = RANGE_PREVIOUS_SOURCE_WINDOW_MISMATCH.equals(blockingReason)
+                        && from.minusDays(1).equals(blockingDate);
+                if (blockingReason.isBlank()
+                        || !(blockerInsideRange || previousSourceWindowBlock)
+                        || !facts.isEmpty()) {
+                    throw new IllegalArgumentException("Blocked P15 scheduled-work range cannot expose partial facts");
+                }
+            }
+        }
+
+        public static RangeResult ready(
+                LocalDate from,
+                LocalDate to,
+                List<RangeFact> facts
+        ) {
+            return new RangeResult(from, to, true, null, null, facts);
+        }
+
+        public static RangeResult blocked(
+                LocalDate from,
+                LocalDate to,
+                String reason,
+                LocalDate blockingDate
+        ) {
+            if (reason == null || reason.isBlank()) {
+                throw new IllegalArgumentException("P15 scheduled-work range blocker is required");
+            }
+            return new RangeResult(from, to, false, reason, blockingDate, List.of());
+        }
     }
 
     public record FreezeResult(

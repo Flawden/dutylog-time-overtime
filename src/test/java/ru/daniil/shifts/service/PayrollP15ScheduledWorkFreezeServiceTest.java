@@ -334,6 +334,189 @@ class PayrollP15ScheduledWorkFreezeServiceTest {
         assertEquals("10", fact.getPlannedDayEntryIds());
     }
 
+    @Test
+    void rangeAuthorityUsesPlanDerivedRelationWithoutPersistence() {
+        LocalDate first = LocalDate.of(2026, 8, 18);
+        LocalDate second = first.plusDays(1);
+        DayEntry one = plannedDay(10L, first, true);
+        DayEntry two = plannedDay(11L, second, true);
+        when(days.findByOwnerAndDateBetweenOrderByDateAsc(eq(user), any(), any()))
+                .thenReturn(List.of(one, two));
+        when(plannedAllocation.netSegments(user, one))
+                .thenReturn(List.of(planned(first, 8, 0, 16, 0)));
+        when(plannedAllocation.netSegments(user, two))
+                .thenReturn(List.of(planned(second, 8, 0, 16, 0)));
+        readyMode(first, 42L, WorkTimeAccountingMode.SUMMARIZED);
+        readyMode(second, 42L, WorkTimeAccountingMode.SUMMARIZED);
+        PayrollSourceSnapshot source = source(
+                LocalDate.of(2026, 8, 1),
+                LocalDate.of(2026, 8, 19),
+                List.of(
+                        sourceDay(first, 480, 0, 0),
+                        sourceDay(second, 480, 960, 480)
+                )
+        );
+
+        var result = service.deriveRange(user, source);
+
+        assertTrue(result.ready());
+        assertEquals(2, result.facts().size());
+        assertEquals(960, result.facts().stream().mapToInt(
+                PayrollP15ScheduledWorkFreezeService.RangeFact::scheduleMinutes
+        ).sum());
+        assertEquals(480, result.facts().stream().mapToInt(
+                PayrollP15ScheduledWorkFreezeService.RangeFact::plannedAndWorkedMinutes
+        ).sum());
+        assertEquals(480, result.facts().stream().mapToInt(
+                PayrollP15ScheduledWorkFreezeService.RangeFact::workedOutsidePlanMinutes
+        ).sum());
+        verify(facts, never()).saveAll(any());
+        verify(manifests, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void rangeAuthorityKeepsExplicitOffScheduleWorkOutsideP15Ratio() {
+        LocalDate date = LocalDate.of(2026, 8, 18);
+        DayEntry day = plannedDay(10L, date, true);
+        ActualWorkInterval interval = actualInterval(20L, date, true);
+        when(days.findByOwnerAndDateBetweenOrderByDateAsc(eq(user), any(), any()))
+                .thenReturn(List.of(day));
+        when(plannedAllocation.netSegments(user, day))
+                .thenReturn(List.of(planned(date, 8, 0, 16, 0)));
+        when(actualWork.findOverlappingRange(user, LocalDate.of(2026, 8, 1), date))
+                .thenReturn(List.of(interval));
+        when(actualAllocation.netSegments(interval))
+                .thenReturn(List.of(actual(date, 18, 0, 22, 0, true)));
+        readyMode(date, 42L, WorkTimeAccountingMode.SUMMARIZED);
+        PayrollSourceSnapshot source = source(
+                LocalDate.of(2026, 8, 1),
+                date,
+                List.of(sourceDay(date, 480, 240, 240))
+        );
+
+        var result = service.deriveRange(user, source);
+
+        assertTrue(result.ready());
+        var fact = result.facts().get(0);
+        assertEquals(480, fact.scheduleMinutes());
+        assertEquals(0, fact.plannedAndWorkedMinutes());
+        assertEquals(480, fact.plannedNotWorkedMinutes());
+        assertEquals(240, fact.workedOutsidePlanMinutes());
+        verify(facts, never()).saveAll(any());
+        verify(manifests, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void rangeAuthorityBlocksWhenPreviousDayPayrollWindowIsNotExact() {
+        LocalDate from = LocalDate.of(2026, 8, 1);
+        LocalDate to = LocalDate.of(2026, 8, 19);
+        LocalDate previous = from.minusDays(1);
+        PayrollSourceSnapshot source = source(from, to, List.of());
+        when(timeCompensation.payrollSource(user, previous, previous))
+                .thenReturn(source(previous.minusDays(1), previous, List.of()));
+
+        var result = service.deriveRange(user, source);
+
+        assertFalse(result.ready());
+        assertEquals(
+                PayrollP15ScheduledWorkFreezeService.RANGE_PREVIOUS_SOURCE_WINDOW_MISMATCH,
+                result.blockingReason()
+        );
+        assertEquals(previous, result.blockingDate());
+        assertTrue(result.facts().isEmpty());
+        verify(facts, never()).saveAll(any());
+        verify(manifests, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void rangeAuthorityBlocksWhenModeAuthorityMissing() {
+        LocalDate date = LocalDate.of(2026, 8, 18);
+        DayEntry day = plannedDay(10L, date, true);
+        when(days.findByOwnerAndDateBetweenOrderByDateAsc(eq(user), any(), any()))
+                .thenReturn(List.of(day));
+        when(plannedAllocation.netSegments(user, day))
+                .thenReturn(List.of(planned(date, 8, 0, 16, 0)));
+        when(accountingHistory.resolveAt(user, date)).thenReturn(
+                WorkTimeAccountingHistoryService.Resolution.blocked(
+                        date,
+                        WorkTimeAccountingHistoryService.MODE_FACT_MISSING + ":" + date
+                )
+        );
+        PayrollSourceSnapshot source = source(
+                LocalDate.of(2026, 8, 1),
+                date,
+                List.of(sourceDay(date, 480, 480, 480))
+        );
+
+        var result = service.deriveRange(user, source);
+
+        assertFalse(result.ready());
+        assertEquals(WorkTimeAccountingHistoryService.MODE_FACT_MISSING + ":" + date,
+                result.blockingReason());
+        assertEquals(date, result.blockingDate());
+        assertTrue(result.facts().isEmpty());
+        verify(facts, never()).saveAll(any());
+        verify(manifests, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void rangeAuthorityBlocksWhenSourceIdentityIsNotExact() {
+        LocalDate date = LocalDate.of(2026, 8, 18);
+        DayEntry day = plannedDay(10L, date, false);
+        when(days.findByOwnerAndDateBetweenOrderByDateAsc(eq(user), any(), any()))
+                .thenReturn(List.of(day));
+        when(plannedAllocation.netSegments(user, day))
+                .thenReturn(List.of(planned(date, 8, 0, 16, 0)));
+        readyMode(date, 42L, WorkTimeAccountingMode.DAILY);
+        PayrollSourceSnapshot source = source(
+                LocalDate.of(2026, 8, 1),
+                date,
+                List.of(sourceDay(date, 480, 480, 480))
+        );
+
+        var result = service.deriveRange(user, source);
+
+        assertFalse(result.ready());
+        assertEquals(
+                PayrollP15ScheduledWorkFreezeService.RANGE_SOURCE_IDENTITY_INCOMPLETE + ":" + date,
+                result.blockingReason()
+        );
+        assertTrue(result.facts().isEmpty());
+        verify(facts, never()).saveAll(any());
+        verify(manifests, never()).saveAndFlush(any());
+    }
+
+    @Test
+    void rangeAuthorityBlocksAmbiguousPartialOvernightPlanDerivedWork() {
+        LocalDate first = LocalDate.of(2026, 8, 18);
+        LocalDate second = first.plusDays(1);
+        DayEntry night = plannedDay(10L, first, true);
+        when(days.findByOwnerAndDateBetweenOrderByDateAsc(eq(user), any(), any()))
+                .thenReturn(List.of(night));
+        when(plannedAllocation.netSegments(user, night)).thenReturn(List.of(
+                planned(first, 21, 0, 24, 0),
+                planned(second, 0, 0, 8, 0)
+        ));
+        readyMode(first, 42L, WorkTimeAccountingMode.SUMMARIZED);
+        readyMode(second, 42L, WorkTimeAccountingMode.SUMMARIZED);
+        PayrollSourceSnapshot source = source(
+                first,
+                second,
+                List.of(sourceDay(first, 660, 330, 330))
+        );
+
+        var result = service.deriveRange(user, source);
+
+        assertFalse(result.ready());
+        assertEquals(
+                PayrollP15ScheduledWorkFreezeService.RANGE_DERIVATION_INCOMPLETE + ":" + first,
+                result.blockingReason()
+        );
+        assertTrue(result.facts().isEmpty());
+        verify(facts, never()).saveAll(any());
+        verify(manifests, never()).saveAndFlush(any());
+    }
+
     private void readyMode(LocalDate date, long termId, WorkTimeAccountingMode mode) {
         when(accountingHistory.resolveAt(user, date)).thenReturn(
                 WorkTimeAccountingHistoryService.Resolution.ready(

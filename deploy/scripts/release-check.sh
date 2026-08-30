@@ -5157,16 +5157,37 @@ contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEven
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15PolicyTest.java "workPeriodAccruedInEventMonthSelectsOneMonthlyPartForP7Basis"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15PolicyTest.java "awardInsidePreEventAndUnknownActualAccrualDefersFailClosedDecisionToB6B3"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBonusP15PolicyContractTest.java "J3B6B2DefersIncompleteBasisRatioToB6B3"
+# 8A4F3J3B6B3A paragraph-7 pre-event bonus scheduled/worked-time FACT authority.
+contains src/main/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeService.java "public RangeResult deriveRange"
+contains src/main/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeService.java "RANGE_SOURCE_IDENTITY_INCOMPLETE"
+contains src/main/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeService.java "RANGE_PREVIOUS_SOURCE_WINDOW_MISMATCH"
+contains src/main/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeService.java "relationEngine.compareDay("
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactService.java "[eventMonthStart,eventDate)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactService.java "timeCompensation.payrollSource(user, periodFrom, periodTo)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactService.java "scheduledWork.deriveRange(user, source)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactService.java "DAILY_PARTIAL_DAY_UNRESOLVED"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactService.java "MIXED_ACCOUNTING_MODE"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactService.java "fact.plannedAndWorkedMinutes()"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactService.java "AverageEarningsBonusP15Formula"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactService.java "BigInteger"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactService.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactService.java "RoundingMode"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactService.java "PARAGRAPH_8"
+contains src/test/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeServiceTest.java "rangeAuthorityUsesPlanDerivedRelationWithoutPersistence"
+contains src/test/java/ru/daniil/shifts/service/PayrollP15ScheduledWorkFreezeServiceTest.java "rangeAuthorityBlocksWhenPreviousDayPayrollWindowIsNotExact"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactServiceTest.java "summarizedMissedSchedulePreservesTrueDenominator"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusWorkTimeFactServiceTest.java "dailyPartialScheduledDayBlocksInsteadOfRounding"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBonusWorkTimeAuthorityContractTest.java "J3B6B3AReusesCanonicalP15PlanActualRelationAuthority"
 
-if [[ "$TEST_METHODS" == "1896" ]]; then
-  ok "test method baseline: 1896"
+if [[ "$TEST_METHODS" == "1935" ]]; then
+  ok "test method baseline: 1935"
 else
-  fail "expected 1896 @Test methods, found $TEST_METHODS"
+  fail "expected 1935 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "312" ]]; then
-  ok "test class baseline: 312"
+if [[ "$TEST_CLASSES" == "314" ]]; then
+  ok "test class baseline: 314"
 else
-  fail "expected 312 test classes, found $TEST_CLASSES"
+  fail "expected 314 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
