@@ -5110,16 +5110,29 @@ contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEven
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationServiceTest.java "fixedAmountHarmfulBlocksInsteadOfProratingMonthlyMoney"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventHarmfulCompensationServiceTest.java "workedTimeWithZeroBasePayProducesZeroWithoutFallbackMeaning"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventHarmfulCompensationAuthorityContractTest.java "J3B5ReusesCanonicalResolverAndComponentCalculator"
+# 8A4F3J3B6A paragraph-7 pre-event bonus paragraph-15 FACT authority.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactService.java "averageFacts.resolveForBonusFacts(user, source)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactService.java "natureFacts.resolveForAverageFacts(user, orderedAverage)"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactService.java "SourceAuthority.BONUS_SOURCE"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactService.java "AVERAGE_FACT_MISSING"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactService.java "NATURE_FACT_MISSING"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactService.java "AverageEarningsBonusP15Policy"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactService.java "AverageEarningsBonusP15Formula"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactService.java "PayrollBonusSourceFactRepository"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactService.java "PARAGRAPH_8"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactServiceTest.java "missingAverageFactBlocksAndDoesNotReadNatureAuthority"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventBonusP15FactServiceTest.java "natureFactIdentityMismatchBlocksWithoutPartialAuthority"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsParagraph7PreEventBonusP15FactAuthorityContractTest.java "J3B6ADoesNotRunParagraph15PolicyOrFormula"
 
-if [[ "$TEST_METHODS" == "1793" ]]; then
-  ok "test method baseline: 1793"
+if [[ "$TEST_METHODS" == "1817" ]]; then
+  ok "test method baseline: 1817"
 else
-  fail "expected 1793 @Test methods, found $TEST_METHODS"
+  fail "expected 1817 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "306" ]]; then
-  ok "test class baseline: 306"
+if [[ "$TEST_CLASSES" == "308" ]]; then
+  ok "test class baseline: 308"
 else
-  fail "expected 306 test classes, found $TEST_CLASSES"
+  fail "expected 308 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
