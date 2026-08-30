@@ -18,7 +18,10 @@ class CalendarComfortFrontendContractTest {
         assertTrue(experience.contains("function calendarExperienceIsAtToday()")
                 && experience.contains("route === \"calendar\" && !calendarExperienceIsAtToday()")
                 && experience.contains("button.hidden = !visible")
-                && experience.contains("Вернуться к сегодняшнему дню"));
+                && experience.contains("Вернуться к сегодняшнему дню")
+                && experience.contains("function renderCalendarExperience(){\n  updateCalendarTodayButton();")
+                && experience.contains("calendarExperienceBaseRenderCalendar();\n  renderCalendarExperience();")
+                && !experience.contains("if (document.documentElement.dataset.vueCalendarTimeline !== \"ready\") renderCalendarExperience();"));
         assertTrue(css.contains(".nav #todayBtn:not([hidden])")
                 && css.contains("content: \"↺\""));
     }

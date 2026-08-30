@@ -38,6 +38,7 @@ public class VacationPlannerService {
     public static final String NO_COMPENSATION = "NONE";
 
     private final VacationSettingsRepository settingsRepository;
+    private final UserRepository userRepository;
     private final AbsenceTypeRepository typeRepository;
     private final AbsencePeriodRepository periodRepository;
     private final DayEntryRepository dayRepository;
@@ -48,6 +49,7 @@ public class VacationPlannerService {
     private final LedgerIntegrityService ledgerIntegrityService;
 
     public VacationPlannerService(VacationSettingsRepository settingsRepository,
+                                  UserRepository userRepository,
                                   AbsenceTypeRepository typeRepository,
                                   AbsencePeriodRepository periodRepository,
                                   DayEntryRepository dayRepository,
@@ -57,6 +59,7 @@ public class VacationPlannerService {
                                   OvertimeService overtimeService,
                                   LedgerIntegrityService ledgerIntegrityService) {
         this.settingsRepository = settingsRepository;
+        this.userRepository = userRepository;
         this.typeRepository = typeRepository;
         this.periodRepository = periodRepository;
         this.dayRepository = dayRepository;
@@ -420,8 +423,13 @@ public class VacationPlannerService {
 
     @Transactional
     public VacationSettings ensureSettings(AppUser user) {
-        return settingsRepository.findByOwner(user)
-                .orElseGet(() -> settingsRepository.saveAndFlush(new VacationSettings(user)));
+        if (user == null || user.getId() == null) {
+            throw new IllegalArgumentException("Vacation settings require a persisted owner");
+        }
+        AppUser lockedOwner = userRepository.findForUpdateById(user.getId())
+                .orElseThrow(() -> ApiException.notFound("Пользователь не найден"));
+        return settingsRepository.findByOwner(lockedOwner)
+                .orElseGet(() -> settingsRepository.saveAndFlush(new VacationSettings(lockedOwner)));
     }
 
     private VacationSettings lockSettings(AppUser user) {

@@ -12,6 +12,7 @@ import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.repo.AbsencePeriodRepository;
 import ru.daniil.shifts.repo.DayEntryRepository;
 import ru.daniil.shifts.repo.UserRepository;
+import ru.daniil.shifts.repo.VacationSettingsRepository;
 import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.LocalDate;
@@ -31,6 +32,7 @@ class VacationPlannerServiceTest {
     @Autowired DayEntryRepository days;
     @Autowired AbsencePeriodRepository periods;
     @Autowired UserRepository users;
+    @Autowired VacationSettingsRepository vacationSettings;
 
     AppUser owner;
     AppUser other;
@@ -59,6 +61,7 @@ class VacationPlannerServiceTest {
         assertEquals(java.util.List.of("VACATION", "TIME_OFF", "SICK", "UNPAID", "OTHER"),
                 first.types().stream().map(AbsenceTypeDto::systemCode).toList());
         assertEquals(5, second.types().size());
+        assertTrue(vacationSettings.findByOwner(owner).isPresent());
     }
 
     @Test

@@ -481,6 +481,7 @@ function calendarExperienceRenderDay(){
 }
 
 function renderCalendarExperience(){
+  updateCalendarTodayButton();
   if (document.documentElement.dataset.vueCalendarTimeline === "ready") return;
   const root = $("calendarExperience");
   if (!root) return;
@@ -546,7 +547,7 @@ function calendarExperienceHeaderToday(){
 const calendarExperienceBaseRenderCalendar = renderCalendar;
 renderCalendar = function renderCalendarWithExperience(){
   calendarExperienceBaseRenderCalendar();
-  if (document.documentElement.dataset.vueCalendarTimeline !== "ready") renderCalendarExperience();
+  renderCalendarExperience();
 };
 const calendarExperienceBaseSelectDay = selectDay;
 selectDay = function selectDayWithExperience(key){

@@ -200,7 +200,10 @@ test('a timezone projection can move a late shift to the next calendar date', as
   // Moving from UTC to fixed UTC+5 sends the whole interval to the next local calendar date.
   await page.locator('#workTimezone').selectOption('Asia/Yekaterinburg');
   profileSaved = waitForApi(page, 'PUT', '/api/v1/time/work-context');
-  await page.locator('#timeSaveTimezone').click();
+  await runWithOptionalHistoricalTimezoneConfirmation(
+    page,
+    () => page.locator('#timeSaveTimezone').click(),
+  );
   await profileSaved;
   await page.evaluate(() => Promise.resolve(window.__dutylogTimeSettingsSaveReady));
   await waitForAppIdle(page);
