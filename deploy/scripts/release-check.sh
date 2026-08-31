@@ -5328,16 +5328,32 @@ contains src/test/java/ru/daniil/shifts/service/VacationPayOrchestratorTest.java
 contains src/test/java/ru/daniil/shifts/service/VacationPayOrchestratorTest.java "mOverflowPropagatesWithoutPartialMoney"
 contains src/test/java/ru/daniil/shifts/web/VacationPayOrchestratorContractTest.java "NDoesNotChooseJ5FallbackBranch"
 contains src/test/java/ru/daniil/shifts/web/VacationPayOrchestratorContractTest.java "NBlockedFacadeNeverExposesPartialMoney"
+# 8A4F3O vacation-pay application authority: P6 -> J5 -> N.
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "RULE_ID = \"DUTYLOG_VACATION_PAY_APPLICATION\""
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "@Autowired"
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "AverageEarningsOrderedFallbackResolver::resolve"
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "orderedFallback.selectedReferenceWindow()"
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "vacationResolver.resolve("
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "PayrollService"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "PayrollSnapshot"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "BigInteger"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "RoundingMode"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "ProductionCalendarService"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "AbsencePeriodRepository"
+contains src/test/java/ru/daniil/shifts/service/VacationPayApplicationServiceTest.java "realJ5Paragraph8EvaluatesParagraph7ThenParagraph8ExactlyOnce"
+contains src/test/java/ru/daniil/shifts/service/VacationPayApplicationServiceTest.java "selectedReferenceWindowIsPassedExactlyToCalculator"
+contains src/test/java/ru/daniil/shifts/web/VacationPayApplicationServiceContractTest.java "ODoesNotMutatePayrollSnapshotOrTotalPay"
 
-if [[ "$TEST_METHODS" == "2218" ]]; then
-  ok "test method baseline: 2218"
+if [[ "$TEST_METHODS" == "2255" ]]; then
+  ok "test method baseline: 2255"
 else
-  fail "expected 2218 @Test methods, found $TEST_METHODS"
+  fail "expected 2255 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "331" ]]; then
-  ok "test class baseline: 331"
+if [[ "$TEST_CLASSES" == "333" ]]; then
+  ok "test class baseline: 333"
 else
-  fail "expected 331 test classes, found $TEST_CLASSES"
+  fail "expected 333 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix

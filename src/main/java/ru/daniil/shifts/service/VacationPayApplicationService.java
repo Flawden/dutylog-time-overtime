@@ -1,0 +1,328 @@
+package ru.daniil.shifts.service;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.model.AppUser;
+
+import java.time.LocalDate;
+import java.time.YearMonth;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Supplier;
+
+/**
+ * Application boundary for one annual-vacation pay calculation.
+ *
+ * <p>O owns application wiring only: P6 reference authority -> J5 ordered
+ * fallback -> N vacation-pay orchestrator. It deliberately does not calculate
+ * paragraph-7 calendar facts, paragraph-8 formula facts, average-daily money,
+ * payable vacation days or final vacation money.</p>
+ *
+ * <p>J5 authority suppliers are application inputs and remain lazy according
+ * to J5. K basis suppliers are passed through untouched to N, so N still owns
+ * the L-ready gate before K can evaluate them.</p>
+ */
+@Service
+public class VacationPayApplicationService {
+    public static final String RULE_ID = "DUTYLOG_VACATION_PAY_APPLICATION";
+
+    private final Paragraph6Resolver paragraph6Resolver;
+    private final OrderedFallbackResolver orderedFallbackResolver;
+    private final ReferenceCalculator referenceCalculator;
+    private final VacationResolver vacationResolver;
+
+    @Autowired
+    public VacationPayApplicationService(
+            AverageEarningsParagraph6ReferenceResolver paragraph6,
+            VacationAveragePrimaryCalculationService referenceCalculation,
+            VacationPayOrchestrator vacationPay
+    ) {
+        this(
+                paragraph6::resolve,
+                AverageEarningsOrderedFallbackResolver::resolve,
+                (user, eventDate, window, discoveryThroughMonth, provenNoPayrollMonths) ->
+                        referenceCalculation.calculate(
+                                user,
+                                eventDate,
+                                window,
+                                discoveryThroughMonth,
+                                provenNoPayrollMonths
+                        ),
+                vacationPay::resolve
+        );
+    }
+
+    VacationPayApplicationService(
+            Paragraph6Resolver paragraph6Resolver,
+            OrderedFallbackResolver orderedFallbackResolver,
+            ReferenceCalculator referenceCalculator,
+            VacationResolver vacationResolver
+    ) {
+        this.paragraph6Resolver = Objects.requireNonNull(
+                paragraph6Resolver,
+                "Vacation pay application requires paragraph-6 resolver"
+        );
+        this.orderedFallbackResolver = Objects.requireNonNull(
+                orderedFallbackResolver,
+                "Vacation pay application requires ordered-fallback resolver"
+        );
+        this.referenceCalculator = Objects.requireNonNull(
+                referenceCalculator,
+                "Vacation pay application requires selected-reference calculator"
+        );
+        this.vacationResolver = Objects.requireNonNull(
+                vacationResolver,
+                "Vacation pay application requires vacation-pay orchestrator"
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public Resolution resolve(
+            AppUser user,
+            LocalDate eventDate,
+            Long absencePeriodId,
+            YearMonth discoveryThroughMonth,
+            List<YearMonth> provenNoPayrollMonths,
+            Supplier<AverageEarningsParagraph7PreEventAccruedWageAuthority.Resolution>
+                    paragraph7AuthoritySupplier,
+            Supplier<AverageEarningsParagraph8TariffSalaryAuthorityService.Resolution>
+                    paragraph8AuthoritySupplier,
+            Supplier<VacationAverageUnifiedDailyResolver.Paragraph7CalendarBasis>
+                    paragraph7CalendarBasisSupplier,
+            Supplier<VacationAverageUnifiedDailyResolver.Paragraph8FormulaBasis>
+                    paragraph8FormulaBasisSupplier
+    ) {
+        Objects.requireNonNull(user, "Vacation pay application requires user");
+        Objects.requireNonNull(eventDate, "Vacation pay application requires event date");
+        Objects.requireNonNull(
+                discoveryThroughMonth,
+                "Vacation pay application requires discovery-through month"
+        );
+        List<YearMonth> zeroProofs = List.copyOf(Objects.requireNonNull(
+                provenNoPayrollMonths,
+                "Vacation pay application requires explicit no-Payroll proofs"
+        ));
+        Objects.requireNonNull(
+                paragraph7AuthoritySupplier,
+                "Vacation pay application requires lazy paragraph-7 authority"
+        );
+        Objects.requireNonNull(
+                paragraph8AuthoritySupplier,
+                "Vacation pay application requires lazy paragraph-8 authority"
+        );
+        Objects.requireNonNull(
+                paragraph7CalendarBasisSupplier,
+                "Vacation pay application requires lazy paragraph-7 calendar basis"
+        );
+        Objects.requireNonNull(
+                paragraph8FormulaBasisSupplier,
+                "Vacation pay application requires lazy paragraph-8 formula basis"
+        );
+
+        AverageEarningsParagraph6ReferenceResolver.Resolution paragraph6 =
+                Objects.requireNonNull(
+                        paragraph6Resolver.resolve(
+                                user,
+                                eventDate,
+                                discoveryThroughMonth,
+                                zeroProofs
+                        ),
+                        "Paragraph-6 application authority returned null"
+                );
+
+        AverageEarningsOrderedFallbackResolver.Resolution orderedFallback =
+                Objects.requireNonNull(
+                        orderedFallbackResolver.resolve(
+                                paragraph6,
+                                paragraph7AuthoritySupplier,
+                                paragraph8AuthoritySupplier
+                        ),
+                        "Ordered vacation fallback returned null"
+                );
+
+        Supplier<VacationAveragePrimaryCalculationService.Resolution>
+                selectedReferenceSupplier = () -> {
+                    AverageEarningsReferenceWindow selected =
+                            Objects.requireNonNull(
+                                    orderedFallback.selectedReferenceWindow(),
+                                    "Selected reference branch lost J5 reference window"
+                            );
+                    return Objects.requireNonNull(
+                            referenceCalculator.calculate(
+                                    user,
+                                    eventDate,
+                                    selected,
+                                    discoveryThroughMonth,
+                                    zeroProofs
+                            ),
+                            "Selected vacation reference calculation returned null"
+                    );
+                };
+
+        VacationPayOrchestrator.Resolution vacationPay =
+                Objects.requireNonNull(
+                        vacationResolver.resolve(
+                                user,
+                                eventDate,
+                                absencePeriodId,
+                                orderedFallback,
+                                selectedReferenceSupplier,
+                                paragraph7CalendarBasisSupplier,
+                                paragraph8FormulaBasisSupplier
+                        ),
+                        "Vacation pay orchestrator returned null"
+                );
+
+        return new Resolution(
+                eventDate,
+                YearMonth.from(eventDate),
+                absencePeriodId,
+                discoveryThroughMonth,
+                zeroProofs,
+                paragraph6,
+                orderedFallback,
+                vacationPay
+        );
+    }
+
+    @FunctionalInterface
+    interface Paragraph6Resolver {
+        AverageEarningsParagraph6ReferenceResolver.Resolution resolve(
+                AppUser user,
+                LocalDate eventDate,
+                YearMonth discoveryThroughMonth,
+                List<YearMonth> provenNoPayrollMonths
+        );
+    }
+
+    @FunctionalInterface
+    interface OrderedFallbackResolver {
+        AverageEarningsOrderedFallbackResolver.Resolution resolve(
+                AverageEarningsParagraph6ReferenceResolver.Resolution paragraph6,
+                Supplier<AverageEarningsParagraph7PreEventAccruedWageAuthority.Resolution>
+                        paragraph7Supplier,
+                Supplier<AverageEarningsParagraph8TariffSalaryAuthorityService.Resolution>
+                        paragraph8Supplier
+        );
+    }
+
+    @FunctionalInterface
+    interface ReferenceCalculator {
+        VacationAveragePrimaryCalculationService.Resolution calculate(
+                AppUser user,
+                LocalDate eventDate,
+                AverageEarningsReferenceWindow selectedWindow,
+                YearMonth discoveryThroughMonth,
+                List<YearMonth> provenNoPayrollMonths
+        );
+    }
+
+    @FunctionalInterface
+    interface VacationResolver {
+        VacationPayOrchestrator.Resolution resolve(
+                AppUser user,
+                LocalDate eventDate,
+                Long absencePeriodId,
+                AverageEarningsOrderedFallbackResolver.Resolution orderedFallback,
+                Supplier<VacationAveragePrimaryCalculationService.Resolution>
+                        referenceCalculationSupplier,
+                Supplier<VacationAverageUnifiedDailyResolver.Paragraph7CalendarBasis>
+                        paragraph7CalendarBasisSupplier,
+                Supplier<VacationAverageUnifiedDailyResolver.Paragraph8FormulaBasis>
+                        paragraph8FormulaBasisSupplier
+        );
+    }
+
+    public record Resolution(
+            LocalDate eventDate,
+            YearMonth eventMonth,
+            Long requestedAbsencePeriodId,
+            YearMonth discoveryThroughMonth,
+            List<YearMonth> provenNoPayrollMonths,
+            AverageEarningsParagraph6ReferenceResolver.Resolution paragraph6Authority,
+            AverageEarningsOrderedFallbackResolver.Resolution orderedFallback,
+            VacationPayOrchestrator.Resolution vacationPay
+    ) {
+        public Resolution {
+            Objects.requireNonNull(eventDate, "Vacation application result requires event date");
+            Objects.requireNonNull(eventMonth, "Vacation application result requires event month");
+            Objects.requireNonNull(
+                    discoveryThroughMonth,
+                    "Vacation application result requires discovery-through month"
+            );
+            provenNoPayrollMonths = List.copyOf(Objects.requireNonNull(
+                    provenNoPayrollMonths,
+                    "Vacation application result requires no-Payroll proofs"
+            ));
+            Objects.requireNonNull(
+                    paragraph6Authority,
+                    "Vacation application result requires paragraph-6 provenance"
+            );
+            Objects.requireNonNull(
+                    orderedFallback,
+                    "Vacation application result requires J5 provenance"
+            );
+            Objects.requireNonNull(
+                    vacationPay,
+                    "Vacation application result requires N provenance"
+            );
+            if (vacationPay.ready()
+                    && (!paragraph6Authority.ready() || !orderedFallback.ready())) {
+                throw new IllegalArgumentException(
+                        "Ready vacation application result requires ready P6 and J5 provenance"
+                );
+            }
+            if (!eventMonth.equals(YearMonth.from(eventDate))
+                    || !eventDate.equals(paragraph6Authority.eventDate())
+                    || !eventMonth.equals(paragraph6Authority.eventMonth())
+                    || !discoveryThroughMonth.equals(
+                            paragraph6Authority.discoveryThroughMonth()
+                    )
+                    || !eventDate.equals(orderedFallback.eventDate())
+                    || !eventMonth.equals(orderedFallback.eventMonth())
+                    || !eventDate.equals(vacationPay.eventDate())
+                    || !eventMonth.equals(vacationPay.eventMonth())
+                    || !Objects.equals(
+                            requestedAbsencePeriodId,
+                            vacationPay.requestedAbsencePeriodId()
+                    )) {
+                throw new IllegalArgumentException(
+                        "Vacation application result authority identity is inconsistent"
+                );
+            }
+        }
+
+        public boolean ready() {
+            return vacationPay.ready();
+        }
+
+        public AverageEarningsOrderedFallbackResolver.Selection selectedBasis() {
+            return orderedFallback.ready() ? orderedFallback.selection() : null;
+        }
+
+        public VacationPayOrchestrator.BlockingStage blockingStage() {
+            return vacationPay.blockingStage();
+        }
+
+        public String blockingReason() {
+            return vacationPay.blockingReason();
+        }
+
+        public String upstreamBlockingReason() {
+            return vacationPay.upstreamBlockingReason();
+        }
+
+        public String currencyCode() {
+            return vacationPay.currencyCode();
+        }
+
+        public Long vacationPayMinor() {
+            return vacationPay.vacationPayMinor();
+        }
+
+        public int payableCalendarDays() {
+            return vacationPay.payableCalendarDays();
+        }
+    }
+}
