@@ -101,6 +101,11 @@ function productionDayLabel(date: string): string {
 }
 const monthTitle = computed(() => dateLabel(`${focusMonth.value}-01`, language.value, { month: "long" }));
 const yearTitle = computed(() => focusDate.value.slice(0, 4));
+const todayReturnHidden = computed(() =>
+  mode.value === "month"
+    ? focusDate.value.slice(0, 7) === workDate.value.slice(0, 7)
+    : focusDate.value === workDate.value
+);
 const monthDates = computed(() => gridDates.value.filter(date => date.startsWith(focusMonth.value)));
 const monthSummary = computed(() => ({
   shifts: monthDates.value.filter(date => dayFactsForProfile(bundle.value, date, activeProfileId.value).shift).length,
@@ -341,7 +346,7 @@ async function openDetails(): Promise<void> { if (viewingSelf.value) await store
       <div class="vue-calendar-title"><small>Vue Calendar · canonical server range</small><h1><span id="monthName">{{ monthTitle }}</span> <span id="yearName">{{ yearTitle }}</span></h1></div>
       <div class="vue-calendar-nav">
         <button id="prev" type="button" aria-label="Предыдущий период" @click="navigate(-1)">←</button>
-        <button id="todayBtn" type="button" :hidden="focusDate === workDate" @click="goToday">Сегодня</button>
+        <button id="todayBtn" type="button" :hidden="todayReturnHidden" @click="goToday">Сегодня</button>
         <button id="next" type="button" aria-label="Следующий период" @click="navigate(1)">→</button>
       </div>
     </header>

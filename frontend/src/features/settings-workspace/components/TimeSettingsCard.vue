@@ -12,6 +12,7 @@ const { profile, shiftTypes, timeContext, workTimezoneHistory, legacyShiftPrevie
 
 const workTimezone = ref("UTC");
 const effectiveFrom = ref("");
+const timezoneDraftTouched = ref(false);
 const dayStart = ref("08:30");
 const dayEnd = ref("17:00");
 const dayBreak = ref(30);
@@ -162,7 +163,9 @@ function syncDraft(): void {
   if (!effectiveFrom.value && currentWorkDate.value) {
     effectiveFrom.value = currentWorkDate.value;
   }
-  workTimezone.value = timezoneAt(effectiveFrom.value || currentWorkDate.value);
+  if (!timezoneDraftTouched.value) {
+    workTimezone.value = timezoneAt(effectiveFrom.value || currentWorkDate.value);
+  }
   const day = findBuiltIn("day");
   const night = findBuiltIn("night");
   if (day) {
@@ -182,10 +185,15 @@ watch([profile, shiftTypes, timeContext, workTimezoneHistory], syncDraft, { imme
 
 watch(effectiveFrom, date => {
   if (!date || !effectiveDateValid.value) return;
+  timezoneDraftTouched.value = false;
   workTimezone.value = timezoneAt(date);
 });
 
+function markTimezoneDraftTouched(): void {
+  timezoneDraftTouched.value = true;
+}
 function detectBrowserTimezone(): void {
+  timezoneDraftTouched.value = true;
   try { workTimezone.value = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC"; }
   catch { workTimezone.value = "UTC"; }
 }
@@ -202,6 +210,8 @@ async function saveTimezone(): Promise<void> {
     effectiveFrom.value,
     props.bridge,
   );
+  timezoneDraftTouched.value = false;
+  syncDraft();
 }
 async function saveShifts(): Promise<void> {
   await settings.saveBuiltInShiftDefaults({
@@ -224,7 +234,7 @@ async function migrateTasks(): Promise<void> {
     <template #status><div id="timeSettingsStatus" class="status" :class="{ ok: settings.timeMessageOk }">{{ status }}</div></template>
     <div class="timeSettingsGrid timeZoneSettingsGrid singleTimezoneGrid">
       <label>{{ text.timezone }}
-        <select id="workTimezone" v-model="workTimezone" aria-describedby="timeZoneHelp"><option v-for="zone in timeZones" :key="zone" :value="zone">{{ zone }}</option></select>
+        <select id="workTimezone" v-model="workTimezone" aria-describedby="timeZoneHelp" @change="markTimezoneDraftTouched"><option v-for="zone in timeZones" :key="zone" :value="zone">{{ zone }}</option></select>
       </label>
       <input id="displayTimezone" type="hidden" :value="workTimezone" />
       <label>{{ temporalText.effectiveFrom }}
