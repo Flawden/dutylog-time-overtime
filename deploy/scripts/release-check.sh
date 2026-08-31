@@ -5304,16 +5304,40 @@ contains src/test/java/ru/daniil/shifts/service/VacationPayMoneyFormulaTest.java
 contains src/test/java/ru/daniil/shifts/service/VacationPayMoneyFormulaTest.java "exactHalfMinorRoundsAwayFromZeroUnderExplicitHalfUpPolicy"
 contains src/test/java/ru/daniil/shifts/service/VacationPayMoneyFormulaTest.java "finalAmountOverflowBlocksInsteadOfWrapping"
 contains src/test/java/ru/daniil/shifts/web/VacationPayMoneyFormulaContractTest.java "MDoesNotRecomputeKOrLPolicies"
+# 8A4F3N annual-vacation pay authority orchestrator.
+contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "RULE_ID = \"DUTYLOG_VACATION_PAY_ORCHESTRATOR\""
+contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "@Autowired"
+contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "VacationAverageUnifiedDailyResolver::resolve"
+contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "VacationPayMoneyFormula::calculate"
+contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "if (!payableDaysAuthority.ready())"
+contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "if (!dailyAuthority.ready())"
+contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "if (!moneyAuthority.ready())"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "BigInteger"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "RoundingMode"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "divideAndRemainder"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "ProductionCalendarService"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "AbsencePeriodRepository"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "AnnualPaidVacationHolidayPolicy"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "PRIMARY_REFERENCE_PERIOD"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "PARAGRAPH_7_PRE_EVENT_ACCRUED_WAGE"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayOrchestrator.java "PARAGRAPH_8_ESTABLISHED_TARIFF_OR_SALARY"
+contains src/test/java/ru/daniil/shifts/service/VacationPayOrchestratorTest.java "lBlockedWinsBeforeNullOrderedFallbackOrSuppliers"
+contains src/test/java/ru/daniil/shifts/service/VacationPayOrchestratorTest.java "blockedJ5MakesKBlockedAndMIsNotCalled"
+contains src/test/java/ru/daniil/shifts/service/VacationPayOrchestratorTest.java "provenZeroPayableDaysRemainReadyZeroEndToEnd"
+contains src/test/java/ru/daniil/shifts/service/VacationPayOrchestratorTest.java "mOverflowPropagatesWithoutPartialMoney"
+contains src/test/java/ru/daniil/shifts/web/VacationPayOrchestratorContractTest.java "NDoesNotChooseJ5FallbackBranch"
+contains src/test/java/ru/daniil/shifts/web/VacationPayOrchestratorContractTest.java "NBlockedFacadeNeverExposesPartialMoney"
 
-if [[ "$TEST_METHODS" == "2182" ]]; then
-  ok "test method baseline: 2182"
+if [[ "$TEST_METHODS" == "2218" ]]; then
+  ok "test method baseline: 2218"
 else
-  fail "expected 2182 @Test methods, found $TEST_METHODS"
+  fail "expected 2218 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "329" ]]; then
-  ok "test class baseline: 329"
+if [[ "$TEST_CLASSES" == "331" ]]; then
+  ok "test class baseline: 331"
 else
-  fail "expected 329 test classes, found $TEST_CLASSES"
+  fail "expected 331 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
