@@ -2,11 +2,9 @@ package ru.daniil.shifts.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.daniil.shifts.dto.Dtos.ProductionCalendarDayDto;
 import ru.daniil.shifts.model.AppUser;
 
 import java.time.LocalDate;
-import java.time.MonthDay;
 import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -49,32 +47,6 @@ public class VacationAverageReferenceCalendarService {
 
     private static final String VACATION =
             "VACATION";
-
-    private static final String HOLIDAY =
-            "HOLIDAY";
-
-    /*
-     * Federal non-working holidays from Article 112 of the Russian Labour
-     * Code. Government transfers move days off, not the legal holiday itself,
-     * so transferred days are deliberately absent from this set.
-     */
-    private static final Set<MonthDay> FEDERAL_NON_WORKING_HOLIDAYS =
-            Set.of(
-                    MonthDay.of(1, 1),
-                    MonthDay.of(1, 2),
-                    MonthDay.of(1, 3),
-                    MonthDay.of(1, 4),
-                    MonthDay.of(1, 5),
-                    MonthDay.of(1, 6),
-                    MonthDay.of(1, 7),
-                    MonthDay.of(1, 8),
-                    MonthDay.of(2, 23),
-                    MonthDay.of(3, 8),
-                    MonthDay.of(5, 1),
-                    MonthDay.of(5, 9),
-                    MonthDay.of(6, 12),
-                    MonthDay.of(11, 4)
-            );
 
     private final EmploymentHistoryService employment;
     private final AverageEarningsReferenceFactsService referenceFacts;
@@ -286,44 +258,13 @@ public class VacationAverageReferenceCalendarService {
                  */
                 for (LocalDate date
                         : absenceDates) {
-
-                    /*
-                     * Federal Article-112 holidays are legal truth independent
-                     * of local production-calendar overrides.
-                     */
-                    if (isFederalNonWorkingHoliday(
-                            date
-                    )) {
-                        retainedVacationHolidayDates.add(
-                                date
-                        );
-
-                        continue;
-                    }
-
-                    /*
-                     * The production calendar remains an explicit extension
-                     * point for additional non-working holiday truth, e.g.
-                     * an officially configured regional holiday.
-                     */
-                    ProductionCalendarDayDto production =
-                            productionCalendar
-                                    .resolvedDay(
-                                            user,
-                                            date
-                                    );
-
-                    if (production == null
-                            || production.dayKind() == null) {
-                        throw new IllegalStateException(
-                                "Vacation holiday classification is unavailable for "
-                                        + date
-                        );
-                    }
-
-                    if (HOLIDAY.equals(
-                            production.dayKind()
-                    )) {
+                    AnnualPaidVacationHolidayPolicy.HolidayFact holidayFact =
+                            AnnualPaidVacationHolidayPolicy.classify(
+                                    productionCalendar,
+                                    user,
+                                    date
+                            );
+                    if (holidayFact.nonWorkingHoliday()) {
                         retainedVacationHolidayDates.add(
                                 date
                         );
@@ -377,21 +318,6 @@ public class VacationAverageReferenceCalendarService {
                         retainedVacationHolidayDates
                 ),
                 denominator
-        );
-    }
-
-    private boolean isFederalNonWorkingHoliday(
-            LocalDate date
-    ) {
-        Objects.requireNonNull(
-                date,
-                "Federal holiday classification requires date"
-        );
-
-        return FEDERAL_NON_WORKING_HOLIDAYS.contains(
-                MonthDay.from(
-                        date
-                )
         );
     }
 

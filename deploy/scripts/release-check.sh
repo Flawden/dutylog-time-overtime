@@ -5265,16 +5265,36 @@ not_contains src/main/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyR
 contains src/test/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolverTest.java "paragraph7UsesExplicitParagraph10PartialMonthDenominator"
 contains src/test/java/ru/daniil/shifts/service/VacationAverageUnifiedDailyResolverTest.java "paragraph8HourlyTariffUsesExplicitAnnualNormFormula"
 contains src/test/java/ru/daniil/shifts/web/VacationAverageUnifiedDailyResolverContractTest.java "KDoesNotChooseFallbackBranch"
+# 8A4F3L Article-120 payable annual-vacation calendar-day FACT.
+contains src/main/java/ru/daniil/shifts/service/AnnualPaidVacationHolidayPolicy.java "RULE_ID = \"TK_RF_ARTICLE_120\""
+contains src/main/java/ru/daniil/shifts/service/AnnualPaidVacationHolidayPolicy.java "TK_RF_ARTICLE_112_FEDERAL_HOLIDAY"
+contains src/main/java/ru/daniil/shifts/service/AnnualPaidVacationHolidayPolicy.java "productionCalendar.resolvedDay(user, date)"
+contains src/main/java/ru/daniil/shifts/service/VacationPayableDaysFactService.java "RULE_ID = \"TK_RF_ARTICLE_120\""
+contains src/main/java/ru/daniil/shifts/service/VacationPayableDaysFactService.java "ledgerIntegrity.posts(period.getStatus())"
+contains src/main/java/ru/daniil/shifts/service/VacationPayableDaysFactService.java "AnnualPaidVacationHolidayPolicy.classify("
+contains src/main/java/ru/daniil/shifts/service/VacationPayableDaysFactService.java "payableDates"
+contains src/main/java/ru/daniil/shifts/service/VacationPayableDaysFactService.java "excludedHolidayDates"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayableDaysFactService.java "VacationAverageUnifiedDailyResolver"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayableDaysFactService.java "VacationSettings"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayableDaysFactService.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayableDaysFactService.java "RoundingMode"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayableDaysFactService.java "currencyCode"
+contains src/main/java/ru/daniil/shifts/service/VacationAverageReferenceCalendarService.java "AnnualPaidVacationHolidayPolicy.classify("
+not_contains src/main/java/ru/daniil/shifts/service/VacationAverageReferenceCalendarService.java "FEDERAL_NON_WORKING_HOLIDAYS"
+contains src/test/java/ru/daniil/shifts/service/AnnualPaidVacationHolidayPolicyTest.java "transferredDayOffIsNotSilentlyPromotedToHoliday"
+contains src/test/java/ru/daniil/shifts/service/VacationPayableDaysFactServiceTest.java "entirelyFederalHolidaySpanIsProvenReadyZero"
+contains src/test/java/ru/daniil/shifts/service/VacationPayableDaysFactServiceTest.java "plannedStatusIsNotPayableAuthority"
+contains src/test/java/ru/daniil/shifts/web/VacationPayableDaysFactAuthorityContractTest.java "LOwnsArticle120PayableDayFactOnly"
 
-if [[ "$TEST_METHODS" == "2102" ]]; then
-  ok "test method baseline: 2102"
+if [[ "$TEST_METHODS" == "2144" ]]; then
+  ok "test method baseline: 2144"
 else
-  fail "expected 2102 @Test methods, found $TEST_METHODS"
+  fail "expected 2144 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "324" ]]; then
-  ok "test class baseline: 324"
+if [[ "$TEST_CLASSES" == "327" ]]; then
+  ok "test class baseline: 327"
 else
-  fail "expected 324 test classes, found $TEST_CLASSES"
+  fail "expected 327 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
