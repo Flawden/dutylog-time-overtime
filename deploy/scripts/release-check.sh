@@ -5285,16 +5285,35 @@ contains src/test/java/ru/daniil/shifts/service/AnnualPaidVacationHolidayPolicyT
 contains src/test/java/ru/daniil/shifts/service/VacationPayableDaysFactServiceTest.java "entirelyFederalHolidaySpanIsProvenReadyZero"
 contains src/test/java/ru/daniil/shifts/service/VacationPayableDaysFactServiceTest.java "plannedStatusIsNotPayableAuthority"
 contains src/test/java/ru/daniil/shifts/web/VacationPayableDaysFactAuthorityContractTest.java "LOwnsArticle120PayableDayFactOnly"
+# 8A4F3M PP-540 paragraph-9 final vacation-pay MONEY formula.
+contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "RULE_ID = \"PP_540_P9_VACATION_PAY_MONEY\""
+contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "ROUNDING_POLICY = \"FINAL_MINOR_UNIT_HALF_UP\""
+contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "VacationAverageUnifiedDailyResolver.Resolution dailyAuthority"
+contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "VacationPayableDaysFactService.Resolution payableDaysAuthority"
+contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java ".multiply(BigInteger.valueOf(payableCalendarDays))"
+contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "divideAndRemainder"
+contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "AMOUNT_OVERFLOW"
+contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "CURRENCY_REQUIRED"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "BigDecimal"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "RoundingMode"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "double"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "VacationSettings"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "ProductionCalendarService"
+not_contains src/main/java/ru/daniil/shifts/service/VacationPayMoneyFormula.java "AbsencePeriodRepository"
+contains src/test/java/ru/daniil/shifts/service/VacationPayMoneyFormulaTest.java "provenZeroPayableDaysProduceReadyZeroMoney"
+contains src/test/java/ru/daniil/shifts/service/VacationPayMoneyFormulaTest.java "exactHalfMinorRoundsAwayFromZeroUnderExplicitHalfUpPolicy"
+contains src/test/java/ru/daniil/shifts/service/VacationPayMoneyFormulaTest.java "finalAmountOverflowBlocksInsteadOfWrapping"
+contains src/test/java/ru/daniil/shifts/web/VacationPayMoneyFormulaContractTest.java "MDoesNotRecomputeKOrLPolicies"
 
-if [[ "$TEST_METHODS" == "2144" ]]; then
-  ok "test method baseline: 2144"
+if [[ "$TEST_METHODS" == "2182" ]]; then
+  ok "test method baseline: 2182"
 else
-  fail "expected 2144 @Test methods, found $TEST_METHODS"
+  fail "expected 2182 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "327" ]]; then
-  ok "test class baseline: 327"
+if [[ "$TEST_CLASSES" == "329" ]]; then
+  ok "test class baseline: 329"
 else
-  fail "expected 327 test classes, found $TEST_CLASSES"
+  fail "expected 329 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
