@@ -38,6 +38,10 @@ class VacationPayApplicationServiceTest {
     private VacationPayApplicationService.OrderedFallbackResolver orderedResolver;
     private VacationPayApplicationService.ReferenceCalculator referenceCalculator;
     private VacationPayApplicationService.VacationResolver vacationResolver;
+    private VacationPayApplicationService.Paragraph7CalendarBasisResolver
+            paragraph7CalendarBasisResolver;
+    private VacationPayApplicationService.Paragraph8FormulaBasisResolver
+            paragraph8FormulaBasisResolver;
     private AppUser user;
     private AverageEarningsParagraph6ReferenceResolver.Resolution p6;
     private AverageEarningsOrderedFallbackResolver.Resolution ordered;
@@ -49,6 +53,12 @@ class VacationPayApplicationServiceTest {
         orderedResolver = mock(VacationPayApplicationService.OrderedFallbackResolver.class);
         referenceCalculator = mock(VacationPayApplicationService.ReferenceCalculator.class);
         vacationResolver = mock(VacationPayApplicationService.VacationResolver.class);
+        paragraph7CalendarBasisResolver = mock(
+                VacationPayApplicationService.Paragraph7CalendarBasisResolver.class
+        );
+        paragraph8FormulaBasisResolver = mock(
+                VacationPayApplicationService.Paragraph8FormulaBasisResolver.class
+        );
         serviceHolder = null;
         user = mock(AppUser.class);
         p6 = p6(AverageEarningsParagraph6ReferenceResolver.Selection.PRIMARY);
@@ -300,6 +310,183 @@ class VacationPayApplicationServiceTest {
     }
 
     @Test
+    void canonicalBasisAuthoritiesStayLazyUntilVacationResolverEvaluatesSuppliers() {
+        service().resolve(
+                user,
+                EVENT,
+                ABSENCE_ID,
+                DISCOVERY,
+                List.of(),
+                () -> null,
+                () -> null
+        );
+
+        verifyNoInteractions(
+                paragraph7CalendarBasisResolver,
+                paragraph8FormulaBasisResolver
+        );
+        verify(ordered, never()).paragraph8Authority();
+    }
+
+    @Test
+    void canonicalParagraph7SupplierUsesP7AuthorityOnlyWhenRequested() {
+        var basis = mock(
+                VacationAverageUnifiedDailyResolver.Paragraph7CalendarBasis.class
+        );
+        var authority = mock(
+                AverageEarningsParagraph7CalendarBasisAuthorityService.Resolution.class
+        );
+        when(authority.ready()).thenReturn(true);
+        when(authority.basis()).thenReturn(basis);
+        when(paragraph7CalendarBasisResolver.resolve(user, EVENT)).thenReturn(authority);
+        when(vacationResolver.resolve(
+                eq(user), eq(EVENT), eq(ABSENCE_ID), eq(ordered), any(), any(), any()
+        )).thenAnswer(invocation -> {
+            @SuppressWarnings("unchecked")
+            Supplier<VacationAverageUnifiedDailyResolver.Paragraph7CalendarBasis> p7Basis =
+                    invocation.getArgument(5);
+            assertSame(basis, p7Basis.get());
+            return vacation;
+        });
+
+        resolveCanonical(() -> null, () -> null);
+
+        verify(paragraph7CalendarBasisResolver).resolve(user, EVENT);
+        verifyNoInteractions(paragraph8FormulaBasisResolver);
+    }
+
+    @Test
+    void canonicalParagraph7BlockedAuthorityBecomesExplicitMissingBasisForK() {
+        var authority = mock(
+                AverageEarningsParagraph7CalendarBasisAuthorityService.Resolution.class
+        );
+        when(authority.ready()).thenReturn(false);
+        when(paragraph7CalendarBasisResolver.resolve(user, EVENT)).thenReturn(authority);
+        when(vacationResolver.resolve(
+                eq(user), eq(EVENT), eq(ABSENCE_ID), eq(ordered), any(), any(), any()
+        )).thenAnswer(invocation -> {
+            @SuppressWarnings("unchecked")
+            Supplier<VacationAverageUnifiedDailyResolver.Paragraph7CalendarBasis> p7Basis =
+                    invocation.getArgument(5);
+            assertNull(p7Basis.get());
+            return vacation;
+        });
+
+        resolveCanonical(() -> null, () -> null);
+
+        verify(paragraph7CalendarBasisResolver).resolve(user, EVENT);
+        verifyNoInteractions(paragraph8FormulaBasisResolver);
+    }
+
+    @Test
+    void canonicalParagraph8SupplierUsesExactSelectedJ5Authority() {
+        var selectedParagraph8 = mock(
+                AverageEarningsParagraph8TariffSalaryAuthorityService.Resolution.class
+        );
+        when(ordered.paragraph8Authority()).thenReturn(selectedParagraph8);
+        var basis = mock(
+                VacationAverageUnifiedDailyResolver.Paragraph8FormulaBasis.class
+        );
+        var authority = mock(
+                AverageEarningsParagraph8VacationFormulaBasisAuthorityService.Resolution.class
+        );
+        when(authority.ready()).thenReturn(true);
+        when(authority.basis()).thenReturn(basis);
+        when(paragraph8FormulaBasisResolver.resolve(
+                user,
+                EVENT,
+                selectedParagraph8
+        )).thenReturn(authority);
+        when(vacationResolver.resolve(
+                eq(user), eq(EVENT), eq(ABSENCE_ID), eq(ordered), any(), any(), any()
+        )).thenAnswer(invocation -> {
+            @SuppressWarnings("unchecked")
+            Supplier<VacationAverageUnifiedDailyResolver.Paragraph8FormulaBasis> p8Basis =
+                    invocation.getArgument(6);
+            assertSame(basis, p8Basis.get());
+            return vacation;
+        });
+
+        resolveCanonical(() -> null, () -> null);
+
+        verify(paragraph8FormulaBasisResolver).resolve(
+                user,
+                EVENT,
+                selectedParagraph8
+        );
+        verifyNoInteractions(paragraph7CalendarBasisResolver);
+    }
+
+    @Test
+    void canonicalParagraph8BlockedAuthorityBecomesExplicitMissingBasisForK() {
+        var selectedParagraph8 = mock(
+                AverageEarningsParagraph8TariffSalaryAuthorityService.Resolution.class
+        );
+        when(ordered.paragraph8Authority()).thenReturn(selectedParagraph8);
+        var authority = mock(
+                AverageEarningsParagraph8VacationFormulaBasisAuthorityService.Resolution.class
+        );
+        when(authority.ready()).thenReturn(false);
+        when(paragraph8FormulaBasisResolver.resolve(
+                user,
+                EVENT,
+                selectedParagraph8
+        )).thenReturn(authority);
+        when(vacationResolver.resolve(
+                eq(user), eq(EVENT), eq(ABSENCE_ID), eq(ordered), any(), any(), any()
+        )).thenAnswer(invocation -> {
+            @SuppressWarnings("unchecked")
+            Supplier<VacationAverageUnifiedDailyResolver.Paragraph8FormulaBasis> p8Basis =
+                    invocation.getArgument(6);
+            assertNull(p8Basis.get());
+            return vacation;
+        });
+
+        resolveCanonical(() -> null, () -> null);
+
+        verify(paragraph8FormulaBasisResolver).resolve(
+                user,
+                EVENT,
+                selectedParagraph8
+        );
+        verifyNoInteractions(paragraph7CalendarBasisResolver);
+    }
+
+    @Test
+    void explicitBasisSupplierSeamNeverTouchesCanonicalBasisAuthorities() {
+        var p7Basis = mock(
+                VacationAverageUnifiedDailyResolver.Paragraph7CalendarBasis.class
+        );
+        var p8Basis = mock(
+                VacationAverageUnifiedDailyResolver.Paragraph8FormulaBasis.class
+        );
+        Supplier<VacationAverageUnifiedDailyResolver.Paragraph7CalendarBasis> p7 =
+                () -> p7Basis;
+        Supplier<VacationAverageUnifiedDailyResolver.Paragraph8FormulaBasis> p8 =
+                () -> p8Basis;
+        when(vacationResolver.resolve(
+                eq(user), eq(EVENT), eq(ABSENCE_ID), eq(ordered), any(), eq(p7), eq(p8)
+        )).thenAnswer(invocation -> {
+            @SuppressWarnings("unchecked")
+            Supplier<VacationAverageUnifiedDailyResolver.Paragraph7CalendarBasis> p7Supplier =
+                    invocation.getArgument(5);
+            @SuppressWarnings("unchecked")
+            Supplier<VacationAverageUnifiedDailyResolver.Paragraph8FormulaBasis> p8Supplier =
+                    invocation.getArgument(6);
+            assertSame(p7Basis, p7Supplier.get());
+            assertSame(p8Basis, p8Supplier.get());
+            return vacation;
+        });
+
+        resolveWithBasisSuppliers(p7, p8);
+
+        verifyNoInteractions(
+                paragraph7CalendarBasisResolver,
+                paragraph8FormulaBasisResolver
+        );
+    }
+
+    @Test
     void resultPreservesP6J5AndNProvenance() {
         var result = resolve(List.of());
 
@@ -488,7 +675,9 @@ class VacationPayApplicationServiceTest {
                 paragraph6Resolver,
                 orderedResolver,
                 referenceCalculator,
-                vacationResolver
+                vacationResolver,
+                paragraph7CalendarBasisResolver,
+                paragraph8FormulaBasisResolver
         );
     }
 
@@ -496,6 +685,21 @@ class VacationPayApplicationServiceTest {
         return service().resolve(
                 user, EVENT, ABSENCE_ID, DISCOVERY, zeroProofs,
                 () -> null, () -> null, () -> null, () -> null
+        );
+    }
+
+    private VacationPayApplicationService.Resolution resolveCanonical(
+            Supplier<AverageEarningsParagraph7PreEventAccruedWageAuthority.Resolution> p7Authority,
+            Supplier<AverageEarningsParagraph8TariffSalaryAuthorityService.Resolution> p8Authority
+    ) {
+        return service().resolve(
+                user,
+                EVENT,
+                ABSENCE_ID,
+                DISCOVERY,
+                List.of(),
+                p7Authority,
+                p8Authority
         );
     }
 
@@ -526,7 +730,9 @@ class VacationPayApplicationServiceTest {
                 paragraph6Resolver,
                 AverageEarningsOrderedFallbackResolver::resolve,
                 referenceCalculator,
-                vacationResolver
+                vacationResolver,
+                paragraph7CalendarBasisResolver,
+                paragraph8FormulaBasisResolver
         );
         serviceHolder = real;
         when(vacationResolver.resolve(

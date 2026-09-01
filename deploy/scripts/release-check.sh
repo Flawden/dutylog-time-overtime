@@ -5360,11 +5360,22 @@ not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8Vac
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7CalendarBasisAuthorityServiceTest.java "fullPreEventEmploymentCountsCalendarDaysNotWorkedShifts"
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph8VacationFormulaBasisAuthorityServiceTest.java "hourlyTariffSumsTwelveCompleteProductionNormMonths"
 contains src/test/java/ru/daniil/shifts/web/AverageEarningsVacationBasisAuthoritiesContractTest.java "basisAuthoritiesContainNoMoneyCalculationOrPayrollMutation"
+# 8A4F3Q vacation-pay basis wiring: canonical P7/P8 authority suppliers through O/N/K.
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "AverageEarningsParagraph7CalendarBasisAuthorityService paragraph7CalendarBasis"
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "AverageEarningsParagraph8VacationFormulaBasisAuthorityService paragraph8FormulaBasis"
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "paragraph7CalendarBasis::resolve"
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "paragraph8FormulaBasis::resolve"
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "ordered -> () -> canonicalParagraph7CalendarBasis(user, eventDate)"
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "orderedFallback.paragraph8Authority()"
+contains src/test/java/ru/daniil/shifts/service/VacationPayApplicationServiceTest.java "canonicalBasisAuthoritiesStayLazyUntilVacationResolverEvaluatesSuppliers"
+contains src/test/java/ru/daniil/shifts/service/VacationPayApplicationServiceTest.java "canonicalParagraph8SupplierUsesExactSelectedJ5Authority"
+contains src/test/java/ru/daniil/shifts/service/VacationPayApplicationServiceTest.java "explicitBasisSupplierSeamNeverTouchesCanonicalBasisAuthorities"
+contains src/test/java/ru/daniil/shifts/web/VacationPayApplicationServiceContractTest.java "QWiresCanonicalBasisAuthoritiesAndRetainsExplicitSupplierSeam"
 
-if [[ "$TEST_METHODS" == "2283" ]]; then
-  ok "test method baseline: 2283"
+if [[ "$TEST_METHODS" == "2289" ]]; then
+  ok "test method baseline: 2289"
 else
-  fail "expected 2283 @Test methods, found $TEST_METHODS"
+  fail "expected 2289 @Test methods, found $TEST_METHODS"
 fi
 if [[ "$TEST_CLASSES" == "336" ]]; then
   ok "test class baseline: 336"

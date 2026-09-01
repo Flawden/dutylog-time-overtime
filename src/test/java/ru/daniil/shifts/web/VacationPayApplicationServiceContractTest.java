@@ -23,12 +23,20 @@ class VacationPayApplicationServiceContractTest {
         assertTrue(source.contains("AverageEarningsParagraph6ReferenceResolver paragraph6"));
         assertTrue(source.contains("AverageEarningsOrderedFallbackResolver::resolve"));
         assertTrue(source.contains("VacationPayOrchestrator vacationPay"));
+        assertTrue(source.contains(
+                "AverageEarningsParagraph7CalendarBasisAuthorityService paragraph7CalendarBasis"
+        ));
+        assertTrue(source.contains(
+                "AverageEarningsParagraph8VacationFormulaBasisAuthorityService paragraph8FormulaBasis"
+        ));
     }
 
     @Test
     void OHasExplicitAutowiredProductionConstructor() throws Exception {
         String source = source();
         assertTrue(source.contains("@Autowired\n    public VacationPayApplicationService("));
+        assertTrue(source.contains("paragraph7CalendarBasis::resolve"));
+        assertTrue(source.contains("paragraph8FormulaBasis::resolve"));
     }
 
     @Test
@@ -53,9 +61,24 @@ class VacationPayApplicationServiceContractTest {
     }
 
     @Test
-    void OPassesKBasisSuppliersThroughWithoutApplicationPolicy() throws Exception {
+    void QWiresCanonicalBasisAuthoritiesAndRetainsExplicitSupplierSeam() throws Exception {
         String source = source();
-        assertTrue(source.contains("paragraph7CalendarBasisSupplier,\n                                paragraph8FormulaBasisSupplier"));
+        assertTrue(source.contains(
+                "ordered -> () -> canonicalParagraph7CalendarBasis(user, eventDate)"
+        ));
+        assertTrue(source.contains(
+                "ordered -> () -> canonicalParagraph8FormulaBasis("
+        ));
+        assertTrue(source.contains("orderedFallback.paragraph8Authority()"));
+        assertTrue(source.contains(
+                "ordered -> paragraph7CalendarBasisSupplier"
+        ));
+        assertTrue(source.contains(
+                "ordered -> paragraph8FormulaBasisSupplier"
+        ));
+        assertTrue(source.contains(
+                "paragraph7CalendarBasisSupplier,\n                                paragraph8FormulaBasisSupplier"
+        ));
         assertFalse(source.contains("Paragraph7CalendarBasis.of("));
         assertFalse(source.contains("Paragraph8FormulaBasis.monthlySalary("));
         assertFalse(source.contains("Paragraph8FormulaBasis.hourlyTariff("));

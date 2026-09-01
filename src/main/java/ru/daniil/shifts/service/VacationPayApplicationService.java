@@ -14,14 +14,16 @@ import java.util.function.Supplier;
 /**
  * Application boundary for one annual-vacation pay calculation.
  *
- * <p>O owns application wiring only: P6 reference authority -> J5 ordered
- * fallback -> N vacation-pay orchestrator. It deliberately does not calculate
- * paragraph-7 calendar facts, paragraph-8 formula facts, average-daily money,
- * payable vacation days or final vacation money.</p>
+ * <p>O/Q owns application wiring only: P6 reference authority -> J5 ordered
+ * fallback -> canonical P7/P8 basis authorities -> N vacation-pay orchestrator.
+ * It deliberately does not calculate paragraph-7 calendar facts, paragraph-8
+ * formula facts, average-daily money, payable vacation days or final vacation
+ * money.</p>
  *
- * <p>J5 authority suppliers are application inputs and remain lazy according
- * to J5. K basis suppliers are passed through untouched to N, so N still owns
- * the L-ready gate before K can evaluate them.</p>
+ * <p>J5 authority suppliers remain lazy according to J5. Production basis
+ * suppliers are created only after J5 selection and stay lazy through N, so N
+ * still owns the L-ready gate before K can evaluate them. The explicit K-basis
+ * supplier overload remains as a deterministic test/integration seam.</p>
  */
 @Service
 public class VacationPayApplicationService {
@@ -31,12 +33,16 @@ public class VacationPayApplicationService {
     private final OrderedFallbackResolver orderedFallbackResolver;
     private final ReferenceCalculator referenceCalculator;
     private final VacationResolver vacationResolver;
+    private final Paragraph7CalendarBasisResolver paragraph7CalendarBasisResolver;
+    private final Paragraph8FormulaBasisResolver paragraph8FormulaBasisResolver;
 
     @Autowired
     public VacationPayApplicationService(
             AverageEarningsParagraph6ReferenceResolver paragraph6,
             VacationAveragePrimaryCalculationService referenceCalculation,
-            VacationPayOrchestrator vacationPay
+            VacationPayOrchestrator vacationPay,
+            AverageEarningsParagraph7CalendarBasisAuthorityService paragraph7CalendarBasis,
+            AverageEarningsParagraph8VacationFormulaBasisAuthorityService paragraph8FormulaBasis
     ) {
         this(
                 paragraph6::resolve,
@@ -49,7 +55,9 @@ public class VacationPayApplicationService {
                                 discoveryThroughMonth,
                                 provenNoPayrollMonths
                         ),
-                vacationPay::resolve
+                vacationPay::resolve,
+                paragraph7CalendarBasis::resolve,
+                paragraph8FormulaBasis::resolve
         );
     }
 
@@ -58,6 +66,24 @@ public class VacationPayApplicationService {
             OrderedFallbackResolver orderedFallbackResolver,
             ReferenceCalculator referenceCalculator,
             VacationResolver vacationResolver
+    ) {
+        this(
+                paragraph6Resolver,
+                orderedFallbackResolver,
+                referenceCalculator,
+                vacationResolver,
+                VacationPayApplicationService::unconfiguredParagraph7CalendarBasis,
+                VacationPayApplicationService::unconfiguredParagraph8FormulaBasis
+        );
+    }
+
+    VacationPayApplicationService(
+            Paragraph6Resolver paragraph6Resolver,
+            OrderedFallbackResolver orderedFallbackResolver,
+            ReferenceCalculator referenceCalculator,
+            VacationResolver vacationResolver,
+            Paragraph7CalendarBasisResolver paragraph7CalendarBasisResolver,
+            Paragraph8FormulaBasisResolver paragraph8FormulaBasisResolver
     ) {
         this.paragraph6Resolver = Objects.requireNonNull(
                 paragraph6Resolver,
@@ -75,8 +101,54 @@ public class VacationPayApplicationService {
                 vacationResolver,
                 "Vacation pay application requires vacation-pay orchestrator"
         );
+        this.paragraph7CalendarBasisResolver = Objects.requireNonNull(
+                paragraph7CalendarBasisResolver,
+                "Vacation pay application requires paragraph-7 calendar-basis authority"
+        );
+        this.paragraph8FormulaBasisResolver = Objects.requireNonNull(
+                paragraph8FormulaBasisResolver,
+                "Vacation pay application requires paragraph-8 formula-basis authority"
+        );
     }
 
+    /**
+     * Canonical production entry point. P7/P8 K-basis suppliers are wired from
+     * their Spring authorities only after J5 has selected a branch; they remain
+     * unevaluated until N passes the L-ready gate and K requests that branch.
+     */
+    @Transactional(readOnly = true)
+    public Resolution resolve(
+            AppUser user,
+            LocalDate eventDate,
+            Long absencePeriodId,
+            YearMonth discoveryThroughMonth,
+            List<YearMonth> provenNoPayrollMonths,
+            Supplier<AverageEarningsParagraph7PreEventAccruedWageAuthority.Resolution>
+                    paragraph7AuthoritySupplier,
+            Supplier<AverageEarningsParagraph8TariffSalaryAuthorityService.Resolution>
+                    paragraph8AuthoritySupplier
+    ) {
+        return resolveInternal(
+                user,
+                eventDate,
+                absencePeriodId,
+                discoveryThroughMonth,
+                provenNoPayrollMonths,
+                paragraph7AuthoritySupplier,
+                paragraph8AuthoritySupplier,
+                ordered -> () -> canonicalParagraph7CalendarBasis(user, eventDate),
+                ordered -> () -> canonicalParagraph8FormulaBasis(
+                        user,
+                        eventDate,
+                        ordered
+                )
+        );
+    }
+
+    /**
+     * Explicit K-basis supplier seam retained for focused tests and controlled
+     * integration callers. Application code forwards both suppliers untouched.
+     */
     @Transactional(readOnly = true)
     public Resolution resolve(
             AppUser user,
@@ -92,6 +164,40 @@ public class VacationPayApplicationService {
                     paragraph7CalendarBasisSupplier,
             Supplier<VacationAverageUnifiedDailyResolver.Paragraph8FormulaBasis>
                     paragraph8FormulaBasisSupplier
+    ) {
+        Objects.requireNonNull(
+                paragraph7CalendarBasisSupplier,
+                "Vacation pay application requires lazy paragraph-7 calendar basis"
+        );
+        Objects.requireNonNull(
+                paragraph8FormulaBasisSupplier,
+                "Vacation pay application requires lazy paragraph-8 formula basis"
+        );
+        return resolveInternal(
+                user,
+                eventDate,
+                absencePeriodId,
+                discoveryThroughMonth,
+                provenNoPayrollMonths,
+                paragraph7AuthoritySupplier,
+                paragraph8AuthoritySupplier,
+                ordered -> paragraph7CalendarBasisSupplier,
+                ordered -> paragraph8FormulaBasisSupplier
+        );
+    }
+
+    private Resolution resolveInternal(
+            AppUser user,
+            LocalDate eventDate,
+            Long absencePeriodId,
+            YearMonth discoveryThroughMonth,
+            List<YearMonth> provenNoPayrollMonths,
+            Supplier<AverageEarningsParagraph7PreEventAccruedWageAuthority.Resolution>
+                    paragraph7AuthoritySupplier,
+            Supplier<AverageEarningsParagraph8TariffSalaryAuthorityService.Resolution>
+                    paragraph8AuthoritySupplier,
+            Paragraph7BasisSupplierFactory paragraph7BasisSupplierFactory,
+            Paragraph8BasisSupplierFactory paragraph8BasisSupplierFactory
     ) {
         Objects.requireNonNull(user, "Vacation pay application requires user");
         Objects.requireNonNull(eventDate, "Vacation pay application requires event date");
@@ -112,12 +218,12 @@ public class VacationPayApplicationService {
                 "Vacation pay application requires lazy paragraph-8 authority"
         );
         Objects.requireNonNull(
-                paragraph7CalendarBasisSupplier,
-                "Vacation pay application requires lazy paragraph-7 calendar basis"
+                paragraph7BasisSupplierFactory,
+                "Vacation pay application requires paragraph-7 basis supplier factory"
         );
         Objects.requireNonNull(
-                paragraph8FormulaBasisSupplier,
-                "Vacation pay application requires lazy paragraph-8 formula basis"
+                paragraph8BasisSupplierFactory,
+                "Vacation pay application requires paragraph-8 basis supplier factory"
         );
 
         AverageEarningsParagraph6ReferenceResolver.Resolution paragraph6 =
@@ -139,6 +245,17 @@ public class VacationPayApplicationService {
                                 paragraph8AuthoritySupplier
                         ),
                         "Ordered vacation fallback returned null"
+                );
+
+        Supplier<VacationAverageUnifiedDailyResolver.Paragraph7CalendarBasis>
+                paragraph7CalendarBasisSupplier = Objects.requireNonNull(
+                        paragraph7BasisSupplierFactory.create(orderedFallback),
+                        "Paragraph-7 basis supplier factory returned null"
+                );
+        Supplier<VacationAverageUnifiedDailyResolver.Paragraph8FormulaBasis>
+                paragraph8FormulaBasisSupplier = Objects.requireNonNull(
+                        paragraph8BasisSupplierFactory.create(orderedFallback),
+                        "Paragraph-8 basis supplier factory returned null"
                 );
 
         Supplier<VacationAveragePrimaryCalculationService.Resolution>
@@ -186,6 +303,58 @@ public class VacationPayApplicationService {
         );
     }
 
+    private VacationAverageUnifiedDailyResolver.Paragraph7CalendarBasis
+            canonicalParagraph7CalendarBasis(
+                    AppUser user,
+                    LocalDate eventDate
+            ) {
+        AverageEarningsParagraph7CalendarBasisAuthorityService.Resolution resolution =
+                Objects.requireNonNull(
+                        paragraph7CalendarBasisResolver.resolve(user, eventDate),
+                        "Paragraph-7 calendar-basis authority returned null"
+                );
+        return resolution.ready() ? resolution.basis() : null;
+    }
+
+    private VacationAverageUnifiedDailyResolver.Paragraph8FormulaBasis
+            canonicalParagraph8FormulaBasis(
+                    AppUser user,
+                    LocalDate eventDate,
+                    AverageEarningsOrderedFallbackResolver.Resolution orderedFallback
+            ) {
+        AverageEarningsParagraph8VacationFormulaBasisAuthorityService.Resolution resolution =
+                Objects.requireNonNull(
+                        paragraph8FormulaBasisResolver.resolve(
+                                user,
+                                eventDate,
+                                orderedFallback.paragraph8Authority()
+                        ),
+                        "Paragraph-8 formula-basis authority returned null"
+                );
+        return resolution.ready() ? resolution.basis() : null;
+    }
+
+    private static AverageEarningsParagraph7CalendarBasisAuthorityService.Resolution
+            unconfiguredParagraph7CalendarBasis(
+                    AppUser user,
+                    LocalDate eventDate
+            ) {
+        throw new IllegalStateException(
+                "Canonical paragraph-7 calendar-basis authority is unavailable in test seam"
+        );
+    }
+
+    private static AverageEarningsParagraph8VacationFormulaBasisAuthorityService.Resolution
+            unconfiguredParagraph8FormulaBasis(
+                    AppUser user,
+                    LocalDate eventDate,
+                    AverageEarningsParagraph8TariffSalaryAuthorityService.Resolution paragraph8
+            ) {
+        throw new IllegalStateException(
+                "Canonical paragraph-8 formula-basis authority is unavailable in test seam"
+        );
+    }
+
     @FunctionalInterface
     interface Paragraph6Resolver {
         AverageEarningsParagraph6ReferenceResolver.Resolution resolve(
@@ -215,6 +384,38 @@ public class VacationPayApplicationService {
                 AverageEarningsReferenceWindow selectedWindow,
                 YearMonth discoveryThroughMonth,
                 List<YearMonth> provenNoPayrollMonths
+        );
+    }
+
+    @FunctionalInterface
+    interface Paragraph7CalendarBasisResolver {
+        AverageEarningsParagraph7CalendarBasisAuthorityService.Resolution resolve(
+                AppUser user,
+                LocalDate eventDate
+        );
+    }
+
+    @FunctionalInterface
+    interface Paragraph8FormulaBasisResolver {
+        AverageEarningsParagraph8VacationFormulaBasisAuthorityService.Resolution resolve(
+                AppUser user,
+                LocalDate eventDate,
+                AverageEarningsParagraph8TariffSalaryAuthorityService.Resolution
+                        paragraph8Authority
+        );
+    }
+
+    @FunctionalInterface
+    interface Paragraph7BasisSupplierFactory {
+        Supplier<VacationAverageUnifiedDailyResolver.Paragraph7CalendarBasis> create(
+                AverageEarningsOrderedFallbackResolver.Resolution orderedFallback
+        );
+    }
+
+    @FunctionalInterface
+    interface Paragraph8BasisSupplierFactory {
+        Supplier<VacationAverageUnifiedDailyResolver.Paragraph8FormulaBasis> create(
+                AverageEarningsOrderedFallbackResolver.Resolution orderedFallback
         );
     }
 
