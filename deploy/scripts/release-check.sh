@@ -4146,7 +4146,7 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains CHANGES.md "v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix"
   contains README.md "v27.38.9 — Vue Read-Model & Offline Browser Parity Hotfix"
   contains docs/VUE_READ_MODEL_OFFLINE_BROWSER_PARITY_HOTFIX_V27.38.9.md "37 passed and 10 failed"
-  contains e2e/calendar-persistence.spec.js "'/api/v1/calendar'"
+  not_contains e2e/calendar-persistence.spec.js "page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/calendar'"
   contains e2e/important-timezone.spec.js '/^\/api\/v1\/important-days\/\d+$/'
   contains e2e/schedule-templates-calendar-layers.spec.js '#calendarProfileBar'
   contains e2e/multiple-daily-notes.spec.js '/^\/api\/notes\/\d+$/'

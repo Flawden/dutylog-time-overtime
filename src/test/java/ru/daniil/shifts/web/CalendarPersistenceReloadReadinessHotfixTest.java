@@ -31,7 +31,10 @@ class CalendarPersistenceReloadReadinessHotfixTest {
         assertTrue(helpers.contains("window.__dutylogLedgerReady"));
         assertTrue(helpers.contains("await waitForAppIdle(page)"));
 
-        assertTrue(persistence.contains("await waitForCalendarNavigationReady(page)"));
+        assertTrue(persistence.contains("await page.locator('#next').click();\n  await waitForCalendarNavigationReady(page);"));
+        assertTrue(persistence.contains("await page.locator('#prev').click();\n  await waitForCalendarNavigationReady(page);"));
+        assertTrue(persistence.contains("await expect(page.locator(`#grid [data-date=\"${date}\"]`)).toHaveCount(0);"));
+        assertFalse(persistence.contains("page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/calendar'"));
         assertTrue(persistence.contains("await waitForAppIdle(page);\n  const authoritativeReload"));
         assertTrue(persistence.contains("await waitForAppIdle(page);\n  const reloadAfterDelete"));
 

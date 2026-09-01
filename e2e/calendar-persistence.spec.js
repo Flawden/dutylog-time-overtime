@@ -48,14 +48,15 @@ Calendar persistence check`;
   await expect(page.locator(`#grid [data-date="${date}"] .dayEmoji`)).toHaveText('🧪');
   await expect(page.locator(`#grid [data-date="${date}"] .ear`)).toHaveCount(1);
 
-  const nextMonth = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/calendar' && response.status() === 200);
+  // Await the product-level navigation readiness promise instead of coupling
+  // persistence to one calendar transport alias. The grid assertion proves
+  // that we really left the source month before navigating back.
   await page.locator('#next').click();
-  await nextMonth;
   await waitForCalendarNavigationReady(page);
-  const previousMonth = page.waitForResponse(response => new URL(response.url()).pathname === '/api/v1/calendar' && response.status() === 200);
+  await expect(page.locator(`#grid [data-date="${date}"]`)).toHaveCount(0);
   await page.locator('#prev').click();
-  await previousMonth;
   await waitForCalendarNavigationReady(page);
+  await expect(page.locator(`#grid [data-date="${date}"]`)).toHaveCount(1);
 
   await expect(page.locator(`#grid [data-date="${date}"] .dayEmoji`)).toHaveText('🧪');
   await expect(page.locator(`#grid [data-date="${date}"] .ear`)).toHaveCount(1);
