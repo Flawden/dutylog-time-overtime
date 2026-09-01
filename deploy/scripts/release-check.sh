@@ -4936,6 +4936,10 @@ not_contains src/main/java/ru/daniil/shifts/module/DutyLogModules.java 'ModuleSe
   contains e2e/payroll-compensation-components.spec.js "#payrollCompensationComponentBreakdown"
   contains e2e/payroll-compensation-components.spec.js "#compensationComponentPreset"
   ok "Playwright test baseline: 52"
+  # 8A4F3S ancillary staging E2E day-boundary alignment.
+  contains e2e/calendar-comfort.spec.js "const canonicalToday = page.locator('#grid .todayCell');"
+  contains frontend/src/features/settings-workspace/components/TimeSettingsCard.vue "&& (!effectiveFrom.value || effectiveFrom.value > currentWorkDate.value)"
+  contains frontend/src/features/settings-workspace/components/TimeSettingsCard.vue "A timezone move can shift the canonical work date backwards across"
 else
   fail "expected 52 Playwright tests, found $E2E_TESTS"
 fi

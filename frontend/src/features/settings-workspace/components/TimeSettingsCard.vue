@@ -160,7 +160,12 @@ function findBuiltIn(kind: "day" | "night") {
     ?? shiftTypes.value.find(item => item.builtin && english.test(item.name));
 }
 function syncDraft(): void {
-  if (!effectiveFrom.value && currentWorkDate.value) {
+  if (
+    currentWorkDate.value
+    && (!effectiveFrom.value || effectiveFrom.value > currentWorkDate.value)
+  ) {
+    // A timezone move can shift the canonical work date backwards across
+    // midnight. Never retain an effective date that became future-dated.
     effectiveFrom.value = currentWorkDate.value;
   }
   if (!timezoneDraftTouched.value) {

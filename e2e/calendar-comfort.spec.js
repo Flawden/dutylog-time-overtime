@@ -1,12 +1,18 @@
 const { test, expect } = require('./fixtures');
-const { registerAndOnboard, currentLocalDateKey, openView, openDayModule } = require('./helpers');
+const { registerAndOnboard, openView, openDayModule } = require('./helpers');
 
 test.use({ viewport: { width: 390, height: 844 } });
 
 test('calendar offers a contextual return to today and keeps important-day controls compact', async ({ page }) => {
   await registerAndOnboard(page, { preset: 'full', prefix: 'calcomfort' });
-  const today = await currentLocalDateKey(page);
   await openView(page, 'calendar');
+
+  // "Today" is DutyLog's canonical account work date, not the browser
+  // runner's local date. Around timezone midnight those can differ.
+  const canonicalToday = page.locator('#grid .todayCell');
+  await expect(canonicalToday).toHaveCount(1, { timeout: 30_000 });
+  const today = await canonicalToday.getAttribute('data-date');
+  expect(today).toMatch(/^\d{4}-\d{2}-\d{2}$/);
 
   await expect(page.locator('#todayBtn')).toBeHidden();
   await page.locator('#next').click();
