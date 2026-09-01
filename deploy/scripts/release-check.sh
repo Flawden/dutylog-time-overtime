@@ -5344,16 +5344,32 @@ not_contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationServic
 contains src/test/java/ru/daniil/shifts/service/VacationPayApplicationServiceTest.java "realJ5Paragraph8EvaluatesParagraph7ThenParagraph8ExactlyOnce"
 contains src/test/java/ru/daniil/shifts/service/VacationPayApplicationServiceTest.java "selectedReferenceWindowIsPassedExactlyToCalculator"
 contains src/test/java/ru/daniil/shifts/web/VacationPayApplicationServiceContractTest.java "ODoesNotMutatePayrollSnapshotOrTotalPay"
+# 8A4F3P vacation-pay basis authorities: p7 p10 calendar + p8 formula norm.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsReferenceFactsService.java "public ReferenceFacts resolveRange("
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7CalendarBasisAuthorityService.java "RULE_ID = \"PP_540_P7_P10_CALENDAR_BASIS\""
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7CalendarBasisAuthorityService.java "referenceFacts.resolveRange("
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7CalendarBasisAuthorityService.java "AverageEarningsLegalPolicy.classifyAbsence("
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7CalendarBasisAuthorityService.java "AnnualPaidVacationHolidayPolicy.classify("
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7CalendarBasisAuthorityService.java "workedDayCount"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8VacationFormulaBasisAuthorityService.java "MONTHLY_SALARY_RULE_ID"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8VacationFormulaBasisAuthorityService.java "HOURLY_TARIFF_RULE_ID"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8VacationFormulaBasisAuthorityService.java "monthNumber <= 12"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8VacationFormulaBasisAuthorityService.java "calendar.scheduleCoverageComplete()"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8VacationFormulaBasisAuthorityService.java "calendar.productionNormMinutes()"
+not_contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph8VacationFormulaBasisAuthorityService.java "baseNormMinutes()"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7CalendarBasisAuthorityServiceTest.java "fullPreEventEmploymentCountsCalendarDaysNotWorkedShifts"
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph8VacationFormulaBasisAuthorityServiceTest.java "hourlyTariffSumsTwelveCompleteProductionNormMonths"
+contains src/test/java/ru/daniil/shifts/web/AverageEarningsVacationBasisAuthoritiesContractTest.java "basisAuthoritiesContainNoMoneyCalculationOrPayrollMutation"
 
-if [[ "$TEST_METHODS" == "2255" ]]; then
-  ok "test method baseline: 2255"
+if [[ "$TEST_METHODS" == "2283" ]]; then
+  ok "test method baseline: 2283"
 else
-  fail "expected 2255 @Test methods, found $TEST_METHODS"
+  fail "expected 2283 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "333" ]]; then
-  ok "test class baseline: 333"
+if [[ "$TEST_CLASSES" == "336" ]]; then
+  ok "test class baseline: 336"
 else
-  fail "expected 333 test classes, found $TEST_CLASSES"
+  fail "expected 336 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix

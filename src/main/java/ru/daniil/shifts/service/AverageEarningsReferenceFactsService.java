@@ -85,9 +85,50 @@ public class AverageEarningsReferenceFactsService {
                 "Average earnings reference facts require reference window"
         );
 
-        YearMonth eventMonth = referenceWindow.eventMonth();
-        LocalDate referenceFrom = referenceWindow.referenceFromDate();
-        LocalDate referenceTo = referenceWindow.referenceToDate();
+        return resolveRange(
+                user,
+                referenceWindow.eventMonth(),
+                referenceWindow.referenceFromDate(),
+                referenceWindow.referenceToDate()
+        );
+    }
+
+    /**
+     * Exact inclusive factual range used by non-reference-period authorities.
+     *
+     * <p>This method is still FACT-only. The caller owns legal classification
+     * and any denominator/formula policy. It exists so paragraph-7 can inspect
+     * only the event-month days strictly before the event without pretending
+     * that a partial month is a twelve-month reference window.</p>
+     */
+    @Transactional(readOnly = true)
+    public ReferenceFacts resolveRange(
+            AppUser user,
+            YearMonth eventMonth,
+            LocalDate referenceFrom,
+            LocalDate referenceTo
+    ) {
+        Objects.requireNonNull(
+                user,
+                "Average earnings reference facts require user"
+        );
+        Objects.requireNonNull(
+                eventMonth,
+                "Average earnings reference facts require event month"
+        );
+        Objects.requireNonNull(
+                referenceFrom,
+                "Average earnings reference facts require range start"
+        );
+        Objects.requireNonNull(
+                referenceTo,
+                "Average earnings reference facts require range end"
+        );
+        if (referenceTo.isBefore(referenceFrom)) {
+            throw new IllegalArgumentException(
+                    "Average earnings factual range is invalid"
+            );
+        }
 
         List<AbsencePeriod> rows =
                 absences

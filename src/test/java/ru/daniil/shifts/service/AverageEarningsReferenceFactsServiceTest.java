@@ -475,6 +475,66 @@ class AverageEarningsReferenceFactsServiceTest {
     }
 
     @Test
+    void exactRangeUsesCallerBoundsAndClipsPostedAbsence() {
+        YearMonth eventMonth = YearMonth.of(2026, 8);
+        LocalDate from = LocalDate.of(2026, 8, 1);
+        LocalDate to = LocalDate.of(2026, 8, 13);
+
+        AbsencePeriod spanning = period(
+                31L,
+                "COMPLETED",
+                "SICK",
+                "NONE",
+                "SICK_PAY",
+                "FULL_DAY",
+                LocalDate.of(2026, 7, 29),
+                LocalDate.of(2026, 8, 20),
+                null,
+                null,
+                0,
+                0
+        );
+
+        when(absences.findByOwnerAndEndDateGreaterThanEqualAndStartDateLessThanEqualOrderByStartDateAscIdAsc(
+                user,
+                from,
+                to
+        )).thenReturn(List.of(spanning));
+
+        var result = service.resolveRange(user, eventMonth, from, to);
+
+        assertEquals(eventMonth, result.eventMonth());
+        assertEquals(from, result.referenceFrom());
+        assertEquals(to, result.referenceTo());
+        assertEquals(1, result.absences().size());
+        assertEquals(from, result.absences().get(0).overlapFrom());
+        assertEquals(to, result.absences().get(0).overlapTo());
+        verify(absences).findByOwnerAndEndDateGreaterThanEqualAndStartDateLessThanEqualOrderByStartDateAscIdAsc(
+                user,
+                from,
+                to
+        );
+    }
+
+    @Test
+    void exactRangeRejectsReversedBoundsBeforeRepositoryRead() {
+        LocalDate from = LocalDate.of(2026, 8, 13);
+        LocalDate to = LocalDate.of(2026, 8, 1);
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> service.resolveRange(
+                        user,
+                        YearMonth.of(2026, 8),
+                        from,
+                        to
+                )
+        );
+
+        verifyNoInteractions(absences);
+    }
+
+    @Test
     void missingIdentityInputsFailClosed() {
         assertThrows(
                 NullPointerException.class,
