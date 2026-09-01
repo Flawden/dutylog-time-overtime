@@ -5372,15 +5372,23 @@ contains src/test/java/ru/daniil/shifts/service/VacationPayApplicationServiceTes
 contains src/test/java/ru/daniil/shifts/service/VacationPayApplicationServiceTest.java "explicitBasisSupplierSeamNeverTouchesCanonicalBasisAuthorities"
 contains src/test/java/ru/daniil/shifts/web/VacationPayApplicationServiceContractTest.java "QWiresCanonicalBasisAuthoritiesAndRetainsExplicitSupplierSeam"
 
-if [[ "$TEST_METHODS" == "2289" ]]; then
-  ok "test method baseline: 2289"
+# 8A4F3S vacation-pay canonical J5 authority composition / production application overload.
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthorityService.java "class AverageEarningsParagraph7PreEventAccruedWageAuthorityService"
+contains src/main/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthorityService.java "AverageEarningsParagraph7PreEventBasePayFormula::calculate"
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "AverageEarningsParagraph7PreEventAccruedWageAuthorityService paragraph7Authority"
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "AverageEarningsParagraph8TariffSalaryAuthorityService paragraph8Authority"
+contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "() -> canonicalParagraph7Authority("
+contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthorityServiceTest.java "readyPipelinePreservesExactAuthorityOrderAndReturnsFinalAggregate"
+contains src/test/java/ru/daniil/shifts/web/VacationPayProductionAuthorityWiringContractTest.java "canonicalJ5AuthoritiesStayLazyBehindOrderedFallbackSuppliers"
+if [[ "$TEST_METHODS" == "2299" ]]; then
+  ok "test method baseline: 2299"
 else
-  fail "expected 2289 @Test methods, found $TEST_METHODS"
+  fail "expected 2299 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "336" ]]; then
-  ok "test class baseline: 336"
+if [[ "$TEST_CLASSES" == "338" ]]; then
+  ok "test class baseline: 338"
 else
-  fail "expected 336 test classes, found $TEST_CLASSES"
+  fail "expected 338 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix

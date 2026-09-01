@@ -46,6 +46,7 @@ public final class AverageEarningsParagraph7PreEventAccruedWageAuthority {
     }
 
     public enum BlockingSource {
+        COMPOSITION_AUTHORITY,
         HARMFUL_AUTHORITY,
         BONUS_AUTHORITY,
         AGGREGATE_AUTHORITY
@@ -337,14 +338,33 @@ public final class AverageEarningsParagraph7PreEventAccruedWageAuthority {
             Objects.requireNonNull(eventDate, "Paragraph-7 accrued-wage event date is required");
             Objects.requireNonNull(periodFrom, "Paragraph-7 accrued-wage period start is required");
             Objects.requireNonNull(cutoffExclusive, "Paragraph-7 accrued-wage cutoff is required");
-            Objects.requireNonNull(
-                    harmfulAuthority,
-                    "Paragraph-7 accrued-wage harmful provenance is required"
-            );
-            Objects.requireNonNull(
-                    bonusAuthority,
-                    "Paragraph-7 accrued-wage BONUS provenance is required"
-            );
+            if (ready) {
+                Objects.requireNonNull(
+                        harmfulAuthority,
+                        "Ready paragraph-7 accrued-wage harmful provenance is required"
+                );
+                Objects.requireNonNull(
+                        bonusAuthority,
+                        "Ready paragraph-7 accrued-wage BONUS provenance is required"
+                );
+            } else if (blockingSource == BlockingSource.COMPOSITION_AUTHORITY) {
+                if (harmfulAuthority != null || bonusAuthority != null) {
+                    throw new IllegalArgumentException(
+                            "Composition-blocked paragraph-7 authority cannot expose later provenance"
+                    );
+                }
+            } else {
+                Objects.requireNonNull(
+                        harmfulAuthority,
+                        "Blocked paragraph-7 accrued-wage harmful provenance is required"
+                );
+                if (blockingSource == BlockingSource.AGGREGATE_AUTHORITY) {
+                    Objects.requireNonNull(
+                            bonusAuthority,
+                            "Aggregate-blocked paragraph-7 BONUS provenance is required"
+                    );
+                }
+            }
             if (!periodFrom.equals(YearMonth.from(eventDate).atDay(1))
                     || !cutoffExclusive.equals(eventDate)
                     || basePayAmountMinor < 0L
@@ -410,6 +430,97 @@ public final class AverageEarningsParagraph7PreEventAccruedWageAuthority {
                     );
                 }
             }
+        }
+
+        static Resolution blockedComposition(
+                LocalDate eventDate,
+                String reason,
+                String message
+        ) {
+            Objects.requireNonNull(eventDate, "Paragraph-7 composition blocker requires event date");
+            return new Resolution(
+                    eventDate,
+                    YearMonth.from(eventDate).atDay(1),
+                    eventDate,
+                    false,
+                    requireReason(reason),
+                    message == null || message.isBlank()
+                            ? "Paragraph-7 composed authority is blocked"
+                            : message,
+                    BlockingSource.COMPOSITION_AUTHORITY,
+                    null,
+                    null,
+                    null,
+                    0L,
+                    0L,
+                    0L,
+                    0L,
+                    0L,
+                    0L,
+                    0L
+            );
+        }
+
+        static Resolution blockedHarmful(
+                AverageEarningsParagraph7PreEventHarmfulCompensationService.Resolution harmful
+        ) {
+            Objects.requireNonNull(harmful, "Paragraph-7 harmful blocker requires authority");
+            LocalDate eventDate = Objects.requireNonNull(
+                    harmful.eventDate(),
+                    "Paragraph-7 harmful blocker requires event date"
+            );
+            return new Resolution(
+                    eventDate,
+                    YearMonth.from(eventDate).atDay(1),
+                    eventDate,
+                    false,
+                    requireReason(harmful.blockingReason()),
+                    harmful.blockingMessage() == null || harmful.blockingMessage().isBlank()
+                            ? "Paragraph-7 harmful-compensation authority is blocked"
+                            : harmful.blockingMessage(),
+                    BlockingSource.HARMFUL_AUTHORITY,
+                    harmful,
+                    null,
+                    null,
+                    0L,
+                    0L,
+                    0L,
+                    0L,
+                    0L,
+                    0L,
+                    0L
+            );
+        }
+
+        static Resolution blockedBonus(
+                LocalDate eventDate,
+                AverageEarningsParagraph7PreEventHarmfulCompensationService.Resolution harmful,
+                String reason,
+                String message
+        ) {
+            Objects.requireNonNull(eventDate, "Paragraph-7 bonus blocker requires event date");
+            Objects.requireNonNull(harmful, "Paragraph-7 bonus blocker requires harmful provenance");
+            return new Resolution(
+                    eventDate,
+                    YearMonth.from(eventDate).atDay(1),
+                    eventDate,
+                    false,
+                    requireReason(reason),
+                    message == null || message.isBlank()
+                            ? "Paragraph-7 P15 BONUS authority is blocked"
+                            : message,
+                    BlockingSource.BONUS_AUTHORITY,
+                    harmful,
+                    null,
+                    null,
+                    0L,
+                    0L,
+                    0L,
+                    0L,
+                    0L,
+                    0L,
+                    0L
+            );
         }
 
         static Resolution ready(
@@ -478,7 +589,7 @@ public final class AverageEarningsParagraph7PreEventAccruedWageAuthority {
         }
 
         public boolean workedTimePresent() {
-            return harmfulAuthority
+            return requireHarmfulProvenance()
                     .ordinaryPremium()
                     .semanticFacts()
                     .basePay()
@@ -487,7 +598,7 @@ public final class AverageEarningsParagraph7PreEventAccruedWageAuthority {
         }
 
         public int workedDayCount() {
-            return harmfulAuthority
+            return requireHarmfulProvenance()
                     .ordinaryPremium()
                     .semanticFacts()
                     .basePay()
@@ -497,13 +608,23 @@ public final class AverageEarningsParagraph7PreEventAccruedWageAuthority {
         }
 
         public long workedMinutes() {
-            return harmfulAuthority
+            return requireHarmfulProvenance()
                     .ordinaryPremium()
                     .semanticFacts()
                     .basePay()
                     .authority()
                     .workFacts()
                     .workedMinutes();
+        }
+
+        private AverageEarningsParagraph7PreEventHarmfulCompensationService.Resolution
+                requireHarmfulProvenance() {
+            if (harmfulAuthority == null) {
+                throw new IllegalStateException(
+                        "Blocked paragraph-7 composition has no worked-time provenance"
+                );
+            }
+            return harmfulAuthority;
         }
 
         public boolean accruedWagePresent() {

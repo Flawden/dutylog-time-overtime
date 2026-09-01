@@ -33,6 +33,8 @@ public class VacationPayApplicationService {
     private final OrderedFallbackResolver orderedFallbackResolver;
     private final ReferenceCalculator referenceCalculator;
     private final VacationResolver vacationResolver;
+    private final Paragraph7AuthorityResolver paragraph7AuthorityResolver;
+    private final Paragraph8AuthorityResolver paragraph8AuthorityResolver;
     private final Paragraph7CalendarBasisResolver paragraph7CalendarBasisResolver;
     private final Paragraph8FormulaBasisResolver paragraph8FormulaBasisResolver;
 
@@ -41,6 +43,8 @@ public class VacationPayApplicationService {
             AverageEarningsParagraph6ReferenceResolver paragraph6,
             VacationAveragePrimaryCalculationService referenceCalculation,
             VacationPayOrchestrator vacationPay,
+            AverageEarningsParagraph7PreEventAccruedWageAuthorityService paragraph7Authority,
+            AverageEarningsParagraph8TariffSalaryAuthorityService paragraph8Authority,
             AverageEarningsParagraph7CalendarBasisAuthorityService paragraph7CalendarBasis,
             AverageEarningsParagraph8VacationFormulaBasisAuthorityService paragraph8FormulaBasis
     ) {
@@ -56,6 +60,8 @@ public class VacationPayApplicationService {
                                 provenNoPayrollMonths
                         ),
                 vacationPay::resolve,
+                paragraph7Authority::resolve,
+                paragraph8Authority::resolve,
                 paragraph7CalendarBasis::resolve,
                 paragraph8FormulaBasis::resolve
         );
@@ -85,6 +91,28 @@ public class VacationPayApplicationService {
             Paragraph7CalendarBasisResolver paragraph7CalendarBasisResolver,
             Paragraph8FormulaBasisResolver paragraph8FormulaBasisResolver
     ) {
+        this(
+                paragraph6Resolver,
+                orderedFallbackResolver,
+                referenceCalculator,
+                vacationResolver,
+                VacationPayApplicationService::unconfiguredParagraph7Authority,
+                VacationPayApplicationService::unconfiguredParagraph8Authority,
+                paragraph7CalendarBasisResolver,
+                paragraph8FormulaBasisResolver
+        );
+    }
+
+    VacationPayApplicationService(
+            Paragraph6Resolver paragraph6Resolver,
+            OrderedFallbackResolver orderedFallbackResolver,
+            ReferenceCalculator referenceCalculator,
+            VacationResolver vacationResolver,
+            Paragraph7AuthorityResolver paragraph7AuthorityResolver,
+            Paragraph8AuthorityResolver paragraph8AuthorityResolver,
+            Paragraph7CalendarBasisResolver paragraph7CalendarBasisResolver,
+            Paragraph8FormulaBasisResolver paragraph8FormulaBasisResolver
+    ) {
         this.paragraph6Resolver = Objects.requireNonNull(
                 paragraph6Resolver,
                 "Vacation pay application requires paragraph-6 resolver"
@@ -101,6 +129,14 @@ public class VacationPayApplicationService {
                 vacationResolver,
                 "Vacation pay application requires vacation-pay orchestrator"
         );
+        this.paragraph7AuthorityResolver = Objects.requireNonNull(
+                paragraph7AuthorityResolver,
+                "Vacation pay application requires canonical paragraph-7 authority"
+        );
+        this.paragraph8AuthorityResolver = Objects.requireNonNull(
+                paragraph8AuthorityResolver,
+                "Vacation pay application requires canonical paragraph-8 authority"
+        );
         this.paragraph7CalendarBasisResolver = Objects.requireNonNull(
                 paragraph7CalendarBasisResolver,
                 "Vacation pay application requires paragraph-7 calendar-basis authority"
@@ -112,9 +148,49 @@ public class VacationPayApplicationService {
     }
 
     /**
-     * Canonical production entry point. P7/P8 K-basis suppliers are wired from
-     * their Spring authorities only after J5 has selected a branch; they remain
-     * unevaluated until N passes the L-ready gate and K requests that branch.
+     * Canonical production entry point. J5 P7/P8 authorities and K P7/P8 basis
+     * suppliers are all owned by Spring application wiring. Every later branch
+     * remains lazy behind ordered fallback / N so an authority is never read
+     * before the preceding legal basis is proven exhausted.
+     */
+    @Transactional(readOnly = true)
+    public Resolution resolve(
+            AppUser user,
+            LocalDate eventDate,
+            Long absencePeriodId,
+            YearMonth discoveryThroughMonth,
+            List<YearMonth> provenNoPayrollMonths
+    ) {
+        List<YearMonth> zeroProofs = List.copyOf(Objects.requireNonNull(
+                provenNoPayrollMonths,
+                "Vacation pay application requires explicit no-Payroll proofs"
+        ));
+        return resolveInternal(
+                user,
+                eventDate,
+                absencePeriodId,
+                discoveryThroughMonth,
+                zeroProofs,
+                () -> canonicalParagraph7Authority(
+                        user,
+                        eventDate,
+                        discoveryThroughMonth,
+                        zeroProofs
+                ),
+                () -> canonicalParagraph8Authority(user, eventDate),
+                ordered -> () -> canonicalParagraph7CalendarBasis(user, eventDate),
+                ordered -> () -> canonicalParagraph8FormulaBasis(
+                        user,
+                        eventDate,
+                        ordered
+                )
+        );
+    }
+
+    /**
+     * Explicit J5 authority supplier seam retained for focused tests and
+     * controlled integration callers. Canonical K-basis wiring remains owned
+     * by the application service.
      */
     @Transactional(readOnly = true)
     public Resolution resolve(
@@ -303,6 +379,35 @@ public class VacationPayApplicationService {
         );
     }
 
+    private AverageEarningsParagraph7PreEventAccruedWageAuthority.Resolution
+            canonicalParagraph7Authority(
+                    AppUser user,
+                    LocalDate eventDate,
+                    YearMonth discoveryThroughMonth,
+                    List<YearMonth> provenNoPayrollMonths
+            ) {
+        return Objects.requireNonNull(
+                paragraph7AuthorityResolver.resolve(
+                        user,
+                        eventDate,
+                        discoveryThroughMonth,
+                        provenNoPayrollMonths
+                ),
+                "Canonical paragraph-7 accrued-wage authority returned null"
+        );
+    }
+
+    private AverageEarningsParagraph8TariffSalaryAuthorityService.Resolution
+            canonicalParagraph8Authority(
+                    AppUser user,
+                    LocalDate eventDate
+            ) {
+        return Objects.requireNonNull(
+                paragraph8AuthorityResolver.resolve(user, eventDate),
+                "Canonical paragraph-8 tariff/salary authority returned null"
+        );
+    }
+
     private VacationAverageUnifiedDailyResolver.Paragraph7CalendarBasis
             canonicalParagraph7CalendarBasis(
                     AppUser user,
@@ -332,6 +437,28 @@ public class VacationPayApplicationService {
                         "Paragraph-8 formula-basis authority returned null"
                 );
         return resolution.ready() ? resolution.basis() : null;
+    }
+
+    private static AverageEarningsParagraph7PreEventAccruedWageAuthority.Resolution
+            unconfiguredParagraph7Authority(
+                    AppUser user,
+                    LocalDate eventDate,
+                    YearMonth discoveryThroughMonth,
+                    List<YearMonth> provenNoPayrollMonths
+            ) {
+        throw new IllegalStateException(
+                "Canonical paragraph-7 accrued-wage authority is unavailable in test seam"
+        );
+    }
+
+    private static AverageEarningsParagraph8TariffSalaryAuthorityService.Resolution
+            unconfiguredParagraph8Authority(
+                    AppUser user,
+                    LocalDate eventDate
+            ) {
+        throw new IllegalStateException(
+                "Canonical paragraph-8 tariff/salary authority is unavailable in test seam"
+        );
     }
 
     private static AverageEarningsParagraph7CalendarBasisAuthorityService.Resolution
@@ -384,6 +511,24 @@ public class VacationPayApplicationService {
                 AverageEarningsReferenceWindow selectedWindow,
                 YearMonth discoveryThroughMonth,
                 List<YearMonth> provenNoPayrollMonths
+        );
+    }
+
+    @FunctionalInterface
+    interface Paragraph7AuthorityResolver {
+        AverageEarningsParagraph7PreEventAccruedWageAuthority.Resolution resolve(
+                AppUser user,
+                LocalDate eventDate,
+                YearMonth discoveryThroughMonth,
+                List<YearMonth> provenNoPayrollMonths
+        );
+    }
+
+    @FunctionalInterface
+    interface Paragraph8AuthorityResolver {
+        AverageEarningsParagraph8TariffSalaryAuthorityService.Resolution resolve(
+                AppUser user,
+                LocalDate eventDate
         );
     }
 
