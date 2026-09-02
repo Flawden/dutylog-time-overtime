@@ -5427,15 +5427,21 @@ contains src/test/java/ru/daniil/shifts/web/ActualWorkHistoricalIdentityFrontend
 # 8A4F3U3 source-workday-aware ordinary/overtime classification.
 contains src/main/java/ru/daniil/shifts/service/PayClassificationService.java "SOURCE_WORKDAY_OWNED_ORDINARY_CAPACITY"
 contains src/test/java/ru/daniil/shifts/service/PayClassificationOvernightOccurrenceTest.java "tailOfPreviousSourceWorkdayAndHeadOfCurrentSourceWorkdayKeepIndependentOrdinaryOrdinals"
-if [[ "$TEST_METHODS" == "2347" ]]; then
-  ok "test method baseline: 2347"
+# 8A4F3U4 payroll paid-interval regression matrix.
+contains src/test/java/ru/daniil/shifts/service/PayrollPaidIntervalRegressionMatrixTest.java "crossMidnightBreakFeedsOnePaidMinuteTruthThroughClassificationAndPayrollSource"
+contains src/test/java/ru/daniil/shifts/service/PayrollPaidIntervalRegressionMatrixTest.java "breakAcrossMidnightNeverReappearsAsOvertimeOrPayrollBase"
+contains src/test/java/ru/daniil/shifts/service/PayrollPaidIntervalRegressionMatrixTest.java "fullNightUnpaidBreakCannotReceiveNightOrHolidayPremiumDimensions"
+contains src/main/java/ru/daniil/shifts/service/TimeCompensationService.java "Payroll itself must not re-classify reality."
+contains src/main/java/ru/daniil/shifts/service/OrdinaryWorkPremiumSourceService.java "only REGULAR slices"
+if [[ "$TEST_METHODS" == "2350" ]]; then
+  ok "test method baseline: 2350"
 else
-  fail "expected 2347 @Test methods, found $TEST_METHODS"
+  fail "expected 2350 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "346" ]]; then
-  ok "test class baseline: 346"
+if [[ "$TEST_CLASSES" == "347" ]]; then
+  ok "test class baseline: 347"
 else
-  fail "expected 346 test classes, found $TEST_CLASSES"
+  fail "expected 347 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
