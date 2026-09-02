@@ -3,6 +3,7 @@ package ru.daniil.shifts.service;
 import org.springframework.stereotype.Service;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
+import ru.daniil.shifts.model.WorkBreakAuthority;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -29,12 +30,14 @@ import java.util.Map;
 public class PlannedWorkDayAllocationService {
 
     private final WorkIntervalService workIntervals;
+    private final WorkBreakWindowAuthorityService breakAuthority;
 
     public PlannedWorkDayAllocationService(
-            WorkIntervalService workIntervals
+            WorkIntervalService workIntervals,
+            WorkBreakWindowAuthorityService breakAuthority
     ) {
-        this.workIntervals =
-                workIntervals;
+        this.workIntervals = workIntervals;
+        this.breakAuthority = breakAuthority;
     }
 
     public List<NetWorkSegment> netSegments(
@@ -67,6 +70,41 @@ public class PlannedWorkDayAllocationService {
                 ZoneId.of(
                         interval.workTimezone()
                 );
+
+        if (day.getShiftBreakAuthority() == WorkBreakAuthority.EXPLICIT_WINDOWS) {
+            if (!day.hasShiftOccurrenceSnapshot()) {
+                throw new IllegalStateException(
+                        "Explicit planned breaks require a dated shift occurrence snapshot"
+                );
+            }
+            List<WorkBreakWindowAuthorityService.AbsoluteBreakWindow> windows =
+                    day.getShiftBreakWindows().stream()
+                            .map(window ->
+                                    new WorkBreakWindowAuthorityService.AbsoluteBreakWindow(
+                                            window.getPosition(),
+                                            window.getStartInstant(),
+                                            window.getEndInstant()
+                                    )
+                            )
+                            .toList();
+
+            List<NetWorkSegment> result = new ArrayList<>();
+            for (WorkBreakWindowAuthorityService.PaidWorkInterval paid :
+                    breakAuthority.subtractAbsolute(
+                            interval.startInstant(),
+                            interval.endInstant(),
+                            windows
+                    )) {
+                appendSourceCalendarSegments(
+                        result,
+                        paid.startInstant(),
+                        paid.endInstant(),
+                        sourceZone
+                );
+            }
+            validateAllocatedMinutes(result, interval.netMinutes());
+            return List.copyOf(result);
+        }
 
         List<NetWorkSegment> result =
                 new ArrayList<>();
@@ -149,23 +187,53 @@ public class PlannedWorkDayAllocationService {
                     segmentEnd;
         }
 
-        int allocated =
-                result.stream()
-                        .mapToInt(
-                                NetWorkSegment::minutes
-                        )
-                        .sum();
+        validateAllocatedMinutes(result, interval.netMinutes());
 
-        if (allocated
-                != interval.netMinutes()) {
-            throw new IllegalStateException(
-                    "Planned shift net allocation does not match canonical shift net minutes"
-            );
-        }
 
         return List.copyOf(
                 result
         );
+    }
+
+    private static void appendSourceCalendarSegments(
+            List<NetWorkSegment> result,
+            Instant start,
+            Instant end,
+            ZoneId sourceZone
+    ) {
+        Instant cursor = start;
+        while (cursor.isBefore(end)) {
+            Instant nextMidnight = cursor.atZone(sourceZone)
+                    .toLocalDate()
+                    .plusDays(1)
+                    .atStartOfDay(sourceZone)
+                    .toInstant();
+            Instant segmentEnd = nextMidnight.isBefore(end) ? nextMidnight : end;
+            if (segmentEnd.isAfter(cursor)) {
+                result.add(new NetWorkSegment(
+                        cursor.atZone(sourceZone).toLocalDateTime(),
+                        segmentEnd.atZone(sourceZone).toLocalDateTime(),
+                        cursor,
+                        segmentEnd,
+                        sourceZone.getId()
+                ));
+            }
+            cursor = segmentEnd;
+        }
+    }
+
+    private static void validateAllocatedMinutes(
+            List<NetWorkSegment> result,
+            long expectedNetMinutes
+    ) {
+        int allocated = result.stream()
+                .mapToInt(NetWorkSegment::minutes)
+                .sum();
+        if (allocated != expectedNetMinutes) {
+            throw new IllegalStateException(
+                    "Planned shift net allocation does not match canonical shift net minutes"
+            );
+        }
     }
 
     public Map<LocalDate, Integer> netMinutesByDate(

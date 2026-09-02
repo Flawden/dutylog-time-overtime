@@ -5405,15 +5405,21 @@ contains src/main/java/ru/daniil/shifts/service/WorkBreakWindowAuthorityService.
 contains src/main/java/ru/daniil/shifts/service/WorkBreakWindowAuthorityService.java "public List<PaidWorkInterval> subtract("
 contains src/test/java/ru/daniil/shifts/service/WorkBreakWindowAuthorityServiceTest.java "subtractionKeepsBothPaidSidesOfCrossMidnightLunch"
 contains src/test/java/ru/daniil/shifts/web/WorkBreakWindowAuthorityFoundationContractTest.java "schemaDoesNotGuessHistoricalBreakPlacement"
-if [[ "$TEST_METHODS" == "2323" ]]; then
-  ok "test method baseline: 2323"
+# 8A4F3U1B planned explicit break snapshot + allocation wiring.
+contains src/main/java/ru/daniil/shifts/service/PlannedBreakWindowSnapshotService.java "captureCurrentAssignment("
+contains src/main/java/ru/daniil/shifts/service/PlannedWorkDayAllocationService.java "breakAuthority.subtractAbsolute("
+contains src/main/java/ru/daniil/shifts/model/DayEntry.java "shift_break_authority"
+contains src/test/java/ru/daniil/shifts/service/PlannedExplicitBreakAllocationTest.java "tailAndNextShiftHeadCanContributeElevenPaidHoursToSameDate"
+contains src/test/java/ru/daniil/shifts/web/PlannedBreakWindowWiringContractTest.java "actualWorkAllocatorRemainsLegacyUntilU1C"
+if [[ "$TEST_METHODS" == "2333" ]]; then
+  ok "test method baseline: 2333"
 else
-  fail "expected 2323 @Test methods, found $TEST_METHODS"
+  fail "expected 2333 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "342" ]]; then
-  ok "test class baseline: 342"
+if [[ "$TEST_CLASSES" == "344" ]]; then
+  ok "test class baseline: 344"
 else
-  fail "expected 342 test classes, found $TEST_CLASSES"
+  fail "expected 344 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix

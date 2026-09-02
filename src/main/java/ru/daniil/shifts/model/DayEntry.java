@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Запись на конкретную дату: назначенная смена, заметка в Markdown,
@@ -60,6 +63,15 @@ public class DayEntry {
     @Column(name = "shift_break_minutes")
     private Integer shiftBreakMinutes;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "shift_break_authority", nullable = false, length = 32)
+    private WorkBreakAuthority shiftBreakAuthority = WorkBreakAuthority.LEGACY_EARLY_TOTAL;
+
+    @OneToMany(mappedBy = "dayEntry", cascade = CascadeType.ALL,
+            orphanRemoval = true, fetch = FetchType.EAGER)
+    @OrderBy("position ASC")
+    private List<DayEntryShiftBreakWindow> shiftBreakWindows = new ArrayList<>();
+
     @Column(name = "shift_net_minutes")
     private Long shiftNetMinutes;
 
@@ -103,6 +115,14 @@ public class DayEntry {
     public LocalTime getShiftSourceStartTime() { return shiftSourceStartTime; }
     public LocalTime getShiftSourceEndTime() { return shiftSourceEndTime; }
     public int getShiftBreakMinutes() { return shiftBreakMinutes == null ? 0 : Math.max(0, shiftBreakMinutes); }
+    public WorkBreakAuthority getShiftBreakAuthority() {
+        return shiftBreakAuthority == null
+                ? WorkBreakAuthority.LEGACY_EARLY_TOTAL
+                : shiftBreakAuthority;
+    }
+    public List<DayEntryShiftBreakWindow> getShiftBreakWindows() {
+        return List.copyOf(shiftBreakWindows);
+    }
     public long getShiftNetMinutes() { return shiftNetMinutes == null ? 0L : Math.max(0L, shiftNetMinutes); }
 
     public boolean hasShiftOccurrenceSnapshot() {
@@ -127,7 +147,42 @@ public class DayEntry {
         this.shiftSourceStartTime = sourceStartTime;
         this.shiftSourceEndTime = sourceEndTime;
         this.shiftBreakMinutes = Math.max(0, breakMinutes);
+        this.shiftBreakAuthority = WorkBreakAuthority.LEGACY_EARLY_TOTAL;
+        this.shiftBreakWindows.clear();
         this.shiftNetMinutes = Math.max(0L, netMinutes);
+    }
+
+    public void captureExplicitShiftOccurrence(Instant startInstant,
+                                               Instant endInstant,
+                                               String sourceTimezone,
+                                               LocalDate sourceDate,
+                                               LocalTime sourceStartTime,
+                                               LocalTime sourceEndTime,
+                                               int breakMinutes,
+                                               long netMinutes,
+                                               List<DayEntryShiftBreakWindow> windows) {
+        captureShiftOccurrence(
+                startInstant,
+                endInstant,
+                sourceTimezone,
+                sourceDate,
+                sourceStartTime,
+                sourceEndTime,
+                breakMinutes,
+                netMinutes
+        );
+        List<DayEntryShiftBreakWindow> safe = windows == null ? List.of() : windows.stream()
+                .sorted(Comparator.comparingInt(DayEntryShiftBreakWindow::getPosition))
+                .toList();
+        for (DayEntryShiftBreakWindow window : safe) {
+            if (window == null || window.getDayEntry() != this) {
+                throw new IllegalArgumentException(
+                        "Explicit break snapshot must belong to this day entry"
+                );
+            }
+        }
+        this.shiftBreakWindows.addAll(safe);
+        this.shiftBreakAuthority = WorkBreakAuthority.EXPLICIT_WINDOWS;
     }
 
     public void clearShiftOccurrence() {
@@ -138,6 +193,8 @@ public class DayEntry {
         this.shiftSourceStartTime = null;
         this.shiftSourceEndTime = null;
         this.shiftBreakMinutes = null;
+        this.shiftBreakAuthority = WorkBreakAuthority.LEGACY_EARLY_TOTAL;
+        this.shiftBreakWindows.clear();
         this.shiftNetMinutes = null;
     }
     public double getOvertimeHours() { return overtimeHours == null ? 0.0 : overtimeHours; }

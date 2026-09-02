@@ -23,9 +23,15 @@ class PlannedWorkDayAllocationServiceTest {
                     time
             );
 
+    private final WorkBreakWindowAuthorityService breakAuthority =
+            new WorkBreakWindowAuthorityService(
+                    time
+            );
+
     private final PlannedWorkDayAllocationService service =
             new PlannedWorkDayAllocationService(
-                    intervals
+                    intervals,
+                    breakAuthority
             );
 
     @Test

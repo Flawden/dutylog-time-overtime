@@ -3,6 +3,9 @@ package ru.daniil.shifts.model;
 import jakarta.persistence.*;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Тип смены: «Дневная», «Ночная», «Выходной» или пользовательская смена.
@@ -44,6 +47,20 @@ public class ShiftType {
     /** Обед/перерыв по умолчанию, в минутах. */
     @Column(name = "break_minutes", nullable = false)
     private int breakMinutes = 0;
+
+    /** Источник истины для положения неоплачиваемых перерывов. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "break_authority", nullable = false, length = 32)
+    private WorkBreakAuthority breakAuthority = WorkBreakAuthority.LEGACY_EARLY_TOTAL;
+
+    /**
+     * Explicit wall-clock break windows. They belong to the template only;
+     * concrete dated assignments receive immutable absolute snapshots.
+     */
+    @OneToMany(mappedBy = "shiftType", cascade = CascadeType.ALL,
+            orphanRemoval = true, fetch = FetchType.EAGER)
+    @OrderBy("position ASC")
+    private List<ShiftTypeBreakWindow> breakWindows = new ArrayList<>();
 
     /** Плановые оплачиваемые/учитываемые часы. Если null — используем hours. */
     @Column(name = "planned_hours")
@@ -97,6 +114,37 @@ public class ShiftType {
     public void setEndTime(LocalTime endTime) { this.endTime = endTime; }
     public int getBreakMinutes() { return breakMinutes; }
     public void setBreakMinutes(int breakMinutes) { this.breakMinutes = Math.max(0, breakMinutes); }
+    public WorkBreakAuthority getBreakAuthority() {
+        return breakAuthority == null
+                ? WorkBreakAuthority.LEGACY_EARLY_TOTAL
+                : breakAuthority;
+    }
+    public List<ShiftTypeBreakWindow> getBreakWindows() {
+        return List.copyOf(breakWindows);
+    }
+    public void replaceExplicitBreakWindows(List<ShiftTypeBreakWindow> windows) {
+        List<ShiftTypeBreakWindow> safe = windows == null ? List.of() : windows.stream()
+                .sorted(Comparator.comparingInt(ShiftTypeBreakWindow::getPosition))
+                .toList();
+        for (ShiftTypeBreakWindow window : safe) {
+            if (window == null || window.getShiftType() != this) {
+                throw new IllegalArgumentException(
+                        "Explicit break window must belong to this shift type"
+                );
+            }
+        }
+        breakWindows.clear();
+        breakWindows.addAll(safe);
+        breakAuthority = WorkBreakAuthority.EXPLICIT_WINDOWS;
+        breakMinutes = safe.stream()
+                .mapToInt(ShiftTypeBreakWindow::getDurationMinutes)
+                .sum();
+    }
+    public void useLegacyBreakTotal(int minutes) {
+        breakWindows.clear();
+        breakAuthority = WorkBreakAuthority.LEGACY_EARLY_TOTAL;
+        setBreakMinutes(minutes);
+    }
     public Double getPlannedHours() { return plannedHours; }
     public void setPlannedHours(Double plannedHours) { this.plannedHours = plannedHours; }
     public double effectivePlannedHours() { return plannedHours != null ? plannedHours : hours; }

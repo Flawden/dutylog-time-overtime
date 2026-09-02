@@ -34,13 +34,16 @@ public class ShiftOccurrenceService {
     private final DayEntryRepository days;
     private final WorkIntervalService intervals;
     private final UserTimeService userTimeService;
+    private final PlannedBreakWindowSnapshotService breakSnapshots;
 
     public ShiftOccurrenceService(DayEntryRepository days,
                                   WorkIntervalService intervals,
-                                  UserTimeService userTimeService) {
+                                  UserTimeService userTimeService,
+                                  PlannedBreakWindowSnapshotService breakSnapshots) {
         this.days = days;
         this.intervals = intervals;
         this.userTimeService = userTimeService;
+        this.breakSnapshots = breakSnapshots;
     }
 
     public void assign(AppUser user, DayEntry entry, ShiftType shiftType, boolean forceSnapshot) {
@@ -57,7 +60,7 @@ public class ShiftOccurrenceService {
         // Never silently reinterpret an existing legacy shift in the current zone.
         // Explicit migration or a canonical timezone change is responsible for freezing it.
         if (!forceSnapshot && sameType) return;
-        capture(entry, userTimeService.workZone(user));
+        captureCurrentAssignment(entry, userTimeService.workZone(user));
     }
 
     public void clear(DayEntry entry) {
@@ -67,6 +70,18 @@ public class ShiftOccurrenceService {
     }
 
     public void capture(DayEntry entry, ZoneId sourceZone) {
+        captureCurrentAssignment(entry, sourceZone);
+    }
+
+    private void captureCurrentAssignment(DayEntry entry, ZoneId sourceZone) {
+        capture(entry, sourceZone, true);
+    }
+
+    private void captureLegacyEvidence(DayEntry entry, ZoneId sourceZone) {
+        capture(entry, sourceZone, false);
+    }
+
+    private void capture(DayEntry entry, ZoneId sourceZone, boolean allowExplicitBreakWindows) {
         if (entry == null || entry.getShiftType() == null) {
             throw new IllegalArgumentException("A dated shift is required");
         }
@@ -81,15 +96,11 @@ public class ShiftOccurrenceService {
                 shift.getStartTime(),
                 shift.getEndTime(),
                 shift.getBreakMinutes());
-        entry.captureShiftOccurrence(
-                interval.startInstant(),
-                interval.endInstant(),
-                interval.workTimezone(),
-                interval.workDate(),
-                interval.localStart().toLocalTime(),
-                interval.localEnd().toLocalTime(),
-                interval.breakMinutes(),
-                interval.netMinutes());
+        if (allowExplicitBreakWindows) {
+            breakSnapshots.captureCurrentAssignment(entry, interval);
+        } else {
+            breakSnapshots.captureLegacyEvidence(entry, interval);
+        }
     }
 
     /**
@@ -104,7 +115,7 @@ public class ShiftOccurrenceService {
         for (DayEntry entry : legacy) {
             ShiftType shift = entry.getShiftType();
             if (shift == null || shift.getStartTime() == null || shift.getEndTime() == null) continue;
-            capture(entry, sourceZone);
+            captureLegacyEvidence(entry, sourceZone);
             captured++;
         }
         if (captured > 0) days.saveAll(legacy);
@@ -179,7 +190,7 @@ public class ShiftOccurrenceService {
         for (DayEntry entry : selected) {
             if (!entry.getOwner().getId().equals(user.getId())) throw ApiException.notFound("Смена не найдена");
             if (entry.getShiftType() == null) throw ApiException.badRequest("У выбранного дня нет смены");
-            if (!entry.hasShiftOccurrenceSnapshot()) capture(entry, sourceZone);
+            if (!entry.hasShiftOccurrenceSnapshot()) captureLegacyEvidence(entry, sourceZone);
         }
         days.saveAll(selected);
         return preview(user, sourceZone.getId());

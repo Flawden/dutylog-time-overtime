@@ -55,7 +55,8 @@ class WorkBreakWindowAuthorityFoundationContractTest {
     }
 
     @Test
-    void foundationDoesNotRewriteLegacyAllocationSemanticsYet() throws Exception {
+    void plannedWiringMayAdvanceWhileActualLegacySemanticsRemainUntilU1C()
+            throws Exception {
         String planned = read(
                 "src/main/java/ru/daniil/shifts/service/"
                         + "PlannedWorkDayAllocationService.java"
@@ -66,12 +67,18 @@ class WorkBreakWindowAuthorityFoundationContractTest {
         );
 
         assertTrue(planned.contains(
+                "day.getShiftBreakAuthority() == WorkBreakAuthority.EXPLICIT_WINDOWS"
+        ));
+        assertTrue(planned.contains(
+                "breakAuthority.subtractAbsolute("
+        ));
+        assertTrue(planned.contains(
                 "unpaid break minutes are consumed from the earliest clock minutes"
         ));
+
         assertTrue(actual.contains(
                 "Unpaid break minutes are consumed from the earliest actual minutes."
         ));
-        assertFalse(planned.contains("WorkBreakWindowAuthorityService"));
         assertFalse(actual.contains("WorkBreakWindowAuthorityService"));
     }
 

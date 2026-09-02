@@ -121,20 +121,36 @@ public class WorkBreakWindowAuthorityService {
             Instant shiftEnd,
             List<ResolvedBreakWindow> breaks
     ) {
+        List<AbsoluteBreakWindow> absolute =
+                breaks == null ? List.of() : breaks.stream()
+                        .map(window -> new AbsoluteBreakWindow(
+                                window.position(),
+                                window.startInstant(),
+                                window.endInstant()
+                        ))
+                        .toList();
+        return subtractAbsolute(shiftStart, shiftEnd, absolute);
+    }
+
+    public List<PaidWorkInterval> subtractAbsolute(
+            Instant shiftStart,
+            Instant shiftEnd,
+            List<AbsoluteBreakWindow> breaks
+    ) {
         requirePositiveShift(shiftStart, shiftEnd);
 
-        List<ResolvedBreakWindow> safe =
+        List<AbsoluteBreakWindow> safe =
                 breaks == null ? List.of() : breaks.stream()
                         .sorted(
-                                Comparator.comparing(ResolvedBreakWindow::startInstant)
-                                        .thenComparingInt(ResolvedBreakWindow::position)
+                                Comparator.comparing(AbsoluteBreakWindow::startInstant)
+                                        .thenComparingInt(AbsoluteBreakWindow::position)
                         )
                         .toList();
 
         List<PaidWorkInterval> paid = new ArrayList<>();
         Instant cursor = shiftStart;
 
-        for (ResolvedBreakWindow window : safe) {
+        for (AbsoluteBreakWindow window : safe) {
             if (window.startInstant().isBefore(shiftStart)
                     || window.endInstant().isAfter(shiftEnd)) {
                 throw new IllegalArgumentException(
@@ -232,6 +248,23 @@ public class WorkBreakWindowAuthorityService {
 
         public long elapsedMinutes() {
             return Duration.between(startInstant, endInstant).toMinutes();
+        }
+    }
+
+    public record AbsoluteBreakWindow(
+            int position,
+            Instant startInstant,
+            Instant endInstant
+    ) {
+        public AbsoluteBreakWindow {
+            if (position < 0
+                    || startInstant == null
+                    || endInstant == null
+                    || !endInstant.isAfter(startInstant)) {
+                throw new IllegalArgumentException(
+                        "Absolute break window requires positive identity"
+                );
+            }
         }
     }
 
