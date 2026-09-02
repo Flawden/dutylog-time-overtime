@@ -5395,15 +5395,25 @@ contains src/test/java/ru/daniil/shifts/web/VacationPayControllerTest.java 'disa
 contains src/test/java/ru/daniil/shifts/web/VacationPayHttpEntryPointContractTest.java 'httpBoundaryCannotMutatePayrollSnapshotsOrTotalPay'
 not_contains src/main/java/ru/daniil/shifts/web/VacationPayController.java 'PayrollSnapshot'
 not_contains src/main/java/ru/daniil/shifts/web/VacationPayController.java 'totalPay'
-if [[ "$TEST_METHODS" == "2311" ]]; then
-  ok "test method baseline: 2311"
+# 8A4F3U1A explicit work-break authority foundation.
+contains src/main/resources/db/migration/postgresql/V78__work_break_window_authority.sql "CREATE TABLE shift_type_break_windows"
+contains src/main/resources/db/migration/postgresql/V78__work_break_window_authority.sql "CREATE TABLE day_entry_shift_break_windows"
+contains src/main/resources/db/migration/postgresql/V78__work_break_window_authority.sql "CREATE TABLE actual_work_break_windows"
+contains src/main/resources/db/migration/postgresql/V78__work_break_window_authority.sql "LEGACY_EARLY_TOTAL"
+contains src/main/resources/db/migration/postgresql/V78__work_break_window_authority.sql "EXPLICIT_WINDOWS"
+contains src/main/java/ru/daniil/shifts/service/WorkBreakWindowAuthorityService.java "public List<ResolvedBreakWindow> resolve("
+contains src/main/java/ru/daniil/shifts/service/WorkBreakWindowAuthorityService.java "public List<PaidWorkInterval> subtract("
+contains src/test/java/ru/daniil/shifts/service/WorkBreakWindowAuthorityServiceTest.java "subtractionKeepsBothPaidSidesOfCrossMidnightLunch"
+contains src/test/java/ru/daniil/shifts/web/WorkBreakWindowAuthorityFoundationContractTest.java "schemaDoesNotGuessHistoricalBreakPlacement"
+if [[ "$TEST_METHODS" == "2323" ]]; then
+  ok "test method baseline: 2323"
 else
-  fail "expected 2311 @Test methods, found $TEST_METHODS"
+  fail "expected 2323 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "340" ]]; then
-  ok "test class baseline: 340"
+if [[ "$TEST_CLASSES" == "342" ]]; then
+  ok "test class baseline: 342"
 else
-  fail "expected 340 test classes, found $TEST_CLASSES"
+  fail "expected 342 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
