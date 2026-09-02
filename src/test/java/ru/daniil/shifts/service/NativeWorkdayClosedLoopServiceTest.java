@@ -579,9 +579,18 @@ class NativeWorkdayClosedLoopServiceTest {
 
         assertEquals(next.toString(), saved.endDate());
         assertEquals(1410, saved.workedMinutes());
-        assertEquals(450, overtime.balanceMinutes(owner));
+        /*
+         * U3 source-workday authority:
+         * this 24-hour factual interval is one source workday, so only the
+         * source date's 480 ordinary minutes apply to its 1410 net minutes.
+         * Calendar projection still owns credit rows/provenance by date:
+         *   date = 900 factual -> 420 overtime
+         *   next = 510 factual tail -> 510 overtime
+         * Aggregate Time Bank = 930.
+         */
+        assertEquals(930, overtime.balanceMinutes(owner));
         assertEquals(420, credits.findByOwnerAndWorkDateAndSourceKind(owner, date, "SYSTEM_ACTUAL_WORK").orElseThrow().getCreditedMinutes());
-        assertEquals(30, credits.findByOwnerAndWorkDateAndSourceKind(owner, next, "SYSTEM_ACTUAL_WORK").orElseThrow().getCreditedMinutes());
+        assertEquals(510, credits.findByOwnerAndWorkDateAndSourceKind(owner, next, "SYSTEM_ACTUAL_WORK").orElseThrow().getCreditedMinutes());
         assertEquals(900, workdayTruth.truth(owner, date).actualMinutes());
         assertEquals(510, workdayTruth.truth(owner, next).actualMinutes());
         assertTrue(workdayTruth.truth(owner, next).explicitActual());
@@ -605,7 +614,11 @@ class NativeWorkdayClosedLoopServiceTest {
         days.saveAndFlush(nextEntry);
         var saved = actualWork.create(owner,
                 new ActualWorkIntervalRequest(date.toString(), next.toString(), "08:30", "08:30", 30, null));
-        assertEquals(450, overtime.balanceMinutes(owner));
+        assertEquals(
+                930,
+                overtime.balanceMinutes(owner),
+                "U3 source-workday classification must drive the derived Time Bank before deletion"
+        );
 
         actualWork.delete(owner, saved.id());
 

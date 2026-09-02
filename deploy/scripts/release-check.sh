@@ -5423,10 +5423,14 @@ contains src/test/java/ru/daniil/shifts/service/ActualWorkDayAllocationServiceTe
 contains src/test/java/ru/daniil/shifts/service/ActualExplicitBreakTimezoneCorrectionTest.java "historicalCorrectionReResolvesBreakInstantsFromFrozenSourceLocalEvidence"
 contains src/test/java/ru/daniil/shifts/web/PlannedBreakWindowWiringContractTest.java "actualWorkAllocatorAndWritePathUseFrozenExplicitWindowsInU1C"
 contains src/test/java/ru/daniil/shifts/web/ActualWorkHistoricalIdentityFrontendContractTest.java "ActualWorkBreakWindowInput"
-if [[ "$TEST_METHODS" == "2346" ]]; then
-  ok "test method baseline: 2346"
+
+# 8A4F3U3 source-workday-aware ordinary/overtime classification.
+contains src/main/java/ru/daniil/shifts/service/PayClassificationService.java "SOURCE_WORKDAY_OWNED_ORDINARY_CAPACITY"
+contains src/test/java/ru/daniil/shifts/service/PayClassificationOvernightOccurrenceTest.java "tailOfPreviousSourceWorkdayAndHeadOfCurrentSourceWorkdayKeepIndependentOrdinaryOrdinals"
+if [[ "$TEST_METHODS" == "2347" ]]; then
+  ok "test method baseline: 2347"
 else
-  fail "expected 2346 @Test methods, found $TEST_METHODS"
+  fail "expected 2347 @Test methods, found $TEST_METHODS"
 fi
 if [[ "$TEST_CLASSES" == "346" ]]; then
   ok "test class baseline: 346"

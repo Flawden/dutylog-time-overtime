@@ -99,8 +99,9 @@ public class PayClassificationService {
                 ).orElse(null);
 
         /*
-         * Fallback for an empty factual day. Once factual source workdays are
-         * present below, their own dated schedules own ordinary capacity.
+         * Empty factual days still expose the requested calendar date's
+         * ordinary schedule capacity. Once factual Actual Work exists,
+         * ordinary/overtime ownership moves to each factual source workday.
          */
         int requestedOrdinaryThresholdMinutes =
                 workNorm.basePlannedMinutes(
@@ -132,78 +133,26 @@ public class PayClassificationService {
                 );
 
         /*
-         * DATE_OWNED_ORDINARY_CAPACITY
+         * SOURCE_WORKDAY_OWNED_ORDINARY_CAPACITY
          *
-         * Preserve the established Native Workday contract whenever the
-         * requested calendar date has its own positive ordinary schedule.
+         * A calendar date may contain both the tail of source workday A and
+         * the head of source workday B. Their REGULAR / OVERTIME ordinals
+         * must remain independent even when the requested calendar date owns
+         * its own positive schedule.
          *
-         * Example:
-         *   day 1 schedule = 480
-         *   day 2 schedule = 480
-         *   one 24h Actual Work crosses midnight
-         *
-         * Each calendar date keeps its own 480-minute ordinary capacity.
-         *
-         * Source-workday ordinal continuation is therefore a fallback only:
-         * it is used when today's calendar date has no positive ordinary
-         * capacity of its own, but factual work arrives here as the tail of an
-         * earlier source workday (for example one overnight planned shift).
+         * NIGHT and HOLIDAY stay requested-calendar-date dimensions. Only
+         * ordinary/overtime threshold ownership follows the factual source
+         * workday occurrence.
          */
         List<ClassificationSlice> slices =
                 new ArrayList<>();
 
-        int ordinaryThresholdMinutes;
+        int ordinaryThresholdMinutes =
+                intervals.isEmpty()
+                        ? requestedOrdinaryThresholdMinutes
+                        : 0;
 
-        if (requestedOrdinaryThresholdMinutes > 0) {
-            /*
-             * Historical / canonical date-owned path.
-             *
-             * All factual segments on this calendar date share today's
-             * ordinary threshold regardless of which Actual Work interval
-             * originally crossed into the date.
-             */
-            List<SourceWorkSegment> currentSegments =
-                    new ArrayList<>();
-
-            for (ActualWorkInterval interval : intervals) {
-                for (NetWorkSegment segment :
-                        allocation.netSegments(interval)) {
-
-                    if (date.equals(
-                            segment.start()
-                                    .toLocalDate()
-                    )) {
-                        currentSegments.add(
-                                new SourceWorkSegment(
-                                        interval.getId(),
-                                        segment
-                                )
-                        );
-                    }
-                }
-            }
-
-            slices.addAll(
-                    engine.classifyDayWithSources(
-                            date,
-                            currentSegments,
-                            requestedOrdinaryThresholdMinutes,
-                            holiday,
-                            DEFAULT_NIGHT_WINDOW
-                    )
-            );
-
-            ordinaryThresholdMinutes =
-                    requestedOrdinaryThresholdMinutes;
-
-        } else {
-            /*
-             * No positive ordinary capacity belongs directly to this calendar
-             * date. Recover ordinary ownership from factual source workdays
-             * that started earlier and continue into today.
-             *
-             * This is the narrow overnight continuation introduced by 6G2E1.
-             */
+        if (!intervals.isEmpty()) {
             Map<LocalDate, List<ActualWorkInterval>>
                     intervalsBySourceWorkDate =
                     new TreeMap<>();
@@ -228,8 +177,6 @@ public class PayClassificationService {
                         .add(interval);
             }
 
-            ordinaryThresholdMinutes = 0;
-
             for (Map.Entry<LocalDate, List<ActualWorkInterval>> group :
                     intervalsBySourceWorkDate.entrySet()) {
 
@@ -248,13 +195,8 @@ public class PayClassificationService {
                         );
 
                 /*
-                 * Zero ordinary capacity is itself a meaningful classification
-                 * rule: factual work on an unscheduled source workday is all
-                 * OVERTIME.
-                 *
-                 * Do not drop such factual slices. The continuation machinery
-                 * below is still valid with threshold=0; every current minute
-                 * will classify as OVERTIME.
+                 * Zero ordinary capacity is meaningful: factual work on an
+                 * unscheduled source workday is all OVERTIME.
                  */
                 List<ActualWorkInterval> sourceIntervals;
 

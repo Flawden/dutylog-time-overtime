@@ -287,4 +287,130 @@ class PayClassificationOvernightOccurrenceTest {
         );
     }
 
+    @Test
+    void tailOfPreviousSourceWorkdayAndHeadOfCurrentSourceWorkdayKeepIndependentOrdinaryOrdinals() {
+        AppUser owner =
+                users.save(
+                        new AppUser(
+                                "night-to-night-source-workdays",
+                                "{noop}unused"
+                        )
+                );
+
+        ShiftType night =
+                shifts.save(
+                        new ShiftType(
+                                owner,
+                                "Night A/B",
+                                11.0,
+                                "#123456",
+                                false,
+                                LocalTime.of(20, 0),
+                                LocalTime.of(8, 0),
+                                60,
+                                11.0
+                        )
+                );
+
+        LocalDate first =
+                LocalDate.of(
+                        2026,
+                        8,
+                        18
+                );
+
+        LocalDate second =
+                first.plusDays(1);
+
+        LocalDate third =
+                second.plusDays(1);
+
+        DayEntry firstEntry =
+                new DayEntry(
+                        owner,
+                        first
+                );
+        firstEntry.setShiftType(night);
+
+        DayEntry secondEntry =
+                new DayEntry(
+                        owner,
+                        second
+                );
+        secondEntry.setShiftType(night);
+
+        days.saveAndFlush(firstEntry);
+        days.saveAndFlush(secondEntry);
+
+        /*
+         * Source workday A: 18:00 -> 08:00, legacy early 60-minute break.
+         * Net = 780, threshold = 660.
+         *   first date  = 300 REGULAR
+         *   second date = 360 REGULAR + 120 OVERTIME
+         *
+         * Source workday B: 20:00 -> 08:00, legacy early 60-minute break.
+         * On the shared second date its head contributes 180 REGULAR minutes.
+         *
+         * Therefore the shared calendar date must be:
+         *   worked   = 660
+         *   regular  = 540
+         *   overtime = 120
+         *
+         * The old DATE_OWNED path incorrectly reused B's 660-minute threshold
+         * for both A tail + B head and classified all 660 minutes REGULAR.
+         */
+        actualWork.create(
+                owner,
+                new ActualWorkIntervalRequest(
+                        first.toString(),
+                        second.toString(),
+                        "18:00",
+                        "08:00",
+                        60,
+                        "source A overtime tail"
+                )
+        );
+
+        actualWork.create(
+                owner,
+                new ActualWorkIntervalRequest(
+                        second.toString(),
+                        third.toString(),
+                        "20:00",
+                        "08:00",
+                        60,
+                        "source B regular head"
+                )
+        );
+
+        var sharedDay =
+                classification.classify(
+                        owner,
+                        second
+                );
+
+        assertEquals(
+                660,
+                sharedDay.workedMinutes()
+        );
+
+        assertEquals(
+                540,
+                sharedDay.regularMinutes(),
+                "Source workday A tail must not borrow ordinary capacity from source workday B"
+        );
+
+        assertEquals(
+                120,
+                sharedDay.overtimeMinutes(),
+                "Each contributing source workday keeps its own ordinary/overtime ordinal"
+        );
+
+        assertEquals(
+                120,
+                overtime.balanceMinutes(owner),
+                "Time Bank must retain overtime from source A even when source B starts on the same calendar date"
+        );
+    }
+
 }
