@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 31e70acc2763ee31a8ba91006adcaedcd00309459afda0b728f2c45aa775288f
+ * SHA-256: 5877cc6310b9b4c4e3a28ed84866f9d84dbb2384aa46c4a1fd32c285f495a7c1
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 145 operations, 151 schemas
+ * Contract: 146 operations, 153 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "31e70acc2763ee31a8ba91006adcaedcd00309459afda0b728f2c45aa775288f";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "5877cc6310b9b4c4e3a28ed84866f9d84dbb2384aa46c4a1fd32c285f495a7c1";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -1613,6 +1613,29 @@ export namespace DutyLogApiSchemas {
     createdAt: string;
   };
 
+  export type VacationPayPreview = {
+    eventDate: string;
+    eventMonth: string;
+    requestedAbsencePeriodId?: number | null;
+    discoveryThroughMonth: string;
+    provenNoPayrollMonths: Array<string>;
+    ready: boolean;
+    selectedBasis?: "PRIMARY_REFERENCE_PERIOD" | "PARAGRAPH_6_PRECEDING_REFERENCE_PERIOD" | "PARAGRAPH_7_PRE_EVENT_ACCRUED_WAGE" | "PARAGRAPH_8_ESTABLISHED_TARIFF_OR_SALARY" | null;
+    blockingStage?: "PAYABLE_DAYS_AUTHORITY" | "DAILY_AUTHORITY" | "MONEY_FORMULA" | null;
+    blockingReason?: string | null;
+    upstreamBlockingReason?: string | null;
+    currencyCode?: string | null;
+    vacationPayMinor?: number | null;
+    payableCalendarDays: number;
+  };
+
+  export type VacationPayPreviewInput = {
+    eventDate: string;
+    absencePeriodId?: number | null;
+    discoveryThroughMonth: string;
+    provenNoPayrollMonths: Array<string>;
+  };
+
   export type VacationPlanner = {
     settings: DutyLogApiSchemas.VacationSettings;
     summary: DutyLogApiSchemas.VacationSummary;
@@ -1782,6 +1805,7 @@ export const dutyLogOperations = {
   "previewLegacyTaskDeadlineMigration": { method: "GET", path: "/api/v1/tasks/legacy-deadline-migration/preview" },
   "previewOvertimeCredit": { method: "POST", path: "/api/v1/overtime/preview" },
   "previewScheduleTemplate": { method: "POST", path: "/api/v1/schedule-templates/{id}/preview" },
+  "previewVacationPay": { method: "POST", path: "/api/v1/payroll/vacation-pay/preview" },
   "productionCalendarMonth": { method: "GET", path: "/api/v1/production-calendar/months/{month}" },
   "promoteLegacyOvertimeUsages": { method: "POST", path: "/api/v1/overtime/legacy-usages/migrate" },
   "quickScenarios": { method: "GET", path: "/api/v1/quick-scenarios" },
@@ -2215,6 +2239,10 @@ export interface DutyLogOperationTypes {
   "previewScheduleTemplate": {
     requestBody: DutyLogApiSchemas.ScheduleTemplateApplyRequest;
     response: DutyLogApiSchemas.ScheduleTemplatePreview;
+  };
+  "previewVacationPay": {
+    requestBody: DutyLogApiSchemas.VacationPayPreviewInput;
+    response: DutyLogApiSchemas.VacationPayPreview;
   };
   "productionCalendarMonth": {
     requestBody: undefined;

@@ -5384,15 +5384,26 @@ contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.ja
 contains src/main/java/ru/daniil/shifts/service/VacationPayApplicationService.java "() -> canonicalParagraph7Authority("
 contains src/test/java/ru/daniil/shifts/service/AverageEarningsParagraph7PreEventAccruedWageAuthorityServiceTest.java "readyPipelinePreservesExactAuthorityOrderAndReturnsFinalAggregate"
 contains src/test/java/ru/daniil/shifts/web/VacationPayProductionAuthorityWiringContractTest.java "canonicalJ5AuthoritiesStayLazyBehindOrderedFallbackSuppliers"
-if [[ "$TEST_METHODS" == "2299" ]]; then
-  ok "test method baseline: 2299"
+# 8A4F3T vacation-pay production HTTP entrypoint.
+contains src/main/java/ru/daniil/shifts/web/VacationPayController.java '@RequestMapping({"/api/payroll/vacation-pay", "/api/v1/payroll/vacation-pay"})'
+contains src/main/java/ru/daniil/shifts/web/VacationPayController.java 'modules.requireEnabled(user, ModuleService.PAYROLL)'
+contains src/main/java/ru/daniil/shifts/web/VacationPayController.java 'CacheControl.noStore()'
+contains src/main/java/ru/daniil/shifts/dto/Dtos.java 'record VacationPayPreviewRequest('
+contains src/main/resources/static/openapi/dutylog-v1.yaml 'operationId: previewVacationPay'
+contains frontend/src/generated/dutylog-api.ts '"previewVacationPay": { method: "POST", path: "/api/v1/payroll/vacation-pay/preview" }'
+contains src/test/java/ru/daniil/shifts/web/VacationPayControllerTest.java 'disabledPayrollModuleShortCircuitsBeforeApplication'
+contains src/test/java/ru/daniil/shifts/web/VacationPayHttpEntryPointContractTest.java 'httpBoundaryCannotMutatePayrollSnapshotsOrTotalPay'
+not_contains src/main/java/ru/daniil/shifts/web/VacationPayController.java 'PayrollSnapshot'
+not_contains src/main/java/ru/daniil/shifts/web/VacationPayController.java 'totalPay'
+if [[ "$TEST_METHODS" == "2311" ]]; then
+  ok "test method baseline: 2311"
 else
-  fail "expected 2299 @Test methods, found $TEST_METHODS"
+  fail "expected 2311 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "338" ]]; then
-  ok "test class baseline: 338"
+if [[ "$TEST_CLASSES" == "340" ]]; then
+  ok "test class baseline: 340"
 else
-  fail "expected 338 test classes, found $TEST_CLASSES"
+  fail "expected 340 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
@@ -5442,8 +5453,8 @@ contains src/main/java/ru/daniil/shifts/service/PayrollService.java "ordinaryPre
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'id="payrollOrdinaryPremiumBreakdown"'
 contains CHANGES.md 'OpenAPI is **138 operations / 144 schemas** with SHA-256 `1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`.'
 contains docs/TEMPORAL_WORK_CONTEXT_NATIVE_PAY_PRICING_V27.46.1.md 'OpenAPI: 138 operations / 144 schemas.'
-contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 151 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "31e70acc2763ee31a8ba91006adcaedcd00309459afda0b728f2c45aa775288f"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 153 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "5877cc6310b9b4c4e3a28ed84866f9d84dbb2384aa46c4a1fd32c285f495a7c1"'
 contains docs/API.md "# DutyLog API v${VERSION}"
 contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
@@ -5568,8 +5579,8 @@ contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Frozen comp
 contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Frozen compensation component earnings "
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "PayrollCompensationComponentLineDto"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "PayrollCompensationComponentLine:"
-contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 151 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "31e70acc2763ee31a8ba91006adcaedcd00309459afda0b728f2c45aa775288f"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 153 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "5877cc6310b9b4c4e3a28ed84866f9d84dbb2384aa46c4a1fd32c285f495a7c1"'
 contains src/test/java/ru/daniil/shifts/service/PayrollCompensationComponentPayrollIntegrationTest.java "Премия за выживание после ночной смены"
 
 # v27.47.0 7A3A Immutable Generic Compensation Component Snapshot Foundation
@@ -5595,8 +5606,8 @@ contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: createP
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listPayrollCompensationComponentHistory"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listEffectivePayrollCompensationComponents"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: upsertPayrollCompensationComponentVersion"
-contains frontend/src/generated/dutylog-api.ts "Contract: 145 operations, 151 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "31e70acc2763ee31a8ba91006adcaedcd00309459afda0b728f2c45aa775288f"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 153 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "5877cc6310b9b4c4e3a28ed84866f9d84dbb2384aa46c4a1fd32c285f495a7c1"'
 contains frontend/src/generated/dutylog-api.ts '"createPayrollCompensationComponent": { method: "POST", path: "/api/v1/payroll/compensation-components" }'
 contains frontend/src/generated/dutylog-api.ts '"listPayrollCompensationComponentHistory": { method: "GET", path: "/api/v1/payroll/compensation-components" }'
 contains frontend/src/generated/dutylog-api.ts '"listEffectivePayrollCompensationComponents": { method: "GET", path: "/api/v1/payroll/compensation-components/effective/{month}" }'

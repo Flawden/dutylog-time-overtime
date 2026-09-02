@@ -2695,6 +2695,50 @@ public final class Dtos {
             List<ActualWorkIntervalDto> actualWork
     ) {}
 
+    /** Explicit read-only input for canonical annual-vacation pay preview. */
+    public record VacationPayPreviewRequest(
+            @NotBlank(message = "Дата события обязательна")
+            @Pattern(
+                    regexp = "\\d{4}-\\d{2}-\\d{2}",
+                    message = "Дата события должна быть в формате yyyy-MM-dd"
+            )
+            String eventDate,
+            @Min(value = 1, message = "absencePeriodId должен быть положительным")
+            Long absencePeriodId,
+            @NotBlank(message = "Месяц границы discovery обязателен")
+            @Pattern(
+                    regexp = "\\d{4}-(0[1-9]|1[0-2])",
+                    message = "discoveryThroughMonth должен быть в формате yyyy-MM"
+            )
+            String discoveryThroughMonth,
+            @NotNull(message = "Список доказанных месяцев без Payroll обязателен")
+            List<
+                    @NotBlank(message = "Месяц доказательства не должен быть пустым")
+                    @Pattern(
+                            regexp = "\\d{4}-(0[1-9]|1[0-2])",
+                            message = "Месяц доказательства должен быть в формате yyyy-MM"
+                    )
+                    String
+            > provenNoPayrollMonths
+    ) {}
+
+    /** Stable flat HTTP projection of the canonical vacation-pay application envelope. */
+    public record VacationPayPreviewDto(
+            String eventDate,
+            String eventMonth,
+            Long requestedAbsencePeriodId,
+            String discoveryThroughMonth,
+            List<String> provenNoPayrollMonths,
+            boolean ready,
+            String selectedBasis,
+            String blockingStage,
+            String blockingReason,
+            String upstreamBlockingReason,
+            String currencyCode,
+            Long vacationPayMinor,
+            int payableCalendarDays
+    ) {}
+
     /** Per-user money settings. All values are stored in minor currency units. */
     public record PayrollSettingsDto(
             String currencyCode,
