@@ -213,6 +213,15 @@ public final class Dtos {
         }
     }
 
+    /** One exact paid piece of a dated shift projected into the current display timezone. */
+    public record ShiftPaidSegmentDto(
+            String startInstant,
+            String endInstant,
+            String displayStart,
+            String displayEnd,
+            long durationMinutes
+    ) {}
+
     /** One immutable dated shift and its current calendar projection. */
     public record ShiftOccurrenceDto(
             Long dayEntryId,
@@ -229,8 +238,49 @@ public final class Dtos {
             int breakMinutes,
             long elapsedMinutes,
             long netMinutes,
+            boolean paidSegmentsPrecise,
+            List<ShiftPaidSegmentDto> paidSegments,
             boolean legacyLocal
-    ) {}
+    ) {
+        /** Source-compatible constructor for older tests/adapters that predate paid-segment projection. */
+        public ShiftOccurrenceDto(
+                Long dayEntryId,
+                String sourceDate,
+                Long shiftTypeId,
+                String startInstant,
+                String endInstant,
+                String sourceStart,
+                String sourceEnd,
+                String displayStart,
+                String displayEnd,
+                String sourceTimezone,
+                String displayTimezone,
+                int breakMinutes,
+                long elapsedMinutes,
+                long netMinutes,
+                boolean legacyLocal
+        ) {
+            this(
+                    dayEntryId,
+                    sourceDate,
+                    shiftTypeId,
+                    startInstant,
+                    endInstant,
+                    sourceStart,
+                    sourceEnd,
+                    displayStart,
+                    displayEnd,
+                    sourceTimezone,
+                    displayTimezone,
+                    breakMinutes,
+                    elapsedMinutes,
+                    netMinutes,
+                    false,
+                    List.of(),
+                    legacyLocal
+            );
+        }
+    }
 
     public record LegacyShiftOccurrenceDto(
             Long dayEntryId,

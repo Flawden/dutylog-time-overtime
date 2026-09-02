@@ -138,7 +138,7 @@ const allDayItems = computed(() => [
 ]);
 
 const timelineEvents = computed(() => {
-  type TimelineEvent = { key: string; type: string; title: string; start: number; end: number; meta: string; color: string; actionId: number | null };
+  type TimelineEvent = { key: string; type: string; title: string; start: number; end: number; meta: string; color: string; actionId: number | null; laneGroup?: string; laneReserveEnd?: number };
   const events: TimelineEvent[] = [];
   const segment = (startDate: string, startTime: string | null | undefined, endDate: string, endTime: string | null | undefined): { start: number; end: number } | null => {
     const date = focusDate.value;
@@ -152,8 +152,47 @@ const timelineEvents = computed(() => {
   for (const occurrence of focusFacts.value.occurrences) {
     const startDate = occurrence.displayStart.slice(0, 10);
     const endDate = occurrence.displayEnd.slice(0, 10);
-    const value = segment(startDate, timePart(occurrence.displayStart), endDate, timePart(occurrence.displayEnd));
-    if (value) events.push({ key: `shift-${occurrence.dayEntryId ?? occurrence.startInstant}`, type: "shift", title: focusFacts.value.shift?.name || "Смена", ...value, meta: `${timePart(occurrence.displayStart)}–${timePart(occurrence.displayEnd)}`, color: focusFacts.value.shift?.color || "var(--accent)", actionId: null });
+    const gross = segment(startDate, timePart(occurrence.displayStart), endDate, timePart(occurrence.displayEnd));
+    const shiftKey = `shift-${occurrence.dayEntryId ?? occurrence.startInstant}`;
+    const title = focusFacts.value.shift?.name || "Смена";
+    const color = focusFacts.value.shift?.color || "var(--accent)";
+
+    if (occurrence.paidSegmentsPrecise) {
+      for (const [index, paid] of occurrence.paidSegments.entries()) {
+        const value = segment(
+          paid.displayStart.slice(0, 10),
+          timePart(paid.displayStart),
+          paid.displayEnd.slice(0, 10),
+          timePart(paid.displayEnd),
+        );
+        if (!value) continue;
+        events.push({
+          key: `${shiftKey}-paid-${index}`,
+          type: "shift",
+          title,
+          ...value,
+          meta: `${timePart(paid.displayStart)}–${timePart(paid.displayEnd)}`,
+          color,
+          actionId: null,
+          laneGroup: shiftKey,
+          laneReserveEnd: gross?.end ?? value.end,
+        });
+      }
+    } else if (gross) {
+      const range = `${timePart(occurrence.displayStart)}–${timePart(occurrence.displayEnd)}`;
+      const unknownBreak = occurrence.breakMinutes > 0
+        ? (language.value === "en" ? "break placement unknown" : "положение перерыва неизвестно")
+        : "";
+      events.push({
+        key: shiftKey,
+        type: "shift",
+        title,
+        ...gross,
+        meta: [range, unknownBreak].filter(Boolean).join(" · "),
+        color,
+        actionId: null,
+      });
+    }
   }
   for (const absence of focusFacts.value.absences.filter(value => value.coverage === "PARTIAL" && value.startTime)) {
     const value = segment(absence.date, absence.startTime, absence.date, absence.endTime);
@@ -206,10 +245,15 @@ const timelineEvents = computed(() => {
     }
   }
   const laneEnds: number[] = [];
+  const laneGroups = new Map<string, number>();
   return events.sort((left, right) => left.start - right.start || left.end - right.end).map(event => {
-    let lane = laneEnds.findIndex(value => value <= event.start);
-    if (lane < 0) lane = laneEnds.length;
-    laneEnds[lane] = event.end;
+    let lane = event.laneGroup ? (laneGroups.get(event.laneGroup) ?? -1) : -1;
+    if (lane < 0) {
+      lane = laneEnds.findIndex(value => value <= event.start);
+      if (lane < 0) lane = laneEnds.length;
+      if (event.laneGroup) laneGroups.set(event.laneGroup, lane);
+    }
+    laneEnds[lane] = Math.max(laneEnds[lane] ?? 0, event.laneReserveEnd ?? event.end);
     return { ...event, lane };
   });
 });

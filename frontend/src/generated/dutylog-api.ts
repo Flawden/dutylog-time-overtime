@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 42a593873774c2dc436c586ca319d9e147e96d47ce1acd123e0def6230dd4b47
+ * SHA-256: 20ff4be35a539f340ab9201af5486250a0e23cdc88dafbaca636a7667906a50c
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 146 operations, 155 schemas
+ * Contract: 146 operations, 156 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "42a593873774c2dc436c586ca319d9e147e96d47ce1acd123e0def6230dd4b47";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "20ff4be35a539f340ab9201af5486250a0e23cdc88dafbaca636a7667906a50c";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -1396,7 +1396,17 @@ export namespace DutyLogApiSchemas {
     breakMinutes: number;
     elapsedMinutes: number;
     netMinutes: number;
+    paidSegmentsPrecise: boolean;
+    paidSegments: Array<DutyLogApiSchemas.ShiftPaidSegment>;
     legacyLocal: boolean;
+  };
+
+  export type ShiftPaidSegment = {
+    startInstant: string;
+    endInstant: string;
+    displayStart: string;
+    displayEnd: string;
+    durationMinutes: number;
   };
 
   export type ShiftType = {

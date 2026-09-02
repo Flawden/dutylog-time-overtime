@@ -94,6 +94,64 @@ public class PlannedBreakWindowSnapshotService {
         );
     }
 
+    /**
+     * Calendar projection of paid work geometry from frozen planned evidence.
+     *
+     * Legacy scalar break totals do not identify a position and are therefore
+     * never converted into guessed display segments.
+     */
+    public CalendarPaidSegmentProjection calendarPaidSegments(DayEntry entry) {
+        if (entry == null || !entry.hasShiftOccurrenceSnapshot()) {
+            return new CalendarPaidSegmentProjection(false, List.of());
+        }
+
+        List<WorkBreakWindowAuthorityService.PaidWorkInterval> paid;
+        if (entry.getShiftBreakAuthority() == WorkBreakAuthority.EXPLICIT_WINDOWS) {
+            List<WorkBreakWindowAuthorityService.AbsoluteBreakWindow> breaks =
+                    entry.getShiftBreakWindows().stream()
+                            .map(window ->
+                                    new WorkBreakWindowAuthorityService.AbsoluteBreakWindow(
+                                            window.getPosition(),
+                                            window.getStartInstant(),
+                                            window.getEndInstant()
+                                    )
+                            )
+                            .toList();
+            paid = breakAuthority.subtractAbsolute(
+                    entry.getShiftStartInstant(),
+                    entry.getShiftEndInstant(),
+                    breaks
+            );
+        } else if (entry.getShiftBreakMinutes() == 0) {
+            paid = breakAuthority.subtractAbsolute(
+                    entry.getShiftStartInstant(),
+                    entry.getShiftEndInstant(),
+                    List.of()
+            );
+        } else {
+            return new CalendarPaidSegmentProjection(false, List.of());
+        }
+
+        long projectedMinutes = paid.stream()
+                .mapToLong(WorkBreakWindowAuthorityService.PaidWorkInterval::minutes)
+                .sum();
+        if (projectedMinutes != entry.getShiftNetMinutes()) {
+            throw new IllegalStateException(
+                    "Frozen calendar paid segments disagree with stored shift net minutes"
+            );
+        }
+        return new CalendarPaidSegmentProjection(true, paid);
+    }
+
+    public record CalendarPaidSegmentProjection(
+            boolean precise,
+            List<WorkBreakWindowAuthorityService.PaidWorkInterval> intervals
+    ) {
+        public CalendarPaidSegmentProjection {
+            intervals = intervals == null ? List.of() : List.copyOf(intervals);
+        }
+    }
+
     public void captureLegacyEvidence(
             DayEntry entry,
             WorkIntervalService.ResolvedWorkInterval interval

@@ -3892,9 +3892,19 @@ components:
         crossesDisplayMidnight: { type: boolean }
         sameTimezone: { type: boolean }
         legacyLocal: { type: boolean, description: True only when the server had to interpret an old row without a stored source timezone }
+    ShiftPaidSegment:
+      type: object
+      description: Exact paid piece of a frozen dated shift, projected into the current display timezone without reclassifying work.
+      required: [startInstant, endInstant, displayStart, displayEnd, durationMinutes]
+      properties:
+        startInstant: { type: string, format: date-time }
+        endInstant: { type: string, format: date-time }
+        displayStart: { type: string, example: '2026-09-01T20:00' }
+        displayEnd: { type: string, example: '2026-09-01T23:30' }
+        durationMinutes: { type: integer, format: int64, minimum: 1 }
     ShiftOccurrence:
       type: object
-      required: [sourceDate, startInstant, endInstant, sourceStart, sourceEnd, displayStart, displayEnd, sourceTimezone, displayTimezone, breakMinutes, elapsedMinutes, netMinutes, legacyLocal]
+      required: [sourceDate, startInstant, endInstant, sourceStart, sourceEnd, displayStart, displayEnd, sourceTimezone, displayTimezone, breakMinutes, elapsedMinutes, netMinutes, paidSegmentsPrecise, paidSegments, legacyLocal]
       properties:
         dayEntryId: { type: integer, format: int64, nullable: true }
         sourceDate: { type: string, format: date }
@@ -3910,6 +3920,12 @@ components:
         breakMinutes: { type: integer, minimum: 0 }
         elapsedMinutes: { type: integer, format: int64, minimum: 1 }
         netMinutes: { type: integer, format: int64, minimum: 0 }
+        paidSegmentsPrecise:
+          type: boolean
+          description: True only when exact paid geometry is known; legacy scalar break placement is never guessed.
+        paidSegments:
+          type: array
+          items: { $ref: '#/components/schemas/ShiftPaidSegment' }
         legacyLocal: { type: boolean }
     LegacyShiftOccurrence:
       type: object

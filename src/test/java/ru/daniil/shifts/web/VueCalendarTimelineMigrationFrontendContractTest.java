@@ -235,6 +235,39 @@ class VueCalendarTimelineMigrationFrontendContractTest {
         assertTrue(manifest.contains("Vue owns Today, Month, Week and Day read surfaces"));
     }
 
+    @Test
+    void authoritativePaidSegmentContractFlowsFromFrozenBackendToGeneratedApi() throws Exception {
+        String dto = read("src/main/java/ru/daniil/shifts/dto/Dtos.java");
+        String snapshot = read("src/main/java/ru/daniil/shifts/service/PlannedBreakWindowSnapshotService.java");
+        String occurrence = read("src/main/java/ru/daniil/shifts/service/ShiftOccurrenceService.java");
+        String openApi = read("src/main/resources/static/openapi/dutylog-v1.yaml");
+        String generated = read("frontend/src/generated/dutylog-api.ts");
+
+        assertTrue(dto.contains("record ShiftPaidSegmentDto("));
+        assertTrue(dto.contains("boolean paidSegmentsPrecise"));
+        assertTrue(dto.contains("List<ShiftPaidSegmentDto> paidSegments"));
+        assertTrue(snapshot.contains("calendarPaidSegments(DayEntry entry)"));
+        assertTrue(snapshot.contains("breakAuthority.subtractAbsolute("));
+        assertTrue(occurrence.contains("breakSnapshots.calendarPaidSegments(entry)"));
+        assertTrue(openApi.contains("ShiftPaidSegment:"));
+        assertTrue(openApi.contains("paidSegmentsPrecise:"));
+        assertTrue(generated.contains("paidSegmentsPrecise: boolean;"));
+        assertTrue(generated.contains("paidSegments: Array<DutyLogApiSchemas.ShiftPaidSegment>;"));
+    }
+
+    @Test
+    void calendarTimelineUsesAuthoritativeSegmentsOneLaneAndLegacyFallbackWithoutBreakMath() throws Exception {
+        String page = read(FEATURE.resolve("components/CalendarPage.vue"));
+
+        assertTrue(page.contains("if (occurrence.paidSegmentsPrecise)"));
+        assertTrue(page.contains("occurrence.paidSegments.entries()"));
+        assertTrue(page.contains("laneGroup: shiftKey"));
+        assertTrue(page.contains("laneReserveEnd: gross?.end ?? value.end"));
+        assertTrue(page.contains("const laneGroups = new Map<string, number>()"));
+        assertTrue(page.contains("положение перерыва неизвестно"));
+        assertFalse(page.contains("subtractAvailabilityIntervals"));
+    }
+
     private static String featureSources() throws Exception {
         var result = new StringBuilder();
         try (var paths = Files.walk(FEATURE)) {

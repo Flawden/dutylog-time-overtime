@@ -136,6 +136,68 @@ class PlannedExplicitBreakAllocationTest {
         assertEquals(660, legacy.getShiftNetMinutes());
     }
 
+    @Test
+    void calendarPaidSegmentsReuseFrozenExplicitBreakAuthority() {
+        DayEntry day = explicitNight(LocalDate.of(2026, 9, 1), 210, 60);
+
+        var projection = snapshots.calendarPaidSegments(day);
+
+        assertTrue(projection.precise());
+        assertEquals(2, projection.intervals().size());
+        assertEquals(210, projection.intervals().get(0).minutes());
+        assertEquals(450, projection.intervals().get(1).minutes());
+        assertEquals(
+                LocalTime.of(23, 30),
+                projection.intervals().get(0).endInstant()
+                        .atZone(ZoneId.of("Asia/Yekaterinburg"))
+                        .toLocalTime()
+        );
+        assertEquals(
+                LocalTime.of(0, 30),
+                projection.intervals().get(1).startInstant()
+                        .atZone(ZoneId.of("Asia/Yekaterinburg"))
+                        .toLocalTime()
+        );
+        assertEquals(
+                day.getShiftNetMinutes(),
+                projection.intervals().stream()
+                        .mapToLong(WorkBreakWindowAuthorityService.PaidWorkInterval::minutes)
+                        .sum()
+        );
+    }
+
+    @Test
+    void calendarPaidSegmentsNeverGuessLegacyScalarBreakPlacement() {
+        ShiftType shift = new ShiftType(
+                user(), "Legacy night", 12, "#000000", false,
+                LocalTime.of(20, 0), LocalTime.of(8, 0), 60, 11.0
+        );
+        DayEntry day = capture(LocalDate.of(2026, 9, 1), shift);
+
+        var projection = snapshots.calendarPaidSegments(day);
+
+        assertFalse(projection.precise());
+        assertTrue(projection.intervals().isEmpty());
+        assertEquals(WorkBreakAuthority.LEGACY_EARLY_TOTAL, day.getShiftBreakAuthority());
+    }
+
+    @Test
+    void zeroBreakFrozenLegacyOccurrenceHasExactWholePaidInterval() {
+        ShiftType shift = new ShiftType(
+                user(), "Whole night", 12, "#000000", false,
+                LocalTime.of(20, 0), LocalTime.of(8, 0), 0, 12.0
+        );
+        DayEntry day = capture(LocalDate.of(2026, 9, 1), shift);
+
+        var projection = snapshots.calendarPaidSegments(day);
+
+        assertTrue(projection.precise());
+        assertEquals(1, projection.intervals().size());
+        assertEquals(720, projection.intervals().get(0).minutes());
+        assertEquals(day.getShiftStartInstant(), projection.intervals().get(0).startInstant());
+        assertEquals(day.getShiftEndInstant(), projection.intervals().get(0).endInstant());
+    }
+
     private DayEntry explicitNight(LocalDate date, int offset, int duration) {
         return capture(date, explicitNightShift(offset, duration));
     }

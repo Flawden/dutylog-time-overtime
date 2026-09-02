@@ -6,6 +6,7 @@ import ru.daniil.shifts.dto.Dtos.LegacyShiftMigrationPreviewDto;
 import ru.daniil.shifts.dto.Dtos.LegacyShiftMigrationRequest;
 import ru.daniil.shifts.dto.Dtos.LegacyShiftOccurrenceDto;
 import ru.daniil.shifts.dto.Dtos.ShiftOccurrenceDto;
+import ru.daniil.shifts.dto.Dtos.ShiftPaidSegmentDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.DayEntry;
 import ru.daniil.shifts.model.ShiftType;
@@ -199,6 +200,18 @@ public class ShiftOccurrenceService {
     private ShiftOccurrenceDto toDto(AppUser user, DayEntry entry) {
         WorkIntervalService.ShiftProjection projection = intervals.projectShift(user, entry);
         ShiftType shift = entry.getShiftType();
+        PlannedBreakWindowSnapshotService.CalendarPaidSegmentProjection paidProjection =
+                breakSnapshots.calendarPaidSegments(entry);
+        ZoneId displayZone = ZoneId.of(projection.displayTimezone());
+        List<ShiftPaidSegmentDto> paidSegments = paidProjection.intervals().stream()
+                .map(interval -> new ShiftPaidSegmentDto(
+                        interval.startInstant().toString(),
+                        interval.endInstant().toString(),
+                        interval.startInstant().atZone(displayZone).toLocalDateTime().toString(),
+                        interval.endInstant().atZone(displayZone).toLocalDateTime().toString(),
+                        interval.minutes()
+                ))
+                .toList();
         return new ShiftOccurrenceDto(
                 entry.getId(),
                 entry.getDate().toString(),
@@ -214,6 +227,8 @@ public class ShiftOccurrenceService {
                 projection.breakMinutes(),
                 projection.elapsedMinutes(),
                 projection.netMinutes(),
+                paidProjection.precise(),
+                paidSegments,
                 projection.legacyLocal()
         );
     }

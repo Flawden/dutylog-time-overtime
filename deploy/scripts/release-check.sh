@@ -5433,10 +5433,24 @@ contains src/test/java/ru/daniil/shifts/service/PayrollPaidIntervalRegressionMat
 contains src/test/java/ru/daniil/shifts/service/PayrollPaidIntervalRegressionMatrixTest.java "fullNightUnpaidBreakCannotReceiveNightOrHolidayPremiumDimensions"
 contains src/main/java/ru/daniil/shifts/service/TimeCompensationService.java "Payroll itself must not re-classify reality."
 contains src/main/java/ru/daniil/shifts/service/OrdinaryWorkPremiumSourceService.java "only REGULAR slices"
-if [[ "$TEST_METHODS" == "2350" ]]; then
-  ok "test method baseline: 2350"
+# V calendar multi-segment UX from frozen paid-segment authority.
+contains src/main/java/ru/daniil/shifts/service/PlannedBreakWindowSnapshotService.java "calendarPaidSegments(DayEntry entry)"
+contains src/main/java/ru/daniil/shifts/service/PlannedBreakWindowSnapshotService.java "breakAuthority.subtractAbsolute("
+contains src/main/java/ru/daniil/shifts/service/ShiftOccurrenceService.java "breakSnapshots.calendarPaidSegments(entry)"
+contains src/main/java/ru/daniil/shifts/dto/Dtos.java "record ShiftPaidSegmentDto("
+contains src/main/resources/static/openapi/dutylog-v1.yaml "ShiftPaidSegment:"
+contains frontend/src/generated/dutylog-api.ts "paidSegmentsPrecise: boolean;"
+contains frontend/src/generated/dutylog-api.ts "paidSegments: Array<DutyLogApiSchemas.ShiftPaidSegment>;"
+contains frontend/src/features/calendar-timeline/components/CalendarPage.vue "if (occurrence.paidSegmentsPrecise)"
+contains frontend/src/features/calendar-timeline/components/CalendarPage.vue "const laneGroups = new Map<string, number>()"
+contains frontend/src/features/calendar-timeline/components/CalendarPage.vue "положение перерыва неизвестно"
+not_contains frontend/src/features/calendar-timeline/components/CalendarPage.vue "subtractAvailabilityIntervals"
+contains src/test/java/ru/daniil/shifts/service/PlannedExplicitBreakAllocationTest.java "calendarPaidSegmentsNeverGuessLegacyScalarBreakPlacement"
+contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontendContractTest.java "calendarTimelineUsesAuthoritativeSegmentsOneLaneAndLegacyFallbackWithoutBreakMath"
+if [[ "$TEST_METHODS" == "2355" ]]; then
+  ok "test method baseline: 2355"
 else
-  fail "expected 2350 @Test methods, found $TEST_METHODS"
+  fail "expected 2355 @Test methods, found $TEST_METHODS"
 fi
 if [[ "$TEST_CLASSES" == "347" ]]; then
   ok "test class baseline: 347"
@@ -5491,8 +5505,8 @@ contains src/main/java/ru/daniil/shifts/service/PayrollService.java "ordinaryPre
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'id="payrollOrdinaryPremiumBreakdown"'
 contains CHANGES.md 'OpenAPI is **138 operations / 144 schemas** with SHA-256 `1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`.'
 contains docs/TEMPORAL_WORK_CONTEXT_NATIVE_PAY_PRICING_V27.46.1.md 'OpenAPI: 138 operations / 144 schemas.'
-contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 155 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "42a593873774c2dc436c586ca319d9e147e96d47ce1acd123e0def6230dd4b47"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 156 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "20ff4be35a539f340ab9201af5486250a0e23cdc88dafbaca636a7667906a50c"'
 contains docs/API.md "# DutyLog API v${VERSION}"
 contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
@@ -5617,8 +5631,8 @@ contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Frozen comp
 contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Frozen compensation component earnings "
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "PayrollCompensationComponentLineDto"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "PayrollCompensationComponentLine:"
-contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 155 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "42a593873774c2dc436c586ca319d9e147e96d47ce1acd123e0def6230dd4b47"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 156 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "20ff4be35a539f340ab9201af5486250a0e23cdc88dafbaca636a7667906a50c"'
 contains src/test/java/ru/daniil/shifts/service/PayrollCompensationComponentPayrollIntegrationTest.java "Премия за выживание после ночной смены"
 
 # v27.47.0 7A3A Immutable Generic Compensation Component Snapshot Foundation
@@ -5644,8 +5658,8 @@ contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: createP
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listPayrollCompensationComponentHistory"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listEffectivePayrollCompensationComponents"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: upsertPayrollCompensationComponentVersion"
-contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 155 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "42a593873774c2dc436c586ca319d9e147e96d47ce1acd123e0def6230dd4b47"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 156 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "20ff4be35a539f340ab9201af5486250a0e23cdc88dafbaca636a7667906a50c"'
 contains frontend/src/generated/dutylog-api.ts '"createPayrollCompensationComponent": { method: "POST", path: "/api/v1/payroll/compensation-components" }'
 contains frontend/src/generated/dutylog-api.ts '"listPayrollCompensationComponentHistory": { method: "GET", path: "/api/v1/payroll/compensation-components" }'
 contains frontend/src/generated/dutylog-api.ts '"listEffectivePayrollCompensationComponents": { method: "GET", path: "/api/v1/payroll/compensation-components/effective/{month}" }'
