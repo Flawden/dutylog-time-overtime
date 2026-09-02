@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.daniil.shifts.model.ActualWorkInterval;
 import ru.daniil.shifts.model.AppUser;
+import ru.daniil.shifts.model.WorkBreakAuthority;
 import ru.daniil.shifts.repo.ActualWorkIntervalRepository;
 import ru.daniil.shifts.repo.UserRepository;
 import ru.daniil.shifts.service.exception.ApiException;
@@ -33,6 +34,7 @@ public class WorkTimezoneChangeService {
     private final WorkTimezoneHistoryService timezoneHistory;
     private final ActualWorkIntervalRepository actualWork;
     private final ActualWorkIdentityService identity;
+    private final ActualBreakWindowSnapshotService breakSnapshots;
     private final WorkdayDerivedCompensationService derivedCompensation;
     private final UserRepository users;
     private final UserTimeService userTimeService;
@@ -45,6 +47,7 @@ public class WorkTimezoneChangeService {
             WorkTimezoneHistoryService timezoneHistory,
             ActualWorkIntervalRepository actualWork,
             ActualWorkIdentityService identity,
+            ActualBreakWindowSnapshotService breakSnapshots,
             WorkdayDerivedCompensationService derivedCompensation,
             UserRepository users,
             UserTimeService userTimeService,
@@ -56,6 +59,7 @@ public class WorkTimezoneChangeService {
         this.timezoneHistory = timezoneHistory;
         this.actualWork = actualWork;
         this.identity = identity;
+        this.breakSnapshots = breakSnapshots;
         this.derivedCompensation = derivedCompensation;
         this.users = users;
         this.userTimeService = userTimeService;
@@ -118,17 +122,24 @@ public class WorkTimezoneChangeService {
                             interval.getEndTime()
                     );
 
-            int breakMinutes =
-                    Math.max(0, interval.getBreakMinutes());
-
-            if (breakMinutes >= resolved.elapsedMinutes()) {
-                throw ApiException.conflict(
-                        "ACTUAL_WORK_BREAK_INVALID_AFTER_CONTEXT_CHANGE",
-                        "После изменения рабочего часового пояса фактический "
-                                + "интервал " + interval.getId()
-                                + " стал короче или равен своему перерыву. "
-                                + "Исправь факт работы или границу часового пояса."
+            int breakMinutes;
+            if (interval.getBreakAuthority()
+                    == WorkBreakAuthority.EXPLICIT_WINDOWS) {
+                breakMinutes = breakSnapshots.reconstructHistoricalIdentity(
+                        interval,
+                        resolved
                 );
+            } else {
+                breakMinutes = Math.max(0, interval.getBreakMinutes());
+                if (breakMinutes >= resolved.elapsedMinutes()) {
+                    throw ApiException.conflict(
+                            "ACTUAL_WORK_BREAK_INVALID_AFTER_CONTEXT_CHANGE",
+                            "После изменения рабочего часового пояса фактический "
+                                    + "интервал " + interval.getId()
+                                    + " стал короче или равен своему перерыву. "
+                                    + "Исправь факт работы или границу часового пояса."
+                    );
+                }
             }
 
             interval.setSourceTimezone(

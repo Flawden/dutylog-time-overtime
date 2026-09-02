@@ -55,7 +55,7 @@ class WorkBreakWindowAuthorityFoundationContractTest {
     }
 
     @Test
-    void plannedWiringMayAdvanceWhileActualLegacySemanticsRemainUntilU1C()
+    void actualWiringAdvancesAtU1CWhileLegacyRowsRemainBackwardCompatible()
             throws Exception {
         String planned = read(
                 "src/main/java/ru/daniil/shifts/service/"
@@ -77,9 +77,14 @@ class WorkBreakWindowAuthorityFoundationContractTest {
         ));
 
         assertTrue(actual.contains(
-                "Unpaid break minutes are consumed from the earliest actual minutes."
+                "interval.getBreakAuthority() == WorkBreakAuthority.EXPLICIT_WINDOWS"
         ));
-        assertFalse(actual.contains("WorkBreakWindowAuthorityService"));
+        assertTrue(actual.contains(
+                "breakAuthority.subtractAbsolute("
+        ));
+        assertTrue(actual.contains(
+                "legacy scalar earliest-break semantics"
+        ));
     }
 
     @Test

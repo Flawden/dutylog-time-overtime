@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 5877cc6310b9b4c4e3a28ed84866f9d84dbb2384aa46c4a1fd32c285f495a7c1
+ * SHA-256: 42a593873774c2dc436c586ca319d9e147e96d47ce1acd123e0def6230dd4b47
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 146 operations, 153 schemas
+ * Contract: 146 operations, 155 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "5877cc6310b9b4c4e3a28ed84866f9d84dbb2384aa46c4a1fd32c285f495a7c1";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "42a593873774c2dc436c586ca319d9e147e96d47ce1acd123e0def6230dd4b47";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -171,10 +171,32 @@ export namespace DutyLogApiSchemas {
     updatedAt?: string | null;
   };
 
-  export type ActualWorkInterval = DutyLogApiSchemas.ActualWorkIntervalInput & {
+  export type ActualWorkBreakWindow = {
+    position: number;
+    sourceStartLocal: string;
+    sourceEndLocal: string;
+    startInstant: string;
+    endInstant: string;
+    sourceTimezone: string;
+  };
+
+  export type ActualWorkBreakWindowInput = {
+    position: number;
+    sourceStartLocal: string;
+    sourceEndLocal: string;
+  };
+
+  export type ActualWorkInterval = {
     id: number;
+    workDate: string;
+    endDate: string;
+    startTime: string;
+    endTime: string;
     workedMinutes: number;
     breakMinutes: number;
+    breakAuthority: "LEGACY_EARLY_TOTAL" | "EXPLICIT_WINDOWS";
+    breakWindows: Array<DutyLogApiSchemas.ActualWorkBreakWindow>;
+    note?: string | null;
     createdAt?: string | null;
     updatedAt?: string | null;
     sourceTimezone?: string | null;
@@ -189,6 +211,7 @@ export namespace DutyLogApiSchemas {
     startTime: string;
     endTime: string;
     breakMinutes?: number | null;
+    breakWindows?: Array<DutyLogApiSchemas.ActualWorkBreakWindowInput> | null;
     note?: string | null;
   };
 

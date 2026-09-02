@@ -2593,6 +2593,23 @@ public final class Dtos {
             @Size(max = 500, message = "Причина: максимум 500 символов") String reason
     ) {}
 
+    public record ActualWorkBreakWindowDto(
+            int position,
+            String sourceStartLocal,
+            String sourceEndLocal,
+            String startInstant,
+            String endInstant,
+            String sourceTimezone
+    ) {}
+
+    public record ActualWorkBreakWindowRequest(
+            @NotNull(message = "Позиция перерыва обязательна")
+            @Min(value = 0, message = "Позиция перерыва не может быть отрицательной")
+            Integer position,
+            @NotBlank(message = "Начало перерыва обязательно") String sourceStartLocal,
+            @NotBlank(message = "Окончание перерыва обязательно") String sourceEndLocal
+    ) {}
+
     public record ActualWorkIntervalDto(
             Long id,
             String workDate,
@@ -2601,6 +2618,8 @@ public final class Dtos {
             String endTime,
             int workedMinutes,
             int breakMinutes,
+            String breakAuthority,
+            List<ActualWorkBreakWindowDto> breakWindows,
             String note,
             String sourceTimezone,
             String startInstant,
@@ -2618,14 +2637,37 @@ public final class Dtos {
             @Min(value = 0, message = "Перерыв не может быть отрицательным")
             @Max(value = 1440, message = "Перерыв не может быть больше 1440 минут")
             Integer breakMinutes,
+            @Valid List<ActualWorkBreakWindowRequest> breakWindows,
             @Size(max = 500, message = "Комментарий: максимум 500 символов") String note
     ) {
-        public ActualWorkIntervalRequest(String workDate, String startTime, String endTime, String note) {
-            this(workDate, null, startTime, endTime, null, note);
+        public ActualWorkIntervalRequest(
+                String workDate,
+                String endDate,
+                String startTime,
+                String endTime,
+                Integer breakMinutes,
+                String note
+        ) {
+            this(workDate, endDate, startTime, endTime, breakMinutes, null, note);
         }
 
-        public ActualWorkIntervalRequest(String workDate, String startTime, String endTime, Integer breakMinutes, String note) {
-            this(workDate, null, startTime, endTime, breakMinutes, note);
+        public ActualWorkIntervalRequest(
+                String workDate,
+                String startTime,
+                String endTime,
+                String note
+        ) {
+            this(workDate, null, startTime, endTime, null, null, note);
+        }
+
+        public ActualWorkIntervalRequest(
+                String workDate,
+                String startTime,
+                String endTime,
+                Integer breakMinutes,
+                String note
+        ) {
+            this(workDate, null, startTime, endTime, breakMinutes, null, note);
         }
     }
 

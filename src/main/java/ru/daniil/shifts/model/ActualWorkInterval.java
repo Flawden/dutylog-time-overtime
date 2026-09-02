@@ -5,6 +5,10 @@ import jakarta.persistence.*;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /** Explicit factual work interval. End at or before start means next-day completion. */
 @Entity
@@ -36,6 +40,18 @@ public class ActualWorkInterval {
 
     @Column(name = "break_minutes", nullable = false)
     private int breakMinutes;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "break_authority", nullable = false, length = 32)
+    private WorkBreakAuthority breakAuthority = WorkBreakAuthority.LEGACY_EARLY_TOTAL;
+
+    @OneToMany(
+            mappedBy = "actualWorkInterval",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    @OrderBy("position ASC")
+    private List<ActualWorkBreakWindow> breakWindows = new ArrayList<>();
 
     @Column(length = 500)
     private String note;
@@ -81,6 +97,45 @@ public class ActualWorkInterval {
     public void setWorkedMinutes(int workedMinutes) { this.workedMinutes = workedMinutes; }
     public int getBreakMinutes() { return Math.max(0, breakMinutes); }
     public void setBreakMinutes(int breakMinutes) { this.breakMinutes = Math.max(0, breakMinutes); }
+
+    public WorkBreakAuthority getBreakAuthority() {
+        return breakAuthority == null
+                ? WorkBreakAuthority.LEGACY_EARLY_TOTAL
+                : breakAuthority;
+    }
+
+    public List<ActualWorkBreakWindow> getBreakWindows() {
+        return Collections.unmodifiableList(breakWindows);
+    }
+
+    public void captureLegacyBreakMinutes(int breakMinutes) {
+        this.breakAuthority = WorkBreakAuthority.LEGACY_EARLY_TOTAL;
+        this.breakMinutes = Math.max(0, breakMinutes);
+        this.breakWindows.clear();
+    }
+
+    public void captureExplicitBreakWindows(
+            int breakMinutes,
+            List<ActualWorkBreakWindow> windows
+    ) {
+        List<ActualWorkBreakWindow> safe = windows == null
+                ? new ArrayList<>()
+                : new ArrayList<>(windows);
+        for (ActualWorkBreakWindow window : safe) {
+            if (window == null || window.getActualWorkInterval() != this) {
+                throw new IllegalArgumentException(
+                        "Explicit break snapshot must belong to this actual interval"
+                );
+            }
+        }
+        safe.sort(Comparator.comparingInt(ActualWorkBreakWindow::getPosition));
+
+        this.breakAuthority = WorkBreakAuthority.EXPLICIT_WINDOWS;
+        this.breakMinutes = Math.max(0, breakMinutes);
+        this.breakWindows.clear();
+        this.breakWindows.addAll(safe);
+    }
+
     public String getNote() { return note; }
     public void setNote(String note) { this.note = note; }
 

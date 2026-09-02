@@ -116,6 +116,123 @@ public class WorkBreakWindowAuthorityService {
         return List.copyOf(resolved);
     }
 
+    /**
+     * Resolve exact source-local break evidence for one factual interval.
+     *
+     * Unlike template offsets, these local boundaries are themselves the
+     * historical audit anchor. They are therefore preserved verbatim so an
+     * intentional historical timezone correction can deterministically
+     * rebuild only their absolute projection.
+     */
+    public List<ResolvedBreakWindow> resolveSourceLocal(
+            Instant shiftStart,
+            Instant shiftEnd,
+            LocalDateTime sourceShiftStart,
+            LocalDateTime sourceShiftEnd,
+            String sourceTimezone,
+            List<SourceLocalBreakWindow> windows
+    ) {
+        requirePositiveShift(shiftStart, shiftEnd);
+        if (sourceShiftStart == null
+                || sourceShiftEnd == null
+                || !sourceShiftEnd.isAfter(sourceShiftStart)) {
+            throw new IllegalArgumentException(
+                    "Positive source-local work interval is required"
+            );
+        }
+
+        ZoneId zone;
+        try {
+            zone = ZoneId.of(sourceTimezone);
+        } catch (Exception ex) {
+            throw new IllegalArgumentException(
+                    "Valid source timezone is required",
+                    ex
+            );
+        }
+
+        List<SourceLocalBreakWindow> safe =
+                windows == null ? List.of() : List.copyOf(windows);
+
+        Set<Integer> positions = new HashSet<>();
+        List<ResolvedBreakWindow> resolved = new ArrayList<>();
+
+        for (SourceLocalBreakWindow window : safe) {
+            if (window == null) {
+                throw new IllegalArgumentException(
+                        "Break window cannot be null"
+                );
+            }
+            if (!positions.add(window.position())) {
+                throw new IllegalArgumentException(
+                        "Break window positions must be unique"
+                );
+            }
+            if (window.sourceStart().isBefore(sourceShiftStart)
+                    || window.sourceEnd().isAfter(sourceShiftEnd)) {
+                throw new IllegalArgumentException(
+                        "Break window must stay inside the source-local work interval"
+                );
+            }
+
+            Instant start = userTime
+                    .resolveLocalDateTime(window.sourceStart(), zone)
+                    .toInstant();
+            Instant end = userTime
+                    .resolveLocalDateTime(window.sourceEnd(), zone)
+                    .toInstant();
+
+            if (!end.isAfter(start)) {
+                throw new IllegalArgumentException(
+                        "Resolved break window must have positive elapsed duration"
+                );
+            }
+            if (start.isBefore(shiftStart) || end.isAfter(shiftEnd)) {
+                throw new IllegalArgumentException(
+                        "Break window must stay inside the dated work interval"
+                );
+            }
+
+            long offset = Duration.between(
+                    sourceShiftStart,
+                    window.sourceStart()
+            ).toMinutes();
+            long duration = Duration.between(
+                    window.sourceStart(),
+                    window.sourceEnd()
+            ).toMinutes();
+
+            resolved.add(new ResolvedBreakWindow(
+                    window.position(),
+                    window.sourceStart(),
+                    window.sourceEnd(),
+                    start,
+                    end,
+                    zone.getId(),
+                    Math.toIntExact(offset),
+                    Math.toIntExact(duration)
+            ));
+        }
+
+        resolved.sort(
+                Comparator.comparing(ResolvedBreakWindow::startInstant)
+                        .thenComparingInt(ResolvedBreakWindow::position)
+        );
+
+        Instant previousEnd = null;
+        for (ResolvedBreakWindow window : resolved) {
+            if (previousEnd != null
+                    && window.startInstant().isBefore(previousEnd)) {
+                throw new IllegalArgumentException(
+                        "Explicit break windows must not overlap"
+                );
+            }
+            previousEnd = window.endInstant();
+        }
+
+        return List.copyOf(resolved);
+    }
+
     public List<PaidWorkInterval> subtract(
             Instant shiftStart,
             Instant shiftEnd,
@@ -216,6 +333,27 @@ public class WorkBreakWindowAuthorityService {
             if ((long) startOffsetMinutes + durationMinutes > 1440L) {
                 throw new IllegalArgumentException(
                         "Break template must fit inside one <=24h shift wall-clock span"
+                );
+            }
+        }
+    }
+
+    public record SourceLocalBreakWindow(
+            int position,
+            LocalDateTime sourceStart,
+            LocalDateTime sourceEnd
+    ) {
+        public SourceLocalBreakWindow {
+            if (position < 0) {
+                throw new IllegalArgumentException(
+                        "Break position cannot be negative"
+                );
+            }
+            if (sourceStart == null
+                    || sourceEnd == null
+                    || !sourceEnd.isAfter(sourceStart)) {
+                throw new IllegalArgumentException(
+                        "Positive source-local break identity is required"
                 );
             }
         }

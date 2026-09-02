@@ -2,6 +2,7 @@ package ru.daniil.shifts.service;
 
 import org.springframework.stereotype.Service;
 import ru.daniil.shifts.model.ActualWorkInterval;
+import ru.daniil.shifts.model.WorkBreakAuthority;
 
 import java.time.Duration;
 import java.time.Instant;
@@ -17,14 +18,20 @@ import java.util.Map;
 /**
  * Splits one explicit factual-work interval by source calendar day.
  *
- * New intervals use their persisted historical absolute identity.
- * Legacy intervals without identity retain the old local-wall-clock semantics
- * until Temporal Work Context reconciliation reconstructs them.
- *
- * Unpaid break minutes are consumed from the earliest actual minutes.
+ * New intervals use their persisted historical absolute identity. Legacy
+ * scalar break rows retain the historical earliest-consumption rule exactly.
+ * EXPLICIT_WINDOWS rows subtract their frozen absolute break snapshots first,
+ * then split only the remaining paid intervals by source calendar day.
  */
 @Service
 public class ActualWorkDayAllocationService {
+    private final WorkBreakWindowAuthorityService breakAuthority;
+
+    public ActualWorkDayAllocationService(
+            WorkBreakWindowAuthorityService breakAuthority
+    ) {
+        this.breakAuthority = breakAuthority;
+    }
 
     public List<NetWorkSegment> netSegments(ActualWorkInterval interval) {
         if (interval == null
@@ -35,12 +42,67 @@ public class ActualWorkDayAllocationService {
             return List.of();
         }
 
+        if (interval.getBreakAuthority() == WorkBreakAuthority.EXPLICIT_WINDOWS) {
+            return interval.hasAbsoluteIdentity()
+                    ? exactExplicitSegments(interval)
+                    : List.of();
+        }
+
         return interval.hasAbsoluteIdentity()
-                ? exactSegments(interval)
+                ? exactLegacySegments(interval)
                 : legacySegments(interval);
     }
 
-    private List<NetWorkSegment> exactSegments(ActualWorkInterval interval) {
+    private List<NetWorkSegment> exactExplicitSegments(
+            ActualWorkInterval interval
+    ) {
+        ZoneId zone;
+        try {
+            zone = ZoneId.of(interval.getSourceTimezone());
+        } catch (Exception ex) {
+            return List.of();
+        }
+
+        Instant start = interval.getStartInstant();
+        Instant end = interval.getEndInstant();
+        if (start == null || end == null || !end.isAfter(start)) {
+            return List.of();
+        }
+
+        List<WorkBreakWindowAuthorityService.AbsoluteBreakWindow> breaks =
+                interval.getBreakWindows().stream()
+                        .map(window ->
+                                new WorkBreakWindowAuthorityService.AbsoluteBreakWindow(
+                                        window.getPosition(),
+                                        window.getStartInstant(),
+                                        window.getEndInstant()
+                                )
+                        )
+                        .toList();
+
+        List<WorkBreakWindowAuthorityService.PaidWorkInterval> paid =
+                breakAuthority.subtractAbsolute(
+                        start,
+                        end,
+                        breaks
+                );
+
+        List<NetWorkSegment> result = new ArrayList<>();
+        for (WorkBreakWindowAuthorityService.PaidWorkInterval slice : paid) {
+            appendExactCalendarSegments(
+                    result,
+                    slice.startInstant(),
+                    slice.endInstant(),
+                    zone
+            );
+        }
+        return List.copyOf(result);
+    }
+
+    /** Exact historical identity + legacy scalar earliest-break semantics. */
+    private List<NetWorkSegment> exactLegacySegments(
+            ActualWorkInterval interval
+    ) {
         ZoneId zone;
         try {
             zone = ZoneId.of(interval.getSourceTimezone());
@@ -100,6 +162,36 @@ public class ActualWorkDayAllocationService {
         return List.copyOf(result);
     }
 
+    private void appendExactCalendarSegments(
+            List<NetWorkSegment> result,
+            Instant start,
+            Instant end,
+            ZoneId zone
+    ) {
+        Instant cursor = start;
+        while (cursor.isBefore(end)) {
+            ZonedDateTime localCursor = cursor.atZone(zone);
+            Instant nextMidnight = localCursor
+                    .toLocalDate()
+                    .plusDays(1)
+                    .atStartOfDay(zone)
+                    .toInstant();
+            Instant segmentEnd = nextMidnight.isBefore(end)
+                    ? nextMidnight
+                    : end;
+
+            result.add(new NetWorkSegment(
+                    cursor.atZone(zone).toLocalDateTime(),
+                    segmentEnd.atZone(zone).toLocalDateTime(),
+                    cursor,
+                    segmentEnd,
+                    zone.getId()
+            ));
+            cursor = segmentEnd;
+        }
+    }
+
+    /** Legacy rows without absolute identity keep their old wall-clock path. */
     private List<NetWorkSegment> legacySegments(ActualWorkInterval interval) {
         List<NetWorkSegment> result = new ArrayList<>();
 
@@ -109,7 +201,9 @@ public class ActualWorkDayAllocationService {
         LocalDateTime end =
                 interval.getEndDate().atTime(interval.getEndTime());
 
-        if (!end.isAfter(start)) return List.of();
+        if (!end.isAfter(start)) {
+            return List.of();
+        }
 
         int breakLeft = Math.max(0, interval.getBreakMinutes());
         LocalDateTime cursor = start;

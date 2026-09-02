@@ -2197,6 +2197,23 @@ components:
         month: { type: string, pattern: '^\d{4}-(0[1-9]|1[0-2])$' }
         signedMinutes: { type: integer, minimum: -600000, maximum: 600000 }
         reason: { type: string, maxLength: 500 }
+    ActualWorkBreakWindowInput:
+      type: object
+      required: [position, sourceStartLocal, sourceEndLocal]
+      properties:
+        position: { type: integer, minimum: 0 }
+        sourceStartLocal: { type: string, format: date-time, description: Source-local boundary without an offset; resolved under the Actual Work historical timezone. }
+        sourceEndLocal: { type: string, format: date-time, description: Source-local boundary without an offset; must be after sourceStartLocal. }
+    ActualWorkBreakWindow:
+      type: object
+      required: [position, sourceStartLocal, sourceEndLocal, startInstant, endInstant, sourceTimezone]
+      properties:
+        position: { type: integer, minimum: 0 }
+        sourceStartLocal: { type: string, format: date-time }
+        sourceEndLocal: { type: string, format: date-time }
+        startInstant: { type: string, format: date-time }
+        endInstant: { type: string, format: date-time }
+        sourceTimezone: { type: string }
     ActualWorkIntervalInput:
       type: object
       required: [workDate, startTime, endTime]
@@ -2205,23 +2222,33 @@ components:
         endDate: { type: string, format: date, nullable: true, description: Explicit completion date; omitted keeps same-day behavior or infers next day when end time is not after start time. }
         startTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$' }
         endTime: { type: string, pattern: '^([01]\d|2[0-3]):[0-5]\d$' }
-        breakMinutes: { type: integer, minimum: 0, maximum: 1440, nullable: true, description: Unpaid break; omitted on a new first interval to inherit the dated shift break. }
+        breakMinutes: { type: integer, minimum: 0, maximum: 1440, nullable: true, description: Legacy scalar unpaid break. If breakWindows is supplied, this value is optional compatibility data and must equal the exact derived total. }
+        breakWindows:
+          type: array
+          nullable: true
+          description: Presence selects EXPLICIT_WINDOWS authority. Missing preserves legacy scalar compatibility; on an existing explicit fact, missing preserves its frozen windows for shape-neutral edits.
+          items: { $ref: '#/components/schemas/ActualWorkBreakWindowInput' }
         note: { type: string, maxLength: 500, nullable: true }
     ActualWorkInterval:
-      allOf:
-        - $ref: '#/components/schemas/ActualWorkIntervalInput'
-        - type: object
-          required: [id, workedMinutes, breakMinutes, identityReconstructed]
-          properties:
-            id: { type: integer, format: int64 }
-            workedMinutes: { type: integer, minimum: 1, maximum: 2880 }
-            breakMinutes: { type: integer, minimum: 0, maximum: 1440 }
-            createdAt: { type: string, format: date-time, nullable: true }
-            updatedAt: { type: string, format: date-time, nullable: true }
-            sourceTimezone: { type: string, nullable: true }
-            startInstant: { type: string, format: date-time, nullable: true }
-            endInstant: { type: string, format: date-time, nullable: true }
-            identityReconstructed: { type: boolean }
+      type: object
+      required: [id, workDate, endDate, startTime, endTime, workedMinutes, breakMinutes, breakAuthority, breakWindows, identityReconstructed]
+      properties:
+        id: { type: integer, format: int64 }
+        workDate: { type: string, format: date }
+        endDate: { type: string, format: date }
+        startTime: { type: string }
+        endTime: { type: string }
+        workedMinutes: { type: integer, minimum: 1, maximum: 2880 }
+        breakMinutes: { type: integer, minimum: 0, maximum: 1440 }
+        breakAuthority: { type: string, enum: [LEGACY_EARLY_TOTAL, EXPLICIT_WINDOWS] }
+        breakWindows: { type: array, items: { $ref: '#/components/schemas/ActualWorkBreakWindow' } }
+        note: { type: string, maxLength: 500, nullable: true }
+        createdAt: { type: string, format: date-time, nullable: true }
+        updatedAt: { type: string, format: date-time, nullable: true }
+        sourceTimezone: { type: string, nullable: true }
+        startInstant: { type: string, format: date-time, nullable: true }
+        endInstant: { type: string, format: date-time, nullable: true }
+        identityReconstructed: { type: boolean }
     ProductionCalendarDayInput:
       type: object
       required: [dayKind, scheduleEffect, payrollEffect]

@@ -28,6 +28,8 @@ class ActualWorkHistoricalIdentityFrontendContractTest {
         assertTrue(openapi.contains(
                 "identityReconstructed: { type: boolean }"
         ));
+        assertTrue(openapi.contains("ActualWorkBreakWindowInput:"));
+        assertTrue(openapi.contains("breakAuthority: { type: string, enum: [LEGACY_EARLY_TOTAL, EXPLICIT_WINDOWS] }"));
 
         String generated =
                 Files.readString(GENERATED, StandardCharsets.UTF_8);
@@ -61,6 +63,26 @@ class ActualWorkHistoricalIdentityFrontendContractTest {
         assertTrue(
                 actualWork.contains("identityReconstructed: boolean;"),
                 actualWork
+        );
+        assertTrue(
+                actualWork.contains("breakAuthority: \"LEGACY_EARLY_TOTAL\" | \"EXPLICIT_WINDOWS\";"),
+                actualWork
+        );
+        assertTrue(
+                actualWork.contains("breakWindows: Array<DutyLogApiSchemas.ActualWorkBreakWindow>;"),
+                actualWork
+        );
+
+        int inputEnd = generated.indexOf(
+                "export type AdminDatabaseStatus =",
+                end
+        );
+        assertTrue(inputEnd > end, "ActualWorkIntervalInput generated block incomplete");
+
+        String actualWorkInput = generated.substring(end, inputEnd);
+        assertTrue(
+                actualWorkInput.contains("breakWindows?: Array<DutyLogApiSchemas.ActualWorkBreakWindowInput> | null;"),
+                actualWorkInput
         );
     }
 }

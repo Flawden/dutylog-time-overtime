@@ -5410,16 +5410,28 @@ contains src/main/java/ru/daniil/shifts/service/PlannedBreakWindowSnapshotServic
 contains src/main/java/ru/daniil/shifts/service/PlannedWorkDayAllocationService.java "breakAuthority.subtractAbsolute("
 contains src/main/java/ru/daniil/shifts/model/DayEntry.java "shift_break_authority"
 contains src/test/java/ru/daniil/shifts/service/PlannedExplicitBreakAllocationTest.java "tailAndNextShiftHeadCanContributeElevenPaidHoursToSameDate"
-contains src/test/java/ru/daniil/shifts/web/PlannedBreakWindowWiringContractTest.java "actualWorkAllocatorRemainsLegacyUntilU1C"
-if [[ "$TEST_METHODS" == "2333" ]]; then
-  ok "test method baseline: 2333"
+
+# 8A4F3U1C actual explicit break snapshot + allocation wiring.
+contains src/main/java/ru/daniil/shifts/model/ActualWorkBreakWindow.java '@Table(name = "actual_work_break_windows")'
+contains src/main/java/ru/daniil/shifts/model/ActualWorkInterval.java 'mappedBy = "actualWorkInterval"'
+contains src/main/java/ru/daniil/shifts/service/ActualBreakWindowSnapshotService.java "reconstructHistoricalIdentity("
+contains src/main/java/ru/daniil/shifts/service/ActualWorkService.java "req.breakWindows()"
+contains src/main/java/ru/daniil/shifts/service/ActualWorkDayAllocationService.java "breakAuthority.subtractAbsolute("
+contains src/main/java/ru/daniil/shifts/service/WorkTimezoneChangeService.java "breakSnapshots.reconstructHistoricalIdentity("
+contains src/main/resources/static/openapi/dutylog-v1.yaml "ActualWorkBreakWindowInput:"
+contains src/test/java/ru/daniil/shifts/service/ActualWorkDayAllocationServiceTest.java "consecutiveExplicitNightsContributeElevenPaidHoursToSharedDate"
+contains src/test/java/ru/daniil/shifts/service/ActualExplicitBreakTimezoneCorrectionTest.java "historicalCorrectionReResolvesBreakInstantsFromFrozenSourceLocalEvidence"
+contains src/test/java/ru/daniil/shifts/web/PlannedBreakWindowWiringContractTest.java "actualWorkAllocatorAndWritePathUseFrozenExplicitWindowsInU1C"
+contains src/test/java/ru/daniil/shifts/web/ActualWorkHistoricalIdentityFrontendContractTest.java "ActualWorkBreakWindowInput"
+if [[ "$TEST_METHODS" == "2346" ]]; then
+  ok "test method baseline: 2346"
 else
-  fail "expected 2333 @Test methods, found $TEST_METHODS"
+  fail "expected 2346 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "344" ]]; then
-  ok "test class baseline: 344"
+if [[ "$TEST_CLASSES" == "346" ]]; then
+  ok "test class baseline: 346"
 else
-  fail "expected 344 test classes, found $TEST_CLASSES"
+  fail "expected 346 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
@@ -5469,8 +5481,8 @@ contains src/main/java/ru/daniil/shifts/service/PayrollService.java "ordinaryPre
 contains frontend/src/features/payroll/components/PayrollWorkspace.vue 'id="payrollOrdinaryPremiumBreakdown"'
 contains CHANGES.md 'OpenAPI is **138 operations / 144 schemas** with SHA-256 `1c76051d23596643e6cd2c92a248bfa7126c0e7a33c62587cea3c62a11d38352`.'
 contains docs/TEMPORAL_WORK_CONTEXT_NATIVE_PAY_PRICING_V27.46.1.md 'OpenAPI: 138 operations / 144 schemas.'
-contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 153 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "5877cc6310b9b4c4e3a28ed84866f9d84dbb2384aa46c4a1fd32c285f495a7c1"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 155 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "42a593873774c2dc436c586ca319d9e147e96d47ce1acd123e0def6230dd4b47"'
 contains docs/API.md "# DutyLog API v${VERSION}"
 contains docs/ROADMAP.md "Current release: **v${VERSION} — ${CURRENT_RELEASE_TITLE}**"
 contains docs/REGRESSION_TEST_BASELINE.md "Current extension: v${VERSION}"
@@ -5595,8 +5607,8 @@ contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Frozen comp
 contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Frozen compensation component earnings "
 contains src/main/java/ru/daniil/shifts/dto/Dtos.java "PayrollCompensationComponentLineDto"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "PayrollCompensationComponentLine:"
-contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 153 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "5877cc6310b9b4c4e3a28ed84866f9d84dbb2384aa46c4a1fd32c285f495a7c1"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 155 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "42a593873774c2dc436c586ca319d9e147e96d47ce1acd123e0def6230dd4b47"'
 contains src/test/java/ru/daniil/shifts/service/PayrollCompensationComponentPayrollIntegrationTest.java "Премия за выживание после ночной смены"
 
 # v27.47.0 7A3A Immutable Generic Compensation Component Snapshot Foundation
@@ -5622,8 +5634,8 @@ contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: createP
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listPayrollCompensationComponentHistory"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: listEffectivePayrollCompensationComponents"
 contains src/main/resources/static/openapi/dutylog-v1.yaml "operationId: upsertPayrollCompensationComponentVersion"
-contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 153 schemas"
-contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "5877cc6310b9b4c4e3a28ed84866f9d84dbb2384aa46c4a1fd32c285f495a7c1"'
+contains frontend/src/generated/dutylog-api.ts "Contract: 146 operations, 155 schemas"
+contains frontend/src/generated/dutylog-api.ts 'DUTYLOG_OPENAPI_SOURCE_SHA256 = "42a593873774c2dc436c586ca319d9e147e96d47ce1acd123e0def6230dd4b47"'
 contains frontend/src/generated/dutylog-api.ts '"createPayrollCompensationComponent": { method: "POST", path: "/api/v1/payroll/compensation-components" }'
 contains frontend/src/generated/dutylog-api.ts '"listPayrollCompensationComponentHistory": { method: "GET", path: "/api/v1/payroll/compensation-components" }'
 contains frontend/src/generated/dutylog-api.ts '"listEffectivePayrollCompensationComponents": { method: "GET", path: "/api/v1/payroll/compensation-components/effective/{month}" }'
