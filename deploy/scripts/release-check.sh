@@ -5468,15 +5468,32 @@ contains src/test/java/ru/daniil/shifts/service/EmployeeRestDayAuthorityServiceT
 contains src/test/java/ru/daniil/shifts/service/EmployeeRestDayAuthorityServiceTest.java "transferredWorkdayOverridesCanonicalOffRoster"
 contains src/test/java/ru/daniil/shifts/service/EmployeeRestDayAuthorityServiceTest.java "localTransferPrecedesBaseAndPlainHolidayDoesNotBecomeRestDayAuthority"
 not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "EmployeeRestDayAuthorityService"
-if [[ "$TEST_METHODS" == "2366" ]]; then
-  ok "test method baseline: 2366"
+# Payroll Trust Gate P1B2A — effective-dated work jurisdiction authority.
+contains src/main/java/ru/daniil/shifts/model/WorkJurisdictionTerm.java "There is intentionally no implicit baseline"
+contains src/main/java/ru/daniil/shifts/service/WorkJurisdictionHistoryService.java "Timezone, language, locale, production-calendar rows and employment dates"
+contains src/main/java/ru/daniil/shifts/service/WorkJurisdictionHistoryService.java "WORK_JURISDICTION_FACT_MISSING"
+contains src/main/java/ru/daniil/shifts/service/WorkJurisdictionHistoryService.java "WORK_JURISDICTION_UNSUPPORTED"
+contains src/main/java/ru/daniil/shifts/service/WorkJurisdictionHistoryService.java "WORK_JURISDICTION_REGION_INVALID"
+contains src/main/resources/db/migration/postgresql/V79__work_jurisdiction_authority.sql "Existing users are deliberately NOT backfilled"
+contains src/main/resources/db/migration/postgresql/V79__work_jurisdiction_authority.sql "CREATE TABLE work_jurisdiction_terms"
+not_contains src/main/resources/db/migration/postgresql/V79__work_jurisdiction_authority.sql "INSERT INTO work_jurisdiction_terms"
+contains src/test/java/ru/daniil/shifts/service/WorkJurisdictionHistoryServiceTest.java "missingTermFailsClosedWithoutTimezoneOrLanguageInference"
+contains src/test/java/ru/daniil/shifts/service/WorkJurisdictionHistoryServiceTest.java "unsupportedPersistedJurisdictionFailsClosed"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "WorkJurisdictionHistoryService"
+not_contains src/main/java/ru/daniil/shifts/service/AnnualPaidVacationHolidayPolicy.java "WorkJurisdictionHistoryService"
+contains src/test/java/ru/daniil/shifts/service/WorkJurisdictionCoverageTest.java "historyReturnsFactsWithStableIds"
+contains src/test/java/ru/daniil/shifts/service/WorkJurisdictionCoverageTest.java "resultRecordInvariantsFailClosed"
+contains src/test/java/ru/daniil/shifts/model/WorkJurisdictionTermLifecycleTest.java "lifecycleRejectsMissingOwner"
+contains src/test/java/ru/daniil/shifts/model/WorkJurisdictionTermLifecycleTest.java "lifecycleRejectsBlankRegion"
+if [[ "$TEST_METHODS" == "2392" ]]; then
+  ok "test method baseline: 2392"
 else
-  fail "expected 2366 @Test methods, found $TEST_METHODS"
+  fail "expected 2392 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "348" ]]; then
-  ok "test class baseline: 348"
+if [[ "$TEST_CLASSES" == "351" ]]; then
+  ok "test class baseline: 351"
 else
-  fail "expected 348 test classes, found $TEST_CLASSES"
+  fail "expected 351 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
