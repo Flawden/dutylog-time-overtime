@@ -14,6 +14,7 @@ import java.time.YearMonth;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * Evidence-driven native qualified-quantity projection.
@@ -35,9 +36,19 @@ import java.util.Objects;
  *
  * This service resolves quantity only. It does not calculate money, choose
  * eligible earnings bases, change Time Bank semantics or persist snapshots.
+ *
+ * Production NIGHT money and immutable per-line qualified-quantity provenance
+ * are owned by OrdinaryWorkPremium pricing plus
+ * PayrollOrdinaryPremiumSemanticProvenance. This aggregate resolver must not be
+ * injected into PayrollService as a second classifier or pricing authority.
  */
 @Service
 public class PayrollNativeQualifiedQuantityService {
+    private static final Set<PayrollEarningKind> SUPPORTED_KINDS =
+            Set.of(
+                    PayrollEarningKind.NIGHT_PREMIUM
+            );
+
 
     private final OrdinaryWorkPremiumSourceService ordinarySource;
 
@@ -48,6 +59,19 @@ public class PayrollNativeQualifiedQuantityService {
                 Objects.requireNonNull(
                         ordinarySource,
                         "Ordinary work premium source is required"
+                );
+    }
+
+    public Set<PayrollEarningKind> supportedKinds() {
+        return SUPPORTED_KINDS;
+    }
+
+    public boolean supports(
+            PayrollEarningKind earningKind
+    ) {
+        return earningKind != null
+                && SUPPORTED_KINDS.contains(
+                        earningKind
                 );
     }
 
@@ -72,8 +96,9 @@ public class PayrollNativeQualifiedQuantityService {
                 "Payroll qualified quantity requires earning kind"
         );
 
-        if (earningKind
-                != PayrollEarningKind.NIGHT_PREMIUM) {
+        if (!supports(
+                earningKind
+        )) {
             throw new IllegalArgumentException(
                     "Native qualified quantity is not proven for "
                             + earningKind

@@ -15,6 +15,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,6 +70,22 @@ class PayrollNativeQualifiedQuantityServiceTest {
                         List.of()
                 )
         );
+    }
+
+    @Test
+    void supportRegistryIsExactlyNightPremium() {
+        assertEquals(
+                Set.of(PayrollEarningKind.NIGHT_PREMIUM),
+                service.supportedKinds()
+        );
+    }
+
+    @Test
+    void supportProbeFailsClosedForNullAndUnprovenKinds() {
+        assertTrue(service.supports(PayrollEarningKind.NIGHT_PREMIUM));
+        assertFalse(service.supports(PayrollEarningKind.HOLIDAY_PAY));
+        assertFalse(service.supports(PayrollEarningKind.HARMFUL_CONDITIONS));
+        assertFalse(service.supports(null));
     }
 
     @Test

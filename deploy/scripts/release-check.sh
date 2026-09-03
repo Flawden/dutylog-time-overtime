@@ -5447,10 +5447,21 @@ contains frontend/src/features/calendar-timeline/components/CalendarPage.vue "п
 not_contains frontend/src/features/calendar-timeline/components/CalendarPage.vue "subtractAvailabilityIntervals"
 contains src/test/java/ru/daniil/shifts/service/PlannedExplicitBreakAllocationTest.java "calendarPaidSegmentsNeverGuessLegacyScalarBreakPlacement"
 contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontendContractTest.java "calendarTimelineUsesAuthoritativeSegmentsOneLaneAndLegacyFallbackWithoutBreakMath"
-if [[ "$TEST_METHODS" == "2355" ]]; then
-  ok "test method baseline: 2355"
+# Payroll Trust Gate P1A — one native qualified-time authority boundary.
+contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "SUPPORTED_KINDS"
+contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "PayrollEarningKind.NIGHT_PREMIUM"
+contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "This aggregate resolver must not be"
+contains src/main/java/ru/daniil/shifts/service/PayrollOrdinaryPremiumSemanticProvenance.java "PayrollQualifiedQuantity.minutes("
+contains src/main/java/ru/daniil/shifts/model/PayrollSnapshotEarningLine.java 'name = "qualified_quantity_value"'
+contains src/main/java/ru/daniil/shifts/model/PayrollSnapshotEarningLine.java 'name = "qualified_quantity_unit"'
+contains src/main/java/ru/daniil/shifts/service/PayrollService.java "PayrollOrdinaryPremiumSemanticProvenance"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "PayrollNativeQualifiedQuantityService"
+contains src/test/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityServiceTest.java "supportRegistryIsExactlyNightPremium"
+contains src/test/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityServiceTest.java "supportProbeFailsClosedForNullAndUnprovenKinds"
+if [[ "$TEST_METHODS" == "2357" ]]; then
+  ok "test method baseline: 2357"
 else
-  fail "expected 2355 @Test methods, found $TEST_METHODS"
+  fail "expected 2357 @Test methods, found $TEST_METHODS"
 fi
 if [[ "$TEST_CLASSES" == "347" ]]; then
   ok "test class baseline: 347"
