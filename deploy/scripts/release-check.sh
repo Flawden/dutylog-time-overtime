@@ -5458,15 +5458,25 @@ contains src/main/java/ru/daniil/shifts/service/PayrollService.java "PayrollOrdi
 not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "PayrollNativeQualifiedQuantityService"
 contains src/test/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityServiceTest.java "supportRegistryIsExactlyNightPremium"
 contains src/test/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityServiceTest.java "supportProbeFailsClosedForNullAndUnprovenKinds"
-if [[ "$TEST_METHODS" == "2357" ]]; then
-  ok "test method baseline: 2357"
+# Payroll Trust Gate P1B1 — employee-specific rest-day authority.
+contains src/main/java/ru/daniil/shifts/service/EmployeeRestDayAuthorityService.java "Absence of a materialized dated roster fact is UNKNOWN"
+contains src/main/java/ru/daniil/shifts/service/EmployeeRestDayAuthorityService.java "TRANSFERRED_DAY_OFF"
+contains src/main/java/ru/daniil/shifts/service/EmployeeRestDayAuthorityService.java "TRANSFERRED_WORKDAY"
+contains src/main/java/ru/daniil/shifts/service/EmployeeRestDayAuthorityService.java "EMPLOYEE_REST_DAY_ROSTER_MISSING"
+contains src/main/java/ru/daniil/shifts/service/EmployeeRestDayAuthorityService.java "EMPLOYEE_REST_DAY_TRANSFER_RULE_INVALID"
+contains src/test/java/ru/daniil/shifts/service/EmployeeRestDayAuthorityServiceTest.java "missingDatedRosterFailsClosedInsteadOfGuessingWeekend"
+contains src/test/java/ru/daniil/shifts/service/EmployeeRestDayAuthorityServiceTest.java "transferredWorkdayOverridesCanonicalOffRoster"
+contains src/test/java/ru/daniil/shifts/service/EmployeeRestDayAuthorityServiceTest.java "localTransferPrecedesBaseAndPlainHolidayDoesNotBecomeRestDayAuthority"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "EmployeeRestDayAuthorityService"
+if [[ "$TEST_METHODS" == "2366" ]]; then
+  ok "test method baseline: 2366"
 else
-  fail "expected 2357 @Test methods, found $TEST_METHODS"
+  fail "expected 2366 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "347" ]]; then
-  ok "test class baseline: 347"
+if [[ "$TEST_CLASSES" == "348" ]]; then
+  ok "test class baseline: 348"
 else
-  fail "expected 347 test classes, found $TEST_CLASSES"
+  fail "expected 348 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
