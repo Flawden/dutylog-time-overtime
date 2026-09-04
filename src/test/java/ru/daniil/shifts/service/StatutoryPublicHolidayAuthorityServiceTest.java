@@ -10,6 +10,11 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 class StatutoryPublicHolidayAuthorityServiceTest {
+    private static final String DATASET_SHA =
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
+    private static final String PACK_SHA =
+            "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
+
     WorkJurisdictionHistoryService jurisdiction;
     RegionalStatutoryHolidayDatasetService regional;
     StatutoryPublicHolidayAuthorityService service;
@@ -138,6 +143,32 @@ class StatutoryPublicHolidayAuthorityServiceTest {
                 () -> new StatutoryPublicHolidayAuthorityService.Resolution(date,StatutoryPublicHolidayAuthorityService.Status.UNRESOLVED,null,null));
     }
 
+    @Test
+    void regionalPositiveProvenanceCarriesExactSourcePackIdentity() {
+        LocalDate date = LocalDate.of(2026,6,24);
+        var resolution = StatutoryPublicHolidayAuthorityService.Resolution.regionalHoliday(
+                date,
+                readyJurisdiction(date,"RU","RU-KYA").fact(),
+                regionalPositive(date));
+        assertEquals(RegionalStatutoryHolidayDatasetService.SOURCE_PACK_SCHEMA_V1,
+                resolution.provenance().regionalSourcePackSchema());
+        assertEquals(PACK_SHA,resolution.provenance().regionalSourcePackSha256());
+        assertEquals("EXHAUSTIVE REGIONAL LEGAL REVIEW 2026",
+                resolution.provenance().regionalCompletenessEvidence());
+    }
+
+    @Test
+    void regionalNegativeProvenanceCarriesSameExactSourcePackIdentity() {
+        LocalDate date = LocalDate.of(2026,7,15);
+        var resolution = StatutoryPublicHolidayAuthorityService.Resolution.regionalNotHoliday(
+                date,
+                readyJurisdiction(date,"RU","RU-KYA").fact(),
+                regionalNegative(date));
+        assertTrue(resolution.provenNotPublicHoliday());
+        assertEquals(PACK_SHA,resolution.provenance().regionalSourcePackSha256());
+        assertNull(resolution.provenance().regionalDateFactId());
+    }
+
     private RegionalStatutoryHolidayDatasetService.Decision regionalPositive(LocalDate date) {
         return new RegionalStatutoryHolidayDatasetService.Decision(
                 date,
@@ -154,7 +185,10 @@ class StatutoryPublicHolidayAuthorityServiceTest {
         return new RegionalStatutoryHolidayDatasetService.DatasetProvenance(
                 501L,"RU","RU-KYA",LocalDate.of(2026,1,1),LocalDate.of(2026,12,31),
                 "RU_KYA_2026_V1","REGIONAL LEGAL BASIS","REVISION-2026-01","REGIONAL DATASET SOURCE",complete,
-                "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+                DATASET_SHA,
+                RegionalStatutoryHolidayDatasetService.SOURCE_PACK_SCHEMA_V1,
+                PACK_SHA,
+                "EXHAUSTIVE REGIONAL LEGAL REVIEW 2026");
     }
     private WorkJurisdictionHistoryService.Resolution readyJurisdiction(LocalDate date,String jurisdictionCode,String regionCode) {
         return WorkJurisdictionHistoryService.Resolution.ready(date,

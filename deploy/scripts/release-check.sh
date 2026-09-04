@@ -5485,37 +5485,42 @@ contains src/test/java/ru/daniil/shifts/service/WorkJurisdictionCoverageTest.jav
 contains src/test/java/ru/daniil/shifts/service/WorkJurisdictionCoverageTest.java "resultRecordInvariantsFailClosed"
 contains src/test/java/ru/daniil/shifts/model/WorkJurisdictionTermLifecycleTest.java "lifecycleRejectsMissingOwner"
 contains src/test/java/ru/daniil/shifts/model/WorkJurisdictionTermLifecycleTest.java "lifecycleRejectsBlankRegion"
-# Payroll Trust Gate P1B2B/P1B2C1 — federal + immutable regional statutory holiday authority.
+# Payroll Trust Gate P1B2B/P1B2C1/P1B2C2 — federal + immutable regional source-pack authority.
 contains docs/payroll-trust/P1B2B_RU_STATUTORY_HOLIDAY_SOURCE_LOCK.md "RU_TK_RF_ARTICLE_112_CALENDAR_2026_V1"
 contains src/main/java/ru/daniil/shifts/service/RuFederalStatutoryHolidayPolicy.java "RU_TK_RF_ARTICLE_112_CALENDAR_2026_V1"
 contains docs/payroll-trust/P1B2C1_REGIONAL_STATUTORY_HOLIDAY_DATASET_AUTHORITY.md "Architecture decision"
-contains docs/payroll-trust/P1B2C1_REGIONAL_STATUTORY_HOLIDAY_DATASET_AUTHORITY.md "LOCAL_OVERRIDE"
-contains src/main/java/ru/daniil/shifts/model/RegionalStatutoryHolidayDataset.java "@Immutable"
-contains src/main/java/ru/daniil/shifts/model/RegionalStatutoryHolidayDateFact.java "@Immutable"
-contains src/main/java/ru/daniil/shifts/service/RegionalStatutoryHolidayDatasetService.java "DATASET_AMBIGUOUS"
-contains src/main/java/ru/daniil/shifts/service/RegionalStatutoryHolidayDatasetService.java "DATASET_INCOMPLETE"
-contains src/main/java/ru/daniil/shifts/service/RegionalStatutoryHolidayDatasetService.java "DATASET_INTEGRITY_FAILURE"
-contains src/main/java/ru/daniil/shifts/service/RegionalStatutoryHolidayDatasetService.java "installTrusted"
-contains src/main/java/ru/daniil/shifts/service/StatutoryPublicHolidayAuthorityService.java "REGIONAL_DATASET"
-contains src/main/java/ru/daniil/shifts/service/StatutoryPublicHolidayAuthorityService.java "provenNotPublicHoliday"
+contains docs/payroll-trust/P1B2C2_REGIONAL_STATUTORY_HOLIDAY_SOURCE_PACK_AUTHORITY.md "DUTYLOG_REGIONAL_STATUTORY_HOLIDAY_SOURCE_PACK_V1"
+contains docs/payroll-trust/P1B2C2_REGIONAL_STATUTORY_HOLIDAY_SOURCE_PACK_AUTHORITY.md "Two fingerprints"
+contains src/main/java/ru/daniil/shifts/model/RegionalStatutoryHolidayDataset.java "source_pack_sha256"
+contains src/main/java/ru/daniil/shifts/model/RegionalStatutoryHolidayDataset.java "completeness_evidence"
+contains src/main/java/ru/daniil/shifts/service/RegionalStatutoryHolidayDatasetService.java "DATASET_SOURCE_PACK_PROVENANCE_MISSING"
+contains src/main/java/ru/daniil/shifts/service/RegionalStatutoryHolidayDatasetService.java "DATASET_SOURCE_PACK_CONFLICT"
+contains src/main/java/ru/daniil/shifts/service/RegionalStatutoryHolidaySourcePackService.java "STRICT_DUPLICATE_DETECTION"
+contains src/main/java/ru/daniil/shifts/service/RegionalStatutoryHolidaySourcePackService.java "SOURCE_PACK_SHA_MISMATCH"
+contains src/main/java/ru/daniil/shifts/service/RegionalStatutoryHolidaySourcePackService.java "SOURCE_PACK_UNKNOWN_FIELD"
+contains src/main/java/ru/daniil/shifts/service/RegionalStatutoryHolidaySourcePackService.java "LEGAL_IDENTITY"
+contains src/main/java/ru/daniil/shifts/service/StatutoryPublicHolidayAuthorityService.java "regionalSourcePackSha256"
 contains src/main/resources/db/migration/postgresql/V80__regional_statutory_holiday_dataset_authority.sql "Existing users and regions are deliberately NOT backfilled"
-contains src/main/resources/db/migration/postgresql/V80__regional_statutory_holiday_dataset_authority.sql "LOCAL_OVERRIDE and ProductionCalendarDay are deliberately NOT legal authority"
-contains src/test/java/ru/daniil/shifts/service/RegionalStatutoryHolidayDatasetServiceTest.java "completeDatasetProvesNegativeDate"
-contains src/test/java/ru/daniil/shifts/service/RegionalStatutoryHolidayDatasetServiceTest.java "overlappingDatasetsFailClosedAsAmbiguous"
-contains src/test/java/ru/daniil/shifts/service/StatutoryPublicHolidayAuthorityServiceTest.java "transferredRestDayDoesNotMasqueradeAsStatutoryHoliday"
+contains src/main/resources/db/migration/postgresql/V81__regional_statutory_holiday_source_pack_provenance.sql "No existing dataset provenance is invented"
+contains src/main/resources/db/migration/postgresql/V81__regional_statutory_holiday_source_pack_provenance.sql "source_pack_sha256"
+contains src/test/java/ru/daniil/shifts/service/RegionalStatutoryHolidayDatasetServiceTest.java "missingSourcePackProvenanceFailsClosedBeforeDateFacts"
+contains src/test/java/ru/daniil/shifts/service/RegionalStatutoryHolidayDatasetServiceTest.java "sameSemanticDatasetWithDifferentSourcePackFailsClosedConflict"
+contains src/test/java/ru/daniil/shifts/service/RegionalStatutoryHolidaySourcePackServiceTest.java "duplicateJsonKeyIsRejected"
+contains src/test/java/ru/daniil/shifts/service/RegionalStatutoryHolidaySourcePackServiceTest.java "completePackWithZeroRegionalHolidaysIsValidNegativeAuthorityInput"
+contains src/test/java/ru/daniil/shifts/service/StatutoryPublicHolidayAuthorityServiceTest.java "regionalPositiveProvenanceCarriesExactSourcePackIdentity"
 not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "StatutoryPublicHolidayAuthorityService"
 not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "HOLIDAY_PAY,"
 not_contains src/main/java/ru/daniil/shifts/service/AnnualPaidVacationHolidayPolicy.java "StatutoryPublicHolidayAuthorityService"
 not_contains src/main/java/ru/daniil/shifts/service/ProductionCalendarService.java "RegionalStatutoryHolidayDataset"
-if [[ "$TEST_METHODS" == "2429" ]]; then
-  ok "test method baseline: 2429"
+if [[ "$TEST_METHODS" == "2448" ]]; then
+  ok "test method baseline: 2448"
 else
-  fail "expected 2429 @Test methods, found $TEST_METHODS"
+  fail "expected 2448 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "355" ]]; then
-  ok "test class baseline: 355"
+if [[ "$TEST_CLASSES" == "356" ]]; then
+  ok "test class baseline: 356"
 else
-  fail "expected 355 test classes, found $TEST_CLASSES"
+  fail "expected 356 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
