@@ -5485,15 +5485,27 @@ contains src/test/java/ru/daniil/shifts/service/WorkJurisdictionCoverageTest.jav
 contains src/test/java/ru/daniil/shifts/service/WorkJurisdictionCoverageTest.java "resultRecordInvariantsFailClosed"
 contains src/test/java/ru/daniil/shifts/model/WorkJurisdictionTermLifecycleTest.java "lifecycleRejectsMissingOwner"
 contains src/test/java/ru/daniil/shifts/model/WorkJurisdictionTermLifecycleTest.java "lifecycleRejectsBlankRegion"
-if [[ "$TEST_METHODS" == "2392" ]]; then
-  ok "test method baseline: 2392"
+# Payroll Trust Gate P1B2B — source-locked RU federal statutory holiday authority.
+contains docs/payroll-trust/P1B2B_RU_STATUTORY_HOLIDAY_SOURCE_LOCK.md "RU_TK_RF_ARTICLE_112_CALENDAR_2026_V1"
+contains docs/payroll-trust/P1B2B_RU_STATUTORY_HOLIDAY_SOURCE_LOCK.md "Government Resolution of the Russian Federation No. 1466"
+contains src/main/java/ru/daniil/shifts/service/RuFederalStatutoryHolidayPolicy.java "RU_TK_RF_ARTICLE_112_CALENDAR_2026_V1"
+contains src/main/java/ru/daniil/shifts/service/RuFederalStatutoryHolidayPolicy.java "SUPPORTED_TO_EXCLUSIVE"
+contains src/main/java/ru/daniil/shifts/service/StatutoryPublicHolidayAuthorityService.java "REGIONAL_AUTHORITY_MISSING"
+contains src/main/java/ru/daniil/shifts/service/StatutoryPublicHolidayAuthorityService.java "REGIONAL_POLICY_UNIMPLEMENTED"
+contains src/test/java/ru/daniil/shifts/service/RuFederalStatutoryHolidayPolicyTest.java "transferredRestDaysAreNotStatutoryFederalHolidays"
+contains src/test/java/ru/daniil/shifts/service/StatutoryPublicHolidayAuthorityServiceTest.java "ordinaryDateWithRegionFailsClosedUntilRegionalPolicyExists"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "StatutoryPublicHolidayAuthorityService"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "HOLIDAY_PAY,"
+not_contains src/main/java/ru/daniil/shifts/service/AnnualPaidVacationHolidayPolicy.java "StatutoryPublicHolidayAuthorityService"
+if [[ "$TEST_METHODS" == "2406" ]]; then
+  ok "test method baseline: 2406"
 else
-  fail "expected 2392 @Test methods, found $TEST_METHODS"
+  fail "expected 2406 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "351" ]]; then
-  ok "test class baseline: 351"
+if [[ "$TEST_CLASSES" == "353" ]]; then
+  ok "test class baseline: 353"
 else
-  fail "expected 351 test classes, found $TEST_CLASSES"
+  fail "expected 353 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
