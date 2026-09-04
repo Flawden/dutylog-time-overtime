@@ -1,0 +1,15 @@
+{
+  "schema": "DUTYLOG_REGIONAL_STATUTORY_HOLIDAY_SOURCE_PACK_V1",
+  "legalIdentity": "NON_WORKING_PUBLIC_HOLIDAY",
+  "jurisdictionCode": "RU",
+  "regionCode": "RU-KYA",
+  "coverageFrom": "2026-01-01",
+  "coverageTo": "2026-12-31",
+  "legalRegime": "RU_KYA_REGIONAL_STATUTORY_HOLIDAYS_2026_REVIEW_2026_09_04_V1",
+  "legalBasis": "TK_RF_ARTICLE_6;FEDERAL_LAW_125_FZ_ARTICLE_4_PART_7;SUPREME_COURT_RF_20_PV11",
+  "sourceRevision": "CONSULTANTPLUS_REGIONAL_NONWORKING_HOLIDAY_REFERENCE_ACCESSED_2026_09_04",
+  "sourceReference": "https://www.consultant.ru/document/cons_doc_LAW_311098/;https://www.consultant.ru/document/cons_doc_LAW_34683/b5f8286871331a1188b20733154abe4957594b3b/;https://www.consultant.ru/document/cons_doc_LAW_16218/ca78a0f4594e9666e8259f2b87a4df2e59a38cb4/",
+  "complete": true,
+  "completenessEvidence": "ConsultantPlus current regional non-working holiday reference, accessed 2026-09-04, states that it presents non-working (holiday) days established by normative acts of RF subjects; its subject list does not include Krasnoyarsk Krai. No positive RU-KYA regional non-working public-holiday fact is therefore recorded for 2026. Coverage is limited to 2026 and must be re-reviewed for later periods.",
+  "holidays": []
+}
