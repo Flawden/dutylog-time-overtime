@@ -5503,6 +5503,22 @@ not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuanti
 not_contains src/main/java/ru/daniil/shifts/service/AnnualPaidVacationHolidayPolicy.java "StatutoryPublicHolidayAuthorityService"
 not_contains src/main/java/ru/daniil/shifts/service/ProductionCalendarService.java "RegionalStatutoryHolidayDataset"
 
+# Payroll Trust Gate P1B3A — HOLIDAY_PAY paid-REGULAR qualified cause authority.
+contains docs/payroll-trust/P1B3A_HOLIDAY_PAY_QUALIFIED_CAUSE_AUTHORITY.md "PUBLIC_HOLIDAY"
+contains docs/payroll-trust/P1B3A_HOLIDAY_PAY_QUALIFIED_CAUSE_AUTHORITY.md "EMPLOYEE_REST_DAY"
+contains docs/payroll-trust/P1B3A_HOLIDAY_PAY_QUALIFIED_CAUSE_AUTHORITY.md "BOTH"
+contains src/main/java/ru/daniil/shifts/service/HolidayPayQualifiedCauseAuthorityService.java "OrdinaryWorkPremiumSourceService ordinarySource"
+contains src/main/java/ru/daniil/shifts/service/HolidayPayQualifiedCauseAuthorityService.java "StatutoryPublicHolidayAuthorityService statutoryHoliday"
+contains src/main/java/ru/daniil/shifts/service/HolidayPayQualifiedCauseAuthorityService.java "EmployeeRestDayAuthorityService employeeRestDay"
+contains src/main/java/ru/daniil/shifts/service/HolidayPayQualifiedCauseAuthorityService.java "deepIdentityComplete()"
+contains src/main/java/ru/daniil/shifts/service/HolidayPayQualifiedCauseAuthorityService.java "Cause.BOTH"
+not_contains src/main/java/ru/daniil/shifts/service/HolidayPayQualifiedCauseAuthorityService.java "piece.holiday()"
+contains src/test/java/ru/daniil/shifts/service/HolidayPayQualifiedCauseAuthorityServiceTest.java "ordinaryWorkingDayIsExcludedEvenWhenLegacyHolidayDimensionIsTrue"
+contains src/test/java/ru/daniil/shifts/service/HolidayPayQualifiedCauseAuthorityServiceTest.java "statutoryHolidayQualifiesEvenWhenLegacyHolidayDimensionIsFalse"
+contains src/test/java/ru/daniil/shifts/service/HolidayPayQualifiedCauseAuthorityServiceTest.java "bothLegalCausesCountOnePaidRegularPieceExactlyOnce"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "HolidayPayQualifiedCauseAuthorityService"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "HOLIDAY_PAY,"
+
 RU_KYA_PACK_SHA="$(sha256sum src/main/resources/legal/ru-kya/2026/regional-statutory-holidays.json | awk '{print $1}')"
 if [[ "$RU_KYA_PACK_SHA" == "7ca56e78cb7c5342af5b73ad59a0326daf88d34d69e561e1825aaaa2ac3be9c3" ]]; then
   ok "RU-KYA 2026 reviewed source-pack SHA-256"
@@ -5510,15 +5526,15 @@ else
   fail "RU-KYA 2026 source-pack SHA mismatch: $RU_KYA_PACK_SHA"
 fi
 
-if [[ "$TEST_METHODS" == "2456" ]]; then
-  ok "test method baseline: 2456"
+if [[ "$TEST_METHODS" == "2466" ]]; then
+  ok "test method baseline: 2466"
 else
-  fail "expected 2456 @Test methods, found $TEST_METHODS"
+  fail "expected 2466 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "357" ]]; then
-  ok "test class baseline: 357"
+if [[ "$TEST_CLASSES" == "358" ]]; then
+  ok "test class baseline: 358"
 else
-  fail "expected 357 test classes, found $TEST_CLASSES"
+  fail "expected 358 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
