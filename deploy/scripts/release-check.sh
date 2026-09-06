@@ -5486,7 +5486,7 @@ contains src/test/java/ru/daniil/shifts/service/WorkJurisdictionCoverageTest.jav
 contains src/test/java/ru/daniil/shifts/model/WorkJurisdictionTermLifecycleTest.java "lifecycleRejectsMissingOwner"
 contains src/test/java/ru/daniil/shifts/model/WorkJurisdictionTermLifecycleTest.java "lifecycleRejectsBlankRegion"
 # Payroll Trust Gate P1B2B/P1B2C1/P1B2C2/P1B2C3 — first real reviewed RU-KYA regional pack.
-contains docs/payroll-trust/P1B2C3_RU_KYA_2026_REVIEWED_SOURCE_PACK.md "regional positive facts: `0`"
+contains docs/payroll-trust/P1B2C3_RU_KYA_2026_REVIEWED_SOURCE_PACK.md 'regional positive facts: `0`'
 contains docs/payroll-trust/P1B2C3_RU_KYA_2026_REVIEWED_SOURCE_PACK.md "7ca56e78cb7c5342af5b73ad59a0326daf88d34d69e561e1825aaaa2ac3be9c3"
 contains docs/payroll-trust/P1B2C3_RU_KYA_2026_REVIEWED_SOURCE_PACK.md "3965ebb71bacbc610c799d81b96730399b0e0aba11779776fc9e58c608c27071"
 contains src/main/resources/legal/ru-kya/2026/regional-statutory-holidays.json "\"regionCode\": \"RU-KYA\""
@@ -5517,6 +5517,20 @@ contains src/test/java/ru/daniil/shifts/service/HolidayPayQualifiedCauseAuthorit
 contains src/test/java/ru/daniil/shifts/service/HolidayPayQualifiedCauseAuthorityServiceTest.java "statutoryHolidayQualifiesEvenWhenLegacyHolidayDimensionIsFalse"
 contains src/test/java/ru/daniil/shifts/service/HolidayPayQualifiedCauseAuthorityServiceTest.java "bothLegalCausesCountOnePaidRegularPieceExactlyOnce"
 not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "HolidayPayQualifiedCauseAuthorityService"
+
+# Payroll Trust Gate P1B3B1 — source-locked TK RF Article 153 statutory economic floor.
+contains docs/payroll-trust/P1B3B1_ARTICLE153_STATUTORY_FLOOR_POLICY.md "statutory floor only"
+contains docs/payroll-trust/P1B3B1_ARTICLE153_STATUTORY_FLOOR_POLICY.md "another Article 153 rest day"
+contains src/main/java/ru/daniil/shifts/service/Article153EconomicLegalPolicy.java "RU_TK_RF_ARTICLE_153_CALENDAR_2026_V1"
+contains src/main/java/ru/daniil/shifts/service/Article153EconomicLegalPolicy.java "FEDERAL_LAW_339_FZ_2024_09_30_EFFECTIVE_2025_03_01"
+contains src/main/java/ru/daniil/shifts/service/Article153EconomicLegalPolicy.java "KS_RF_26_P_2018_06_28"
+contains src/main/java/ru/daniil/shifts/service/Article153EconomicLegalPolicy.java "ABOVE_MONTHLY_NORM"
+contains src/main/java/ru/daniil/shifts/service/Article153EconomicLegalPolicy.java "OTHER_REST_DAY"
+contains src/test/java/ru/daniil/shifts/service/Article153EconomicLegalPolicyTest.java "salaryAboveNormEnhancedPayAddsTwoTariffsAboveSalary"
+contains src/test/java/ru/daniil/shifts/service/Article153EconomicLegalPolicyTest.java "salaryAboveNormOtherRestDayAddsOneTariffAboveSalary"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Article153EconomicLegalPolicy"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "Article153EconomicLegalPolicy"
+
 not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "HOLIDAY_PAY,"
 
 RU_KYA_PACK_SHA="$(sha256sum src/main/resources/legal/ru-kya/2026/regional-statutory-holidays.json | awk '{print $1}')"
@@ -5526,15 +5540,15 @@ else
   fail "RU-KYA 2026 source-pack SHA mismatch: $RU_KYA_PACK_SHA"
 fi
 
-if [[ "$TEST_METHODS" == "2466" ]]; then
-  ok "test method baseline: 2466"
+if [[ "$TEST_METHODS" == "2478" ]]; then
+  ok "test method baseline: 2478"
 else
-  fail "expected 2466 @Test methods, found $TEST_METHODS"
+  fail "expected 2478 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "358" ]]; then
-  ok "test class baseline: 358"
+if [[ "$TEST_CLASSES" == "359" ]]; then
+  ok "test class baseline: 359"
 else
-  fail "expected 358 test classes, found $TEST_CLASSES"
+  fail "expected 359 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
