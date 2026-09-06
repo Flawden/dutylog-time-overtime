@@ -5543,6 +5543,20 @@ not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Article
 not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "Article153MonthlyNormPositionAuthorityService"
 not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "HOLIDAY_PAY,"
 
+# Payroll Trust Gate P1B3B2B — persistent source-locked Article 153 other-rest-day election.
+contains docs/payroll-trust/P1B3B2B_ARTICLE153_REST_DAY_ELECTION_AUTHORITY.md "another rest day"
+contains src/main/resources/db/migration/postgresql/V83__article153_rest_day_election_authority.sql "CREATE TABLE article153_rest_day_elections"
+contains src/main/resources/db/migration/postgresql/V83__article153_rest_day_election_authority.sql "source_event_fingerprint"
+contains src/main/resources/db/migration/postgresql/V83__article153_rest_day_election_authority.sql "source_identity"
+contains src/main/java/ru/daniil/shifts/service/Article153RestDayElectionAuthorityService.java "HolidayPayQualifiedCauseAuthorityService"
+contains src/main/java/ru/daniil/shifts/service/Article153RestDayElectionAuthorityService.java "REVOKED_REQUIRES_REVIEW"
+contains src/main/java/ru/daniil/shifts/service/Article153RestDayElectionAuthorityService.java "REELECTION_NOT_AUTHORIZED"
+contains src/test/java/ru/daniil/shifts/service/Article153RestDayElectionAuthorityServiceTest.java "revokedElectionCannotBeReelected"
+contains src/test/java/ru/daniil/shifts/db/PostgreSqlMigrationContractTest.java "article153RestDayElectionMigrationKeepsLegalElectionSeparateFromOvertimeBank"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Article153RestDayElectionAuthorityService"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "Article153RestDayElectionAuthorityService"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "HOLIDAY_PAY,"
+
 RU_KYA_PACK_SHA="$(sha256sum src/main/resources/legal/ru-kya/2026/regional-statutory-holidays.json | awk '{print $1}')"
 if [[ "$RU_KYA_PACK_SHA" == "7ca56e78cb7c5342af5b73ad59a0326daf88d34d69e561e1825aaaa2ac3be9c3" ]]; then
   ok "RU-KYA 2026 reviewed source-pack SHA-256"
@@ -5550,15 +5564,15 @@ else
   fail "RU-KYA 2026 source-pack SHA mismatch: $RU_KYA_PACK_SHA"
 fi
 
-if [[ "$TEST_METHODS" == "2490" ]]; then
-  ok "test method baseline: 2490"
+if [[ "$TEST_METHODS" == "2505" ]]; then
+  ok "test method baseline: 2505"
 else
-  fail "expected 2490 @Test methods, found $TEST_METHODS"
+  fail "expected 2505 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "360" ]]; then
-  ok "test class baseline: 360"
+if [[ "$TEST_CLASSES" == "361" ]]; then
+  ok "test class baseline: 361"
 else
-  fail "expected 360 test classes, found $TEST_CLASSES"
+  fail "expected 361 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix

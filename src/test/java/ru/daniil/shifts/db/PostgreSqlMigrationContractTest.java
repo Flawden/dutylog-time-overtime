@@ -305,6 +305,30 @@ class PostgreSqlMigrationContractTest {
 
 
 
+    @Test
+    void article153RestDayElectionMigrationKeepsLegalElectionSeparateFromOvertimeBank() throws IOException {
+        String sql = Files.readString(
+                MIGRATION_ROOT.resolve(
+                        "V83__article153_rest_day_election_authority.sql"
+                )
+        );
+
+        assertTrue(sql.contains("CREATE TABLE article153_rest_day_elections"));
+        assertTrue(sql.contains("source_identity VARCHAR(96) NOT NULL"));
+        assertTrue(sql.contains("source_event_fingerprint VARCHAR(64) NOT NULL"));
+        assertTrue(sql.contains("qualified_minutes INTEGER NOT NULL"));
+        assertTrue(sql.contains("status VARCHAR(16) NOT NULL DEFAULT 'ELECTED'"));
+        assertTrue(sql.contains("uq_article153_rest_day_election_source"));
+        assertTrue(sql.contains("source_kind IN ('EXPLICIT', 'PLAN_DERIVED')"));
+        assertTrue(sql.contains("status IN ('ELECTED', 'REVOKED')"));
+        assertFalse(sql.contains("INSERT INTO article153_rest_day_elections"),
+                "V83 must not synthesize historical employee elections");
+        assertFalse(sql.contains("UPDATE article153_rest_day_elections"),
+                "V83 must not synthesize or rewrite Article 153 election history");
+        assertFalse(sql.contains("REFERENCES overtime_"),
+                "Article 153 election identity must not depend on overtime-bank row lifetime");
+    }
+
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);
