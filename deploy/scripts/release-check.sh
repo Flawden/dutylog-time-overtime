@@ -5533,6 +5533,16 @@ not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuanti
 
 not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "HOLIDAY_PAY,"
 
+# Payroll Trust Gate P1B3B2A — machine-owned Article 153 salary monthly-norm position.
+contains docs/payroll-trust/P1B3B2A_ARTICLE153_MONTHLY_NORM_POSITION_AUTHORITY.md "ARTICLE153_MONTHLY_NORM_BOUNDARY_AMBIGUOUS"
+contains src/main/java/ru/daniil/shifts/service/Article153MonthlyNormPositionAuthorityService.java "WITHIN_MONTHLY_NORM"
+contains src/main/java/ru/daniil/shifts/service/Article153MonthlyNormPositionAuthorityService.java "ABOVE_MONTHLY_NORM"
+contains src/main/java/ru/daniil/shifts/service/Article153MonthlyNormPositionAuthorityService.java "TimeCompensationService"
+contains src/test/java/ru/daniil/shifts/service/Article153MonthlyNormPositionAuthorityServiceTest.java "normBoundaryCrossingInsideQualifiedDateFailsClosed"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Article153MonthlyNormPositionAuthorityService"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "Article153MonthlyNormPositionAuthorityService"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "HOLIDAY_PAY,"
+
 RU_KYA_PACK_SHA="$(sha256sum src/main/resources/legal/ru-kya/2026/regional-statutory-holidays.json | awk '{print $1}')"
 if [[ "$RU_KYA_PACK_SHA" == "7ca56e78cb7c5342af5b73ad59a0326daf88d34d69e561e1825aaaa2ac3be9c3" ]]; then
   ok "RU-KYA 2026 reviewed source-pack SHA-256"
@@ -5540,15 +5550,15 @@ else
   fail "RU-KYA 2026 source-pack SHA mismatch: $RU_KYA_PACK_SHA"
 fi
 
-if [[ "$TEST_METHODS" == "2478" ]]; then
-  ok "test method baseline: 2478"
+if [[ "$TEST_METHODS" == "2490" ]]; then
+  ok "test method baseline: 2490"
 else
-  fail "expected 2478 @Test methods, found $TEST_METHODS"
+  fail "expected 2490 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "359" ]]; then
-  ok "test class baseline: 359"
+if [[ "$TEST_CLASSES" == "360" ]]; then
+  ok "test class baseline: 360"
 else
-  fail "expected 359 test classes, found $TEST_CLASSES"
+  fail "expected 360 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
