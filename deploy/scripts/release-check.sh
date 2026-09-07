@@ -5557,6 +5557,20 @@ not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Article
 not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "Article153RestDayElectionAuthorityService"
 not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "HOLIDAY_PAY,"
 
+
+# Payroll Trust Gate P1B3C1 — source-backed local Article 153 rate authority.
+contains docs/payroll-trust/P1B3C1_ARTICLE153_LOCAL_RATE_AUTHORITY.md "source-backed local rate authority"
+contains src/main/resources/db/migration/postgresql/V84__article153_local_rate_authority.sql "CREATE TABLE article153_local_rate_authorities"
+contains src/main/resources/db/migration/postgresql/V84__article153_local_rate_authority.sql "pay_pricing_term_id"
+contains src/main/java/ru/daniil/shifts/service/Article153LocalRateAuthorityService.java "PayPricingRuleResolver"
+contains src/main/java/ru/daniil/shifts/service/Article153LocalRateAuthorityService.java "SOURCE_AUTHORITY_REQUIRED"
+contains src/main/java/ru/daniil/shifts/service/Article153LocalRateAuthorityService.java "SOURCE_POLICY_CHANGED"
+contains src/test/java/ru/daniil/shifts/service/Article153LocalRateAuthorityServiceTest.java "mutationOfCertifiedHolidayRulesFailsClosed"
+contains src/test/java/ru/daniil/shifts/db/PostgreSqlMigrationContractTest.java "article153LocalRateAuthorityBindsLegalSourceToExistingPricingWithoutSecondEngine"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Article153LocalRateAuthorityService"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "Article153LocalRateAuthorityService"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "HOLIDAY_PAY,"
+
 RU_KYA_PACK_SHA="$(sha256sum src/main/resources/legal/ru-kya/2026/regional-statutory-holidays.json | awk '{print $1}')"
 if [[ "$RU_KYA_PACK_SHA" == "7ca56e78cb7c5342af5b73ad59a0326daf88d34d69e561e1825aaaa2ac3be9c3" ]]; then
   ok "RU-KYA 2026 reviewed source-pack SHA-256"
@@ -5564,15 +5578,15 @@ else
   fail "RU-KYA 2026 source-pack SHA mismatch: $RU_KYA_PACK_SHA"
 fi
 
-if [[ "$TEST_METHODS" == "2505" ]]; then
-  ok "test method baseline: 2505"
+if [[ "$TEST_METHODS" == "2533" ]]; then
+  ok "test method baseline: 2533"
 else
-  fail "expected 2505 @Test methods, found $TEST_METHODS"
+  fail "expected 2533 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "361" ]]; then
-  ok "test class baseline: 361"
+if [[ "$TEST_CLASSES" == "364" ]]; then
+  ok "test class baseline: 364"
 else
-  fail "expected 361 test classes, found $TEST_CLASSES"
+  fail "expected 364 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix

@@ -329,6 +329,30 @@ class PostgreSqlMigrationContractTest {
                 "Article 153 election identity must not depend on overtime-bank row lifetime");
     }
 
+
+    @Test
+    void article153LocalRateAuthorityBindsLegalSourceToExistingPricingWithoutSecondEngine() throws IOException {
+        String sql = Files.readString(
+                MIGRATION_ROOT.resolve(
+                        "V84__article153_local_rate_authority.sql"
+                )
+        );
+
+        assertTrue(sql.contains("CREATE TABLE article153_local_rate_authorities"));
+        assertTrue(sql.contains("pay_pricing_term_id BIGINT NOT NULL REFERENCES pay_pricing_terms(id)"));
+        assertTrue(sql.contains("holiday_policy_fingerprint VARCHAR(64) NOT NULL"));
+        assertTrue(sql.contains("'COLLECTIVE_AGREEMENT'"));
+        assertTrue(sql.contains("'LOCAL_NORMATIVE_ACT'"));
+        assertTrue(sql.contains("'EMPLOYMENT_CONTRACT'"));
+        assertTrue(sql.contains("uq_article153_local_rate_term"));
+        assertFalse(sql.contains("premium_bps"),
+                "V84 must not duplicate the existing PayPricing economic rule");
+        assertFalse(sql.contains("INSERT INTO article153_local_rate_authorities"),
+                "V84 must not invent historical legal-source certifications");
+        assertFalse(sql.contains("UPDATE article153_local_rate_authorities"),
+                "V84 authority history must not be synthesized or rewritten");
+    }
+
     private Set<String> matches(Pattern pattern, String sql) {
         Set<String> values = new HashSet<>();
         Matcher matcher = pattern.matcher(sql);
