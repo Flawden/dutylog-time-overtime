@@ -12,7 +12,7 @@ RUN find src/main/resources/static -type f -name '*.js' -exec \
       sed -i "s/__DUTYLOG_BUILD_ID__/${DUTYLOG_BUILD_ID}/g" {} + \
     && mvn -q -DskipTests package
 
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:24-jre
 WORKDIR /app
 ARG DUTYLOG_BUILD_VERSION=27.2.29-local
 ARG DUTYLOG_BUILD_COMMIT=local
