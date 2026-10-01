@@ -5578,15 +5578,15 @@ else
   fail "RU-KYA 2026 source-pack SHA mismatch: $RU_KYA_PACK_SHA"
 fi
 
-if [[ "$TEST_METHODS" == "2533" ]]; then
-  ok "test method baseline: 2533"
+if [[ "$TEST_METHODS" == "2557" ]]; then
+  ok "test method baseline: 2557"
 else
-  fail "expected 2533 @Test methods, found $TEST_METHODS"
+  fail "expected 2557 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "364" ]]; then
-  ok "test class baseline: 364"
+if [[ "$TEST_CLASSES" == "367" ]]; then
+  ok "test class baseline: 367"
 else
-  fail "expected 364 test classes, found $TEST_CLASSES"
+  fail "expected 367 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
@@ -5963,6 +5963,15 @@ contains docs/PRODUCTION_CALENDAR_FOUNDATION_V27.45.0.md "Total gzip stays **250
 contains CHANGES.md "measured **869227 B raw**"
 contains CHANGES.md "total raw ceiling to **875000 B**"
 contains docs/PRODUCTION_CALENDAR_FOUNDATION_V27.45.0.md "Payroll Core will consume the production norm explicitly in the next phase"
+
+# P1B3C2: source-backed remuneration-system component authority; no money activation.
+contains docs/payroll-trust/P1B3C2_ARTICLE153_COMPONENT_AUTHORITY.md "PayrollService wiring NONE"
+contains src/main/resources/db/migration/postgresql/V85__article153_component_authority.sql "CREATE TABLE article153_component_authorities"
+contains src/main/java/ru/daniil/shifts/service/Article153ComponentAuthorityService.java "article153-component-v1"
+contains src/main/java/ru/daniil/shifts/service/Article153ComponentAuthorityService.java "CompensationComponentResolverService"
+contains src/test/java/ru/daniil/shifts/service/Article153ComponentAuthorityServiceTest.java "missingSecondComponentBlocksWithoutPartialFacts"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Article153ComponentAuthorityService"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "Article153ComponentAuthorityService"
 
 # v27.44.4 Shared Full-Day Free Dates
 contains CHANGES.md "v27.44.4 — Shared Full-Day Free Dates"

@@ -2,6 +2,8 @@ package ru.daniil.shifts.repo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.Lock;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.repository.query.Param;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.CompensationComponent;
@@ -13,6 +15,12 @@ import java.util.Optional;
 
 public interface CompensationComponentVersionRepository
         extends JpaRepository<CompensationComponentVersion, Long> {
+
+    // Serialize competing certifications and formula writes on the same persisted version.
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("select v from CompensationComponentVersion v where v.id = :id and v.component.owner = :owner")
+    Optional<CompensationComponentVersion> findOwnedForArticle153Certification(
+            @Param("owner") AppUser owner, @Param("id") Long id);
 
     Optional<CompensationComponentVersion>
     findByComponentAndEffectiveFrom(
