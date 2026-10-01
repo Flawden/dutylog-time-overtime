@@ -234,7 +234,7 @@ public class Article153LocalRateAuthorityService {
                 .toList();
     }
 
-    private String fingerprint(
+    String fingerprint(
             PayPricingTerm term,
             List<PayPricingRule> holidayRules
     ) {

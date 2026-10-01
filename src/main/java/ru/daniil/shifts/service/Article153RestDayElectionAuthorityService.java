@@ -414,7 +414,7 @@ public class Article153RestDayElectionAuthorityService {
         };
     }
 
-    private String fingerprint(
+    String fingerprint(
             LocalDate workDate,
             String sourceIdentity,
             HolidayPayQualifiedCauseAuthorityService.Cause cause,
