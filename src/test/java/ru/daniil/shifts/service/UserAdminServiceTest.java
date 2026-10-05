@@ -23,7 +23,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 /** Business rules for user search, role safety and administrative password resets. */
-@SpringBootTest
+@SpringBootTest(properties="spring.datasource.url=jdbc:h2:mem:user-admin-isolated;DB_CLOSE_DELAY=-1")
 @Transactional
 class UserAdminServiceTest {
 

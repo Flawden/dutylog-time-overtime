@@ -5578,6 +5578,13 @@ contains src/main/java/ru/daniil/shifts/service/Article153SnapshotCodec.java "AR
 contains src/main/java/ru/daniil/shifts/service/Article153SnapshotFreezeService.java "Isolation.REPEATABLE_READ"
 not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Article153SnapshotFreezeService"
 
+# P1B3C4B1: complete source review, append-only corrections; no money activation.
+contains src/main/resources/db/migration/postgresql/V88__article153_remuneration_authority.sql "REFERENCES users(id)"
+contains src/main/resources/db/migration/postgresql/V88__article153_remuneration_authority.sql "UNIQUE (owner_id, period_month, revision)"
+contains src/main/java/ru/daniil/shifts/service/Article153RemunerationDocument.java "SOURCE_REVIEW_ONLY"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Article153Remuneration"
+not_contains src/main/java/ru/daniil/shifts/service/PayrollNativeQualifiedQuantityService.java "Article153Remuneration"
+
 # P1B3C4A: unbooked tariff references from immutable C3 evidence.
 contains src/main/resources/db/migration/postgresql/V87__article153_tariff_reference.sql "REFERENCES payroll_snapshot_article153(snapshot_id)"
 contains src/main/java/ru/daniil/shifts/service/Article153TariffDocument.java "TARIFF_REFERENCE_ONLY"
@@ -5592,15 +5599,15 @@ else
   fail "RU-KYA 2026 source-pack SHA mismatch: $RU_KYA_PACK_SHA"
 fi
 
-if [[ "$TEST_METHODS" == "2662" ]]; then
-  ok "test method baseline: 2662"
+if [[ "$TEST_METHODS" == "2695" ]]; then
+  ok "test method baseline: 2695"
 else
-  fail "expected 2662 @Test methods, found $TEST_METHODS"
+  fail "expected 2695 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "375" ]]; then
-  ok "test class baseline: 375"
+if [[ "$TEST_CLASSES" == "378" ]]; then
+  ok "test class baseline: 378"
 else
-  fail "expected 375 test classes, found $TEST_CLASSES"
+  fail "expected 378 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix
