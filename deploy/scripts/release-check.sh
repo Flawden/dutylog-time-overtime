@@ -5578,6 +5578,13 @@ contains src/main/java/ru/daniil/shifts/service/Article153SnapshotCodec.java "AR
 contains src/main/java/ru/daniil/shifts/service/Article153SnapshotFreezeService.java "Isolation.REPEATABLE_READ"
 not_contains src/main/java/ru/daniil/shifts/service/PayrollService.java "Article153SnapshotFreezeService"
 
+# P1B3C4C: reviewed revision integration and exact immutable booked delta.
+contains src/main/resources/db/migration/postgresql/V90__article153_payable_snapshot.sql "REFERENCES payroll_snapshot_article153_remuneration(snapshot_id)"
+contains src/main/java/ru/daniil/shifts/service/PayrollService.java "article153Payroll.createRevision(draft, article153)"
+contains src/main/java/ru/daniil/shifts/service/Article153PayableProjection.java "Math.max(floor.additionalBps(),local.additionalBps())"
+contains src/main/java/ru/daniil/shifts/service/Article153PayableDocument.java "PAYABLE_INTEGRATION_FINGERPRINT"
+contains src/main/java/ru/daniil/shifts/service/Article153LegacyReconciliation.java "LEGACY_MIXED_EXCLUSIVE_GROUP"
+contains docs/payroll-trust/P1B3C4C_PAYROLL_INTEGRATION.md "**неподтверждённое**"
 # P1B3C4B2: complete unbooked money, exact review FK, shared pricing kernel.
 contains src/main/resources/db/migration/postgresql/V89__article153_remuneration_snapshot.sql "REFERENCES payroll_snapshot_article153_tariff(snapshot_id)"
 contains src/main/resources/db/migration/postgresql/V89__article153_remuneration_snapshot.sql "REFERENCES article153_remuneration_authorities(id)"
@@ -5607,15 +5614,15 @@ else
   fail "RU-KYA 2026 source-pack SHA mismatch: $RU_KYA_PACK_SHA"
 fi
 
-if [[ "$TEST_METHODS" == "2736" ]]; then
-  ok "test method baseline: 2736"
+if [[ "$TEST_METHODS" == "2781" ]]; then
+  ok "test method baseline: 2781"
 else
-  fail "expected 2736 @Test methods, found $TEST_METHODS"
+  fail "expected 2781 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "383" ]]; then
-  ok "test class baseline: 383"
+if [[ "$TEST_CLASSES" == "388" ]]; then
+  ok "test class baseline: 388"
 else
-  fail "expected 383 test classes, found $TEST_CLASSES"
+  fail "expected 388 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix

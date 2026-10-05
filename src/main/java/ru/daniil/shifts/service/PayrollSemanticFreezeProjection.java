@@ -68,17 +68,23 @@ public final class PayrollSemanticFreezeProjection {
                 source.ordinaryNightPremiumLines()
         );
 
+        appendNativeLines(classified, PayrollEarningKind.HOLIDAY_PAY, source.ordinaryHolidayPayMinor(), source.ordinaryHolidayLines());
+
         long classifiedAmount =
                 Math.addExact(
                         source.basePayMinor(),
                         source.ordinaryNightPremiumPayMinor()
                 );
 
+        classifiedAmount = Math.addExact(classifiedAmount, source.ordinaryHolidayPayMinor());
+
         long unclassifiedAmount =
                 Math.subtractExact(
                         source.ordinaryPremiumPayMinor(),
                         source.ordinaryNightPremiumPayMinor()
                 );
+
+        unclassifiedAmount = Math.subtractExact(unclassifiedAmount, source.ordinaryHolidayPayMinor());
 
         unclassifiedAmount =
                 Math.addExact(
@@ -203,8 +209,16 @@ public final class PayrollSemanticFreezeProjection {
             List<ComponentLine> compensationComponentLines,
             long additionsMinor,
             List<SemanticLine> basePayLines,
-            List<SemanticLine> ordinaryNightPremiumLines
+            List<SemanticLine> ordinaryNightPremiumLines,
+            long ordinaryHolidayPayMinor,
+            List<SemanticLine> ordinaryHolidayLines
     ) {
+        public Source(long basePayMinor,long ordinaryPremiumPayMinor,long ordinaryNightPremiumPayMinor,long settlementPayMinor,
+                long compensationComponentEarningsMinor,List<ComponentLine> compensationComponentLines,long additionsMinor,
+                List<SemanticLine> basePayLines,List<SemanticLine> ordinaryNightPremiumLines) {
+            this(basePayMinor,ordinaryPremiumPayMinor,ordinaryNightPremiumPayMinor,settlementPayMinor,compensationComponentEarningsMinor,
+                    compensationComponentLines,additionsMinor,basePayLines,ordinaryNightPremiumLines,0L,null);
+        }
         /**
          * Compatibility constructor for the pre-8A4E2A production path.
          *
@@ -285,12 +299,14 @@ public final class PayrollSemanticFreezeProjection {
                 );
             }
 
-            if (ordinaryNightPremiumPayMinor
+            if (ordinaryHolidayPayMinor < 0L || Math.addExact(ordinaryNightPremiumPayMinor, ordinaryHolidayPayMinor)
                     > ordinaryPremiumPayMinor) {
                 throw new IllegalArgumentException(
                         "Proven NIGHT premium cannot exceed ordinary premium aggregate"
                 );
             }
+
+            if (ordinaryHolidayLines != null) ordinaryHolidayLines = copySemanticLines(ordinaryHolidayLines,"Detailed HOLIDAY line is required");
 
             if (basePayLines != null) {
                 basePayLines =

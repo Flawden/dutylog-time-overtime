@@ -18,11 +18,14 @@ class PayrollP15ScheduledWorkFreezeWiringContractTest {
                 StandardCharsets.UTF_8
         );
 
-        int create = payroll.indexOf("snapshots.saveAndFlush(new PayrollSnapshot(");
+        int draft = payroll.indexOf("PayrollSnapshot draft = new PayrollSnapshot(");
+        int create = payroll.indexOf("PayrollSnapshot created = article153.active()");
         int freeze = payroll.indexOf("freezeP15ScheduledWork(");
         int supersede = payroll.indexOf("previous.supersedeWith(created)");
 
-        assertTrue(create >= 0);
+        assertTrue(draft >= 0);
+        assertTrue(create > draft);
+        assertTrue(payroll.contains("article153Payroll.createRevision(draft, article153) : snapshots.saveAndFlush(draft)"));
         assertTrue(freeze > create);
         assertTrue(supersede > freeze);
         assertTrue(payroll.contains("p15ScheduledWorkFreeze.freeze("));

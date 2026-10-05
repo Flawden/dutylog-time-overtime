@@ -51,6 +51,10 @@ public class PayrollService {
      * 7A3B collaborators are setter-injected so historical isolated tests
      * that construct the pre-7A3B PayrollService directly remain source-compatible.
      */
+    private Article153PayrollIntegrationService article153Payroll;
+    @Autowired
+    public void setArticle153Payroll(Article153PayrollIntegrationService service) { this.article153Payroll = service; }
+
     private PayrollCompensationComponentPreviewService componentPricing;
     private PayrollSnapshotComponentLineRepository snapshotComponentLines;
 
@@ -225,7 +229,7 @@ public class PayrollService {
         this.p15ScheduledWorkFreeze = p15ScheduledWorkFreeze;
     }
 
-    @Transactional
+    @Transactional(isolation=org.springframework.transaction.annotation.Isolation.REPEATABLE_READ)
     public PayrollPeriodDto period(AppUser user, String monthText) {
         YearMonth month = parseMonth(monthText);
         PayrollSettings legacySettings = ensureSettings(user);
@@ -284,7 +288,7 @@ public class PayrollService {
         return toAdjustment(saved);
     }
 
-    @Transactional
+    @Transactional(isolation=org.springframework.transaction.annotation.Isolation.REPEATABLE_READ)
     public PayrollSnapshotDto calculate(AppUser user, String monthText) {
         YearMonth month = parseMonth(monthText);
         TimeAccountingPeriod period = requireClosedPeriod(user, month, true);
@@ -339,6 +343,8 @@ public class PayrollService {
             );
         }
 
+        var article153 = article153Payroll == null ? Article153PayrollIntegrationService.Prepared.legacy()
+                : article153Payroll.prepare(user, month, term, production, source, ordinaryPremiumPreview);
         PayrollPreviewDto preview = preview(
                 user,
                 month,
@@ -348,7 +354,8 @@ public class PayrollService {
                 source,
                 monthAdjustments,
                 settlementPreview,
-                ordinaryPremiumPreview
+                ordinaryPremiumPreview,
+                article153
         );
 
         if (!preview.compensationComponentCalculationReady()) {
@@ -358,6 +365,7 @@ public class PayrollService {
             );
         }
 
+        if (!article153.ready()) throw ApiException.conflict(article153.blockingReason(), "Для оплаты праздничной работы требуется полное подтверждение источников");
         PayrollSnapshot previous = snapshots.findFirstByOwnerAndPeriodMonthOrderByRevisionDesc(user, month.atDay(1)).orElse(null);
         int revision = previous == null ? 1 : previous.getRevision() + 1;
         Instant checkedAt = Instant.now();
@@ -366,10 +374,10 @@ public class PayrollService {
                         preview,
                         period.getClosedAt(),
                         monthAdjustments,
-                        ordinaryPremiumPreview.pricingFingerprint()
+                        article153.active() ? article153.fingerprint() : ordinaryPremiumPreview.pricingFingerprint()
                 );
 
-        PayrollSnapshot created = snapshots.saveAndFlush(new PayrollSnapshot(
+        PayrollSnapshot draft = new PayrollSnapshot(
                 user, month.atDay(1), revision, preview.currencyCode(), preview.effectiveHourlyRateMinor(),
                 preview.payMode(), YearMonth.parse(preview.compensationEffectiveMonth()).atDay(1),
                 preview.configuredHourlyRateMinor(), preview.monthlySalaryMinor(),
@@ -384,12 +392,13 @@ public class PayrollService {
                 preview.ordinaryPremiumMinutes(),
                 preview.ordinaryPremiumReferenceBasePayMinor(),
                 preview.ordinaryPremiumPayMinor(),
-                ordinaryPremiumPreview.pricingFingerprint(),
+                article153.active() ? article153.fingerprint() : ordinaryPremiumPreview.pricingFingerprint(),
                 preview.settlementCount(), preview.settlementMinutes(),
                 preview.settlementBasePayMinor(), preview.settlementPremiumPayMinor(),
                 preview.settlementPayMinor(), preview.settlementPricingFingerprint(),
                 preview.additionsMinor(), preview.deductionsMinor(), preview.totalPayMinor(),
-                period.getClosedAt(), checkedAt, hash));
+                period.getClosedAt(), checkedAt, hash);
+        PayrollSnapshot created = article153.active() ? article153Payroll.createRevision(draft, article153) : snapshots.saveAndFlush(draft);
 
         List<PayrollSnapshotComponentLine> frozenComponentLines =
                 freezeComponentLines(
@@ -402,7 +411,8 @@ public class PayrollService {
                 preview,
                 source,
                 ordinaryPremiumPreview,
-                frozenComponentLines
+                frozenComponentLines,
+                article153
         );
 
         freezeP15ScheduledWork(
@@ -442,7 +452,8 @@ public class PayrollService {
             PayrollSourceSnapshot source,
             PayrollOrdinaryPremiumPreviewService.OrdinaryPremiumPreview
                     ordinaryPremiumPreview,
-            List<PayrollSnapshotComponentLine> frozenComponentLines
+            List<PayrollSnapshotComponentLine> frozenComponentLines,
+            Article153PayrollIntegrationService.Prepared article153
     ) {
         /*
          * Compatibility path for historical direct-construction unit fixtures.
@@ -461,7 +472,7 @@ public class PayrollService {
         }
 
         if (preview.ordinaryPremiumPayMinor()
-                != ordinaryPremiumPreview.premiumAmountMinor()) {
+                != (article153.active() ? article153.premiumMinor() : ordinaryPremiumPreview.premiumAmountMinor())) {
             throw new IllegalStateException(
                     "Payroll ordinary premium aggregate differs from semantic preview"
             );
@@ -586,7 +597,9 @@ public class PayrollService {
                         semanticComponentLines,
                         preview.additionsMinor(),
                         semanticBasePayLines,
-                        semanticNightLines
+                        semanticNightLines,
+                        article153.active() ? article153.payable().holidayPayMinor() : 0L,
+                        Article153PayrollIntegrationService.semanticLines(article153)
                 )
         );
 
@@ -663,6 +676,8 @@ public class PayrollService {
                         payrollCurrency
                 );
 
+        var article153 = article153Payroll == null ? Article153PayrollIntegrationService.Prepared.legacy()
+                : article153Payroll.prepare(user, month, term, production, source, ordinaryPremiumPreview);
         PayrollPreviewDto preview = preview(
                 user,
                 month,
@@ -672,7 +687,8 @@ public class PayrollService {
                 source,
                 monthAdjustments,
                 settlementPreview,
-                ordinaryPremiumPreview
+                ordinaryPremiumPreview,
+                article153
         );
 
         List<PayrollSnapshotDto> history = snapshots.findByOwnerAndPeriodMonthOrderByRevisionDesc(user, first).stream().map(this::toSnapshot).toList();
@@ -686,7 +702,7 @@ public class PayrollService {
                 preview.compensationComponentCalculationReady();
         boolean settlementPricingReady = settlementPreview.ready();
         boolean ordinaryPremiumPricingReady =
-                ordinaryPremiumPreview.ready();
+                ordinaryPremiumPreview.ready() && article153.ready();
 
         boolean formulaReady =
                 compensationReady
@@ -709,7 +725,7 @@ public class PayrollService {
                 : !componentPricingReady
                     ? preview.compensationComponentCalculationBlockingReason()
                 : !settlementPricingReady ? settlementPreview.blockingReason()
-                : !ordinaryPremiumPricingReady ? ordinaryPremiumPreview.blockingReason()
+                : !ordinaryPremiumPricingReady ? (article153.ready() ? ordinaryPremiumPreview.blockingReason() : article153.blockingReason())
                 : null;
         return new PayrollPeriodDto(month.toString(), closed, integrity.healthy(), canCalculate, blockingReason,
                 toSettings(legacySettings), production, preview,
@@ -727,7 +743,8 @@ public class PayrollService {
             PayrollSourceSnapshot source,
             List<PayrollAdjustment> monthAdjustments,
             SettlementPreview settlementPreview,
-            OrdinaryPremiumPreview ordinaryPremiumPreview
+            OrdinaryPremiumPreview ordinaryPremiumPreview,
+            Article153PayrollIntegrationService.Prepared article153
     ) {
         long additions =
                 monthAdjustments.stream()
@@ -873,11 +890,16 @@ public class PayrollService {
             }
         }
 
+        if (previewFormulaReady && article153.active() && article153.ready()) {
+            componentUpstreamSemanticEarnings.add(new PayrollEligibleEarningsBaseResolver.Earning(
+                    PayrollEarningKind.HOLIDAY_PAY, article153.payable().holidayPayMinor()));
+        }
         boolean componentUpstreamSemanticEarningsComplete =
                 previewFormulaReady
                         && ordinaryPremiumPreview.ready()
                         && ordinaryPremiumPreview
-                        .unclassifiedPremiumAmountMinor() == 0L;
+                        .unclassifiedPremiumAmountMinor() == 0L
+                        || previewFormulaReady && ordinaryPremiumPreview.ready() && article153.active() && article153.ready();
 
         ComponentPreview componentPreview =
                 componentPreview(
@@ -928,8 +950,8 @@ public class PayrollService {
          * ordinary base is already represented by basePay.
          */
         long ordinaryPremiumPay =
-                ordinaryPremiumPreview.ready()
-                        ? ordinaryPremiumPreview.premiumAmountMinor()
+                ordinaryPremiumPreview.ready() && article153.ready()
+                        ? (article153.active() ? article153.premiumMinor() : ordinaryPremiumPreview.premiumAmountMinor())
                         : 0L;
 
         /*
@@ -997,8 +1019,8 @@ public class PayrollService {
                 componentEarnings,
                 componentProjection.fingerprint(),
                 componentLines,
-                ordinaryPremiumPreview.ready(),
-                ordinaryPremiumPreview.blockingReason(),
+                ordinaryPremiumPreview.ready() && article153.ready(),
+                article153.ready() ? ordinaryPremiumPreview.blockingReason() : article153.blockingReason(),
                 ordinaryPremiumPreview.pricingIdentityRequired(),
                 ordinaryPremiumPreview.ordinaryMinutes(),
                 ordinaryPremiumReferenceBase,

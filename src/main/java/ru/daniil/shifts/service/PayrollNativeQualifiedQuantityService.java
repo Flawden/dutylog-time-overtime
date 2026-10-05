@@ -25,10 +25,9 @@ import java.util.Set;
  *   -> ordinary-work source pieces whose NIGHT dimension is true
  *   -> MINUTES
  *
- * HOLIDAY_PAY is deliberately not mapped yet. Real payroll evidence names
- * "holiday and weekend" work, while the current native classifier exposes
- * HOLIDAY as one payroll dimension. Equating those concepts without proof
- * would silently invent payroll semantics.
+ * Proven HOLIDAY_PAY money and quantity are owned by Article 153 capture and
+ * Article153PayrollIntegrationService. This legacy aggregate resolver remains
+ * NIGHT-only; it cannot relabel an uncertified legacy HOLIDAY aggregate.
  *
  * HARMFUL_CONDITIONS is also deliberately unsupported. Real split-period
  * payroll evidence proves that its qualified minutes cannot simply be copied

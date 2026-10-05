@@ -92,14 +92,20 @@ public final class Article153RemunerationSnapshotDocument {
         check(review.getId()!=null && review.getId()>0 && contract.ownerId()==snapshot.getOwner().getId()
                 && contract.periodMonth().equals(snapshot.getPeriodMonth())
                 && contract.review().currencyCode().equals(snapshot.getCurrencyCode()),"REVIEW_BINDING");
+        return groups(Article153SnapshotCodec.read(tariff.getAuthority()), snapshot.getOwner().getId(), snapshot.getPeriodMonth(), snapshot.getCurrencyCode(), contract);
+    }
+    static Map<Key,List<Share>> groups(JsonNode source, long ownerId, LocalDate periodMonth, String currencyCode,
+            Article153RemunerationDocument.Document contract) {
+        check(contract.ownerId()==ownerId && contract.periodMonth().equals(periodMonth)
+                && contract.review().currencyCode().equals(currencyCode),"REVIEW_BINDING");
         var rules=new HashMap<Long,Article153RemunerationDocument.Rule>();
         for(var rule:contract.review().rules())rules.put(rule.versionId(),rule);
         var result=new TreeMap<Key,List<Share>>(Comparator.comparing(Key::kind).thenComparingLong(Key::versionId)
                 .thenComparing(Key::period).thenComparingLong(Key::periodAmountMinor).thenComparingLong(Key::periodMinutes).thenComparingInt(Key::additionalBps));
-        var source=Article153SnapshotCodec.read(tariff.getAuthority());int index=0;
+        int index=0;
         for(var piece:source.path("pieces")){
-            Article153TariffValuationService.validatePiece(piece,snapshot.getCurrencyCode());
-            check(LocalDate.parse(text(piece.at("/norm/qualifiedPiece/payrollDate"))).withDayOfMonth(1).equals(snapshot.getPeriodMonth()),"PIECE_MONTH");
+            Article153TariffValuationService.validatePiece(piece,currencyCode);
+            check(LocalDate.parse(text(piece.at("/norm/qualifiedPiece/payrollDate"))).withDayOfMonth(1).equals(periodMonth),"PIECE_MONTH");
             int minutes=Math.toIntExact(number(piece.at("/norm/qualifiedPiece/sourcePiece/minutes")));
             var share=new Share(index++,minutes);
             boolean rest="OTHER_REST_DAY".equals(text(piece.at("/statutoryFloor/compensationChoice")));
@@ -112,7 +118,7 @@ public final class Article153RemunerationSnapshotDocument {
             var included=new HashSet<Long>();var allVersions=new HashSet<Long>();
             for(var c:piece.at("/components/components")){
                 long id=number(c.path("versionId"));
-                check(id>0 && allVersions.add(id) && number(c.path("ownerId"))==snapshot.getOwner().getId(),"COMPONENT_IDENTITY");
+                check(id>0 && allVersions.add(id) && number(c.path("ownerId"))==ownerId,"COMPONENT_IDENTITY");
                 if("EXCLUDE".equals(text(c.path("decision")))){check(!rules.containsKey(id),"EXCLUDED_RULE");continue;}
                 var r=rules.get(id);
                 check(r!=null && r.componentFingerprint().equals(text(c.path("componentFingerprint"))),"COMPONENT_RULE_REQUIRED");

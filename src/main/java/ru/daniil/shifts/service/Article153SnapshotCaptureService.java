@@ -42,14 +42,13 @@ public class Article153SnapshotCaptureService {
                 .comparing((Article153MonthlyNormPositionAuthorityService.NormPositionPiece p) -> p.qualifiedPiece().payrollDate())
                 .thenComparing(p -> identity(p.qualifiedPiece().sourcePiece()))
                 .thenComparing(p -> p.qualifiedPiece().sourcePiece().sourceEvidenceStartInstant())).toList();
-        Map<String, Instant> ends = new HashMap<>();
+        Map<String, SourceEvidence> evidence = new HashMap<>();
         for (var norm : ordered) {
             var qualified = norm.qualifiedPiece(); var source = qualified.sourcePiece();
             LocalDate date = qualified.payrollDate(); String identity = identity(source);
             require(month.equals(YearMonth.from(date)), "PIECE_MONTH");
             String key = date + ":" + identity;
-            Instant previousEnd = ends.put(key, source.sourceEvidenceEndInstant());
-            require(previousEnd == null || !source.sourceEvidenceStartInstant().isBefore(previousEnd), "OVERLAPPING_SOURCE");
+            retainEvidence(evidence, key, source);
             var rate = rates.resolve(user, date);
             require(rate.sourceDate().equals(date) && rate.payMode().equals(norm.payMode().name())
                     && rate.compensationEffectiveFrom().equals(norm.compensationEffectiveFrom())
@@ -111,6 +110,24 @@ public class Article153SnapshotCaptureService {
         }
         return doc;
     }
+    /** Planned NIGHT groups cite a shared clock interval; their minutes are quantities, not new clock ranges. */
+    private static void retainEvidence(Map<String, SourceEvidence> evidence, String identity,
+            OrdinaryWorkPremiumSourceService.SourcePiece source) {
+        var previous = evidence.get(identity);
+        var start = source.sourceEvidenceStartInstant(); var end = source.sourceEvidenceEndInstant();
+        require(start != null && end != null && end.isAfter(start), "SOURCE_CLOCK");
+        boolean sharedPlanned = previous != null
+                && source.sourceKind() == OrdinaryWorkPremiumSourceService.SourceKind.PLAN_DERIVED
+                && start.equals(previous.start()) && end.equals(previous.end());
+        require(previous == null || sharedPlanned || !start.isBefore(previous.end()), "OVERLAPPING_SOURCE");
+        int minutes = sharedPlanned ? Math.addExact(previous.minutes(), source.minutes()) : source.minutes();
+        if (source.sourceKind() == OrdinaryWorkPremiumSourceService.SourceKind.PLAN_DERIVED) {
+            require(!sharedPlanned || Objects.equals(previous.timezone(), source.sourceEvidenceTimezone()), "SOURCE_TIMEZONE_DRIFT");
+            require(minutes <= Duration.between(start, end).toMinutes(), "PLANNED_EVIDENCE_QUANTITY");
+        }
+        evidence.put(identity, new SourceEvidence(start, end, source.sourceEvidenceTimezone(), minutes));
+    }
+    private record SourceEvidence(Instant start, Instant end, String timezone, int minutes) {}
     private static String identity(OrdinaryWorkPremiumSourceService.SourcePiece source) {
         Long id = source.sourceKind() == OrdinaryWorkPremiumSourceService.SourceKind.EXPLICIT
                 ? source.sourceActualWorkIntervalId() : source.sourceDayEntryId();
