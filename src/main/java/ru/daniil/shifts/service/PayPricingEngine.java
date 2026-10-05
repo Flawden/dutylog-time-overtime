@@ -188,6 +188,14 @@ public class PayPricingEngine {
             int minutes,
             int rateBps
     ) {
+        return pricePeriodPremium(hourlyRateMinor, 60L, minutes, rateBps);
+    }
+
+    /** Additional amount only, using an exact reviewed period denominator; one HALF_UP rounding. */
+    public long pricePeriodPremium(long periodAmountMinor, long periodMinutes, int minutes, int rateBps) {
+        if (periodAmountMinor <= 0 || periodMinutes <= 0) {
+            throw new IllegalArgumentException("Pricing requires positive period amount and minutes");
+        }
         if (minutes < 0) {
             throw new IllegalArgumentException(
                     "Pricing minutes cannot be negative"
@@ -202,7 +210,7 @@ public class PayPricingEngine {
 
         try {
             return BigDecimal
-                    .valueOf(hourlyRateMinor)
+                    .valueOf(periodAmountMinor)
                     .multiply(
                             BigDecimal.valueOf(minutes)
                     )
@@ -210,9 +218,7 @@ public class PayPricingEngine {
                             BigDecimal.valueOf(rateBps)
                     )
                     .divide(
-                            BigDecimal.valueOf(
-                                    60L * BASE_BPS
-                            ),
+                            BigDecimal.valueOf(periodMinutes).multiply(BigDecimal.valueOf(BASE_BPS)),
                             0,
                             RoundingMode.HALF_UP
                     )
