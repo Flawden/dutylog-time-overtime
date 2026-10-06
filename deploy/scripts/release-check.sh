@@ -5614,15 +5614,15 @@ else
   fail "RU-KYA 2026 source-pack SHA mismatch: $RU_KYA_PACK_SHA"
 fi
 
-if [[ "$TEST_METHODS" == "2789" ]]; then
-  ok "test method baseline: 2789"
+if [[ "$TEST_METHODS" == "2794" ]]; then
+  ok "test method baseline: 2794"
 else
-  fail "expected 2789 @Test methods, found $TEST_METHODS"
+  fail "expected 2794 @Test methods, found $TEST_METHODS"
 fi
-if [[ "$TEST_CLASSES" == "389" ]]; then
-  ok "test class baseline: 389"
+if [[ "$TEST_CLASSES" == "390" ]]; then
+  ok "test class baseline: 390"
 else
-  fail "expected 389 test classes, found $TEST_CLASSES"
+  fail "expected 390 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix

@@ -2,6 +2,7 @@ package ru.daniil.shifts.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.service.exception.PayrollPricingUnavailableException;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.PayPricingRule;
 import ru.daniil.shifts.model.PayPricingTerm;
@@ -11,7 +12,6 @@ import ru.daniil.shifts.service.PayPricingRuleResolver.ConsumedSlice;
 import ru.daniil.shifts.service.PayPricingRuleResolver.Dimension;
 import ru.daniil.shifts.service.PayPricingRuleResolver.Rule;
 import ru.daniil.shifts.service.PayPricingRuleResolver.RuleSet;
-import ru.daniil.shifts.service.exception.ApiException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -49,7 +49,7 @@ public class PayPricingPolicyService {
         this.resolver = resolver;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, noRollbackFor = PayrollPricingUnavailableException.class)
     public ResolvedPricingPolicy resolveForSourceDate(
             AppUser user,
             LocalDate sourceDate,
@@ -74,7 +74,7 @@ public class PayPricingPolicyService {
                                 sourceDate
                         )
                         .orElseThrow(() ->
-                                ApiException.conflict(
+                                PayrollPricingUnavailableException.unavailable(
                                         "PAY_PRICING_RULES_REQUIRED",
                                         "Для даты "
                                                 + sourceDate

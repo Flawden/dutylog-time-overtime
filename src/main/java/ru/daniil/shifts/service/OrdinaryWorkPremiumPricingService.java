@@ -2,6 +2,7 @@ package ru.daniil.shifts.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.service.exception.PayrollPricingUnavailableException;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.HistoricalCompensationRateService.HistoricalBaseRate;
 import ru.daniil.shifts.service.OrdinaryWorkPremiumSourceService.OrdinaryPremiumSource;
@@ -15,7 +16,6 @@ import ru.daniil.shifts.service.PayPricingRuleResolver.ConsumedSlice;
 import ru.daniil.shifts.service.PayPricingRuleResolver.Dimension;
 import ru.daniil.shifts.service.PayPricingRuleResolver.Rule;
 import ru.daniil.shifts.service.PayPricingRuleResolver.RuleSet;
-import ru.daniil.shifts.service.exception.ApiException;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -63,7 +63,7 @@ public class OrdinaryWorkPremiumPricingService {
         this.pricingEngine = pricingEngine;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, noRollbackFor = PayrollPricingUnavailableException.class)
     public MonthPremiumProjection priceMonth(
             AppUser user,
             YearMonth payrollMonth
@@ -331,7 +331,7 @@ public class OrdinaryWorkPremiumPricingService {
             } else if (!currency.equals(
                     rate.currencyCode()
             )) {
-                throw ApiException.conflict(
+                throw PayrollPricingUnavailableException.unavailable(
                         "PAY_PRICING_CURRENCY_MISMATCH",
                         "Обычные премиальные часы месяца используют разные валюты: "
                                 + currency

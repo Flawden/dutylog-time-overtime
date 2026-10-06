@@ -2,6 +2,7 @@ package ru.daniil.shifts.service;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.daniil.shifts.service.exception.PayrollPricingUnavailableException;
 import ru.daniil.shifts.dto.Dtos.ProductionCalendarMonthDto;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.model.CompensationTerm;
@@ -46,7 +47,7 @@ public class HistoricalCompensationRateService {
         this.calculation = calculation;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional(readOnly = true, noRollbackFor = PayrollPricingUnavailableException.class)
     public HistoricalBaseRate resolve(
             AppUser user,
             LocalDate sourceDate
@@ -84,7 +85,7 @@ public class HistoricalCompensationRateService {
                                 compensationBoundary
                         )
                         .orElseThrow(() ->
-                                ApiException.conflict(
+                                PayrollPricingUnavailableException.unavailable(
                                         "PAYROLL_COMPENSATION_REQUIRED",
                                         "Для месяца "
                                                 + sourceMonth
@@ -147,7 +148,7 @@ public class HistoricalCompensationRateService {
          */
         if (!production
                 .scheduleCoverageComplete()) {
-            throw ApiException.conflict(
+            throw PayrollPricingUnavailableException.unavailable(
                     "PAYROLL_PRODUCTION_NORM_INCOMPLETE",
                     "Для оклада сначала заполни график на весь расчётный месяц "
                             + sourceMonth
@@ -157,7 +158,7 @@ public class HistoricalCompensationRateService {
         if (production
                 .productionNormMinutes()
                 <= 0) {
-            throw ApiException.conflict(
+            throw PayrollPricingUnavailableException.unavailable(
                     "PAYROLL_PRODUCTION_NORM_REQUIRED",
                     "Для оклада нужна положительная расчётная норма месяца "
                             + sourceMonth
