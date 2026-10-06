@@ -246,7 +246,10 @@ body.vue-modal-open { overflow: hidden; }
   position: fixed;
   inset: 0;
   z-index: 1500;
-  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  --modal-top: max(18px, env(safe-area-inset-top));
+  --modal-bottom: max(18px, env(safe-area-inset-bottom));
+  box-sizing: border-box;
+  padding: var(--modal-top) 18px var(--modal-bottom);
   display: grid;
   place-items: center;
   background: rgba(2, 7, 12, .74);
@@ -254,20 +257,23 @@ body.vue-modal-open { overflow: hidden; }
 }
 .ui-modal {
   width: min(620px, 100%);
-  max-height: min(720px, calc(100dvh - 36px));
+  max-height: min(720px, calc(100dvh - var(--modal-top) - var(--modal-bottom)));
   overflow: auto;
+  overscroll-behavior: contain;
   border: 1px solid var(--vue-shell-border);
   border-radius: 22px;
   color: var(--text);
   background: linear-gradient(145deg, color-mix(in srgb, var(--panel) 98%, #0a1723), color-mix(in srgb, var(--panel2) 90%, #07101a));
   box-shadow: 0 30px 90px rgba(0,0,0,.5);
 }
-.ui-modal__header { padding: 18px 18px 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--vue-shell-border-soft); }
+.ui-modal__header { flex: none; padding: 18px 18px 14px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; border-bottom: 1px solid var(--vue-shell-border-soft); }
+.ui-modal__header > div { min-width: 0; overflow-wrap: anywhere; }
+.ui-modal__header > .ui-button { flex: none; }
 .ui-modal__header h2, .ui-modal__header p { margin: 0; }
 .ui-modal__header h2 { font-size: 21px; }
 .ui-modal__header p { margin-top: 5px; color: var(--mut); font-size: 13px; line-height: 1.45; }
 .ui-modal__body { padding: 16px 18px; display: grid; gap: 14px; }
-.ui-modal__footer { padding: 14px 18px 18px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--vue-shell-border-soft); }
+.ui-modal__footer { flex: none; flex-wrap: wrap; padding: 14px 18px 18px; display: flex; justify-content: flex-end; gap: 8px; border-top: 1px solid var(--vue-shell-border-soft); }
 .ui-overlay-enter-active, .ui-overlay-leave-active { transition: opacity .16s ease; }
 .ui-overlay-enter-from, .ui-overlay-leave-to { opacity: 0; }
 
@@ -384,8 +390,9 @@ html[data-vue-shell="ready"] body.app-modal-open .vue-shell-nav { visibility: hi
   .vue-shell-header__actions > .ui-badge { display: none; }
   .vue-shell-more-grid { grid-template-columns: 1fr; }
   .ui-modal-backdrop { padding-inline: 8px; place-items: end center; }
-  .ui-modal { width: 100%; max-height: calc(100dvh - 16px); border-radius: 22px 22px 12px 12px; }
-  .ui-modal__footer { display: grid; grid-template-columns: 1fr 1fr; }
+  .ui-modal { width: 100%; max-height: calc(100dvh - var(--modal-top) - var(--modal-bottom)); border-radius: 22px 22px 12px 12px; }
+  .ui-modal__footer { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ui-modal__footer > .ui-button { min-width: 0; overflow-wrap: anywhere; }
 }
 
 @media (prefers-reduced-motion: reduce) {

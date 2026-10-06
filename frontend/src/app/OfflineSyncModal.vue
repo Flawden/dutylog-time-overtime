@@ -20,7 +20,7 @@ let refreshRevision = 0;
 
 const text = computed(() => props.language === "en" ? {
   title: "Data sync",
-  description: "Local queue, failed operations and offline diagnostics. DutyLog keeps one sync executor in the existing data layer.",
+  description: "Check pending changes, retry failed uploads or download your local data.",
   close: "Close",
   online: "Online",
   offline: "Offline",
@@ -78,7 +78,7 @@ const text = computed(() => props.language === "en" ? {
   dayAgo: "d ago",
 } : {
   title: "Синхронизация данных",
-  description: "Локальная очередь, неудачные операции и диагностика оффлайна. Исполнитель синхронизации остаётся единственным — существующий dataLayer.",
+  description: "Проверьте ожидающие изменения, повторите неудачные отправки или скачайте локальные данные.",
   close: "Закрыть",
   online: "Онлайн",
   offline: "Оффлайн",

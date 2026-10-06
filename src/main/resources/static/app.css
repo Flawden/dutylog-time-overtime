@@ -3392,3 +3392,21 @@ body.panel-open .globalQuickAdd { display:none !important; }
 
 /* v27.46.0 human-first Compensation Setup & Base Native Payroll */
 .payrollCompensationGrid{align-items:start}.nativeCompensationForm{display:grid;gap:12px}.compensationModeSwitch{display:grid;grid-template-columns:1fr 1fr;gap:8px}.compensationModeSwitch button.active{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}.compensationHistory{display:grid;gap:8px;margin-top:16px}.compensationHistoryRow{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 12px;border:1px solid var(--line);border-radius:12px}.compensationHistoryRow span{display:grid;gap:2px}.nativePayrollSummary{display:grid;gap:10px}.nativePayrollSummary>div{display:flex;justify-content:space-between;gap:16px}.nativePayrollSummary b{text-align:right}@media(max-width:720px){.compensationModeSwitch{grid-template-columns:1fr}.compensationHistoryRow{align-items:flex-start;flex-direction:column}.nativePayrollSummary>div{align-items:flex-start;flex-direction:column}}
+
+/* Payroll controls need their own dimensions, including Vue-owned forms. */
+.payrollWorkspace :is(input:not([type=checkbox]):not([type=radio]), select, textarea, button) {
+  box-sizing: border-box;
+  min-width: 0;
+  min-height: 44px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  color: var(--text);
+  background: var(--panel2);
+  font: inherit;
+}
+.payrollWorkspace :is(input:not([type=checkbox]):not([type=radio]), select, textarea) { width: 100%; }
+.payrollWorkspace button { cursor: pointer; }
+.payrollWorkspace button:disabled { opacity: .5; cursor: not-allowed; }
+.payrollWorkspace button.primary { background: var(--accent); color: #11151a; font-weight: 800; }
+.payrollWorkspace :is(button, input, select, textarea):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
