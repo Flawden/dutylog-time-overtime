@@ -157,6 +157,8 @@ test('native HOLIDAY pricing adds configured premium from production calendar in
   expect(preview.settlementPayMinor).toBe(0);
 
   expect(preview.totalPayMinor).toBe(200000);
+  expect(preview.article153.status).toBe('LEGACY_UNREVIEWED');
+  expect(preview.article153.tariffPremiumMinor).toBeNull();
 
   expect(result.snapshot.revision).toBe(1);
   expect(result.snapshot.workedMinutes).toBe(60);

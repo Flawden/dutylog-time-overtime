@@ -2561,6 +2561,42 @@ components:
           format: int64
           minimum: 0
 
+    PayrollArticle153:
+      type: object
+      description: Backend-owned explanation of additive holiday and night money. REVIEWED means source review exists; LEGACY_UNREVIEWED never asserts statutory correctness. Frozen revisions use their saved documents, not current configuration.
+      required: [status, blockingReason, qualifiedMinutes, tariffPremiumMinor, componentPremiumMinor, preservedNightPremiumMinor]
+      properties:
+        status:
+          type: string
+          enum: [LEGACY_UNREVIEWED, REVIEW_BLOCKED, REVIEWED]
+        blockingReason:
+          type: string
+          nullable: true
+        qualifiedMinutes:
+          type: integer
+          format: int64
+          minimum: 0
+          nullable: true
+          description: Qualified holiday/rest-day minutes counted once, regardless of component count. Null unless REVIEWED.
+        tariffPremiumMinor:
+          type: integer
+          format: int64
+          minimum: 0
+          nullable: true
+          description: Additive tariff holiday pay included in ordinaryPremiumPayMinor; do not add again.
+        componentPremiumMinor:
+          type: integer
+          format: int64
+          minimum: 0
+          nullable: true
+          description: Additive source-reviewed component holiday pay included in ordinaryPremiumPayMinor; do not add again.
+        preservedNightPremiumMinor:
+          type: integer
+          format: int64
+          minimum: 0
+          nullable: true
+          description: Preserved night premium included in ordinaryPremiumPayMinor; do not add again.
+
     PayrollMoneyProjection:
       type: object
       description: Canonical Payroll time and money projection shared by live preview and immutable revision snapshots.
@@ -2684,8 +2720,10 @@ components:
       allOf:
         - $ref: '#/components/schemas/PayrollMoneyProjection'
         - type: object
-          required: [compensationComponentCalculationReady, compensationComponentCalculationBlockingReason, ordinaryPremiumPricingReady, ordinaryPremiumPricingBlockingReason, ordinaryPremiumPricingIdentityRequired, ordinaryPremiumMinutes, ordinaryPremiumReferenceBasePayMinor, ordinaryPremiumPayMinor, settlementPricingReady, settlementPricingBlockingReason]
+          required: [article153, compensationComponentCalculationReady, compensationComponentCalculationBlockingReason, ordinaryPremiumPricingReady, ordinaryPremiumPricingBlockingReason, ordinaryPremiumPricingIdentityRequired, ordinaryPremiumMinutes, ordinaryPremiumReferenceBasePayMinor, ordinaryPremiumPayMinor, settlementPricingReady, settlementPricingBlockingReason]
           properties:
+            article153:
+              $ref: '#/components/schemas/PayrollArticle153'
             compensationComponentCalculationReady:
               type: boolean
               description: False when an enabled generic compensation component cannot be valued safely for this Payroll preview.
@@ -2700,7 +2738,7 @@ components:
             ordinaryPremiumPricingBlockingReason:
               type: string
               nullable: true
-              enum: [ORDINARY_PREMIUM_SOURCE_NOT_READY, PAY_PRICING_RULES_REQUIRED, PAYROLL_COMPENSATION_REQUIRED, PAYROLL_PRODUCTION_NORM_INCOMPLETE, PAYROLL_PRODUCTION_NORM_REQUIRED, PAY_PRICING_CURRENCY_MISMATCH, PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH]
+              enum: [ORDINARY_PREMIUM_SOURCE_NOT_READY, PAY_PRICING_RULES_REQUIRED, PAYROLL_COMPENSATION_REQUIRED, PAYROLL_PRODUCTION_NORM_INCOMPLETE, PAYROLL_PRODUCTION_NORM_REQUIRED, PAY_PRICING_CURRENCY_MISMATCH, PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH, PAYROLL_ARTICLE153_CONFIGURATION_CHANGED, PAYROLL_ARTICLE153_SOURCE_REQUIRED, PAYROLL_ARTICLE153_SOURCE_BLOCKED, PAYROLL_ARTICLE153_REVIEW_DRIFT, PAYROLL_ARTICLE153_LEGACY_RECONCILIATION_REQUIRED]
               description: Exact fail-closed reason when ordinaryPremiumPricingReady is false.
             ordinaryPremiumPricingIdentityRequired:
               type: boolean
@@ -2732,8 +2770,10 @@ components:
       allOf:
         - $ref: '#/components/schemas/PayrollMoneyProjection'
         - type: object
-          required: [id, revision, ordinaryPremiumMinutes, ordinaryPremiumReferenceBasePayMinor, ordinaryPremiumPayMinor, ordinaryPremiumPricingFingerprint, sourcePeriodClosedAt, sourceIntegrityCheckedAt, calculationHash, createdAt]
+          required: [article153, id, revision, ordinaryPremiumMinutes, ordinaryPremiumReferenceBasePayMinor, ordinaryPremiumPayMinor, ordinaryPremiumPricingFingerprint, sourcePeriodClosedAt, sourceIntegrityCheckedAt, calculationHash, createdAt]
           properties:
+            article153:
+              $ref: '#/components/schemas/PayrollArticle153'
             ordinaryPremiumMinutes:
               type: integer
               minimum: 0
@@ -2791,7 +2831,7 @@ components:
         blockingReason:
           type: string
           nullable: true
-          enum: [PERIOD_OPEN, LEDGER_INTEGRITY_FAILED, PAYROLL_COMPENSATION_REQUIRED, PAYROLL_PRODUCTION_NORM_INCOMPLETE, PAYROLL_PRODUCTION_NORM_REQUIRED, PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH, PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE, PAYROLL_COMP_COMPONENT_LOCAL_BASE_INCOMPLETE, PAYROLL_COMP_COMPONENT_LOCAL_BASE_UNSUPPORTED, PAYROLL_COMP_COMPONENT_INVALID, PAY_PRICING_PROVENANCE_REQUIRED, PAY_PRICING_RULES_REQUIRED, PAY_PRICING_CURRENCY_MISMATCH, PAYROLL_SETTLEMENT_CURRENCY_MISMATCH, ORDINARY_PREMIUM_SOURCE_NOT_READY, PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH]
+          enum: [PERIOD_OPEN, LEDGER_INTEGRITY_FAILED, PAYROLL_COMPENSATION_REQUIRED, PAYROLL_PRODUCTION_NORM_INCOMPLETE, PAYROLL_PRODUCTION_NORM_REQUIRED, PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH, PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE, PAYROLL_COMP_COMPONENT_LOCAL_BASE_INCOMPLETE, PAYROLL_COMP_COMPONENT_LOCAL_BASE_UNSUPPORTED, PAYROLL_COMP_COMPONENT_INVALID, PAY_PRICING_PROVENANCE_REQUIRED, PAY_PRICING_RULES_REQUIRED, PAY_PRICING_CURRENCY_MISMATCH, PAYROLL_SETTLEMENT_CURRENCY_MISMATCH, ORDINARY_PREMIUM_SOURCE_NOT_READY, PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH, PAYROLL_ARTICLE153_CONFIGURATION_CHANGED, PAYROLL_ARTICLE153_SOURCE_REQUIRED, PAYROLL_ARTICLE153_SOURCE_BLOCKED, PAYROLL_ARTICLE153_REVIEW_DRIFT, PAYROLL_ARTICLE153_LEGACY_RECONCILIATION_REQUIRED]
         settings:
           $ref: '#/components/schemas/PayrollSettings'
         productionCalendar:

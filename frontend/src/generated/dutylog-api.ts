@@ -2,12 +2,12 @@
 /**
  * GENERATED FILE — DO NOT EDIT.
  * Source: src/main/resources/static/openapi/dutylog-v1.yaml
- * SHA-256: 20ff4be35a539f340ab9201af5486250a0e23cdc88dafbaca636a7667906a50c
+ * SHA-256: 86548a5e70bf5826d253b555a163a5340ad76d06bce793cb6200b79eab620593
  * Generator: frontend/scripts/generate-openapi-contract.mjs
- * Contract: 146 operations, 156 schemas
+ * Contract: 146 operations, 157 schemas
  */
 
-export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "20ff4be35a539f340ab9201af5486250a0e23cdc88dafbaca636a7667906a50c";
+export const DUTYLOG_OPENAPI_SOURCE_SHA256 = "86548a5e70bf5826d253b555a163a5340ad76d06bce793cb6200b79eab620593";
 
 export namespace DutyLogApiSchemas {
   export type AbsenceOccurrence = {
@@ -1017,6 +1017,15 @@ export namespace DutyLogApiSchemas {
     note?: string | null;
   };
 
+  export type PayrollArticle153 = {
+    status: "LEGACY_UNREVIEWED" | "REVIEW_BLOCKED" | "REVIEWED";
+    blockingReason: string | null;
+    qualifiedMinutes: number | null;
+    tariffPremiumMinor: number | null;
+    componentPremiumMinor: number | null;
+    preservedNightPremiumMinor: number | null;
+  };
+
   export type PayrollCompensationComponentCreateInput = {
     effectiveMonth: string;
     version: DutyLogApiSchemas.PayrollCompensationComponentVersionInput;
@@ -1119,7 +1128,7 @@ export namespace DutyLogApiSchemas {
     periodClosed: boolean;
     integrityHealthy: boolean;
     canCalculate: boolean;
-    blockingReason?: "PERIOD_OPEN" | "LEDGER_INTEGRITY_FAILED" | "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | "PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH" | "PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE" | "PAYROLL_COMP_COMPONENT_LOCAL_BASE_INCOMPLETE" | "PAYROLL_COMP_COMPONENT_LOCAL_BASE_UNSUPPORTED" | "PAYROLL_COMP_COMPONENT_INVALID" | "PAY_PRICING_PROVENANCE_REQUIRED" | "PAY_PRICING_RULES_REQUIRED" | "PAY_PRICING_CURRENCY_MISMATCH" | "PAYROLL_SETTLEMENT_CURRENCY_MISMATCH" | "ORDINARY_PREMIUM_SOURCE_NOT_READY" | "PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH" | null;
+    blockingReason?: "PERIOD_OPEN" | "LEDGER_INTEGRITY_FAILED" | "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | "PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH" | "PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE" | "PAYROLL_COMP_COMPONENT_LOCAL_BASE_INCOMPLETE" | "PAYROLL_COMP_COMPONENT_LOCAL_BASE_UNSUPPORTED" | "PAYROLL_COMP_COMPONENT_INVALID" | "PAY_PRICING_PROVENANCE_REQUIRED" | "PAY_PRICING_RULES_REQUIRED" | "PAY_PRICING_CURRENCY_MISMATCH" | "PAYROLL_SETTLEMENT_CURRENCY_MISMATCH" | "ORDINARY_PREMIUM_SOURCE_NOT_READY" | "PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH" | "PAYROLL_ARTICLE153_CONFIGURATION_CHANGED" | "PAYROLL_ARTICLE153_SOURCE_REQUIRED" | "PAYROLL_ARTICLE153_SOURCE_BLOCKED" | "PAYROLL_ARTICLE153_REVIEW_DRIFT" | "PAYROLL_ARTICLE153_LEGACY_RECONCILIATION_REQUIRED" | null;
     settings: DutyLogApiSchemas.PayrollSettings;
     productionCalendar: DutyLogApiSchemas.ProductionCalendarMonth;
     preview: DutyLogApiSchemas.PayrollPreview;
@@ -1131,10 +1140,11 @@ export namespace DutyLogApiSchemas {
   };
 
   export type PayrollPreview = DutyLogApiSchemas.PayrollMoneyProjection & {
+    article153: DutyLogApiSchemas.PayrollArticle153;
     compensationComponentCalculationReady: boolean;
     compensationComponentCalculationBlockingReason: "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | "PAYROLL_COMP_COMPONENT_CURRENCY_MISMATCH" | "PAYROLL_COMP_COMPONENT_BASE_UNAVAILABLE" | "PAYROLL_COMP_COMPONENT_LOCAL_BASE_INCOMPLETE" | "PAYROLL_COMP_COMPONENT_LOCAL_BASE_UNSUPPORTED" | "PAYROLL_COMP_COMPONENT_INVALID" | null;
     ordinaryPremiumPricingReady: boolean;
-    ordinaryPremiumPricingBlockingReason: "ORDINARY_PREMIUM_SOURCE_NOT_READY" | "PAY_PRICING_RULES_REQUIRED" | "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | "PAY_PRICING_CURRENCY_MISMATCH" | "PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH" | null;
+    ordinaryPremiumPricingBlockingReason: "ORDINARY_PREMIUM_SOURCE_NOT_READY" | "PAY_PRICING_RULES_REQUIRED" | "PAYROLL_COMPENSATION_REQUIRED" | "PAYROLL_PRODUCTION_NORM_INCOMPLETE" | "PAYROLL_PRODUCTION_NORM_REQUIRED" | "PAY_PRICING_CURRENCY_MISMATCH" | "PAYROLL_ORDINARY_PREMIUM_CURRENCY_MISMATCH" | "PAYROLL_ARTICLE153_CONFIGURATION_CHANGED" | "PAYROLL_ARTICLE153_SOURCE_REQUIRED" | "PAYROLL_ARTICLE153_SOURCE_BLOCKED" | "PAYROLL_ARTICLE153_REVIEW_DRIFT" | "PAYROLL_ARTICLE153_LEGACY_RECONCILIATION_REQUIRED" | null;
     ordinaryPremiumPricingIdentityRequired: boolean;
     ordinaryPremiumMinutes: number;
     ordinaryPremiumReferenceBasePayMinor: number;
@@ -1153,6 +1163,7 @@ export namespace DutyLogApiSchemas {
   };
 
   export type PayrollSnapshot = DutyLogApiSchemas.PayrollMoneyProjection & {
+    article153: DutyLogApiSchemas.PayrollArticle153;
     ordinaryPremiumMinutes: number;
     ordinaryPremiumReferenceBasePayMinor: number;
     ordinaryPremiumPayMinor: number;

@@ -43,9 +43,9 @@ describe("PayrollWorkspace ordinary premium explainability", () => {
       "!preview.value.ordinaryPremiumPricingReady",
     );
     expect(source).toContain(
-      "!preview.value.ordinaryPremiumPricingReady)return text.value.ordinaryPremium",
+      "!preview.value.ordinaryPremiumPricingReady)return ordinaryPremiumMessage",
     );
-    expect(source).not.toContain(
+    expect(source).toContain(
       'id="payrollOrdinaryPremiumPricingStatus"',
     );
     expect(pricingSource).toContain(

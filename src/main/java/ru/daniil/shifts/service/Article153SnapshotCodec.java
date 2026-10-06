@@ -27,6 +27,10 @@ public final class Article153SnapshotCodec {
         try { return JSON.writeValueAsString(document); }
         catch (Exception e) { throw new IllegalStateException("ARTICLE153_SNAPSHOT_ENCODING", e); }
     }
+    static JsonNode tree(String json) {
+        try { return JSON.readTree(json); }
+        catch (Exception e) { throw new IllegalStateException("ARTICLE153_SNAPSHOT_INVALID", e); }
+    }
     public static String fingerprint(String json) {
         try { return HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256")
                 .digest(json.getBytes(StandardCharsets.UTF_8))); }

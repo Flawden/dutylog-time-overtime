@@ -1042,7 +1042,8 @@ public class PayrollService {
                 salary,
                 effectiveHourly,
                 production.productionNormMinutes(),
-                salaryCovered
+                salaryCovered,
+                Article153PayrollIntegrationService.summary(article153)
         );
     }
 
@@ -1522,7 +1523,9 @@ public class PayrollService {
                 value.getMonthlySalaryMinor(),
                 value.getHourlyRateMinor(),
                 value.getProductionNormMinutes(),
-                value.getSalaryCoveredMinutes()
+                value.getSalaryCoveredMinutes(),
+                article153Payroll == null ? Article153PayrollIntegrationService.legacySummary()
+                        : article153Payroll.summary(value.getOwner(), value.getId())
         );
     }
 

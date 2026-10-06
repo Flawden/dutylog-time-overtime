@@ -46,7 +46,7 @@ public class Article153PayrollIntegrationService {
         if(!legacy.ready())return Prepared.blocked(legacy.blockingReason());
         if("SALARY".equals(term.getPayMode())&&(!production.scheduleCoverageComplete()||production.productionNormMinutes()<=0))return Prepared.blocked("PAYROLL_PRODUCTION_NORM_INCOMPLETE");
         var resolved=authority.resolve(owner,month.atDay(1));
-        if(!resolved.ready())return Prepared.blocked("PAYROLL_ARTICLE153_"+resolved.blockingReason());
+        if(!resolved.ready())return Prepared.blocked("PAYROLL_ARTICLE153_"+(resolved.blockingReason().startsWith("DEPENDENCY_BLOCKED:") ? "SOURCE_BLOCKED" : resolved.blockingReason()));
         var fact=resolved.fact();
         var result=base.calculate(term,source,production.productionNormMinutes());
         var draft=new PayrollSnapshot(owner,month.atDay(1),1,term.getCurrencyCode(),result.effectiveHourlyRateMinor(),term.getPayMode(),
@@ -111,6 +111,30 @@ public class Article153PayrollIntegrationService {
         String json=Article153PayableDocument.encode(doc);
         var row=new PayrollSnapshotArticle153Payable(refs,Article153PayableDocument.SCHEMA,json,Article153SnapshotCodec.fingerprint(json));
         Article153PayableDocument.read(row);saved.saveAndFlush(row);return draft;
+    }
+    public static ru.daniil.shifts.dto.Dtos.PayrollArticle153Dto summary(Prepared prepared) {
+        if (!prepared.active()) return legacySummary();
+        if (!prepared.ready()) return new ru.daniil.shifts.dto.Dtos.PayrollArticle153Dto(
+                "REVIEW_BLOCKED", prepared.blockingReason(), null, null, null, null);
+        var source = Article153SnapshotCodec.tree(prepared.capturedJson());
+        return reviewedSummary(source.path("qualifiedMinutes").asLong(), prepared.payable(), prepared.nightMinor());
+    }
+    public static ru.daniil.shifts.dto.Dtos.PayrollArticle153Dto legacySummary() {
+        return new ru.daniil.shifts.dto.Dtos.PayrollArticle153Dto("LEGACY_UNREVIEWED", null, null, null, null, null);
+    }
+    private static ru.daniil.shifts.dto.Dtos.PayrollArticle153Dto reviewedSummary(long minutes, Article153PayableProjection.Outcome outcome, long night) {
+        return new ru.daniil.shifts.dto.Dtos.PayrollArticle153Dto("REVIEWED", null, minutes,
+                outcome.tariffPremiumMinor(), outcome.componentPremiumMinor(), night);
+    }
+    /** Frozen history reads only validated sidecars; live authorities and pricing are never used. */
+    @Transactional(readOnly=true)
+    public ru.daniil.shifts.dto.Dtos.PayrollArticle153Dto summary(AppUser owner, Long snapshotId) {
+        check(owner!=null && owner.getId()!=null && owner.getId()>0 && snapshotId!=null && snapshotId>0,"READ_IDENTITY");
+        return saved.findBySnapshotIdAndRemuneration_Tariff_Authority_Snapshot_Owner(snapshotId,owner).map(row -> {
+            var document=Article153PayableDocument.read(row);
+            var source=Article153SnapshotCodec.read(row.getRemuneration().getTariff().getAuthority());
+            return reviewedSummary(source.path("qualifiedMinutes").asLong(), document.payable(), document.preservedNightMinor());
+        }).orElseGet(Article153PayrollIntegrationService::legacySummary);
     }
     @Transactional(readOnly=true)
     public Optional<Article153PayableDocument.Document> load(AppUser owner,Long snapshotId){

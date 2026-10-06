@@ -3133,6 +3133,16 @@ public final class Dtos {
     }
 
     /** Transparent source-time and money projection before it is frozen into a revision. */
+    /** Display-only explanation: never a second calculation or a certification command. */
+    public record PayrollArticle153Dto(
+            String status,
+            String blockingReason,
+            Long qualifiedMinutes,
+            Long tariffPremiumMinor,
+            Long componentPremiumMinor,
+            Long preservedNightPremiumMinor
+    ) {}
+
     public record PayrollPreviewDto(
             String month,
             String currencyCode,
@@ -3177,7 +3187,8 @@ public final class Dtos {
             Long monthlySalaryMinor,
             long effectiveHourlyRateMinor,
             int productionNormMinutes,
-            int salaryCoveredMinutes
+            int salaryCoveredMinutes,
+            PayrollArticle153Dto article153
     ) {}
 
     /** Immutable versioned payroll snapshot of a closed accounting month. */
@@ -3226,7 +3237,8 @@ public final class Dtos {
             Long monthlySalaryMinor,
             long effectiveHourlyRateMinor,
             int productionNormMinutes,
-            int salaryCoveredMinutes
+            int salaryCoveredMinutes,
+            PayrollArticle153Dto article153
     ) {}
 
     /** One Payroll workspace payload with effective compensation and immutable revision history. */
