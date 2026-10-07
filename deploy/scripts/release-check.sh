@@ -2654,7 +2654,7 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "57" ]]; then
+if [[ "$E2E_TESTS" == "59" ]]; then
   # v27.11.1 CI & Contract Hotfix
 contains CHANGES.md "v27.11.1 — CI & Contract Hotfix"
 contains README.md "v27.11.1 — CI & Contract Hotfix"
@@ -4935,13 +4935,13 @@ not_contains src/main/java/ru/daniil/shifts/module/DutyLogModules.java 'ModuleSe
   contains e2e/payroll-compensation-components.spec.js "persisted1.supersededById"
   contains e2e/payroll-compensation-components.spec.js "#payrollCompensationComponentBreakdown"
   contains e2e/payroll-compensation-components.spec.js "#compensationComponentPreset"
-  ok "Playwright test baseline: 57"
+  ok "Playwright test baseline: 59"
   # 8A4F3S ancillary staging E2E day-boundary alignment.
   contains e2e/calendar-comfort.spec.js "const canonicalToday = page.locator('#grid .todayCell');"
   contains frontend/src/features/settings-workspace/components/TimeSettingsCard.vue "&& (!effectiveFrom.value || effectiveFrom.value > currentWorkDate.value)"
   contains frontend/src/features/settings-workspace/components/TimeSettingsCard.vue "A timezone move can shift the canonical work date backwards across"
 else
-  fail "expected 57 Playwright tests, found $E2E_TESTS"
+  fail "expected 59 Playwright tests, found $E2E_TESTS"
 fi
 
 VITEST_TESTS=$(grep -R --include='*.spec.ts' --include='*.test.ts' -h -E '^[[:space:]]*(it|test)\(' frontend/src | wc -l | tr -d ' ')

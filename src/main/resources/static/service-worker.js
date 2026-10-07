@@ -60,7 +60,20 @@ self.addEventListener("fetch", event => {
     return;
   }
 
-  // JS/CSS, включая content-hashed Vue chunks — network-first: HTML может обновиться раньше shell-кэша.
+  // content-hashed Vue chunks identify immutable public code. A cache hit needs no
+  // network request; mutable entry points and HTML still use network-first.
+  if (event.request.method === "GET" && /^\/vue\/chunks\/[^/]+-[A-Za-z0-9_-]{8}\.(js|css)$/.test(url.pathname)) {
+    event.respondWith(caches.open(CACHE_NAME).then(async cache => {
+      const cached = await cache.match(event.request);
+      if (cached) return cached;
+      const response = await fetch(event.request);
+      if (response.ok) await cache.put(event.request, response.clone());
+      return response;
+    }));
+    return;
+  }
+
+  // JS/CSS со стабильным URL — network-first: HTML может обновиться раньше shell-кэша.
   // Загруженный chunk кладётся в текущий release cache, поэтому посещённый workspace переживает offline reload.
   // Если отдать старые JS-файлы к новому index.html, получим фантомные баги.
   if (url.pathname.endsWith(".js") || url.pathname.endsWith(".css")) {

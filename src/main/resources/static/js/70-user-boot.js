@@ -234,15 +234,20 @@ async function init(){
     setAppBooting(true, "Загружаю модули…");
     await loadModules();
     setAppBooting(true, "Загружаю календарь…");
-    state.shiftTypes = await api.shiftTypes();
-    state.quickScenarios = moduleEnabled("scenarios") ? await api.quickScenarios() : [];
-    state.scheduleTemplates = await api.scheduleTemplates();
-    state.calendarLayers = await api.calendarLayers();
-    if (moduleEnabled("important_dates")) await refreshImportantSettings();
-    // The calendar projection depends on the persisted work/display zones. Load the
-    // authoritative profile before the first month request instead of racing both.
-    await loadProfile();
-    if (moduleEnabled("calendar_sync") && typeof loadCalendarSyncStatus === "function") await loadCalendarSyncStatus(true);
+    // Independent authenticated reads share one network round trip budget.
+    // Wait for every read (including failure paths) before projecting the month.
+    const bootstrap = await Promise.allSettled([
+      (async () => { state.shiftTypes = await api.shiftTypes(); })(),
+      (async () => { state.quickScenarios = moduleEnabled("scenarios") ? await api.quickScenarios() : []; })(),
+      (async () => { state.scheduleTemplates = await api.scheduleTemplates(); })(),
+      (async () => { state.calendarLayers = await api.calendarLayers(); })(),
+      (async () => { if (moduleEnabled("important_dates")) await refreshImportantSettings(); })(),
+      // Profile zones remain authoritative before the first month request.
+      (async () => { await loadProfile(); })(),
+      (async () => { if (moduleEnabled("calendar_sync") && typeof loadCalendarSyncStatus === "function") await loadCalendarSyncStatus(true); })(),
+    ]);
+    const failed = bootstrap.find(result => result.status === "rejected");
+    if (failed) throw failed.reason;
     // The first visible month follows DutyLog's persisted work timezone rather
     // than the browser clock. This matters near month boundaries and in UTC±14.
     const [profileTodayYear, profileTodayMonth] = todayKey().split("-").map(Number);
@@ -257,7 +262,10 @@ async function init(){
     setSave("err", t("нет связи — открыта локальная копия"));
   }
   await loadMonth();
-  if (moduleEnabled("overtime")) await loadLedgerPage(true);
+  // Native time-bank routes load their own bundle when entered. Calendar/Today
+  // already receive their balance in the calendar projection; do not block boot
+  // on vacation, settlement and compensation reads for an unopened workspace.
+  if (moduleEnabled("overtime") && !window.DutyLogVueDomains?.absenceTimeBank) await loadLedgerPage(true);
   if (moduleEnabled("tasks")) await Promise.all([loadTaskBoard(true), loadTaskMetadata(true), loadInbox(true)]);
   applyModuleVisibility();
   if (typeof calendarExperienceRestoreFocus === "function") await calendarExperienceRestoreFocus();
