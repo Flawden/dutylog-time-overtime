@@ -40,7 +40,7 @@ const importantSummary = computed(() => !productivityReadable.value ? "" : (impo
 
 const domain: DutyLogProductivityDomain = Object.freeze({
   ready: () => productivityReadable.value && store.loaded,
-  refresh: async () => { await store.refreshAll(focusDate.value); },
+  refresh: async () => { await store.refreshAll(focusDate.value, activeRoute.value); },
   openQuickActions: (date?: string) => { store.openQuickActions(date || focusDate.value); },
   openTaskCreate: async (date?: string, text = "", sourceInboxId: number | null = null) => {
     await store.openTaskCreate(date || focusDate.value, text, sourceInboxId);
@@ -94,7 +94,7 @@ async function synchronizeProductivity(): Promise<void> {
     store.loaded = false;
     return;
   }
-  await store.refreshAll(focusDate.value);
+  await store.refreshAll(focusDate.value, activeRoute.value);
 }
 
 async function refreshAfterOfflineSync(): Promise<void> {
@@ -103,7 +103,7 @@ async function refreshAfterOfflineSync(): Promise<void> {
   // Refresh Vue only after that owner publishes completion; do not start a
   // second reconnect flush from ProductivityWorkspace.
   store.synchronizeQueuedCount();
-  try { await store.refreshAll(focusDate.value); } catch { /* queue diagnostics remain authoritative */ }
+  try { await store.refreshAll(focusDate.value, activeRoute.value); } catch { /* queue diagnostics remain authoritative */ }
 }
 function handleOfflineSyncComplete(): void { void refreshAfterOfflineSync(); }
 

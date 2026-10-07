@@ -220,7 +220,7 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
       const targetDate = date ?? this.selectedDate;
       if (!this.loaded) await this.refreshAll(targetDate);
     },
-    async refreshAll(date?: string): Promise<void> {
+    async refreshAll(date?: string, route = "all"): Promise<void> {
       const targetDate = date ?? this.selectedDate;
       this.loading = true;
       this.error = "";
@@ -236,9 +236,9 @@ export const useProductivityStore = defineStore("dutylog-productivity", {
         const importantEnabled = runtimeModuleEnabled("important_dates");
         const [selectedOk, boardOk, importantOk, inboxOk] = await Promise.all([
           this.loadSelectedDate(targetDate),
-          tasksEnabled && !offline ? this.loadBoard() : Promise.resolve(true),
-          importantEnabled && !offline ? this.loadImportantDays() : Promise.resolve(true),
-          tasksEnabled && !offline ? this.loadInbox() : Promise.resolve(true),
+          tasksEnabled && !offline && (route === "all" || route === "tasks") ? this.loadBoard() : Promise.resolve(true),
+          importantEnabled && !offline && (route === "all" || route === "important") ? this.loadImportantDays() : Promise.resolve(true),
+          tasksEnabled && !offline && (route === "all" || route === "tasks") ? this.loadInbox() : Promise.resolve(true),
         ]);
         // The selected-day IndexedDB snapshot is the offline authority. Board,
         // Inbox and full Important lists are server-owned and deliberately stay

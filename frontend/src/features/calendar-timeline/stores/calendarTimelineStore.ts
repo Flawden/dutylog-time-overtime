@@ -10,6 +10,8 @@ const FOCUS_KEY = "dutylog.calendar.focus.v2";
 const PROFILE_KEY = "dutylog.calendar.profile.v1";
 let readSequence = 0;
 let activeApi = calendarTimelineApi;
+const readControllers = new WeakMap<object, AbortController>();
+const ensuredReads = new WeakMap<object, { key: string; promise: Promise<void> }>();
 
 type CalendarTimelineOfflineSnapshot = Readonly<{ bundle: unknown; savedAt: string | null }>;
 type CalendarTimelineOfflineSource = (focusDate: string) => Promise<CalendarTimelineOfflineSnapshot | null>;
@@ -81,16 +83,28 @@ export const useCalendarTimelineStore = defineStore("dutylog-calendar-timeline",
       storageSet(FOCUS_KEY, this.focusDate);
       storageSet(PROFILE_KEY, this.activeProfileId);
     },
-    async ensureLoaded(): Promise<void> { if (!this.loaded) await this.refresh(); },
+    async ensureLoaded(): Promise<void> {
+      if (this.loaded) return;
+      const key = this.focusDate;
+      const pending = ensuredReads.get(this);
+      if (pending?.key === key) return pending.promise;
+      const promise = this.refresh();
+      ensuredReads.set(this, { key, promise });
+      try { await promise; }
+      finally { if (ensuredReads.get(this)?.promise === promise) ensuredReads.delete(this); }
+    },
     async ensureTodayLoaded(): Promise<void> {
       if (!this.loaded || this.workDate < this.range.from || this.workDate > this.range.to) await this.refresh(true);
     },
     async refresh(preferWorkDate = false): Promise<void> {
       const sequence = ++readSequence;
+      readControllers.get(this)?.abort();
+      const controller = new AbortController();
+      readControllers.set(this, controller);
       this.loading = true;
       this.error = "";
       try {
-        const result = await activeApi.load(this.focusDate, preferWorkDate);
+        const result = await activeApi.load(this.focusDate, preferWorkDate, controller.signal);
         if (sequence !== readSequence) return;
         this.bundle = result.bundle;
         if (this.activeProfileId !== "self" && !result.bundle.calendarLayers.some(layer => layer.visible && String(layer.id) === this.activeProfileId)) {
@@ -123,7 +137,7 @@ export const useCalendarTimelineStore = defineStore("dutylog-calendar-timeline",
         }
         this.error = error instanceof Error ? error.message : "Не удалось загрузить календарь";
       } finally {
-        if (sequence === readSequence) this.loading = false;
+        if (sequence === readSequence) { this.loading = false; readControllers.delete(this); }
       }
     },
     async openDate(date: string, mode?: CalendarMode): Promise<void> {

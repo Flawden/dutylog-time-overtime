@@ -152,6 +152,7 @@ async function performDutyLogLogout(){
   if (dutyLogLogoutInFlight) return;
   dutyLogLogoutInFlight = true;
   try { await flushPendingSave(); } catch (e) { /* не блокируем выход */ }
+  clearOfflineOwner();
   try { await fetch("/logout", { method: "POST", headers: csrfToken() ? { "X-XSRF-TOKEN": csrfToken() } : {} }); } catch (e) { /* пофиг, всё равно уходим */ }
   window.location.href = "/login.html";
 }
@@ -226,9 +227,10 @@ async function init(){
   renderSwatches();
   initTimeSettingsEvents();
   initSettingsAccordion();
-  await dataLayer.init();
   try {
     const me = await jfetch("/api/auth/me");
+    selectOfflineOwner(me.userId == null ? null : String(me.userId));
+    await dataLayer.init();
     const legacyWhoami = $("whoami");
     if (legacyWhoami) legacyWhoami.textContent = me.username;
     setAppBooting(true, "Загружаю модули…");
@@ -258,6 +260,10 @@ async function init(){
   } catch (err) {
     console.error(err);
     if (err.status === 401) return; // при 401 нас уже уносит на login.html
+    if (!offlineOwner && isNetworkError(err)) {
+      selectOfflineOwner(rememberedOfflineOwner());
+      if (offlineOwner) await dataLayer.init();
+    }
     state.offline.online = false;
     setSave("err", t("нет связи — открыта локальная копия"));
   }

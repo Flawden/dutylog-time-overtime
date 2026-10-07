@@ -7,6 +7,9 @@ import type { DutyLogSettingsWorkspaceDomain } from "@/features/settings-workspa
 export {};
 
 declare global {
+  interface Window {
+    DutyLogOfflineIdentity?: Readonly<{ owner(): string | null; clear(): void }>;
+  }
   interface DutyLogLegacyProfileSnapshot {
     displayName: string;
     initials: string;

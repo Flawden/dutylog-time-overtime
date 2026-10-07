@@ -2654,7 +2654,7 @@ else
 fi
 
 E2E_TESTS=$(grep -R --include='*.spec.js' -h -E '^[[:space:]]*test\(' e2e | wc -l | tr -d ' ')
-if [[ "$E2E_TESTS" == "59" ]]; then
+if [[ "$E2E_TESTS" == "61" ]]; then
   # v27.11.1 CI & Contract Hotfix
 contains CHANGES.md "v27.11.1 — CI & Contract Hotfix"
 contains README.md "v27.11.1 — CI & Contract Hotfix"
@@ -4131,9 +4131,9 @@ contains src/test/java/ru/daniil/shifts/web/VueCalendarTimelineMigrationFrontend
   contains e2e/multiple-daily-notes.spec.js '/^\/api\/notes\/\d+$/'
   contains e2e/multiple-daily-notes.spec.js '/^\/api\/v1\/notes\/\d+$/'
   contains frontend/src/features/productivity/stores/productivityStore.ts 'const offline = typeof navigator !== "undefined" && !navigator.onLine && bridge !== null'
-  contains frontend/src/features/productivity/stores/productivityStore.ts 'tasksEnabled && !offline ? this.loadBoard() : Promise.resolve(true)'
-  contains frontend/src/features/productivity/stores/productivityStore.ts 'importantEnabled && !offline ? this.loadImportantDays() : Promise.resolve(true)'
-  contains frontend/src/features/productivity/stores/productivityStore.ts 'tasksEnabled && !offline ? this.loadInbox() : Promise.resolve(true)'
+  contains frontend/src/features/productivity/stores/productivityStore.ts 'tasksEnabled && !offline && (route === "all" || route === "tasks") ? this.loadBoard() : Promise.resolve(true)'
+  contains frontend/src/features/productivity/stores/productivityStore.ts 'importantEnabled && !offline && (route === "all" || route === "important") ? this.loadImportantDays() : Promise.resolve(true)'
+  contains frontend/src/features/productivity/stores/productivityStore.ts 'tasksEnabled && !offline && (route === "all" || route === "tasks") ? this.loadInbox() : Promise.resolve(true)'
   contains frontend/src/features/productivity/stores/productivityStore.ts 'publishSavedTask(saved: Task)'
   contains frontend/src/features/productivity/stores/productivityStore.ts 'items[boardIndex] = saved'
   not_contains frontend/src/features/productivity/stores/productivityStore.ts 'this.board = { ...this.board, items: sortDayTasks(items)'
@@ -4935,20 +4935,20 @@ not_contains src/main/java/ru/daniil/shifts/module/DutyLogModules.java 'ModuleSe
   contains e2e/payroll-compensation-components.spec.js "persisted1.supersededById"
   contains e2e/payroll-compensation-components.spec.js "#payrollCompensationComponentBreakdown"
   contains e2e/payroll-compensation-components.spec.js "#compensationComponentPreset"
-  ok "Playwright test baseline: 59"
+  ok "Playwright test baseline: 61"
   # 8A4F3S ancillary staging E2E day-boundary alignment.
   contains e2e/calendar-comfort.spec.js "const canonicalToday = page.locator('#grid .todayCell');"
   contains frontend/src/features/settings-workspace/components/TimeSettingsCard.vue "&& (!effectiveFrom.value || effectiveFrom.value > currentWorkDate.value)"
   contains frontend/src/features/settings-workspace/components/TimeSettingsCard.vue "A timezone move can shift the canonical work date backwards across"
 else
-  fail "expected 59 Playwright tests, found $E2E_TESTS"
+  fail "expected 61 Playwright tests, found $E2E_TESTS"
 fi
 
 VITEST_TESTS=$(grep -R --include='*.spec.ts' --include='*.test.ts' -h -E '^[[:space:]]*(it|test)\(' frontend/src | wc -l | tr -d ' ')
-if [[ "$VITEST_TESTS" == "92" ]]; then
-  ok "Vitest case baseline: 92"
+if [[ "$VITEST_TESTS" == "94" ]]; then
+  ok "Vitest case baseline: 94"
 else
-  fail "expected 92 Vitest cases, found $VITEST_TESTS"
+  fail "expected 94 Vitest cases, found $VITEST_TESTS"
 fi
 
 
@@ -5614,15 +5614,21 @@ else
   fail "RU-KYA 2026 source-pack SHA mismatch: $RU_KYA_PACK_SHA"
 fi
 
-if [[ "$TEST_METHODS" == "2794" ]]; then
-  ok "test method baseline: 2794"
+if node --test tests/offline-owner.test.cjs; then
+  ok "offline account isolation and empty queue regressions"
 else
-  fail "expected 2794 @Test methods, found $TEST_METHODS"
+  fail "offline account isolation regression tests failed"
 fi
-if [[ "$TEST_CLASSES" == "390" ]]; then
-  ok "test class baseline: 390"
+
+if [[ "$TEST_METHODS" == "2799" ]]; then
+  ok "test method baseline: 2799"
 else
-  fail "expected 390 test classes, found $TEST_CLASSES"
+  fail "expected 2799 @Test methods, found $TEST_METHODS"
+fi
+if [[ "$TEST_CLASSES" == "392" ]]; then
+  ok "test class baseline: 392"
+else
+  fail "expected 392 test classes, found $TEST_CLASSES"
 fi
 
 # v27.42.7 People Profiles E2E Locator Alignment Hotfix

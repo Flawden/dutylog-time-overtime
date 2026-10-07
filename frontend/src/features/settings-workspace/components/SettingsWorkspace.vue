@@ -121,7 +121,10 @@ onBeforeMount(() => {
 });
 onMounted(async () => {
   const now = new Date(); const from = new Date(now); from.setDate(from.getDate() - 30); const to = new Date(now); to.setDate(to.getDate() + 335); exportFrom.value = isoDay(from); exportTo.value = isoDay(to);
-  try { await settings.bootstrap(props.bridge); } catch (_) {}
+  try {
+    await settings.bootstrap(props.bridge);
+    if (activeRoute.value === "settings") await settings.loadDetails();
+  } catch (_) {}
   // Settings metadata may bootstrap before first-run onboarding commits its
   // module preset. The shell snapshot is the current runtime authority, so
   // merge its enabled flags after bootstrap and on every later module event.
@@ -131,6 +134,7 @@ onMounted(async () => {
   const saved = (() => { try { return localStorage.getItem("dutylog.settings.openSection"); } catch (_) { return null; } })();
   if (route) open(route, false); else if (saved === "all") expandAll(); else if (saved === "none") collapseAll(); else if (saved && SECTIONS.includes(saved as Section)) open(saved as Section, false); else open("profile", false);
 });
+watch(activeRoute, route => { if (route === "settings" && settings.loaded) void settings.loadDetails(); });
 watch(profile, value => { if (!value) return; displayName.value = value.displayName ?? ""; birthday.value = value.birthday ?? ""; });
 watch(shellModules, value => { settings.synchronizeModuleEnabledMap(value); }, { deep: true });
 watch(rawRoute, route => { const section = sectionFromRoute(route); if (section) open(section, false); });

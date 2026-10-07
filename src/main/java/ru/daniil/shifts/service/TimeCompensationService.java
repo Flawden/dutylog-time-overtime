@@ -70,7 +70,9 @@ public class TimeCompensationService {
             planned.put(entry.getDate(), entry);
         }
 
-        Map<LocalDate, List<ActualWorkInterval>> actualByDate = actualByDate(user, from, to);
+        var productionDays = productionCalendar.effectiveDays(user, from, to);
+        Map<ActualWorkInterval, Map<LocalDate, Integer>> actualMinutes = new LinkedHashMap<>();
+        Map<LocalDate, List<ActualWorkInterval>> actualByDate = actualByDate(user, from, to, actualMinutes);
 
         Map<LocalDate, List<AbsenceOccurrenceDto>> absences = new LinkedHashMap<>();
         for (AbsenceOccurrenceDto occurrence : vacationPlanner.occurrences(user, from, to)) {
@@ -110,7 +112,7 @@ public class TimeCompensationService {
 
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
             DayEntry day = planned.get(date);
-            int plannedMinutes = productionCalendar.requiredMinutes(user, date, day);
+            int plannedMinutes = productionCalendar.requiredMinutes(user, date, day, productionDays);
             List<AbsenceOccurrenceDto> dayAbsences = absences.getOrDefault(date, List.of());
             int absenceMinutes = absenceMinutes(plannedMinutes, dayAbsences);
             int earnedMinutes = earnedByDate.getOrDefault(date, 0);
@@ -118,7 +120,7 @@ public class TimeCompensationService {
             LocalDate currentDate = date;
             boolean explicitActual = !actualIntervals.isEmpty();
             int workedMinutes = explicitActual
-                    ? actualIntervals.stream().mapToInt(item -> actualAllocation.netMinutesOnDate(item, currentDate)).sum()
+                    ? actualIntervals.stream().mapToInt(item -> actualMinutes.get(item).getOrDefault(currentDate, 0)).sum()
                     : Math.max(0, plannedMinutes - Math.min(plannedMinutes, absenceMinutes)) + earnedMinutes;
             int usedMinutes = usedByDate.getOrDefault(date, 0);
             int compensatedMinutes = compensatedByDate.getOrDefault(date, 0);
@@ -225,7 +227,9 @@ public class TimeCompensationService {
             planned.put(entry.getDate(), entry);
         }
 
-        Map<LocalDate, List<ActualWorkInterval>> actualByDate = actualByDate(user, from, to);
+        var productionDays = productionCalendar.effectiveDays(user, from, to);
+        Map<ActualWorkInterval, Map<LocalDate, Integer>> actualMinutes = new LinkedHashMap<>();
+        Map<LocalDate, List<ActualWorkInterval>> actualByDate = actualByDate(user, from, to, actualMinutes);
 
         Map<LocalDate, List<AbsenceOccurrenceDto>> postedAbsences = new LinkedHashMap<>();
         for (AbsenceOccurrenceDto occurrence : vacationPlanner.occurrences(user, from, to)) {
@@ -253,7 +257,7 @@ public class TimeCompensationService {
         int hourlyBaseWorkedTotal = 0;
 
         for (LocalDate date = from; !date.isAfter(to); date = date.plusDays(1)) {
-            int plannedMinutes = productionCalendar.requiredMinutes(user, date, planned.get(date));
+            int plannedMinutes = productionCalendar.requiredMinutes(user, date, planned.get(date), productionDays);
             List<AbsenceOccurrenceDto> absences = postedAbsences.getOrDefault(date, List.of());
             int absenceMinutes = absenceMinutes(plannedMinutes, absences);
             int earnedMinutes = earnedByDate.getOrDefault(date, 0);
@@ -261,7 +265,7 @@ public class TimeCompensationService {
             LocalDate currentDate = date;
             int workedMinutes = actualIntervals.isEmpty()
                     ? Math.max(0, plannedMinutes - Math.min(plannedMinutes, absenceMinutes)) + earnedMinutes
-                    : actualIntervals.stream().mapToInt(item -> actualAllocation.netMinutesOnDate(item, currentDate)).sum();
+                    : actualIntervals.stream().mapToInt(item -> actualMinutes.get(item).getOrDefault(currentDate, 0)).sum();
 
             /*
              * HOURLY bank-first base:
@@ -375,10 +379,13 @@ public class TimeCompensationService {
         );
     }
 
-    private Map<LocalDate, List<ActualWorkInterval>> actualByDate(AppUser user, LocalDate from, LocalDate to) {
+    private Map<LocalDate, List<ActualWorkInterval>> actualByDate(AppUser user, LocalDate from, LocalDate to,
+        Map<ActualWorkInterval, Map<LocalDate, Integer>> actualMinutes) {
         Map<LocalDate, List<ActualWorkInterval>> result = new LinkedHashMap<>();
         for (ActualWorkInterval interval : actualWork.findOverlappingRange(user, from, to)) {
-            for (LocalDate date : actualAllocation.netMinutesByDate(interval).keySet()) {
+            Map<LocalDate, Integer> allocation = actualAllocation.netMinutesByDate(interval);
+            actualMinutes.put(interval, allocation);
+            for (LocalDate date : allocation.keySet()) {
                 if (date.isBefore(from) || date.isAfter(to)) continue;
                 result.computeIfAbsent(date, ignored -> new ArrayList<>()).add(interval);
             }

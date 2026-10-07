@@ -49,7 +49,10 @@ export function createDutyLogHttpClient(options: DutyLogHttpClientOptions = {}) 
   const readCookie = options.readCookie ?? (() => globalThis.document?.cookie ?? "");
   const requestIdFactory = options.requestIdFactory ?? defaultRequestId;
   const onUnauthorized = options.onUnauthorized ?? (() => {
-    if (globalThis.window) globalThis.window.location.assign("/login.html");
+    if (globalThis.window) {
+      globalThis.window.DutyLogOfflineIdentity?.clear();
+      globalThis.window.location.assign("/login.html");
+    }
   });
 
   return async function requestJson<TResponse, TBody = unknown>(
@@ -62,6 +65,8 @@ export function createDutyLogHttpClient(options: DutyLogHttpClientOptions = {}) 
     const clientRequestId = normalizeRequestId(headers.get("X-Request-Id"))
       ?? normalizeRequestId(requestIdFactory())
       ?? defaultRequestId();
+    const owner = globalThis.window?.DutyLogOfflineIdentity?.owner();
+    if (owner) headers.set("X-DutyLog-Offline-Owner", owner);
     headers.set("Accept", "application/json");
     headers.set("X-Request-Id", clientRequestId);
 

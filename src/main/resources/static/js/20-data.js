@@ -703,6 +703,10 @@ async function jfetch(url, opts = {}) {
     throw err;
   }
   const headers = opts.body ? { "Content-Type": "application/json" } : {};
+  if (offlineOwner && url !== "/api/auth/me") {
+    assertOfflineOwner();
+    headers["X-DutyLog-Offline-Owner"] = offlineOwner;
+  }
   if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
     const token = csrfToken();
     if (token) headers["X-XSRF-TOKEN"] = token;
@@ -712,11 +716,13 @@ async function jfetch(url, opts = {}) {
     headers,
     body: opts.body ? JSON.stringify(opts.body) : undefined,
     cache: opts.cache,
+    signal: opts.signal,
   });
   if (res.status === 401) {
     // Сессия истекла или не залогинен — на страницу входа
     window.location.href = "/login.html";
-    throw new Error(t("401: не авторизован"));
+    clearOfflineOwner();
+    throw Object.assign(new Error(t("401: не авторизован")), { status:401, url, method });
   }
   if (!res.ok) {
     let msg = `${opts.method || "GET"} ${url} → ${res.status}`;
@@ -769,6 +775,46 @@ function setSave(s, msg = "") {
  * снимок календаря и очередь безопасных мутаций: день/заметка и done-задачи.
  */
 const OFFLINE_DB_NAME = "dutylog-offline";
+const OFFLINE_OWNER_KEY = "dutylog.offline.account.v2";
+let offlineOwner = null;
+function rememberedOfflineOwner(){
+  try { return localStorage.getItem(OFFLINE_OWNER_KEY); } catch (_) { return undefined; }
+}
+function selectOfflineOwner(userId){
+  const owner = typeof userId === "string" && userId.length ? userId : null;
+  if (owner !== offlineOwner) {
+    offlineDb.db?.close();
+    offlineDb.db = null;
+    state.offline.cacheReady = false;
+    state.offline.lastSyncAt = null;
+    state.offline.pending = 0;
+    state.offline.failed = [];
+  }
+  const previousOwner = offlineOwner;
+  offlineOwner = owner;
+  try {
+    if (owner) localStorage.setItem(OFFLINE_OWNER_KEY, owner);
+    else if (rememberedOfflineOwner() === previousOwner) localStorage.removeItem(OFFLINE_OWNER_KEY);
+  } catch (_) { /* No persistent identity means no offline fallback after reload. */ }
+}
+function clearOfflineOwner(){ selectOfflineOwner(null); }
+window.DutyLogOfflineIdentity = Object.freeze({ owner:() => offlineOwner, clear:clearOfflineOwner });
+function assertOfflineOwner(){
+  if (!offlineOwner || (rememberedOfflineOwner() !== undefined && rememberedOfflineOwner() !== offlineOwner)) {
+    throw Object.assign(new Error(t("Аккаунт изменился. Перезагрузите страницу.")), { status:401 });
+  }
+}
+window.addEventListener("storage", event => {
+  if (event.key === OFFLINE_OWNER_KEY && offlineOwner && event.newValue !== offlineOwner) {
+    offlineDb.db?.close();
+    offlineDb.db = null;
+    offlineOwner = null;
+    state.offline.cacheReady = false;
+    window.location.href = "/login.html";
+  }
+});
+function offlineSyncLockKey(){ return OFFLINE_SYNC_LOCK_KEY + ":" + encodeURIComponent(offlineOwner || ""); }
+
 const OFFLINE_DB_VERSION = 1;
 const OFFLINE_SNAPSHOT_KEY = "bootstrap";
 const OFFLINE_META_FAILED_KEY = "failedMutations";
@@ -833,39 +879,39 @@ function describeOfflineOperation(item){
 function acquireOfflineSyncLock(){
   try {
     const now = Date.now();
-    const raw = localStorage.getItem(OFFLINE_SYNC_LOCK_KEY);
+    const raw = localStorage.getItem(offlineSyncLockKey());
     const current = raw ? JSON.parse(raw) : null;
     if (current?.owner && current.owner !== OFFLINE_CLIENT_ID && Number(current.expiresAt || 0) > now) {
       return null;
     }
     const lock = { owner:OFFLINE_CLIENT_ID, token:uuid(), startedAt:new Date().toISOString(), expiresAt:now + OFFLINE_SYNC_LOCK_TTL_MS };
-    localStorage.setItem(OFFLINE_SYNC_LOCK_KEY, JSON.stringify(lock));
-    const saved = JSON.parse(localStorage.getItem(OFFLINE_SYNC_LOCK_KEY) || "{}");
+    localStorage.setItem(offlineSyncLockKey(), JSON.stringify(lock));
+    const saved = JSON.parse(localStorage.getItem(offlineSyncLockKey()) || "{}");
     return saved.token === lock.token ? lock : null;
   } catch (_) { return { owner:OFFLINE_CLIENT_ID, token:"memory", expiresAt:Date.now() + OFFLINE_SYNC_LOCK_TTL_MS }; }
 }
 function refreshOfflineSyncLock(lock){
   if (!lock || lock.token === "memory") return;
   try {
-    const raw = localStorage.getItem(OFFLINE_SYNC_LOCK_KEY);
+    const raw = localStorage.getItem(offlineSyncLockKey());
     const current = raw ? JSON.parse(raw) : null;
     if (current?.token === lock.token) {
       current.expiresAt = Date.now() + OFFLINE_SYNC_LOCK_TTL_MS;
-      localStorage.setItem(OFFLINE_SYNC_LOCK_KEY, JSON.stringify(current));
+      localStorage.setItem(offlineSyncLockKey(), JSON.stringify(current));
     }
   } catch (_) {}
 }
 function releaseOfflineSyncLock(lock){
   if (!lock || lock.token === "memory") return;
   try {
-    const raw = localStorage.getItem(OFFLINE_SYNC_LOCK_KEY);
+    const raw = localStorage.getItem(offlineSyncLockKey());
     const current = raw ? JSON.parse(raw) : null;
-    if (current?.token === lock.token) localStorage.removeItem(OFFLINE_SYNC_LOCK_KEY);
+    if (current?.token === lock.token) localStorage.removeItem(offlineSyncLockKey());
   } catch (_) {}
 }
 function offlineSyncLockInfo(){
   try {
-    const raw = localStorage.getItem(OFFLINE_SYNC_LOCK_KEY);
+    const raw = localStorage.getItem(offlineSyncLockKey());
     if (!raw) return { active:false, label:t("нет"), raw:null };
     const lock = JSON.parse(raw);
     const expiresAt = Number(lock?.expiresAt || 0);
@@ -956,10 +1002,11 @@ function txDone(tx){
 const offlineDb = {
   db: null,
   async open(){
+    assertOfflineOwner();
     if (this.db) return this.db;
     if (!('indexedDB' in window)) throw new Error(t("Браузер не поддерживает локальное хранилище"));
     this.db = await new Promise((resolve, reject) => {
-      const req = indexedDB.open(OFFLINE_DB_NAME, OFFLINE_DB_VERSION);
+      const req = indexedDB.open(OFFLINE_DB_NAME + ":account:" + encodeURIComponent(offlineOwner), OFFLINE_DB_VERSION);
       req.onupgradeneeded = () => {
         const db = req.result;
         if (!db.objectStoreNames.contains("snapshot")) db.createObjectStore("snapshot", { keyPath:"key" });
@@ -1002,13 +1049,14 @@ const dataLayer = {
   },
   async readSnapshot(){
     if (!state.offline.cacheReady) return null;
-    return (await offlineDb.get("snapshot", OFFLINE_SNAPSHOT_KEY)) || null;
+    const snapshot = await offlineDb.get("snapshot", OFFLINE_SNAPSHOT_KEY);
+    return snapshot?.owner === offlineOwner ? snapshot : null;
   },
   async writeSnapshot(bundle, y = state.y, m = state.m){
     if (!state.offline.cacheReady || !bundle) return;
     const savedAt = new Date().toISOString();
     const cleanBundle = sanitizeCalendarBundleForModules(bundle);
-    await offlineDb.put("snapshot", { key:OFFLINE_SNAPSHOT_KEY, y, m, savedAt, modules:cleanBundle?.modules || state.modulesList || [], bundle:cleanBundle });
+    await offlineDb.put("snapshot", { key:OFFLINE_SNAPSHOT_KEY, owner:offlineOwner, y, m, savedAt, modules:cleanBundle?.modules || state.modulesList || [], bundle:cleanBundle });
     state.offline.lastSyncAt = savedAt;
     updateOfflineStatus();
   },
@@ -1056,7 +1104,7 @@ const dataLayer = {
     if (!state.offline.cacheReady) throw new Error(t("Нет связи с сервером, а локальная очередь недоступна"));
     const disabledReason = offlineOperationDisabledReason({ type, payload });
     if (disabledReason) throw new Error(`${t("модуль выключен")}: ${disabledReason}`);
-    await offlineDb.put("queue", { id:uuid(), type, payload, createdAt:new Date().toISOString(), attempts:0, lastError:null });
+    await offlineDb.put("queue", { id:uuid(), owner:offlineOwner, type, payload, createdAt:new Date().toISOString(), attempts:0, lastError:null });
     await this.refreshQueueState();
     updateOfflineStatus();
   },
@@ -1069,16 +1117,16 @@ const dataLayer = {
   },
   async getQueueItems(){
     if (!state.offline.cacheReady) return [];
-    return (await offlineDb.all("queue")).sort((a,b) => String(a.createdAt).localeCompare(String(b.createdAt)) || String(a.id).localeCompare(String(b.id)));
+    return (await offlineDb.all("queue")).filter(item => item.owner === offlineOwner).sort((a,b) => String(a.createdAt).localeCompare(String(b.createdAt)) || String(a.id).localeCompare(String(b.id)));
   },
   async getFailedItems(){
     if (!state.offline.cacheReady) return [];
     const failed = await offlineDb.get("meta", OFFLINE_META_FAILED_KEY);
-    return failed?.items || [];
+    return failed?.owner === offlineOwner ? (failed.items || []).filter(item => item.owner === offlineOwner) : [];
   },
   async setFailedItems(items){
     if (!state.offline.cacheReady) return;
-    await offlineDb.put("meta", { key:OFFLINE_META_FAILED_KEY, items:items || [] });
+    await offlineDb.put("meta", { key:OFFLINE_META_FAILED_KEY, owner:offlineOwner, items:items || [] });
     await this.refreshQueueState();
     updateOfflineStatus();
   },
@@ -1280,9 +1328,15 @@ const dataLayer = {
     updateOfflineStatus();
     return true;
   },
-  async syncQueue(){
+  async syncQueue(){ return this.syncQueueWithLock(false); },
+  async syncQueueWithLock(browserLockHeld = false){
+    if (!browserLockHeld && navigator.locks) {
+      return navigator.locks.request(offlineSyncLockKey(), { ifAvailable:true },
+        lock => lock ? this.syncQueueWithLock(true) : undefined);
+    }
     if (!state.offline.cacheReady || state.offline.syncing) return;
     if (!navigator.onLine) { state.offline.online = false; updateOfflineStatus(); return; }
+    if (!(await this.getQueueItems()).length) return;
     const lock = acquireOfflineSyncLock();
     if (!lock) {
       state.offline.syncLockedByOther = true;
@@ -1290,15 +1344,21 @@ const dataLayer = {
       setSave("err", t("Синхронизация уже запущена в другой вкладке"));
       return;
     }
+    let applied = 0;
     state.offline.syncLockedByOther = false;
     state.offline.syncing = true;
     updateOfflineStatus();
     try {
+      const me = await jfetch("/api/auth/me");
+      assertOfflineOwner();
+      if (me.userId == null || String(me.userId) !== offlineOwner) throw Object.assign(new Error(t("Аккаунт изменился. Перезагрузите страницу.")), { status:401 });
       const items = await this.getQueueItems();
       const failed = [];
       for (const item of items) {
         refreshOfflineSyncLock(lock);
         try {
+          assertOfflineOwner();
+          if (item.owner !== offlineOwner) throw Object.assign(new Error("Offline owner mismatch"), { status:401 });
           const disabledReason = offlineOperationDisabledReason(item);
           if (disabledReason) {
             throw Object.assign(new Error(`${t("операция относится к выключенному модулю")}: ${disabledReason}`), { status:403 });
@@ -1318,6 +1378,7 @@ const dataLayer = {
             throw Object.assign(new Error("Неизвестный тип операции: " + item.type), { status:400 });
           }
           await offlineDb.delete("queue", item.id);
+          applied++;
         } catch (err) {
           if (err.status === 401) throw err;
           if (err.status === 400 || err.status === 403 || err.status === 404 || err.status === 409) {
@@ -1333,10 +1394,10 @@ const dataLayer = {
       }
       if (failed.length) {
         const prev = await offlineDb.get("meta", OFFLINE_META_FAILED_KEY);
-        await offlineDb.put("meta", { key:OFFLINE_META_FAILED_KEY, items:[...(prev?.items || []), ...failed].slice(-30) });
+        await offlineDb.put("meta", { key:OFFLINE_META_FAILED_KEY, owner:offlineOwner, items:[...(prev?.items || []), ...failed].slice(-30) });
       }
       await this.refreshQueueState();
-      if (state.offline.pending === 0) {
+      if (applied > 0) {
         const bundle = await api.month(state.y, state.m);
         await this.writeSnapshot(bundle, state.y, state.m);
         applyCalendarBundle(bundle);
@@ -1362,8 +1423,8 @@ const dataLayer = {
       // dataLayer is the single reconnect queue owner. Vue domains listen only
       // for this completion signal so a browser `online` event cannot submit
       // the same queued mutation through two competing reconnect triggers.
-      window.dispatchEvent(new CustomEvent("dutylog:offline-sync-complete", {
-        detail:{ pending:Number(state.offline.pending || 0), failed:Number(state.offline.failed?.length || 0) }
+      if (applied > 0) window.dispatchEvent(new CustomEvent("dutylog:offline-sync-complete", {
+        detail:{ applied, pending:Number(state.offline.pending || 0), failed:Number(state.offline.failed?.length || 0) }
       }));
     }
   },};
@@ -1465,7 +1526,7 @@ function closeOfflineSyncDialog(){
 window.addEventListener("online", () => { state.offline.online = true; updateOfflineStatus(); publishLegacyPlatformState(); dataLayer.syncQueue(); });
 window.addEventListener("offline", () => { state.offline.online = false; updateOfflineStatus(); publishLegacyPlatformState(); });
 window.addEventListener("storage", e => {
-  if (e.key === OFFLINE_SYNC_LOCK_KEY) updateOfflineStatus();
+  if (e.key === offlineSyncLockKey()) updateOfflineStatus();
 });
 document.addEventListener("keydown", e => {
   if (document.documentElement.dataset.vueOfflineSync === "ready") return;

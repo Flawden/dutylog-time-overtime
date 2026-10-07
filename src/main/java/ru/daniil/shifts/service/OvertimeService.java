@@ -92,7 +92,17 @@ public class OvertimeService {
      */
     @Transactional
     public OvertimeSummaryDto summary(AppUser user, LocalDate from, LocalDate to) {
-        List<OvertimeCreditRowDto> rows = projectedRowsInRange(user, from, to);
+        dayEntryService.validateRange(from, to);
+        return summary(user, from, to, account(user));
+    }
+
+    /** Reuse one complete FIFO projection inside the caller's transaction. */
+    public OvertimeSummaryDto summary(AppUser user, LocalDate from, LocalDate to, OvertimeAccountDto account) {
+        dayEntryService.validateRange(from, to);
+        List<OvertimeCreditRowDto> rows = account.credits().stream()
+                .filter(row -> row.workedDate().compareTo(from.toString()) >= 0)
+                .filter(row -> row.workedDate().compareTo(to.toString()) <= 0)
+                .toList();
 
         double overtime =
                 rows.stream()

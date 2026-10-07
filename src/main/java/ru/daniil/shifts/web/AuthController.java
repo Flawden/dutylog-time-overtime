@@ -5,6 +5,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.daniil.shifts.model.AppUser;
 import ru.daniil.shifts.service.AppSettingsService;
+import ru.daniil.shifts.service.CurrentUserService;
 import ru.daniil.shifts.service.UserRegistrationService;
 
 import java.security.Principal;
@@ -14,11 +15,13 @@ import java.util.Map;
 @RequestMapping("/api/auth")
 public class AuthController {
     private final AppSettingsService appSettingsService;
+    private final CurrentUserService currentUserService;
     private final UserRegistrationService registrationService;
 
     public AuthController(AppSettingsService appSettingsService,
-                          UserRegistrationService registrationService) {
+                          UserRegistrationService registrationService, CurrentUserService currentUserService) {
         this.appSettingsService = appSettingsService;
+        this.currentUserService = currentUserService;
         this.registrationService = registrationService;
     }
 
@@ -45,6 +48,6 @@ public class AuthController {
 
     @GetMapping("/me")
     public Map<String, String> me(Principal principal) {
-        return Map.of("username", principal.getName());
+        return Map.of("username", principal.getName(), "userId", currentUserService.requireUser(principal).getId().toString());
     }
 }

@@ -5,6 +5,21 @@ import { createDutyLogHttpClient, csrfTokenFromCookie } from "./httpClient";
 beforeEach(() => resetFrontendDiagnosticsForTests());
 
 describe("DutyLog HTTP client", () => {
+  it("binds native requests to the account id and clears it on unauthorized", async () => {
+    const clear = vi.fn(), assign = vi.fn();
+    vi.stubGlobal("window", { DutyLogOfflineIdentity:{ owner:() => "42", clear }, location:{ assign } });
+    try {
+      const fetchImpl = vi.fn().mockResolvedValueOnce(new Response("{}", { status:200 }))
+        .mockResolvedValueOnce(new Response("{}", { status:401 }));
+      const request = createDutyLogHttpClient({ fetchImpl:fetchImpl as typeof fetch });
+      await request("/api/v1/profile");
+      expect(new Headers(fetchImpl.mock.calls[0]?.[1]?.headers).get("X-DutyLog-Offline-Owner")).toBe("42");
+      await expect(request("/api/v1/profile")).rejects.toMatchObject({ status:401 });
+      expect(clear).toHaveBeenCalledTimes(1);
+      expect(assign).toHaveBeenCalledWith("/login.html");
+    } finally { vi.unstubAllGlobals(); }
+  });
+
   it("reads and decodes the Spring XSRF cookie", () => {
     expect(csrfTokenFromCookie("theme=dark; XSRF-TOKEN=a%2Fb%3D; language=ru")).toBe("a/b=");
     expect(csrfTokenFromCookie("theme=dark")).toBeNull();

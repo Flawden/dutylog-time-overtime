@@ -159,6 +159,25 @@ public class ProductionCalendarService {
                 && effective.getNormMinutesOverride() != null ? effective.getNormMinutesOverride() : baseMinutes;
     }
 
+    /** Request-local effective days; LOCAL wins even when it explicitly restores normal schedule. */
+    @Transactional(readOnly = true)
+    public Map<LocalDate, ProductionCalendarDay> effectiveDays(AppUser user, LocalDate from, LocalDate to) {
+        Map<LocalDate, ProductionCalendarDay> result = new LinkedHashMap<>();
+        for (ProductionCalendarDay item : days.findByOwnerAndDateBetweenOrderByDateAscLayerAsc(user, from, to)) {
+            if (LOCAL.equals(item.getLayer())) result.put(item.getDate(), item);
+            else if (BASE.equals(item.getLayer())) result.putIfAbsent(item.getDate(), item);
+        }
+        return result;
+    }
+
+    public int requiredMinutes(AppUser user, LocalDate date, DayEntry schedule,
+                               Map<LocalDate, ProductionCalendarDay> effectiveDays) {
+        int baseMinutes = workNorm.basePlannedMinutes(schedule);
+        ProductionCalendarDay effective = effectiveDays.get(date);
+        return effective != null && "NORM_OVERRIDE".equals(effective.getScheduleEffect())
+                && effective.getNormMinutesOverride() != null ? effective.getNormMinutesOverride() : baseMinutes;
+    }
+
     @Transactional(readOnly = true)
     public ProductionCalendarDayDto resolvedDay(AppUser user, LocalDate date) {
         DayEntry schedule = scheduleDays.findByOwnerAndDate(user, date).orElse(null);

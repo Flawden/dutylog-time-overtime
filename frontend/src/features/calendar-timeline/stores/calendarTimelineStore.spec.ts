@@ -32,6 +32,23 @@ function mockApi(overrides: Partial<CalendarTimelineApi> = {}): CalendarTimeline
 beforeEach(() => setActivePinia(createPinia()));
 
 describe("calendar and timeline store", () => {
+  it("shares overlapping ensure reads but still allows an explicit refresh", async () => {
+    const pending = deferred<ReturnType<typeof loaded>>();
+    const load = vi.fn().mockReturnValueOnce(pending.promise).mockResolvedValue(loaded("Fresh"));
+    const restore = installCalendarTimelineApiForTests(mockApi({ load }));
+    try {
+      const store = useCalendarTimelineStore();
+      const first = store.ensureLoaded();
+      const second = store.ensureLoaded();
+      expect(load).toHaveBeenCalledTimes(1);
+      pending.resolve(loaded("Shared"));
+      await Promise.all([first, second]);
+      await store.refresh();
+      expect(load).toHaveBeenCalledTimes(2);
+      expect(store.bundle?.tasks[0]?.text).toBe("Fresh");
+    } finally { restore(); }
+  });
+
   it("does not let a stale month response replace a newer range", async () => {
     const first = deferred<ReturnType<typeof loaded>>();
     const second = deferred<ReturnType<typeof loaded>>();
@@ -81,7 +98,7 @@ describe("calendar and timeline store", () => {
     store.focusDate = "2025-01-15";
     store.workDate = "2026-08-05";
     await store.ensureTodayLoaded();
-    expect(load).toHaveBeenCalledWith("2025-01-15", true);
+    expect(load).toHaveBeenCalledWith("2025-01-15", true, expect.any(AbortSignal));
     expect(store.focusDate).toBe("2026-08-05");
     restore();
 

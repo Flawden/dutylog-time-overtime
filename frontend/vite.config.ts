@@ -8,6 +8,7 @@ const productionSourceMaps = process.env.DUTYLOG_FRONTEND_SOURCEMAPS === "true" 
 
 function manualChunkName(id: string): string | undefined {
   const normalizedId = id.replaceAll("\\", "/");
+  if (normalizedId.endsWith("/src/main.ts")) return "main";
   if (normalizedId.includes("/node_modules/")) return "vendor";
   if (normalizedId.includes("/src/generated/")) return "api-contract";
   if (normalizedId.includes("/src/platform/")) return "platform";
@@ -42,17 +43,16 @@ export default defineConfig({
     emptyOutDir: true,
     sourcemap: productionSourceMaps,
     cssCodeSplit: false,
-    lib: {
-      entry: fileURLToPath(new URL("./src/main.ts", import.meta.url)),
-      formats: ["es"],
-      fileName: () => "dutylog-vue-app-shell.js",
-    },
+    modulePreload: false,
+    // This is an application entry, not a reusable library. Application mode
+    // enables whitespace minification and preserves normal chunk hashing.
     rollupOptions: {
+      input: fileURLToPath(new URL("./src/entry.ts", import.meta.url)),
       output: {
         entryFileNames: "dutylog-vue-app-shell.js",
         chunkFileNames: "chunks/[name]-[hash].js",
         manualChunks: manualChunkName,
-        assetFileNames: assetInfo => assetInfo.name === "style.css"
+        assetFileNames: assetInfo => assetInfo.name === "style.css" || assetInfo.name?.endsWith(".css")
           ? "dutylog-vue-app-shell.css"
           : "[name][extname]",
       },

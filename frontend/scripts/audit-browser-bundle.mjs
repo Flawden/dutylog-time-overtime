@@ -78,3 +78,20 @@ if (violations.length > 0) {
   console.log(`Entry budget: ${entry.bytes}/${budget.maxEntryBytes} B raw, ${entry.gzipBytes}/${budget.maxEntryGzipBytes} B gzip`);
   console.log(`Total JS budget: ${totalBytes}/${budget.maxTotalBytes} B raw, ${totalGzipBytes}/${budget.maxTotalGzipBytes} B gzip`);
 }
+
+// Account for the legacy boot as well as the Vue build. These are file-size
+// budgets, not measured wire bytes or phone CPU timings.
+const staticDirectory = resolve(frontendDirectory, "../src/main/resources/static");
+const html = await readFile(resolve(staticDirectory, "index.html"), "utf8");
+let legacyBytes = 0, legacyGzipBytes = 0, blockingScripts = 0, deferredScripts = 0;
+for (const match of html.matchAll(/<script\s+src="(js\/[^"?]+)\?[^"\n]+"([^>]*)>/g)) {
+  const bytes = await readFile(resolve(staticDirectory, match[1]));
+  legacyBytes += bytes.length;
+  legacyGzipBytes += gzipSync(bytes, { level:9 }).length;
+  if (/\bdefer\b/.test(match[2])) deferredScripts++; else blockingScripts++;
+}
+if (!Number.isInteger(budget.maxLegacyBytes) || !Number.isInteger(budget.maxLegacyGzipBytes)
+    || legacyBytes > budget.maxLegacyBytes || legacyGzipBytes > budget.maxLegacyGzipBytes) {
+  throw new Error(`Legacy boot size budget exceeded: ${legacyBytes} raw, ${legacyGzipBytes} gzip`);
+}
+console.log(`Legacy boot: ${legacyBytes}/${budget.maxLegacyBytes} B raw, ${legacyGzipBytes}/${budget.maxLegacyGzipBytes} B gzip; ${blockingScripts} blocking, ${deferredScripts} deferred scripts.`);

@@ -87,9 +87,9 @@ class VueTasksNotesImportantMigrationFrontendContractTest {
         assertFalse(store.contains("structuredClone(this.taskDraft)"));
         assertFalse(store.contains("structuredClone(this.importantDraft)"));
         assertTrue(store.contains("const offline = typeof navigator !== \"undefined\" && !navigator.onLine && bridge !== null"));
-        assertTrue(store.contains("tasksEnabled && !offline ? this.loadBoard() : Promise.resolve(true)"));
-        assertTrue(store.contains("importantEnabled && !offline ? this.loadImportantDays() : Promise.resolve(true)"));
-        assertTrue(store.contains("tasksEnabled && !offline ? this.loadInbox() : Promise.resolve(true)"));
+        assertTrue(store.contains("tasksEnabled && !offline && (route === \"all\" || route === \"tasks\") ? this.loadBoard() : Promise.resolve(true)"));
+        assertTrue(store.contains("importantEnabled && !offline && (route === \"all\" || route === \"important\") ? this.loadImportantDays() : Promise.resolve(true)"));
+        assertTrue(store.contains("tasksEnabled && !offline && (route === \"all\" || route === \"tasks\") ? this.loadInbox() : Promise.resolve(true)"));
         assertTrue(store.contains("function runtimeModuleEnabled(key: string): boolean"));
         assertTrue(store.contains("const snapshot = bridge?.snapshot()"));
         assertTrue(count(store, "!runtimeModuleEnabled(\"tasks\")") >= 2);

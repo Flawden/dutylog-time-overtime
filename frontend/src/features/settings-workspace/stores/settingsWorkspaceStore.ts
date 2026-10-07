@@ -97,7 +97,7 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
           themePreset: profile.themePreset,
           themeConfig: profile.themeConfig,
         });
-        await Promise.all([this.loadSessions(api), this.refreshIntegrations(api), this.loadRetiredIslandData(api)]);
+
         this.loaded = true;
       } catch (error) {
         this.error = errorMessage(error);
@@ -105,6 +105,9 @@ export const useSettingsWorkspaceStore = defineStore("dutylog-settings-workspace
       } finally {
         this.loading = false;
       }
+    },
+    async loadDetails(): Promise<void> {
+      await Promise.all([this.loadSessions(), this.refreshIntegrations(), this.loadRetiredIslandData()]);
     },
     async refreshIntegrations(api: SettingsWorkspaceApi = createSettingsWorkspaceApi()): Promise<void> {
       const jobs: Promise<unknown>[] = [];

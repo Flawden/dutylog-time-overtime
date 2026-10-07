@@ -63,13 +63,13 @@ public class CalendarService {
     public CalendarRangeDto range(AppUser user, LocalDate from, LocalDate to) {
         dayEntryService.validateRange(from, to);
         List<ModuleDto> modules = moduleService.list(user);
-        boolean notesEnabled = moduleService.isEnabled(user, ModuleService.NOTES);
-        boolean tasksEnabled = moduleService.isEnabled(user, ModuleService.TASKS);
-        boolean overtimeEnabled = moduleService.isEnabled(user, ModuleService.OVERTIME);
-        boolean importantEnabled = moduleService.isEnabled(user, ModuleService.IMPORTANT_DATES);
-        boolean vacationEnabled = moduleService.isEnabled(user, ModuleService.VACATION);
-        boolean notificationsEnabled = moduleService.isEnabled(user, ModuleService.NOTIFICATIONS);
-        boolean scenariosEnabled = moduleService.isEnabled(user, ModuleService.SCENARIOS);
+        boolean notesEnabled = modules.stream().anyMatch(module -> ModuleService.NOTES.equals(module.key()) && module.enabled());
+        boolean tasksEnabled = modules.stream().anyMatch(module -> ModuleService.TASKS.equals(module.key()) && module.enabled());
+        boolean overtimeEnabled = modules.stream().anyMatch(module -> ModuleService.OVERTIME.equals(module.key()) && module.enabled());
+        boolean importantEnabled = modules.stream().anyMatch(module -> ModuleService.IMPORTANT_DATES.equals(module.key()) && module.enabled());
+        boolean vacationEnabled = modules.stream().anyMatch(module -> ModuleService.VACATION.equals(module.key()) && module.enabled());
+        boolean notificationsEnabled = modules.stream().anyMatch(module -> ModuleService.NOTIFICATIONS.equals(module.key()) && module.enabled());
+        boolean scenariosEnabled = modules.stream().anyMatch(module -> ModuleService.SCENARIOS.equals(module.key()) && module.enabled());
 
         List<ShiftTypeDto> shiftTypes = shiftTypeService.list(user);
         List<DayDto> dayEntries = dayEntryService.listRange(user, from, to).stream()
@@ -91,12 +91,12 @@ public class CalendarService {
         List<TaskDto> tasks = tasksEnabled ? taskService.listRange(user, from, to) : List.of();
         List<ImportantDayOccurrenceDto> importantDays = importantEnabled ? importantDayService.occurrences(user, from, to) : List.of();
         List<AbsenceOccurrenceDto> absences = vacationEnabled ? vacationPlannerService.occurrences(user, from, to) : List.of();
-        OvertimeSummaryDto overtime = overtimeEnabled
-                ? overtimeService.summary(user, from, to)
-                : new OvertimeSummaryDto(from.toString(), to.toString(), 0, 0, 0);
         OvertimeAccountDto overtimeAccount = overtimeEnabled
                 ? overtimeService.account(user)
                 : new OvertimeAccountDto(0, 0, 0, List.of(), List.of());
+        OvertimeSummaryDto overtime = overtimeEnabled
+                ? overtimeService.summary(user, from, to, overtimeAccount)
+                : new OvertimeSummaryDto(from.toString(), to.toString(), 0, 0, 0);
         NotificationSettingsDto notificationSettings = notificationsEnabled ? notificationService.settings(user) : null;
         List<NotificationReminderDto> reminders = notificationsEnabled ? notificationService.upcoming(user, from, to) : List.of();
         List<QuickScenarioDto> quickScenarios = scenariosEnabled && overtimeEnabled ? quickScenarioService.list(user) : List.of();
