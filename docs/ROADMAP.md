@@ -16,7 +16,14 @@ This section records the verified current branch state. Release-specific invento
 - [x] User confirmed green deployment and working exports from the real account.
 - [x] Fresh CSV and XLS contain matching data: 17 rows, 90 hours earned, 83 hours used and 7 hours remaining; each row balances.
 - [x] Full-journal export is scoped to the current account and does not depend on the visible month/year selection.
-- [ ] Reconcile the reviewed holiday-pay / article 153 development slices and startup/offline optimizations with their implementation documentation and acceptance evidence.
+- [x] Reconcile article 153 Payroll integration and full-scenario documentation: reviewed holiday remuneration enters ordinary premiums once, preserves NIGHT and feeds the existing eligible earnings bases.
+- [x] Documented domain/API scenario covers reviewed, blocked and legacy states, rest-day election, components, bonus/regional bases, stale review, immutable history, ownership and corrupted frozen documents. See `docs/payroll-trust/P1B3_FULL_SCENARIO.md` and `P1B3C4C_PAYROLL_INTEGRATION.md`.
+- [x] Documented Payroll preview recovery returns a readable blocked preview for expected incomplete pricing configuration while preserving strict write rollback. See `docs/payroll-trust/PAYROLL_PREVIEW_TRANSACTION_RECOVERY.md`.
+- [x] Reconcile startup optimization documentation: defer Time Bank loading until its workspace, parallelize independent startup reads and cache immutable Vue chunks. See `docs/STARTUP_PERFORMANCE.md`.
+- [ ] Add the user-facing review/certification input flow; existing reviewed-month integration does not provide that form.
+- [ ] Verify article 153 clean PostgreSQL V90 and exact-commit staging acceptance from runner RESULT evidence.
+- [ ] Reconcile `d7911a20` offline-account isolation and redundant-startup-work changes with implementation and targeted validation evidence.
+- [ ] Measure post-deployment startup on the target phone; further calendar projection/context profiling remains open.
 - [ ] Verify any still-open clean PostgreSQL migration and release-specific acceptance gates from their own evidence.
 
 The earlier CSV attachment differed from the fresh exports; its transformation source was not established. Fresh exports match, so no server export defect was demonstrated.
