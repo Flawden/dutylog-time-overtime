@@ -3,6 +3,26 @@
 Current release: **v27.47.0 — Generic Compensation Components**.
 
 
+## Current acceptance — 2026-10-09
+
+This section records the verified current branch state. Release-specific inventories below remain historical; their unchecked acceptance gates are not automatically closed by a later green deployment.
+
+- [x] `3c660529`: deterministic manual offline-sync feedback assertions using a controlled bridge gate; progress, disabled/busy state and final result verified.
+- [x] Full local Playwright regression: 61 scenarios passed after the synchronization-test fix.
+- [x] `c0c228ad`: Docker frontend audit stage includes the legacy HTML and JavaScript inputs; local Docker build and subsequent CI passed.
+- [x] Docker frontend validation included 94 passing unit tests; this is a later validation inventory, not a rewrite of the v27.47.0 release baseline.
+- [x] `d896aabb`: restore Excel and CSV full-journal exports in Time Bank → Credits using the existing authenticated endpoints.
+- [x] Export UI passed the canonical Node 20.18.1 / npm 10.8.2 frontend build, including delivery, contract, typecheck and bundle audit.
+- [x] User confirmed green deployment and working exports from the real account.
+- [x] Fresh CSV and XLS contain matching data: 17 rows, 90 hours earned, 83 hours used and 7 hours remaining; each row balances.
+- [x] Full-journal export is scoped to the current account and does not depend on the visible month/year selection.
+- [ ] Reconcile the reviewed holiday-pay / article 153 development slices and startup/offline optimizations with their implementation documentation and acceptance evidence.
+- [ ] Verify any still-open clean PostgreSQL migration and release-specific acceptance gates from their own evidence.
+
+The earlier CSV attachment differed from the fresh exports; its transformation source was not established. Fresh exports match, so no server export defect was demonstrated.
+
+Current product planning is owned by the top release sections and "Core roadmap after Day Truth". Historical queues below do not assign current release numbers or reopen already accepted features. The next planned Payroll release remains v27.48.0 — Real Payroll Bases & Qualified-Time Formulas; nearest shared-window / multi-day discovery remains a separate follow-up.
+
 ## Product north star
 
 > **The user describes reality. DutyLog derives the consequences.**
@@ -310,13 +330,13 @@ Next planned product release after green: **v27.42.0 — People Profiles & Share
 - [x] Lock real rendered bar heights in the existing Chromium Overtime Next journey.
 - [ ] Exact frontend, Maven 790/790, Chromium 48/48, immutable image/PostgreSQL V47 and staging green.
 
-## v27.42.0 — People Profiles & Shared Availability — after frontend bundle segmentation
+## Historical v27.42.0 planning slot — superseded by accepted People Profiles / Shared Availability sections
 - [ ] Treat another person as a selected calendar profile, not an overlay pasted on top of the current user.
 - [ ] Switching profile recolors/reprojects the whole calendar to that person while making active identity unmistakable.
 - [ ] Add Shared Availability for common free days, including the nearest shared window and multi-day overlaps.
 - [ ] Define permission/privacy boundaries before exposing another person’s schedule details.
 
-## Superseded planning slot — Vacation Entitlement & Accrual Engine (now v27.47.0)
+## Superseded planning slot — Vacation Entitlement & Accrual Engine (future version unassigned)
 - [ ] Entitlement policy and annual allowance.
 - [ ] Accrual/carry-over/adjustments with explainable balance.
 - [ ] Planned/used/available vacation projection integrated with the existing Absence domain.
@@ -1417,7 +1437,7 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
-## Текущая продуктовая точка — Unified Time & Compensation Ledger
+## Historical product snapshot — v27.26.2 Unified Time & Compensation Ledger
 
 Статус: **v27.26.2** восстанавливает единую каноническую линию; **v27.26.0** объединяет плановые смены, фактические отсутствия и компенсационные движения. Отгул за ранее отработанное время больше не списывает отдельное число: он владеет FIFO usage в каноническом overtime ledger. Flyway V43 переносит старый баланс в opening credit, сохраняет `day_entries`, а salary-правила остаются задачей Payroll Foundation.
 
@@ -1435,7 +1455,7 @@ Next product stage: **v27.24.0 — Calendar Comfort & Correctness**.
 
 Следующий этап: **v27.27.0 — Ledger Integrity & Approval Workflow**.
 
-## Ближайшая продуктовая очередь после v27.26.2
+## Historical planning queue after v27.26.2 — superseded
 
 ### v27.26.0 — Unified Time & Compensation Ledger — completed
 
