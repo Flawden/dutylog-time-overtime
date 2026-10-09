@@ -412,6 +412,15 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
         </div>
       </header>
 
+      <div class="ledger-export-actions" aria-label="Экспорт всех переработок">
+        <a class="ui-button ui-button--secondary ui-button--md"
+           href="/api/overtime/export.xls"
+           data-ledger-export="xls">Excel — весь журнал</a>
+        <a class="ui-button ui-button--secondary ui-button--md"
+           href="/api/overtime/export.csv"
+           data-ledger-export="csv">CSV — весь журнал</a>
+      </div>
+
       <div class="ledger-insights ledger-insights--period">
         <div><small>Период</small><strong id="ledgerPeriodLabel">{{ periodLabel }}</strong><span>{{ rangeMode === 'year' ? 'по месяцам' : 'по дням' }}</span></div>
       </div>
@@ -544,3 +553,14 @@ watch([timeBankTab, focusAbsenceUsageId], async ([tab, id]) => {
     </UiModal>
   </main>
 </template>
+<style scoped>
+.ledger-export-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.ledger-export-actions a {
+  text-decoration: none;
+}
+</style>
