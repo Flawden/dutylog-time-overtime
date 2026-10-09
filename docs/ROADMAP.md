@@ -22,7 +22,10 @@ This section records the verified current branch state. Release-specific invento
 - [x] Reconcile startup optimization documentation: defer Time Bank loading until its workspace, parallelize independent startup reads and cache immutable Vue chunks. See `docs/STARTUP_PERFORMANCE.md`.
 - [ ] Add the user-facing review/certification input flow; existing reviewed-month integration does not provide that form.
 - [ ] Verify article 153 clean PostgreSQL V90 and exact-commit staging acceptance from runner RESULT evidence.
-- [ ] Reconcile `d7911a20` offline-account isolation and redundant-startup-work changes with implementation and targeted validation evidence.
+- [x] Reconcile `d7911a20` with `docs/OPTIMIZATION_FIXES_2026-10-07.md` and regression sources: userId-scoped offline storage, owner validation, retained account queues, empty-sync fast path and reduced redundant startup work.
+- [x] Optimization documentation reports 6 passing Node regressions and 94 Vitest tests; the two optimization browser scenarios belong to the subsequently passed 61-scenario local Playwright suite.
+- [ ] Recover any pending operations from the old ownerless offline database only through an explicit verified ownership process; automatic adoption/replay is intentionally disabled.
+- [ ] Complete remaining optimization audit work: calendar ownership, metadata caching, safe local-first loading, concurrent preset seeding checks and retired legacy/redundant FIFO read cleanup.
 - [ ] Measure post-deployment startup on the target phone; further calendar projection/context profiling remains open.
 - [ ] Verify any still-open clean PostgreSQL migration and release-specific acceptance gates from their own evidence.
 
