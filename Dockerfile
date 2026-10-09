@@ -14,6 +14,8 @@ RUN test "$(node --version)" = "v$(cat .node-version)" \
     && test -e node_modules/.bin/vite \
     && npm ls --all >/dev/null
 COPY frontend ./
+COPY src/main/resources/static/index.html /src/main/resources/static/index.html
+COPY src/main/resources/static/js/ /src/main/resources/static/js/
 COPY src/main/resources/static/openapi/dutylog-v1.yaml \
      /src/main/resources/static/openapi/dutylog-v1.yaml
 RUN node ./scripts/verify-authentic-lockfile.mjs \
