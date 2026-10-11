@@ -62,7 +62,7 @@ function errorMessage(value: unknown): string {
 }
 
 const shiftLabel = computed(() => {
-  if (!truth.value?.shiftName) return "По графику выходной";
+  if (!truth.value?.shiftName) return "Исходный график дня не задан";
   const range = truth.value.scheduledStartTime && truth.value.scheduledEndTime
     ? ` · ${shortTime(truth.value.scheduledStartTime)}–${shortTime(truth.value.scheduledEndTime)}` : "";
   return `${truth.value.shiftName}${range}`;
